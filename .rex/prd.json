@@ -34,7 +34,7 @@
             {
               "id": "5c160a8b-ad78-44f6-9335-444e7727ccfd",
               "title": "Add approval flow for LLM proposals",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Present proposed tree structure for user approval before inserting",
               "acceptanceCriteria": [
@@ -62,7 +62,7 @@
             {
               "id": "1d92f102-9a80-4234-a3e9-f713ed42ab61",
               "title": "Maintain explicit manual mode",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Support direct task creation bypassing LLM with explicit parameters",
               "acceptanceCriteria": [
