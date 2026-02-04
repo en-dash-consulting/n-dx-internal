@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { resolveStore } from "../../store/index.js";
 import { LEVEL_HIERARCHY } from "../../schema/index.js";
 import { findItem } from "../../core/tree.js";
+import { validateDAG } from "../../core/dag.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError } from "../errors.js";
 import { info, result } from "../output.js";
@@ -109,6 +110,27 @@ export async function cmdAdd(
 
   if (flags.description) item.description = flags.description;
   if (flags.priority) item.priority = flags.priority as Priority;
+
+  if (flags.blockedBy) {
+    const deps = flags.blockedBy.split(",").map((s) => s.trim()).filter(Boolean);
+    if (deps.length > 0) {
+      item.blockedBy = deps;
+    }
+  }
+
+  // Validate dependencies before persisting
+  if (item.blockedBy && item.blockedBy.length > 0) {
+    const doc = await store.loadDocument();
+    // Simulate adding the item to validate the DAG
+    const simItems = [...doc.items, item];
+    const dagResult = validateDAG(simItems);
+    if (!dagResult.valid) {
+      throw new CLIError(
+        `Invalid dependencies: ${dagResult.errors.join("; ")}`,
+        "Check the IDs with 'rex status' and ensure no cycles exist.",
+      );
+    }
+  }
 
   await store.addItem(item, parentId);
 

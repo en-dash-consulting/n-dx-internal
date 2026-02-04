@@ -356,7 +356,7 @@
             {
               "id": "2938285a-01bf-4eb2-8ff9-6ef1ef6315da",
               "title": "Implement task-to-task dependencies",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Ensure blockedBy field is fully respected in work selection",
               "acceptanceCriteria": [
@@ -390,8 +390,6 @@
           "level": "feature",
           "description": "Improve task status management and tracking throughout lifecycle",
           "source": "llm",
-          "startedAt": "2026-02-04T15:43:05.711Z",
-          "completedAt": "2026-02-04T15:43:05.711Z",
           "children": [
             {
               "id": "8c0107fc-f568-4649-8e6c-7c81ce45f22b",
@@ -453,7 +451,9 @@
               "startedAt": "2026-02-04T15:25:09.269Z",
               "completedAt": "2026-02-04T15:25:09.269Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-04T15:43:05.711Z",
+          "completedAt": "2026-02-04T15:43:05.711Z"
         },
         {
           "id": "7f822601-2e01-4a98-adc2-3426481da3f2",

@@ -10,6 +10,7 @@ import { findNextTask, collectCompletedIds, explainSelection } from "../core/nex
 import { validateTransition } from "../core/transitions.js";
 import { computeTimestampUpdates } from "../core/timestamps.js";
 import { findAutoCompletions } from "../core/parent-completion.js";
+import { validateDAG } from "../core/dag.js";
 import { TOOL_VERSION } from "./commands/constants.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../schema/index.js";
 import type { PRDStore } from "../store/index.js";
@@ -241,6 +242,24 @@ export async function startMcpServer(dir: string): Promise<void> {
         if (args.tags) item.tags = args.tags;
         if (args.source) item.source = args.source;
         if (args.blockedBy) item.blockedBy = args.blockedBy;
+
+        // Validate dependencies before persisting
+        if (item.blockedBy && item.blockedBy.length > 0) {
+          const doc = await store.loadDocument();
+          const simItems = [...doc.items, item];
+          const dagResult = validateDAG(simItems);
+          if (!dagResult.valid) {
+            return {
+              content: [
+                {
+                  type: "text" as const,
+                  text: `Invalid dependencies: ${dagResult.errors.join("; ")}. Check IDs with get_prd_status.`,
+                },
+              ],
+              isError: true,
+            };
+          }
+        }
 
         await store.addItem(item, args.parentId);
         await store.appendLog({

@@ -6,6 +6,8 @@ import { info, result } from "../output.js";
 import { validateTransition } from "../../core/transitions.js";
 import { computeTimestampUpdates } from "../../core/timestamps.js";
 import { findAutoCompletions } from "../../core/parent-completion.js";
+import { validateDAG } from "../../core/dag.js";
+import { findItem } from "../../core/tree.js";
 import type { PRDItem, ItemStatus, Priority } from "../../schema/index.js";
 
 const VALID_STATUSES = new Set([
@@ -85,11 +87,39 @@ export async function cmdUpdate(
   if (flags.title) updates.title = flags.title;
   if (flags.description) updates.description = flags.description;
 
+  if (flags.blockedBy !== undefined) {
+    const raw = flags.blockedBy.trim();
+    if (raw === "") {
+      // Clear dependencies
+      updates.blockedBy = undefined;
+    } else {
+      updates.blockedBy = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  }
+
   if (Object.keys(updates).length === 0) {
     throw new CLIError(
       "No updates specified.",
-      "Use --status, --priority, --title, or --description.",
+      "Use --status, --priority, --title, --description, or --blockedBy.",
     );
+  }
+
+  // Validate dependencies before persisting
+  if (updates.blockedBy && updates.blockedBy.length > 0) {
+    const doc = await store.loadDocument();
+    // Simulate the update to validate the resulting DAG
+    const simItems = JSON.parse(JSON.stringify(doc.items)) as PRDItem[];
+    const simEntry = findItem(simItems, id);
+    if (simEntry) {
+      simEntry.item.blockedBy = updates.blockedBy;
+    }
+    const dagResult = validateDAG(simItems);
+    if (!dagResult.valid) {
+      throw new CLIError(
+        `Invalid dependencies: ${dagResult.errors.join("; ")}`,
+        "Check the IDs with 'rex status' and ensure no cycles exist.",
+      );
+    }
   }
 
   await store.updateItem(id, updates);

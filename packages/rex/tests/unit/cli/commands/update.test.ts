@@ -237,6 +237,91 @@ describe("cmdUpdate", () => {
     });
   });
 
+  // --- blockedBy updates ---
+
+  describe("blockedBy updates", () => {
+    it("sets blockedBy from comma-separated string", async () => {
+      writeFileSync(
+        join(tmp, ".rex", "prd.json"),
+        JSON.stringify({
+          schema: "rex/v1",
+          title: "test",
+          items: [
+            { id: itemId, title: "Test item", level: "epic", status: "pending" },
+            { id: "dep-1", title: "Dep 1", level: "task", status: "pending" },
+            { id: "dep-2", title: "Dep 2", level: "task", status: "pending" },
+          ],
+        }),
+      );
+
+      await cmdUpdate(tmp, itemId, { blockedBy: "dep-1,dep-2" });
+
+      const raw = readFileSync(join(tmp, ".rex", "prd.json"), "utf-8");
+      const doc = JSON.parse(raw) as PRDDocument;
+      expect(doc.items[0].blockedBy).toEqual(["dep-1", "dep-2"]);
+    });
+
+    it("clears blockedBy with empty string", async () => {
+      writeFileSync(
+        join(tmp, ".rex", "prd.json"),
+        JSON.stringify({
+          schema: "rex/v1",
+          title: "test",
+          items: [
+            { id: itemId, title: "Test item", level: "epic", status: "pending", blockedBy: ["dep-1"] },
+            { id: "dep-1", title: "Dep 1", level: "task", status: "pending" },
+          ],
+        }),
+      );
+
+      await cmdUpdate(tmp, itemId, { blockedBy: "" });
+
+      const raw = readFileSync(join(tmp, ".rex", "prd.json"), "utf-8");
+      const doc = JSON.parse(raw) as PRDDocument;
+      expect(doc.items[0].blockedBy).toBeUndefined();
+    });
+
+    it("rejects blockedBy with nonexistent IDs", async () => {
+      await expect(
+        cmdUpdate(tmp, itemId, { blockedBy: "nonexistent" }),
+      ).rejects.toThrow(CLIError);
+      await expect(
+        cmdUpdate(tmp, itemId, { blockedBy: "nonexistent" }),
+      ).rejects.toThrow(/not found|Orphan|unknown/i);
+    });
+
+    it("rejects blockedBy that creates a self-reference", async () => {
+      await expect(
+        cmdUpdate(tmp, itemId, { blockedBy: itemId }),
+      ).rejects.toThrow(CLIError);
+      await expect(
+        cmdUpdate(tmp, itemId, { blockedBy: itemId }),
+      ).rejects.toThrow(/self|itself|cycle/i);
+    });
+
+    it("rejects blockedBy that creates a cycle", async () => {
+      writeFileSync(
+        join(tmp, ".rex", "prd.json"),
+        JSON.stringify({
+          schema: "rex/v1",
+          title: "test",
+          items: [
+            { id: "a", title: "A", level: "task", status: "pending", blockedBy: ["b"] },
+            { id: "b", title: "B", level: "task", status: "pending" },
+          ],
+        }),
+      );
+
+      // b blocked by a → a blocked by b → cycle
+      await expect(
+        cmdUpdate(tmp, "b", { blockedBy: "a" }),
+      ).rejects.toThrow(CLIError);
+      await expect(
+        cmdUpdate(tmp, "b", { blockedBy: "a" }),
+      ).rejects.toThrow(/[Cc]ycle/);
+    });
+  });
+
   // --- Automatic timestamps ---
 
   describe("automatic timestamps", () => {

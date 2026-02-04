@@ -191,3 +191,78 @@ describe("cmdAdd – level inference (no explicit level)", () => {
     expect(feat.level).toBe("feature");
   });
 });
+
+describe("cmdAdd – blockedBy support", () => {
+  let tmp: string;
+
+  beforeEach(() => {
+    tmp = mkdtempSync(join(tmpdir(), "rex-add-blocked-"));
+    mkdirSync(join(tmp, ".rex"));
+  });
+
+  afterEach(() => {
+    rmSync(tmp, { recursive: true });
+  });
+
+  it("accepts --blockedBy as comma-separated IDs", async () => {
+    writeFileSync(
+      join(tmp, ".rex", "prd.json"),
+      makePrd([
+        { id: "t1", title: "Task 1", level: "task", status: "pending" },
+        { id: "t2", title: "Task 2", level: "task", status: "pending" },
+      ]),
+    );
+
+    await cmdAdd(tmp, "epic", { title: "Blocked Epic", blockedBy: "t1,t2", format: "json" });
+
+    const prd = JSON.parse(readFileSync(join(tmp, ".rex", "prd.json"), "utf-8"));
+    const item = prd.items.find((i: { title: string }) => i.title === "Blocked Epic");
+    expect(item).toBeDefined();
+    expect(item.blockedBy).toEqual(["t1", "t2"]);
+  });
+
+  it("accepts single blockedBy ID", async () => {
+    writeFileSync(
+      join(tmp, ".rex", "prd.json"),
+      makePrd([
+        { id: "t1", title: "Task 1", level: "task", status: "pending" },
+      ]),
+    );
+
+    await cmdAdd(tmp, "epic", { title: "Blocked Epic", blockedBy: "t1", format: "json" });
+
+    const prd = JSON.parse(readFileSync(join(tmp, ".rex", "prd.json"), "utf-8"));
+    const item = prd.items.find((i: { title: string }) => i.title === "Blocked Epic");
+    expect(item.blockedBy).toEqual(["t1"]);
+  });
+
+  it("rejects blockedBy with nonexistent IDs", async () => {
+    writeFileSync(join(tmp, ".rex", "prd.json"), makePrd());
+
+    await expect(
+      cmdAdd(tmp, "epic", { title: "Bad Dep", blockedBy: "nonexistent" }),
+    ).rejects.toThrow(CLIError);
+    await expect(
+      cmdAdd(tmp, "epic", { title: "Bad Dep", blockedBy: "nonexistent" }),
+    ).rejects.toThrow(/not found|Orphan|unknown/i);
+  });
+
+  it("rejects blockedBy that creates a cycle", async () => {
+    // t1 blocks t2, trying to add t3 that blocks t1 while t1 blocks t3
+    writeFileSync(
+      join(tmp, ".rex", "prd.json"),
+      makePrd([
+        { id: "t1", title: "Task 1", level: "task", status: "pending", blockedBy: ["t2"] },
+        { id: "t2", title: "Task 2", level: "task", status: "pending" },
+      ]),
+    );
+
+    // New item blocked by t1, where t1 is blocked by t2 — no cycle, should succeed
+    await cmdAdd(tmp, "epic", { title: "Chained", blockedBy: "t1", format: "json" });
+
+    const prd = JSON.parse(readFileSync(join(tmp, ".rex", "prd.json"), "utf-8"));
+    const chained = prd.items.find((i: { title: string }) => i.title === "Chained");
+    expect(chained).toBeDefined();
+    expect(chained.blockedBy).toEqual(["t1"]);
+  });
+});
