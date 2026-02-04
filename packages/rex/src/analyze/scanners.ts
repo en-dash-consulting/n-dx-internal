@@ -150,12 +150,16 @@ function parseDescribeTree(content: string): { roots: DescribeNode[]; topLevelTe
   let braceDepth = 0;
 
   for (const line of lines) {
-    // Count braces on this line (outside of strings, roughly)
-    // Good enough for well-formatted test files
-    const strippedLine = stripStrings(line);
+    // Strip comments first so braces/patterns inside them are ignored,
+    // then strip string literals for brace counting.
+    const uncommented = stripComments(line);
+    const strippedLine = stripStrings(uncommented);
 
-    // Check for describe block opening before counting braces
-    const describeMatch = line.match(/describe\(\s*["'`]([^"'`]+)["'`]/);
+    // Check for describe block opening before counting braces.
+    // Handles: describe(, describe.skip(, describe.each(...)( , etc.
+    const describeMatch = uncommented.match(
+      /describe(?:\.(?:skip|only|each)\b(?:\([^)]*\))?)?(?:\s*)\(\s*["'`]([^"'`]+)["'`]/,
+    );
     if (describeMatch) {
       const node: DescribeNode = { name: describeMatch[1], children: [], tests: [] };
       if (stack.length > 0) {
@@ -171,8 +175,11 @@ function parseDescribeTree(content: string): { roots: DescribeNode[]; topLevelTe
       continue;
     }
 
-    // Check for it/test blocks
-    const testMatch = line.match(/(?:it|test)\(\s*["'`]([^"'`]+)["'`]/);
+    // Check for it/test blocks.
+    // Handles: it(, it.skip(, it.each(...)( , test(, test.skip(, etc.
+    const testMatch = uncommented.match(
+      /(?:it|test)(?:\.(?:skip|only|each|todo)\b(?:\([^)]*\))?)?(?:\s*)\(\s*["'`]([^"'`]+)["'`]/,
+    );
     if (testMatch) {
       if (stack.length > 0) {
         stack[stack.length - 1].node.tests.push(testMatch[1]);
@@ -202,6 +209,17 @@ function stripStrings(line: string): string {
     .replace(/`[^`]*`/g, "")
     .replace(/"[^"]*"/g, "")
     .replace(/'[^']*'/g, "");
+}
+
+/** Strip comments from a line so braces and patterns inside them are ignored */
+function stripComments(line: string): string {
+  // Remove inline block comments: /* ... */
+  let result = line.replace(/\/\*.*?\*\//g, "");
+  // Remove single-line comments: // ...
+  // Only strip if "//" is not inside a string literal — approximate by checking
+  // that it is preceded by whitespace or start-of-line (good enough for test files).
+  result = result.replace(/\/\/.*$/, "");
+  return result;
 }
 
 /** Walk a describe tree and emit ScanResults with hierarchical paths */

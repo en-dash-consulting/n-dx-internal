@@ -194,6 +194,112 @@ describe("Formatting", () => {
     expect(fmtTask!.tags).toContain("Formatting");
   });
 
+  it("handles describe.skip and describe.each variants", async () => {
+    await mkdir(join(tempDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tempDir, "tests", "variants.test.ts"),
+      `
+describe.skip("Skipped Suite", () => {
+  it("never runs", () => {});
+});
+
+describe.each([[1], [2]])("Param Suite %i", (n) => {
+  it("works with param", () => {});
+});
+`,
+    );
+
+    const results = await scanTests(tempDir);
+    const features = results.filter((r) => r.kind === "feature");
+    const tasks = results.filter((r) => r.kind === "task");
+
+    expect(features.some((f) => f.name === "Skipped Suite")).toBe(true);
+    expect(features.some((f) => f.name === "Param Suite %i")).toBe(true);
+    expect(tasks.some((t) => t.name === "never runs")).toBe(true);
+    expect(tasks.some((t) => t.name === "works with param")).toBe(true);
+  });
+
+  it("handles it.skip, it.each, test.skip, and test.each variants", async () => {
+    await mkdir(join(tempDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tempDir, "tests", "test-variants.test.ts"),
+      `
+describe("Variants", () => {
+  it.skip("skipped test", () => {});
+  it.each([1, 2])("param test %i", () => {});
+  test.skip("skipped test fn", () => {});
+  test.each([1, 2])("param test fn %i", () => {});
+});
+`,
+    );
+
+    const results = await scanTests(tempDir);
+    const tasks = results.filter((r) => r.kind === "task");
+
+    expect(tasks.some((t) => t.name === "skipped test")).toBe(true);
+    expect(tasks.some((t) => t.name === "param test %i")).toBe(true);
+    expect(tasks.some((t) => t.name === "skipped test fn")).toBe(true);
+    expect(tasks.some((t) => t.name === "param test fn %i")).toBe(true);
+  });
+
+  it("excludes braces inside comments from depth tracking", async () => {
+    await mkdir(join(tempDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tempDir, "tests", "comments.test.ts"),
+      `
+describe("WithComments", () => {
+  // This line has braces { that } should be ignored
+  it("test one", () => {});
+  /* Another comment { with braces } */
+  it("test two", () => {});
+});
+
+describe("After", () => {
+  it("still works", () => {});
+});
+`,
+    );
+
+    const results = await scanTests(tempDir);
+    const tasks = results.filter((r) => r.kind === "task");
+
+    // Both tests should be inside "WithComments"
+    const t1 = tasks.find((t) => t.name === "test one");
+    expect(t1).toBeDefined();
+    expect(t1!.tags).toContain("WithComments");
+
+    const t2 = tasks.find((t) => t.name === "test two");
+    expect(t2).toBeDefined();
+    expect(t2!.tags).toContain("WithComments");
+
+    // "After" describe should still be parsed correctly
+    const t3 = tasks.find((t) => t.name === "still works");
+    expect(t3).toBeDefined();
+    expect(t3!.tags).toContain("After");
+  });
+
+  it("ignores commented-out describe and test lines", async () => {
+    await mkdir(join(tempDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tempDir, "tests", "commented.test.ts"),
+      `
+describe("Real", () => {
+  // describe("Fake", () => {
+  it("real test", () => {});
+  // it("fake test", () => {});
+});
+`,
+    );
+
+    const results = await scanTests(tempDir);
+    const features = results.filter((r) => r.kind === "feature");
+    const tasks = results.filter((r) => r.kind === "task");
+
+    expect(features.some((f) => f.name === "Fake")).toBe(false);
+    expect(tasks.some((t) => t.name === "fake test")).toBe(false);
+    expect(tasks.some((t) => t.name === "real test")).toBe(true);
+  });
+
   it("emits feature results for each describe block with nesting path", async () => {
     await mkdir(join(tempDir, "tests"), { recursive: true });
     await writeFile(
