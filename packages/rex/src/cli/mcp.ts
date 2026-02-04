@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { resolveStore } from "../store/index.js";
+import { resolveStore, resolveRemoteStore, SyncEngine } from "../store/index.js";
 import { SCHEMA_VERSION, LEVEL_HIERARCHY } from "../schema/index.js";
 import { computeStats, findItem } from "../core/tree.js";
 import { findNextTask, collectCompletedIds, explainSelection } from "../core/next-task.js";
@@ -432,6 +432,76 @@ export async function startMcpServer(dir: string): Promise<void> {
             {
               type: "text" as const,
               text: JSON.stringify({ logged: true, event: args.event }),
+            },
+          ],
+        };
+      } catch (err) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Error: ${(err as Error).message}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  server.tool(
+    "sync_with_remote",
+    "Sync local PRD with a remote adapter (e.g. Notion)",
+    {
+      direction: z.enum(["push", "pull", "sync"]).optional().describe("Sync direction (default: sync)"),
+      adapter: z.string().optional().describe("Adapter name (default: notion)"),
+    },
+    async ({ direction, adapter }) => {
+      try {
+        const syncDirection = direction ?? "sync";
+        const adapterName = adapter ?? "notion";
+
+        let remote;
+        try {
+          remote = await resolveRemoteStore(rexDir, adapterName);
+        } catch {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: `Adapter "${adapterName}" is not configured. Run 'rex adapter add ${adapterName}' to configure it.`,
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        const engine = new SyncEngine(store, remote);
+
+        let report;
+        switch (syncDirection) {
+          case "push":
+            report = await engine.push();
+            break;
+          case "pull":
+            report = await engine.pull();
+            break;
+          default:
+            report = await engine.sync();
+            break;
+        }
+
+        await store.appendLog({
+          timestamp: report.timestamp,
+          event: "sync_completed",
+          detail: `${syncDirection} sync with ${adapterName}: ${report.pushed.length} pushed, ${report.pulled.length} pulled, ${report.conflicts.length} conflicts`,
+        });
+
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(report, null, 2),
             },
           ],
         };

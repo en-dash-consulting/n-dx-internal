@@ -109,6 +109,14 @@ if (command === "status") {
   process.exit(0);
 }
 
+if (command === "sync") {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".rex"]);
+  const flags = extractFlags(rest);
+  await runOrDie(tools.rex, ["sync", ...flags, dir]);
+  process.exit(0);
+}
+
 if (command === "ci") {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex", ".sourcevision"]);
@@ -149,6 +157,7 @@ Orchestration:
   plan --accept [dir]   Analyze and accept proposals into PRD
   work [dir]            Run next task (--task=ID, --auto, --iterations=N)
   status [dir]          Show PRD status (--format=json)
+  sync [dir]            Sync local PRD with remote adapter (--push, --pull)
   ci [dir]              Run analysis pipeline and validate PRD health
   config [key] [value]  View and edit settings (--json, --help)
 

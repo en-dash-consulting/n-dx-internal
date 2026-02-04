@@ -18,8 +18,6 @@ export type {
   AdapterInfo,
 } from "./adapter-registry.js";
 
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { FileStore } from "./file-adapter.js";
 import { NotionStore } from "./notion-adapter.js";
 import { LiveNotionClient } from "./notion-client.js";
@@ -66,20 +64,15 @@ export function createNotionStore(
 }
 
 /**
- * Resolve the correct PRDStore for a `.rex/` directory by reading the
- * configured adapter from `config.json`.
+ * Resolve the local PRDStore for a `.rex/` directory.
  *
- * Resolution order:
- * 1. Read `config.json` → use the `adapter` field (e.g. `"file"`, `"notion"`).
- * 2. For adapters that require config (e.g. Notion), load saved adapter
- *    config from `adapters.json` via the registry.
- * 3. Falls back to the `"file"` adapter if config is missing or unreadable.
+ * Always returns a FileStore. Remote adapters (e.g. Notion) are accessed
+ * only during explicit sync operations via {@link resolveRemoteStore}.
  *
  * This is the preferred way to obtain a store in CLI commands and tools.
- * It ensures the user's configured adapter is respected.
  *
  * @param rexDir  Path to the `.rex/` directory.
- * @returns A PRDStore instance for the configured adapter.
+ * @returns A FileStore instance.
  *
  * @example
  * ```ts
@@ -88,31 +81,24 @@ export function createNotionStore(
  * ```
  */
 export async function resolveStore(rexDir: string): Promise<PRDStore> {
+  return new FileStore(rexDir);
+}
+
+/**
+ * Resolve a remote PRDStore for sync operations.
+ *
+ * Reads the adapter configuration from `adapters.json` via the adapter
+ * registry. If no adapter name is provided, defaults to `"notion"`.
+ *
+ * @param rexDir       Path to the `.rex/` directory.
+ * @param adapterName  Adapter to resolve (default: `"notion"`).
+ * @returns A PRDStore instance for the remote adapter.
+ * @throws If the adapter is not configured or unknown.
+ */
+export async function resolveRemoteStore(
+  rexDir: string,
+  adapterName: string = "notion",
+): Promise<PRDStore> {
   const registry = getDefaultRegistry();
-
-  let adapterName = "file";
-  try {
-    const raw = await readFile(join(rexDir, "config.json"), "utf-8");
-    const config = JSON.parse(raw);
-    if (typeof config.adapter === "string" && config.adapter.length > 0) {
-      adapterName = config.adapter;
-    }
-  } catch {
-    // Config missing or unreadable — use default
-  }
-
-  // Simple adapters (no required config fields) can be created directly
-  const def = registry.get(adapterName);
-  if (!def) {
-    // Unknown adapter in config — fall back to file
-    return new FileStore(rexDir);
-  }
-
-  const hasRequiredConfig = Object.values(def.configSchema).some((f) => f.required);
-  if (!hasRequiredConfig) {
-    return registry.create(adapterName, rexDir, {});
-  }
-
-  // Adapter requires config — load from adapters.json
   return registry.createFromConfig(rexDir, adapterName);
 }

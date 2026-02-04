@@ -23,6 +23,7 @@ Commands:
   recommend [dir]         Get SourceVision recommendations
   analyze [dir]           Build PRD from project analysis
   import [dir]            Alias for analyze (file import shorthand)
+  sync [dir]              Sync local PRD with remote adapter
   adapter <sub> [name]    Manage store adapters (list|add|remove|show)
   mcp [dir]               Start MCP server
 
@@ -45,6 +46,9 @@ Options:
   --model=<name>          Override LLM model (for analyze, smart add)
   --analyze               Run SourceVision analysis (for init)
   --fail-on-error         Exit 1 on validation errors (for report)
+  --push                  Push local changes to remote only (for sync)
+  --pull                  Pull remote changes to local only (for sync)
+  --adapter=<name>        Specify adapter for sync (default: notion)
   --quiet, -q             Suppress informational output (for scripting)
 `);
 }

@@ -1,9 +1,9 @@
 /**
- * Tests for the resolveStore function.
+ * Tests for the resolveStore and resolveRemoteStore functions.
  *
- * resolveStore reads config.json to determine which adapter to use,
- * then creates the appropriate store via the adapter registry. This
- * closes the gap where CLI commands previously hardcoded "file".
+ * resolveStore always returns a FileStore — the local file store is the
+ * primary store for all commands. resolveRemoteStore creates a remote
+ * store from adapters.json config, used only by the sync command.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -12,7 +12,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { SCHEMA_VERSION } from "../../../src/schema/index.js";
 import { toCanonicalJSON } from "../../../src/core/canonical.js";
-import { resolveStore, createStore } from "../../../src/store/index.js";
+import { resolveStore, resolveRemoteStore, createStore } from "../../../src/store/index.js";
 import {
   getDefaultRegistry,
   resetDefaultRegistry,
@@ -101,25 +101,62 @@ describe("resolveStore", () => {
     expect(store.capabilities().adapter).toBe("file");
   });
 
-  // ---- Custom adapter via registry -----------------------------------------
+  // ---- Always returns FileStore regardless of config -----------------------
 
-  it("resolves a custom adapter when registered and no config needed", async () => {
+  it("resolves to FileStore even when config.adapter is a custom adapter", async () => {
     const registry = getDefaultRegistry();
     registry.register({
       name: "memory",
       description: "In-memory store for testing",
       configSchema: {},
-      factory: (dir) => new FileStore(dir), // uses FileStore as stand-in
+      factory: (dir) => new FileStore(dir),
     });
 
     await seedRexDir(rexDir, "memory");
 
     const store = await resolveStore(rexDir);
-    // The factory creates a FileStore, but the resolution path is through "memory"
-    expect(store).toBeDefined();
+    expect(store.capabilities().adapter).toBe("file");
   });
 
-  it("resolves adapter with required config from adapters.json", async () => {
+  it("resolves to FileStore even when adapter has required config", async () => {
+    const registry = getDefaultRegistry();
+    registry.register({
+      name: "custom-db",
+      description: "Custom DB adapter",
+      configSchema: {
+        connectionString: { required: true, description: "DB connection string" },
+      },
+      factory: (dir, config) => new FileStore(dir),
+    });
+
+    await seedRexDir(rexDir, "custom-db");
+
+    const store = await resolveStore(rexDir);
+    // No longer reads config.adapter — always returns FileStore
+    expect(store.capabilities().adapter).toBe("file");
+  });
+
+  it("resolves to FileStore when adapter requires config but adapters.json is missing", async () => {
+    const registry = getDefaultRegistry();
+    registry.register({
+      name: "needs-config",
+      description: "Requires config",
+      configSchema: {
+        token: { required: true, description: "API token" },
+      },
+      factory: (dir) => new FileStore(dir),
+    });
+
+    await seedRexDir(rexDir, "needs-config");
+
+    // No longer throws — resolveStore always returns FileStore
+    const store = await resolveStore(rexDir);
+    expect(store.capabilities().adapter).toBe("file");
+  });
+
+  // ---- resolveRemoteStore ---------------------------------------------------
+
+  it("resolveRemoteStore creates store from adapters.json config", async () => {
     const registry = getDefaultRegistry();
     let factoryCalledWith: Record<string, unknown> = {};
 
@@ -135,34 +172,21 @@ describe("resolveStore", () => {
       },
     });
 
-    await seedRexDir(rexDir, "custom-db");
-
-    // Save adapter config to adapters.json
+    await seedRexDir(rexDir, "file");
     await registry.saveAdapterConfig(rexDir, {
       name: "custom-db",
       config: { connectionString: "postgres://localhost/test" },
     });
 
-    const store = await resolveStore(rexDir);
-    expect(store).toBeDefined();
+    const remote = await resolveRemoteStore(rexDir, "custom-db");
+    expect(remote).toBeDefined();
     expect(factoryCalledWith.connectionString).toBe("postgres://localhost/test");
   });
 
-  it("throws when adapter requires config but adapters.json is missing", async () => {
-    const registry = getDefaultRegistry();
-    registry.register({
-      name: "needs-config",
-      description: "Requires config",
-      configSchema: {
-        token: { required: true, description: "API token" },
-      },
-      factory: (dir) => new FileStore(dir),
-    });
+  it("resolveRemoteStore throws when adapter config is missing", async () => {
+    await seedRexDir(rexDir, "file");
 
-    await seedRexDir(rexDir, "needs-config");
-    // Don't save adapters.json — config is missing
-
-    await expect(resolveStore(rexDir)).rejects.toThrow(/no.*config/i);
+    await expect(resolveRemoteStore(rexDir, "notion")).rejects.toThrow(/no.*config/i);
   });
 
   // ---- Functional integration: resolved store works correctly ---------------
