@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { PRDStore } from "rex/dist/store/types.js";
 import type { ItemStatus } from "rex/dist/schema/v1.js";
 import { computeTimestampUpdates } from "rex/dist/core/timestamps.js";
+import { findAutoCompletions } from "rex/dist/core/parent-completion.js";
 
 export async function toolRexUpdateStatus(
   store: PRDStore,
@@ -29,7 +30,40 @@ export async function toolRexUpdateStatus(
     detail: `Status changed to ${params.status} by hench agent`,
   });
 
-  return `Updated task ${taskId} status to ${params.status}`;
+  // Auto-complete parent items when a child is completed or deferred
+  const autoCompleted: string[] = [];
+  if (params.status === "completed" || params.status === "deferred") {
+    const doc = await store.loadDocument();
+    const { completedItems } = findAutoCompletions(doc.items, taskId);
+
+    for (const item of completedItems) {
+      const parentItem = await store.getItem(item.id);
+      if (!parentItem) continue;
+
+      const parentTsUpdates = computeTimestampUpdates(
+        parentItem.status,
+        "completed",
+        parentItem,
+      );
+      await store.updateItem(item.id, {
+        status: "completed" as ItemStatus,
+        ...parentTsUpdates,
+      });
+      await store.appendLog({
+        timestamp: new Date().toISOString(),
+        event: "auto_completed",
+        itemId: item.id,
+        detail: `Auto-completed ${item.level}: ${item.title} (all children done)`,
+      });
+      autoCompleted.push(`${item.level}: ${item.title}`);
+    }
+  }
+
+  const msg = `Updated task ${taskId} status to ${params.status}`;
+  if (autoCompleted.length > 0) {
+    return `${msg}\nAuto-completed: ${autoCompleted.join(", ")}`;
+  }
+  return msg;
 }
 
 export async function toolRexAppendLog(

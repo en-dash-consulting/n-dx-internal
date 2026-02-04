@@ -9,6 +9,7 @@ import { computeStats, findItem } from "../core/tree.js";
 import { findNextTask, collectCompletedIds, explainSelection } from "../core/next-task.js";
 import { validateTransition } from "../core/transitions.js";
 import { computeTimestampUpdates } from "../core/timestamps.js";
+import { findAutoCompletions } from "../core/parent-completion.js";
 import { TOOL_VERSION } from "./commands/constants.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../schema/index.js";
 import type { PRDStore } from "../store/index.js";
@@ -153,11 +154,47 @@ export async function startMcpServer(dir: string): Promise<void> {
           itemId: id,
           detail: `${existing.status} → ${status}${force ? " (forced)" : ""}`,
         });
+
+        // Auto-complete parent items when a child is completed or deferred
+        const autoCompleted: Array<{ id: string; title: string; level: string }> = [];
+        if (status === "completed" || status === "deferred") {
+          const doc = await store.loadDocument();
+          const { completedItems } = findAutoCompletions(doc.items, id);
+
+          for (const item of completedItems) {
+            const parentItem = await store.getItem(item.id);
+            if (!parentItem) continue;
+
+            const parentTsUpdates = computeTimestampUpdates(
+              parentItem.status,
+              "completed",
+              parentItem,
+            );
+            await store.updateItem(item.id, {
+              status: "completed" as ItemStatus,
+              ...parentTsUpdates,
+            });
+            await store.appendLog({
+              timestamp: new Date().toISOString(),
+              event: "auto_completed",
+              itemId: item.id,
+              detail: `Auto-completed ${item.level}: ${item.title} (all children done)`,
+            });
+            autoCompleted.push(item);
+          }
+        }
+
         return {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify({ id, title: existing.title, previousStatus: existing.status, newStatus: status }),
+              text: JSON.stringify({
+                id,
+                title: existing.title,
+                previousStatus: existing.status,
+                newStatus: status,
+                ...(autoCompleted.length > 0 ? { autoCompleted } : {}),
+              }),
             },
           ],
         };

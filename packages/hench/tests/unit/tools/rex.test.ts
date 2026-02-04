@@ -41,18 +41,63 @@ describe("toolRexUpdateStatus", () => {
 
   it("preserves existing startedAt when completing", async () => {
     const store = mockStore();
-    store.getItem.mockResolvedValue({
+    const taskItem = {
       id: "task-1",
       title: "Test task",
       status: "in_progress",
       level: "task",
       startedAt: "2025-01-01T00:00:00.000Z",
+    };
+    store.getItem.mockResolvedValue(taskItem);
+    store.loadDocument.mockResolvedValue({
+      schema: "rex/v1",
+      title: "Test",
+      items: [taskItem],
     });
     await toolRexUpdateStatus(store, "task-1", { status: "completed" });
     const call = store.updateItem.mock.calls[0][1];
     expect(call.status).toBe("completed");
     expect(call.completedAt).toBeDefined();
     expect(call.startedAt).toBeUndefined(); // not overwritten
+  });
+
+  it("auto-completes parent when all children done", async () => {
+    const store = mockStore();
+    const taskItem = {
+      id: "task-2",
+      title: "Last task",
+      status: "in_progress",
+      level: "task",
+    };
+    const parentItem = {
+      id: "feature-1",
+      title: "Feature",
+      status: "in_progress",
+      level: "feature",
+      children: [
+        { id: "task-1", title: "First task", status: "completed", level: "task" },
+        taskItem,
+      ],
+    };
+    store.getItem.mockImplementation(async (id: string) => {
+      if (id === "task-2") return taskItem;
+      if (id === "feature-1") return parentItem;
+      return null;
+    });
+    store.loadDocument.mockResolvedValue({
+      schema: "rex/v1",
+      title: "Test",
+      items: [parentItem],
+    });
+    const result = await toolRexUpdateStatus(store, "task-2", { status: "completed" });
+    expect(result).toContain("Auto-completed");
+    expect(result).toContain("Feature");
+    // Should have updated parent too (2 updateItem calls total)
+    expect(store.updateItem).toHaveBeenCalledTimes(2);
+    expect(store.updateItem).toHaveBeenCalledWith(
+      "feature-1",
+      expect.objectContaining({ status: "completed" }),
+    );
   });
 
   it("rejects invalid status", async () => {

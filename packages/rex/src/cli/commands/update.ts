@@ -5,6 +5,7 @@ import { CLIError, requireRexDir } from "../errors.js";
 import { info, result } from "../output.js";
 import { validateTransition } from "../../core/transitions.js";
 import { computeTimestampUpdates } from "../../core/timestamps.js";
+import { findAutoCompletions } from "../../core/parent-completion.js";
 import type { PRDItem, ItemStatus, Priority } from "../../schema/index.js";
 
 const VALID_STATUSES = new Set([
@@ -101,11 +102,46 @@ export async function cmdUpdate(
     detail: `Updated: ${Object.keys(updates).join(", ")}`,
   });
 
+  // Auto-complete parent items when a child is completed or deferred
+  const autoCompleted: Array<{ id: string; title: string; level: string }> = [];
+  if (
+    updates.status &&
+    (updates.status === "completed" || updates.status === "deferred")
+  ) {
+    const doc = await store.loadDocument();
+    const { completedItems } = findAutoCompletions(doc.items, id);
+
+    for (const item of completedItems) {
+      const parentItem = await store.getItem(item.id);
+      if (!parentItem) continue;
+
+      const parentTsUpdates = computeTimestampUpdates(
+        parentItem.status,
+        "completed",
+        parentItem,
+      );
+      await store.updateItem(item.id, {
+        status: "completed" as ItemStatus,
+        ...parentTsUpdates,
+      });
+      await store.appendLog({
+        timestamp: new Date().toISOString(),
+        event: "auto_completed",
+        itemId: item.id,
+        detail: `Auto-completed ${item.level}: ${item.title} (all children done)`,
+      });
+      autoCompleted.push(item);
+    }
+  }
+
   if (flags.format === "json") {
     const updated = await store.getItem(id);
-    result(JSON.stringify(updated, null, 2));
+    result(JSON.stringify({ ...updated, autoCompleted }, null, 2));
   } else {
     result(`Updated ${existing.level}: ${existing.title}`);
     info(`  ${Object.entries(updates).map(([k, v]) => `${k}: ${v}`).join(", ")}`);
+    for (const item of autoCompleted) {
+      info(`  ✓ Auto-completed ${item.level}: ${item.title}`);
+    }
   }
 }

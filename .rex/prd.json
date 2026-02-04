@@ -176,7 +176,7 @@
             {
               "id": "c8e37f18-7a10-4f27-ae6a-d62d6833584c",
               "title": "Add automatic parent completion logic",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Auto-complete parent items when all children are completed",
               "acceptanceCriteria": [
@@ -386,10 +386,12 @@
         {
           "id": "4ac64ac1-fa02-4f8a-b0b3-45faa30b69ac",
           "title": "Better task lifecycle",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Improve task status management and tracking throughout lifecycle",
           "source": "llm",
+          "startedAt": "2026-02-04T15:43:05.711Z",
+          "completedAt": "2026-02-04T15:43:05.711Z",
           "children": [
             {
               "id": "8c0107fc-f568-4649-8e6c-7c81ce45f22b",
@@ -408,7 +410,7 @@
             {
               "id": "a42cfc8a-51c6-4183-b133-19f635c48dad",
               "title": "Add explanation to rex next",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Explain why a particular task was selected",
               "acceptanceCriteria": [
@@ -417,7 +419,9 @@
                 "Notes dependency status"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T15:31:22.533Z",
+              "completedAt": "2026-02-04T15:31:22.533Z"
             },
             {
               "id": "a080f709-e5aa-4672-9043-8088b512f964",
