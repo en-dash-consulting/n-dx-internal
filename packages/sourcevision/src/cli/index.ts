@@ -17,7 +17,7 @@ import { cmdInit } from "./commands/init.js";
 import { cmdReset } from "./commands/reset.js";
 import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdValidate } from "./commands/validate.js";
-import { handleCLIError, requireSvDir } from "./errors.js";
+import { CLIError, handleCLIError, requireSvDir } from "./errors.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -83,9 +83,10 @@ try {
       usage();
       break;
     default:
-      console.error(`Unknown command: ${command}`);
-      usage();
-      process.exit(1);
+      throw new CLIError(
+        `Unknown command: ${command}`,
+        "Run 'sourcevision --help' to see available commands.",
+      );
   }
 } catch (err) {
   handleCLIError(err);

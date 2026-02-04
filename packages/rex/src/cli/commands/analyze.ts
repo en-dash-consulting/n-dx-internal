@@ -4,6 +4,7 @@ import { createInterface } from "node:readline";
 import { randomUUID } from "node:crypto";
 import { createStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
+import { CLIError } from "../errors.js";
 import {
   scanTests,
   scanDocs,
@@ -84,10 +85,10 @@ async function acceptProposals(
   proposals: Proposal[],
 ): Promise<void> {
   if (!(await hasRexDir(dir))) {
-    console.error(
-      `No .rex/ found in ${dir}. Run "rex init" first.`,
+    throw new CLIError(
+      `Rex directory not found in ${dir}`,
+      "Run 'n-dx init' to set up the project, or 'rex init' if using rex standalone.",
     );
-    process.exit(1);
   }
 
   const rexDir = join(dir, REX_DIR);
@@ -213,8 +214,10 @@ export async function cmdAnalyze(
     try {
       proposals = await reasonFromFiles(resolved, existing, model);
     } catch (err) {
-      console.error(`Failed to analyze file: ${(err as Error).message}`);
-      process.exit(1);
+      throw new CLIError(
+        `Failed to analyze file: ${(err as Error).message}`,
+        "Check the file path and format, then try again.",
+      );
     }
 
     if (flags.format === "json") {

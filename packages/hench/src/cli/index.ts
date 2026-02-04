@@ -2,7 +2,7 @@
 
 import { resolve } from "node:path";
 import { usage } from "./commands/constants.js";
-import { handleCLIError, requireHenchDir } from "./errors.js";
+import { CLIError, handleCLIError, requireHenchDir } from "./errors.js";
 
 function parseArgs(argv: string[]): {
   command: string | undefined;
@@ -75,8 +75,10 @@ async function main(): Promise<void> {
       case "show": {
         const runId = positional[0];
         if (!runId) {
-          console.error("Usage: hench show <run-id> [dir]");
-          process.exit(1);
+          throw new CLIError(
+            "Missing run ID.",
+            "Usage: hench show <run-id> [dir]",
+          );
         }
         const dir =
           positional.length > 1 ? resolve(positional[positional.length - 1]) : process.cwd();
@@ -85,9 +87,10 @@ async function main(): Promise<void> {
         break;
       }
       default:
-        console.error(`Unknown command: ${command}`);
-        usage();
-        process.exit(1);
+        throw new CLIError(
+          `Unknown command: ${command}`,
+          "Run 'hench --help' to see available commands.",
+        );
     }
   } catch (err) {
     handleCLIError(err);

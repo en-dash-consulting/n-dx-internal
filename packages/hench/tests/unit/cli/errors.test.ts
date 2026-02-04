@@ -62,6 +62,22 @@ describe("formatCLIError", () => {
     expect(result).toContain("Hint:");
   });
 
+  it("matches Invalid hench config pattern", () => {
+    const err = new Error("Invalid hench config: missing required field 'provider'");
+    const result = formatCLIError(err);
+    expect(result).toContain("corrupted or has an invalid format");
+    expect(result).toContain("Hint:");
+    expect(result).toContain(".hench/config.json");
+  });
+
+  it("matches Invalid run record pattern", () => {
+    const err = new Error("Invalid run record abc-123: missing required field 'status'");
+    const result = formatCLIError(err);
+    expect(result).toContain("Run record is corrupted");
+    expect(result).toContain("Hint:");
+    expect(result).toContain(".hench/runs/");
+  });
+
   it("falls back to generic message for unknown errors", () => {
     const err = new Error("some weird internal error");
     expect(formatCLIError(err)).toBe("Error: some weird internal error");

@@ -4,6 +4,7 @@ import { createInterface } from "node:readline";
 import { randomUUID } from "node:crypto";
 import { createStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
+import { CLIError } from "../errors.js";
 import {
   reasonFromDescription,
   DEFAULT_MODEL,
@@ -126,8 +127,10 @@ export async function cmdSmartAdd(
   flags: Record<string, string>,
 ): Promise<void> {
   if (!(await hasRexDir(dir))) {
-    console.error(`No .rex/ found in ${dir}. Run "rex init" first.`);
-    process.exit(1);
+    throw new CLIError(
+      `Rex directory not found in ${dir}`,
+      "Run 'n-dx init' to set up the project, or 'rex init' if using rex standalone.",
+    );
   }
 
   const accept = flags.accept === "true";
@@ -159,8 +162,10 @@ export async function cmdSmartAdd(
     const { findItem } = await import("../../core/tree.js");
     const parentEntry = findItem(existing, parentId);
     if (!parentEntry) {
-      console.error(`Parent "${parentId}" not found.`);
-      process.exit(1);
+      throw new CLIError(
+        `Parent "${parentId}" not found.`,
+        "Check the ID with 'rex status' and try again.",
+      );
     }
   }
 
@@ -176,8 +181,10 @@ export async function cmdSmartAdd(
       parentId,
     });
   } catch (err) {
-    console.error(`LLM analysis failed: ${(err as Error).message}`);
-    process.exit(1);
+    throw new CLIError(
+      `LLM analysis failed: ${(err as Error).message}`,
+      "Check your API key and network connection, then try again.",
+    );
   }
 
   if (proposals.length === 0) {

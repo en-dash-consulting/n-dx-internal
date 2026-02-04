@@ -3,7 +3,7 @@
 import { resolve } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { usage } from "./commands/constants.js";
-import { handleCLIError, requireRexDir } from "./errors.js";
+import { CLIError, handleCLIError, requireRexDir } from "./errors.js";
 
 /** Keys that accept multiple values (accumulated into arrays). */
 const MULTI_VALUE_KEYS = new Set(["file"]);
@@ -116,22 +116,28 @@ async function main(): Promise<void> {
             ? descParts.join(" ")
             : flags.description;
           if (!description) {
-            console.error('Usage: rex add <level> --title="..." or rex add "<description>"');
-            process.exit(1);
+            throw new CLIError(
+              "Missing description.",
+              'Usage: rex add <level> --title="..." or rex add "<description>"',
+            );
           }
           const { cmdSmartAdd } = await import("./commands/smart-add.js");
           await cmdSmartAdd(dir, description, flags);
         } else {
-          console.error('Usage: rex add <level> --title="..." or rex add "<description>"');
-          process.exit(1);
+          throw new CLIError(
+            "Missing level or description.",
+            'Usage: rex add <level> --title="..." or rex add "<description>"',
+          );
         }
         break;
       }
       case "update": {
         const id = positional[0];
         if (!id) {
-          console.error("Usage: rex update <id> [dir] --status=<s>");
-          process.exit(1);
+          throw new CLIError(
+            "Missing item ID.",
+            "Usage: rex update <id> --status=<s> --priority=<p> --title=<t>",
+          );
         }
         const dir =
           positional.length > 1 ? resolve(positional[positional.length - 1]) : process.cwd();
@@ -160,9 +166,10 @@ async function main(): Promise<void> {
         break;
       }
       default:
-        console.error(`Unknown command: ${command}`);
-        usage();
-        process.exit(1);
+        throw new CLIError(
+          `Unknown command: ${command}`,
+          "Run 'rex --help' to see available commands.",
+        );
     }
   } catch (err) {
     handleCLIError(err);

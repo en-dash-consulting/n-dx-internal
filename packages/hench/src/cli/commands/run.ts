@@ -6,7 +6,7 @@ import { agentLoop } from "../../agent/loop.js";
 import { cliLoop } from "../../agent/cli-loop.js";
 import { getActionableTasks } from "../../agent/brief.js";
 import { HENCH_DIR, safeParseInt } from "./constants.js";
-import { requireClaudeCLI } from "../errors.js";
+import { CLIError, requireClaudeCLI } from "../errors.js";
 
 function promptUser(question: string): Promise<string> {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -43,8 +43,10 @@ async function selectTask(
   const idx = answer === "" ? 0 : parseInt(answer, 10) - 1;
 
   if (isNaN(idx) || idx < 0 || idx >= tasks.length) {
-    console.error("Invalid selection.");
-    process.exit(1);
+    throw new CLIError(
+      "Invalid selection.",
+      `Enter a number between 1 and ${tasks.length}.`,
+    );
   }
 
   return tasks[idx].id;

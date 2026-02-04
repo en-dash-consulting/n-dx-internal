@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { SV_DIR } from "./constants.js";
+import { CLIError } from "../errors.js";
 import {
   validateManifest,
   validateInventory,
@@ -14,9 +15,10 @@ export function cmdValidate(dir: string): void {
   const svDir = join(resolve(dir), SV_DIR);
 
   if (!existsSync(svDir)) {
-    console.error(`No .sourcevision/ directory found in: ${resolve(dir)}`);
-    console.error("Run 'sourcevision init' first.");
-    process.exit(1);
+    throw new CLIError(
+      `Sourcevision directory not found in ${resolve(dir)}`,
+      "Run 'n-dx init' to set up the project, or 'sourcevision init' if using sourcevision standalone.",
+    );
   }
 
   const modules: Array<{

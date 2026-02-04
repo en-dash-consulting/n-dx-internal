@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { createStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
+import { CLIError } from "../errors.js";
 import type { PRDItem, ItemStatus, Priority } from "../../schema/index.js";
 
 const VALID_STATUSES = new Set([
@@ -17,8 +18,10 @@ export async function cmdUpdate(
   flags: Record<string, string>,
 ): Promise<void> {
   if (!id) {
-    console.error("Missing item ID. Usage: rex update <id> [options]");
-    process.exit(1);
+    throw new CLIError(
+      "Missing item ID.",
+      "Usage: rex update <id> --status=<s> --priority=<p> --title=<t>",
+    );
   }
 
   const rexDir = join(dir, REX_DIR);
@@ -26,28 +29,30 @@ export async function cmdUpdate(
 
   const existing = await store.getItem(id);
   if (!existing) {
-    console.error(`Item "${id}" not found.`);
-    process.exit(1);
+    throw new CLIError(
+      `Item "${id}" not found.`,
+      "Check the ID with 'rex status' and try again.",
+    );
   }
 
   const updates: Partial<PRDItem> = {};
 
   if (flags.status) {
     if (!VALID_STATUSES.has(flags.status)) {
-      console.error(
-        `Invalid status "${flags.status}". Must be one of: ${[...VALID_STATUSES].join(", ")}`,
+      throw new CLIError(
+        `Invalid status "${flags.status}".`,
+        `Must be one of: ${[...VALID_STATUSES].join(", ")}`,
       );
-      process.exit(1);
     }
     updates.status = flags.status as ItemStatus;
   }
 
   if (flags.priority) {
     if (!VALID_PRIORITIES.has(flags.priority)) {
-      console.error(
-        `Invalid priority "${flags.priority}". Must be one of: ${[...VALID_PRIORITIES].join(", ")}`,
+      throw new CLIError(
+        `Invalid priority "${flags.priority}".`,
+        `Must be one of: ${[...VALID_PRIORITIES].join(", ")}`,
       );
-      process.exit(1);
     }
     updates.priority = flags.priority as Priority;
   }
@@ -56,8 +61,10 @@ export async function cmdUpdate(
   if (flags.description) updates.description = flags.description;
 
   if (Object.keys(updates).length === 0) {
-    console.error("No updates specified. Use --status, --priority, --title, or --description.");
-    process.exit(1);
+    throw new CLIError(
+      "No updates specified.",
+      "Use --status, --priority, --title, or --description.",
+    );
   }
 
   await store.updateItem(id, updates);

@@ -5,7 +5,8 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { HENCH_DIR } from "./commands/constants.js";
+
+const HENCH_DIR = ".hench";
 
 /** An error with an optional actionable suggestion for the user. */
 export class CLIError extends Error {
@@ -37,6 +38,16 @@ const ERROR_HINTS: Array<[RegExp, string, string]> = [
     /ENOENT.*config\.json/,
     "Configuration file not found.",
     "Run 'n-dx init' to create default configuration.",
+  ],
+  [
+    /Invalid hench config|Invalid config\.json/,
+    "Configuration file is corrupted or has an invalid format.",
+    "Check .hench/config.json for syntax errors, or re-initialize with 'n-dx init'.",
+  ],
+  [
+    /Invalid run record/,
+    "Run record is corrupted or has an invalid format.",
+    "The run data in .hench/runs/ may be damaged. Check the file for syntax errors.",
   ],
   [
     /EACCES/,

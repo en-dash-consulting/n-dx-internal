@@ -4,6 +4,7 @@ import { createStore } from "../../store/index.js";
 import { LEVEL_HIERARCHY } from "../../schema/index.js";
 import { findItem } from "../../core/tree.js";
 import { REX_DIR } from "./constants.js";
+import { CLIError } from "../errors.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../../schema/index.js";
 
 const VALID_LEVELS = new Set(Object.keys(LEVEL_HIERARCHY));
@@ -14,16 +15,18 @@ export async function cmdAdd(
   flags: Record<string, string>,
 ): Promise<void> {
   if (!VALID_LEVELS.has(level)) {
-    console.error(
-      `Invalid level "${level}". Must be one of: ${[...VALID_LEVELS].join(", ")}`,
+    throw new CLIError(
+      `Invalid level "${level}".`,
+      `Must be one of: ${[...VALID_LEVELS].join(", ")}`,
     );
-    process.exit(1);
   }
 
   const title = flags.title;
   if (!title) {
-    console.error('Missing required flag: --title="..."');
-    process.exit(1);
+    throw new CLIError(
+      "Missing required flag: --title",
+      'Usage: rex add <level> --title="..."',
+    );
   }
 
   const rexDir = join(dir, REX_DIR);
@@ -35,23 +38,25 @@ export async function cmdAdd(
   // Validate parent-child level relationship
   const requiredParentLevel = LEVEL_HIERARCHY[level as ItemLevel];
   if (requiredParentLevel && !parentId) {
-    console.error(
-      `A ${level} requires a parent. Use --parent=<id> to specify a ${requiredParentLevel}.`,
+    throw new CLIError(
+      `A ${level} requires a parent.`,
+      `Use --parent=<id> to specify a ${requiredParentLevel}.`,
     );
-    process.exit(1);
   }
 
   if (parentId) {
     const parentEntry = findItem(doc.items, parentId);
     if (!parentEntry) {
-      console.error(`Parent "${parentId}" not found.`);
-      process.exit(1);
+      throw new CLIError(
+        `Parent "${parentId}" not found.`,
+        "Check the ID with 'rex status' and try again.",
+      );
     }
     if (requiredParentLevel && parentEntry.item.level !== requiredParentLevel) {
-      console.error(
+      throw new CLIError(
         `A ${level} must be a child of a ${requiredParentLevel}, but "${parentId}" is a ${parentEntry.item.level}.`,
+        `Use --parent=<id> to specify a ${requiredParentLevel} instead.`,
       );
-      process.exit(1);
     }
   }
 

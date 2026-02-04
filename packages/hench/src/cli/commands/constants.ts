@@ -1,11 +1,15 @@
+import { CLIError } from "../errors.js";
+
 export const HENCH_DIR = ".hench";
 export const TOOL_VERSION = "0.1.0";
 
 export function safeParseInt(value: string, name: string): number {
   const n = parseInt(value, 10);
   if (isNaN(n) || n < 1) {
-    console.error(`Invalid --${name} value: ${value}`);
-    process.exit(1);
+    throw new CLIError(
+      `Invalid --${name} value: "${value}"`,
+      `Must be a positive integer.`,
+    );
   }
   return n;
 }

@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { SV_DIR } from "./constants.js";
+import { CLIError } from "../errors.js";
 import { DATA_FILES, SUPPLEMENTARY_FILES } from "../../schema/data-files.js";
 import { toCanonicalJSON } from "../../util/sort.js";
 import { analyzeInventory } from "../../analyzers/inventory.js";
@@ -40,8 +41,10 @@ function shouldRunPhase(filter: PhaseFilter, phase: number, moduleName: string):
 export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promise<void> {
   const absDir = resolve(targetDir);
   if (!existsSync(absDir)) {
-    console.error(`Directory not found: ${absDir}`);
-    process.exit(1);
+    throw new CLIError(
+      `Directory not found: ${absDir}`,
+      "Check the path and try again.",
+    );
   }
 
   // Auto-init if needed

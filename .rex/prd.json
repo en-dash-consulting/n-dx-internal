@@ -875,7 +875,7 @@
         {
           "id": "04ca00fe-ef44-4d81-890a-5d8772df540b",
           "title": "Error handling improvements",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Provide clear, actionable error messages instead of technical failures",
           "source": "llm",
@@ -911,7 +911,7 @@
             {
               "id": "4345197b-c78f-4334-9748-b4a486c0a027",
               "title": "Handle missing claude CLI gracefully",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Provide install instructions and fallback when claude CLI not found",
               "acceptanceCriteria": [
