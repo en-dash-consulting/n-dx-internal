@@ -169,6 +169,41 @@ describe("validateCompletion", () => {
     const callArgs = mockExecFile.mock.calls[0];
     expect(callArgs[0]).toBe("git");
     expect(callArgs[1]).toContain("--stat");
+    expect(callArgs[1]).toContain("HEAD");
+  });
+
+  it("diffs against startingHead when provided", async () => {
+    const { validateCompletion } = await import("../../../src/agent/completion.js");
+
+    mockExecFileResult(" src/foo.ts | 5 +++--\n");
+
+    await validateCompletion("/project", { startingHead: "abc123" });
+
+    const callArgs = mockExecFile.mock.calls[0];
+    expect(callArgs[0]).toBe("git");
+    expect(callArgs[1]).toContain("--stat");
+    expect(callArgs[1]).toContain("abc123");
+    expect(callArgs[1]).not.toContain("HEAD");
+  });
+
+  it("passes when changes are committed (startingHead differs from current HEAD)", async () => {
+    const { validateCompletion } = await import("../../../src/agent/completion.js");
+
+    // Agent committed its changes, so diff against the starting HEAD still shows changes
+    mockExecFileResult(
+      " src/foo.ts | 10 ++++---\n 1 file changed, 7 insertions(+), 3 deletions(-)\n",
+    );
+
+    const result = await validateCompletion("/project", {
+      startingHead: "abc123",
+    });
+
+    expect(result.valid).toBe(true);
+    expect(result.hasChanges).toBe(true);
+
+    // Verify it diffed against the starting commit, not HEAD
+    const callArgs = mockExecFile.mock.calls[0];
+    expect(callArgs[1]).toContain("abc123");
   });
 });
 

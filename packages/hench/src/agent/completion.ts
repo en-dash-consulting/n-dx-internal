@@ -21,6 +21,8 @@ export interface CompletionValidationOptions {
   testCommand?: string;
   /** Timeout for git/test commands in ms. Default: 30_000. */
   timeout?: number;
+  /** Commit hash captured before the agent started. Diff against this instead of HEAD. */
+  startingHead?: string;
 }
 
 const DEFAULT_TIMEOUT = 30_000;
@@ -58,10 +60,11 @@ export async function validateCompletion(
 ): Promise<CompletionValidationResult> {
   const timeout = options?.timeout ?? DEFAULT_TIMEOUT;
 
-  // Check git diff (staged + unstaged vs HEAD)
+  // Check git diff (staged + unstaged vs starting HEAD or current HEAD)
+  const diffRef = options?.startingHead ?? "HEAD";
   const { stdout: diffOutput } = await exec(
     "git",
-    ["diff", "--stat", "HEAD"],
+    ["diff", "--stat", diffRef],
     projectDir,
     timeout,
   );

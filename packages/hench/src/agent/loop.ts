@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import type { PRDStore } from "rex/dist/store/types.js";
 import type { HenchConfig, RunRecord, TurnTokenUsage } from "../schema/index.js";
@@ -134,6 +135,14 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     );
   }
 
+  // Capture the starting HEAD so completion validation can diff against it
+  // even if the agent commits changes during the run.
+  const startingHead = await new Promise<string | undefined>((resolve) => {
+    execFile("git", ["rev-parse", "HEAD"], { cwd: projectDir }, (err, stdout) => {
+      resolve(err ? undefined : stdout.toString().trim());
+    });
+  });
+
   const client = new Anthropic({ apiKey });
   const guard = new GuardRails(projectDir, config.guard);
 
@@ -143,6 +152,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     store,
     taskId,
     testCommand: brief.project.testCommand,
+    startingHead,
   };
 
   const run: RunRecord = {

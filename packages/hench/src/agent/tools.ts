@@ -134,6 +134,8 @@ export interface ToolContext {
   taskId: string;
   /** Test command for completion validation (from project config). */
   testCommand?: string;
+  /** Commit hash captured before the agent started, for diffing against. */
+  startingHead?: string;
 }
 
 export async function dispatchTool(
@@ -182,7 +184,7 @@ export async function dispatchTool(
           ctx.store,
           ctx.taskId,
           input as { status: string },
-          { projectDir: ctx.projectDir, testCommand: ctx.testCommand },
+          { projectDir: ctx.projectDir, testCommand: ctx.testCommand, startingHead: ctx.startingHead },
         );
 
       case "rex_append_log":

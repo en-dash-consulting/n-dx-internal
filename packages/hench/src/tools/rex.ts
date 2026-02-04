@@ -10,6 +10,8 @@ export interface UpdateStatusOptions {
   projectDir?: string;
   /** Test command to run during completion validation. */
   testCommand?: string;
+  /** Commit hash captured before the agent started, for diffing against. */
+  startingHead?: string;
 }
 
 export async function toolRexUpdateStatus(
@@ -29,6 +31,7 @@ export async function toolRexUpdateStatus(
   if (params.status === "completed" && options?.projectDir) {
     const validation = await validateCompletion(options.projectDir, {
       testCommand: options.testCommand,
+      startingHead: options.startingHead,
     });
 
     if (!validation.valid) {
