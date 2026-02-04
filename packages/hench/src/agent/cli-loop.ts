@@ -10,7 +10,8 @@ import { toolRexUpdateStatus, toolRexAppendLog } from "../tools/rex.js";
 import { validateCompletion, formatValidationResult } from "./completion.js";
 import { collectReviewDiff, promptReview, revertChanges } from "./review.js";
 import { checkTokenBudget } from "./token-budget.js";
-import { section, subsection, stream, info } from "../cli/output.js";
+import { runPostTaskTests } from "./test-runner.js";
+import { section, subsection, stream, detail, info } from "../cli/output.js";
 
 export interface CliLoopOptions {
   config: HenchConfig;
@@ -482,6 +483,34 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   }
 
   run.structuredSummary = buildRunSummary(run.toolCalls);
+
+  // Automatic post-task test run — only for completed runs
+  if (run.status === "completed" && brief.project.testCommand) {
+    subsection("Post-Task Tests");
+    const testResult = await runPostTaskTests({
+      projectDir,
+      filesChanged: run.structuredSummary.filesChanged,
+      testCommand: brief.project.testCommand,
+    });
+    run.structuredSummary.postRunTests = testResult;
+
+    if (testResult.ran) {
+      const scope = testResult.targetedFiles.length > 0
+        ? ` (${testResult.targetedFiles.length} targeted file(s))`
+        : " (full suite)";
+      const status = testResult.passed ? "passed" : "FAILED";
+      stream("Tests", `${status}${scope}`);
+      if (testResult.durationMs != null) {
+        detail(`${testResult.durationMs}ms`);
+      }
+      if (!testResult.passed && testResult.output) {
+        info(testResult.output.slice(-500));
+      }
+    } else if (testResult.error) {
+      detail(testResult.error);
+    }
+  }
+
   run.finishedAt = new Date().toISOString();
   await saveRun(henchDir, run);
 

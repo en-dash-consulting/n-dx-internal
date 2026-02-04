@@ -71,11 +71,22 @@ const SummaryCountsSchema = z.object({
   toolCallsTotal: z.number(),
 });
 
+const PostRunTestRecordSchema = z.object({
+  ran: z.boolean(),
+  passed: z.boolean(),
+  command: z.string().optional(),
+  output: z.string().optional(),
+  durationMs: z.number().optional(),
+  targetedFiles: z.array(z.string()),
+  error: z.string().optional(),
+});
+
 const RunSummaryDataSchema = z.object({
   filesChanged: z.array(z.string()),
   filesRead: z.array(z.string()),
   commandsExecuted: z.array(CommandRecordSchema),
   testsRun: z.array(TestRecordSchema),
+  postRunTests: PostRunTestRecordSchema.optional(),
   counts: SummaryCountsSchema,
 });
 

@@ -133,17 +133,21 @@
     {
       "id": "6b0c3873-5607-4adc-9027-abd8d70ab0e3",
       "title": "Reliable work loop",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "llm",
+      "startedAt": "2026-02-04T18:33:18.839Z",
+      "completedAt": "2026-02-04T18:33:18.839Z",
       "children": [
         {
           "id": "262601f3-b1d3-4c76-abc7-cd3310a2a2b3",
           "title": "Task selection and state transitions",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Ensure proper task ordering and atomic state management during execution",
           "source": "llm",
+          "startedAt": "2026-02-04T18:33:18.832Z",
+          "completedAt": "2026-02-04T18:33:18.832Z",
           "children": [
             {
               "id": "1ba9b8ba-078b-4a20-91bc-221462c1364e",
@@ -194,7 +198,7 @@
             {
               "id": "0df69478-9dd8-4b64-9564-da2a9fcd72e7",
               "title": "Handle task failures properly",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Mark failed tasks as deferred with clear error summary",
               "acceptanceCriteria": [
@@ -204,7 +208,8 @@
               ],
               "priority": "high",
               "source": "llm",
-              "startedAt": "2026-02-04T18:26:17.790Z"
+              "startedAt": "2026-02-04T18:26:17.790Z",
+              "completedAt": "2026-02-04T18:33:18.820Z"
             }
           ]
         },
@@ -1119,7 +1124,7 @@
             {
               "id": "7c545f27-6c88-4044-9e1e-abb08ffc8a49",
               "title": "Add automatic test running to hench",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Attempt to run relevant tests when hench completes a task",
               "acceptanceCriteria": [
@@ -1128,7 +1133,9 @@
                 "Reports test results in run summary"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T18:33:18.852Z",
+              "completedAt": "2026-02-04T18:40:52.009Z"
             },
             {
               "id": "3dd0ce48-04ea-44e0-896c-44b6e2cd9fe3",

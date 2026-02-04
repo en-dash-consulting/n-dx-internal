@@ -13,6 +13,7 @@ export type {
   TokenUsage,
   CommandRecord,
   TestRecord,
+  PostRunTestRecord,
   SummaryCounts,
   RunSummaryData,
   RunRecord,

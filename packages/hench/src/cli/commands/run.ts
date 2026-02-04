@@ -180,6 +180,15 @@ async function runOne(
   info(`Tokens: ${run.tokenUsage.input} in / ${run.tokenUsage.output} out`);
   info(`Tool calls: ${run.toolCalls.length}`);
 
+  // Post-task test results
+  const postTests = run.structuredSummary?.postRunTests;
+  if (postTests?.ran) {
+    const scope = postTests.targetedFiles.length > 0
+      ? `${postTests.targetedFiles.length} targeted file(s)`
+      : "full suite";
+    info(`Post-task tests: ${postTests.passed ? "passed" : "FAILED"} (${scope}, ${postTests.durationMs ?? 0}ms)`);
+  }
+
   if (run.summary) {
     info(`\nSummary: ${run.summary}`);
   }

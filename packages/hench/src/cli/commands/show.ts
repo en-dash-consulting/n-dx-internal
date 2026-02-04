@@ -58,6 +58,25 @@ export async function cmdShow(
         info(`    ${icon} ${c.command} [${c.exitStatus}] (${c.durationMs}ms)`);
       }
     }
+
+    if (ss.postRunTests) {
+      const pt = ss.postRunTests;
+      info(`\n  Post-Task Tests:`);
+      if (pt.ran) {
+        const icon = pt.passed ? "✓" : "✗";
+        const scope = pt.targetedFiles.length > 0
+          ? `${pt.targetedFiles.length} targeted file(s)`
+          : "full suite";
+        info(`    ${icon} ${pt.command ?? "unknown"} [${scope}] (${pt.durationMs ?? 0}ms)`);
+        if (pt.targetedFiles.length > 0) {
+          for (const f of pt.targetedFiles) {
+            info(`      → ${f}`);
+          }
+        }
+      } else {
+        info(`    ⊘ Not run: ${pt.error ?? "unknown reason"}`);
+      }
+    }
   }
 
   if (run.toolCalls.length > 0) {

@@ -92,11 +92,30 @@ export interface SummaryCounts {
   toolCallsTotal: number;
 }
 
+export interface PostRunTestRecord {
+  /** Whether tests were executed. */
+  ran: boolean;
+  /** Whether all tests passed. */
+  passed: boolean;
+  /** The command that was executed. */
+  command?: string;
+  /** Human-readable test output (truncated). */
+  output?: string;
+  /** Duration in ms. */
+  durationMs?: number;
+  /** Test files that were specifically targeted. Empty if full suite. */
+  targetedFiles: string[];
+  /** Error message if tests couldn't be run. */
+  error?: string;
+}
+
 export interface RunSummaryData {
   filesChanged: string[];
   filesRead: string[];
   commandsExecuted: CommandRecord[];
   testsRun: TestRecord[];
+  /** Automatic post-task test results. */
+  postRunTests?: PostRunTestRecord;
   counts: SummaryCounts;
 }
 
