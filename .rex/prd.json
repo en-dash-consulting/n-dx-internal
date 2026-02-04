@@ -868,7 +868,7 @@
     {
       "id": "4ca9aac4-cd85-4af3-96d9-c4274e2d9f83",
       "title": "CLI and developer experience",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "llm",
       "children": [
@@ -927,7 +927,7 @@
         {
           "id": "c679bde8-9a4b-46bb-a0f8-750bf34fbf95",
           "title": "Output and formatting",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Improve visual presentation and information density of command output",
           "source": "llm",
@@ -935,7 +935,7 @@
             {
               "id": "ef35bbdc-1a62-4e01-9a46-98950bc12b4d",
               "title": "Add progress bars to status command",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Show visual progress indicators per epic in status output",
               "acceptanceCriteria": [
@@ -949,7 +949,7 @@
             {
               "id": "2a5c0077-de89-42b2-a783-45fb675f275a",
               "title": "Add tree format option to status",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Support --format=tree to show full hierarchy with status icons",
               "acceptanceCriteria": [
@@ -963,7 +963,7 @@
             {
               "id": "5e68b89e-8f81-4c6b-b2a6-52b361eee707",
               "title": "Stream hench output with section headers",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Provide real-time output from hench with clear organization",
               "acceptanceCriteria": [
@@ -977,7 +977,7 @@
             {
               "id": "da4fecd8-f501-4499-9af2-655eeafedb0c",
               "title": "Add quiet mode for scripting",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Support --quiet flag across all commands for automation",
               "acceptanceCriteria": [
