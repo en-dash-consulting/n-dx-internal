@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import { resolveStore } from "../store/index.js";
 import { SCHEMA_VERSION, LEVEL_HIERARCHY } from "../schema/index.js";
 import { computeStats, findItem } from "../core/tree.js";
-import { findNextTask, collectCompletedIds } from "../core/next-task.js";
+import { findNextTask, collectCompletedIds, explainSelection } from "../core/next-task.js";
 import { validateTransition } from "../core/transitions.js";
 import { computeTimestampUpdates } from "../core/timestamps.js";
 import { TOOL_VERSION } from "./commands/constants.js";
@@ -57,7 +57,7 @@ export async function startMcpServer(dir: string): Promise<void> {
     }
   });
 
-  server.tool("get_next_task", "Get the next actionable task based on priority and dependencies", {}, async () => {
+  server.tool("get_next_task", "Get the next actionable task based on priority and dependencies, with explanation of why it was selected", {}, async () => {
     try {
       const doc = await store.loadDocument();
       const completedIds = collectCompletedIds(doc.items);
@@ -72,6 +72,7 @@ export async function startMcpServer(dir: string): Promise<void> {
           ],
         };
       }
+      const explanation = explainSelection(doc.items, result, completedIds);
       return {
         content: [
           {
@@ -84,6 +85,7 @@ export async function startMcpServer(dir: string): Promise<void> {
                   title: p.title,
                   level: p.level,
                 })),
+                explanation,
               },
               null,
               2,

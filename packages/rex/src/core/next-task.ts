@@ -1,5 +1,6 @@
 import type { PRDItem, Priority } from "../schema/index.js";
 import type { TreeEntry } from "./tree.js";
+import { walkTree } from "./tree.js";
 
 const PRIORITY_ORDER: Record<Priority, number> = {
   critical: 0,
@@ -7,6 +8,39 @@ const PRIORITY_ORDER: Record<Priority, number> = {
   medium: 2,
   low: 3,
 };
+
+const PRIORITY_LABELS: Record<number, Priority> = {
+  0: "critical",
+  1: "high",
+  2: "medium",
+  3: "low",
+};
+
+export interface SelectionExplanation {
+  /** Human-readable summary of why this task was selected. */
+  summary: string;
+  /** Priority reasoning. */
+  priority: {
+    itemPriority: Priority;
+    /** Number of higher-priority items that exist but aren't actionable. */
+    higherPriorityBlocked: number;
+  };
+  /** Dependency status for the selected item. */
+  dependencies: {
+    status: "none" | "resolved";
+    resolvedBlockers: string[];
+  };
+  /** Breadcrumb path through the tree to reach this item. */
+  traversalPath: string[];
+  /** Summary of items considered but skipped. */
+  skipped: {
+    completed: number;
+    deferred: number;
+    blocked: number;
+    unresolvedDeps: number;
+    total: number;
+  };
+}
 
 function sortByPriority(items: PRDItem[]): PRDItem[] {
   return [...items].sort((a, b) => {
@@ -131,4 +165,114 @@ export function findNextTask(
   }
 
   return search(items, []);
+}
+
+/**
+ * Explain why a particular task was selected by findNextTask.
+ * Walks the full tree to gather skip counts, dependency info, and priority context.
+ */
+export function explainSelection(
+  items: PRDItem[],
+  selected: TreeEntry,
+  completedIds: Set<string>,
+): SelectionExplanation {
+  const skipped = { completed: 0, deferred: 0, blocked: 0, unresolvedDeps: 0, total: 0 };
+  const selectedPriority = PRIORITY_ORDER[selected.item.priority ?? "medium"];
+  let higherPriorityBlocked = 0;
+
+  // Walk every leaf to count skipped items and detect higher-priority blocked items
+  for (const { item } of walkTree(items)) {
+    if (item.id === selected.item.id) continue;
+
+    if (item.status === "completed") {
+      skipped.completed++;
+      skipped.total++;
+    } else if (item.status === "deferred") {
+      skipped.deferred++;
+      skipped.total++;
+    } else if (item.status === "blocked") {
+      skipped.blocked++;
+      skipped.total++;
+      if (PRIORITY_ORDER[item.priority ?? "medium"] < selectedPriority) {
+        higherPriorityBlocked++;
+      }
+    } else if (
+      item.blockedBy &&
+      item.blockedBy.length > 0 &&
+      !item.blockedBy.every((dep) => completedIds.has(dep))
+    ) {
+      skipped.unresolvedDeps++;
+      skipped.total++;
+      if (PRIORITY_ORDER[item.priority ?? "medium"] < selectedPriority) {
+        higherPriorityBlocked++;
+      }
+    }
+  }
+
+  // Dependency info for the selected item
+  const resolvedBlockers = (selected.item.blockedBy ?? []).filter((dep) =>
+    completedIds.has(dep),
+  );
+  const depStatus: SelectionExplanation["dependencies"] =
+    selected.item.blockedBy && selected.item.blockedBy.length > 0
+      ? { status: "resolved", resolvedBlockers }
+      : { status: "none", resolvedBlockers: [] };
+
+  const traversalPath = selected.parents.map((p) => p.title);
+  const itemPriority: Priority = selected.item.priority ?? "medium";
+
+  // Build human-readable summary
+  const summaryParts: string[] = [];
+
+  // Status context
+  if (selected.item.status === "in_progress") {
+    summaryParts.push(`"${selected.item.title}" is already in_progress`);
+  } else {
+    // Check if this is a parent with all children done
+    const allChildrenDone =
+      selected.item.children &&
+      selected.item.children.length > 0 &&
+      selected.item.children.every(
+        (c) => c.status === "completed" || c.status === "deferred",
+      );
+    if (allChildrenDone) {
+      summaryParts.push(
+        `"${selected.item.title}" — all children completed, ready to finalize`,
+      );
+    } else {
+      summaryParts.push(
+        `"${selected.item.title}" selected at ${itemPriority} priority`,
+      );
+    }
+  }
+
+  // Traversal context
+  if (traversalPath.length > 0) {
+    summaryParts.push(`via ${traversalPath.join(" → ")}`);
+  }
+
+  // Dependency context
+  if (depStatus.status === "resolved") {
+    summaryParts.push(
+      `(${resolvedBlockers.length} blocker${resolvedBlockers.length === 1 ? "" : "s"} resolved)`,
+    );
+  }
+
+  // Higher-priority blocked context
+  if (higherPriorityBlocked > 0) {
+    summaryParts.push(
+      `(${higherPriorityBlocked} higher-priority item${higherPriorityBlocked === 1 ? "" : "s"} blocked)`,
+    );
+  }
+
+  return {
+    summary: summaryParts.join(" "),
+    priority: {
+      itemPriority,
+      higherPriorityBlocked,
+    },
+    dependencies: depStatus,
+    traversalPath,
+    skipped,
+  };
 }

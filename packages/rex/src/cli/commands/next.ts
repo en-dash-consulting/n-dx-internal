@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { resolveStore } from "../../store/index.js";
-import { findNextTask, collectCompletedIds } from "../../core/next-task.js";
+import { findNextTask, collectCompletedIds, explainSelection } from "../../core/next-task.js";
 import { REX_DIR } from "./constants.js";
 import { info, result } from "../output.js";
 
@@ -26,9 +26,10 @@ export async function cmdNext(
   }
 
   const { item, parents } = nextResult;
+  const explanation = explainSelection(doc.items, nextResult, completedIds);
 
   if (flags.format === "json") {
-    result(JSON.stringify({ item, parents }, null, 2));
+    result(JSON.stringify({ item, parents, explanation }, null, 2));
     return;
   }
 
@@ -47,5 +48,19 @@ export async function cmdNext(
     for (const ac of item.acceptanceCriteria) {
       info(`    - ${ac}`);
     }
+  }
+
+  // Selection reasoning
+  info(`\n  Why: ${explanation.summary}`);
+  if (explanation.dependencies.status === "resolved") {
+    info(`  Dependencies: ${explanation.dependencies.resolvedBlockers.length} resolved`);
+  }
+  if (explanation.skipped.total > 0) {
+    const parts: string[] = [];
+    if (explanation.skipped.completed > 0) parts.push(`${explanation.skipped.completed} completed`);
+    if (explanation.skipped.deferred > 0) parts.push(`${explanation.skipped.deferred} deferred`);
+    if (explanation.skipped.blocked > 0) parts.push(`${explanation.skipped.blocked} blocked`);
+    if (explanation.skipped.unresolvedDeps > 0) parts.push(`${explanation.skipped.unresolvedDeps} awaiting deps`);
+    info(`  Skipped: ${parts.join(", ")}`);
   }
 }
