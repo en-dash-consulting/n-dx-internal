@@ -7,7 +7,7 @@ import type { ScanResult } from "./scanners.js";
 import type { Proposal } from "./propose.js";
 import { walkTree } from "../core/tree.js";
 
-const DEFAULT_MODEL = "claude-sonnet-4-20250514";
+export const DEFAULT_MODEL = "claude-sonnet-4-20250514";
 
 // ── Zod schemas for LLM response validation ──
 

@@ -13,6 +13,7 @@ export { formatDiff } from "./diff.js";
 
 export type { FileFormat } from "./reason.js";
 export {
+  DEFAULT_MODEL,
   reasonFromFile,
   reasonFromFiles,
   reasonFromScanResults,

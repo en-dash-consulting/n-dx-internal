@@ -29,6 +29,7 @@ Options:
   --accept                Add proposals to PRD (for analyze)
   --file=<path>           Import PRD from a document (repeatable, for analyze)
   --no-llm                Force algorithmic pipeline, skip LLM (for analyze)
+  --model=<name>          Override LLM model for analyze (for analyze)
   --analyze               Run SourceVision analysis (for init)
 `);
 }

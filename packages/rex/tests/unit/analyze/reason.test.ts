@@ -3,6 +3,7 @@ import { writeFile, mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
+  DEFAULT_MODEL,
   parseProposalResponse,
   detectFileFormat,
   parseStructuredFile,
@@ -813,5 +814,16 @@ describe("readProjectContext", () => {
 
     expect(result).toContain("README");
     expect(result).toContain("Plain readme");
+  });
+});
+
+describe("DEFAULT_MODEL", () => {
+  it("is exported and is a non-empty string", () => {
+    expect(typeof DEFAULT_MODEL).toBe("string");
+    expect(DEFAULT_MODEL.length).toBeGreaterThan(0);
+  });
+
+  it("contains a claude model identifier", () => {
+    expect(DEFAULT_MODEL).toMatch(/^claude-/);
   });
 });

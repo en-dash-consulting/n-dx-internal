@@ -35,6 +35,7 @@ export interface RexConfig {
   validate?: string;
   test?: string;
   sourcevision?: string;
+  model?: string;
   future?: Record<string, unknown>;
   [key: string]: unknown;
 }

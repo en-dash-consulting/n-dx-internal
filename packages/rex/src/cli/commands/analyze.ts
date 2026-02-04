@@ -14,6 +14,7 @@ import {
   reasonFromFiles,
   reasonFromScanResults,
   formatDiff,
+  DEFAULT_MODEL,
 } from "../../analyze/index.js";
 import type { ScanResult, Proposal } from "../../analyze/index.js";
 import type { PRDItem, PRDDocument } from "../../schema/index.js";
@@ -158,6 +159,21 @@ export async function cmdAnalyze(
   // Support multiple --file flags; fall back to single flags.file for compat
   const filePaths: string[] = multiFlags.file ?? (flags.file ? [flags.file] : []);
 
+  // Resolve model: --model flag → config.model → DEFAULT_MODEL
+  let model: string | undefined = flags.model;
+  if (!model && await hasRexDir(dir)) {
+    try {
+      const rexDir = join(dir, REX_DIR);
+      const store = createStore("file", rexDir);
+      const config = await store.loadConfig();
+      if (config.model) {
+        model = config.model;
+      }
+    } catch {
+      // Config unreadable — fall through to default
+    }
+  }
+
   // --accept with no other flags: replay cached proposals
   if (accept && filePaths.length === 0 && !flags.format) {
     const cached = await loadPending(dir);
@@ -194,7 +210,7 @@ export async function cmdAnalyze(
     }
 
     try {
-      proposals = await reasonFromFiles(resolved, existing);
+      proposals = await reasonFromFiles(resolved, existing, model);
     } catch (err) {
       console.error(`Failed to analyze file: ${(err as Error).message}`);
       process.exit(1);
@@ -229,7 +245,7 @@ export async function cmdAnalyze(
 
     if (!noLlm) {
       try {
-        proposals = await reasonFromScanResults(newResults, existing, { dir });
+        proposals = await reasonFromScanResults(newResults, existing, { dir, model });
         if (flags.format !== "json") {
           console.log("Proposals refined by LLM.");
         }

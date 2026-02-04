@@ -482,4 +482,57 @@ describe("Cache", () => {
     expect(allFeatures).toContain("User Management");
     expect(allFeatures).toContain("API Gateway");
   });
+
+  it("--model flag is accepted without error", async () => {
+    await mkdir(join(tmpDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tmpDir, "tests", "model.test.ts"),
+      `
+describe("Model", () => {
+  it("works", () => {});
+});
+`,
+    );
+
+    // --no-llm skips the actual LLM call, but --model should still be
+    // parsed without error and not break the pipeline
+    const output = run([
+      "analyze",
+      "--no-llm",
+      "--model=claude-sonnet-4-20250514",
+      "--format=json",
+      tmpDir,
+    ]);
+    const parsed = JSON.parse(output);
+
+    expect(parsed).toHaveProperty("scanned");
+    expect(parsed).toHaveProperty("proposals");
+  });
+
+  it("reads model from config.json when --model not provided", async () => {
+    run(["init", tmpDir]);
+
+    // Write a model into config
+    const configPath = join(tmpDir, ".rex", "config.json");
+    const config = JSON.parse(await readFile(configPath, "utf-8"));
+    config.model = "claude-haiku-4-20250414";
+    await writeFile(configPath, JSON.stringify(config, null, 2));
+
+    await mkdir(join(tmpDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tmpDir, "tests", "cfg.test.ts"),
+      `
+describe("Cfg", () => {
+  it("runs", () => {});
+});
+`,
+    );
+
+    // Should not error — config model is resolved but --no-llm skips LLM call
+    const output = run(["analyze", "--no-llm", "--format=json", tmpDir]);
+    const parsed = JSON.parse(output);
+
+    expect(parsed).toHaveProperty("scanned");
+    expect(parsed).toHaveProperty("proposals");
+  });
 });
