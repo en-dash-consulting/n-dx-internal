@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { join } from "node:path";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { cmdStatus } from "../../../../src/cli/commands/status.js";
+import {
+  cmdStatus,
+  renderProgressBar,
+} from "../../../../src/cli/commands/status.js";
 import { CLIError } from "../../../../src/cli/errors.js";
 import type { PRDDocument } from "../../../../src/schema/index.js";
 
@@ -64,6 +67,46 @@ const POPULATED_PRD: PRDDocument = {
     },
   ],
 };
+
+describe("renderProgressBar", () => {
+  it("renders empty bar at 0%", () => {
+    const bar = renderProgressBar(0, 20);
+    expect(bar).toBe("░░░░░░░░░░░░░░░░░░░░");
+    expect(bar.length).toBe(20);
+  });
+
+  it("renders full bar at 100%", () => {
+    const bar = renderProgressBar(1, 20);
+    expect(bar).toBe("████████████████████");
+    expect(bar.length).toBe(20);
+  });
+
+  it("renders partial bar at 50%", () => {
+    const bar = renderProgressBar(0.5, 20);
+    expect(bar).toBe("██████████░░░░░░░░░░");
+  });
+
+  it("rounds filled count correctly", () => {
+    // 33% of 12 = 3.96 → rounds to 4
+    const bar = renderProgressBar(0.33, 12);
+    expect(bar).toBe("████░░░░░░░░");
+  });
+
+  it("clamps ratio below 0 to 0", () => {
+    const bar = renderProgressBar(-0.5, 10);
+    expect(bar).toBe("░░░░░░░░░░");
+  });
+
+  it("clamps ratio above 1 to 1", () => {
+    const bar = renderProgressBar(1.5, 10);
+    expect(bar).toBe("██████████");
+  });
+
+  it("uses default width of 20", () => {
+    const bar = renderProgressBar(0.5);
+    expect(bar.length).toBe(20);
+  });
+});
 
 describe("cmdStatus", () => {
   let tmp: string;
@@ -179,6 +222,108 @@ describe("cmdStatus", () => {
       const out = output();
 
       expect(out).toContain("PRD: Test Project");
+    });
+  });
+
+  describe("epic progress bars", () => {
+    it("shows progress bar for epics with children", async () => {
+      writePRD(tmp, POPULATED_PRD);
+      await cmdStatus(tmp, { format: "tree" });
+      const lines = output().split("\n");
+
+      // Auth System has children, should show a progress bar
+      const authLine = lines.find((l) => l.includes("Auth System"));
+      expect(authLine).toBeDefined();
+      expect(authLine).toMatch(/[█░]/);
+    });
+
+    it("does not show progress bar for epics without children", async () => {
+      writePRD(tmp, POPULATED_PRD);
+      await cmdStatus(tmp, { format: "tree" });
+      const lines = output().split("\n");
+
+      // Dashboard has no children, no progress bar
+      const dashLine = lines.find((l) => l.includes("Dashboard"));
+      expect(dashLine).toBeDefined();
+      expect(dashLine).not.toMatch(/[█░]/);
+    });
+
+    it("shows accurate percentage for each epic", async () => {
+      writePRD(tmp, POPULATED_PRD);
+      await cmdStatus(tmp, { format: "tree" });
+      const lines = output().split("\n");
+
+      // Auth System: 1 completed out of 4 descendants = 25%
+      const authLine = lines.find((l) => l.includes("Auth System"));
+      expect(authLine).toContain("25%");
+    });
+
+    it("shows 100% bar for fully completed epic", async () => {
+      const fullPrd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Done Project",
+        items: [
+          {
+            id: "e1",
+            title: "Finished Epic",
+            level: "epic",
+            status: "completed",
+            children: [
+              {
+                id: "t1",
+                title: "Done Task",
+                level: "task",
+                status: "completed",
+              },
+              {
+                id: "t2",
+                title: "Also Done",
+                level: "task",
+                status: "completed",
+              },
+            ],
+          },
+        ],
+      };
+      writePRD(tmp, fullPrd);
+      await cmdStatus(tmp, {});
+      const lines = output().split("\n");
+
+      const epicLine = lines.find((l) => l.includes("Finished Epic"));
+      expect(epicLine).toContain("100%");
+      expect(epicLine).toMatch(/█/);
+      expect(epicLine).not.toMatch(/░/);
+    });
+
+    it("shows 0% bar for epic with no completed children", async () => {
+      const emptyPrd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Fresh Project",
+        items: [
+          {
+            id: "e1",
+            title: "New Epic",
+            level: "epic",
+            status: "pending",
+            children: [
+              {
+                id: "t1",
+                title: "Todo Task",
+                level: "task",
+                status: "pending",
+              },
+            ],
+          },
+        ],
+      };
+      writePRD(tmp, emptyPrd);
+      await cmdStatus(tmp, {});
+      const lines = output().split("\n");
+
+      const epicLine = lines.find((l) => l.includes("New Epic"));
+      expect(epicLine).toContain("0%");
+      expect(epicLine).toMatch(/░/);
+      expect(epicLine).not.toMatch(/█/);
     });
   });
 

@@ -15,6 +15,20 @@ const STATUS_ICONS: Record<string, string> = {
   deferred: "◌",
 };
 
+const FILLED = "█";
+const EMPTY = "░";
+const DEFAULT_BAR_WIDTH = 20;
+
+/** Render a progress bar string from a completion ratio. */
+export function renderProgressBar(
+  ratio: number,
+  width: number = DEFAULT_BAR_WIDTH,
+): string {
+  const clamped = Math.max(0, Math.min(1, ratio));
+  const filled = Math.round(clamped * width);
+  return FILLED.repeat(filled) + EMPTY.repeat(width - filled);
+}
+
 /** Render a PRD tree to lines with status icons and indentation. */
 export function renderTree(items: PRDItem[], indent: number = 0): string[] {
   const lines: string[] = [];
@@ -25,9 +39,20 @@ export function renderTree(items: PRDItem[], indent: number = 0): string[] {
 
     if (item.children && item.children.length > 0) {
       const stats = computeStats(item.children);
-      lines.push(
-        `${prefix}${icon} ${item.title}${priority} [${stats.completed}/${stats.total}]`,
-      );
+      const count = `[${stats.completed}/${stats.total}]`;
+
+      if (item.level === "epic") {
+        const ratio = stats.total > 0 ? stats.completed / stats.total : 0;
+        const pct = Math.round(ratio * 100);
+        const bar = renderProgressBar(ratio);
+        lines.push(
+          `${prefix}${icon} ${item.title}${priority} ${bar} ${pct}% ${count}`,
+        );
+      } else {
+        lines.push(
+          `${prefix}${icon} ${item.title}${priority} ${count}`,
+        );
+      }
       lines.push(...renderTree(item.children, indent + 1));
     } else {
       lines.push(`${prefix}${icon} ${item.title}${priority}`);
