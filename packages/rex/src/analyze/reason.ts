@@ -354,6 +354,86 @@ Respond with ONLY a valid JSON array, no explanation or markdown fences.`;
   return parseProposalResponse(raw);
 }
 
+// ── Multi-file support ──
+
+/**
+ * Merge proposals that share the same epic title (case-insensitive).
+ * Features and tasks are concatenated; duplicates within features are
+ * removed by normalized title.
+ */
+export function mergeProposals(all: Proposal[]): Proposal[] {
+  const epicMap = new Map<string, Proposal>();
+
+  for (const p of all) {
+    const key = normalize(p.epic.title);
+    const existing = epicMap.get(key);
+    if (!existing) {
+      // Clone to avoid mutating inputs
+      epicMap.set(key, {
+        epic: { ...p.epic },
+        features: p.features.map((f) => ({
+          ...f,
+          tasks: [...f.tasks],
+        })),
+      });
+    } else {
+      // Merge features into existing epic
+      const seenFeatures = new Set(
+        existing.features.map((f) => normalize(f.title)),
+      );
+      for (const f of p.features) {
+        const fKey = normalize(f.title);
+        if (seenFeatures.has(fKey)) {
+          // Merge tasks into existing feature
+          const target = existing.features.find(
+            (ef) => normalize(ef.title) === fKey,
+          )!;
+          const seenTasks = new Set(
+            target.tasks.map((t) => normalize(t.title)),
+          );
+          for (const t of f.tasks) {
+            if (!seenTasks.has(normalize(t.title))) {
+              target.tasks.push(t);
+              seenTasks.add(normalize(t.title));
+            }
+          }
+        } else {
+          existing.features.push({ ...f, tasks: [...f.tasks] });
+          seenFeatures.add(fKey);
+        }
+      }
+    }
+  }
+
+  return [...epicMap.values()];
+}
+
+/**
+ * Process multiple input files and combine results into a single proposal list.
+ * Each file is read and parsed independently, then proposals are merged by epic.
+ */
+export async function reasonFromFiles(
+  filePaths: string[],
+  existingItems: PRDItem[],
+  model?: string,
+): Promise<Proposal[]> {
+  if (filePaths.length === 0) {
+    return [];
+  }
+  if (filePaths.length === 1) {
+    return reasonFromFile(filePaths[0], existingItems, model);
+  }
+
+  const allProposals: Proposal[] = [];
+
+  for (const fp of filePaths) {
+    const proposals = await reasonFromFile(fp, existingItems, model);
+    allProposals.push(...proposals);
+  }
+
+  return mergeProposals(allProposals);
+}
+
 export async function reasonFromScanResults(
   results: ScanResult[],
   existingItems: PRDItem[],

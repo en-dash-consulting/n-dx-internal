@@ -10,8 +10,10 @@ export { buildProposals } from "./propose.js";
 export type { FileFormat } from "./reason.js";
 export {
   reasonFromFile,
+  reasonFromFiles,
   reasonFromScanResults,
   parseProposalResponse,
   detectFileFormat,
   parseStructuredFile,
+  mergeProposals,
 } from "./reason.js";

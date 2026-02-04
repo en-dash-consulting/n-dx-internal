@@ -248,4 +248,192 @@ describe("Cache", () => {
       expect(combined).toMatch(/no such file|ENOENT|Failed to analyze/i);
     }
   });
+
+  it("--file imports a JSON file with --format=json", async () => {
+    const content = JSON.stringify([
+      {
+        epic: { title: "Auth" },
+        features: [
+          { title: "Login", tasks: [{ title: "Validate email" }] },
+        ],
+      },
+    ]);
+    await writeFile(join(tmpDir, "spec.json"), content);
+
+    const output = run(["analyze", "--file=spec.json", "--format=json", tmpDir]);
+    const parsed = JSON.parse(output);
+
+    expect(parsed).toHaveProperty("proposals");
+    expect(parsed.proposals).toHaveLength(1);
+    expect(parsed.proposals[0].epic.title).toBe("Auth");
+  });
+
+  it("multiple --file flags combine results", async () => {
+    await writeFile(
+      join(tmpDir, "auth.json"),
+      JSON.stringify([
+        {
+          epic: { title: "Auth" },
+          features: [
+            { title: "Login", tasks: [{ title: "Validate email" }] },
+          ],
+        },
+      ]),
+    );
+    await writeFile(
+      join(tmpDir, "dashboard.json"),
+      JSON.stringify([
+        {
+          epic: { title: "Dashboard" },
+          features: [
+            { title: "Charts", tasks: [{ title: "Render chart" }] },
+          ],
+        },
+      ]),
+    );
+
+    const output = run([
+      "analyze",
+      "--file=auth.json",
+      "--file=dashboard.json",
+      "--format=json",
+      tmpDir,
+    ]);
+    const parsed = JSON.parse(output);
+
+    expect(parsed.proposals).toHaveLength(2);
+    const epicTitles = parsed.proposals.map(
+      (p: { epic: { title: string } }) => p.epic.title,
+    );
+    expect(epicTitles).toContain("Auth");
+    expect(epicTitles).toContain("Dashboard");
+  });
+
+  it("multiple --file flags merge same-epic proposals", async () => {
+    await writeFile(
+      join(tmpDir, "auth1.json"),
+      JSON.stringify([
+        {
+          epic: { title: "Auth" },
+          features: [
+            { title: "Login", tasks: [{ title: "Validate email" }] },
+          ],
+        },
+      ]),
+    );
+    await writeFile(
+      join(tmpDir, "auth2.json"),
+      JSON.stringify([
+        {
+          epic: { title: "Auth" },
+          features: [
+            { title: "Signup", tasks: [{ title: "Create account" }] },
+          ],
+        },
+      ]),
+    );
+
+    const output = run([
+      "analyze",
+      "--file=auth1.json",
+      "--file=auth2.json",
+      "--format=json",
+      tmpDir,
+    ]);
+    const parsed = JSON.parse(output);
+
+    expect(parsed.proposals).toHaveLength(1);
+    expect(parsed.proposals[0].epic.title).toBe("Auth");
+    const featureTitles = parsed.proposals[0].features.map(
+      (f: { title: string }) => f.title,
+    );
+    expect(featureTitles).toContain("Login");
+    expect(featureTitles).toContain("Signup");
+  });
+
+  it("multiple --file flags with --accept adds all items", async () => {
+    run(["init", tmpDir]);
+
+    await writeFile(
+      join(tmpDir, "auth.json"),
+      JSON.stringify([
+        {
+          epic: { title: "Auth" },
+          features: [
+            { title: "Login", tasks: [{ title: "Validate email" }] },
+          ],
+        },
+      ]),
+    );
+    await writeFile(
+      join(tmpDir, "dashboard.json"),
+      JSON.stringify([
+        {
+          epic: { title: "Dashboard" },
+          features: [
+            { title: "Charts", tasks: [{ title: "Render chart" }] },
+          ],
+        },
+      ]),
+    );
+
+    const output = run([
+      "analyze",
+      "--file=auth.json",
+      "--file=dashboard.json",
+      "--accept",
+      tmpDir,
+    ]);
+    expect(output).toContain("Added");
+    expect(output).toContain("items to PRD");
+
+    // Verify items in prd.json (items are nested: epics → features → tasks)
+    const prd = JSON.parse(
+      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
+    );
+    function collectTitles(items: { title: string; children?: unknown[] }[]): string[] {
+      const result: string[] = [];
+      for (const item of items) {
+        result.push(item.title);
+        if (Array.isArray(item.children)) {
+          result.push(...collectTitles(item.children as { title: string; children?: unknown[] }[]));
+        }
+      }
+      return result;
+    }
+    const titles = collectTitles(prd.items);
+    expect(titles).toContain("Auth");
+    expect(titles).toContain("Dashboard");
+    expect(titles).toContain("Login");
+    expect(titles).toContain("Charts");
+  });
+
+  it("multiple --file flags with mixed formats", async () => {
+    await writeFile(
+      join(tmpDir, "features.json"),
+      JSON.stringify([
+        { title: "User Management", description: "CRUD for users" },
+      ]),
+    );
+    await writeFile(
+      join(tmpDir, "more.yaml"),
+      "title: API Gateway\ndescription: Route requests\n",
+    );
+
+    const output = run([
+      "analyze",
+      "--file=features.json",
+      "--file=more.yaml",
+      "--format=json",
+      tmpDir,
+    ]);
+    const parsed = JSON.parse(output);
+
+    const allFeatures = parsed.proposals.flatMap(
+      (p: { features: { title: string }[] }) =>
+        p.features.map((f) => f.title),
+    );
+    expect(allFeatures).toContain("User Management");
+    expect(allFeatures).toContain("API Gateway");
+  });
 });

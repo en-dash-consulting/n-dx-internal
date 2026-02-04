@@ -10,7 +10,7 @@ import {
   scanSourceVision,
   reconcile,
   buildProposals,
-  reasonFromFile,
+  reasonFromFiles,
   reasonFromScanResults,
 } from "../../analyze/index.js";
 import type { ScanResult, Proposal } from "../../analyze/index.js";
@@ -148,14 +148,16 @@ async function acceptProposals(
 export async function cmdAnalyze(
   dir: string,
   flags: Record<string, string>,
+  multiFlags: Record<string, string[]> = {},
 ): Promise<void> {
   const lite = flags.lite === "true";
   const accept = flags.accept === "true";
   const noLlm = flags["no-llm"] === "true";
-  const filePath = flags.file;
+  // Support multiple --file flags; fall back to single flags.file for compat
+  const filePaths: string[] = multiFlags.file ?? (flags.file ? [flags.file] : []);
 
   // --accept with no other flags: replay cached proposals
-  if (accept && !filePath && !flags.format) {
+  if (accept && filePaths.length === 0 && !flags.format) {
     const cached = await loadPending(dir);
     if (cached && cached.length > 0) {
       console.log(`Accepting ${cached.length} cached proposals...`);
@@ -180,16 +182,17 @@ export async function cmdAnalyze(
 
   let proposals: Proposal[];
 
-  if (filePath) {
-    // --file mode: import from a document via LLM
-    const resolved = resolve(dir, filePath);
+  if (filePaths.length > 0) {
+    // --file mode: import from document(s) via structured parsing or LLM
+    const resolved = filePaths.map((fp) => resolve(dir, fp));
 
     if (flags.format !== "json") {
-      console.log(`Importing from file: ${resolved}`);
+      const label = resolved.length === 1 ? "file" : "files";
+      console.log(`Importing from ${label}: ${resolved.join(", ")}`);
     }
 
     try {
-      proposals = await reasonFromFile(resolved, existing);
+      proposals = await reasonFromFiles(resolved, existing);
     } catch (err) {
       console.error(`Failed to analyze file: ${(err as Error).message}`);
       process.exit(1);
@@ -200,7 +203,8 @@ export async function cmdAnalyze(
       return;
     }
 
-    console.log(`LLM extracted ${proposals.length} epics from file.`);
+    const fileLabel = resolved.length === 1 ? "file" : `${resolved.length} files`;
+    console.log(`Extracted ${proposals.length} epics from ${fileLabel}.`);
   } else {
     // Scanner mode: run all three scanners
     const opts = { lite };

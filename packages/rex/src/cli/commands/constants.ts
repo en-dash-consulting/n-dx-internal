@@ -27,7 +27,7 @@ Options:
   --format=json           Output as JSON
   --lite                  File-name-only scan (for analyze)
   --accept                Add proposals to PRD (for analyze)
-  --file=<path>           Import PRD from a document via LLM (for analyze)
+  --file=<path>           Import PRD from a document (repeatable, for analyze)
   --no-llm                Force algorithmic pipeline, skip LLM (for analyze)
   --analyze               Run SourceVision analysis (for init)
 `);

@@ -3,12 +3,17 @@
 import { resolve } from "node:path";
 import { usage } from "./commands/constants.js";
 
+/** Keys that accept multiple values (accumulated into arrays). */
+const MULTI_VALUE_KEYS = new Set(["file"]);
+
 function parseArgs(argv: string[]): {
   command: string | undefined;
   positional: string[];
   flags: Record<string, string>;
+  multiFlags: Record<string, string[]>;
 } {
   const flags: Record<string, string> = {};
+  const multiFlags: Record<string, string[]> = {};
   const positional: string[] = [];
   let command: string | undefined;
 
@@ -16,7 +21,12 @@ function parseArgs(argv: string[]): {
     if (arg.startsWith("--")) {
       const eq = arg.indexOf("=");
       if (eq !== -1) {
-        flags[arg.slice(2, eq)] = arg.slice(eq + 1);
+        const key = arg.slice(2, eq);
+        const val = arg.slice(eq + 1);
+        if (MULTI_VALUE_KEYS.has(key)) {
+          (multiFlags[key] ??= []).push(val);
+        }
+        flags[key] = val;
       } else {
         flags[arg.slice(2)] = "true";
       }
@@ -29,11 +39,11 @@ function parseArgs(argv: string[]): {
     }
   }
 
-  return { command, positional, flags };
+  return { command, positional, flags, multiFlags };
 }
 
 async function main(): Promise<void> {
-  const { command, positional, flags } = parseArgs(process.argv.slice(2));
+  const { command, positional, flags, multiFlags } = parseArgs(process.argv.slice(2));
 
   if (flags.help || !command) {
     usage();
@@ -102,7 +112,7 @@ async function main(): Promise<void> {
       }
       case "analyze": {
         const { cmdAnalyze } = await import("./commands/analyze.js");
-        await cmdAnalyze(resolveDir(), flags);
+        await cmdAnalyze(resolveDir(), flags, multiFlags);
         break;
       }
       case "mcp": {

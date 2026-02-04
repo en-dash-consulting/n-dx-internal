@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { writeFile, mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -6,7 +6,10 @@ import {
   parseProposalResponse,
   detectFileFormat,
   parseStructuredFile,
+  mergeProposals,
+  reasonFromFiles,
 } from "../../../src/analyze/reason.js";
+import type { Proposal } from "../../../src/analyze/propose.js";
 
 describe("parseProposalResponse", () => {
   it("parses valid JSON array into proposals", () => {
@@ -373,5 +376,351 @@ description: Does Y things
     expect(proposals).not.toBeNull();
     const feature = proposals![0].features.find((f) => f.title === "Feature Y");
     expect(feature?.description).toBe("Does Y things");
+  });
+});
+
+describe("mergeProposals", () => {
+  it("merges proposals with the same epic title", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          { title: "Login", source: "file-import", tasks: [] },
+        ],
+      },
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          { title: "Signup", source: "file-import", tasks: [] },
+        ],
+      },
+    ];
+
+    const merged = mergeProposals(proposals);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0].epic.title).toBe("Auth");
+    const titles = merged[0].features.map((f) => f.title);
+    expect(titles).toContain("Login");
+    expect(titles).toContain("Signup");
+  });
+
+  it("merges case-insensitively", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "auth", source: "file-import" },
+        features: [
+          { title: "Login", source: "file-import", tasks: [] },
+        ],
+      },
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          { title: "Signup", source: "file-import", tasks: [] },
+        ],
+      },
+    ];
+
+    const merged = mergeProposals(proposals);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0].features).toHaveLength(2);
+  });
+
+  it("deduplicates features within the same epic", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          { title: "Login", source: "file-import", tasks: [] },
+        ],
+      },
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          { title: "Login", source: "file-import", tasks: [] },
+        ],
+      },
+    ];
+
+    const merged = mergeProposals(proposals);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0].features).toHaveLength(1);
+  });
+
+  it("merges tasks into existing features", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          {
+            title: "Login",
+            source: "file-import",
+            tasks: [
+              { title: "Validate email", source: "file-import", sourceFile: "" },
+            ],
+          },
+        ],
+      },
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          {
+            title: "Login",
+            source: "file-import",
+            tasks: [
+              { title: "Handle errors", source: "file-import", sourceFile: "" },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const merged = mergeProposals(proposals);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0].features).toHaveLength(1);
+    const taskTitles = merged[0].features[0].tasks.map((t) => t.title);
+    expect(taskTitles).toContain("Validate email");
+    expect(taskTitles).toContain("Handle errors");
+  });
+
+  it("deduplicates tasks within merged features", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          {
+            title: "Login",
+            source: "file-import",
+            tasks: [
+              { title: "Validate email", source: "file-import", sourceFile: "" },
+            ],
+          },
+        ],
+      },
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          {
+            title: "Login",
+            source: "file-import",
+            tasks: [
+              { title: "Validate email", source: "file-import", sourceFile: "" },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const merged = mergeProposals(proposals);
+
+    expect(merged[0].features[0].tasks).toHaveLength(1);
+  });
+
+  it("keeps distinct epics separate", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [{ title: "Login", source: "file-import", tasks: [] }],
+      },
+      {
+        epic: { title: "Dashboard", source: "file-import" },
+        features: [{ title: "Charts", source: "file-import", tasks: [] }],
+      },
+    ];
+
+    const merged = mergeProposals(proposals);
+
+    expect(merged).toHaveLength(2);
+  });
+
+  it("handles empty input", () => {
+    expect(mergeProposals([])).toEqual([]);
+  });
+
+  it("does not mutate input proposals", () => {
+    const original: Proposal[] = [
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          {
+            title: "Login",
+            source: "file-import",
+            tasks: [
+              { title: "Validate email", source: "file-import", sourceFile: "" },
+            ],
+          },
+        ],
+      },
+      {
+        epic: { title: "Auth", source: "file-import" },
+        features: [
+          {
+            title: "Signup",
+            source: "file-import",
+            tasks: [],
+          },
+        ],
+      },
+    ];
+
+    // Deep-copy to compare later
+    const before = JSON.parse(JSON.stringify(original));
+    mergeProposals(original);
+
+    expect(original).toEqual(before);
+  });
+});
+
+describe("reasonFromFiles", () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "rex-reason-files-"));
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("returns empty array for zero files", async () => {
+    const result = await reasonFromFiles([], []);
+    expect(result).toEqual([]);
+  });
+
+  it("processes a single JSON file", async () => {
+    const content = JSON.stringify([
+      {
+        epic: { title: "Auth" },
+        features: [
+          { title: "Login", tasks: [{ title: "Validate email" }] },
+        ],
+      },
+    ]);
+    const filePath = join(tmpDir, "spec.json");
+    await writeFile(filePath, content);
+
+    const result = await reasonFromFiles([filePath], []);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].epic.title).toBe("Auth");
+  });
+
+  it("combines multiple JSON files and merges same-epic proposals", async () => {
+    const file1 = join(tmpDir, "auth.json");
+    await writeFile(
+      file1,
+      JSON.stringify([
+        {
+          epic: { title: "Auth" },
+          features: [
+            { title: "Login", tasks: [{ title: "Validate email" }] },
+          ],
+        },
+      ]),
+    );
+
+    const file2 = join(tmpDir, "auth2.json");
+    await writeFile(
+      file2,
+      JSON.stringify([
+        {
+          epic: { title: "Auth" },
+          features: [
+            { title: "Signup", tasks: [{ title: "Create account" }] },
+          ],
+        },
+      ]),
+    );
+
+    const result = await reasonFromFiles([file1, file2], []);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].epic.title).toBe("Auth");
+    const featureTitles = result[0].features.map((f) => f.title);
+    expect(featureTitles).toContain("Login");
+    expect(featureTitles).toContain("Signup");
+  });
+
+  it("combines files with distinct epics", async () => {
+    const file1 = join(tmpDir, "auth.json");
+    await writeFile(
+      file1,
+      JSON.stringify([
+        {
+          epic: { title: "Auth" },
+          features: [{ title: "Login", tasks: [] }],
+        },
+      ]),
+    );
+
+    const file2 = join(tmpDir, "dashboard.json");
+    await writeFile(
+      file2,
+      JSON.stringify([
+        {
+          epic: { title: "Dashboard" },
+          features: [{ title: "Charts", tasks: [] }],
+        },
+      ]),
+    );
+
+    const result = await reasonFromFiles([file1, file2], []);
+
+    expect(result).toHaveLength(2);
+    const epicTitles = result.map((p) => p.epic.title);
+    expect(epicTitles).toContain("Auth");
+    expect(epicTitles).toContain("Dashboard");
+  });
+
+  it("combines JSON and YAML files", async () => {
+    const jsonFile = join(tmpDir, "features.json");
+    await writeFile(
+      jsonFile,
+      JSON.stringify([
+        { title: "User Management", description: "CRUD for users" },
+      ]),
+    );
+
+    const yamlFile = join(tmpDir, "more.yaml");
+    await writeFile(
+      yamlFile,
+      `title: API Gateway\ndescription: Route requests\n`,
+    );
+
+    const result = await reasonFromFiles([jsonFile, yamlFile], []);
+
+    expect(result.length).toBeGreaterThanOrEqual(1);
+    const allFeatures = result.flatMap((p) => p.features.map((f) => f.title));
+    expect(allFeatures).toContain("User Management");
+    expect(allFeatures).toContain("API Gateway");
+  });
+
+  it("deduplicates against existing PRD items", async () => {
+    const file1 = join(tmpDir, "spec.json");
+    await writeFile(
+      file1,
+      JSON.stringify([
+        { title: "Already Tracked", description: "Exists" },
+        { title: "New Feature", description: "Fresh" },
+      ]),
+    );
+
+    const existing = [
+      {
+        id: "1",
+        title: "Already Tracked",
+        level: "feature" as const,
+        status: "pending" as const,
+      },
+    ];
+
+    const result = await reasonFromFiles([file1], existing);
+
+    const allFeatures = result.flatMap((p) => p.features.map((f) => f.title));
+    expect(allFeatures).not.toContain("Already Tracked");
+    expect(allFeatures).toContain("New Feature");
   });
 });
