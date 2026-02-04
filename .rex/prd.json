@@ -1098,6 +1098,8 @@
       "status": "completed",
       "level": "epic",
       "source": "llm",
+      "startedAt": "2026-02-04T19:25:58.596Z",
+      "completedAt": "2026-02-04T19:25:58.596Z",
       "children": [
         {
           "id": "2b12a3aa-b3ba-4255-b581-064dc3ceb590",
@@ -1219,9 +1221,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-04T19:25:58.596Z",
-      "completedAt": "2026-02-04T19:25:58.596Z"
+      ]
     },
     {
       "id": "05338f33-e638-49b8-815f-ed12949f0c63",
@@ -1279,7 +1279,7 @@
             {
               "id": "5b633358-ed65-403f-9bea-f32cd4cf49d0",
               "title": "Add token tracking to hench runs",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Track tokens used during autonomous agent execution",
               "acceptanceCriteria": [
@@ -1293,7 +1293,9 @@
                 "tokens",
                 "analytics"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-04T19:26:18.917Z",
+              "completedAt": "2026-02-04T19:37:27.034Z"
             }
           ]
         },
