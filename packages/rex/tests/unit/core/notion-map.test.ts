@@ -5,9 +5,16 @@ import {
   mapDocumentToNotion,
   mapNotionToDocument,
   resolveParentPage,
+  resolveStatusFromNotion,
+  validateDatabaseSchema,
+  buildStatusGroupMap,
   NOTION_LEVEL_CONFIG,
+  STATUS_OPTIONS,
+  PRIORITY_OPTIONS,
+  DATABASE_SCHEMA,
 } from "../../../src/core/notion-map.js";
 import type { PRDItem, PRDDocument } from "../../../src/schema/index.js";
+import type { NotionStatusGroup } from "../../../src/core/notion-map.js";
 
 function makeItem(
   overrides: Partial<PRDItem> & { id: string; title: string },
@@ -969,5 +976,349 @@ describe("mapNotionToDocument", () => {
     expect(doc.items).toHaveLength(2);
     expect(doc.items[0].id).toBe("e1");
     expect(doc.items[1].id).toBe("e2");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Native Notion property types
+// ---------------------------------------------------------------------------
+
+describe("STATUS_OPTIONS", () => {
+  it("defines options for all four PRD statuses", () => {
+    expect(STATUS_OPTIONS.pending).toBeDefined();
+    expect(STATUS_OPTIONS.in_progress).toBeDefined();
+    expect(STATUS_OPTIONS.completed).toBeDefined();
+    expect(STATUS_OPTIONS.deferred).toBeDefined();
+  });
+
+  it("assigns each status to a Notion status group", () => {
+    expect(STATUS_OPTIONS.pending.group).toBe("To-do");
+    expect(STATUS_OPTIONS.in_progress.group).toBe("In progress");
+    expect(STATUS_OPTIONS.completed.group).toBe("Complete");
+    expect(STATUS_OPTIONS.deferred.group).toBe("To-do");
+  });
+
+  it("provides color for each option", () => {
+    for (const opt of Object.values(STATUS_OPTIONS)) {
+      expect(opt.color).toBeDefined();
+      expect(typeof opt.color).toBe("string");
+    }
+  });
+
+  it("maintains the canonical Notion status names", () => {
+    expect(STATUS_OPTIONS.pending.name).toBe("Not started");
+    expect(STATUS_OPTIONS.in_progress.name).toBe("In progress");
+    expect(STATUS_OPTIONS.completed.name).toBe("Done");
+    expect(STATUS_OPTIONS.deferred.name).toBe("Deferred");
+  });
+});
+
+describe("PRIORITY_OPTIONS", () => {
+  it("defines options for all four PRD priorities", () => {
+    expect(PRIORITY_OPTIONS.critical).toBeDefined();
+    expect(PRIORITY_OPTIONS.high).toBeDefined();
+    expect(PRIORITY_OPTIONS.medium).toBeDefined();
+    expect(PRIORITY_OPTIONS.low).toBeDefined();
+  });
+
+  it("uses title-cased names for Notion display", () => {
+    expect(PRIORITY_OPTIONS.critical.name).toBe("Critical");
+    expect(PRIORITY_OPTIONS.high.name).toBe("High");
+    expect(PRIORITY_OPTIONS.medium.name).toBe("Medium");
+    expect(PRIORITY_OPTIONS.low.name).toBe("Low");
+  });
+
+  it("provides color for each option", () => {
+    for (const opt of Object.values(PRIORITY_OPTIONS)) {
+      expect(opt.color).toBeDefined();
+      expect(typeof opt.color).toBe("string");
+    }
+  });
+});
+
+describe("DATABASE_SCHEMA", () => {
+  it("declares Status as native status type (not select)", () => {
+    expect(DATABASE_SCHEMA.Status.type).toBe("status");
+  });
+
+  it("declares Priority as select type", () => {
+    expect(DATABASE_SCHEMA.Priority.type).toBe("select");
+  });
+
+  it("declares Name as title type", () => {
+    expect(DATABASE_SCHEMA.Name.type).toBe("title");
+  });
+
+  it("includes status groups with correct assignments", () => {
+    const groups = DATABASE_SCHEMA.Status.groups!;
+    expect(groups).toHaveLength(3);
+
+    const todoGroup = groups.find((g) => g.name === "To-do");
+    const inProgressGroup = groups.find((g) => g.name === "In progress");
+    const completeGroup = groups.find((g) => g.name === "Complete");
+
+    expect(todoGroup).toBeDefined();
+    expect(inProgressGroup).toBeDefined();
+    expect(completeGroup).toBeDefined();
+
+    expect(todoGroup!.option_names).toContain("Not started");
+    expect(todoGroup!.option_names).toContain("Deferred");
+    expect(inProgressGroup!.option_names).toContain("In progress");
+    expect(completeGroup!.option_names).toContain("Done");
+  });
+
+  it("includes all status options", () => {
+    const options = DATABASE_SCHEMA.Status.options!;
+    expect(options).toHaveLength(4);
+    const names = options.map((o) => o.name);
+    expect(names).toContain("Not started");
+    expect(names).toContain("In progress");
+    expect(names).toContain("Done");
+    expect(names).toContain("Deferred");
+  });
+
+  it("includes all priority options", () => {
+    const options = DATABASE_SCHEMA.Priority.options!;
+    expect(options).toHaveLength(4);
+    const names = options.map((o) => o.name);
+    expect(names).toContain("Critical");
+    expect(names).toContain("High");
+    expect(names).toContain("Medium");
+    expect(names).toContain("Low");
+  });
+});
+
+describe("resolveStatusFromNotion", () => {
+  it("resolves known status names by exact match", () => {
+    expect(resolveStatusFromNotion("Not started")).toBe("pending");
+    expect(resolveStatusFromNotion("In progress")).toBe("in_progress");
+    expect(resolveStatusFromNotion("Done")).toBe("completed");
+    expect(resolveStatusFromNotion("Deferred")).toBe("deferred");
+  });
+
+  it("resolves unknown status name via group fallback", () => {
+    expect(resolveStatusFromNotion("Blocked", "In progress")).toBe("in_progress");
+    expect(resolveStatusFromNotion("Backlog", "To-do")).toBe("pending");
+    expect(resolveStatusFromNotion("Archived", "Complete")).toBe("completed");
+  });
+
+  it("falls back to pending for completely unknown status without group", () => {
+    expect(resolveStatusFromNotion("Something Random")).toBe("pending");
+  });
+
+  it("falls back to pending for unknown status with unknown group", () => {
+    expect(resolveStatusFromNotion("Unknown", "Unknown Group" as NotionStatusGroup)).toBe("pending");
+  });
+});
+
+describe("mapNotionToItem with statusGroupMap", () => {
+  it("resolves custom status options via group map", () => {
+    const statusGroupMap = new Map<string, NotionStatusGroup>([
+      ["Blocked", "In progress"],
+      ["Backlog", "To-do"],
+      ["Won't do", "Complete"],
+    ]);
+
+    const blocked = {
+      id: "p1",
+      properties: {
+        Name: { title: [{ plain_text: "Blocked Task" }] },
+        Status: { status: { name: "Blocked" } },
+        Level: { select: { name: "task" } },
+        "PRD ID": { rich_text: [{ plain_text: "t1" }] },
+      },
+    };
+    expect(mapNotionToItem(blocked, statusGroupMap).status).toBe("in_progress");
+
+    const backlog = {
+      id: "p2",
+      properties: {
+        Name: { title: [{ plain_text: "Backlog Task" }] },
+        Status: { status: { name: "Backlog" } },
+        Level: { select: { name: "task" } },
+        "PRD ID": { rich_text: [{ plain_text: "t2" }] },
+      },
+    };
+    expect(mapNotionToItem(backlog, statusGroupMap).status).toBe("pending");
+
+    const wontDo = {
+      id: "p3",
+      properties: {
+        Name: { title: [{ plain_text: "Won't Do Task" }] },
+        Status: { status: { name: "Won't do" } },
+        Level: { select: { name: "task" } },
+        "PRD ID": { rich_text: [{ plain_text: "t3" }] },
+      },
+    };
+    expect(mapNotionToItem(wontDo, statusGroupMap).status).toBe("completed");
+  });
+
+  it("still works without statusGroupMap (backward compatible)", () => {
+    const notionPage = {
+      id: "p1",
+      properties: {
+        Name: { title: [{ plain_text: "Task" }] },
+        Status: { status: { name: "In progress" } },
+        Level: { select: { name: "task" } },
+        "PRD ID": { rich_text: [{ plain_text: "t1" }] },
+      },
+    };
+    const item = mapNotionToItem(notionPage);
+    expect(item.status).toBe("in_progress");
+  });
+});
+
+describe("validateDatabaseSchema", () => {
+  it("validates a correct database schema", () => {
+    const dbProps = {
+      Name: { type: "title" },
+      Status: { type: "status" },
+      Level: { type: "select" },
+      "PRD ID": { type: "rich_text" },
+      Description: { type: "rich_text" },
+      Priority: { type: "select" },
+      Tags: { type: "multi_select" },
+      Source: { type: "rich_text" },
+      "Blocked By": { type: "rich_text" },
+    };
+    const result = validateDatabaseSchema(dbProps);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("reports missing required properties", () => {
+    const result = validateDatabaseSchema({});
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Missing required property: "Name"');
+    expect(result.errors).toContain('Missing required property: "Status"');
+    expect(result.errors).toContain('Missing required property: "Level"');
+    expect(result.errors).toContain('Missing required property: "PRD ID"');
+  });
+
+  it("reports wrong property type for Status", () => {
+    const dbProps = {
+      Name: { type: "title" },
+      Status: { type: "select" }, // should be "status"
+      Level: { type: "select" },
+      "PRD ID": { type: "rich_text" },
+    };
+    const result = validateDatabaseSchema(dbProps);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain(
+      'Property "Status" has type "select", expected "status"',
+    );
+  });
+
+  it("allows missing optional properties", () => {
+    const dbProps = {
+      Name: { type: "title" },
+      Status: { type: "status" },
+      Level: { type: "select" },
+      "PRD ID": { type: "rich_text" },
+      // No Description, Priority, Tags, Source, Blocked By — all optional
+    };
+    const result = validateDatabaseSchema(dbProps);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+});
+
+describe("buildStatusGroupMap", () => {
+  it("builds a map from database Status property groups", () => {
+    const dbProps = {
+      Status: {
+        type: "status",
+        status: {
+          options: [
+            { id: "opt-1", name: "Not started", color: "default" },
+            { id: "opt-2", name: "In progress", color: "blue" },
+            { id: "opt-3", name: "Done", color: "green" },
+            { id: "opt-4", name: "Blocked", color: "red" },
+          ],
+          groups: [
+            { name: "To-do", color: "gray", option_ids: ["opt-1"] },
+            { name: "In progress", color: "blue", option_ids: ["opt-2", "opt-4"] },
+            { name: "Complete", color: "green", option_ids: ["opt-3"] },
+          ],
+        },
+      },
+    };
+
+    const map = buildStatusGroupMap(dbProps);
+    expect(map.get("Not started")).toBe("To-do");
+    expect(map.get("In progress")).toBe("In progress");
+    expect(map.get("Done")).toBe("Complete");
+    expect(map.get("Blocked")).toBe("In progress");
+  });
+
+  it("returns empty map for non-status property type", () => {
+    const dbProps = {
+      Status: { type: "select", select: { options: [] } },
+    };
+    const map = buildStatusGroupMap(dbProps);
+    expect(map.size).toBe(0);
+  });
+
+  it("returns empty map when Status property is missing", () => {
+    const map = buildStatusGroupMap({});
+    expect(map.size).toBe(0);
+  });
+
+  it("integrates with mapNotionToItem for custom status options", () => {
+    const dbProps = {
+      Status: {
+        type: "status",
+        status: {
+          options: [
+            { id: "opt-1", name: "Not started", color: "default" },
+            { id: "opt-2", name: "In review", color: "purple" },
+            { id: "opt-3", name: "Done", color: "green" },
+          ],
+          groups: [
+            { name: "To-do", color: "gray", option_ids: ["opt-1"] },
+            { name: "In progress", color: "blue", option_ids: ["opt-2"] },
+            { name: "Complete", color: "green", option_ids: ["opt-3"] },
+          ],
+        },
+      },
+    };
+
+    const groupMap = buildStatusGroupMap(dbProps);
+    const notionPage = {
+      id: "p1",
+      properties: {
+        Name: { title: [{ plain_text: "Task in review" }] },
+        Status: { status: { name: "In review" } },
+        Level: { select: { name: "task" } },
+        "PRD ID": { rich_text: [{ plain_text: "t1" }] },
+      },
+    };
+
+    const item = mapNotionToItem(notionPage, groupMap);
+    expect(item.status).toBe("in_progress");
+  });
+});
+
+describe("mapNotionToDocument with statusGroupMap", () => {
+  it("forwards statusGroupMap when reconstructing document tree", () => {
+    const statusGroupMap = new Map<string, NotionStatusGroup>([
+      ["In review", "In progress"],
+    ]);
+
+    const notionPages = [
+      {
+        id: "notion-t1",
+        properties: {
+          Name: { title: [{ plain_text: "Task" }] },
+          Status: { status: { name: "In review" } },
+          Level: { select: { name: "task" } },
+          "PRD ID": { rich_text: [{ plain_text: "t1" }] },
+        },
+        parent: { database_id: "db-123" },
+      },
+    ];
+
+    const doc = mapNotionToDocument(notionPages, "Test", statusGroupMap);
+    expect(doc.items[0].status).toBe("in_progress");
   });
 });
