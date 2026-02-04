@@ -1200,7 +1200,7 @@
             {
               "id": "ddde7747-c541-42c6-a800-a2535cff81bb",
               "title": "Fail CI on validation errors",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Return appropriate exit codes for CI failure conditions",
               "acceptanceCriteria": [
@@ -1209,7 +1209,8 @@
                 "Clear error reporting"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T19:04:20.312Z"
             }
           ]
         }
