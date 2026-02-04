@@ -2,6 +2,7 @@
  * CLI error handling — user-friendly errors with optional suggestions.
  */
 
+import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { HENCH_DIR } from "./commands/constants.js";
@@ -50,7 +51,7 @@ const ERROR_HINTS: Array<[RegExp, string, string]> = [
   [
     /claude.*not found|ENOENT.*claude/i,
     "Claude CLI not found.",
-    "Install the Claude CLI: https://docs.anthropic.com/en/docs/claude-cli",
+    "Install it with: npm install -g @anthropic-ai/claude-code\n       Or switch to the API provider: n-dx config hench.provider api",
   ],
   [
     /ANTHROPIC_API_KEY/,
@@ -99,6 +100,22 @@ export function formatCLIError(err: unknown): string {
 export function handleCLIError(err: unknown): never {
   console.error(formatCLIError(err));
   process.exit(1);
+}
+
+/**
+ * Check that the claude CLI binary is available on PATH.
+ * Throws a CLIError with install instructions and API-provider fallback if missing.
+ */
+export function requireClaudeCLI(): void {
+  try {
+    execFileSync("which", ["claude"], { stdio: "pipe" });
+  } catch {
+    throw new CLIError(
+      "Claude CLI not found.",
+      "Install it with: npm install -g @anthropic-ai/claude-code\n" +
+        "  Or switch to the API provider: n-dx config hench.provider api",
+    );
+  }
 }
 
 /**

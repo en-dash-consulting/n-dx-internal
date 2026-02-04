@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { join } from "node:path";
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { CLIError, formatCLIError, handleCLIError, requireHenchDir } from "../../../src/cli/errors.js";
+import { CLIError, formatCLIError, handleCLIError, requireHenchDir, requireClaudeCLI } from "../../../src/cli/errors.js";
 
 describe("CLIError", () => {
   it("stores message and suggestion", () => {
@@ -81,6 +81,75 @@ describe("handleCLIError", () => {
 
     expect(mockStderr).toHaveBeenCalledWith("Error: test error\nHint: try something");
     expect(mockExit).toHaveBeenCalledWith(1);
+  });
+});
+
+describe("requireClaudeCLI", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("throws CLIError when claude is not on PATH", () => {
+    // Override PATH to ensure claude won't be found
+    const original = process.env.PATH;
+    try {
+      process.env.PATH = "/nonexistent";
+      expect(() => requireClaudeCLI()).toThrow(CLIError);
+      expect(() => requireClaudeCLI()).toThrow(/Claude CLI not found/);
+    } finally {
+      process.env.PATH = original;
+    }
+  });
+
+  it("includes install instructions in the suggestion", () => {
+    const original = process.env.PATH;
+    try {
+      process.env.PATH = "/nonexistent";
+      let caught: CLIError | undefined;
+      try {
+        requireClaudeCLI();
+      } catch (err) {
+        caught = err as CLIError;
+      }
+      expect(caught).toBeInstanceOf(CLIError);
+      expect(caught!.suggestion).toContain("npm install -g @anthropic-ai/claude-code");
+    } finally {
+      process.env.PATH = original;
+    }
+  });
+
+  it("suggests API provider as fallback", () => {
+    const original = process.env.PATH;
+    try {
+      process.env.PATH = "/nonexistent";
+      let caught: CLIError | undefined;
+      try {
+        requireClaudeCLI();
+      } catch (err) {
+        caught = err as CLIError;
+      }
+      expect(caught).toBeInstanceOf(CLIError);
+      expect(caught!.suggestion).toContain("hench.provider");
+      expect(caught!.suggestion).toContain("api");
+    } finally {
+      process.env.PATH = original;
+    }
+  });
+
+  it("does not throw when claude is available", () => {
+    // This test only passes if claude is on PATH — skip otherwise
+    const { execFileSync } = require("node:child_process");
+    let hasClaude = false;
+    try {
+      execFileSync("which", ["claude"], { stdio: "pipe" });
+      hasClaude = true;
+    } catch {
+      // claude not installed, skip
+    }
+
+    if (hasClaude) {
+      expect(() => requireClaudeCLI()).not.toThrow();
+    }
   });
 });
 

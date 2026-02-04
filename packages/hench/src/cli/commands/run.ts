@@ -6,6 +6,7 @@ import { agentLoop } from "../../agent/loop.js";
 import { cliLoop } from "../../agent/cli-loop.js";
 import { getActionableTasks } from "../../agent/brief.js";
 import { HENCH_DIR, safeParseInt } from "./constants.js";
+import { requireClaudeCLI } from "../errors.js";
 
 function promptUser(question: string): Promise<string> {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -115,6 +116,11 @@ export async function cmdRun(
   const dryRun = flags["dry-run"] === "true";
   const model = flags.model;
   const auto = flags.auto === "true";
+
+  // Fail fast if CLI provider selected but claude binary not available
+  if (provider === "cli" && !dryRun) {
+    requireClaudeCLI();
+  }
   const iterations = flags.iterations ? safeParseInt(flags.iterations, "iterations") : 1;
   const maxTurns = flags["max-turns"] ? safeParseInt(flags["max-turns"], "max-turns") : undefined;
 

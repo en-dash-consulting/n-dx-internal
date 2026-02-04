@@ -168,7 +168,8 @@ function spawnClaude(
     proc.on("error", (err) => {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {
         reject(new Error(
-          "claude CLI not found. Install it with: npm install -g @anthropic-ai/claude-code",
+          "Claude CLI not found. Install it with: npm install -g @anthropic-ai/claude-code\n" +
+            "Or switch to the API provider: n-dx config hench.provider api",
         ));
       } else {
         reject(err);
