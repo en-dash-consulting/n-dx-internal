@@ -21,6 +21,8 @@ export interface HenchConfig {
   model: string;
   maxTurns: number;
   maxTokens: number;
+  /** Total token budget per run (input + output). 0 = unlimited. */
+  tokenBudget: number;
   rexDir: string;
   apiKeyEnv: string;
   guard: GuardConfig;
@@ -36,6 +38,7 @@ export function DEFAULT_HENCH_CONFIG(): HenchConfig {
     model: "sonnet",
     maxTurns: 50,
     maxTokens: 8192,
+    tokenBudget: 0,
     rexDir: ".rex",
     apiKeyEnv: "ANTHROPIC_API_KEY",
     guard: {
@@ -54,7 +57,7 @@ export function DEFAULT_HENCH_CONFIG(): HenchConfig {
   };
 }
 
-export type RunStatus = "running" | "completed" | "failed" | "timeout" | "error_transient";
+export type RunStatus = "running" | "completed" | "failed" | "timeout" | "budget_exceeded" | "error_transient";
 
 export interface ToolCallRecord {
   turn: number;

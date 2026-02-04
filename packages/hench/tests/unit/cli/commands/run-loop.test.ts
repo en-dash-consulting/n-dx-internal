@@ -44,6 +44,13 @@ describe("loop mode helpers", () => {
       );
       expect(shouldContinueLoop("timeout")).toBe(false);
     });
+
+    it("returns false for budget_exceeded status", async () => {
+      const { shouldContinueLoop } = await import(
+        "../../../../src/cli/commands/run.js"
+      );
+      expect(shouldContinueLoop("budget_exceeded")).toBe(false);
+    });
   });
 
   describe("loopPause", () => {
@@ -124,6 +131,66 @@ describe("stuck task config defaults", () => {
     const config = { ...DEFAULT_HENCH_CONFIG(), maxFailedAttempts: -1 };
     const result = validateConfig(config);
     expect(result.ok).toBe(false);
+  });
+});
+
+describe("token budget config defaults", () => {
+  it("tokenBudget is optional in schema and defaults to 0 (unlimited)", async () => {
+    const { validateConfig } = await import("../../../../src/schema/validate.js");
+    const { DEFAULT_HENCH_CONFIG } = await import("../../../../src/schema/v1.js");
+
+    const config = DEFAULT_HENCH_CONFIG();
+    const result = validateConfig(config);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.tokenBudget).toBe(0);
+    }
+  });
+
+  it("tokenBudget can be set to a positive value", async () => {
+    const { validateConfig } = await import("../../../../src/schema/validate.js");
+    const { DEFAULT_HENCH_CONFIG } = await import("../../../../src/schema/v1.js");
+
+    const config = { ...DEFAULT_HENCH_CONFIG(), tokenBudget: 500_000 };
+    const result = validateConfig(config);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.tokenBudget).toBe(500_000);
+    }
+  });
+
+  it("rejects negative tokenBudget", async () => {
+    const { validateConfig } = await import("../../../../src/schema/validate.js");
+    const { DEFAULT_HENCH_CONFIG } = await import("../../../../src/schema/v1.js");
+
+    const config = { ...DEFAULT_HENCH_CONFIG(), tokenBudget: -1 };
+    const result = validateConfig(config);
+    expect(result.ok).toBe(false);
+  });
+
+  it("accepts tokenBudget of 0 (unlimited)", async () => {
+    const { validateConfig } = await import("../../../../src/schema/validate.js");
+    const { DEFAULT_HENCH_CONFIG } = await import("../../../../src/schema/v1.js");
+
+    const config = { ...DEFAULT_HENCH_CONFIG(), tokenBudget: 0 };
+    const result = validateConfig(config);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.tokenBudget).toBe(0);
+    }
+  });
+
+  it("validates existing configs without tokenBudget field (backward compat)", async () => {
+    const { validateConfig } = await import("../../../../src/schema/validate.js");
+    const { DEFAULT_HENCH_CONFIG } = await import("../../../../src/schema/v1.js");
+
+    // Simulate an old config file that doesn't have tokenBudget
+    const { tokenBudget, ...configWithout } = DEFAULT_HENCH_CONFIG();
+    const result = validateConfig(configWithout);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.tokenBudget).toBe(0);
+    }
   });
 });
 

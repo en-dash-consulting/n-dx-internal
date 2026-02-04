@@ -5,7 +5,7 @@ import type { RunRecord } from "../schema/index.js";
  * Transient errors (API rate limits, network blips) do not count because
  * they are expected to self-resolve on retry.
  */
-const FAILURE_STATUSES: Set<string> = new Set(["failed", "timeout"]);
+const FAILURE_STATUSES: Set<string> = new Set(["failed", "timeout", "budget_exceeded"]);
 
 /**
  * Count the number of consecutive recent failures for a given task.

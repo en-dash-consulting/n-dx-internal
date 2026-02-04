@@ -49,6 +49,8 @@ function statusIcon(status: string): string {
       return "[!!]";
     case "timeout":
       return "[to]";
+    case "budget_exceeded":
+      return "[$!]";
     case "running":
       return "[..]";
     default:

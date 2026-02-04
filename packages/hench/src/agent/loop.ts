@@ -10,6 +10,7 @@ import { buildSystemPrompt } from "./prompt.js";
 import { saveRun } from "../store/index.js";
 import { buildRunSummary } from "./summary.js";
 import { collectReviewDiff, promptReview, revertChanges } from "./review.js";
+import { checkTokenBudget } from "./token-budget.js";
 import { section, subsection, stream, detail, info } from "../cli/output.js";
 
 export interface AgentLoopOptions {
@@ -20,6 +21,8 @@ export interface AgentLoopOptions {
   taskId?: string;
   dryRun?: boolean;
   maxTurns?: number;
+  /** Total token budget per run (input + output). Overrides config. */
+  tokenBudget?: number;
   model?: string;
   /** Show diff and prompt for approval before finalizing. */
   review?: boolean;
@@ -80,6 +83,7 @@ function pruneMessages(messages: Anthropic.MessageParam[]): void {
 export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult> {
   const { config, store, projectDir, henchDir, dryRun } = opts;
   const maxTurns = opts.maxTurns ?? config.maxTurns;
+  const tokenBudget = opts.tokenBudget ?? config.tokenBudget;
   const model = opts.model ?? config.model;
 
   // Assemble brief
@@ -174,6 +178,15 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
       // Track token usage
       run.tokenUsage.input += response.usage.input_tokens;
       run.tokenUsage.output += response.usage.output_tokens;
+
+      // Check token budget
+      const budgetCheck = checkTokenBudget(run.tokenUsage, tokenBudget);
+      if (budgetCheck.exceeded) {
+        run.status = "budget_exceeded";
+        run.error = `Token budget exceeded: ${budgetCheck.totalUsed} used of ${budgetCheck.budget} budget`;
+        stream("Budget", run.error);
+        break;
+      }
 
       // Process response content
       const assistantContent = response.content;

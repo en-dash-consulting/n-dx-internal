@@ -9,6 +9,7 @@ import { buildRunSummary } from "./summary.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../tools/rex.js";
 import { validateCompletion, formatValidationResult } from "./completion.js";
 import { collectReviewDiff, promptReview, revertChanges } from "./review.js";
+import { checkTokenBudget } from "./token-budget.js";
 import { section, subsection, stream, info } from "../cli/output.js";
 
 export interface CliLoopOptions {
@@ -347,6 +348,23 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
         run.toolCalls = accumulatedToolCalls;
         run.tokenUsage = result.tokenUsage;
         run.retryAttempts = attempt > 0 ? attempt : undefined;
+
+        // Post-run token budget check (CLI provider can only check after run)
+        const budgetCheck = checkTokenBudget(run.tokenUsage, config.tokenBudget);
+        if (budgetCheck.exceeded) {
+          run.status = "budget_exceeded";
+          run.summary = result.summary;
+          run.error = `Token budget exceeded: ${budgetCheck.totalUsed} used of ${budgetCheck.budget} budget`;
+
+          info(`\n${run.error}`);
+
+          await toolRexUpdateStatus(store, taskId, { status: "pending" });
+          await toolRexAppendLog(store, taskId, {
+            event: "budget_exceeded",
+            detail: run.error,
+          });
+          break;
+        }
 
         if (validation.valid) {
           // Review gate — prompt user before finalizing

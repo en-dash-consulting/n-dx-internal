@@ -138,6 +138,12 @@ describe("validateRunRecord", () => {
     expect(result.ok).toBe(true);
   });
 
+  it("accepts budget_exceeded status", () => {
+    const run = { ...validRun, status: "budget_exceeded" };
+    const result = validateRunRecord(run);
+    expect(result.ok).toBe(true);
+  });
+
   it("accepts retryAttempts field", () => {
     const run = { ...validRun, retryAttempts: 2 };
     const result = validateRunRecord(run);

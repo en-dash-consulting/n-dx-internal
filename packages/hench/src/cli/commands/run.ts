@@ -23,7 +23,7 @@ import { info, result as output } from "../output.js";
  * are simply skipped on the next iteration.
  */
 export function shouldContinueLoop(status: string): boolean {
-  return status !== "failed" && status !== "timeout";
+  return status !== "failed" && status !== "timeout" && status !== "budget_exceeded";
 }
 
 /**
@@ -132,15 +132,21 @@ async function runOne(
   dryRun: boolean,
   model: string | undefined,
   maxTurns: number | undefined,
+  tokenBudget: number | undefined,
   review: boolean,
   excludeTaskIds?: Set<string>,
 ): Promise<{ status: string }> {
   const config = await loadConfig(henchDir);
   const store = await resolveStore(rexDir);
 
+  // Apply CLI token budget override to config for CLI provider
+  const effectiveConfig = tokenBudget != null
+    ? { ...config, provider, tokenBudget }
+    : { ...config, provider };
+
   const result = provider === "cli"
     ? await cliLoop({
-        config: { ...config, provider },
+        config: effectiveConfig as typeof config & { provider: "cli" },
         store,
         projectDir: dir,
         henchDir,
@@ -151,13 +157,14 @@ async function runOne(
         excludeTaskIds,
       })
     : await agentLoop({
-        config: { ...config, provider },
+        config: effectiveConfig as typeof config & { provider: "api" },
         store,
         projectDir: dir,
         henchDir,
         taskId,
         dryRun,
         maxTurns,
+        tokenBudget,
         model,
         review,
         excludeTaskIds,
@@ -219,6 +226,7 @@ export async function cmdRun(
 
   const iterations = flags.iterations ? safeParseInt(flags.iterations, "iterations") : 1;
   const maxTurns = flags["max-turns"] ? safeParseInt(flags["max-turns"], "max-turns") : undefined;
+  const tokenBudget = flags["token-budget"] ? safeParseInt(flags["token-budget"], "token-budget") : undefined;
   const pauseMs = flags["loop-pause"]
     ? safeParseInt(flags["loop-pause"], "loop-pause")
     : config.loopPauseMs;
@@ -233,9 +241,9 @@ export async function cmdRun(
   // If --auto, --loop, or non-TTY, taskId stays undefined → assembleTaskBrief autoselects
 
   if (loop) {
-    await runLoop(dir, henchDir, rexDir, provider, taskId, dryRun, model, maxTurns, pauseMs, config.maxFailedAttempts, review);
+    await runLoop(dir, henchDir, rexDir, provider, taskId, dryRun, model, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review);
   } else {
-    await runIterations(dir, henchDir, rexDir, provider, taskId, dryRun, model, maxTurns, iterations, config.maxFailedAttempts, review);
+    await runIterations(dir, henchDir, rexDir, provider, taskId, dryRun, model, maxTurns, tokenBudget, iterations, config.maxFailedAttempts, review);
   }
 }
 
@@ -252,6 +260,7 @@ async function runIterations(
   dryRun: boolean,
   model: string | undefined,
   maxTurns: number | undefined,
+  tokenBudget: number | undefined,
   iterations: number,
   maxFailedAttempts: number,
   review: boolean,
@@ -272,7 +281,7 @@ async function runIterations(
       // Only use the explicit taskId for the first iteration;
       // subsequent iterations autoselect the next task
       i === 0 ? taskId : undefined,
-      dryRun, model, maxTurns,
+      dryRun, model, maxTurns, tokenBudget,
       review,
       stuckIds,
     );
@@ -282,7 +291,7 @@ async function runIterations(
       continue;
     }
 
-    if (status === "failed" || status === "timeout") {
+    if (status === "failed" || status === "timeout" || status === "budget_exceeded") {
       info(`\nStopping after ${i + 1} iteration(s) due to ${status} status.`);
       break;
     }
@@ -304,6 +313,7 @@ async function runLoop(
   dryRun: boolean,
   model: string | undefined,
   maxTurns: number | undefined,
+  tokenBudget: number | undefined,
   pauseMs: number,
   maxFailedAttempts: number,
   review: boolean,
@@ -352,7 +362,7 @@ async function runLoop(
           dir, henchDir, rexDir, provider,
           // Only use explicit taskId on the very first iteration
           completed === 1 ? taskId : undefined,
-          dryRun, model, maxTurns,
+          dryRun, model, maxTurns, tokenBudget,
           review,
           stuckIds,
         );

@@ -11,7 +11,7 @@ import type { RunRecord } from "../../../src/schema/v1.js";
 
 function makeRun(
   taskId: string,
-  status: "completed" | "failed" | "timeout" | "error_transient",
+  status: "completed" | "failed" | "timeout" | "budget_exceeded" | "error_transient",
   startedAt: string,
 ): RunRecord {
   return {
@@ -82,6 +82,17 @@ describe("countRecentFailures", () => {
 
     const runs: RunRecord[] = [
       makeRun("task-a", "timeout", "2024-01-01T03:00:00Z"),
+      makeRun("task-a", "failed", "2024-01-01T02:00:00Z"),
+    ];
+
+    expect(countRecentFailures("task-a", runs)).toBe(2);
+  });
+
+  it("counts budget_exceeded as a failure", async () => {
+    const { countRecentFailures } = await import("../../../src/agent/stuck.js");
+
+    const runs: RunRecord[] = [
+      makeRun("task-a", "budget_exceeded", "2024-01-01T03:00:00Z"),
       makeRun("task-a", "failed", "2024-01-01T02:00:00Z"),
     ];
 

@@ -23,6 +23,7 @@ export const HenchConfigSchema = z.object({
   model: z.string(),
   maxTurns: z.number().positive(),
   maxTokens: z.number().positive(),
+  tokenBudget: z.number().int().nonnegative().optional().default(0),
   rexDir: z.string(),
   apiKeyEnv: z.string(),
   guard: GuardConfigSchema,
@@ -35,7 +36,7 @@ export const HenchConfigSchema = z.object({
   maxFailedAttempts: z.number().int().positive().optional().default(3),
 });
 
-const RunStatusSchema = z.enum(["running", "completed", "failed", "timeout", "error_transient"]);
+const RunStatusSchema = z.enum(["running", "completed", "failed", "timeout", "budget_exceeded", "error_transient"]);
 
 const ToolCallRecordSchema = z.object({
   turn: z.number(),

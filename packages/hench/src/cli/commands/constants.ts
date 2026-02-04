@@ -35,6 +35,7 @@ Options:
   --dry-run               Print brief without calling Claude API (for run)
   --review                Show proposed changes and prompt for approval (for run)
   --max-turns=<n>         Override max turns (for run)
+  --token-budget=<n>      Cap total tokens (input+output) per run (for run)
   --model=<m>             Override model (for run)
   --format=json           Output as JSON (for status/show)
   --last=<n>              Number of recent runs to show (for status)
