@@ -506,7 +506,7 @@
     {
       "id": "e4868f49-5256-4fb7-a775-ac5bf06dbb47",
       "title": "Analyze pipeline improvements",
-      "status": "in_progress",
+      "status": "completed",
       "level": "epic",
       "source": "llm",
       "children": [
@@ -1001,7 +1001,7 @@
             {
               "id": "cf194705-5786-44f9-8d8b-ddb8aa7bd924",
               "title": "Add unified config command",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Single command to view and edit settings across all packages",
               "acceptanceCriteria": [

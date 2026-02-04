@@ -16,6 +16,7 @@ packages/
   rex/             # PRD + task tracker
   hench/           # autonomous agent
 cli.js             # n-dx entry point (orchestration + delegation)
+config.js          # unified config command (view/edit all package settings)
 ```
 
 Build and test:
@@ -34,6 +35,7 @@ n-dx plan [dir]            # sourcevision analyze → rex analyze (show proposal
 n-dx plan --accept [dir]   # ...then accept proposals into PRD
 n-dx work [dir]            # hench run (pass --task=ID, --dry-run, etc.)
 n-dx status [dir]          # rex status (pass --format=json)
+n-dx config [key] [value]  # view/edit settings (--json, --help)
 ```
 
 ## Direct Tool Access

@@ -3,6 +3,7 @@
 import { spawn } from "child_process";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+import { runConfig } from "./config.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 
@@ -78,6 +79,11 @@ if (command === "status") {
   process.exit(0);
 }
 
+if (command === "config") {
+  await runConfig(rest);
+  process.exit(0);
+}
+
 // --- Delegation commands ---
 
 if (tools[command]) {
@@ -95,6 +101,7 @@ Orchestration:
   plan --accept [dir]   Analyze and accept proposals into PRD
   work [dir]            Run next task (--task=ID, --auto, --iterations=N)
   status [dir]          Show PRD status (--format=json)
+  config [key] [value]  View and edit settings (--json, --help)
 
 Tools:
   rex ...               PRD management and task tracking
