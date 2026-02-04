@@ -209,6 +209,11 @@ async function main(): Promise<void> {
         await cmdMove(dir, id, flags);
         break;
       }
+      case "prune": {
+        const { cmdPrune } = await import("./commands/prune.js");
+        await cmdPrune(resolveDir(), flags);
+        break;
+      }
       case "validate": {
         const { cmdValidate } = await import("./commands/validate.js");
         await cmdValidate(resolveDir(), flags);

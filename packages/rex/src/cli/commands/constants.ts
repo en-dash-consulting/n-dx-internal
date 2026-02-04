@@ -16,6 +16,7 @@ Commands:
   echo "desc" | add       Pipe text as description (combinable with other sources)
   update <id> [dir]       Update item status/priority
   move <id> [dir]         Move item to new parent (reparent)
+  prune [dir]             Remove completed subtrees (archive to .rex/archive.json)
   validate [dir]          Check PRD integrity (DAG, schema)
   recommend [dir]         Get SourceVision recommendations
   analyze [dir]           Build PRD from project analysis
@@ -31,6 +32,7 @@ Options:
   --force                 Override status transition rules (for update)
   --priority=<p>          Priority (for update/add)
   --description="..."     Description (for add/update)
+  --dry-run               Preview without making changes (for prune)
   --format=tree|json      Output format (default: tree)
   --lite                  File-name-only scan (for analyze)
   --accept                Accept LLM proposals into PRD (for smart add, analyze)
