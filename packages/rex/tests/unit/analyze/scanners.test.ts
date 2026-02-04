@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { scanTests, scanDocs, scanSourceVision } from "../../../src/analyze/scanners.js";
+import { scanTests, scanDocs, scanSourceVision, scanPackageJson } from "../../../src/analyze/scanners.js";
 
 describe("scanTests", () => {
   let tempDir: string;
@@ -758,5 +758,185 @@ describe("scanSourceVision", () => {
     // Info-severity actionable findings get medium priority
     const suggestion = tasks.find((t) => t.name.includes("Consider adding tests"));
     expect(suggestion?.priority).toBe("medium");
+  });
+});
+
+describe("scanPackageJson", () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), "rex-scan-pkg-"));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  it("extracts scripts as tasks", async () => {
+    await writeFile(
+      join(tempDir, "package.json"),
+      JSON.stringify({
+        name: "my-app",
+        scripts: {
+          build: "tsc",
+          test: "vitest",
+          lint: "eslint .",
+          "dev": "vite",
+        },
+      }),
+    );
+
+    const results = await scanPackageJson(tempDir);
+
+    const tasks = results.filter((r) => r.kind === "task" && r.tags?.includes("scripts"));
+    expect(tasks.length).toBe(4);
+    expect(tasks.some((t) => t.name === 'Script: build' && t.description === "tsc")).toBe(true);
+    expect(tasks.some((t) => t.name === 'Script: test' && t.description === "vitest")).toBe(true);
+    expect(tasks.some((t) => t.name === 'Script: lint')).toBe(true);
+    expect(tasks.some((t) => t.name === 'Script: dev')).toBe(true);
+    // All script tasks should have source "package"
+    expect(tasks.every((t) => t.source === "package")).toBe(true);
+  });
+
+  it("extracts dependencies as features", async () => {
+    await writeFile(
+      join(tempDir, "package.json"),
+      JSON.stringify({
+        name: "my-app",
+        dependencies: {
+          react: "^18.2.0",
+          "react-dom": "^18.2.0",
+        },
+        devDependencies: {
+          vitest: "^1.0.0",
+          typescript: "^5.3.0",
+        },
+      }),
+    );
+
+    const results = await scanPackageJson(tempDir);
+
+    const depFeature = results.find((r) => r.kind === "feature" && r.name === "Dependencies");
+    expect(depFeature).toBeDefined();
+    expect(depFeature!.description).toContain("2 production");
+
+    const devDepFeature = results.find((r) => r.kind === "feature" && r.name === "Dev Dependencies");
+    expect(devDepFeature).toBeDefined();
+    expect(devDepFeature!.description).toContain("2 dev");
+  });
+
+  it("notes engine requirements", async () => {
+    await writeFile(
+      join(tempDir, "package.json"),
+      JSON.stringify({
+        name: "my-app",
+        engines: {
+          node: ">=18.0.0",
+          npm: ">=9.0.0",
+        },
+      }),
+    );
+
+    const results = await scanPackageJson(tempDir);
+
+    const engineTasks = results.filter((r) => r.kind === "task" && r.tags?.includes("engines"));
+    expect(engineTasks.length).toBe(2);
+    expect(engineTasks.some((t) => t.name === "Engine: node >=18.0.0")).toBe(true);
+    expect(engineTasks.some((t) => t.name === "Engine: npm >=9.0.0")).toBe(true);
+  });
+
+  it("scans nested package.json in subdirectories", async () => {
+    await mkdir(join(tempDir, "packages", "lib"), { recursive: true });
+    await writeFile(
+      join(tempDir, "packages", "lib", "package.json"),
+      JSON.stringify({
+        name: "@scope/lib",
+        scripts: { build: "tsc", test: "vitest" },
+      }),
+    );
+
+    const results = await scanPackageJson(tempDir);
+
+    const tasks = results.filter((r) => r.kind === "task" && r.tags?.includes("scripts"));
+    expect(tasks.length).toBe(2);
+    expect(tasks[0].sourceFile).toBe("packages/lib/package.json");
+  });
+
+  it("creates a project epic from root package.json", async () => {
+    await writeFile(
+      join(tempDir, "package.json"),
+      JSON.stringify({
+        name: "my-awesome-app",
+        description: "An awesome application",
+        scripts: { build: "tsc" },
+      }),
+    );
+
+    const results = await scanPackageJson(tempDir);
+
+    const epic = results.find((r) => r.kind === "epic");
+    expect(epic).toBeDefined();
+    expect(epic!.name).toBe("my-awesome-app");
+    expect(epic!.description).toBe("An awesome application");
+  });
+
+  it("returns empty when no package.json exists", async () => {
+    const results = await scanPackageJson(tempDir);
+    expect(results).toEqual([]);
+  });
+
+  it("skips node_modules directories", async () => {
+    await mkdir(join(tempDir, "node_modules", "react"), { recursive: true });
+    await writeFile(
+      join(tempDir, "node_modules", "react", "package.json"),
+      JSON.stringify({ name: "react", scripts: { build: "tsc" } }),
+    );
+
+    const results = await scanPackageJson(tempDir);
+    expect(results).toEqual([]);
+  });
+
+  it("handles malformed package.json gracefully", async () => {
+    await writeFile(join(tempDir, "package.json"), "{ invalid json }");
+
+    const results = await scanPackageJson(tempDir);
+    expect(results).toEqual([]);
+  });
+
+  it("lite mode emits only file-level features", async () => {
+    await writeFile(
+      join(tempDir, "package.json"),
+      JSON.stringify({
+        name: "my-app",
+        scripts: { build: "tsc", test: "vitest" },
+        dependencies: { react: "^18.0.0" },
+        engines: { node: ">=18" },
+      }),
+    );
+
+    const results = await scanPackageJson(tempDir, { lite: true });
+
+    // Lite mode: just a feature per package.json, no detailed breakdown
+    expect(results.length).toBe(1);
+    expect(results[0].kind).toBe("feature");
+    expect(results[0].name).toBe("my-app");
+    expect(results[0].source).toBe("package");
+  });
+
+  it("handles package.json with no scripts, dependencies, or engines", async () => {
+    await writeFile(
+      join(tempDir, "package.json"),
+      JSON.stringify({ name: "minimal-pkg", version: "1.0.0" }),
+    );
+
+    const results = await scanPackageJson(tempDir);
+
+    // Should still emit a project epic for the root
+    const epic = results.find((r) => r.kind === "epic");
+    expect(epic).toBeDefined();
+    expect(epic!.name).toBe("minimal-pkg");
+    // No tasks since no scripts/engines
+    const tasks = results.filter((r) => r.kind === "task");
+    expect(tasks.length).toBe(0);
   });
 });

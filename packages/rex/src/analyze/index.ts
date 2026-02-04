@@ -1,5 +1,5 @@
 export type { ScanResult, ScanOptions } from "./scanners.js";
-export { scanTests, scanDocs, scanSourceVision } from "./scanners.js";
+export { scanTests, scanDocs, scanSourceVision, scanPackageJson } from "./scanners.js";
 
 export type { ReconcileStats } from "./reconcile.js";
 export { reconcile } from "./reconcile.js";

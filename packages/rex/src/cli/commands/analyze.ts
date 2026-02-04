@@ -8,6 +8,7 @@ import {
   scanTests,
   scanDocs,
   scanSourceVision,
+  scanPackageJson,
   reconcile,
   buildProposals,
   deduplicateScanResults,
@@ -226,13 +227,14 @@ export async function cmdAnalyze(
   } else {
     // Scanner mode: run all three scanners
     const opts = { lite };
-    const [testResults, docResults, svResults] = await Promise.all([
+    const [testResults, docResults, svResults, pkgResults] = await Promise.all([
       scanTests(dir, opts),
       scanDocs(dir, opts),
       scanSourceVision(dir),
+      scanPackageJson(dir, opts),
     ]);
 
-    const rawResults: ScanResult[] = [...testResults, ...docResults, ...svResults];
+    const rawResults: ScanResult[] = [...testResults, ...docResults, ...svResults, ...pkgResults];
 
     // Merge near-duplicate scan results before reconciliation
     const allResults = deduplicateScanResults(rawResults);
@@ -240,6 +242,7 @@ export async function cmdAnalyze(
     const testFiles = new Set(testResults.map((r) => r.sourceFile)).size;
     const docFiles = new Set(docResults.map((r) => r.sourceFile)).size;
     const svZones = svResults.filter((r) => r.kind === "feature" && r.source === "sourcevision").length;
+    const pkgFiles = new Set(pkgResults.map((r) => r.sourceFile)).size;
 
     const { results: newResults, stats } = reconcile(allResults, existing);
 
@@ -259,7 +262,7 @@ export async function cmdAnalyze(
     if (flags.format === "json") {
       console.log(
         JSON.stringify(
-          { scanned: { testFiles, docFiles, svZones }, stats, proposals },
+          { scanned: { testFiles, docFiles, svZones, pkgFiles }, stats, proposals },
           null,
           2,
         ),
@@ -268,7 +271,7 @@ export async function cmdAnalyze(
     }
 
     console.log(
-      `Scanned: ${testFiles} test files, ${docFiles} docs, ${svZones} sourcevision zones`,
+      `Scanned: ${testFiles} test files, ${docFiles} docs, ${svZones} sourcevision zones, ${pkgFiles} package.json files`,
     );
     console.log(
       `Found: ${stats.total} proposals (${stats.newCount} new, ${stats.alreadyTracked} already tracked)`,

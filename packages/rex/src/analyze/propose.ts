@@ -44,7 +44,9 @@ function inferEpic(result: ScanResult): string {
     ? "SourceVision"
     : result.source === "test"
       ? "Tests"
-      : "Documentation";
+      : result.source === "package"
+        ? "Package"
+        : "Documentation";
 }
 
 export function buildProposals(results: ScanResult[]): Proposal[] {

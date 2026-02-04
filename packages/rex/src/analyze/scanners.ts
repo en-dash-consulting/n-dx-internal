@@ -4,7 +4,7 @@ import type { Priority } from "../schema/index.js";
 
 export interface ScanResult {
   name: string;
-  source: "test" | "doc" | "sourcevision";
+  source: "test" | "doc" | "sourcevision" | "package";
   sourceFile: string;
   kind: "epic" | "feature" | "task";
   description?: string;
@@ -767,6 +767,130 @@ export async function scanSourceVision(dir: string): Promise<ScanResult[]> {
     }
   } catch {
     // imports.json not found or invalid, skip
+  }
+
+  return results;
+}
+
+// ── scanPackageJson ─────────────────────────────────────────────────
+
+interface PackageJsonData {
+  name?: string;
+  description?: string;
+  scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  engines?: Record<string, string>;
+}
+
+function isPackageJson(rel: string): boolean {
+  return basename(rel) === "package.json";
+}
+
+export async function scanPackageJson(
+  dir: string,
+  opts: ScanOptions = {},
+): Promise<ScanResult[]> {
+  const files = await globFiles(dir, isPackageJson);
+  const results: ScanResult[] = [];
+
+  for (const filePath of files) {
+    const rel = relative(dir, filePath);
+
+    let content: string;
+    try {
+      content = await readFile(filePath, "utf-8");
+    } catch {
+      continue;
+    }
+
+    let pkg: PackageJsonData;
+    try {
+      pkg = JSON.parse(content) as PackageJsonData;
+    } catch {
+      continue;
+    }
+
+    const pkgName = pkg.name ?? basename(dirname(filePath));
+    const isRoot = rel === "package.json";
+
+    if (opts.lite) {
+      results.push({
+        name: pkgName,
+        source: "package",
+        sourceFile: rel,
+        kind: "feature",
+      });
+      continue;
+    }
+
+    // Emit a project epic for the package
+    if (isRoot) {
+      results.push({
+        name: pkgName,
+        source: "package",
+        sourceFile: rel,
+        kind: "epic",
+        description: pkg.description,
+      });
+    }
+
+    // Scripts → tasks
+    if (pkg.scripts) {
+      for (const [scriptName, command] of Object.entries(pkg.scripts)) {
+        results.push({
+          name: `Script: ${scriptName}`,
+          source: "package",
+          sourceFile: rel,
+          kind: "task",
+          description: command,
+          tags: ["scripts"],
+        });
+      }
+    }
+
+    // Dependencies → feature summaries
+    if (pkg.dependencies && Object.keys(pkg.dependencies).length > 0) {
+      const count = Object.keys(pkg.dependencies).length;
+      const depNames = Object.keys(pkg.dependencies).slice(0, 10);
+      const suffix = count > 10 ? `, +${count - 10} more` : "";
+      results.push({
+        name: "Dependencies",
+        source: "package",
+        sourceFile: rel,
+        kind: "feature",
+        description: `${count} production ${count === 1 ? "dependency" : "dependencies"}: ${depNames.join(", ")}${suffix}`,
+        tags: ["dependencies"],
+      });
+    }
+
+    if (pkg.devDependencies && Object.keys(pkg.devDependencies).length > 0) {
+      const count = Object.keys(pkg.devDependencies).length;
+      const depNames = Object.keys(pkg.devDependencies).slice(0, 10);
+      const suffix = count > 10 ? `, +${count - 10} more` : "";
+      results.push({
+        name: "Dev Dependencies",
+        source: "package",
+        sourceFile: rel,
+        kind: "feature",
+        description: `${count} dev ${count === 1 ? "dependency" : "dependencies"}: ${depNames.join(", ")}${suffix}`,
+        tags: ["dependencies"],
+      });
+    }
+
+    // Engines → tasks noting requirements
+    if (pkg.engines) {
+      for (const [engine, constraint] of Object.entries(pkg.engines)) {
+        results.push({
+          name: `Engine: ${engine} ${constraint}`,
+          source: "package",
+          sourceFile: rel,
+          kind: "task",
+          description: `Requires ${engine} ${constraint}`,
+          tags: ["engines"],
+        });
+      }
+    }
   }
 
   return results;
