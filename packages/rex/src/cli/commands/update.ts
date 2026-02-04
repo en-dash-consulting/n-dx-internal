@@ -4,6 +4,7 @@ import { REX_DIR } from "./constants.js";
 import { CLIError, requireRexDir } from "../errors.js";
 import { info, result } from "../output.js";
 import { validateTransition } from "../../core/transitions.js";
+import { computeTimestampUpdates } from "../../core/timestamps.js";
 import type { PRDItem, ItemStatus, Priority } from "../../schema/index.js";
 
 const VALID_STATUSES = new Set([
@@ -64,6 +65,10 @@ export async function cmdUpdate(
     }
 
     updates.status = flags.status as ItemStatus;
+
+    // Compute automatic timestamp updates for the status change
+    const tsUpdates = computeTimestampUpdates(existing.status, updates.status, existing);
+    Object.assign(updates, tsUpdates);
   }
 
   if (flags.priority) {

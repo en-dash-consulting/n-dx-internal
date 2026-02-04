@@ -17,6 +17,8 @@ export interface PRDItem {
   tags?: string[];
   source?: string;
   blockedBy?: string[];
+  startedAt?: string;
+  completedAt?: string;
   children?: PRDItem[];
   [key: string]: unknown;
 }

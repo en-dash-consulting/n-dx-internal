@@ -31,6 +31,30 @@ export function renderProgressBar(
   return FILLED.repeat(filled) + EMPTY.repeat(width - filled);
 }
 
+/** Format an ISO timestamp as a compact date string for tree display. */
+export function formatTimestamp(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hour = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${month}-${day} ${hour}:${min}`;
+}
+
+/** Build a timestamp suffix for tree display. */
+function timestampSuffix(item: PRDItem): string {
+  if (item.status === "completed" && typeof item.completedAt === "string") {
+    const ts = formatTimestamp(item.completedAt);
+    return ts ? ` (done ${ts})` : "";
+  }
+  if (item.status === "in_progress" && typeof item.startedAt === "string") {
+    const ts = formatTimestamp(item.startedAt);
+    return ts ? ` (started ${ts})` : "";
+  }
+  return "";
+}
+
 /** Render a PRD tree to lines with status icons and indentation. */
 export function renderTree(items: PRDItem[], indent: number = 0): string[] {
   const lines: string[] = [];
@@ -38,6 +62,7 @@ export function renderTree(items: PRDItem[], indent: number = 0): string[] {
     const icon = STATUS_ICONS[item.status] ?? "?";
     const prefix = "  ".repeat(indent);
     const priority = item.priority ? ` [${item.priority}]` : "";
+    const ts = timestampSuffix(item);
 
     if (item.children && item.children.length > 0) {
       const stats = computeStats(item.children);
@@ -52,12 +77,12 @@ export function renderTree(items: PRDItem[], indent: number = 0): string[] {
         );
       } else {
         lines.push(
-          `${prefix}${icon} ${item.title}${priority} ${count}`,
+          `${prefix}${icon} ${item.title}${priority} ${count}${ts}`,
         );
       }
       lines.push(...renderTree(item.children, indent + 1));
     } else {
-      lines.push(`${prefix}${icon} ${item.title}${priority}`);
+      lines.push(`${prefix}${icon} ${item.title}${priority}${ts}`);
     }
   }
   return lines;

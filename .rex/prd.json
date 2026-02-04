@@ -436,7 +436,7 @@
             {
               "id": "98ee2a19-494b-4717-810f-8d484c58a7ee",
               "title": "Add automatic timestamping",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Track startedAt and completedAt timestamps on status changes",
               "acceptanceCriteria": [
@@ -445,7 +445,9 @@
                 "Timestamps included in status output"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T15:25:09.269Z",
+              "completedAt": "2026-02-04T15:25:09.269Z"
             }
           ]
         },

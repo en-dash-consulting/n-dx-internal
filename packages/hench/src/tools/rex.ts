@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { PRDStore } from "rex/dist/store/types.js";
 import type { ItemStatus } from "rex/dist/schema/v1.js";
+import { computeTimestampUpdates } from "rex/dist/core/timestamps.js";
 
 export async function toolRexUpdateStatus(
   store: PRDStore,
@@ -14,7 +15,13 @@ export async function toolRexUpdateStatus(
     );
   }
 
-  await store.updateItem(taskId, { status: params.status as ItemStatus });
+  const existing = await store.getItem(taskId);
+  const tsUpdates = computeTimestampUpdates(
+    existing?.status ?? "pending",
+    params.status as ItemStatus,
+    existing ?? undefined,
+  );
+  await store.updateItem(taskId, { status: params.status as ItemStatus, ...tsUpdates });
   await store.appendLog({
     timestamp: new Date().toISOString(),
     event: "status_updated",

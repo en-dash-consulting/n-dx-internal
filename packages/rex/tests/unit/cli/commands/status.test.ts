@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import {
   cmdStatus,
   renderProgressBar,
+  formatTimestamp,
 } from "../../../../src/cli/commands/status.js";
 import { CLIError } from "../../../../src/cli/errors.js";
 import type { PRDDocument } from "../../../../src/schema/index.js";
@@ -105,6 +106,20 @@ describe("renderProgressBar", () => {
   it("uses default width of 20", () => {
     const bar = renderProgressBar(0.5);
     expect(bar.length).toBe(20);
+  });
+});
+
+describe("formatTimestamp", () => {
+  it("formats an ISO string as MM-DD HH:MM", () => {
+    expect(formatTimestamp("2025-03-15T14:30:00.000Z")).toMatch(/\d{2}-15 \d{2}:\d{2}/);
+  });
+
+  it("returns empty string for invalid date", () => {
+    expect(formatTimestamp("not-a-date")).toBe("");
+  });
+
+  it("returns empty string for empty string", () => {
+    expect(formatTimestamp("")).toBe("");
   });
 });
 
@@ -345,6 +360,119 @@ describe("cmdStatus", () => {
       expect(epicLine).toContain("0%");
       expect(epicLine).toMatch(/░/);
       expect(epicLine).not.toMatch(/█/);
+    });
+  });
+
+  describe("timestamps in tree output", () => {
+    it("shows startedAt for in_progress items", async () => {
+      const prd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "t1",
+            title: "Active Task",
+            level: "task",
+            status: "in_progress",
+            startedAt: "2025-03-15T14:30:00.000Z",
+          },
+        ],
+      };
+      writePRD(tmp, prd);
+      await cmdStatus(tmp, {});
+      const out = output();
+
+      expect(out).toContain("Active Task");
+      expect(out).toMatch(/\(started \d{2}-15 \d{2}:\d{2}\)/);
+    });
+
+    it("shows completedAt for completed items", async () => {
+      const prd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "t1",
+            title: "Done Task",
+            level: "task",
+            status: "completed",
+            completedAt: "2025-06-20T09:15:00.000Z",
+          },
+        ],
+      };
+      writePRD(tmp, prd);
+      await cmdStatus(tmp, {});
+      const out = output();
+
+      expect(out).toContain("Done Task");
+      expect(out).toMatch(/\(done \d{2}-20 \d{2}:\d{2}\)/);
+    });
+
+    it("does not show timestamp for pending items", async () => {
+      const prd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "t1",
+            title: "Pending Task",
+            level: "task",
+            status: "pending",
+          },
+        ],
+      };
+      writePRD(tmp, prd);
+      await cmdStatus(tmp, {});
+      const out = output();
+
+      expect(out).toContain("Pending Task");
+      expect(out).not.toContain("(started");
+      expect(out).not.toContain("(done");
+    });
+
+    it("does not show timestamp when field is absent", async () => {
+      const prd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "t1",
+            title: "No Timestamp",
+            level: "task",
+            status: "in_progress",
+          },
+        ],
+      };
+      writePRD(tmp, prd);
+      await cmdStatus(tmp, {});
+      const out = output();
+
+      expect(out).toContain("No Timestamp");
+      expect(out).not.toContain("(started");
+    });
+
+    it("shows timestamps in json output via document dump", async () => {
+      const prd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "t1",
+            title: "Tracked Task",
+            level: "task",
+            status: "completed",
+            startedAt: "2025-03-15T14:30:00.000Z",
+            completedAt: "2025-03-15T16:00:00.000Z",
+          },
+        ],
+      };
+      writePRD(tmp, prd);
+      await cmdStatus(tmp, { format: "json" });
+      const out = output();
+      const parsed = JSON.parse(out);
+
+      expect(parsed.items[0].startedAt).toBe("2025-03-15T14:30:00.000Z");
+      expect(parsed.items[0].completedAt).toBe("2025-03-15T16:00:00.000Z");
     });
   });
 

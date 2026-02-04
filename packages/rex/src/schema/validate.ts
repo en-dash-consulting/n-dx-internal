@@ -29,6 +29,8 @@ export const PRDItemSchema: z.ZodType<Record<string, unknown>> = z.lazy(() =>
       tags: z.array(z.string()).optional(),
       source: z.string().optional(),
       blockedBy: z.array(z.string()).optional(),
+      startedAt: z.string().optional(),
+      completedAt: z.string().optional(),
       children: z.array(PRDItemSchema).optional(),
     })
     .passthrough(),

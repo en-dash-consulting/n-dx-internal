@@ -20,14 +20,39 @@ function mockStore() {
 }
 
 describe("toolRexUpdateStatus", () => {
-  it("updates task status", async () => {
+  it("updates task status and sets timestamps", async () => {
     const store = mockStore();
+    store.getItem.mockResolvedValue({
+      id: "task-1",
+      title: "Test task",
+      status: "pending",
+      level: "task",
+    });
     const result = await toolRexUpdateStatus(store, "task-1", {
       status: "in_progress",
     });
     expect(result).toContain("in_progress");
-    expect(store.updateItem).toHaveBeenCalledWith("task-1", { status: "in_progress" });
+    expect(store.updateItem).toHaveBeenCalledWith(
+      "task-1",
+      expect.objectContaining({ status: "in_progress", startedAt: expect.any(String) }),
+    );
     expect(store.appendLog).toHaveBeenCalled();
+  });
+
+  it("preserves existing startedAt when completing", async () => {
+    const store = mockStore();
+    store.getItem.mockResolvedValue({
+      id: "task-1",
+      title: "Test task",
+      status: "in_progress",
+      level: "task",
+      startedAt: "2025-01-01T00:00:00.000Z",
+    });
+    await toolRexUpdateStatus(store, "task-1", { status: "completed" });
+    const call = store.updateItem.mock.calls[0][1];
+    expect(call.status).toBe("completed");
+    expect(call.completedAt).toBeDefined();
+    expect(call.startedAt).toBeUndefined(); // not overwritten
   });
 
   it("rejects invalid status", async () => {

@@ -8,6 +8,7 @@ import { SCHEMA_VERSION, LEVEL_HIERARCHY } from "../schema/index.js";
 import { computeStats, findItem } from "../core/tree.js";
 import { findNextTask, collectCompletedIds } from "../core/next-task.js";
 import { validateTransition } from "../core/transitions.js";
+import { computeTimestampUpdates } from "../core/timestamps.js";
 import { TOOL_VERSION } from "./commands/constants.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../schema/index.js";
 import type { PRDStore } from "../store/index.js";
@@ -142,7 +143,8 @@ export async function startMcpServer(dir: string): Promise<void> {
           }
         }
 
-        await store.updateItem(id, { status: status as ItemStatus });
+        const tsUpdates = computeTimestampUpdates(existing.status, status as ItemStatus, existing);
+        await store.updateItem(id, { status: status as ItemStatus, ...tsUpdates });
         await store.appendLog({
           timestamp: new Date().toISOString(),
           event: "status_changed",

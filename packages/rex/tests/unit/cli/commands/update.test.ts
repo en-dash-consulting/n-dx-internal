@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { join } from "node:path";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { CLIError } from "../../../../src/cli/errors.js";
 import { cmdUpdate } from "../../../../src/cli/commands/update.js";
+import type { PRDDocument } from "../../../../src/schema/index.js";
 
 describe("cmdUpdate", () => {
   let tmp: string;
@@ -233,6 +234,69 @@ describe("cmdUpdate", () => {
       await expect(
         cmdUpdate(tmp, itemId, { title: "New title" }),
       ).resolves.toBeUndefined();
+    });
+  });
+
+  // --- Automatic timestamps ---
+
+  describe("automatic timestamps", () => {
+    function readItem(): PRDDocument["items"][number] {
+      const raw = readFileSync(join(tmp, ".rex", "prd.json"), "utf-8");
+      const doc = JSON.parse(raw) as PRDDocument;
+      return doc.items[0];
+    }
+
+    it("sets startedAt when transitioning to in_progress", async () => {
+      await cmdUpdate(tmp, itemId, { status: "in_progress" });
+      const item = readItem();
+      expect(item.startedAt).toBeDefined();
+      expect(typeof item.startedAt).toBe("string");
+      // Should be a valid ISO timestamp
+      expect(new Date(item.startedAt as string).toISOString()).toBe(item.startedAt);
+    });
+
+    it("sets completedAt when transitioning to completed", async () => {
+      await cmdUpdate(tmp, itemId, { status: "in_progress" });
+      await cmdUpdate(tmp, itemId, { status: "completed" });
+      const item = readItem();
+      expect(item.completedAt).toBeDefined();
+      expect(typeof item.completedAt).toBe("string");
+    });
+
+    it("preserves startedAt when completing after in_progress", async () => {
+      await cmdUpdate(tmp, itemId, { status: "in_progress" });
+      const before = readItem();
+      const started = before.startedAt;
+      expect(started).toBeDefined();
+
+      await cmdUpdate(tmp, itemId, { status: "completed" });
+      const after = readItem();
+      expect(after.startedAt).toBe(started);
+      expect(after.completedAt).toBeDefined();
+    });
+
+    it("sets both startedAt and completedAt when skipping to completed", async () => {
+      await cmdUpdate(tmp, itemId, { status: "completed" });
+      const item = readItem();
+      expect(item.startedAt).toBeDefined();
+      expect(item.completedAt).toBeDefined();
+    });
+
+    it("clears completedAt when forced back from completed", async () => {
+      await cmdUpdate(tmp, itemId, { status: "completed" });
+      const before = readItem();
+      expect(before.completedAt).toBeDefined();
+
+      await cmdUpdate(tmp, itemId, { status: "pending", force: "true" });
+      const after = readItem();
+      expect(after.completedAt).toBeUndefined();
+    });
+
+    it("does not add timestamps for non-status updates", async () => {
+      await cmdUpdate(tmp, itemId, { title: "New title" });
+      const item = readItem();
+      expect(item.startedAt).toBeUndefined();
+      expect(item.completedAt).toBeUndefined();
     });
   });
 });
