@@ -252,3 +252,4 @@
 {"timestamp":"2026-02-04T17:19:07.547Z","event":"item_updated","itemId":"a3508f63-7ca4-4f9a-ba05-afb73a67442c","detail":"Updated: status, completedAt"}
 {"timestamp":"2026-02-04T17:19:07.556Z","event":"auto_completed","itemId":"7f822601-2e01-4a98-adc2-3426481da3f2","detail":"Auto-completed feature: PRD quality (all children done)"}
 {"timestamp":"2026-02-04T17:19:07.561Z","event":"auto_completed","itemId":"d6d0cbed-f63a-4434-a004-166c39cc8d2c","detail":"Auto-completed epic: PRD structure and lifecycle (all children done)"}
+{"timestamp":"2026-02-04T17:21:36.105Z","event":"task_completed","detail":"Feature: PRD quality — completed. Finalized rex prune command (core logic, CLI, archive support, dry-run, 27 tests). All 3 subtasks complete: structural validation, import alias, prune."}
