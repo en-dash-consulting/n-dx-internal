@@ -647,13 +647,13 @@ describe("cmdStatus", () => {
     });
   });
 
-  describe("--tokens flag", () => {
+  describe("token usage (shown by default)", () => {
     function writeLog(dir: string, entries: Array<Record<string, unknown>>): void {
       const lines = entries.map((e) => JSON.stringify(e)).join("\n") + "\n";
       writeFileSync(join(dir, ".rex", "execution-log.jsonl"), lines);
     }
 
-    it("shows token usage summary in tree output", async () => {
+    it("shows token usage summary by default in tree output", async () => {
       writePRD(tmp, POPULATED_PRD);
       writeLog(tmp, [
         {
@@ -663,7 +663,7 @@ describe("cmdStatus", () => {
         },
       ]);
 
-      await cmdStatus(tmp, { tokens: "true" });
+      await cmdStatus(tmp, {});
       const out = output();
 
       expect(out).toContain("Token usage:");
@@ -675,13 +675,13 @@ describe("cmdStatus", () => {
     it("shows 'none recorded' when no token data exists", async () => {
       writePRD(tmp, POPULATED_PRD);
 
-      await cmdStatus(tmp, { tokens: "true" });
+      await cmdStatus(tmp, {});
       const out = output();
 
       expect(out).toContain("Token usage: none recorded");
     });
 
-    it("does not show token usage when flag is absent", async () => {
+    it("hides token usage with --tokens=false", async () => {
       writePRD(tmp, POPULATED_PRD);
       writeLog(tmp, [
         {
@@ -691,13 +691,13 @@ describe("cmdStatus", () => {
         },
       ]);
 
-      await cmdStatus(tmp, {});
+      await cmdStatus(tmp, { tokens: "false" });
       const out = output();
 
       expect(out).not.toContain("Token usage:");
     });
 
-    it("includes token usage in JSON output", async () => {
+    it("includes token usage in JSON output by default", async () => {
       writePRD(tmp, POPULATED_PRD);
       writeLog(tmp, [
         {
@@ -707,7 +707,7 @@ describe("cmdStatus", () => {
         },
       ]);
 
-      await cmdStatus(tmp, { format: "json", tokens: "true" });
+      await cmdStatus(tmp, { format: "json" });
       const out = output();
       const parsed = JSON.parse(out);
 
@@ -718,7 +718,7 @@ describe("cmdStatus", () => {
       expect(parsed.tokenUsage.packages.rex).toBeDefined();
     });
 
-    it("does not include tokenUsage in JSON output when flag is absent", async () => {
+    it("excludes tokenUsage from JSON output with --tokens=false", async () => {
       writePRD(tmp, POPULATED_PRD);
       writeLog(tmp, [
         {
@@ -728,7 +728,7 @@ describe("cmdStatus", () => {
         },
       ]);
 
-      await cmdStatus(tmp, { format: "json" });
+      await cmdStatus(tmp, { format: "json", tokens: "false" });
       const out = output();
       const parsed = JSON.parse(out);
 
@@ -750,7 +750,7 @@ describe("cmdStatus", () => {
         },
       ]);
 
-      await cmdStatus(tmp, { tokens: "true", since: "2026-01-15T00:00:00.000Z" });
+      await cmdStatus(tmp, { since: "2026-01-15T00:00:00.000Z" });
       const out = output();
 
       // Should only include the Jan 20 entry
@@ -774,7 +774,7 @@ describe("cmdStatus", () => {
         },
       ]);
 
-      await cmdStatus(tmp, { tokens: "true", until: "2026-01-15T00:00:00.000Z" });
+      await cmdStatus(tmp, { until: "2026-01-15T00:00:00.000Z" });
       const out = output();
 
       // Should only include the Jan 10 entry
@@ -793,7 +793,7 @@ describe("cmdStatus", () => {
         },
       ]);
 
-      await cmdStatus(tmp, { tokens: "true" });
+      await cmdStatus(tmp, {});
       const out = output();
 
       expect(out).toContain("rex:");

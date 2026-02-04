@@ -156,7 +156,7 @@ Orchestration:
   plan [dir]            Analyze codebase and show PRD proposals (--guided for new projects)
   plan --accept [dir]   Analyze and accept proposals into PRD
   work [dir]            Run next task (--task=ID, --auto, --iterations=N)
-  status [dir]          Show PRD status (--format=json)
+  status [dir]          Show PRD status (--format=json, --since, --until)
   sync [dir]            Sync local PRD with remote adapter (--push, --pull)
   ci [dir]              Run analysis pipeline and validate PRD health
   config [key] [value]  View and edit settings (--json, --help)

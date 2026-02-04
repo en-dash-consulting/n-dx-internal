@@ -155,7 +155,7 @@ export async function cmdStatus(
 ): Promise<void> {
   const format = flags.format;
   const showCoverage = flags.coverage === "true";
-  const showTokens = flags.tokens === "true";
+  const showTokens = flags.tokens !== "false";
 
   if (format && !VALID_FORMATS.includes(format as (typeof VALID_FORMATS)[number])) {
     throw new CLIError(
