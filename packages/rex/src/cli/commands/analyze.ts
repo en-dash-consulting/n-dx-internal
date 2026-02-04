@@ -284,8 +284,26 @@ export async function cmdAnalyze(
   }
 
   if (proposals.length === 0) {
-    result("No new proposals found.");
-    return;
+    const guided = flags.guided === "true";
+    if ((existing.length === 0 || guided) && !noLlm) {
+      if (process.stdin.isTTY) {
+        const { runGuidedSpec } = await import("../../analyze/guided.js");
+        proposals = await runGuidedSpec(dir, model);
+      } else if (!guided) {
+        result("No new proposals found.");
+        info("Hint: Run 'n-dx plan --guided' interactively to build your initial spec.");
+        return;
+      } else {
+        throw new CLIError(
+          "Guided spec mode requires an interactive terminal.",
+          "Run this command in a terminal (not piped).",
+        );
+      }
+    }
+    if (proposals.length === 0) {
+      result("No new proposals found.");
+      return;
+    }
   }
 
   // Show diff view when existing PRD items are present, otherwise plain list

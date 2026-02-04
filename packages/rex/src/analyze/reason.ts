@@ -409,7 +409,7 @@ function spawnClaudeOnce(prompt: string, model: string): Promise<string> {
  * Retries up to MAX_RETRIES times with exponential backoff.
  * Non-retryable errors (ENOENT for missing CLI) are thrown immediately.
  */
-async function spawnClaude(prompt: string, model: string): Promise<string> {
+export async function spawnClaude(prompt: string, model: string): Promise<string> {
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {

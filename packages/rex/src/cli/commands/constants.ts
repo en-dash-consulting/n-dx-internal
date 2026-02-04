@@ -42,6 +42,7 @@ Options:
   --lite                  File-name-only scan (for analyze)
   --accept                Accept LLM proposals into PRD (for smart add, analyze)
   --file=<path>           Import from a document (repeatable, for add/analyze)
+  --guided              Interactive spec builder (for analyze/plan)
   --no-llm                Force algorithmic pipeline, skip LLM (for analyze)
   --model=<name>          Override LLM model (for analyze, smart add)
   --analyze               Run SourceVision analysis (for init)

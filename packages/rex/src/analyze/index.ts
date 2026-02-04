@@ -17,6 +17,7 @@ export {
   MAX_RETRIES,
   CHUNK_CHAR_LIMIT,
   FEW_SHOT_EXAMPLE,
+  spawnClaude,
   reasonFromFile,
   reasonFromFiles,
   reasonFromScanResults,
@@ -37,3 +38,6 @@ export {
   chunkScanResults,
   summarizeScanResults,
 } from "./reason.js";
+
+export type { GuidedContext, ClarifyResponse } from "./guided.js";
+export { runGuidedSpec, clarify, generateSpecFromContext } from "./guided.js";

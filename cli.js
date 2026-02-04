@@ -153,7 +153,7 @@ console.log(`n-dx — AI-powered development toolkit
 
 Orchestration:
   init [dir]            Initialize all tools (sourcevision + rex + hench)
-  plan [dir]            Analyze codebase and show PRD proposals
+  plan [dir]            Analyze codebase and show PRD proposals (--guided for new projects)
   plan --accept [dir]   Analyze and accept proposals into PRD
   work [dir]            Run next task (--task=ID, --auto, --iterations=N)
   status [dir]          Show PRD status (--format=json)
