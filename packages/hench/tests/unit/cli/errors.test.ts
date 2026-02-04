@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { CLIError, formatCLIError, handleCLIError, requireHenchDir, requireClaudeCLI } from "../../../src/cli/errors.js";
+import { TaskNotActionableError } from "../../../src/agent/brief.js";
 
 describe("CLIError", () => {
   it("stores message and suggestion", () => {
@@ -81,6 +82,31 @@ describe("formatCLIError", () => {
   it("falls back to generic message for unknown errors", () => {
     const err = new Error("some weird internal error");
     expect(formatCLIError(err)).toBe("Error: some weird internal error");
+  });
+
+  it("formats TaskNotActionableError for completed tasks", () => {
+    const err = new TaskNotActionableError(
+      "task-1", "completed",
+      "This task is already complete. Run 'n-dx status' to see remaining work.",
+      "Setup CI",
+    );
+    const result = formatCLIError(err);
+    expect(result).toContain("Error:");
+    expect(result).toContain("completed");
+    expect(result).toContain("Hint:");
+    expect(result).toContain("n-dx status");
+  });
+
+  it("formats TaskNotActionableError for deferred tasks", () => {
+    const err = new TaskNotActionableError(
+      "task-2", "deferred",
+      "This task has been deferred. To reactivate it, run:\n  rex update task-2 --status=pending",
+    );
+    const result = formatCLIError(err);
+    expect(result).toContain("Error:");
+    expect(result).toContain("deferred");
+    expect(result).toContain("Hint:");
+    expect(result).toContain("rex update");
   });
 });
 

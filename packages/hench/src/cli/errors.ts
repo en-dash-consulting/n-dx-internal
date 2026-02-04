@@ -5,6 +5,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { TaskNotActionableError } from "../agent/brief.js";
 
 const HENCH_DIR = ".hench";
 
@@ -88,6 +89,11 @@ export function formatCLIError(err: unknown): string {
       msg += `\nHint: ${err.suggestion}`;
     }
     return msg;
+  }
+
+  // TaskNotActionableError — explicit task selection with invalid status
+  if (err instanceof TaskNotActionableError) {
+    return `Error: ${err.message}\nHint: ${err.suggestion}`;
   }
 
   const message = err instanceof Error ? err.message : String(err);

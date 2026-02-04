@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { formatTaskBrief } from "../../../src/agent/brief.js";
+import {
+  formatTaskBrief,
+  assembleTaskBrief,
+  TaskNotActionableError,
+} from "../../../src/agent/brief.js";
 import type { TaskBrief } from "../../../src/schema/v1.js";
+import type { PRDStore } from "rex/dist/store/types.js";
+import type { PRDItem } from "rex/dist/schema/v1.js";
 
 describe("formatTaskBrief", () => {
   const minimalBrief: TaskBrief = {
@@ -116,5 +122,197 @@ describe("formatTaskBrief", () => {
     expect(output).toContain("## Recent Activity");
     expect(output).toContain("task_started");
     expect(output).toContain("Starting work");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Mock store helper
+// ---------------------------------------------------------------------------
+
+function mockStore(items: PRDItem[]): PRDStore {
+  return {
+    loadDocument: async () => ({
+      schema: "rex/v1",
+      title: "Test",
+      items,
+    }),
+    loadConfig: async () => ({
+      schema: "rex/v1",
+      project: "test",
+      adapter: "file",
+    }),
+    loadWorkflow: async () => "",
+    readLog: async () => [],
+    // Unused in these tests
+    saveDocument: async () => {},
+    saveConfig: async () => {},
+    getItem: async () => null,
+    addItem: async () => {},
+    updateItem: async () => {},
+    removeItem: async () => {},
+    appendLog: async () => {},
+    saveWorkflow: async () => {},
+    capabilities: () => ({ adapter: "file", supportsTransactions: false, supportsWatch: false }),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// TaskNotActionableError
+// ---------------------------------------------------------------------------
+
+describe("TaskNotActionableError", () => {
+  it("stores taskId, status, and suggestion", () => {
+    const err = new TaskNotActionableError("abc-123", "completed", "Do something else");
+    expect(err).toBeInstanceOf(Error);
+    expect(err.name).toBe("TaskNotActionableError");
+    expect(err.taskId).toBe("abc-123");
+    expect(err.status).toBe("completed");
+    expect(err.suggestion).toBe("Do something else");
+    expect(err.message).toContain("completed");
+    expect(err.message).toContain("abc-123");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// assembleTaskBrief — invalid task status errors
+// ---------------------------------------------------------------------------
+
+describe("assembleTaskBrief — invalid task selection", () => {
+  it("throws TaskNotActionableError for a completed task", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "done-1",
+        title: "Already done",
+        status: "completed",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    await expect(assembleTaskBrief(store, "done-1")).rejects.toThrow(TaskNotActionableError);
+
+    try {
+      await assembleTaskBrief(store, "done-1");
+    } catch (err) {
+      const e = err as TaskNotActionableError;
+      expect(e.status).toBe("completed");
+      expect(e.taskId).toBe("done-1");
+      expect(e.message).toContain("completed");
+      expect(e.suggestion).toBeTruthy();
+    }
+  });
+
+  it("throws TaskNotActionableError for a deferred task", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "defer-1",
+        title: "Put on hold",
+        status: "deferred",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    await expect(assembleTaskBrief(store, "defer-1")).rejects.toThrow(TaskNotActionableError);
+
+    try {
+      await assembleTaskBrief(store, "defer-1");
+    } catch (err) {
+      const e = err as TaskNotActionableError;
+      expect(e.status).toBe("deferred");
+      expect(e.taskId).toBe("defer-1");
+      expect(e.message).toContain("deferred");
+      expect(e.suggestion).toContain("rex update");
+    }
+  });
+
+  it("suggests using rex status for completed tasks", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "done-2",
+        title: "Finished task",
+        status: "completed",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    try {
+      await assembleTaskBrief(store, "done-2");
+    } catch (err) {
+      const e = err as TaskNotActionableError;
+      expect(e.suggestion).toContain("n-dx status");
+    }
+  });
+
+  it("suggests reactivating for deferred tasks", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "defer-2",
+        title: "Deferred task",
+        status: "deferred",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    try {
+      await assembleTaskBrief(store, "defer-2");
+    } catch (err) {
+      const e = err as TaskNotActionableError;
+      expect(e.suggestion).toContain("rex update");
+      expect(e.suggestion).toContain("pending");
+    }
+  });
+
+  it("allows pending tasks through", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "ok-1",
+        title: "Ready to go",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    const { brief, taskId } = await assembleTaskBrief(store, "ok-1");
+    expect(taskId).toBe("ok-1");
+    expect(brief.task.status).toBe("pending");
+  });
+
+  it("allows in_progress tasks through", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "wip-1",
+        title: "Work in progress",
+        status: "in_progress",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    const { brief, taskId } = await assembleTaskBrief(store, "wip-1");
+    expect(taskId).toBe("wip-1");
+    expect(brief.task.status).toBe("in_progress");
+  });
+
+  it("includes task title in error message", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "done-3",
+        title: "Setup CI pipeline",
+        status: "completed",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    try {
+      await assembleTaskBrief(store, "done-3");
+    } catch (err) {
+      const e = err as TaskNotActionableError;
+      expect(e.message).toContain("Setup CI pipeline");
+    }
   });
 });

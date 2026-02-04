@@ -17,6 +17,44 @@ export interface AssembleBriefOptions {
   excludeTaskIds?: Set<string>;
 }
 
+// ---------------------------------------------------------------------------
+// Task status validation
+// ---------------------------------------------------------------------------
+
+/** Statuses that cannot be worked on. */
+const NON_ACTIONABLE_STATUSES = new Set(["completed", "deferred"]);
+
+/** Thrown when an explicitly-selected task cannot be worked on. */
+export class TaskNotActionableError extends Error {
+  readonly taskId: string;
+  readonly status: string;
+  readonly suggestion: string;
+
+  constructor(taskId: string, status: string, suggestion: string, title?: string) {
+    const label = title ? `"${title}" (${taskId})` : taskId;
+    super(`Task ${label} is ${status} and cannot be worked on.`);
+    this.name = "TaskNotActionableError";
+    this.taskId = taskId;
+    this.status = status;
+    this.suggestion = suggestion;
+  }
+}
+
+function buildSuggestion(status: string, taskId: string): string {
+  if (status === "completed") {
+    return (
+      "This task is already complete. Run 'n-dx status' to see remaining work,\n" +
+      "or pick a different task with 'n-dx work --task=<ID>'."
+    );
+  }
+  // deferred
+  return (
+    `This task has been deferred. To reactivate it, run:\n` +
+    `  rex update ${taskId} --status=pending\n` +
+    "Then run 'n-dx work' again."
+  );
+}
+
 function itemToTaskBrief(item: PRDItem): TaskBriefTask {
   return {
     id: item.id,
@@ -68,6 +106,14 @@ export async function assembleTaskBrief(
     entry = findItem(doc.items, taskId);
     if (!entry) {
       throw new Error(`Task not found: ${taskId}`);
+    }
+    if (NON_ACTIONABLE_STATUSES.has(entry.item.status)) {
+      throw new TaskNotActionableError(
+        taskId,
+        entry.item.status,
+        buildSuggestion(entry.item.status, taskId),
+        entry.item.title,
+      );
     }
   } else {
     const completedIds = collectCompletedIds(doc.items);
