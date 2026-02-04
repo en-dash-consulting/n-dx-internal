@@ -50,6 +50,34 @@ const TokenUsageSchema = z.object({
   output: z.number(),
 });
 
+const CommandRecordSchema = z.object({
+  command: z.string(),
+  exitStatus: z.enum(["ok", "error", "timeout", "blocked"]),
+  durationMs: z.number(),
+});
+
+const TestRecordSchema = z.object({
+  command: z.string(),
+  passed: z.boolean(),
+  durationMs: z.number(),
+});
+
+const SummaryCountsSchema = z.object({
+  filesRead: z.number(),
+  filesChanged: z.number(),
+  commandsExecuted: z.number(),
+  testsRun: z.number(),
+  toolCallsTotal: z.number(),
+});
+
+const RunSummaryDataSchema = z.object({
+  filesChanged: z.array(z.string()),
+  filesRead: z.array(z.string()),
+  commandsExecuted: z.array(CommandRecordSchema),
+  testsRun: z.array(TestRecordSchema),
+  counts: SummaryCountsSchema,
+});
+
 export const RunRecordSchema = z.object({
   id: z.string(),
   taskId: z.string(),
@@ -64,6 +92,7 @@ export const RunRecordSchema = z.object({
   toolCalls: z.array(ToolCallRecordSchema),
   model: z.string(),
   retryAttempts: z.number().int().nonnegative().optional(),
+  structuredSummary: RunSummaryDataSchema.optional(),
 });
 
 export function validateConfig(

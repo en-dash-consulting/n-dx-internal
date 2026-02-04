@@ -8,6 +8,7 @@ import type { ToolContext } from "./tools.js";
 import { assembleTaskBrief, formatTaskBrief } from "./brief.js";
 import { buildSystemPrompt } from "./prompt.js";
 import { saveRun } from "../store/index.js";
+import { buildRunSummary } from "./summary.js";
 import { section, subsection, stream, detail, info } from "../cli/output.js";
 
 export interface AgentLoopOptions {
@@ -260,6 +261,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     console.error(`[Error] ${run.error}`);
   }
 
+  run.structuredSummary = buildRunSummary(run.toolCalls);
   run.finishedAt = new Date().toISOString();
   await saveRun(henchDir, run);
 

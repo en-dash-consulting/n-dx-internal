@@ -69,6 +69,34 @@ export interface TokenUsage {
   output: number;
 }
 
+export interface CommandRecord {
+  command: string;
+  exitStatus: "ok" | "error" | "timeout" | "blocked";
+  durationMs: number;
+}
+
+export interface TestRecord {
+  command: string;
+  passed: boolean;
+  durationMs: number;
+}
+
+export interface SummaryCounts {
+  filesRead: number;
+  filesChanged: number;
+  commandsExecuted: number;
+  testsRun: number;
+  toolCallsTotal: number;
+}
+
+export interface RunSummaryData {
+  filesChanged: string[];
+  filesRead: string[];
+  commandsExecuted: CommandRecord[];
+  testsRun: TestRecord[];
+  counts: SummaryCounts;
+}
+
 export interface RunRecord {
   id: string;
   taskId: string;
@@ -83,6 +111,8 @@ export interface RunRecord {
   toolCalls: ToolCallRecord[];
   model: string;
   retryAttempts?: number;
+  /** Structured metadata derived from tool calls at run finalization. */
+  structuredSummary?: RunSummaryData;
 }
 
 export interface TaskBriefTask {

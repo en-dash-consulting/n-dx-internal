@@ -154,4 +154,53 @@ describe("validateRunRecord", () => {
       expect(result.data.retryAttempts).toBeUndefined();
     }
   });
+
+  it("accepts run with structuredSummary", () => {
+    const run = {
+      ...validRun,
+      structuredSummary: {
+        filesChanged: ["src/foo.ts"],
+        filesRead: ["src/bar.ts"],
+        commandsExecuted: [
+          { command: "npm test", exitStatus: "ok", durationMs: 5000 },
+        ],
+        testsRun: [
+          { command: "npm test", passed: true, durationMs: 5000 },
+        ],
+        counts: {
+          filesRead: 1,
+          filesChanged: 1,
+          commandsExecuted: 1,
+          testsRun: 1,
+          toolCallsTotal: 3,
+        },
+      },
+    };
+    const result = validateRunRecord(run);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.structuredSummary).toBeDefined();
+      expect(result.data.structuredSummary!.filesChanged).toEqual(["src/foo.ts"]);
+      expect(result.data.structuredSummary!.counts.testsRun).toBe(1);
+    }
+  });
+
+  it("accepts run without structuredSummary (backward compat)", () => {
+    const result = validateRunRecord(validRun);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.structuredSummary).toBeUndefined();
+    }
+  });
+
+  it("rejects run with invalid structuredSummary", () => {
+    const run = {
+      ...validRun,
+      structuredSummary: {
+        filesChanged: "not-an-array",
+      },
+    };
+    const result = validateRunRecord(run);
+    expect(result.ok).toBe(false);
+  });
 });

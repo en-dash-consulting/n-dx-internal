@@ -5,6 +5,7 @@ import type { HenchConfig, RetryConfig, RunRecord, ToolCallRecord } from "../sch
 import { assembleTaskBrief, formatTaskBrief } from "./brief.js";
 import { buildSystemPrompt } from "./prompt.js";
 import { saveRun } from "../store/index.js";
+import { buildRunSummary } from "./summary.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../tools/rex.js";
 import { validateCompletion, formatValidationResult } from "./completion.js";
 import { section, subsection, stream, info } from "../cli/output.js";
@@ -434,6 +435,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
     });
   }
 
+  run.structuredSummary = buildRunSummary(run.toolCalls);
   run.finishedAt = new Date().toISOString();
   await saveRun(henchDir, run);
 
