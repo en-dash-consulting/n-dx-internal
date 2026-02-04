@@ -232,6 +232,77 @@ description: Route requests
     const results = await scanDocs(tempDir, { lite: true });
     expect(results).toEqual([]);
   });
+
+  it("skips lockfiles", async () => {
+    await writeFile(
+      join(tempDir, "package-lock.json"),
+      JSON.stringify({ name: "test", lockfileVersion: 3 }),
+    );
+    await writeFile(
+      join(tempDir, "pnpm-lock.yaml"),
+      "lockfileVersion: '9.0'\n",
+    );
+    await writeFile(
+      join(tempDir, "yarn.lock"),
+      "# yarn lockfile v1\n",
+    );
+    // Real doc should still come through
+    await writeFile(
+      join(tempDir, "design.md"),
+      "# Design\n- Decision A\n",
+    );
+
+    const results = await scanDocs(tempDir);
+    expect(results.every((r) => !r.sourceFile.includes("lock"))).toBe(true);
+    expect(results.some((r) => r.name === "Design")).toBe(true);
+  });
+
+  it("skips generated output directories like build/ and out/", async () => {
+    await mkdir(join(tempDir, "build"), { recursive: true });
+    await mkdir(join(tempDir, "out"), { recursive: true });
+    await mkdir(join(tempDir, ".hench"), { recursive: true });
+    await writeFile(join(tempDir, "build", "output.md"), "# Generated\n- item");
+    await writeFile(join(tempDir, "out", "bundle.json"), '{"name":"x"}');
+    await writeFile(join(tempDir, ".hench", "run.json"), '{"name":"run"}');
+    // Real doc should still come through
+    await writeFile(join(tempDir, "roadmap.md"), "# Roadmap\n- Milestone 1\n");
+
+    const results = await scanDocs(tempDir);
+    expect(results.every((r) => !r.sourceFile.startsWith("build/"))).toBe(true);
+    expect(results.every((r) => !r.sourceFile.startsWith("out/"))).toBe(true);
+    expect(results.every((r) => !r.sourceFile.startsWith(".hench/"))).toBe(true);
+    expect(results.some((r) => r.name === "Roadmap")).toBe(true);
+  });
+
+  it("accepts custom ignorePatterns to skip additional paths", async () => {
+    await mkdir(join(tempDir, "vendor"), { recursive: true });
+    await writeFile(join(tempDir, "vendor", "third-party.md"), "# Vendor\n- stuff");
+    await writeFile(join(tempDir, "api-spec.md"), "# API\n- endpoint");
+
+    const results = await scanDocs(tempDir, { ignorePatterns: ["vendor/"] });
+    expect(results.every((r) => !r.sourceFile.startsWith("vendor/"))).toBe(true);
+    expect(results.some((r) => r.name === "API")).toBe(true);
+  });
+
+  it("skips auto-generated files by name pattern", async () => {
+    await writeFile(
+      join(tempDir, "tsconfig.json"),
+      '{"compilerOptions":{}}',
+    );
+    await writeFile(
+      join(tempDir, ".eslintrc.json"),
+      '{"rules":{}}',
+    );
+    await writeFile(
+      join(tempDir, "features.md"),
+      "# Features\n- Feature A\n",
+    );
+
+    const results = await scanDocs(tempDir);
+    expect(results.every((r) => !r.sourceFile.includes("tsconfig"))).toBe(true);
+    expect(results.every((r) => !r.sourceFile.includes("eslintrc"))).toBe(true);
+    expect(results.some((r) => r.name === "Features")).toBe(true);
+  });
 });
 
 describe("scanSourceVision", () => {

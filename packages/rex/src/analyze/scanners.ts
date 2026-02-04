@@ -15,6 +15,8 @@ export interface ScanResult {
 
 export interface ScanOptions {
   lite?: boolean;
+  /** Extra path prefixes or directory names to ignore in scanDocs */
+  ignorePatterns?: string[];
 }
 
 const SKIP_DIRS = new Set([
@@ -26,6 +28,39 @@ const SKIP_DIRS = new Set([
   "coverage",
   ".next",
   ".turbo",
+]);
+
+/** Directories that contain generated output — not human-written docs */
+const SKIP_DOC_DIRS = new Set([
+  "build",
+  "out",
+  ".hench",
+  ".cache",
+  ".parcel-cache",
+  ".vite",
+  ".nuxt",
+  ".svelte-kit",
+  ".output",
+  "tmp",
+  "temp",
+]);
+
+/** File basenames that are auto-generated or machine config, not human docs */
+const SKIP_DOC_FILES = new Set([
+  "package-lock.json",
+  "pnpm-lock.yaml",
+  "yarn.lock",
+  "bun.lockb",
+  "shrinkwrap.json",
+  "npm-shrinkwrap.json",
+  "tsconfig.json",
+  "tsconfig.build.json",
+  "jsconfig.json",
+  ".eslintrc.json",
+  ".prettierrc.json",
+  ".prettierrc.yaml",
+  ".prettierrc.yml",
+  "turbo.json",
 ]);
 
 async function globFiles(
@@ -164,6 +199,27 @@ function isDocFile(rel: string): boolean {
   return [".md", ".txt", ".json", ".yaml", ".yml"].includes(ext);
 }
 
+/** Check whether a relative path lives under a generated directory or is a generated file */
+function isGeneratedDoc(rel: string, extraIgnore: string[] = []): boolean {
+  const base = basename(rel);
+
+  // Skip known generated/config files
+  if (SKIP_DOC_FILES.has(base)) return true;
+
+  // Skip files inside generated output directories
+  const parts = rel.split("/");
+  for (const part of parts.slice(0, -1)) {
+    if (SKIP_DOC_DIRS.has(part)) return true;
+  }
+
+  // Skip user-supplied ignore patterns (prefix match on relative path)
+  for (const pattern of extraIgnore) {
+    if (rel.startsWith(pattern) || rel.includes(`/${pattern}`)) return true;
+  }
+
+  return false;
+}
+
 function extractMarkdownHeadings(
   content: string,
 ): { heading: string; bullets: string[] }[] {
@@ -261,7 +317,10 @@ export async function scanDocs(
   dir: string,
   opts: ScanOptions = {},
 ): Promise<ScanResult[]> {
-  const files = await globFiles(dir, isDocFile);
+  const extraIgnore = opts.ignorePatterns ?? [];
+  const files = await globFiles(dir, (rel) =>
+    isDocFile(rel) && !isGeneratedDoc(rel, extraIgnore),
+  );
   const results: ScanResult[] = [];
 
   for (const filePath of files) {

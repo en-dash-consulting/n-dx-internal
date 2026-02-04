@@ -535,7 +535,7 @@
             {
               "id": "9a7d6848-2054-47d4-9d10-e5bd144939e9",
               "title": "Filter auto-generated files from scanDocs",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Ignore files in dist/, .sourcevision/ and other generated directories",
               "acceptanceCriteria": [
@@ -549,7 +549,7 @@
             {
               "id": "dbcbbb03-7c1d-4d45-8764-abf7711fb87e",
               "title": "Enhance scanSourceVision output",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Produce more actionable tasks from zone findings with file paths",
               "acceptanceCriteria": [
