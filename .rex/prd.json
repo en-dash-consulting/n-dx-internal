@@ -230,7 +230,7 @@
             {
               "id": "da30cf47-a66f-4c72-9843-30472b2eb384",
               "title": "Implement review mode",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Add --review flag to show proposed changes before committing",
               "acceptanceCriteria": [
@@ -239,7 +239,8 @@
                 "Changes only applied after approval"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T17:55:05.986Z"
             },
             {
               "id": "8817fcaf-2f8d-4f9a-8cc8-dca1a3795250",
