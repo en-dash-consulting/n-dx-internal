@@ -1106,6 +1106,8 @@
           "level": "feature",
           "description": "Link PRD acceptance criteria to actual test execution",
           "source": "llm",
+          "startedAt": "2026-02-04T18:57:35.785Z",
+          "completedAt": "2026-02-04T18:57:35.785Z",
           "children": [
             {
               "id": "8f740afc-9757-42bf-88e8-b6b9b73b4da2",
@@ -1155,9 +1157,7 @@
               "startedAt": "2026-02-04T18:51:15.586Z",
               "completedAt": "2026-02-04T18:57:35.775Z"
             }
-          ],
-          "startedAt": "2026-02-04T18:57:35.785Z",
-          "completedAt": "2026-02-04T18:57:35.785Z"
+          ]
         },
         {
           "id": "a2b48f7b-e6b9-4e72-a300-d9631a1a1db6",
@@ -1170,7 +1170,7 @@
             {
               "id": "9808a298-ed86-425e-a9e6-b2e499e405df",
               "title": "Add n-dx ci command",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Run sourcevision analyze, rex validate, and generate reports",
               "acceptanceCriteria": [
@@ -1179,7 +1179,8 @@
                 "Generates comprehensive report"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T18:58:01.612Z"
             },
             {
               "id": "dff06e9b-3406-4d8d-b0d4-b73f60d024bf",

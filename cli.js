@@ -5,6 +5,7 @@ import { existsSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { runConfig } from "./config.js";
+import { runCI } from "./ci.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 
@@ -108,6 +109,19 @@ if (command === "status") {
   process.exit(0);
 }
 
+if (command === "ci") {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".rex", ".sourcevision"]);
+  const flags = extractFlags(rest);
+  try {
+    const ok = await runCI(dir, flags, { run, tools });
+    process.exit(ok ? 0 : 1);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
 if (command === "config") {
   try {
     await runConfig(rest);
@@ -135,6 +149,7 @@ Orchestration:
   plan --accept [dir]   Analyze and accept proposals into PRD
   work [dir]            Run next task (--task=ID, --auto, --iterations=N)
   status [dir]          Show PRD status (--format=json)
+  ci [dir]              Run analysis pipeline and validate PRD health
   config [key] [value]  View and edit settings (--json, --help)
 
 Tools:
