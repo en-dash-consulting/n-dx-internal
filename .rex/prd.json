@@ -334,15 +334,17 @@
         {
           "id": "d0937fc9-9d94-408f-b5d2-3b5666b55e17",
           "title": "Flexible hierarchy",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Allow more flexible organization of PRD items beyond rigid four-level structure",
           "source": "llm",
+          "startedAt": "2026-02-04T16:12:38.681Z",
+          "completedAt": "2026-02-04T16:12:38.681Z",
           "children": [
             {
               "id": "23402c98-4566-4d51-9f98-3c353988b2a9",
               "title": "Allow tasks directly under epics",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Support skipping feature level when not needed",
               "acceptanceCriteria": [
@@ -356,7 +358,7 @@
             {
               "id": "2938285a-01bf-4eb2-8ff9-6ef1ef6315da",
               "title": "Implement task-to-task dependencies",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Ensure blockedBy field is fully respected in work selection",
               "acceptanceCriteria": [
@@ -370,7 +372,7 @@
             {
               "id": "a143409d-3428-4e11-8332-31c0c8c284a7",
               "title": "Add move command for reparenting",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Support moving items to different parents in the tree",
               "acceptanceCriteria": [
@@ -379,7 +381,9 @@
                 "Updates references correctly"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T16:12:38.671Z",
+              "completedAt": "2026-02-04T16:12:38.671Z"
             }
           ]
         },
@@ -390,6 +394,8 @@
           "level": "feature",
           "description": "Improve task status management and tracking throughout lifecycle",
           "source": "llm",
+          "startedAt": "2026-02-04T15:43:05.711Z",
+          "completedAt": "2026-02-04T15:43:05.711Z",
           "children": [
             {
               "id": "8c0107fc-f568-4649-8e6c-7c81ce45f22b",
@@ -451,9 +457,7 @@
               "startedAt": "2026-02-04T15:25:09.269Z",
               "completedAt": "2026-02-04T15:25:09.269Z"
             }
-          ],
-          "startedAt": "2026-02-04T15:43:05.711Z",
-          "completedAt": "2026-02-04T15:43:05.711Z"
+          ]
         },
         {
           "id": "7f822601-2e01-4a98-adc2-3426481da3f2",
@@ -466,7 +470,7 @@
             {
               "id": "6834c45c-3f27-4ffb-9042-34d79edba35b",
               "title": "Enhance rex validate with structural checks",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Check for orphaned items, circular dependencies, and stuck tasks",
               "acceptanceCriteria": [
@@ -475,7 +479,9 @@
                 "Identifies tasks stuck in_progress too long"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T16:21:45.959Z",
+              "completedAt": "2026-02-04T16:21:45.959Z"
             },
             {
               "id": "a3508f63-7ca4-4f9a-ba05-afb73a67442c",
