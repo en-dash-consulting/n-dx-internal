@@ -297,6 +297,80 @@ describe("n-dx config", () => {
       expect(output).toContain("n-dx config");
       expect(output).toContain("dot notation");
     });
+
+    it("shows -h shorthand", () => {
+      const output = run(["-h"]);
+      expect(output).toContain("n-dx config");
+    });
+
+    it("documents all rex config keys", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("rex.project");
+      expect(output).toContain("rex.adapter");
+      expect(output).toContain("rex.validate");
+      expect(output).toContain("rex.test");
+      expect(output).toContain("rex.sourcevision");
+      expect(output).toContain("rex.model");
+    });
+
+    it("documents all hench config keys", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("hench.provider");
+      expect(output).toContain("hench.model");
+      expect(output).toContain("hench.maxTurns");
+      expect(output).toContain("hench.maxTokens");
+      expect(output).toContain("hench.rexDir");
+      expect(output).toContain("hench.apiKeyEnv");
+    });
+
+    it("documents all hench guard keys", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("hench.guard.blockedPaths");
+      expect(output).toContain("hench.guard.allowedCommands");
+      expect(output).toContain("hench.guard.commandTimeout");
+      expect(output).toContain("hench.guard.maxFileSize");
+    });
+
+    it("shows default values", () => {
+      const output = run(["--help"]);
+      expect(output).toContain('default: "file"');
+      expect(output).toContain('default: "cli"');
+      expect(output).toContain('default: "sonnet"');
+      expect(output).toContain("default: 50");
+      expect(output).toContain("default: 8192");
+      expect(output).toContain("default: 30000");
+      expect(output).toContain("default: 1048576");
+    });
+
+    it("shows type information", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("string");
+      expect(output).toContain("number");
+      expect(output).toContain("string[]");
+    });
+
+    it("notes sourcevision is read-only", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("sourcevision");
+      expect(output).toContain("read-only");
+    });
+
+    it("documents type coercion rules", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("Type coercion");
+      expect(output).toContain("Numbers");
+      expect(output).toContain("Booleans");
+      expect(output).toContain("Arrays");
+      expect(output).toContain("comma-separated");
+    });
+
+    it("includes usage examples", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("Examples:");
+      expect(output).toContain("n-dx config hench.model opus");
+      expect(output).toContain("n-dx config hench.maxTurns 100");
+      expect(output).toContain("n-dx config --json");
+    });
   });
 
   // ── No config ──────────────────────────────────────────────────────────────
