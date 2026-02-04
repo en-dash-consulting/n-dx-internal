@@ -16,9 +16,11 @@ import {
   groupByCommand,
   groupByTimePeriod,
   periodKey,
+  checkBudget,
+  formatBudgetWarnings,
 } from "../../../src/core/token-usage.js";
 import type { LogEntry } from "../../../src/schema/index.js";
-import type { AggregateTokenUsage, TokenEvent } from "../../../src/core/token-usage.js";
+import type { AggregateTokenUsage, TokenEvent, BudgetConfig } from "../../../src/core/token-usage.js";
 
 // ---------------------------------------------------------------------------
 // extractRexTokenUsage
@@ -1243,5 +1245,218 @@ describe("groupByTimePeriod", () => {
 
   it("returns empty array for no events", () => {
     expect(groupByTimePeriod([], "day")).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// checkBudget
+// ---------------------------------------------------------------------------
+
+describe("checkBudget", () => {
+  const EMPTY_PKG = { inputTokens: 0, outputTokens: 0, calls: 0 };
+
+  function makeUsage(input: number, output: number): AggregateTokenUsage {
+    return {
+      packages: {
+        rex: { ...EMPTY_PKG },
+        hench: { inputTokens: input, outputTokens: output, calls: 1 },
+        sv: { ...EMPTY_PKG },
+      },
+      totalInputTokens: input,
+      totalOutputTokens: output,
+      totalCalls: 1,
+    };
+  }
+
+  it("returns ok when no budget is configured", () => {
+    const result = checkBudget(makeUsage(10000, 5000), {});
+
+    expect(result.severity).toBe("ok");
+    expect(result.warnings).toHaveLength(0);
+    expect(result.tokens).toBeUndefined();
+    expect(result.cost).toBeUndefined();
+  });
+
+  it("returns ok when usage is below token budget", () => {
+    const result = checkBudget(makeUsage(5000, 2000), { tokens: 100000 });
+
+    expect(result.severity).toBe("ok");
+    expect(result.warnings).toHaveLength(0);
+    expect(result.tokens).toBeDefined();
+    expect(result.tokens!.used).toBe(7000);
+    expect(result.tokens!.budget).toBe(100000);
+    expect(result.tokens!.percent).toBeCloseTo(7, 1);
+    expect(result.tokens!.severity).toBe("ok");
+  });
+
+  it("returns warning when usage exceeds warnAt threshold", () => {
+    // 85000 tokens used of 100000 = 85%, default warnAt = 80
+    const result = checkBudget(makeUsage(60000, 25000), { tokens: 100000 });
+
+    expect(result.severity).toBe("warning");
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0]).toContain("Approaching token budget");
+    expect(result.warnings[0]).toContain("85%");
+    expect(result.tokens!.severity).toBe("warning");
+  });
+
+  it("returns exceeded when usage meets or exceeds token budget", () => {
+    // 100000 tokens used of 100000 = 100%
+    const result = checkBudget(makeUsage(70000, 30000), { tokens: 100000 });
+
+    expect(result.severity).toBe("exceeded");
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0]).toContain("Token budget exceeded");
+    expect(result.warnings[0]).toContain("100%");
+    expect(result.tokens!.severity).toBe("exceeded");
+  });
+
+  it("returns exceeded when usage is over token budget", () => {
+    const result = checkBudget(makeUsage(80000, 40000), { tokens: 100000 });
+
+    expect(result.severity).toBe("exceeded");
+    expect(result.tokens!.used).toBe(120000);
+    expect(result.tokens!.percent).toBe(120);
+  });
+
+  it("respects custom warnAt threshold", () => {
+    // 50000 tokens of 100000 = 50%, warnAt = 50 means this IS a warning
+    const result = checkBudget(makeUsage(30000, 20000), { tokens: 100000, warnAt: 50 });
+
+    expect(result.severity).toBe("warning");
+    expect(result.warnings).toHaveLength(1);
+  });
+
+  it("checks cost budget", () => {
+    // 1M input + 1M output @ Sonnet pricing = $3 + $15 = $18
+    const result = checkBudget(makeUsage(1000000, 1000000), { cost: 20 });
+
+    expect(result.severity).toBe("warning"); // $18 of $20 = 90%
+    expect(result.cost).toBeDefined();
+    expect(result.cost!.used).toBe(18);
+    expect(result.cost!.budget).toBe(20);
+    expect(result.cost!.percent).toBe(90);
+    expect(result.cost!.severity).toBe("warning");
+    expect(result.warnings[0]).toContain("Approaching cost budget");
+  });
+
+  it("returns exceeded when cost exceeds budget", () => {
+    // 1M input + 1M output = $18, budget $10
+    const result = checkBudget(makeUsage(1000000, 1000000), { cost: 10 });
+
+    expect(result.severity).toBe("exceeded");
+    expect(result.cost!.severity).toBe("exceeded");
+    expect(result.warnings[0]).toContain("Cost budget exceeded");
+  });
+
+  it("returns ok when cost is below budget", () => {
+    // 500 input + 100 output = $0.003, budget $10
+    const result = checkBudget(makeUsage(500, 100), { cost: 10 });
+
+    expect(result.severity).toBe("ok");
+    expect(result.cost!.severity).toBe("ok");
+    expect(result.warnings).toHaveLength(0);
+  });
+
+  it("checks both token and cost budgets simultaneously", () => {
+    // 90000 tokens used of 100000 = 90% (warning)
+    // $0.42 of $10 cost (ok)
+    const result = checkBudget(makeUsage(60000, 30000), {
+      tokens: 100000,
+      cost: 10,
+    });
+
+    expect(result.severity).toBe("warning");
+    expect(result.tokens!.severity).toBe("warning");
+    expect(result.cost!.severity).toBe("ok");
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0]).toContain("token budget");
+  });
+
+  it("exceeded takes precedence over warning", () => {
+    // Token: 120% (exceeded), Cost: 90% (warning)
+    const result = checkBudget(makeUsage(80000, 40000), {
+      tokens: 100000,
+      cost: 100, // large cost budget so it's only warning/ok
+    });
+
+    expect(result.severity).toBe("exceeded");
+  });
+
+  it("treats zero token budget as unlimited", () => {
+    const result = checkBudget(makeUsage(1000000, 1000000), { tokens: 0 });
+
+    expect(result.severity).toBe("ok");
+    expect(result.tokens).toBeUndefined();
+  });
+
+  it("treats zero cost budget as unlimited", () => {
+    const result = checkBudget(makeUsage(1000000, 1000000), { cost: 0 });
+
+    expect(result.severity).toBe("ok");
+    expect(result.cost).toBeUndefined();
+  });
+
+  it("treats negative budgets as unlimited", () => {
+    const result = checkBudget(makeUsage(1000000, 1000000), {
+      tokens: -1,
+      cost: -5,
+    });
+
+    expect(result.severity).toBe("ok");
+    expect(result.tokens).toBeUndefined();
+    expect(result.cost).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// formatBudgetWarnings
+// ---------------------------------------------------------------------------
+
+describe("formatBudgetWarnings", () => {
+  it("returns empty array for ok severity", () => {
+    const lines = formatBudgetWarnings({
+      severity: "ok",
+      warnings: [],
+    });
+
+    expect(lines).toEqual([]);
+  });
+
+  it("formats warning severity with header", () => {
+    const lines = formatBudgetWarnings({
+      severity: "warning",
+      warnings: ["Approaching token budget: 85,000 of 100,000 tokens used (85%)"],
+    });
+
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toContain("Budget warning");
+    expect(lines[1]).toContain("Approaching token budget");
+  });
+
+  it("formats exceeded severity with header", () => {
+    const lines = formatBudgetWarnings({
+      severity: "exceeded",
+      warnings: ["Token budget exceeded: 120,000 of 100,000 tokens used (120%)"],
+    });
+
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toContain("BUDGET EXCEEDED");
+    expect(lines[1]).toContain("Token budget exceeded");
+  });
+
+  it("formats multiple warnings", () => {
+    const lines = formatBudgetWarnings({
+      severity: "exceeded",
+      warnings: [
+        "Token budget exceeded: 120,000 of 100,000 tokens used (120%)",
+        "Cost budget exceeded: $25.00 of $20.00 used (125%)",
+      ],
+    });
+
+    expect(lines).toHaveLength(3); // header + 2 warnings
+    expect(lines[0]).toContain("BUDGET EXCEEDED");
+    expect(lines[1]).toContain("Token budget exceeded");
+    expect(lines[2]).toContain("Cost budget exceeded");
   });
 });

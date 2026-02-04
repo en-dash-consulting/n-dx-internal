@@ -30,6 +30,22 @@ export interface PRDDocument {
   [key: string]: unknown;
 }
 
+/** Token/cost budget thresholds for usage warnings. */
+export interface BudgetThresholds {
+  /** Maximum total tokens (input + output). 0 = unlimited. */
+  tokens?: number;
+  /** Maximum estimated cost in USD. 0 = unlimited. */
+  cost?: number;
+  /**
+   * Warning threshold as a percentage (0–100).
+   * Warn when usage reaches this percentage of the budget.
+   * Default: 80.
+   */
+  warnAt?: number;
+  /** Abort operations when budget is exceeded. Default: false. */
+  abort?: boolean;
+}
+
 export interface RexConfig {
   schema: string;
   project: string;
@@ -38,6 +54,7 @@ export interface RexConfig {
   test?: string;
   sourcevision?: string;
   model?: string;
+  budget?: BudgetThresholds;
   future?: Record<string, unknown>;
   [key: string]: unknown;
 }

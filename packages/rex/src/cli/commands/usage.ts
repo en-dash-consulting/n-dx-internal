@@ -7,10 +7,12 @@ import {
   collectTokenEvents,
   groupByCommand,
   groupByTimePeriod,
+  checkBudget,
+  formatBudgetWarnings,
 } from "../../core/token-usage.js";
-import { CLIError } from "../errors.js";
+import { CLIError, BudgetExceededError } from "../errors.js";
 import { REX_DIR } from "./constants.js";
-import { info, result } from "../output.js";
+import { info, warn, result } from "../output.js";
 import type {
   AggregateTokenUsage,
   TokenUsageFilter,
@@ -125,6 +127,12 @@ export async function cmdUsage(
   // Period grouping (optional)
   const periodBuckets = group ? groupByTimePeriod(events, group) : undefined;
 
+  // Budget checking
+  const config = await store.loadConfig();
+  const budgetResult = config.budget
+    ? checkBudget(usage, config.budget)
+    : undefined;
+
   if (format === "json") {
     const output: Record<string, unknown> = { ...usage };
     output.estimatedCost = {
@@ -162,6 +170,16 @@ export async function cmdUsage(
       if (tokenFilter.since) filter.since = tokenFilter.since;
       if (tokenFilter.until) filter.until = tokenFilter.until;
       output.filter = filter;
+    }
+
+    // Budget status (when configured)
+    if (budgetResult) {
+      output.budget = {
+        severity: budgetResult.severity,
+        tokens: budgetResult.tokens,
+        cost: budgetResult.cost,
+        warnings: budgetResult.warnings,
+      };
     }
 
     result(JSON.stringify(output, null, 2));
@@ -212,5 +230,20 @@ export async function cmdUsage(
     if (tokenFilter.since) parts.push(`since ${tokenFilter.since}`);
     if (tokenFilter.until) parts.push(`until ${tokenFilter.until}`);
     info(`  (filtered: ${parts.join(", ")})`);
+  }
+
+  // Budget warnings
+  if (budgetResult) {
+    const budgetLines = formatBudgetWarnings(budgetResult);
+    if (budgetLines.length > 0) {
+      warn("");
+      for (const line of budgetLines) {
+        warn(line);
+      }
+    }
+
+    if (budgetResult.severity === "exceeded" && config.budget?.abort) {
+      throw new BudgetExceededError(budgetResult.warnings);
+    }
   }
 }

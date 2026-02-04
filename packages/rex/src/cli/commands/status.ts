@@ -5,10 +5,12 @@ import { verify } from "../../core/verify.js";
 import {
   aggregateTokenUsage,
   formatAggregateTokenUsage,
+  checkBudget,
+  formatBudgetWarnings,
 } from "../../core/token-usage.js";
-import { CLIError } from "../errors.js";
+import { CLIError, BudgetExceededError } from "../errors.js";
 import { REX_DIR } from "./constants.js";
-import { info, result, isQuiet } from "../output.js";
+import { info, warn, result, isQuiet } from "../output.js";
 import type { PRDItem } from "../../schema/index.js";
 import type { TreeStats } from "../../core/tree.js";
 import type { VerifyResult } from "../../core/verify.js";
@@ -246,6 +248,23 @@ export async function cmdStatus(
       if (tokenFilter.since) parts.push(`since ${tokenFilter.since}`);
       if (tokenFilter.until) parts.push(`until ${tokenFilter.until}`);
       info(`  (filtered: ${parts.join(", ")})`);
+    }
+
+    // Budget warnings (gracefully skip if config is unavailable)
+    try {
+      const config = await store.loadConfig();
+      if (config.budget) {
+        const budgetResult = checkBudget(tokenUsage, config.budget);
+        const budgetLines = formatBudgetWarnings(budgetResult);
+        if (budgetLines.length > 0) {
+          warn("");
+          for (const line of budgetLines) {
+            warn(line);
+          }
+        }
+      }
+    } catch {
+      // Config unavailable — skip budget check
     }
   }
 }

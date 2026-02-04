@@ -631,3 +631,170 @@ export function estimateCost(
     outputCost,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Budget checking
+// ---------------------------------------------------------------------------
+
+/** Configurable budget thresholds. */
+export interface BudgetConfig {
+  /** Maximum total tokens (input + output). 0 = unlimited. */
+  tokens?: number;
+  /** Maximum estimated cost in USD. 0 = unlimited. */
+  cost?: number;
+  /**
+   * Warning threshold as a percentage (0–100).
+   * Warn when usage reaches this percentage of the budget.
+   * Default: 80.
+   */
+  warnAt?: number;
+}
+
+/** Severity level for budget status. */
+export type BudgetSeverity = "ok" | "warning" | "exceeded";
+
+/** Result of checking usage against a budget. */
+export interface BudgetCheckResult {
+  /** Overall severity: "ok", "warning", or "exceeded". */
+  severity: BudgetSeverity;
+  /** Token budget status (if a token budget is configured). */
+  tokens?: {
+    used: number;
+    budget: number;
+    percent: number;
+    severity: BudgetSeverity;
+  };
+  /** Cost budget status (if a cost budget is configured). */
+  cost?: {
+    used: number;
+    budget: number;
+    percent: number;
+    severity: BudgetSeverity;
+  };
+  /** Human-readable warning messages (empty when severity is "ok"). */
+  warnings: string[];
+}
+
+/**
+ * Check aggregate token usage against budget thresholds.
+ *
+ * Returns a result with severity, per-dimension status, and warning messages.
+ * A budget value of 0, undefined, or negative means unlimited (always passes).
+ */
+export function checkBudget(
+  usage: AggregateTokenUsage,
+  budget: BudgetConfig,
+  pricing: ModelPricing = DEFAULT_PRICING,
+): BudgetCheckResult {
+  const warnAt = budget.warnAt ?? 80;
+  const warnings: string[] = [];
+
+  let tokenStatus: BudgetCheckResult["tokens"];
+  let costStatus: BudgetCheckResult["cost"];
+
+  function dimCheck(used: number, limit: number): { percent: number; severity: BudgetSeverity } {
+    const percent = (used / limit) * 100;
+    const severity: BudgetSeverity =
+      percent >= 100 ? "exceeded" : percent >= warnAt ? "warning" : "ok";
+    return { percent, severity };
+  }
+
+  // Token budget check
+  if (budget.tokens && budget.tokens > 0) {
+    const used = usage.totalInputTokens + usage.totalOutputTokens;
+    const { percent, severity } = dimCheck(used, budget.tokens);
+
+    tokenStatus = { used, budget: budget.tokens, percent, severity };
+
+    if (severity === "exceeded") {
+      warnings.push(
+        `Token budget exceeded: ${fmt(used)} of ${fmt(budget.tokens)} tokens used (${percent.toFixed(0)}%)`,
+      );
+    } else if (severity === "warning") {
+      warnings.push(
+        `Approaching token budget: ${fmt(used)} of ${fmt(budget.tokens)} tokens used (${percent.toFixed(0)}%)`,
+      );
+    }
+  }
+
+  // Cost budget check
+  if (budget.cost && budget.cost > 0) {
+    const costEstimate = estimateCost(usage, pricing);
+    const used = costEstimate.totalRaw;
+    const { percent, severity } = dimCheck(used, budget.cost);
+
+    costStatus = { used, budget: budget.cost, percent, severity };
+
+    if (severity === "exceeded") {
+      warnings.push(
+        `Cost budget exceeded: $${used.toFixed(2)} of $${budget.cost.toFixed(2)} used (${percent.toFixed(0)}%)`,
+      );
+    } else if (severity === "warning") {
+      warnings.push(
+        `Approaching cost budget: $${used.toFixed(2)} of $${budget.cost.toFixed(2)} used (${percent.toFixed(0)}%)`,
+      );
+    }
+  }
+
+  // Overall severity is the worst of all dimensions
+  const severity: BudgetSeverity =
+    [tokenStatus?.severity, costStatus?.severity].includes("exceeded")
+      ? "exceeded"
+      : [tokenStatus?.severity, costStatus?.severity].includes("warning")
+        ? "warning"
+        : "ok";
+
+  return { severity, tokens: tokenStatus, cost: costStatus, warnings };
+}
+
+/**
+ * Format budget check warnings for CLI display.
+ *
+ * Returns an array of formatted lines with severity indicators.
+ * Returns an empty array when no budget is configured or usage is within bounds.
+ */
+export function formatBudgetWarnings(result: BudgetCheckResult): string[] {
+  if (result.severity === "ok" || result.warnings.length === 0) return [];
+
+  const prefix = result.severity === "exceeded" ? "⚠ BUDGET EXCEEDED" : "⚠ Budget warning";
+  const lines: string[] = [`${prefix}:`];
+
+  for (const warning of result.warnings) {
+    lines.push(`  ${warning}`);
+  }
+
+  return lines;
+}
+
+/**
+ * Pre-flight budget check for orchestration commands.
+ *
+ * Loads the rex config, aggregates current token usage, checks against
+ * budget thresholds, and returns the result. Returns undefined if no
+ * budget is configured.
+ *
+ * @param rexDir  Path to the `.rex/` directory.
+ * @param projectDir  Project root directory.
+ */
+export async function preflightBudgetCheck(
+  rexDir: string,
+  projectDir: string,
+): Promise<BudgetCheckResult | undefined> {
+  // Dynamic import to avoid circular dependency with store
+  const { resolveStore } = await import("../store/index.js");
+  const store = await resolveStore(rexDir);
+
+  let config;
+  try {
+    config = await store.loadConfig();
+  } catch {
+    return undefined; // Config not available — skip
+  }
+
+  if (!config.budget) return undefined;
+
+  const logEntries = await store.readLog();
+  const usage = await aggregateTokenUsage(logEntries, projectDir);
+
+  return checkBudget(usage, config.budget);
+}

@@ -216,6 +216,12 @@ Rex settings (.rex/config.json):
   rex.sourcevision         string    Sourcevision integration mode (default: "auto")
   rex.model                string    LLM model for analysis (optional)
 
+Rex budget settings (token/cost usage limits):
+  rex.budget.tokens        number    Max total tokens (input+output), 0 = unlimited
+  rex.budget.cost          number    Max estimated cost in USD, 0 = unlimited
+  rex.budget.warnAt        number    Warning threshold percentage (default: 80)
+  rex.budget.abort         boolean   Abort operations when budget exceeded (default: false)
+
 Hench settings (.hench/config.json):
   hench.provider           string    API provider: "cli" or "api" (default: "cli")
   hench.model              string    Claude model name (default: "sonnet")
@@ -265,6 +271,9 @@ Examples:
   n-dx config hench.guard.allowedCommands \\
     "npm,git,pnpm,tsc"                         Set allowed commands (coerced to array)
   n-dx config rex.validate "pnpm typecheck"    Set validation command
+  n-dx config rex.budget.tokens 500000         Set token budget to 500k
+  n-dx config rex.budget.cost 10               Set cost budget to $10
+  n-dx config rex.budget.abort true            Abort operations when exceeded
   n-dx config --json                           Show all settings as JSON
   n-dx config hench --json                     Show hench settings as JSON`);
     return;

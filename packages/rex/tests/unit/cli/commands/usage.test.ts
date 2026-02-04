@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { cmdUsage } from "../../../../src/cli/commands/usage.js";
-import type { PRDDocument } from "../../../../src/schema/index.js";
+import type { PRDDocument, RexConfig } from "../../../../src/schema/index.js";
 
 function writePRD(dir: string, doc: PRDDocument): void {
   writeFileSync(join(dir, ".rex", "prd.json"), JSON.stringify(doc));
@@ -33,28 +33,46 @@ function writeSvManifest(
   writeFileSync(join(svDir, "manifest.json"), JSON.stringify(manifest));
 }
 
+function writeConfig(dir: string, config: RexConfig): void {
+  writeFileSync(join(dir, ".rex", "config.json"), JSON.stringify(config));
+}
+
 const MINIMAL_PRD: PRDDocument = {
   schema: "rex/v1",
   title: "Test Project",
   items: [],
 };
 
+const MINIMAL_CONFIG: RexConfig = {
+  schema: "rex/v1",
+  project: "test",
+  adapter: "file",
+};
+
 let tmp: string;
 let logSpy: ReturnType<typeof vi.spyOn>;
+let errSpy: ReturnType<typeof vi.spyOn>;
 
 function output(): string {
   return logSpy.mock.calls.map((c) => c[0] ?? "").join("\n");
+}
+
+function errOutput(): string {
+  return errSpy.mock.calls.map((c) => c[0] ?? "").join("\n");
 }
 
 beforeEach(() => {
   tmp = mkdtempSync(join(tmpdir(), "rex-usage-test-"));
   mkdirSync(join(tmp, ".rex"));
   writePRD(tmp, MINIMAL_PRD);
+  writeConfig(tmp, MINIMAL_CONFIG);
   logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+  errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
 afterEach(() => {
   logSpy.mockRestore();
+  errSpy.mockRestore();
   rmSync(tmp, { recursive: true, force: true });
 });
 
@@ -525,6 +543,154 @@ describe("cmdUsage", () => {
       await expect(cmdUsage(tmp, { group: "hour" })).rejects.toThrow(
         /Unknown group period/,
       );
+    });
+  });
+
+  describe("budget warnings", () => {
+    it("shows warning when token budget threshold is reached", async () => {
+      writeConfig(tmp, {
+        ...MINIMAL_CONFIG,
+        budget: { tokens: 10000, warnAt: 80 },
+      });
+      writeHenchRun(tmp, "run-1", {
+        startedAt: "2026-01-16T10:00:00.000Z",
+        status: "completed",
+        tokenUsage: { input: 7000, output: 2000 },
+      });
+
+      await cmdUsage(tmp, {});
+      const err = errOutput();
+
+      expect(err).toContain("Budget warning");
+      expect(err).toContain("Approaching token budget");
+    });
+
+    it("shows exceeded warning when token budget is exceeded", async () => {
+      writeConfig(tmp, {
+        ...MINIMAL_CONFIG,
+        budget: { tokens: 5000 },
+      });
+      writeHenchRun(tmp, "run-1", {
+        startedAt: "2026-01-16T10:00:00.000Z",
+        status: "completed",
+        tokenUsage: { input: 4000, output: 2000 },
+      });
+
+      await cmdUsage(tmp, {});
+      const err = errOutput();
+
+      expect(err).toContain("BUDGET EXCEEDED");
+      expect(err).toContain("Token budget exceeded");
+    });
+
+    it("shows cost budget warning", async () => {
+      writeConfig(tmp, {
+        ...MINIMAL_CONFIG,
+        budget: { cost: 20, warnAt: 80 },
+      });
+      // 1M input + 1M output @ Sonnet pricing = $18 → 90% of $20
+      writeHenchRun(tmp, "run-1", {
+        startedAt: "2026-01-16T10:00:00.000Z",
+        status: "completed",
+        tokenUsage: { input: 1000000, output: 1000000 },
+      });
+
+      await cmdUsage(tmp, {});
+      const err = errOutput();
+
+      expect(err).toContain("Approaching cost budget");
+    });
+
+    it("does not show budget warnings when under threshold", async () => {
+      writeConfig(tmp, {
+        ...MINIMAL_CONFIG,
+        budget: { tokens: 100000 },
+      });
+      writeHenchRun(tmp, "run-1", {
+        startedAt: "2026-01-16T10:00:00.000Z",
+        status: "completed",
+        tokenUsage: { input: 1000, output: 500 },
+      });
+
+      await cmdUsage(tmp, {});
+      const err = errOutput();
+
+      expect(err).not.toContain("Budget");
+    });
+
+    it("does not show budget warnings when no budget configured", async () => {
+      writeHenchRun(tmp, "run-1", {
+        startedAt: "2026-01-16T10:00:00.000Z",
+        status: "completed",
+        tokenUsage: { input: 100000, output: 50000 },
+      });
+
+      await cmdUsage(tmp, {});
+      const err = errOutput();
+
+      expect(err).not.toContain("Budget");
+    });
+
+    it("includes budget in JSON output when configured", async () => {
+      writeConfig(tmp, {
+        ...MINIMAL_CONFIG,
+        budget: { tokens: 10000 },
+      });
+      writeHenchRun(tmp, "run-1", {
+        startedAt: "2026-01-16T10:00:00.000Z",
+        status: "completed",
+        tokenUsage: { input: 7000, output: 2000 },
+      });
+
+      await cmdUsage(tmp, { format: "json" });
+      const out = output();
+      const parsed = JSON.parse(out);
+
+      expect(parsed.budget).toBeDefined();
+      expect(parsed.budget.severity).toBe("warning");
+      expect(parsed.budget.tokens).toBeDefined();
+      expect(parsed.budget.tokens.used).toBe(9000);
+      expect(parsed.budget.tokens.budget).toBe(10000);
+    });
+
+    it("omits budget from JSON when not configured", async () => {
+      await cmdUsage(tmp, { format: "json" });
+      const out = output();
+      const parsed = JSON.parse(out);
+
+      expect(parsed.budget).toBeUndefined();
+    });
+
+    it("aborts when budget exceeded and abort is true", async () => {
+      writeConfig(tmp, {
+        ...MINIMAL_CONFIG,
+        budget: { tokens: 5000, abort: true },
+      });
+      writeHenchRun(tmp, "run-1", {
+        startedAt: "2026-01-16T10:00:00.000Z",
+        status: "completed",
+        tokenUsage: { input: 4000, output: 2000 },
+      });
+
+      await expect(cmdUsage(tmp, {})).rejects.toThrow(/Budget exceeded/);
+    });
+
+    it("does not abort when budget exceeded but abort is false", async () => {
+      writeConfig(tmp, {
+        ...MINIMAL_CONFIG,
+        budget: { tokens: 5000, abort: false },
+      });
+      writeHenchRun(tmp, "run-1", {
+        startedAt: "2026-01-16T10:00:00.000Z",
+        status: "completed",
+        tokenUsage: { input: 4000, output: 2000 },
+      });
+
+      // Should not throw
+      await cmdUsage(tmp, {});
+      const err = errOutput();
+
+      expect(err).toContain("BUDGET EXCEEDED");
     });
   });
 });

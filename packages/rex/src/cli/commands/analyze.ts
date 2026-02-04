@@ -4,8 +4,12 @@ import { createInterface } from "node:readline";
 import { randomUUID } from "node:crypto";
 import { resolveStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
-import { CLIError } from "../errors.js";
-import { info, result } from "../output.js";
+import { CLIError, BudgetExceededError } from "../errors.js";
+import { info, warn, result } from "../output.js";
+import {
+  preflightBudgetCheck,
+  formatBudgetWarnings,
+} from "../../core/token-usage.js";
 import {
   scanTests,
   scanDocs,
@@ -195,6 +199,29 @@ export async function cmdAnalyze(
       }
     } catch {
       // Config unreadable — fall through to default
+    }
+  }
+
+  // Pre-flight budget check — warn or abort before expensive LLM calls
+  if (await hasRexDir(dir)) {
+    const rexDir = join(dir, REX_DIR);
+    const budgetResult = await preflightBudgetCheck(rexDir, dir);
+    if (budgetResult) {
+      const budgetLines = formatBudgetWarnings(budgetResult);
+      if (budgetLines.length > 0) {
+        for (const line of budgetLines) {
+          warn(line);
+        }
+        warn("");
+      }
+      if (budgetResult.severity === "exceeded") {
+        // Load config to check abort setting
+        const store = await resolveStore(rexDir);
+        const config = await store.loadConfig();
+        if (config.budget?.abort) {
+          throw new BudgetExceededError(budgetResult.warnings);
+        }
+      }
     }
   }
 

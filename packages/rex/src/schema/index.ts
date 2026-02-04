@@ -11,6 +11,7 @@ export type {
   PRDItem,
   PRDDocument,
   RexConfig,
+  BudgetThresholds,
   LogEntry,
   TokenUsage,
   AnalyzeTokenUsage,

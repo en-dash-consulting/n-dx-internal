@@ -18,6 +18,22 @@ export class CLIError extends Error {
 }
 
 /**
+ * Thrown when a budget threshold is exceeded and abort is configured.
+ * Exit code 2 to distinguish from general errors (exit code 1).
+ */
+export class BudgetExceededError extends CLIError {
+  exitCode = 2;
+
+  constructor(warnings: string[]) {
+    super(
+      `Budget exceeded:\n  ${warnings.join("\n  ")}`,
+      "Adjust budget with: n-dx config rex.budget.tokens <value> or rex.budget.cost <value>",
+    );
+    this.name = "BudgetExceededError";
+  }
+}
+
+/**
  * Known error patterns mapped to user-friendly messages and suggestions.
  * Each entry: [regex to match, user-friendly message, suggestion].
  */
