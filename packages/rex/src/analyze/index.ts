@@ -21,6 +21,8 @@ export {
   reasonFromFiles,
   reasonFromScanResults,
   reasonFromDescription,
+  reasonFromIdeasFile,
+  buildIdeasPrompt,
   readProjectContext,
   parseProposalResponse,
   extractJson,

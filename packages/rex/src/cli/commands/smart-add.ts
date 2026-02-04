@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { access } from "node:fs/promises";
 import { createInterface } from "node:readline";
 import { randomUUID } from "node:crypto";
@@ -8,6 +8,7 @@ import { CLIError } from "../errors.js";
 import { info, result } from "../output.js";
 import {
   reasonFromDescription,
+  reasonFromIdeasFile,
   DEFAULT_MODEL,
 } from "../../analyze/index.js";
 import type { Proposal } from "../../analyze/index.js";
@@ -126,6 +127,7 @@ export async function cmdSmartAdd(
   dir: string,
   description: string,
   flags: Record<string, string>,
+  multiFlags: Record<string, string[]> = {},
 ): Promise<void> {
   if (!(await hasRexDir(dir))) {
     throw new CLIError(
@@ -136,6 +138,7 @@ export async function cmdSmartAdd(
 
   const accept = flags.accept === "true";
   const parentId = flags.parent;
+  const filePaths: string[] = multiFlags.file ?? (flags.file ? [flags.file] : []);
 
   // Resolve model: --model flag → config.model → DEFAULT_MODEL
   let model: string | undefined = flags.model;
@@ -170,22 +173,49 @@ export async function cmdSmartAdd(
     }
   }
 
-  if (flags.format !== "json") {
-    info("Analyzing description with LLM...");
-  }
-
   let proposals: Proposal[];
-  try {
-    proposals = await reasonFromDescription(description, existing, {
-      model,
-      dir,
-      parentId,
-    });
-  } catch (err) {
-    throw new CLIError(
-      `LLM analysis failed: ${(err as Error).message}`,
-      "Check your API key and network connection, then try again.",
-    );
+
+  if (filePaths.length > 0) {
+    // File-based idea import mode
+    const resolved = filePaths.map((fp) => resolve(dir, fp));
+
+    if (flags.format !== "json") {
+      const label = resolved.length === 1
+        ? `ideas file: ${resolved[0]}`
+        : `${resolved.length} ideas files`;
+      info(`Reading ${label}...`);
+    }
+
+    try {
+      proposals = await reasonFromIdeasFile(resolved, existing, {
+        model,
+        dir,
+        parentId,
+      });
+    } catch (err) {
+      throw new CLIError(
+        `Failed to process ideas file: ${(err as Error).message}`,
+        "Check the file path and try again.",
+      );
+    }
+  } else {
+    // Description-based mode (original smart add)
+    if (flags.format !== "json") {
+      info("Analyzing description with LLM...");
+    }
+
+    try {
+      proposals = await reasonFromDescription(description, existing, {
+        model,
+        dir,
+        parentId,
+      });
+    } catch (err) {
+      throw new CLIError(
+        `LLM analysis failed: ${(err as Error).message}`,
+        "Check your API key and network connection, then try again.",
+      );
+    }
   }
 
   if (proposals.length === 0) {

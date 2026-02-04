@@ -1026,3 +1026,107 @@ export async function reasonFromDescription(
   const raw = await spawnClaude(prompt, options?.model ?? DEFAULT_MODEL);
   return parseProposalResponse(raw);
 }
+
+// ── Ideas file import ──
+
+/**
+ * Build an LLM prompt for structuring freeform brainstorming notes into PRD
+ * proposals. Distinct from `buildAddPrompt` (single description) and
+ * `reasonFromFile` (formal spec import via analyze): this prompt is tuned for
+ * rough, unstructured idea dumps.
+ */
+export async function buildIdeasPrompt(
+  content: string,
+  existingItems: PRDItem[],
+  dir: string,
+  options?: AddPromptOptions,
+): Promise<string> {
+  const existingSummary = summarizeExisting(existingItems);
+  const projectContext = await readProjectContext(dir);
+
+  const contextBlock = projectContext
+    ? `\nProject context (from documentation):\n${projectContext}\n`
+    : "";
+
+  let parentConstraint = "";
+  if (options?.parentId) {
+    const parentEntry = findItemInTree(existingItems, options.parentId);
+    if (parentEntry) {
+      parentConstraint = `
+IMPORTANT: Scope your response to fit under this existing parent item:
+  ID: ${options.parentId}
+  Level: ${parentEntry.level}
+  Title: ${parentEntry.title}
+
+Only create children appropriate for a ${parentEntry.level}. For example, if the parent is an epic, create features and tasks. If the parent is a feature, create only tasks.
+Do NOT create a new epic — instead use the parent's title as the epic title in your response.`;
+    }
+  }
+
+  return `You are a product requirements analyst. You are reading freeform brainstorming notes — rough ideas, bullet points, stream-of-consciousness thoughts, and informal descriptions. Your job is to distill ALL of these ideas into a well-structured PRD as a JSON array.
+
+Each element must be an object with:
+- "epic": { "title": string }
+- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
+
+${FEW_SHOT_EXAMPLE}
+
+Guidelines:
+- These are rough notes, not a formal specification. Extract the intent behind each idea.
+- Capture EVERY idea mentioned, even brief or vague ones — flesh them out into actionable tasks.
+- Group related ideas into logical epics and features.
+- Task titles must be specific and actionable (verb-first, e.g. "Implement X", "Add Y").
+- Every task MUST have either a description or acceptanceCriteria (preferably both).
+- Each task should represent a single unit of work completable in one session.
+- Assign priority based on: blocking dependencies → user-facing impact → technical debt.
+- If an idea is ambiguous, interpret it reasonably and note assumptions in the description.
+- Do NOT include items that duplicate anything already in the existing PRD below.
+- Use the project context to understand terminology and architecture.
+${parentConstraint}
+${contextBlock}
+Existing PRD:
+${existingSummary}
+
+Brainstorming notes:
+${content}
+
+Respond with ONLY a valid JSON array, no explanation or markdown fences.`;
+}
+
+/**
+ * Read one or more freeform idea files and structure them into proposals via
+ * LLM. Unlike `reasonFromFile` / `reasonFromFiles` (used by `analyze --file`
+ * for formal spec import), this function uses a prompt specifically tuned for
+ * rough brainstorming notes.
+ */
+export async function reasonFromIdeasFile(
+  filePaths: string[],
+  existingItems: PRDItem[],
+  options?: { model?: string; dir?: string; parentId?: string },
+): Promise<Proposal[]> {
+  if (filePaths.length === 0) return [];
+
+  const dir = options?.dir ?? process.cwd();
+
+  // Read and concatenate all idea files
+  const sections: string[] = [];
+  for (const fp of filePaths) {
+    const content = await readFile(fp, "utf-8");
+    if (content.trim().length === 0) continue;
+    if (filePaths.length > 1) {
+      sections.push(`--- ${fp} ---\n${content.trim()}`);
+    } else {
+      sections.push(content.trim());
+    }
+  }
+
+  if (sections.length === 0) return [];
+
+  const combined = sections.join("\n\n");
+  const prompt = await buildIdeasPrompt(combined, existingItems, dir, {
+    parentId: options?.parentId,
+  });
+
+  const raw = await spawnClaude(prompt, options?.model ?? DEFAULT_MODEL);
+  return parseProposalResponse(raw);
+}

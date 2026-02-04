@@ -96,6 +96,7 @@ async function main(): Promise<void> {
       case "add": {
         const VALID_LEVELS = new Set(["epic", "feature", "task", "subtask"]);
         const firstArg = positional[0];
+        const hasFileFlag = !!(multiFlags.file?.length || flags.file);
 
         if (firstArg && VALID_LEVELS.has(firstArg)) {
           // Manual mode: rex add <level> --title="..."
@@ -103,8 +104,9 @@ async function main(): Promise<void> {
             positional.length > 1 ? resolve(positional[positional.length - 1]) : process.cwd();
           const { cmdAdd } = await import("./commands/add.js");
           await cmdAdd(dir, firstArg, flags);
-        } else if (firstArg || flags.description) {
+        } else if (firstArg || flags.description || hasFileFlag) {
           // Smart mode: rex add "natural language description" [dir]
+          //   or file mode: rex add --file=ideas.txt [dir]
           // Last positional may be a dir path — check if it's an existing directory
           let descParts = [...positional];
           let dir = process.cwd();
@@ -118,23 +120,25 @@ async function main(): Promise<void> {
             } catch {
               // Not a valid path — include in description
             }
+          } else if (descParts.length === 0 && hasFileFlag) {
+            // --file mode with no positional description — dir from last positional already handled
           }
 
           const description = descParts.length > 0
             ? descParts.join(" ")
-            : flags.description;
-          if (!description) {
+            : flags.description ?? "";
+          if (!description && !hasFileFlag) {
             throw new CLIError(
-              "Missing description.",
-              'Usage: rex add <level> --title="..." or rex add "<description>"',
+              "Missing description or --file flag.",
+              'Usage: rex add <level> --title="..." or rex add "<description>" or rex add --file=ideas.txt',
             );
           }
           const { cmdSmartAdd } = await import("./commands/smart-add.js");
-          await cmdSmartAdd(dir, description, flags);
+          await cmdSmartAdd(dir, description, flags, multiFlags);
         } else {
           throw new CLIError(
-            "Missing level or description.",
-            'Usage: rex add <level> --title="..." or rex add "<description>"',
+            "Missing level, description, or --file flag.",
+            'Usage: rex add <level> --title="..." or rex add "<description>" or rex add --file=ideas.txt',
           );
         }
         break;

@@ -12,6 +12,7 @@ Commands:
   next [dir]              Print next actionable task
   add <level> [dir]       Add item manually (epic|feature|task|subtask)
   add "<description>"     Smart add: LLM creates PRD structure from description
+  add --file=<path>       Import ideas from a freeform text file (repeatable)
   update <id> [dir]       Update item status/priority
   validate [dir]          Check PRD integrity (DAG, schema)
   recommend [dir]         Get SourceVision recommendations
@@ -29,7 +30,7 @@ Options:
   --format=tree|json      Output format (default: tree)
   --lite                  File-name-only scan (for analyze)
   --accept                Accept LLM proposals into PRD (for smart add, analyze)
-  --file=<path>           Import PRD from a document (repeatable, for analyze)
+  --file=<path>           Import from a document (repeatable, for add/analyze)
   --no-llm                Force algorithmic pipeline, skip LLM (for analyze)
   --model=<name>          Override LLM model (for analyze, smart add)
   --analyze               Run SourceVision analysis (for init)

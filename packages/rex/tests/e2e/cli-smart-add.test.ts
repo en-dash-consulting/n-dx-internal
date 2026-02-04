@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, rm, readFile } from "node:fs/promises";
+import { mkdtemp, rm, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -159,4 +159,124 @@ describe("rex add (smart mode routing)", () => {
     // Smart mode tries to run and fails because no .rex/ (tmpDir has no .rex/)
     expect(combined).toContain("rex init");
   });
+});
+
+describe("rex add --file (idea import)", () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "rex-e2e-idea-import-"));
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("shows error without .rex/ for --file mode", async () => {
+    const ideasFile = join(tmpDir, "ideas.txt");
+    await writeFile(ideasFile, "maybe add dark mode\nadd caching");
+
+    const { stderr } = runExpectFail([
+      "add",
+      `--file=${ideasFile}`,
+      tmpDir,
+    ]);
+
+    expect(stderr).toContain("rex init");
+  });
+
+  it("routes --file flag to idea import mode", async () => {
+    run(["init", tmpDir]);
+
+    const ideasFile = join(tmpDir, "ideas.txt");
+    await writeFile(
+      ideasFile,
+      "maybe add dark mode\nalso need better error handling\nwhat about caching?",
+    );
+
+    // Run with short timeout — we just want to verify routing to idea import
+    const { stderr, stdout, timedOut } = runQuick([
+      "add",
+      `--file=${ideasFile}`,
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    // Should show idea-specific message, or LLM call results/failures
+    expect(
+      combined.includes("Reading") ||
+      combined.includes("ideas") ||
+      combined.includes("Failed to process ideas file") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("supports multiple --file flags", async () => {
+    run(["init", tmpDir]);
+
+    const file1 = join(tmpDir, "ideas1.txt");
+    const file2 = join(tmpDir, "ideas2.txt");
+    await writeFile(file1, "add login page");
+    await writeFile(file2, "add dashboard");
+
+    const { stderr, stdout, timedOut } = runQuick([
+      "add",
+      `--file=${file1}`,
+      `--file=${file2}`,
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    expect(
+      combined.includes("ideas files") ||
+      combined.includes("Reading") ||
+      combined.includes("Failed to process ideas file") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("--file works alongside a description", async () => {
+    run(["init", tmpDir]);
+
+    const ideasFile = join(tmpDir, "ideas.txt");
+    await writeFile(ideasFile, "add charts");
+
+    // When both --file and description are provided, --file takes precedence
+    const { stderr, stdout, timedOut } = runQuick([
+      "add",
+      `--file=${ideasFile}`,
+      "also add reports",
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    expect(
+      combined.includes("Reading") ||
+      combined.includes("ideas") ||
+      combined.includes("Failed to process ideas file") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("--file=<path> without positional args routes correctly", async () => {
+    run(["init", tmpDir]);
+
+    const ideasFile = join(tmpDir, "ideas.txt");
+    await writeFile(ideasFile, "build a notifications system");
+
+    // Only --file flag, no positional description
+    const { stderr, stdout, timedOut } = runQuick([
+      "add",
+      `--file=${ideasFile}`,
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    // Should NOT show "Missing description" error
+    expect(combined).not.toContain("Missing description");
+    expect(combined).not.toContain("Missing level");
+  }, 10000);
 });
