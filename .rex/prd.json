@@ -1316,7 +1316,7 @@
             {
               "id": "c0954b48-a8e1-44b3-a379-65314f51dcfa",
               "title": "Add token usage to n-dx status command",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Show aggregate token usage across all packages in status output",
               "acceptanceCriteria": [
@@ -1331,12 +1331,13 @@
                 "reporting"
               ],
               "source": "smart-add",
-              "startedAt": "2026-02-04T22:12:42.341Z"
+              "startedAt": "2026-02-04T22:12:42.341Z",
+              "completedAt": "2026-02-04T22:40:18.458Z"
             },
             {
               "id": "f656069c-ab55-4e6b-a314-b3aba21bbdb9",
               "title": "Implement dedicated usage reporting command",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Create n-dx usage command for detailed token analytics",
               "acceptanceCriteria": [
@@ -1350,7 +1351,8 @@
                 "tokens",
                 "reporting"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-04T22:40:46.669Z"
             },
             {
               "id": "6a759ce3-8c81-4853-a052-0de115440c9d",

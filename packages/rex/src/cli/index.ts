@@ -224,6 +224,11 @@ async function main(): Promise<void> {
         await cmdSync(resolveDir(), flags);
         break;
       }
+      case "usage": {
+        const { cmdUsage } = await import("./commands/usage.js");
+        await cmdUsage(resolveDir(), flags);
+        break;
+      }
       case "report": {
         const { cmdReport } = await import("./commands/report.js");
         await cmdReport(resolveDir(), flags);

@@ -8,6 +8,7 @@ import {
   extractSvTokenUsage,
   aggregateTokenUsage,
   formatAggregateTokenUsage,
+  estimateCost,
 } from "../../../src/core/token-usage.js";
 import type { LogEntry } from "../../../src/schema/index.js";
 import type { AggregateTokenUsage } from "../../../src/core/token-usage.js";
@@ -714,5 +715,94 @@ describe("formatAggregateTokenUsage", () => {
     expect(lines[1]).toContain("sv:");
     expect(lines[1]).not.toContain("rex:");
     expect(lines[1]).not.toContain("hench:");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// estimateCost
+// ---------------------------------------------------------------------------
+
+describe("estimateCost", () => {
+  const EMPTY_PKG = { inputTokens: 0, outputTokens: 0, calls: 0 };
+
+  it("estimates cost with default Sonnet pricing", () => {
+    const usage: AggregateTokenUsage = {
+      packages: {
+        rex: { ...EMPTY_PKG },
+        hench: { inputTokens: 1000000, outputTokens: 1000000, calls: 1 },
+        sv: { ...EMPTY_PKG },
+      },
+      totalInputTokens: 1000000,
+      totalOutputTokens: 1000000,
+      totalCalls: 1,
+    };
+
+    const cost = estimateCost(usage);
+
+    // $3/1M input + $15/1M output = $18
+    expect(cost.total).toBe("$18.00");
+    expect(cost.inputCost).toBe(3);
+    expect(cost.outputCost).toBe(15);
+    expect(cost.totalRaw).toBe(18);
+  });
+
+  it("returns zero for empty usage", () => {
+    const usage: AggregateTokenUsage = {
+      packages: {
+        rex: { ...EMPTY_PKG },
+        hench: { ...EMPTY_PKG },
+        sv: { ...EMPTY_PKG },
+      },
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      totalCalls: 0,
+    };
+
+    const cost = estimateCost(usage);
+
+    expect(cost.total).toBe("$0.00");
+    expect(cost.totalRaw).toBe(0);
+  });
+
+  it("accepts custom pricing", () => {
+    const usage: AggregateTokenUsage = {
+      packages: {
+        rex: { ...EMPTY_PKG },
+        hench: { inputTokens: 1000000, outputTokens: 1000000, calls: 1 },
+        sv: { ...EMPTY_PKG },
+      },
+      totalInputTokens: 1000000,
+      totalOutputTokens: 1000000,
+      totalCalls: 1,
+    };
+
+    // Opus pricing: $15/1M input, $75/1M output
+    const cost = estimateCost(usage, {
+      inputPerMillion: 15,
+      outputPerMillion: 75,
+    });
+
+    expect(cost.total).toBe("$90.00");
+    expect(cost.inputCost).toBe(15);
+    expect(cost.outputCost).toBe(75);
+  });
+
+  it("handles fractional token counts", () => {
+    const usage: AggregateTokenUsage = {
+      packages: {
+        rex: { inputTokens: 500, outputTokens: 100, calls: 1 },
+        hench: { ...EMPTY_PKG },
+        sv: { ...EMPTY_PKG },
+      },
+      totalInputTokens: 500,
+      totalOutputTokens: 100,
+      totalCalls: 1,
+    };
+
+    const cost = estimateCost(usage);
+
+    // $3 * 500/1M = $0.0015, $15 * 100/1M = $0.0015
+    expect(cost.total).toBe("$0.00");
+    expect(cost.totalRaw).toBeCloseTo(0.003, 4);
   });
 });

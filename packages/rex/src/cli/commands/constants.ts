@@ -17,6 +17,7 @@ Commands:
   update <id> [dir]       Update item status/priority
   move <id> [dir]         Move item to new parent (reparent)
   prune [dir]             Remove completed subtrees (archive to .rex/archive.json)
+  usage [dir]             Detailed token usage analytics and cost estimation
   validate [dir]          Check PRD integrity (DAG, schema)
   report [dir]            Generate JSON health report for CI dashboards
   verify [dir]            Run tests for acceptance criteria
@@ -39,8 +40,8 @@ Options:
   --dry-run               Preview without making changes (for prune, verify)
   --coverage              Show test coverage per task (for status)
   --tokens=false          Hide token usage summary (shown by default, for status)
-  --since=<ISO>           Filter token usage after timestamp (for status)
-  --until=<ISO>           Filter token usage before timestamp (for status)
+  --since=<ISO>           Filter token usage after timestamp (for status, usage)
+  --until=<ISO>           Filter token usage before timestamp (for status, usage)
   --format=tree|json      Output format (default: tree)
   --lite                  File-name-only scan (for analyze)
   --accept                Accept LLM proposals into PRD (for smart add, analyze)

@@ -275,3 +275,57 @@ export function formatAggregateTokenUsage(usage: AggregateTokenUsage): string[] 
 
   return lines;
 }
+
+// ---------------------------------------------------------------------------
+// Cost estimation
+// ---------------------------------------------------------------------------
+
+/** Per-million-token pricing for a model. */
+export interface ModelPricing {
+  inputPerMillion: number;
+  outputPerMillion: number;
+}
+
+/**
+ * Default pricing uses Claude Sonnet rates since that's the primary model
+ * across all packages. This gives a reasonable ballpark even when exact
+ * model info isn't available per-call.
+ */
+const DEFAULT_PRICING: ModelPricing = {
+  inputPerMillion: 3, // $3 per 1M input tokens
+  outputPerMillion: 15, // $15 per 1M output tokens
+};
+
+/** Estimated cost breakdown. */
+export interface CostEstimate {
+  /** Formatted total cost string (e.g. "$1.23"). */
+  total: string;
+  /** Raw numeric total in USD. */
+  totalRaw: number;
+  /** Cost from input tokens. */
+  inputCost: number;
+  /** Cost from output tokens. */
+  outputCost: number;
+}
+
+/**
+ * Estimate cost from aggregate token usage.
+ *
+ * Uses default Sonnet pricing as a baseline. Cost is approximate since
+ * individual calls may use different models or benefit from prompt caching.
+ */
+export function estimateCost(
+  usage: AggregateTokenUsage,
+  pricing: ModelPricing = DEFAULT_PRICING,
+): CostEstimate {
+  const inputCost = (usage.totalInputTokens / 1_000_000) * pricing.inputPerMillion;
+  const outputCost = (usage.totalOutputTokens / 1_000_000) * pricing.outputPerMillion;
+  const totalRaw = inputCost + outputCost;
+
+  return {
+    total: `$${totalRaw.toFixed(2)}`,
+    totalRaw,
+    inputCost,
+    outputCost,
+  };
+}
