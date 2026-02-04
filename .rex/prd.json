@@ -327,7 +327,7 @@
     {
       "id": "d6d0cbed-f63a-4434-a004-166c39cc8d2c",
       "title": "PRD structure and lifecycle",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "llm",
       "children": [
@@ -462,10 +462,12 @@
         {
           "id": "7f822601-2e01-4a98-adc2-3426481da3f2",
           "title": "PRD quality",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Tools to maintain and clean up PRD structure and content",
           "source": "llm",
+          "startedAt": "2026-02-04T17:12:50.586Z",
+          "completedAt": "2026-02-04T17:19:07.553Z",
           "children": [
             {
               "id": "6834c45c-3f27-4ffb-9042-34d79edba35b",
@@ -486,7 +488,7 @@
             {
               "id": "a3508f63-7ca4-4f9a-ba05-afb73a67442c",
               "title": "Add rex prune command",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Remove completed subtrees and archive them",
               "acceptanceCriteria": [
@@ -495,7 +497,9 @@
                 "Preserves history"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T17:19:04.854Z",
+              "completedAt": "2026-02-04T17:19:07.542Z"
             },
             {
               "id": "d6520294-3587-410f-965f-99370db07d26",
@@ -515,7 +519,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-04T17:19:07.559Z",
+      "completedAt": "2026-02-04T17:19:07.559Z"
     },
     {
       "id": "e4868f49-5256-4fb7-a775-ac5bf06dbb47",
