@@ -1,0 +1,192 @@
+/* CollapsibleSection */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 0;
+  user-select: none;
+}
+
+.collapsible-header:hover { color: var(--accent); }
+
+.collapsible-chevron {
+  font-size: 10px;
+  transition: transform 0.15s;
+  color: var(--text-dim);
+}
+
+.collapsible-chevron.open {
+  transform: rotate(90deg);
+}
+
+.collapsible-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.collapsible-count {
+  font-size: 11px;
+  background: var(--bg-hover);
+  color: var(--text-dim);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.collapsible-toggle {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.collapsible-toggle:hover {
+  text-decoration: underline;
+}
+
+.collapsible-scroll-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.collapsible-sticky-footer {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(transparent, var(--bg) 40%);
+  padding: 16px 0 4px;
+  text-align: center;
+}
+
+/* TreeView */
+.tree-node {
+  position: relative;
+}
+
+.tree-node-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  border-radius: 4px;
+  position: relative;
+}
+
+.tree-node-expandable {
+  cursor: pointer;
+}
+
+.tree-node-row:hover {
+  background: var(--bg-hover);
+}
+
+.tree-node-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.tree-chevron {
+  width: 16px;
+  font-size: 9px;
+  color: var(--text-dim);
+  text-align: center;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.tree-chevron-open {
+  transform: rotate(90deg);
+}
+
+/* Tree connector lines */
+.tree-line {
+  position: absolute;
+  top: 0;
+  width: 24px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.tree-line::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.tree-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  width: 12px;
+  height: 1px;
+  background: var(--border);
+}
+
+.tree-line-last::before {
+  bottom: calc(100% - 14px);
+}
+
+.tree-children {
+  position: relative;
+}
+
+.tree-children::before {
+  content: "";
+  position: absolute;
+  left: var(--tree-line-left, 12px);
+  top: 0;
+  bottom: 14px;
+  width: 1px;
+  background: var(--border);
+}
+
+/* BarChart */
+.bar-chart-label {
+  font-size: 12px;
+  fill: var(--text-dim);
+}
+
+.bar-chart-value {
+  font-size: 11px;
+  fill: var(--text);
+}
+
+/* FlowDiagram */
+.flow-diagram {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.flow-diagram svg {
+  width: 100%;
+  max-width: 800px;
+  display: block;
+  margin: 0 auto 16px;
+}
+
+.flow-node { cursor: pointer; }
+.flow-node:hover circle { stroke-width: 3px; }
+.flow-node text {
+  font-size: 10px;
+  fill: var(--text);
+  pointer-events: none;
+}
+
+.flow-edge {
+  fill: none;
+  stroke-linecap: round;
+}

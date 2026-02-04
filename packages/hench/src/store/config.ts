@@ -1,0 +1,45 @@
+import { join } from "node:path";
+import { readFile, writeFile, mkdir, access } from "node:fs/promises";
+import { validateConfig, DEFAULT_HENCH_CONFIG } from "../schema/index.js";
+import { toCanonicalJSON } from "./json.js";
+import type { HenchConfig } from "../schema/index.js";
+
+export async function ensureHenchDir(henchDir: string): Promise<void> {
+  await mkdir(henchDir, { recursive: true });
+  await mkdir(join(henchDir, "runs"), { recursive: true });
+}
+
+export async function loadConfig(henchDir: string): Promise<HenchConfig> {
+  const configPath = join(henchDir, "config.json");
+  const raw = await readFile(configPath, "utf-8");
+  const data = JSON.parse(raw);
+  const result = validateConfig(data);
+  if (!result.ok) {
+    throw new Error(`Invalid hench config: ${result.errors.message}`);
+  }
+  return result.data as HenchConfig;
+}
+
+export async function saveConfig(
+  henchDir: string,
+  config: HenchConfig,
+): Promise<void> {
+  const configPath = join(henchDir, "config.json");
+  await writeFile(configPath, toCanonicalJSON(config), "utf-8");
+}
+
+export async function configExists(henchDir: string): Promise<boolean> {
+  try {
+    await access(join(henchDir, "config.json"));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function initConfig(henchDir: string): Promise<HenchConfig> {
+  await ensureHenchDir(henchDir);
+  const config = DEFAULT_HENCH_CONFIG();
+  await saveConfig(henchDir, config);
+  return config;
+}

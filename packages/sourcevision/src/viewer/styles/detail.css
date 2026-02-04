@@ -1,0 +1,134 @@
+/* Detail panel internals */
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.detail-row .label { color: var(--text-dim); }
+
+/* Detail panel navigation button */
+.detail-nav-btn {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 8px 12px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+}
+
+.detail-nav-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: #fff;
+}
+
+/* Detail panel import lists */
+.detail-import-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-import-item {
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--text-dim);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail-import-item:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+/* Detail code block */
+.detail-code {
+  font-family: monospace;
+  font-size: 11px;
+  background: var(--bg-hover);
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  word-break: break-all;
+  color: var(--accent);
+}
+
+/* Zone badge */
+.zone-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Zone badge with CSS custom property */
+.zone-badge[style] {
+  background: color-mix(in srgb, var(--zone-color) 13%, transparent);
+  color: var(--zone-color);
+  border: 1px solid color-mix(in srgb, var(--zone-color) 27%, transparent);
+}
+
+/* Detail panel close button */
+.detail-close {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.detail-close:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Detail panel header */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* Detail nav button group (no top margin on children) */
+.detail-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.detail-nav-group .detail-nav-btn {
+  margin-top: 0;
+}
+
+/* Zone detail finding item */
+.detail-finding-item {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Detail more indicator */
+.detail-more {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding-top: 4px;
+}

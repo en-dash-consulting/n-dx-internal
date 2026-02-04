@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0.0",
+  "toolVersion": "0.1.0",
+  "analyzedAt": "2026-02-03T04:46:21.594Z",
+  "gitSha": "63d150ae28616003380c385586352d8a928bb9bf",
+  "gitBranch": "main",
+  "targetPath": "/Users/nick/development/endash/n-dx/sourcevision",
+  "modules": {
+    "inventory": {
+      "status": "complete",
+      "startedAt": "2026-02-03T04:22:08.425Z",
+      "completedAt": "2026-02-03T04:22:08.431Z"
+    },
+    "imports": {
+      "status": "complete",
+      "startedAt": "2026-02-03T04:22:08.431Z",
+      "completedAt": "2026-02-03T04:22:08.433Z"
+    },
+    "zones": {
+      "status": "complete",
+      "startedAt": "2026-02-03T04:22:08.434Z",
+      "completedAt": "2026-02-03T04:46:21.591Z"
+    },
+    "components": {
+      "status": "complete",
+      "startedAt": "2026-02-03T04:46:21.591Z",
+      "completedAt": "2026-02-03T04:46:21.594Z"
+    }
+  }
+}

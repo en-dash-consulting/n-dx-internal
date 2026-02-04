@@ -1,0 +1,62 @@
+# Rex
+
+> PRD management and implementation workflow CLI for AI-assisted development.
+
+Rex tracks product requirements as a tree of epics, features, tasks, and subtasks. It provides both a CLI for humans and an MCP server for AI agents.
+
+## Usage
+
+```
+rex init [dir]              Initialize .rex/ directory
+rex status [dir]            Print PRD tree with stats
+rex next [dir]              Get next actionable task
+rex add <level> [dir]       Add item (epic|feature|task|subtask)
+rex update <id> [dir]       Update item status/priority
+rex validate [dir]          Check PRD integrity
+rex recommend [dir]         SourceVision recommendations
+rex analyze [dir]           Build PRD from project analysis
+rex mcp [dir]               Start MCP server (stdio)
+```
+
+## Data model
+
+Items form a strict hierarchy: epic > feature > task > subtask. Each item has an id (UUID), title, status (pending|in_progress|completed|deferred), level, and optional description, acceptanceCriteria, priority (critical|high|medium|low), tags, source, blockedBy (dependency IDs), and children.
+
+The PRD document is stored as `.rex/prd.json`:
+```json
+{ "schema": "rex/v1", "title": "...", "items": [...] }
+```
+
+## MCP tools
+
+- get_prd_status: returns title, overall stats, per-epic stats
+- get_next_task: returns next actionable item and parent chain
+- update_task_status(id, status): change item status
+- add_item(title, level, parentId?, description?, priority?, acceptanceCriteria?, tags?, source?, blockedBy?): create item
+- get_item(id): item details with parent chain
+- append_log(event, itemId?, detail?): write to execution log
+- get_capabilities: schema version, adapter, feature flags
+
+## MCP resources
+
+- rex://prd: full PRDDocument as JSON
+- rex://workflow: workflow instructions as markdown
+- rex://log: last 50 log entries as JSON
+
+## Analyze command
+
+`rex analyze` scans test files (describe/it blocks), docs (markdown headings, JSON title fields, YAML), and SourceVision data (zones, inventory, imports) to propose PRD items. Use --lite for filename-only scanning, --accept to add proposals to the PRD. Reconciles against existing items to skip duplicates.
+
+## Workflow
+
+Rex's default agent workflow: get next task, implement with TDD, mark complete, log decisions, commit, exit. One task per execution.
+
+## File structure
+
+```
+.rex/
+  config.json           # { schema, project, adapter, sourcevision }
+  prd.json              # PRD tree
+  execution-log.jsonl   # append-only event log
+  workflow.md           # agent workflow instructions
+```

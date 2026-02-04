@@ -1,0 +1,43 @@
+/* Brand tokens */
+:root {
+  --brand-navy: #001769;
+  --brand-teal: #00E5B9;
+  --brand-purple: #6c41f0;
+  --brand-rose: #d52e66;
+  --brand-green: #00bd81;
+  --brand-orange: #ff5926;
+  --sidebar-w: 220px;
+  --panel-w: 320px;
+}
+
+/* Dark theme (default) */
+[data-theme="dark"] {
+  --bg: #0c0e1a;
+  --bg-surface: #151829;
+  --bg-hover: #1e2240;
+  --border: #2a2f4a;
+  --text: #e8eaf0;
+  --text-dim: #9ea3bc;
+  --accent: var(--brand-teal);
+  --accent-dim: #008f75;
+  --green: var(--brand-green);
+  --orange: var(--brand-orange);
+  --red: var(--brand-rose);
+  --purple: var(--brand-purple);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg: #f5f6fa;
+  --bg-surface: #ffffff;
+  --bg-hover: #eef0f6;
+  --border: #d8dce6;
+  --text: #1a1d2e;
+  --text-dim: #5c6078;
+  --accent: #008f60;
+  --accent-dim: #007a52;
+  --green: var(--brand-green);
+  --orange: var(--brand-orange);
+  --red: var(--brand-rose);
+  --purple: var(--brand-purple);
+}

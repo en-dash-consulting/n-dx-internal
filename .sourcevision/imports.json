@@ -1,0 +1,3674 @@
+{
+  "edges": [
+    {
+      "from": "packages/hench/src/agent/brief.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "TaskBrief",
+        "TaskBriefTask",
+        "TaskBriefParent",
+        "TaskBriefSibling",
+        "TaskBriefProject",
+        "TaskBriefLogEntry"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/agent/brief.ts",
+      "type": "static",
+      "symbols": [
+        "assembleTaskBrief",
+        "formatTaskBrief"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/agent/prompt.ts",
+      "type": "static",
+      "symbols": [
+        "buildSystemPrompt"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "HenchConfig",
+        "RunRecord",
+        "ToolCallRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "saveRun"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "type": "static",
+      "symbols": [
+        "toolRexUpdateStatus",
+        "toolRexAppendLog"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/agent/brief.ts",
+      "type": "static",
+      "symbols": [
+        "assembleTaskBrief",
+        "formatTaskBrief"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/agent/prompt.ts",
+      "type": "static",
+      "symbols": [
+        "buildSystemPrompt"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/agent/tools.ts",
+      "type": "static",
+      "symbols": [
+        "TOOL_DEFINITIONS",
+        "dispatchTool"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/agent/tools.ts",
+      "type": "type",
+      "symbols": [
+        "ToolContext"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/guard/index.ts",
+      "type": "static",
+      "symbols": [
+        "GuardRails"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "HenchConfig",
+        "RunRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "saveRun"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/prompt.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "HenchConfig",
+        "TaskBriefProject"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/tools.ts",
+      "to": "packages/hench/src/guard/index.ts",
+      "type": "static",
+      "symbols": [
+        "GuardError"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/tools.ts",
+      "to": "packages/hench/src/guard/index.ts",
+      "type": "type",
+      "symbols": [
+        "GuardRails"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/tools.ts",
+      "to": "packages/hench/src/tools/files.ts",
+      "type": "static",
+      "symbols": [
+        "toolReadFile",
+        "toolWriteFile",
+        "toolListDirectory",
+        "toolSearchFiles"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/tools.ts",
+      "to": "packages/hench/src/tools/git.ts",
+      "type": "static",
+      "symbols": [
+        "toolGit"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/tools.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "type": "static",
+      "symbols": [
+        "toolRexUpdateStatus",
+        "toolRexAppendLog",
+        "toolRexAddSubtask"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/tools.ts",
+      "to": "packages/hench/src/tools/shell.ts",
+      "type": "static",
+      "symbols": [
+        "toolRunCommand"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/init.ts",
+      "to": "packages/hench/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "HENCH_DIR"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/init.ts",
+      "to": "packages/hench/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "ensureHenchDir",
+        "configExists",
+        "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/agent/cli-loop.ts",
+      "type": "static",
+      "symbols": [
+        "cliLoop"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/agent/loop.ts",
+      "type": "static",
+      "symbols": [
+        "agentLoop"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "HENCH_DIR",
+        "safeParseInt"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "loadConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/show.ts",
+      "to": "packages/hench/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "HENCH_DIR"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/show.ts",
+      "to": "packages/hench/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "loadRun"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/status.ts",
+      "to": "packages/hench/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "HENCH_DIR",
+        "safeParseInt"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/status.ts",
+      "to": "packages/hench/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "listRuns"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/index.ts",
+      "to": "packages/hench/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "usage"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/index.ts",
+      "to": "packages/hench/src/cli/commands/init.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/index.ts",
+      "to": "packages/hench/src/cli/commands/run.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/index.ts",
+      "to": "packages/hench/src/cli/commands/show.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/index.ts",
+      "to": "packages/hench/src/cli/commands/status.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/src/guard/commands.ts",
+      "to": "packages/hench/src/guard/paths.ts",
+      "type": "static",
+      "symbols": [
+        "GuardError"
+      ]
+    },
+    {
+      "from": "packages/hench/src/guard/index.ts",
+      "to": "packages/hench/src/guard/commands.ts",
+      "type": "reexport",
+      "symbols": [
+        "validateCommand"
+      ]
+    },
+    {
+      "from": "packages/hench/src/guard/index.ts",
+      "to": "packages/hench/src/guard/commands.ts",
+      "type": "static",
+      "symbols": [
+        "validateCommand"
+      ]
+    },
+    {
+      "from": "packages/hench/src/guard/index.ts",
+      "to": "packages/hench/src/guard/paths.ts",
+      "type": "reexport",
+      "symbols": [
+        "GuardError",
+        "validatePath",
+        "simpleGlobMatch"
+      ]
+    },
+    {
+      "from": "packages/hench/src/guard/index.ts",
+      "to": "packages/hench/src/guard/paths.ts",
+      "type": "static",
+      "symbols": [
+        "validatePath",
+        "simpleGlobMatch"
+      ]
+    },
+    {
+      "from": "packages/hench/src/guard/index.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "GuardConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/src/schema/index.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "reexport",
+      "symbols": [
+        "HENCH_SCHEMA_VERSION",
+        "DEFAULT_HENCH_CONFIG",
+        "GuardConfig",
+        "HenchConfig",
+        "Provider",
+        "RunStatus",
+        "ToolCallRecord",
+        "TokenUsage",
+        "RunRecord",
+        "TaskBrief",
+        "TaskBriefTask",
+        "TaskBriefParent",
+        "TaskBriefSibling",
+        "TaskBriefProject",
+        "TaskBriefLogEntry"
+      ]
+    },
+    {
+      "from": "packages/hench/src/schema/index.ts",
+      "to": "packages/hench/src/schema/validate.ts",
+      "type": "reexport",
+      "symbols": [
+        "HenchConfigSchema",
+        "RunRecordSchema",
+        "validateConfig",
+        "validateRunRecord",
+        "ValidationResult"
+      ]
+    },
+    {
+      "from": "packages/hench/src/store/config.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "validateConfig",
+        "DEFAULT_HENCH_CONFIG"
+      ]
+    },
+    {
+      "from": "packages/hench/src/store/config.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "HenchConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/src/store/config.ts",
+      "to": "packages/hench/src/store/json.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/hench/src/store/index.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "reexport",
+      "symbols": [
+        "ensureHenchDir",
+        "loadConfig",
+        "saveConfig",
+        "configExists",
+        "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/src/store/index.ts",
+      "to": "packages/hench/src/store/runs.ts",
+      "type": "reexport",
+      "symbols": [
+        "saveRun",
+        "loadRun",
+        "listRuns"
+      ]
+    },
+    {
+      "from": "packages/hench/src/store/runs.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "validateRunRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/src/store/runs.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "RunRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/src/store/runs.ts",
+      "to": "packages/hench/src/store/json.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/hench/src/tools/files.ts",
+      "to": "packages/hench/src/guard/index.ts",
+      "type": "type",
+      "symbols": [
+        "GuardRails"
+      ]
+    },
+    {
+      "from": "packages/hench/src/tools/files.ts",
+      "to": "packages/hench/src/guard/paths.ts",
+      "type": "static",
+      "symbols": [
+        "simpleGlobMatch"
+      ]
+    },
+    {
+      "from": "packages/hench/src/tools/shell.ts",
+      "to": "packages/hench/src/guard/index.ts",
+      "type": "type",
+      "symbols": [
+        "GuardRails"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/integration/store-roundtrip.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_HENCH_CONFIG"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/integration/store-roundtrip.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "RunRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/integration/store-roundtrip.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "static",
+      "symbols": [
+        "ensureHenchDir",
+        "loadConfig",
+        "saveConfig",
+        "configExists",
+        "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/integration/store-roundtrip.test.ts",
+      "to": "packages/hench/src/store/runs.ts",
+      "type": "static",
+      "symbols": [
+        "saveRun",
+        "loadRun",
+        "listRuns"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/brief.test.ts",
+      "to": "packages/hench/src/agent/brief.ts",
+      "type": "static",
+      "symbols": [
+        "formatTaskBrief"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/brief.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "TaskBrief"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/loop.test.ts",
+      "to": "packages/hench/src/agent/loop.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/loop.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/loop.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "static",
+      "symbols": [
+        "ensureHenchDir",
+        "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/prompt.test.ts",
+      "to": "packages/hench/src/agent/prompt.ts",
+      "type": "static",
+      "symbols": [
+        "buildSystemPrompt"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/prompt.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_HENCH_CONFIG"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/prompt.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "TaskBriefProject"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/guard/commands.test.ts",
+      "to": "packages/hench/src/guard/commands.ts",
+      "type": "static",
+      "symbols": [
+        "validateCommand"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/guard/commands.test.ts",
+      "to": "packages/hench/src/guard/paths.ts",
+      "type": "static",
+      "symbols": [
+        "GuardError"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/guard/paths.test.ts",
+      "to": "packages/hench/src/guard/paths.ts",
+      "type": "static",
+      "symbols": [
+        "validatePath",
+        "simpleGlobMatch",
+        "GuardError"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/schema/validate.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_HENCH_CONFIG"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/schema/validate.test.ts",
+      "to": "packages/hench/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateConfig",
+        "validateRunRecord",
+        "HenchConfigSchema",
+        "RunRecordSchema"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/files.test.ts",
+      "to": "packages/hench/src/guard/index.ts",
+      "type": "static",
+      "symbols": [
+        "GuardRails"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/files.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_HENCH_CONFIG"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/files.test.ts",
+      "to": "packages/hench/src/tools/files.ts",
+      "type": "static",
+      "symbols": [
+        "toolReadFile",
+        "toolWriteFile",
+        "toolListDirectory",
+        "toolSearchFiles"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/git.test.ts",
+      "to": "packages/hench/src/tools/git.ts",
+      "type": "static",
+      "symbols": [
+        "toolGit"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/rex.test.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "type": "static",
+      "symbols": [
+        "toolRexUpdateStatus",
+        "toolRexAppendLog",
+        "toolRexAddSubtask"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/shell.test.ts",
+      "to": "packages/hench/src/guard/index.ts",
+      "type": "static",
+      "symbols": [
+        "GuardRails"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/shell.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_HENCH_CONFIG"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/shell.test.ts",
+      "to": "packages/hench/src/tools/shell.ts",
+      "type": "static",
+      "symbols": [
+        "toolRunCommand"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "reexport",
+      "symbols": [
+        "Proposal",
+        "ProposalFeature",
+        "ProposalTask",
+        "buildProposals"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/reconcile.ts",
+      "type": "reexport",
+      "symbols": [
+        "ReconcileStats",
+        "reconcile"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/scanners.ts",
+      "type": "reexport",
+      "symbols": [
+        "ScanResult",
+        "ScanOptions",
+        "scanTests",
+        "scanDocs",
+        "scanSourceVision"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/propose.ts",
+      "to": "packages/rex/src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reconcile.ts",
+      "to": "packages/rex/src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reconcile.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reconcile.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/scanners.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Priority"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/add.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/add.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/add.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "LEVEL_HIERARCHY"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/add.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemLevel",
+        "ItemStatus",
+        "Priority"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/add.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "static",
+      "symbols": [
+        "scanTests",
+        "scanDocs",
+        "scanSourceVision",
+        "reconcile",
+        "buildProposals"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult",
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/init.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/init.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/init.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION",
+        "DEFAULT_CONFIG"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/init.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/init.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "ensureRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/init.ts",
+      "to": "packages/rex/src/workflow/default.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_WORKFLOW"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/next.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/next.ts",
+      "to": "packages/rex/src/core/next-task.ts",
+      "type": "static",
+      "symbols": [
+        "findNextTask",
+        "collectCompletedIds"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/next.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/recommend.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/recommend.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/recommend.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "computeStats"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "type",
+      "symbols": [
+        "TreeStats"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemStatus",
+        "Priority"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate.ts",
+      "to": "packages/rex/src/core/dag.ts",
+      "type": "static",
+      "symbols": [
+        "validateDAG"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION",
+        "validateDocument",
+        "validateConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/add.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/analyze.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "usage"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/init.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/next.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/recommend.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/status.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/update.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/validate.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/mcp.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "TOOL_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/core/next-task.ts",
+      "type": "static",
+      "symbols": [
+        "findNextTask",
+        "collectCompletedIds"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "computeStats",
+        "findItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION",
+        "LEVEL_HIERARCHY"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemLevel",
+        "ItemStatus",
+        "Priority"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/canonical.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "Priority"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/dag.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree",
+        "collectAllIds"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/dag.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/next-task.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "type",
+      "symbols": [
+        "TreeEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/next-task.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "Priority"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/tree.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/schema/index.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "reexport",
+      "symbols": [
+        "SCHEMA_VERSION",
+        "LEVEL_HIERARCHY",
+        "DEFAULT_CONFIG",
+        "ItemLevel",
+        "ItemStatus",
+        "Priority",
+        "PRDItem",
+        "PRDDocument",
+        "RexConfig",
+        "LogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/schema/index.ts",
+      "to": "packages/rex/src/schema/validate.ts",
+      "type": "reexport",
+      "symbols": [
+        "PRDItemSchema",
+        "PRDDocumentSchema",
+        "RexConfigSchema",
+        "LogEntrySchema",
+        "validateDocument",
+        "validateConfig",
+        "validateLogEntry",
+        "ValidationResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/file-adapter.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/file-adapter.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem",
+        "insertChild",
+        "updateInTree",
+        "removeFromTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/file-adapter.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "validateDocument",
+        "validateConfig",
+        "validateLogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/file-adapter.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem",
+        "RexConfig",
+        "LogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/file-adapter.ts",
+      "to": "packages/rex/src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore",
+        "StoreCapabilities"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/file-adapter.ts",
+      "type": "reexport",
+      "symbols": [
+        "FileStore",
+        "ensureRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/file-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/types.ts",
+      "type": "reexport",
+      "symbols": [
+        "PRDStore",
+        "StoreCapabilities"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/types.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem",
+        "RexConfig",
+        "LogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/store-roundtrip.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/store-roundtrip.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/store-roundtrip.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/store-roundtrip.test.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore",
+        "ensureRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/store-roundtrip.test.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/propose.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "static",
+      "symbols": [
+        "buildProposals"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/propose.test.ts",
+      "to": "packages/rex/src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/reconcile.test.ts",
+      "to": "packages/rex/src/analyze/reconcile.ts",
+      "type": "static",
+      "symbols": [
+        "reconcile"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/reconcile.test.ts",
+      "to": "packages/rex/src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/reconcile.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/scanners.test.ts",
+      "to": "packages/rex/src/analyze/scanners.ts",
+      "type": "static",
+      "symbols": [
+        "scanTests",
+        "scanDocs",
+        "scanSourceVision"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/canonical.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON",
+        "sortItems"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/canonical.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/dag.test.ts",
+      "to": "packages/rex/src/core/dag.ts",
+      "type": "static",
+      "symbols": [
+        "validateDAG"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/dag.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/next-task.test.ts",
+      "to": "packages/rex/src/core/next-task.ts",
+      "type": "static",
+      "symbols": [
+        "findNextTask",
+        "collectCompletedIds"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/next-task.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/tree.test.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree",
+        "findItem",
+        "insertChild",
+        "updateInTree",
+        "removeFromTree",
+        "computeStats",
+        "getParentChain",
+        "collectAllIds"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/tree.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/schema/validate.test.ts",
+      "to": "packages/rex/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateDocument",
+        "validateConfig",
+        "validateLogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/file-adapter.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/file-adapter.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/file-adapter.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/file-adapter.test.ts",
+      "to": "packages/rex/src/store/file-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore",
+        "ensureRexDir"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/claude-cli.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "type": "static",
+      "symbols": [
+        "IDLE_TIMEOUT_MS",
+        "OVERALL_TIMEOUT_MS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/components.ts",
+      "to": "packages/sourcevision/src/analyzers/route-detection.ts",
+      "type": "static",
+      "symbols": [
+        "ROUTE_EXPORT_NAMES",
+        "parseFileRoutePattern",
+        "buildRouteTree",
+        "findRoutesConfig",
+        "parseRoutesConfig",
+        "findRoutesDir"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/components.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "ComponentKind",
+        "ComponentDefinition",
+        "ComponentUsageEdge",
+        "RouteExportKind",
+        "RouteModule",
+        "RouteTreeNode",
+        "Components",
+        "ComponentsSummary",
+        "Inventory",
+        "Imports"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/components.ts",
+      "to": "packages/sourcevision/src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "sortComponents"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/context.ts",
+      "to": "packages/sourcevision/src/analyzers/next-steps.ts",
+      "type": "static",
+      "symbols": [
+        "deriveNextSteps"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/context.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Components"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing",
+        "Finding",
+        "FindingType"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "Finding",
+        "FindingType"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/claude-cli.ts",
+      "type": "reexport",
+      "symbols": [
+        "tryCallClaude",
+        "ClaudeCallResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/claude-cli.ts",
+      "type": "static",
+      "symbols": [
+        "tryCallClaude"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "type": "reexport",
+      "symbols": [
+        "PASS_CONFIGS",
+        "getPassConfig",
+        "buildMetaPrompt",
+        "computeAttemptConfigs",
+        "PassConfig"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "type": "static",
+      "symbols": [
+        "ZONES_PER_BATCH",
+        "MAX_CONCURRENT_BATCHES",
+        "IDLE_TIMEOUT_MS",
+        "OVERALL_TIMEOUT_MS",
+        "getPassConfig",
+        "computeAttemptConfigs",
+        "buildMetaPrompt"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "type": "type",
+      "symbols": [
+        "PassConfig"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "type": "reexport",
+      "symbols": [
+        "tryParseJSON",
+        "extractFindings",
+        "EnrichResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "tryParseJSON",
+        "extractFindings",
+        "deduplicateZoneIds"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "type": "type",
+      "symbols": [
+        "EnrichResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "Zone",
+        "ZoneCrossing",
+        "Zones",
+        "Finding"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/imports.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "ImportEdge",
+        "ImportType",
+        "ExternalImport",
+        "Imports",
+        "ImportsSummary",
+        "Inventory"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/imports.ts",
+      "to": "packages/sourcevision/src/util/merge.ts",
+      "type": "static",
+      "symbols": [
+        "detectCirculars"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/imports.ts",
+      "to": "packages/sourcevision/src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "sortImports"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/index.ts",
+      "to": "packages/sourcevision/src/analyzers/components.ts",
+      "type": "reexport",
+      "symbols": [
+        "analyzeComponents",
+        "extractComponentDefinitions",
+        "extractJsxUsages",
+        "extractConventionExports"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/index.ts",
+      "to": "packages/sourcevision/src/analyzers/imports.ts",
+      "type": "reexport",
+      "symbols": [
+        "analyzeImports",
+        "extractImports",
+        "extractPackageName"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/index.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "reexport",
+      "symbols": [
+        "analyzeInventory",
+        "detectLanguage",
+        "classifyRole",
+        "deriveCategory",
+        "isBinary",
+        "loadIgnoreFilter",
+        "IgnoreFilter"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/index.ts",
+      "to": "packages/sourcevision/src/analyzers/manifest.ts",
+      "type": "reexport",
+      "symbols": [
+        "readManifest",
+        "writeManifest",
+        "updateManifestModule",
+        "updateManifestError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/index.ts",
+      "to": "packages/sourcevision/src/analyzers/route-detection.ts",
+      "type": "reexport",
+      "symbols": [
+        "parseFileRoutePattern",
+        "buildRouteTree",
+        "findRoutesConfig",
+        "parseRoutesConfig",
+        "findRoutesDir"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/index.ts",
+      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "type": "reexport",
+      "symbols": [
+        "analyzeZones"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/inventory.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "FileEntry",
+        "FileRole",
+        "Inventory"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/inventory.ts",
+      "to": "packages/sourcevision/src/util/merge.ts",
+      "type": "static",
+      "symbols": [
+        "computeInventorySummary"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/inventory.ts",
+      "to": "packages/sourcevision/src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "sortInventory",
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/llms-txt.ts",
+      "to": "packages/sourcevision/src/analyzers/next-steps.ts",
+      "type": "static",
+      "symbols": [
+        "deriveNextSteps"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/llms-txt.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Components"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/louvain.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "ImportEdge"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/manifest.ts",
+      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR",
+        "TOOL_VERSION"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/manifest.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "ModuleStatus"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/next-steps.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zones",
+        "Finding",
+        "NextStep"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/route-detection.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "RouteExportKind",
+        "RouteModule",
+        "RouteTreeNode"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich.ts",
+      "type": "static",
+      "symbols": [
+        "enrichZonesWithAI"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich.ts",
+      "type": "type",
+      "symbols": [
+        "EnrichResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/louvain.ts",
+      "type": "static",
+      "symbols": [
+        "buildUndirectedGraph",
+        "louvainPhase1",
+        "mergeBidirectionalCoupling",
+        "mergeSmallCommunities",
+        "capZoneCount"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "Zone",
+        "ZoneCrossing",
+        "Zones",
+        "Finding"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "sortZonesData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/components.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeComponents"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/context.ts",
+      "type": "static",
+      "symbols": [
+        "generateContext"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/imports.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeImports"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeInventory"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "type",
+      "symbols": [
+        "InventoryResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/llms-txt.ts",
+      "type": "static",
+      "symbols": [
+        "generateLlmsTxt"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/manifest.ts",
+      "type": "static",
+      "symbols": [
+        "updateManifestModule",
+        "updateManifestError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeZones"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/cli/commands/init.ts",
+      "type": "static",
+      "symbols": [
+        "cmdInit"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES",
+        "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/init.ts",
+      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "TOOL_VERSION",
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/init.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/reset.ts",
+      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/validate.ts",
+      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/validate.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/validate.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "validateManifest",
+        "validateInventory",
+        "validateImports",
+        "validateZones",
+        "validateComponents"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "type": "static",
+      "symbols": [
+        "cmdAnalyze"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "usage",
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/commands/init.ts",
+      "type": "static",
+      "symbols": [
+        "cmdInit"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/commands/reset.ts",
+      "type": "static",
+      "symbols": [
+        "cmdReset"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/commands/validate.ts",
+      "type": "static",
+      "symbols": [
+        "cmdValidate"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/mcp.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/serve.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/mcp.ts",
+      "to": "packages/sourcevision/src/analyzers/context.ts",
+      "type": "static",
+      "symbols": [
+        "generateContext"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/mcp.ts",
+      "to": "packages/sourcevision/src/analyzers/next-steps.ts",
+      "type": "static",
+      "symbols": [
+        "deriveNextSteps"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/mcp.ts",
+      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/mcp.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/mcp.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Components"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/serve.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "ALL_DATA_FILES",
+        "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/schema/index.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "reexport",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/schema/index.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "type": "reexport",
+      "symbols": [
+        "ManifestSchema",
+        "InventorySchema",
+        "ImportsSchema",
+        "ZonesSchema",
+        "FindingSchema",
+        "ComponentsSchema",
+        "validateManifest",
+        "validateInventory",
+        "validateImports",
+        "validateZones",
+        "validateComponents",
+        "validateModule",
+        "ValidationResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/schema/validate.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/util/merge.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "FileEntry",
+        "Inventory",
+        "InventorySummary",
+        "ImportEdge",
+        "ExternalImport",
+        "Imports",
+        "FileRole"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/util/merge.ts",
+      "to": "packages/sourcevision/src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "sortInventory",
+        "sortImports"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/util/sort.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "FileEntry",
+        "ImportEdge",
+        "ExternalImport",
+        "Zone",
+        "ZoneCrossing",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Finding",
+        "ComponentDefinition",
+        "ComponentUsageEdge",
+        "RouteModule",
+        "Components"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/detail-panel.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ZONE_COLORS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/detail-panel.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData",
+        "NavigateTo",
+        "DetailItem",
+        "FileDetail",
+        "ZoneDetail"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/detail-panel.ts",
+      "to": "packages/sourcevision/src/viewer/utils.ts",
+      "type": "static",
+      "symbols": [
+        "meterClass"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/findings-list.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Finding"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/findings-list.ts",
+      "to": "packages/sourcevision/src/viewer/components/collapsible-section.ts",
+      "type": "static",
+      "symbols": [
+        "CollapsibleSection"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/findings-list.ts",
+      "to": "packages/sourcevision/src/viewer/components/search-filter.ts",
+      "type": "static",
+      "symbols": [
+        "SearchFilter"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/sidebar.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Zones"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/sidebar.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ENRICHMENT_THRESHOLDS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/sidebar.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/graph/renderer.ts",
+      "to": "packages/sourcevision/src/viewer/graph/physics.ts",
+      "type": "static",
+      "symbols": [
+        "SimState",
+        "TickCallbacks",
+        "initZoneClusteredPositions",
+        "tick"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/loader.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/loader.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Components"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/loader.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateManifest",
+        "validateInventory",
+        "validateImports",
+        "validateZones",
+        "validateComponents"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/loader.ts",
+      "to": "packages/sourcevision/src/viewer/schema-compat.ts",
+      "type": "static",
+      "symbols": [
+        "migrateData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/loader.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "ALL_DATA_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/components/detail-panel.ts",
+      "type": "static",
+      "symbols": [
+        "DetailPanel"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/components/guide.ts",
+      "type": "static",
+      "symbols": [
+        "Guide"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/components/sidebar.ts",
+      "type": "static",
+      "symbols": [
+        "Sidebar"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/components/theme-toggle.ts",
+      "type": "static",
+      "symbols": [
+        "ThemeToggle",
+        "initTheme"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/loader.ts",
+      "type": "static",
+      "symbols": [
+        "loadFromServer",
+        "loadFromFiles",
+        "detectMode",
+        "onDataChange",
+        "startPolling",
+        "stopPolling"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData",
+        "ViewId",
+        "NavigateTo",
+        "DetailItem"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/architecture.ts",
+      "type": "static",
+      "symbols": [
+        "ArchitectureView"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/files.ts",
+      "type": "static",
+      "symbols": [
+        "FilesView"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/graph.ts",
+      "type": "static",
+      "symbols": [
+        "Graph"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/overview.ts",
+      "type": "static",
+      "symbols": [
+        "Overview"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/problems.ts",
+      "type": "static",
+      "symbols": [
+        "ProblemsView"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/routes.ts",
+      "type": "static",
+      "symbols": [
+        "RoutesView"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/suggestions.ts",
+      "type": "static",
+      "symbols": [
+        "SuggestionsView"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/zones.ts",
+      "type": "static",
+      "symbols": [
+        "ZonesView"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/schema-compat.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/schema-compat.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/types.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Components"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/utils.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Zones"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/utils.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ZONE_COLORS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/architecture.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Finding"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/architecture.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ENRICHMENT_THRESHOLDS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/architecture.ts",
+      "to": "packages/sourcevision/src/viewer/components/findings-list.ts",
+      "type": "static",
+      "symbols": [
+        "FindingsList"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/architecture.ts",
+      "to": "packages/sourcevision/src/viewer/components/mini-charts.ts",
+      "type": "static",
+      "symbols": [
+        "BarChart",
+        "FlowDiagram"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/architecture.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData",
+        "NavigateTo",
+        "DetailItem"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/architecture.ts",
+      "to": "packages/sourcevision/src/viewer/utils.ts",
+      "type": "static",
+      "symbols": [
+        "buildFlowNodes",
+        "buildFlowEdges"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/files.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "FileEntry"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/files.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ZONE_COLORS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/files.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData",
+        "NavigateTo",
+        "DetailItem"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/files.ts",
+      "to": "packages/sourcevision/src/viewer/utils.ts",
+      "type": "static",
+      "symbols": [
+        "buildFileToZoneMap"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/graph.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ZONE_COLORS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/graph.ts",
+      "to": "packages/sourcevision/src/viewer/graph/renderer.ts",
+      "type": "static",
+      "symbols": [
+        "GraphRenderer",
+        "GraphNode",
+        "GraphLink"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/graph.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData",
+        "DetailItem"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/overview.ts",
+      "to": "packages/sourcevision/src/viewer/components/collapsible-section.ts",
+      "type": "static",
+      "symbols": [
+        "CollapsibleSection"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/overview.ts",
+      "to": "packages/sourcevision/src/viewer/components/mini-charts.ts",
+      "type": "static",
+      "symbols": [
+        "BarChart"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/overview.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/problems.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Finding"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/problems.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ENRICHMENT_THRESHOLDS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/problems.ts",
+      "to": "packages/sourcevision/src/viewer/components/findings-list.ts",
+      "type": "static",
+      "symbols": [
+        "FindingsList"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/problems.ts",
+      "to": "packages/sourcevision/src/viewer/components/mini-charts.ts",
+      "type": "static",
+      "symbols": [
+        "BarChart"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/problems.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/routes.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "RouteTreeNode",
+        "RouteExportKind",
+        "ComponentUsageEdge"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/routes.ts",
+      "to": "packages/sourcevision/src/viewer/components/collapsible-section.ts",
+      "type": "static",
+      "symbols": [
+        "CollapsibleSection"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/routes.ts",
+      "to": "packages/sourcevision/src/viewer/components/mini-charts.ts",
+      "type": "static",
+      "symbols": [
+        "BarChart"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/routes.ts",
+      "to": "packages/sourcevision/src/viewer/components/search-filter.ts",
+      "type": "static",
+      "symbols": [
+        "SearchFilter"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/routes.ts",
+      "to": "packages/sourcevision/src/viewer/components/tree-view.ts",
+      "type": "static",
+      "symbols": [
+        "TreeView",
+        "TreeNode"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/routes.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/suggestions.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Finding"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/suggestions.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ENRICHMENT_THRESHOLDS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/suggestions.ts",
+      "to": "packages/sourcevision/src/viewer/components/findings-list.ts",
+      "type": "static",
+      "symbols": [
+        "FindingsList"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/suggestions.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/zones.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "Finding"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/zones.ts",
+      "to": "packages/sourcevision/src/viewer/components/collapsible-section.ts",
+      "type": "static",
+      "symbols": [
+        "CollapsibleSection"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/zones.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ZONE_COLORS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/zones.ts",
+      "to": "packages/sourcevision/src/viewer/components/mini-charts.ts",
+      "type": "static",
+      "symbols": [
+        "FlowDiagram"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/zones.ts",
+      "to": "packages/sourcevision/src/viewer/components/search-filter.ts",
+      "type": "static",
+      "symbols": [
+        "SearchFilter"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/zones.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData",
+        "NavigateTo",
+        "DetailItem"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/zones.ts",
+      "to": "packages/sourcevision/src/viewer/utils.ts",
+      "type": "static",
+      "symbols": [
+        "meterClass",
+        "buildFlowNodes",
+        "buildFlowEdges"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/e2e/cli-analyze.test.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateInventory",
+        "validateImports",
+        "validateZones",
+        "validateComponents"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/fixtures/small-ts-project/src/index.ts",
+      "to": "packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts",
+      "type": "static",
+      "symbols": [
+        "UserService"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/fixtures/small-ts-project/src/index.ts",
+      "to": "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts",
+      "type": "static",
+      "symbols": [
+        "formatName"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/fixtures/small-ts-project/src/services/email-service.ts",
+      "to": "packages/sourcevision/tests/fixtures/small-ts-project/src/models/user.ts",
+      "type": "static",
+      "symbols": [
+        "User"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts",
+      "to": "packages/sourcevision/tests/fixtures/small-ts-project/src/models/user.ts",
+      "type": "static",
+      "symbols": [
+        "User",
+        "createUser"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts",
+      "to": "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts",
+      "type": "static",
+      "symbols": [
+        "formatName"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts",
+      "to": "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateName"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/validate.ts",
+      "to": "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts",
+      "type": "static",
+      "symbols": [
+        "formatName"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/context.test.ts",
+      "to": "packages/sourcevision/src/analyzers/context.ts",
+      "type": "static",
+      "symbols": [
+        "generateContext"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/context.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Components"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/llms-txt.test.ts",
+      "to": "packages/sourcevision/src/analyzers/llms-txt.ts",
+      "type": "static",
+      "symbols": [
+        "generateLlmsTxt"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/llms-txt.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Components"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/components.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeComponents"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/imports.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeImports"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeInventory"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeZones"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateInventory",
+        "validateImports",
+        "validateZones",
+        "validateComponents"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/components.test.ts",
+      "to": "packages/sourcevision/src/analyzers/components.ts",
+      "type": "static",
+      "symbols": [
+        "extractComponentDefinitions",
+        "extractJsxUsages",
+        "extractConventionExports",
+        "analyzeComponents"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/components.test.ts",
+      "to": "packages/sourcevision/src/analyzers/imports.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeImports"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/components.test.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeInventory"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/components.test.ts",
+      "to": "packages/sourcevision/src/analyzers/route-detection.ts",
+      "type": "static",
+      "symbols": [
+        "parseFileRoutePattern",
+        "buildRouteTree",
+        "findRoutesConfig",
+        "parseRoutesConfig"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/imports.test.ts",
+      "to": "packages/sourcevision/src/analyzers/imports.ts",
+      "type": "static",
+      "symbols": [
+        "extractImports",
+        "extractPackageName",
+        "analyzeImports"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/imports.test.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeInventory"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/imports.test.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "type",
+      "symbols": [
+        "InventoryResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/inventory.test.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "static",
+      "symbols": [
+        "detectLanguage",
+        "classifyRole",
+        "deriveCategory",
+        "isBinary",
+        "analyzeInventory",
+        "IgnoreFilter",
+        "loadIgnoreFilter"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/inventory.test.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "type",
+      "symbols": [
+        "InventoryResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/manifest.test.ts",
+      "to": "packages/sourcevision/src/analyzers/manifest.ts",
+      "type": "static",
+      "symbols": [
+        "readManifest",
+        "writeManifest",
+        "updateManifestModule",
+        "updateManifestError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/next-steps.test.ts",
+      "to": "packages/sourcevision/src/analyzers/next-steps.ts",
+      "type": "static",
+      "symbols": [
+        "deriveNextSteps"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/next-steps.test.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Zones",
+        "Finding"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich.ts",
+      "type": "static",
+      "symbols": [
+        "enrichZonesWithAI",
+        "computeAttemptConfigs",
+        "extractFindings"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
+      "to": "packages/sourcevision/src/analyzers/louvain.ts",
+      "type": "static",
+      "symbols": [
+        "buildUndirectedGraph",
+        "louvainPhase1",
+        "mergeSmallCommunities"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
+      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "type": "static",
+      "symbols": [
+        "deriveZoneId",
+        "deriveZoneName",
+        "analyzeZones",
+        "assignByProximity",
+        "computeStructureHash",
+        "generateStructuralInsights"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "ImportEdge",
+        "FileEntry",
+        "Zone",
+        "ZoneCrossing",
+        "Finding",
+        "FindingType"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/schema/data-files.test.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES",
+        "ALL_DATA_FILES",
+        "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/schema/validate.test.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateManifest",
+        "validateInventory",
+        "validateImports",
+        "validateZones",
+        "validateComponents",
+        "validateModule"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/util/merge.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "ImportEdge"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/util/merge.test.ts",
+      "to": "packages/sourcevision/src/util/merge.ts",
+      "type": "static",
+      "symbols": [
+        "mergeInventories",
+        "mergeImports",
+        "detectCirculars",
+        "chunkByTopDir"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/util/sort.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "FileEntry",
+        "ImportEdge",
+        "ExternalImport",
+        "Inventory",
+        "Imports",
+        "Finding"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/util/sort.test.ts",
+      "to": "packages/sourcevision/src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "sortFiles",
+        "sortEdges",
+        "sortExternals",
+        "sortInventory",
+        "sortImports",
+        "sortFindings",
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/bar-chart.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/mini-charts.ts",
+      "type": "static",
+      "symbols": [
+        "BarChart"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/collapsible-section.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/collapsible-section.ts",
+      "type": "static",
+      "symbols": [
+        "CollapsibleSection"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/detail-panel.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/detail-panel.ts",
+      "type": "static",
+      "symbols": [
+        "DetailPanel"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/flow-diagram.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/mini-charts.ts",
+      "type": "static",
+      "symbols": [
+        "FlowDiagram"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/tree-view.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/tree-view.ts",
+      "type": "static",
+      "symbols": [
+        "TreeView",
+        "TreeNode"
+      ]
+    }
+  ],
+  "external": [
+    {
+      "package": "@anthropic-ai/sdk",
+      "importedBy": [
+        "packages/hench/src/agent/loop.ts",
+        "packages/hench/src/agent/tools.ts"
+      ],
+      "symbols": [
+        "default"
+      ]
+    },
+    {
+      "package": "@modelcontextprotocol/sdk",
+      "importedBy": [
+        "packages/rex/src/cli/mcp.ts",
+        "packages/sourcevision/src/cli/mcp.ts"
+      ],
+      "symbols": [
+        "McpServer",
+        "StdioServerTransport"
+      ]
+    },
+    {
+      "package": "esbuild",
+      "importedBy": [
+        "packages/sourcevision/build.js"
+      ],
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "package": "preact",
+      "importedBy": [
+        "packages/sourcevision/src/viewer/components/collapsible-section.ts",
+        "packages/sourcevision/src/viewer/components/detail-panel.ts",
+        "packages/sourcevision/src/viewer/components/findings-list.ts",
+        "packages/sourcevision/src/viewer/components/guide.ts",
+        "packages/sourcevision/src/viewer/components/mini-charts.ts",
+        "packages/sourcevision/src/viewer/components/search-filter.ts",
+        "packages/sourcevision/src/viewer/components/sidebar.ts",
+        "packages/sourcevision/src/viewer/components/theme-toggle.ts",
+        "packages/sourcevision/src/viewer/components/tree-view.ts",
+        "packages/sourcevision/src/viewer/main.ts",
+        "packages/sourcevision/src/viewer/views/architecture.ts",
+        "packages/sourcevision/src/viewer/views/files.ts",
+        "packages/sourcevision/src/viewer/views/graph.ts",
+        "packages/sourcevision/src/viewer/views/overview.ts",
+        "packages/sourcevision/src/viewer/views/problems.ts",
+        "packages/sourcevision/src/viewer/views/routes.ts",
+        "packages/sourcevision/src/viewer/views/suggestions.ts",
+        "packages/sourcevision/src/viewer/views/zones.ts",
+        "packages/sourcevision/tests/unit/viewer/bar-chart.test.ts",
+        "packages/sourcevision/tests/unit/viewer/collapsible-section.test.ts",
+        "packages/sourcevision/tests/unit/viewer/detail-panel.test.ts",
+        "packages/sourcevision/tests/unit/viewer/flow-diagram.test.ts",
+        "packages/sourcevision/tests/unit/viewer/tree-view.test.ts"
+      ],
+      "symbols": [
+        "ComponentChildren",
+        "Fragment",
+        "VNode",
+        "h",
+        "render",
+        "useCallback",
+        "useEffect",
+        "useMemo",
+        "useRef",
+        "useState"
+      ]
+    },
+    {
+      "package": "rex",
+      "importedBy": [
+        "packages/hench/src/agent/brief.ts",
+        "packages/hench/src/agent/cli-loop.ts",
+        "packages/hench/src/agent/loop.ts",
+        "packages/hench/src/agent/tools.ts",
+        "packages/hench/src/cli/commands/run.ts",
+        "packages/hench/src/tools/rex.ts",
+        "packages/hench/tests/unit/agent/loop.test.ts"
+      ],
+      "symbols": [
+        "*",
+        "ItemStatus",
+        "PRDItem",
+        "PRDStore",
+        "TreeEntry",
+        "collectCompletedIds",
+        "createStore",
+        "findItem",
+        "findNextTask"
+      ]
+    },
+    {
+      "package": "typescript",
+      "importedBy": [
+        "packages/sourcevision/src/analyzers/components.ts",
+        "packages/sourcevision/src/analyzers/imports.ts",
+        "packages/sourcevision/src/analyzers/route-detection.ts"
+      ],
+      "symbols": [
+        "default"
+      ]
+    },
+    {
+      "package": "vitest",
+      "importedBy": [
+        "packages/hench/tests/e2e/cli-init.test.ts",
+        "packages/hench/tests/integration/store-roundtrip.test.ts",
+        "packages/hench/tests/unit/agent/brief.test.ts",
+        "packages/hench/tests/unit/agent/loop.test.ts",
+        "packages/hench/tests/unit/agent/prompt.test.ts",
+        "packages/hench/tests/unit/guard/commands.test.ts",
+        "packages/hench/tests/unit/guard/paths.test.ts",
+        "packages/hench/tests/unit/schema/validate.test.ts",
+        "packages/hench/tests/unit/tools/files.test.ts",
+        "packages/hench/tests/unit/tools/git.test.ts",
+        "packages/hench/tests/unit/tools/rex.test.ts",
+        "packages/hench/tests/unit/tools/shell.test.ts",
+        "packages/hench/vitest.config.ts",
+        "packages/rex/tests/e2e/cli-analyze.test.ts",
+        "packages/rex/tests/e2e/cli-init.test.ts",
+        "packages/rex/tests/e2e/cli-workflow.test.ts",
+        "packages/rex/tests/integration/store-roundtrip.test.ts",
+        "packages/rex/tests/unit/analyze/propose.test.ts",
+        "packages/rex/tests/unit/analyze/reconcile.test.ts",
+        "packages/rex/tests/unit/analyze/scanners.test.ts",
+        "packages/rex/tests/unit/core/canonical.test.ts",
+        "packages/rex/tests/unit/core/dag.test.ts",
+        "packages/rex/tests/unit/core/next-task.test.ts",
+        "packages/rex/tests/unit/core/tree.test.ts",
+        "packages/rex/tests/unit/schema/validate.test.ts",
+        "packages/rex/tests/unit/store/file-adapter.test.ts",
+        "packages/rex/vitest.config.ts",
+        "packages/sourcevision/tests/e2e/cli-analyze.test.ts",
+        "packages/sourcevision/tests/e2e/cli-serve.test.ts",
+        "packages/sourcevision/tests/integration/context.test.ts",
+        "packages/sourcevision/tests/integration/llms-txt.test.ts",
+        "packages/sourcevision/tests/integration/pipeline.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/components.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/imports.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/inventory.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/manifest.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/next-steps.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
+        "packages/sourcevision/tests/unit/schema/data-files.test.ts",
+        "packages/sourcevision/tests/unit/schema/validate.test.ts",
+        "packages/sourcevision/tests/unit/util/merge.test.ts",
+        "packages/sourcevision/tests/unit/util/sort.test.ts",
+        "packages/sourcevision/tests/unit/viewer/bar-chart.test.ts",
+        "packages/sourcevision/tests/unit/viewer/collapsible-section.test.ts",
+        "packages/sourcevision/tests/unit/viewer/detail-panel.test.ts",
+        "packages/sourcevision/tests/unit/viewer/flow-diagram.test.ts",
+        "packages/sourcevision/tests/unit/viewer/tree-view.test.ts",
+        "packages/sourcevision/vitest.config.ts"
+      ],
+      "symbols": [
+        "afterEach",
+        "beforeEach",
+        "defineConfig",
+        "describe",
+        "expect",
+        "it",
+        "vi"
+      ]
+    },
+    {
+      "package": "zod",
+      "importedBy": [
+        "packages/hench/src/schema/validate.ts",
+        "packages/rex/src/cli/mcp.ts",
+        "packages/rex/src/schema/validate.ts",
+        "packages/sourcevision/src/cli/mcp.ts",
+        "packages/sourcevision/src/schema/validate.ts"
+      ],
+      "symbols": [
+        "ZodError",
+        "z"
+      ]
+    }
+  ],
+  "summary": {
+    "totalEdges": 375,
+    "totalExternal": 8,
+    "circularCount": 0,
+    "circulars": [],
+    "mostImported": [
+      {
+        "path": "packages/rex/src/schema/index.ts",
+        "count": 30
+      },
+      {
+        "path": "packages/sourcevision/src/schema/index.ts",
+        "count": 22
+      },
+      {
+        "path": "packages/sourcevision/src/schema/v1.ts",
+        "count": 16
+      },
+      {
+        "path": "packages/sourcevision/src/viewer/types.ts",
+        "count": 13
+      },
+      {
+        "path": "packages/rex/src/store/index.ts",
+        "count": 11
+      },
+      {
+        "path": "packages/rex/src/cli/commands/constants.ts",
+        "count": 10
+      },
+      {
+        "path": "packages/hench/src/schema/index.ts",
+        "count": 9
+      },
+      {
+        "path": "packages/hench/src/schema/v1.ts",
+        "count": 9
+      },
+      {
+        "path": "packages/rex/src/core/tree.ts",
+        "count": 9
+      },
+      {
+        "path": "packages/sourcevision/src/analyzers/inventory.ts",
+        "count": 9
+      },
+      {
+        "path": "packages/sourcevision/src/viewer/components/constants.ts",
+        "count": 9
+      },
+      {
+        "path": "packages/hench/src/guard/index.ts",
+        "count": 7
+      },
+      {
+        "path": "packages/sourcevision/src/cli/commands/constants.ts",
+        "count": 7
+      },
+      {
+        "path": "packages/sourcevision/src/schema/data-files.ts",
+        "count": 7
+      },
+      {
+        "path": "packages/sourcevision/src/util/sort.ts",
+        "count": 7
+      },
+      {
+        "path": "packages/sourcevision/src/viewer/components/mini-charts.ts",
+        "count": 7
+      },
+      {
+        "path": "packages/hench/src/guard/paths.ts",
+        "count": 6
+      },
+      {
+        "path": "packages/hench/src/store/index.ts",
+        "count": 6
+      },
+      {
+        "path": "packages/rex/src/analyze/scanners.ts",
+        "count": 6
+      },
+      {
+        "path": "packages/hench/src/cli/commands/constants.ts",
+        "count": 5
+      }
+    ],
+    "avgImportsPerFile": 2.95
+  }
+}

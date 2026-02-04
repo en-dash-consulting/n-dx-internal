@@ -1,0 +1,27 @@
+{
+  "schema": "hench/v1",
+  "provider": "cli",
+  "model": "sonnet",
+  "maxTurns": 50,
+  "maxTokens": 8192,
+  "rexDir": ".rex",
+  "apiKeyEnv": "ANTHROPIC_API_KEY",
+  "guard": {
+    "blockedPaths": [
+      ".hench/**",
+      ".rex/**",
+      ".git/**",
+      "node_modules/**"
+    ],
+    "allowedCommands": [
+      "npm",
+      "npx",
+      "node",
+      "git",
+      "tsc",
+      "vitest"
+    ],
+    "commandTimeout": 30000,
+    "maxFileSize": 1048576
+  }
+}

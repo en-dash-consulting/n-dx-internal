@@ -1,0 +1,111 @@
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header h1 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.sidebar-header .meta {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-dim);
+  transition: all 0.15s;
+}
+
+.nav-item:hover { background: var(--bg-hover); color: var(--text); }
+.nav-item.active { background: var(--accent-dim); color: #fff; }
+
+.nav-icon { width: 16px; text-align: center; font-size: 14px; }
+
+/* Sidebar locked nav items */
+.nav-item.locked {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.nav-item.locked:hover {
+  background: transparent;
+  color: var(--text-dim);
+}
+
+.nav-badge {
+  font-size: 9px;
+  background: var(--bg-hover);
+  color: var(--text-dim);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: auto;
+}
+
+/* Sidebar logo */
+.sidebar-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+/* Theme-aware sidebar logo */
+[data-theme="dark"] .sidebar-logo-light { display: none; }
+[data-theme="light"] .sidebar-logo-dark { display: none; }
+
+/* Main content */
+.main {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 24px;
+}
+
+/* Detail panel */
+.detail-panel {
+  width: var(--panel-w);
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: none;
+}
+
+.detail-panel.open { display: block; }
+
+.detail-panel h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* Detail panel backdrop for mobile */
+.detail-backdrop {
+  display: none;
+}

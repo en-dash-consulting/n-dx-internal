@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0.0",
+  "toolVersion": "0.1.0",
+  "analyzedAt": "2026-02-03T19:09:40.257Z",
+  "targetPath": "/Users/nick/development/endash/n-dx",
+  "modules": {
+    "inventory": {
+      "status": "complete",
+      "startedAt": "2026-02-03T19:04:08.530Z",
+      "completedAt": "2026-02-03T19:04:08.593Z"
+    },
+    "imports": {
+      "status": "complete",
+      "startedAt": "2026-02-03T19:04:08.593Z",
+      "completedAt": "2026-02-03T19:04:08.728Z"
+    },
+    "zones": {
+      "status": "complete",
+      "startedAt": "2026-02-03T19:04:08.728Z",
+      "completedAt": "2026-02-03T19:09:40.238Z"
+    },
+    "components": {
+      "status": "complete",
+      "startedAt": "2026-02-03T19:09:40.239Z",
+      "completedAt": "2026-02-03T19:09:40.257Z"
+    }
+  }
+}

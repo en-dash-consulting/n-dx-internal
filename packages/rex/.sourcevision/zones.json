@@ -1,0 +1,388 @@
+{
+  "zones": [
+    {
+      "id": "rex-cli",
+      "name": "Rex PRD Management CLI",
+      "description": "A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.",
+      "files": [
+        "src/analyze/index.ts",
+        "src/analyze/propose.ts",
+        "src/analyze/reconcile.ts",
+        "src/analyze/scanners.ts",
+        "src/cli/commands/add.ts",
+        "src/cli/commands/analyze.ts",
+        "src/cli/commands/constants.ts",
+        "src/cli/commands/init.ts",
+        "src/cli/commands/next.ts",
+        "src/cli/commands/recommend.ts",
+        "src/cli/commands/status.ts",
+        "src/cli/commands/update.ts",
+        "src/cli/commands/validate.ts",
+        "src/cli/index.ts",
+        "src/cli/mcp.ts",
+        "src/core/canonical.ts",
+        "src/core/dag.ts",
+        "src/core/next-task.ts",
+        "src/core/tree.ts",
+        "src/schema/index.ts",
+        "src/schema/v1.ts",
+        "src/schema/validate.ts",
+        "src/store/file-adapter.ts",
+        "src/store/index.ts",
+        "src/store/types.ts",
+        "src/workflow/default.ts",
+        "tests/integration/store-roundtrip.test.ts",
+        "tests/unit/analyze/propose.test.ts",
+        "tests/unit/analyze/reconcile.test.ts",
+        "tests/unit/analyze/scanners.test.ts",
+        "tests/unit/core/canonical.test.ts",
+        "tests/unit/core/dag.test.ts",
+        "tests/unit/core/next-task.test.ts",
+        "tests/unit/core/tree.test.ts",
+        "tests/unit/schema/validate.test.ts",
+        "tests/unit/store/file-adapter.test.ts"
+      ],
+      "entryPoints": [],
+      "cohesion": 1,
+      "coupling": 0,
+      "insights": [
+        "High cohesion (1) — files are tightly interconnected",
+        "Contains 71% of project files (36/51) — may be too broad, consider splitting",
+        "The dependency graph flows cleanly from schema -> core -> store -> cli with no circular dependencies, indicating strong architectural discipline for a 36-file single-zone codebase.",
+        "The analyze module (scanners, propose, reconcile) is a well-isolated subsystem that could be extracted into its own zone if the project grows, since it has minimal coupling to core.",
+        "The MCP server in cli/mcp.ts at ~405 lines is the largest single file and serves as a second entry point alongside the CLI dispatcher, making it a natural seam for future zone splitting.",
+        "The store layer (file-adapter.ts) imports core/tree.js and core/canonical.js, creating a dependency inversion: store depends on core business logic instead of being a dumb persistence layer. Layering should be schema ← core ← store, but store reaches sideways into core.",
+        "PRIORITY_ORDER is duplicated three times (core/canonical.ts, core/next-task.ts, analyze/propose.ts) — a hidden coupling via copy-paste that risks drift if priority tiers change.",
+        "CLI commands init.ts and validate.ts bypass the store abstraction by directly using node:fs/promises for config file I/O, undermining the adapter pattern.",
+        "The core layer has no barrel export (no src/core/index.ts), so consumers import from individual files (core/tree.js, core/next-task.js), making the public API surface implicit rather than explicit.",
+        "REX_DIR constant is duplicated: declared in cli/commands/constants.ts and re-declared in cli/mcp.ts, creating a sync risk for the two entry points.",
+        "sortByPriority logic is duplicated between core/canonical.ts:14-27 (sortItems, recursive) and core/next-task.ts:11-18 (sortByPriority, shallow) — two subtly different sort implementations within the same core layer that can diverge.",
+        "MCP tool handlers in cli/mcp.ts reimplement the same orchestration logic as CLI commands (e.g., get_next_task duplicates cmdNext, update_task_status duplicates cmdUpdate) rather than sharing a common service layer, creating a parallel maintenance burden across ~400 lines.",
+        "The PRDItem interface in schema/v1.ts:21 has an index signature `[key: string]: unknown` alongside explicit fields, which defeats TypeScript's excess-property checking and allows arbitrary data to pass type checks silently — the `.passthrough()` on the Zod schema compounds this by accepting unknown keys at runtime too.",
+        "readLog() at store/file-adapter.ts:105 casts each parsed JSON line as LogEntry without validation (`JSON.parse(line) as LogEntry`), while appendLog() validates via Zod before writing — asymmetric serialization boundary means corrupted log files can inject malformed entries into the system.",
+        "The analyze --accept flow in cli/commands/analyze.ts:125-169 calls store.addItem() sequentially in a loop (one file write per item) with no batching or transaction, so a failure mid-loop leaves the PRD in a partially-updated state with no rollback.",
+        "update.ts:6-12 hardcodes VALID_STATUSES and VALID_PRIORITIES as string Sets instead of deriving them from the Zod enums in schema/validate.ts (ItemStatusSchema, PrioritySchema), creating a second source of truth that will drift if enum values change.",
+        "callSourceVisionMCP in recommend.ts:33-78 uses raw child_process.spawn with callback-based stream handling, but never sets a timeout — a hung sourcevision process will block the CLI indefinitely.",
+        "The PRDItemSchema in validate.ts:18 is typed as `z.ZodType<Record<string, unknown>>` erasing the inferred Zod type, so validateDocument returns `Record<string, unknown>` forcing every callsite to cast `as PRDDocument` — the Zod schema is well-typed internally but the export discards the type information.",
+        "PRIORITY_ORDER is defined three times (canonical.ts:7, next-task.ts:4, propose.ts:25) with two different type signatures — propose.ts uses Record<string, number> (loose) while the other two use Record<Priority, number> (strict), creating a silent type-safety gap",
+        "The adapter field in RexConfig is dead configuration — all 8 createStore() call sites hardcode the literal string \"file\" instead of reading config.adapter, making alternative adapters unreachable",
+        "Log event names for the same semantic operation differ between CLI and MCP: update.ts:68 emits \"item_updated\" while mcp.ts:129 emits \"status_changed\" for status changes, with no shared event-name constants",
+        "init.ts and validate.ts both bypass the store abstraction layer, using raw fs readFile/writeFile directly, making them incompatible with any non-file adapter"
+      ]
+    }
+  ],
+  "crossings": [],
+  "unzoned": [
+    ".claude/settings.local.json",
+    "README.md",
+    "context.md",
+    "llms.txt",
+    "package-lock.json",
+    "package.json",
+    "tests/e2e/cli-analyze.test.ts",
+    "tests/e2e/cli-init.test.ts",
+    "tests/e2e/cli-workflow.test.ts",
+    "tests/e2e/fixtures/sample-prd/.rex/config.json",
+    "tests/e2e/fixtures/sample-prd/.rex/execution-log.jsonl",
+    "tests/e2e/fixtures/sample-prd/.rex/prd.json",
+    "tests/e2e/fixtures/sample-prd/.rex/workflow.md",
+    "tsconfig.json",
+    "vitest.config.ts"
+  ],
+  "insights": [
+    "With only a single detected zone and zero cross-zone imports, this codebase is architecturally monolithic in the positive sense—tightly cohesive with clean internal layering (schema -> core -> store -> analyze -> cli) that could naturally decompose if the project scales.",
+    "With a single zone, cross-zone analysis reduces to inter-layer analysis: the primary architectural risk is the store layer's upward dependency on core (tree/canonical), which would become a circular-dependency hazard if core ever needs store access — worth resolving before any zone split.",
+    "The codebase has two fully parallel entry points (CLI commands and MCP tool handlers) that share core and store layers but have no shared 'service' or 'use-case' layer between them, meaning every business operation is implemented twice with subtly different error handling, validation, and logging behavior."
+  ],
+  "findings": [
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "rex-cli",
+      "text": "Contains 71% of project files (36/51) — may be too broad, consider splitting",
+      "severity": "warning"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "rex-cli",
+      "text": "High cohesion (1) — files are tightly interconnected",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "global",
+      "text": "The entire codebase (~2,600 lines across 36 files) fits in one community, which is appropriate for a focused CLI tool; premature modular splitting would add overhead without benefit at this scale.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "rex-cli",
+      "text": "All 36 files resolve into a single community with perfect cohesion (1.0) and zero coupling (0.0), confirming the codebase has no fragmented or orphaned modules—every file participates in a unified import graph.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "rex-cli",
+      "text": "No entry points were detected by the import graph, which suggests the CLI entry (src/cli/index.ts) and MCP server (src/cli/mcp.ts) are invoked via bin/package.json configuration rather than being imported by other modules—this is expected for a standalone tool.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "rex-cli",
+      "text": "The store layer uses a read-modify-write pattern in file-adapter.ts without file locking or optimistic concurrency control; concurrent CLI and MCP invocations against the same .rex/ directory could produce data races.",
+      "severity": "warning"
+    },
+    {
+      "type": "pattern",
+      "pass": 2,
+      "scope": "global",
+      "text": "No circular dependencies exist in the import graph, but the store→core dependency creates a latent risk: any future core→store dependency would immediately form a cycle.",
+      "severity": "warning"
+    },
+    {
+      "type": "pattern",
+      "pass": 2,
+      "scope": "rex-cli",
+      "text": "Analyze barrel export exposes all intermediate pipeline types (ScanResult, ReconcileStats) alongside final output types (Proposal), over-exposing internal pipeline stages.",
+      "severity": "info"
+    },
+    {
+      "type": "pattern",
+      "pass": 2,
+      "scope": "rex-cli",
+      "text": "CLI and MCP server share code cleanly through the store factory (createStore) and core utilities, with consistent usage patterns across both entry points.",
+      "severity": "info"
+    },
+    {
+      "type": "pattern",
+      "pass": 2,
+      "scope": "rex-cli",
+      "text": "CLI commands init.ts and validate.ts perform direct filesystem I/O (readFile/writeFile) instead of going through the store abstraction, creating a second persistence path that would break if the storage backend changes.",
+      "severity": "warning"
+    },
+    {
+      "type": "pattern",
+      "pass": 2,
+      "scope": "rex-cli",
+      "text": "CLI status.ts imports TreeStats type directly from core/tree.js rather than through a public API, coupling presentation to internal core types.",
+      "severity": "info"
+    },
+    {
+      "type": "pattern",
+      "pass": 2,
+      "scope": "rex-cli",
+      "text": "PRIORITY_ORDER mapping is defined identically in three files (core/canonical.ts, core/next-task.ts, analyze/propose.ts) rather than exported from a single source of truth.",
+      "severity": "warning"
+    },
+    {
+      "type": "pattern",
+      "pass": 2,
+      "scope": "rex-cli",
+      "text": "Status and priority validation sets in CLI commands (update.ts, add.ts) duplicate schema-layer type definitions, risking validation drift if enum values change.",
+      "severity": "info"
+    },
+    {
+      "type": "pattern",
+      "pass": 2,
+      "scope": "rex-cli",
+      "text": "Store barrel export (store/index.ts) exposes FileStore class and ensureRexDir utility, leaking filesystem-specific implementation details through the public API and defeating the adapter pattern.",
+      "severity": "warning"
+    },
+    {
+      "type": "pattern",
+      "pass": 2,
+      "scope": "rex-cli",
+      "text": "Store layer imports tree manipulation functions (findItem, insertChild, updateInTree, removeFromTree) from core/tree.js, creating a dependency inversion where the persistence layer depends on business logic utilities.",
+      "severity": "warning"
+    },
+    {
+      "type": "relationship",
+      "pass": 2,
+      "scope": "global",
+      "text": "The two entry points (CLI dispatcher and MCP server) are well-isolated from each other but share a duplicated REX_DIR constant and diverge slightly in how they resolve the working directory, suggesting a missing shared configuration module.",
+      "severity": "info"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "global",
+      "text": "Every store operation (addItem, updateItem, removeItem) performs a full loadDocument-modify-saveDocument cycle (file-adapter.ts:40-69), meaning concurrent CLI or MCP calls on the same .rex directory will race on the JSON file with no locking, potentially causing silent data loss via last-write-wins.",
+      "severity": "critical"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "global",
+      "text": "The normalize() text helper is duplicated in propose.ts:32 and reconcile.ts:5 within the same analyze module — not just across layers but within a single package that already has a barrel export (analyze/index.ts), indicating the module's internal factoring needs cleanup.",
+      "severity": "info"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "rex-cli",
+      "text": "MCP tool handlers duplicate CLI command orchestration logic wholesale (status retrieval, next-task selection, item addition, update-with-log). Neither entry point delegates to a shared service layer, so any business logic change (e.g., adding validation or audit rules) must be applied in two places.",
+      "severity": "critical"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "rex-cli",
+      "text": "PRDItem has an index signature `[key: string]: unknown` (v1.ts:21) which disables TypeScript excess-property checking on every PRDItem value. Combined with `.passthrough()` on the Zod schema, arbitrary properties silently survive both compile-time and runtime validation, defeating the purpose of the typed schema.",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "rex-cli",
+      "text": "PRDItemSchema is exported as `z.ZodType<Record<string, unknown>>` (validate.ts:18), erasing the inferred type that Zod would normally provide. Every consumer must cast the validated result `as PRDDocument` or `as PRDItem`, creating a chain of unsafe casts (file-adapter.ts:27,37,50,78) that provide false confidence while bypassing actual type safety.",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "rex-cli",
+      "text": "VALID_STATUSES and VALID_PRIORITIES in update.ts:6-12 are hardcoded string Sets that duplicate the enum values defined in schema/validate.ts (ItemStatusSchema, PrioritySchema). The MCP layer uses Zod enums directly (mcp.ts:110,163), so the CLI and MCP validate against different sources of truth.",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "rex-cli",
+      "text": "analyze --accept (analyze.ts:125-169) performs sequential store.addItem() calls in a loop, each of which reads and rewrites the entire prd.json file. For N proposals this is O(N) full file rewrites with no atomicity — a crash at item K leaves K items written and the rest lost, with no rollback mechanism.",
+      "severity": "critical"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "rex-cli",
+      "text": "callSourceVisionMCP (recommend.ts:38) spawns a child process with no timeout or AbortSignal. If the sourcevision binary hangs or produces no output, the CLI blocks indefinitely with no way for the user to recover short of killing the process.",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "rex-cli",
+      "text": "readLog() (file-adapter.ts:105) uses a bare `as LogEntry` cast on each JSON.parse result without Zod validation, while appendLog() validates before writing. This asymmetric validation at the serialization boundary means hand-edited or corrupted log files can inject malformed data.",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "rex-cli",
+      "text": "sortItems (canonical.ts:14) and sortByPriority (next-task.ts:11) are near-duplicate sort functions in core with a subtle behavioral difference: sortItems recurses into children while sortByPriority does not. A single parameterized sort in canonical.ts with an optional `recursive` flag would eliminate the hidden divergence risk.",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "All four core interfaces in schema/v1.ts have [key: string]: unknown index signatures (lines 21, 28, 39, 47) combined with .passthrough() on Zod schemas, forcing 'as' casts throughout file-adapter.ts since Zod infers Record<string,unknown> rather than the intended types.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "DEFAULT_CONFIG (schema/v1.ts:57) is a function but uses UPPER_SNAKE_CASE naming, the only function in the codebase to do so. All other UPPER_SNAKE_CASE exports are genuine constants. Should be createDefaultConfig or defaultConfig.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "Log event names are raw inline strings with no shared enum/constant. CLI uses \"item_updated\" (update.ts:68) while MCP uses \"status_changed\" (mcp.ts:129) for the same operation, making log consumers handle divergent event names.",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "MCP add_item handler (mcp.ts:160-195) skips the parent-level hierarchy validation that CLI cmdAdd enforces (add.ts:36-55), allowing invalid level nesting through the MCP entry point.",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "MCP get_recommendations tool (mcp.ts:307-324) is a permanent stub returning { available: false } — it registers a tool that can never succeed and could be removed or gated behind a feature flag.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "PRIORITY_ORDER duplicated 3x across canonical.ts:7, next-task.ts:4, propose.ts:25 with inconsistent typing (Record<Priority,number> vs Record<string,number>). Extract to a single export in schema or core.",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "ProposalTask.priority is typed as string (propose.ts:9) while ScanResult.priority uses the strict Priority union (scanners.ts:12), causing type erasure during the scan-to-proposal pipeline and requiring unsafe cast-back in analyze.ts:163.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "REX_DIR is redeclared as a private const in mcp.ts:14 instead of importing from cli/commands/constants.ts where it is already exported. A rename would silently diverge.",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "collectCompletedIds in next-task.ts:20-34 hand-rolls recursive tree walking instead of using the established walkTree generator from tree.ts:8, violating the project's own abstraction.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "config.adapter is never read at any call site — all 8 createStore() calls hardcode \"file\". The adapter config field and store factory switch are dead code paths.",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "flags.accept is checked with strict equality (=== \"true\") in analyze.ts:45 but with truthiness (if (flags.accept)) in recommend.ts:146. The string \"false\" would pass the truthiness check, creating inconsistent --accept=false behavior.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "normalize() is identically duplicated in propose.ts:32 and reconcile.ts:5. Extract to a shared analyze utility.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "scanSourceVision (scanners.ts:359) does not accept ScanOptions unlike its siblings scanTests (scanners.ts:97) and scanDocs (scanners.ts:260), breaking the scanner function signature convention.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "type: \"text\" as const appears 20 times in mcp.ts as a type-assertion workaround. A helper like textContent(text: string) would eliminate this repetition.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "rex-cli",
+      "text": "validate.ts reads config.json and prd.json via raw fs.readFile (lines 23, 46) bypassing the store layer. init.ts writes all files via raw fs.writeFile (lines 27, 42, 52, 62). Both would break with a non-file adapter.",
+      "severity": "warning"
+    }
+  ],
+  "enrichmentPass": 4,
+  "structureHash": "6988e61fabd6770e"
+}

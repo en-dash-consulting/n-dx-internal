@@ -1,0 +1,95 @@
+{
+  "schema": "rex/v1",
+  "title": "Sample PRD",
+  "items": [
+    {
+      "id": "epic-auth",
+      "title": "Authentication System",
+      "status": "in_progress",
+      "level": "epic",
+      "priority": "critical",
+      "children": [
+        {
+          "id": "feat-login",
+          "title": "Login Flow",
+          "status": "in_progress",
+          "level": "feature",
+          "children": [
+            {
+              "id": "task-login-ui",
+              "title": "Build login form",
+              "status": "completed",
+              "level": "task",
+              "priority": "high"
+            },
+            {
+              "id": "task-login-api",
+              "title": "Implement login API",
+              "status": "pending",
+              "level": "task",
+              "priority": "high",
+              "blockedBy": ["task-login-ui"],
+              "acceptanceCriteria": [
+                "POST /api/login returns JWT",
+                "Invalid credentials return 401",
+                "Rate limiting applied"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "feat-oauth",
+          "title": "OAuth Integration",
+          "status": "pending",
+          "level": "feature",
+          "priority": "medium",
+          "children": [
+            {
+              "id": "task-oauth-google",
+              "title": "Google OAuth provider",
+              "status": "pending",
+              "level": "task"
+            },
+            {
+              "id": "task-oauth-github",
+              "title": "GitHub OAuth provider",
+              "status": "pending",
+              "level": "task"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "epic-dashboard",
+      "title": "Dashboard",
+      "status": "pending",
+      "level": "epic",
+      "priority": "high",
+      "children": [
+        {
+          "id": "feat-widgets",
+          "title": "Widget System",
+          "status": "pending",
+          "level": "feature",
+          "children": [
+            {
+              "id": "task-widget-api",
+              "title": "Widget data API",
+              "status": "pending",
+              "level": "task",
+              "priority": "high"
+            },
+            {
+              "id": "task-widget-render",
+              "title": "Widget renderer",
+              "status": "pending",
+              "level": "task",
+              "blockedBy": ["task-widget-api"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

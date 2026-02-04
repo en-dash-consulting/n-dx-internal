@@ -1,0 +1,1031 @@
+{
+  "edges": [
+    {
+      "from": "src/analyze/index.ts",
+      "to": "src/analyze/propose.ts",
+      "type": "reexport",
+      "symbols": [
+        "Proposal",
+        "ProposalFeature",
+        "ProposalTask",
+        "buildProposals"
+      ]
+    },
+    {
+      "from": "src/analyze/index.ts",
+      "to": "src/analyze/reconcile.ts",
+      "type": "reexport",
+      "symbols": [
+        "ReconcileStats",
+        "reconcile"
+      ]
+    },
+    {
+      "from": "src/analyze/index.ts",
+      "to": "src/analyze/scanners.ts",
+      "type": "reexport",
+      "symbols": [
+        "ScanResult",
+        "ScanOptions",
+        "scanTests",
+        "scanDocs",
+        "scanSourceVision"
+      ]
+    },
+    {
+      "from": "src/analyze/propose.ts",
+      "to": "src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "src/analyze/reconcile.ts",
+      "to": "src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "src/analyze/reconcile.ts",
+      "to": "src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "src/analyze/reconcile.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "src/analyze/scanners.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Priority"
+      ]
+    },
+    {
+      "from": "src/cli/commands/add.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/add.ts",
+      "to": "src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem"
+      ]
+    },
+    {
+      "from": "src/cli/commands/add.ts",
+      "to": "src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "LEVEL_HIERARCHY"
+      ]
+    },
+    {
+      "from": "src/cli/commands/add.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemLevel",
+        "ItemStatus",
+        "Priority"
+      ]
+    },
+    {
+      "from": "src/cli/commands/add.ts",
+      "to": "src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/analyze/index.ts",
+      "type": "static",
+      "symbols": [
+        "scanTests",
+        "scanDocs",
+        "scanSourceVision",
+        "reconcile",
+        "buildProposals"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult",
+        "Proposal"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "src/cli/commands/init.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/init.ts",
+      "to": "src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "src/cli/commands/init.ts",
+      "to": "src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION",
+        "DEFAULT_CONFIG"
+      ]
+    },
+    {
+      "from": "src/cli/commands/init.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "src/cli/commands/init.ts",
+      "to": "src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "ensureRexDir"
+      ]
+    },
+    {
+      "from": "src/cli/commands/init.ts",
+      "to": "src/workflow/default.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_WORKFLOW"
+      ]
+    },
+    {
+      "from": "src/cli/commands/next.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/next.ts",
+      "to": "src/core/next-task.ts",
+      "type": "static",
+      "symbols": [
+        "findNextTask",
+        "collectCompletedIds"
+      ]
+    },
+    {
+      "from": "src/cli/commands/next.ts",
+      "to": "src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "src/cli/commands/recommend.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/recommend.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemLevel"
+      ]
+    },
+    {
+      "from": "src/cli/commands/recommend.ts",
+      "to": "src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status.ts",
+      "to": "src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "computeStats"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status.ts",
+      "to": "src/core/tree.ts",
+      "type": "type",
+      "symbols": [
+        "TreeStats"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status.ts",
+      "to": "src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "src/cli/commands/update.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/update.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemStatus",
+        "Priority"
+      ]
+    },
+    {
+      "from": "src/cli/commands/update.ts",
+      "to": "src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "src/cli/commands/validate.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/validate.ts",
+      "to": "src/core/dag.ts",
+      "type": "static",
+      "symbols": [
+        "validateDAG"
+      ]
+    },
+    {
+      "from": "src/cli/commands/validate.ts",
+      "to": "src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION",
+        "validateDocument",
+        "validateConfig"
+      ]
+    },
+    {
+      "from": "src/cli/commands/validate.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/add.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/analyze.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "usage"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/init.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/next.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/recommend.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/status.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/update.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/validate.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/mcp.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "src/cli/mcp.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "TOOL_VERSION"
+      ]
+    },
+    {
+      "from": "src/cli/mcp.ts",
+      "to": "src/core/next-task.ts",
+      "type": "static",
+      "symbols": [
+        "findNextTask",
+        "collectCompletedIds"
+      ]
+    },
+    {
+      "from": "src/cli/mcp.ts",
+      "to": "src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "computeStats",
+        "findItem"
+      ]
+    },
+    {
+      "from": "src/cli/mcp.ts",
+      "to": "src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION",
+        "LEVEL_HIERARCHY"
+      ]
+    },
+    {
+      "from": "src/cli/mcp.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemLevel",
+        "ItemStatus",
+        "Priority"
+      ]
+    },
+    {
+      "from": "src/cli/mcp.ts",
+      "to": "src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore"
+      ]
+    },
+    {
+      "from": "src/cli/mcp.ts",
+      "to": "src/store/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
+      ]
+    },
+    {
+      "from": "src/core/canonical.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "Priority"
+      ]
+    },
+    {
+      "from": "src/core/dag.ts",
+      "to": "src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree",
+        "collectAllIds"
+      ]
+    },
+    {
+      "from": "src/core/dag.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "src/core/next-task.ts",
+      "to": "src/core/tree.ts",
+      "type": "type",
+      "symbols": [
+        "TreeEntry"
+      ]
+    },
+    {
+      "from": "src/core/next-task.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "Priority"
+      ]
+    },
+    {
+      "from": "src/core/tree.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "src/schema/index.ts",
+      "to": "src/schema/v1.ts",
+      "type": "reexport",
+      "symbols": [
+        "SCHEMA_VERSION",
+        "LEVEL_HIERARCHY",
+        "DEFAULT_CONFIG",
+        "ItemLevel",
+        "ItemStatus",
+        "Priority",
+        "PRDItem",
+        "PRDDocument",
+        "RexConfig",
+        "LogEntry"
+      ]
+    },
+    {
+      "from": "src/schema/index.ts",
+      "to": "src/schema/validate.ts",
+      "type": "reexport",
+      "symbols": [
+        "PRDItemSchema",
+        "PRDDocumentSchema",
+        "RexConfigSchema",
+        "LogEntrySchema",
+        "validateDocument",
+        "validateConfig",
+        "validateLogEntry",
+        "ValidationResult"
+      ]
+    },
+    {
+      "from": "src/store/file-adapter.ts",
+      "to": "src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "src/store/file-adapter.ts",
+      "to": "src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem",
+        "insertChild",
+        "updateInTree",
+        "removeFromTree"
+      ]
+    },
+    {
+      "from": "src/store/file-adapter.ts",
+      "to": "src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "validateDocument",
+        "validateConfig",
+        "validateLogEntry"
+      ]
+    },
+    {
+      "from": "src/store/file-adapter.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem",
+        "RexConfig",
+        "LogEntry"
+      ]
+    },
+    {
+      "from": "src/store/file-adapter.ts",
+      "to": "src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore",
+        "StoreCapabilities"
+      ]
+    },
+    {
+      "from": "src/store/index.ts",
+      "to": "src/store/file-adapter.ts",
+      "type": "reexport",
+      "symbols": [
+        "FileStore",
+        "ensureRexDir"
+      ]
+    },
+    {
+      "from": "src/store/index.ts",
+      "to": "src/store/file-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore"
+      ]
+    },
+    {
+      "from": "src/store/index.ts",
+      "to": "src/store/types.ts",
+      "type": "reexport",
+      "symbols": [
+        "PRDStore",
+        "StoreCapabilities"
+      ]
+    },
+    {
+      "from": "src/store/index.ts",
+      "to": "src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
+      ]
+    },
+    {
+      "from": "src/store/types.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem",
+        "RexConfig",
+        "LogEntry"
+      ]
+    },
+    {
+      "from": "tests/integration/store-roundtrip.test.ts",
+      "to": "src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "tests/integration/store-roundtrip.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "tests/integration/store-roundtrip.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "tests/integration/store-roundtrip.test.ts",
+      "to": "src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore",
+        "ensureRexDir"
+      ]
+    },
+    {
+      "from": "tests/integration/store-roundtrip.test.ts",
+      "to": "src/store/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
+      ]
+    },
+    {
+      "from": "tests/unit/analyze/propose.test.ts",
+      "to": "src/analyze/propose.ts",
+      "type": "static",
+      "symbols": [
+        "buildProposals"
+      ]
+    },
+    {
+      "from": "tests/unit/analyze/propose.test.ts",
+      "to": "src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "tests/unit/analyze/reconcile.test.ts",
+      "to": "src/analyze/reconcile.ts",
+      "type": "static",
+      "symbols": [
+        "reconcile"
+      ]
+    },
+    {
+      "from": "tests/unit/analyze/reconcile.test.ts",
+      "to": "src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "tests/unit/analyze/reconcile.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "tests/unit/analyze/scanners.test.ts",
+      "to": "src/analyze/scanners.ts",
+      "type": "static",
+      "symbols": [
+        "scanTests",
+        "scanDocs",
+        "scanSourceVision"
+      ]
+    },
+    {
+      "from": "tests/unit/core/canonical.test.ts",
+      "to": "src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON",
+        "sortItems"
+      ]
+    },
+    {
+      "from": "tests/unit/core/canonical.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "tests/unit/core/dag.test.ts",
+      "to": "src/core/dag.ts",
+      "type": "static",
+      "symbols": [
+        "validateDAG"
+      ]
+    },
+    {
+      "from": "tests/unit/core/dag.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "tests/unit/core/next-task.test.ts",
+      "to": "src/core/next-task.ts",
+      "type": "static",
+      "symbols": [
+        "findNextTask",
+        "collectCompletedIds"
+      ]
+    },
+    {
+      "from": "tests/unit/core/next-task.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "tests/unit/core/tree.test.ts",
+      "to": "src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree",
+        "findItem",
+        "insertChild",
+        "updateInTree",
+        "removeFromTree",
+        "computeStats",
+        "getParentChain",
+        "collectAllIds"
+      ]
+    },
+    {
+      "from": "tests/unit/core/tree.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "tests/unit/schema/validate.test.ts",
+      "to": "src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateDocument",
+        "validateConfig",
+        "validateLogEntry"
+      ]
+    },
+    {
+      "from": "tests/unit/store/file-adapter.test.ts",
+      "to": "src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "tests/unit/store/file-adapter.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "tests/unit/store/file-adapter.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "tests/unit/store/file-adapter.test.ts",
+      "to": "src/store/file-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore",
+        "ensureRexDir"
+      ]
+    }
+  ],
+  "external": [
+    {
+      "package": "@modelcontextprotocol/sdk",
+      "importedBy": [
+        "src/cli/mcp.ts"
+      ],
+      "symbols": [
+        "McpServer",
+        "StdioServerTransport"
+      ]
+    },
+    {
+      "package": "vitest",
+      "importedBy": [
+        "tests/e2e/cli-analyze.test.ts",
+        "tests/e2e/cli-init.test.ts",
+        "tests/e2e/cli-workflow.test.ts",
+        "tests/integration/store-roundtrip.test.ts",
+        "tests/unit/analyze/propose.test.ts",
+        "tests/unit/analyze/reconcile.test.ts",
+        "tests/unit/analyze/scanners.test.ts",
+        "tests/unit/core/canonical.test.ts",
+        "tests/unit/core/dag.test.ts",
+        "tests/unit/core/next-task.test.ts",
+        "tests/unit/core/tree.test.ts",
+        "tests/unit/schema/validate.test.ts",
+        "tests/unit/store/file-adapter.test.ts",
+        "vitest.config.ts"
+      ],
+      "symbols": [
+        "afterEach",
+        "beforeEach",
+        "defineConfig",
+        "describe",
+        "expect",
+        "it"
+      ]
+    },
+    {
+      "package": "zod",
+      "importedBy": [
+        "src/cli/mcp.ts",
+        "src/schema/validate.ts"
+      ],
+      "symbols": [
+        "ZodError",
+        "z"
+      ]
+    }
+  ],
+  "summary": {
+    "totalEdges": 101,
+    "totalExternal": 3,
+    "circularCount": 0,
+    "circulars": [],
+    "mostImported": [
+      {
+        "path": "src/schema/index.ts",
+        "count": 30
+      },
+      {
+        "path": "src/store/index.ts",
+        "count": 11
+      },
+      {
+        "path": "src/cli/commands/constants.ts",
+        "count": 10
+      },
+      {
+        "path": "src/core/tree.ts",
+        "count": 9
+      },
+      {
+        "path": "src/analyze/scanners.ts",
+        "count": 6
+      },
+      {
+        "path": "src/core/canonical.ts",
+        "count": 5
+      },
+      {
+        "path": "src/core/next-task.ts",
+        "count": 3
+      },
+      {
+        "path": "src/store/file-adapter.ts",
+        "count": 3
+      },
+      {
+        "path": "src/store/types.ts",
+        "count": 3
+      },
+      {
+        "path": "src/analyze/index.ts",
+        "count": 2
+      },
+      {
+        "path": "src/analyze/propose.ts",
+        "count": 2
+      },
+      {
+        "path": "src/analyze/reconcile.ts",
+        "count": 2
+      },
+      {
+        "path": "src/core/dag.ts",
+        "count": 2
+      },
+      {
+        "path": "src/schema/validate.ts",
+        "count": 2
+      },
+      {
+        "path": "src/cli/commands/add.ts",
+        "count": 1
+      },
+      {
+        "path": "src/cli/commands/init.ts",
+        "count": 1
+      },
+      {
+        "path": "src/cli/commands/next.ts",
+        "count": 1
+      },
+      {
+        "path": "src/cli/commands/status.ts",
+        "count": 1
+      },
+      {
+        "path": "src/cli/commands/update.ts",
+        "count": 1
+      },
+      {
+        "path": "src/workflow/default.ts",
+        "count": 1
+      }
+    ],
+    "avgImportsPerFile": 3.16
+  }
+}

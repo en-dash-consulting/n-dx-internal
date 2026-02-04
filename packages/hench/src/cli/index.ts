@@ -1,0 +1,92 @@
+#!/usr/bin/env node
+
+import { resolve } from "node:path";
+import { usage } from "./commands/constants.js";
+
+function parseArgs(argv: string[]): {
+  command: string | undefined;
+  positional: string[];
+  flags: Record<string, string>;
+} {
+  const flags: Record<string, string> = {};
+  const positional: string[] = [];
+  let command: string | undefined;
+
+  for (const arg of argv) {
+    if (arg.startsWith("--")) {
+      const eq = arg.indexOf("=");
+      if (eq !== -1) {
+        flags[arg.slice(2, eq)] = arg.slice(eq + 1);
+      } else {
+        flags[arg.slice(2)] = "true";
+      }
+    } else if (arg === "-h") {
+      flags.help = "true";
+    } else if (!command) {
+      command = arg;
+    } else {
+      positional.push(arg);
+    }
+  }
+
+  return { command, positional, flags };
+}
+
+async function main(): Promise<void> {
+  const { command, positional, flags } = parseArgs(process.argv.slice(2));
+
+  if (flags.help || !command) {
+    usage();
+    process.exit(0);
+  }
+
+  // Resolve dir: last positional arg or cwd
+  const resolveDir = (): string => {
+    const last = positional[positional.length - 1];
+    if (last && !last.startsWith("-")) {
+      return resolve(last);
+    }
+    return process.cwd();
+  };
+
+  try {
+    switch (command) {
+      case "init": {
+        const { cmdInit } = await import("./commands/init.js");
+        await cmdInit(resolveDir(), flags);
+        break;
+      }
+      case "run": {
+        const { cmdRun } = await import("./commands/run.js");
+        await cmdRun(resolveDir(), flags);
+        break;
+      }
+      case "status": {
+        const { cmdStatus } = await import("./commands/status.js");
+        await cmdStatus(resolveDir(), flags);
+        break;
+      }
+      case "show": {
+        const runId = positional[0];
+        if (!runId) {
+          console.error("Usage: hench show <run-id> [dir]");
+          process.exit(1);
+        }
+        const dir =
+          positional.length > 1 ? resolve(positional[positional.length - 1]) : process.cwd();
+        const { cmdShow } = await import("./commands/show.js");
+        await cmdShow(dir, runId, flags);
+        break;
+      }
+      default:
+        console.error(`Unknown command: ${command}`);
+        usage();
+        process.exit(1);
+    }
+  } catch (err) {
+    console.error((err as Error).message);
+    process.exit(1);
+  }
+}
+
+main();

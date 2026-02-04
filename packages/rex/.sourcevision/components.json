@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "usageEdges": [],
+  "routeModules": [],
+  "routeTree": [],
+  "summary": {
+    "totalComponents": 0,
+    "totalRouteModules": 0,
+    "totalUsageEdges": 0,
+    "routeConventions": {},
+    "mostUsedComponents": [],
+    "layoutDepth": 0
+  }
+}

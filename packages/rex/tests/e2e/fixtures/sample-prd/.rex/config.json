@@ -1,0 +1,6 @@
+{
+  "schema": "rex/v1",
+  "project": "sample-prd",
+  "adapter": "file",
+  "sourcevision": "auto"
+}

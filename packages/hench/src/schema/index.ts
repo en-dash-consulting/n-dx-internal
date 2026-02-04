@@ -1,0 +1,29 @@
+export {
+  HENCH_SCHEMA_VERSION,
+  DEFAULT_HENCH_CONFIG,
+} from "./v1.js";
+
+export type {
+  GuardConfig,
+  HenchConfig,
+  Provider,
+  RunStatus,
+  ToolCallRecord,
+  TokenUsage,
+  RunRecord,
+  TaskBrief,
+  TaskBriefTask,
+  TaskBriefParent,
+  TaskBriefSibling,
+  TaskBriefProject,
+  TaskBriefLogEntry,
+} from "./v1.js";
+
+export {
+  HenchConfigSchema,
+  RunRecordSchema,
+  validateConfig,
+  validateRunRecord,
+} from "./validate.js";
+
+export type { ValidationResult } from "./validate.js";

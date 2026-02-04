@@ -1,0 +1,233 @@
+# rex
+
+PRD management and implementation workflow CLI. Rex maintains a structured product requirements document as a tree of epics, features, tasks, and subtasks, then exposes that tree to both humans (CLI) and AI agents (MCP server) so work gets tracked from planning through completion.
+
+## Install
+
+```bash
+npm install -g rex
+# or link locally
+npm link
+```
+
+## Quick start
+
+```bash
+rex init myproject
+rex add epic myproject --title="Authentication"
+# note the ID printed, e.g. abc-123
+rex add feature myproject --title="Login UI" --parent=abc-123 --priority=high
+rex status myproject
+rex next myproject
+```
+
+## Commands
+
+### `rex init [dir]`
+
+Create `.rex/` in the target directory with skeleton config, empty PRD, execution log, and default workflow.
+
+```bash
+rex init              # current directory
+rex init /path/to/project
+```
+
+Idempotent -- re-running on an existing project is safe.
+
+### `rex add <level> [dir]`
+
+Add an item to the PRD. Level is one of `epic`, `feature`, `task`, `subtask`.
+
+```bash
+rex add epic --title="Payments"
+rex add feature --title="Checkout Flow" --parent=<epic-id> --priority=high
+rex add task --title="Validate card" --parent=<feature-id> --description="Luhn check"
+```
+
+Features require an epic parent, tasks require a feature parent, subtasks require a task parent.
+
+**Flags:** `--title` (required), `--parent=<id>`, `--description`, `--priority=<critical|high|medium|low>`, `--status=<pending|in_progress|completed|deferred>`, `--format=json`
+
+### `rex update <id> [dir]`
+
+Update an existing item.
+
+```bash
+rex update <id> --status=completed
+rex update <id> --priority=critical --title="New title"
+```
+
+**Flags:** `--status`, `--priority`, `--title`, `--description`, `--format=json`
+
+### `rex status [dir]`
+
+Print the PRD tree with status icons and completion stats.
+
+```
+PRD: My Project
+
+○ Authentication [high] [1/3]
+  ○ Login UI [high]
+    ● Validate email
+    ○ Handle errors
+    ○ Password reset
+◐ Dashboard [0/2]
+  ◐ Charts
+  ○ Export
+
+2 completed, 1 in progress, 4 pending — 28% complete (2/7)
+```
+
+Icons: `○` pending, `◐` in progress, `●` completed, `◌` deferred.
+
+**Flags:** `--format=json` outputs the full PRDDocument.
+
+### `rex next [dir]`
+
+Print the next actionable task. Searches depth-first by priority, skipping completed/deferred items and items with unresolved `blockedBy` dependencies.
+
+```
+Authentication → Login UI →
+  [task] Validate email (abc-123) [pending] [high]
+  Luhn check on card number
+  Acceptance criteria:
+    - Rejects invalid card numbers
+    - Accepts valid Visa/MC/Amex
+```
+
+**Flags:** `--format=json`
+
+### `rex validate [dir]`
+
+Check PRD integrity: schema validation, version check, DAG validation (duplicate IDs, self-references, orphan blockedBy, cycles).
+
+```bash
+rex validate myproject
+```
+
+Exits with code 1 on failure. `--format=json` for structured output.
+
+### `rex recommend [dir]`
+
+Get SourceVision-based recommendations. Requires a `.sourcevision/` directory from a prior SourceVision analysis.
+
+```bash
+rex recommend myproject
+rex recommend --accept myproject   # add recommendations to PRD
+```
+
+**Flags:** `--accept`, `--format=json`
+
+### `rex analyze [dir]`
+
+Scan the project's test files, documentation, and SourceVision data to propose PRD items. Reconciles against existing items to avoid duplicates.
+
+```bash
+rex analyze myproject              # full scan
+rex analyze --lite myproject       # filename-only, skip content parsing
+rex analyze --accept myproject     # add proposals to PRD
+rex analyze --format=json myproject
+```
+
+**Scanners:**
+- **Tests** -- finds `*.test.*`, `*.spec.*`, `__tests__/` files. Full mode parses `describe`/`it`/`test` blocks. Lite mode uses filenames only.
+- **Docs** -- finds `*.md`, `*.txt`, `*.json`, `*.yaml`. Extracts headings, bullets, title/name fields.
+- **SourceVision** -- reads `.sourcevision/zones.json`, `inventory.json`, `imports.json`.
+
+**Flags:** `--lite`, `--accept`, `--format=json`
+
+### `rex mcp [dir]`
+
+Start an MCP (Model Context Protocol) server on stdio. This is how AI agents interact with rex programmatically.
+
+## MCP server
+
+The MCP server exposes seven tools and three resources.
+
+### Tools
+
+| Tool | Description |
+|------|-------------|
+| `get_prd_status` | PRD title, overall stats, per-epic breakdown |
+| `get_next_task` | Next actionable task with parent chain |
+| `update_task_status` | Change item status (`id`, `status`) |
+| `add_item` | Create a new PRD item with full metadata |
+| `get_item` | Get item details and parent chain by ID |
+| `append_log` | Write to the execution log |
+| `get_capabilities` | Schema version, adapter info, feature flags |
+
+### Resources
+
+| URI | Content |
+|-----|---------|
+| `rex://prd` | Full PRDDocument as JSON |
+| `rex://workflow` | Workflow instructions (markdown) |
+| `rex://log` | Last 50 execution log entries |
+
+## Data model
+
+Items form a tree: **epic > feature > task > subtask**. Each item has:
+
+| Field | Type | Required |
+|-------|------|----------|
+| `id` | string (UUID) | yes |
+| `title` | string | yes |
+| `status` | `pending` \| `in_progress` \| `completed` \| `deferred` | yes |
+| `level` | `epic` \| `feature` \| `task` \| `subtask` | yes |
+| `description` | string | no |
+| `acceptanceCriteria` | string[] | no |
+| `priority` | `critical` \| `high` \| `medium` \| `low` | no |
+| `tags` | string[] | no |
+| `source` | string | no |
+| `blockedBy` | string[] (item IDs) | no |
+| `children` | PRDItem[] | no |
+
+The PRD document (`prd.json`) wraps items in:
+
+```json
+{
+  "schema": "rex/v1",
+  "title": "Project Name",
+  "items": [ ... ]
+}
+```
+
+## Project structure
+
+```
+.rex/
+  config.json           Project configuration
+  prd.json              PRD tree
+  execution-log.jsonl   Append-only structured log
+  workflow.md           Agent workflow instructions
+```
+
+## Default workflow
+
+Rex ships with an opinionated workflow for AI agents:
+
+1. Validate the project, fix and commit if broken
+2. `get_next_task` -- if nothing, report complete and exit
+3. Read full task context
+4. Implement with TDD: failing test, green, refactor
+5. Run validation and tests
+6. `update_task_status` to mark complete
+7. `append_log` with decisions and issues
+8. Commit
+9. Exit after one task
+
+One task per execution, no exceptions.
+
+## Development
+
+```bash
+npm install
+npm run build       # tsc
+npm test            # vitest
+npm run dev         # tsc --watch
+npm run validate    # typecheck + test
+```
+
+## License
+
+ISC
