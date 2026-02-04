@@ -9,13 +9,6 @@ const PRIORITY_ORDER: Record<Priority, number> = {
   low: 3,
 };
 
-const PRIORITY_LABELS: Record<number, Priority> = {
-  0: "critical",
-  1: "high",
-  2: "medium",
-  3: "low",
-};
-
 export interface SelectionExplanation {
   /** Human-readable summary of why this task was selected. */
   summary: string;
@@ -42,15 +35,6 @@ export interface SelectionExplanation {
   };
 }
 
-function sortByPriority(items: PRDItem[]): PRDItem[] {
-  return [...items].sort((a, b) => {
-    const pa = PRIORITY_ORDER[a.priority ?? "medium"];
-    const pb = PRIORITY_ORDER[b.priority ?? "medium"];
-    if (pa !== pb) return pa - pb;
-    return a.title.localeCompare(b.title);
-  });
-}
-
 export function collectCompletedIds(items: PRDItem[]): Set<string> {
   const ids = new Set<string>();
   function walk(list: PRDItem[]): void {
@@ -69,8 +53,9 @@ export function collectCompletedIds(items: PRDItem[]): Set<string> {
 
 /**
  * Collect ALL actionable tasks flattened and sorted globally by priority.
- * Unlike findNextTask (which is depth-first per-level), this returns every
- * leaf task that is pending/in_progress with resolved dependencies.
+ * Returns every leaf task that is pending/in_progress with resolved
+ * dependencies, sorted: in_progress first, then by priority, then by
+ * ancestor priority, then alphabetically.
  */
 export function findActionableTasks(
   items: PRDItem[],
@@ -104,8 +89,13 @@ export function findActionableTasks(
 
   collect(items, []);
 
-  // Sort globally by priority (own priority first, then parent epic priority as tiebreaker)
+  // Sort: in_progress first, then by own priority, then ancestor priority, then title
   results.sort((a, b) => {
+    // in_progress always wins — finish what you started
+    const aInProgress = a.item.status === "in_progress" ? 0 : 1;
+    const bInProgress = b.item.status === "in_progress" ? 0 : 1;
+    if (aInProgress !== bInProgress) return aInProgress - bInProgress;
+
     const pa = PRIORITY_ORDER[a.item.priority ?? "medium"];
     const pb = PRIORITY_ORDER[b.item.priority ?? "medium"];
     if (pa !== pb) return pa - pb;
@@ -123,48 +113,60 @@ export function findNextTask(
   items: PRDItem[],
   completedIds: Set<string>,
 ): TreeEntry | null {
-  function search(
-    list: PRDItem[],
-    parentChain: PRDItem[],
-  ): TreeEntry | null {
-    const sorted = sortByPriority(list);
-    for (const item of sorted) {
+  const candidates: TreeEntry[] = [];
+
+  function collect(list: PRDItem[], parentChain: PRDItem[]): void {
+    for (const item of list) {
       if (item.status === "completed" || item.status === "deferred" || item.status === "blocked") {
         continue;
       }
 
       if (item.blockedBy && item.blockedBy.length > 0) {
-        const allResolved = item.blockedBy.every((dep) =>
-          completedIds.has(dep),
-        );
-        if (!allResolved) {
+        if (!item.blockedBy.every((dep) => completedIds.has(dep))) {
           continue;
         }
       }
 
       if (item.children && item.children.length > 0) {
-        const childResult = search(item.children, [...parentChain, item]);
-        if (childResult) {
-          return childResult;
-        }
-      }
+        collect(item.children, [...parentChain, item]);
 
-      const isLeaf = !item.children || item.children.length === 0;
-      const allChildrenDone =
-        item.children &&
-        item.children.length > 0 &&
-        item.children.every(
+        const allChildrenDone = item.children.every(
           (c) => c.status === "completed" || c.status === "deferred",
         );
-
-      if (isLeaf || allChildrenDone) {
-        return { item, parents: parentChain };
+        if (allChildrenDone) {
+          candidates.push({ item, parents: parentChain });
+        }
+      } else {
+        candidates.push({ item, parents: parentChain });
       }
     }
-    return null;
   }
 
-  return search(items, []);
+  collect(items, []);
+
+  if (candidates.length === 0) return null;
+
+  // Sort: in_progress first, then by own priority, then ancestor priority, then title
+  candidates.sort((a, b) => {
+    // in_progress always wins — finish what you started
+    const aInProgress = a.item.status === "in_progress" ? 0 : 1;
+    const bInProgress = b.item.status === "in_progress" ? 0 : 1;
+    if (aInProgress !== bInProgress) return aInProgress - bInProgress;
+
+    // Then by own priority
+    const pa = PRIORITY_ORDER[a.item.priority ?? "medium"];
+    const pb = PRIORITY_ORDER[b.item.priority ?? "medium"];
+    if (pa !== pb) return pa - pb;
+
+    // Tiebreak: highest-priority ancestor
+    const ancestorA = Math.min(...a.parents.map((p) => PRIORITY_ORDER[p.priority ?? "medium"]));
+    const ancestorB = Math.min(...b.parents.map((p) => PRIORITY_ORDER[p.priority ?? "medium"]));
+    if (ancestorA !== ancestorB) return ancestorA - ancestorB;
+
+    return a.item.title.localeCompare(b.item.title);
+  });
+
+  return candidates[0];
 }
 
 /**

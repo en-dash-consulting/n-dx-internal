@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { findNextTask, collectCompletedIds, explainSelection } from "../../../src/core/next-task.js";
+import { findNextTask, findActionableTasks, collectCompletedIds, explainSelection } from "../../../src/core/next-task.js";
 import type { PRDItem } from "../../../src/schema/index.js";
 
 function makeItem(overrides: Partial<PRDItem> & { id: string; title: string }): PRDItem {
@@ -148,6 +148,116 @@ describe("findNextTask", () => {
     expect(result).not.toBeNull();
     expect(result!.item.id).toBe("e1");
   });
+
+  it("selects critical task in low-priority epic over medium task in high-priority epic", () => {
+    const items: PRDItem[] = [
+      makeItem({
+        id: "e1",
+        title: "High Epic",
+        level: "epic",
+        priority: "high",
+        children: [
+          makeItem({ id: "t1", title: "Medium Task", priority: "medium" }),
+        ],
+      }),
+      makeItem({
+        id: "e2",
+        title: "Low Epic",
+        level: "epic",
+        priority: "low",
+        children: [
+          makeItem({ id: "t2", title: "Critical Task", priority: "critical" }),
+        ],
+      }),
+    ];
+    const result = findNextTask(items, new Set());
+    expect(result!.item.id).toBe("t2");
+  });
+
+  it("skips children when parent has unresolved blockedBy", () => {
+    const items: PRDItem[] = [
+      makeItem({
+        id: "e1",
+        title: "Blocked Epic",
+        level: "epic",
+        blockedBy: ["external"],
+        children: [
+          makeItem({ id: "t1", title: "Child of blocked" }),
+        ],
+      }),
+      makeItem({ id: "t2", title: "Free task" }),
+    ];
+    const result = findNextTask(items, new Set());
+    expect(result!.item.id).toBe("t2");
+  });
+
+  it("skips children when ancestor has unresolved blockedBy", () => {
+    const items: PRDItem[] = [
+      makeItem({
+        id: "e1",
+        title: "Blocked Epic",
+        level: "epic",
+        blockedBy: ["external"],
+        children: [
+          makeItem({
+            id: "f1",
+            title: "Feature",
+            level: "feature",
+            children: [
+              makeItem({ id: "t1", title: "Deep child of blocked" }),
+            ],
+          }),
+        ],
+      }),
+      makeItem({ id: "t2", title: "Free task" }),
+    ];
+    const result = findNextTask(items, new Set());
+    expect(result!.item.id).toBe("t2");
+  });
+
+  it("prefers in_progress tasks over pending tasks of same priority", () => {
+    const items: PRDItem[] = [
+      makeItem({ id: "t1", title: "Pending high", priority: "high" }),
+      makeItem({ id: "t2", title: "In progress high", priority: "high", status: "in_progress" }),
+    ];
+    const result = findNextTask(items, new Set());
+    expect(result!.item.id).toBe("t2");
+  });
+
+  it("prefers in_progress tasks even at lower priority", () => {
+    const items: PRDItem[] = [
+      makeItem({ id: "t1", title: "Pending critical", priority: "critical" }),
+      makeItem({ id: "t2", title: "In progress medium", priority: "medium", status: "in_progress" }),
+    ];
+    // in_progress should always come first — finish what you started
+    const result = findNextTask(items, new Set());
+    expect(result!.item.id).toBe("t2");
+  });
+
+  it("uses ancestor priority as tiebreaker for same-priority tasks", () => {
+    const items: PRDItem[] = [
+      makeItem({
+        id: "e1",
+        title: "Critical Epic",
+        level: "epic",
+        priority: "critical",
+        children: [
+          makeItem({ id: "t1", title: "AAA Task", priority: "medium" }),
+        ],
+      }),
+      makeItem({
+        id: "e2",
+        title: "Low Epic",
+        level: "epic",
+        priority: "low",
+        children: [
+          makeItem({ id: "t2", title: "AAA Task", priority: "medium" }),
+        ],
+      }),
+    ];
+    const result = findNextTask(items, new Set());
+    expect(result!.item.id).toBe("t1");
+  });
 });
 
 describe("explainSelection", () => {
@@ -294,5 +404,79 @@ describe("explainSelection", () => {
 
     const explanation = explainSelection(items, result, completedIds);
     expect(explanation.summary).toContain("children completed");
+  });
+});
+
+describe("findActionableTasks", () => {
+  it("returns actionable tasks sorted by priority", () => {
+    const items: PRDItem[] = [
+      makeItem({ id: "t1", title: "Low", priority: "low" }),
+      makeItem({ id: "t2", title: "Critical", priority: "critical" }),
+      makeItem({ id: "t3", title: "Medium", priority: "medium" }),
+    ];
+    const results = findActionableTasks(items, new Set());
+    expect(results.map((r) => r.item.id)).toEqual(["t2", "t3", "t1"]);
+  });
+
+  it("ranks in_progress tasks before pending at same priority", () => {
+    const items: PRDItem[] = [
+      makeItem({ id: "t1", title: "Pending high", priority: "high" }),
+      makeItem({ id: "t2", title: "In progress high", priority: "high", status: "in_progress" }),
+      makeItem({ id: "t3", title: "Pending medium", priority: "medium" }),
+    ];
+    const results = findActionableTasks(items, new Set());
+    expect(results[0].item.id).toBe("t2");
+  });
+
+  it("skips children of blocked parents", () => {
+    const items: PRDItem[] = [
+      makeItem({
+        id: "e1",
+        title: "Blocked Epic",
+        level: "epic",
+        blockedBy: ["external"],
+        children: [
+          makeItem({ id: "t1", title: "Child of blocked" }),
+        ],
+      }),
+      makeItem({ id: "t2", title: "Free task" }),
+    ];
+    const results = findActionableTasks(items, new Set());
+    expect(results.map((r) => r.item.id)).toEqual(["t2"]);
+  });
+
+  it("selects critical tasks across epics regardless of epic priority", () => {
+    const items: PRDItem[] = [
+      makeItem({
+        id: "e1",
+        title: "High Epic",
+        level: "epic",
+        priority: "high",
+        children: [
+          makeItem({ id: "t1", title: "Medium Task", priority: "medium" }),
+        ],
+      }),
+      makeItem({
+        id: "e2",
+        title: "Low Epic",
+        level: "epic",
+        priority: "low",
+        children: [
+          makeItem({ id: "t2", title: "Critical Task", priority: "critical" }),
+        ],
+      }),
+    ];
+    const results = findActionableTasks(items, new Set());
+    expect(results[0].item.id).toBe("t2");
+  });
+
+  it("respects limit parameter", () => {
+    const items: PRDItem[] = [
+      makeItem({ id: "t1", title: "A" }),
+      makeItem({ id: "t2", title: "B" }),
+      makeItem({ id: "t3", title: "C" }),
+    ];
+    const results = findActionableTasks(items, new Set(), 2);
+    expect(results).toHaveLength(2);
   });
 });
