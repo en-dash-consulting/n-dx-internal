@@ -69,14 +69,12 @@
 
 /* Sidebar logo */
 .sidebar-logo {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
+  border-radius: 6px;
+  image-rendering: pixelated;
 }
-
-/* Theme-aware sidebar logo */
-[data-theme="dark"] .sidebar-logo-light { display: none; }
-[data-theme="light"] .sidebar-logo-dark { display: none; }
 
 /* Main content */
 .main {

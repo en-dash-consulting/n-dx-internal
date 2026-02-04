@@ -33,6 +33,58 @@ export function collectCompletedIds(items: PRDItem[]): Set<string> {
   return ids;
 }
 
+/**
+ * Collect ALL actionable tasks flattened and sorted globally by priority.
+ * Unlike findNextTask (which is depth-first per-level), this returns every
+ * leaf task that is pending/in_progress with resolved dependencies.
+ */
+export function findActionableTasks(
+  items: PRDItem[],
+  completedIds: Set<string>,
+  limit = 20,
+): TreeEntry[] {
+  const results: TreeEntry[] = [];
+
+  function collect(list: PRDItem[], parentChain: PRDItem[]): void {
+    for (const item of list) {
+      if (item.status === "completed" || item.status === "deferred") continue;
+
+      if (item.blockedBy && item.blockedBy.length > 0) {
+        if (!item.blockedBy.every((dep) => completedIds.has(dep))) continue;
+      }
+
+      if (item.children && item.children.length > 0) {
+        collect(item.children, [...parentChain, item]);
+
+        const allChildrenDone = item.children.every(
+          (c) => c.status === "completed" || c.status === "deferred",
+        );
+        if (allChildrenDone) {
+          results.push({ item, parents: parentChain });
+        }
+      } else {
+        results.push({ item, parents: parentChain });
+      }
+    }
+  }
+
+  collect(items, []);
+
+  // Sort globally by priority (own priority first, then parent epic priority as tiebreaker)
+  results.sort((a, b) => {
+    const pa = PRIORITY_ORDER[a.item.priority ?? "medium"];
+    const pb = PRIORITY_ORDER[b.item.priority ?? "medium"];
+    if (pa !== pb) return pa - pb;
+    // Tiebreak: highest-priority ancestor
+    const ancestorA = Math.min(...a.parents.map((p) => PRIORITY_ORDER[p.priority ?? "medium"]));
+    const ancestorB = Math.min(...b.parents.map((p) => PRIORITY_ORDER[p.priority ?? "medium"]));
+    if (ancestorA !== ancestorB) return ancestorA - ancestorB;
+    return a.item.title.localeCompare(b.item.title);
+  });
+
+  return results.slice(0, limit);
+}
+
 export function findNextTask(
   items: PRDItem[],
   completedIds: Set<string>,

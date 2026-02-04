@@ -1,5 +1,7 @@
 # rex
 
+<img src="Rex.png" alt="Rex" width="128">
+
 PRD management and implementation workflow CLI. Rex maintains a structured product requirements document as a tree of epics, features, tasks, and subtasks, then exposes that tree to both humans (CLI) and AI agents (MCP server) so work gets tracked from planning through completion.
 
 ## Install

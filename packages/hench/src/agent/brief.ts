@@ -1,4 +1,4 @@
-import { findNextTask, collectCompletedIds } from "rex/dist/core/next-task.js";
+import { findNextTask, findActionableTasks, collectCompletedIds } from "rex/dist/core/next-task.js";
 import { findItem } from "rex/dist/core/tree.js";
 import type { PRDStore } from "rex/dist/store/types.js";
 import type { PRDItem } from "rex/dist/schema/v1.js";
@@ -99,6 +99,31 @@ export async function assembleTaskBrief(
   };
 
   return { brief, taskId: entry.item.id };
+}
+
+export interface ActionableTask {
+  id: string;
+  title: string;
+  level: string;
+  priority: string;
+  parentChain: string;
+}
+
+export async function getActionableTasks(
+  store: PRDStore,
+  limit = 20,
+): Promise<ActionableTask[]> {
+  const doc = await store.loadDocument();
+  const completedIds = collectCompletedIds(doc.items);
+  const entries = findActionableTasks(doc.items, completedIds, limit);
+
+  return entries.map((e) => ({
+    id: e.item.id,
+    title: e.item.title,
+    level: e.item.level,
+    priority: e.item.priority ?? "medium",
+    parentChain: e.parents.map((p) => p.title).join(" > "),
+  }));
 }
 
 export function formatTaskBrief(brief: TaskBrief): string {

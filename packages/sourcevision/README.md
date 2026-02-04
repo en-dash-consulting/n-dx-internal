@@ -1,5 +1,7 @@
 # Sourcevision
 
+<img src="SourceVision.png" alt="SourceVision" width="128">
+
 Codebase analysis tool that produces structured, git-friendly JSON output describing your project's file inventory, import graph, architectural zones, component definitions, and route structure — with an interactive browser-based viewer and AI integration.
 
 ## Quick Start

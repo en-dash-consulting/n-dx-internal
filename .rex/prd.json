@@ -20,7 +20,7 @@
             {
               "id": "75e2da1b-51c2-4dab-a9fe-c0f8591ea24e",
               "title": "Implement LLM-powered add command",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Send description to Claude to determine hierarchy and create full breakdown",
               "acceptanceCriteria": [
@@ -588,7 +588,7 @@
             {
               "id": "ce0f3736-1f0a-43dc-a0a0-34fee6fb407e",
               "title": "Include project context in LLM prompt",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add CLAUDE.md or README content to reasonFromScanResults prompt",
               "acceptanceCriteria": [
@@ -616,7 +616,7 @@
             {
               "id": "53558943-22ff-4e1a-b1e8-787b51bb7639",
               "title": "Add model selection for analyze",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Support --model flag to override default model",
               "acceptanceCriteria": [
@@ -1114,6 +1114,149 @@
               ],
               "priority": "low",
               "source": "llm"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "05338f33-e638-49b8-815f-ed12949f0c63",
+      "title": "Token usage tracking and analytics",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "a98b3029-d627-49b6-8578-aa060aa33252",
+          "title": "Claude API token tracking",
+          "status": "pending",
+          "level": "feature",
+          "description": "Track and display token consumption from Claude API calls across all packages",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "bb3a012d-48d9-49b5-b76a-cc77da2ca1b8",
+              "title": "Add token tracking to sourcevision analyze command",
+              "status": "pending",
+              "level": "task",
+              "description": "Track tokens used when sourcevision calls Claude for analysis",
+              "acceptanceCriteria": [
+                "Token usage is captured from Claude API responses",
+                "Usage is displayed in analyze output",
+                "Historical usage can be queried"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "tokens",
+                "analytics"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "2f9ec405-a237-4106-8c32-736d3b48f034",
+              "title": "Add token tracking to rex analyze command",
+              "status": "pending",
+              "level": "task",
+              "description": "Track tokens used when rex calls Claude for PRD generation",
+              "acceptanceCriteria": [
+                "Token usage is captured from Claude API responses",
+                "Usage is displayed in analyze output",
+                "Historical usage can be queried"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "tokens",
+                "analytics"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "5b633358-ed65-403f-9bea-f32cd4cf49d0",
+              "title": "Add token tracking to hench runs",
+              "status": "pending",
+              "level": "task",
+              "description": "Track tokens used during autonomous agent execution",
+              "acceptanceCriteria": [
+                "Token usage is captured from all Claude API calls in run",
+                "Usage is stored in run history",
+                "Per-task token breakdown is available"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "tokens",
+                "analytics"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "d0549383-6285-4d0f-bd13-6e171ac9d269",
+          "title": "Usage reporting and visualization",
+          "status": "pending",
+          "level": "feature",
+          "description": "Provide comprehensive token usage reports across all n-dx operations",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "c0954b48-a8e1-44b3-a379-65314f51dcfa",
+              "title": "Add token usage to n-dx status command",
+              "status": "pending",
+              "level": "task",
+              "description": "Show aggregate token usage across all packages in status output",
+              "acceptanceCriteria": [
+                "Status command shows total tokens used",
+                "Breakdown by package (sv/rex/hench) is available",
+                "Time-based filtering options exist"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "tokens",
+                "reporting"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "f656069c-ab55-4e6b-a314-b3aba21bbdb9",
+              "title": "Implement dedicated usage reporting command",
+              "status": "pending",
+              "level": "task",
+              "description": "Create n-dx usage command for detailed token analytics",
+              "acceptanceCriteria": [
+                "Shows usage by package, command, and time period",
+                "Supports JSON output for scripting",
+                "Includes cost estimation based on model pricing"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "tokens",
+                "reporting"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "6a759ce3-8c81-4853-a052-0de115440c9d",
+              "title": "Add usage budget warnings",
+              "level": "task",
+              "status": "pending",
+              "source": "smart-add",
+              "description": "Warn users when approaching token usage limits",
+              "acceptanceCriteria": [
+                "Configurable budget thresholds",
+                "Warnings displayed during command execution",
+                "Option to abort operations when budget exceeded"
+              ],
+              "priority": "low",
+              "tags": [
+                "cli",
+                "tokens",
+                "budget"
+              ]
             }
           ]
         }
