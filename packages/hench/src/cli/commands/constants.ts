@@ -30,6 +30,8 @@ Options:
   --task=<id>             Target a specific Rex task ID (for run)
   --auto                  Skip interactive selection, autoselect by priority (for run)
   --iterations=<n>        Run multiple tasks sequentially (for run)
+  --loop                  Run continuously until all tasks complete or Ctrl+C (for run)
+  --loop-pause=<ms>       Pause between loop iterations in ms (default: config loopPauseMs)
   --dry-run               Print brief without calling Claude API (for run)
   --max-turns=<n>         Override max turns (for run)
   --model=<m>             Override model (for run)

@@ -9,6 +9,45 @@ import { HENCH_DIR, safeParseInt } from "./constants.js";
 import { CLIError, requireClaudeCLI } from "../errors.js";
 import { info, result as output } from "../output.js";
 
+// ---------------------------------------------------------------------------
+// Loop helpers (exported for testing)
+// ---------------------------------------------------------------------------
+
+/**
+ * Determine whether the loop should continue after a task run.
+ * Continues on success and transient errors; stops on hard failures.
+ */
+export function shouldContinueLoop(status: string): boolean {
+  return status !== "failed" && status !== "timeout";
+}
+
+/**
+ * Pause between loop iterations. Respects an optional AbortSignal so
+ * that a Ctrl-C handler can interrupt the wait immediately.
+ */
+export function loopPause(ms: number, signal?: AbortSignal): Promise<void> {
+  if (ms <= 0) return Promise.resolve();
+  return new Promise<void>((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    if (signal) {
+      const onAbort = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+      if (signal.aborted) {
+        clearTimeout(timer);
+        resolve();
+        return;
+      }
+      signal.addEventListener("abort", onAbort, { once: true });
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Interactive task selection
+// ---------------------------------------------------------------------------
+
 function promptUser(question: string): Promise<string> {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   return new Promise((resolve) => {
@@ -52,6 +91,10 @@ async function selectTask(
 
   return tasks[idx].id;
 }
+
+// ---------------------------------------------------------------------------
+// Single task execution
+// ---------------------------------------------------------------------------
 
 async function runOne(
   dir: string,
@@ -107,6 +150,20 @@ async function runOne(
   return { status: run.status };
 }
 
+// ---------------------------------------------------------------------------
+// No-more-tasks sentinel
+// ---------------------------------------------------------------------------
+
+const NO_TASKS_MSG = "No actionable tasks found in PRD";
+
+function isNoTasksError(err: unknown): boolean {
+  return err instanceof Error && err.message.includes(NO_TASKS_MSG);
+}
+
+// ---------------------------------------------------------------------------
+// cmdRun — main entry point
+// ---------------------------------------------------------------------------
+
 export async function cmdRun(
   dir: string,
   flags: Record<string, string>,
@@ -119,22 +176,50 @@ export async function cmdRun(
   const dryRun = flags["dry-run"] === "true";
   const model = flags.model;
   const auto = flags.auto === "true";
+  const loop = flags.loop === "true";
 
   // Fail fast if CLI provider selected but claude binary not available
   if (provider === "cli" && !dryRun) {
     requireClaudeCLI();
   }
+
   const iterations = flags.iterations ? safeParseInt(flags.iterations, "iterations") : 1;
   const maxTurns = flags["max-turns"] ? safeParseInt(flags["max-turns"], "max-turns") : undefined;
+  const pauseMs = flags["loop-pause"]
+    ? safeParseInt(flags["loop-pause"], "loop-pause")
+    : config.loopPauseMs;
 
   let taskId = flags.task;
 
   // Task selection: --task > interactive (TTY) > autoselect
-  if (!taskId && !auto && process.stdin.isTTY && !dryRun) {
+  // In loop mode, always autoselect (skip interactive)
+  if (!taskId && !auto && !loop && process.stdin.isTTY && !dryRun) {
     taskId = await selectTask(dir, rexDir);
   }
-  // If --auto or non-TTY, taskId stays undefined → assembleTaskBrief autoselects
+  // If --auto, --loop, or non-TTY, taskId stays undefined → assembleTaskBrief autoselects
 
+  if (loop) {
+    await runLoop(dir, henchDir, rexDir, provider, taskId, dryRun, model, maxTurns, pauseMs);
+  } else {
+    await runIterations(dir, henchDir, rexDir, provider, taskId, dryRun, model, maxTurns, iterations);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Fixed iteration mode (existing behaviour)
+// ---------------------------------------------------------------------------
+
+async function runIterations(
+  dir: string,
+  henchDir: string,
+  rexDir: string,
+  provider: "cli" | "api",
+  taskId: string | undefined,
+  dryRun: boolean,
+  model: string | undefined,
+  maxTurns: number | undefined,
+  iterations: number,
+): Promise<void> {
   for (let i = 0; i < iterations; i++) {
     if (iterations > 1) {
       info(`\n=== Iteration ${i + 1}/${iterations} ===`);
@@ -159,5 +244,93 @@ export async function cmdRun(
     }
 
     if (dryRun) break;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Continuous loop mode (--loop)
+// ---------------------------------------------------------------------------
+
+async function runLoop(
+  dir: string,
+  henchDir: string,
+  rexDir: string,
+  provider: "cli" | "api",
+  taskId: string | undefined,
+  dryRun: boolean,
+  model: string | undefined,
+  maxTurns: number | undefined,
+  pauseMs: number,
+): Promise<void> {
+  // Graceful shutdown via SIGINT (Ctrl-C)
+  const ac = new AbortController();
+  let stopping = false;
+
+  const onSignal = () => {
+    if (stopping) {
+      // Second Ctrl-C: force exit
+      process.exit(1);
+    }
+    stopping = true;
+    ac.abort();
+    info("\nReceived interrupt — finishing current task then stopping…");
+  };
+
+  process.on("SIGINT", onSignal);
+
+  let completed = 0;
+
+  try {
+    info("Loop mode: running continuously until all tasks complete or interrupted (Ctrl+C to stop)");
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      if (stopping) {
+        info(`\nLoop stopped by user after ${completed} task(s).`);
+        break;
+      }
+
+      completed++;
+      info(`\n=== Loop iteration ${completed} ===`);
+
+      let status: string;
+      try {
+        const result = await runOne(
+          dir, henchDir, rexDir, provider,
+          // Only use explicit taskId on the very first iteration
+          completed === 1 ? taskId : undefined,
+          dryRun, model, maxTurns,
+        );
+        status = result.status;
+      } catch (err) {
+        if (isNoTasksError(err)) {
+          info(`\nAll tasks complete — loop finished after ${completed - 1} task(s).`);
+          break;
+        }
+        throw err;
+      }
+
+      if (!shouldContinueLoop(status)) {
+        info(`\nLoop stopped after ${completed} task(s) due to ${status} status.`);
+        break;
+      }
+
+      if (dryRun) {
+        info("\nDry run — stopping after one iteration.");
+        break;
+      }
+
+      if (status === "error_transient") {
+        info("\nTransient error, continuing to next task...");
+      }
+
+      // Pause between tasks (interruptible)
+      if (!stopping && pauseMs > 0) {
+        info(`\nPausing ${pauseMs}ms before next task...`);
+        await loopPause(pauseMs, ac.signal);
+      }
+    }
+  } finally {
+    process.removeListener("SIGINT", onSignal);
   }
 }

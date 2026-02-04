@@ -25,6 +25,7 @@ export interface HenchConfig {
   apiKeyEnv: string;
   guard: GuardConfig;
   retry: RetryConfig;
+  loopPauseMs: number;
 }
 
 export function DEFAULT_HENCH_CONFIG(): HenchConfig {
@@ -47,6 +48,7 @@ export function DEFAULT_HENCH_CONFIG(): HenchConfig {
       baseDelayMs: 2000,
       maxDelayMs: 30000,
     },
+    loopPauseMs: 2000,
   };
 }
 
