@@ -6,6 +6,7 @@ import { assembleTaskBrief, formatTaskBrief } from "./brief.js";
 import { buildSystemPrompt } from "./prompt.js";
 import { saveRun } from "../store/index.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../tools/rex.js";
+import { validateCompletion, formatValidationResult } from "./completion.js";
 import { section, subsection, stream, info } from "../cli/output.js";
 
 export interface CliLoopOptions {
@@ -333,19 +334,41 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
       accumulatedToolCalls = accumulatedToolCalls.concat(result.toolCalls);
 
       if (!result.error) {
-        // Success
+        // Validate completion: require meaningful changes
+        const validation = await validateCompletion(projectDir, {
+          testCommand: brief.project.testCommand,
+        });
+
         run.turns = accumulatedTurns;
         run.toolCalls = accumulatedToolCalls;
         run.tokenUsage = result.tokenUsage;
-        run.status = "completed";
-        run.summary = result.summary;
         run.retryAttempts = attempt > 0 ? attempt : undefined;
 
-        await toolRexUpdateStatus(store, taskId, { status: "completed" });
-        await toolRexAppendLog(store, taskId, {
-          event: "task_completed",
-          detail: run.summary,
-        });
+        if (validation.valid) {
+          // Success
+          run.status = "completed";
+          run.summary = result.summary;
+
+          await toolRexUpdateStatus(store, taskId, { status: "completed" });
+          await toolRexAppendLog(store, taskId, {
+            event: "task_completed",
+            detail: run.summary,
+          });
+        } else {
+          // Completion rejected — no meaningful changes
+          run.status = "failed";
+          run.summary = result.summary;
+          run.error = validation.reason;
+
+          info(`\nCompletion rejected: ${validation.reason}`);
+          info(formatValidationResult(validation));
+
+          await toolRexUpdateStatus(store, taskId, { status: "pending" });
+          await toolRexAppendLog(store, taskId, {
+            event: "completion_rejected",
+            detail: formatValidationResult(validation),
+          });
+        }
         break;
       }
 

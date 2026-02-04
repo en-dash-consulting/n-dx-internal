@@ -3,17 +3,46 @@ import type { PRDStore } from "rex/dist/store/types.js";
 import type { ItemStatus } from "rex/dist/schema/v1.js";
 import { computeTimestampUpdates } from "rex/dist/core/timestamps.js";
 import { findAutoCompletions } from "rex/dist/core/parent-completion.js";
+import { validateCompletion, formatValidationResult } from "../agent/completion.js";
+
+export interface UpdateStatusOptions {
+  /** Project directory for git-based completion validation. */
+  projectDir?: string;
+  /** Test command to run during completion validation. */
+  testCommand?: string;
+}
 
 export async function toolRexUpdateStatus(
   store: PRDStore,
   taskId: string,
   params: { status: string },
+  options?: UpdateStatusOptions,
 ): Promise<string> {
   const validStatuses = ["pending", "in_progress", "completed", "deferred"];
   if (!validStatuses.includes(params.status)) {
     throw new Error(
       `Invalid status "${params.status}". Valid: ${validStatuses.join(", ")}`,
     );
+  }
+
+  // Validate completion: require meaningful changes before marking complete
+  if (params.status === "completed" && options?.projectDir) {
+    const validation = await validateCompletion(options.projectDir, {
+      testCommand: options.testCommand,
+    });
+
+    if (!validation.valid) {
+      const detail = formatValidationResult(validation);
+      await store.appendLog({
+        timestamp: new Date().toISOString(),
+        event: "completion_rejected",
+        itemId: taskId,
+        detail,
+      });
+      return `[COMPLETION_REJECTED] Cannot mark task as completed: ${validation.reason}\n` +
+        `The task must produce meaningful changes (non-empty git diff) to be marked complete. ` +
+        `If you believe the task is done, review your changes and ensure they are committed or staged.`;
+    }
   }
 
   const existing = await store.getItem(taskId);

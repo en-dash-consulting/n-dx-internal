@@ -132,6 +132,8 @@ export interface ToolContext {
   projectDir: string;
   store: PRDStore;
   taskId: string;
+  /** Test command for completion validation (from project config). */
+  testCommand?: string;
 }
 
 export async function dispatchTool(
@@ -180,6 +182,7 @@ export async function dispatchTool(
           ctx.store,
           ctx.taskId,
           input as { status: string },
+          { projectDir: ctx.projectDir, testCommand: ctx.testCommand },
         );
 
       case "rex_append_log":

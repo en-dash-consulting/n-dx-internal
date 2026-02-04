@@ -214,7 +214,7 @@
             {
               "id": "c953070b-ef5a-4793-aaca-27144bed45c0",
               "title": "Add completion validation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Validate meaningful changes were made before marking tasks complete",
               "acceptanceCriteria": [
@@ -223,7 +223,9 @@
                 "Prevents false completion claims"
               ],
               "priority": "high",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T17:40:56.141Z",
+              "completedAt": "2026-02-04T17:46:49.192Z"
             },
             {
               "id": "da30cf47-a66f-4c72-9843-30472b2eb384",
@@ -273,10 +275,12 @@
         {
           "id": "2cae10b4-7d16-4b09-82b4-c0922d28a00f",
           "title": "Loop continuity",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Enable continuous autonomous execution with proper error handling",
           "source": "llm",
+          "startedAt": "2026-02-04T17:40:56.130Z",
+          "completedAt": "2026-02-04T17:40:56.130Z",
           "children": [
             {
               "id": "54b42890-14ca-40eb-9f45-e4e9a2e1ec83",
@@ -313,7 +317,7 @@
             {
               "id": "87fe384b-0e3e-49d8-8d36-3f25b8c8942b",
               "title": "Add clear error handling for invalid task selection",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Error clearly when trying to work on completed or deferred tasks",
               "acceptanceCriteria": [
@@ -322,7 +326,9 @@
                 "Suggests alternative actions"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-04T17:35:35.313Z",
+              "completedAt": "2026-02-04T17:40:56.118Z"
             }
           ]
         }

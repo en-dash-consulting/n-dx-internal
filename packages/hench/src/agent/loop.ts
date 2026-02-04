@@ -126,6 +126,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     projectDir,
     store,
     taskId,
+    testCommand: brief.project.testCommand,
   };
 
   const run: RunRecord = {
