@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { CLIError, formatCLIError, handleCLIError } from "../../../src/cli/errors.js";
+import { join } from "node:path";
+import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { CLIError, formatCLIError, handleCLIError, requireRexDir } from "../../../src/cli/errors.js";
 
 describe("CLIError", () => {
   it("stores message and suggestion", () => {
@@ -116,5 +119,43 @@ describe("handleCLIError", () => {
 
     expect(mockStderr).toHaveBeenCalledWith("Error: test error\nHint: try something");
     expect(mockExit).toHaveBeenCalledWith(1);
+  });
+});
+
+describe("requireRexDir", () => {
+  it("throws CLIError when .rex/ does not exist", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "rex-test-"));
+    try {
+      expect(() => requireRexDir(tmp)).toThrow(CLIError);
+      expect(() => requireRexDir(tmp)).toThrow(/Rex directory not found/);
+    } finally {
+      rmSync(tmp, { recursive: true });
+    }
+  });
+
+  it("includes n-dx init suggestion in the error", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "rex-test-"));
+    try {
+      let caught: CLIError | undefined;
+      try {
+        requireRexDir(tmp);
+      } catch (err) {
+        caught = err as CLIError;
+      }
+      expect(caught).toBeInstanceOf(CLIError);
+      expect(caught!.suggestion).toContain("n-dx init");
+    } finally {
+      rmSync(tmp, { recursive: true });
+    }
+  });
+
+  it("does not throw when .rex/ exists", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "rex-test-"));
+    mkdirSync(join(tmp, ".rex"));
+    try {
+      expect(() => requireRexDir(tmp)).not.toThrow();
+    } finally {
+      rmSync(tmp, { recursive: true });
+    }
   });
 });

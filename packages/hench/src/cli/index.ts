@@ -2,7 +2,7 @@
 
 import { resolve } from "node:path";
 import { usage } from "./commands/constants.js";
-import { handleCLIError } from "./errors.js";
+import { handleCLIError, requireHenchDir } from "./errors.js";
 
 function parseArgs(argv: string[]): {
   command: string | undefined;
@@ -51,6 +51,11 @@ async function main(): Promise<void> {
   };
 
   try {
+    // Ensure .hench/ exists for all commands except init
+    if (command !== "init") {
+      requireHenchDir(resolveDir());
+    }
+
     switch (command) {
       case "init": {
         const { cmdInit } = await import("./commands/init.js");

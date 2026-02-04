@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { CLIError, formatCLIError, handleCLIError } from "../../../src/cli/errors.js";
+import { join } from "node:path";
+import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { CLIError, formatCLIError, handleCLIError, requireHenchDir } from "../../../src/cli/errors.js";
 
 describe("CLIError", () => {
   it("stores message and suggestion", () => {
@@ -78,5 +81,43 @@ describe("handleCLIError", () => {
 
     expect(mockStderr).toHaveBeenCalledWith("Error: test error\nHint: try something");
     expect(mockExit).toHaveBeenCalledWith(1);
+  });
+});
+
+describe("requireHenchDir", () => {
+  it("throws CLIError when .hench/ does not exist", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "hench-test-"));
+    try {
+      expect(() => requireHenchDir(tmp)).toThrow(CLIError);
+      expect(() => requireHenchDir(tmp)).toThrow(/Hench directory not found/);
+    } finally {
+      rmSync(tmp, { recursive: true });
+    }
+  });
+
+  it("includes n-dx init suggestion in the error", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "hench-test-"));
+    try {
+      let caught: CLIError | undefined;
+      try {
+        requireHenchDir(tmp);
+      } catch (err) {
+        caught = err as CLIError;
+      }
+      expect(caught).toBeInstanceOf(CLIError);
+      expect(caught!.suggestion).toContain("n-dx init");
+    } finally {
+      rmSync(tmp, { recursive: true });
+    }
+  });
+
+  it("does not throw when .hench/ exists", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "hench-test-"));
+    mkdirSync(join(tmp, ".hench"));
+    try {
+      expect(() => requireHenchDir(tmp)).not.toThrow();
+    } finally {
+      rmSync(tmp, { recursive: true });
+    }
   });
 });

@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { CLIError, formatCLIError, handleCLIError } from "../../../src/cli/errors.js";
+import { join } from "node:path";
+import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { CLIError, formatCLIError, handleCLIError, requireSvDir } from "../../../src/cli/errors.js";
 
 describe("CLIError", () => {
   it("stores message and suggestion", () => {
@@ -71,5 +74,43 @@ describe("handleCLIError", () => {
 
     expect(mockStderr).toHaveBeenCalledWith("Error: test error\nHint: try something");
     expect(mockExit).toHaveBeenCalledWith(1);
+  });
+});
+
+describe("requireSvDir", () => {
+  it("throws CLIError when .sourcevision/ does not exist", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "sv-test-"));
+    try {
+      expect(() => requireSvDir(tmp)).toThrow(CLIError);
+      expect(() => requireSvDir(tmp)).toThrow(/Sourcevision directory not found/);
+    } finally {
+      rmSync(tmp, { recursive: true });
+    }
+  });
+
+  it("includes n-dx init suggestion in the error", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "sv-test-"));
+    try {
+      let caught: CLIError | undefined;
+      try {
+        requireSvDir(tmp);
+      } catch (err) {
+        caught = err as CLIError;
+      }
+      expect(caught).toBeInstanceOf(CLIError);
+      expect(caught!.suggestion).toContain("n-dx init");
+    } finally {
+      rmSync(tmp, { recursive: true });
+    }
+  });
+
+  it("does not throw when .sourcevision/ exists", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "sv-test-"));
+    mkdirSync(join(tmp, ".sourcevision"));
+    try {
+      expect(() => requireSvDir(tmp)).not.toThrow();
+    } finally {
+      rmSync(tmp, { recursive: true });
+    }
   });
 });

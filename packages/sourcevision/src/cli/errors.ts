@@ -2,6 +2,10 @@
  * CLI error handling — user-friendly errors with optional suggestions.
  */
 
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { SV_DIR } from "./commands/constants.js";
+
 /** An error with an optional actionable suggestion for the user. */
 export class CLIError extends Error {
   suggestion?: string;
@@ -85,4 +89,17 @@ export function formatCLIError(err: unknown): string {
 export function handleCLIError(err: unknown): never {
   console.error(formatCLIError(err));
   process.exit(1);
+}
+
+/**
+ * Check that .sourcevision/ exists in the given directory.
+ * Throws a CLIError with an init suggestion if missing.
+ */
+export function requireSvDir(dir: string): void {
+  if (!existsSync(join(dir, SV_DIR))) {
+    throw new CLIError(
+      `Sourcevision directory not found in ${dir}`,
+      "Run 'n-dx init' to set up the project, or 'sourcevision init' if using sourcevision standalone.",
+    );
+  }
 }

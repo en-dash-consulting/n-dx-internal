@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { spawn } from "child_process";
-import { dirname, resolve } from "path";
+import { existsSync } from "fs";
+import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { runConfig } from "./config.js";
 
@@ -50,6 +51,19 @@ function extractFlags(args) {
   return args.filter((a) => a.startsWith("-"));
 }
 
+/**
+ * Check that required directories exist before running orchestration commands.
+ * Provides a clear, actionable error message suggesting `n-dx init`.
+ */
+function requireInit(dir, dirs) {
+  const missing = dirs.filter((d) => !existsSync(join(dir, d)));
+  if (missing.length > 0) {
+    console.error(`Error: Missing ${missing.join(", ")} in ${dir}`);
+    console.error(`Hint: Run 'n-dx init ${dir === process.cwd() ? "" : dir}' to set up the project.`.trimEnd());
+    process.exit(1);
+  }
+}
+
 const [command, ...rest] = process.argv.slice(2);
 
 // --- Orchestration commands ---
@@ -64,6 +78,7 @@ if (command === "init") {
 
 if (command === "plan") {
   const dir = resolveDir(rest);
+  requireInit(dir, [".rex"]);
   const flags = extractFlags(rest);
   const hasFile = flags.some((f) => f.startsWith("--file=") || f === "--file");
 
@@ -78,6 +93,7 @@ if (command === "plan") {
 
 if (command === "work") {
   const dir = resolveDir(rest);
+  requireInit(dir, [".rex", ".hench"]);
   const flags = extractFlags(rest);
   await runOrDie(tools.hench, ["run", ...flags, dir]);
   process.exit(0);
@@ -85,6 +101,7 @@ if (command === "work") {
 
 if (command === "status") {
   const dir = resolveDir(rest);
+  requireInit(dir, [".rex"]);
   const flags = extractFlags(rest);
   await runOrDie(tools.rex, ["status", ...flags, dir]);
   process.exit(0);

@@ -11,14 +11,13 @@
  *   mcp [dir]        - Start MCP server for AI tool integration
  */
 
-import { existsSync } from "node:fs";
-import { resolve, join } from "node:path";
-import { usage, SV_DIR } from "./commands/constants.js";
+import { resolve } from "node:path";
+import { usage } from "./commands/constants.js";
 import { cmdInit } from "./commands/init.js";
 import { cmdReset } from "./commands/reset.js";
 import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdValidate } from "./commands/validate.js";
-import { handleCLIError } from "./errors.js";
+import { handleCLIError, requireSvDir } from "./errors.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -41,33 +40,24 @@ const targetArg = args.slice(1).find((a) => !a.startsWith("-"));
 
 async function cmdServe(dir: string, port: number): Promise<void> {
   const absDir = resolve(dir);
-  const svDir = join(absDir, SV_DIR);
-
-  if (!existsSync(svDir)) {
-    console.error(`No .sourcevision/ directory found in: ${absDir}`);
-    console.error("Run 'sourcevision init' or 'sourcevision analyze' first.");
-    process.exit(1);
-  }
-
   const { startServer } = await import("./serve.js");
   startServer(absDir, port);
 }
 
 async function cmdMcp(dir: string): Promise<void> {
   const absDir = resolve(dir);
-  const svDir = join(absDir, SV_DIR);
-
-  if (!existsSync(svDir)) {
-    console.error(`No .sourcevision/ directory found in: ${absDir}`);
-    console.error("Run 'sourcevision analyze' first.");
-    process.exit(1);
-  }
-
   const { startMcpServer } = await import("./mcp.js");
   await startMcpServer(absDir);
 }
 
+// Commands that require .sourcevision/ to exist
+const NEEDS_SV_DIR = new Set(["serve", "validate", "reset", "mcp"]);
+
 try {
+  if (command && NEEDS_SV_DIR.has(command)) {
+    requireSvDir(resolve(targetArg || "."));
+  }
+
   switch (command) {
     case "init":
       cmdInit(targetArg || ".");

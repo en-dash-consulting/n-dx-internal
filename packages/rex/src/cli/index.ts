@@ -3,7 +3,7 @@
 import { resolve } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { usage } from "./commands/constants.js";
-import { handleCLIError } from "./errors.js";
+import { handleCLIError, requireRexDir } from "./errors.js";
 
 /** Keys that accept multiple values (accumulated into arrays). */
 const MULTI_VALUE_KEYS = new Set(["file"]);
@@ -62,6 +62,13 @@ async function main(): Promise<void> {
   };
 
   try {
+    // Ensure .rex/ exists for commands that need it.
+    // init creates it; analyze handles its own graceful fallback.
+    const SKIP_DIR_CHECK = new Set(["init", "analyze"]);
+    if (!SKIP_DIR_CHECK.has(command)) {
+      requireRexDir(resolveDir());
+    }
+
     switch (command) {
       case "init": {
         const { cmdInit } = await import("./commands/init.js");

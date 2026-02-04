@@ -2,6 +2,10 @@
  * CLI error handling — user-friendly errors with optional suggestions.
  */
 
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { REX_DIR } from "./commands/constants.js";
+
 /** An error with an optional actionable suggestion for the user. */
 export class CLIError extends Error {
   suggestion?: string;
@@ -95,4 +99,17 @@ export function formatCLIError(err: unknown): string {
 export function handleCLIError(err: unknown): never {
   console.error(formatCLIError(err));
   process.exit(1);
+}
+
+/**
+ * Check that .rex/ exists in the given directory.
+ * Throws a CLIError with an init suggestion if missing.
+ */
+export function requireRexDir(dir: string): void {
+  if (!existsSync(join(dir, REX_DIR))) {
+    throw new CLIError(
+      `Rex directory not found in ${dir}`,
+      "Run 'n-dx init' to set up the project, or 'rex init' if using rex standalone.",
+    );
+  }
 }
