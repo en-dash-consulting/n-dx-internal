@@ -11,7 +11,7 @@ import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../../schema/inde
 
 const VALID_LEVELS = new Set(Object.keys(LEVEL_HIERARCHY));
 
-/** Map parent level → child level for inference. */
+/** Map parent level → default child level for inference. */
 const CHILD_LEVEL: Record<string, ItemLevel> = {
   epic: "feature",
   feature: "task",
@@ -71,11 +71,15 @@ export async function cmdAdd(
   }
 
   // Validate parent-child level relationship
-  const requiredParentLevel = LEVEL_HIERARCHY[resolvedLevel as ItemLevel];
-  if (requiredParentLevel && !parentId) {
+  const allowedParents = LEVEL_HIERARCHY[resolvedLevel as ItemLevel];
+  const canBeRoot = allowedParents.includes(null);
+  const allowedParentLevels = allowedParents.filter((p): p is ItemLevel => p !== null);
+
+  if (!canBeRoot && !parentId) {
+    const parentNames = allowedParentLevels.join(" or ");
     throw new CLIError(
       `A ${resolvedLevel} requires a parent.`,
-      `Use --parent=<id> to specify a ${requiredParentLevel}.`,
+      `Use --parent=<id> to specify a ${parentNames}.`,
     );
   }
 
@@ -88,16 +92,13 @@ export async function cmdAdd(
         "Check the ID with 'rex status' and try again.",
       );
     }
-    if (requiredParentLevel && parentEntry.item.level !== requiredParentLevel) {
+    if (allowedParentLevels.length > 0 && !allowedParentLevels.includes(parentEntry.item.level)) {
+      const parentNames = allowedParentLevels.join(" or ");
       throw new CLIError(
-        `A ${resolvedLevel} must be a child of a ${requiredParentLevel}, but "${parentId}" is a ${parentEntry.item.level}.`,
-        `Use --parent=<id> to specify a ${requiredParentLevel} instead.`,
+        `A ${resolvedLevel} must be a child of a ${parentNames}, but "${parentId}" is a ${parentEntry.item.level}.`,
+        `Use --parent=<id> to specify a ${parentNames} instead.`,
       );
     }
-  }
-
-  if (!requiredParentLevel && parentId) {
-    // epics can optionally have parents but it's unusual
   }
 
   const id = randomUUID();

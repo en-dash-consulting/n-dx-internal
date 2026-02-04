@@ -50,11 +50,18 @@ export interface LogEntry {
   [key: string]: unknown;
 }
 
-export const LEVEL_HIERARCHY: Record<ItemLevel, ItemLevel | null> = {
-  epic: null,
-  feature: "epic",
-  task: "feature",
-  subtask: "task",
+/**
+ * Valid parent levels for each item level.
+ *
+ * - `null` entries mean the level can be a root (no parent required).
+ * - Multiple entries mean several parent levels are accepted (e.g. a task
+ *   can live under a feature *or* directly under an epic).
+ */
+export const LEVEL_HIERARCHY: Record<ItemLevel, Array<ItemLevel | null>> = {
+  epic: [null],
+  feature: ["epic"],
+  task: ["feature", "epic"],
+  subtask: ["task"],
 };
 
 export function DEFAULT_CONFIG(project: string): RexConfig {

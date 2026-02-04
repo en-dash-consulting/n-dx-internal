@@ -192,6 +192,114 @@ describe("cmdAdd – level inference (no explicit level)", () => {
   });
 });
 
+describe("cmdAdd – flexible hierarchy (tasks under epics)", () => {
+  let tmp: string;
+
+  beforeEach(() => {
+    tmp = mkdtempSync(join(tmpdir(), "rex-add-flex-"));
+    mkdirSync(join(tmp, ".rex"));
+  });
+
+  afterEach(() => {
+    rmSync(tmp, { recursive: true });
+  });
+
+  it("allows adding a task directly under an epic", async () => {
+    writeFileSync(
+      join(tmp, ".rex", "prd.json"),
+      makePrd([{ id: "epic-1", title: "E", level: "epic", status: "pending", children: [] }]),
+    );
+
+    await cmdAdd(tmp, "task", { title: "Direct Task", parent: "epic-1", format: "json" });
+
+    const prd = JSON.parse(readFileSync(join(tmp, ".rex", "prd.json"), "utf-8"));
+    const epic = prd.items.find((i: { id: string }) => i.id === "epic-1");
+    const task = epic.children.find((i: { title: string }) => i.title === "Direct Task");
+    expect(task).toBeDefined();
+    expect(task.level).toBe("task");
+  });
+
+  it("still allows adding a task under a feature", async () => {
+    writeFileSync(
+      join(tmp, ".rex", "prd.json"),
+      makePrd([{
+        id: "epic-1", title: "E", level: "epic", status: "pending",
+        children: [{ id: "feat-1", title: "F", level: "feature", status: "pending", children: [] }],
+      }]),
+    );
+
+    await cmdAdd(tmp, "task", { title: "Feature Task", parent: "feat-1", format: "json" });
+
+    const prd = JSON.parse(readFileSync(join(tmp, ".rex", "prd.json"), "utf-8"));
+    const feat = prd.items[0].children.find((i: { id: string }) => i.id === "feat-1");
+    const task = feat.children.find((i: { title: string }) => i.title === "Feature Task");
+    expect(task).toBeDefined();
+    expect(task.level).toBe("task");
+  });
+
+  it("rejects adding a task under a subtask", async () => {
+    writeFileSync(
+      join(tmp, ".rex", "prd.json"),
+      makePrd([{
+        id: "epic-1", title: "E", level: "epic", status: "pending",
+        children: [{
+          id: "feat-1", title: "F", level: "feature", status: "pending",
+          children: [{
+            id: "task-1", title: "T", level: "task", status: "pending",
+            children: [{ id: "sub-1", title: "S", level: "subtask", status: "pending", children: [] }],
+          }],
+        }],
+      }]),
+    );
+
+    await expect(
+      cmdAdd(tmp, "task", { title: "Bad Task", parent: "sub-1" }),
+    ).rejects.toThrow(/must be a child of/);
+  });
+
+  it("rejects adding a task without any parent", async () => {
+    writeFileSync(join(tmp, ".rex", "prd.json"), makePrd());
+
+    await expect(
+      cmdAdd(tmp, "task", { title: "Orphan Task" }),
+    ).rejects.toThrow(/requires a parent/);
+  });
+
+  it("infers feature (not task) when parent is an epic and no level given", async () => {
+    writeFileSync(
+      join(tmp, ".rex", "prd.json"),
+      makePrd([{ id: "epic-1", title: "E", level: "epic", status: "pending", children: [] }]),
+    );
+
+    // Without explicit level, inference still defaults epic→feature
+    await cmdAdd(tmp, undefined, { title: "Inferred Feature", parent: "epic-1", format: "json" });
+
+    const prd = JSON.parse(readFileSync(join(tmp, ".rex", "prd.json"), "utf-8"));
+    const epic = prd.items.find((i: { id: string }) => i.id === "epic-1");
+    const feat = epic.children.find((i: { title: string }) => i.title === "Inferred Feature");
+    expect(feat).toBeDefined();
+    expect(feat.level).toBe("feature");
+  });
+
+  it("feature level remains optional — epics can have both features and tasks", async () => {
+    writeFileSync(
+      join(tmp, ".rex", "prd.json"),
+      makePrd([{ id: "epic-1", title: "E", level: "epic", status: "pending", children: [] }]),
+    );
+
+    // Add a feature under the epic
+    await cmdAdd(tmp, "feature", { title: "Feature", parent: "epic-1", format: "json" });
+    // Add a task directly under the epic
+    await cmdAdd(tmp, "task", { title: "Direct Task", parent: "epic-1", format: "json" });
+
+    const prd = JSON.parse(readFileSync(join(tmp, ".rex", "prd.json"), "utf-8"));
+    const epic = prd.items.find((i: { id: string }) => i.id === "epic-1");
+    expect(epic.children).toHaveLength(2);
+    expect(epic.children[0].level).toBe("feature");
+    expect(epic.children[1].level).toBe("task");
+  });
+});
+
 describe("cmdAdd – blockedBy support", () => {
   let tmp: string;
 
