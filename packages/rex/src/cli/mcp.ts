@@ -7,6 +7,7 @@ import { resolveStore } from "../store/index.js";
 import { SCHEMA_VERSION, LEVEL_HIERARCHY } from "../schema/index.js";
 import { computeStats, findItem } from "../core/tree.js";
 import { findNextTask, collectCompletedIds } from "../core/next-task.js";
+import { validateTransition } from "../core/transitions.js";
 import { TOOL_VERSION } from "./commands/constants.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../schema/index.js";
 import type { PRDStore } from "../store/index.js";
@@ -108,8 +109,9 @@ export async function startMcpServer(dir: string): Promise<void> {
     {
       id: z.string().describe("Item ID"),
       status: z.enum(["pending", "in_progress", "completed", "deferred", "blocked"]).describe("New status"),
+      force: z.boolean().optional().describe("Force the transition even if it violates transition rules (e.g. completed → pending)"),
     },
-    async ({ id, status }) => {
+    async ({ id, status, force }) => {
       try {
         const existing = await store.getItem(id);
         if (!existing) {
@@ -123,12 +125,29 @@ export async function startMcpServer(dir: string): Promise<void> {
             isError: true,
           };
         }
+
+        // Validate transition unless force is set
+        if (!force) {
+          const transition = validateTransition(existing.status, status as ItemStatus);
+          if (!transition.allowed) {
+            return {
+              content: [
+                {
+                  type: "text" as const,
+                  text: `${transition.message} Pass force: true to override.`,
+                },
+              ],
+              isError: true,
+            };
+          }
+        }
+
         await store.updateItem(id, { status: status as ItemStatus });
         await store.appendLog({
           timestamp: new Date().toISOString(),
           event: "status_changed",
           itemId: id,
-          detail: `${existing.status} → ${status}`,
+          detail: `${existing.status} → ${status}${force ? " (forced)" : ""}`,
         });
         return {
           content: [

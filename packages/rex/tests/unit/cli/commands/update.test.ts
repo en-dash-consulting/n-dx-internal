@@ -135,4 +135,104 @@ describe("cmdUpdate", () => {
       cmdUpdate(tmp, itemId, { status: "blocked" }),
     ).resolves.toBeUndefined();
   });
+
+  // --- Status transition validation ---
+
+  describe("status transition validation", () => {
+    it("allows pending → in_progress", async () => {
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "in_progress" }),
+      ).resolves.toBeUndefined();
+    });
+
+    it("allows pending → completed", async () => {
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "completed" }),
+      ).resolves.toBeUndefined();
+    });
+
+    it("blocks completed → pending without --force", async () => {
+      // First move to completed
+      await cmdUpdate(tmp, itemId, { status: "completed" });
+      // Then try to go back to pending
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "pending" }),
+      ).rejects.toThrow(CLIError);
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "pending" }),
+      ).rejects.toThrow(/Cannot move from "completed"/);
+    });
+
+    it("includes --force hint in transition error", async () => {
+      await cmdUpdate(tmp, itemId, { status: "completed" });
+      try {
+        await cmdUpdate(tmp, itemId, { status: "pending" });
+      } catch (err) {
+        expect(err).toBeInstanceOf(CLIError);
+        expect((err as CLIError).suggestion).toContain("--force");
+      }
+    });
+
+    it("allows completed → pending with --force", async () => {
+      await cmdUpdate(tmp, itemId, { status: "completed" });
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "pending", force: "true" }),
+      ).resolves.toBeUndefined();
+    });
+
+    it("blocks completed → in_progress without --force", async () => {
+      await cmdUpdate(tmp, itemId, { status: "completed" });
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "in_progress" }),
+      ).rejects.toThrow(/Cannot move from "completed"/);
+    });
+
+    it("allows completed → in_progress with --force", async () => {
+      await cmdUpdate(tmp, itemId, { status: "completed" });
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "in_progress", force: "true" }),
+      ).resolves.toBeUndefined();
+    });
+
+    it("blocks deferred → completed without --force", async () => {
+      await cmdUpdate(tmp, itemId, { status: "deferred" });
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "completed" }),
+      ).rejects.toThrow(/Cannot move from "deferred"/);
+    });
+
+    it("allows deferred → completed with --force", async () => {
+      await cmdUpdate(tmp, itemId, { status: "deferred" });
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "completed", force: "true" }),
+      ).resolves.toBeUndefined();
+    });
+
+    it("blocks blocked → completed without --force", async () => {
+      await cmdUpdate(tmp, itemId, { status: "blocked" });
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "completed" }),
+      ).rejects.toThrow(/Cannot move from "blocked"/);
+    });
+
+    it("allows blocked → completed with --force", async () => {
+      await cmdUpdate(tmp, itemId, { status: "blocked" });
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "completed", force: "true" }),
+      ).resolves.toBeUndefined();
+    });
+
+    it("allows same-status no-op without error", async () => {
+      await expect(
+        cmdUpdate(tmp, itemId, { status: "pending" }),
+      ).resolves.toBeUndefined();
+    });
+
+    it("does not require --force for non-status updates on completed items", async () => {
+      await cmdUpdate(tmp, itemId, { status: "completed" });
+      await expect(
+        cmdUpdate(tmp, itemId, { title: "New title" }),
+      ).resolves.toBeUndefined();
+    });
+  });
 });

@@ -26,6 +26,7 @@ Options:
   --title="..."           Item title (for add)
   --parent=<id>           Parent item ID (for add)
   --status=<s>            Status (for update)
+  --force                 Override status transition rules (for update)
   --priority=<p>          Priority (for update/add)
   --description="..."     Description (for add/update)
   --format=tree|json      Output format (default: tree)

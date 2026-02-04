@@ -3,6 +3,7 @@ import { resolveStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError, requireRexDir } from "../errors.js";
 import { info, result } from "../output.js";
+import { validateTransition } from "../../core/transitions.js";
 import type { PRDItem, ItemStatus, Priority } from "../../schema/index.js";
 
 const VALID_STATUSES = new Set([
@@ -47,6 +48,21 @@ export async function cmdUpdate(
         `Must be one of: ${[...VALID_STATUSES].join(", ")}`,
       );
     }
+
+    // Validate transition unless --force is set
+    if (flags.force !== "true") {
+      const transition = validateTransition(
+        existing.status,
+        flags.status as ItemStatus,
+      );
+      if (!transition.allowed) {
+        throw new CLIError(
+          transition.message!,
+          "Use --force to override this check.",
+        );
+      }
+    }
+
     updates.status = flags.status as ItemStatus;
   }
 
