@@ -32,5 +32,6 @@ Options:
   --no-llm                Force algorithmic pipeline, skip LLM (for analyze)
   --model=<name>          Override LLM model (for analyze, smart add)
   --analyze               Run SourceVision analysis (for init)
+  --quiet, -q             Suppress informational output (for scripting)
 `);
 }

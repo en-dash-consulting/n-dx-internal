@@ -70,9 +70,10 @@ const [command, ...rest] = process.argv.slice(2);
 
 if (command === "init") {
   const dir = resolveDir(rest);
-  await runOrDie(tools.sourcevision, ["init", dir]);
-  await runOrDie(tools.rex, ["init", dir]);
-  await runOrDie(tools.hench, ["init", dir]);
+  const flags = extractFlags(rest);
+  await runOrDie(tools.sourcevision, ["init", ...flags, dir]);
+  await runOrDie(tools.rex, ["init", ...flags, dir]);
+  await runOrDie(tools.hench, ["init", ...flags, dir]);
   process.exit(0);
 }
 
@@ -84,7 +85,7 @@ if (command === "plan") {
 
   // Skip sourcevision when importing from a specific file
   if (!hasFile) {
-    await runOrDie(tools.sourcevision, ["analyze", dir]);
+    await runOrDie(tools.sourcevision, ["analyze", ...flags.filter((f) => f === "--quiet" || f === "-q"), dir]);
   }
 
   await runOrDie(tools.rex, ["analyze", ...flags, dir]);
@@ -141,6 +142,9 @@ Tools:
   hench ...             Autonomous agent for task execution
   sourcevision ...      Codebase analysis and visualization
   sv ...                Alias for sourcevision
+
+Global Options:
+  --quiet, -q             Suppress informational output (for scripting)
 
 Usage: n-dx <command> [args...]`);
 process.exit(command ? 1 : 0);

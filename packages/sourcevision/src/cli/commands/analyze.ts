@@ -13,6 +13,7 @@ import { updateManifestModule, updateManifestError } from "../../analyzers/manif
 import { generateLlmsTxt } from "../../analyzers/llms-txt.js";
 import { generateContext } from "../../analyzers/context.js";
 import { cmdInit } from "./init.js";
+import { info } from "../output.js";
 
 type PhaseFilter =
   | { type: "all" }
@@ -50,21 +51,21 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
   // Auto-init if needed
   const svDir = join(absDir, SV_DIR);
   if (!existsSync(join(svDir, DATA_FILES.manifest))) {
-    console.log("No .sourcevision/ found — initializing...");
+    info("No .sourcevision/ found — initializing...");
     cmdInit(absDir);
-    console.log("");
+    info("");
   }
 
   const filter = parsePhaseFilter(extraArgs);
 
-  console.log(`Analyzing: ${absDir}`);
-  console.log("");
+  info(`Analyzing: ${absDir}`);
+  info("");
 
   // ── Phase 1: Inventory (deterministic) ──────────────────────────────────
   let inventoryResult: InventoryResult | null = null;
 
   if (shouldRunPhase(filter, 1, "inventory")) {
-    console.log("[phase 1] Inventory...");
+    info("[phase 1] Inventory...");
     updateManifestModule(absDir, "inventory", "running");
 
     try {
@@ -88,9 +89,9 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
 
       const stats = inventoryResult.stats;
       if (stats) {
-        console.log(`  ${inventoryResult.files.length} files (${stats.cached} cached, ${stats.changed} changed, ${stats.added} new, ${stats.deleted} deleted) → ${outPath}`);
+        info(`  ${inventoryResult.files.length} files (${stats.cached} cached, ${stats.changed} changed, ${stats.added} new, ${stats.deleted} deleted) → ${outPath}`);
       } else {
-        console.log(`  ${inventoryResult.files.length} files cataloged → ${outPath}`);
+        info(`  ${inventoryResult.files.length} files cataloged → ${outPath}`);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -108,7 +109,7 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
       console.error("  Phase 2 requires inventory.json — run phase 1 first.");
       if (filter.type === "all") process.exit(1);
     } else {
-      console.log("[phase 2] Imports...");
+      info("[phase 2] Imports...");
       updateManifestModule(absDir, "imports", "running");
 
       try {
@@ -137,7 +138,7 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
         const outPath = join(svDir, DATA_FILES.imports);
         writeFileSync(outPath, toCanonicalJSON(imports));
         updateManifestModule(absDir, "imports", "complete");
-        console.log(`  ${imports.summary.totalEdges} edges, ${imports.summary.totalExternal} external → ${outPath}`);
+        info(`  ${imports.summary.totalEdges} edges, ${imports.summary.totalExternal} external → ${outPath}`);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         updateManifestError(absDir, "imports", msg);
@@ -156,7 +157,7 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
       console.error("  Phase 3 requires inventory.json and imports.json — run phases 1-2 first.");
       if (filter.type === "all") process.exit(1);
     } else {
-      console.log("[phase 3] Zones...");
+      info("[phase 3] Zones...");
       updateManifestModule(absDir, "zones", "running");
 
       const enrich = !extraArgs.includes("--fast");
@@ -174,9 +175,9 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
 
       if (enrich) {
         const prevPass = previousZones?.enrichmentPass ?? 0;
-        console.log(`  Enriching zones (pass ${prevPass + 1})...`);
+        info(`  Enriching zones (pass ${prevPass + 1})...`);
       } else {
-        console.log("  (skipping AI enrichment)");
+        info("  (skipping AI enrichment)");
       }
 
       try {
@@ -196,7 +197,7 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
           const passesNeeded = targetPass - currentPass;
 
           for (let p = 0; p < passesNeeded; p++) {
-            console.log(`\n[phase 3] Enrichment pass ${currentPass + p + 2}...`);
+            info(`\n[phase 3] Enrichment pass ${currentPass + p + 2}...`);
             const prevZones = zones;
             zones = await analyzeZones(inventory, importsData, { enrich: true, previousZones: prevZones });
             writeFileSync(outPath, toCanonicalJSON(zones));
@@ -204,21 +205,21 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
         }
 
         updateManifestModule(absDir, "zones", "complete");
-        console.log(`  ${zones.zones.length} zones, ${zones.crossings.length} crossings, ${zones.unzoned.length} unzoned → ${outPath}`);
+        info(`  ${zones.zones.length} zones, ${zones.crossings.length} crossings, ${zones.unzoned.length} unzoned → ${outPath}`);
 
         // Print key insights
         const totalInsights =
           (zones.insights?.length ?? 0) +
           zones.zones.reduce((s, z) => s + (z.insights?.length ?? 0), 0);
         if (totalInsights > 0) {
-          console.log(`  ${totalInsights} insights${zones.enrichmentPass ? ` (enrichment pass ${zones.enrichmentPass})` : ""}`);
+          info(`  ${totalInsights} insights${zones.enrichmentPass ? ` (enrichment pass ${zones.enrichmentPass})` : ""}`);
         }
         if (zones.insights && zones.insights.length > 0) {
           for (const insight of zones.insights.slice(0, 5)) {
-            console.log(`    · ${insight}`);
+            info(`    · ${insight}`);
           }
           if (zones.insights.length > 5) {
-            console.log(`    ... and ${zones.insights.length - 5} more in zones.json`);
+            info(`    ... and ${zones.insights.length - 5} more in zones.json`);
           }
         }
       } catch (err) {
@@ -239,7 +240,7 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
       console.error("  Phase 4 requires inventory.json and imports.json — run phases 1-2 first.");
       if (filter.type === "all") process.exit(1);
     } else {
-      console.log("[phase 4] Components...");
+      info("[phase 4] Components...");
       updateManifestModule(absDir, "components", "running");
 
       try {
@@ -270,7 +271,7 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
         const outPath = join(svDir, DATA_FILES.components);
         writeFileSync(outPath, toCanonicalJSON(components));
         updateManifestModule(absDir, "components", "complete");
-        console.log(`  ${components.summary.totalComponents} components, ${components.summary.totalRouteModules} route modules, ${components.summary.totalUsageEdges} usage edges → ${outPath}`);
+        info(`  ${components.summary.totalComponents} components, ${components.summary.totalRouteModules} route modules, ${components.summary.totalUsageEdges} usage edges → ${outPath}`);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         updateManifestError(absDir, "components", msg);
@@ -304,13 +305,13 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
         const contextMd = generateContext(manifest, inventory, importsData, zonesData, componentsData);
         writeFileSync(join(svDir, SUPPLEMENTARY_FILES[1]), contextMd);
 
-        console.log(`[output] llms.txt + CONTEXT.md → ${svDir}`);
+        info(`[output] llms.txt + CONTEXT.md → ${svDir}`);
       }
     } catch {
       // Non-critical — don't fail the analysis
     }
   }
 
-  console.log("");
-  console.log("Done.");
+  info("");
+  info("Done.");
 }

@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { SCHEMA_VERSION, validateDocument, validateConfig } from "../../schema/index.js";
 import { validateDAG } from "../../core/dag.js";
 import { REX_DIR } from "./constants.js";
+import { info, result } from "../output.js";
 import type { PRDDocument } from "../../schema/index.js";
 
 interface CheckResult {
@@ -93,27 +94,27 @@ export async function cmdValidate(
 
   // Output results
   if (flags.format === "json") {
-    console.log(JSON.stringify(checks, null, 2));
+    result(JSON.stringify(checks, null, 2));
     return;
   }
 
   let allPass = true;
   for (const check of checks) {
     const icon = check.pass ? "✓" : "✗";
-    console.log(`${icon} ${check.name}`);
+    result(`${icon} ${check.name}`);
     if (!check.pass) {
       allPass = false;
       for (const err of check.errors) {
-        console.log(`    ${err}`);
+        result(`    ${err}`);
       }
     }
   }
 
-  console.log("");
+  info("");
   if (allPass) {
-    console.log("All checks passed.");
+    result("All checks passed.");
   } else {
-    console.log("Validation failed.");
+    result("Validation failed.");
     process.exit(1);
   }
 }

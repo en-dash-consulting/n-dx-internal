@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { loadRun } from "../../store/index.js";
 import { HENCH_DIR } from "./constants.js";
+import { info, result } from "../output.js";
 
 export async function cmdShow(
   dir: string,
@@ -11,34 +12,34 @@ export async function cmdShow(
   const run = await loadRun(henchDir, runId);
 
   if (flags.format === "json") {
-    console.log(JSON.stringify(run, null, 2));
+    result(JSON.stringify(run, null, 2));
     return;
   }
 
-  console.log(`Run: ${run.id}`);
-  console.log(`Task: ${run.taskTitle} (${run.taskId})`);
-  console.log(`Model: ${run.model}`);
-  console.log(`Status: ${run.status}`);
-  console.log(`Started: ${run.startedAt}`);
-  if (run.finishedAt) console.log(`Finished: ${run.finishedAt}`);
-  console.log(`Turns: ${run.turns}`);
-  console.log(`Tokens: ${run.tokenUsage.input} in / ${run.tokenUsage.output} out`);
+  result(`Run: ${run.id}`);
+  result(`Task: ${run.taskTitle} (${run.taskId})`);
+  info(`Model: ${run.model}`);
+  result(`Status: ${run.status}`);
+  info(`Started: ${run.startedAt}`);
+  if (run.finishedAt) info(`Finished: ${run.finishedAt}`);
+  info(`Turns: ${run.turns}`);
+  info(`Tokens: ${run.tokenUsage.input} in / ${run.tokenUsage.output} out`);
 
   if (run.summary) {
-    console.log(`\nSummary:\n${run.summary}`);
+    info(`\nSummary:\n${run.summary}`);
   }
 
   if (run.error) {
-    console.log(`\nError:\n${run.error}`);
+    result(`\nError:\n${run.error}`);
   }
 
   if (run.toolCalls.length > 0) {
-    console.log(`\nTool Calls (${run.toolCalls.length}):`);
+    info(`\nTool Calls (${run.toolCalls.length}):`);
     for (const call of run.toolCalls) {
       const inputStr = JSON.stringify(call.input).slice(0, 80);
-      console.log(`  [${call.turn}] ${call.tool}(${inputStr}) — ${call.durationMs}ms`);
+      info(`  [${call.turn}] ${call.tool}(${inputStr}) — ${call.durationMs}ms`);
       if (call.output.startsWith("[GUARD]") || call.output.startsWith("[ERROR]")) {
-        console.log(`       ${call.output.slice(0, 120)}`);
+        info(`       ${call.output.slice(0, 120)}`);
       }
     }
   }

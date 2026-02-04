@@ -5,6 +5,7 @@ import { LEVEL_HIERARCHY } from "../../schema/index.js";
 import { findItem } from "../../core/tree.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError } from "../errors.js";
+import { info, result } from "../output.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../../schema/index.js";
 
 const VALID_LEVELS = new Set(Object.keys(LEVEL_HIERARCHY));
@@ -86,9 +87,9 @@ export async function cmdAdd(
   });
 
   if (flags.format === "json") {
-    console.log(JSON.stringify({ id, level, title }, null, 2));
+    result(JSON.stringify({ id, level, title }, null, 2));
   } else {
-    console.log(`Created ${level}: ${title}`);
-    console.log(`  ID: ${id}`);
+    result(`Created ${level}: ${title}`);
+    result(`  ID: ${id}`);
   }
 }

@@ -7,6 +7,7 @@ import { cliLoop } from "../../agent/cli-loop.js";
 import { getActionableTasks } from "../../agent/brief.js";
 import { HENCH_DIR, safeParseInt } from "./constants.js";
 import { CLIError, requireClaudeCLI } from "../errors.js";
+import { info, result as output } from "../output.js";
 
 function promptUser(question: string): Promise<string> {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -26,18 +27,18 @@ async function selectTask(
   const tasks = await getActionableTasks(store);
 
   if (tasks.length === 0) {
-    console.log("No actionable tasks found in PRD.");
+    output("No actionable tasks found in PRD.");
     process.exit(0);
   }
 
-  console.log("\nActionable tasks (by priority):\n");
+  info("\nActionable tasks (by priority):\n");
   for (let i = 0; i < tasks.length; i++) {
     const t = tasks[i];
     const pri = `[${t.priority}]`.padEnd(10);
     const chain = t.parentChain ? ` (${t.parentChain})` : "";
-    console.log(`  ${String(i + 1).padStart(2)}. ${pri} ${t.title}${chain}`);
+    info(`  ${String(i + 1).padStart(2)}. ${pri} ${t.title}${chain}`);
   }
-  console.log("");
+  info("");
 
   const answer = await promptUser(`Select task [1]: `);
   const idx = answer === "" ? 0 : parseInt(answer, 10) - 1;
@@ -88,19 +89,19 @@ async function runOne(
 
   const { run } = result;
 
-  console.log("\n=== Run Complete ===");
-  console.log(`Run ID: ${run.id}`);
-  console.log(`Task: ${run.taskTitle}`);
-  console.log(`Status: ${run.status}`);
-  console.log(`Turns: ${run.turns}`);
-  console.log(`Tokens: ${run.tokenUsage.input} in / ${run.tokenUsage.output} out`);
-  console.log(`Tool calls: ${run.toolCalls.length}`);
+  info("\n=== Run Complete ===");
+  output(`Run ID: ${run.id}`);
+  output(`Task: ${run.taskTitle}`);
+  output(`Status: ${run.status}`);
+  info(`Turns: ${run.turns}`);
+  info(`Tokens: ${run.tokenUsage.input} in / ${run.tokenUsage.output} out`);
+  info(`Tool calls: ${run.toolCalls.length}`);
 
   if (run.summary) {
-    console.log(`\nSummary: ${run.summary}`);
+    info(`\nSummary: ${run.summary}`);
   }
   if (run.error) {
-    console.log(`\nError: ${run.error}`);
+    output(`\nError: ${run.error}`);
   }
 
   return { status: run.status };
@@ -136,7 +137,7 @@ export async function cmdRun(
 
   for (let i = 0; i < iterations; i++) {
     if (iterations > 1) {
-      console.log(`\n=== Iteration ${i + 1}/${iterations} ===`);
+      info(`\n=== Iteration ${i + 1}/${iterations} ===`);
     }
 
     const { status } = await runOne(
@@ -148,7 +149,7 @@ export async function cmdRun(
     );
 
     if (status === "failed" || status === "timeout") {
-      console.log(`\nStopping after ${i + 1} iteration(s) due to ${status} status.`);
+      info(`\nStopping after ${i + 1} iteration(s) due to ${status} status.`);
       break;
     }
 

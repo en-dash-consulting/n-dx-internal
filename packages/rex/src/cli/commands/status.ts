@@ -3,6 +3,7 @@ import { createStore } from "../../store/index.js";
 import { computeStats } from "../../core/tree.js";
 import { CLIError } from "../errors.js";
 import { REX_DIR } from "./constants.js";
+import { info, result, isQuiet } from "../output.js";
 import type { PRDItem } from "../../schema/index.js";
 import type { TreeStats } from "../../core/tree.js";
 
@@ -90,24 +91,33 @@ export async function cmdStatus(
   const doc = await store.loadDocument();
 
   if (format === "json") {
-    console.log(JSON.stringify(doc, null, 2));
+    result(JSON.stringify(doc, null, 2));
+    return;
+  }
+
+  // Quiet mode with non-JSON format: emit a one-line summary
+  if (isQuiet()) {
+    const stats = computeStats(doc.items);
+    const pct =
+      stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+    result(`${pct}% complete (${stats.completed}/${stats.total})`);
     return;
   }
 
   // Default and --format=tree both render the tree view
-  console.log(`PRD: ${doc.title}`);
-  console.log("");
+  result(`PRD: ${doc.title}`);
+  result("");
 
   if (doc.items.length === 0) {
-    console.log("  No items yet. Run: rex add epic --title=\"...\" " + dir);
+    result("  No items yet. Run: rex add epic --title=\"...\" " + dir);
     return;
   }
 
   for (const line of renderTree(doc.items)) {
-    console.log(line);
+    result(line);
   }
 
   const stats = computeStats(doc.items);
-  console.log("");
-  console.log(formatStats(stats));
+  info("");
+  info(formatStats(stats));
 }

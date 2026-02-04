@@ -35,5 +35,6 @@ Options:
   --model=<m>             Override model (for run)
   --format=json           Output as JSON (for status/show)
   --last=<n>              Number of recent runs to show (for status)
+  --quiet, -q             Suppress informational output (for scripting)
 `);
 }

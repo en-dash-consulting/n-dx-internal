@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { createStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError } from "../errors.js";
+import { info, result } from "../output.js";
 import {
   scanTests,
   scanDocs,
@@ -147,7 +148,7 @@ async function acceptProposals(
   });
 
   await clearPending(dir);
-  console.log(`Added ${addedCount} items to PRD.`);
+  result(`Added ${addedCount} items to PRD.`);
 }
 
 export async function cmdAnalyze(
@@ -180,7 +181,7 @@ export async function cmdAnalyze(
   if (accept && filePaths.length === 0 && !flags.format) {
     const cached = await loadPending(dir);
     if (cached && cached.length > 0) {
-      console.log(`Accepting ${cached.length} cached proposals...`);
+      info(`Accepting ${cached.length} cached proposals...`);
       await acceptProposals(dir, cached);
       return;
     }
@@ -208,7 +209,7 @@ export async function cmdAnalyze(
 
     if (flags.format !== "json") {
       const label = resolved.length === 1 ? "file" : "files";
-      console.log(`Importing from ${label}: ${resolved.join(", ")}`);
+      info(`Importing from ${label}: ${resolved.join(", ")}`);
     }
 
     try {
@@ -221,12 +222,12 @@ export async function cmdAnalyze(
     }
 
     if (flags.format === "json") {
-      console.log(JSON.stringify({ proposals }, null, 2));
+      result(JSON.stringify({ proposals }, null, 2));
       return;
     }
 
     const fileLabel = resolved.length === 1 ? "file" : `${resolved.length} files`;
-    console.log(`Extracted ${proposals.length} epics from ${fileLabel}.`);
+    info(`Extracted ${proposals.length} epics from ${fileLabel}.`);
   } else {
     // Scanner mode: run all three scanners
     const opts = { lite };
@@ -253,7 +254,7 @@ export async function cmdAnalyze(
       try {
         proposals = await reasonFromScanResults(newResults, existing, { dir, model });
         if (flags.format !== "json") {
-          console.log("Proposals refined by LLM.");
+          info("Proposals refined by LLM.");
         }
       } catch {
         proposals = buildProposals(newResults);
@@ -263,7 +264,7 @@ export async function cmdAnalyze(
     }
 
     if (flags.format === "json") {
-      console.log(
+      result(
         JSON.stringify(
           { scanned: { testFiles, docFiles, svZones, pkgFiles }, stats, proposals },
           null,
@@ -273,27 +274,27 @@ export async function cmdAnalyze(
       return;
     }
 
-    console.log(
+    info(
       `Scanned: ${testFiles} test files, ${docFiles} docs, ${svZones} sourcevision zones, ${pkgFiles} package.json files`,
     );
-    console.log(
+    info(
       `Found: ${stats.total} proposals (${stats.newCount} new, ${stats.alreadyTracked} already tracked)`,
     );
-    console.log("");
+    info("");
   }
 
   if (proposals.length === 0) {
-    console.log("No new proposals found.");
+    result("No new proposals found.");
     return;
   }
 
   // Show diff view when existing PRD items are present, otherwise plain list
   if (existing.length > 0) {
-    console.log(formatDiff(proposals, existing));
+    info(formatDiff(proposals, existing));
   } else {
-    console.log(formatProposals(proposals));
+    info(formatProposals(proposals));
   }
-  console.log("");
+  info("");
 
   // Cache proposals so they can be accepted later without re-running
   if (await hasRexDir(dir)) {
@@ -309,10 +310,10 @@ export async function cmdAnalyze(
     if (answer === "y" || answer === "yes") {
       await acceptProposals(dir, proposals);
     } else {
-      console.log("Proposals saved. Run `rex analyze --accept` to accept later.");
+      info("Proposals saved. Run `rex analyze --accept` to accept later.");
     }
   } else {
     // Non-interactive without --accept: just show
-    console.log("Proposals saved. Run `rex analyze --accept` to accept later.");
+    info("Proposals saved. Run `rex analyze --accept` to accept later.");
   }
 }

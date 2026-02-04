@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { usage } from "./commands/constants.js";
 import { CLIError, handleCLIError, requireRexDir } from "./errors.js";
+import { setQuiet } from "./output.js";
 
 /** Keys that accept multiple values (accumulated into arrays). */
 const MULTI_VALUE_KEYS = new Set(["file"]);
@@ -34,6 +35,8 @@ function parseArgs(argv: string[]): {
       }
     } else if (arg === "-h") {
       flags.help = "true";
+    } else if (arg === "-q") {
+      flags.quiet = "true";
     } else if (!command) {
       command = arg;
     } else {
@@ -51,6 +54,8 @@ async function main(): Promise<void> {
     usage();
     process.exit(0);
   }
+
+  setQuiet(flags.quiet === "true");
 
   // Resolve dir: last positional arg or cwd
   const resolveDir = (): string => {

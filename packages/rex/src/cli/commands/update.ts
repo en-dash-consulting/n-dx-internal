@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { createStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError } from "../errors.js";
+import { info, result } from "../output.js";
 import type { PRDItem, ItemStatus, Priority } from "../../schema/index.js";
 
 const VALID_STATUSES = new Set([
@@ -79,11 +80,9 @@ export async function cmdUpdate(
 
   if (flags.format === "json") {
     const updated = await store.getItem(id);
-    console.log(JSON.stringify(updated, null, 2));
+    result(JSON.stringify(updated, null, 2));
   } else {
-    console.log(`Updated ${existing.level}: ${existing.title}`);
-    for (const [key, value] of Object.entries(updates)) {
-      console.log(`  ${key}: ${value}`);
-    }
+    result(`Updated ${existing.level}: ${existing.title}`);
+    info(`  ${Object.entries(updates).map(([k, v]) => `${k}: ${v}`).join(", ")}`);
   }
 }

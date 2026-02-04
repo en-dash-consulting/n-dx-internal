@@ -3,14 +3,15 @@ import { resolve, join } from "node:path";
 import { execSync } from "node:child_process";
 import { SCHEMA_VERSION } from "../../schema/v1.js";
 import { TOOL_VERSION, SV_DIR } from "./constants.js";
+import { info } from "../output.js";
 
 export function cmdInit(dir: string): void {
   const absDir = resolve(dir);
   const svDir = join(absDir, SV_DIR);
 
   if (existsSync(join(svDir, "manifest.json"))) {
-    console.log(`.sourcevision/ already initialized in ${absDir}`);
-    console.log("Run 'sourcevision analyze' to update.");
+    info(`.sourcevision/ already initialized in ${absDir}`);
+    info("Run 'sourcevision analyze' to update.");
     return;
   }
 
@@ -38,14 +39,14 @@ export function cmdInit(dir: string): void {
 
   writeFileSync(join(svDir, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
 
-  console.log(`Initialized .sourcevision/ in ${absDir}`);
-  console.log(`  ${join(svDir, "manifest.json")} created`);
-  console.log("");
-  console.log("Analysis output saved to .sourcevision/ — this is designed to be committed to your repo.");
-  console.log("The viewer UI is served from the sourcevision package and is not stored in your project.");
-  console.log("");
+  info(`Initialized .sourcevision/ in ${absDir}`);
+  info(`  ${join(svDir, "manifest.json")} created`);
+  info("");
+  info("Analysis output saved to .sourcevision/ — this is designed to be committed to your repo.");
+  info("The viewer UI is served from the sourcevision package and is not stored in your project.");
+  info("");
 
-  console.log("Next steps:");
-  console.log("  sourcevision analyze    Run the analysis pipeline");
-  console.log("  sourcevision serve      View results in the browser");
+  info("Next steps:");
+  info("  sourcevision analyze    Run the analysis pipeline");
+  info("  sourcevision serve      View results in the browser");
 }

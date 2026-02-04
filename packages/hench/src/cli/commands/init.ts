@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { ensureHenchDir, configExists, initConfig } from "../../store/index.js";
 import { HENCH_DIR } from "./constants.js";
+import { info } from "../output.js";
 
 export async function cmdInit(
   dir: string,
@@ -9,19 +10,19 @@ export async function cmdInit(
   const henchDir = join(dir, HENCH_DIR);
 
   if (await configExists(henchDir)) {
-    console.log(".hench/ already initialized, skipping");
+    info(".hench/ already initialized, skipping");
     return;
   }
 
   const config = await initConfig(henchDir);
 
-  console.log("Created .hench/config.json");
-  console.log("Created .hench/runs/");
-  console.log(`\nInitialized .hench/ in ${dir}`);
-  console.log(`Model: ${config.model}`);
-  console.log(`Max turns: ${config.maxTurns}`);
-  console.log(`Rex dir: ${config.rexDir}`);
-  console.log("\nNext steps:");
-  console.log("  hench run " + dir);
-  console.log("  hench status " + dir);
+  info("Created .hench/config.json");
+  info("Created .hench/runs/");
+  info(`\nInitialized .hench/ in ${dir}`);
+  info(`Model: ${config.model}`);
+  info(`Max turns: ${config.maxTurns}`);
+  info(`Rex dir: ${config.rexDir}`);
+  info("\nNext steps:");
+  info("  hench run " + dir);
+  info("  hench status " + dir);
 }

@@ -3,6 +3,7 @@
 import { resolve } from "node:path";
 import { usage } from "./commands/constants.js";
 import { CLIError, handleCLIError, requireHenchDir } from "./errors.js";
+import { setQuiet } from "./output.js";
 
 function parseArgs(argv: string[]): {
   command: string | undefined;
@@ -23,6 +24,8 @@ function parseArgs(argv: string[]): {
       }
     } else if (arg === "-h") {
       flags.help = "true";
+    } else if (arg === "-q") {
+      flags.quiet = "true";
     } else if (!command) {
       command = arg;
     } else {
@@ -40,6 +43,8 @@ async function main(): Promise<void> {
     usage();
     process.exit(0);
   }
+
+  setQuiet(flags.quiet === "true");
 
   // Resolve dir: last positional arg or cwd
   const resolveDir = (): string => {

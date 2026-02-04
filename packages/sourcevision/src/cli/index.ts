@@ -18,6 +18,7 @@ import { cmdReset } from "./commands/reset.js";
 import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdValidate } from "./commands/validate.js";
 import { CLIError, handleCLIError, requireSvDir } from "./errors.js";
+import { setQuiet } from "./output.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -25,15 +26,20 @@ const command = args[0];
 // ── arg parsing & dispatch ──────────────────────────────────────────────────
 
 let port = 3117;
+let quiet = false;
 const passthrough: string[] = [];
 
 for (const a of args.slice(1)) {
   if (a.startsWith("--port=")) {
     port = parseInt(a.split("=")[1], 10);
+  } else if (a === "--quiet" || a === "-q") {
+    quiet = true;
   } else if (a.startsWith("--phase=") || a.startsWith("--only=") || a === "--fast" || a === "--full") {
     passthrough.push(a);
   }
 }
+
+setQuiet(quiet);
 
 // First non-flag arg after command is the target dir
 const targetArg = args.slice(1).find((a) => !a.startsWith("-"));

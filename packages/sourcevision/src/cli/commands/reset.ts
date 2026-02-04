@@ -1,13 +1,14 @@
 import { existsSync, mkdirSync, rmSync, readdirSync, copyFileSync, statSync, writeFileSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { SV_DIR } from "./constants.js";
+import { info } from "../output.js";
 
 export function cmdReset(dir: string): void {
   const absDir = resolve(dir);
   const svDir = join(absDir, SV_DIR);
 
   if (!existsSync(svDir)) {
-    console.log(`No .sourcevision/ directory found in ${absDir} — nothing to reset.`);
+    info(`No .sourcevision/ directory found in ${absDir} — nothing to reset.`);
     return;
   }
 
@@ -36,7 +37,7 @@ export function cmdReset(dir: string): void {
     rmSync(join(svDir, entry), { recursive: true, force: true });
   }
 
-  console.log(`Backed up analysis to ${backupDir}`);
-  console.log(`Cleared ${svDir}`);
-  console.log("Run 'sourcevision analyze' to start fresh.");
+  info(`Backed up analysis to ${backupDir}`);
+  info(`Cleared ${svDir}`);
+  info("Run 'sourcevision analyze' to start fresh.");
 }

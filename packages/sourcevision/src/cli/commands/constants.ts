@@ -18,5 +18,6 @@ Options:
   --only=MODULE  Run only named module (inventory, imports, zones, components)
   --fast         Skip AI zone-name enrichment (use algorithmic names)
   --full         Run all 4 enrichment passes in sequence
+  --quiet, -q    Suppress informational output (for scripting)
   --help         Show this help`);
 }

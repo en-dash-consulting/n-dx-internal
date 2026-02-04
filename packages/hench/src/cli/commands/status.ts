@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { listRuns } from "../../store/index.js";
 import { HENCH_DIR, safeParseInt } from "./constants.js";
+import { info, result } from "../output.js";
 
 export async function cmdStatus(
   dir: string,
@@ -11,32 +12,32 @@ export async function cmdStatus(
   const runs = await listRuns(henchDir, limit);
 
   if (runs.length === 0) {
-    console.log("No runs found. Use 'hench run' to execute a task.");
+    result("No runs found. Use 'hench run' to execute a task.");
     return;
   }
 
   if (flags.format === "json") {
-    console.log(JSON.stringify(runs, null, 2));
+    result(JSON.stringify(runs, null, 2));
     return;
   }
 
-  console.log(`Recent runs (${runs.length}):\n`);
+  info(`Recent runs (${runs.length}):\n`);
 
   for (const run of runs) {
-    const status = statusIcon(run.status);
+    const icon = statusIcon(run.status);
     const duration = run.finishedAt
       ? formatDuration(
           new Date(run.finishedAt).getTime() - new Date(run.startedAt).getTime(),
         )
       : "running";
 
-    console.log(`${status} ${run.id.slice(0, 8)}  ${run.taskTitle}`);
-    console.log(`  ${run.status} | ${run.turns} turns | ${duration} | ${run.model}`);
-    console.log(`  tokens: ${run.tokenUsage.input} in / ${run.tokenUsage.output} out`);
+    result(`${icon} ${run.id.slice(0, 8)}  ${run.taskTitle}`);
+    info(`  ${run.status} | ${run.turns} turns | ${duration} | ${run.model}`);
+    info(`  tokens: ${run.tokenUsage.input} in / ${run.tokenUsage.output} out`);
     if (run.error) {
-      console.log(`  error: ${run.error}`);
+      result(`  error: ${run.error}`);
     }
-    console.log();
+    info();
   }
 }
 

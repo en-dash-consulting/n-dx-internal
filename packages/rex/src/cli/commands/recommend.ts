@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { access, readFile } from "node:fs/promises";
 import { createStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
+import { info, result } from "../output.js";
 import type { PRDItem, ItemLevel } from "../../schema/index.js";
 import { randomUUID } from "node:crypto";
 
@@ -89,8 +90,8 @@ export async function cmdRecommend(
 ): Promise<void> {
   const hasSourceVision = await detectSourceVision(dir);
   if (!hasSourceVision) {
-    console.log("SourceVision not detected.");
-    console.log("Run 'sourcevision analyze' first, or pass a project with .sourcevision/");
+    result("SourceVision not detected.");
+    info("Run 'sourcevision analyze' first, or pass a project with .sourcevision/");
     return;
   }
 
@@ -103,22 +104,22 @@ export async function cmdRecommend(
   }
 
   if (findings.length === 0) {
-    console.log("No findings to recommend.");
+    result("No findings to recommend.");
     return;
   }
 
   const recommendations = mapFindingsToRecommendations(findings);
 
   if (flags.format === "json") {
-    console.log(JSON.stringify(recommendations, null, 2));
+    result(JSON.stringify(recommendations, null, 2));
     return;
   }
 
-  console.log(`\n${recommendations.length} recommended items:\n`);
+  result(`\n${recommendations.length} recommended items:\n`);
   for (const rec of recommendations) {
-    console.log(`  [${rec.priority}] ${rec.title}`);
-    console.log(`    ${rec.description.split("\n")[0]}`);
-    console.log("");
+    result(`  [${rec.priority}] ${rec.title}`);
+    info(`    ${rec.description.split("\n")[0]}`);
+    info("");
   }
 
   if (flags.accept) {
@@ -136,9 +137,9 @@ export async function cmdRecommend(
         source: rec.source,
       };
       await store.addItem(item);
-      console.log(`Added: ${rec.title} (${item.id})`);
+      result(`Added: ${rec.title} (${item.id})`);
     }
   } else {
-    console.log("Run with --accept to add all recommendations to the PRD.");
+    info("Run with --accept to add all recommendations to the PRD.");
   }
 }

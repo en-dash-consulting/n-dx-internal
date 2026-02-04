@@ -10,6 +10,7 @@ import {
   validateComponents,
 } from "../../schema/index.js";
 import { DATA_FILES } from "../../schema/data-files.js";
+import { info, result } from "../output.js";
 
 export function cmdValidate(dir: string): void {
   const svDir = join(resolve(dir), SV_DIR);
@@ -38,32 +39,32 @@ export function cmdValidate(dir: string): void {
   for (const mod of modules) {
     const filePath = join(svDir, mod.file);
     if (!existsSync(filePath)) {
-      console.log(`  [skip] ${mod.file} — not found`);
+      info(`  [skip] ${mod.file} — not found`);
       continue;
     }
 
     try {
       const raw = readFileSync(filePath, "utf-8");
       const data = JSON.parse(raw);
-      const result = mod.validate(data);
+      const check = mod.validate(data);
 
-      if (result.ok) {
-        console.log(`  [pass] ${mod.file}`);
+      if (check.ok) {
+        result(`  [pass] ${mod.file}`);
       } else {
-        console.log(`  [fail] ${mod.file}`);
-        console.log(`         ${JSON.stringify(result.errors, null, 2)}`);
+        result(`  [fail] ${mod.file}`);
+        result(`         ${JSON.stringify(check.errors, null, 2)}`);
         allValid = false;
       }
     } catch (err) {
-      console.log(`  [fail] ${mod.file} — ${err instanceof Error ? err.message : err}`);
+      result(`  [fail] ${mod.file} — ${err instanceof Error ? err.message : err}`);
       allValid = false;
     }
   }
 
   if (allValid) {
-    console.log("\nAll modules valid.");
+    result("\nAll modules valid.");
   } else {
-    console.log("\nValidation failed for one or more modules.");
+    result("\nValidation failed for one or more modules.");
     process.exit(1);
   }
 }

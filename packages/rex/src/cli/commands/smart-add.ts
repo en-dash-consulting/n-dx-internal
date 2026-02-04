@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { createStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError } from "../errors.js";
+import { info, result } from "../output.js";
 import {
   reasonFromDescription,
   DEFAULT_MODEL,
@@ -170,7 +171,7 @@ export async function cmdSmartAdd(
   }
 
   if (flags.format !== "json") {
-    console.log("Analyzing description with LLM...");
+    info("Analyzing description with LLM...");
   }
 
   let proposals: Proposal[];
@@ -189,41 +190,41 @@ export async function cmdSmartAdd(
 
   if (proposals.length === 0) {
     if (flags.format === "json") {
-      console.log(JSON.stringify({ proposals: [], added: 0 }, null, 2));
+      result(JSON.stringify({ proposals: [], added: 0 }, null, 2));
     } else {
-      console.log("LLM returned no proposals for the given description.");
+      result("LLM returned no proposals for the given description.");
     }
     return;
   }
 
   if (flags.format === "json" && !accept) {
-    console.log(JSON.stringify({ proposals }, null, 2));
+    result(JSON.stringify({ proposals }, null, 2));
     return;
   }
 
   if (flags.format !== "json") {
-    console.log("\nProposed structure:");
-    console.log(formatProposals(proposals));
-    console.log("");
+    info("\nProposed structure:");
+    info(formatProposals(proposals));
+    info("");
   }
 
   if (accept) {
     const added = await acceptProposals(dir, proposals, parentId);
     if (flags.format === "json") {
-      console.log(JSON.stringify({ proposals, added }, null, 2));
+      result(JSON.stringify({ proposals, added }, null, 2));
     } else {
-      console.log(`Added ${added} items to PRD.`);
+      result(`Added ${added} items to PRD.`);
     }
   } else if (process.stdin.isTTY) {
     const answer = await promptUser("Accept these items into the PRD? (y/n) ");
     if (answer === "y" || answer === "yes") {
       const added = await acceptProposals(dir, proposals, parentId);
-      console.log(`Added ${added} items to PRD.`);
+      result(`Added ${added} items to PRD.`);
     } else {
-      console.log("Proposals discarded.");
+      info("Proposals discarded.");
     }
   } else {
     // Non-interactive without --accept: just show
-    console.log("Run with --accept to add these items to the PRD.");
+    info("Run with --accept to add these items to the PRD.");
   }
 }
