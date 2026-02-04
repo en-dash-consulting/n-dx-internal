@@ -5,52 +5,55 @@
 <architecture>
 
 Project: n-dx
-Files: 221, Lines: 29554
-Languages: TypeScript(165) JSON(21) CSS(14) Other(8) Markdown(6)
-Import edges: 375, External packages: 8
+Files: 327, Lines: 63488
+Languages: TypeScript(259) JSON(22) CSS(14) Other(10) Markdown(10)
+Import edges: 676, External packages: 12
 
 </architecture>
 
 <zones>
 
-[hench-cli] CLI Command Layer (5 files, coh=0.67 coup=0.33)
-  The hench command-line interface including the entry dispatcher and commands for run, status, show, and init.
-  files: packages/hench/src/cli/commands/constants.ts, packages/hench/src/cli/commands/run.ts, packages/hench/src/cli/commands/show.ts, packages/hench/src/cli/commands/status.ts, packages/hench/src/cli/index.ts
-[hench-core] Agent Core and Schema (19 files, coh=0.83 coup=0.17)
-  Central agent logic (loop, brief, prompt), schema definitions, and persistence store that form the backbone of the Hench autonomous task runner.
-  files: packages/hench/src/agent/brief.ts, packages/hench/src/agent/cli-loop.ts, packages/hench/src/agent/loop.ts, packages/hench/src/agent/prompt.ts, packages/hench/src/cli/commands/init.ts, packages/hench/src/schema/index.ts, packages/hench/src/schema/v1.ts, packages/hench/src/schema/validate.ts, packages/hench/src/store/config.ts, packages/hench/src/store/index.ts +9
-[hench-tools-and-guard] Tools and Guard Rails (12 files, coh=0.86 coup=0.14)
-  Tool implementations (file, shell, git, rex) and the security guard layer (path validation, command allowlisting) that constrain agent behavior.
+[hench-agent-core] Hench Agent Core (49 files, coh=0.97 coup=0.03)
+  Agent orchestration layer: task briefing, multi-turn LLM loop, completion validation, review flow, and run persistence.
+  files: packages/hench/src/agent/brief.ts, packages/hench/src/agent/cli-loop.ts, packages/hench/src/agent/completion.ts, packages/hench/src/agent/loop.ts, packages/hench/src/agent/prompt.ts, packages/hench/src/agent/review.ts, packages/hench/src/agent/stuck.ts, packages/hench/src/agent/summary.ts, packages/hench/src/agent/test-runner.ts, packages/hench/src/agent/token-budget.ts +39
+[hench-agent-tooling] Hench Agent Tooling (12 files, coh=0.84 coup=0.16)
+  Sandboxed tool implementations (file I/O, shell, git) and security guard subsystem that validates every agent action.
   files: packages/hench/src/agent/tools.ts, packages/hench/src/guard/commands.ts, packages/hench/src/guard/index.ts, packages/hench/src/guard/paths.ts, packages/hench/src/tools/files.ts, packages/hench/src/tools/git.ts, packages/hench/src/tools/shell.ts, packages/hench/tests/unit/guard/commands.test.ts, packages/hench/tests/unit/guard/paths.test.ts, packages/hench/tests/unit/tools/files.test.ts +2
-[rex-task-engine] Rex Task Engine (36 files, coh=1.00 coup=0.00)
-  Self-contained PRD management system with hierarchical task modeling, DAG validation, priority scheduling, project scanning, and an MCP server for AI agent integration.
-  files: packages/rex/src/analyze/index.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/scanners.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/constants.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/next.ts, packages/rex/src/cli/commands/recommend.ts +26
-[sourcevision-analysis] Sourcevision Analysis Pipeline (42 files, coh=0.96 coup=0.04)
-  Core analysis engine with 4-phase pipeline (inventory, imports, zones, components), AI enrichment via Claude, schema validation, and supplementary output generation.
-  files: packages/sourcevision/src/analyzers/claude-cli.ts, packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/context.ts, packages/sourcevision/src/analyzers/enrich-config.ts, packages/sourcevision/src/analyzers/enrich-parsing.ts, packages/sourcevision/src/analyzers/enrich.ts, packages/sourcevision/src/analyzers/imports.ts, packages/sourcevision/src/analyzers/index.ts, packages/sourcevision/src/analyzers/inventory.ts, packages/sourcevision/src/analyzers/llms-txt.ts +32
-[sourcevision-test-fixture] SourceVision Test Fixture (7 files, coh=1.00 coup=0.00)
-  A self-contained minimal TypeScript project (7 files, ~56 LOC) used as an analyzer test fixture, featuring realistic layering (models, services, utilities) and intentional dead-code patterns for validation.
+[rex-analysis] Rex Analysis Pipeline (17 files, coh=0.77 coup=0.23)
+  Project scanning, deduplication, LLM-enriched proposal generation, and conflict reconciliation pipeline for PRD item discovery.
+  files: packages/rex/src/analyze/dedupe.ts, packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/index.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/scanners.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/tests/unit/analyze/dedupe.test.ts, packages/rex/tests/unit/analyze/diff.test.ts +7
+[rex-prd-core] Rex PRD Core (78 files, coh=0.97 coup=0.03)
+  PRD data model, tree operations, storage adapters (file and Notion), state machine, sync engine, schema validation, and all non-analyze CLI commands.
+  files: packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/constants.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/move.ts, packages/rex/src/cli/commands/next.ts, packages/rex/src/cli/commands/prune.ts, packages/rex/src/cli/commands/recommend.ts, packages/rex/src/cli/commands/report.ts, packages/rex/src/cli/commands/smart-add.ts +68
+[root-orchestration] Root Orchestration (3 files, coh=1.00 coup=0.00)
+  Top-level CLI dispatcher, CI pipeline runner, and unified configuration manager for the n-dx toolkit.
+  files: ci.js, cli.js, config.js
+[sourcevision-analysis-engine] Sourcevision Analysis Engine (46 files, coh=0.97 coup=0.03)
+  Core static analysis pipeline: file inventory, import graph extraction, Louvain zone detection, React component cataloging, AI enrichment, and output generation (CONTEXT.md, llms.txt).
+  files: packages/sourcevision/src/analyzers/claude-cli.ts, packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/context.ts, packages/sourcevision/src/analyzers/enrich-config.ts, packages/sourcevision/src/analyzers/enrich-parsing.ts, packages/sourcevision/src/analyzers/enrich.ts, packages/sourcevision/src/analyzers/imports.ts, packages/sourcevision/src/analyzers/index.ts, packages/sourcevision/src/analyzers/inventory.ts, packages/sourcevision/src/analyzers/llms-txt.ts +36
+[sourcevision-test-fixture] Sourcevision Test Fixture (7 files, coh=1.00 coup=0.00)
+  Minimal TypeScript project (7 files) used as a deterministic integration test baseline for validating the analysis pipeline produces correct inventory, import graphs, and zone output.
   files: packages/sourcevision/tests/fixtures/small-ts-project/src/config.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/index.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/models/user.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/services/email-service.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/utils/validate.ts
-[sourcevision-viewer] SourceVision Viewer (49 files, coh=0.96 coup=0.04)
-  Preact-based interactive UI for exploring code analysis results, including the v1 schema definition, data loading layer, reusable components, and seven visualization views (overview, graph, zones, files, routes, architecture, problems).
+[sourcevision-viewer] Sourcevision Viewer (49 files, coh=0.96 coup=0.04)
+  Preact-based interactive web UI with force-directed graph visualization, zone/file browsers, architecture views, and dual-mode data loading (dev server or drag-and-drop static files).
   files: packages/sourcevision/src/schema/v1.ts, packages/sourcevision/src/viewer/components/collapsible-section.ts, packages/sourcevision/src/viewer/components/constants.ts, packages/sourcevision/src/viewer/components/detail-panel.ts, packages/sourcevision/src/viewer/components/findings-list.ts, packages/sourcevision/src/viewer/components/guide.ts, packages/sourcevision/src/viewer/components/mini-charts.ts, packages/sourcevision/src/viewer/components/search-filter.ts, packages/sourcevision/src/viewer/components/sidebar.ts, packages/sourcevision/src/viewer/components/theme-toggle.ts +39
-[unzoned] 51 files: .claude/settings.local.json, .npmrc, .rex/config.json, .rex/execution-log.jsonl, .rex/prd.json ...
+[unzoned] 66 files: .claude/settings.local.json, .gitignore, .hench/config.json, .npmrc, .rex/config.json ...
 
 </zones>
 
 <imports>
 
 Most imported:
-  packages/rex/src/schema/index.ts ← packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/scanners.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts +25
+  packages/rex/src/schema/index.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/scanners.ts, packages/rex/src/cli/commands/add.ts +68
+  packages/rex/src/core/tree.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/report.ts +21
   packages/sourcevision/src/schema/index.ts ← packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/context.ts, packages/sourcevision/src/analyzers/enrich-config.ts, packages/sourcevision/src/analyzers/enrich-parsing.ts, packages/sourcevision/src/analyzers/enrich.ts +17
+  packages/rex/src/store/index.ts ← packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/move.ts, packages/rex/src/cli/commands/next.ts +15
+  packages/rex/src/cli/commands/constants.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/move.ts +13
+  packages/rex/src/cli/errors.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/move.ts, packages/rex/src/cli/commands/prune.ts +12
+  packages/rex/src/cli/output.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/move.ts +12
   packages/sourcevision/src/schema/v1.ts ← packages/sourcevision/src/cli/commands/init.ts, packages/sourcevision/src/schema/index.ts, packages/sourcevision/src/schema/validate.ts, packages/sourcevision/src/viewer/components/findings-list.ts, packages/sourcevision/src/viewer/components/sidebar.ts +11
-  packages/sourcevision/src/viewer/types.ts ← packages/sourcevision/src/viewer/components/detail-panel.ts, packages/sourcevision/src/viewer/components/sidebar.ts, packages/sourcevision/src/viewer/loader.ts, packages/sourcevision/src/viewer/main.ts, packages/sourcevision/src/viewer/schema-compat.ts +8
-  packages/rex/src/store/index.ts ← packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/next.ts, packages/rex/src/cli/commands/recommend.ts +6
-  packages/rex/src/cli/commands/constants.ts ← packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/next.ts, packages/rex/src/cli/commands/recommend.ts +5
-  packages/hench/src/schema/index.ts ← packages/hench/src/agent/brief.ts, packages/hench/src/agent/cli-loop.ts, packages/hench/src/agent/loop.ts, packages/hench/src/agent/prompt.ts, packages/hench/src/guard/index.ts +4
-  packages/hench/src/schema/v1.ts ← packages/hench/src/schema/index.ts, packages/hench/tests/integration/store-roundtrip.test.ts, packages/hench/tests/integration/store-roundtrip.test.ts, packages/hench/tests/unit/agent/brief.test.ts, packages/hench/tests/unit/agent/prompt.test.ts +4
-  packages/rex/src/core/tree.ts ← packages/rex/src/analyze/reconcile.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/status.ts, packages/rex/src/cli/commands/status.ts, packages/rex/src/cli/mcp.ts +4
-  packages/sourcevision/src/analyzers/inventory.ts ← packages/sourcevision/src/analyzers/index.ts, packages/sourcevision/src/cli/commands/analyze.ts, packages/sourcevision/src/cli/commands/analyze.ts, packages/sourcevision/tests/integration/pipeline.test.ts, packages/sourcevision/tests/unit/analyzers/components.test.ts +4
+  packages/hench/src/schema/v1.ts ← packages/hench/src/agent/summary.ts, packages/hench/src/schema/index.ts, packages/hench/tests/integration/store-roundtrip.test.ts, packages/hench/tests/integration/store-roundtrip.test.ts, packages/hench/tests/unit/agent/brief.test.ts +10
+  packages/rex/src/core/canonical.ts ← packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/prune.ts, packages/rex/src/store/adapter-registry.ts, packages/rex/src/store/file-adapter.ts, packages/rex/src/store/notion-adapter.ts +9
 
 </imports>
 
@@ -69,45 +72,65 @@ Conventions: action(2) default(4) loader(2) meta(1)
 
 <findings>
 
-[warning] Bidirectional coupling: "hench-cli" ↔ "hench-core" (6+1 crossings) — consider extracting shared interface
-[warning] Bidirectional coupling: "hench-core" ↔ "hench-tools-and-guard" (3+4 crossings) — consider extracting shared interface
-[warning] Bidirectional coupling: "sourcevision-analysis" ↔ "sourcevision-viewer" (3+4 crossings) — consider extracting shared interface
-[warning] Cross-package imports from hench to rex use dist/ paths (e.g., rex/dist/store/index.js) rather than package exports — this bypasses any package.json exports map and creates fragile coupling to rex's internal file structure.
-[warning] The hench package has the lowest zone cohesion in the codebase (hench-3 at 0.67) and the highest cross-zone import density (14 imports across 3 zones), making it the most likely candidate for boundary refactoring
-[warning] 11 imports from the rex package (types, store, core/tree, core/next-task) represent a cross-package dependency invisible to zone-level coupling metrics; these are stable interfaces but worth monitoring as rex evolves. [hench-core]
-[warning] 4 imports from hench-core (schema types, config) and 3 imports back from hench-core into this zone indicate bidirectional coupling — consider whether agent/tools.ts belongs in hench-core or if a cleaner interface could reduce the back-and-forth. [hench-tools-and-guard]
-[warning] No entry points listed despite being heavily consumed by hench (11 cross-package imports) — this may indicate the import graph analysis resolved rex imports through dist/ paths rather than source, so entry points were not detected. [rex-task-engine]
-[warning] The AI enrichment subsystem (enrich.ts, enrich-config.ts, enrich-parsing.ts, claude-cli.ts) adds 4 files with external subprocess dependencies — this is the only zone that shells out to Claude directly, making it a potential reliability concern if the claude CLI changes. [sourcevision-analysis]
-[warning] Global app state is threaded through props across views and components rather than using Preact Context, which will make adding new cross-cutting concerns (e.g. user preferences, keyboard shortcuts) increasingly verbose as the component tree grows [sourcevision-viewer]
+[warning] Bidirectional coupling: "hench-agent-core" ↔ "hench-agent-tooling" (4+4 crossings) — consider extracting shared interface
+[warning] Bidirectional coupling: "rex-analysis" ↔ "rex-prd-core" (14+4 crossings) — consider extracting shared interface
+[warning] Bidirectional coupling: "sourcevision-analysis-engine" ↔ "sourcevision-viewer" (3+4 crossings) — consider extracting shared interface
+[warning] Rex-analysis has the highest coupling ratio (0.23) in the codebase; while structurally justified, growth of the analysis pipeline should be monitored to prevent it from becoming tightly bound to core internals.
+[warning] Test fixtures appearing as first-class architectural zones (sourcevision-3) is a Louvain artifact — the algorithm correctly identifies them as disconnected communities but they are not architectural zones. Consider filtering tests/fixtures/** paths before zone detection to produce cleaner output for consumers.
+[warning] Cohesion at 0.77 is the lowest of all zones, indicating the analysis pipeline has some internal fragmentation; the CLI command file bridges two concerns (CLI orchestration and pipeline invocation). [rex-analysis]
+[warning] sync-engine.ts (552 lines) and notion-map.ts (726 lines) are the two largest files and handle inherently complex bidirectional sync; documenting the sync algorithm phases would aid future maintainers. [rex-prd-core]
+[warning] The enrichment subsystem (enrich.ts + 3 helpers) mixes orchestration, prompt construction, CLI invocation, and response parsing in adjacent files without a clear subdirectory boundary. As this is the most failure-prone subsystem (network, auth, parse errors), isolating it would improve testability and error tracing. [sourcevision-analysis-engine]
+[warning] The fixture is intentionally simple (7 files, no cycles, no React) to serve as a baseline. This means the analysis pipeline's handling of circular dependencies, dynamic imports, and component detection is only tested against real-world codebases, not controlled fixtures. [sourcevision-test-fixture]
+[warning] The graph physics engine and SVG renderer (~600 lines) are imperative code that mutates DOM directly, sidestepping Preact's reconciliation. Unit tests cover only flow diagrams, not the core force simulation or zoom/pan/highlight logic. This is the highest-risk area for regressions. [sourcevision-viewer]
+[warning] scanners.ts duplicates sourcevision type definitions locally instead of sharing them, creating a shadow type contract that could silently drift if sourcevision's JSON schema evolves. [rex-analysis]
+[warning] Graph subsystem (physics.ts, renderer.ts) bypasses Preact VDOM with imperative SVG/math and has zero test coverage — this is the most fragile viewer code path [sourcevision-viewer]
+[warning] Hench→Rex runtime coupling (9 function imports across 6 files) is the sole cross-package dependency — if rex core APIs change, hench breaks with no compile-time safety beyond TypeScript path resolution against dist/
+[warning] Rex has no explicit public API module (index.ts barrel) despite being consumed as a library by hench — hench reaches into rex/dist/store/types, rex/dist/core/*, and rex/dist/schema/* directly, creating a fragile integration surface.
+[warning] Rex's shadow type definitions for sourcevision data (SVFinding, SVZone, etc. in scanners.ts) and the absence of a shared schema package mean the sourcevision↔rex data contract has no compile-time enforcement and could drift silently.
+... +4 more
 
 </findings>
 
 <next-steps>
 
-[medium] Bidirectional coupling: "hench-cli" ↔ "hench-core" (6+1 crossings) — consider e…
-  category: refactor
-[medium] Bidirectional coupling: "hench-core" ↔ "hench-tools-and-guard" (3+4 crossings) …
-  category: refactor
-[medium] Bidirectional coupling: "sourcevision-analysis" ↔ "sourcevision-viewer" (3+4 cr…
-  category: refactor
-[medium] Cross-package imports from hench to rex use dist/ paths (e.g., rex/dist/store/i…
-  category: refactor
-[medium] The hench package has the lowest zone cohesion in the codebase (hench-3 at 0.67…
-  category: refactor
-[medium] 11 imports from the rex package (types, store, core/tree, core/next-task) repre…
-  files: packages/hench/src/agent/brief.ts, packages/hench/src/agent/cli-loop.ts, packages/hench/src/agent/loop.ts
-  category: refactor
-[medium] 4 imports from hench-core (schema types, config) and 3 imports back from hench-…
-  files: packages/hench/src/agent/tools.ts, packages/hench/src/guard/commands.ts, packages/hench/src/guard/index.ts
-  category: refactor
-[medium] No entry points listed despite being heavily consumed by hench (11 cross-packag…
-  files: packages/rex/src/analyze/index.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reconcile.ts
-  category: refactor
-[medium] The AI enrichment subsystem (enrich.ts, enrich-config.ts, enrich-parsing.ts, cl…
-  files: packages/sourcevision/src/analyzers/claude-cli.ts, packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/context.ts
-  category: refactor
-[medium] Global app state is threaded through props across views and components rather t…
+[medium] Hench→Rex runtime coupling (9 function imports across 6 fil… (+2 related)
+  category: extract
+[medium] scanners.ts duplicates sourcevision type definitions locally instead of sharing…
+  files: packages/rex/src/analyze/dedupe.ts, packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/index.ts
+  category: extract
+[medium] Graph subsystem (physics.ts, renderer.ts) bypasses Preact VDOM with imperative …
   files: packages/sourcevision/src/schema/v1.ts, packages/sourcevision/src/viewer/components/collapsible-section.ts, packages/sourcevision/src/viewer/components/constants.ts
+  category: extract
+[medium] Hench imports rex core utilities (findNextTask, findItem, walkTree, computeTime…
+  files: packages/hench/src/agent/brief.ts, packages/hench/src/agent/cli-loop.ts, packages/hench/src/agent/completion.ts
+  category: extract
+[medium] tools/rex.ts importing agent/completion.ts is the sole cause of bidirectional c…
+  files: packages/hench/src/agent/tools.ts, packages/hench/src/guard/commands.ts, packages/hench/src/guard/index.ts
+  category: extract
+[medium] Hench imports 5+ internal rex modules via rex/dist/* paths with no public API b…
+  files: packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/constants.ts
+  category: extract
+[medium] config.js must understand the JSON schema of every package's config file, creat…
+  files: ci.js, cli.js, config.js
+  category: extract
+[medium] Bidirectional coupling: "hench-agent-core" ↔ "hench-agent-tooling" (4+4 crossin…
+  category: refactor
+[medium] Bidirectional coupling: "rex-analysis" ↔ "rex-prd-core" (14+4 crossings) — cons…
+  category: refactor
+[medium] Bidirectional coupling: "sourcevision-analysis-engine" ↔ "sourcevision-viewer" …
+  category: refactor
+[medium] Rex-analysis has the highest coupling ratio (0.23) in the codebase; while struc…
+  category: refactor
+[medium] Test fixtures appearing as first-class architectural zones (sourcevision-3) is …
+  category: refactor
+[medium] Cohesion at 0.77 is the lowest of all zones, indicating the analysis pipeline h…
+  files: packages/rex/src/analyze/dedupe.ts, packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/index.ts
+  category: refactor
+[medium] sync-engine.ts (552 lines) and notion-map.ts (726 lines) are the two largest fi…
+  files: packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/constants.ts
+  category: refactor
+[medium] The enrichment subsystem (enrich.ts + 3 helpers) mixes orchestration, prompt co…
+  files: packages/sourcevision/src/analyzers/claude-cli.ts, packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/context.ts
   category: refactor
 
 </next-steps>

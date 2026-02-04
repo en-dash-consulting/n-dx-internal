@@ -1,6 +1,22 @@
 {
   "edges": [
     {
+      "from": "cli.js",
+      "to": "ci.js",
+      "type": "static",
+      "symbols": [
+        "runCI"
+      ]
+    },
+    {
+      "from": "cli.js",
+      "to": "config.js",
+      "type": "static",
+      "symbols": [
+        "runConfig"
+      ]
+    },
+    {
       "from": "packages/hench/src/agent/brief.ts",
       "to": "packages/hench/src/schema/index.ts",
       "type": "type",
@@ -24,6 +40,15 @@
     },
     {
       "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/agent/completion.ts",
+      "type": "static",
+      "symbols": [
+        "validateCompletion",
+        "formatValidationResult"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
       "to": "packages/hench/src/agent/prompt.ts",
       "type": "static",
       "symbols": [
@@ -32,12 +57,60 @@
     },
     {
       "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/agent/review.ts",
+      "type": "static",
+      "symbols": [
+        "collectReviewDiff",
+        "promptReview",
+        "revertChanges"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/agent/summary.ts",
+      "type": "static",
+      "symbols": [
+        "buildRunSummary"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/agent/test-runner.ts",
+      "type": "static",
+      "symbols": [
+        "runPostTaskTests"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/agent/token-budget.ts",
+      "type": "static",
+      "symbols": [
+        "checkTokenBudget"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "section",
+        "subsection",
+        "stream",
+        "detail",
+        "info"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
       "to": "packages/hench/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "HenchConfig",
+        "RetryConfig",
         "RunRecord",
-        "ToolCallRecord"
+        "ToolCallRecord",
+        "TurnTokenUsage"
       ]
     },
     {
@@ -76,6 +149,40 @@
     },
     {
       "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/agent/review.ts",
+      "type": "static",
+      "symbols": [
+        "collectReviewDiff",
+        "promptReview",
+        "revertChanges"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/agent/summary.ts",
+      "type": "static",
+      "symbols": [
+        "buildRunSummary"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/agent/test-runner.ts",
+      "type": "static",
+      "symbols": [
+        "runPostTaskTests"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/agent/token-budget.ts",
+      "type": "static",
+      "symbols": [
+        "checkTokenBudget"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
       "to": "packages/hench/src/agent/tools.ts",
       "type": "static",
       "symbols": [
@@ -93,6 +200,18 @@
     },
     {
       "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "section",
+        "subsection",
+        "stream",
+        "detail",
+        "info"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
       "to": "packages/hench/src/guard/index.ts",
       "type": "static",
       "symbols": [
@@ -105,7 +224,8 @@
       "type": "type",
       "symbols": [
         "HenchConfig",
-        "RunRecord"
+        "RunRecord",
+        "TurnTokenUsage"
       ]
     },
     {
@@ -117,12 +237,58 @@
       ]
     },
     {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "type": "static",
+      "symbols": [
+        "toolRexUpdateStatus",
+        "toolRexAppendLog"
+      ]
+    },
+    {
       "from": "packages/hench/src/agent/prompt.ts",
       "to": "packages/hench/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "HenchConfig",
         "TaskBriefProject"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/review.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "section",
+        "subsection",
+        "info"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/stuck.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "RunRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/summary.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "ToolCallRecord",
+        "RunSummaryData",
+        "CommandRecord",
+        "TestRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/token-budget.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage"
       ]
     },
     {
@@ -179,11 +345,27 @@
       ]
     },
     {
+      "from": "packages/hench/src/cli/commands/constants.ts",
+      "to": "packages/hench/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
       "from": "packages/hench/src/cli/commands/init.ts",
       "to": "packages/hench/src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
         "HENCH_DIR"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/init.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
       ]
     },
     {
@@ -194,6 +376,14 @@
         "ensureHenchDir",
         "configExists",
         "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/agent/brief.ts",
+      "type": "static",
+      "symbols": [
+        "getActionableTasks"
       ]
     },
     {
@@ -214,6 +404,14 @@
     },
     {
       "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/agent/stuck.ts",
+      "type": "static",
+      "symbols": [
+        "getStuckTaskIds"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
       "to": "packages/hench/src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
@@ -223,10 +421,29 @@
     },
     {
       "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "requireClaudeCLI"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "output"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
       "to": "packages/hench/src/store/index.ts",
       "type": "static",
       "symbols": [
-        "loadConfig"
+        "loadConfig",
+        "listRuns"
       ]
     },
     {
@@ -235,6 +452,15 @@
       "type": "static",
       "symbols": [
         "HENCH_DIR"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/show.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
       ]
     },
     {
@@ -256,10 +482,27 @@
     },
     {
       "from": "packages/hench/src/cli/commands/status.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/status.ts",
       "to": "packages/hench/src/store/index.ts",
       "type": "static",
       "symbols": [
         "listRuns"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/errors.ts",
+      "to": "packages/hench/src/agent/brief.ts",
+      "type": "static",
+      "symbols": [
+        "TaskNotActionableError"
       ]
     },
     {
@@ -300,6 +543,24 @@
       "type": "dynamic",
       "symbols": [
         "*"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/index.ts",
+      "to": "packages/hench/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "handleCLIError",
+        "requireHenchDir"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/index.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "setQuiet"
       ]
     },
     {
@@ -361,11 +622,18 @@
         "HENCH_SCHEMA_VERSION",
         "DEFAULT_HENCH_CONFIG",
         "GuardConfig",
+        "RetryConfig",
         "HenchConfig",
         "Provider",
         "RunStatus",
         "ToolCallRecord",
         "TokenUsage",
+        "TurnTokenUsage",
+        "CommandRecord",
+        "TestRecord",
+        "PostRunTestRecord",
+        "SummaryCounts",
+        "RunSummaryData",
         "RunRecord",
         "TaskBrief",
         "TaskBriefTask",
@@ -410,6 +678,15 @@
       "type": "static",
       "symbols": [
         "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/hench/src/store/config.ts",
+      "to": "packages/hench/src/store/project-config.ts",
+      "type": "static",
+      "symbols": [
+        "loadProjectOverrides",
+        "mergeWithOverrides"
       ]
     },
     {
@@ -475,6 +752,15 @@
       ]
     },
     {
+      "from": "packages/hench/src/tools/rex.ts",
+      "to": "packages/hench/src/agent/completion.ts",
+      "type": "static",
+      "symbols": [
+        "validateCompletion",
+        "formatValidationResult"
+      ]
+    },
+    {
       "from": "packages/hench/src/tools/shell.ts",
       "to": "packages/hench/src/guard/index.ts",
       "type": "type",
@@ -521,11 +807,45 @@
       ]
     },
     {
+      "from": "packages/hench/tests/unit/agent/atomic-transition.test.ts",
+      "to": "packages/hench/src/agent/loop.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/atomic-transition.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/atomic-transition.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "static",
+      "symbols": [
+        "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/atomic-transition.test.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "type": "static",
+      "symbols": [
+        "toolRexUpdateStatus"
+      ]
+    },
+    {
       "from": "packages/hench/tests/unit/agent/brief.test.ts",
       "to": "packages/hench/src/agent/brief.ts",
       "type": "static",
       "symbols": [
-        "formatTaskBrief"
+        "formatTaskBrief",
+        "assembleTaskBrief",
+        "TaskNotActionableError"
       ]
     },
     {
@@ -534,6 +854,24 @@
       "type": "type",
       "symbols": [
         "TaskBrief"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/cli-retry.test.ts",
+      "to": "packages/hench/src/agent/cli-loop.ts",
+      "type": "static",
+      "symbols": [
+        "isTransientError",
+        "computeDelay",
+        "buildRetryNotice"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/completion.test.ts",
+      "to": "packages/hench/src/agent/completion.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
       ]
     },
     {
@@ -586,6 +924,208 @@
       ]
     },
     {
+      "from": "packages/hench/tests/unit/agent/review.test.ts",
+      "to": "packages/hench/src/agent/review.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/stuck.test.ts",
+      "to": "packages/hench/src/agent/stuck.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/stuck.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "RunRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/summary.test.ts",
+      "to": "packages/hench/src/agent/summary.ts",
+      "type": "static",
+      "symbols": [
+        "buildRunSummary"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/summary.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "ToolCallRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/task-failure.test.ts",
+      "to": "packages/hench/src/agent/loop.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/task-failure.test.ts",
+      "to": "packages/hench/src/agent/tools.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/task-failure.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/task-failure.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "static",
+      "symbols": [
+        "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/test-runner.test.ts",
+      "to": "packages/hench/src/agent/test-runner.ts",
+      "type": "static",
+      "symbols": [
+        "isTestFile",
+        "candidateTestPaths",
+        "findRelevantTests",
+        "detectRunner",
+        "buildScopedCommand",
+        "runPostTaskTests"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/token-budget.test.ts",
+      "to": "packages/hench/src/agent/token-budget.ts",
+      "type": "static",
+      "symbols": [
+        "checkTokenBudget",
+        "TokenBudgetResult"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/token-budget.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/token-tracking.test.ts",
+      "to": "packages/hench/src/agent/cli-loop.ts",
+      "type": "static",
+      "symbols": [
+        "processStreamLine",
+        "CliRunResult"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/token-tracking.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "TurnTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/constants.test.ts",
+      "to": "packages/hench/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "safeParseInt"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/constants.test.ts",
+      "to": "packages/hench/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
+      "to": "packages/hench/src/cli/commands/run.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
+      "to": "packages/hench/src/schema/validate.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "static",
+      "symbols": [
+        "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/errors.test.ts",
+      "to": "packages/hench/src/agent/brief.ts",
+      "type": "static",
+      "symbols": [
+        "TaskNotActionableError"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/errors.test.ts",
+      "to": "packages/hench/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "formatCLIError",
+        "handleCLIError",
+        "requireHenchDir",
+        "requireClaudeCLI"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/output.test.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "setQuiet",
+        "isQuiet",
+        "info",
+        "result",
+        "section",
+        "subsection",
+        "stream",
+        "detail"
+      ]
+    },
+    {
       "from": "packages/hench/tests/unit/guard/commands.test.ts",
       "to": "packages/hench/src/guard/commands.ts",
       "type": "static",
@@ -628,6 +1168,33 @@
         "validateRunRecord",
         "HenchConfigSchema",
         "RunRecordSchema"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/store/project-config.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "static",
+      "symbols": [
+        "ensureHenchDir",
+        "loadConfig",
+        "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/completion-validation.test.ts",
+      "to": "packages/hench/src/agent/completion.ts",
+      "type": "static",
+      "symbols": [
+        "validateCompletion",
+        "formatValidationResult"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/completion-validation.test.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "type": "static",
+      "symbols": [
+        "toolRexUpdateStatus"
       ]
     },
     {
@@ -700,6 +1267,55 @@
       ]
     },
     {
+      "from": "packages/rex/src/analyze/dedupe.ts",
+      "to": "packages/rex/src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/diff.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/diff.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/diff.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/dedupe.ts",
+      "type": "reexport",
+      "symbols": [
+        "similarity",
+        "deduplicateScanResults"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/diff.ts",
+      "type": "reexport",
+      "symbols": [
+        "formatDiff"
+      ]
+    },
+    {
       "from": "packages/rex/src/analyze/index.ts",
       "to": "packages/rex/src/analyze/propose.ts",
       "type": "reexport",
@@ -708,6 +1324,39 @@
         "ProposalFeature",
         "ProposalTask",
         "buildProposals"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "reexport",
+      "symbols": [
+        "FileFormat",
+        "AddPromptOptions",
+        "QualityIssue",
+        "DEFAULT_MODEL",
+        "MAX_RETRIES",
+        "CHUNK_CHAR_LIMIT",
+        "FEW_SHOT_EXAMPLE",
+        "reasonFromFile",
+        "reasonFromFiles",
+        "reasonFromScanResults",
+        "reasonFromDescription",
+        "reasonFromDescriptions",
+        "reasonFromIdeasFile",
+        "buildIdeasPrompt",
+        "readProjectContext",
+        "parseProposalResponse",
+        "extractJson",
+        "repairTruncatedJson",
+        "validateProposalQuality",
+        "buildAddPrompt",
+        "buildMultiAddPrompt",
+        "detectFileFormat",
+        "parseStructuredFile",
+        "mergeProposals",
+        "chunkScanResults",
+        "summarizeScanResults"
       ]
     },
     {
@@ -728,7 +1377,16 @@
         "ScanOptions",
         "scanTests",
         "scanDocs",
-        "scanSourceVision"
+        "scanSourceVision",
+        "scanPackageJson"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/propose.ts",
+      "to": "packages/rex/src/analyze/dedupe.ts",
+      "type": "static",
+      "symbols": [
+        "deduplicateScanResults"
       ]
     },
     {
@@ -737,6 +1395,39 @@
       "type": "type",
       "symbols": [
         "ScanResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "ProposalTask"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
       ]
     },
     {
@@ -772,11 +1463,77 @@
       ]
     },
     {
+      "from": "packages/rex/src/cli/commands/adapter.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/adapter.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/adapter.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/adapter.ts",
+      "to": "packages/rex/src/store/adapter-registry.ts",
+      "type": "static",
+      "symbols": [
+        "getDefaultRegistry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/adapter.ts",
+      "to": "packages/rex/src/store/adapter-registry.ts",
+      "type": "type",
+      "symbols": [
+        "AdapterConfig"
+      ]
+    },
+    {
       "from": "packages/rex/src/cli/commands/add.ts",
       "to": "packages/rex/src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
         "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/add.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/add.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/add.ts",
+      "to": "packages/rex/src/core/dag.ts",
+      "type": "static",
+      "symbols": [
+        "validateDAG"
       ]
     },
     {
@@ -811,7 +1568,7 @@
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
-        "createStore"
+        "resolveStore"
       ]
     },
     {
@@ -822,8 +1579,14 @@
         "scanTests",
         "scanDocs",
         "scanSourceVision",
+        "scanPackageJson",
         "reconcile",
-        "buildProposals"
+        "buildProposals",
+        "deduplicateScanResults",
+        "reasonFromFiles",
+        "reasonFromScanResults",
+        "formatDiff",
+        "DEFAULT_MODEL"
       ]
     },
     {
@@ -845,6 +1608,23 @@
     },
     {
       "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -857,7 +1637,7 @@
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
-        "createStore"
+        "resolveStore"
       ]
     },
     {
@@ -866,6 +1646,14 @@
       "type": "static",
       "symbols": [
         "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/init.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
       ]
     },
     {
@@ -910,11 +1698,62 @@
       ]
     },
     {
+      "from": "packages/rex/src/cli/commands/move.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/move.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/move.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/move.ts",
+      "to": "packages/rex/src/core/move.ts",
+      "type": "static",
+      "symbols": [
+        "validateMove",
+        "moveItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/move.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
       "from": "packages/rex/src/cli/commands/next.ts",
       "to": "packages/rex/src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
         "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/next.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
       ]
     },
     {
@@ -923,7 +1762,8 @@
       "type": "static",
       "symbols": [
         "findNextTask",
-        "collectCompletedIds"
+        "collectCompletedIds",
+        "explainSelection"
       ]
     },
     {
@@ -931,7 +1771,65 @@
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
-        "createStore"
+        "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/core/prune.ts",
+      "type": "static",
+      "symbols": [
+        "findPrunableItems",
+        "pruneItems"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
       ]
     },
     {
@@ -940,6 +1838,15 @@
       "type": "static",
       "symbols": [
         "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/recommend.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
       ]
     },
     {
@@ -956,7 +1863,147 @@
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
-        "createStore"
+        "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/report.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/report.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/report.ts",
+      "to": "packages/rex/src/core/dag.ts",
+      "type": "static",
+      "symbols": [
+        "validateDAG"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/report.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "static",
+      "symbols": [
+        "validateStructure"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/report.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "computeStats",
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/report.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "type",
+      "symbols": [
+        "TreeStats"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/report.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION",
+        "validateDocument",
+        "validateConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/report.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem",
+        "ItemLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/smart-add.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "static",
+      "symbols": [
+        "reasonFromDescriptions",
+        "reasonFromIdeasFile",
+        "validateProposalQuality",
+        "DEFAULT_MODEL"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/smart-add.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "QualityIssue"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/smart-add.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/smart-add.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/smart-add.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "warn",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/smart-add.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/smart-add.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/smart-add.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
       ]
     },
     {
@@ -965,6 +2012,24 @@
       "type": "static",
       "symbols": [
         "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result",
+        "isQuiet"
       ]
     },
     {
@@ -985,6 +2050,22 @@
     },
     {
       "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/core/verify.ts",
+      "type": "static",
+      "symbols": [
+        "verify"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/core/verify.ts",
+      "type": "type",
+      "symbols": [
+        "VerifyResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -996,7 +2077,51 @@
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
-        "createStore"
+        "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/sync.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/sync.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/sync.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/sync.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore",
+        "resolveRemoteStore",
+        "SyncEngine"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/sync.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "type",
+      "symbols": [
+        "SyncDirection",
+        "SyncReport"
       ]
     },
     {
@@ -1005,6 +2130,64 @@
       "type": "static",
       "symbols": [
         "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "requireRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/core/dag.ts",
+      "type": "static",
+      "symbols": [
+        "validateDAG"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/core/parent-completion.ts",
+      "type": "static",
+      "symbols": [
+        "findAutoCompletions"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/core/timestamps.ts",
+      "type": "static",
+      "symbols": [
+        "computeTimestampUpdates"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/core/transitions.ts",
+      "type": "static",
+      "symbols": [
+        "validateTransition"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem"
       ]
     },
     {
@@ -1022,7 +2205,7 @@
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
-        "createStore"
+        "resolveStore"
       ]
     },
     {
@@ -1035,10 +2218,27 @@
     },
     {
       "from": "packages/rex/src/cli/commands/validate.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate.ts",
       "to": "packages/rex/src/core/dag.ts",
       "type": "static",
       "symbols": [
         "validateDAG"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "static",
+      "symbols": [
+        "validateStructure"
       ]
     },
     {
@@ -1057,6 +2257,71 @@
       "type": "type",
       "symbols": [
         "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/verify.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/verify.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/verify.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/verify.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/verify.ts",
+      "to": "packages/rex/src/core/verify.ts",
+      "type": "static",
+      "symbols": [
+        "verify"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/verify.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/errors.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/adapter.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
       ]
     },
     {
@@ -1093,7 +2358,23 @@
     },
     {
       "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/move.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
       "to": "packages/rex/src/cli/commands/next.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/prune.ts",
       "type": "dynamic",
       "symbols": [
         "*"
@@ -1109,7 +2390,31 @@
     },
     {
       "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/report.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/smart-add.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
       "to": "packages/rex/src/cli/commands/status.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/sync.ts",
       "type": "dynamic",
       "symbols": [
         "*"
@@ -1133,10 +2438,36 @@
     },
     {
       "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/verify.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "handleCLIError",
+        "requireRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
       "to": "packages/rex/src/cli/mcp.ts",
       "type": "dynamic",
       "symbols": [
         "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "setQuiet"
       ]
     },
     {
@@ -1149,11 +2480,53 @@
     },
     {
       "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/core/dag.ts",
+      "type": "static",
+      "symbols": [
+        "validateDAG"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/core/move.ts",
+      "type": "static",
+      "symbols": [
+        "validateMove",
+        "moveItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
       "to": "packages/rex/src/core/next-task.ts",
       "type": "static",
       "symbols": [
         "findNextTask",
-        "collectCompletedIds"
+        "collectCompletedIds",
+        "explainSelection"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/core/parent-completion.ts",
+      "type": "static",
+      "symbols": [
+        "findAutoCompletions"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/core/timestamps.ts",
+      "type": "static",
+      "symbols": [
+        "computeTimestampUpdates"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/core/transitions.ts",
+      "type": "static",
+      "symbols": [
+        "validateTransition"
       ]
     },
     {
@@ -1163,6 +2536,14 @@
       "symbols": [
         "computeStats",
         "findItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/core/verify.ts",
+      "type": "static",
+      "symbols": [
+        "verify"
       ]
     },
     {
@@ -1190,7 +2571,9 @@
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
-        "createStore"
+        "resolveStore",
+        "resolveRemoteStore",
+        "SyncEngine"
       ]
     },
     {
@@ -1228,6 +2611,42 @@
       ]
     },
     {
+      "from": "packages/rex/src/core/move.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem",
+        "removeFromTree",
+        "insertChild",
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/move.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "LEVEL_HIERARCHY"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/move.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/next-task.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
       "from": "packages/rex/src/core/next-task.ts",
       "to": "packages/rex/src/core/tree.ts",
       "type": "type",
@@ -1245,7 +2664,183 @@
       ]
     },
     {
+      "from": "packages/rex/src/core/notion-map.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/notion-map.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/notion-map.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "ItemLevel",
+        "ItemStatus",
+        "PRDItem",
+        "PRDDocument",
+        "Priority"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/parent-completion.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/parent-completion.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/prune.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/prune.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/structural.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree",
+        "collectAllIds"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/structural.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "LEVEL_HIERARCHY"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/structural.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/sync-engine.ts",
+      "to": "packages/rex/src/core/sync.ts",
+      "type": "static",
+      "symbols": [
+        "detectChangedFields",
+        "isModifiedSinceSync",
+        "resolveConflicts",
+        "stampSynced",
+        "extractSyncMeta",
+        "conflictToLogEntry",
+        "ConflictRecord"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/sync-engine.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/sync-engine.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/sync-engine.ts",
+      "to": "packages/rex/src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/sync.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/sync.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "LogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/timestamps.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus",
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/transitions.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus"
+      ]
+    },
+    {
       "from": "packages/rex/src/core/tree.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/verify.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/verify.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -1282,6 +2877,46 @@
         "validateConfig",
         "validateLogEntry",
         "ValidationResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/adapter-registry.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/adapter-registry.ts",
+      "to": "packages/rex/src/store/file-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/adapter-registry.ts",
+      "to": "packages/rex/src/store/notion-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "NotionStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/adapter-registry.ts",
+      "to": "packages/rex/src/store/notion-client.ts",
+      "type": "static",
+      "symbols": [
+        "LiveNotionClient"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/adapter-registry.ts",
+      "to": "packages/rex/src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
       ]
     },
     {
@@ -1326,11 +2961,54 @@
     },
     {
       "from": "packages/rex/src/store/file-adapter.ts",
+      "to": "packages/rex/src/store/project-config.ts",
+      "type": "static",
+      "symbols": [
+        "loadProjectOverrides",
+        "mergeWithOverrides"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/file-adapter.ts",
       "to": "packages/rex/src/store/types.ts",
       "type": "type",
       "symbols": [
         "PRDStore",
         "StoreCapabilities"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/core/sync-engine.ts",
+      "type": "reexport",
+      "symbols": [
+        "SyncEngine",
+        "SyncDirection",
+        "SyncReport",
+        "SyncOptions"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/adapter-registry.ts",
+      "type": "reexport",
+      "symbols": [
+        "AdapterRegistry",
+        "getDefaultRegistry",
+        "resetDefaultRegistry",
+        "AdapterDefinition",
+        "AdapterFactory",
+        "AdapterConfig",
+        "AdapterConfigField",
+        "AdapterInfo"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/adapter-registry.ts",
+      "type": "static",
+      "symbols": [
+        "getDefaultRegistry"
       ]
     },
     {
@@ -1352,6 +3030,49 @@
     },
     {
       "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/notion-adapter.ts",
+      "type": "reexport",
+      "symbols": [
+        "NotionStore",
+        "ensureNotionRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/notion-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "NotionStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/notion-client.ts",
+      "type": "reexport",
+      "symbols": [
+        "NotionClient",
+        "NotionAdapterConfig",
+        "LiveNotionClient"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/notion-client.ts",
+      "type": "static",
+      "symbols": [
+        "LiveNotionClient"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
+      "to": "packages/rex/src/store/notion-client.ts",
+      "type": "type",
+      "symbols": [
+        "NotionAdapterConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/index.ts",
       "to": "packages/rex/src/store/types.ts",
       "type": "reexport",
       "symbols": [
@@ -1368,6 +3089,105 @@
       ]
     },
     {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/core/notion-map.ts",
+      "type": "static",
+      "symbols": [
+        "mapItemToNotion",
+        "mapNotionToItem",
+        "mapNotionToDocument",
+        "resolveParentPage",
+        "buildStatusGroupMap",
+        "validateDatabaseSchema"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/core/notion-map.ts",
+      "type": "type",
+      "symbols": [
+        "NotionStatusGroup"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/core/sync.ts",
+      "type": "static",
+      "symbols": [
+        "stampModified",
+        "stampSynced",
+        "extractSyncMeta"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem",
+        "insertChild",
+        "updateInTree",
+        "removeFromTree",
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "validateDocument",
+        "validateConfig",
+        "validateLogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem",
+        "RexConfig",
+        "LogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/store/notion-client.ts",
+      "type": "type",
+      "symbols": [
+        "NotionClient",
+        "NotionAdapterConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/store/project-config.ts",
+      "type": "static",
+      "symbols": [
+        "loadProjectOverrides",
+        "mergeWithOverrides"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore",
+        "StoreCapabilities"
+      ]
+    },
+    {
       "from": "packages/rex/src/store/types.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
@@ -1376,6 +3196,39 @@
         "PRDItem",
         "RexConfig",
         "LogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/project-config.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/project-config.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/project-config.test.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "createStore",
+        "ensureRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/project-config.test.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
       ]
     },
     {
@@ -1421,6 +3274,47 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/analyze/dedupe.test.ts",
+      "to": "packages/rex/src/analyze/dedupe.ts",
+      "type": "static",
+      "symbols": [
+        "similarity",
+        "deduplicateScanResults"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/dedupe.test.ts",
+      "to": "packages/rex/src/analyze/scanners.ts",
+      "type": "type",
+      "symbols": [
+        "ScanResult"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/diff.test.ts",
+      "to": "packages/rex/src/analyze/diff.ts",
+      "type": "static",
+      "symbols": [
+        "formatDiff"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/diff.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/diff.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/analyze/propose.test.ts",
       "to": "packages/rex/src/analyze/propose.ts",
       "type": "static",
@@ -1434,6 +3328,63 @@
       "type": "type",
       "symbols": [
         "ScanResult"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/reason-description.test.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "parseProposalResponse",
+        "buildAddPrompt"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/reason-ideas.test.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "buildIdeasPrompt",
+        "reasonFromIdeasFile"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/reason-multi-description.test.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "buildMultiAddPrompt",
+        "reasonFromDescriptions"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/reason.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/reason.test.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_MODEL",
+        "MAX_RETRIES",
+        "FEW_SHOT_EXAMPLE",
+        "parseProposalResponse",
+        "extractJson",
+        "repairTruncatedJson",
+        "validateProposalQuality",
+        "detectFileFormat",
+        "parseStructuredFile",
+        "mergeProposals",
+        "reasonFromFiles",
+        "readProjectContext",
+        "chunkScanResults",
+        "summarizeScanResults",
+        "CHUNK_CHAR_LIMIT"
       ]
     },
     {
@@ -1467,7 +3418,249 @@
       "symbols": [
         "scanTests",
         "scanDocs",
-        "scanSourceVision"
+        "scanSourceVision",
+        "scanPackageJson"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/add.test.ts",
+      "to": "packages/rex/src/cli/commands/add.ts",
+      "type": "static",
+      "symbols": [
+        "cmdAdd"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/add.test.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/move.test.ts",
+      "to": "packages/rex/src/cli/commands/move.ts",
+      "type": "static",
+      "symbols": [
+        "cmdMove"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/move.test.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/report.test.ts",
+      "to": "packages/rex/src/cli/commands/report.ts",
+      "type": "static",
+      "symbols": [
+        "cmdReport"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/report.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/smart-add.test.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "QualityIssue"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/smart-add.test.ts",
+      "to": "packages/rex/src/cli/commands/smart-add.ts",
+      "type": "static",
+      "symbols": [
+        "formatProposalTree",
+        "countProposalItems",
+        "filterProposalsByIndex",
+        "parseApprovalInput",
+        "formatQualityWarnings"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/status.test.ts",
+      "to": "packages/rex/src/cli/commands/status.ts",
+      "type": "static",
+      "symbols": [
+        "cmdStatus",
+        "renderProgressBar",
+        "formatTimestamp",
+        "renderTree"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/status.test.ts",
+      "to": "packages/rex/src/cli/commands/status.ts",
+      "type": "type",
+      "symbols": [
+        "CoverageMap"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/status.test.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/status.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/sync.test.ts",
+      "to": "packages/rex/src/cli/commands/sync.ts",
+      "type": "static",
+      "symbols": [
+        "cmdSync"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/sync.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/sync.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/sync.test.ts",
+      "to": "packages/rex/src/store/adapter-registry.ts",
+      "type": "static",
+      "symbols": [
+        "getDefaultRegistry",
+        "resetDefaultRegistry"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/sync.test.ts",
+      "to": "packages/rex/src/store/file-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/update.test.ts",
+      "to": "packages/rex/src/cli/commands/update.ts",
+      "type": "static",
+      "symbols": [
+        "cmdUpdate"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/update.test.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/update.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/validate.test.ts",
+      "to": "packages/rex/src/cli/commands/validate.ts",
+      "type": "static",
+      "symbols": [
+        "cmdValidate"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/validate.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/verify.test.ts",
+      "to": "packages/rex/src/cli/commands/verify.ts",
+      "type": "static",
+      "symbols": [
+        "cmdVerify"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/verify.test.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/verify.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/verify.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "RexConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/errors.test.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "formatCLIError",
+        "handleCLIError",
+        "requireRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/output.test.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "setQuiet",
+        "isQuiet",
+        "info",
+        "warn",
+        "result"
       ]
     },
     {
@@ -1504,12 +3697,31 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/core/move.test.ts",
+      "to": "packages/rex/src/core/move.ts",
+      "type": "static",
+      "symbols": [
+        "validateMove",
+        "moveItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/move.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/core/next-task.test.ts",
       "to": "packages/rex/src/core/next-task.ts",
       "type": "static",
       "symbols": [
         "findNextTask",
-        "collectCompletedIds"
+        "findActionableTasks",
+        "collectCompletedIds",
+        "explainSelection"
       ]
     },
     {
@@ -1518,6 +3730,178 @@
       "type": "type",
       "symbols": [
         "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/notion-map.test.ts",
+      "to": "packages/rex/src/core/notion-map.ts",
+      "type": "static",
+      "symbols": [
+        "mapItemToNotion",
+        "mapNotionToItem",
+        "mapDocumentToNotion",
+        "mapNotionToDocument",
+        "resolveParentPage",
+        "resolveStatusFromNotion",
+        "validateDatabaseSchema",
+        "buildStatusGroupMap",
+        "NOTION_LEVEL_CONFIG",
+        "STATUS_OPTIONS",
+        "PRIORITY_OPTIONS",
+        "DATABASE_SCHEMA"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/notion-map.test.ts",
+      "to": "packages/rex/src/core/notion-map.ts",
+      "type": "type",
+      "symbols": [
+        "NotionStatusGroup"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/notion-map.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/parent-completion.test.ts",
+      "to": "packages/rex/src/core/parent-completion.ts",
+      "type": "static",
+      "symbols": [
+        "findAutoCompletions"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/parent-completion.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/prune.test.ts",
+      "to": "packages/rex/src/core/prune.ts",
+      "type": "static",
+      "symbols": [
+        "isFullyCompleted",
+        "findPrunableItems",
+        "pruneItems"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/prune.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/structural.test.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "static",
+      "symbols": [
+        "validateStructure"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/structural.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/sync-engine.test.ts",
+      "to": "packages/rex/src/core/sync-engine.ts",
+      "type": "static",
+      "symbols": [
+        "SyncEngine",
+        "SyncDirection",
+        "SyncReport"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/sync-engine.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/sync-engine.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem",
+        "RexConfig",
+        "LogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/sync-engine.test.ts",
+      "to": "packages/rex/src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore",
+        "StoreCapabilities"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/sync.test.ts",
+      "to": "packages/rex/src/core/sync.ts",
+      "type": "static",
+      "symbols": [
+        "detectChangedFields",
+        "isModifiedSinceSync",
+        "resolveConflicts",
+        "reconcile",
+        "conflictToLogEntry",
+        "stampModified",
+        "stampSynced",
+        "extractSyncMeta"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/sync.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/timestamps.test.ts",
+      "to": "packages/rex/src/core/timestamps.ts",
+      "type": "static",
+      "symbols": [
+        "computeTimestampUpdates"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/transitions.test.ts",
+      "to": "packages/rex/src/core/transitions.ts",
+      "type": "static",
+      "symbols": [
+        "validateTransition",
+        "allowedTargets"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/transitions.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus"
       ]
     },
     {
@@ -1544,6 +3928,27 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/core/verify.test.ts",
+      "to": "packages/rex/src/core/verify.ts",
+      "type": "static",
+      "symbols": [
+        "extractKeywords",
+        "scoreMatch",
+        "mapCriteriaToTests",
+        "collectVerifiableTasks",
+        "findTestFiles",
+        "verify"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/verify.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/schema/validate.test.ts",
       "to": "packages/rex/src/schema/validate.ts",
       "type": "static",
@@ -1551,6 +3956,48 @@
         "validateDocument",
         "validateConfig",
         "validateLogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/adapter-registry.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/adapter-registry.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/adapter-registry.test.ts",
+      "to": "packages/rex/src/store/adapter-registry.ts",
+      "type": "static",
+      "symbols": [
+        "AdapterRegistry",
+        "AdapterDefinition",
+        "AdapterConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/adapter-registry.test.ts",
+      "to": "packages/rex/src/store/file-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/adapter-registry.test.ts",
+      "to": "packages/rex/src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
       ]
     },
     {
@@ -1585,6 +4032,149 @@
       "symbols": [
         "FileStore",
         "ensureRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/notion-adapter.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/notion-adapter.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/notion-adapter.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/notion-adapter.test.ts",
+      "to": "packages/rex/src/store/notion-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "NotionStore",
+        "ensureNotionRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/notion-adapter.test.ts",
+      "to": "packages/rex/src/store/notion-client.ts",
+      "type": "type",
+      "symbols": [
+        "NotionClient",
+        "NotionAdapterConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/notion-client.test.ts",
+      "to": "packages/rex/src/store/notion-client.ts",
+      "type": "static",
+      "symbols": [
+        "LiveNotionClient"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/resolve-store.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/resolve-store.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/resolve-store.test.ts",
+      "to": "packages/rex/src/store/adapter-registry.ts",
+      "type": "static",
+      "symbols": [
+        "getDefaultRegistry",
+        "resetDefaultRegistry"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/resolve-store.test.ts",
+      "to": "packages/rex/src/store/file-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/resolve-store.test.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore",
+        "resolveRemoteStore",
+        "createStore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/resolve-store.test.ts",
+      "to": "packages/rex/src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/store-contract.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/store-contract.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/store-contract.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/store-contract.test.ts",
+      "to": "packages/rex/src/store/file-adapter.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore",
+        "ensureRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/store/store-contract.test.ts",
+      "to": "packages/rex/src/store/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
       ]
     },
     {
@@ -1733,6 +4323,7 @@
       "symbols": [
         "tryParseJSON",
         "extractFindings",
+        "mergeZonesByName",
         "EnrichResult"
       ]
     },
@@ -1743,6 +4334,7 @@
       "symbols": [
         "tryParseJSON",
         "extractFindings",
+        "mergeZonesByName",
         "deduplicateZoneIds"
       ]
     },
@@ -2087,6 +4679,22 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
       "to": "packages/sourcevision/src/schema/data-files.ts",
       "type": "static",
       "symbols": [
@@ -2113,6 +4721,14 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/init.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/init.ts",
       "to": "packages/sourcevision/src/schema/v1.ts",
       "type": "static",
       "symbols": [
@@ -2128,11 +4744,36 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/cli/commands/reset.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/cli/commands/validate.ts",
       "to": "packages/sourcevision/src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
         "SV_DIR"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/validate.ts",
+      "to": "packages/sourcevision/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/validate.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
       ]
     },
     {
@@ -2156,6 +4797,14 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/cli/errors.ts",
+      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/cli/index.ts",
       "to": "packages/sourcevision/src/cli/commands/analyze.ts",
       "type": "static",
@@ -2168,8 +4817,7 @@
       "to": "packages/sourcevision/src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
-        "usage",
-        "SV_DIR"
+        "usage"
       ]
     },
     {
@@ -2198,10 +4846,28 @@
     },
     {
       "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "handleCLIError",
+        "requireSvDir"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
       "to": "packages/sourcevision/src/cli/mcp.ts",
       "type": "dynamic",
       "symbols": [
         "*"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "setQuiet"
       ]
     },
     {
@@ -3288,6 +5954,28 @@
       ]
     },
     {
+      "from": "packages/sourcevision/tests/unit/cli/errors.test.ts",
+      "to": "packages/sourcevision/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "formatCLIError",
+        "handleCLIError",
+        "requireSvDir"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/cli/output.test.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "setQuiet",
+        "isQuiet",
+        "info",
+        "result"
+      ]
+    },
+    {
       "from": "packages/sourcevision/tests/unit/schema/data-files.test.ts",
       "to": "packages/sourcevision/src/schema/data-files.ts",
       "type": "static",
@@ -3405,7 +6093,8 @@
       "package": "@anthropic-ai/sdk",
       "importedBy": [
         "packages/hench/src/agent/loop.ts",
-        "packages/hench/src/agent/tools.ts"
+        "packages/hench/src/agent/tools.ts",
+        "packages/hench/tests/unit/agent/task-failure.test.ts"
       ],
       "symbols": [
         "default"
@@ -3423,12 +6112,43 @@
       ]
     },
     {
+      "package": "child_process",
+      "importedBy": [
+        "ci.js",
+        "cli.js"
+      ],
+      "symbols": [
+        "spawn"
+      ]
+    },
+    {
       "package": "esbuild",
       "importedBy": [
         "packages/sourcevision/build.js"
       ],
       "symbols": [
         "*"
+      ]
+    },
+    {
+      "package": "fs",
+      "importedBy": [
+        "cli.js"
+      ],
+      "symbols": [
+        "existsSync"
+      ]
+    },
+    {
+      "package": "path",
+      "importedBy": [
+        "ci.js",
+        "cli.js"
+      ],
+      "symbols": [
+        "dirname",
+        "join",
+        "resolve"
       ]
     },
     {
@@ -3480,7 +6200,10 @@
         "packages/hench/src/agent/tools.ts",
         "packages/hench/src/cli/commands/run.ts",
         "packages/hench/src/tools/rex.ts",
-        "packages/hench/tests/unit/agent/loop.test.ts"
+        "packages/hench/tests/unit/agent/atomic-transition.test.ts",
+        "packages/hench/tests/unit/agent/brief.test.ts",
+        "packages/hench/tests/unit/agent/loop.test.ts",
+        "packages/hench/tests/unit/agent/task-failure.test.ts"
       ],
       "symbols": [
         "*",
@@ -3489,9 +6212,12 @@
         "PRDStore",
         "TreeEntry",
         "collectCompletedIds",
-        "createStore",
+        "computeTimestampUpdates",
+        "findActionableTasks",
+        "findAutoCompletions",
         "findItem",
-        "findNextTask"
+        "findNextTask",
+        "resolveStore"
       ]
     },
     {
@@ -3506,34 +6232,99 @@
       ]
     },
     {
+      "package": "url",
+      "importedBy": [
+        "ci.js",
+        "cli.js"
+      ],
+      "symbols": [
+        "fileURLToPath"
+      ]
+    },
+    {
       "package": "vitest",
       "importedBy": [
         "packages/hench/tests/e2e/cli-init.test.ts",
         "packages/hench/tests/integration/store-roundtrip.test.ts",
+        "packages/hench/tests/unit/agent/atomic-transition.test.ts",
         "packages/hench/tests/unit/agent/brief.test.ts",
+        "packages/hench/tests/unit/agent/cli-retry.test.ts",
+        "packages/hench/tests/unit/agent/completion.test.ts",
         "packages/hench/tests/unit/agent/loop.test.ts",
         "packages/hench/tests/unit/agent/prompt.test.ts",
+        "packages/hench/tests/unit/agent/review.test.ts",
+        "packages/hench/tests/unit/agent/stuck.test.ts",
+        "packages/hench/tests/unit/agent/summary.test.ts",
+        "packages/hench/tests/unit/agent/task-failure.test.ts",
+        "packages/hench/tests/unit/agent/test-runner.test.ts",
+        "packages/hench/tests/unit/agent/token-budget.test.ts",
+        "packages/hench/tests/unit/agent/token-tracking.test.ts",
+        "packages/hench/tests/unit/cli/commands/constants.test.ts",
+        "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
+        "packages/hench/tests/unit/cli/errors.test.ts",
+        "packages/hench/tests/unit/cli/output.test.ts",
         "packages/hench/tests/unit/guard/commands.test.ts",
         "packages/hench/tests/unit/guard/paths.test.ts",
         "packages/hench/tests/unit/schema/validate.test.ts",
+        "packages/hench/tests/unit/store/project-config.test.ts",
+        "packages/hench/tests/unit/tools/completion-validation.test.ts",
         "packages/hench/tests/unit/tools/files.test.ts",
         "packages/hench/tests/unit/tools/git.test.ts",
         "packages/hench/tests/unit/tools/rex.test.ts",
         "packages/hench/tests/unit/tools/shell.test.ts",
         "packages/hench/vitest.config.ts",
+        "packages/rex/tests/e2e/cli-adapter.test.ts",
         "packages/rex/tests/e2e/cli-analyze.test.ts",
+        "packages/rex/tests/e2e/cli-import.test.ts",
         "packages/rex/tests/e2e/cli-init.test.ts",
+        "packages/rex/tests/e2e/cli-prune.test.ts",
+        "packages/rex/tests/e2e/cli-quiet.test.ts",
+        "packages/rex/tests/e2e/cli-smart-add.test.ts",
+        "packages/rex/tests/e2e/cli-sync.test.ts",
         "packages/rex/tests/e2e/cli-workflow.test.ts",
+        "packages/rex/tests/integration/project-config.test.ts",
         "packages/rex/tests/integration/store-roundtrip.test.ts",
+        "packages/rex/tests/unit/analyze/dedupe.test.ts",
+        "packages/rex/tests/unit/analyze/diff.test.ts",
         "packages/rex/tests/unit/analyze/propose.test.ts",
+        "packages/rex/tests/unit/analyze/reason-description.test.ts",
+        "packages/rex/tests/unit/analyze/reason-ideas.test.ts",
+        "packages/rex/tests/unit/analyze/reason-multi-description.test.ts",
+        "packages/rex/tests/unit/analyze/reason.test.ts",
         "packages/rex/tests/unit/analyze/reconcile.test.ts",
         "packages/rex/tests/unit/analyze/scanners.test.ts",
+        "packages/rex/tests/unit/cli/commands/add.test.ts",
+        "packages/rex/tests/unit/cli/commands/move.test.ts",
+        "packages/rex/tests/unit/cli/commands/report.test.ts",
+        "packages/rex/tests/unit/cli/commands/smart-add.test.ts",
+        "packages/rex/tests/unit/cli/commands/status.test.ts",
+        "packages/rex/tests/unit/cli/commands/sync.test.ts",
+        "packages/rex/tests/unit/cli/commands/update.test.ts",
+        "packages/rex/tests/unit/cli/commands/validate.test.ts",
+        "packages/rex/tests/unit/cli/commands/verify.test.ts",
+        "packages/rex/tests/unit/cli/errors.test.ts",
+        "packages/rex/tests/unit/cli/output.test.ts",
         "packages/rex/tests/unit/core/canonical.test.ts",
         "packages/rex/tests/unit/core/dag.test.ts",
+        "packages/rex/tests/unit/core/move.test.ts",
         "packages/rex/tests/unit/core/next-task.test.ts",
+        "packages/rex/tests/unit/core/notion-map.test.ts",
+        "packages/rex/tests/unit/core/parent-completion.test.ts",
+        "packages/rex/tests/unit/core/prune.test.ts",
+        "packages/rex/tests/unit/core/structural.test.ts",
+        "packages/rex/tests/unit/core/sync-engine.test.ts",
+        "packages/rex/tests/unit/core/sync.test.ts",
+        "packages/rex/tests/unit/core/timestamps.test.ts",
+        "packages/rex/tests/unit/core/transitions.test.ts",
         "packages/rex/tests/unit/core/tree.test.ts",
+        "packages/rex/tests/unit/core/verify.test.ts",
         "packages/rex/tests/unit/schema/validate.test.ts",
+        "packages/rex/tests/unit/store/adapter-registry.test.ts",
         "packages/rex/tests/unit/store/file-adapter.test.ts",
+        "packages/rex/tests/unit/store/notion-adapter.test.ts",
+        "packages/rex/tests/unit/store/notion-client.test.ts",
+        "packages/rex/tests/unit/store/resolve-store.test.ts",
+        "packages/rex/tests/unit/store/store-contract.test.ts",
         "packages/rex/vitest.config.ts",
         "packages/sourcevision/tests/e2e/cli-analyze.test.ts",
         "packages/sourcevision/tests/e2e/cli-serve.test.ts",
@@ -3546,6 +6337,8 @@
         "packages/sourcevision/tests/unit/analyzers/manifest.test.ts",
         "packages/sourcevision/tests/unit/analyzers/next-steps.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
+        "packages/sourcevision/tests/unit/cli/errors.test.ts",
+        "packages/sourcevision/tests/unit/cli/output.test.ts",
         "packages/sourcevision/tests/unit/schema/data-files.test.ts",
         "packages/sourcevision/tests/unit/schema/validate.test.ts",
         "packages/sourcevision/tests/unit/util/merge.test.ts",
@@ -3555,7 +6348,10 @@
         "packages/sourcevision/tests/unit/viewer/detail-panel.test.ts",
         "packages/sourcevision/tests/unit/viewer/flow-diagram.test.ts",
         "packages/sourcevision/tests/unit/viewer/tree-view.test.ts",
-        "packages/sourcevision/vitest.config.ts"
+        "packages/sourcevision/vitest.config.ts",
+        "tests/e2e/cli-ci.test.js",
+        "tests/e2e/cli-config.test.js",
+        "vitest.config.js"
       ],
       "symbols": [
         "afterEach",
@@ -3571,6 +6367,7 @@
       "package": "zod",
       "importedBy": [
         "packages/hench/src/schema/validate.ts",
+        "packages/rex/src/analyze/reason.ts",
         "packages/rex/src/cli/mcp.ts",
         "packages/rex/src/schema/validate.ts",
         "packages/sourcevision/src/cli/mcp.ts",
@@ -3583,45 +6380,73 @@
     }
   ],
   "summary": {
-    "totalEdges": 375,
-    "totalExternal": 8,
+    "totalEdges": 676,
+    "totalExternal": 12,
     "circularCount": 0,
     "circulars": [],
     "mostImported": [
       {
         "path": "packages/rex/src/schema/index.ts",
-        "count": 30
+        "count": 73
+      },
+      {
+        "path": "packages/rex/src/core/tree.ts",
+        "count": 26
       },
       {
         "path": "packages/sourcevision/src/schema/index.ts",
         "count": 22
       },
       {
+        "path": "packages/rex/src/store/index.ts",
+        "count": 20
+      },
+      {
+        "path": "packages/rex/src/cli/commands/constants.ts",
+        "count": 18
+      },
+      {
+        "path": "packages/rex/src/cli/errors.ts",
+        "count": 17
+      },
+      {
+        "path": "packages/rex/src/cli/output.ts",
+        "count": 17
+      },
+      {
         "path": "packages/sourcevision/src/schema/v1.ts",
         "count": 16
+      },
+      {
+        "path": "packages/hench/src/schema/v1.ts",
+        "count": 15
+      },
+      {
+        "path": "packages/rex/src/core/canonical.ts",
+        "count": 14
       },
       {
         "path": "packages/sourcevision/src/viewer/types.ts",
         "count": 13
       },
       {
-        "path": "packages/rex/src/store/index.ts",
+        "path": "packages/hench/src/schema/index.ts",
         "count": 11
       },
       {
-        "path": "packages/rex/src/cli/commands/constants.ts",
+        "path": "packages/hench/src/store/config.ts",
         "count": 10
       },
       {
-        "path": "packages/hench/src/schema/index.ts",
+        "path": "packages/rex/src/store/types.ts",
+        "count": 10
+      },
+      {
+        "path": "packages/hench/src/cli/output.ts",
         "count": 9
       },
       {
-        "path": "packages/hench/src/schema/v1.ts",
-        "count": 9
-      },
-      {
-        "path": "packages/rex/src/core/tree.ts",
+        "path": "packages/rex/src/analyze/scanners.ts",
         "count": 9
       },
       {
@@ -3633,42 +6458,14 @@
         "count": 9
       },
       {
-        "path": "packages/hench/src/guard/index.ts",
-        "count": 7
+        "path": "packages/rex/src/store/file-adapter.ts",
+        "count": 8
       },
       {
         "path": "packages/sourcevision/src/cli/commands/constants.ts",
-        "count": 7
-      },
-      {
-        "path": "packages/sourcevision/src/schema/data-files.ts",
-        "count": 7
-      },
-      {
-        "path": "packages/sourcevision/src/util/sort.ts",
-        "count": 7
-      },
-      {
-        "path": "packages/sourcevision/src/viewer/components/mini-charts.ts",
-        "count": 7
-      },
-      {
-        "path": "packages/hench/src/guard/paths.ts",
-        "count": 6
-      },
-      {
-        "path": "packages/hench/src/store/index.ts",
-        "count": 6
-      },
-      {
-        "path": "packages/rex/src/analyze/scanners.ts",
-        "count": 6
-      },
-      {
-        "path": "packages/hench/src/cli/commands/constants.ts",
-        "count": 5
+        "count": 8
       }
     ],
-    "avgImportsPerFile": 2.95
+    "avgImportsPerFile": 3.22
   }
 }
