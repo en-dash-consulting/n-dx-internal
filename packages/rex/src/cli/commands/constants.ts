@@ -18,6 +18,7 @@ Commands:
   move <id> [dir]         Move item to new parent (reparent)
   prune [dir]             Remove completed subtrees (archive to .rex/archive.json)
   validate [dir]          Check PRD integrity (DAG, schema)
+  report [dir]            Generate JSON health report for CI dashboards
   verify [dir]            Run tests for acceptance criteria
   recommend [dir]         Get SourceVision recommendations
   analyze [dir]           Build PRD from project analysis
@@ -43,6 +44,7 @@ Options:
   --no-llm                Force algorithmic pipeline, skip LLM (for analyze)
   --model=<name>          Override LLM model (for analyze, smart add)
   --analyze               Run SourceVision analysis (for init)
+  --fail-on-error         Exit 1 on validation errors (for report)
   --quiet, -q             Suppress informational output (for scripting)
 `);
 }

@@ -219,6 +219,11 @@ async function main(): Promise<void> {
         await cmdValidate(resolveDir(), flags);
         break;
       }
+      case "report": {
+        const { cmdReport } = await import("./commands/report.js");
+        await cmdReport(resolveDir(), flags);
+        break;
+      }
       case "verify": {
         const { cmdVerify } = await import("./commands/verify.js");
         await cmdVerify(resolveDir(), flags);
