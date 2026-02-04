@@ -5,6 +5,7 @@ export {
 
 export type {
   GuardConfig,
+  RetryConfig,
   HenchConfig,
   Provider,
   RunStatus,

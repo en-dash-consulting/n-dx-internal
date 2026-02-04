@@ -148,6 +148,11 @@ export async function cmdRun(
       dryRun, model, maxTurns,
     );
 
+    if (status === "error_transient") {
+      info(`\nTransient error on iteration ${i + 1}, continuing to next task...`);
+      continue;
+    }
+
     if (status === "failed" || status === "timeout") {
       info(`\nStopping after ${i + 1} iteration(s) due to ${status} status.`);
       break;

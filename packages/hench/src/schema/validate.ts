@@ -11,6 +11,12 @@ const GuardConfigSchema = z.object({
   maxFileSize: z.number().positive(),
 });
 
+const RetryConfigSchema = z.object({
+  maxRetries: z.number().int().nonnegative(),
+  baseDelayMs: z.number().positive(),
+  maxDelayMs: z.number().positive(),
+});
+
 export const HenchConfigSchema = z.object({
   schema: z.string(),
   provider: z.enum(["cli", "api"]).default("cli"),
@@ -20,9 +26,14 @@ export const HenchConfigSchema = z.object({
   rexDir: z.string(),
   apiKeyEnv: z.string(),
   guard: GuardConfigSchema,
+  retry: RetryConfigSchema.optional().default({
+    maxRetries: 3,
+    baseDelayMs: 2000,
+    maxDelayMs: 30000,
+  }),
 });
 
-const RunStatusSchema = z.enum(["running", "completed", "failed", "timeout"]);
+const RunStatusSchema = z.enum(["running", "completed", "failed", "timeout", "error_transient"]);
 
 const ToolCallRecordSchema = z.object({
   turn: z.number(),
@@ -50,6 +61,7 @@ export const RunRecordSchema = z.object({
   tokenUsage: TokenUsageSchema,
   toolCalls: z.array(ToolCallRecordSchema),
   model: z.string(),
+  retryAttempts: z.number().int().nonnegative().optional(),
 });
 
 export function validateConfig(

@@ -7,6 +7,12 @@ export interface GuardConfig {
   maxFileSize: number;
 }
 
+export interface RetryConfig {
+  maxRetries: number;
+  baseDelayMs: number;
+  maxDelayMs: number;
+}
+
 export type Provider = "cli" | "api";
 
 export interface HenchConfig {
@@ -18,6 +24,7 @@ export interface HenchConfig {
   rexDir: string;
   apiKeyEnv: string;
   guard: GuardConfig;
+  retry: RetryConfig;
 }
 
 export function DEFAULT_HENCH_CONFIG(): HenchConfig {
@@ -35,10 +42,15 @@ export function DEFAULT_HENCH_CONFIG(): HenchConfig {
       commandTimeout: 30000,
       maxFileSize: 1048576,
     },
+    retry: {
+      maxRetries: 3,
+      baseDelayMs: 2000,
+      maxDelayMs: 30000,
+    },
   };
 }
 
-export type RunStatus = "running" | "completed" | "failed" | "timeout";
+export type RunStatus = "running" | "completed" | "failed" | "timeout" | "error_transient";
 
 export interface ToolCallRecord {
   turn: number;
@@ -66,6 +78,7 @@ export interface RunRecord {
   tokenUsage: TokenUsage;
   toolCalls: ToolCallRecord[];
   model: string;
+  retryAttempts?: number;
 }
 
 export interface TaskBriefTask {

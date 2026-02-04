@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import type { PRDStore } from "rex/dist/store/types.js";
-import type { HenchConfig, RunRecord, ToolCallRecord } from "../schema/index.js";
+import type { HenchConfig, RetryConfig, RunRecord, ToolCallRecord } from "../schema/index.js";
 import { assembleTaskBrief, formatTaskBrief } from "./brief.js";
 import { buildSystemPrompt } from "./prompt.js";
 import { saveRun } from "../store/index.js";
@@ -23,6 +23,50 @@ export interface CliLoopResult {
 }
 
 const MAX_SUMMARY_LENGTH = 500;
+
+const TRANSIENT_PATTERNS = [
+  /\b500\b/,
+  /\b502\b/,
+  /\b503\b/,
+  /\b529\b/,
+  /\b429\b/,
+  /overloaded/i,
+  /ETIMEDOUT/,
+  /ECONNRESET/,
+  /ECONNREFUSED/,
+  /socket hang up/i,
+  /network error/i,
+];
+
+export function isTransientError(errorText: string): boolean {
+  return TRANSIENT_PATTERNS.some((pattern) => pattern.test(errorText));
+}
+
+export function computeDelay(
+  attempt: number,
+  baseMs: number,
+  maxMs: number,
+): number {
+  const delay = baseMs * Math.pow(2, attempt);
+  return Math.min(delay, maxMs);
+}
+
+export function buildRetryNotice(
+  attempt: number,
+  maxRetries: number,
+  priorTurns: number,
+): string {
+  return (
+    `\n\n---\nRETRY NOTICE (attempt ${attempt + 1}/${maxRetries + 1}): ` +
+    `A previous attempt completed ${priorTurns} turn(s) before a transient error. ` +
+    `Files written to disk by the prior attempt still exist. ` +
+    `Check the current state of files before re-doing any work.\n---`
+  );
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 interface CliRunResult {
   turns: number;
@@ -247,42 +291,114 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
 
   await saveRun(henchDir, run);
 
+  const retryConfig: RetryConfig = config.retry ?? {
+    maxRetries: 3,
+    baseDelayMs: 2000,
+    maxDelayMs: 30000,
+  };
+
+  let accumulatedTurns = 0;
+  let accumulatedToolCalls: ToolCallRecord[] = [];
+  let lastError: string | undefined;
+
   try {
-    const args = [
-      "-p", briefText,
-      "--output-format", "stream-json",
-      "--verbose",
-      "--system-prompt", systemPrompt,
-      "--dangerously-skip-permissions",
-    ];
+    for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
+      const prompt = attempt === 0
+        ? briefText
+        : briefText + buildRetryNotice(attempt, retryConfig.maxRetries, accumulatedTurns);
 
-    // Only pass --model if explicitly overridden; otherwise let claude CLI use its default
-    if (opts.model) {
-      args.push("--model", opts.model);
+      const args = [
+        "-p", prompt,
+        "--output-format", "stream-json",
+        "--verbose",
+        "--system-prompt", systemPrompt,
+        "--dangerously-skip-permissions",
+      ];
+
+      // Only pass --model if explicitly overridden; otherwise let claude CLI use its default
+      if (opts.model) {
+        args.push("--model", opts.model);
+      }
+
+      section(`Agent Run${opts.model ? ` (${opts.model})` : ""}${attempt > 0 ? ` (retry ${attempt}/${retryConfig.maxRetries})` : ""}`);
+      stream("CLI", `Spawning claude${opts.model ? ` (model: ${opts.model})` : ""}...`);
+
+      const result = await spawnClaude(args, projectDir);
+
+      accumulatedTurns += result.turns;
+      accumulatedToolCalls = accumulatedToolCalls.concat(result.toolCalls);
+
+      if (!result.error) {
+        // Success
+        run.turns = accumulatedTurns;
+        run.toolCalls = accumulatedToolCalls;
+        run.tokenUsage = result.tokenUsage;
+        run.status = "completed";
+        run.summary = result.summary;
+        run.retryAttempts = attempt > 0 ? attempt : undefined;
+
+        await toolRexUpdateStatus(store, taskId, { status: "completed" });
+        await toolRexAppendLog(store, taskId, {
+          event: "task_completed",
+          detail: run.summary,
+        });
+        break;
+      }
+
+      // Error path — check if transient
+      lastError = result.error;
+
+      if (!isTransientError(result.error)) {
+        // Non-transient error: fail immediately
+        run.turns = accumulatedTurns;
+        run.toolCalls = accumulatedToolCalls;
+        run.tokenUsage = result.tokenUsage;
+        run.status = "failed";
+        run.summary = result.summary;
+        run.error = result.error;
+        run.retryAttempts = attempt > 0 ? attempt : undefined;
+
+        await toolRexUpdateStatus(store, taskId, { status: "deferred" });
+        await toolRexAppendLog(store, taskId, {
+          event: "task_failed",
+          detail: run.error,
+        });
+        break;
+      }
+
+      // Transient error
+      await toolRexAppendLog(store, taskId, {
+        event: "transient_error",
+        detail: `Attempt ${attempt + 1}: ${result.error}`,
+      });
+
+      if (attempt < retryConfig.maxRetries) {
+        const delay = computeDelay(attempt, retryConfig.baseDelayMs, retryConfig.maxDelayMs);
+        info(`Transient error on attempt ${attempt + 1}, retrying in ${delay}ms...`);
+        await sleep(delay);
+      } else {
+        // Retries exhausted
+        run.turns = accumulatedTurns;
+        run.toolCalls = accumulatedToolCalls;
+        run.tokenUsage = result.tokenUsage;
+        run.status = "error_transient";
+        run.summary = result.summary;
+        run.error = result.error;
+        run.retryAttempts = attempt;
+
+        // Revert to pending so it gets auto-picked next run
+        await toolRexUpdateStatus(store, taskId, { status: "pending" });
+        await toolRexAppendLog(store, taskId, {
+          event: "task_transient_exhausted",
+          detail: `All ${retryConfig.maxRetries + 1} attempts failed with transient errors. Last: ${result.error}`,
+        });
+      }
     }
-
-    section(`Agent Run${opts.model ? ` (${opts.model})` : ""}`);
-    stream("CLI", `Spawning claude${opts.model ? ` (model: ${opts.model})` : ""}...`);
-
-    const result = await spawnClaude(args, projectDir);
-
-    run.turns = result.turns;
-    run.toolCalls = result.toolCalls;
-    run.tokenUsage = result.tokenUsage;
-    run.status = result.error ? "failed" : "completed";
-    run.summary = result.summary;
-    run.error = result.error;
-
-    // Update rex status based on outcome
-    const newStatus = run.status === "completed" ? "completed" : "deferred";
-    await toolRexUpdateStatus(store, taskId, { status: newStatus });
-    await toolRexAppendLog(store, taskId, {
-      event: run.status === "completed" ? "task_completed" : "task_failed",
-      detail: run.summary || run.error,
-    });
   } catch (err) {
     run.status = "failed";
     run.error = (err as Error).message;
+    run.turns = accumulatedTurns;
+    run.toolCalls = accumulatedToolCalls;
     console.error(`[Error] ${run.error}`);
 
     await toolRexAppendLog(store, taskId, {

@@ -37,6 +37,42 @@ describe("validateConfig", () => {
     const result = validateConfig(config);
     expect(result.ok).toBe(true);
   });
+
+  it("accepts config with retry section", () => {
+    const config = DEFAULT_HENCH_CONFIG();
+    config.retry = { maxRetries: 5, baseDelayMs: 1000, maxDelayMs: 60000 };
+    const result = validateConfig(config);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.retry).toEqual({
+        maxRetries: 5,
+        baseDelayMs: 1000,
+        maxDelayMs: 60000,
+      });
+    }
+  });
+
+  it("provides retry defaults when retry section is missing", () => {
+    const { retry, ...configWithoutRetry } = DEFAULT_HENCH_CONFIG();
+    const result = validateConfig(configWithoutRetry);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.retry).toEqual({
+        maxRetries: 3,
+        baseDelayMs: 2000,
+        maxDelayMs: 30000,
+      });
+    }
+  });
+
+  it("rejects config with invalid retry values", () => {
+    const config = {
+      ...DEFAULT_HENCH_CONFIG(),
+      retry: { maxRetries: -1, baseDelayMs: 0, maxDelayMs: -100 },
+    };
+    const result = validateConfig(config);
+    expect(result.ok).toBe(false);
+  });
 });
 
 describe("validateRunRecord", () => {
@@ -94,5 +130,28 @@ describe("validateRunRecord", () => {
   it("rejects run with missing required fields", () => {
     const result = validateRunRecord({ id: "test" });
     expect(result.ok).toBe(false);
+  });
+
+  it("accepts error_transient status", () => {
+    const run = { ...validRun, status: "error_transient" };
+    const result = validateRunRecord(run);
+    expect(result.ok).toBe(true);
+  });
+
+  it("accepts retryAttempts field", () => {
+    const run = { ...validRun, retryAttempts: 2 };
+    const result = validateRunRecord(run);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.retryAttempts).toBe(2);
+    }
+  });
+
+  it("accepts run without retryAttempts (backward compat)", () => {
+    const result = validateRunRecord(validRun);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.retryAttempts).toBeUndefined();
+    }
   });
 });
