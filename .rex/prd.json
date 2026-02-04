@@ -1233,15 +1233,17 @@
         {
           "id": "a98b3029-d627-49b6-8578-aa060aa33252",
           "title": "Claude API token tracking",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Track and display token consumption from Claude API calls across all packages",
           "source": "smart-add",
+          "startedAt": "2026-02-04T22:12:08.026Z",
+          "completedAt": "2026-02-04T22:12:08.026Z",
           "children": [
             {
               "id": "bb3a012d-48d9-49b5-b76a-cc77da2ca1b8",
               "title": "Add token tracking to sourcevision analyze command",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Track tokens used when sourcevision calls Claude for analysis",
               "acceptanceCriteria": [
@@ -1255,12 +1257,14 @@
                 "tokens",
                 "analytics"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-04T22:00:14.140Z",
+              "completedAt": "2026-02-04T22:12:08.015Z"
             },
             {
               "id": "2f9ec405-a237-4106-8c32-736d3b48f034",
               "title": "Add token tracking to rex analyze command",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Track tokens used when rex calls Claude for PRD generation",
               "acceptanceCriteria": [
@@ -1274,7 +1278,9 @@
                 "tokens",
                 "analytics"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-04T21:43:47.631Z",
+              "completedAt": "2026-02-04T21:59:34.077Z"
             },
             {
               "id": "5b633358-ed65-403f-9bea-f32cd4cf49d0",
@@ -1310,7 +1316,7 @@
             {
               "id": "c0954b48-a8e1-44b3-a379-65314f51dcfa",
               "title": "Add token usage to n-dx status command",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Show aggregate token usage across all packages in status output",
               "acceptanceCriteria": [
@@ -1324,7 +1330,8 @@
                 "tokens",
                 "reporting"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-04T22:12:42.341Z"
             },
             {
               "id": "f656069c-ab55-4e6b-a314-b3aba21bbdb9",
