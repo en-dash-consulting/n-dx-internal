@@ -4,10 +4,13 @@ import { extname, join } from "node:path";
 import { z } from "zod";
 import type { PRDItem } from "../schema/index.js";
 import type { ScanResult } from "./scanners.js";
-import type { Proposal } from "./propose.js";
+import type { Proposal, ProposalTask } from "./propose.js";
 import { walkTree } from "../core/tree.js";
 
 export const DEFAULT_MODEL = "claude-sonnet-4-20250514";
+
+/** Maximum number of LLM retry attempts for transient/parse failures. */
+export const MAX_RETRIES = 2;
 
 // ── Zod schemas for LLM response validation ──
 
@@ -88,18 +91,177 @@ export async function readProjectContext(dir: string): Promise<string> {
   return sections.join("\n\n");
 }
 
-export function parseProposalResponse(raw: string): Proposal[] {
-  // Strip markdown code fences if present
+/**
+ * Extract JSON text from an LLM response, handling markdown fences,
+ * leading prose, and trailing text after the JSON array.
+ */
+export function extractJson(raw: string): string {
   let text = raw.trim();
+
+  // Try markdown code fences first
   const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
   if (fenceMatch) {
-    text = fenceMatch[1].trim();
+    return fenceMatch[1].trim();
   }
 
-  const parsed = JSON.parse(text);
-  const validated = ProposalArraySchema.parse(parsed);
+  // If it already looks like a JSON object (not an array), return as-is —
+  // the caller (parseProposalResponse) will handle schema validation.
+  if (text.startsWith("{")) {
+    return text;
+  }
 
-  // Normalize into full Proposal shape with source fields
+  // Find the start of a top-level JSON array. When text already starts with
+  // `[`, the search begins at index 0. Otherwise, look for `[` at the
+  // beginning of a line (to avoid matching arrays embedded in object values).
+  let arrayStart = -1;
+  if (text.startsWith("[")) {
+    arrayStart = 0;
+  } else {
+    const match = text.match(/(?:^|\n)\s*(\[)/);
+    if (match) {
+      arrayStart = text.indexOf(match[1], match.index!);
+    }
+  }
+
+  if (arrayStart >= 0) {
+    text = text.slice(arrayStart);
+
+    // Find the matching closing bracket, accounting for nesting and strings
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (escaped) { escaped = false; continue; }
+      if (ch === "\\") { escaped = true; continue; }
+      if (ch === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === "[") depth++;
+      else if (ch === "]") {
+        depth--;
+        if (depth === 0) {
+          return text.slice(0, i + 1);
+        }
+      }
+    }
+  }
+
+  return text;
+}
+
+/**
+ * Attempt to repair truncated JSON by closing any open structures.
+ * Returns repaired JSON string or null if not repairable.
+ */
+export function repairTruncatedJson(text: string): string | null {
+  // Only attempt repair on text that starts as a JSON array
+  const trimmed = text.trim();
+  if (!trimmed.startsWith("[")) return null;
+
+  // Try parsing as-is first
+  try {
+    JSON.parse(trimmed);
+    return trimmed;
+  } catch {
+    // Continue with repair
+  }
+
+  // Track open brackets, braces, and string state
+  let inString = false;
+  let escaped = false;
+  const stack: string[] = [];
+
+  for (const ch of trimmed) {
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+
+    if (ch === "[" || ch === "{") {
+      stack.push(ch);
+    } else if (ch === "]" || ch === "}") {
+      stack.pop();
+    }
+  }
+
+  if (stack.length === 0) return null;
+
+  // Close any unclosed string
+  let repaired = trimmed;
+  if (inString) repaired += '"';
+
+  // Close structures in reverse order
+  while (stack.length > 0) {
+    const open = stack.pop()!;
+    repaired += open === "[" ? "]" : "}";
+  }
+
+  // Validate the repaired JSON actually parses
+  try {
+    JSON.parse(repaired);
+    return repaired;
+  } catch {
+    return null;
+  }
+}
+
+export function parseProposalResponse(raw: string): Proposal[] {
+  const text = extractJson(raw);
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    // Attempt to repair truncated JSON from cut-off responses
+    const repaired = repairTruncatedJson(text);
+    if (repaired) {
+      parsed = JSON.parse(repaired);
+    } else {
+      throw new Error(`Invalid JSON in LLM response: ${text.slice(0, 200)}`);
+    }
+  }
+
+  // Try strict validation first
+  const strict = ProposalArraySchema.safeParse(parsed);
+  if (strict.success) {
+    return normalizeProposals(strict.data);
+  }
+
+  // Lenient fallback: parse valid items individually, skip broken ones
+  if (Array.isArray(parsed) && parsed.length > 0) {
+    const valid: z.infer<typeof ProposalSchema>[] = [];
+    for (const item of parsed) {
+      const result = ProposalSchema.safeParse(item);
+      if (result.success) {
+        valid.push(result.data);
+      }
+    }
+    if (valid.length > 0) {
+      return normalizeProposals(valid);
+    }
+  }
+
+  // Nothing salvageable — throw with original error detail
+  throw new Error(
+    `LLM response failed schema validation: ${strict.error.issues.map((i) => i.message).join("; ")}`,
+  );
+}
+
+/**
+ * Convert Zod-validated proposals into the full Proposal shape with source fields.
+ */
+function normalizeProposals(
+  validated: z.infer<typeof ProposalArraySchema>,
+): Proposal[] {
   return validated.map((p) => ({
     epic: { title: p.epic.title, source: "llm" },
     features: p.features.map((f) => ({
@@ -119,7 +281,81 @@ export function parseProposalResponse(raw: string): Proposal[] {
   }));
 }
 
-function spawnClaude(prompt: string, model: string): Promise<string> {
+// ── Quality validation ──
+
+export interface QualityIssue {
+  level: "warning" | "error";
+  path: string;
+  message: string;
+}
+
+/**
+ * Validate semantic quality of LLM-generated proposals.
+ * Returns issues found. Empty array means all quality checks passed.
+ */
+export function validateProposalQuality(proposals: Proposal[]): QualityIssue[] {
+  const issues: QualityIssue[] = [];
+
+  for (const p of proposals) {
+    const epicPath = `epic:"${p.epic.title}"`;
+
+    // Epic title quality
+    if (p.epic.title.length < 3) {
+      issues.push({
+        level: "warning",
+        path: epicPath,
+        message: "Epic title is too short to be descriptive",
+      });
+    }
+    if (p.features.length === 0) {
+      issues.push({
+        level: "warning",
+        path: epicPath,
+        message: "Epic has no features",
+      });
+    }
+
+    for (const f of p.features) {
+      const featurePath = `${epicPath} > feature:"${f.title}"`;
+
+      if (f.tasks.length === 0) {
+        issues.push({
+          level: "warning",
+          path: featurePath,
+          message: "Feature has no tasks",
+        });
+      }
+
+      for (const t of f.tasks) {
+        const taskPath = `${featurePath} > task:"${t.title}"`;
+
+        // Tasks should have descriptions or acceptance criteria
+        if (!t.description && (!t.acceptanceCriteria || t.acceptanceCriteria.length === 0)) {
+          issues.push({
+            level: "warning",
+            path: taskPath,
+            message: "Task lacks both description and acceptance criteria",
+          });
+        }
+
+        // Very short task titles suggest vague output
+        if (t.title.length < 5) {
+          issues.push({
+            level: "warning",
+            path: taskPath,
+            message: "Task title is too short to be actionable",
+          });
+        }
+      }
+    }
+  }
+
+  return issues;
+}
+
+// ── LLM interaction ──
+
+function spawnClaudeOnce(prompt: string, model: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const args = [
       "-p", prompt,
@@ -166,6 +402,36 @@ function spawnClaude(prompt: string, model: string): Promise<string> {
       }
     });
   });
+}
+
+/**
+ * Spawn claude CLI with automatic retry on transient failures.
+ * Retries up to MAX_RETRIES times with exponential backoff.
+ * Non-retryable errors (ENOENT for missing CLI) are thrown immediately.
+ */
+async function spawnClaude(prompt: string, model: string): Promise<string> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await spawnClaudeOnce(prompt, model);
+    } catch (err) {
+      lastError = err as Error;
+
+      // Don't retry if the CLI itself is missing
+      if (lastError.message.includes("claude CLI not found")) {
+        throw lastError;
+      }
+
+      // Don't retry on the last attempt
+      if (attempt < MAX_RETRIES) {
+        const delay = Math.min(1000 * 2 ** attempt, 10000);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+
+  throw lastError!;
 }
 
 // ── Format detection ──
@@ -354,6 +620,38 @@ const FORMAT_HINTS: Record<FileFormat, string> = {
     "The document is in YAML format. Extract meaningful requirements from the structured data fields.",
 };
 
+// ── Few-shot example for LLM prompts ──
+
+/**
+ * A compact example included in prompts to show the LLM the expected output
+ * shape, quality of titles, and level of detail for tasks.
+ */
+export const FEW_SHOT_EXAMPLE = `Example output (for reference — do NOT include this example in your response):
+[
+  {
+    "epic": { "title": "User Authentication" },
+    "features": [
+      {
+        "title": "OAuth2 Integration",
+        "description": "Support third-party OAuth2 providers for user login",
+        "tasks": [
+          {
+            "title": "Implement OAuth2 callback handler",
+            "description": "Handle the authorization code exchange and token storage after provider redirects back to our app",
+            "acceptanceCriteria": [
+              "Handles Google OAuth2 flow end-to-end",
+              "Stores refresh token securely",
+              "Returns meaningful error on provider rejection"
+            ],
+            "priority": "high",
+            "tags": ["auth", "backend"]
+          }
+        ]
+      }
+    ]
+  }
+]`;
+
 // ── Scan result summarization + chunking ──
 
 /**
@@ -444,11 +742,18 @@ Each element must be an object with:
 - "epic": { "title": string }
 - "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
 
-Group related items into epics and features logically. Derive tasks from actionable items in the document.
+${FEW_SHOT_EXAMPLE}
+
+Guidelines:
+- Group related items into epics and features logically
+- Derive tasks from actionable items in the document
+- Every task MUST have either a description or acceptanceCriteria (preferably both)
+- Task titles must be specific and actionable (verb-first, e.g. "Implement X", "Add Y")
+- Each task should represent a single unit of work completable in one session
+- Assign priority based on: blocking dependencies → user-facing impact → technical debt
+- Do NOT include items that duplicate anything already in the existing PRD
 
 ${FORMAT_HINTS[format]}
-
-IMPORTANT: Do NOT include items that duplicate anything already in the existing PRD below.
 
 Existing PRD:
 ${existingSummary}
@@ -571,10 +876,17 @@ export async function reasonFromScanResults(
   for (let i = 0; i < chunks.length; i++) {
     const scanSummary = summarizeScanResults(chunks[i]);
 
-    const chunkNote =
-      chunks.length > 1
-        ? `\nNote: This is chunk ${i + 1} of ${chunks.length}. Focus only on the scan results shown here.\n`
-        : "";
+    // Multi-chunk context: include epic titles from previous chunks so the
+    // LLM can reuse existing groupings instead of creating duplicates
+    let chunkNote = "";
+    if (chunks.length > 1) {
+      chunkNote = `\nNote: This is chunk ${i + 1} of ${chunks.length}. Focus only on the scan results shown here.`;
+      if (i > 0 && allProposals.length > 0) {
+        const priorEpics = [...new Set(allProposals.map((p) => p.epic.title))];
+        chunkNote += `\nEpics created from previous chunks (reuse these names where items belong to the same area):\n${priorEpics.map((e) => `  - ${e}`).join("\n")}`;
+      }
+      chunkNote += "\n";
+    }
 
     const prompt = `You are a product requirements analyst. Given the following raw scan results from automated code analysis, organize them into a clean, well-structured PRD as a JSON array.
 
@@ -582,12 +894,17 @@ Each element must be an object with:
 - "epic": { "title": string }
 - "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
 
+${FEW_SHOT_EXAMPLE}
+
 Guidelines:
 - Near-duplicate items have already been merged. Focus on semantic grouping and structure.
 - If any remaining items are clearly about the same thing, merge them into a single item.
 - Create meaningful epic groupings (not just "Tests" or "Documentation")
-- Rewrite vague titles to be clear and actionable
+- Rewrite vague titles to be clear and actionable (verb-first, e.g. "Implement X", "Add Y")
+- Every task MUST have either a description or acceptanceCriteria (preferably both)
+- Each task should represent a single unit of work completable in one session
 - Preserve priority levels from the scan results
+- Assign priority based on: blocking dependencies → user-facing impact → technical debt
 - Do NOT include items that duplicate anything in the existing PRD
 - Use the project context below to understand the project's purpose, architecture, and terminology; align epic/feature names with the project's domain
 ${chunkNote}${contextBlock}
@@ -656,11 +973,15 @@ Each element must be an object with:
 - "epic": { "title": string }
 - "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
 
+${FEW_SHOT_EXAMPLE}
+
 Guidelines:
 - Break the description into a logical hierarchy of epics, features, and tasks
-- Create actionable, specific task titles
+- Task titles must be specific and actionable (verb-first, e.g. "Implement X", "Add Y")
+- Every task MUST have either a description or acceptanceCriteria (preferably both)
+- Each task should represent a single unit of work completable in one session
 - Add acceptance criteria where requirements are clear
-- Assign priority levels based on apparent importance
+- Assign priority based on: blocking dependencies → user-facing impact → technical debt
 - Group related work into features under appropriate epics
 - Do NOT include items that duplicate anything already in the existing PRD below
 - Use the project context to understand terminology and architecture

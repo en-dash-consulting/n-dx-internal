@@ -11,16 +11,21 @@ export { similarity, deduplicateScanResults } from "./dedupe.js";
 
 export { formatDiff } from "./diff.js";
 
-export type { FileFormat, AddPromptOptions } from "./reason.js";
+export type { FileFormat, AddPromptOptions, QualityIssue } from "./reason.js";
 export {
   DEFAULT_MODEL,
+  MAX_RETRIES,
   CHUNK_CHAR_LIMIT,
+  FEW_SHOT_EXAMPLE,
   reasonFromFile,
   reasonFromFiles,
   reasonFromScanResults,
   reasonFromDescription,
   readProjectContext,
   parseProposalResponse,
+  extractJson,
+  repairTruncatedJson,
+  validateProposalQuality,
   buildAddPrompt,
   detectFileFormat,
   parseStructuredFile,

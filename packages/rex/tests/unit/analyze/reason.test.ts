@@ -4,7 +4,12 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
   DEFAULT_MODEL,
+  MAX_RETRIES,
+  FEW_SHOT_EXAMPLE,
   parseProposalResponse,
+  extractJson,
+  repairTruncatedJson,
+  validateProposalQuality,
   detectFileFormat,
   parseStructuredFile,
   mergeProposals,
@@ -959,5 +964,362 @@ describe("chunkScanResults", () => {
     expect(chunks.length).toBe(2);
     expect(chunks[0]).toEqual([hugeResult]);
     expect(chunks[1]).toEqual([smallResult]);
+  });
+});
+
+// ── New LLM refinement tests ──
+
+describe("extractJson", () => {
+  it("extracts JSON from markdown code fences", () => {
+    const raw = '```json\n[{"epic":{"title":"A"},"features":[]}]\n```';
+    expect(extractJson(raw)).toBe('[{"epic":{"title":"A"},"features":[]}]');
+  });
+
+  it("extracts JSON from plain code fences", () => {
+    const raw = '```\n[{"epic":{"title":"B"},"features":[]}]\n```';
+    expect(extractJson(raw)).toBe('[{"epic":{"title":"B"},"features":[]}]');
+  });
+
+  it("strips leading prose before JSON array", () => {
+    const raw = 'Here is the result:\n[{"epic":{"title":"C"},"features":[]}]';
+    expect(extractJson(raw)).toBe('[{"epic":{"title":"C"},"features":[]}]');
+  });
+
+  it("strips trailing prose after JSON array", () => {
+    const raw = '[{"epic":{"title":"D"},"features":[]}]\n\nLet me know if you need changes.';
+    expect(extractJson(raw)).toBe('[{"epic":{"title":"D"},"features":[]}]');
+  });
+
+  it("handles nested arrays correctly", () => {
+    const json = '[{"epic":{"title":"E"},"features":[{"title":"F","tasks":[{"title":"T"}]}]}]';
+    const raw = `Some preamble\n${json}\nSome epilogue`;
+    expect(extractJson(raw)).toBe(json);
+  });
+
+  it("returns original text when no JSON array found", () => {
+    const raw = "no json here";
+    expect(extractJson(raw)).toBe("no json here");
+  });
+
+  it("prefers code fences over bare JSON", () => {
+    const raw = 'Preamble [bad]\n```json\n[{"epic":{"title":"X"},"features":[]}]\n```\nTrailing';
+    expect(extractJson(raw)).toBe('[{"epic":{"title":"X"},"features":[]}]');
+  });
+});
+
+describe("repairTruncatedJson", () => {
+  it("returns valid JSON as-is", () => {
+    const valid = '[{"epic":{"title":"A"},"features":[]}]';
+    expect(repairTruncatedJson(valid)).toBe(valid);
+  });
+
+  it("closes unclosed braces and brackets", () => {
+    const truncated = '[{"epic":{"title":"A"},"features":[{"title":"F","tasks":[';
+    const repaired = repairTruncatedJson(truncated);
+    expect(repaired).not.toBeNull();
+    expect(() => JSON.parse(repaired!)).not.toThrow();
+
+    const parsed = JSON.parse(repaired!);
+    expect(parsed[0].epic.title).toBe("A");
+  });
+
+  it("closes unclosed strings", () => {
+    const truncated = '[{"epic":{"title":"Hello';
+    const repaired = repairTruncatedJson(truncated);
+    expect(repaired).not.toBeNull();
+    expect(() => JSON.parse(repaired!)).not.toThrow();
+  });
+
+  it("returns null for non-array input", () => {
+    expect(repairTruncatedJson('{"key": "value"')).toBeNull();
+  });
+
+  it("returns null for completely mangled input", () => {
+    expect(repairTruncatedJson("not json at all")).toBeNull();
+  });
+
+  it("handles escaped characters inside strings", () => {
+    const truncated = '[{"epic":{"title":"Say \\"hello\\""},"features":[';
+    const repaired = repairTruncatedJson(truncated);
+    expect(repaired).not.toBeNull();
+    expect(() => JSON.parse(repaired!)).not.toThrow();
+  });
+});
+
+describe("parseProposalResponse — enhanced", () => {
+  it("recovers from truncated JSON", () => {
+    // Simulate a cut-off LLM response
+    const truncated = '[{"epic":{"title":"Auth"},"features":[{"title":"Login","tasks":[{"title":"Validate email"}';
+    const proposals = parseProposalResponse(truncated);
+
+    expect(proposals.length).toBeGreaterThanOrEqual(1);
+    expect(proposals[0].epic.title).toBe("Auth");
+  });
+
+  it("strips leading prose from LLM response", () => {
+    const raw = 'Here is the structured PRD:\n[{"epic":{"title":"API"},"features":[{"title":"Endpoints","tasks":[]}]}]';
+    const proposals = parseProposalResponse(raw);
+
+    expect(proposals).toHaveLength(1);
+    expect(proposals[0].epic.title).toBe("API");
+  });
+
+  it("falls back to lenient parsing when some items are invalid", () => {
+    const raw = JSON.stringify([
+      {
+        epic: { title: "Good" },
+        features: [{ title: "F1", tasks: [{ title: "T1" }] }],
+      },
+      {
+        // Missing epic.title - invalid
+        epic: {},
+        features: [],
+      },
+    ]);
+
+    const proposals = parseProposalResponse(raw);
+
+    // Should recover the valid item
+    expect(proposals).toHaveLength(1);
+    expect(proposals[0].epic.title).toBe("Good");
+  });
+
+  it("throws descriptive error when nothing is salvageable", () => {
+    const raw = JSON.stringify([{ bad: "data" }, { also: "bad" }]);
+
+    expect(() => parseProposalResponse(raw)).toThrow(/schema validation/);
+  });
+
+  it("provides useful error message for non-JSON", () => {
+    expect(() => parseProposalResponse("I cannot generate that")).toThrow(/Invalid JSON/);
+  });
+});
+
+describe("validateProposalQuality", () => {
+  it("returns no issues for well-formed proposals", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "User Authentication", source: "llm" },
+        features: [
+          {
+            title: "Login Flow",
+            source: "llm",
+            tasks: [
+              {
+                title: "Implement email validation",
+                source: "llm",
+                sourceFile: "",
+                description: "Validate user email format before submission",
+                acceptanceCriteria: ["Rejects invalid emails", "Allows valid emails"],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const issues = validateProposalQuality(proposals);
+    expect(issues).toEqual([]);
+  });
+
+  it("warns about tasks missing description and criteria", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "API Layer", source: "llm" },
+        features: [
+          {
+            title: "REST Endpoints",
+            source: "llm",
+            tasks: [
+              {
+                title: "Add GET /users endpoint",
+                source: "llm",
+                sourceFile: "",
+                // No description or acceptanceCriteria
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const issues = validateProposalQuality(proposals);
+    expect(issues.some((i) => i.message.includes("lacks both description and acceptance criteria"))).toBe(true);
+  });
+
+  it("warns about short epic titles", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "UI", source: "llm" },
+        features: [{ title: "Forms", source: "llm", tasks: [] }],
+      },
+    ];
+
+    const issues = validateProposalQuality(proposals);
+    expect(issues.some((i) => i.message.includes("too short"))).toBe(true);
+  });
+
+  it("warns about features with no tasks", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "Backend Services", source: "llm" },
+        features: [
+          { title: "Database Layer", source: "llm", tasks: [] },
+        ],
+      },
+    ];
+
+    const issues = validateProposalQuality(proposals);
+    expect(issues.some((i) => i.message.includes("no tasks"))).toBe(true);
+  });
+
+  it("warns about epics with no features", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "Empty Epic", source: "llm" },
+        features: [],
+      },
+    ];
+
+    const issues = validateProposalQuality(proposals);
+    expect(issues.some((i) => i.message.includes("no features"))).toBe(true);
+  });
+
+  it("warns about very short task titles", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "Testing Infrastructure", source: "llm" },
+        features: [
+          {
+            title: "Unit Tests",
+            source: "llm",
+            tasks: [
+              {
+                title: "Fix",
+                source: "llm",
+                sourceFile: "",
+                description: "Fix something",
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const issues = validateProposalQuality(proposals);
+    expect(issues.some((i) => i.message.includes("too short to be actionable"))).toBe(true);
+  });
+
+  it("reports all issues across multiple proposals", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "A", source: "llm" },  // Short title
+        features: [],                           // No features
+      },
+      {
+        epic: { title: "Backend Services", source: "llm" },
+        features: [
+          {
+            title: "API",
+            source: "llm",
+            tasks: [
+              { title: "Do", source: "llm", sourceFile: "" },  // Short title, no desc
+            ],
+          },
+        ],
+      },
+    ];
+
+    const issues = validateProposalQuality(proposals);
+
+    // Should find issues in both proposals
+    expect(issues.length).toBeGreaterThanOrEqual(3);
+    expect(issues.some((i) => i.path.includes('epic:"A"'))).toBe(true);
+    expect(issues.some((i) => i.path.includes('task:"Do"'))).toBe(true);
+  });
+
+  it("accepts tasks with only description (no criteria)", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "Infrastructure", source: "llm" },
+        features: [
+          {
+            title: "CI/CD Pipeline",
+            source: "llm",
+            tasks: [
+              {
+                title: "Configure GitHub Actions workflow",
+                source: "llm",
+                sourceFile: "",
+                description: "Set up CI/CD with build, test, and deploy stages",
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const issues = validateProposalQuality(proposals);
+    expect(issues).toEqual([]);
+  });
+
+  it("accepts tasks with only criteria (no description)", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "Infrastructure", source: "llm" },
+        features: [
+          {
+            title: "Monitoring",
+            source: "llm",
+            tasks: [
+              {
+                title: "Add health check endpoint",
+                source: "llm",
+                sourceFile: "",
+                acceptanceCriteria: ["Returns 200 on /health", "Includes uptime in response"],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const issues = validateProposalQuality(proposals);
+    expect(issues).toEqual([]);
+  });
+});
+
+describe("FEW_SHOT_EXAMPLE", () => {
+  it("is valid JSON within the example text", () => {
+    // Extract the JSON part from the example
+    const jsonStart = FEW_SHOT_EXAMPLE.indexOf("[");
+    const jsonEnd = FEW_SHOT_EXAMPLE.lastIndexOf("]") + 1;
+    const json = FEW_SHOT_EXAMPLE.slice(jsonStart, jsonEnd);
+
+    expect(() => JSON.parse(json)).not.toThrow();
+
+    const parsed = JSON.parse(json);
+    expect(Array.isArray(parsed)).toBe(true);
+    expect(parsed[0].epic.title).toBe("User Authentication");
+  });
+
+  it("demonstrates the expected structure with all optional fields", () => {
+    const jsonStart = FEW_SHOT_EXAMPLE.indexOf("[");
+    const jsonEnd = FEW_SHOT_EXAMPLE.lastIndexOf("]") + 1;
+    const parsed = JSON.parse(FEW_SHOT_EXAMPLE.slice(jsonStart, jsonEnd));
+
+    const task = parsed[0].features[0].tasks[0];
+    expect(task.description).toBeDefined();
+    expect(task.acceptanceCriteria).toBeDefined();
+    expect(task.priority).toBeDefined();
+    expect(task.tags).toBeDefined();
+  });
+});
+
+describe("MAX_RETRIES", () => {
+  it("is exported and is a positive integer", () => {
+    expect(typeof MAX_RETRIES).toBe("number");
+    expect(MAX_RETRIES).toBeGreaterThanOrEqual(1);
+    expect(Number.isInteger(MAX_RETRIES)).toBe(true);
   });
 });

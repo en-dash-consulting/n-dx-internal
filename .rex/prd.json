@@ -580,7 +580,7 @@
         {
           "id": "d23b926d-00b5-4b9e-b99c-6adb30fd69c1",
           "title": "LLM refinement",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Improve the LLM reasoning layer for better analysis quality",
           "source": "llm",
@@ -630,7 +630,7 @@
             {
               "id": "46f6c6a0-f5c0-4e3c-bfe2-74b25ce959ec",
               "title": "Handle large result sets with chunking",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Batch large scan results into multiple LLM calls",
               "acceptanceCriteria": [
@@ -640,6 +640,30 @@
               ],
               "priority": "low",
               "source": "llm"
+            },
+            {
+              "id": "337fd5f7-c548-4ab7-ada2-01450a79706d",
+              "title": "Robust LLM response parsing with retry and recovery",
+              "status": "completed",
+              "level": "task"
+            },
+            {
+              "id": "8bb3e9b8-9c93-41bc-b60f-1c7ad7014d6d",
+              "title": "Add few-shot examples to LLM prompts",
+              "status": "completed",
+              "level": "task"
+            },
+            {
+              "id": "bc3747a6-1c71-4aae-bbfa-5edb8c9d2a83",
+              "title": "Add semantic quality validation for LLM output",
+              "status": "completed",
+              "level": "task"
+            },
+            {
+              "id": "9ef3a745-ed2b-41f0-ae12-4604b07c7658",
+              "title": "Improve multi-chunk context carryover",
+              "status": "completed",
+              "level": "task"
             }
           ]
         },

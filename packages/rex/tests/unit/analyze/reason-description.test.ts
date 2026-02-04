@@ -81,6 +81,21 @@ describe("buildAddPrompt", () => {
     expect(prompt).toContain('"tasks"');
   });
 
+  it("includes few-shot example in prompt", async () => {
+    const prompt = await buildAddPrompt("Add feature X", [], tmpDir);
+
+    expect(prompt).toContain("Example output");
+    expect(prompt).toContain("User Authentication");
+    expect(prompt).toContain("acceptanceCriteria");
+  });
+
+  it("includes quality guidance about task descriptions", async () => {
+    const prompt = await buildAddPrompt("Add feature X", [], tmpDir);
+
+    expect(prompt).toMatch(/description|acceptanceCriteria/);
+    expect(prompt).toMatch(/actionable/);
+  });
+
   it("instructs LLM to avoid duplicates", async () => {
     const prompt = await buildAddPrompt("Add feature X", [], tmpDir);
 
