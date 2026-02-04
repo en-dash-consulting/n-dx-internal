@@ -739,7 +739,7 @@
     {
       "id": "9679e55e-a3c0-43e3-b240-1e749613e9cc",
       "title": "External sync and Notion integration",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "llm",
       "children": [
