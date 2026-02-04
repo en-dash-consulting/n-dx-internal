@@ -8,6 +8,7 @@ import type { ToolContext } from "./tools.js";
 import { assembleTaskBrief, formatTaskBrief } from "./brief.js";
 import { buildSystemPrompt } from "./prompt.js";
 import { saveRun } from "../store/index.js";
+import { section, subsection, stream, detail, info } from "../cli/output.js";
 
 export interface AgentLoopOptions {
   config: HenchConfig;
@@ -46,7 +47,7 @@ async function callWithRetry(
 
       if (status && RETRY_STATUS_CODES.has(status) && attempt < MAX_RETRIES) {
         const delay = BASE_DELAY_MS * Math.pow(2, attempt);
-        console.log(`  [Retry] API returned ${status}, retrying in ${delay}ms...`);
+        stream("Retry", `API returned ${status}, retrying in ${delay}ms...`);
         await new Promise((r) => setTimeout(r, delay));
         continue;
       }
@@ -67,7 +68,7 @@ function pruneMessages(messages: Anthropic.MessageParam[]): void {
 
   const removed = messages.length - maxKeep;
   messages.splice(1, removed);
-  console.log(`  [Context] Pruned ${removed} messages to stay within token budget`);
+  detail(`Pruned ${removed} messages to stay within token budget`);
 }
 
 export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult> {
@@ -80,13 +81,13 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
   const briefText = formatTaskBrief(brief);
 
   if (dryRun) {
-    console.log("=== DRY RUN ===");
-    console.log("\n--- System Prompt ---");
-    console.log(buildSystemPrompt(brief.project, config));
-    console.log("\n--- Task Brief ---");
-    console.log(briefText);
-    console.log("\n--- Tools ---");
-    console.log(TOOL_DEFINITIONS.map((t) => t.name).join(", "));
+    section("Dry Run");
+    subsection("System Prompt");
+    info(buildSystemPrompt(brief.project, config));
+    subsection("Task Brief");
+    info(briefText);
+    subsection("Tools");
+    info(TOOL_DEFINITIONS.map((t) => t.name).join(", "));
 
     const run: RunRecord = {
       id: randomUUID(),
@@ -143,11 +144,13 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     { role: "user", content: briefText },
   ];
 
+  section(`Agent Run (${model})`);
+
   try {
     for (let turn = 0; turn < maxTurns; turn++) {
       run.turns = turn + 1;
 
-      console.log(`\n--- Turn ${turn + 1}/${maxTurns} ---`);
+      subsection(`Turn ${turn + 1}/${maxTurns}`);
 
       pruneMessages(messages);
 
@@ -170,7 +173,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
       // Print text output
       for (const block of assistantContent) {
         if (block.type === "text" && block.text) {
-          console.log(`[Agent] ${block.text}`);
+          stream("Agent", block.text);
         }
       }
 
@@ -187,7 +190,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
       }
 
       if (response.stop_reason === "max_tokens") {
-        console.log("  [Warning] Response truncated (max_tokens). Continuing...");
+        stream("Warning", "Response truncated (max_tokens). Continuing...");
         // Send a continuation prompt so the agent can finish its thought
         messages.push({
           role: "user",
@@ -208,7 +211,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
         if (block.type !== "tool_use") continue;
 
         const startMs = Date.now();
-        console.log(`  [Tool] ${block.name}(${JSON.stringify(block.input).slice(0, 100)})`);
+        stream("Tool", `${block.name}(${JSON.stringify(block.input).slice(0, 100)})`);
 
         const output = await dispatchTool(
           toolCtx,
@@ -232,7 +235,8 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
           content: output,
         });
 
-        console.log(`  [Result] ${output.slice(0, 200)}${output.length > 200 ? "..." : ""}`);
+        stream("Result", `${output.slice(0, 200)}${output.length > 200 ? "..." : ""}`);
+        detail(`${durationMs}ms`);
       }
 
       messages.push({ role: "user", content: toolResults });

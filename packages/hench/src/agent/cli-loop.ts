@@ -6,6 +6,7 @@ import { assembleTaskBrief, formatTaskBrief } from "./brief.js";
 import { buildSystemPrompt } from "./prompt.js";
 import { saveRun } from "../store/index.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../tools/rex.js";
+import { section, subsection, stream, info } from "../cli/output.js";
 
 export interface CliLoopOptions {
   config: HenchConfig;
@@ -44,7 +45,7 @@ function processStreamLine(
     event = JSON.parse(line);
   } catch {
     // Not JSON — print raw output for visibility
-    console.log(line);
+    info(line);
     return;
   }
 
@@ -57,7 +58,7 @@ function processStreamLine(
       // Extract text from message — may be a string, object with content blocks, or absent
       const message = event.message;
       if (typeof message === "string") {
-        console.log(`[Agent] ${message}`);
+        stream("Agent", message);
         result.summary = message.slice(0, MAX_SUMMARY_LENGTH);
       } else if (message && typeof message === "object") {
         const msg = message as Record<string, unknown>;
@@ -65,7 +66,7 @@ function processStreamLine(
         if (Array.isArray(blocks)) {
           for (const block of blocks) {
             if (block.type === "text" && block.text) {
-              console.log(`[Agent] ${block.text}`);
+              stream("Agent", block.text);
               result.summary = block.text.slice(0, MAX_SUMMARY_LENGTH);
             }
           }
@@ -77,7 +78,7 @@ function processStreamLine(
       if (Array.isArray(content) && !event.message) {
         for (const block of content) {
           if (block.type === "text" && block.text) {
-            console.log(`[Agent] ${block.text}`);
+            stream("Agent", block.text);
             result.summary = block.text.slice(0, MAX_SUMMARY_LENGTH);
           }
         }
@@ -88,7 +89,7 @@ function processStreamLine(
     case "tool_use": {
       const toolName = (event.tool as string) || (event.name as string) || "unknown";
       const toolInput = (event.input as Record<string, unknown>) || {};
-      console.log(`  [Tool] ${toolName}(${JSON.stringify(toolInput).slice(0, 100)})`);
+      stream("Tool", `${toolName}(${JSON.stringify(toolInput).slice(0, 100)})`);
       result.toolCalls.push({
         turn: turnCounter.value,
         tool: toolName,
@@ -106,7 +107,7 @@ function processStreamLine(
         result.toolCalls[result.toolCalls.length - 1].output = output.slice(0, 2000);
       }
       const preview = output.slice(0, 200);
-      console.log(`  [Result] ${preview}${output.length > 200 ? "..." : ""}`);
+      stream("Result", `${preview}${output.length > 200 ? "..." : ""}`);
       break;
     }
 
@@ -204,13 +205,13 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   const systemPrompt = buildSystemPrompt(brief.project, config);
 
   if (dryRun) {
-    console.log("=== DRY RUN (CLI) ===");
-    console.log("\n--- System Prompt ---");
-    console.log(systemPrompt);
-    console.log("\n--- Task Brief ---");
-    console.log(briefText);
-    console.log("\n--- Provider ---");
-    console.log("cli (claude binary)");
+    section("Dry Run (CLI)");
+    subsection("System Prompt");
+    info(systemPrompt);
+    subsection("Task Brief");
+    info(briefText);
+    subsection("Provider");
+    info("cli (claude binary)");
 
     const run: RunRecord = {
       id: randomUUID(),
@@ -260,7 +261,8 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
       args.push("--model", opts.model);
     }
 
-    console.log(`[CLI] Spawning claude${opts.model ? ` (model: ${opts.model})` : ""}...`);
+    section(`Agent Run${opts.model ? ` (${opts.model})` : ""}`);
+    stream("CLI", `Spawning claude${opts.model ? ` (model: ${opts.model})` : ""}...`);
 
     const result = await spawnClaude(args, projectDir);
 

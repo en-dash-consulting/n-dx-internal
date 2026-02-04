@@ -76,7 +76,7 @@ describe("agentLoop", () => {
     expect(result.run.tokenUsage.output).toBe(0);
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("DRY RUN"),
+      expect.stringContaining("Dry Run"),
     );
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Test task"),
