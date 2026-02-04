@@ -513,7 +513,7 @@
         {
           "id": "6f927f1f-811b-4eb3-a269-0bae5edd8017",
           "title": "Scanner improvements",
-          "status": "pending",
+          "status": "in_progress",
           "level": "feature",
           "description": "Enhance individual scanners to produce better quality analysis results",
           "source": "llm",
@@ -563,7 +563,7 @@
             {
               "id": "0cf5900a-dbac-4146-b0ac-880f19523d52",
               "title": "Add scanPackageJson scanner",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Extract scripts, dependencies, and engine requirements as tasks",
               "acceptanceCriteria": [
@@ -574,6 +574,20 @@
               ],
               "priority": "low",
               "source": "llm"
+            },
+            {
+              "id": "05e9ee30-c4ab-43cb-8718-cccd4f648b6d",
+              "title": "Improve scanDocs: numbered lists, clean headings, skip code blocks",
+              "status": "completed",
+              "level": "task",
+              "priority": "medium"
+            },
+            {
+              "id": "321c5342-b0a3-4d59-91db-65e1d6f8fcb3",
+              "title": "Improve scanTests: handle skip/each variants and exclude comment braces",
+              "status": "pending",
+              "level": "task",
+              "priority": "medium"
             }
           ]
         },

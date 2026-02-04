@@ -327,22 +327,46 @@ function isGeneratedDoc(rel: string, extraIgnore: string[] = []): boolean {
   return false;
 }
 
+/** Strip inline markdown formatting from a heading string */
+function cleanHeading(raw: string): string {
+  let h = raw;
+  // Bold / italic: **text**, __text__, *text*, _text_
+  h = h.replace(/\*{1,2}([^*]+)\*{1,2}/g, "$1");
+  h = h.replace(/_{1,2}([^_]+)_{1,2}/g, "$1");
+  // Links: [text](url) → text
+  h = h.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
+  // Inline code: `text` → text
+  h = h.replace(/`([^`]+)`/g, "$1");
+  // Strikethrough: ~~text~~ → text
+  h = h.replace(/~~([^~]+)~~/g, "$1");
+  return h.trim();
+}
+
 function extractMarkdownHeadings(
   content: string,
 ): { heading: string; bullets: string[] }[] {
   const lines = content.split("\n");
   const sections: { heading: string; bullets: string[] }[] = [];
   let current: { heading: string; bullets: string[] } | null = null;
+  let inCodeBlock = false;
 
   for (const line of lines) {
+    // Track fenced code blocks (``` or ~~~)
+    if (/^\s*(`{3,}|~{3,})/.test(line)) {
+      inCodeBlock = !inCodeBlock;
+      continue;
+    }
+    if (inCodeBlock) continue;
+
     const headingMatch = line.match(/^#{1,3}\s+(.+)/);
     if (headingMatch) {
       if (current) sections.push(current);
-      current = { heading: headingMatch[1].trim(), bullets: [] };
+      current = { heading: cleanHeading(headingMatch[1]), bullets: [] };
       continue;
     }
     if (current) {
-      const bulletMatch = line.match(/^\s*[-*]\s+(.+)/);
+      // Match dash/star bullets and numbered lists
+      const bulletMatch = line.match(/^\s*(?:[-*]|\d+\.)\s+(.+)/);
       if (bulletMatch) {
         current.bullets.push(bulletMatch[1].trim());
       }

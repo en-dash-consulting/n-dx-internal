@@ -407,6 +407,95 @@ description: Route requests
     expect(results.every((r) => !r.sourceFile.includes("eslintrc"))).toBe(true);
     expect(results.some((r) => r.name === "Features")).toBe(true);
   });
+
+  it("extracts numbered list items as bullets", async () => {
+    await writeFile(
+      join(tempDir, "roadmap.md"),
+      `# Phase 1
+1. Build core API
+2. Add authentication
+3. Deploy to staging
+
+# Phase 2
+- Monitoring dashboard
+`,
+    );
+
+    const results = await scanDocs(tempDir);
+
+    const phase1 = results.find(
+      (r) => r.kind === "feature" && r.name === "Phase 1",
+    );
+    expect(phase1).toBeDefined();
+    expect(phase1!.acceptanceCriteria).toEqual([
+      "Build core API",
+      "Add authentication",
+      "Deploy to staging",
+    ]);
+
+    // Numbered items should also become tasks
+    const tasks = results.filter((r) => r.kind === "task");
+    expect(tasks.some((t) => t.name === "Build core API")).toBe(true);
+    expect(tasks.some((t) => t.name === "Add authentication")).toBe(true);
+    expect(tasks.some((t) => t.name === "Deploy to staging")).toBe(true);
+    // Dash bullets still work
+    expect(tasks.some((t) => t.name === "Monitoring dashboard")).toBe(true);
+  });
+
+  it("cleans markdown formatting from headings", async () => {
+    await writeFile(
+      join(tempDir, "spec.md"),
+      `# **Bold Heading**
+- item A
+
+## [Link Heading](https://example.com)
+- item B
+
+### \`Code Heading\`
+- item C
+`,
+    );
+
+    const results = await scanDocs(tempDir);
+
+    const features = results.filter((r) => r.kind === "feature");
+    expect(features.some((f) => f.name === "Bold Heading")).toBe(true);
+    expect(features.some((f) => f.name === "Link Heading")).toBe(true);
+    expect(features.some((f) => f.name === "Code Heading")).toBe(true);
+
+    // Should NOT contain markdown syntax
+    expect(features.every((f) => !f.name.includes("**"))).toBe(true);
+    expect(features.every((f) => !f.name.includes("["))).toBe(true);
+    expect(features.every((f) => !f.name.includes("`"))).toBe(true);
+  });
+
+  it("ignores bullets inside fenced code blocks", async () => {
+    await writeFile(
+      join(tempDir, "guide.md"),
+      `# Installation
+- Run the installer
+
+\`\`\`bash
+# This is a comment
+- not a real bullet
+* also not a bullet
+\`\`\`
+
+# Usage
+- Import the module
+`,
+    );
+
+    const results = await scanDocs(tempDir);
+
+    const tasks = results.filter((r) => r.kind === "task");
+    expect(tasks.some((t) => t.name === "Run the installer")).toBe(true);
+    expect(tasks.some((t) => t.name === "Import the module")).toBe(true);
+    // Code block content should NOT produce tasks
+    expect(tasks.some((t) => t.name === "not a real bullet")).toBe(false);
+    expect(tasks.some((t) => t.name === "also not a bullet")).toBe(false);
+    expect(tasks.length).toBe(2);
+  });
 });
 
 describe("scanSourceVision", () => {
