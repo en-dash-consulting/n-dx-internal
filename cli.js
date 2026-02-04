@@ -7,6 +7,17 @@ import { runConfig } from "./config.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 
+// Catch unhandled errors at the top level — never show stack traces
+process.on("uncaughtException", (err) => {
+  console.error(`Error: ${err.message}`);
+  process.exit(1);
+});
+process.on("unhandledRejection", (err) => {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(`Error: ${message}`);
+  process.exit(1);
+});
+
 const tools = {
   rex: "packages/rex/dist/cli/index.js",
   hench: "packages/hench/dist/cli/index.js",
@@ -80,7 +91,12 @@ if (command === "status") {
 }
 
 if (command === "config") {
-  await runConfig(rest);
+  try {
+    await runConfig(rest);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
   process.exit(0);
 }
 

@@ -2,6 +2,7 @@
 
 import { resolve } from "node:path";
 import { usage } from "./commands/constants.js";
+import { handleCLIError } from "./errors.js";
 
 function parseArgs(argv: string[]): {
   command: string | undefined;
@@ -84,8 +85,7 @@ async function main(): Promise<void> {
         process.exit(1);
     }
   } catch (err) {
-    console.error((err as Error).message);
-    process.exit(1);
+    handleCLIError(err);
   }
 }
 

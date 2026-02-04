@@ -18,6 +18,7 @@ import { cmdInit } from "./commands/init.js";
 import { cmdReset } from "./commands/reset.js";
 import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdValidate } from "./commands/validate.js";
+import { handleCLIError } from "./errors.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -66,32 +67,36 @@ async function cmdMcp(dir: string): Promise<void> {
   await startMcpServer(absDir);
 }
 
-switch (command) {
-  case "init":
-    cmdInit(targetArg || ".");
-    break;
-  case "analyze":
-    cmdAnalyze(targetArg || ".", passthrough);
-    break;
-  case "serve":
-    cmdServe(targetArg || ".", port);
-    break;
-  case "validate":
-    cmdValidate(targetArg || ".");
-    break;
-  case "reset":
-    cmdReset(targetArg || ".");
-    break;
-  case "mcp":
-    cmdMcp(targetArg || ".");
-    break;
-  case "--help":
-  case "-h":
-  case undefined:
-    usage();
-    break;
-  default:
-    console.error(`Unknown command: ${command}`);
-    usage();
-    process.exit(1);
+try {
+  switch (command) {
+    case "init":
+      cmdInit(targetArg || ".");
+      break;
+    case "analyze":
+      await cmdAnalyze(targetArg || ".", passthrough);
+      break;
+    case "serve":
+      await cmdServe(targetArg || ".", port);
+      break;
+    case "validate":
+      cmdValidate(targetArg || ".");
+      break;
+    case "reset":
+      cmdReset(targetArg || ".");
+      break;
+    case "mcp":
+      await cmdMcp(targetArg || ".");
+      break;
+    case "--help":
+    case "-h":
+    case undefined:
+      usage();
+      break;
+    default:
+      console.error(`Unknown command: ${command}`);
+      usage();
+      process.exit(1);
+  }
+} catch (err) {
+  handleCLIError(err);
 }

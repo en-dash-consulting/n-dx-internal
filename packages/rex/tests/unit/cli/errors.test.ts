@@ -1,0 +1,120 @@
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { CLIError, formatCLIError, handleCLIError } from "../../../src/cli/errors.js";
+
+describe("CLIError", () => {
+  it("stores message and suggestion", () => {
+    const err = new CLIError("something broke", "try this instead");
+    expect(err.message).toBe("something broke");
+    expect(err.suggestion).toBe("try this instead");
+    expect(err.name).toBe("CLIError");
+  });
+
+  it("works without a suggestion", () => {
+    const err = new CLIError("something broke");
+    expect(err.message).toBe("something broke");
+    expect(err.suggestion).toBeUndefined();
+  });
+
+  it("is an instance of Error", () => {
+    const err = new CLIError("test");
+    expect(err).toBeInstanceOf(Error);
+  });
+});
+
+describe("formatCLIError", () => {
+  it("formats CLIError with suggestion", () => {
+    const err = new CLIError("File missing", "Run init first");
+    const result = formatCLIError(err);
+    expect(result).toBe("Error: File missing\nHint: Run init first");
+  });
+
+  it("formats CLIError without suggestion", () => {
+    const err = new CLIError("Something failed");
+    const result = formatCLIError(err);
+    expect(result).toBe("Error: Something failed");
+  });
+
+  it("never includes stack traces for Error instances", () => {
+    const err = new Error("kaboom");
+    const result = formatCLIError(err);
+    expect(result).not.toContain("at ");
+    expect(result).not.toContain(".ts:");
+    expect(result).not.toContain(".js:");
+    expect(result).toBe("Error: kaboom");
+  });
+
+  it("handles non-Error values", () => {
+    expect(formatCLIError("string error")).toBe("Error: string error");
+    expect(formatCLIError(42)).toBe("Error: 42");
+    expect(formatCLIError(null)).toBe("Error: null");
+    expect(formatCLIError(undefined)).toBe("Error: undefined");
+  });
+
+  it("matches ENOENT .rex pattern", () => {
+    const err = new Error("ENOENT: no such file or directory, open '/tmp/.rex/prd.json'");
+    const result = formatCLIError(err);
+    expect(result).toContain("Rex directory not found");
+    expect(result).toContain("Hint:");
+    expect(result).toContain("n-dx init");
+  });
+
+  it("matches ENOENT prd.json pattern", () => {
+    const err = new Error("ENOENT: no such file or directory, open 'prd.json'");
+    const result = formatCLIError(err);
+    expect(result).toContain("PRD file not found");
+    expect(result).toContain("Hint:");
+  });
+
+  it("matches Invalid prd.json pattern", () => {
+    const err = new Error("Invalid prd.json: missing required field 'schema'");
+    const result = formatCLIError(err);
+    expect(result).toContain("corrupted or has an invalid format");
+    expect(result).toContain("Hint:");
+  });
+
+  it("matches EACCES pattern", () => {
+    const err = new Error("EACCES: permission denied, open '/tmp/.rex/config.json'");
+    const result = formatCLIError(err);
+    expect(result).toContain("Permission denied");
+    expect(result).toContain("Hint:");
+  });
+
+  it("matches Unexpected token (JSON parse) pattern", () => {
+    const err = new Error("Unexpected token } in JSON at position 42");
+    const result = formatCLIError(err);
+    expect(result).toContain("parse JSON");
+    expect(result).toContain("Hint:");
+  });
+
+  it("matches 'not found' pattern with original message", () => {
+    const err = new Error('Item "abc-123" not found');
+    const result = formatCLIError(err);
+    expect(result).toContain('Item "abc-123" not found');
+    expect(result).toContain("Hint:");
+  });
+
+  it("falls back to generic message for unknown errors", () => {
+    const err = new Error("some weird internal error");
+    const result = formatCLIError(err);
+    expect(result).toBe("Error: some weird internal error");
+    expect(result).not.toContain("Hint:");
+  });
+});
+
+describe("handleCLIError", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("prints formatted error and exits with code 1", () => {
+    const mockExit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+    const mockStderr = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const err = new CLIError("test error", "try something");
+
+    handleCLIError(err);
+
+    expect(mockStderr).toHaveBeenCalledWith("Error: test error\nHint: try something");
+    expect(mockExit).toHaveBeenCalledWith(1);
+  });
+});

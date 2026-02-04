@@ -3,6 +3,7 @@
 import { resolve } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { usage } from "./commands/constants.js";
+import { handleCLIError } from "./errors.js";
 
 /** Keys that accept multiple values (accumulated into arrays). */
 const MULTI_VALUE_KEYS = new Set(["file"]);
@@ -157,8 +158,7 @@ async function main(): Promise<void> {
         process.exit(1);
     }
   } catch (err) {
-    console.error((err as Error).message);
-    process.exit(1);
+    handleCLIError(err);
   }
 }
 
