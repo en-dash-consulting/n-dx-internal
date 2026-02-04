@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { resolve } from "node:path";
+import { existsSync, statSync } from "node:fs";
 import { usage } from "./commands/constants.js";
 
 /** Keys that accept multiple values (accumulated into arrays). */
@@ -77,15 +78,45 @@ async function main(): Promise<void> {
         break;
       }
       case "add": {
-        const level = positional[0];
-        if (!level) {
-          console.error("Usage: rex add <level> [dir] --title=\"...\"");
+        const VALID_LEVELS = new Set(["epic", "feature", "task", "subtask"]);
+        const firstArg = positional[0];
+
+        if (firstArg && VALID_LEVELS.has(firstArg)) {
+          // Manual mode: rex add <level> --title="..."
+          const dir =
+            positional.length > 1 ? resolve(positional[positional.length - 1]) : process.cwd();
+          const { cmdAdd } = await import("./commands/add.js");
+          await cmdAdd(dir, firstArg, flags);
+        } else if (firstArg || flags.description) {
+          // Smart mode: rex add "natural language description" [dir]
+          // Last positional may be a dir path — check if it's an existing directory
+          let descParts = [...positional];
+          let dir = process.cwd();
+          if (descParts.length > 1) {
+            const last = descParts[descParts.length - 1];
+            try {
+              if (existsSync(last) && statSync(last).isDirectory()) {
+                dir = resolve(last);
+                descParts = descParts.slice(0, -1);
+              }
+            } catch {
+              // Not a valid path — include in description
+            }
+          }
+
+          const description = descParts.length > 0
+            ? descParts.join(" ")
+            : flags.description;
+          if (!description) {
+            console.error('Usage: rex add <level> --title="..." or rex add "<description>"');
+            process.exit(1);
+          }
+          const { cmdSmartAdd } = await import("./commands/smart-add.js");
+          await cmdSmartAdd(dir, description, flags);
+        } else {
+          console.error('Usage: rex add <level> --title="..." or rex add "<description>"');
           process.exit(1);
         }
-        const dir =
-          positional.length > 1 ? resolve(positional[positional.length - 1]) : process.cwd();
-        const { cmdAdd } = await import("./commands/add.js");
-        await cmdAdd(dir, level, flags);
         break;
       }
       case "update": {

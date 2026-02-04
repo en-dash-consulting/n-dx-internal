@@ -1,0 +1,162 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtemp, rm, readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { execFileSync, spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+const cliPath = join(
+  fileURLToPath(import.meta.url),
+  "..",
+  "..",
+  "..",
+  "dist",
+  "cli",
+  "index.js",
+);
+
+function run(args: string[]): string {
+  return execFileSync("node", [cliPath, ...args], {
+    encoding: "utf-8",
+    timeout: 15000,
+  });
+}
+
+function runExpectFail(args: string[], timeout = 15000): { stdout: string; stderr: string } {
+  try {
+    const stdout = execFileSync("node", [cliPath, ...args], {
+      encoding: "utf-8",
+      timeout,
+    });
+    return { stdout, stderr: "" };
+  } catch (err) {
+    return {
+      stdout: (err as { stdout?: string }).stdout ?? "",
+      stderr: (err as { stderr?: string }).stderr ?? "",
+    };
+  }
+}
+
+/**
+ * Run command with a very short timeout — used for tests that trigger LLM calls
+ * where we just want to verify routing, not wait for the LLM response.
+ */
+function runQuick(args: string[]): { stdout: string; stderr: string; timedOut: boolean } {
+  const result = spawnSync("node", [cliPath, ...args], {
+    encoding: "utf-8",
+    timeout: 3000,
+  });
+  return {
+    stdout: result.stdout ?? "",
+    stderr: result.stderr ?? "",
+    timedOut: result.status === null && result.signal === "SIGTERM",
+  };
+}
+
+describe("rex add (smart mode routing)", () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "rex-e2e-smart-add-"));
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("manual mode still works: rex add epic --title=X", async () => {
+    run(["init", tmpDir]);
+
+    const output = run(["add", "epic", "--title=Test Epic", tmpDir]);
+
+    expect(output).toContain("Created epic: Test Epic");
+    expect(output).toContain("ID:");
+
+    // Verify in prd.json
+    const prd = JSON.parse(
+      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
+    );
+    expect(prd.items.some((i: { title: string }) => i.title === "Test Epic")).toBe(true);
+  });
+
+  it("manual mode still works: rex add feature with parent", async () => {
+    run(["init", tmpDir]);
+    const epicOutput = run(["add", "epic", "--title=My Epic", "--format=json", tmpDir]);
+    const epicId = JSON.parse(epicOutput).id;
+
+    const output = run(["add", "feature", `--title=My Feature`, `--parent=${epicId}`, tmpDir]);
+
+    expect(output).toContain("Created feature: My Feature");
+  });
+
+  it("shows error without .rex/ for smart add", () => {
+    const { stderr } = runExpectFail([
+      "add",
+      "Add user authentication with OAuth",
+      tmpDir,
+    ]);
+
+    expect(stderr).toContain("rex init");
+  });
+
+  it("shows error when no arguments provided", () => {
+    const { stderr } = runExpectFail(["add"]);
+
+    expect(stderr).toContain("Usage:");
+  });
+
+  it("smart mode triggers for non-level first argument", async () => {
+    run(["init", tmpDir]);
+
+    // Run with short timeout — we just want to verify routing to smart add
+    // The command will either print "Analyzing description..." before the LLM call
+    // or fail/timeout during the LLM call
+    const { stderr, stdout, timedOut } = runQuick([
+      "add",
+      "Add user authentication with OAuth",
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    // Either it started the LLM analysis (showing the message before the call),
+    // or the LLM call failed, or it timed out during the LLM call
+    expect(
+      combined.includes("Analyzing description") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("smart mode with --description flag", async () => {
+    run(["init", tmpDir]);
+
+    const { stderr, stdout, timedOut } = runQuick([
+      "add",
+      "--description=Build caching layer",
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    expect(
+      combined.includes("Analyzing description") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("non-level argument triggers smart mode, not manual mode error", () => {
+    // "notavalidlevel" is not a valid level, so it triggers smart mode
+    // without .rex/ it will show "rex init" error
+    const { stderr, stdout } = runExpectFail([
+      "add",
+      "notavalidlevel",
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    // Smart mode tries to run and fails because no .rex/ (tmpDir has no .rex/)
+    expect(combined).toContain("rex init");
+  });
+});

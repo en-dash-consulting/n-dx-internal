@@ -1,0 +1,222 @@
+import { join } from "node:path";
+import { access } from "node:fs/promises";
+import { createInterface } from "node:readline";
+import { randomUUID } from "node:crypto";
+import { createStore } from "../../store/index.js";
+import { REX_DIR } from "./constants.js";
+import {
+  reasonFromDescription,
+  DEFAULT_MODEL,
+} from "../../analyze/index.js";
+import type { Proposal } from "../../analyze/index.js";
+import type { PRDItem } from "../../schema/index.js";
+
+async function hasRexDir(dir: string): Promise<boolean> {
+  try {
+    await access(join(dir, REX_DIR));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function formatProposals(proposals: Proposal[]): string {
+  const lines: string[] = [];
+  for (const p of proposals) {
+    lines.push(`  [epic] ${p.epic.title}`);
+    for (const f of p.features) {
+      lines.push(`    [feature] ${f.title}`);
+      if (f.description) {
+        lines.push(`      ${f.description}`);
+      }
+      for (const t of f.tasks) {
+        const pri = t.priority ? ` [${t.priority}]` : "";
+        lines.push(`      [task] ${t.title}${pri}`);
+        if (t.acceptanceCriteria?.length) {
+          for (const ac of t.acceptanceCriteria) {
+            lines.push(`        - ${ac}`);
+          }
+        }
+      }
+    }
+  }
+  return lines.join("\n");
+}
+
+function promptUser(question: string): Promise<string> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.trim().toLowerCase());
+    });
+  });
+}
+
+async function acceptProposals(
+  dir: string,
+  proposals: Proposal[],
+  parentId?: string,
+): Promise<number> {
+  const rexDir = join(dir, REX_DIR);
+  const store = createStore("file", rexDir);
+
+  let addedCount = 0;
+
+  for (const p of proposals) {
+    // If scoped to a parent, skip creating the epic and attach features directly
+    const epicId = parentId ?? randomUUID();
+
+    if (!parentId) {
+      const epicItem: PRDItem = {
+        id: epicId,
+        title: p.epic.title,
+        level: "epic",
+        status: "pending",
+        source: "smart-add",
+      };
+      await store.addItem(epicItem);
+      addedCount++;
+    }
+
+    for (const f of p.features) {
+      const featureId = randomUUID();
+      const featureItem: PRDItem = {
+        id: featureId,
+        title: f.title,
+        level: "feature",
+        status: "pending",
+        source: "smart-add",
+        description: f.description,
+      };
+      await store.addItem(featureItem, epicId);
+      addedCount++;
+
+      for (const t of f.tasks) {
+        const taskId = randomUUID();
+        const taskItem: PRDItem = {
+          id: taskId,
+          title: t.title,
+          level: "task",
+          status: "pending",
+          source: "smart-add",
+          description: t.description,
+          acceptanceCriteria: t.acceptanceCriteria,
+          priority: t.priority as PRDItem["priority"],
+          tags: t.tags,
+        };
+        await store.addItem(taskItem, featureId);
+        addedCount++;
+      }
+    }
+  }
+
+  await store.appendLog({
+    timestamp: new Date().toISOString(),
+    event: "smart_add_accept",
+    detail: `Added ${addedCount} items from smart add`,
+  });
+
+  return addedCount;
+}
+
+export async function cmdSmartAdd(
+  dir: string,
+  description: string,
+  flags: Record<string, string>,
+): Promise<void> {
+  if (!(await hasRexDir(dir))) {
+    console.error(`No .rex/ found in ${dir}. Run "rex init" first.`);
+    process.exit(1);
+  }
+
+  const accept = flags.accept === "true";
+  const parentId = flags.parent;
+
+  // Resolve model: --model flag → config.model → DEFAULT_MODEL
+  let model: string | undefined = flags.model;
+  if (!model) {
+    try {
+      const rexDir = join(dir, REX_DIR);
+      const store = createStore("file", rexDir);
+      const config = await store.loadConfig();
+      if (config.model) {
+        model = config.model;
+      }
+    } catch {
+      // Config unreadable — fall through to default
+    }
+  }
+
+  // Load existing PRD for context
+  const rexDir = join(dir, REX_DIR);
+  const store = createStore("file", rexDir);
+  const doc = await store.loadDocument();
+  const existing = doc.items;
+
+  // Validate parent if provided
+  if (parentId) {
+    const { findItem } = await import("../../core/tree.js");
+    const parentEntry = findItem(existing, parentId);
+    if (!parentEntry) {
+      console.error(`Parent "${parentId}" not found.`);
+      process.exit(1);
+    }
+  }
+
+  if (flags.format !== "json") {
+    console.log("Analyzing description with LLM...");
+  }
+
+  let proposals: Proposal[];
+  try {
+    proposals = await reasonFromDescription(description, existing, {
+      model,
+      dir,
+      parentId,
+    });
+  } catch (err) {
+    console.error(`LLM analysis failed: ${(err as Error).message}`);
+    process.exit(1);
+  }
+
+  if (proposals.length === 0) {
+    if (flags.format === "json") {
+      console.log(JSON.stringify({ proposals: [], added: 0 }, null, 2));
+    } else {
+      console.log("LLM returned no proposals for the given description.");
+    }
+    return;
+  }
+
+  if (flags.format === "json" && !accept) {
+    console.log(JSON.stringify({ proposals }, null, 2));
+    return;
+  }
+
+  if (flags.format !== "json") {
+    console.log("\nProposed structure:");
+    console.log(formatProposals(proposals));
+    console.log("");
+  }
+
+  if (accept) {
+    const added = await acceptProposals(dir, proposals, parentId);
+    if (flags.format === "json") {
+      console.log(JSON.stringify({ proposals, added }, null, 2));
+    } else {
+      console.log(`Added ${added} items to PRD.`);
+    }
+  } else if (process.stdin.isTTY) {
+    const answer = await promptUser("Accept these items into the PRD? (y/n) ");
+    if (answer === "y" || answer === "yes") {
+      const added = await acceptProposals(dir, proposals, parentId);
+      console.log(`Added ${added} items to PRD.`);
+    } else {
+      console.log("Proposals discarded.");
+    }
+  } else {
+    // Non-interactive without --accept: just show
+    console.log("Run with --accept to add these items to the PRD.");
+  }
+}

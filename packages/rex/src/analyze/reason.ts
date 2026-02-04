@@ -531,3 +531,98 @@ Respond with ONLY a valid JSON array, no explanation or markdown fences.`;
   const raw = await spawnClaude(prompt, options?.model ?? DEFAULT_MODEL);
   return parseProposalResponse(raw);
 }
+
+// ── Natural-language add ──
+
+export interface AddPromptOptions {
+  parentId?: string;
+}
+
+/**
+ * Build the LLM prompt for a natural-language add command.
+ * Exported separately so it can be tested without spawning claude.
+ */
+export async function buildAddPrompt(
+  description: string,
+  existingItems: PRDItem[],
+  dir: string,
+  options?: AddPromptOptions,
+): Promise<string> {
+  const existingSummary = summarizeExisting(existingItems);
+  const projectContext = await readProjectContext(dir);
+
+  const contextBlock = projectContext
+    ? `\nProject context (from documentation):\n${projectContext}\n`
+    : "";
+
+  let parentConstraint = "";
+  if (options?.parentId) {
+    // Find the parent in the tree and describe it
+    const parentEntry = findItemInTree(existingItems, options.parentId);
+    if (parentEntry) {
+      parentConstraint = `
+IMPORTANT: Scope your response to fit under this existing parent item:
+  ID: ${options.parentId}
+  Level: ${parentEntry.level}
+  Title: ${parentEntry.title}
+
+Only create children appropriate for a ${parentEntry.level}. For example, if the parent is an epic, create features and tasks. If the parent is a feature, create only tasks.
+Do NOT create a new epic — instead use the parent's title as the epic title in your response.`;
+    }
+  }
+
+  return `You are a product requirements analyst. Given the following natural-language description, create a structured PRD breakdown as a JSON array.
+
+Each element must be an object with:
+- "epic": { "title": string }
+- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
+
+Guidelines:
+- Break the description into a logical hierarchy of epics, features, and tasks
+- Create actionable, specific task titles
+- Add acceptance criteria where requirements are clear
+- Assign priority levels based on apparent importance
+- Group related work into features under appropriate epics
+- Do NOT include items that duplicate anything already in the existing PRD below
+- Use the project context to understand terminology and architecture
+${parentConstraint}
+${contextBlock}
+Existing PRD:
+${existingSummary}
+
+Description to add:
+${description}
+
+Respond with ONLY a valid JSON array, no explanation or markdown fences.`;
+}
+
+function findItemInTree(
+  items: PRDItem[],
+  id: string,
+): PRDItem | null {
+  for (const item of items) {
+    if (item.id === id) return item;
+    if (item.children) {
+      const found = findItemInTree(item.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+/**
+ * Send a natural-language description to the LLM and get back structured proposals.
+ */
+export async function reasonFromDescription(
+  description: string,
+  existingItems: PRDItem[],
+  options?: { model?: string; dir?: string; parentId?: string },
+): Promise<Proposal[]> {
+  const dir = options?.dir ?? process.cwd();
+  const prompt = await buildAddPrompt(description, existingItems, dir, {
+    parentId: options?.parentId,
+  });
+
+  const raw = await spawnClaude(prompt, options?.model ?? DEFAULT_MODEL);
+  return parseProposalResponse(raw);
+}
