@@ -384,3 +384,136 @@ describe("rex add --file (idea import)", () => {
     expect(combined).not.toContain("Missing level");
   }, 10000);
 });
+
+describe("rex add with piped stdin", () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "rex-e2e-stdin-add-"));
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("accepts piped stdin as description", async () => {
+    run(["init", tmpDir]);
+
+    const result = spawnSync("node", [cliPath, "add", tmpDir], {
+      input: "Add a notifications system with email and push support",
+      encoding: "utf-8",
+      timeout: 3000,
+    });
+
+    const combined = (result.stderr ?? "") + (result.stdout ?? "");
+    const timedOut = result.status === null && result.signal === "SIGTERM";
+    expect(
+      combined.includes("Analyzing description") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("piped multiline input is treated as single description", async () => {
+    run(["init", tmpDir]);
+
+    const input = "Add user authentication\nwith OAuth and JWT support\nand password reset";
+    const result = spawnSync("node", [cliPath, "add", tmpDir], {
+      input,
+      encoding: "utf-8",
+      timeout: 3000,
+    });
+
+    const combined = (result.stderr ?? "") + (result.stdout ?? "");
+    const timedOut = result.status === null && result.signal === "SIGTERM";
+    // Multiline piped input is a single description, not multiple
+    expect(
+      combined.includes("Analyzing description") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+    expect(combined).not.toContain("3 descriptions");
+  }, 10000);
+
+  it("piped stdin combines with positional descriptions", async () => {
+    run(["init", tmpDir]);
+
+    const result = spawnSync(
+      "node",
+      [cliPath, "add", "Build caching layer", tmpDir],
+      {
+        input: "Add monitoring dashboard",
+        encoding: "utf-8",
+        timeout: 3000,
+      },
+    );
+
+    const combined = (result.stderr ?? "") + (result.stdout ?? "");
+    const timedOut = result.status === null && result.signal === "SIGTERM";
+    // Should see 2 descriptions (1 positional + 1 from stdin)
+    expect(
+      combined.includes("Analyzing 2 descriptions") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("empty piped input is ignored", async () => {
+    run(["init", tmpDir]);
+
+    const result = spawnSync(
+      "node",
+      [cliPath, "add", "Build caching layer", tmpDir],
+      {
+        input: "",
+        encoding: "utf-8",
+        timeout: 3000,
+      },
+    );
+
+    const combined = (result.stderr ?? "") + (result.stdout ?? "");
+    const timedOut = result.status === null && result.signal === "SIGTERM";
+    // With empty stdin, only the positional description counts
+    expect(
+      combined.includes("Analyzing description") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+    expect(combined).not.toContain("2 descriptions");
+  }, 10000);
+
+  it("piped stdin without any other description triggers smart mode", async () => {
+    run(["init", tmpDir]);
+
+    const result = spawnSync("node", [cliPath, "add", tmpDir], {
+      input: "Build a REST API for user management",
+      encoding: "utf-8",
+      timeout: 3000,
+    });
+
+    const combined = (result.stderr ?? "") + (result.stdout ?? "");
+    const timedOut = result.status === null && result.signal === "SIGTERM";
+    // Should NOT show "Missing description" error
+    expect(combined).not.toContain("Missing description");
+    expect(combined).not.toContain("Missing level");
+    expect(
+      combined.includes("Analyzing description") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("shows error with no piped input and no arguments", () => {
+    run(["init", tmpDir]);
+
+    // No stdin input, no positional args — should error
+    const { stderr } = runExpectFail(["add", tmpDir]);
+
+    expect(stderr).toContain("Usage:");
+  });
+});

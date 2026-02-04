@@ -6,6 +6,21 @@ import { usage } from "./commands/constants.js";
 import { CLIError, handleCLIError, requireRexDir } from "./errors.js";
 import { setQuiet } from "./output.js";
 
+/**
+ * Read all data from stdin when input is piped (not a TTY).
+ * Returns trimmed text, or empty string if stdin is a terminal.
+ */
+function readStdin(): Promise<string> {
+  if (process.stdin.isTTY) return Promise.resolve("");
+
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    process.stdin.on("data", (chunk: Buffer) => chunks.push(chunk));
+    process.stdin.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8").trim()));
+    process.stdin.on("error", reject);
+  });
+}
+
 /** Keys that accept multiple values (accumulated into arrays). */
 const MULTI_VALUE_KEYS = new Set(["file"]);
 
@@ -98,20 +113,24 @@ async function main(): Promise<void> {
         const firstArg = positional[0];
         const hasFileFlag = !!(multiFlags.file?.length || flags.file);
 
+        // Read piped stdin if available (non-blocking for TTY)
+        const stdinText = await readStdin();
+
         if (firstArg && VALID_LEVELS.has(firstArg)) {
           // Manual mode: rex add <level> --title="..."
           const dir =
             positional.length > 1 ? resolve(positional[positional.length - 1]) : process.cwd();
           const { cmdAdd } = await import("./commands/add.js");
           await cmdAdd(dir, firstArg, flags);
-        } else if (firstArg || flags.description || hasFileFlag) {
+        } else if (firstArg || flags.description || hasFileFlag || stdinText) {
           // Smart mode: rex add "desc1" "desc2" ... [dir]
           //   or file mode: rex add --file=ideas.txt [dir]
+          //   or piped:     echo "desc" | rex add [dir]
           // Last positional may be a dir path — check if it's an existing directory
           let descParts = [...positional];
           let dir = process.cwd();
-          if (descParts.length > 1) {
-            const last = descParts[descParts.length - 1];
+          const last = descParts[descParts.length - 1];
+          if (last) {
             try {
               if (existsSync(last) && statSync(last).isDirectory()) {
                 dir = resolve(last);
@@ -120,20 +139,21 @@ async function main(): Promise<void> {
             } catch {
               // Not a valid path — include in descriptions
             }
-          } else if (descParts.length === 0 && hasFileFlag) {
-            // --file mode with no positional description — dir from last positional already handled
           }
 
-          // Collect descriptions: positional args + --description flag
+          // Collect descriptions: positional args + --description flag + piped stdin
           const descriptions: string[] = [...descParts];
           if (flags.description) {
             descriptions.push(flags.description);
+          }
+          if (stdinText) {
+            descriptions.push(stdinText);
           }
 
           if (descriptions.length === 0 && !hasFileFlag) {
             throw new CLIError(
               "Missing description or --file flag.",
-              'Usage: rex add <level> --title="..." or rex add "<description>" ["<desc2>" ...] or rex add --file=ideas.txt',
+              'Usage: rex add <level> --title="..." or rex add "<description>" ["<desc2>" ...] or rex add --file=ideas.txt or echo "desc" | rex add',
             );
           }
           const { cmdSmartAdd } = await import("./commands/smart-add.js");
@@ -141,7 +161,7 @@ async function main(): Promise<void> {
         } else {
           throw new CLIError(
             "Missing level, description, or --file flag.",
-            'Usage: rex add <level> --title="..." or rex add "<description>" ["<desc2>" ...] or rex add --file=ideas.txt',
+            'Usage: rex add <level> --title="..." or rex add "<description>" ["<desc2>" ...] or rex add --file=ideas.txt or echo "desc" | rex add',
           );
         }
         break;

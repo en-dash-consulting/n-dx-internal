@@ -13,6 +13,7 @@ Commands:
   add <level> [dir]       Add item manually (epic|feature|task|subtask)
   add "<desc>" ["<d2>"]   Smart add: LLM creates PRD structure from description(s)
   add --file=<path>       Import ideas from a freeform text file (repeatable)
+  echo "desc" | add       Pipe text as description (combinable with other sources)
   update <id> [dir]       Update item status/priority
   validate [dir]          Check PRD integrity (DAG, schema)
   recommend [dir]         Get SourceVision recommendations
