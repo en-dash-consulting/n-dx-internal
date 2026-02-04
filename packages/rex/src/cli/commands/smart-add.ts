@@ -7,7 +7,7 @@ import { REX_DIR } from "./constants.js";
 import { CLIError } from "../errors.js";
 import { info, result } from "../output.js";
 import {
-  reasonFromDescription,
+  reasonFromDescriptions,
   reasonFromIdeasFile,
   DEFAULT_MODEL,
 } from "../../analyze/index.js";
@@ -125,10 +125,14 @@ async function acceptProposals(
 
 export async function cmdSmartAdd(
   dir: string,
-  description: string,
+  descriptions: string | string[],
   flags: Record<string, string>,
   multiFlags: Record<string, string[]> = {},
 ): Promise<void> {
+  // Normalise to array for uniform handling
+  const descList: string[] = Array.isArray(descriptions)
+    ? descriptions
+    : descriptions ? [descriptions] : [];
   if (!(await hasRexDir(dir))) {
     throw new CLIError(
       `Rex directory not found in ${dir}`,
@@ -199,13 +203,16 @@ export async function cmdSmartAdd(
       );
     }
   } else {
-    // Description-based mode (original smart add)
+    // Description-based mode (single or multiple descriptions)
     if (flags.format !== "json") {
-      info("Analyzing description with LLM...");
+      const label = descList.length > 1
+        ? `Analyzing ${descList.length} descriptions with LLM...`
+        : "Analyzing description with LLM...";
+      info(label);
     }
 
     try {
-      proposals = await reasonFromDescription(description, existing, {
+      proposals = await reasonFromDescriptions(descList, existing, {
         model,
         dir,
         parentId,

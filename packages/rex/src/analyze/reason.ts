@@ -1027,6 +1027,101 @@ export async function reasonFromDescription(
   return parseProposalResponse(raw);
 }
 
+// ── Multiple descriptions ──
+
+/**
+ * Build the LLM prompt for multiple natural-language descriptions in a single
+ * add call. Each description is treated as a distinct idea; the LLM is
+ * instructed to produce a coherent, de-duplicated structure that covers them
+ * all.
+ */
+export async function buildMultiAddPrompt(
+  descriptions: string[],
+  existingItems: PRDItem[],
+  dir: string,
+  options?: AddPromptOptions,
+): Promise<string> {
+  const existingSummary = summarizeExisting(existingItems);
+  const projectContext = await readProjectContext(dir);
+
+  const contextBlock = projectContext
+    ? `\nProject context (from documentation):\n${projectContext}\n`
+    : "";
+
+  let parentConstraint = "";
+  if (options?.parentId) {
+    const parentEntry = findItemInTree(existingItems, options.parentId);
+    if (parentEntry) {
+      parentConstraint = `
+IMPORTANT: Scope your response to fit under this existing parent item:
+  ID: ${options.parentId}
+  Level: ${parentEntry.level}
+  Title: ${parentEntry.title}
+
+Only create children appropriate for a ${parentEntry.level}. For example, if the parent is an epic, create features and tasks. If the parent is a feature, create only tasks.
+Do NOT create a new epic — instead use the parent's title as the epic title in your response.`;
+    }
+  }
+
+  const numbered = descriptions
+    .map((d, i) => `${i + 1}. ${d}`)
+    .join("\n");
+
+  return `You are a product requirements analyst. You have been given multiple feature descriptions at once. Analyze ALL of them and create a unified, coherent PRD breakdown as a JSON array.
+
+Each element must be an object with:
+- "epic": { "title": string }
+- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
+
+${FEW_SHOT_EXAMPLE}
+
+Guidelines:
+- You are receiving ${descriptions.length} separate descriptions. Treat each one as a distinct piece of work.
+- Group related descriptions under the same epic when they naturally belong together.
+- Keep unrelated descriptions in separate epics.
+- Task titles must be specific and actionable (verb-first, e.g. "Implement X", "Add Y")
+- Every task MUST have either a description or acceptanceCriteria (preferably both)
+- Each task should represent a single unit of work completable in one session
+- Add acceptance criteria where requirements are clear
+- Assign priority based on: blocking dependencies → user-facing impact → technical debt
+- Do NOT include items that duplicate anything already in the existing PRD below
+- Do NOT create duplicate items across descriptions — if two descriptions overlap, merge them
+- Use the project context to understand terminology and architecture
+${parentConstraint}
+${contextBlock}
+Existing PRD:
+${existingSummary}
+
+Descriptions to add:
+${numbered}
+
+Respond with ONLY a valid JSON array, no explanation or markdown fences.`;
+}
+
+/**
+ * Send multiple natural-language descriptions to the LLM in a single call and
+ * get back a unified set of proposals.
+ */
+export async function reasonFromDescriptions(
+  descriptions: string[],
+  existingItems: PRDItem[],
+  options?: { model?: string; dir?: string; parentId?: string },
+): Promise<Proposal[]> {
+  if (descriptions.length === 0) return [];
+  // Single description — delegate to the original function
+  if (descriptions.length === 1) {
+    return reasonFromDescription(descriptions[0], existingItems, options);
+  }
+
+  const dir = options?.dir ?? process.cwd();
+  const prompt = await buildMultiAddPrompt(descriptions, existingItems, dir, {
+    parentId: options?.parentId,
+  });
+
+  const raw = await spawnClaude(prompt, options?.model ?? DEFAULT_MODEL);
+  return parseProposalResponse(raw);
+}
+
 // ── Ideas file import ──
 
 /**

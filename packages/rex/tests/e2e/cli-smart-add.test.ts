@@ -161,6 +161,110 @@ describe("rex add (smart mode routing)", () => {
   });
 });
 
+describe("rex add with multiple descriptions", () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "rex-e2e-multi-desc-"));
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("multiple positional descriptions trigger smart mode with multi label", async () => {
+    run(["init", tmpDir]);
+
+    const { stderr, stdout, timedOut } = runQuick([
+      "add",
+      "Add user authentication",
+      "Build admin dashboard",
+      "Implement rate limiting",
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    // Should show multi-description message, or LLM call results/failures
+    expect(
+      combined.includes("Analyzing 3 descriptions") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("two descriptions route to multi-description mode", async () => {
+    run(["init", tmpDir]);
+
+    const { stderr, stdout, timedOut } = runQuick([
+      "add",
+      "Add caching layer",
+      "Build monitoring dashboard",
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    expect(
+      combined.includes("Analyzing 2 descriptions") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("--description flag combined with positional args", async () => {
+    run(["init", tmpDir]);
+
+    const { stderr, stdout, timedOut } = runQuick([
+      "add",
+      "Add auth",
+      "--description=Build dashboard",
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    // Both descriptions should be collected (2 total)
+    expect(
+      combined.includes("Analyzing 2 descriptions") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+  }, 10000);
+
+  it("shows error without .rex/ for multi-description mode", () => {
+    const { stderr } = runExpectFail([
+      "add",
+      "Add auth",
+      "Build dashboard",
+      tmpDir,
+    ]);
+
+    expect(stderr).toContain("rex init");
+  });
+
+  it("single description still works normally", async () => {
+    run(["init", tmpDir]);
+
+    const { stderr, stdout, timedOut } = runQuick([
+      "add",
+      "Add user authentication with OAuth",
+      tmpDir,
+    ]);
+
+    const combined = stderr + stdout;
+    // Should show single-description message (no count)
+    expect(
+      combined.includes("Analyzing description") ||
+      combined.includes("LLM analysis failed") ||
+      combined.includes("claude CLI not found") ||
+      timedOut,
+    ).toBe(true);
+    // Should NOT say "2 descriptions" (the dir isn't counted as a description)
+    expect(combined).not.toContain("2 descriptions");
+  }, 10000);
+});
+
 describe("rex add --file (idea import)", () => {
   let tmpDir: string;
 

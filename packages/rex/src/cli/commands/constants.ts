@@ -11,7 +11,7 @@ Commands:
   status [dir]            Show PRD tree with completion stats
   next [dir]              Print next actionable task
   add <level> [dir]       Add item manually (epic|feature|task|subtask)
-  add "<description>"     Smart add: LLM creates PRD structure from description
+  add "<desc>" ["<d2>"]   Smart add: LLM creates PRD structure from description(s)
   add --file=<path>       Import ideas from a freeform text file (repeatable)
   update <id> [dir]       Update item status/priority
   validate [dir]          Check PRD integrity (DAG, schema)

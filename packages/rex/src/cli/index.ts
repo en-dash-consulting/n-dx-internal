@@ -105,7 +105,7 @@ async function main(): Promise<void> {
           const { cmdAdd } = await import("./commands/add.js");
           await cmdAdd(dir, firstArg, flags);
         } else if (firstArg || flags.description || hasFileFlag) {
-          // Smart mode: rex add "natural language description" [dir]
+          // Smart mode: rex add "desc1" "desc2" ... [dir]
           //   or file mode: rex add --file=ideas.txt [dir]
           // Last positional may be a dir path — check if it's an existing directory
           let descParts = [...positional];
@@ -118,27 +118,30 @@ async function main(): Promise<void> {
                 descParts = descParts.slice(0, -1);
               }
             } catch {
-              // Not a valid path — include in description
+              // Not a valid path — include in descriptions
             }
           } else if (descParts.length === 0 && hasFileFlag) {
             // --file mode with no positional description — dir from last positional already handled
           }
 
-          const description = descParts.length > 0
-            ? descParts.join(" ")
-            : flags.description ?? "";
-          if (!description && !hasFileFlag) {
+          // Collect descriptions: positional args + --description flag
+          const descriptions: string[] = [...descParts];
+          if (flags.description) {
+            descriptions.push(flags.description);
+          }
+
+          if (descriptions.length === 0 && !hasFileFlag) {
             throw new CLIError(
               "Missing description or --file flag.",
-              'Usage: rex add <level> --title="..." or rex add "<description>" or rex add --file=ideas.txt',
+              'Usage: rex add <level> --title="..." or rex add "<description>" ["<desc2>" ...] or rex add --file=ideas.txt',
             );
           }
           const { cmdSmartAdd } = await import("./commands/smart-add.js");
-          await cmdSmartAdd(dir, description, flags, multiFlags);
+          await cmdSmartAdd(dir, descriptions, flags, multiFlags);
         } else {
           throw new CLIError(
             "Missing level, description, or --file flag.",
-            'Usage: rex add <level> --title="..." or rex add "<description>" or rex add --file=ideas.txt',
+            'Usage: rex add <level> --title="..." or rex add "<description>" ["<desc2>" ...] or rex add --file=ideas.txt',
           );
         }
         break;
