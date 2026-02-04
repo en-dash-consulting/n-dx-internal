@@ -114,6 +114,110 @@ describe("Helper", () => {
     const results = await scanTests(tempDir);
     expect(results).toEqual([]);
   });
+
+  it("groups tests under nested describe blocks", async () => {
+    await mkdir(join(tempDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tempDir, "tests", "auth.test.ts"),
+      `
+describe("Auth", () => {
+  describe("login", () => {
+    it("validates email", () => {});
+    it("checks password", () => {});
+  });
+  describe("logout", () => {
+    it("clears session", () => {});
+  });
+});
+`,
+    );
+
+    const results = await scanTests(tempDir);
+    const tasks = results.filter((r) => r.kind === "task");
+
+    // Tasks should carry their describe-block hierarchy in tags
+    const emailTask = tasks.find((t) => t.name === "validates email");
+    expect(emailTask).toBeDefined();
+    expect(emailTask!.tags).toContain("Auth > login");
+
+    const sessionTask = tasks.find((t) => t.name === "clears session");
+    expect(sessionTask).toBeDefined();
+    expect(sessionTask!.tags).toContain("Auth > logout");
+  });
+
+  it("handles deeply nested describe blocks", async () => {
+    await mkdir(join(tempDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tempDir, "tests", "api.test.ts"),
+      `
+describe("API", () => {
+  describe("v2", () => {
+    describe("users", () => {
+      it("lists all users", () => {});
+    });
+  });
+});
+`,
+    );
+
+    const results = await scanTests(tempDir);
+    const tasks = results.filter((r) => r.kind === "task");
+
+    const task = tasks.find((t) => t.name === "lists all users");
+    expect(task).toBeDefined();
+    expect(task!.tags).toContain("API > v2 > users");
+  });
+
+  it("preserves top-level tests without describe nesting", async () => {
+    await mkdir(join(tempDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tempDir, "tests", "utils.test.ts"),
+      `
+test("adds numbers", () => {});
+describe("Formatting", () => {
+  it("formats dates", () => {});
+});
+`,
+    );
+
+    const results = await scanTests(tempDir);
+    const tasks = results.filter((r) => r.kind === "task");
+
+    // Top-level test has no describe path — just the epic tag
+    const addTask = tasks.find((t) => t.name === "adds numbers");
+    expect(addTask).toBeDefined();
+    expect(addTask!.tags).toEqual(["General"]);
+
+    // Nested test has describe path
+    const fmtTask = tasks.find((t) => t.name === "formats dates");
+    expect(fmtTask).toBeDefined();
+    expect(fmtTask!.tags).toContain("Formatting");
+  });
+
+  it("emits feature results for each describe block with nesting path", async () => {
+    await mkdir(join(tempDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tempDir, "tests", "parser.test.ts"),
+      `
+describe("Parser", () => {
+  describe("JSON", () => {
+    it("parses objects", () => {});
+  });
+  describe("YAML", () => {
+    it("parses documents", () => {});
+  });
+});
+`,
+    );
+
+    const results = await scanTests(tempDir);
+    const features = results.filter((r) => r.kind === "feature");
+
+    // Should have file-level feature + describe features
+    expect(features.some((f) => f.name === "Parser")).toBe(true);
+    expect(features.some((f) => f.name === "Parser > JSON")).toBe(true);
+    expect(features.some((f) => f.name === "Parser > YAML")).toBe(true);
+  });
 });
 
 describe("scanDocs", () => {

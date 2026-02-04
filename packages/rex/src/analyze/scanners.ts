@@ -129,6 +129,123 @@ function featureNameFromFile(filePath: string): string {
   return toTitleCase(name);
 }
 
+/** A node in the describe-block tree */
+interface DescribeNode {
+  name: string;
+  children: DescribeNode[];
+  tests: string[];
+}
+
+/**
+ * Parse test file content into a tree of describe blocks and their tests.
+ * Uses brace-depth tracking (not regex alone) so nesting is preserved.
+ */
+function parseDescribeTree(content: string): { roots: DescribeNode[]; topLevelTests: string[] } {
+  const roots: DescribeNode[] = [];
+  const topLevelTests: string[] = [];
+  const lines = content.split("\n");
+
+  // Stack tracks current nesting: each entry is { node, braceDepth at open }
+  const stack: { node: DescribeNode; openDepth: number }[] = [];
+  let braceDepth = 0;
+
+  for (const line of lines) {
+    // Count braces on this line (outside of strings, roughly)
+    // Good enough for well-formatted test files
+    const strippedLine = stripStrings(line);
+
+    // Check for describe block opening before counting braces
+    const describeMatch = line.match(/describe\(\s*["'`]([^"'`]+)["'`]/);
+    if (describeMatch) {
+      const node: DescribeNode = { name: describeMatch[1], children: [], tests: [] };
+      if (stack.length > 0) {
+        stack[stack.length - 1].node.children.push(node);
+      } else {
+        roots.push(node);
+      }
+      // The opening brace for the describe callback is on this line (or will be)
+      const openBraces = (strippedLine.match(/\{/g) || []).length;
+      const closeBraces = (strippedLine.match(/\}/g) || []).length;
+      braceDepth += openBraces - closeBraces;
+      stack.push({ node, openDepth: braceDepth });
+      continue;
+    }
+
+    // Check for it/test blocks
+    const testMatch = line.match(/(?:it|test)\(\s*["'`]([^"'`]+)["'`]/);
+    if (testMatch) {
+      if (stack.length > 0) {
+        stack[stack.length - 1].node.tests.push(testMatch[1]);
+      } else {
+        topLevelTests.push(testMatch[1]);
+      }
+    }
+
+    // Update brace depth
+    const openBraces = (strippedLine.match(/\{/g) || []).length;
+    const closeBraces = (strippedLine.match(/\}/g) || []).length;
+    braceDepth += openBraces - closeBraces;
+
+    // Pop stack when we close back to where a describe opened
+    while (stack.length > 0 && braceDepth < stack[stack.length - 1].openDepth) {
+      stack.pop();
+    }
+  }
+
+  return { roots, topLevelTests };
+}
+
+/** Strip string literals from a line to avoid counting braces inside strings */
+function stripStrings(line: string): string {
+  // Remove template literals, double-quoted, and single-quoted strings
+  return line
+    .replace(/`[^`]*`/g, "")
+    .replace(/"[^"]*"/g, "")
+    .replace(/'[^']*'/g, "");
+}
+
+/** Walk a describe tree and emit ScanResults with hierarchical paths */
+function emitDescribeResults(
+  node: DescribeNode,
+  parentPath: string[],
+  epicName: string,
+  rel: string,
+  featureName: string,
+  results: ScanResult[],
+): void {
+  const currentPath = [...parentPath, node.name];
+  const pathLabel = currentPath.join(" > ");
+
+  // Emit a feature for this describe block (with nesting path)
+  // Skip if it duplicates the file-level feature name
+  if (pathLabel.toLowerCase() !== featureName.toLowerCase()) {
+    results.push({
+      name: pathLabel,
+      source: "test",
+      sourceFile: rel,
+      kind: "feature",
+      tags: [epicName],
+    });
+  }
+
+  // Emit tasks under this describe block — tag with the describe path
+  for (const testName of node.tests) {
+    results.push({
+      name: testName,
+      source: "test",
+      sourceFile: rel,
+      kind: "task",
+      acceptanceCriteria: [testName],
+      tags: [pathLabel],
+    });
+  }
+
+  // Recurse into children
+  for (const child of node.children) {
+    emitDescribeResults(child, currentPath, epicName, rel, featureName, results);
+  }
+}
+
 export async function scanTests(
   dir: string,
   opts: ScanOptions = {},
@@ -160,32 +277,22 @@ export async function scanTests(
       continue;
     }
 
-    // Extract describe blocks (top-level → feature-level context)
-    const describeRegex = /describe\(\s*["'`]([^"'`]+)["'`]/g;
-    let descMatch: RegExpExecArray | null;
-    while ((descMatch = describeRegex.exec(content)) !== null) {
-      const descName = descMatch[1];
-      // Skip if it's just the same as the file name
-      if (descName.toLowerCase() === featureName.toLowerCase()) continue;
-      results.push({
-        name: descName,
-        source: "test",
-        sourceFile: rel,
-        kind: "feature",
-        tags: [epicName],
-      });
+    // Parse describe-block tree to produce hierarchical grouping
+    const { roots, topLevelTests } = parseDescribeTree(content);
+
+    // Emit results for each describe tree
+    for (const root of roots) {
+      emitDescribeResults(root, [], epicName, rel, featureName, results);
     }
 
-    // Extract it/test blocks → tasks
-    const itRegex = /(?:it|test)\(\s*["'`]([^"'`]+)["'`]/g;
-    let itMatch: RegExpExecArray | null;
-    while ((itMatch = itRegex.exec(content)) !== null) {
+    // Top-level tests (outside any describe block)
+    for (const testName of topLevelTests) {
       results.push({
-        name: itMatch[1],
+        name: testName,
         source: "test",
         sourceFile: rel,
         kind: "task",
-        acceptanceCriteria: [itMatch[1]],
+        acceptanceCriteria: [testName],
         tags: [epicName],
       });
     }
