@@ -470,6 +470,133 @@ describe("findActionableTasks", () => {
     expect(results[0].item.id).toBe("t2");
   });
 
+  it("interleaves tasks from many epics by own priority, not epic order", () => {
+    const items: PRDItem[] = [
+      makeItem({
+        id: "e1",
+        title: "Alpha Epic",
+        level: "epic",
+        priority: "low",
+        children: [
+          makeItem({ id: "t1", title: "High in low epic", priority: "high" }),
+          makeItem({ id: "t2", title: "Low in low epic", priority: "low" }),
+        ],
+      }),
+      makeItem({
+        id: "e2",
+        title: "Beta Epic",
+        level: "epic",
+        priority: "critical",
+        children: [
+          makeItem({ id: "t3", title: "Critical in critical epic", priority: "critical" }),
+          makeItem({ id: "t4", title: "Medium in critical epic", priority: "medium" }),
+        ],
+      }),
+      makeItem({
+        id: "e3",
+        title: "Gamma Epic",
+        level: "epic",
+        priority: "medium",
+        children: [
+          makeItem({ id: "t5", title: "Critical in medium epic", priority: "critical" }),
+        ],
+      }),
+    ];
+    const results = findActionableTasks(items, new Set());
+    const ids = results.map((r) => r.item.id);
+    // critical tasks first (t3 before t5 due to higher ancestor), then high, medium, low
+    expect(ids).toEqual(["t3", "t5", "t1", "t4", "t2"]);
+  });
+
+  it("selects deeply nested critical task over shallow medium task", () => {
+    const items: PRDItem[] = [
+      makeItem({
+        id: "e1",
+        title: "Shallow Epic",
+        level: "epic",
+        priority: "high",
+        children: [
+          makeItem({ id: "t1", title: "Shallow Medium", priority: "medium" }),
+        ],
+      }),
+      makeItem({
+        id: "e2",
+        title: "Deep Epic",
+        level: "epic",
+        priority: "low",
+        children: [
+          makeItem({
+            id: "f1",
+            title: "Deep Feature",
+            level: "feature",
+            priority: "low",
+            children: [
+              makeItem({ id: "t2", title: "Deep Critical", priority: "critical" }),
+            ],
+          }),
+        ],
+      }),
+    ];
+    const results = findActionableTasks(items, new Set());
+    expect(results[0].item.id).toBe("t2");
+    expect(results[0].parents.map((p) => p.id)).toEqual(["e2", "f1"]);
+  });
+
+  it("picks unblocked critical from one epic when another epic's critical is blocked", () => {
+    const items: PRDItem[] = [
+      makeItem({
+        id: "e1",
+        title: "Epic A",
+        level: "epic",
+        priority: "high",
+        children: [
+          makeItem({ id: "t1", title: "Blocked Critical", priority: "critical", blockedBy: ["ext"] }),
+          makeItem({ id: "t2", title: "Available Medium", priority: "medium" }),
+        ],
+      }),
+      makeItem({
+        id: "e2",
+        title: "Epic B",
+        level: "epic",
+        priority: "low",
+        children: [
+          makeItem({ id: "t3", title: "Available Critical", priority: "critical" }),
+        ],
+      }),
+    ];
+    const results = findActionableTasks(items, new Set());
+    // t3 wins: critical and unblocked; t1 is critical but blocked
+    expect(results[0].item.id).toBe("t3");
+    expect(results.map((r) => r.item.id)).toEqual(["t3", "t2"]);
+  });
+
+  it("uses ancestor priority to break ties between same-priority cross-epic tasks", () => {
+    const items: PRDItem[] = [
+      makeItem({
+        id: "e1",
+        title: "Critical Epic",
+        level: "epic",
+        priority: "critical",
+        children: [
+          makeItem({ id: "t1", title: "ZZZ Task", priority: "high" }),
+        ],
+      }),
+      makeItem({
+        id: "e2",
+        title: "Low Epic",
+        level: "epic",
+        priority: "low",
+        children: [
+          makeItem({ id: "t2", title: "AAA Task", priority: "high" }),
+        ],
+      }),
+    ];
+    const results = findActionableTasks(items, new Set());
+    // Both high priority — ancestor breaks tie: critical epic wins over low epic
+    expect(results[0].item.id).toBe("t1");
+    expect(results[1].item.id).toBe("t2");
+  });
+
   it("respects limit parameter", () => {
     const items: PRDItem[] = [
       makeItem({ id: "t1", title: "A" }),
