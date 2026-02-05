@@ -368,3 +368,11 @@
 {"timestamp":"2026-02-05T01:43:25.510Z","event":"status_updated","itemId":"fadf770b-4806-4f6b-b8c6-0851718424a6","detail":"Status changed to in_progress by hench agent"}
 {"timestamp":"2026-02-05T01:47:37.939Z","event":"item_updated","itemId":"fadf770b-4806-4f6b-b8c6-0851718424a6","detail":"Updated: status, completedAt"}
 {"timestamp":"2026-02-05T01:47:37.986Z","event":"auto_completed","itemId":"d24dbc1a-77cb-4db3-ac06-0315cfe76ddb","detail":"Auto-completed feature: Core Validation Logic (all children done)"}
+{"timestamp":"2026-02-05T01:48:18.757Z","event":"status_updated","itemId":"fadf770b-4806-4f6b-b8c6-0851718424a6","detail":"Status changed to completed by hench agent"}
+{"timestamp":"2026-02-05T01:48:18.783Z","event":"task_completed","itemId":"fadf770b-4806-4f6b-b8c6-0851718424a6","detail":"## Summary\n\n**Task: Validate DAG structure** — ✅ Complete\n\n### What was done\n\nAudited all 14 acceptance criteria against the existing test suite and found near-complete coverage. The only gap was an explicitly named \"detects triangle cycle\" test.\n\n### Changes made\n\n**`packages/rex/tests/unit/core/dag.test.ts`** — 1 test added, 1 test refined:\n- **Added** `\"detects triangle cycle\"` test — 3-node cycle (t1→t3, t2→t1, t3→t2) matching the acceptance criterion exactly\n- **Narrowed** existing `\"detect"}
+{"timestamp":"2026-02-05T01:48:18.833Z","event":"status_updated","itemId":"7aa15b45-6ab2-4a49-b56e-590088400ced","detail":"Status changed to in_progress by hench agent"}
+{"timestamp":"2026-02-05T01:53:22.839Z","event":"item_updated","itemId":"7aa15b45-6ab2-4a49-b56e-590088400ced","detail":"Updated: status, completedAt"}
+{"timestamp":"2026-02-05T01:53:38.581Z","event":"item_updated","itemId":"9a6cc288-dd6f-4442-a12c-c0f9ad321a35","detail":"Updated: status, startedAt, completedAt"}
+{"timestamp":"2026-02-05T01:53:39.123Z","event":"item_updated","itemId":"c139d7f1-75b1-48bb-a4e7-88a5abd74f80","detail":"Updated: status, startedAt, completedAt"}
+{"timestamp":"2026-02-05T01:53:39.177Z","event":"auto_completed","itemId":"37e313bb-c278-4ff2-abb6-bc59fbe10761","detail":"Auto-completed feature: Store Adapter Architecture (all children done)"}
+{"timestamp":"2026-02-05T01:53:45.607Z","event":"item_updated","itemId":"7aa15b45-6ab2-4a49-b56e-590088400ced","detail":"Updated: description"}

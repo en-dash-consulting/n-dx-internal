@@ -1984,6 +1984,8 @@
           "level": "feature",
           "description": "Fundamental validation algorithms for PRD structure",
           "source": "llm",
+          "startedAt": "2026-02-05T01:47:37.959Z",
+          "completedAt": "2026-02-05T01:47:37.959Z",
           "children": [
             {
               "id": "fadf770b-4806-4f6b-b8c6-0851718424a6",
@@ -2019,9 +2021,7 @@
               "startedAt": "2026-02-05T01:43:25.500Z",
               "completedAt": "2026-02-05T01:47:37.926Z"
             }
-          ],
-          "startedAt": "2026-02-05T01:47:37.959Z",
-          "completedAt": "2026-02-05T01:47:37.959Z"
+          ]
         },
         {
           "id": "6bcacd7d-9a06-49df-8e9b-dd77d1a814ae",
@@ -7667,15 +7667,17 @@
         {
           "id": "37e313bb-c278-4ff2-abb6-bc59fbe10761",
           "title": "Store Adapter Architecture",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Clean interface for external data store integration",
           "source": "llm",
+          "startedAt": "2026-02-05T01:53:39.146Z",
+          "completedAt": "2026-02-05T01:53:39.146Z",
           "children": [
             {
               "id": "9a6cc288-dd6f-4442-a12c-c0f9ad321a35",
               "title": "Define clean adapter interface",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create interface that both file and external stores implement",
               "acceptanceCriteria": [
@@ -7688,12 +7690,14 @@
                 "integration",
                 "architecture"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T01:53:38.567Z",
+              "completedAt": "2026-02-05T01:53:38.567Z"
             },
             {
               "id": "c139d7f1-75b1-48bb-a4e7-88a5abd74f80",
               "title": "Implement adapter registration system",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Support n-dx rex adapter add notion --token=<secret> style registration",
               "acceptanceCriteria": [
@@ -7706,14 +7710,16 @@
                 "integration",
                 "cli"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T01:53:39.108Z",
+              "completedAt": "2026-02-05T01:53:39.108Z"
             },
             {
               "id": "7aa15b45-6ab2-4a49-b56e-590088400ced",
               "title": "Add bidirectional sync support",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Changes in external systems reflect back to local state",
+              "description": "Bidirectional sync engine that coordinates between local and remote PRDStore instances. Supports push (local→remote), pull (remote→local), and full bidirectional sync with last-write-wins conflict resolution. Implementation spans core/sync.ts (primitives), core/sync-engine.ts (orchestration), and cli/commands/sync.ts (CLI). Sync metadata (lastModified, lastSyncedAt, remoteId) tracked on each PRDItem.",
               "acceptanceCriteria": [
                 "External changes sync to local PRD",
                 "Conflict detection and resolution",
@@ -7724,7 +7730,9 @@
                 "integration",
                 "sync"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T01:48:18.822Z",
+              "completedAt": "2026-02-05T01:53:22.826Z"
             }
           ]
         },
