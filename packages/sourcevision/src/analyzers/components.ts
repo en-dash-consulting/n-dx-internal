@@ -260,6 +260,9 @@ export function extractComponentDefinitions(
 
 // ── extractJsxUsages ────────────────────────────────────────────────────────
 
+/** Names that represent React fragments, not real component usages. */
+const FRAGMENT_NAMES = new Set(["Fragment", "React.Fragment"]);
+
 export function extractJsxUsages(
   sourceText: string,
   filePath: string
@@ -274,21 +277,22 @@ export function extractJsxUsages(
 
   const counts = new Map<string, number>();
 
-  function getTagName(node: ts.JsxOpeningElement | ts.JsxSelfClosingElement): string | null {
-    const tag = node.tagName;
-    if (ts.isIdentifier(tag)) return tag.text;
-    if (ts.isPropertyAccessExpression(tag) && ts.isIdentifier(tag.expression)) {
-      // e.g. Foo.Bar — use the whole expression
-      return tag.getText();
+  /** Recursively build a dotted name from a property access chain. */
+  function resolveTagName(expr: ts.JsxTagNameExpression): string | null {
+    if (ts.isIdentifier(expr)) return expr.text;
+    if (ts.isPropertyAccessExpression(expr)) {
+      const left = resolveTagName(expr.expression as ts.JsxTagNameExpression);
+      if (left === null) return null;
+      return `${left}.${expr.name.text}`;
     }
     return null;
   }
 
   function visit(node: ts.Node) {
     if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
-      const name = getTagName(node);
-      // Skip lowercase (HTML elements) and null
-      if (name && /^[A-Z]/.test(name)) {
+      const name = resolveTagName(node.tagName);
+      // Skip lowercase (HTML elements), null, and React fragments
+      if (name && /^[A-Z]/.test(name) && !FRAGMENT_NAMES.has(name)) {
         counts.set(name, (counts.get(name) || 0) + 1);
       }
     }

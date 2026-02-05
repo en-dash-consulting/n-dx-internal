@@ -190,6 +190,91 @@ describe("extractJsxUsages", () => {
     const result = extractJsxUsages(source, "App.tsx");
     expect(result).toHaveLength(2);
   });
+
+  it("detects property access components (Foo.Bar)", () => {
+    const source = `
+      export function App() {
+        return <div><Icons.Arrow /><Form.Input>text</Form.Input></div>;
+      }
+    `;
+    const result = extractJsxUsages(source, "App.tsx");
+    expect(result).toHaveLength(2);
+    expect(result.find((u) => u.componentName === "Icons.Arrow")?.count).toBe(1);
+    expect(result.find((u) => u.componentName === "Form.Input")?.count).toBe(1);
+  });
+
+  it("handles deep property access (A.B.C)", () => {
+    const source = `
+      export function App() {
+        return <Motion.div.animated />;
+      }
+    `;
+    const result = extractJsxUsages(source, "App.tsx");
+    expect(result).toHaveLength(1);
+    expect(result[0].componentName).toBe("Motion.div.animated");
+  });
+
+  it("skips React.Fragment as a component usage", () => {
+    const source = `
+      import React from 'react';
+      export function App() {
+        return <React.Fragment><Button /><Card /></React.Fragment>;
+      }
+    `;
+    const result = extractJsxUsages(source, "App.tsx");
+    expect(result).toHaveLength(2);
+    expect(result.map((u) => u.componentName)).not.toContain("React.Fragment");
+  });
+
+  it("skips Fragment import used as JSX tag", () => {
+    const source = `
+      import { Fragment } from 'react';
+      export function App() {
+        return <Fragment><Button /></Fragment>;
+      }
+    `;
+    const result = extractJsxUsages(source, "App.tsx");
+    expect(result).toHaveLength(1);
+    expect(result[0].componentName).toBe("Button");
+  });
+
+  it("counts components across nested JSX expressions", () => {
+    const source = `
+      export function App() {
+        return (
+          <div>
+            {condition && <Alert />}
+            {items.map(i => <Card key={i} />)}
+            <Alert />
+          </div>
+        );
+      }
+    `;
+    const result = extractJsxUsages(source, "App.tsx");
+    expect(result).toHaveLength(2);
+    expect(result.find((u) => u.componentName === "Alert")?.count).toBe(2);
+    expect(result.find((u) => u.componentName === "Card")?.count).toBe(1);
+  });
+
+  it("sorts results by count descending", () => {
+    const source = `
+      export function App() {
+        return (
+          <div>
+            <A /><A /><A />
+            <B /><B />
+            <C />
+          </div>
+        );
+      }
+    `;
+    const result = extractJsxUsages(source, "App.tsx");
+    expect(result).toEqual([
+      { componentName: "A", count: 3 },
+      { componentName: "B", count: 2 },
+      { componentName: "C", count: 1 },
+    ]);
+  });
 });
 
 // ── extractConventionExports ────────────────────────────────────────────────
