@@ -5820,7 +5820,7 @@
             {
               "id": "ea49bd62-1aa3-4139-b549-90078dcc4590",
               "title": "Fix double-counting in grouping passes",
-              "status": "completed",
+              "status": "pending",
               "level": "task",
               "description": "Ensure findings aren't counted multiple times across different grouping passes",
               "acceptanceCriteria": [
@@ -5832,8 +5832,7 @@
                 "deriveNextSteps"
               ],
               "source": "llm",
-              "startedAt": "2026-02-05T14:09:00.166Z",
-              "completedAt": "2026-02-05T14:13:29.858Z"
+              "startedAt": "2026-02-05T14:09:00.166Z"
             }
           ]
         },
