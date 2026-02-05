@@ -3440,7 +3440,7 @@
             {
               "id": "43438e05-3a59-4719-94bf-363948ecdbb0",
               "title": "Audit command parsing logic for duplication",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Review shell.ts and guard/commands.ts for duplicated command parsing and validation logic, consolidate where appropriate",
               "acceptanceCriteria": [
@@ -3454,7 +3454,8 @@
                 "code-quality"
               ],
               "source": "llm",
-              "startedAt": "2026-02-05T18:51:53.762Z"
+              "startedAt": "2026-02-05T18:51:53.762Z",
+              "completedAt": "2026-02-05T18:54:52.899Z"
             },
             {
               "id": "08356c3f-deb5-4131-a0ad-327522d2e3ab",
