@@ -4469,7 +4469,7 @@
             {
               "id": "4097dd91-741f-48ae-bfcd-28b781a036c9",
               "title": "Fix validation failure exit codes",
-              "status": "completed",
+              "status": "pending",
               "level": "task",
               "description": "Ensure CI fails with proper exit codes when validation fails",
               "acceptanceCriteria": [
@@ -4481,8 +4481,7 @@
                 "validation failure"
               ],
               "source": "llm",
-              "startedAt": "2026-02-05T14:28:42.831Z",
-              "completedAt": "2026-02-05T14:34:55.747Z"
+              "startedAt": "2026-02-05T14:28:42.831Z"
             }
           ]
         },
