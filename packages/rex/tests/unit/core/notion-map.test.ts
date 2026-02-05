@@ -57,6 +57,18 @@ describe("NOTION_LEVEL_CONFIG", () => {
       expect(config.statusMap.in_progress).toBeDefined();
       expect(config.statusMap.completed).toBeDefined();
       expect(config.statusMap.deferred).toBeDefined();
+      expect(config.statusMap.blocked).toBeDefined();
+    }
+  });
+
+  it("maps all status values correctly", () => {
+    for (const level of ["epic", "feature", "task", "subtask"] as const) {
+      const config = NOTION_LEVEL_CONFIG[level];
+      expect(config.statusMap.pending).toBe("Not started");
+      expect(config.statusMap.in_progress).toBe("In progress");
+      expect(config.statusMap.completed).toBe("Done");
+      expect(config.statusMap.deferred).toBe("Deferred");
+      expect(config.statusMap.blocked).toBe("Blocked");
     }
   });
 });
@@ -86,6 +98,7 @@ describe("mapItemToNotion", () => {
       { prd: "in_progress", notion: "In progress" },
       { prd: "completed", notion: "Done" },
       { prd: "deferred", notion: "Deferred" },
+      { prd: "blocked", notion: "Blocked" },
     ] as const;
 
     for (const { prd, notion } of statuses) {
