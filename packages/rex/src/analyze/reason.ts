@@ -831,6 +831,13 @@ export const FEW_SHOT_EXAMPLE = `Example output (for reference — do NOT includ
 export const CHUNK_CHAR_LIMIT = 40_000;
 
 /**
+ * Maximum number of scan results per LLM chunk. Even if results fit within
+ * the character budget, limiting item count improves LLM reasoning quality
+ * by keeping context manageable. Set to 100 as a sensible default.
+ */
+export const CHUNK_ITEM_LIMIT = 100;
+
+/**
  * Render an array of ScanResults into the text block used inside LLM prompts.
  */
 export function summarizeScanResults(results: ScanResult[]): string {
@@ -850,9 +857,17 @@ export function summarizeScanResults(results: ScanResult[]): string {
 }
 
 /**
- * Split scan results into chunks whose serialised summary stays within
- * `CHUNK_CHAR_LIMIT`. When all results fit in a single chunk, this returns
+ * Split scan results into chunks that respect both `CHUNK_CHAR_LIMIT` and
+ * `CHUNK_ITEM_LIMIT`. When all results fit in a single chunk, this returns
  * a one-element array — no overhead.
+ *
+ * Chunking triggers when either:
+ * - The serialized summary would exceed the character limit, OR
+ * - The item count would exceed 100 items per chunk
+ *
+ * This dual constraint ensures both:
+ * - Token budget stays within LLM limits (character-based)
+ * - LLM reasoning quality stays high (item-count-based)
  */
 export function chunkScanResults(results: ScanResult[]): ScanResult[][] {
   if (results.length === 0) return [];
@@ -865,9 +880,12 @@ export function chunkScanResults(results: ScanResult[]): ScanResult[][] {
     const itemText = summarizeScanResults([r]);
     const itemLen = itemText.length;
 
-    // If adding this item would exceed the limit, flush the current chunk
+    // Flush the current chunk if adding this item would exceed either limit
     // (unless it's empty — an oversized single item gets its own chunk).
-    if (current.length > 0 && currentLen + itemLen + 2 > CHUNK_CHAR_LIMIT) {
+    const wouldExceedCharLimit = currentLen + itemLen + 2 > CHUNK_CHAR_LIMIT;
+    const wouldExceedItemLimit = current.length >= CHUNK_ITEM_LIMIT;
+
+    if (current.length > 0 && (wouldExceedCharLimit || wouldExceedItemLimit)) {
       chunks.push(current);
       current = [];
       currentLen = 0;

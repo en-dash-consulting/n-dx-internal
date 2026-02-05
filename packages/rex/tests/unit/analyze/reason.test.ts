@@ -18,6 +18,7 @@ import {
   chunkScanResults,
   summarizeScanResults,
   CHUNK_CHAR_LIMIT,
+  CHUNK_ITEM_LIMIT,
 } from "../../../src/analyze/reason.js";
 import type { Proposal } from "../../../src/analyze/propose.js";
 
@@ -977,6 +978,71 @@ describe("chunkScanResults", () => {
     expect(chunks.length).toBe(2);
     expect(chunks[0]).toEqual([hugeResult]);
     expect(chunks[1]).toEqual([smallResult]);
+  });
+
+  it("splits by item count when exceeding CHUNK_ITEM_LIMIT", () => {
+    // Create exactly CHUNK_ITEM_LIMIT + 10 minimal results
+    // These are small enough that character limit won't trigger
+    const results = Array.from({ length: CHUNK_ITEM_LIMIT + 10 }, (_, i) =>
+      makeScanResult(`task-${i}`),
+    );
+
+    const chunks = chunkScanResults(results);
+
+    // Should split into 2 chunks: 100 items + 10 items
+    expect(chunks.length).toBe(2);
+    expect(chunks[0].length).toBe(CHUNK_ITEM_LIMIT);
+    expect(chunks[1].length).toBe(10);
+  });
+
+  it("respects item limit even when character limit would allow more", () => {
+    // Create 150 tiny results - well under char limit but over item limit
+    const results = Array.from({ length: 150 }, (_, i) => ({
+      name: `T${i}`,
+      source: "test" as const,
+      sourceFile: `t${i}.ts`,
+      kind: "task" as const,
+    }));
+
+    const chunks = chunkScanResults(results);
+
+    // Should split by item count (100 + 50)
+    expect(chunks.length).toBe(2);
+    expect(chunks[0].length).toBe(CHUNK_ITEM_LIMIT);
+    expect(chunks[1].length).toBe(50);
+  });
+
+  it("character limit takes precedence when it triggers first", () => {
+    // Create 50 large results that exceed char limit before item limit
+    const largeResults = Array.from({ length: 50 }, (_, i) => ({
+      name: `Task ${i} with a long name for testing purposes`,
+      source: "test" as const,
+      sourceFile: `tests/very/long/path/to/file/${i}/component.test.ts`,
+      kind: "task" as const,
+      description: "x".repeat(1000), // Large description
+      acceptanceCriteria: ["Criterion A", "Criterion B", "Criterion C"],
+      priority: "medium" as const,
+      tags: ["tag-a", "tag-b", "tag-c"],
+    }));
+
+    const chunks = chunkScanResults(largeResults);
+
+    // Should split by char limit, resulting in chunks smaller than 100 items
+    expect(chunks.length).toBeGreaterThanOrEqual(2);
+    for (const chunk of chunks) {
+      expect(chunk.length).toBeLessThanOrEqual(CHUNK_ITEM_LIMIT);
+      // Each chunk should stay within char limit (except oversized singles)
+      if (chunk.length > 1) {
+        const summary = summarizeScanResults(chunk);
+        expect(summary.length).toBeLessThanOrEqual(CHUNK_CHAR_LIMIT);
+      }
+    }
+  });
+});
+
+describe("CHUNK_ITEM_LIMIT", () => {
+  it("is exported and equals 100", () => {
+    expect(CHUNK_ITEM_LIMIT).toBe(100);
   });
 });
 

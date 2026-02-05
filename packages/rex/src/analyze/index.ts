@@ -16,6 +16,7 @@ export {
   DEFAULT_MODEL,
   MAX_RETRIES,
   CHUNK_CHAR_LIMIT,
+  CHUNK_ITEM_LIMIT,
   FEW_SHOT_EXAMPLE,
   spawnClaude,
   reasonFromFile,
