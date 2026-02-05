@@ -41,6 +41,11 @@ describe("buildIdeasPrompt", () => {
     expect(prompt).toMatch(/[Bb]rainstorming|freeform|rough/);
     // Should instruct to capture every idea
     expect(prompt).toMatch(/[Ee]very idea|[Cc]apture/i);
+    // Should NOT use formal spec language like "Read the following document"
+    expect(prompt).not.toContain("Read the following document");
+    expect(prompt).not.toContain("Document to analyze");
+    // Should reference notes-specific concepts
+    expect(prompt).toContain("Brainstorming notes");
   });
 
   it("includes existing PRD summary for dedup", async () => {
@@ -122,7 +127,42 @@ describe("buildIdeasPrompt", () => {
   it("instructs LLM to handle ambiguous ideas", async () => {
     const prompt = await buildIdeasPrompt("vague ideas", [], tmpDir);
 
+    // Should mention ambiguity handling
     expect(prompt).toMatch(/[Aa]mbiguous/);
+    // Should instruct to note assumptions for unclear ideas
+    expect(prompt).toMatch(/[Aa]ssum/);
+  });
+
+  it("instructs LLM to handle questions as feature requests", async () => {
+    const prompt = await buildIdeasPrompt("what about dark mode?", [], tmpDir);
+
+    expect(prompt).toMatch(/[Qq]uestions/);
+    expect(prompt).toMatch(/feature request/i);
+  });
+
+  it("instructs LLM to expand shorthand and abbreviations", async () => {
+    const prompt = await buildIdeasPrompt("auth perf caching", [], tmpDir);
+
+    expect(prompt).toMatch(/[Ss]horthand|[Aa]bbreviation/);
+  });
+
+  it("instructs LLM to handle contradictory notes", async () => {
+    const prompt = await buildIdeasPrompt("use Redis; no external deps", [], tmpDir);
+
+    expect(prompt).toMatch(/[Cc]ontradictory/);
+  });
+
+  it("instructs LLM to turn problems into investigative tasks", async () => {
+    const prompt = await buildIdeasPrompt("login is slow", [], tmpDir);
+
+    expect(prompt).toMatch(/problem|investigat/i);
+  });
+
+  it("instructs LLM to flesh out vague ideas into concrete tasks", async () => {
+    const prompt = await buildIdeasPrompt("make it better", [], tmpDir);
+
+    expect(prompt).toMatch(/[Vv]ague/);
+    expect(prompt).toMatch(/concrete|actionable|flesh/i);
   });
 });
 

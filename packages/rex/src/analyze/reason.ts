@@ -1371,7 +1371,7 @@ Do NOT create a new epic — instead use the parent's title as the epic title in
     }
   }
 
-  return `You are a product requirements analyst. You are reading freeform brainstorming notes — rough ideas, bullet points, stream-of-consciousness thoughts, and informal descriptions. Your job is to distill ALL of these ideas into a well-structured PRD as a JSON array.
+  return `You are a product requirements analyst reading raw brainstorming notes. These are NOT formal specs — they are rough ideas, bullet points, half-formed thoughts, stream-of-consciousness fragments, and informal shorthand. Your job is to distill every idea into a well-structured PRD as a JSON array.
 
 Each element must be an object with:
 - "epic": { "title": string }
@@ -1379,17 +1379,23 @@ Each element must be an object with:
 
 ${FEW_SHOT_EXAMPLE}
 
-Guidelines:
-- These are rough notes, not a formal specification. Extract the intent behind each idea.
-- Capture EVERY idea mentioned, even brief or vague ones — flesh them out into actionable tasks.
+Interpreting rough notes:
+- Capture EVERY idea, no matter how brief or fragmentary. A single word like "caching" is still an idea worth structuring.
+- Questions ("what about dark mode?") are feature requests in disguise — treat them as such.
+- Shorthand and abbreviations are common in notes. Expand "auth" → "authentication", "perf" → "performance", etc. using the project context to infer meaning.
+- When an idea is ambiguous or could mean multiple things, pick the most likely interpretation given the project context and note your assumption in the task description (e.g. "Assuming this refers to client-side caching based on project architecture").
+- Contradictory notes (e.g. "use Redis" and "keep it simple, no external deps") should both be captured as separate options with a note about the trade-off.
+- If notes mention a problem without a solution ("login is slow"), turn it into an investigative task (e.g. "Profile and optimize login flow").
+- Vague ideas ("make it better", "improve UX") should be fleshed out into concrete, actionable tasks based on what the project context suggests.
+
+Structuring guidelines:
 - Group related ideas into logical epics and features.
 - Task titles must be specific and actionable (verb-first, e.g. "Implement X", "Add Y").
 - Every task MUST have either a description or acceptanceCriteria (preferably both).
 - Each task should represent a single unit of work completable in one session.
 - Assign priority based on: blocking dependencies → user-facing impact → technical debt.
-- If an idea is ambiguous, interpret it reasonably and note assumptions in the description.
 - Do NOT include items that duplicate anything already in the existing PRD below.
-- Use the project context to understand terminology and architecture.
+- Use the project context to understand terminology, architecture, and domain-specific jargon in the notes.
 ${parentConstraint}
 ${contextBlock}
 Existing PRD:

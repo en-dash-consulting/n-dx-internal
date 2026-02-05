@@ -2600,7 +2600,7 @@
             {
               "id": "8aa36d0d-ee60-45cb-9e1a-9a404b187ca4",
               "title": "Build token accumulation system",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Accumulate token usage across multiple API turns and sessions",
               "acceptanceCriteria": [
@@ -2615,7 +2615,9 @@
                 "accumulateTokenUsage",
                 "extractRexTokenUsage"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T18:55:19.981Z",
+              "completedAt": "2026-02-05T18:58:20.756Z"
             },
             {
               "id": "66ccb0ca-13f1-44e2-bd6d-8fae2359b0c2",
@@ -2800,7 +2802,7 @@
             {
               "id": "272d5ffc-a4f6-46f1-ae39-bb63e17b3b95",
               "title": "Enhance ideas import prompts",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Improve prompts for importing brainstorming notes",
               "acceptanceCriteria": [
@@ -2814,7 +2816,9 @@
                 "ideas",
                 "import"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T19:02:53.660Z",
+              "completedAt": "2026-02-05T19:07:13.641Z"
             },
             {
               "id": "a0848c59-2d3b-4fcd-9360-591dec30cf18",
@@ -2959,7 +2963,7 @@
             {
               "id": "4c205b80-c5d2-48e9-96ea-960312de0f58",
               "title": "Enhance component definition extraction",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Improve detection of various React component patterns",
               "acceptanceCriteria": [
@@ -2980,7 +2984,9 @@
               "tags": [
                 "extractComponentDefinitions"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T18:59:05.086Z",
+              "completedAt": "2026-02-05T19:01:51.057Z"
             },
             {
               "id": "0b59dd36-5d8c-4a1e-9644-0bbf2f3b94a5",
