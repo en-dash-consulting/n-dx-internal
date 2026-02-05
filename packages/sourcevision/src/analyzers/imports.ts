@@ -47,17 +47,30 @@ export function extractImports(sourceText: string, filePath: string): RawImport[
     if (ts.isImportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
       const specifier = node.moduleSpecifier.text;
       const isTypeOnly = node.importClause?.isTypeOnly ?? false;
-      const symbols = extractImportSymbols(node);
-      imports.push({
-        specifier,
-        type: isTypeOnly ? "type" : "static",
-        symbols,
-      });
+
+      if (isTypeOnly) {
+        // `import type { Foo } from "x"` — whole clause is type-only
+        imports.push({ specifier, type: "type", symbols: extractImportSymbols(node) });
+      } else {
+        // Check for inline type specifiers: `import { type Foo, bar } from "x"`
+        const { typeSymbols, valueSymbols } = splitImportSymbols(node);
+        if (typeSymbols.length > 0) {
+          imports.push({ specifier, type: "type", symbols: typeSymbols });
+        }
+        if (valueSymbols.length > 0) {
+          imports.push({ specifier, type: "static", symbols: valueSymbols });
+        }
+        // If neither (side-effect import), still record it
+        if (typeSymbols.length === 0 && valueSymbols.length === 0) {
+          imports.push({ specifier, type: "static", symbols: extractImportSymbols(node) });
+        }
+      }
     }
 
     // export ... from "specifier"
     if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
       const specifier = node.moduleSpecifier.text;
+      const isTypeOnly = node.isTypeOnly ?? false;
       const symbols: string[] = [];
       if (node.exportClause && ts.isNamedExports(node.exportClause)) {
         for (const el of node.exportClause.elements) {
@@ -66,7 +79,7 @@ export function extractImports(sourceText: string, filePath: string): RawImport[
       } else {
         symbols.push("*");
       }
-      imports.push({ specifier, type: "reexport", symbols });
+      imports.push({ specifier, type: isTypeOnly ? "type" : "reexport", symbols });
     }
 
     // import("specifier") or require("specifier")
@@ -119,6 +132,39 @@ function extractImportSymbols(node: ts.ImportDeclaration): string[] {
   }
 
   return symbols.length > 0 ? symbols : ["*"];
+}
+
+/**
+ * Split import symbols into type-only and value symbols.
+ * Handles inline `type` specifiers: `import { type Foo, bar } from "x"`
+ */
+function splitImportSymbols(node: ts.ImportDeclaration): { typeSymbols: string[]; valueSymbols: string[] } {
+  const typeSymbols: string[] = [];
+  const valueSymbols: string[] = [];
+  const clause = node.importClause;
+
+  if (!clause) return { typeSymbols, valueSymbols }; // side-effect import
+
+  // Default import is always a value
+  if (clause.name) {
+    valueSymbols.push("default");
+  }
+
+  if (clause.namedBindings) {
+    if (ts.isNamedImports(clause.namedBindings)) {
+      for (const el of clause.namedBindings.elements) {
+        if (el.isTypeOnly) {
+          typeSymbols.push(el.name.text);
+        } else {
+          valueSymbols.push(el.name.text);
+        }
+      }
+    } else if (ts.isNamespaceImport(clause.namedBindings)) {
+      valueSymbols.push("*");
+    }
+  }
+
+  return { typeSymbols, valueSymbols };
 }
 
 // ── Module resolution ────────────────────────────────────────────────────────

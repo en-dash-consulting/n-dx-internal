@@ -80,6 +80,98 @@ describe("extractImports", () => {
     expect(result[0].symbols).toEqual(["*"]);
   });
 
+  it("detects default import", () => {
+    const result = extractImports(
+      'import React from "react";',
+      "test.ts"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("static");
+    expect(result[0].specifier).toBe("react");
+    expect(result[0].symbols).toEqual(["default"]);
+  });
+
+  it("detects default + named combined import", () => {
+    const result = extractImports(
+      'import React, { useState, useEffect } from "react";',
+      "test.ts"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("static");
+    expect(result[0].symbols).toEqual(["default", "useState", "useEffect"]);
+  });
+
+  it("detects inline type import (import { type Foo, bar })", () => {
+    const result = extractImports(
+      'import { type Foo, bar } from "./x";',
+      "test.ts"
+    );
+    // Should produce two imports: one type for Foo, one static for bar
+    expect(result).toHaveLength(2);
+    const typeImport = result.find((r) => r.type === "type");
+    const staticImport = result.find((r) => r.type === "static");
+    expect(typeImport).toBeDefined();
+    expect(typeImport!.symbols).toEqual(["Foo"]);
+    expect(staticImport).toBeDefined();
+    expect(staticImport!.symbols).toEqual(["bar"]);
+  });
+
+  it("detects star re-export (export * from)", () => {
+    const result = extractImports(
+      'export * from "./utils";',
+      "test.ts"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("reexport");
+    expect(result[0].specifier).toBe("./utils");
+    expect(result[0].symbols).toEqual(["*"]);
+  });
+
+  it("detects namespace re-export (export * as ns from)", () => {
+    const result = extractImports(
+      'export * as utils from "./utils";',
+      "test.ts"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("reexport");
+    expect(result[0].specifier).toBe("./utils");
+    expect(result[0].symbols).toEqual(["*"]);
+  });
+
+  it("detects type re-export (export type { Foo } from)", () => {
+    const result = extractImports(
+      'export type { Foo } from "./types";',
+      "test.ts"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("type");
+    expect(result[0].specifier).toBe("./types");
+    expect(result[0].symbols).toContain("Foo");
+  });
+
+  it("detects require() in nested expression", () => {
+    const result = extractImports(
+      'const pick = require("lodash").pick;',
+      "test.js"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("require");
+    expect(result[0].specifier).toBe("lodash");
+  });
+
+  it("detects dynamic import() in async function", () => {
+    const source = `
+      async function load() {
+        const { default: mod } = await import("./module");
+        return mod;
+      }
+    `;
+    const result = extractImports(source, "test.ts");
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("dynamic");
+    expect(result[0].specifier).toBe("./module");
+  });
+
   it("handles multiple imports in one file", () => {
     const source = `
       import { a } from "./a";
@@ -88,6 +180,28 @@ describe("extractImports", () => {
     `;
     const result = extractImports(source, "test.ts");
     expect(result).toHaveLength(3);
+  });
+
+  it("handles all import types in a single file", () => {
+    const source = `
+      import { a } from "./a";
+      import type { B } from "./b";
+      import * as c from "./c";
+      import "./side-effect";
+      import def from "./default";
+      const d = import("./dynamic");
+      const e = require("./cjs");
+      export { f } from "./reexport";
+      export type { G } from "./type-reexport";
+    `;
+    const result = extractImports(source, "test.ts");
+    // static(a) + type(B) + static(c namespace) + static(side-effect) + static(def) + dynamic + require + reexport + type-reexport
+    expect(result).toHaveLength(9);
+    expect(result.filter((r) => r.type === "static")).toHaveLength(4);
+    expect(result.filter((r) => r.type === "type")).toHaveLength(2);
+    expect(result.filter((r) => r.type === "dynamic")).toHaveLength(1);
+    expect(result.filter((r) => r.type === "require")).toHaveLength(1);
+    expect(result.filter((r) => r.type === "reexport")).toHaveLength(1);
   });
 });
 

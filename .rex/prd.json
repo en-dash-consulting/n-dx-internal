@@ -3139,9 +3139,9 @@
             {
               "id": "ff4cd814-d51a-4d1e-bde9-479a1ee1ac6d",
               "title": "Enhance import extraction",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Improve detection of various import patterns in source code",
+              "description": "Improve detection of various import patterns in source code\n\n## Changes Made\n- **Inline type imports**: `import { type Foo, bar } from \"./x\"` now correctly splits into separate type and static RawImport entries, detecting per-symbol type-only status via TS 4.5+ `isTypeOnly` on ImportSpecifier elements\n- **Type re-exports**: `export type { Foo } from \"./x\"` now classified as `\"type\"` instead of `\"reexport\"`, using `ExportDeclaration.isTypeOnly`\n- Added `splitImportSymbols()` helper that partitions named bindings into type-only and value symbols\n\n## Tests Added (9 new)\n- default import\n- default + named combined import\n- inline type import (import { type Foo, bar })\n- star re-export (export * from)\n- namespace re-export (export * as ns from)\n- type re-export (export type { Foo } from)\n- require() in nested expression\n- dynamic import() in async function\n- all import types in a single file (comprehensive)",
               "acceptanceCriteria": [
                 "detects static imports",
                 "detects type imports",
@@ -3155,7 +3155,9 @@
               "tags": [
                 "extractImports"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T19:16:09.315Z",
+              "completedAt": "2026-02-05T19:22:40.549Z"
             },
             {
               "id": "af00c704-7915-46e1-ba93-c58413698e80",
