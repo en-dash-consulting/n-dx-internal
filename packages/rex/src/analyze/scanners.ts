@@ -626,6 +626,70 @@ function findingPrefix(type: SVFinding["type"]): string {
   }
 }
 
+/** Generate a concrete fix suggestion based on finding text patterns */
+function generateFixSuggestion(finding: SVFinding, zone?: SVZone): string[] {
+  const suggestions: string[] = [];
+  const text = finding.text.toLowerCase();
+
+  // Pattern-based fix suggestions
+  if (text.includes("circular") || text.includes("cycle")) {
+    suggestions.push("Break the dependency cycle by extracting shared types to a common module");
+    suggestions.push("Consider introducing an interface/abstraction to invert the dependency direction");
+  }
+  if (text.includes("bidirectional") || text.includes("mutual")) {
+    suggestions.push("Extract shared interfaces to a dedicated types module");
+    suggestions.push("Apply dependency inversion to establish unidirectional flow");
+  }
+  if (text.includes("god") || text.includes("too broad") || text.includes("too large")) {
+    suggestions.push("Split responsibilities into focused modules with single concerns");
+    if (zone && zone.files.length > 20) {
+      suggestions.push(`Consider splitting into 2-3 zones (current: ${zone.files.length} files)`);
+    }
+  }
+  if (text.includes("duplicat") || text.includes("copy-paste") || text.includes("repeated")) {
+    suggestions.push("Extract duplicated logic to a shared utility function");
+    suggestions.push("Create a single source of truth for this functionality");
+  }
+  if (text.includes("hardcoded") || text.includes("magic")) {
+    suggestions.push("Extract to configuration or constants file");
+    suggestions.push("Consider making values configurable via environment or config");
+  }
+  if (text.includes("missing test") || text.includes("no test") || text.includes("untested")) {
+    suggestions.push("Add unit tests for critical code paths");
+    suggestions.push("Consider TDD approach for new additions");
+  }
+  if (text.includes("coupling") && text.includes("high")) {
+    suggestions.push("Reduce coupling by introducing abstraction layers");
+    suggestions.push("Apply interface segregation to minimize dependencies");
+  }
+  if (text.includes("cohesion") && text.includes("low")) {
+    suggestions.push("Group related functionality together");
+    suggestions.push("Consider splitting into more focused modules");
+  }
+  if (text.includes("dead code") || text.includes("unused") || text.includes("orphan")) {
+    suggestions.push("Remove unused code after verifying no hidden references");
+    suggestions.push("Add tests if the code should be retained");
+  }
+  if (text.includes("bypass") || text.includes("violat")) {
+    suggestions.push("Refactor to use the established abstraction layer");
+    suggestions.push("Document exceptions if bypass is intentional");
+  }
+  if (text.includes("security") || text.includes("guard")) {
+    suggestions.push("Add integration tests for security-critical paths");
+    suggestions.push("Audit for potential bypass vectors");
+  }
+  if (text.includes("timeout") || text.includes("no backoff") || text.includes("retry")) {
+    suggestions.push("Implement exponential backoff for retries");
+    suggestions.push("Add configurable timeout with reasonable defaults");
+  }
+  if (text.includes("extract") || text.includes("candidate for")) {
+    suggestions.push("Extract to a dedicated module when complexity increases");
+    suggestions.push("Document extraction criteria for future maintainers");
+  }
+
+  return suggestions;
+}
+
 export async function scanSourceVision(dir: string): Promise<ScanResult[]> {
   const svDir = join(dir, ".sourcevision");
   try {
@@ -688,15 +752,35 @@ export async function scanSourceVision(dir: string): Promise<ScanResult[]> {
           const primaryFile = finding.related?.[0];
           const sourceFile = primaryFile ?? ".sourcevision/zones.json";
 
-          // Build acceptance criteria from related file paths
+          // Build acceptance criteria from related file paths and fix suggestions
           const criteria: string[] = [];
+
+          // Include specific file paths from the zone
           if (finding.related && finding.related.length > 0) {
-            criteria.push(
-              `Affected files: ${finding.related.join(", ")}`,
-            );
+            criteria.push(`Affected files: ${finding.related.join(", ")}`);
+          } else if (zone && zone.files.length > 0 && zone.files.length <= 10) {
+            // For zone-scoped findings without explicit related files, include zone files
+            criteria.push(`Zone files: ${zone.files.join(", ")}`);
           }
+
+          // Include entry points if available (useful for understanding impact)
+          if (zone?.entryPoints && zone.entryPoints.length > 0) {
+            criteria.push(`Entry points: ${zone.entryPoints.join(", ")}`);
+          }
+
+          // Zone metadata
           if (zone) {
-            criteria.push(`Zone: ${zone.name} (${zone.files.length} files)`);
+            criteria.push(`Zone: ${zone.name} (${zone.files.length} files, cohesion: ${zone.cohesion.toFixed(2)}, coupling: ${zone.coupling.toFixed(2)})`);
+          }
+
+          // Generate concrete fix suggestions based on finding patterns
+          const fixSuggestions = generateFixSuggestion(finding, zone);
+          if (fixSuggestions.length > 0) {
+            criteria.push(""); // Visual separator
+            criteria.push("Suggested fixes:");
+            for (const suggestion of fixSuggestions) {
+              criteria.push(`• ${suggestion}`);
+            }
           }
 
           results.push({
@@ -774,6 +858,12 @@ export async function scanSourceVision(dir: string): Promise<ScanResult[]> {
           acceptanceCriteria: [
             `Break circular dependency cycle: ${dep.cycle.join(" → ")}`,
             ...uniqueFiles.map((f) => `File: ${f}`),
+            "",
+            "Suggested fixes:",
+            "• Extract shared types/interfaces to a common module that both can import",
+            "• Use dependency injection to invert one direction of the dependency",
+            "• Consider if one module should contain the other's functionality",
+            "• Lazy-load or defer the import to break the static cycle",
           ],
         });
       }

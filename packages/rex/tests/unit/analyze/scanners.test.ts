@@ -954,6 +954,255 @@ describe("scanSourceVision", () => {
     const suggestion = tasks.find((t) => t.name.includes("Consider adding tests"));
     expect(suggestion?.priority).toBe("medium");
   });
+
+  it("includes concrete fix suggestions based on finding patterns", async () => {
+    await mkdir(join(tempDir, ".sourcevision"), { recursive: true });
+    await writeFile(
+      join(tempDir, ".sourcevision", "zones.json"),
+      JSON.stringify({
+        zones: [
+          {
+            id: "core",
+            name: "Core",
+            description: "Core module",
+            files: ["src/core.ts"],
+            entryPoints: ["src/core.ts"],
+            cohesion: 0.7,
+            coupling: 0.3,
+          },
+        ],
+        findings: [
+          {
+            type: "anti-pattern",
+            pass: 1,
+            scope: "core",
+            text: "Bidirectional coupling between modules",
+            severity: "warning",
+            related: ["src/moduleA.ts", "src/moduleB.ts"],
+          },
+        ],
+      }),
+    );
+
+    const results = await scanSourceVision(tempDir);
+    const task = results.find((r) => r.kind === "task" && r.name.includes("Bidirectional"));
+    expect(task).toBeDefined();
+    expect(task!.acceptanceCriteria).toBeDefined();
+    // Should include fix suggestions
+    expect(task!.acceptanceCriteria!.some((c: string) => c.includes("Suggested fixes:"))).toBe(true);
+    expect(task!.acceptanceCriteria!.some((c: string) => c.includes("interfaces") || c.includes("types"))).toBe(true);
+  });
+
+  it("includes zone entry points in acceptance criteria", async () => {
+    await mkdir(join(tempDir, ".sourcevision"), { recursive: true });
+    await writeFile(
+      join(tempDir, ".sourcevision", "zones.json"),
+      JSON.stringify({
+        zones: [
+          {
+            id: "api",
+            name: "API",
+            description: "API layer",
+            files: ["src/api/routes.ts", "src/api/handlers.ts"],
+            entryPoints: ["src/api/routes.ts"],
+            cohesion: 0.8,
+            coupling: 0.2,
+          },
+        ],
+        findings: [
+          {
+            type: "suggestion",
+            pass: 2,
+            scope: "api",
+            text: "Add input validation middleware",
+            severity: "warning",
+          },
+        ],
+      }),
+    );
+
+    const results = await scanSourceVision(tempDir);
+    const task = results.find((r) => r.kind === "task" && r.name.includes("validation middleware"));
+    expect(task).toBeDefined();
+    // Should include entry points
+    expect(task!.acceptanceCriteria!.some((c: string) => c.includes("Entry points:"))).toBe(true);
+    expect(task!.acceptanceCriteria!.some((c: string) => c.includes("src/api/routes.ts"))).toBe(true);
+  });
+
+  it("includes zone metrics in acceptance criteria", async () => {
+    await mkdir(join(tempDir, ".sourcevision"), { recursive: true });
+    await writeFile(
+      join(tempDir, ".sourcevision", "zones.json"),
+      JSON.stringify({
+        zones: [
+          {
+            id: "utils",
+            name: "Utils",
+            description: "Utility functions",
+            files: ["src/utils.ts"],
+            entryPoints: [],
+            cohesion: 0.95,
+            coupling: 0.05,
+          },
+        ],
+        findings: [
+          {
+            type: "observation",
+            pass: 1,
+            scope: "utils",
+            text: "Low coupling indicates good isolation",
+            severity: "warning",
+          },
+        ],
+      }),
+    );
+
+    const results = await scanSourceVision(tempDir);
+    const task = results.find((r) => r.kind === "task" && r.name.includes("Low coupling"));
+    expect(task).toBeDefined();
+    // Should include zone metrics
+    expect(task!.acceptanceCriteria!.some((c: string) => c.includes("cohesion: 0.95"))).toBe(true);
+    expect(task!.acceptanceCriteria!.some((c: string) => c.includes("coupling: 0.05"))).toBe(true);
+  });
+
+  it("provides fix suggestions for duplication findings", async () => {
+    await mkdir(join(tempDir, ".sourcevision"), { recursive: true });
+    await writeFile(
+      join(tempDir, ".sourcevision", "zones.json"),
+      JSON.stringify({
+        zones: [
+          {
+            id: "core",
+            name: "Core",
+            description: "Core module",
+            files: ["src/core.ts"],
+            entryPoints: [],
+            cohesion: 0.9,
+            coupling: 0.1,
+          },
+        ],
+        findings: [
+          {
+            type: "pattern",
+            pass: 2,
+            scope: "core",
+            text: "Duplicated sorting logic in multiple files",
+            severity: "warning",
+          },
+        ],
+      }),
+    );
+
+    const results = await scanSourceVision(tempDir);
+    const task = results.find((r) => r.kind === "task" && r.name.includes("Duplicated"));
+    expect(task).toBeDefined();
+    // Should suggest extracting to utility
+    expect(task!.acceptanceCriteria!.some((c: string) => c.toLowerCase().includes("extract"))).toBe(true);
+    expect(task!.acceptanceCriteria!.some((c: string) => c.toLowerCase().includes("shared") || c.toLowerCase().includes("utility"))).toBe(true);
+  });
+
+  it("provides fix suggestions for god object findings", async () => {
+    await mkdir(join(tempDir, ".sourcevision"), { recursive: true });
+    await writeFile(
+      join(tempDir, ".sourcevision", "zones.json"),
+      JSON.stringify({
+        zones: [
+          {
+            id: "main",
+            name: "Main",
+            description: "Main module",
+            files: Array.from({ length: 25 }, (_, i) => `src/file${i}.ts`),
+            entryPoints: [],
+            cohesion: 0.6,
+            coupling: 0.4,
+          },
+        ],
+        findings: [
+          {
+            type: "anti-pattern",
+            pass: 3,
+            scope: "main",
+            text: "God module with too many responsibilities",
+            severity: "critical",
+          },
+        ],
+      }),
+    );
+
+    const results = await scanSourceVision(tempDir);
+    const task = results.find((r) => r.kind === "task" && r.name.includes("God module"));
+    expect(task).toBeDefined();
+    // Should suggest splitting
+    expect(task!.acceptanceCriteria!.some((c: string) => c.toLowerCase().includes("split"))).toBe(true);
+    // Should mention current file count since zone has >20 files
+    expect(task!.acceptanceCriteria!.some((c: string) => c.includes("25 files"))).toBe(true);
+  });
+
+  it("includes zone files when no related files specified", async () => {
+    await mkdir(join(tempDir, ".sourcevision"), { recursive: true });
+    await writeFile(
+      join(tempDir, ".sourcevision", "zones.json"),
+      JSON.stringify({
+        zones: [
+          {
+            id: "small",
+            name: "Small",
+            description: "Small zone",
+            files: ["src/a.ts", "src/b.ts", "src/c.ts"],
+            entryPoints: ["src/a.ts"],
+            cohesion: 0.9,
+            coupling: 0.1,
+          },
+        ],
+        findings: [
+          {
+            type: "suggestion",
+            pass: 1,
+            scope: "small",
+            text: "Consider adding documentation",
+            severity: "info",
+            // No related field
+          },
+        ],
+      }),
+    );
+
+    const results = await scanSourceVision(tempDir);
+    const task = results.find((r) => r.kind === "task" && r.name.includes("documentation"));
+    expect(task).toBeDefined();
+    // Should include zone files since no explicit related files
+    expect(task!.acceptanceCriteria!.some((c: string) => c.includes("Zone files:"))).toBe(true);
+    expect(task!.acceptanceCriteria!.some((c: string) => c.includes("src/a.ts"))).toBe(true);
+  });
+
+  it("provides fix suggestions for circular dependency imports", async () => {
+    await mkdir(join(tempDir, ".sourcevision"), { recursive: true });
+    await writeFile(
+      join(tempDir, ".sourcevision", "imports.json"),
+      JSON.stringify({
+        edges: [],
+        external: [],
+        summary: {
+          totalEdges: 5,
+          totalExternal: 2,
+          circularCount: 1,
+          circulars: [
+            { cycle: ["src/moduleA.ts", "src/moduleB.ts", "src/moduleA.ts"] },
+          ],
+          mostImported: [],
+          avgImportsPerFile: 2,
+        },
+      }),
+    );
+
+    const results = await scanSourceVision(tempDir);
+    const circular = results.find((r) => r.name.startsWith("Resolve circular"));
+    expect(circular).toBeDefined();
+    // Should include fix suggestions for circular deps
+    expect(circular!.acceptanceCriteria!.some((c: string) => c.includes("Suggested fixes:"))).toBe(true);
+    expect(circular!.acceptanceCriteria!.some((c: string) => c.toLowerCase().includes("extract") || c.toLowerCase().includes("common"))).toBe(true);
+    expect(circular!.acceptanceCriteria!.some((c: string) => c.toLowerCase().includes("dependency injection") || c.toLowerCase().includes("invert"))).toBe(true);
+  });
 });
 
 describe("scanPackageJson", () => {

@@ -5944,7 +5944,7 @@
             {
               "id": "e6615ff0-9b2f-4e35-bd69-51e0b06e68db",
               "title": "Enhance scanSourceVision output",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Produce more actionable tasks from zone findings with file paths and suggested fixes",
               "acceptanceCriteria": [
@@ -5957,7 +5957,9 @@
                 "analysis",
                 "sourcevision"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:24:32.287Z",
+              "completedAt": "2026-02-05T13:29:18.183Z"
             },
             {
               "id": "cf07f0e1-caf2-4724-aedd-53a79a492d2f",
@@ -7892,7 +7894,7 @@
             {
               "id": "38975c85-6093-4992-8213-6b9ff8a15d47",
               "title": "Add unit tests for agent task brief assembly",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Test task brief creation and invalid task selection handling",
               "acceptanceCriteria": [
@@ -7905,7 +7907,9 @@
                 "testing",
                 "agent"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T12:50:16.993Z",
+              "completedAt": "2026-02-05T12:56:10.782Z"
             },
             {
               "id": "29290aeb-e549-4adb-ac0c-52e9458a21a2",
@@ -7928,7 +7932,7 @@
             {
               "id": "3d2a1253-abbc-4fb6-a850-4cb245e5cbb6",
               "title": "Add unit tests for validation and completion workflows",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Test validation result formatting and change reversion capabilities",
               "acceptanceCriteria": [
@@ -7941,7 +7945,9 @@
                 "testing",
                 "validation"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:16:39.630Z",
+              "completedAt": "2026-02-05T13:20:43.669Z"
             }
           ]
         },
@@ -7956,7 +7962,7 @@
             {
               "id": "360bcb9a-2973-4196-8c56-1fadd2b8ce0e",
               "title": "Add unit tests for stuck task detection",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Test countRecentFailures and task failure tracking",
               "acceptanceCriteria": [
@@ -7970,7 +7976,9 @@
                 "agent",
                 "reliability"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:05:49.548Z",
+              "completedAt": "2026-02-05T13:06:39.862Z"
             },
             {
               "id": "36511476-2208-491c-90d1-0852e40bdfbf",
@@ -8040,7 +8048,7 @@
             {
               "id": "c709a521-5f75-4c7d-a910-35011c6f4ef7",
               "title": "Add unit tests for path security validation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Test glob matching and path validation for security",
               "acceptanceCriteria": [
@@ -8053,14 +8061,16 @@
                 "testing",
                 "security"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:00:52.606Z",
+              "completedAt": "2026-02-05T13:02:41.398Z"
             },
             {
               "id": "f84b3d2e-35a7-497e-a5de-134a65c15183",
               "title": "Add unit tests for tool execution safety",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Test git and shell tool execution with proper safeguards",
+              "description": "Enhanced tool execution safety test coverage from 17 to 89 tests across three test files:\n\n- git.test.ts: 4 → 23 tests covering allowed/disallowed subcommands, command injection prevention (semicolons, &&, backticks, $()), quoted args handling\n- shell.test.ts: 5 → 34 tests covering command injection, dangerous patterns (sudo, eval, exec), timeout handling, working directory validation, output capture\n- commands.test.ts: 8 → 32 tests covering shell operator injection, command substitution blocking, variable expansion rejection, error message quality\n\nAll 514 hench tests pass. Acceptance criteria met: toolGit validation, Shell/toolRunCommand safety, and command injection prevention thoroughly tested.",
               "acceptanceCriteria": [
                 "Test toolGit command validation",
                 "Test Shell and toolRunCommand safety",
@@ -8072,7 +8082,9 @@
                 "security",
                 "tools"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:10:18.156Z",
+              "completedAt": "2026-02-05T13:13:53.412Z"
             }
           ]
         },
@@ -8086,7 +8098,7 @@
             {
               "id": "80039676-955c-42b8-a128-b0378f1879c3",
               "title": "Add unit tests for hench agent retry logic",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Test transient error detection, exponential backoff delay computation, and retry attempt numbering",
               "acceptanceCriteria": [
@@ -8100,12 +8112,14 @@
                 "computeDelay",
                 "buildRetryNotice"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T12:56:45.501Z",
+              "completedAt": "2026-02-05T12:57:56.043Z"
             },
             {
               "id": "0be711a3-7f13-4c1f-986c-b5f5f4a5209a",
               "title": "Add tests for task completion validation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Validate task state transitions, brief formatting, and error handling for invalid task selection",
               "acceptanceCriteria": [
@@ -8129,7 +8143,9 @@
                 "assembleTaskBrief",
                 "TaskNotActionableError"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T12:44:26.317Z",
+              "completedAt": "2026-02-05T12:48:18.430Z"
             },
             {
               "id": "bb57e11f-03a4-43fb-97ab-6ef210cf76ee",
@@ -12041,7 +12057,7 @@
             {
               "id": "a1ab517b-1564-483d-bb9f-dcd4da8933f4",
               "title": "Add unit tests for tree operations",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Test core tree manipulation and statistics computation",
               "acceptanceCriteria": [
@@ -12057,12 +12073,14 @@
                 "prd",
                 "core"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:14:30.283Z",
+              "completedAt": "2026-02-05T13:16:13.352Z"
             },
             {
               "id": "6953b3c2-7537-449e-a2f6-0414f8154022",
               "title": "Add unit tests for task selection logic",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Test next task selection and completion tracking",
               "acceptanceCriteria": [
@@ -12076,7 +12094,9 @@
                 "prd",
                 "tasks"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:07:11.509Z",
+              "completedAt": "2026-02-05T13:09:43.555Z"
             },
             {
               "id": "c460f9e7-7adb-4324-93da-26365e83ccda",
@@ -12148,7 +12168,7 @@
             {
               "id": "db1472b5-527e-4fc6-8f04-222b348a9905",
               "title": "Add unit tests for LLM integration",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Test AI reasoning and JSON extraction capabilities",
               "acceptanceCriteria": [
@@ -12164,7 +12184,9 @@
                 "ai",
                 "json"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T12:58:07.330Z",
+              "completedAt": "2026-02-05T13:00:41.619Z"
             }
           ]
         },
@@ -12440,7 +12462,7 @@
             {
               "id": "178a5ed0-0523-4a37-90b8-565115c77e79",
               "title": "Add unit tests for smart add interface",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Test intelligent PRD item addition and approval flow",
               "acceptanceCriteria": [
@@ -12455,7 +12477,9 @@
                 "cli",
                 "smart-add"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:02:51.490Z",
+              "completedAt": "2026-02-05T13:05:27.240Z"
             }
           ]
         },
@@ -13231,7 +13255,7 @@
             {
               "id": "c6682733-2917-46cb-9282-75881295db55",
               "title": "Add end-to-end tests for CI command",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Test complete CI workflow and validation reporting",
               "acceptanceCriteria": [
@@ -13245,7 +13269,9 @@
                 "ci",
                 "integration"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T12:37:45.011Z",
+              "completedAt": "2026-02-05T12:43:51.971Z"
             },
             {
               "id": "5fab7550-7bab-4c96-8c35-7fb47dd143da",
@@ -13472,9 +13498,9 @@
             {
               "id": "a5547b5c-f1e1-491c-8193-a3280771cbf8",
               "title": "Enhance LLM response parsing with prose handling",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Improve parsing to handle prose-wrapped responses and provide better error messages",
+              "description": "All acceptance criteria already met by existing implementation and 109 tests. No code changes needed.",
               "acceptanceCriteria": [
                 "strips leading prose from LLM response",
                 "extracts JSON object wrapped in prose and treats as single-item array",
@@ -13485,7 +13511,9 @@
               "tags": [
                 "parseProposalResponse"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:21:13.702Z",
+              "completedAt": "2026-02-05T13:24:01.081Z"
             }
           ]
         },
