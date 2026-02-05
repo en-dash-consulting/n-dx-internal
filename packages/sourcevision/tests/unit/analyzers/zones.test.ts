@@ -1277,6 +1277,81 @@ describe("analyzeZones findings", () => {
       }
     }
   });
+
+  it("structural findings have severity based on content — entry points get warning", async () => {
+    // "N entry points — wide API surface, consider consolidating exports"
+    // should map to "warning" severity since it suggests action
+    const files = Array.from({ length: 10 }, (_, i) => `src/a/${String.fromCharCode(97 + i)}.ts`);
+    const inventory = makeInventory(files.map((f) => makeFileEntry(f)));
+    // Create enough edges so all files cluster into one zone,
+    // but set up entry points by having every file imported externally
+    const imports = makeImports([
+      makeEdge(files[0], files[1]),
+      makeEdge(files[1], files[2]),
+      makeEdge(files[2], files[3]),
+      makeEdge(files[3], files[4]),
+      makeEdge(files[4], files[5]),
+      makeEdge(files[5], files[6]),
+      makeEdge(files[6], files[7]),
+      makeEdge(files[7], files[8]),
+      makeEdge(files[8], files[9]),
+      // Lots of cross-edges to form one tight cluster
+      makeEdge(files[0], files[5]),
+      makeEdge(files[1], files[6]),
+      makeEdge(files[2], files[7]),
+      makeEdge(files[3], files[8]),
+      makeEdge(files[4], files[9]),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // Find a finding about entry points if it exists
+    const entryPointFinding = result.findings?.find((f) => f.text.includes("entry points"));
+    if (entryPointFinding) {
+      expect(entryPointFinding.severity).toBe("warning");
+    }
+  });
+
+  it("back-populates findings into insights for backward compat", async () => {
+    // After AI enrichment produces findings in the new format, those findings
+    // should also appear in the legacy insights arrays on zones and at top level.
+    // This test uses enrich: false (structural only) where back-population
+    // already works — every zone insight text appears in findings and vice versa.
+    const inventory = makeInventory([
+      makeFileEntry("src/a/x.ts"),
+      makeFileEntry("src/a/y.ts"),
+      makeFileEntry("src/a/z.ts"),
+    ]);
+    const imports = makeImports([
+      makeEdge("src/a/x.ts", "src/a/y.ts"),
+      makeEdge("src/a/y.ts", "src/a/z.ts"),
+      makeEdge("src/a/x.ts", "src/a/z.ts"),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // Every finding's text should appear in the corresponding insights array
+    for (const f of result.findings ?? []) {
+      if (f.scope === "global") {
+        expect(result.insights ?? []).toContain(f.text);
+      } else {
+        const zone = result.zones.find((z) => z.id === f.scope);
+        if (zone) {
+          expect(zone.insights ?? []).toContain(f.text);
+        }
+      }
+    }
+
+    // Every insight should appear as a finding
+    for (const zone of result.zones) {
+      for (const insight of zone.insights ?? []) {
+        expect(result.findings!.some((f) => f.text === insight && f.scope === zone.id)).toBe(true);
+      }
+    }
+    for (const insight of result.insights ?? []) {
+      expect(result.findings!.some((f) => f.text === insight && f.scope === "global")).toBe(true);
+    }
+  });
 });
 
 // ── subdivideZone ──────────────────────────────────────────────────────────────

@@ -2082,7 +2082,7 @@
             {
               "id": "764452f8-0554-4a7b-b237-729e679d3382",
               "title": "Improve proposal building logic",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Enhance buildProposals hierarchy generation",
               "acceptanceCriteria": [
@@ -2095,7 +2095,9 @@
                 "analysis",
                 "ai"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T18:19:32.566Z",
+              "completedAt": "2026-02-05T18:28:56.256Z"
             },
             {
               "id": "7fef6cda-6eee-4b84-a515-6b5261c3cb2a",
@@ -2332,7 +2334,7 @@
             {
               "id": "dda88308-2bb6-4ce2-8d00-3ee31f43d2f4",
               "title": "Maintain backward compatibility for insights",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Ensure new findings format maintains compatibility with existing insights format",
               "acceptanceCriteria": [
@@ -2343,7 +2345,9 @@
               "tags": [
                 "analyzeZones findings"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T18:29:13.448Z",
+              "completedAt": "2026-02-05T18:37:44.423Z"
             }
           ]
         },
@@ -2396,7 +2400,7 @@
             {
               "id": "8d448bbb-3a2e-43e6-b7a9-2acc8fa44b38",
               "title": "Implement robust LLM response parsing",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Parse LLM responses with fallback mechanisms for malformed content",
               "acceptanceCriteria": [
@@ -2413,7 +2417,9 @@
                 "parsing",
                 "robustness"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T18:06:15.624Z",
+              "completedAt": "2026-02-05T18:12:08.556Z"
             },
             {
               "id": "a25d13dc-417e-4020-939c-0a350f5e98de",
@@ -2568,7 +2574,7 @@
             {
               "id": "553cef28-1f04-4870-9d1a-678dbed19668",
               "title": "Implement token extraction from API responses",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Extract token usage data from Claude API streaming responses",
               "acceptanceCriteria": [
@@ -2585,7 +2591,9 @@
               "tags": [
                 "processStreamLine token tracking"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T18:16:18.705Z",
+              "completedAt": "2026-02-05T18:19:10.821Z"
             },
             {
               "id": "8aa36d0d-ee60-45cb-9e1a-9a404b187ca4",
@@ -2837,7 +2845,7 @@
             {
               "id": "65c11692-f57b-463d-8e9f-79706efbd04d",
               "title": "Implement task filtering logic",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Filter out non-actionable tasks based on status and dependencies",
               "acceptanceCriteria": [
@@ -2853,7 +2861,9 @@
                 "findNextTask",
                 "collectCompletedIds"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T18:12:50.380Z",
+              "completedAt": "2026-02-05T18:15:57.340Z"
             },
             {
               "id": "26b1b3bf-44eb-4b0b-b9ff-5470f8200f03",

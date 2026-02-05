@@ -862,7 +862,9 @@ export async function analyzeZones(
           ? "warning"
           : text.includes("High coupling")
             ? "warning"
-            : "info",
+            : text.includes("entry points")
+              ? "warning"
+              : "info",
       });
     }
   }
@@ -899,6 +901,36 @@ export async function analyzeZones(
   }
 
   const allFindings = [...structuralFindings, ...prevAiFindings, ...aiFindings];
+
+  // ── Back-populate findings into insights for backward compatibility ──
+  // AI enrichment may produce structured findings without corresponding legacy
+  // insight strings. Ensure every finding's text appears in the appropriate
+  // insights array so consumers reading only the legacy format stay in sync.
+
+  const zoneInsightSets = new Map<string, Set<string>>();
+  for (const zone of finalZones) {
+    zoneInsightSets.set(zone.id, new Set(zone.insights ?? []));
+  }
+  const globalInsightSet = new Set(allGlobalInsights);
+
+  for (const f of allFindings) {
+    if (f.scope === "global") {
+      if (!globalInsightSet.has(f.text)) {
+        allGlobalInsights.push(f.text);
+        globalInsightSet.add(f.text);
+      }
+    } else {
+      const existing = zoneInsightSets.get(f.scope);
+      if (existing && !existing.has(f.text)) {
+        const zone = finalZones.find((z) => z.id === f.scope);
+        if (zone) {
+          if (!zone.insights) zone.insights = [];
+          zone.insights.push(f.text);
+          existing.add(f.text);
+        }
+      }
+    }
+  }
 
   // Track meta-evaluation count: enrichmentPass stays at 4 for UI, metaEvaluationCount tracks pass 5+
   const prevMetaCount = previousZones?.metaEvaluationCount ?? 0;
