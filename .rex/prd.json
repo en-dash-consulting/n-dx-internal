@@ -5781,7 +5781,7 @@
             {
               "id": "1c72464b-a642-46d4-be6d-f6757a37496e",
               "title": "Create standalone rex command",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add rex binary that directly invokes rex package commands",
               "acceptanceCriteria": [
@@ -5795,7 +5795,9 @@
                 "rex",
                 "standalone"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-05T16:45:43.228Z",
+              "completedAt": "2026-02-05T16:47:44.342Z"
             },
             {
               "id": "85309262-fe76-4fe1-bd52-347fbefff59c",
