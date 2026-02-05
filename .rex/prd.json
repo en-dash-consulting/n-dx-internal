@@ -2153,7 +2153,7 @@
             {
               "id": "5604c1ad-35f1-4453-87f0-00aeb8524594",
               "title": "Implement proposal merging logic",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Merge proposals intelligently while preserving structure",
               "acceptanceCriteria": [
@@ -2169,7 +2169,9 @@
                 "proposals",
                 "deduplication"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T21:27:53.499Z",
+              "completedAt": "2026-02-05T21:32:12.796Z"
             },
             {
               "id": "5591cc9b-d36e-45de-9647-8203ad7b6362",
@@ -2325,7 +2327,7 @@
             {
               "id": "2354d362-6c8f-46df-8532-196f3b6e8aca",
               "title": "Implement findings-first analysis",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Support generating structural findings without requiring AI enrichment",
               "acceptanceCriteria": [
@@ -2338,7 +2340,8 @@
                 "analyzeZones insights"
               ],
               "source": "llm",
-              "startedAt": "2026-02-05T21:10:50.476Z"
+              "startedAt": "2026-02-05T21:10:50.476Z",
+              "completedAt": "2026-02-05T21:27:53.400Z"
             },
             {
               "id": "dda88308-2bb6-4ce2-8d00-3ee31f43d2f4",
