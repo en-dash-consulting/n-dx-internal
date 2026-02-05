@@ -202,4 +202,61 @@ describe("deriveNextSteps", () => {
     // Info severity anti-patterns don't match any pass criteria
     expect(result).toHaveLength(0);
   });
+
+  it("skips findings without severity (undefined)", () => {
+    const findings = [
+      makeFinding({ severity: undefined, type: "observation", text: "No severity" }),
+    ];
+    const result = deriveNextSteps(makeZones(findings));
+    // Findings without severity don't match any pass criteria
+    expect(result).toHaveLength(0);
+  });
+
+  it("groups warning relationship findings by scope", () => {
+    const findings = [
+      makeFinding({ severity: "warning", type: "relationship", scope: "zone-a", text: "Coupling 1" }),
+      makeFinding({ severity: "warning", type: "relationship", scope: "zone-a", text: "Coupling 2" }),
+      makeFinding({ severity: "warning", type: "pattern", scope: "zone-a", text: "Pattern 1" }),
+    ];
+    const result = deriveNextSteps(makeZones(findings));
+    expect(result).toHaveLength(1);
+    expect(result[0].relatedFindings).toHaveLength(3);
+    expect(result[0].category).toBe("extract");
+  });
+
+  it("handles complex multi-type scenario without double-counting", () => {
+    const findings = [
+      // Pass 1: critical (high priority)
+      makeFinding({ severity: "critical", scope: "a", text: "Critical 1" }),
+      makeFinding({ severity: "critical", scope: "a", text: "Critical 2" }),
+      // Pass 2: warning anti-pattern (medium priority)
+      makeFinding({ severity: "warning", type: "anti-pattern", scope: "a", text: "AP Warning" }),
+      // Pass 3: warning relationship (medium priority, extract)
+      makeFinding({ severity: "warning", type: "relationship", scope: "b", text: "Relationship" }),
+      makeFinding({ severity: "warning", type: "pattern", scope: "b", text: "Pattern" }),
+      // Pass 4: suggestion (any severity)
+      makeFinding({ severity: "info", type: "suggestion", text: "Suggestion" }),
+      // Pass 5: remaining warning (observation type)
+      makeFinding({ severity: "warning", type: "observation", scope: "c", text: "Observation warning" }),
+    ];
+    const result = deriveNextSteps(makeZones(findings));
+
+    // Should have 5 steps total
+    expect(result).toHaveLength(5);
+
+    // Verify no double-counting
+    const allRelated = result.flatMap((s) => s.relatedFindings);
+    const unique = new Set(allRelated);
+    expect(unique.size).toBe(allRelated.length);
+
+    // Verify each finding is used exactly once
+    expect(unique.size).toBe(findings.length);
+
+    // Verify priorities are correct
+    expect(result[0].priority).toBe("high"); // critical
+    expect(result[1].priority).toBe("medium"); // anti-pattern warning
+    expect(result[2].priority).toBe("medium"); // relationship/pattern warning
+    expect(result[3].priority).toBe("medium"); // observation warning
+    expect(result[4].priority).toBe("low"); // info suggestion
+  });
 });
