@@ -125,4 +125,44 @@ describe("reconcile", () => {
     const { results } = reconcile(proposals, existing);
     expect(results.length).toBe(0);
   });
+
+  it("filters near-duplicate proposals using similarity", () => {
+    const proposals = [
+      makeScanResult({ name: "fix auth bug" }),
+      makeScanResult({ name: "New Feature" }),
+    ];
+    const existing = [
+      makeItem({ id: "1", title: "fix authentication bug" }),
+    ];
+
+    const { results, stats } = reconcile(proposals, existing);
+    expect(results.length).toBe(1);
+    expect(results[0].name).toBe("New Feature");
+    expect(stats.alreadyTracked).toBe(1);
+  });
+
+  it("filters proposals with synonymous action verbs", () => {
+    const proposals = [
+      makeScanResult({ name: "Add user login" }),
+    ];
+    const existing = [
+      makeItem({ id: "1", title: "Implement user login" }),
+    ];
+
+    const { results } = reconcile(proposals, existing);
+    expect(results.length).toBe(0);
+  });
+
+  it("keeps proposals with different content despite shared verb", () => {
+    const proposals = [
+      makeScanResult({ name: "Implement caching" }),
+    ];
+    const existing = [
+      makeItem({ id: "1", title: "Implement auth" }),
+    ];
+
+    const { results } = reconcile(proposals, existing);
+    expect(results.length).toBe(1);
+    expect(results[0].name).toBe("Implement caching");
+  });
 });

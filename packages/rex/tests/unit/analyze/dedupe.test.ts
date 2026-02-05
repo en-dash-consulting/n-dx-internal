@@ -64,6 +64,30 @@ describe("similarity", () => {
     // Bigrams differ but there should be some overlap
     expect(score).toBeGreaterThan(0.2);
   });
+
+  it("discounts shared stopwords (action verb + different content)", () => {
+    // "Implement X" vs "Implement Y" should not score high just because
+    // they share the action verb
+    const score = similarity("Implement caching", "Implement auth");
+    expect(score).toBeLessThan(0.5);
+  });
+
+  it("discounts shared action verbs in 'Fix' prefixed titles", () => {
+    const score = similarity("Fix login bug", "Fix payment bug");
+    expect(score).toBeLessThan(0.45);
+  });
+
+  it("treats synonymous action verbs as equivalent", () => {
+    // "Add X" and "Implement X" are the same intent
+    const score = similarity("Add user login", "Implement user login");
+    expect(score).toBeGreaterThan(0.7);
+  });
+
+  it("handles verb-noun reordering with suffix variation", () => {
+    // "validate email" and "email validation" are the same concept
+    const score = similarity("validate email", "email validation");
+    expect(score).toBeGreaterThan(0.5);
+  });
 });
 
 describe("deduplicateScanResults", () => {
@@ -309,5 +333,72 @@ describe("deduplicateScanResults", () => {
 
     const deduped = deduplicateScanResults(results);
     expect(deduped).toHaveLength(2);
+  });
+
+  it("merges results with same description but different names", () => {
+    const results = [
+      makeScanResult({
+        name: "Auth module refactor",
+        kind: "task",
+        description: "Refactor the authentication module to use JWT tokens",
+        sourceFile: "a.ts",
+      }),
+      makeScanResult({
+        name: "JWT migration",
+        kind: "task",
+        description: "Refactor the authentication module to use JWT tokens",
+        sourceFile: "b.ts",
+      }),
+    ];
+
+    const deduped = deduplicateScanResults(results);
+    expect(deduped).toHaveLength(1);
+  });
+
+  it("does not merge results with different descriptions and names", () => {
+    const results = [
+      makeScanResult({
+        name: "Auth refactor",
+        kind: "task",
+        description: "Move auth to use OAuth2 provider",
+        sourceFile: "a.ts",
+      }),
+      makeScanResult({
+        name: "Payment refactor",
+        kind: "task",
+        description: "Switch to Stripe for payment processing",
+        sourceFile: "b.ts",
+      }),
+    ];
+
+    const deduped = deduplicateScanResults(results);
+    expect(deduped).toHaveLength(2);
+  });
+
+  it("merges descriptions from cluster members", () => {
+    const results = [
+      makeScanResult({
+        name: "Setup caching",
+        kind: "feature",
+        sourceFile: "a.ts",
+      }),
+      makeScanResult({
+        name: "Set up caching layer",
+        kind: "feature",
+        description: "Implement Redis-based caching for API responses",
+        sourceFile: "b.ts",
+      }),
+      makeScanResult({
+        name: "Caching setup",
+        kind: "feature",
+        description: "Add cache invalidation logic",
+        sourceFile: "c.ts",
+      }),
+    ];
+
+    const deduped = deduplicateScanResults(results);
+    expect(deduped).toHaveLength(1);
+    // Should have the richest result's description
+    expect(deduped[0].description).toBeTruthy();
   });
 });

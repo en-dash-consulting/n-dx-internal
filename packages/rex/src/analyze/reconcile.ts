@@ -1,17 +1,19 @@
 import type { PRDItem } from "../schema/index.js";
 import { walkTree } from "../core/tree.js";
 import type { ScanResult } from "./scanners.js";
+import { similarity } from "./dedupe.js";
 
-function normalize(s: string): string {
-  return s.toLowerCase().trim().replace(/\s+/g, " ");
-}
+/** Similarity threshold for considering a proposal already tracked in the PRD */
+const RECONCILE_THRESHOLD = 0.7;
 
+/**
+ * Check whether a proposal name matches an existing PRD item title.
+ * Uses the same multi-signal similarity function as deduplication to
+ * catch near-duplicates (action verb synonyms, prefix matching, etc.)
+ * in addition to exact and substring matches.
+ */
 function fuzzyMatch(proposal: string, existing: string): boolean {
-  const a = normalize(proposal);
-  const b = normalize(existing);
-  if (a === b) return true;
-  if (a.includes(b) || b.includes(a)) return true;
-  return false;
+  return similarity(proposal, existing) >= RECONCILE_THRESHOLD;
 }
 
 export interface ReconcileStats {

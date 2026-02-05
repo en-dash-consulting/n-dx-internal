@@ -29,17 +29,78 @@ function wordSet(s: string): Set<string> {
 }
 
 /**
- * Compute similarity between two strings using a combination of:
- * 1. Bigram Dice coefficient (character-level)
- * 2. Word overlap (Jaccard index)
- * 3. Substring containment bonus
- *
- * Returns the maximum of these scores (0.0–1.0).
+ * Action verbs that appear at the start of scan result names as prefixes.
+ * These are semantically "noise" for similarity — "Implement caching" and
+ * "Implement auth" should not score high just because they share "implement".
+ * Grouped by synonym class so e.g. "add" and "implement" are treated as
+ * interchangeable before content comparison.
  */
-export function similarity(a: string, b: string): number {
-  const na = normalize(a);
-  const nb = normalize(b);
+const ACTION_SYNONYM_MAP: Record<string, string> = {
+  add: "implement",
+  implement: "implement",
+  create: "implement",
+  build: "implement",
+  setup: "implement",
+  set: "implement", // "set up"
+  introduce: "implement",
+  fix: "fix",
+  resolve: "fix",
+  repair: "fix",
+  patch: "fix",
+  refactor: "refactor",
+  restructure: "refactor",
+  reorganize: "refactor",
+  clean: "refactor",
+  update: "update",
+  upgrade: "update",
+  improve: "update",
+  enhance: "update",
+  optimize: "update",
+  remove: "remove",
+  delete: "remove",
+  drop: "remove",
+  investigate: "investigate",
+  analyze: "investigate",
+  review: "investigate",
+  audit: "investigate",
+};
 
+/**
+ * Words that carry little semantic weight for distinguishing scan results.
+ * These are excluded from word-level matching so they don't inflate scores.
+ */
+const STOPWORDS = new Set([
+  "the", "a", "an", "and", "or", "for", "to", "in", "of", "on", "with",
+  "is", "be", "up", "by", "at", "as", "its", "it", "this", "that",
+]);
+
+/**
+ * Strip leading action verb from a normalized string and return the
+ * canonical verb + remaining content words.
+ */
+function splitActionContent(s: string): { verb: string | null; content: string } {
+  const words = s.split(" ").filter(Boolean);
+  if (words.length === 0) return { verb: null, content: "" };
+
+  // Strip colon suffixes (e.g., "Fix:" → "fix")
+  const first = words[0].replace(/:$/, "");
+  const canonical = ACTION_SYNONYM_MAP[first];
+  if (canonical) {
+    // Also skip "up" after "set" (handles "set up caching")
+    let skip = 1;
+    if (first === "set" && words.length > 1 && words[1] === "up") skip = 2;
+    const contentWords = words.slice(skip).filter((w) => !STOPWORDS.has(w));
+    return { verb: canonical, content: contentWords.join(" ") };
+  }
+
+  const contentWords = words.filter((w) => !STOPWORDS.has(w));
+  return { verb: null, content: contentWords.join(" ") };
+}
+
+/**
+ * Compute raw (non-action-aware) similarity between two normalized strings.
+ */
+function rawSimilarity(na: string, nb: string): number {
   if (na.length === 0 || nb.length === 0) return 0;
   if (na === nb) return 1.0;
 
@@ -66,12 +127,15 @@ export function similarity(a: string, b: string): number {
 
   // Word-level fuzzy Jaccard: counts a word as matching if it equals or is a
   // prefix of a word in the other set (e.g. "auth" matches "authentication").
+  // Prefix-matched pairs reduce the effective union size so that
+  // "auth bug" vs "authentication bug" isn't penalized for having 3 unique
+  // strings when "auth" and "authentication" represent the same concept.
   const wA = wordSet(na);
   const wB = wordSet(nb);
   let wordScore = 0;
   if (wA.size > 0 && wB.size > 0) {
     let matched = 0;
-    const allWords = new Set([...wA, ...wB]);
+    let prefixPairs = 0; // count of prefix-matched pairs (collapse in union)
 
     for (const w of wA) {
       if (wB.has(w)) {
@@ -81,16 +145,70 @@ export function similarity(a: string, b: string): number {
         for (const wb of wB) {
           if (wb.startsWith(w) || w.startsWith(wb)) {
             matched += 0.8; // Partial credit for prefix match
+            prefixPairs++;
             break;
           }
         }
       }
     }
 
-    wordScore = matched / allWords.size;
+    // Effective union: total unique strings minus prefix-matched duplicates
+    const rawUnion = new Set([...wA, ...wB]).size;
+    const effectiveUnion = rawUnion - prefixPairs;
+    wordScore = matched / effectiveUnion;
   }
 
   return Math.max(bigramScore, wordScore);
+}
+
+/**
+ * Compute similarity between two strings using a combination of:
+ * 1. Action-verb normalization (synonyms mapped, then compared on content)
+ * 2. Bigram Dice coefficient (character-level)
+ * 3. Word overlap with fuzzy matching (Jaccard index)
+ * 4. Substring containment bonus
+ *
+ * When both strings start with an action verb (e.g. "Fix", "Implement"),
+ * the verb is factored out and similarity is computed on the remaining
+ * content words. Synonymous verbs ("Add" / "Implement") are treated as
+ * matching, so only the content difference matters.
+ *
+ * Returns the maximum of these scores (0.0–1.0).
+ */
+export function similarity(a: string, b: string): number {
+  const na = normalize(a);
+  const nb = normalize(b);
+
+  if (na.length === 0 || nb.length === 0) return 0;
+  if (na === nb) return 1.0;
+
+  // Compute raw similarity on the full strings
+  const fullScore = rawSimilarity(na, nb);
+
+  // Action-verb-aware comparison: if both strings have a leading action verb,
+  // compute similarity on content words only and weight verb match separately.
+  // This prevents shared action verbs from inflating scores for unrelated items.
+  const sa = splitActionContent(na);
+  const sb = splitActionContent(nb);
+
+  if (sa.verb && sb.verb && sa.content.length > 0 && sb.content.length > 0) {
+    const contentScore = rawSimilarity(sa.content, sb.content);
+
+    if (sa.verb === sb.verb) {
+      // Same or synonymous verb: the verb is shared context that confirms
+      // relatedness when content overlaps. Score is primarily content-driven
+      // but verb agreement provides a boost when content is similar.
+      // This avoids inflating scores when content is unrelated (e.g. both
+      // say "Fix" but describe different bugs).
+      const verbAwareScore = contentScore * 0.85 + 0.15;
+      return Math.min(verbAwareScore, 1.0);
+    } else {
+      // Different verb classes: content similarity alone decides.
+      return contentScore * 0.85;
+    }
+  }
+
+  return fullScore;
 }
 
 // ── Merge strategy: pick the "best" representative from a cluster ──
@@ -152,10 +270,43 @@ function mergeCluster(cluster: ScanResult[]): ScanResult {
 // ── Public API ──
 
 /**
+ * Compute a combined similarity score for two scan results, considering
+ * both name and description similarity. When both results have descriptions,
+ * high description similarity can compensate for lower name similarity,
+ * catching duplicates that describe the same work in different words.
+ */
+function resultSimilarity(a: ScanResult, b: ScanResult): number {
+  const nameScore = similarity(a.name, b.name);
+
+  // If both have descriptions, also consider description similarity
+  if (a.description && b.description) {
+    const descScore = similarity(a.description, b.description);
+
+    // High description overlap is a strong signal of duplication even when
+    // names differ (e.g. "Auth refactor" vs "JWT migration" with identical
+    // descriptions). Blend: use whichever signal is stronger, with a boost
+    // when both signals agree.
+    if (descScore >= 0.8) {
+      // Very similar descriptions: boost the combined score significantly
+      return Math.max(nameScore, descScore * 0.9 + nameScore * 0.1);
+    }
+    if (descScore >= 0.5) {
+      // Moderately similar descriptions: blend with name score
+      return Math.max(nameScore, nameScore * 0.6 + descScore * 0.4);
+    }
+  }
+
+  return nameScore;
+}
+
+/**
  * Deduplicate scan results by merging near-duplicates within the same kind.
  *
- * Uses bigram-based Dice coefficient to detect similarity. Results of different
- * kinds (epic vs feature vs task) are never merged with each other.
+ * Uses multi-signal similarity: name comparison (bigram Dice + word overlap
+ * with action-verb normalization) combined with description similarity for
+ * results that describe the same work in different words.
+ *
+ * Results of different kinds (epic vs feature vs task) are never merged.
  *
  * @param results - Raw scan results
  * @param threshold - Similarity threshold (0.0–1.0). Default 0.7.
@@ -196,10 +347,10 @@ export function deduplicateScanResults(
       if (ri !== rj) parent[ri] = rj;
     }
 
-    // Compare all pairs within this kind
+    // Compare all pairs within this kind using combined similarity
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
-        const score = similarity(kindResults[i].name, kindResults[j].name);
+        const score = resultSimilarity(kindResults[i], kindResults[j]);
         if (score >= threshold) {
           union(i, j);
         }
