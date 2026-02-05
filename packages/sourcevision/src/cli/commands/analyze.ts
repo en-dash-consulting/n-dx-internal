@@ -187,7 +187,7 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
         const modeLabel = perZone ? " (per-zone mode)" : "";
         info(`  Enriching zones (pass ${prevPass + 1})${modeLabel}...`);
       } else {
-        info("  (skipping AI enrichment)");
+        info("  Structural analysis only (skipping AI enrichment)");
       }
 
       try {
@@ -239,11 +239,19 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
         updateManifestModule(absDir, "zones", "complete");
         info(`  ${zones.zones.length} zones, ${zones.crossings.length} crossings, ${zones.unzoned.length} unzoned → ${outPath}`);
 
-        // Print key insights
+        // Print key insights and findings
+        const totalFindings = zones.findings?.length ?? 0;
         const totalInsights =
           (zones.insights?.length ?? 0) +
           zones.zones.reduce((s, z) => s + (z.insights?.length ?? 0), 0);
-        if (totalInsights > 0) {
+        if (totalFindings > 0) {
+          const passLabel = zones.enrichmentPass
+            ? zones.enrichmentPass > 0
+              ? ` (enrichment pass ${zones.enrichmentPass})`
+              : " (structural only)"
+            : "";
+          info(`  ${totalFindings} findings, ${totalInsights} insights${passLabel}`);
+        } else if (totalInsights > 0) {
           info(`  ${totalInsights} insights${zones.enrichmentPass ? ` (enrichment pass ${zones.enrichmentPass})` : ""}`);
         }
         if (zones.insights && zones.insights.length > 0) {

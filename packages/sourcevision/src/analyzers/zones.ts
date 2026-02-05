@@ -945,7 +945,7 @@ export async function analyzeZones(
       unzoned,
       insights: allGlobalInsights.length > 0 ? allGlobalInsights : undefined,
       findings: allFindings.length > 0 ? allFindings : undefined,
-      enrichmentPass: displayPass > 0 ? displayPass : undefined,
+      enrichmentPass: allFindings.length > 0 ? displayPass : undefined,
       ...(metaEvaluationCount ? { metaEvaluationCount } : {}),
       structureHash,
     }),

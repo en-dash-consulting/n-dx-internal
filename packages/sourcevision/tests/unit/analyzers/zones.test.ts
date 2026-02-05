@@ -1226,6 +1226,9 @@ describe("analyzeZones findings", () => {
     expect(result.findings!.length).toBeGreaterThan(0);
     expect(result.findings!.every((f) => f.pass === 0)).toBe(true);
     expect(result.findings!.every((f) => f.type === "observation")).toBe(true);
+
+    // enrichmentPass should be 0 (not undefined) to indicate structural analysis completed
+    expect(result.enrichmentPass).toBe(0);
   });
 
   it("populates both findings and insights for backward compat", async () => {
