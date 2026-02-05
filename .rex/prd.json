@@ -3285,7 +3285,7 @@
             {
               "id": "125ede5e-0e5b-446e-b237-b0efcd527562",
               "title": "Enhance priority assignment logic",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Ensure findings are properly prioritized based on severity and impact",
               "acceptanceCriteria": [
@@ -3299,7 +3299,9 @@
               "tags": [
                 "deriveNextSteps"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T19:33:25.630Z",
+              "completedAt": "2026-02-05T19:39:24.978Z"
             },
             {
               "id": "e6b015e9-7116-4a58-aa03-bbf97c0b0ad4",

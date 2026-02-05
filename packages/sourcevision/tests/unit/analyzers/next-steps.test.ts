@@ -224,6 +224,86 @@ describe("deriveNextSteps", () => {
     expect(result[0].category).toBe("extract");
   });
 
+  it("promotes warning anti-pattern to high priority when impact is broad (many related)", () => {
+    const findings = [
+      makeFinding({
+        severity: "warning",
+        type: "anti-pattern",
+        text: "Cross-cutting concern spans many zones",
+        related: ["zone-a", "zone-b", "zone-c", "zone-d", "zone-e"],
+      }),
+    ];
+    const result = deriveNextSteps(makeZones(findings));
+    expect(result).toHaveLength(1);
+    expect(result[0].priority).toBe("high");
+    expect(result[0].category).toBe("refactor");
+  });
+
+  it("promotes warning relationship to high priority when impact is broad", () => {
+    const findings = [
+      makeFinding({
+        severity: "warning",
+        type: "relationship",
+        text: "Heavy coupling across many zones",
+        related: ["zone-a", "zone-b", "zone-c", "zone-d", "zone-e"],
+      }),
+    ];
+    const result = deriveNextSteps(makeZones(findings));
+    expect(result).toHaveLength(1);
+    expect(result[0].priority).toBe("high");
+  });
+
+  it("does not promote warning findings with few related items", () => {
+    const findings = [
+      makeFinding({
+        severity: "warning",
+        type: "anti-pattern",
+        text: "Local anti-pattern",
+        related: ["zone-a", "zone-b"],
+      }),
+    ];
+    const result = deriveNextSteps(makeZones(findings));
+    expect(result).toHaveLength(1);
+    expect(result[0].priority).toBe("medium");
+  });
+
+  it("does not promote info suggestions regardless of related count", () => {
+    const findings = [
+      makeFinding({
+        severity: "info",
+        type: "suggestion",
+        text: "Many related but low severity",
+        related: ["zone-a", "zone-b", "zone-c", "zone-d", "zone-e"],
+      }),
+    ];
+    const result = deriveNextSteps(makeZones(findings));
+    expect(result).toHaveLength(1);
+    expect(result[0].priority).toBe("low");
+  });
+
+  it("uses related count as tiebreaker within same priority", () => {
+    const findings = [
+      makeFinding({
+        severity: "warning",
+        type: "anti-pattern",
+        scope: "zone-a",
+        text: "No related",
+      }),
+      makeFinding({
+        severity: "warning",
+        type: "anti-pattern",
+        scope: "zone-b",
+        text: "Has related",
+        related: ["zone-c", "zone-d"],
+      }),
+    ];
+    const result = deriveNextSteps(makeZones(findings));
+    expect(result).toHaveLength(2);
+    // The one with related items should sort first within same priority
+    expect(result[0].title).toContain("Has related");
+    expect(result[1].title).toContain("No related");
+  });
+
   it("handles complex multi-type scenario without double-counting", () => {
     const findings = [
       // Pass 1: critical (high priority)

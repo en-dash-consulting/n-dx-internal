@@ -68,8 +68,11 @@ export function deriveNextSteps(zones: Zones): NextStep[] {
     const files = zone ? zone.files.slice(0, 3) : [];
     const filesStr = files.length > 0 ? ` Files: ${files.join(", ")}` : "";
 
+    // Promote to high when any grouped finding has broad impact
+    const apImpact = related.some((idx) => isHighImpact(findings[idx]));
+
     steps.push({
-      priority: "medium",
+      priority: apImpact ? "high" : "medium",
       title: summarizeFindings(findings, related),
       description: `${f.text}${filesStr}`,
       category: "refactor",
@@ -96,8 +99,10 @@ export function deriveNextSteps(zones: Zones): NextStep[] {
       }
     }
 
+    const relImpact = related.some((idx) => isHighImpact(findings[idx]));
+
     steps.push({
-      priority: "medium",
+      priority: relImpact ? "high" : "medium",
       title: summarizeFindings(findings, related),
       description: f.text,
       category: "extract",
@@ -115,8 +120,15 @@ export function deriveNextSteps(zones: Zones): NextStep[] {
     const related = [i];
     usedFindings.add(i);
 
+    let sugPriority: NextStep["priority"];
+    if (f.severity === "warning") {
+      sugPriority = isHighImpact(f) ? "high" : "medium";
+    } else {
+      sugPriority = "low";
+    }
+
     steps.push({
-      priority: f.severity === "warning" ? "medium" : "low",
+      priority: sugPriority,
       title: truncateText(f.text, 80),
       description: f.text,
       category: "refactor",
@@ -134,7 +146,7 @@ export function deriveNextSteps(zones: Zones): NextStep[] {
     usedFindings.add(i);
 
     steps.push({
-      priority: "medium",
+      priority: isHighImpact(f) ? "high" : "medium",
       title: truncateText(f.text, 80),
       description: f.text,
       category: categorizeFromType(f.type),
@@ -143,11 +155,14 @@ export function deriveNextSteps(zones: Zones): NextStep[] {
     });
   }
 
-  // Sort: high > medium > low, then by number of related findings (desc)
+  // Sort: high > medium > low, then by impact score (related count), then by grouped findings count
   const priorityOrder = { high: 0, medium: 1, low: 2 };
   steps.sort((a, b) => {
     const po = priorityOrder[a.priority] - priorityOrder[b.priority];
     if (po !== 0) return po;
+    const impactA = groupImpactScore(findings, a.relatedFindings);
+    const impactB = groupImpactScore(findings, b.relatedFindings);
+    if (impactA !== impactB) return impactB - impactA;
     return b.relatedFindings.length - a.relatedFindings.length;
   });
 
@@ -165,6 +180,28 @@ function summarizeFindings(findings: Finding[], indices: number[]): string {
 function truncateText(text: string, max: number): string {
   if (text.length <= max) return text;
   return text.slice(0, max - 1) + "\u2026";
+}
+
+/** Threshold of related items at which a warning finding is considered high-impact. */
+const HIGH_IMPACT_THRESHOLD = 4;
+
+/**
+ * Determine whether a finding's impact warrants priority promotion.
+ * Findings that reference many related zones/files have broader impact.
+ */
+function isHighImpact(finding: Finding): boolean {
+  return (finding.related?.length ?? 0) >= HIGH_IMPACT_THRESHOLD;
+}
+
+/**
+ * Sum the related counts across a group of findings.
+ */
+function groupImpactScore(findings: Finding[], indices: number[]): number {
+  let score = 0;
+  for (const i of indices) {
+    score += findings[i].related?.length ?? 0;
+  }
+  return score;
 }
 
 function categorizeFromType(type: string): NextStep["category"] {
