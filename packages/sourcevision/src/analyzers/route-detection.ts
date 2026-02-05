@@ -119,20 +119,28 @@ export function buildRouteTree(routeModules: RouteModule[]): RouteTreeNode[] {
     childrenOf.get(parent)!.push(mod);
   }
 
+  const cmp = (a: RouteTreeNode, b: RouteTreeNode) =>
+    a.routePattern < b.routePattern ? -1 : a.routePattern > b.routePattern ? 1 : 0;
+
   function buildNodes(parentFile: string | null): RouteTreeNode[] {
     const children = childrenOf.get(parentFile) || [];
-    return children
-      .filter((m) => m.routePattern !== null)
-      .map((m) => ({
-        file: m.file,
-        routePattern: m.routePattern!,
-        children: buildNodes(m.file).sort((a, b) =>
-          a.routePattern < b.routePattern ? -1 : a.routePattern > b.routePattern ? 1 : 0
-        ),
-      }))
-      .sort((a, b) =>
-        a.routePattern < b.routePattern ? -1 : a.routePattern > b.routePattern ? 1 : 0
-      );
+    const nodes: RouteTreeNode[] = [];
+
+    for (const m of children) {
+      if (m.routePattern !== null) {
+        // Routed module — becomes a tree node with its own children
+        nodes.push({
+          file: m.file,
+          routePattern: m.routePattern,
+          children: buildNodes(m.file).sort(cmp),
+        });
+      } else {
+        // Pathless layout (null pattern) — promote its children to this level
+        nodes.push(...buildNodes(m.file));
+      }
+    }
+
+    return nodes.sort(cmp);
   }
 
   return buildNodes(null);

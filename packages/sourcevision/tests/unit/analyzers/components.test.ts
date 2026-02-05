@@ -416,7 +416,9 @@ describe("buildRouteTree", () => {
     const tree = buildRouteTree(modules);
     expect(tree).toHaveLength(2);
     expect(tree[0].routePattern).toBe("/");
+    expect(tree[0].children).toEqual([]);
     expect(tree[1].routePattern).toBe("/about");
+    expect(tree[1].children).toEqual([]);
   });
 
   it("builds nested route tree with layout", () => {
@@ -427,19 +429,82 @@ describe("buildRouteTree", () => {
       { file: "app/routes/_index.tsx", routePattern: "/", exports: ["default" as const], parentLayout: null, isLayout: false, isIndex: true },
     ];
     const tree = buildRouteTree(modules);
-    // Root-level: only _index.tsx (layout has null pattern, filtered out)
-    expect(tree).toHaveLength(1);
+    // Pathless layout is filtered out, but its children are promoted to root
+    expect(tree).toHaveLength(3);
     expect(tree[0].routePattern).toBe("/");
+    expect(tree[1].routePattern).toBe("/login");
+    expect(tree[2].routePattern).toBe("/register");
+  });
+
+  it("promotes children through multiple levels of pathless layouts", () => {
+    const modules = [
+      { file: "app/routes/_outer.tsx", routePattern: null, exports: ["default" as const], parentLayout: null, isLayout: true, isIndex: false },
+      { file: "app/routes/_outer._inner.tsx", routePattern: null, exports: ["default" as const], parentLayout: "app/routes/_outer.tsx", isLayout: true, isIndex: false },
+      { file: "app/routes/_outer._inner.page.tsx", routePattern: "/page", exports: ["default" as const], parentLayout: "app/routes/_outer._inner.tsx", isLayout: false, isIndex: false },
+    ];
+    const tree = buildRouteTree(modules);
+    // Both pathless layouts filtered out, /page promoted to root
+    expect(tree).toHaveLength(1);
+    expect(tree[0].routePattern).toBe("/page");
+  });
+
+  it("nests children under a routed parent", () => {
+    const modules = [
+      { file: "app/routes/users.tsx", routePattern: "/users", exports: ["default" as const], parentLayout: null, isLayout: false, isIndex: false },
+      { file: "app/routes/users._index.tsx", routePattern: "/users", exports: ["default" as const], parentLayout: "app/routes/users.tsx", isLayout: false, isIndex: true },
+      { file: "app/routes/users.$id.tsx", routePattern: "/users/:id", exports: ["default" as const], parentLayout: "app/routes/users.tsx", isLayout: false, isIndex: false },
+    ];
+    const tree = buildRouteTree(modules);
+    expect(tree).toHaveLength(1);
+    expect(tree[0].routePattern).toBe("/users");
+    expect(tree[0].children).toHaveLength(2);
+    expect(tree[0].children[0].routePattern).toBe("/users");
+    expect(tree[0].children[1].routePattern).toBe("/users/:id");
+  });
+
+  it("promotes pathless layout children into their routed grandparent", () => {
+    // /dashboard parent has a pathless _sidebar layout with children
+    const modules = [
+      { file: "app/routes/dashboard.tsx", routePattern: "/dashboard", exports: ["default" as const], parentLayout: null, isLayout: false, isIndex: false },
+      { file: "app/routes/dashboard._sidebar.tsx", routePattern: null, exports: ["default" as const], parentLayout: "app/routes/dashboard.tsx", isLayout: true, isIndex: false },
+      { file: "app/routes/dashboard._sidebar.stats.tsx", routePattern: "/dashboard/stats", exports: ["default" as const], parentLayout: "app/routes/dashboard._sidebar.tsx", isLayout: false, isIndex: false },
+      { file: "app/routes/dashboard._sidebar.settings.tsx", routePattern: "/dashboard/settings", exports: ["default" as const], parentLayout: "app/routes/dashboard._sidebar.tsx", isLayout: false, isIndex: false },
+    ];
+    const tree = buildRouteTree(modules);
+    expect(tree).toHaveLength(1);
+    expect(tree[0].routePattern).toBe("/dashboard");
+    // Children promoted from pathless _sidebar layout
+    expect(tree[0].children).toHaveLength(2);
+    expect(tree[0].children[0].routePattern).toBe("/dashboard/settings");
+    expect(tree[0].children[1].routePattern).toBe("/dashboard/stats");
   });
 
   it("sorts children by route pattern", () => {
     const modules = [
       { file: "app/routes/z.tsx", routePattern: "/z", exports: ["default" as const], parentLayout: null, isLayout: false, isIndex: false },
       { file: "app/routes/a.tsx", routePattern: "/a", exports: ["default" as const], parentLayout: null, isLayout: false, isIndex: false },
+      { file: "app/routes/m.tsx", routePattern: "/m", exports: ["default" as const], parentLayout: null, isLayout: false, isIndex: false },
     ];
     const tree = buildRouteTree(modules);
     expect(tree[0].routePattern).toBe("/a");
-    expect(tree[1].routePattern).toBe("/z");
+    expect(tree[1].routePattern).toBe("/m");
+    expect(tree[2].routePattern).toBe("/z");
+  });
+
+  it("sorts nested children by route pattern", () => {
+    const modules = [
+      { file: "app/routes/users.tsx", routePattern: "/users", exports: ["default" as const], parentLayout: null, isLayout: false, isIndex: false },
+      { file: "app/routes/users.profile.tsx", routePattern: "/users/profile", exports: ["default" as const], parentLayout: "app/routes/users.tsx", isLayout: false, isIndex: false },
+      { file: "app/routes/users.admin.tsx", routePattern: "/users/admin", exports: ["default" as const], parentLayout: "app/routes/users.tsx", isLayout: false, isIndex: false },
+      { file: "app/routes/about.tsx", routePattern: "/about", exports: ["default" as const], parentLayout: null, isLayout: false, isIndex: false },
+    ];
+    const tree = buildRouteTree(modules);
+    // Root level sorted
+    expect(tree[0].routePattern).toBe("/about");
+    expect(tree[1].routePattern).toBe("/users");
+    // Nested level sorted
+    expect(tree[1].children[0].routePattern).toBe("/users/admin");
+    expect(tree[1].children[1].routePattern).toBe("/users/profile");
   });
 });
 
