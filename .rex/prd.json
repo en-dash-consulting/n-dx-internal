@@ -1284,175 +1284,6 @@
               "source": "llm"
             },
             {
-              "id": "7c3cf232-39b9-4ce0-aa34-c4c77563cae1",
-              "title": "Replace stack traces with user-friendly errors",
-              "status": "pending",
-              "level": "task",
-              "description": "All commands should print actionable error messages instead of stack traces",
-              "acceptanceCriteria": [
-                "No stack traces shown to users",
-                "Clear error descriptions",
-                "Actionable resolution steps"
-              ],
-              "priority": "high",
-              "tags": [
-                "cli",
-                "errors"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "5b23228d-f23c-4593-babc-e5308d15c9d2",
-              "title": "Add helpful suggestions for missing directories",
-              "status": "pending",
-              "level": "task",
-              "description": "If .rex/ doesn't exist, suggest n-dx init . instead of crashing",
-              "acceptanceCriteria": [
-                "Detects missing project setup",
-                "Suggests initialization command",
-                "Graceful degradation"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cli",
-                "errors"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "907c0f41-1efb-4b5d-b440-d77325fe0758",
-              "title": "Handle missing claude CLI gracefully",
-              "status": "pending",
-              "level": "task",
-              "description": "Provide install instructions and fall back gracefully when claude CLI isn't installed",
-              "acceptanceCriteria": [
-                "Detects missing claude CLI",
-                "Shows installation instructions",
-                "Graceful fallback where possible"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cli",
-                "errors"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "f7f698a6-7712-4713-a02a-d60535d24789",
-          "title": "Command Validation",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve command input validation and safety",
-          "source": "llm",
-          "children": [
-            {
-              "id": "b68a4841-3041-4c13-9e93-199b1eb13c0f",
-              "title": "Enhance path security validation",
-              "status": "completed",
-              "level": "task",
-              "description": "Hardened path security validation via TDD. Fixed simpleGlobMatch to block directory roots (dir/** now matches dir itself), added null-byte rejection to validatePath, and added 10 new test cases covering: directory root bypass, null byte injection, ? wildcard edge cases, Windows backslash normalization, absolute path handling, internal traversal. All 333 tests pass.",
-              "acceptanceCriteria": [
-                "Path traversal attacks are prevented",
-                "Glob patterns work correctly",
-                "Blocked paths are enforced"
-              ],
-              "priority": "critical",
-              "tags": [
-                "security",
-                "validation"
-              ],
-              "source": "llm",
-              "startedAt": "2026-02-05T01:36:55.528Z",
-              "completedAt": "2026-02-05T01:42:36.160Z"
-            },
-            {
-              "id": "1b971f79-4d51-4afa-a11a-95f487d9d851",
-              "title": "Add constants validation",
-              "status": "pending",
-              "level": "task",
-              "description": "Test safeParseInt and other constant parsing utilities",
-              "acceptanceCriteria": [
-                "Integer parsing handles edge cases",
-                "Invalid inputs return appropriate defaults",
-                "Type safety is maintained"
-              ],
-              "priority": "low",
-              "tags": [
-                "validation",
-                "utils"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "e14a4abc-59c3-46ec-8b5d-1e0e77bab2cb",
-          "title": "Package API Architecture",
-          "status": "pending",
-          "level": "feature",
-          "description": "Establish proper package boundaries and public APIs for the monorepo",
-          "source": "llm",
-          "children": [
-            {
-              "id": "fdd4fece-07ba-47c9-9611-6603a8bed17f",
-              "title": "Refactor rex package to expose proper public API",
-              "status": "pending",
-              "level": "task",
-              "description": "Rex has no package.json exports field or public API barrel — hench imports 7 runtime functions from 5 internal dist/ paths. Add packages/rex/src/public.ts re-exporting the 7 consumed functions + 3 consumed types, add exports field to rex package.json mapping rex → dist/public.js, update hench imports to use rex (not rex/dist/...).",
-              "acceptanceCriteria": [
-                "Creates packages/rex/src/public.ts with re-exports of consumed functions",
-                "Updates rex package.json with proper exports field",
-                "Updates hench imports to use public API",
-                "All internal implementation details are encapsulated"
-              ],
-              "priority": "high",
-              "tags": [
-                "refactoring",
-                "architecture"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "7b449fbe-342e-4021-b888-8cad5d583499",
-          "title": "Initialization System",
-          "status": "pending",
-          "level": "feature",
-          "description": "Robust and idempotent initialization for all packages",
-          "source": "llm",
-          "children": [
-            {
-              "id": "27ac198d-2a28-4c80-8870-d1ba3544840f",
-              "title": "Ensure init commands create valid configuration files",
-              "status": "pending",
-              "level": "task",
-              "description": "Validate that hench and rex init commands properly create valid config.json and prd.json files",
-              "acceptanceCriteria": [
-                "Hench init creates valid config.json",
-                "Rex init creates valid prd.json",
-                "Both commands are idempotent on re-run"
-              ],
-              "priority": "medium",
-              "tags": [
-                "init",
-                "validation"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "8fade22a-99e8-45b8-8c6e-c879d6e18760",
-          "title": "Error Handling and Validation",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve error messages, validation, and user experience",
-          "source": "llm",
-          "children": [
-            {
               "id": "79e45114-9bc1-4337-bfc7-c1c2e0d85a73",
               "title": "Enhance input validation with helpful errors",
               "status": "completed",
@@ -1534,173 +1365,51 @@
           ]
         },
         {
-          "id": "749a57e8-c3c2-4a85-9603-298f69766902",
-          "title": "Configuration Management",
+          "id": "f7f698a6-7712-4713-a02a-d60535d24789",
+          "title": "Command Validation",
           "status": "pending",
           "level": "feature",
-          "description": "Robust configuration loading, validation, and project-level overrides",
+          "description": "Improve command input validation and safety",
           "source": "llm",
           "children": [
             {
-              "id": "c70b3fac-76ff-4563-9b99-0a35dfad37f3",
-              "title": "Implement project-level configuration merging",
-              "status": "pending",
-              "level": "task",
-              "description": "Support .n-dx.json files that override default configurations",
-              "acceptanceCriteria": [
-                "Loads config without .n-dx.json",
-                "Merges .n-dx.json overrides into config",
-                "Deep merges nested guard overrides",
-                "Project config overrides array values entirely",
-                "Ignores .n-dx.json with no hench section",
-                "Ignores .n-dx.json with no rex section"
-              ],
-              "priority": "medium",
-              "tags": [
-                "project-config merge"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "bb7791ec-b388-44cd-8b8f-91754bbe0b87",
-              "title": "Add configuration defaults and validation",
+              "id": "b68a4841-3041-4c13-9e93-199b1eb13c0f",
+              "title": "Enhance path security validation",
               "status": "completed",
               "level": "task",
-              "description": "Provide sensible defaults and validate configuration values. All three config fields (tokenBudget, maxFailedAttempts, loopPauseMs) are optional in the Zod schema with sensible defaults, and validated against invalid values. Comprehensive test coverage added.",
+              "description": "Hardened path security validation via TDD. Fixed simpleGlobMatch to block directory roots (dir/** now matches dir itself), added null-byte rejection to validatePath, and added 10 new test cases covering: directory root bypass, null byte injection, ? wildcard edge cases, Windows backslash normalization, absolute path handling, internal traversal. All 333 tests pass.",
               "acceptanceCriteria": [
-                "tokenBudget is optional in schema and defaults to 0 (unlimited)",
-                "maxFailedAttempts is optional in schema and defaults to 3",
-                "loopPauseMs is optional in schema and defaults to 2000",
-                "maxFailedAttempts can be customised in config",
-                "loopPauseMs can be customised in config",
-                "rejects maxFailedAttempts of 0",
-                "rejects negative maxFailedAttempts",
-                "tokenBudget can be set to a positive value",
-                "rejects negative tokenBudget",
-                "accepts tokenBudget of 0 (unlimited)",
-                "validates existing configs without tokenBudget field (backward compat)",
-                "rejects negative loopPauseMs"
+                "Path traversal attacks are prevented",
+                "Glob patterns work correctly",
+                "Blocked paths are enforced"
               ],
-              "priority": "high",
+              "priority": "critical",
               "tags": [
-                "stuck task config defaults",
-                "token budget config defaults",
-                "loop config defaults"
+                "security",
+                "validation"
               ],
               "source": "llm",
-              "startedAt": "2026-02-05T02:04:22.162Z",
-              "completedAt": "2026-02-05T02:08:35.294Z"
+              "startedAt": "2026-02-05T01:36:55.528Z",
+              "completedAt": "2026-02-05T01:42:36.160Z"
             },
             {
-              "id": "df51902d-e8f4-4b9b-9377-05802d75844d",
-              "title": "Add unified config command",
+              "id": "1b971f79-4d51-4afa-a11a-95f487d9d851",
+              "title": "Add constants validation",
               "status": "pending",
               "level": "task",
-              "description": "n-dx config command to view/edit settings across all three packages",
+              "description": "Test safeParseInt and other constant parsing utilities",
               "acceptanceCriteria": [
-                "Single command for all package configs",
-                "View and edit capabilities",
-                "Validates config changes"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cli",
-                "config"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "95bf658e-7c2a-4409-94a2-6e6028fc4c3a",
-              "title": "Support project-level config file",
-              "status": "pending",
-              "level": "task",
-              "description": "Support .n-dx.json at project root as unified config that merges into individual package configs",
-              "acceptanceCriteria": [
-                "Project-level config file support",
-                "Merges with package configs",
-                "Proper precedence handling"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cli",
-                "config"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "8664c7da-238c-42a0-93dd-3e6ca68ed87d",
-              "title": "Document all config options in help",
-              "status": "pending",
-              "level": "task",
-              "description": "All configuration options documented in --help output",
-              "acceptanceCriteria": [
-                "Complete config documentation",
-                "Help text includes all options",
-                "Clear descriptions and examples"
+                "Integer parsing handles edge cases",
+                "Invalid inputs return appropriate defaults",
+                "Type safety is maintained"
               ],
               "priority": "low",
               "tags": [
-                "cli",
-                "documentation"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "cad1b34b-ce8c-491c-ab9e-0726a365bc37",
-          "title": "Task Execution Controls",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve task execution reliability with proper timeouts and failure handling",
-          "source": "llm",
-          "children": [
-            {
-              "id": "78488756-9b00-4690-a926-cd7869bcb0c0",
-              "title": "Implement loop controls with abort capability",
-              "status": "pending",
-              "level": "task",
-              "description": "Add configurable pause mechanism with abort signal support",
-              "acceptanceCriteria": [
-                "Resolves after the specified delay",
-                "Resolves immediately for 0ms delay",
-                "Can be aborted via AbortSignal"
-              ],
-              "priority": "medium",
-              "tags": [
-                "loopPause"
+                "validation",
+                "utils"
               ],
               "source": "llm"
             },
-            {
-              "id": "26961fc1-9711-4dee-beda-b698b1a48384",
-              "title": "Add task failure handling",
-              "status": "completed",
-              "level": "task",
-              "description": "Properly handle various task failure scenarios with appropriate status updates.\n\n## Implementation\n\nAll three failure handling paths are implemented in `packages/hench/src/agent/loop.ts`:\n\n1. **Uncaught exception** (lines 325-334): catch block marks task as `deferred`, logs `task_failed` event\n2. **Timeout** (lines 315-323): when loop exits while still `running`, marks task as `deferred`, logs `task_failed` event  \n3. **Budget exceeded** (lines 222-234): per-turn budget check marks task as `pending` (recoverable), logs `budget_exceeded` event\n\nTests: `packages/hench/tests/unit/agent/task-failure.test.ts` (3 tests, all passing)",
-              "acceptanceCriteria": [
-                "Marks task as deferred on uncaught exception and logs error",
-                "Marks task as deferred on timeout and logs error",
-                "Marks task as pending on budget exceeded and logs error"
-              ],
-              "priority": "high",
-              "tags": [
-                "API loop task failure handling"
-              ],
-              "source": "llm",
-              "startedAt": "2026-02-05T02:12:18.093Z",
-              "completedAt": "2026-02-05T02:14:59.350Z"
-            }
-          ]
-        },
-        {
-          "id": "67b42eb6-cc9b-4292-8a35-a4ddc4ba50fd",
-          "title": "Command Validation and Error Handling",
-          "status": "pending",
-          "level": "feature",
-          "description": "Comprehensive validation and user-friendly error messages",
-          "source": "llm",
-          "children": [
             {
               "id": "6bfb1e50-3b56-41ef-a93f-bd3e71a9f3aa",
               "title": "Implement command validation with helpful errors",
@@ -1779,17 +1488,44 @@
                 "relationships"
               ],
               "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "55a11221-bb9f-4d3f-9dec-7dfbdd14bdc0",
-          "title": "Command Input Validation",
-          "status": "pending",
-          "level": "feature",
-          "description": "Robust validation and error handling for command inputs",
-          "source": "llm",
-          "children": [
+            },
+            {
+              "id": "fdd4fece-07ba-47c9-9611-6603a8bed17f",
+              "title": "Refactor rex package to expose proper public API",
+              "status": "pending",
+              "level": "task",
+              "description": "Rex has no package.json exports field or public API barrel — hench imports 7 runtime functions from 5 internal dist/ paths. Add packages/rex/src/public.ts re-exporting the 7 consumed functions + 3 consumed types, add exports field to rex package.json mapping rex → dist/public.js, update hench imports to use rex (not rex/dist/...).",
+              "acceptanceCriteria": [
+                "Creates packages/rex/src/public.ts with re-exports of consumed functions",
+                "Updates rex package.json with proper exports field",
+                "Updates hench imports to use public API",
+                "All internal implementation details are encapsulated"
+              ],
+              "priority": "high",
+              "tags": [
+                "refactoring",
+                "architecture"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "27ac198d-2a28-4c80-8870-d1ba3544840f",
+              "title": "Ensure init commands create valid configuration files",
+              "status": "pending",
+              "level": "task",
+              "description": "Validate that hench and rex init commands properly create valid config.json and prd.json files",
+              "acceptanceCriteria": [
+                "Hench init creates valid config.json",
+                "Rex init creates valid prd.json",
+                "Both commands are idempotent on re-run"
+              ],
+              "priority": "medium",
+              "tags": [
+                "init",
+                "validation"
+              ],
+              "source": "llm"
+            },
             {
               "id": "c5e370a3-8849-4816-ac4d-f76d95417ffd",
               "title": "Validate update command parameters",
@@ -1823,6 +1559,225 @@
                 "cmdStatus"
               ],
               "source": "llm"
+            }
+          ]
+        },
+        {
+          "id": "749a57e8-c3c2-4a85-9603-298f69766902",
+          "title": "Configuration Management",
+          "status": "pending",
+          "level": "feature",
+          "description": "Robust configuration loading, validation, and project-level overrides",
+          "source": "llm",
+          "children": [
+            {
+              "id": "c70b3fac-76ff-4563-9b99-0a35dfad37f3",
+              "title": "Implement project-level configuration merging",
+              "status": "pending",
+              "level": "task",
+              "description": "Support .n-dx.json files that override default configurations",
+              "acceptanceCriteria": [
+                "Loads config without .n-dx.json",
+                "Merges .n-dx.json overrides into config",
+                "Deep merges nested guard overrides",
+                "Project config overrides array values entirely",
+                "Ignores .n-dx.json with no hench section",
+                "Ignores .n-dx.json with no rex section"
+              ],
+              "priority": "medium",
+              "tags": [
+                "project-config merge"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "bb7791ec-b388-44cd-8b8f-91754bbe0b87",
+              "title": "Add configuration defaults and validation",
+              "status": "completed",
+              "level": "task",
+              "description": "Provide sensible defaults and validate configuration values. All three config fields (tokenBudget, maxFailedAttempts, loopPauseMs) are optional in the Zod schema with sensible defaults, and validated against invalid values. Comprehensive test coverage added.",
+              "acceptanceCriteria": [
+                "tokenBudget is optional in schema and defaults to 0 (unlimited)",
+                "maxFailedAttempts is optional in schema and defaults to 3",
+                "loopPauseMs is optional in schema and defaults to 2000",
+                "maxFailedAttempts can be customised in config",
+                "loopPauseMs can be customised in config",
+                "rejects maxFailedAttempts of 0",
+                "rejects negative maxFailedAttempts",
+                "tokenBudget can be set to a positive value",
+                "rejects negative tokenBudget",
+                "accepts tokenBudget of 0 (unlimited)",
+                "validates existing configs without tokenBudget field (backward compat)",
+                "rejects negative loopPauseMs"
+              ],
+              "priority": "high",
+              "tags": [
+                "stuck task config defaults",
+                "token budget config defaults",
+                "loop config defaults"
+              ],
+              "source": "llm",
+              "startedAt": "2026-02-05T02:04:22.162Z",
+              "completedAt": "2026-02-05T02:08:35.294Z"
+            },
+            {
+              "id": "e7e40a00-1ddd-4588-92d8-43805607f123",
+              "title": "Enhance configuration display",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve how configuration is displayed and retrieved",
+              "acceptanceCriteria": [
+                "displays all package configs",
+                "skips missing packages gracefully",
+                "gets a string value by dotted key",
+                "gets a number value",
+                "gets a nested value",
+                "gets an array value",
+                "gets a whole package config by name"
+              ],
+              "priority": "medium",
+              "tags": [
+                "n-dx config",
+                "display"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "275e8400-3aff-4362-a496-c3b422eb5f7f",
+              "title": "Improve configuration setting capabilities",
+              "status": "pending",
+              "level": "task",
+              "description": "Enhance configuration modification and validation",
+              "acceptanceCriteria": [
+                "gets rex value",
+                "sets a rex value",
+                "sets a nested value",
+                "sets a string value",
+                "sets a number value with type coercion",
+                "adds a new optional field"
+              ],
+              "priority": "medium",
+              "tags": [
+                "n-dx config",
+                "set"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "d6a2f440-619a-4f20-ae31-e9e161d30518",
+              "title": "Enhance JSON output support",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve JSON output formatting for programmatic use",
+              "acceptanceCriteria": [
+                "outputs single value as JSON",
+                "outputs package config as JSON"
+              ],
+              "priority": "low",
+              "tags": [
+                "n-dx config",
+                "json"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "bb6130b9-3c07-4a13-84ec-f3b85657444e",
+              "title": "Strengthen configuration validation",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve validation rules and error handling for configuration changes",
+              "acceptanceCriteria": [
+                "errors on missing key",
+                "errors on missing package",
+                "prevents modifying schema version",
+                "prevents setting sourcevision (read-only)",
+                "prevents setting an object key directly",
+                "rejects unknown package name"
+              ],
+              "priority": "high",
+              "tags": [
+                "n-dx config",
+                "validation"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "449dd34d-3656-4376-83af-945a2b4d20b0",
+              "title": "Enhance configuration documentation",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve help text and documentation for configuration options",
+              "acceptanceCriteria": [
+                "documents all rex config keys",
+                "documents all hench config keys",
+                "documents all hench guard keys",
+                "notes sourcevision is read-only",
+                "documents type coercion rules",
+                "includes usage examples",
+                "documents .n-dx.json project config"
+              ],
+              "priority": "low",
+              "tags": [
+                "n-dx config",
+                "help"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "924a8058-540b-4e4d-8047-57126c887800",
+              "title": "Implement project-level configuration support",
+              "status": "pending",
+              "level": "task",
+              "description": "Add support for .n-dx.json project-level configuration files",
+              "acceptanceCriteria": [
+                "reads .n-dx.json and merges with package configs",
+                "project config takes precedence over package config",
+                "deep merges nested objects",
+                "set writes to package config, not .n-dx.json",
+                "array override replaces entire array"
+              ],
+              "priority": "medium",
+              "tags": [
+                "n-dx config",
+                "project config"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "78488756-9b00-4690-a926-cd7869bcb0c0",
+              "title": "Implement loop controls with abort capability",
+              "status": "pending",
+              "level": "task",
+              "description": "Add configurable pause mechanism with abort signal support",
+              "acceptanceCriteria": [
+                "Resolves after the specified delay",
+                "Resolves immediately for 0ms delay",
+                "Can be aborted via AbortSignal"
+              ],
+              "priority": "medium",
+              "tags": [
+                "loopPause"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "26961fc1-9711-4dee-beda-b698b1a48384",
+              "title": "Add task failure handling",
+              "status": "completed",
+              "level": "task",
+              "description": "Properly handle various task failure scenarios with appropriate status updates.\n\n## Implementation\n\nAll three failure handling paths are implemented in `packages/hench/src/agent/loop.ts`:\n\n1. **Uncaught exception** (lines 325-334): catch block marks task as `deferred`, logs `task_failed` event\n2. **Timeout** (lines 315-323): when loop exits while still `running`, marks task as `deferred`, logs `task_failed` event  \n3. **Budget exceeded** (lines 222-234): per-turn budget check marks task as `pending` (recoverable), logs `budget_exceeded` event\n\nTests: `packages/hench/tests/unit/agent/task-failure.test.ts` (3 tests, all passing)",
+              "acceptanceCriteria": [
+                "Marks task as deferred on uncaught exception and logs error",
+                "Marks task as deferred on timeout and logs error",
+                "Marks task as pending on budget exceeded and logs error"
+              ],
+              "priority": "high",
+              "tags": [
+                "API loop task failure handling"
+              ],
+              "source": "llm",
+              "startedAt": "2026-02-05T02:12:18.093Z",
+              "completedAt": "2026-02-05T02:14:59.350Z"
             }
           ]
         },
@@ -1992,17 +1947,7 @@
                 "formatBudgetWarnings"
               ],
               "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "d3962642-490e-4e7e-aa2a-12e769806958",
-          "title": "Context Generation Enhancement",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improved context and documentation generation",
-          "source": "llm",
-          "children": [
+            },
             {
               "id": "35c1313b-473c-41d8-aca2-40e06306a029",
               "title": "Enhance context generation",
@@ -2098,203 +2043,6 @@
               "completedAt": "2026-02-05T14:59:06.856Z"
             }
           ]
-        },
-        {
-          "id": "c85284cc-fb7b-4a5d-a912-1c196a8694da",
-          "title": "Configuration Management Enhancement",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve configuration display, validation, and project-level support",
-          "source": "llm",
-          "children": [
-            {
-              "id": "e7e40a00-1ddd-4588-92d8-43805607f123",
-              "title": "Enhance configuration display",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve how configuration is displayed and retrieved",
-              "acceptanceCriteria": [
-                "displays all package configs",
-                "skips missing packages gracefully",
-                "gets a string value by dotted key",
-                "gets a number value",
-                "gets a nested value",
-                "gets an array value",
-                "gets a whole package config by name"
-              ],
-              "priority": "medium",
-              "tags": [
-                "n-dx config",
-                "display"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "275e8400-3aff-4362-a496-c3b422eb5f7f",
-              "title": "Improve configuration setting capabilities",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance configuration modification and validation",
-              "acceptanceCriteria": [
-                "gets rex value",
-                "sets a rex value",
-                "sets a nested value",
-                "sets a string value",
-                "sets a number value with type coercion",
-                "adds a new optional field"
-              ],
-              "priority": "medium",
-              "tags": [
-                "n-dx config",
-                "set"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "d6a2f440-619a-4f20-ae31-e9e161d30518",
-              "title": "Enhance JSON output support",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve JSON output formatting for programmatic use",
-              "acceptanceCriteria": [
-                "outputs single value as JSON",
-                "outputs package config as JSON"
-              ],
-              "priority": "low",
-              "tags": [
-                "n-dx config",
-                "json"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "bb6130b9-3c07-4a13-84ec-f3b85657444e",
-              "title": "Strengthen configuration validation",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve validation rules and error handling for configuration changes",
-              "acceptanceCriteria": [
-                "errors on missing key",
-                "errors on missing package",
-                "prevents modifying schema version",
-                "prevents setting sourcevision (read-only)",
-                "prevents setting an object key directly",
-                "rejects unknown package name"
-              ],
-              "priority": "high",
-              "tags": [
-                "n-dx config",
-                "validation"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "449dd34d-3656-4376-83af-945a2b4d20b0",
-              "title": "Enhance configuration documentation",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve help text and documentation for configuration options",
-              "acceptanceCriteria": [
-                "documents all rex config keys",
-                "documents all hench config keys",
-                "documents all hench guard keys",
-                "notes sourcevision is read-only",
-                "documents type coercion rules",
-                "includes usage examples",
-                "documents .n-dx.json project config"
-              ],
-              "priority": "low",
-              "tags": [
-                "n-dx config",
-                "help"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "924a8058-540b-4e4d-8047-57126c887800",
-              "title": "Implement project-level configuration support",
-              "status": "pending",
-              "level": "task",
-              "description": "Add support for .n-dx.json project-level configuration files",
-              "acceptanceCriteria": [
-                "reads .n-dx.json and merges with package configs",
-                "project config takes precedence over package config",
-                "deep merges nested objects",
-                "set writes to package config, not .n-dx.json",
-                "array override replaces entire array"
-              ],
-              "priority": "medium",
-              "tags": [
-                "n-dx config",
-                "project config"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "4fcc80be-58dc-49e2-a74b-2db48ca1dd6a",
-          "title": "Output and User Experience",
-          "status": "pending",
-          "level": "feature",
-          "description": "Better visual feedback and formatting for CLI users",
-          "source": "llm",
-          "children": [
-            {
-              "id": "7bf85b90-9b9c-4512-a109-a6526fcbbddc",
-              "title": "Add progress bars to status command",
-              "status": "pending",
-              "level": "task",
-              "description": "n-dx status should show a progress bar per epic",
-              "acceptanceCriteria": [
-                "Visual progress bars for each epic",
-                "Percentage completion shown",
-                "Clear progress indication"
-              ],
-              "priority": "low",
-              "tags": [
-                "cli",
-                "ui"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "4f3837a7-f924-4dc6-b747-735b6a2c535b",
-              "title": "Stream hench output with section headers",
-              "status": "pending",
-              "level": "task",
-              "description": "n-dx work should stream hench output in real-time with clear section headers",
-              "acceptanceCriteria": [
-                "Real-time output streaming",
-                "Clear section demarcation",
-                "Readable progress updates"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cli",
-                "ui"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "d5b44a04-59c3-4832-8ede-0bb7ae47e477",
-              "title": "Add quiet mode for scripting",
-              "status": "pending",
-              "level": "task",
-              "description": "Add --quiet flag across all commands for scripting use",
-              "acceptanceCriteria": [
-                "Suppresses progress output",
-                "Maintains essential error output",
-                "Consistent across all commands"
-              ],
-              "priority": "low",
-              "tags": [
-                "cli",
-                "scripting"
-              ],
-              "source": "llm"
-            }
-          ]
         }
       ]
     },
@@ -2366,209 +2114,11 @@
                 "analysis"
               ],
               "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "d9c40582-36ed-4426-862a-5dad0a402e3c",
-          "title": "LLM Integration Robustness",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve reliability of AI-powered analysis",
-          "source": "llm",
-          "children": [
-            {
-              "id": "53825594-2a47-4a28-9cfd-b41960d92b3d",
-              "title": "Enhance JSON extraction and repair",
-              "status": "completed",
-              "level": "task",
-              "description": "Improve extractJson and repairTruncatedJson functions",
-              "acceptanceCriteria": [
-                "Truncated JSON responses are repaired correctly",
-                "Invalid JSON is handled gracefully",
-                "Retry logic works for parsing failures"
-              ],
-              "priority": "high",
-              "tags": [
-                "ai",
-                "parsing"
-              ],
-              "source": "llm",
-              "startedAt": "2026-02-05T02:57:46.268Z",
-              "completedAt": "2026-02-05T03:08:54.338Z"
             },
-            {
-              "id": "b152ce55-8c25-45a7-b712-6d7fa9c1203e",
-              "title": "Optimize scan result chunking",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve chunkScanResults for large analysis jobs",
-              "acceptanceCriteria": [
-                "Large codebases are chunked appropriately",
-                "Context is preserved across chunks",
-                "Memory usage is optimized"
-              ],
-              "priority": "medium",
-              "tags": [
-                "performance",
-                "analysis"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "c6c06d43-c2d9-4da8-b68a-ecfaf946d305",
-          "title": "Token Usage Tracking",
-          "status": "pending",
-          "level": "feature",
-          "description": "Comprehensive tracking and reporting of Claude API token consumption",
-          "source": "llm",
-          "children": [
-            {
-              "id": "553cef28-1f04-4870-9d1a-678dbed19668",
-              "title": "Implement token extraction from API responses",
-              "status": "pending",
-              "level": "task",
-              "description": "Extract token usage data from Claude API streaming responses",
-              "acceptanceCriteria": [
-                "Extracts token usage from assistant event with message.usage",
-                "Extracts cache token fields from assistant event",
-                "Does not set cache fields when not present in usage",
-                "Handles assistant event without usage field",
-                "Extracts fallback token totals from result event",
-                "Does not overwrite per-turn accumulated tokens from result event",
-                "Handles string message assistant events (no usage)",
-                "Ignores non-JSON lines"
-              ],
-              "priority": "high",
-              "tags": [
-                "processStreamLine token tracking"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "8aa36d0d-ee60-45cb-9e1a-9a404b187ca4",
-              "title": "Build token accumulation system",
-              "status": "pending",
-              "level": "task",
-              "description": "Accumulate token usage across multiple API turns and sessions",
-              "acceptanceCriteria": [
-                "Accumulates tokens across multiple turns",
-                "Accumulates cache tokens across turns",
-                "Accumulates cache tokens when present",
-                "Accumulates across multiple log entries",
-                "Does not set cache fields when not provided"
-              ],
-              "priority": "medium",
-              "tags": [
-                "accumulateTokenUsage",
-                "extractRexTokenUsage"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "66ccb0ca-13f1-44e2-bd6d-8fae2359b0c2",
-              "title": "Implement token budget controls",
-              "status": "pending",
-              "level": "task",
-              "description": "Enforce token budget limits and provide budget checking",
-              "acceptanceCriteria": [
-                "Counts both input and output tokens toward budget",
-                "Handles zero usage correctly"
-              ],
-              "priority": "medium",
-              "tags": [
-                "checkTokenBudget"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "7514d08b-4b97-4eea-9108-8b10e06f81d5",
-              "title": "Improve token usage parsing",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance parsing of token usage from Claude API streaming responses",
-              "acceptanceCriteria": [
-                "extracts tokens from top-level fields",
-                "extracts from nested usage object",
-                "extracts cache tokens from nested usage object",
-                "prefers top-level fields over nested usage"
-              ],
-              "priority": "medium",
-              "tags": [
-                "parseStreamTokenUsage"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "fe3eb56e-a017-4e19-980d-d3590b632824",
-          "title": "File and Format Detection",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve file handling and format detection capabilities",
-          "source": "llm",
-          "children": [
-            {
-              "id": "72444020-200d-4aee-bc4a-34b223d74925",
-              "title": "Enhance file format detection",
-              "status": "pending",
-              "level": "task",
-              "description": "Detect file formats including handling full paths",
-              "acceptanceCriteria": [
-                "Handles commands with full paths",
-                "Handles full paths"
-              ],
-              "priority": "low",
-              "tags": [
-                "detectFileFormat"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "69627531-753f-4576-be5a-184a3db6e373",
-          "title": "JSON Processing Robustness",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve handling of malformed and truncated JSON responses",
-          "source": "llm",
-          "children": [
-            {
-              "id": "2d88295f-93ac-44ac-aab4-1e94ada32bcb",
-              "title": "Handle escaped characters in JSON strings",
-              "status": "pending",
-              "level": "task",
-              "description": "Process escaped characters correctly in JSON parsing",
-              "acceptanceCriteria": [
-                "handles single-character strings",
-                "handles escaped characters inside strings"
-              ],
-              "priority": "medium",
-              "tags": [
-                "json",
-                "parsing",
-                "robustness"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "1d5db975-c2c0-4cc7-ad48-a5496bd1e467",
-          "title": "Scan Result Deduplication",
-          "status": "pending",
-          "level": "feature",
-          "description": "Advanced deduplication logic for scan results",
-          "source": "llm",
-          "children": [
             {
               "id": "aef1c182-56b1-4d01-829a-50d7fbe85a07",
               "title": "Implement intelligent result merging",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Merge similar scan results while preserving distinct ones",
               "acceptanceCriteria": [
@@ -2590,262 +2140,10 @@
                 "scanning",
                 "optimization"
               ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "5a053cd2-3b57-4f6b-8db0-f87f10ad9401",
-          "title": "Diff and Reconciliation",
-          "status": "pending",
-          "level": "feature",
-          "description": "Advanced diffing between proposals and existing PRD items",
-          "source": "llm",
-          "children": [
-            {
-              "id": "401c3c78-1fec-4402-9c07-eb0dc4af614f",
-              "title": "Implement proposal diffing system",
-              "status": "pending",
-              "level": "task",
-              "description": "Compare new proposals against existing PRD structure",
-              "acceptanceCriteria": [
-                "marks existing epics that match proposals",
-                "marks existing features under existing epics",
-                "marks existing tasks as unchanged",
-                "handles multiple epics with mixed existing/new",
-                "counts unchanged items separately from additions"
-              ],
-              "priority": "high",
-              "tags": [
-                "diffing",
-                "reconciliation",
-                "analysis"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "cb40a429-3964-4061-bb2b-2b4efbf5cae7",
-          "title": "LLM Response Processing",
-          "status": "pending",
-          "level": "feature",
-          "description": "Robust parsing and validation of LLM-generated content",
-          "source": "llm",
-          "children": [
-            {
-              "id": "8d448bbb-3a2e-43e6-b7a9-2acc8fa44b38",
-              "title": "Implement robust LLM response parsing",
-              "status": "pending",
-              "level": "task",
-              "description": "Parse LLM responses with fallback mechanisms for malformed content",
-              "acceptanceCriteria": [
-                "parses a single-epic response with features and tasks",
-                "handles malformed LLM response gracefully by returning ready",
-                "handles AI response wrapped in markdown fences",
-                "includes previous exchanges in the prompt",
-                "includes project context in the prompt when provided",
-                "includes few-shot example in the prompt"
-              ],
-              "priority": "high",
-              "tags": [
-                "llm",
-                "parsing",
-                "robustness"
-              ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T17:22:11.614Z",
+              "completedAt": "2026-02-05T17:26:11.212Z"
             },
-            {
-              "id": "a25d13dc-417e-4020-939c-0a350f5e98de",
-              "title": "Enhance proposal building logic",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve how scan results are organized into structured proposals",
-              "acceptanceCriteria": [
-                "groups results by epic inferred from tags",
-                "deduplicates results with same name and kind",
-                "prioritizes by priority (critical first)",
-                "places tasks under features from same sourceFile",
-                "handles explicit epics from scan results",
-                "creates implicit features for orphan tasks"
-              ],
-              "priority": "medium",
-              "tags": [
-                "proposals",
-                "organization",
-                "structuring"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "f0648a2a-df92-4773-9238-3b758387f9f4",
-          "title": "Prompt Engineering",
-          "status": "pending",
-          "level": "feature",
-          "description": "Optimize prompts for better LLM responses",
-          "source": "llm",
-          "children": [
-            {
-              "id": "04470729-8b31-44f3-86fe-606446f7b9d9",
-              "title": "Improve add command prompts",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance prompts for the smart add functionality",
-              "acceptanceCriteria": [
-                "includes existing PRD summary when items exist",
-                "instructs LLM to return JSON array of proposals",
-                "includes quality guidance about task descriptions",
-                "instructs LLM to avoid cross-description duplicates",
-                "handles response with multiple epics for broader descriptions"
-              ],
-              "priority": "medium",
-              "tags": [
-                "prompts",
-                "add-command",
-                "llm"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "272d5ffc-a4f6-46f1-ae39-bb63e17b3b95",
-              "title": "Enhance ideas import prompts",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve prompts for importing brainstorming notes",
-              "acceptanceCriteria": [
-                "includes the brainstorming notes in the prompt",
-                "is distinct from formal spec import prompts",
-                "instructs LLM to handle ambiguous ideas"
-              ],
-              "priority": "medium",
-              "tags": [
-                "prompts",
-                "ideas",
-                "import"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "a0848c59-2d3b-4fcd-9360-591dec30cf18",
-              "title": "Optimize multi-description prompts",
-              "status": "pending",
-              "level": "task",
-              "description": "Better handling of multiple descriptions in single command",
-              "acceptanceCriteria": [
-                "mentions the description count",
-                "instructs LLM to group related and separate unrelated"
-              ],
-              "priority": "medium",
-              "tags": [
-                "prompts",
-                "multi-description",
-                "grouping"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "337a55bb-aae5-4935-9c44-70a576472516",
-          "title": "File Format Support",
-          "status": "pending",
-          "level": "feature",
-          "description": "Support multiple input file formats for PRD import",
-          "source": "llm",
-          "children": [
-            {
-              "id": "bfe24c09-b4f7-4a4f-9999-80a69cf1d5d9",
-              "title": "Implement structured file parsing",
-              "status": "pending",
-              "level": "task",
-              "description": "Parse JSON and YAML files with flexible schemas",
-              "acceptanceCriteria": [
-                "parses valid JSON array into proposals",
-                "extracts JSON from markdown code fences",
-                "strips code fences without json language tag",
-                "preserves optional fields",
-                "rejects missing epic title",
-                "throws on invalid JSON",
-                "detects markdown from .txt extension",
-                "defaults to markdown for unknown extensions",
-                "merges case-insensitively"
-              ],
-              "priority": "medium",
-              "tags": [
-                "file-formats",
-                "parsing",
-                "import"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "3f8e56b4-9ef6-46d4-a42b-37ed3ab8e4a2",
-              "title": "Support multiple file format schemas",
-              "status": "pending",
-              "level": "task",
-              "description": "Handle various JSON and YAML structures for PRD import",
-              "acceptanceCriteria": [
-                "parses JSON file matching Proposal schema directly",
-                "parses JSON file with flat items array",
-                "parses JSON file with nested objects",
-                "parses YAML file with title/description pairs",
-                "parses YAML file with name fields",
-                "deduplicates against existing PRD items",
-                "preserves description in JSON items"
-              ],
-              "priority": "medium",
-              "tags": [
-                "schemas",
-                "yaml",
-                "json",
-                "flexibility"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "07886998-02ab-4dcb-8862-f38c42ca6866",
-          "title": "Project Context Processing",
-          "status": "pending",
-          "level": "feature",
-          "description": "Enhanced project documentation analysis",
-          "source": "llm",
-          "children": [
-            {
-              "id": "9a6d5e8e-c1c7-46ff-9d6f-976b8dbee8b9",
-              "title": "Improve project context reading",
-              "status": "pending",
-              "level": "task",
-              "description": "Better processing of project documentation files",
-              "acceptanceCriteria": [
-                "reads CLAUDE.md when present",
-                "reads both CLAUDE.md and README.md",
-                "skips empty files",
-                "truncates content exceeding max length",
-                "stops reading files once budget is exhausted",
-                "reads plain README file"
-              ],
-              "priority": "medium",
-              "tags": [
-                "documentation",
-                "context",
-                "analysis"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "61f22106-ba5e-4676-8ad8-5b1617d2f3d3",
-          "title": "Result Processing and Validation",
-          "status": "pending",
-          "level": "feature",
-          "description": "Advanced result processing and quality validation",
-          "source": "llm",
-          "children": [
             {
               "id": "5604c1ad-35f1-4453-87f0-00aeb8524594",
               "title": "Implement proposal merging logic",
@@ -2953,6 +2251,574 @@
                 "warnings"
               ],
               "source": "llm"
+            },
+            {
+              "id": "87bb286d-7eb1-4a98-9394-c85e19f64459",
+              "title": "Implement proposal quality validation system",
+              "status": "pending",
+              "level": "task",
+              "description": "Add validation checks for proposal completeness and quality standards",
+              "acceptanceCriteria": [
+                "warns about tasks missing description and criteria",
+                "warns about very short task titles",
+                "warns about features with no tasks",
+                "accepts tasks with only description (no criteria)",
+                "accepts tasks with only criteria (no description)"
+              ],
+              "priority": "medium",
+              "tags": [
+                "validateProposalQuality"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "d0f2be2c-a57a-4eac-946d-fee5a7bd0012",
+              "title": "Implement cross-proposal validation and counting",
+              "status": "pending",
+              "level": "task",
+              "description": "Add validation that works across multiple proposals and provides accurate counts",
+              "acceptanceCriteria": [
+                "counts across multiple proposals with parentLevel",
+                "reports all issues across multiple proposals",
+                "counts items across multiple proposals"
+              ],
+              "priority": "medium",
+              "tags": [
+                "validateProposalQuality",
+                "countProposalItems"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "401c3c78-1fec-4402-9c07-eb0dc4af614f",
+              "title": "Implement proposal diffing system",
+              "status": "pending",
+              "level": "task",
+              "description": "Compare new proposals against existing PRD structure",
+              "acceptanceCriteria": [
+                "marks existing epics that match proposals",
+                "marks existing features under existing epics",
+                "marks existing tasks as unchanged",
+                "handles multiple epics with mixed existing/new",
+                "counts unchanged items separately from additions"
+              ],
+              "priority": "high",
+              "tags": [
+                "diffing",
+                "reconciliation",
+                "analysis"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "2354d362-6c8f-46df-8532-196f3b6e8aca",
+              "title": "Implement findings-first analysis",
+              "status": "pending",
+              "level": "task",
+              "description": "Support generating structural findings without requiring AI enrichment",
+              "acceptanceCriteria": [
+                "produces structural findings at pass 0 with enrich: false",
+                "generates structural insights without AI",
+                "assigns proximity files to reduce unzoned count"
+              ],
+              "priority": "medium",
+              "tags": [
+                "analyzeZones insights"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "dda88308-2bb6-4ce2-8d00-3ee31f43d2f4",
+              "title": "Maintain backward compatibility for insights",
+              "status": "pending",
+              "level": "task",
+              "description": "Ensure new findings format maintains compatibility with existing insights format",
+              "acceptanceCriteria": [
+                "populates both findings and insights for backward compat",
+                "structural findings have severity based on content"
+              ],
+              "priority": "high",
+              "tags": [
+                "analyzeZones findings"
+              ],
+              "source": "llm"
+            }
+          ]
+        },
+        {
+          "id": "d9c40582-36ed-4426-862a-5dad0a402e3c",
+          "title": "LLM Integration Robustness",
+          "status": "pending",
+          "level": "feature",
+          "description": "Improve reliability of AI-powered analysis",
+          "source": "llm",
+          "children": [
+            {
+              "id": "53825594-2a47-4a28-9cfd-b41960d92b3d",
+              "title": "Enhance JSON extraction and repair",
+              "status": "completed",
+              "level": "task",
+              "description": "Improve extractJson and repairTruncatedJson functions",
+              "acceptanceCriteria": [
+                "Truncated JSON responses are repaired correctly",
+                "Invalid JSON is handled gracefully",
+                "Retry logic works for parsing failures"
+              ],
+              "priority": "high",
+              "tags": [
+                "ai",
+                "parsing"
+              ],
+              "source": "llm",
+              "startedAt": "2026-02-05T02:57:46.268Z",
+              "completedAt": "2026-02-05T03:08:54.338Z"
+            },
+            {
+              "id": "b152ce55-8c25-45a7-b712-6d7fa9c1203e",
+              "title": "Optimize scan result chunking",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve chunkScanResults for large analysis jobs",
+              "acceptanceCriteria": [
+                "Large codebases are chunked appropriately",
+                "Context is preserved across chunks",
+                "Memory usage is optimized"
+              ],
+              "priority": "medium",
+              "tags": [
+                "performance",
+                "analysis"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "8d448bbb-3a2e-43e6-b7a9-2acc8fa44b38",
+              "title": "Implement robust LLM response parsing",
+              "status": "pending",
+              "level": "task",
+              "description": "Parse LLM responses with fallback mechanisms for malformed content",
+              "acceptanceCriteria": [
+                "parses a single-epic response with features and tasks",
+                "handles malformed LLM response gracefully by returning ready",
+                "handles AI response wrapped in markdown fences",
+                "includes previous exchanges in the prompt",
+                "includes project context in the prompt when provided",
+                "includes few-shot example in the prompt"
+              ],
+              "priority": "high",
+              "tags": [
+                "llm",
+                "parsing",
+                "robustness"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "a25d13dc-417e-4020-939c-0a350f5e98de",
+              "title": "Enhance proposal building logic",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve how scan results are organized into structured proposals",
+              "acceptanceCriteria": [
+                "groups results by epic inferred from tags",
+                "deduplicates results with same name and kind",
+                "prioritizes by priority (critical first)",
+                "places tasks under features from same sourceFile",
+                "handles explicit epics from scan results",
+                "creates implicit features for orphan tasks"
+              ],
+              "priority": "medium",
+              "tags": [
+                "proposals",
+                "organization",
+                "structuring"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "34bf31c6-1226-4d0e-8307-552724f1f123",
+              "title": "Handle large result sets with chunking",
+              "status": "completed",
+              "level": "task",
+              "description": "If scan results exceed 100 items, batch into multiple LLM calls",
+              "acceptanceCriteria": [
+                "Automatic chunking for large result sets",
+                "Context preservation across chunks",
+                "Proper merging of chunked results"
+              ],
+              "priority": "high",
+              "tags": [
+                "analysis",
+                "llm"
+              ],
+              "source": "llm",
+              "startedAt": "2026-02-05T15:04:47.376Z",
+              "completedAt": "2026-02-05T15:10:57.247Z"
+            },
+            {
+              "id": "fe192dc5-cd62-4d2d-ab26-370285dfd5e7",
+              "title": "Handle deeply nested tree truncation recovery",
+              "status": "pending",
+              "level": "task",
+              "description": "Implement recovery logic for deeply nested trees (4+ levels) when JSON is truncated",
+              "acceptanceCriteria": [
+                "handles deeply nested truncation",
+                "handles deeply nested trees (4 levels)"
+              ],
+              "priority": "medium",
+              "tags": [
+                "repairTruncatedJson",
+                "findAutoCompletions"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "e72afed7-a785-4716-958a-d8d6eaaef79d",
+              "title": "Implement robust JSON truncation recovery",
+              "status": "pending",
+              "level": "task",
+              "description": "Handle various JSON truncation scenarios including mid-key truncation and partial data",
+              "acceptanceCriteria": [
+                "handles truncation in the middle of a key name",
+                "recovers from truncated JSON",
+                "handles deeply truncated JSON with partial acceptance criteria",
+                "handles JSON with trailing commas from truncation"
+              ],
+              "priority": "high",
+              "tags": [
+                "repairTruncatedJson",
+                "parseProposalResponse"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "a5547b5c-f1e1-491c-8193-a3280771cbf8",
+              "title": "Enhance LLM response parsing with prose handling",
+              "status": "completed",
+              "level": "task",
+              "description": "All acceptance criteria already met by existing implementation and 109 tests. No code changes needed.",
+              "acceptanceCriteria": [
+                "strips leading prose from LLM response",
+                "extracts JSON object wrapped in prose and treats as single-item array",
+                "throws descriptive error when nothing is salvageable",
+                "provides useful error message for non-JSON"
+              ],
+              "priority": "high",
+              "tags": [
+                "parseProposalResponse"
+              ],
+              "source": "llm",
+              "startedAt": "2026-02-05T13:21:13.702Z",
+              "completedAt": "2026-02-05T13:24:01.081Z"
+            },
+            {
+              "id": "2d88295f-93ac-44ac-aab4-1e94ada32bcb",
+              "title": "Handle escaped characters in JSON strings",
+              "status": "pending",
+              "level": "task",
+              "description": "Process escaped characters correctly in JSON parsing",
+              "acceptanceCriteria": [
+                "handles single-character strings",
+                "handles escaped characters inside strings"
+              ],
+              "priority": "medium",
+              "tags": [
+                "json",
+                "parsing",
+                "robustness"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "9a6d5e8e-c1c7-46ff-9d6f-976b8dbee8b9",
+              "title": "Improve project context reading",
+              "status": "pending",
+              "level": "task",
+              "description": "Better processing of project documentation files",
+              "acceptanceCriteria": [
+                "reads CLAUDE.md when present",
+                "reads both CLAUDE.md and README.md",
+                "skips empty files",
+                "truncates content exceeding max length",
+                "stops reading files once budget is exhausted",
+                "reads plain README file"
+              ],
+              "priority": "medium",
+              "tags": [
+                "documentation",
+                "context",
+                "analysis"
+              ],
+              "source": "llm"
+            }
+          ]
+        },
+        {
+          "id": "c6c06d43-c2d9-4da8-b68a-ecfaf946d305",
+          "title": "Token Usage Tracking",
+          "status": "pending",
+          "level": "feature",
+          "description": "Comprehensive tracking and reporting of Claude API token consumption",
+          "source": "llm",
+          "children": [
+            {
+              "id": "553cef28-1f04-4870-9d1a-678dbed19668",
+              "title": "Implement token extraction from API responses",
+              "status": "pending",
+              "level": "task",
+              "description": "Extract token usage data from Claude API streaming responses",
+              "acceptanceCriteria": [
+                "Extracts token usage from assistant event with message.usage",
+                "Extracts cache token fields from assistant event",
+                "Does not set cache fields when not present in usage",
+                "Handles assistant event without usage field",
+                "Extracts fallback token totals from result event",
+                "Does not overwrite per-turn accumulated tokens from result event",
+                "Handles string message assistant events (no usage)",
+                "Ignores non-JSON lines"
+              ],
+              "priority": "high",
+              "tags": [
+                "processStreamLine token tracking"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "8aa36d0d-ee60-45cb-9e1a-9a404b187ca4",
+              "title": "Build token accumulation system",
+              "status": "pending",
+              "level": "task",
+              "description": "Accumulate token usage across multiple API turns and sessions",
+              "acceptanceCriteria": [
+                "Accumulates tokens across multiple turns",
+                "Accumulates cache tokens across turns",
+                "Accumulates cache tokens when present",
+                "Accumulates across multiple log entries",
+                "Does not set cache fields when not provided"
+              ],
+              "priority": "medium",
+              "tags": [
+                "accumulateTokenUsage",
+                "extractRexTokenUsage"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "66ccb0ca-13f1-44e2-bd6d-8fae2359b0c2",
+              "title": "Implement token budget controls",
+              "status": "pending",
+              "level": "task",
+              "description": "Enforce token budget limits and provide budget checking",
+              "acceptanceCriteria": [
+                "Counts both input and output tokens toward budget",
+                "Handles zero usage correctly"
+              ],
+              "priority": "medium",
+              "tags": [
+                "checkTokenBudget"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "7514d08b-4b97-4eea-9108-8b10e06f81d5",
+              "title": "Improve token usage parsing",
+              "status": "pending",
+              "level": "task",
+              "description": "Enhance parsing of token usage from Claude API streaming responses",
+              "acceptanceCriteria": [
+                "extracts tokens from top-level fields",
+                "extracts from nested usage object",
+                "extracts cache tokens from nested usage object",
+                "prefers top-level fields over nested usage"
+              ],
+              "priority": "medium",
+              "tags": [
+                "parseStreamTokenUsage"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "f8c7d2fe-52eb-4960-a728-43f60523f37e",
+              "title": "Enhance token usage parsing from API responses",
+              "status": "pending",
+              "level": "task",
+              "description": "Implement robust token extraction that handles various API response formats and fields",
+              "acceptanceCriteria": [
+                "extracts input and output tokens from envelope",
+                "extracts total_input/output_tokens as fallback",
+                "prefers input_tokens over total_input_tokens",
+                "extracts cache token fields when present",
+                "omits cache fields when they are zero",
+                "handles partial fields (only input or output)"
+              ],
+              "priority": "medium",
+              "tags": [
+                "parseTokenUsage",
+                "parseStreamTokenUsage"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "a9a9d413-1372-4cc4-841a-44c0c214f46a",
+              "title": "Implement token usage accumulation and formatting",
+              "status": "pending",
+              "level": "task",
+              "description": "Build system to accumulate token usage across calls and format for display",
+              "acceptanceCriteria": [
+                "increments call count even when usage is undefined",
+                "accumulates input and output tokens",
+                "formats single call without call count",
+                "formats multiple calls with call count"
+              ],
+              "priority": "medium",
+              "tags": [
+                "accumulateTokenUsage",
+                "formatTokenUsage"
+              ],
+              "source": "llm"
+            }
+          ]
+        },
+        {
+          "id": "fe3eb56e-a017-4e19-980d-d3590b632824",
+          "title": "File and Format Detection",
+          "status": "pending",
+          "level": "feature",
+          "description": "Improve file handling and format detection capabilities",
+          "source": "llm",
+          "children": [
+            {
+              "id": "72444020-200d-4aee-bc4a-34b223d74925",
+              "title": "Enhance file format detection",
+              "status": "pending",
+              "level": "task",
+              "description": "Detect file formats including handling full paths",
+              "acceptanceCriteria": [
+                "Handles commands with full paths",
+                "Handles full paths"
+              ],
+              "priority": "low",
+              "tags": [
+                "detectFileFormat"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "bfe24c09-b4f7-4a4f-9999-80a69cf1d5d9",
+              "title": "Implement structured file parsing",
+              "status": "pending",
+              "level": "task",
+              "description": "Parse JSON and YAML files with flexible schemas",
+              "acceptanceCriteria": [
+                "parses valid JSON array into proposals",
+                "extracts JSON from markdown code fences",
+                "strips code fences without json language tag",
+                "preserves optional fields",
+                "rejects missing epic title",
+                "throws on invalid JSON",
+                "detects markdown from .txt extension",
+                "defaults to markdown for unknown extensions",
+                "merges case-insensitively"
+              ],
+              "priority": "medium",
+              "tags": [
+                "file-formats",
+                "parsing",
+                "import"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "3f8e56b4-9ef6-46d4-a42b-37ed3ab8e4a2",
+              "title": "Support multiple file format schemas",
+              "status": "pending",
+              "level": "task",
+              "description": "Handle various JSON and YAML structures for PRD import",
+              "acceptanceCriteria": [
+                "parses JSON file matching Proposal schema directly",
+                "parses JSON file with flat items array",
+                "parses JSON file with nested objects",
+                "parses YAML file with title/description pairs",
+                "parses YAML file with name fields",
+                "deduplicates against existing PRD items",
+                "preserves description in JSON items"
+              ],
+              "priority": "medium",
+              "tags": [
+                "schemas",
+                "yaml",
+                "json",
+                "flexibility"
+              ],
+              "source": "llm"
+            }
+          ]
+        },
+        {
+          "id": "f0648a2a-df92-4773-9238-3b758387f9f4",
+          "title": "Prompt Engineering",
+          "status": "pending",
+          "level": "feature",
+          "description": "Optimize prompts for better LLM responses",
+          "source": "llm",
+          "children": [
+            {
+              "id": "04470729-8b31-44f3-86fe-606446f7b9d9",
+              "title": "Improve add command prompts",
+              "status": "pending",
+              "level": "task",
+              "description": "Enhance prompts for the smart add functionality",
+              "acceptanceCriteria": [
+                "includes existing PRD summary when items exist",
+                "instructs LLM to return JSON array of proposals",
+                "includes quality guidance about task descriptions",
+                "instructs LLM to avoid cross-description duplicates",
+                "handles response with multiple epics for broader descriptions"
+              ],
+              "priority": "medium",
+              "tags": [
+                "prompts",
+                "add-command",
+                "llm"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "272d5ffc-a4f6-46f1-ae39-bb63e17b3b95",
+              "title": "Enhance ideas import prompts",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve prompts for importing brainstorming notes",
+              "acceptanceCriteria": [
+                "includes the brainstorming notes in the prompt",
+                "is distinct from formal spec import prompts",
+                "instructs LLM to handle ambiguous ideas"
+              ],
+              "priority": "medium",
+              "tags": [
+                "prompts",
+                "ideas",
+                "import"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "a0848c59-2d3b-4fcd-9360-591dec30cf18",
+              "title": "Optimize multi-description prompts",
+              "status": "pending",
+              "level": "task",
+              "description": "Better handling of multiple descriptions in single command",
+              "acceptanceCriteria": [
+                "mentions the description count",
+                "instructs LLM to group related and separate unrelated"
+              ],
+              "priority": "medium",
+              "tags": [
+                "prompts",
+                "multi-description",
+                "grouping"
+              ],
+              "source": "llm"
             }
           ]
         },
@@ -3043,17 +2909,7 @@
                 "findActionableTasks"
               ],
               "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "d12497c3-4c2d-49fa-9061-06eb43454d99",
-          "title": "Parent Completion Detection",
-          "status": "pending",
-          "level": "feature",
-          "description": "Automatic detection and handling of parent item completion",
-          "source": "llm",
-          "children": [
+            },
             {
               "id": "bc9b3d74-39e7-4f88-a0ad-8a72bfb8696b",
               "title": "Implement completion propagation",
@@ -3368,6 +3224,21 @@
                 "analyzeInventory"
               ],
               "source": "llm"
+            },
+            {
+              "id": "e4b1322b-0533-4d46-9ede-431ed316a6d0",
+              "title": "Improve structure hash independence",
+              "status": "pending",
+              "level": "task",
+              "description": "Ensure structural hashing is based only on file groupings, not labels",
+              "acceptanceCriteria": [
+                "is independent of zone ID or name (only file groupings matter)"
+              ],
+              "priority": "medium",
+              "tags": [
+                "computeStructureHash"
+              ],
+              "source": "llm"
             }
           ]
         },
@@ -3453,74 +3324,6 @@
           ]
         },
         {
-          "id": "23683ec5-a59c-41ac-91da-7cc44efd79a0",
-          "title": "Structural Hash Consistency",
-          "status": "pending",
-          "level": "feature",
-          "description": "Ensure structural analysis produces consistent results",
-          "source": "llm",
-          "children": [
-            {
-              "id": "e4b1322b-0533-4d46-9ede-431ed316a6d0",
-              "title": "Improve structure hash independence",
-              "status": "pending",
-              "level": "task",
-              "description": "Ensure structural hashing is based only on file groupings, not labels",
-              "acceptanceCriteria": [
-                "is independent of zone ID or name (only file groupings matter)"
-              ],
-              "priority": "medium",
-              "tags": [
-                "computeStructureHash"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "91d1e1f5-d76e-4435-a277-608e30d3baf7",
-          "title": "Findings Integration",
-          "status": "pending",
-          "level": "feature",
-          "description": "Enhance integration between structural analysis and AI-generated findings",
-          "source": "llm",
-          "children": [
-            {
-              "id": "2354d362-6c8f-46df-8532-196f3b6e8aca",
-              "title": "Implement findings-first analysis",
-              "status": "pending",
-              "level": "task",
-              "description": "Support generating structural findings without requiring AI enrichment",
-              "acceptanceCriteria": [
-                "produces structural findings at pass 0 with enrich: false",
-                "generates structural insights without AI",
-                "assigns proximity files to reduce unzoned count"
-              ],
-              "priority": "medium",
-              "tags": [
-                "analyzeZones insights"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "dda88308-2bb6-4ce2-8d00-3ee31f43d2f4",
-              "title": "Maintain backward compatibility for insights",
-              "status": "pending",
-              "level": "task",
-              "description": "Ensure new findings format maintains compatibility with existing insights format",
-              "acceptanceCriteria": [
-                "populates both findings and insights for backward compat",
-                "structural findings have severity based on content"
-              ],
-              "priority": "high",
-              "tags": [
-                "analyzeZones findings"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
           "id": "8ddf135c-6f39-4a94-bba1-83c0a2674cc7",
           "title": "Scanner Enhancements",
           "status": "pending",
@@ -3528,24 +3331,6 @@
           "description": "Improve individual scanner output quality and filtering",
           "source": "llm",
           "children": [
-            {
-              "id": "b0857e02-93a2-49ee-a2ed-793cf2f88201",
-              "title": "Filter auto-generated files from scanDocs",
-              "status": "pending",
-              "level": "task",
-              "description": "Ignore auto-generated files in dist/, .sourcevision/, and similar directories",
-              "acceptanceCriteria": [
-                "Excludes dist/ and build directories",
-                "Skips .sourcevision/ generated content",
-                "Configurable exclusion patterns"
-              ],
-              "priority": "medium",
-              "tags": [
-                "analysis",
-                "docs"
-              ],
-              "source": "llm"
-            },
             {
               "id": "e6615ff0-9b2f-4e35-bd69-51e0b06e68db",
               "title": "Enhance scanSourceVision output",
@@ -3565,170 +3350,106 @@
               "source": "llm",
               "startedAt": "2026-02-05T13:24:32.287Z",
               "completedAt": "2026-02-05T13:29:18.183Z"
-            },
-            {
-              "id": "cf07f0e1-caf2-4724-aedd-53a79a492d2f",
-              "title": "Add scanPackageJson scanner",
-              "status": "pending",
-              "level": "task",
-              "description": "Extract scripts, dependencies, and engine requirements as potential tasks",
-              "acceptanceCriteria": [
-                "Identifies outdated dependencies",
-                "Suggests script improvements",
-                "Flags engine compatibility issues"
-              ],
-              "priority": "medium",
-              "tags": [
-                "analysis",
-                "package"
-              ],
-              "source": "llm"
             }
           ]
         },
         {
-          "id": "432d74d6-85b4-40b6-9cfa-cb12adbe62c7",
-          "title": "LLM Processing Improvements",
+          "id": "3e493079-5986-4fa7-875f-9dc6879183af",
+          "title": "Zone Architecture Enhancement",
           "status": "pending",
           "level": "feature",
-          "description": "Better LLM reasoning with context and chunking",
+          "description": "Improve zone-based code organization and reduce coupling",
           "source": "llm",
           "children": [
             {
-              "id": "6ced7f13-8dfe-4138-b1ec-a1109082b04c",
-              "title": "Include project context in LLM prompt",
-              "status": "pending",
-              "level": "task",
-              "description": "Add project's CLAUDE.md or README to reasonFromScanResults prompt",
-              "acceptanceCriteria": [
-                "Project context included in LLM calls",
-                "Better alignment with project goals",
-                "More relevant task suggestions"
-              ],
-              "priority": "high",
-              "tags": [
-                "analysis",
-                "llm"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "f59dfd66-df8d-48e2-b185-388ec5c58e29",
-              "title": "Implement duplicate merging",
-              "status": "pending",
-              "level": "task",
-              "description": "LLM should merge near-duplicate scan results like Login from tests and Login Flow from docs",
-              "acceptanceCriteria": [
-                "Identifies semantically similar tasks",
-                "Merges duplicates intelligently",
-                "Preserves important details from both sources"
-              ],
-              "priority": "medium",
-              "tags": [
-                "analysis",
-                "llm"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "e31f84c2-a10d-4283-bbd9-8401220d33e5",
-              "title": "Add model selection for analyze",
-              "status": "pending",
-              "level": "task",
-              "description": "Add --model flag to rex analyze to override default model for LLM reasoning",
-              "acceptanceCriteria": [
-                "Supports multiple model options",
-                "Fallback to default when model unavailable",
-                "Model choice documented in help"
-              ],
-              "priority": "low",
-              "tags": [
-                "analysis",
-                "llm"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "34bf31c6-1226-4d0e-8307-552724f1f123",
-              "title": "Handle large result sets with chunking",
+              "id": "bc578874-916e-4148-b3de-84ddba2fbd54",
+              "title": "Extract shared types to break circular dependencies",
               "status": "completed",
               "level": "task",
-              "description": "If scan results exceed 100 items, batch into multiple LLM calls",
+              "description": "Create packages/hench/src/types/index.ts with shared interfaces like RunContext and ToolResult, then re-export from both CLI and core modules",
               "acceptanceCriteria": [
-                "Automatic chunking for large result sets",
-                "Context preservation across chunks",
-                "Proper merging of chunked results"
+                "Shared types module created with RunContext and ToolResult interfaces",
+                "Bidirectional imports between CLI and core are eliminated",
+                "All existing functionality preserved after refactor"
               ],
               "priority": "high",
               "tags": [
-                "analysis",
-                "llm"
+                "hench-core",
+                "architecture"
               ],
               "source": "llm",
-              "startedAt": "2026-02-05T15:04:47.376Z",
-              "completedAt": "2026-02-05T15:10:57.247Z"
-            }
-          ]
-        },
-        {
-          "id": "7b5d31be-f1e4-40ab-95eb-bcf6e353b9de",
-          "title": "File Import Capabilities",
-          "status": "pending",
-          "level": "feature",
-          "description": "Enhanced file input support for PRD generation",
-          "source": "llm",
-          "children": [
+              "startedAt": "2026-02-05T13:48:22.381Z",
+              "completedAt": "2026-02-05T13:54:48.374Z"
+            },
             {
-              "id": "33220950-6638-44e0-bb6d-cef532667772",
-              "title": "Support multiple input files",
+              "id": "2f741c6f-0af4-42cc-9bd4-84ec00aed789",
+              "title": "Split Hench zone into focused modules",
               "status": "pending",
               "level": "task",
-              "description": "Allow rex analyze --file=spec1.md --file=spec2.md with multiple file flags",
+              "description": "Split the 32-file Hench 2 zone into hench-core (run loop, context) and hench-tooling (tool definitions, execution) for better separation of concerns",
               "acceptanceCriteria": [
-                "Multiple --file flags supported",
-                "Files processed in order specified",
-                "Combined analysis across all files"
+                "Hench-core module contains run loop and context management",
+                "Hench-tooling module contains tool definitions and execution",
+                "Each module has clear responsibilities and minimal coupling"
               ],
-              "priority": "medium",
+              "priority": "high",
               "tags": [
-                "analysis",
-                "import"
+                "hench-core",
+                "architecture"
               ],
               "source": "llm"
             },
             {
-              "id": "30c14752-81a6-414d-9e48-a5720d5072f7",
-              "title": "Add JSON and YAML import support",
+              "id": "471ba9ad-3e03-4c07-a3a9-06bc25d8e148",
+              "title": "Reorganize agent directory structure",
               "status": "pending",
               "level": "task",
-              "description": "Support JSON and YAML input files, detecting format by extension",
+              "description": "Split agent/ into lifecycle (loop, cli-loop), planning (brief, prompt), and analysis (review, summary, stuck) subdirectories for better organization",
               "acceptanceCriteria": [
-                "JSON file import works",
-                "YAML file import works",
-                "Format auto-detected by extension"
+                "Agent directory split into logical subdirectories",
+                "All imports updated to reflect new structure",
+                "No functionality broken by reorganization"
               ],
               "priority": "medium",
               "tags": [
-                "analysis",
-                "import"
+                "hench-core",
+                "organization"
               ],
               "source": "llm"
             },
             {
-              "id": "eccbaddf-5283-42ec-b2fb-429075a76075",
-              "title": "Show import diff before accepting",
+              "id": "43438e05-3a59-4719-94bf-363948ecdbb0",
+              "title": "Audit command parsing logic for duplication",
               "status": "pending",
               "level": "task",
-              "description": "Display diff against existing PRD items before accepting import",
+              "description": "Review shell.ts and guard/commands.ts for duplicated command parsing and validation logic, consolidate where appropriate",
               "acceptanceCriteria": [
-                "Shows what will be added/changed",
-                "Clear diff format",
-                "User confirmation before applying"
+                "Duplicated command parsing logic identified",
+                "Consolidated parsing logic where appropriate",
+                "No functionality lost in consolidation"
               ],
               "priority": "medium",
               "tags": [
-                "analysis",
-                "import"
+                "hench-tooling",
+                "code-quality"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "08356c3f-deb5-4131-a0ad-327522d2e3ab",
+              "title": "Integrate ci.js into main orchestration flow",
+              "status": "pending",
+              "level": "task",
+              "description": "Verify if ci.js should be documented separately or wired into cli.js as part of the main orchestration flow",
+              "acceptanceCriteria": [
+                "ci.js integration status clarified",
+                "Either properly integrated into cli.js or documented as standalone",
+                "No orphaned functionality in codebase"
+              ],
+              "priority": "medium",
+              "tags": [
+                "orchestration",
+                "integration"
               ],
               "source": "llm"
             }
@@ -3806,17 +3527,7 @@
                 "validation"
               ],
               "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "7c02253b-604f-4661-8cbb-e72d78f82b76",
-          "title": "Task Verification System",
-          "status": "pending",
-          "level": "feature",
-          "description": "Implement automated task verification against acceptance criteria",
-          "source": "llm",
-          "children": [
+            },
             {
               "id": "18d30912-8cf0-4e84-9dae-3f5e18403b64",
               "title": "Add keyword extraction for matching",
@@ -3832,6 +3543,99 @@
               "tags": [
                 "nlp",
                 "matching"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "72a0b52f-4413-4ec8-9fed-ad8af1f47bfb",
+              "title": "Implement priority-based task sorting",
+              "status": "pending",
+              "level": "task",
+              "description": "Sort tasks by priority with critical tasks first",
+              "acceptanceCriteria": [
+                "prioritizes by priority (critical first)"
+              ],
+              "priority": "medium",
+              "tags": [
+                "sorting",
+                "priority",
+                "task-management"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "cdca0347-b1a1-4de3-a5ef-bc864bdfad58",
+              "title": "Implement proposal reconciliation",
+              "status": "pending",
+              "level": "task",
+              "description": "Reconcile new proposals against existing PRD structure",
+              "acceptanceCriteria": [
+                "preserves non-matching proposals",
+                "handles empty proposals list",
+                "handles nested existing items",
+                "filters when existing title contains proposal name"
+              ],
+              "priority": "medium",
+              "tags": [
+                "reconciliation",
+                "proposals",
+                "matching"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "b73833de-c1c7-4487-a0d0-0fe618912bfc",
+              "title": "Enhance tree traversal",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve tree walking with proper parent chain tracking",
+              "acceptanceCriteria": [
+                "visits all items depth-first",
+                "provides correct parent chains"
+              ],
+              "priority": "medium",
+              "tags": [
+                "walkTree"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "2b0424a1-bda2-45aa-8ab7-3351da5faf18",
+              "title": "Improve tree search and manipulation",
+              "status": "pending",
+              "level": "task",
+              "description": "Enhance tree search and item manipulation operations",
+              "acceptanceCriteria": [
+                "finds root item",
+                "adds child to existing parent",
+                "creates children array if needed",
+                "updates item fields",
+                "removes root item"
+              ],
+              "priority": "medium",
+              "tags": [
+                "findItem",
+                "insertChild",
+                "updateInTree",
+                "removeFromTree"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "02d1ee55-b210-41df-94b3-39a09f6e0586",
+              "title": "Enhance tree statistics",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve tree statistics computation and ID collection",
+              "acceptanceCriteria": [
+                "counts all statuses",
+                "counts nested items",
+                "collects all ids from tree"
+              ],
+              "priority": "low",
+              "tags": [
+                "computeStats",
+                "collectAllIds"
               ],
               "source": "llm"
             }
@@ -3944,6 +3748,61 @@
                 "n-dx config"
               ],
               "source": "llm"
+            },
+            {
+              "id": "8cbf42a1-d57f-4ad6-aedc-42745c2a5272",
+              "title": "Implement completion validation workflow",
+              "status": "pending",
+              "level": "task",
+              "description": "Validate task completion through automated tests and validation",
+              "acceptanceCriteria": [
+                "Rejects completion when validation fails",
+                "Rejects completion when tests fail",
+                "Allows completion when validation passes",
+                "Passes testCommand to validation",
+                "Skips validation when no projectDir provided",
+                "Skips validation for non-completed statuses"
+              ],
+              "priority": "high",
+              "tags": [
+                "toolRexUpdateStatus with completion validation"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "61cc554d-795f-4b4e-9425-86c9e1214c48",
+              "title": "Implement guided flow activation",
+              "status": "pending",
+              "level": "task",
+              "description": "Automatically trigger guided flow for empty PRDs with scan results in TTY environment",
+              "acceptanceCriteria": [
+                "invokes guided flow when empty PRD + no scan results + isTTY",
+                "invokes guided flow when --guided flag is set"
+              ],
+              "priority": "medium",
+              "tags": [
+                "analyze",
+                "guided integration"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "d128d932-58e2-4afd-903d-700f96d7d453",
+              "title": "Handle non-TTY environments gracefully",
+              "status": "pending",
+              "level": "task",
+              "description": "Provide appropriate feedback and prevent guided flow in non-interactive environments",
+              "acceptanceCriteria": [
+                "does NOT invoke guided flow when --no-llm is set",
+                "prints hint when non-TTY without --guided flag",
+                "throws CLIError when --guided in non-TTY"
+              ],
+              "priority": "medium",
+              "tags": [
+                "analyze",
+                "guided integration"
+              ],
+              "source": "llm"
             }
           ]
         },
@@ -3995,93 +3854,6 @@
                 "Store roundtrip integration",
                 "FileStore",
                 "NotionStore"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "cc2140a7-7264-4e18-915a-3d5bd23395d5",
-          "title": "Completion Validation",
-          "status": "pending",
-          "level": "feature",
-          "description": "Validate task completion with automated testing",
-          "source": "llm",
-          "children": [
-            {
-              "id": "8cbf42a1-d57f-4ad6-aedc-42745c2a5272",
-              "title": "Implement completion validation workflow",
-              "status": "pending",
-              "level": "task",
-              "description": "Validate task completion through automated tests and validation",
-              "acceptanceCriteria": [
-                "Rejects completion when validation fails",
-                "Rejects completion when tests fail",
-                "Allows completion when validation passes",
-                "Passes testCommand to validation",
-                "Skips validation when no projectDir provided",
-                "Skips validation for non-completed statuses"
-              ],
-              "priority": "high",
-              "tags": [
-                "toolRexUpdateStatus with completion validation"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "48082d33-ef38-484a-9282-0bc4782a4330",
-          "title": "Task Prioritization and Organization",
-          "status": "pending",
-          "level": "feature",
-          "description": "Enhanced task sorting and prioritization logic",
-          "source": "llm",
-          "children": [
-            {
-              "id": "72a0b52f-4413-4ec8-9fed-ad8af1f47bfb",
-              "title": "Implement priority-based task sorting",
-              "status": "pending",
-              "level": "task",
-              "description": "Sort tasks by priority with critical tasks first",
-              "acceptanceCriteria": [
-                "prioritizes by priority (critical first)"
-              ],
-              "priority": "medium",
-              "tags": [
-                "sorting",
-                "priority",
-                "task-management"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "54fd378a-9645-4e29-b908-4b612559566c",
-          "title": "Reconciliation System",
-          "status": "pending",
-          "level": "feature",
-          "description": "Advanced reconciliation between proposals and existing items",
-          "source": "llm",
-          "children": [
-            {
-              "id": "cdca0347-b1a1-4de3-a5ef-bc864bdfad58",
-              "title": "Implement proposal reconciliation",
-              "status": "pending",
-              "level": "task",
-              "description": "Reconcile new proposals against existing PRD structure",
-              "acceptanceCriteria": [
-                "preserves non-matching proposals",
-                "handles empty proposals list",
-                "handles nested existing items",
-                "filters when existing title contains proposal name"
-              ],
-              "priority": "medium",
-              "tags": [
-                "reconciliation",
-                "proposals",
-                "matching"
               ],
               "source": "llm"
             }
@@ -4167,51 +3939,6 @@
           ]
         },
         {
-          "id": "341223c9-180c-4b13-99a6-5521d9c6358f",
-          "title": "Guided Analysis Flow",
-          "status": "pending",
-          "level": "feature",
-          "description": "Interactive flow for analyzing empty projects with TTY detection",
-          "source": "llm",
-          "children": [
-            {
-              "id": "61cc554d-795f-4b4e-9425-86c9e1214c48",
-              "title": "Implement guided flow activation",
-              "status": "pending",
-              "level": "task",
-              "description": "Automatically trigger guided flow for empty PRDs with scan results in TTY environment",
-              "acceptanceCriteria": [
-                "invokes guided flow when empty PRD + no scan results + isTTY",
-                "invokes guided flow when --guided flag is set"
-              ],
-              "priority": "medium",
-              "tags": [
-                "analyze",
-                "guided integration"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "d128d932-58e2-4afd-903d-700f96d7d453",
-              "title": "Handle non-TTY environments gracefully",
-              "status": "pending",
-              "level": "task",
-              "description": "Provide appropriate feedback and prevent guided flow in non-interactive environments",
-              "acceptanceCriteria": [
-                "does NOT invoke guided flow when --no-llm is set",
-                "prints hint when non-TTY without --guided flag",
-                "throws CLIError when --guided in non-TTY"
-              ],
-              "priority": "medium",
-              "tags": [
-                "analyze",
-                "guided integration"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
           "id": "0dc251e5-02b1-4f79-bd24-aa9344ac08e2",
           "title": "Item Movement and Hierarchy",
           "status": "pending",
@@ -4288,32 +4015,6 @@
           "source": "llm",
           "children": [
             {
-              "id": "25147134-15db-4833-91e7-95a321a98518",
-              "title": "Validate status transitions",
-              "status": "pending",
-              "level": "task",
-              "description": "Enforce valid status transition rules with force override option",
-              "acceptanceCriteria": [
-                "allows pending → in_progress",
-                "allows pending → completed",
-                "blocks completed → pending without --force",
-                "allows completed → pending with --force",
-                "blocks completed → in_progress without --force",
-                "allows completed → in_progress with --force",
-                "blocks deferred → completed without --force",
-                "allows deferred → completed with --force",
-                "blocks blocked → completed without --force",
-                "allows blocked → completed with --force"
-              ],
-              "priority": "high",
-              "tags": [
-                "cmdUpdate",
-                "status transition validation",
-                "validateTransition"
-              ],
-              "source": "llm"
-            },
-            {
               "id": "1faf07df-6109-4f56-b963-e9a89f5c4a60",
               "title": "Improve status transition error messages",
               "status": "pending",
@@ -4361,6 +4062,59 @@
               "tags": [
                 "cmdUpdate",
                 "validateDocument"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "cf89a47f-8102-4453-829a-ebbf7155f5a4",
+              "title": "Enhance transition validation",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve status transition validation with better error messages",
+              "acceptanceCriteria": [
+                "includes allowed transitions in error message"
+              ],
+              "priority": "medium",
+              "tags": [
+                "validateTransition"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "73cbf527-e71e-497f-b37c-6d4878e19630",
+              "title": "Add blocked status distinct from deferred",
+              "status": "completed",
+              "level": "task",
+              "description": "Implement blocked status for tasks that can't proceed due to dependencies, separate from deferred tasks. Blocked items display their blockedBy dependencies in status/next output, are excluded from task selection, and require transitioning through pending/in_progress before completion.",
+              "acceptanceCriteria": [
+                "Blocked status prevents task selection in next command",
+                "Blocked tasks show dependency information",
+                "Status transitions validate blocked→ready path"
+              ],
+              "priority": "high",
+              "tags": [
+                "prd",
+                "status"
+              ],
+              "source": "llm",
+              "startedAt": "2026-02-05T01:54:16.173Z",
+              "completedAt": "2026-02-05T02:03:55.707Z"
+            },
+            {
+              "id": "68c010e6-6b62-4e56-87eb-cf4b8a25f841",
+              "title": "Implement automatic timestamping",
+              "status": "pending",
+              "level": "task",
+              "description": "Track startedAt and completedAt timestamps when updating task status",
+              "acceptanceCriteria": [
+                "Timestamps added on status transitions",
+                "StartedAt set when task moves to in_progress",
+                "CompletedAt set when task moves to completed"
+              ],
+              "priority": "medium",
+              "tags": [
+                "prd",
+                "tracking"
               ],
               "source": "llm"
             }
@@ -4531,17 +4285,7 @@
                 "groupByTimePeriod"
               ],
               "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "caa04073-c6b8-44fb-8dec-c5c5b0e52032",
-          "title": "Budget Management",
-          "status": "pending",
-          "level": "feature",
-          "description": "Token and cost budget monitoring and warnings",
-          "source": "llm",
-          "children": [
+            },
             {
               "id": "ade792d2-ba2c-4639-83f6-71c10041d53f",
               "title": "Implement budget checking",
@@ -4581,163 +4325,6 @@
           ]
         },
         {
-          "id": "1e9606c7-8c55-4a7e-b57f-aa2f945b7d8e",
-          "title": "Status Transition Validation",
-          "status": "pending",
-          "level": "feature",
-          "description": "Robust validation for task status transitions",
-          "source": "llm",
-          "children": [
-            {
-              "id": "cf89a47f-8102-4453-829a-ebbf7155f5a4",
-              "title": "Enhance transition validation",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve status transition validation with better error messages",
-              "acceptanceCriteria": [
-                "includes allowed transitions in error message"
-              ],
-              "priority": "medium",
-              "tags": [
-                "validateTransition"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "a6a95cf0-91a7-4857-9d02-dcde8ddb54d1",
-          "title": "Tree Operations Enhancement",
-          "status": "pending",
-          "level": "feature",
-          "description": "Core tree manipulation and traversal operations",
-          "source": "llm",
-          "children": [
-            {
-              "id": "b73833de-c1c7-4487-a0d0-0fe618912bfc",
-              "title": "Enhance tree traversal",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve tree walking with proper parent chain tracking",
-              "acceptanceCriteria": [
-                "visits all items depth-first",
-                "provides correct parent chains"
-              ],
-              "priority": "medium",
-              "tags": [
-                "walkTree"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "2b0424a1-bda2-45aa-8ab7-3351da5faf18",
-              "title": "Improve tree search and manipulation",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance tree search and item manipulation operations",
-              "acceptanceCriteria": [
-                "finds root item",
-                "adds child to existing parent",
-                "creates children array if needed",
-                "updates item fields",
-                "removes root item"
-              ],
-              "priority": "medium",
-              "tags": [
-                "findItem",
-                "insertChild",
-                "updateInTree",
-                "removeFromTree"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "02d1ee55-b210-41df-94b3-39a09f6e0586",
-              "title": "Enhance tree statistics",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve tree statistics computation and ID collection",
-              "acceptanceCriteria": [
-                "counts all statuses",
-                "counts nested items",
-                "collects all ids from tree"
-              ],
-              "priority": "low",
-              "tags": [
-                "computeStats",
-                "collectAllIds"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "60d24c80-fb86-4921-af6d-7d8398cd5628",
-          "title": "Task Status and Lifecycle",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve task status management with proper blocking, timestamping, and validation",
-          "source": "llm",
-          "children": [
-            {
-              "id": "73cbf527-e71e-497f-b37c-6d4878e19630",
-              "title": "Add blocked status distinct from deferred",
-              "status": "completed",
-              "level": "task",
-              "description": "Implement blocked status for tasks that can't proceed due to dependencies, separate from deferred tasks. Blocked items display their blockedBy dependencies in status/next output, are excluded from task selection, and require transitioning through pending/in_progress before completion.",
-              "acceptanceCriteria": [
-                "Blocked status prevents task selection in next command",
-                "Blocked tasks show dependency information",
-                "Status transitions validate blocked→ready path"
-              ],
-              "priority": "high",
-              "tags": [
-                "prd",
-                "status"
-              ],
-              "source": "llm",
-              "startedAt": "2026-02-05T01:54:16.173Z",
-              "completedAt": "2026-02-05T02:03:55.707Z"
-            },
-            {
-              "id": "df9258a6-99d7-4ea7-9510-b20384e47f76",
-              "title": "Add explanation to rex next command",
-              "status": "pending",
-              "level": "task",
-              "description": "Explain why rex next picked a particular task (priority, unblocked status, only option)",
-              "acceptanceCriteria": [
-                "Shows reasoning for task selection",
-                "Explains priority factors",
-                "Indicates if task is only available option"
-              ],
-              "priority": "medium",
-              "tags": [
-                "prd",
-                "cli"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "68c010e6-6b62-4e56-87eb-cf4b8a25f841",
-              "title": "Implement automatic timestamping",
-              "status": "pending",
-              "level": "task",
-              "description": "Track startedAt and completedAt timestamps when updating task status",
-              "acceptanceCriteria": [
-                "Timestamps added on status transitions",
-                "StartedAt set when task moves to in_progress",
-                "CompletedAt set when task moves to completed"
-              ],
-              "priority": "medium",
-              "tags": [
-                "prd",
-                "tracking"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
           "id": "428fed3c-fa27-455f-a39e-f882f344fab3",
           "title": "PRD Validation and Maintenance",
           "status": "pending",
@@ -4764,42 +4351,6 @@
               "source": "llm",
               "startedAt": "2026-02-05T03:42:40.333Z",
               "completedAt": "2026-02-05T12:37:11.942Z"
-            },
-            {
-              "id": "896bd05e-c5be-4fd7-afa1-5ea2235559ea",
-              "title": "Add rex prune command",
-              "status": "pending",
-              "level": "task",
-              "description": "Remove completed subtrees and archive them to separate file",
-              "acceptanceCriteria": [
-                "Archives completed epic/feature trees",
-                "Maintains archive file structure",
-                "Preserves history for reporting"
-              ],
-              "priority": "medium",
-              "tags": [
-                "prd",
-                "cleanup"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "ba654bfa-714b-42bf-9fbe-03cb0df64fab",
-              "title": "Add rex import alias",
-              "status": "pending",
-              "level": "task",
-              "description": "Create rex import as synonym for rex analyze --file for discoverability",
-              "acceptanceCriteria": [
-                "rex import command works identically to rex analyze --file",
-                "Help text references both commands",
-                "Backward compatibility maintained"
-              ],
-              "priority": "low",
-              "tags": [
-                "prd",
-                "cli"
-              ],
-              "source": "llm"
             }
           ]
         }
@@ -5021,33 +4572,40 @@
               "source": "llm",
               "startedAt": "2026-02-05T13:42:09.844Z",
               "completedAt": "2026-02-05T13:47:56.510Z"
-            }
-          ]
-        },
-        {
-          "id": "a9618cea-ce3a-4c92-b416-a6b05c6d02a3",
-          "title": "Synchronization Operations",
-          "status": "pending",
-          "level": "feature",
-          "description": "Bidirectional sync operations with external systems",
-          "source": "llm",
-          "children": [
+            },
             {
-              "id": "60781b1f-d3bf-4604-a787-aba02a492339",
-              "title": "Implement sync command operations",
+              "id": "c5d88dd1-87d4-4e99-bb18-f556a7652e89",
+              "title": "Enhance Notion document operations",
               "status": "pending",
               "level": "task",
-              "description": "Support push, pull, and bidirectional sync operations",
+              "description": "Improve Notion document loading with proper field mapping",
               "acceptanceCriteria": [
-                "calls engine.push() when --push flag is set",
-                "calls engine.pull() when --pull flag is set",
-                "calls engine.sync() by default (bidirectional)",
-                "logs sync_completed event",
-                "dry-run does not write changes"
+                "maps priority and tags from Notion"
               ],
               "priority": "medium",
               "tags": [
-                "cmdSync"
+                "NotionStore"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "714d8f4d-f3b7-4bcb-b9dc-cb542c286006",
+              "title": "Improve Notion page management",
+              "status": "pending",
+              "level": "task",
+              "description": "Enhance Notion page creation, updates, and management",
+              "acceptanceCriteria": [
+                "creates pages for new items",
+                "updates existing pages",
+                "creates a new page in Notion",
+                "creates page under parent when parentId given",
+                "updates an existing item",
+                "removes an existing item",
+                "archives the Notion page"
+              ],
+              "priority": "high",
+              "tags": [
+                "NotionStore"
               ],
               "source": "llm"
             }
@@ -5112,6 +4670,43 @@
               "priority": "high",
               "tags": [
                 "AdapterRegistry"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "60781b1f-d3bf-4604-a787-aba02a492339",
+              "title": "Implement sync command operations",
+              "status": "pending",
+              "level": "task",
+              "description": "Support push, pull, and bidirectional sync operations",
+              "acceptanceCriteria": [
+                "calls engine.push() when --push flag is set",
+                "calls engine.pull() when --pull flag is set",
+                "calls engine.sync() by default (bidirectional)",
+                "logs sync_completed event",
+                "dry-run does not write changes"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cmdSync"
+              ],
+              "source": "llm"
+            },
+            {
+              "id": "2795e2af-709c-497d-8720-a9e79e946223",
+              "title": "Enhance store resolution",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve store resolution with configuration-based creation",
+              "acceptanceCriteria": [
+                "resolveRemoteStore creates store from adapters.json config",
+                "resolved store can load and save documents",
+                "resolved store can load config",
+                "produces same result as createStore for file adapter"
+              ],
+              "priority": "medium",
+              "tags": [
+                "resolveStore"
               ],
               "source": "llm"
             }
@@ -5188,52 +4783,6 @@
           ]
         },
         {
-          "id": "00541274-e1ad-405c-9ac9-32dde4740448",
-          "title": "Notion Integration Enhancement",
-          "status": "pending",
-          "level": "feature",
-          "description": "Comprehensive Notion adapter with full feature support",
-          "source": "llm",
-          "children": [
-            {
-              "id": "c5d88dd1-87d4-4e99-bb18-f556a7652e89",
-              "title": "Enhance Notion document operations",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve Notion document loading with proper field mapping",
-              "acceptanceCriteria": [
-                "maps priority and tags from Notion"
-              ],
-              "priority": "medium",
-              "tags": [
-                "NotionStore"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "714d8f4d-f3b7-4bcb-b9dc-cb542c286006",
-              "title": "Improve Notion page management",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance Notion page creation, updates, and management",
-              "acceptanceCriteria": [
-                "creates pages for new items",
-                "updates existing pages",
-                "creates a new page in Notion",
-                "creates page under parent when parentId given",
-                "updates an existing item",
-                "removes an existing item",
-                "archives the Notion page"
-              ],
-              "priority": "high",
-              "tags": [
-                "NotionStore"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
           "id": "ddfd2e07-e466-4a6c-bb66-daac71343c66",
           "title": "Notion Client Enhancement",
           "status": "completed",
@@ -5264,34 +4813,6 @@
               "source": "llm",
               "startedAt": "2026-02-05T03:18:11.873Z",
               "completedAt": "2026-02-05T03:23:26.704Z"
-            }
-          ]
-        },
-        {
-          "id": "eda87221-68bc-4bd2-a399-afa8f1bf32cc",
-          "title": "Store Resolution Enhancement",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improved store resolution and configuration management",
-          "source": "llm",
-          "children": [
-            {
-              "id": "2795e2af-709c-497d-8720-a9e79e946223",
-              "title": "Enhance store resolution",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve store resolution with configuration-based creation",
-              "acceptanceCriteria": [
-                "resolveRemoteStore creates store from adapters.json config",
-                "resolved store can load and save documents",
-                "resolved store can load config",
-                "produces same result as createStore for file adapter"
-              ],
-              "priority": "medium",
-              "tags": [
-                "resolveStore"
-              ],
-              "source": "llm"
             }
           ]
         },
@@ -5366,381 +4887,17 @@
               "completedAt": "2026-02-05T01:53:22.826Z"
             }
           ]
-        },
-        {
-          "id": "cfdd6281-be67-4480-8341-f704f83da06e",
-          "title": "Notion Integration",
-          "status": "pending",
-          "level": "feature",
-          "description": "Full Notion workspace integration for PRD management",
-          "source": "llm",
-          "children": [
-            {
-              "id": "fbec59ff-c921-4ecd-946e-4d6119af51b6",
-              "title": "Sync all PRD fields to Notion",
-              "status": "pending",
-              "level": "task",
-              "description": "Sync status, priority, description, acceptance criteria, and tags",
-              "acceptanceCriteria": [
-                "All PRD fields represented in Notion",
-                "Bidirectional field synchronization",
-                "Data integrity maintained"
-              ],
-              "priority": "medium",
-              "tags": [
-                "integration",
-                "notion"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "786309d6-227b-4613-a490-d27bb7b157d6",
-              "title": "Use Notion native properties",
-              "status": "pending",
-              "level": "task",
-              "description": "Map to rex equivalents using Notion's status and priority properties",
-              "acceptanceCriteria": [
-                "Native Notion status properties used",
-                "Priority mapped to Notion select",
-                "Proper field type mapping"
-              ],
-              "priority": "medium",
-              "tags": [
-                "integration",
-                "notion"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "b1376b61-6016-4240-94f2-08fb8069ae95",
-              "title": "Implement conflict resolution",
-              "status": "pending",
-              "level": "task",
-              "description": "Handle conflicts with last-write-wins and warning log",
-              "acceptanceCriteria": [
-                "Conflict detection on sync",
-                "Last-write-wins resolution strategy",
-                "Warning logs for conflicts"
-              ],
-              "priority": "medium",
-              "tags": [
-                "integration",
-                "notion"
-              ],
-              "source": "llm"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "2a5db18f-cf8e-4718-a94f-5fd0c3a8e678",
-      "title": "Analysis Engine Enhancement",
-      "status": "pending",
-      "level": "epic",
-      "source": "llm",
-      "children": []
-    },
-    {
-      "id": "64c18d38-67c0-4321-8700-45d41a36f0f1",
-      "title": "Analysis Pipeline Optimization",
-      "status": "pending",
-      "level": "epic",
-      "source": "llm",
-      "children": [
-        {
-          "id": "92d4e0fe-8986-457e-b112-a711b91ca71a",
-          "title": "LLM Response Processing Enhancement",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve robustness of LLM response parsing and handling",
-          "source": "llm",
-          "children": [
-            {
-              "id": "fe192dc5-cd62-4d2d-ab26-370285dfd5e7",
-              "title": "Handle deeply nested tree truncation recovery",
-              "status": "pending",
-              "level": "task",
-              "description": "Implement recovery logic for deeply nested trees (4+ levels) when JSON is truncated",
-              "acceptanceCriteria": [
-                "handles deeply nested truncation",
-                "handles deeply nested trees (4 levels)"
-              ],
-              "priority": "medium",
-              "tags": [
-                "repairTruncatedJson",
-                "findAutoCompletions"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "e72afed7-a785-4716-958a-d8d6eaaef79d",
-              "title": "Implement robust JSON truncation recovery",
-              "status": "pending",
-              "level": "task",
-              "description": "Handle various JSON truncation scenarios including mid-key truncation and partial data",
-              "acceptanceCriteria": [
-                "handles truncation in the middle of a key name",
-                "recovers from truncated JSON",
-                "handles deeply truncated JSON with partial acceptance criteria",
-                "handles JSON with trailing commas from truncation"
-              ],
-              "priority": "high",
-              "tags": [
-                "repairTruncatedJson",
-                "parseProposalResponse"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "a5547b5c-f1e1-491c-8193-a3280771cbf8",
-              "title": "Enhance LLM response parsing with prose handling",
-              "status": "completed",
-              "level": "task",
-              "description": "All acceptance criteria already met by existing implementation and 109 tests. No code changes needed.",
-              "acceptanceCriteria": [
-                "strips leading prose from LLM response",
-                "extracts JSON object wrapped in prose and treats as single-item array",
-                "throws descriptive error when nothing is salvageable",
-                "provides useful error message for non-JSON"
-              ],
-              "priority": "high",
-              "tags": [
-                "parseProposalResponse"
-              ],
-              "source": "llm",
-              "startedAt": "2026-02-05T13:21:13.702Z",
-              "completedAt": "2026-02-05T13:24:01.081Z"
-            }
-          ]
-        },
-        {
-          "id": "6f9ee3cb-58d7-491e-840c-67194bf0b343",
-          "title": "Proposal Quality Validation",
-          "status": "pending",
-          "level": "feature",
-          "description": "Implement comprehensive validation for proposal quality and structure",
-          "source": "llm",
-          "children": [
-            {
-              "id": "87bb286d-7eb1-4a98-9394-c85e19f64459",
-              "title": "Implement proposal quality validation system",
-              "status": "pending",
-              "level": "task",
-              "description": "Add validation checks for proposal completeness and quality standards",
-              "acceptanceCriteria": [
-                "warns about tasks missing description and criteria",
-                "warns about very short task titles",
-                "warns about features with no tasks",
-                "accepts tasks with only description (no criteria)",
-                "accepts tasks with only criteria (no description)"
-              ],
-              "priority": "medium",
-              "tags": [
-                "validateProposalQuality"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "d0f2be2c-a57a-4eac-946d-fee5a7bd0012",
-              "title": "Implement cross-proposal validation and counting",
-              "status": "pending",
-              "level": "task",
-              "description": "Add validation that works across multiple proposals and provides accurate counts",
-              "acceptanceCriteria": [
-                "counts across multiple proposals with parentLevel",
-                "reports all issues across multiple proposals",
-                "counts items across multiple proposals"
-              ],
-              "priority": "medium",
-              "tags": [
-                "validateProposalQuality",
-                "countProposalItems"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "80dfabc2-8046-4a5d-a85c-ed89d4283b5e",
-          "title": "Token Usage Tracking Enhancement",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve token usage extraction and tracking across different API response formats",
-          "source": "llm",
-          "children": [
-            {
-              "id": "f8c7d2fe-52eb-4960-a728-43f60523f37e",
-              "title": "Enhance token usage parsing from API responses",
-              "status": "pending",
-              "level": "task",
-              "description": "Implement robust token extraction that handles various API response formats and fields",
-              "acceptanceCriteria": [
-                "extracts input and output tokens from envelope",
-                "extracts total_input/output_tokens as fallback",
-                "prefers input_tokens over total_input_tokens",
-                "extracts cache token fields when present",
-                "omits cache fields when they are zero",
-                "handles partial fields (only input or output)"
-              ],
-              "priority": "medium",
-              "tags": [
-                "parseTokenUsage",
-                "parseStreamTokenUsage"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "a9a9d413-1372-4cc4-841a-44c0c214f46a",
-              "title": "Implement token usage accumulation and formatting",
-              "status": "pending",
-              "level": "task",
-              "description": "Build system to accumulate token usage across calls and format for display",
-              "acceptanceCriteria": [
-                "increments call count even when usage is undefined",
-                "accumulates input and output tokens",
-                "formats single call without call count",
-                "formats multiple calls with call count"
-              ],
-              "priority": "medium",
-              "tags": [
-                "accumulateTokenUsage",
-                "formatTokenUsage"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "3e493079-5986-4fa7-875f-9dc6879183af",
-          "title": "Zone Architecture Enhancement",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve zone-based code organization and reduce coupling",
-          "source": "llm",
-          "children": [
-            {
-              "id": "bc578874-916e-4148-b3de-84ddba2fbd54",
-              "title": "Extract shared types to break circular dependencies",
-              "status": "completed",
-              "level": "task",
-              "description": "Create packages/hench/src/types/index.ts with shared interfaces like RunContext and ToolResult, then re-export from both CLI and core modules",
-              "acceptanceCriteria": [
-                "Shared types module created with RunContext and ToolResult interfaces",
-                "Bidirectional imports between CLI and core are eliminated",
-                "All existing functionality preserved after refactor"
-              ],
-              "priority": "high",
-              "tags": [
-                "hench-core",
-                "architecture"
-              ],
-              "source": "llm",
-              "startedAt": "2026-02-05T13:48:22.381Z",
-              "completedAt": "2026-02-05T13:54:48.374Z"
-            },
-            {
-              "id": "2f741c6f-0af4-42cc-9bd4-84ec00aed789",
-              "title": "Split Hench zone into focused modules",
-              "status": "pending",
-              "level": "task",
-              "description": "Split the 32-file Hench 2 zone into hench-core (run loop, context) and hench-tooling (tool definitions, execution) for better separation of concerns",
-              "acceptanceCriteria": [
-                "Hench-core module contains run loop and context management",
-                "Hench-tooling module contains tool definitions and execution",
-                "Each module has clear responsibilities and minimal coupling"
-              ],
-              "priority": "high",
-              "tags": [
-                "hench-core",
-                "architecture"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "471ba9ad-3e03-4c07-a3a9-06bc25d8e148",
-              "title": "Reorganize agent directory structure",
-              "status": "pending",
-              "level": "task",
-              "description": "Split agent/ into lifecycle (loop, cli-loop), planning (brief, prompt), and analysis (review, summary, stuck) subdirectories for better organization",
-              "acceptanceCriteria": [
-                "Agent directory split into logical subdirectories",
-                "All imports updated to reflect new structure",
-                "No functionality broken by reorganization"
-              ],
-              "priority": "medium",
-              "tags": [
-                "hench-core",
-                "organization"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "a6fdf573-087e-4132-91cc-28c6ef7b667b",
-          "title": "Tool Architecture Enhancement",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve tool organization and eliminate dependencies",
-          "source": "llm",
-          "children": [
-            {
-              "id": "43438e05-3a59-4719-94bf-363948ecdbb0",
-              "title": "Audit command parsing logic for duplication",
-              "status": "pending",
-              "level": "task",
-              "description": "Review shell.ts and guard/commands.ts for duplicated command parsing and validation logic, consolidate where appropriate",
-              "acceptanceCriteria": [
-                "Duplicated command parsing logic identified",
-                "Consolidated parsing logic where appropriate",
-                "No functionality lost in consolidation"
-              ],
-              "priority": "medium",
-              "tags": [
-                "hench-tooling",
-                "code-quality"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "892974a4-b627-4c2b-b845-9d874c378dc7",
-          "title": "Orchestration Integration",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve integration of standalone components into main workflow",
-          "source": "llm",
-          "children": [
-            {
-              "id": "08356c3f-deb5-4131-a0ad-327522d2e3ab",
-              "title": "Integrate ci.js into main orchestration flow",
-              "status": "pending",
-              "level": "task",
-              "description": "Verify if ci.js should be documented separately or wired into cli.js as part of the main orchestration flow",
-              "acceptanceCriteria": [
-                "ci.js integration status clarified",
-                "Either properly integrated into cli.js or documented as standalone",
-                "No orphaned functionality in codebase"
-              ],
-              "priority": "medium",
-              "tags": [
-                "orchestration",
-                "integration"
-              ],
-              "source": "llm"
-            }
-          ]
         }
       ]
     },
     {
       "id": "339476c0-333f-433e-aedf-1e1f3e890f82",
       "title": "CLI Command Aliases and Shortcuts",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-05T17:11:30.051Z",
+      "completedAt": "2026-02-05T17:11:30.051Z",
       "children": [
         {
           "id": "46e1f889-a1aa-49c7-beda-72e187589640",
@@ -5749,6 +4906,8 @@
           "level": "feature",
           "description": "Allow users to use 'ndx' as an alternative to 'n-dx' for the main command",
           "source": "smart-add",
+          "startedAt": "2026-02-05T16:54:58.835Z",
+          "completedAt": "2026-02-05T16:54:58.835Z",
           "children": [
             {
               "id": "0d0b108e-fb68-446c-a7d3-88a806eaacfe",
@@ -5770,9 +4929,7 @@
               "startedAt": "2026-02-05T16:50:44.722Z",
               "completedAt": "2026-02-05T16:54:58.798Z"
             }
-          ],
-          "startedAt": "2026-02-05T16:54:58.835Z",
-          "completedAt": "2026-02-05T16:54:58.835Z"
+          ]
         },
         {
           "id": "83a33c2a-31d7-4d71-95a3-246233fdc056",
@@ -5852,15 +5009,17 @@
         {
           "id": "4db98642-d2a7-4b4b-b74b-fcf66b0c9928",
           "title": "Sourcevision Short Alias",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Provide 'sv' as a short alias for sourcevision in all contexts",
           "source": "smart-add",
+          "startedAt": "2026-02-05T17:06:14.761Z",
+          "completedAt": "2026-02-05T17:06:14.761Z",
           "children": [
             {
               "id": "45541378-5da7-41db-bdaa-a747095ca4a8",
               "title": "Add sv standalone binary",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create sv binary that delegates to sourcevision commands",
               "acceptanceCriteria": [
@@ -5874,12 +5033,14 @@
                 "sourcevision",
                 "aliases"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-05T16:55:22.091Z",
+              "completedAt": "2026-02-05T17:00:45.383Z"
             },
             {
               "id": "72f8572e-2bf9-45c7-8587-5f515b466f9d",
               "title": "Support sv with prefixes",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Enable both 'n-dx sv' and 'ndx sv' command patterns",
               "acceptanceCriteria": [
@@ -5893,17 +5054,21 @@
                 "sourcevision",
                 "aliases"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-05T17:01:37.699Z",
+              "completedAt": "2026-02-05T17:06:14.725Z"
             }
           ]
         },
         {
           "id": "eef40dd9-bbf6-449e-bf8d-de8f1dd3f482",
           "title": "CLI Installation and Distribution",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Ensure all command aliases are properly installed and available in user PATH",
           "source": "smart-add",
+          "startedAt": "2026-02-05T17:11:30.001Z",
+          "completedAt": "2026-02-05T17:11:30.001Z",
           "children": [
             {
               "id": "a0cb59d5-5c5f-4968-ae2b-971ffdcff464",
@@ -5929,7 +5094,7 @@
             {
               "id": "e1464393-196b-4c34-ac03-114fca5bee4d",
               "title": "Update CLI documentation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Document all available command aliases and usage patterns",
               "acceptanceCriteria": [
@@ -5942,7 +5107,9 @@
                 "documentation",
                 "cli"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-05T17:07:01.211Z",
+              "completedAt": "2026-02-05T17:11:29.963Z"
             }
           ]
         }
