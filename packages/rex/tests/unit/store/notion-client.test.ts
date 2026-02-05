@@ -23,6 +23,10 @@ describe("LiveNotionClient", () => {
     });
   }
 
+  // ---------------------------------------------------------------------------
+  // getDatabase
+  // ---------------------------------------------------------------------------
+
   describe("getDatabase", () => {
     it("calls GET /databases/:id with correct headers", async () => {
       const dbData = { id: "db-123", properties: {} };
@@ -51,6 +55,10 @@ describe("LiveNotionClient", () => {
       );
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // queryDatabase
+  // ---------------------------------------------------------------------------
 
   describe("queryDatabase", () => {
     it("returns all pages from a single response", async () => {
@@ -82,7 +90,19 @@ describe("LiveNotionClient", () => {
       );
       expect(secondCallBody.start_cursor).toBe("cursor-abc");
     });
+
+    it("throws on non-OK response", async () => {
+      mockFetch(500, { message: "Internal error" });
+
+      await expect(client.queryDatabase("db-123")).rejects.toThrow(
+        /Notion API POST \/databases\/db-123\/query failed \(500\)/,
+      );
+    });
   });
+
+  // ---------------------------------------------------------------------------
+  // getPage
+  // ---------------------------------------------------------------------------
 
   describe("getPage", () => {
     it("calls GET /pages/:id", async () => {
@@ -96,7 +116,19 @@ describe("LiveNotionClient", () => {
         expect.objectContaining({ method: "GET" }),
       );
     });
+
+    it("throws on non-OK response", async () => {
+      mockFetch(404, { message: "Not found" });
+
+      await expect(client.getPage("missing-id")).rejects.toThrow(
+        /Notion API GET \/pages\/missing-id failed \(404\)/,
+      );
+    });
   });
+
+  // ---------------------------------------------------------------------------
+  // createPage
+  // ---------------------------------------------------------------------------
 
   describe("createPage", () => {
     it("calls POST /pages with parent and properties", async () => {
@@ -135,7 +167,22 @@ describe("LiveNotionClient", () => {
       );
       expect(body.children).toHaveLength(1);
     });
+
+    it("throws on non-OK response", async () => {
+      mockFetch(400, { message: "Invalid properties" });
+
+      await expect(
+        client.createPage({
+          parent: { database_id: "db-123" },
+          properties: {},
+        }),
+      ).rejects.toThrow(/Notion API POST \/pages failed \(400\)/);
+    });
   });
+
+  // ---------------------------------------------------------------------------
+  // updatePage
+  // ---------------------------------------------------------------------------
 
   describe("updatePage", () => {
     it("calls PATCH /pages/:id with properties", async () => {
@@ -157,7 +204,21 @@ describe("LiveNotionClient", () => {
       );
       expect(body.properties.Name).toBeDefined();
     });
+
+    it("throws on non-OK response", async () => {
+      mockFetch(409, { message: "Conflict" });
+
+      await expect(
+        client.updatePage("page-123", { Name: {} }),
+      ).rejects.toThrow(
+        /Notion API PATCH \/pages\/page-123 failed \(409\)/,
+      );
+    });
   });
+
+  // ---------------------------------------------------------------------------
+  // archivePage
+  // ---------------------------------------------------------------------------
 
   describe("archivePage", () => {
     it("calls PATCH /pages/:id with archived: true", async () => {
@@ -165,12 +226,29 @@ describe("LiveNotionClient", () => {
 
       await client.archivePage("page-123");
 
+      expect(fetch).toHaveBeenCalledWith(
+        "https://api.notion.com/v1/pages/page-123",
+        expect.objectContaining({ method: "PATCH" }),
+      );
+
       const body = JSON.parse(
         (fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body,
       );
       expect(body.archived).toBe(true);
     });
+
+    it("throws on non-OK response", async () => {
+      mockFetch(403, { message: "Forbidden" });
+
+      await expect(client.archivePage("page-123")).rejects.toThrow(
+        /Notion API PATCH \/pages\/page-123 failed \(403\)/,
+      );
+    });
   });
+
+  // ---------------------------------------------------------------------------
+  // getBlockChildren
+  // ---------------------------------------------------------------------------
 
   describe("getBlockChildren", () => {
     it("returns all blocks from a single response", async () => {
@@ -198,6 +276,50 @@ describe("LiveNotionClient", () => {
       const result = await client.getBlockChildren("page-123");
       expect(result).toEqual([{ type: "paragraph" }, { type: "heading_2" }]);
       expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("throws on non-OK response", async () => {
+      mockFetch(404, { message: "Not found" });
+
+      await expect(client.getBlockChildren("bad-id")).rejects.toThrow(
+        /Notion API GET \/blocks\/bad-id\/children failed \(404\)/,
+      );
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // shared request() behavior
+  // ---------------------------------------------------------------------------
+
+  describe("request error handling", () => {
+    it("includes response body text in error message", async () => {
+      mockFetch(429, { message: "Rate limited", code: "rate_limited" });
+
+      await expect(client.getPage("page-123")).rejects.toThrow(
+        /Rate limited/,
+      );
+    });
+
+    it("handles text() rejection gracefully", async () => {
+      (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: () => Promise.reject(new Error("body stream error")),
+      });
+
+      await expect(client.getPage("page-123")).rejects.toThrow(
+        /Notion API GET \/pages\/page-123 failed \(500\)/,
+      );
+    });
+
+    it("returns undefined for 204 No Content", async () => {
+      mockFetch(204, null);
+
+      // archivePage calls request() and discards the result via await
+      // but we can verify the underlying behavior through updatePage
+      // which returns the result — using 204 forces the undefined path
+      const result = await client.updatePage("page-123", {});
+      expect(result).toBeUndefined();
     });
   });
 });
