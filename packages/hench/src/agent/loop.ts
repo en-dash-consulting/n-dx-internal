@@ -5,7 +5,6 @@ import type { PRDStore } from "rex/dist/store/types.js";
 import type { HenchConfig, RunRecord, TurnTokenUsage } from "../schema/index.js";
 import { GuardRails } from "../guard/index.js";
 import { TOOL_DEFINITIONS, dispatchTool } from "./tools.js";
-import type { ToolContext } from "./tools.js";
 import { assembleTaskBrief, formatTaskBrief } from "./brief.js";
 import { buildSystemPrompt } from "./prompt.js";
 import { saveRun } from "../store/index.js";
@@ -14,7 +13,8 @@ import { collectReviewDiff, promptReview, revertChanges } from "./review.js";
 import { checkTokenBudget } from "./token-budget.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../tools/rex.js";
 import { runPostTaskTests } from "./test-runner.js";
-import { section, subsection, stream, detail, info } from "../cli/output.js";
+import { section, subsection, stream, detail, info } from "../types/output.js";
+import type { ToolContext } from "../types/index.js";
 
 export interface AgentLoopOptions {
   config: HenchConfig;

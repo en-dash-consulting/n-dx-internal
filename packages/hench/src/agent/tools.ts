@@ -1,11 +1,13 @@
 import type Anthropic from "@anthropic-ai/sdk";
-import type { GuardRails } from "../guard/index.js";
-import type { PRDStore } from "rex/dist/store/types.js";
 import { GuardError } from "../guard/index.js";
 import { toolReadFile, toolWriteFile, toolListDirectory, toolSearchFiles } from "../tools/files.js";
 import { toolRunCommand } from "../tools/shell.js";
 import { toolGit } from "../tools/git.js";
 import { toolRexUpdateStatus, toolRexAppendLog, toolRexAddSubtask } from "../tools/rex.js";
+import type { ToolContext } from "../types/index.js";
+
+// Re-export ToolContext for backwards compatibility
+export type { ToolContext } from "../types/index.js";
 
 export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   {
@@ -126,17 +128,6 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
     },
   },
 ];
-
-export interface ToolContext {
-  guard: GuardRails;
-  projectDir: string;
-  store: PRDStore;
-  taskId: string;
-  /** Test command for completion validation (from project config). */
-  testCommand?: string;
-  /** Commit hash captured before the agent started, for diffing against. */
-  startingHead?: string;
-}
 
 export async function dispatchTool(
   ctx: ToolContext,

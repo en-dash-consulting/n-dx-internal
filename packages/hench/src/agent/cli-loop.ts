@@ -11,7 +11,7 @@ import { validateCompletion, formatValidationResult } from "./completion.js";
 import { collectReviewDiff, promptReview, revertChanges } from "./review.js";
 import { checkTokenBudget } from "./token-budget.js";
 import { runPostTaskTests } from "./test-runner.js";
-import { section, subsection, stream, detail, info } from "../cli/output.js";
+import { section, subsection, stream, detail, info } from "../types/output.js";
 
 export interface CliLoopOptions {
   config: HenchConfig;
