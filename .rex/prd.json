@@ -3572,7 +3572,7 @@
             {
               "id": "009f2991-c3be-4d2a-b571-fa86b99df175",
               "title": "Fail CI on validation errors",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "CI should fail if there are validation errors or orphaned items",
               "acceptanceCriteria": [
@@ -3585,7 +3585,9 @@
                 "testing",
                 "ci"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T14:04:35.909Z",
+              "completedAt": "2026-02-05T14:07:01.883Z"
             }
           ]
         }
