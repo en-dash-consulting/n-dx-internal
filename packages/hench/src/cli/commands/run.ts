@@ -1,13 +1,12 @@
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { resolveStore } from "rex/dist/store/index.js";
-import { walkTree } from "rex/dist/core/tree.js";
 import type { PRDItem } from "rex/dist/schema/v1.js";
 import type { PRDStore } from "rex/dist/store/types.js";
 import { loadConfig, listRuns } from "../../store/index.js";
 import { agentLoop } from "../../agent/loop.js";
 import { cliLoop } from "../../agent/cli-loop.js";
-import { getActionableTasks } from "../../agent/brief.js";
+import { getActionableTasks, collectEpicTaskIds } from "../../agent/brief.js";
 import { getStuckTaskIds } from "../../agent/stuck.js";
 import { HENCH_DIR, safeParseInt } from "./constants.js";
 import { CLIError, EpicNotFoundError, requireClaudeCLI } from "../errors.js";
@@ -71,27 +70,8 @@ export async function resolveEpicFlag(
   return epic;
 }
 
-/**
- * Collect all task/subtask IDs that belong to a specific epic.
- * Includes all descendants of the epic.
- */
-export function collectEpicTaskIds(items: PRDItem[], epicId: string): Set<string> {
-  const ids = new Set<string>();
-
-  // Find the epic and collect all its descendant task/subtask IDs
-  for (const { item, parents } of walkTree(items)) {
-    // Check if this item is inside the target epic
-    const isInEpic =
-      item.id === epicId ||
-      parents.some((p) => p.id === epicId);
-
-    if (isInEpic && (item.level === "task" || item.level === "subtask")) {
-      ids.add(item.id);
-    }
-  }
-
-  return ids;
-}
+// Re-export collectEpicTaskIds from brief.ts for backward compatibility with tests
+export { collectEpicTaskIds } from "../../agent/brief.js";
 
 // ---------------------------------------------------------------------------
 // Loop helpers (exported for testing)

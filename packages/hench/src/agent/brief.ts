@@ -1,5 +1,5 @@
 import { findNextTask, findActionableTasks, collectCompletedIds } from "rex/dist/core/next-task.js";
-import { findItem } from "rex/dist/core/tree.js";
+import { findItem, walkTree } from "rex/dist/core/tree.js";
 import type { PRDStore } from "rex/dist/store/types.js";
 import type { PRDItem } from "rex/dist/schema/v1.js";
 import type { TreeEntry } from "rex/dist/core/tree.js";
@@ -17,6 +17,31 @@ export interface AssembleBriefOptions {
   excludeTaskIds?: Set<string>;
   /** Restrict task selection to this epic (ID). */
   epicId?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Epic task collection
+// ---------------------------------------------------------------------------
+
+/**
+ * Collect all task/subtask IDs that belong to a specific epic.
+ * Includes all descendants of the epic at task or subtask level.
+ */
+export function collectEpicTaskIds(items: PRDItem[], epicId: string): Set<string> {
+  const ids = new Set<string>();
+
+  for (const { item, parents } of walkTree(items)) {
+    // Check if this item is inside the target epic
+    const isInEpic =
+      item.id === epicId ||
+      parents.some((p) => p.id === epicId);
+
+    if (isInEpic && (item.level === "task" || item.level === "subtask")) {
+      ids.add(item.id);
+    }
+  }
+
+  return ids;
 }
 
 // ---------------------------------------------------------------------------
@@ -132,9 +157,31 @@ export async function assembleTaskBrief(
     const skipIds = excludeIds
       ? new Set([...completedIds, ...excludeIds])
       : completedIds;
-    entry = findNextTask(doc.items, skipIds);
-    if (!entry) {
-      throw new Error("No actionable tasks found in PRD");
+
+    const epicId = options?.epicId;
+
+    if (epicId) {
+      // Epic filter active: get all actionable tasks and filter to epic
+      const epicTaskIds = collectEpicTaskIds(doc.items, epicId);
+      const allActionable = findActionableTasks(doc.items, skipIds, Infinity);
+
+      // Filter to tasks within the epic and not in excludeIds
+      const epicActionable = allActionable.filter(
+        (e) => epicTaskIds.has(e.item.id) && !excludeIds?.has(e.item.id),
+      );
+
+      if (epicActionable.length === 0) {
+        throw new Error("No actionable tasks found in epic");
+      }
+
+      // findActionableTasks already sorts by priority, so first is best
+      entry = epicActionable[0];
+    } else {
+      // No epic filter: use standard findNextTask
+      entry = findNextTask(doc.items, skipIds);
+      if (!entry) {
+        throw new Error("No actionable tasks found in PRD");
+      }
     }
   }
 

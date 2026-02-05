@@ -4,6 +4,7 @@ import {
   assembleTaskBrief,
   getActionableTasks,
   TaskNotActionableError,
+  collectEpicTaskIds,
 } from "../../../src/agent/brief.js";
 import type { TaskBrief } from "../../../src/schema/v1.js";
 import type { PRDStore } from "rex/dist/store/types.js";
@@ -557,6 +558,340 @@ describe("assembleTaskBrief — auto-selection", () => {
       excludeTaskIds: new Set(["blocker-task"]),
     });
     expect(withExclusion).toBe("blocked-task");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// collectEpicTaskIds
+// ---------------------------------------------------------------------------
+
+describe("collectEpicTaskIds", () => {
+  it("returns empty set for non-existent epic", () => {
+    const items: PRDItem[] = [
+      { id: "epic-1", title: "Epic", level: "epic", status: "pending" },
+    ];
+    const ids = collectEpicTaskIds(items, "nonexistent");
+    expect(ids.size).toBe(0);
+  });
+
+  it("collects task IDs from epic with flat tasks", () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic",
+        level: "epic",
+        status: "pending",
+        children: [
+          { id: "task-1", title: "Task 1", level: "task", status: "pending" },
+          { id: "task-2", title: "Task 2", level: "task", status: "completed" },
+        ],
+      },
+    ];
+
+    const ids = collectEpicTaskIds(items, "epic-1");
+    expect(ids.size).toBe(2);
+    expect(ids.has("task-1")).toBe(true);
+    expect(ids.has("task-2")).toBe(true);
+  });
+
+  it("collects task and subtask IDs from nested structure", () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic",
+        level: "epic",
+        status: "pending",
+        children: [
+          {
+            id: "feat-1",
+            title: "Feature",
+            level: "feature",
+            status: "pending",
+            children: [
+              {
+                id: "task-1",
+                title: "Task 1",
+                level: "task",
+                status: "pending",
+                children: [
+                  { id: "subtask-1", title: "Subtask 1", level: "subtask", status: "pending" },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const ids = collectEpicTaskIds(items, "epic-1");
+    expect(ids.size).toBe(2);
+    expect(ids.has("task-1")).toBe(true);
+    expect(ids.has("subtask-1")).toBe(true);
+    // Feature should not be included
+    expect(ids.has("feat-1")).toBe(false);
+  });
+
+  it("excludes tasks from other epics", () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "pending",
+        children: [
+          { id: "task-1", title: "Task 1", level: "task", status: "pending" },
+        ],
+      },
+      {
+        id: "epic-2",
+        title: "Epic Two",
+        level: "epic",
+        status: "pending",
+        children: [
+          { id: "task-2", title: "Task 2", level: "task", status: "pending" },
+        ],
+      },
+    ];
+
+    const ids = collectEpicTaskIds(items, "epic-1");
+    expect(ids.size).toBe(1);
+    expect(ids.has("task-1")).toBe(true);
+    expect(ids.has("task-2")).toBe(false);
+  });
+
+  it("handles epic with no children", () => {
+    const items: PRDItem[] = [
+      { id: "epic-1", title: "Empty Epic", level: "epic", status: "pending" },
+    ];
+
+    const ids = collectEpicTaskIds(items, "epic-1");
+    expect(ids.size).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// assembleTaskBrief — epic-filtered task selection
+// ---------------------------------------------------------------------------
+
+describe("assembleTaskBrief — epic-filtered selection", () => {
+  it("only returns tasks from filtered epic", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-auth",
+        title: "Authentication",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          { id: "task-auth-1", title: "Auth Task 1", level: "task", status: "pending" },
+        ],
+      },
+      {
+        id: "epic-dashboard",
+        title: "Dashboard",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          { id: "task-dash-1", title: "Dashboard Task 1", level: "task", status: "pending", priority: "critical" },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    // Without epic filter, highest priority task is selected (critical > medium)
+    const { taskId: noFilter } = await assembleTaskBrief(store);
+    expect(noFilter).toBe("task-dash-1");
+
+    // With epic filter, only tasks from that epic are considered
+    const { taskId: withFilter } = await assembleTaskBrief(store, undefined, {
+      epicId: "epic-auth",
+    });
+    expect(withFilter).toBe("task-auth-1");
+  });
+
+  it("maintains priority ordering within epic", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          { id: "task-low", title: "Low Priority", level: "task", status: "pending", priority: "low" },
+          { id: "task-high", title: "High Priority", level: "task", status: "pending", priority: "high" },
+          { id: "task-medium", title: "Medium Priority", level: "task", status: "pending" },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const { taskId } = await assembleTaskBrief(store, undefined, { epicId: "epic-1" });
+    expect(taskId).toBe("task-high");
+  });
+
+  it("prefers in_progress task within epic", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          { id: "task-pending", title: "Pending Task", level: "task", status: "pending", priority: "critical" },
+          { id: "task-wip", title: "In Progress Task", level: "task", status: "in_progress", priority: "low" },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const { taskId } = await assembleTaskBrief(store, undefined, { epicId: "epic-1" });
+    expect(taskId).toBe("task-wip");
+  });
+
+  it("returns null when no actionable tasks remain in epic", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          { id: "task-done", title: "Completed Task", level: "task", status: "completed" },
+        ],
+      },
+      {
+        id: "task-other",
+        title: "Other Task",
+        level: "task",
+        status: "pending",
+      },
+    ];
+    const store = mockStore(items);
+
+    await expect(
+      assembleTaskBrief(store, undefined, { epicId: "epic-1" }),
+    ).rejects.toThrow("No actionable tasks found in epic");
+  });
+
+  it("respects dependency ordering within epic", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          {
+            id: "task-blocker",
+            title: "Blocker Task",
+            level: "task",
+            status: "pending",
+            priority: "low",
+          },
+          {
+            id: "task-blocked",
+            title: "Blocked Task",
+            level: "task",
+            status: "pending",
+            priority: "critical",
+            blockedBy: ["task-blocker"],
+          },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    // Even though blocked task is critical priority, blocker must be done first
+    const { taskId } = await assembleTaskBrief(store, undefined, { epicId: "epic-1" });
+    expect(taskId).toBe("task-blocker");
+  });
+
+  it("selects task when dependency is resolved within epic", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          {
+            id: "task-blocker",
+            title: "Blocker Task",
+            level: "task",
+            status: "completed",
+          },
+          {
+            id: "task-ready",
+            title: "Ready Task",
+            level: "task",
+            status: "pending",
+            blockedBy: ["task-blocker"],
+          },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const { taskId } = await assembleTaskBrief(store, undefined, { epicId: "epic-1" });
+    expect(taskId).toBe("task-ready");
+  });
+
+  it("combines epic filter with excludeTaskIds", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          { id: "task-1", title: "First Task", level: "task", status: "pending", priority: "high" },
+          { id: "task-2", title: "Second Task", level: "task", status: "pending", priority: "medium" },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    // First task excluded (e.g., stuck), should select second task
+    const { taskId } = await assembleTaskBrief(store, undefined, {
+      epicId: "epic-1",
+      excludeTaskIds: new Set(["task-1"]),
+    });
+    expect(taskId).toBe("task-2");
+  });
+
+  it("includes subtasks in epic filtering", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          {
+            id: "feat-1",
+            title: "Feature One",
+            level: "feature",
+            status: "in_progress",
+            children: [
+              {
+                id: "task-1",
+                title: "Task with subtasks",
+                level: "task",
+                status: "in_progress",
+                children: [
+                  { id: "subtask-1", title: "Subtask 1", level: "subtask", status: "pending" },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      // Subtask outside the epic (root level) should be excluded
+      { id: "subtask-other", title: "Other Subtask", level: "subtask", status: "pending", priority: "critical" },
+    ];
+    const store = mockStore(items);
+
+    const { taskId } = await assembleTaskBrief(store, undefined, { epicId: "epic-1" });
+    expect(taskId).toBe("subtask-1");
   });
 });
 
