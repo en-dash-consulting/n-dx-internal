@@ -111,10 +111,15 @@ export function formatCLIError(err: unknown): string {
 /**
  * Handle a CLI error: print it and exit.
  * Drop-in replacement for catch blocks in CLI entry points.
+ * Respects custom exitCode if the error has one.
  */
 export function handleCLIError(err: unknown): never {
   console.error(formatCLIError(err));
-  process.exit(1);
+  const exitCode =
+    err instanceof CLIError && "exitCode" in err
+      ? (err as CLIError & { exitCode: number }).exitCode
+      : 1;
+  process.exit(exitCode);
 }
 
 /**

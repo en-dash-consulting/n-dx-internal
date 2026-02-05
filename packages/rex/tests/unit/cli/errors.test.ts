@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { join } from "node:path";
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { CLIError, formatCLIError, handleCLIError, requireRexDir } from "../../../src/cli/errors.js";
+import { CLIError, BudgetExceededError, formatCLIError, handleCLIError, requireRexDir } from "../../../src/cli/errors.js";
 
 describe("CLIError", () => {
   it("stores message and suggestion", () => {
@@ -21,6 +21,30 @@ describe("CLIError", () => {
   it("is an instance of Error", () => {
     const err = new CLIError("test");
     expect(err).toBeInstanceOf(Error);
+  });
+});
+
+describe("BudgetExceededError", () => {
+  it("has exitCode 2 to distinguish from general errors", () => {
+    const err = new BudgetExceededError(["token limit exceeded"]);
+    expect(err.exitCode).toBe(2);
+  });
+
+  it("formats warnings into message", () => {
+    const err = new BudgetExceededError(["token limit exceeded", "cost limit exceeded"]);
+    expect(err.message).toContain("token limit exceeded");
+    expect(err.message).toContain("cost limit exceeded");
+  });
+
+  it("includes budget adjustment suggestion", () => {
+    const err = new BudgetExceededError(["exceeded"]);
+    expect(err.suggestion).toContain("budget");
+  });
+
+  it("is an instance of CLIError", () => {
+    const err = new BudgetExceededError([]);
+    expect(err).toBeInstanceOf(CLIError);
+    expect(err.name).toBe("BudgetExceededError");
   });
 });
 
@@ -118,6 +142,27 @@ describe("handleCLIError", () => {
     handleCLIError(err);
 
     expect(mockStderr).toHaveBeenCalledWith("Error: test error\nHint: try something");
+    expect(mockExit).toHaveBeenCalledWith(1);
+  });
+
+  it("respects custom exitCode on CLIError subclasses", () => {
+    const mockExit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+    const mockStderr = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const err = new BudgetExceededError(["token limit exceeded"]);
+
+    handleCLIError(err);
+
+    expect(mockStderr).toHaveBeenCalled();
+    expect(mockExit).toHaveBeenCalledWith(2);
+  });
+
+  it("exits with code 1 for plain Error objects", () => {
+    const mockExit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+    const mockStderr = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    handleCLIError(new Error("plain error"));
+
     expect(mockExit).toHaveBeenCalledWith(1);
   });
 });
