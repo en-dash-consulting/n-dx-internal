@@ -6,6 +6,8 @@ import {
   findEpicByIdOrTitle,
   resolveEpicFlag,
   collectEpicTaskIds,
+  getEpicScopeInfo,
+  type EpicScopeInfo,
 } from "../../../../src/cli/commands/run.js";
 import { EpicNotFoundError } from "../../../../src/cli/errors.js";
 
@@ -345,5 +347,184 @@ describe("EpicNotFoundError", () => {
   it("shows no epics message when none available", () => {
     const err = new EpicNotFoundError("search", []);
     expect(err.suggestion).toContain("No epics found in PRD");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getEpicScopeInfo
+// ---------------------------------------------------------------------------
+
+describe("getEpicScopeInfo", () => {
+  it("returns correct counts for epic with all pending tasks", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "pending",
+        children: [
+          { id: "task-1", title: "Task 1", level: "task", status: "pending" },
+          { id: "task-2", title: "Task 2", level: "task", status: "pending" },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const info = await getEpicScopeInfo(store, "epic-1");
+    expect(info).toEqual({
+      id: "epic-1",
+      title: "Epic One",
+      totalTasks: 2,
+      completedTasks: 0,
+      actionableTasks: 2,
+      isComplete: false,
+      hasActionableTasks: true,
+    });
+  });
+
+  it("returns correct counts for epic with mixed task statuses", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          { id: "task-1", title: "Task 1", level: "task", status: "completed" },
+          { id: "task-2", title: "Task 2", level: "task", status: "pending" },
+          { id: "task-3", title: "Task 3", level: "task", status: "deferred" },
+          { id: "task-4", title: "Task 4", level: "task", status: "blocked" },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const info = await getEpicScopeInfo(store, "epic-1");
+    expect(info.totalTasks).toBe(4);
+    expect(info.completedTasks).toBe(1);
+    expect(info.actionableTasks).toBe(1); // only pending task-2
+    expect(info.isComplete).toBe(false);
+    expect(info.hasActionableTasks).toBe(true);
+  });
+
+  it("detects when all tasks in epic are complete", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "completed",
+        children: [
+          { id: "task-1", title: "Task 1", level: "task", status: "completed" },
+          { id: "task-2", title: "Task 2", level: "task", status: "completed" },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const info = await getEpicScopeInfo(store, "epic-1");
+    expect(info.totalTasks).toBe(2);
+    expect(info.completedTasks).toBe(2);
+    expect(info.actionableTasks).toBe(0);
+    expect(info.isComplete).toBe(true);
+    expect(info.hasActionableTasks).toBe(false);
+  });
+
+  it("handles epic with no actionable tasks but incomplete", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "pending",
+        children: [
+          { id: "task-1", title: "Task 1", level: "task", status: "deferred" },
+          { id: "task-2", title: "Task 2", level: "task", status: "blocked" },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const info = await getEpicScopeInfo(store, "epic-1");
+    expect(info.totalTasks).toBe(2);
+    expect(info.completedTasks).toBe(0);
+    expect(info.actionableTasks).toBe(0);
+    expect(info.isComplete).toBe(false);
+    expect(info.hasActionableTasks).toBe(false);
+  });
+
+  it("handles nested tasks within features", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "pending",
+        children: [
+          {
+            id: "feat-1",
+            title: "Feature",
+            level: "feature",
+            status: "pending",
+            children: [
+              { id: "task-1", title: "Task 1", level: "task", status: "completed" },
+              {
+                id: "task-2",
+                title: "Task 2",
+                level: "task",
+                status: "pending",
+                children: [
+                  { id: "subtask-1", title: "Subtask 1", level: "subtask", status: "pending" },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const info = await getEpicScopeInfo(store, "epic-1");
+    // Counts: task-1 (completed), task-2 (pending), subtask-1 (pending)
+    expect(info.totalTasks).toBe(3);
+    expect(info.completedTasks).toBe(1);
+    expect(info.actionableTasks).toBe(2);
+    expect(info.isComplete).toBe(false);
+    expect(info.hasActionableTasks).toBe(true);
+  });
+
+  it("handles empty epic with no children", async () => {
+    const items: PRDItem[] = [
+      { id: "epic-1", title: "Empty Epic", level: "epic", status: "pending" },
+    ];
+    const store = mockStore(items);
+
+    const info = await getEpicScopeInfo(store, "epic-1");
+    expect(info.totalTasks).toBe(0);
+    expect(info.completedTasks).toBe(0);
+    expect(info.actionableTasks).toBe(0);
+    expect(info.isComplete).toBe(true); // No tasks means nothing left to do
+    expect(info.hasActionableTasks).toBe(false);
+  });
+
+  it("counts in_progress tasks as actionable", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          { id: "task-1", title: "Task 1", level: "task", status: "in_progress" },
+          { id: "task-2", title: "Task 2", level: "task", status: "pending" },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const info = await getEpicScopeInfo(store, "epic-1");
+    expect(info.totalTasks).toBe(2);
+    expect(info.actionableTasks).toBe(2); // both in_progress and pending are actionable
+    expect(info.hasActionableTasks).toBe(true);
   });
 });

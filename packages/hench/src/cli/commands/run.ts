@@ -74,6 +74,77 @@ export async function resolveEpicFlag(
 export { collectEpicTaskIds } from "../../agent/brief.js";
 
 // ---------------------------------------------------------------------------
+// Epic scope info
+// ---------------------------------------------------------------------------
+
+export interface EpicScopeInfo {
+  id: string;
+  title: string;
+  /** Total number of tasks/subtasks in the epic. */
+  totalTasks: number;
+  /** Number of completed tasks/subtasks. */
+  completedTasks: number;
+  /** Number of actionable tasks (pending or in_progress). */
+  actionableTasks: number;
+  /** True if all tasks are completed (or epic has no tasks). */
+  isComplete: boolean;
+  /** True if there are actionable tasks to work on. */
+  hasActionableTasks: boolean;
+}
+
+/**
+ * Get detailed scope information about an epic.
+ * Counts tasks/subtasks and their completion status.
+ */
+export async function getEpicScopeInfo(
+  store: PRDStore,
+  epicId: string,
+): Promise<EpicScopeInfo> {
+  const doc = await store.loadDocument();
+  const epic = findEpicByIdOrTitle(doc.items, epicId);
+  if (!epic) {
+    throw new EpicNotFoundError(epicId, listEpics(doc.items));
+  }
+
+  // Walk the tree and count tasks belonging to this epic
+  const { walkTree } = await import("rex/dist/core/tree.js");
+
+  let totalTasks = 0;
+  let completedTasks = 0;
+  let actionableTasks = 0;
+
+  for (const { item, parents } of walkTree(doc.items)) {
+    // Check if this item is inside the target epic
+    const isInEpic =
+      item.id === epicId ||
+      parents.some((p) => p.id === epicId);
+
+    if (isInEpic && (item.level === "task" || item.level === "subtask")) {
+      totalTasks++;
+      if (item.status === "completed") {
+        completedTasks++;
+      } else if (item.status === "pending" || item.status === "in_progress") {
+        actionableTasks++;
+      }
+      // deferred and blocked are neither completed nor actionable
+    }
+  }
+
+  const isComplete = totalTasks === 0 || completedTasks === totalTasks;
+  const hasActionableTasks = actionableTasks > 0;
+
+  return {
+    id: epic.id,
+    title: epic.title,
+    totalTasks,
+    completedTasks,
+    actionableTasks,
+    isComplete,
+    hasActionableTasks,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Loop helpers (exported for testing)
 // ---------------------------------------------------------------------------
 
@@ -319,9 +390,26 @@ export async function cmdRun(
   let epicId: string | undefined;
   if (flags.epic) {
     const store = await resolveStore(rexDir);
-    const resolvedEpic = await resolveEpicFlag(store, flags.epic);
-    epicId = resolvedEpic.id;
-    info(`Epic scope: ${resolvedEpic.title} (${resolvedEpic.id})`);
+    const scopeInfo = await getEpicScopeInfo(store, flags.epic);
+    epicId = scopeInfo.id;
+
+    // Show epic scope with completion status
+    const progress = scopeInfo.totalTasks > 0
+      ? `${scopeInfo.completedTasks}/${scopeInfo.totalTasks} tasks complete`
+      : "no tasks";
+    info(`Epic scope: ${scopeInfo.title} (${scopeInfo.id}) — ${progress}`);
+
+    // Check for completion or no actionable tasks
+    if (scopeInfo.isComplete) {
+      output(`\n✓ All tasks in epic "${scopeInfo.title}" are complete.`);
+      process.exit(0);
+    }
+    if (!scopeInfo.hasActionableTasks) {
+      output(`\n⚠ Epic "${scopeInfo.title}" has no actionable tasks.`);
+      output(`  ${scopeInfo.totalTasks - scopeInfo.completedTasks} task(s) are blocked or deferred.`);
+      output(`  Use 'rex status' to see task statuses, or update tasks with 'rex update <id> --status=pending'.`);
+      process.exit(0);
+    }
   }
 
   let taskId = flags.task;
@@ -433,7 +521,8 @@ async function runLoop(
   let completed = 0;
 
   try {
-    info("Loop mode: running continuously until all tasks complete or interrupted (Ctrl+C to stop)");
+    const scope = epicId ? "epic tasks" : "all tasks";
+    info(`Loop mode: running continuously until ${scope} complete or interrupted (Ctrl+C to stop)`);
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
