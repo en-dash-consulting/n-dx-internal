@@ -5734,6 +5734,308 @@
           ]
         }
       ]
+    },
+    {
+      "id": "339476c0-333f-433e-aedf-1e1f3e890f82",
+      "title": "CLI Command Aliases and Shortcuts",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "46e1f889-a1aa-49c7-beda-72e187589640",
+          "title": "Alternative Command Prefix",
+          "status": "pending",
+          "level": "feature",
+          "description": "Allow users to use 'ndx' as an alternative to 'n-dx' for the main command",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "0d0b108e-fb68-446c-a7d3-88a806eaacfe",
+              "title": "Add ndx binary alias",
+              "status": "pending",
+              "level": "task",
+              "description": "Create ndx executable that delegates to n-dx CLI",
+              "acceptanceCriteria": [
+                "ndx command works identically to n-dx",
+                "All subcommands work with ndx prefix",
+                "Help text shows both ndx and n-dx as valid"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "aliases"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "83a33c2a-31d7-4d71-95a3-246233fdc056",
+          "title": "Direct Package Command Access",
+          "status": "pending",
+          "level": "feature",
+          "description": "Allow users to run rex, sourcevision, and hench commands directly without the n-dx prefix",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "1c72464b-a642-46d4-be6d-f6757a37496e",
+              "title": "Create standalone rex command",
+              "status": "pending",
+              "level": "task",
+              "description": "Add rex binary that directly invokes rex package commands",
+              "acceptanceCriteria": [
+                "rex status works without n-dx prefix",
+                "All rex subcommands accessible directly",
+                "Maintains same functionality as n-dx rex"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "rex",
+                "standalone"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "85309262-fe76-4fe1-bd52-347fbefff59c",
+              "title": "Create standalone sourcevision command",
+              "status": "pending",
+              "level": "task",
+              "description": "Add sourcevision binary that directly invokes sourcevision package commands",
+              "acceptanceCriteria": [
+                "sourcevision analyze works without n-dx prefix",
+                "All sourcevision subcommands accessible directly",
+                "Maintains same functionality as n-dx sourcevision"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "sourcevision",
+                "standalone"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "c4cef365-de7c-4c6c-a453-75b1ae90c215",
+              "title": "Create standalone hench command",
+              "status": "pending",
+              "level": "task",
+              "description": "Add hench binary that directly invokes hench package commands",
+              "acceptanceCriteria": [
+                "hench run works without n-dx prefix",
+                "All hench subcommands accessible directly",
+                "Maintains same functionality as n-dx hench"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "hench",
+                "standalone"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "4db98642-d2a7-4b4b-b74b-fcf66b0c9928",
+          "title": "Sourcevision Short Alias",
+          "status": "pending",
+          "level": "feature",
+          "description": "Provide 'sv' as a short alias for sourcevision in all contexts",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "45541378-5da7-41db-bdaa-a747095ca4a8",
+              "title": "Add sv standalone binary",
+              "status": "pending",
+              "level": "task",
+              "description": "Create sv binary that delegates to sourcevision commands",
+              "acceptanceCriteria": [
+                "sv analyze works identically to sourcevision analyze",
+                "sv works without any prefix",
+                "All sourcevision subcommands work with sv"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "sourcevision",
+                "aliases"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "72f8572e-2bf9-45c7-8587-5f515b466f9d",
+              "title": "Support sv with prefixes",
+              "status": "pending",
+              "level": "task",
+              "description": "Enable both 'n-dx sv' and 'ndx sv' command patterns",
+              "acceptanceCriteria": [
+                "n-dx sv analyze works",
+                "ndx sv analyze works",
+                "sv maintains existing alias functionality"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "sourcevision",
+                "aliases"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "eef40dd9-bbf6-449e-bf8d-de8f1dd3f482",
+          "title": "CLI Installation and Distribution",
+          "status": "pending",
+          "level": "feature",
+          "description": "Ensure all command aliases are properly installed and available in user PATH",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "a0cb59d5-5c5f-4968-ae2b-971ffdcff464",
+              "title": "Update package.json bin configuration",
+              "status": "pending",
+              "level": "task",
+              "description": "Add all command aliases to package.json bin section for proper installation",
+              "acceptanceCriteria": [
+                "npm/pnpm install creates all command binaries",
+                "All aliases available in PATH after install",
+                "Binaries have proper executable permissions"
+              ],
+              "priority": "critical",
+              "tags": [
+                "cli",
+                "installation",
+                "npm"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "e1464393-196b-4c34-ac03-114fca5bee4d",
+              "title": "Update CLI documentation",
+              "status": "pending",
+              "level": "task",
+              "description": "Document all available command aliases and usage patterns",
+              "acceptanceCriteria": [
+                "README shows all alias options",
+                "Help text mentions available aliases",
+                "Examples use both full and short forms"
+              ],
+              "priority": "medium",
+              "tags": [
+                "documentation",
+                "cli"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "18f3eb14-1a1d-452f-aac1-125e32888ddd",
+      "title": "Epic-scoped Task Execution",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "8659f10b-6326-4db8-93bf-e84fe5168cd2",
+          "title": "Epic Filtering for Work Command",
+          "status": "completed",
+          "level": "feature",
+          "description": "Allow users to constrain hench work loop to execute only tasks within a specified epic",
+          "source": "smart-add",
+          "startedAt": "2026-02-05T16:26:43.089Z",
+          "completedAt": "2026-02-05T16:26:43.089Z",
+          "children": [
+            {
+              "id": "74c29c7b-f70f-432a-af2b-3901774e8564",
+              "title": "Add epic parameter to hench run command",
+              "status": "completed",
+              "level": "task",
+              "description": "Extend the hench run CLI to accept an --epic flag that filters available tasks to only those within the specified epic",
+              "acceptanceCriteria": [
+                "Accepts epic ID or title as parameter value",
+                "Validates epic exists before starting work loop",
+                "Shows helpful error for non-existent epics"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "cli"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-05T15:55:15.801Z",
+              "completedAt": "2026-02-05T16:03:37.833Z"
+            },
+            {
+              "id": "2721b6c6-8847-4352-aefd-107fb3f827cf",
+              "title": "Implement epic-filtered task selection in findNextTask",
+              "status": "completed",
+              "level": "task",
+              "description": "Modify the task selection logic to only consider tasks that belong to the specified epic when epic filter is active",
+              "acceptanceCriteria": [
+                "Only returns tasks from filtered epic",
+                "Maintains priority and dependency ordering within epic",
+                "Returns null when no actionable tasks remain in epic"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "core"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-05T16:04:50.267Z",
+              "completedAt": "2026-02-05T16:09:38.700Z"
+            },
+            {
+              "id": "b9f97ae3-3676-428b-9436-e43ff61fb535",
+              "title": "Add epic scope validation and messaging",
+              "status": "completed",
+              "level": "task",
+              "description": "Provide clear feedback when epic filtering is active, including scope information and completion status",
+              "acceptanceCriteria": [
+                "Shows epic name and scope in work loop startup message",
+                "Indicates when all tasks in epic are complete",
+                "Warns if epic has no actionable tasks"
+              ],
+              "priority": "medium",
+              "tags": [
+                "hench",
+                "ux"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-05T16:13:37.555Z",
+              "completedAt": "2026-02-05T16:18:54.135Z"
+            },
+            {
+              "id": "bedd0db7-3359-4ed8-85d6-1e026d89cac0",
+              "title": "Extend n-dx work orchestration with epic support",
+              "status": "completed",
+              "level": "task",
+              "description": "Pass through epic filtering parameter from n-dx work command to hench run",
+              "acceptanceCriteria": [
+                "Accepts --epic flag in n-dx work command",
+                "Forwards epic parameter to hench run",
+                "Maintains backward compatibility with unfiltered runs"
+              ],
+              "priority": "high",
+              "tags": [
+                "orchestration",
+                "cli"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-05T16:23:22.499Z",
+              "completedAt": "2026-02-05T16:26:43.051Z"
+            }
+          ]
+        }
+      ],
+      "startedAt": "2026-02-05T16:26:43.141Z",
+      "completedAt": "2026-02-05T16:26:43.141Z"
     }
   ]
 }
