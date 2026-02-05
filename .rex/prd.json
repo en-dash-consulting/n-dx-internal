@@ -5745,7 +5745,7 @@
         {
           "id": "46e1f889-a1aa-49c7-beda-72e187589640",
           "title": "Alternative Command Prefix",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Allow users to use 'ndx' as an alternative to 'n-dx' for the main command",
           "source": "smart-add",
@@ -5753,7 +5753,7 @@
             {
               "id": "0d0b108e-fb68-446c-a7d3-88a806eaacfe",
               "title": "Add ndx binary alias",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create ndx executable that delegates to n-dx CLI",
               "acceptanceCriteria": [
@@ -5766,17 +5766,23 @@
                 "cli",
                 "aliases"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-05T16:50:44.722Z",
+              "completedAt": "2026-02-05T16:54:58.798Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-05T16:54:58.835Z",
+          "completedAt": "2026-02-05T16:54:58.835Z"
         },
         {
           "id": "83a33c2a-31d7-4d71-95a3-246233fdc056",
           "title": "Direct Package Command Access",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Allow users to run rex, sourcevision, and hench commands directly without the n-dx prefix",
           "source": "smart-add",
+          "startedAt": "2026-02-05T16:50:15.245Z",
+          "completedAt": "2026-02-05T16:50:15.245Z",
           "children": [
             {
               "id": "1c72464b-a642-46d4-be6d-f6757a37496e",
@@ -5802,7 +5808,7 @@
             {
               "id": "85309262-fe76-4fe1-bd52-347fbefff59c",
               "title": "Create standalone sourcevision command",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add sourcevision binary that directly invokes sourcevision package commands",
               "acceptanceCriteria": [
@@ -5816,7 +5822,9 @@
                 "sourcevision",
                 "standalone"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-05T16:48:16.514Z",
+              "completedAt": "2026-02-05T16:50:15.210Z"
             },
             {
               "id": "c4cef365-de7c-4c6c-a453-75b1ae90c215",
