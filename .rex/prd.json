@@ -3836,9 +3836,9 @@
             {
               "id": "6bff530e-bae5-4b1c-bbdf-e3b13b092122",
               "title": "Add dependency validation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Validate external dependencies and provide helpful installation guidance",
+              "description": "Validate external dependencies and provide helpful installation guidance. Implemented: requireClaudeCLI() checks for claude binary on PATH, throws CLIError with npm install instructions and API provider fallback suggestion. Called early in cmdRun for cli provider. Full test coverage for all acceptance criteria.",
               "acceptanceCriteria": [
                 "Throws CLIError when claude is not on PATH",
                 "Includes install instructions in the suggestion",
@@ -3849,7 +3849,9 @@
               "tags": [
                 "requireClaudeCLI"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T02:09:02.151Z",
+              "completedAt": "2026-02-05T02:11:35.785Z"
             },
             {
               "id": "058098a9-16d9-4089-8161-78ca9c1b01e1",

@@ -386,3 +386,8 @@
 {"timestamp":"2026-02-05T02:04:22.171Z","event":"status_updated","itemId":"bb7791ec-b388-44cd-8b8f-91754bbe0b87","detail":"Status changed to in_progress by hench agent"}
 {"timestamp":"2026-02-05T02:08:35.307Z","event":"item_updated","itemId":"bb7791ec-b388-44cd-8b8f-91754bbe0b87","detail":"Updated: status, completedAt"}
 {"timestamp":"2026-02-05T02:08:39.389Z","event":"item_updated","itemId":"bb7791ec-b388-44cd-8b8f-91754bbe0b87","detail":"Updated: description"}
+{"timestamp":"2026-02-05T02:09:02.093Z","event":"status_updated","itemId":"bb7791ec-b388-44cd-8b8f-91754bbe0b87","detail":"Status changed to completed by hench agent"}
+{"timestamp":"2026-02-05T02:09:02.103Z","event":"task_completed","itemId":"bb7791ec-b388-44cd-8b8f-91754bbe0b87","detail":"## Summary\n\n**Task: Add configuration defaults and validation** — ✅ Complete\n\n### What was done\n\nThe schema validation in `packages/hench/src/schema/validate.ts` already had all three fields correctly configured:\n\n| Field | Schema | Default | Validation |\n|-------|--------|---------|------------|\n| `tokenBudget` | `z.number().int().nonnegative().optional().default(0)` | 0 (unlimited) | Rejects negative, accepts 0 |\n| `maxFailedAttempts` | `z.number().int().positive().optional().default(3)` | 3 |"}
+{"timestamp":"2026-02-05T02:09:02.161Z","event":"status_updated","itemId":"6bff530e-bae5-4b1c-bbdf-e3b13b092122","detail":"Status changed to in_progress by hench agent"}
+{"timestamp":"2026-02-05T02:11:35.797Z","event":"item_updated","itemId":"6bff530e-bae5-4b1c-bbdf-e3b13b092122","detail":"Updated: status, completedAt"}
+{"timestamp":"2026-02-05T02:11:40.970Z","event":"item_updated","itemId":"6bff530e-bae5-4b1c-bbdf-e3b13b092122","detail":"Updated: description"}
