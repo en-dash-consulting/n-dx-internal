@@ -98,6 +98,10 @@ export class NotionStore implements PRDStore {
   }
 
   async saveDocument(doc: PRDDocument): Promise<void> {
+    const result = validateDocument(doc);
+    if (!result.ok) {
+      throw new Error(`Invalid document: ${result.errors.message}`);
+    }
     this.invalidateCache();
 
     // Build the ID map of existing items (PRD ID → Notion page ID)

@@ -58,6 +58,42 @@ describe("FileStore", () => {
       expect(reloaded.items.length).toBe(1);
       expect(reloaded.items[0].title).toBe("Epic");
     });
+
+    it("throws on malformed JSON in prd.json", async () => {
+      await writeFile(join(rexDir, "prd.json"), "{not valid json", "utf-8");
+      await expect(store.loadDocument()).rejects.toThrow();
+    });
+
+    it("throws on schema-invalid prd.json", async () => {
+      await writeFile(
+        join(rexDir, "prd.json"),
+        JSON.stringify({ title: "No schema", items: [] }),
+        "utf-8",
+      );
+      await expect(store.loadDocument()).rejects.toThrow("Invalid prd.json");
+    });
+
+    it("throws on prd.json with invalid item fields", async () => {
+      await writeFile(
+        join(rexDir, "prd.json"),
+        JSON.stringify({
+          schema: SCHEMA_VERSION,
+          title: "Bad Items",
+          items: [{ id: "x", title: "X", status: "bogus", level: "epic" }],
+        }),
+        "utf-8",
+      );
+      await expect(store.loadDocument()).rejects.toThrow("Invalid prd.json");
+    });
+
+    it("saveDocument validates before writing", async () => {
+      const invalid = { schema: SCHEMA_VERSION, title: "Missing items" } as unknown as PRDDocument;
+      await expect(store.saveDocument(invalid)).rejects.toThrow();
+
+      // Verify the original document is untouched
+      const doc = await store.loadDocument();
+      expect(doc.title).toBe("Test");
+    });
   });
 
   describe("getItem", () => {

@@ -47,10 +47,27 @@ function describeStoreContract(
     // ---- Document CRUD ---------------------------------------------------
 
     describe("loadDocument / saveDocument", () => {
+      it("loads a valid document", async () => {
+        const doc = await store.loadDocument();
+        expect(doc).toBeDefined();
+        expect(doc.title).toBeTruthy();
+        expect(Array.isArray(doc.items)).toBe(true);
+      });
+
       it("loads a valid document with schema version", async () => {
         const doc = await store.loadDocument();
         expect(doc.schema).toBe(SCHEMA_VERSION);
         expect(Array.isArray(doc.items)).toBe(true);
+      });
+
+      it("round-trips a document", async () => {
+        const doc = await store.loadDocument();
+        doc.title = "Round-Trip Title";
+        await store.saveDocument(doc);
+
+        const reloaded = await store.loadDocument();
+        expect(reloaded.title).toBe("Round-Trip Title");
+        expect(reloaded.schema).toBe(SCHEMA_VERSION);
       });
 
       it("round-trips a document with items", async () => {
@@ -86,6 +103,136 @@ function describeStoreContract(
         const final = await store.loadDocument();
         expect(final.items).toHaveLength(1);
         expect(final.items[0].id).toBe("ct-c");
+      });
+
+      it("round-trips a deep hierarchy (4 levels)", async () => {
+        const doc = await store.loadDocument();
+        doc.items.push({
+          id: "ct-deep-e1",
+          title: "Deep Epic",
+          status: "pending",
+          level: "epic",
+          children: [
+            {
+              id: "ct-deep-f1",
+              title: "Deep Feature",
+              status: "in_progress",
+              level: "feature",
+              children: [
+                {
+                  id: "ct-deep-t1",
+                  title: "Deep Task",
+                  status: "completed",
+                  level: "task",
+                  children: [
+                    {
+                      id: "ct-deep-s1",
+                      title: "Deep Subtask",
+                      status: "pending",
+                      level: "subtask",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        });
+        await store.saveDocument(doc);
+
+        const reloaded = await store.loadDocument();
+        expect(reloaded.items).toHaveLength(1);
+        const epic = reloaded.items[0];
+        expect(epic.title).toBe("Deep Epic");
+        expect(epic.children).toHaveLength(1);
+        const feature = epic.children![0];
+        expect(feature.title).toBe("Deep Feature");
+        expect(feature.status).toBe("in_progress");
+        expect(feature.children).toHaveLength(1);
+        const task = feature.children![0];
+        expect(task.title).toBe("Deep Task");
+        expect(task.status).toBe("completed");
+        expect(task.children).toHaveLength(1);
+        const subtask = task.children![0];
+        expect(subtask.title).toBe("Deep Subtask");
+        expect(subtask.level).toBe("subtask");
+      });
+
+      it("round-trips items with all optional fields", async () => {
+        const doc = await store.loadDocument();
+        doc.items.push({
+          id: "ct-full",
+          title: "Fully Loaded",
+          status: "blocked",
+          level: "task",
+          description: "A thorough task",
+          acceptanceCriteria: ["Criterion A", "Criterion B"],
+          priority: "critical",
+          tags: ["auth", "security"],
+          source: "hench",
+          blockedBy: ["ct-other"],
+          startedAt: "2024-06-01T00:00:00Z",
+          completedAt: "2024-06-02T12:00:00Z",
+        });
+        await store.saveDocument(doc);
+
+        const reloaded = await store.loadDocument();
+        const item = reloaded.items[0];
+        expect(item.description).toBe("A thorough task");
+        expect(item.acceptanceCriteria).toEqual(["Criterion A", "Criterion B"]);
+        expect(item.priority).toBe("critical");
+        expect(item.tags).toEqual(["auth", "security"]);
+        expect(item.source).toBe("hench");
+        expect(item.blockedBy).toEqual(["ct-other"]);
+        expect(item.startedAt).toBe("2024-06-01T00:00:00Z");
+        expect(item.completedAt).toBe("2024-06-02T12:00:00Z");
+      });
+
+      it("round-trips items with only required fields", async () => {
+        const doc = await store.loadDocument();
+        doc.items.push({
+          id: "ct-min",
+          title: "Minimal",
+          status: "pending",
+          level: "epic",
+        });
+        await store.saveDocument(doc);
+
+        const reloaded = await store.loadDocument();
+        const item = reloaded.items[0];
+        expect(item.id).toBe("ct-min");
+        expect(item.title).toBe("Minimal");
+        expect(item.status).toBe("pending");
+        expect(item.level).toBe("epic");
+      });
+
+      it("round-trips passthrough fields on document and items", async () => {
+        const doc: PRDDocument = {
+          schema: SCHEMA_VERSION,
+          title: "Extended",
+          items: [
+            {
+              id: "ct-ext",
+              title: "Extended Item",
+              status: "pending",
+              level: "epic",
+              customMeta: { nested: true, count: 42 },
+            } as PRDItem,
+          ],
+          projectMeta: "preserved",
+        } as PRDDocument;
+        await store.saveDocument(doc);
+
+        const reloaded = await store.loadDocument();
+        expect((reloaded as Record<string, unknown>).projectMeta).toBe("preserved");
+        expect((reloaded.items[0] as Record<string, unknown>).customMeta).toEqual({
+          nested: true,
+          count: 42,
+        });
+      });
+
+      it("saveDocument rejects an invalid document", async () => {
+        const invalid = { schema: SCHEMA_VERSION, title: "Bad" } as unknown as PRDDocument;
+        await expect(store.saveDocument(invalid)).rejects.toThrow();
       });
     });
 

@@ -29,6 +29,10 @@ export class FileStore implements PRDStore {
   }
 
   async saveDocument(doc: PRDDocument): Promise<void> {
+    const result = validateDocument(doc);
+    if (!result.ok) {
+      throw new Error(`Invalid document: ${result.errors.message}`);
+    }
     await writeFile(this.path("prd.json"), toCanonicalJSON(doc), "utf-8");
   }
 
