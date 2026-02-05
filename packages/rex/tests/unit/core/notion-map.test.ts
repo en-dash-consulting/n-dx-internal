@@ -725,7 +725,199 @@ describe("mapNotionToItem", () => {
     expect(roundTripped.blockedBy).toEqual(original.blockedBy);
     expect(roundTripped.acceptanceCriteria).toEqual(original.acceptanceCriteria);
   });
+
+  it("round-trips all status values", () => {
+    const statuses = ["pending", "in_progress", "completed", "deferred", "blocked"] as const;
+
+    for (const status of statuses) {
+      const original = makeItem({ id: "t1", title: "Status Test", status });
+      const { properties, children } = mapItemToNotion(original);
+
+      const notionPage = buildMockNotionPage("notion-abc", properties, children);
+      const roundTripped = mapNotionToItem(notionPage);
+
+      expect(roundTripped.status).toBe(status);
+    }
+  });
+
+  it("round-trips all level values", () => {
+    const levels = ["epic", "feature", "task", "subtask"] as const;
+
+    for (const level of levels) {
+      const original = makeItem({ id: "item1", title: "Level Test", level });
+      const { properties, children } = mapItemToNotion(original);
+
+      const notionPage = buildMockNotionPage("notion-abc", properties, children);
+      const roundTripped = mapNotionToItem(notionPage);
+
+      expect(roundTripped.level).toBe(level);
+    }
+  });
+
+  it("round-trips all priority values", () => {
+    const priorities = ["critical", "high", "medium", "low"] as const;
+
+    for (const priority of priorities) {
+      const original = makeItem({ id: "t1", title: "Priority Test", priority });
+      const { properties, children } = mapItemToNotion(original);
+
+      const notionPage = buildMockNotionPage("notion-abc", properties, children);
+      const roundTripped = mapNotionToItem(notionPage);
+
+      expect(roundTripped.priority).toBe(priority);
+    }
+  });
+
+  it("round-trips items with no optional fields", () => {
+    const original = makeItem({ id: "t1", title: "Minimal Item" });
+    const { properties, children } = mapItemToNotion(original);
+
+    const notionPage = buildMockNotionPage("notion-abc", properties, children);
+    const roundTripped = mapNotionToItem(notionPage);
+
+    expect(roundTripped.id).toBe(original.id);
+    expect(roundTripped.title).toBe(original.title);
+    expect(roundTripped.status).toBe(original.status);
+    expect(roundTripped.level).toBe(original.level);
+    expect(roundTripped.description).toBeUndefined();
+    expect(roundTripped.priority).toBeUndefined();
+    expect(roundTripped.tags).toBeUndefined();
+    expect(roundTripped.source).toBeUndefined();
+    expect(roundTripped.blockedBy).toBeUndefined();
+    expect(roundTripped.acceptanceCriteria).toBeUndefined();
+  });
+
+  it("round-trips empty tags array (omits it)", () => {
+    const original = makeItem({ id: "t1", title: "Empty Tags", tags: [] });
+    const { properties, children } = mapItemToNotion(original);
+
+    // Empty tags should be omitted
+    expect(properties.Tags).toBeUndefined();
+
+    const notionPage = buildMockNotionPage("notion-abc", properties, children);
+    const roundTripped = mapNotionToItem(notionPage);
+
+    expect(roundTripped.tags).toBeUndefined();
+  });
+
+  it("round-trips empty blockedBy array (omits it)", () => {
+    const original = makeItem({ id: "t1", title: "No Blockers", blockedBy: [] });
+    const { properties, children } = mapItemToNotion(original);
+
+    // Empty blockedBy should be omitted
+    expect(properties["Blocked By"]).toBeUndefined();
+
+    const notionPage = buildMockNotionPage("notion-abc", properties, children);
+    const roundTripped = mapNotionToItem(notionPage);
+
+    expect(roundTripped.blockedBy).toBeUndefined();
+  });
+
+  it("round-trips empty acceptanceCriteria array (omits it)", () => {
+    const original = makeItem({ id: "t1", title: "No Criteria", acceptanceCriteria: [] });
+    const { properties, children } = mapItemToNotion(original);
+
+    // Empty acceptanceCriteria should produce no children blocks (undefined)
+    expect(children).toBeUndefined();
+
+    const notionPage = buildMockNotionPage("notion-abc", properties, children);
+    const roundTripped = mapNotionToItem(notionPage);
+
+    expect(roundTripped.acceptanceCriteria).toBeUndefined();
+  });
+
+  it("round-trips single-element arrays", () => {
+    const original = makeItem({
+      id: "t1",
+      title: "Single Elements",
+      tags: ["solo-tag"],
+      blockedBy: ["single-blocker"],
+      acceptanceCriteria: ["one criterion"],
+    });
+    const { properties, children } = mapItemToNotion(original);
+
+    const notionPage = buildMockNotionPage("notion-abc", properties, children);
+    const roundTripped = mapNotionToItem(notionPage);
+
+    expect(roundTripped.tags).toEqual(["solo-tag"]);
+    expect(roundTripped.blockedBy).toEqual(["single-blocker"]);
+    expect(roundTripped.acceptanceCriteria).toEqual(["one criterion"]);
+  });
+
+  it("round-trips description with description property and body block", () => {
+    const original = makeItem({
+      id: "t1",
+      title: "With Description",
+      description: "A detailed description",
+    });
+    const { properties, children } = mapItemToNotion(original);
+
+    // Description should be in both property and body
+    expect(properties.Description).toBeDefined();
+    expect(children).toHaveLength(1);
+
+    const notionPage = buildMockNotionPage("notion-abc", properties, children);
+    const roundTripped = mapNotionToItem(notionPage);
+
+    expect(roundTripped.description).toBe("A detailed description");
+  });
 });
+
+/**
+ * Helper to build a mock Notion page object from mapped properties and children.
+ * Converts our output format to Notion's API response format.
+ */
+function buildMockNotionPage(
+  notionId: string,
+  properties: ReturnType<typeof mapItemToNotion>["properties"],
+  children?: ReturnType<typeof mapItemToNotion>["children"],
+) {
+  return {
+    id: notionId,
+    properties: {
+      Name: { title: properties.Name.title.map((rt) => ({ plain_text: rt.text.content })) },
+      Status: properties.Status,
+      Level: properties.Level,
+      "PRD ID": { rich_text: properties["PRD ID"].rich_text.map((rt) => ({ plain_text: rt.text.content })) },
+      Description: properties.Description
+        ? { rich_text: properties.Description.rich_text.map((rt) => ({ plain_text: rt.text.content })) }
+        : undefined,
+      Priority: properties.Priority,
+      Tags: properties.Tags,
+      Source: properties.Source
+        ? { rich_text: properties.Source.rich_text.map((rt) => ({ plain_text: rt.text.content })) }
+        : undefined,
+      "Blocked By": properties["Blocked By"]
+        ? { rich_text: properties["Blocked By"].rich_text.map((rt) => ({ plain_text: rt.text.content })) }
+        : undefined,
+    },
+    children: children?.map((block) => {
+      const b = block as any;
+      if (b.type === "paragraph") {
+        return {
+          type: "paragraph",
+          paragraph: { rich_text: b.paragraph.rich_text.map((rt: any) => ({ plain_text: rt.text.content })) },
+        };
+      }
+      if (b.type === "heading_2") {
+        return {
+          type: "heading_2",
+          heading_2: { rich_text: b.heading_2.rich_text.map((rt: any) => ({ plain_text: rt.text.content })) },
+        };
+      }
+      if (b.type === "to_do") {
+        return {
+          type: "to_do",
+          to_do: {
+            rich_text: b.to_do.rich_text.map((rt: any) => ({ plain_text: rt.text.content })),
+            checked: b.to_do.checked,
+          },
+        };
+      }
+      return b;
+    }),
+  };
+}
 
 describe("resolveParentPage", () => {
   it("returns database ID for epics (top-level)", () => {
