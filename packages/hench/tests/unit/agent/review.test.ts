@@ -232,4 +232,141 @@ describe("revertChanges", () => {
     // Should not throw
     await revertChanges("/project");
   });
+
+  it("passes correct arguments to git reset", async () => {
+    const { revertChanges } = await import("../../../src/agent/review.js");
+
+    mockExecFile.mockImplementation(
+      ((_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
+        cb(null, "", "");
+      }) as typeof execFile,
+    );
+
+    await revertChanges("/project");
+
+    const resetCall = mockExecFile.mock.calls[0];
+    expect(resetCall[1]).toEqual(["reset", "HEAD", "."]);
+  });
+
+  it("passes correct arguments to git checkout", async () => {
+    const { revertChanges } = await import("../../../src/agent/review.js");
+
+    mockExecFile.mockImplementation(
+      ((_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
+        cb(null, "", "");
+      }) as typeof execFile,
+    );
+
+    await revertChanges("/project");
+
+    const checkoutCall = mockExecFile.mock.calls[1];
+    expect(checkoutCall[1]).toEqual(["checkout", "."]);
+  });
+
+  it("passes correct arguments to git clean", async () => {
+    const { revertChanges } = await import("../../../src/agent/review.js");
+
+    mockExecFile.mockImplementation(
+      ((_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
+        cb(null, "", "");
+      }) as typeof execFile,
+    );
+
+    await revertChanges("/project");
+
+    const cleanCall = mockExecFile.mock.calls[2];
+    expect(cleanCall[1]).toEqual(["clean", "-fd"]);
+  });
+
+  it("passes projectDir as cwd to all git commands", async () => {
+    const { revertChanges } = await import("../../../src/agent/review.js");
+
+    mockExecFile.mockImplementation(
+      ((_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
+        cb(null, "", "");
+      }) as typeof execFile,
+    );
+
+    await revertChanges("/my/project/path");
+
+    const calls = mockExecFile.mock.calls;
+    for (const call of calls) {
+      const opts = call[2] as { cwd: string };
+      expect(opts.cwd).toBe("/my/project/path");
+    }
+  });
+
+  it("uses custom timeout when provided", async () => {
+    const { revertChanges } = await import("../../../src/agent/review.js");
+
+    mockExecFile.mockImplementation(
+      ((_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
+        cb(null, "", "");
+      }) as typeof execFile,
+    );
+
+    await revertChanges("/project", 60_000);
+
+    const calls = mockExecFile.mock.calls;
+    for (const call of calls) {
+      const opts = call[2] as { timeout: number };
+      expect(opts.timeout).toBe(60_000);
+    }
+  });
+
+  it("uses default timeout when none specified", async () => {
+    const { revertChanges } = await import("../../../src/agent/review.js");
+
+    mockExecFile.mockImplementation(
+      ((_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
+        cb(null, "", "");
+      }) as typeof execFile,
+    );
+
+    await revertChanges("/project");
+
+    const calls = mockExecFile.mock.calls;
+    for (const call of calls) {
+      const opts = call[2] as { timeout: number };
+      expect(opts.timeout).toBe(30_000);
+    }
+  });
+
+  it("continues with subsequent commands even if earlier commands fail", async () => {
+    const { revertChanges } = await import("../../../src/agent/review.js");
+
+    let callCount = 0;
+    mockExecFile.mockImplementation(
+      ((_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
+        callCount++;
+        if (callCount === 1) {
+          // First call (reset) fails
+          cb(new Error("reset failed"), "", "");
+        } else {
+          cb(null, "", "");
+        }
+      }) as typeof execFile,
+    );
+
+    await revertChanges("/project");
+
+    // All three commands should still be called
+    expect(mockExecFile).toHaveBeenCalledTimes(3);
+  });
+
+  it("runs commands sequentially (reset before checkout before clean)", async () => {
+    const { revertChanges } = await import("../../../src/agent/review.js");
+
+    const commandOrder: string[] = [];
+    mockExecFile.mockImplementation(
+      ((_cmd: string, args: string[], _opts: unknown, cb: Function) => {
+        commandOrder.push((args as string[])[0]);
+        cb(null, "", "");
+      }) as typeof execFile,
+    );
+
+    await revertChanges("/project");
+
+    expect(commandOrder).toEqual(["reset", "checkout", "clean"]);
+  });
 });
