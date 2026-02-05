@@ -1402,9 +1402,9 @@
             {
               "id": "37bb211e-c06e-46f3-9a4f-c3ffc3ea0f1b",
               "title": "Add unit tests for hench agent retry logic",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Test isTransientError, computeDelay, and buildRetryNotice functions",
+              "description": "Added 26 new tests (22 to 48) to cli-retry.test.ts covering isTransientError, computeDelay, and buildRetryNotice with comprehensive edge cases for network failures, API rate limits, multi-line errors, JSON error bodies, case sensitivity, word boundary matching, exponential backoff bounds, and retry notice formatting.",
               "acceptanceCriteria": [
                 "All retry logic functions have comprehensive unit tests",
                 "Edge cases like network failures and API rate limits are covered",
@@ -1415,14 +1415,16 @@
                 "testing",
                 "hench"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T02:20:23.658Z",
+              "completedAt": "2026-02-05T02:23:27.445Z"
             },
             {
               "id": "535c8b05-2ffb-4aa6-8f53-0daa04b29743",
               "title": "Add tests for task completion validation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Test formatValidationResult and completion criteria checking",
+              "description": "Tests for formatValidationResult and validateCompletion covering all edge cases: fallback values, multi-line formatting, timeout forwarding, cwd passthrough, combined options, early exit on no changes, and toolRexUpdateStatus integration for startingHead passthrough and rejection behavior.",
               "acceptanceCriteria": [
                 "Task completion validation logic is fully tested",
                 "Invalid completion states are properly handled",
@@ -1433,7 +1435,9 @@
                 "testing",
                 "hench"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T02:15:22.097Z",
+              "completedAt": "2026-02-05T02:20:06.495Z"
             },
             {
               "id": "cbf8d781-850e-4d81-92ce-ca854d2f1408",
@@ -1649,9 +1653,9 @@
             {
               "id": "b391da9f-7f72-4cc1-b109-3dd428ad9dbb",
               "title": "Build test discovery engine",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Find relevant test files for source code changes and handle deduplication",
+              "description": "Find relevant test files for source code changes and handle deduplication. Implementation uses two-level deduplication (candidate paths + result paths) with path normalization.",
               "acceptanceCriteria": [
                 "Finds co-located test files for known source files",
                 "Deduplicates when multiple source files map to the same test",
@@ -1663,7 +1667,9 @@
                 "findRelevantTests",
                 "buildRunSummary"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T02:31:58.601Z",
+              "completedAt": "2026-02-05T02:38:35.573Z"
             }
           ]
         },
@@ -1696,9 +1702,9 @@
             {
               "id": "a256b5ff-0d6d-4ec2-86fa-9583b479e5ac",
               "title": "Build scoped test commands",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Generate framework-specific commands to run only relevant test files",
+              "description": "Generate framework-specific commands to run only relevant test files. Fixed buildScopedCommand to preserve runner flags (e.g. jest --ci, mocha --recursive) and deduplicate vitest run subcommand. Added 9 new tests (32→41 in test-runner.test.ts).",
               "acceptanceCriteria": [
                 "Scopes vitest run to specific files",
                 "Scopes jest with -- separator",
@@ -1709,7 +1715,9 @@
               "tags": [
                 "buildScopedCommand"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T02:23:50.803Z",
+              "completedAt": "2026-02-05T02:31:37.226Z"
             },
             {
               "id": "7e3e8f1f-98c1-43a3-9a24-b6b92bd7662e",
@@ -3800,7 +3808,7 @@
             {
               "id": "79e45114-9bc1-4337-bfc7-c1c2e0d85a73",
               "title": "Enhance input validation with helpful errors",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Provide clear error messages with suggestions for invalid inputs",
               "acceptanceCriteria": [
@@ -3813,7 +3821,9 @@
               "tags": [
                 "safeParseInt"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T02:55:22.200Z",
+              "completedAt": "2026-02-05T02:57:24.199Z"
             },
             {
               "id": "3b8274e5-b7e0-411d-ab94-c31cfc6d606a",
@@ -4018,9 +4028,9 @@
             {
               "id": "26961fc1-9711-4dee-beda-b698b1a48384",
               "title": "Add task failure handling",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Properly handle various task failure scenarios with appropriate status updates",
+              "description": "Properly handle various task failure scenarios with appropriate status updates.\n\n## Implementation\n\nAll three failure handling paths are implemented in `packages/hench/src/agent/loop.ts`:\n\n1. **Uncaught exception** (lines 325-334): catch block marks task as `deferred`, logs `task_failed` event\n2. **Timeout** (lines 315-323): when loop exits while still `running`, marks task as `deferred`, logs `task_failed` event  \n3. **Budget exceeded** (lines 222-234): per-turn budget check marks task as `pending` (recoverable), logs `budget_exceeded` event\n\nTests: `packages/hench/tests/unit/agent/task-failure.test.ts` (3 tests, all passing)",
               "acceptanceCriteria": [
                 "Marks task as deferred on uncaught exception and logs error",
                 "Marks task as deferred on timeout and logs error",
@@ -4030,7 +4040,9 @@
               "tags": [
                 "API loop task failure handling"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T02:12:18.093Z",
+              "completedAt": "2026-02-05T02:14:59.350Z"
             }
           ]
         },
@@ -7210,9 +7222,9 @@
             {
               "id": "b23b4a4a-12e0-4060-b5aa-dfc270ff0453",
               "title": "Define Notion level configuration",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Configure proper hierarchy mapping for all PRD levels in Notion",
+              "description": "Configure proper hierarchy mapping for all PRD levels in Notion. NOTION_LEVEL_CONFIG defines parentLevel and statusMap for all four levels (epic, feature, task, subtask). Each statusMap covers all five PRD statuses (pending, in_progress, completed, deferred, blocked) mapped to their Notion equivalents.",
               "acceptanceCriteria": [
                 "defines config for all four PRD levels",
                 "epics are top-level (no parent level)",
@@ -7223,7 +7235,9 @@
               "tags": [
                 "NOTION_LEVEL_CONFIG"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T02:39:00.285Z",
+              "completedAt": "2026-02-05T02:44:43.089Z"
             },
             {
               "id": "afaa20c0-b9db-440e-9374-773e37651b4f",
@@ -7509,9 +7523,9 @@
             {
               "id": "c2a3ad4a-1a4a-4467-a979-e067f3dc1c6b",
               "title": "Enhance document operations",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
-              "description": "Ensure robust document loading and saving across store implementations",
+              "description": "Ensured robust document loading and saving across store implementations. Added saveDocument validation to FileStore and NotionStore to prevent persisting invalid documents. Added 11 new tests covering: document loading, schema version checks, round-trip with deep hierarchies, round-trip with all optional fields, passthrough field preservation, invalid document rejection, and corrupt JSON handling.",
               "acceptanceCriteria": [
                 "loads a valid document",
                 "loads a valid document with schema version",
@@ -7524,7 +7538,9 @@
                 "FileStore",
                 "PRDStore"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T02:45:18.922Z",
+              "completedAt": "2026-02-05T02:54:33.629Z"
             },
             {
               "id": "7caae0b8-bb71-4374-a40d-8614a1b5080a",

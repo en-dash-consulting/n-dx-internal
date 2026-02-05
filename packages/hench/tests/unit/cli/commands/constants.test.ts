@@ -12,6 +12,8 @@ describe("safeParseInt", () => {
   it("throws CLIError for non-numeric values", () => {
     expect(() => safeParseInt("abc", "iterations")).toThrow(CLIError);
     expect(() => safeParseInt("abc", "iterations")).toThrow(/Invalid --iterations/);
+    expect(() => safeParseInt("", "iterations")).toThrow(CLIError);
+    expect(() => safeParseInt("  ", "iterations")).toThrow(CLIError);
   });
 
   it("throws CLIError for zero", () => {
@@ -25,17 +27,13 @@ describe("safeParseInt", () => {
   });
 
   it("includes the invalid value in the error message", () => {
-    try {
-      safeParseInt("abc", "iterations");
-    } catch (err) {
-      expect(err).toBeInstanceOf(CLIError);
-      expect((err as CLIError).message).toContain('"abc"');
-    }
+    expect(() => safeParseInt("abc", "iterations")).toThrow('"abc"');
   });
 
   it("includes positive integer suggestion", () => {
     try {
       safeParseInt("0", "max-turns");
+      expect.unreachable("should have thrown");
     } catch (err) {
       expect(err).toBeInstanceOf(CLIError);
       expect((err as CLIError).suggestion).toContain("positive integer");
