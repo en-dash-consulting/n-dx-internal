@@ -9,7 +9,7 @@ import {
   detectRunner,
   buildScopedCommand,
   runPostTaskTests,
-} from "../../../src/agent/test-runner.js";
+} from "../../../src/tools/test-runner.js";
 
 // ---------------------------------------------------------------------------
 // isTestFile
