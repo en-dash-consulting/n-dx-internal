@@ -179,4 +179,27 @@ describe("deriveNextSteps", () => {
     const unique = new Set(allRelated);
     expect(unique.size).toBe(allRelated.length);
   });
+
+  it("does not group anti-patterns of different severities", () => {
+    const findings = [
+      makeFinding({ severity: "warning", type: "anti-pattern", scope: "a", text: "Warning AP" }),
+      makeFinding({ severity: "info", type: "anti-pattern", scope: "a", text: "Info AP" }),
+    ];
+    const result = deriveNextSteps(makeZones(findings));
+    // Warning anti-pattern should create medium priority step
+    // Info anti-pattern should be skipped (not grouped with warning)
+    expect(result).toHaveLength(1);
+    expect(result[0].priority).toBe("medium");
+    expect(result[0].relatedFindings).toHaveLength(1);
+    expect(result[0].relatedFindings[0]).toBe(0);
+  });
+
+  it("skips info-severity anti-patterns entirely", () => {
+    const findings = [
+      makeFinding({ severity: "info", type: "anti-pattern", text: "Info anti-pattern" }),
+    ];
+    const result = deriveNextSteps(makeZones(findings));
+    // Info severity anti-patterns don't match any pass criteria
+    expect(result).toHaveLength(0);
+  });
 });

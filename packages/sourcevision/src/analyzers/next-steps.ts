@@ -55,10 +55,10 @@ export function deriveNextSteps(zones: Zones): NextStep[] {
 
     const related = [i];
     usedFindings.add(i);
-    // Group related anti-patterns in the same scope
+    // Group related anti-patterns in the same scope (must also be warning severity)
     for (let j = i + 1; j < findings.length; j++) {
       if (usedFindings.has(j)) continue;
-      if (findings[j].type === "anti-pattern" && findings[j].scope === f.scope) {
+      if (findings[j].type === "anti-pattern" && findings[j].severity === "warning" && findings[j].scope === f.scope) {
         related.push(j);
         usedFindings.add(j);
       }
