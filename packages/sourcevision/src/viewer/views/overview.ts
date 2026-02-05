@@ -1,11 +1,17 @@
 import { h } from "preact";
-import { useMemo } from "preact/hooks";
-import type { LoadedData } from "../types.js";
+import { useMemo, useState } from "preact/hooks";
+import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
+import type { Zone, Finding } from "../../schema/v1.js";
 import { BarChart } from "../components/mini-charts.js";
 import { CollapsibleSection } from "../components/collapsible-section.js";
+import { HealthGauge, PatternBadge, MetricCard } from "../components/health-gauge.js";
+import { ZoneMap, ZoneDetail } from "../components/zone-map.js";
+import { ZONE_COLORS } from "../components/constants.js";
 
 interface OverviewProps {
   data: LoadedData;
+  navigateTo?: NavigateTo;
+  onSelect?: (detail: DetailItem | null) => void;
 }
 
 const LANG_COLORS: Record<string, string> = {
@@ -21,8 +27,9 @@ const LANG_COLORS: Record<string, string> = {
   Go: "#00add8",
 };
 
-export function Overview({ data }: OverviewProps) {
-  const { manifest, inventory, imports, zones } = data;
+export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
+  const { manifest, inventory, imports, zones, components } = data;
+  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
 
   if (!manifest && !inventory && !imports && !zones) {
     return h("div", { class: "loading" }, "No data loaded. Use 'sourcevision serve' or drop files.");
@@ -32,37 +39,78 @@ export function Overview({ data }: OverviewProps) {
   const hasImports = imports && imports.edges.length > 0;
   const showGettingStarted = manifest && (!hasImports || !hasZones);
 
-  const stats: Array<{ value: string | number; label: string }> = [];
+  // Calculate overall health metrics
+  const healthMetrics = useMemo(() => {
+    if (!zones) return null;
 
-  if (inventory) {
-    stats.push(
-      { value: inventory.summary.totalFiles, label: "Files" },
-      { value: inventory.summary.totalLines.toLocaleString(), label: "Lines of Code" },
-      { value: Object.keys(inventory.summary.byLanguage).length, label: "Languages" }
+    const avgCohesion = zones.zones.length > 0
+      ? zones.zones.reduce((s, z) => s + z.cohesion, 0) / zones.zones.length
+      : 0;
+
+    const avgCoupling = zones.zones.length > 0
+      ? zones.zones.reduce((s, z) => s + z.coupling, 0) / zones.zones.length
+      : 0;
+
+    // Count patterns and antipatterns from findings
+    const patterns: string[] = [];
+    const antipatterns: string[] = [];
+
+    // High cohesion zones
+    const highCohesionZones = zones.zones.filter(z => z.cohesion >= 0.8);
+    if (highCohesionZones.length > zones.zones.length / 2) {
+      patterns.push("Well-structured modules");
+    }
+
+    // Low coupling zones
+    const lowCouplingZones = zones.zones.filter(z => z.coupling <= 0.3);
+    if (lowCouplingZones.length > zones.zones.length / 2) {
+      patterns.push("Clean boundaries");
+    }
+
+    // Check for circular deps
+    if (imports && imports.summary.circularCount > 0) {
+      antipatterns.push(`${imports.summary.circularCount} circular deps`);
+    }
+
+    // Hub files (too many importers)
+    if (imports && imports.summary.mostImported.length > 0) {
+      const hubs = imports.summary.mostImported.filter(f => f.count > 10);
+      if (hubs.length > 0) {
+        antipatterns.push(`${hubs.length} hub file${hubs.length > 1 ? "s" : ""}`);
+      }
+    }
+
+    // Bidirectional coupling from findings
+    const bidirectionalFindings = (zones.findings ?? []).filter(
+      f => f.text.includes("Bidirectional")
     );
-  }
+    if (bidirectionalFindings.length > 0) {
+      antipatterns.push(`${bidirectionalFindings.length} bidirectional couplings`);
+    }
 
-  if (imports) {
-    stats.push(
-      { value: imports.summary.totalEdges, label: "Import Edges" },
-      { value: imports.summary.totalExternal, label: "External Packages" },
-      { value: imports.summary.circularCount, label: "Circular Deps" }
-    );
-  }
+    return { avgCohesion, avgCoupling, patterns, antipatterns };
+  }, [zones, imports]);
 
-  if (zones) {
-    stats.push(
-      { value: zones.zones.length, label: "Zones" },
-      { value: zones.crossings.length, label: "Zone Crossings" },
-      { value: zones.unzoned.length, label: "Unzoned Files" }
-    );
-  }
+  // Top zones by size
+  const topZones = useMemo(() => {
+    if (!zones) return [];
+    return [...zones.zones]
+      .sort((a, b) => b.files.length - a.files.length)
+      .slice(0, 5);
+  }, [zones]);
 
-  // Language bar chart data
+  // Zone with issues (low cohesion or high coupling)
+  const zonesWithIssues = useMemo(() => {
+    if (!zones) return [];
+    return zones.zones.filter(z => z.cohesion < 0.4 || z.coupling > 0.5);
+  }, [zones]);
+
+  // Language breakdown
   const langChartData = useMemo(() => {
     if (!inventory) return [];
     return Object.entries(inventory.summary.byLanguage)
       .sort(([, a], [, b]) => b - a)
+      .slice(0, 8)
       .map(([lang, count]) => ({
         label: lang,
         value: count,
@@ -70,176 +118,229 @@ export function Overview({ data }: OverviewProps) {
       }));
   }, [inventory]);
 
-  // Most imported bar chart (top 5)
-  const importChartData = useMemo(() => {
-    if (!imports?.summary.mostImported.length) return [];
-    return imports.summary.mostImported.slice(0, 5).map((f) => ({
-      label: f.path.split("/").pop() || f.path,
-      value: f.count,
-    }));
-  }, [imports]);
+  // Handle zone click from map
+  const handleZoneClick = (zoneId: string) => {
+    setSelectedZoneId(zoneId);
+  };
 
-  return h("div", null,
-    h("h2", { class: "section-header" }, "Overview"),
+  const selectedZone = selectedZoneId
+    ? zones?.zones.find(z => z.id === selectedZoneId)
+    : null;
+
+  return h("div", { class: "overview-container" },
+    // Header with project info
     manifest
-      ? h("p", { class: "section-sub" },
-          `Analyzed ${manifest.targetPath.split("/").pop()} `,
-          manifest.gitBranch ? `on ${manifest.gitBranch} ` : "",
-          manifest.gitSha ? `(${manifest.gitSha.slice(0, 7)}) ` : "",
-          `at ${new Date(manifest.analyzedAt).toLocaleString()}`
+      ? h("div", { class: "overview-header" },
+          h("h2", null, manifest.targetPath.split("/").pop()),
+          h("p", { class: "overview-meta" },
+            manifest.gitBranch ? `${manifest.gitBranch} ` : "",
+            manifest.gitSha ? `(${manifest.gitSha.slice(0, 7)}) \u2022 ` : "",
+            new Date(manifest.analyzedAt).toLocaleString()
+          )
         )
-      : null,
+      : h("h2", null, "Overview"),
 
-    // Getting Started card
+    // Getting Started guide for incomplete analysis
     showGettingStarted
       ? h("div", { class: "getting-started" },
           h("h3", null, "Getting Started"),
-          h("p", null, "Sourcevision analyzes your codebase in phases. Here's what to run next:"),
+          h("p", null, "Complete the analysis to see architectural insights:"),
           h("ol", null,
             !hasImports
-              ? h("li", null, h("code", null, "sourcevision analyze --phase=2"), " — Build the import graph")
+              ? h("li", null, h("code", null, "sourcevision analyze --phase=2"), " \u2014 Build import graph")
               : null,
             !hasZones
-              ? h("li", null, h("code", null, "sourcevision analyze --phase=3"), " — Detect architectural zones")
+              ? h("li", null, h("code", null, "sourcevision analyze --phase=3"), " \u2014 Detect zones")
               : null,
-            h("li", null, h("code", null, "sourcevision analyze"), " — Run all phases (including AI enrichment)"),
-          ),
-          h("p", { class: "text-dim mt-8", style: "font-size: 12px" },
-            "Use ", h("code", null, "--fast"), " to skip AI enrichment for quick structural analysis."
+            h("li", null, h("code", null, "sourcevision analyze --full"), " \u2014 Run full analysis"),
           ),
         )
       : null,
 
-    // Stats grid
-    h("div", { class: "stat-grid" },
-      stats.map((s, i) =>
-        h("div", { key: i, class: "stat-card" },
-          h("div", { class: "value" }, s.value),
-          h("div", { class: "label" }, s.label)
-        )
-      )
+    // Main metrics row
+    h("div", { class: "overview-metrics" },
+      inventory
+        ? h(MetricCard, {
+            value: inventory.summary.totalFiles,
+            label: "Files",
+          })
+        : null,
+      inventory
+        ? h(MetricCard, {
+            value: Math.round(inventory.summary.totalLines / 1000) + "k",
+            label: "Lines of Code",
+          })
+        : null,
+      zones
+        ? h(MetricCard, {
+            value: zones.zones.length,
+            label: "Zones",
+            color: "var(--accent)",
+          })
+        : null,
+      imports
+        ? h(MetricCard, {
+            value: imports.summary.circularCount,
+            label: "Circular Deps",
+            color: imports.summary.circularCount > 0 ? "var(--orange)" : "var(--green)",
+          })
+        : null
     ),
 
-    // Language breakdown — BarChart + collapsible table
-    inventory
-      ? h("div", null,
-          h("h3", { class: "section-header-sm mt-24" },
-            "Languages"
-          ),
-          h(BarChart, { data: langChartData }),
-          h(CollapsibleSection, {
-            title: "Language Details",
-            count: langChartData.length,
-            defaultOpen: false,
-            threshold: 20,
-          },
-            h("table", { class: "data-table" },
-              h("thead", null,
-                h("tr", null,
-                  h("th", null, "Language"),
-                  h("th", null, "Files"),
-                  h("th", null, "% of Total")
+    // Architecture health section
+    healthMetrics && zones
+      ? h("div", { class: "overview-section" },
+          h("div", { class: "section-header-row" },
+            h("h3", null, "Architecture Health"),
+            zones.enrichmentPass
+              ? h("span", { class: "enrichment-badge" },
+                  `Pass ${zones.enrichmentPass}${zones.metaEvaluationCount ? ` + ${zones.metaEvaluationCount} meta` : ""}`
                 )
+              : null
+          ),
+
+          h("div", { class: "health-row" },
+            h(HealthGauge, {
+              value: healthMetrics.avgCohesion,
+              label: "Avg Cohesion",
+              size: 90,
+            }),
+            h(HealthGauge, {
+              value: healthMetrics.avgCoupling,
+              label: "Avg Coupling",
+              size: 90,
+              inverted: true,
+            }),
+            h("div", { class: "pattern-list" },
+              healthMetrics.patterns.map(p =>
+                h(PatternBadge, { key: p, type: "pattern", label: p })
               ),
-              h("tbody", null,
-                Object.entries(inventory.summary.byLanguage)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([lang, count]) =>
-                    h("tr", { key: lang },
-                      h("td", null, lang),
-                      h("td", null, count),
-                      h("td", null,
-                        `${((count / inventory.summary.totalFiles) * 100).toFixed(1)}%`
-                      )
-                    )
-                  )
+              healthMetrics.antipatterns.map(p =>
+                h(PatternBadge, { key: p, type: "antipattern", label: p })
               )
             )
           )
         )
       : null,
 
-    // Most imported files — BarChart + collapsible full list
-    imports?.summary.mostImported.length
-      ? h("div", null,
-          h("h3", { class: "section-header-sm mt-24" },
-            "Most Imported Files"
-          ),
-          h(BarChart, { data: importChartData }),
-          h(CollapsibleSection, {
-            title: "Full Import List",
-            count: imports.summary.mostImported.length,
-            defaultOpen: false,
-            threshold: 10,
-          },
-            h("table", { class: "data-table" },
-              h("thead", null,
-                h("tr", null,
-                  h("th", null, "File"),
-                  h("th", null, "Imported By")
-                )
-              ),
-              h("tbody", null,
-                imports.summary.mostImported.map((f) =>
-                  h("tr", { key: f.path },
-                    h("td", null, f.path),
-                    h("td", null, f.count)
+    // Zone Map visualization
+    zones && zones.zones.length > 0
+      ? h(ZoneMap, {
+          zones: zones.zones,
+          crossings: zones.crossings,
+          selectedZone: selectedZoneId,
+          onZoneClick: handleZoneClick,
+        })
+      : null,
+
+    // Two-column layout for details
+    h("div", { class: "overview-columns" },
+      // Left column - Languages
+      langChartData.length > 0
+        ? h("div", { class: "overview-col" },
+            h("h3", null, "Languages"),
+            h(BarChart, { data: langChartData })
+          )
+        : null,
+
+      // Right column - Top Zones
+      topZones.length > 0
+        ? h("div", { class: "overview-col" },
+            h("h3", null, "Largest Zones"),
+            h("div", { class: "top-zones-list" },
+              topZones.map((zone, i) => {
+                const globalIdx = zones!.zones.indexOf(zone);
+                const color = ZONE_COLORS[globalIdx % ZONE_COLORS.length];
+
+                return h("div", {
+                  key: zone.id,
+                  class: "top-zone-item",
+                  onClick: () => handleZoneClick(zone.id),
+                },
+                  h("span", { class: "zone-dot", style: `background: ${color}` }),
+                  h("span", { class: "zone-name" }, zone.name),
+                  h("span", { class: "zone-files" }, `${zone.files.length} files`)
+                );
+              })
+            )
+          )
+        : null
+    ),
+
+    // Zones needing attention
+    zonesWithIssues.length > 0
+      ? h("div", { class: "overview-section" },
+          h("h3", null, "Zones Needing Attention"),
+          h("div", { class: "attention-list" },
+            zonesWithIssues.slice(0, 5).map(zone => {
+              const issues: string[] = [];
+              if (zone.cohesion < 0.4) issues.push(`Low cohesion (${zone.cohesion.toFixed(2)})`);
+              if (zone.coupling > 0.5) issues.push(`High coupling (${zone.coupling.toFixed(2)})`);
+
+              return h("div", { key: zone.id, class: "attention-item" },
+                h("span", { class: "attention-name" }, zone.name),
+                h("span", { class: "attention-issues" },
+                  issues.map(issue =>
+                    h("span", { key: issue, class: "issue-tag" }, issue)
                   )
                 )
-              )
-            )
+              );
+            }),
+            zonesWithIssues.length > 5
+              ? h("div", { class: "attention-more" },
+                  `+${zonesWithIssues.length - 5} more zones`
+                )
+              : null
           )
         )
       : null,
 
-    // Circular dependencies
+    // Key insights from zones
+    zones?.insights && zones.insights.length > 0
+      ? h(CollapsibleSection, {
+          title: "Key Insights",
+          count: zones.insights.length,
+          defaultOpen: true,
+          threshold: 10,
+        },
+          ...zones.insights.slice(0, 10).map((insight, i) =>
+            h("div", { key: i, class: "insight-item" }, insight)
+          ),
+          zones.insights.length > 10
+            ? h("div", { class: "insight-more" },
+                `+${zones.insights.length - 10} more insights in zones.json`
+              )
+            : null
+        )
+      : null,
+
+    // Circular dependencies (if any)
     imports?.summary.circulars.length
       ? h(CollapsibleSection, {
-          title: `Circular Dependencies`,
+          title: "Circular Dependencies",
           count: imports.summary.circularCount,
           defaultOpen: true,
           threshold: 5,
         },
           ...imports.summary.circulars.map((c, i) =>
-            h("div", {
-              key: i,
-              class: "circular-dep-block",
-            },
+            h("div", { key: i, class: "circular-dep-block" },
               c.cycle.join(" \u2192 ") + " \u2192 " + c.cycle[0]
             )
           )
         )
       : null,
 
-    // Module status
-    manifest
-      ? h("div", null,
-          h("h3", { class: "section-header-sm mt-24" },
-            "Module Status"
-          ),
-          h("table", { class: "data-table" },
-            h("thead", null,
-              h("tr", null,
-                h("th", null, "Module"),
-                h("th", null, "Status"),
-                h("th", null, "Completed")
-              )
-            ),
-            h("tbody", null,
-              Object.entries(manifest.modules).map(([name, info]) =>
-                h("tr", { key: name },
-                  h("td", null, name),
-                  h("td", null,
-                    h("span", {
-                      class: `tag tag-${info.status === "complete" ? "test" : info.status === "error" ? "other" : "source"}`,
-                    }, info.status)
-                  ),
-                  h("td", null, info.completedAt ? new Date(info.completedAt).toLocaleTimeString() : "\u2014")
-                )
-              )
-            )
-          )
-        )
+    // Zone detail popup
+    selectedZone && zones
+      ? h(ZoneDetail, {
+          zone: selectedZone,
+          crossings: zones.crossings,
+          allZones: zones.zones,
+          onClose: () => setSelectedZoneId(null),
+          onFileClick: navigateTo
+            ? (path) => navigateTo("files", { file: path })
+            : undefined,
+        })
       : null
   );
 }

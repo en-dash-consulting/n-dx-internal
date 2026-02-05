@@ -59,7 +59,7 @@ describe("sourcevision serve (e2e)", () => {
     const htmlRes = await fetch(`http://localhost:${port}/`);
     expect(htmlRes.status).toBe(200);
     const html = await htmlRes.text();
-    expect(html).toContain("Sourcevision");
+    expect(html).toContain("SourceVision");
     expect(html).toContain("<div id=\"app\"></div>");
 
     // Fetch data file list
