@@ -130,6 +130,7 @@ async function acceptProposals(
       level: "epic",
       status: "pending",
       source: p.epic.source,
+      description: p.epic.description,
     };
     await store.addItem(epicItem);
     addedCount++;

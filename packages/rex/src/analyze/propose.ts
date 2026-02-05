@@ -19,7 +19,7 @@ export interface ProposalFeature {
 }
 
 export interface Proposal {
-  epic: { title: string; source: string };
+  epic: { title: string; source: string; description?: string };
   features: ProposalFeature[];
 }
 
@@ -49,6 +49,47 @@ function inferEpic(result: ScanResult): string {
         : "Documentation";
 }
 
+/**
+ * Derive a descriptive title from a file path by taking the basename,
+ * stripping extensions, and converting to title case.
+ */
+function titleFromPath(filePath: string): string {
+  // Extract the file name: strip directories
+  const parts = filePath.split("/");
+  const base = parts[parts.length - 1] || filePath;
+  // Strip extensions (including .test.ts, .spec.tsx, etc.)
+  const name = base
+    .replace(/\.(test|spec)\.(ts|tsx|js|jsx)$/, "")
+    .replace(/\.(ts|tsx|js|jsx|json|md|txt|yaml|yml)$/, "");
+  // Convert kebab-case, snake_case, dots to spaces and title-case
+  return name
+    .replace(/[-_.]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
+}
+
+/**
+ * Compute tag overlap between two tag arrays. Returns the number of shared
+ * tags (case-insensitive), excluding the first tag (which is used for epic
+ * grouping).
+ */
+function tagOverlap(tagsA?: string[], tagsB?: string[]): number {
+  if (!tagsA || !tagsB || tagsA.length < 2 || tagsB.length < 2) return 0;
+  // Compare all tags (including first) for matching purposes
+  const setB = new Set(tagsB.map(normalize));
+  let count = 0;
+  for (const tag of tagsA) {
+    if (setB.has(normalize(tag))) count++;
+  }
+  return count;
+}
+
+interface EpicEntry {
+  source: string;
+  description?: string;
+  features: Map<string, { result: ScanResult; tasks: ScanResult[] }>;
+}
+
 export function buildProposals(results: ScanResult[]): Proposal[] {
   // Deduplicate within proposal set: merge near-duplicates by kind
   const deduped = deduplicateScanResults(results);
@@ -59,13 +100,15 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
   const tasks = deduped.filter((r) => r.kind === "task");
 
   // Group features and tasks by epic
-  const epicMap = new Map<string, { source: string; features: Map<string, { result: ScanResult; tasks: ScanResult[] }> }>();
+  const epicMap = new Map<string, EpicEntry>();
 
-  // Seed from explicit epics
+  // Seed from explicit epics (preserve description)
   for (const e of epics) {
-    if (!epicMap.has(normalize(e.name))) {
-      epicMap.set(normalize(e.name), {
+    const key = normalize(e.name);
+    if (!epicMap.has(key)) {
+      epicMap.set(key, {
         source: e.source,
+        description: e.description,
         features: new Map(),
       });
     }
@@ -84,7 +127,10 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
     }
   }
 
-  // Place tasks under features (match by tags or sourceFile)
+  // Place tasks under features using multi-strategy matching:
+  // 1. Exact sourceFile match (strongest signal)
+  // 2. Tag overlap match (semantic grouping)
+  // 3. Create implicit feature (fallback)
   for (const t of tasks) {
     const epicName = normalize(inferEpic(t));
     if (!epicMap.has(epicName)) {
@@ -92,7 +138,7 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
     }
     const epic = epicMap.get(epicName)!;
 
-    // Try to find a matching feature by sourceFile
+    // Strategy 1: exact sourceFile match
     let placed = false;
     for (const [, feat] of epic.features) {
       if (feat.result.sourceFile === t.sourceFile) {
@@ -102,13 +148,35 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
       }
     }
 
+    // Strategy 2: tag overlap — find the feature with the most shared tags
+    if (!placed && t.tags && t.tags.length > 0) {
+      let bestFeat: { result: ScanResult; tasks: ScanResult[] } | null = null;
+      let bestOverlap = 0;
+
+      for (const [, feat] of epic.features) {
+        const overlap = tagOverlap(t.tags, feat.result.tags);
+        if (overlap > bestOverlap) {
+          bestOverlap = overlap;
+          bestFeat = feat;
+        }
+      }
+
+      if (bestFeat && bestOverlap >= 1) {
+        bestFeat.tasks.push(t);
+        placed = true;
+      }
+    }
+
     if (!placed) {
-      // Create an implicit feature from the task's source file
-      const implicitName = normalize(t.sourceFile || t.name);
-      if (!epic.features.has(implicitName)) {
-        epic.features.set(implicitName, {
+      // Create an implicit feature with a descriptive title from the file path
+      const implicitKey = normalize(t.sourceFile || t.name);
+      if (!epic.features.has(implicitKey)) {
+        const implicitTitle = t.sourceFile
+          ? titleFromPath(t.sourceFile)
+          : t.name;
+        epic.features.set(implicitKey, {
           result: {
-            name: t.sourceFile || t.name,
+            name: implicitTitle,
             source: t.source,
             sourceFile: t.sourceFile,
             kind: "feature",
@@ -116,13 +184,16 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
           tasks: [],
         });
       }
-      epic.features.get(implicitName)!.tasks.push(t);
+      epic.features.get(implicitKey)!.tasks.push(t);
     }
   }
 
   // Build final proposals
   const proposals: Proposal[] = [];
   for (const [epicKey, epicData] of epicMap) {
+    // Skip empty epics that have no features
+    if (epicData.features.size === 0) continue;
+
     const featureList: ProposalFeature[] = [];
     for (const [, feat] of epicData.features) {
       // Sort tasks by priority
@@ -165,10 +236,15 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
     const epicTitle =
       epics.find((e) => normalize(e.name) === epicKey)?.name ??
       features.find((f) => normalize(inferEpic(f)) === epicKey)?.tags?.[0] ??
+      tasks.find((t) => normalize(inferEpic(t)) === epicKey)?.tags?.[0] ??
       epicKey;
 
     proposals.push({
-      epic: { title: epicTitle, source: epicData.source },
+      epic: {
+        title: epicTitle,
+        source: epicData.source,
+        description: epicData.description,
+      },
       features: featureList,
     });
   }

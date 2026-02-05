@@ -116,4 +116,115 @@ describe("buildProposals", () => {
     expect(proposals[0].features[0].tasks.length).toBe(1);
     expect(proposals[0].features[0].tasks[0].title).toBe("fix bug");
   });
+
+  it("matches tasks to features by shared tags within the same epic", () => {
+    const results: ScanResult[] = [
+      makeScanResult({ name: "Auth System", kind: "feature", tags: ["Auth", "security"], sourceFile: "auth.ts" }),
+      makeScanResult({ name: "validate JWT", kind: "task", tags: ["Auth", "security"], sourceFile: "jwt.ts" }),
+      makeScanResult({ name: "hash passwords", kind: "task", tags: ["Auth", "security"], sourceFile: "crypto.ts" }),
+    ];
+
+    const proposals = buildProposals(results);
+    const authEpic = proposals.find((p) => p.epic.title === "Auth");
+    expect(authEpic).toBeDefined();
+
+    const authFeature = authEpic!.features.find((f) => f.title === "Auth System");
+    expect(authFeature).toBeDefined();
+    // Tasks share tags with the feature, so they should be grouped under it
+    expect(authFeature!.tasks.length).toBe(2);
+  });
+
+  it("uses descriptive title for implicit features instead of raw file path", () => {
+    const results: ScanResult[] = [
+      makeScanResult({
+        name: "fix memory leak",
+        kind: "task",
+        tags: ["Performance"],
+        sourceFile: "src/utils/memory-handler.ts",
+      }),
+      makeScanResult({
+        name: "add cache invalidation",
+        kind: "task",
+        tags: ["Performance"],
+        sourceFile: "src/utils/memory-handler.ts",
+      }),
+    ];
+
+    const proposals = buildProposals(results);
+    expect(proposals.length).toBe(1);
+    const feat = proposals[0].features[0];
+    // Implicit feature should derive a descriptive title, not use the raw path
+    expect(feat.title).not.toBe("src/utils/memory-handler.ts");
+    expect(feat.title).toMatch(/Memory Handler/i);
+  });
+
+  it("propagates description from explicit epics to proposal epics", () => {
+    const results: ScanResult[] = [
+      makeScanResult({
+        name: "Infrastructure",
+        kind: "epic",
+        source: "sourcevision",
+        description: "Core infrastructure and build tooling",
+      }),
+      makeScanResult({
+        name: "CI Pipeline",
+        kind: "feature",
+        tags: ["Infrastructure"],
+        source: "sourcevision",
+      }),
+    ];
+
+    const proposals = buildProposals(results);
+    const infra = proposals.find((p) => p.epic.title === "Infrastructure");
+    expect(infra).toBeDefined();
+    // Epics should carry their descriptions through to proposals
+    expect(infra!.epic).toHaveProperty("description");
+    expect((infra!.epic as any).description).toBe("Core infrastructure and build tooling");
+  });
+
+  it("groups multiple orphan tasks from same file under one implicit feature", () => {
+    const results: ScanResult[] = [
+      makeScanResult({ name: "fix null pointer crash", kind: "task", tags: ["Backend"], sourceFile: "api/routes.ts" }),
+      makeScanResult({ name: "add request validation middleware", kind: "task", tags: ["Backend"], sourceFile: "api/routes.ts" }),
+      makeScanResult({ name: "implement rate limiting", kind: "task", tags: ["Backend"], sourceFile: "api/routes.ts" }),
+    ];
+
+    const proposals = buildProposals(results);
+    const backend = proposals.find((p) => p.epic.title === "Backend");
+    expect(backend).toBeDefined();
+    // All three tasks from the same file should be under one feature
+    expect(backend!.features.length).toBe(1);
+    expect(backend!.features[0].tasks.length).toBe(3);
+  });
+
+  it("preserves features without tasks (context-only features)", () => {
+    const results: ScanResult[] = [
+      makeScanResult({
+        name: "API Tests",
+        kind: "feature",
+        tags: ["Testing"],
+        source: "test",
+        description: "Test coverage: 5 test files",
+      }),
+    ];
+
+    const proposals = buildProposals(results);
+    expect(proposals.length).toBe(1);
+    expect(proposals[0].features[0].title).toBe("API Tests");
+    expect(proposals[0].features[0].tasks.length).toBe(0);
+    expect(proposals[0].features[0].description).toBe("Test coverage: 5 test files");
+  });
+
+  it("removes empty epics that have no features and no tasks", () => {
+    const results: ScanResult[] = [
+      makeScanResult({ name: "Empty Epic", kind: "epic", source: "sourcevision" }),
+      makeScanResult({ name: "Real Feature", kind: "feature", tags: ["Other"], source: "sourcevision" }),
+    ];
+
+    const proposals = buildProposals(results);
+    // The empty epic has no features, so it should be filtered out
+    expect(proposals.some((p) => p.epic.title === "Empty Epic")).toBe(false);
+    expect(proposals.length).toBe(1);
+    expect(proposals[0].features[0].title).toBe("Real Feature");
+  });
 });
