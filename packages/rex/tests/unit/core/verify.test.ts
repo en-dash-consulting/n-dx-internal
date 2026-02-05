@@ -221,6 +221,39 @@ describe("findTestFiles", () => {
     expect(files).toEqual(["auth.spec.js"]);
   });
 
+  it("finds .test.tsx files", async () => {
+    writeFileSync(join(tmp, "Button.test.tsx"), "");
+    const files = await findTestFiles(tmp);
+    expect(files).toEqual(["Button.test.tsx"]);
+  });
+
+  it("finds _test.ts files", async () => {
+    writeFileSync(join(tmp, "utils_test.ts"), "");
+    const files = await findTestFiles(tmp);
+    expect(files).toEqual(["utils_test.ts"]);
+  });
+
+  it("finds _spec.tsx files", async () => {
+    writeFileSync(join(tmp, "Component_spec.tsx"), "");
+    const files = await findTestFiles(tmp);
+    expect(files).toEqual(["Component_spec.tsx"]);
+  });
+
+  it("rejects regular source files", async () => {
+    writeFileSync(join(tmp, "index.ts"), "");
+    writeFileSync(join(tmp, "utils.js"), "");
+    writeFileSync(join(tmp, "README.md"), "");
+    const files = await findTestFiles(tmp);
+    expect(files).toHaveLength(0);
+  });
+
+  it("rejects files with test in directory name but not filename", async () => {
+    mkdirSync(join(tmp, "tests"), { recursive: true });
+    writeFileSync(join(tmp, "tests", "helpers.ts"), "");
+    const files = await findTestFiles(tmp);
+    expect(files).toHaveLength(0);
+  });
+
   it("skips node_modules", async () => {
     mkdirSync(join(tmp, "node_modules", "pkg"), { recursive: true });
     writeFileSync(join(tmp, "node_modules", "pkg", "index.test.ts"), "");

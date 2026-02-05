@@ -79,8 +79,8 @@ export interface VerifyResult {
 
 const DEFAULT_TIMEOUT = 120_000;
 
-/** Common test file patterns. */
-const TEST_FILE_RE = /\.(test|spec)\.[jt]sx?$/;
+/** Common test file patterns — matches *.test.ts, *.spec.js, *_test.ts, etc. */
+const TEST_FILE_RE = /[._](test|spec)\.[jt]sx?$/;
 
 /** Words to ignore when matching criteria to file names. */
 const STOP_WORDS = new Set([
