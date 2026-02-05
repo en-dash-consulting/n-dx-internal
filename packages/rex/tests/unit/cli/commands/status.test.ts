@@ -482,6 +482,103 @@ describe("cmdStatus", () => {
     });
   });
 
+  describe("blocked items show blockedBy", () => {
+    it("shows blockedBy IDs for blocked leaf items", async () => {
+      const prd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "t1",
+            title: "Blocked Task",
+            level: "task",
+            status: "blocked",
+            blockedBy: ["dep-1", "dep-2"],
+          },
+        ],
+      };
+      writePRD(tmp, prd);
+      await cmdStatus(tmp, {});
+      const out = output();
+
+      expect(out).toContain("Blocked Task");
+      expect(out).toContain("(blocked by: dep-1, dep-2)");
+    });
+
+    it("shows blockedBy on blocked parent items", async () => {
+      const prd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "e1",
+            title: "Blocked Epic",
+            level: "epic",
+            status: "blocked",
+            blockedBy: ["external-123"],
+            children: [
+              {
+                id: "t1",
+                title: "Child Task",
+                level: "task",
+                status: "pending",
+              },
+            ],
+          },
+        ],
+      };
+      writePRD(tmp, prd);
+      await cmdStatus(tmp, {});
+      const out = output();
+
+      expect(out).toContain("(blocked by: external-123)");
+    });
+
+    it("does not show blockedBy for non-blocked items", async () => {
+      const prd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "t1",
+            title: "Pending Task",
+            level: "task",
+            status: "pending",
+            blockedBy: ["dep-1"],
+          },
+        ],
+      };
+      writePRD(tmp, prd);
+      await cmdStatus(tmp, {});
+      const out = output();
+
+      expect(out).toContain("Pending Task");
+      expect(out).not.toContain("blocked by:");
+    });
+
+    it("does not show blockedBy for blocked items with empty array", async () => {
+      const prd: PRDDocument = {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "t1",
+            title: "Blocked No Deps",
+            level: "task",
+            status: "blocked",
+            blockedBy: [],
+          },
+        ],
+      };
+      writePRD(tmp, prd);
+      await cmdStatus(tmp, {});
+      const out = output();
+
+      expect(out).toContain("Blocked No Deps");
+      expect(out).not.toContain("blocked by:");
+    });
+  });
+
   describe("default format matches tree format", () => {
     it("produces same output as --format=tree", async () => {
       writePRD(tmp, POPULATED_PRD);

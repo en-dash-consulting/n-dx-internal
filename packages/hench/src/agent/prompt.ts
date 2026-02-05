@@ -22,7 +22,8 @@ export function buildSystemPrompt(
     lines.push("7. Stay within the project directory. Do not access files outside it.\n");
   } else {
     lines.push("6. Update the task status when you're done.");
-    lines.push("7. If you're blocked, log the issue and defer the task.");
+    lines.push("7. If blocked by an external dependency, set status to 'blocked' and log the blocker.");
+    lines.push("   If postponing by choice, set status to 'deferred'.");
     lines.push("8. Never modify .hench/, .rex/, or .git/ files directly.");
     lines.push("9. Use rex_append_log to record significant actions and decisions.");
     lines.push("10. If a task is too large, use rex_add_subtask to break it down.\n");

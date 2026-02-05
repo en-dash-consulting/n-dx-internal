@@ -155,6 +155,15 @@ async function runChecks(dir: string): Promise<{
         (s) => `"${s.itemId}": ${s.reason}`,
       ),
     });
+
+    if (structural.warnings.length > 0) {
+      checks.push({
+        name: "blocked item dependencies",
+        pass: false,
+        severity: "warn",
+        errors: structural.warnings,
+      });
+    }
   }
 
   return { checks, doc };

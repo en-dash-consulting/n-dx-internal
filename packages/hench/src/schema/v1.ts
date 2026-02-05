@@ -159,6 +159,7 @@ export interface TaskBriefTask {
   acceptanceCriteria?: string[];
   priority?: string;
   tags?: string[];
+  blockedBy?: string[];
 }
 
 export interface TaskBriefParent {

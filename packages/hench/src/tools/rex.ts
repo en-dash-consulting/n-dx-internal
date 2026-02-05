@@ -20,7 +20,7 @@ export async function toolRexUpdateStatus(
   params: { status: string },
   options?: UpdateStatusOptions,
 ): Promise<string> {
-  const validStatuses = ["pending", "in_progress", "completed", "deferred"];
+  const validStatuses = ["pending", "in_progress", "completed", "deferred", "blocked"];
   if (!validStatuses.includes(params.status)) {
     throw new Error(
       `Invalid status "${params.status}". Valid: ${validStatuses.join(", ")}`,

@@ -42,6 +42,9 @@ export async function cmdNext(
   result(`  ID:     ${item.id}`);
   info(`  Status: ${item.status}`);
   if (item.priority) info(`  Priority: ${item.priority}`);
+  if (item.blockedBy && item.blockedBy.length > 0) {
+    info(`  Blocked by: ${item.blockedBy.join(", ")}`);
+  }
   if (item.description) info(`\n  ${item.description}`);
   if (item.acceptanceCriteria && item.acceptanceCriteria.length > 0) {
     info("\n  Acceptance Criteria:");

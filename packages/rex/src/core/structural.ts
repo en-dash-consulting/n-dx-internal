@@ -19,6 +19,8 @@ export interface StuckItem {
 export interface StructuralResult {
   valid: boolean;
   errors: string[];
+  /** Non-fatal issues (e.g. blocked items without blockedBy). */
+  warnings: string[];
   orphanedItems: OrphanedItem[];
   cycles: string[][];
   stuckItems: StuckItem[];
@@ -40,12 +42,16 @@ const DEFAULT_STUCK_THRESHOLD_MS = 48 * 60 * 60 * 1000; // 48 hours
  * 1. Orphaned items — placed at a level that violates the hierarchy rules
  * 2. Circular blockedBy references — cycles in the dependency graph
  * 3. Stuck tasks — in_progress for too long or missing startedAt
+ *
+ * Warns:
+ * - Items with status "blocked" but no blockedBy dependencies
  */
 export function validateStructure(
   items: PRDItem[],
   options: StructuralOptions = {},
 ): StructuralResult {
   const errors: string[] = [];
+  const warnings: string[] = [];
   const orphanedItems = findOrphanedItems(items);
   const cycles = findCycles(items);
   const stuckItems = findStuckItems(items, options);
@@ -60,9 +66,24 @@ export function validateStructure(
     errors.push(`Stuck: "${stuck.itemId}" — ${stuck.reason}`);
   }
 
+  // Warn about blocked items with no recorded dependencies
+  for (const { item } of walkTree(items)) {
+    if (
+      item.status === "blocked" &&
+      (!item.blockedBy || item.blockedBy.length === 0)
+    ) {
+      warnings.push(
+        `Blocked without dependencies: "${item.id}" (${item.title}) — ` +
+        `status is "blocked" but blockedBy is empty. Consider adding dependency IDs ` +
+        `or recording the blocker reason in the description.`,
+      );
+    }
+  }
+
   return {
     valid: errors.length === 0,
     errors,
+    warnings,
     orphanedItems,
     cycles,
     stuckItems,

@@ -121,6 +121,15 @@ export async function cmdValidate(
         (s) => `"${s.itemId}": ${s.reason}`,
       ),
     });
+
+    if (structural.warnings.length > 0) {
+      checks.push({
+        name: "blocked item dependencies",
+        pass: false,
+        severity: "warn",
+        errors: structural.warnings,
+      });
+    }
   }
 
   // Determine pass/fail: warnings don't cause failure

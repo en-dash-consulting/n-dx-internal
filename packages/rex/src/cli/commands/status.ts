@@ -67,6 +67,14 @@ function timestampSuffix(item: PRDItem): string {
   return "";
 }
 
+/** Build a suffix showing blockedBy dependency IDs for blocked items. */
+function blockedBySuffix(item: PRDItem): string {
+  if (item.status !== "blocked" || !item.blockedBy || item.blockedBy.length === 0) {
+    return "";
+  }
+  return ` (blocked by: ${item.blockedBy.join(", ")})`;
+}
+
 /** Format a coverage suffix for a task with acceptance criteria. */
 function coverageSuffix(itemId: string, coverage?: CoverageMap): string {
   if (!coverage) return "";
@@ -96,6 +104,7 @@ export function renderTree(
     const priority = item.priority ? ` [${item.priority}]` : "";
     const ts = timestampSuffix(item);
     const cov = coverageSuffix(item.id, coverage);
+    const blocked = blockedBySuffix(item);
 
     if (item.children && item.children.length > 0) {
       const stats = computeStats(item.children);
@@ -106,16 +115,16 @@ export function renderTree(
         const pct = Math.round(ratio * 100);
         const bar = renderProgressBar(ratio);
         lines.push(
-          `${prefix}${icon} ${item.title}${priority} ${bar} ${pct}% ${count}`,
+          `${prefix}${icon} ${item.title}${priority} ${bar} ${pct}% ${count}${blocked}`,
         );
       } else {
         lines.push(
-          `${prefix}${icon} ${item.title}${priority} ${count}${ts}`,
+          `${prefix}${icon} ${item.title}${priority} ${count}${ts}${blocked}`,
         );
       }
       lines.push(...renderTree(item.children, indent + 1, coverage));
     } else {
-      lines.push(`${prefix}${icon} ${item.title}${priority}${cov}${ts}`);
+      lines.push(`${prefix}${icon} ${item.title}${priority}${cov}${ts}${blocked}`);
     }
   }
   return lines;

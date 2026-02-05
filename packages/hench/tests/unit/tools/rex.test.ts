@@ -100,6 +100,24 @@ describe("toolRexUpdateStatus", () => {
     );
   });
 
+  it("accepts blocked as valid status", async () => {
+    const store = mockStore();
+    store.getItem.mockResolvedValue({
+      id: "task-1",
+      title: "Test task",
+      status: "pending",
+      level: "task",
+    });
+    const result = await toolRexUpdateStatus(store, "task-1", {
+      status: "blocked",
+    });
+    expect(result).toContain("blocked");
+    expect(store.updateItem).toHaveBeenCalledWith(
+      "task-1",
+      expect.objectContaining({ status: "blocked" }),
+    );
+  });
+
   it("rejects invalid status", async () => {
     const store = mockStore();
     await expect(

@@ -297,6 +297,63 @@ describe("validateStructure", () => {
     });
   });
 
+  describe("blocked items without blockedBy", () => {
+    it("warns about blocked item with no blockedBy", () => {
+      const items: PRDItem[] = [
+        makeItem({ id: "t1", title: "Mystery blocker", status: "blocked" }),
+      ];
+      const result = validateStructure(items);
+      expect(result.warnings.length).toBe(1);
+      expect(result.warnings[0]).toContain("t1");
+      expect(result.warnings[0]).toContain("blockedBy is empty");
+    });
+
+    it("warns about blocked item with empty blockedBy array", () => {
+      const items: PRDItem[] = [
+        makeItem({ id: "t1", title: "Empty deps", status: "blocked", blockedBy: [] }),
+      ];
+      const result = validateStructure(items);
+      expect(result.warnings.length).toBe(1);
+    });
+
+    it("does not warn about blocked item with blockedBy populated", () => {
+      const items: PRDItem[] = [
+        makeItem({ id: "t1", title: "Properly blocked", status: "blocked", blockedBy: ["dep-1"] }),
+        makeItem({ id: "dep-1", title: "Dependency" }),
+      ];
+      const result = validateStructure(items);
+      expect(result.warnings).toEqual([]);
+    });
+
+    it("does not warn about non-blocked items", () => {
+      const items: PRDItem[] = [
+        makeItem({ id: "t1", title: "Normal pending", status: "pending" }),
+        makeItem({ id: "t2", title: "In progress", status: "in_progress" }),
+        makeItem({ id: "t3", title: "Done", status: "completed" }),
+        makeItem({ id: "t4", title: "Deferred", status: "deferred" }),
+      ];
+      const result = validateStructure(items);
+      expect(result.warnings).toEqual([]);
+    });
+
+    it("warnings do not affect valid flag", () => {
+      const items: PRDItem[] = [
+        makeItem({
+          id: "e1",
+          title: "Epic",
+          level: "epic",
+          children: [
+            makeItem({ id: "t1", title: "Mystery blocker", status: "blocked" }),
+          ],
+        }),
+      ];
+      const result = validateStructure(items);
+      // Warnings are non-fatal; result should still be valid
+      expect(result.valid).toBe(true);
+      expect(result.warnings.length).toBe(1);
+    });
+  });
+
   describe("aggregate result", () => {
     it("returns valid true when no issues", () => {
       const items: PRDItem[] = [

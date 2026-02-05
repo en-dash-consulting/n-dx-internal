@@ -22,7 +22,7 @@ export interface AssembleBriefOptions {
 // ---------------------------------------------------------------------------
 
 /** Statuses that cannot be worked on. */
-const NON_ACTIONABLE_STATUSES = new Set(["completed", "deferred"]);
+const NON_ACTIONABLE_STATUSES = new Set(["completed", "deferred", "blocked"]);
 
 /** Thrown when an explicitly-selected task cannot be worked on. */
 export class TaskNotActionableError extends Error {
@@ -47,6 +47,14 @@ function buildSuggestion(status: string, taskId: string): string {
       "or pick a different task with 'n-dx work --task=<ID>'."
     );
   }
+  if (status === "blocked") {
+    return (
+      `This task is blocked and cannot proceed until its dependencies are resolved.\n` +
+      `To unblock it, run:\n` +
+      `  rex update ${taskId} --status=pending\n` +
+      "Then run 'n-dx work' again."
+    );
+  }
   // deferred
   return (
     `This task has been deferred. To reactivate it, run:\n` +
@@ -65,6 +73,7 @@ function itemToTaskBrief(item: PRDItem): TaskBriefTask {
     acceptanceCriteria: item.acceptanceCriteria,
     priority: item.priority,
     tags: item.tags,
+    blockedBy: item.blockedBy,
   };
 }
 
@@ -192,6 +201,9 @@ export function formatTaskBrief(brief: TaskBrief): string {
   sections.push(`ID: ${brief.task.id}`);
   sections.push(`Status: ${brief.task.status}`);
   if (brief.task.priority) sections.push(`Priority: ${brief.task.priority}`);
+  if (brief.task.blockedBy?.length) {
+    sections.push(`Blocked by: ${brief.task.blockedBy.join(", ")}`);
+  }
   if (brief.task.description) sections.push(`\nDescription:\n${brief.task.description}`);
   if (brief.task.acceptanceCriteria?.length) {
     sections.push("\nAcceptance Criteria:");

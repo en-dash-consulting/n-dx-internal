@@ -123,6 +123,23 @@ describe("formatTaskBrief", () => {
     expect(output).toContain("task_started");
     expect(output).toContain("Starting work");
   });
+
+  it("includes blockedBy when present", () => {
+    const brief: TaskBrief = {
+      ...minimalBrief,
+      task: {
+        ...minimalBrief.task,
+        blockedBy: ["dep-1", "dep-2"],
+      },
+    };
+    const output = formatTaskBrief(brief);
+    expect(output).toContain("Blocked by: dep-1, dep-2");
+  });
+
+  it("omits blockedBy when not present", () => {
+    const output = formatTaskBrief(minimalBrief);
+    expect(output).not.toContain("Blocked by:");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -265,6 +282,32 @@ describe("assembleTaskBrief — invalid task selection", () => {
     }
   });
 
+  it("throws TaskNotActionableError for a blocked task", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "blocked-1",
+        title: "Waiting on API",
+        status: "blocked",
+        level: "task",
+        blockedBy: ["dep-1"],
+      },
+    ];
+    const store = mockStore(items);
+
+    await expect(assembleTaskBrief(store, "blocked-1")).rejects.toThrow(TaskNotActionableError);
+
+    try {
+      await assembleTaskBrief(store, "blocked-1");
+    } catch (err) {
+      const e = err as TaskNotActionableError;
+      expect(e.status).toBe("blocked");
+      expect(e.taskId).toBe("blocked-1");
+      expect(e.message).toContain("blocked");
+      expect(e.suggestion).toContain("blocked");
+      expect(e.suggestion).toContain("rex update");
+    }
+  });
+
   it("allows pending tasks through", async () => {
     const items: PRDItem[] = [
       {
@@ -314,5 +357,21 @@ describe("assembleTaskBrief — invalid task selection", () => {
       const e = err as TaskNotActionableError;
       expect(e.message).toContain("Setup CI pipeline");
     }
+  });
+
+  it("includes blockedBy in task brief", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Depends on dep",
+        status: "pending",
+        level: "task",
+        blockedBy: ["dep-1"],
+      },
+    ];
+    const store = mockStore(items);
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.task.blockedBy).toEqual(["dep-1"]);
   });
 });

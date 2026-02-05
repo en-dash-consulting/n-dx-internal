@@ -74,6 +74,13 @@ describe("buildSystemPrompt", () => {
       expect(prompt).toContain("completed");
     });
 
+    it("distinguishes blocked from deferred in guidance", () => {
+      const config = { ...DEFAULT_HENCH_CONFIG(), provider: "api" as const };
+      const prompt = buildSystemPrompt(project, config);
+      expect(prompt).toContain("blocked");
+      expect(prompt).toContain("deferred");
+    });
+
     it("includes allowed commands in tool notes", () => {
       const config = { ...DEFAULT_HENCH_CONFIG(), provider: "api" as const };
       const prompt = buildSystemPrompt(project, config);
