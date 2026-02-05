@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   formatTaskBrief,
   assembleTaskBrief,
+  getActionableTasks,
   TaskNotActionableError,
 } from "../../../src/agent/brief.js";
 import type { TaskBrief } from "../../../src/schema/v1.js";
@@ -412,5 +413,595 @@ describe("assembleTaskBrief — invalid task selection", () => {
 
     const { brief } = await assembleTaskBrief(store, "task-1");
     expect(brief.task.blockedBy).toEqual(["dep-1"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// assembleTaskBrief — auto-selection and context assembly
+// ---------------------------------------------------------------------------
+
+describe("assembleTaskBrief — auto-selection", () => {
+  it("selects the first actionable task when no taskId provided", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "First task",
+        status: "pending",
+        level: "task",
+      },
+      {
+        id: "task-2",
+        title: "Second task",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    const { taskId, brief } = await assembleTaskBrief(store);
+    expect(taskId).toBe("task-1");
+    expect(brief.task.title).toBe("First task");
+  });
+
+  it("selects in_progress task over pending when auto-selecting", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Pending task",
+        status: "pending",
+        level: "task",
+      },
+      {
+        id: "task-2",
+        title: "In progress task",
+        status: "in_progress",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    const { taskId, brief } = await assembleTaskBrief(store);
+    expect(taskId).toBe("task-2");
+    expect(brief.task.status).toBe("in_progress");
+  });
+
+  it("skips completed tasks during auto-selection", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Completed task",
+        status: "completed",
+        level: "task",
+      },
+      {
+        id: "task-2",
+        title: "Actionable task",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    const { taskId } = await assembleTaskBrief(store);
+    expect(taskId).toBe("task-2");
+  });
+
+  it("throws when no actionable tasks exist", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Completed",
+        status: "completed",
+        level: "task",
+      },
+      {
+        id: "task-2",
+        title: "Also completed",
+        status: "completed",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    await expect(assembleTaskBrief(store)).rejects.toThrow("No actionable tasks found in PRD");
+  });
+
+  it("throws when task not found with explicit taskId", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Existing task",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    await expect(assembleTaskBrief(store, "non-existent")).rejects.toThrow(
+      "Task not found: non-existent",
+    );
+  });
+
+  it("excludeTaskIds marks tasks as completed for dependency resolution", async () => {
+    // If a task is blocked by another task and we mark the blocker as excluded/completed,
+    // the blocked task becomes actionable because its dependency is considered resolved.
+    // This is used for skipping stuck tasks - if a task is stuck, its dependents can
+    // still make progress.
+    const items: PRDItem[] = [
+      {
+        id: "blocker-task",
+        title: "Blocker task",
+        status: "pending",
+        level: "task",
+        priority: "low", // Lower priority so blocked-task wins when both are actionable
+      },
+      {
+        id: "blocked-task",
+        title: "Blocked task",
+        status: "pending",
+        level: "task",
+        priority: "high",
+        blockedBy: ["blocker-task"],
+      },
+    ];
+    const store = mockStore(items);
+
+    // Without exclusion, blocked-task is not actionable because blocker-task isn't done
+    const { taskId: firstSelection } = await assembleTaskBrief(store);
+    expect(firstSelection).toBe("blocker-task");
+
+    // With blocker excluded, its ID is treated as "completed" for dependency resolution.
+    // Now blocked-task has its dependency resolved and becomes actionable.
+    // Since blocked-task has higher priority, it gets selected.
+    const { taskId: withExclusion } = await assembleTaskBrief(store, undefined, {
+      excludeTaskIds: new Set(["blocker-task"]),
+    });
+    expect(withExclusion).toBe("blocked-task");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// assembleTaskBrief — context assembly verification
+// ---------------------------------------------------------------------------
+
+describe("assembleTaskBrief — context assembly", () => {
+  it("includes task priority in brief", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "High priority task",
+        status: "pending",
+        level: "task",
+        priority: "high",
+      },
+    ];
+    const store = mockStore(items);
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.task.priority).toBe("high");
+  });
+
+  it("includes task tags in brief", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Tagged task",
+        status: "pending",
+        level: "task",
+        tags: ["frontend", "auth"],
+      },
+    ];
+    const store = mockStore(items);
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.task.tags).toEqual(["frontend", "auth"]);
+  });
+
+  it("includes task description in brief", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Described task",
+        status: "pending",
+        level: "task",
+        description: "This is a detailed description of the task",
+      },
+    ];
+    const store = mockStore(items);
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.task.description).toBe("This is a detailed description of the task");
+  });
+
+  it("includes acceptance criteria in brief", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Task with criteria",
+        status: "pending",
+        level: "task",
+        acceptanceCriteria: ["Criterion 1", "Criterion 2"],
+      },
+    ];
+    const store = mockStore(items);
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.task.acceptanceCriteria).toEqual(["Criterion 1", "Criterion 2"]);
+  });
+
+  it("assembles parent chain correctly", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic One",
+        level: "epic",
+        status: "in_progress",
+        description: "Epic description",
+        children: [
+          {
+            id: "feat-1",
+            title: "Feature One",
+            level: "feature",
+            status: "in_progress",
+            description: "Feature description",
+            children: [
+              {
+                id: "task-1",
+                title: "Task One",
+                level: "task",
+                status: "pending",
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.parentChain).toHaveLength(2);
+    expect(brief.parentChain[0]).toEqual({
+      id: "epic-1",
+      title: "Epic One",
+      level: "epic",
+      description: "Epic description",
+    });
+    expect(brief.parentChain[1]).toEqual({
+      id: "feat-1",
+      title: "Feature One",
+      level: "feature",
+      description: "Feature description",
+    });
+  });
+
+  it("assembles siblings correctly", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "feat-1",
+        title: "Feature",
+        level: "feature",
+        status: "in_progress",
+        children: [
+          {
+            id: "task-1",
+            title: "First Task",
+            level: "task",
+            status: "pending",
+          },
+          {
+            id: "task-2",
+            title: "Second Task",
+            level: "task",
+            status: "completed",
+          },
+          {
+            id: "task-3",
+            title: "Third Task",
+            level: "task",
+            status: "pending",
+          },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.siblings).toHaveLength(2);
+    expect(brief.siblings).toContainEqual({
+      id: "task-2",
+      title: "Second Task",
+      status: "completed",
+    });
+    expect(brief.siblings).toContainEqual({
+      id: "task-3",
+      title: "Third Task",
+      status: "pending",
+    });
+  });
+
+  it("includes project configuration in brief", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Task",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const store: PRDStore = {
+      ...mockStore(items),
+      loadConfig: async () => ({
+        schema: "rex/v1",
+        project: "test-project",
+        adapter: "file",
+        validate: "npm run typecheck",
+        test: "npm test",
+      }),
+    };
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.project).toEqual({
+      name: "test-project",
+      validateCommand: "npm run typecheck",
+      testCommand: "npm test",
+    });
+  });
+
+  it("includes workflow in brief when available", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Task",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const store: PRDStore = {
+      ...mockStore(items),
+      loadWorkflow: async () => "1. Read code\n2. Make changes\n3. Test",
+    };
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.workflow).toBe("1. Read code\n2. Make changes\n3. Test");
+  });
+
+  it("handles missing workflow gracefully", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Task",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const store: PRDStore = {
+      ...mockStore(items),
+      loadWorkflow: async () => {
+        throw new Error("ENOENT: workflow.md not found");
+      },
+    };
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.workflow).toBe("");
+  });
+
+  it("includes recent log entries in brief", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Task",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const logEntries = [
+      { timestamp: "2025-01-01T10:00:00Z", event: "task_started", detail: "Started task-0" },
+      { timestamp: "2025-01-01T11:00:00Z", event: "task_completed", detail: "Finished task-0" },
+      { timestamp: "2025-01-01T12:00:00Z", event: "status_changed", detail: "Task-1 now pending" },
+    ];
+    const store: PRDStore = {
+      ...mockStore(items),
+      readLog: async () => logEntries,
+    };
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.recentLog).toHaveLength(3);
+    expect(brief.recentLog[0]).toEqual({
+      timestamp: "2025-01-01T10:00:00Z",
+      event: "task_started",
+      detail: "Started task-0",
+    });
+  });
+
+  it("maps log entries without detail correctly", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Task",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const logEntries = [
+      { timestamp: "2025-01-01T10:00:00Z", event: "system_init" },
+    ];
+    const store: PRDStore = {
+      ...mockStore(items),
+      readLog: async () => logEntries,
+    };
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.recentLog[0]).toEqual({
+      timestamp: "2025-01-01T10:00:00Z",
+      event: "system_init",
+      detail: undefined,
+    });
+  });
+
+  it("handles root-level tasks with no siblings from other parents", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Root Task 1",
+        level: "task",
+        status: "pending",
+      },
+      {
+        id: "task-2",
+        title: "Root Task 2",
+        level: "task",
+        status: "pending",
+      },
+    ];
+    const store = mockStore(items);
+
+    const { brief } = await assembleTaskBrief(store, "task-1");
+    expect(brief.parentChain).toHaveLength(0);
+    expect(brief.siblings).toHaveLength(1);
+    expect(brief.siblings[0]).toEqual({
+      id: "task-2",
+      title: "Root Task 2",
+      status: "pending",
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getActionableTasks
+// ---------------------------------------------------------------------------
+
+describe("getActionableTasks", () => {
+  it("returns actionable tasks sorted by priority", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Low priority",
+        status: "pending",
+        level: "task",
+        priority: "low",
+      },
+      {
+        id: "task-2",
+        title: "High priority",
+        status: "pending",
+        level: "task",
+        priority: "high",
+      },
+      {
+        id: "task-3",
+        title: "Medium priority",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    const tasks = await getActionableTasks(store);
+    expect(tasks[0].id).toBe("task-2"); // high
+    expect(tasks[1].id).toBe("task-3"); // medium (default)
+    expect(tasks[2].id).toBe("task-1"); // low
+  });
+
+  it("excludes completed and deferred tasks", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Completed",
+        status: "completed",
+        level: "task",
+      },
+      {
+        id: "task-2",
+        title: "Deferred",
+        status: "deferred",
+        level: "task",
+      },
+      {
+        id: "task-3",
+        title: "Pending",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    const tasks = await getActionableTasks(store);
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].id).toBe("task-3");
+  });
+
+  it("respects the limit parameter", async () => {
+    const items: PRDItem[] = [
+      { id: "task-1", title: "Task 1", status: "pending", level: "task" },
+      { id: "task-2", title: "Task 2", status: "pending", level: "task" },
+      { id: "task-3", title: "Task 3", status: "pending", level: "task" },
+      { id: "task-4", title: "Task 4", status: "pending", level: "task" },
+      { id: "task-5", title: "Task 5", status: "pending", level: "task" },
+    ];
+    const store = mockStore(items);
+
+    const tasks = await getActionableTasks(store, 2);
+    expect(tasks).toHaveLength(2);
+  });
+
+  it("includes parent chain in formatted output", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Epic",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          {
+            id: "feat-1",
+            title: "Feature",
+            level: "feature",
+            status: "in_progress",
+            children: [
+              {
+                id: "task-1",
+                title: "Task",
+                level: "task",
+                status: "pending",
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const store = mockStore(items);
+
+    const tasks = await getActionableTasks(store);
+    expect(tasks[0].parentChain).toBe("Epic > Feature");
+  });
+
+  it("returns empty array when no actionable tasks", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "Done",
+        status: "completed",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    const tasks = await getActionableTasks(store);
+    expect(tasks).toEqual([]);
+  });
+
+  it("includes priority defaulting to medium", async () => {
+    const items: PRDItem[] = [
+      {
+        id: "task-1",
+        title: "No priority set",
+        status: "pending",
+        level: "task",
+      },
+    ];
+    const store = mockStore(items);
+
+    const tasks = await getActionableTasks(store);
+    expect(tasks[0].priority).toBe("medium");
   });
 });
