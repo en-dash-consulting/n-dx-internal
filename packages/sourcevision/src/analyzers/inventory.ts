@@ -537,6 +537,8 @@ export interface InventoryStats {
   changed: number;
   added: number;
   deleted: number;
+  /** Files whose mtime/size changed but content hash stayed the same (e.g. `touch`) */
+  touched: number;
 }
 
 export interface InventoryResult extends Inventory {
@@ -567,6 +569,7 @@ export async function analyzeInventory(
   let cached = 0;
   let changed = 0;
   let added = 0;
+  let touched = 0;
 
   for (const relPath of filePaths) {
     const fullPath = join(absDir, relPath);
@@ -575,14 +578,14 @@ export async function analyzeInventory(
 
     const prevEntry = prevMap.get(relPath);
 
-    // If previous entry exists and mtime matches, reuse it
-    if (prevEntry && prevEntry.lastModified === mtime) {
+    // Cache hit: reuse entry when both mtime and size match
+    if (prevEntry && prevEntry.lastModified === mtime && prevEntry.size === st.size) {
       files.push(prevEntry);
       cached++;
       continue;
     }
 
-    // Otherwise, read and process the file
+    // Cache miss: read and process the file
     const buf = await readFile(fullPath);
     const hash = createHash("sha256").update(buf).digest("hex");
     const language = detectLanguage(relPath);
@@ -609,10 +612,17 @@ export async function analyzeInventory(
       lastModified: mtime,
     });
 
-    changedFiles.add(relPath);
     if (prevEntry) {
-      changed++;
+      if (prevEntry.hash === hash) {
+        // Mtime/size changed but content is identical (e.g. `touch`, rebuild).
+        // Don't flag as changed — downstream phases need not re-process.
+        touched++;
+      } else {
+        changedFiles.add(relPath);
+        changed++;
+      }
     } else {
+      changedFiles.add(relPath);
       added++;
     }
   }
@@ -632,7 +642,7 @@ export async function analyzeInventory(
   const result: InventoryResult = sortInventory({ files, summary }) as InventoryResult;
 
   if (prev) {
-    result.stats = { cached, changed, added, deleted };
+    result.stats = { cached, changed, added, deleted, touched };
     result.changedFiles = changedFiles;
   }
 

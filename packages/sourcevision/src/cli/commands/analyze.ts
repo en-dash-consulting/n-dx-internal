@@ -95,7 +95,9 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
 
       const stats = inventoryResult.stats;
       if (stats) {
-        info(`  ${inventoryResult.files.length} files (${stats.cached} cached, ${stats.changed} changed, ${stats.added} new, ${stats.deleted} deleted) → ${outPath}`);
+        const parts = [`${stats.cached} cached`, `${stats.changed} changed`, `${stats.added} new`, `${stats.deleted} deleted`];
+        if (stats.touched > 0) parts.push(`${stats.touched} touched`);
+        info(`  ${inventoryResult.files.length} files (${parts.join(", ")}) → ${outPath}`);
       } else {
         info(`  ${inventoryResult.files.length} files cataloged → ${outPath}`);
       }

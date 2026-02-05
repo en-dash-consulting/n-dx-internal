@@ -197,6 +197,7 @@ describe("analyzeInventory (incremental)", () => {
     expect(second.stats!.changed).toBe(0);
     expect(second.stats!.added).toBe(0);
     expect(second.stats!.deleted).toBe(0);
+    expect(second.stats!.touched).toBe(0);
     expect(second.changedFiles?.size).toBe(0);
 
     // Output should have same file data
@@ -253,6 +254,49 @@ describe("analyzeInventory (incremental)", () => {
 
     expect(second.stats!.deleted).toBe(1);
     expect(second.files.length).toBe(1);
+  });
+
+  it("detects touched-but-unchanged files (mtime changed, content identical)", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-inc-touch-"));
+    await writeFile(join(tmpDir, "a.ts"), "const a = 1;\n");
+
+    const first = await analyzeInventory(tmpDir) as InventoryResult;
+
+    // Simulate `touch` — rewrite identical content after a short delay
+    await new Promise((r) => setTimeout(r, 50));
+    await writeFile(join(tmpDir, "a.ts"), "const a = 1;\n");
+
+    const second = await analyzeInventory(tmpDir, { previousInventory: first }) as InventoryResult;
+
+    expect(second.stats!.touched).toBe(1);
+    expect(second.stats!.changed).toBe(0);
+    expect(second.stats!.cached).toBe(0);
+    // Touched files should NOT appear in changedFiles (downstream doesn't need to reprocess)
+    expect(second.changedFiles?.has("a.ts")).toBe(false);
+    // But hash should still be correct
+    expect(second.files.find((f) => f.path === "a.ts")!.hash).toBe(
+      first.files.find((f) => f.path === "a.ts")!.hash,
+    );
+  });
+
+  it("invalidates cache when size changes even if mtime stays the same", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-inc-size-"));
+    await writeFile(join(tmpDir, "a.ts"), "const a = 1;\n");
+
+    const first = await analyzeInventory(tmpDir) as InventoryResult;
+    const entry = first.files.find((f) => f.path === "a.ts")!;
+
+    // Construct a fake previous inventory with matching mtime but wrong size
+    const fakeEntry = { ...entry, size: entry.size + 100 };
+    const fakePrev = { files: [fakeEntry], summary: first.summary };
+
+    const second = await analyzeInventory(tmpDir, { previousInventory: fakePrev }) as InventoryResult;
+
+    // Should NOT be cached since size doesn't match
+    expect(second.stats!.cached).toBe(0);
+    // File is touched (mtime matches via the real stat, content hash matches)
+    // but was re-read due to size mismatch — exact classification depends on hash
+    expect(second.files.find((f) => f.path === "a.ts")!.hash).toBe(entry.hash);
   });
 
   it("produces identical file data as full run for changed files", async () => {

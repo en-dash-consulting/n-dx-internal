@@ -3241,7 +3241,7 @@
             {
               "id": "842e4e87-f444-47d0-b44c-6340f0d339ab",
               "title": "Enhance incremental inventory analysis",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Improve incremental analysis with change detection",
               "acceptanceCriteria": [
@@ -3251,7 +3251,9 @@
               "tags": [
                 "analyzeInventory"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T19:23:19.470Z",
+              "completedAt": "2026-02-05T19:29:49.257Z"
             },
             {
               "id": "e4b1322b-0533-4d46-9ede-431ed316a6d0",
