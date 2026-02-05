@@ -227,4 +227,129 @@ describe("buildProposals", () => {
     expect(proposals.length).toBe(1);
     expect(proposals[0].features[0].title).toBe("Real Feature");
   });
+
+  it("uses explicit epic field to group features and tasks", () => {
+    const results: ScanResult[] = [
+      makeScanResult({ name: "Login Form", kind: "feature", epic: "Authentication", sourceFile: "login.ts" }),
+      makeScanResult({ name: "validate credentials", kind: "task", epic: "Authentication", sourceFile: "login.ts" }),
+      makeScanResult({ name: "Dashboard Widget", kind: "feature", epic: "UI", sourceFile: "widget.ts" }),
+    ];
+
+    const proposals = buildProposals(results);
+    expect(proposals.length).toBe(2);
+
+    const authEpic = proposals.find((p) => p.epic.title === "Authentication");
+    expect(authEpic).toBeDefined();
+    expect(authEpic!.features.some((f) => f.title === "Login Form")).toBe(true);
+
+    const uiEpic = proposals.find((p) => p.epic.title === "UI");
+    expect(uiEpic).toBeDefined();
+  });
+
+  it("explicit epic field takes precedence over tag-based inference", () => {
+    const results: ScanResult[] = [
+      makeScanResult({
+        name: "Metrics Collector",
+        kind: "feature",
+        tags: ["Monitoring"],  // Would infer epic "Monitoring"
+        epic: "Observability",  // But explicit epic overrides
+        sourceFile: "metrics.ts",
+      }),
+    ];
+
+    const proposals = buildProposals(results);
+    expect(proposals.length).toBe(1);
+    // Should use the explicit epic, not the tag
+    expect(proposals[0].epic.title).toBe("Observability");
+  });
+
+  it("places tasks under cross-epic features when sourceFile matches", () => {
+    const results: ScanResult[] = [
+      // Feature in "Backend" epic
+      makeScanResult({ name: "API Routes", kind: "feature", tags: ["Backend"], sourceFile: "api/routes.ts" }),
+      // Task that infers to "Frontend" epic but shares sourceFile with Backend feature
+      makeScanResult({ name: "add CORS header", kind: "task", tags: ["Frontend"], sourceFile: "api/routes.ts" }),
+    ];
+
+    const proposals = buildProposals(results);
+    const backend = proposals.find((p) => p.epic.title === "Backend");
+    expect(backend).toBeDefined();
+
+    const apiFeature = backend!.features.find((f) => f.title === "API Routes");
+    expect(apiFeature).toBeDefined();
+    // Task should be placed under the cross-epic feature due to sourceFile match
+    expect(apiFeature!.tasks.length).toBe(1);
+    expect(apiFeature!.tasks[0].title).toBe("add CORS header");
+  });
+
+  it("sorts features by feature-level priority when they have no tasks", () => {
+    const results: ScanResult[] = [
+      makeScanResult({
+        name: "Low Priority Feature",
+        kind: "feature",
+        tags: ["Project"],
+        priority: "low",
+        sourceFile: "low.ts",
+      }),
+      makeScanResult({
+        name: "Critical Feature",
+        kind: "feature",
+        tags: ["Project"],
+        priority: "critical",
+        sourceFile: "critical.ts",
+      }),
+    ];
+
+    const proposals = buildProposals(results);
+    expect(proposals.length).toBe(1);
+    // Critical feature should come first
+    expect(proposals[0].features[0].title).toBe("Critical Feature");
+    expect(proposals[0].features[1].title).toBe("Low Priority Feature");
+  });
+
+  it("excludes epic tag from tag overlap to avoid false matches", () => {
+    // Both items share the "Auth" epic tag but have no other tag overlap.
+    // The task should NOT be placed under the feature by tag matching
+    // (it should create an implicit feature instead).
+    const results: ScanResult[] = [
+      makeScanResult({ name: "OAuth Provider", kind: "feature", tags: ["Auth", "oauth"], sourceFile: "oauth.ts" }),
+      makeScanResult({ name: "fix session bug", kind: "task", tags: ["Auth", "sessions"], sourceFile: "session.ts" }),
+    ];
+
+    const proposals = buildProposals(results);
+    const authEpic = proposals.find((p) => p.epic.title === "Auth");
+    expect(authEpic).toBeDefined();
+
+    const oauthFeature = authEpic!.features.find((f) => f.title === "OAuth Provider");
+    expect(oauthFeature).toBeDefined();
+    // Task has no tag overlap beyond the epic tag, so it should NOT be under OAuth Provider
+    expect(oauthFeature!.tasks.length).toBe(0);
+    // Instead it should be under an implicit feature
+    expect(authEpic!.features.length).toBe(2);
+  });
+
+  it("sorts proposals by highest-priority feature when features have own priority", () => {
+    const results: ScanResult[] = [
+      makeScanResult({
+        name: "Nice to have",
+        kind: "feature",
+        tags: ["Low"],
+        priority: "low",
+        sourceFile: "low.ts",
+      }),
+      makeScanResult({
+        name: "Critical fix",
+        kind: "feature",
+        tags: ["High"],
+        priority: "critical",
+        sourceFile: "high.ts",
+      }),
+    ];
+
+    const proposals = buildProposals(results);
+    expect(proposals.length).toBe(2);
+    // Proposal with critical feature should come first
+    expect(proposals[0].epic.title).toBe("High");
+    expect(proposals[1].epic.title).toBe("Low");
+  });
 });

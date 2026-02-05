@@ -35,6 +35,10 @@ function normalize(s: string): string {
 }
 
 function inferEpic(result: ScanResult): string {
+  // Explicit epic field takes precedence (set by scanners or LLM)
+  if (result.epic) {
+    return result.epic;
+  }
   // Use first tag as epic grouping (scanners set this to directory-inferred epic)
   if (result.tags && result.tags.length > 0) {
     return result.tags[0];
@@ -70,15 +74,15 @@ function titleFromPath(filePath: string): string {
 
 /**
  * Compute tag overlap between two tag arrays. Returns the number of shared
- * tags (case-insensitive), excluding the first tag (which is used for epic
- * grouping).
+ * tags (case-insensitive), excluding the first tag of each (which is used
+ * for epic grouping) to avoid false matches on the epic tag alone.
  */
 function tagOverlap(tagsA?: string[], tagsB?: string[]): number {
   if (!tagsA || !tagsB || tagsA.length < 2 || tagsB.length < 2) return 0;
-  // Compare all tags (including first) for matching purposes
-  const setB = new Set(tagsB.map(normalize));
+  // Skip the first tag (epic tag) from both sets to avoid inflated matches
+  const setB = new Set(tagsB.slice(1).map(normalize));
   let count = 0;
-  for (const tag of tagsA) {
+  for (const tag of tagsA.slice(1)) {
     if (setB.has(normalize(tag))) count++;
   }
   return count;
@@ -88,6 +92,25 @@ interface EpicEntry {
   source: string;
   description?: string;
   features: Map<string, { result: ScanResult; tasks: ScanResult[] }>;
+}
+
+/**
+ * Compute effective priority for a feature by considering both its tasks'
+ * priorities and the feature's own priority from the scan result.
+ * Returns the numeric priority rank (lower = higher priority).
+ */
+function featurePriority(
+  feat: ProposalFeature,
+  scanPriority?: string,
+): number {
+  const taskPris = feat.tasks.map(
+    (t) => PRIORITY_ORDER[t.priority ?? "medium"] ?? 2,
+  );
+  // Include the feature-level priority from the scan result if available
+  if (scanPriority) {
+    taskPris.push(PRIORITY_ORDER[scanPriority] ?? 2);
+  }
+  return Math.min(...taskPris, 2);
 }
 
 export function buildProposals(results: ScanResult[]): Proposal[] {
@@ -114,6 +137,11 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
     }
   }
 
+  // Build a map of feature-level priorities from scan results so we can
+  // use them during sorting (features may have their own priority distinct
+  // from their child tasks).
+  const featPriorities = new Map<string, string>();
+
   // Place features under epics
   for (const f of features) {
     const epicName = normalize(inferEpic(f));
@@ -125,12 +153,16 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
     if (!epic.features.has(fKey)) {
       epic.features.set(fKey, { result: f, tasks: [] });
     }
+    if (f.priority) {
+      featPriorities.set(fKey, f.priority);
+    }
   }
 
   // Place tasks under features using multi-strategy matching:
-  // 1. Exact sourceFile match (strongest signal)
-  // 2. Tag overlap match (semantic grouping)
-  // 3. Create implicit feature (fallback)
+  // 1. Exact sourceFile match within same epic (strongest signal)
+  // 2. Tag overlap match within same epic (semantic grouping)
+  // 3. Cross-epic sourceFile match (file cohesion across epics)
+  // 4. Create implicit feature (fallback)
   for (const t of tasks) {
     const epicName = normalize(inferEpic(t));
     if (!epicMap.has(epicName)) {
@@ -138,7 +170,7 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
     }
     const epic = epicMap.get(epicName)!;
 
-    // Strategy 1: exact sourceFile match
+    // Strategy 1: exact sourceFile match within same epic
     let placed = false;
     for (const [, feat] of epic.features) {
       if (feat.result.sourceFile === t.sourceFile) {
@@ -164,6 +196,22 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
       if (bestFeat && bestOverlap >= 1) {
         bestFeat.tasks.push(t);
         placed = true;
+      }
+    }
+
+    // Strategy 3: cross-epic sourceFile match — if a feature in another epic
+    // shares the same sourceFile, place the task there for file cohesion
+    if (!placed && t.sourceFile) {
+      for (const [, otherEpic] of epicMap) {
+        if (otherEpic === epic) continue;
+        for (const [, feat] of otherEpic.features) {
+          if (feat.result.sourceFile === t.sourceFile) {
+            feat.tasks.push(t);
+            placed = true;
+            break;
+          }
+        }
+        if (placed) break;
       }
     }
 
@@ -219,22 +267,21 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
       });
     }
 
-    // Sort features: those with higher-priority tasks first
+    // Sort features: those with higher-priority content first.
+    // Consider both task priorities and feature-level priority from the
+    // scan result (features with no tasks use the feature's own priority).
     featureList.sort((a, b) => {
-      const aPri = Math.min(
-        ...a.tasks.map((t) => PRIORITY_ORDER[t.priority ?? "medium"] ?? 2),
-        2,
-      );
-      const bPri = Math.min(
-        ...b.tasks.map((t) => PRIORITY_ORDER[t.priority ?? "medium"] ?? 2),
-        2,
-      );
+      const aPri = featurePriority(a, featPriorities.get(normalize(a.title)));
+      const bPri = featurePriority(b, featPriorities.get(normalize(b.title)));
       return aPri - bPri;
     });
 
-    // Use original casing for epic title from the first entry
+    // Use original casing for epic title from the first entry.
+    // Check explicit epic fields, then explicit epic results, then tag inference.
     const epicTitle =
       epics.find((e) => normalize(e.name) === epicKey)?.name ??
+      features.find((f) => f.epic && normalize(f.epic) === epicKey)?.epic ??
+      tasks.find((t) => t.epic && normalize(t.epic) === epicKey)?.epic ??
       features.find((f) => normalize(inferEpic(f)) === epicKey)?.tags?.[0] ??
       tasks.find((t) => normalize(inferEpic(t)) === epicKey)?.tags?.[0] ??
       epicKey;
@@ -252,16 +299,10 @@ export function buildProposals(results: ScanResult[]): Proposal[] {
   // Sort proposals: those with higher-priority content first
   proposals.sort((a, b) => {
     const aPri = Math.min(
-      ...a.features.flatMap((f) =>
-        f.tasks.map((t) => PRIORITY_ORDER[t.priority ?? "medium"] ?? 2),
-      ),
-      2,
+      ...a.features.map((f) => featurePriority(f, featPriorities.get(normalize(f.title)))),
     );
     const bPri = Math.min(
-      ...b.features.flatMap((f) =>
-        f.tasks.map((t) => PRIORITY_ORDER[t.priority ?? "medium"] ?? 2),
-      ),
-      2,
+      ...b.features.map((f) => featurePriority(f, featPriorities.get(normalize(f.title)))),
     );
     return aPri - bPri;
   });

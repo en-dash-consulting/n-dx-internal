@@ -2426,7 +2426,7 @@
             {
               "id": "a25d13dc-417e-4020-939c-0a350f5e98de",
               "title": "Enhance proposal building logic",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Improve how scan results are organized into structured proposals",
               "acceptanceCriteria": [
@@ -2443,7 +2443,9 @@
                 "organization",
                 "structuring"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T19:40:16.303Z",
+              "completedAt": "2026-02-05T19:49:04.831Z"
             },
             {
               "id": "34bf31c6-1226-4d0e-8307-552724f1f123",

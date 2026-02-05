@@ -11,6 +11,8 @@ export interface ScanResult {
   acceptanceCriteria?: string[];
   priority?: Priority;
   tags?: string[];
+  /** Explicit epic name to group this result under (overrides tag-based inference) */
+  epic?: string;
 }
 
 export interface ScanOptions {
