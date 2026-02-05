@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import type { PRDStore } from "rex/dist/store/types.js";
 import type { HenchConfig, RetryConfig, RunRecord, ToolCallRecord, TurnTokenUsage } from "../schema/index.js";
@@ -75,6 +75,18 @@ export function buildRetryNotice(
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Get the current HEAD commit hash.
+ * Used to diff against after agent runs (in case agent commits changes).
+ */
+function getCurrentHead(cwd: string): string | undefined {
+  try {
+    return execFileSync("git", ["rev-parse", "HEAD"], { cwd, encoding: "utf-8" }).trim();
+  } catch {
+    return undefined;
+  }
 }
 
 /** @internal Exported for testing. */
@@ -346,6 +358,9 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
 
   await saveRun(henchDir, run);
 
+  // Capture HEAD before agent runs so we can diff against it even if agent commits
+  const startingHead = getCurrentHead(projectDir);
+
   const retryConfig: RetryConfig = config.retry ?? {
     maxRetries: 3,
     baseDelayMs: 2000,
@@ -387,8 +402,10 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
 
       if (!result.error) {
         // Validate completion: require meaningful changes
+        // Pass startingHead so we detect changes even if agent committed them
         const validation = await validateCompletion(projectDir, {
           testCommand: brief.project.testCommand,
+          startingHead,
         });
 
         run.turns = accumulatedTurns;
