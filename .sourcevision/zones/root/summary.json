@@ -1,0 +1,15 @@
+{
+  "id": "root",
+  "name": "Root",
+  "description": "3 files, primarily JavaScript",
+  "files": [
+    "ci.js",
+    "cli.js",
+    "config.js"
+  ],
+  "entryPoints": [],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 3,
+  "lineCount": 893
+}

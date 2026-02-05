@@ -1611,7 +1611,7 @@
             {
               "id": "9e736284-9681-4687-8c9e-051af3af0f79",
               "title": "Enhance test file detection patterns",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Support various test file naming conventions including .test.tsx, .spec.js, and _test.ts patterns",
               "acceptanceCriteria": [
@@ -1628,7 +1628,9 @@
                 "isTestFile",
                 "findTestFiles"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:30:12.311Z",
+              "completedAt": "2026-02-05T13:34:24.105Z"
             },
             {
               "id": "715dce2a-e706-4a7a-8ae8-0359bbe0520e",
@@ -5291,7 +5293,7 @@
             {
               "id": "3dab4b0e-3429-4212-943c-a0d99b906bf7",
               "title": "Enhanced JSON extraction",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Robust JSON extraction from mixed content",
               "acceptanceCriteria": [
@@ -5310,7 +5312,9 @@
                 "robustness",
                 "error-handling"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:34:47.297Z",
+              "completedAt": "2026-02-05T13:41:32.478Z"
             },
             {
               "id": "a6bae265-0984-4b7d-a133-5e36b6f0011d",
@@ -7417,7 +7421,7 @@
             {
               "id": "81c39b5e-f127-416a-9bec-674eaed34f01",
               "title": "Ensure round-trip fidelity",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Verify data integrity through complete mapping cycles",
               "acceptanceCriteria": [
@@ -7427,7 +7431,9 @@
               "tags": [
                 "mapNotionToItem"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:42:09.844Z",
+              "completedAt": "2026-02-05T13:47:56.510Z"
             }
           ]
         },
@@ -13625,7 +13631,7 @@
             {
               "id": "bc578874-916e-4148-b3de-84ddba2fbd54",
               "title": "Extract shared types to break circular dependencies",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create packages/hench/src/types/index.ts with shared interfaces like RunContext and ToolResult, then re-export from both CLI and core modules",
               "acceptanceCriteria": [
@@ -13638,7 +13644,9 @@
                 "hench-core",
                 "architecture"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:48:22.381Z",
+              "completedAt": "2026-02-05T13:54:48.374Z"
             },
             {
               "id": "2f741c6f-0af4-42cc-9bd4-84ec00aed789",
@@ -13689,7 +13697,7 @@
             {
               "id": "aba9ed56-1886-4097-9c55-1509c50cc327",
               "title": "Extract test-runner from agent directory",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Move test-runner.ts from agent/ to tools/ to remove implicit dependency on test framework and treat tests as external operations",
               "acceptanceCriteria": [
@@ -13702,7 +13710,9 @@
                 "hench-core",
                 "architecture"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T13:55:04.514Z",
+              "completedAt": "2026-02-05T14:00:35.251Z"
             },
             {
               "id": "43438e05-3a59-4719-94bf-363948ecdbb0",

@@ -1299,6 +1299,44 @@
       ]
     },
     {
+      "from": "packages/rex/src/analyze/guided.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/guided.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "spawnClaude",
+        "readProjectContext",
+        "parseProposalResponse",
+        "FEW_SHOT_EXAMPLE",
+        "DEFAULT_MODEL",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/guided.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "type",
+      "symbols": [
+        "ReasonResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/guided.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
+      ]
+    },
+    {
       "from": "packages/rex/src/analyze/index.ts",
       "to": "packages/rex/src/analyze/dedupe.ts",
       "type": "reexport",
@@ -1313,6 +1351,18 @@
       "type": "reexport",
       "symbols": [
         "formatDiff"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/guided.ts",
+      "type": "reexport",
+      "symbols": [
+        "GuidedContext",
+        "ClarifyResponse",
+        "runGuidedSpec",
+        "clarify",
+        "generateSpecFromContext"
       ]
     },
     {
@@ -1334,10 +1384,13 @@
         "FileFormat",
         "AddPromptOptions",
         "QualityIssue",
+        "ClaudeResult",
+        "ReasonResult",
         "DEFAULT_MODEL",
         "MAX_RETRIES",
         "CHUNK_CHAR_LIMIT",
         "FEW_SHOT_EXAMPLE",
+        "spawnClaude",
         "reasonFromFile",
         "reasonFromFiles",
         "reasonFromScanResults",
@@ -1347,6 +1400,9 @@
         "buildIdeasPrompt",
         "readProjectContext",
         "parseProposalResponse",
+        "parseTokenUsage",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
         "extractJson",
         "repairTruncatedJson",
         "validateProposalQuality",
@@ -1427,7 +1483,9 @@
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
-        "PRDItem"
+        "PRDItem",
+        "TokenUsage",
+        "AnalyzeTokenUsage"
       ]
     },
     {
@@ -1573,6 +1631,14 @@
     },
     {
       "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/analyze/guided.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
       "to": "packages/rex/src/analyze/index.ts",
       "type": "static",
       "symbols": [
@@ -1585,6 +1651,7 @@
         "deduplicateScanResults",
         "reasonFromFiles",
         "reasonFromScanResults",
+        "emptyAnalyzeTokenUsage",
         "formatDiff",
         "DEFAULT_MODEL"
       ]
@@ -1611,7 +1678,8 @@
       "to": "packages/rex/src/cli/errors.ts",
       "type": "static",
       "symbols": [
-        "CLIError"
+        "CLIError",
+        "BudgetExceededError"
       ]
     },
     {
@@ -1620,7 +1688,17 @@
       "type": "static",
       "symbols": [
         "info",
+        "warn",
         "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "preflightBudgetCheck",
+        "formatBudgetWarnings"
       ]
     },
     {
@@ -1629,7 +1707,8 @@
       "type": "type",
       "symbols": [
         "PRDItem",
-        "PRDDocument"
+        "PRDDocument",
+        "AnalyzeTokenUsage"
       ]
     },
     {
@@ -2019,7 +2098,8 @@
       "to": "packages/rex/src/cli/errors.ts",
       "type": "static",
       "symbols": [
-        "CLIError"
+        "CLIError",
+        "BudgetExceededError"
       ]
     },
     {
@@ -2028,8 +2108,28 @@
       "type": "static",
       "symbols": [
         "info",
+        "warn",
         "result",
         "isQuiet"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "aggregateTokenUsage",
+        "formatAggregateTokenUsage",
+        "checkBudget",
+        "formatBudgetWarnings"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsageFilter"
       ]
     },
     {
@@ -2202,6 +2302,68 @@
     },
     {
       "from": "packages/rex/src/cli/commands/update.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/usage.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/usage.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "BudgetExceededError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/usage.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "warn",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/usage.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "aggregateTokenUsage",
+        "formatAggregateTokenUsage",
+        "estimateCost",
+        "collectTokenEvents",
+        "groupByCommand",
+        "groupByTimePeriod",
+        "checkBudget",
+        "formatBudgetWarnings"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/usage.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "type",
+      "symbols": [
+        "AggregateTokenUsage",
+        "TokenUsageFilter",
+        "CommandTokenUsage",
+        "TimePeriod",
+        "PeriodBucket"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/usage.ts",
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
@@ -2423,6 +2585,14 @@
     {
       "from": "packages/rex/src/cli/index.ts",
       "to": "packages/rex/src/cli/commands/update.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/usage.ts",
       "type": "dynamic",
       "symbols": [
         "*"
@@ -2816,6 +2986,22 @@
       ]
     },
     {
+      "from": "packages/rex/src/core/token-usage.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "LogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/token-usage.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
       "from": "packages/rex/src/core/transitions.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
@@ -2861,7 +3047,10 @@
         "PRDItem",
         "PRDDocument",
         "RexConfig",
-        "LogEntry"
+        "BudgetThresholds",
+        "LogEntry",
+        "TokenUsage",
+        "AnalyzeTokenUsage"
       ]
     },
     {
@@ -3315,6 +3504,31 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/analyze/guided.test.ts",
+      "to": "packages/rex/src/analyze/guided.ts",
+      "type": "static",
+      "symbols": [
+        "clarify",
+        "generateSpecFromContext"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/guided.test.ts",
+      "to": "packages/rex/src/analyze/guided.ts",
+      "type": "type",
+      "symbols": [
+        "GuidedContext"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/guided.test.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "spawnClaude"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/analyze/propose.test.ts",
       "to": "packages/rex/src/analyze/propose.ts",
       "type": "static",
@@ -3423,6 +3637,33 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/analyze/token-tracking.test.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "parseTokenUsage",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/token-tracking.test.ts",
+      "to": "packages/rex/src/cli/commands/analyze.ts",
+      "type": "static",
+      "symbols": [
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/token-tracking.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/cli/commands/add.test.ts",
       "to": "packages/rex/src/cli/commands/add.ts",
       "type": "static",
@@ -3436,6 +3677,30 @@
       "type": "static",
       "symbols": [
         "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/analyze-guided.test.ts",
+      "to": "packages/rex/src/analyze/guided.ts",
+      "type": "static",
+      "symbols": [
+        "runGuidedSpec"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/analyze-guided.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/analyze-guided.test.ts",
+      "to": "packages/rex/src/cli/commands/analyze.ts",
+      "type": "static",
+      "symbols": [
+        "cmdAnalyze"
       ]
     },
     {
@@ -3590,6 +3855,23 @@
       "type": "type",
       "symbols": [
         "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/usage.test.ts",
+      "to": "packages/rex/src/cli/commands/usage.ts",
+      "type": "static",
+      "symbols": [
+        "cmdUsage"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/usage.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "RexConfig"
       ]
     },
     {
@@ -3885,6 +4167,46 @@
       "type": "static",
       "symbols": [
         "computeTimestampUpdates"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/token-usage.test.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "extractRexTokenUsage",
+        "extractHenchTokenUsage",
+        "extractSvTokenUsage",
+        "aggregateTokenUsage",
+        "formatAggregateTokenUsage",
+        "estimateCost",
+        "extractRexTokenEvents",
+        "extractHenchTokenEvents",
+        "extractSvTokenEvents",
+        "collectTokenEvents",
+        "groupByCommand",
+        "groupByTimePeriod",
+        "periodKey",
+        "checkBudget",
+        "formatBudgetWarnings"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/token-usage.test.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "type",
+      "symbols": [
+        "AggregateTokenUsage",
+        "TokenEvent",
+        "BudgetConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/token-usage.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "LogEntry"
       ]
     },
     {
@@ -4187,6 +4509,14 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/analyzers/claude-cli.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/analyzers/components.ts",
       "to": "packages/sourcevision/src/analyzers/route-detection.ts",
       "type": "static",
@@ -4262,7 +4592,72 @@
       "symbols": [
         "Zone",
         "Finding",
-        "FindingType"
+        "FindingType",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-per-zone.ts",
+      "to": "packages/sourcevision/src/analyzers/claude-cli.ts",
+      "type": "static",
+      "symbols": [
+        "tryCallClaude"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-per-zone.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "type": "static",
+      "symbols": [
+        "MAX_CONCURRENT_ZONES",
+        "PER_ZONE_MAX_FILES",
+        "PER_ZONE_MAX_CROSSINGS",
+        "IDLE_TIMEOUT_MS",
+        "OVERALL_TIMEOUT_MS",
+        "getPassConfig",
+        "computePerZoneAttemptConfigs"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-per-zone.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "type": "type",
+      "symbols": [
+        "PassConfig"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-per-zone.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "tryParseJSON",
+        "extractFindings",
+        "deduplicateZoneIds"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-per-zone.ts",
+      "to": "packages/sourcevision/src/analyzers/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-per-zone.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "Zone",
+        "ZoneCrossing",
+        "Zones",
+        "Finding",
+        "ZoneTokenUsage",
+        "AnalyzeTokenUsage"
       ]
     },
     {
@@ -4271,6 +4666,7 @@
       "type": "reexport",
       "symbols": [
         "tryCallClaude",
+        "parseStreamTokenUsage",
         "ClaudeCallResult"
       ]
     },
@@ -4291,6 +4687,10 @@
         "getPassConfig",
         "buildMetaPrompt",
         "computeAttemptConfigs",
+        "computePerZoneAttemptConfigs",
+        "MAX_CONCURRENT_ZONES",
+        "PER_ZONE_MAX_FILES",
+        "PER_ZONE_MAX_CROSSINGS",
         "PassConfig"
       ]
     },
@@ -4348,6 +4748,35 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-per-zone.ts",
+      "type": "reexport",
+      "symbols": [
+        "enrichZonesPerZone",
+        "computeZoneStructureHash",
+        "PerZoneEnrichResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/token-usage.ts",
+      "type": "reexport",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -4356,7 +4785,9 @@
         "Zone",
         "ZoneCrossing",
         "Zones",
-        "Finding"
+        "Finding",
+        "TokenUsage",
+        "AnalyzeTokenUsage"
       ]
     },
     {
@@ -4448,10 +4879,21 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/index.ts",
+      "to": "packages/sourcevision/src/analyzers/token-usage.ts",
+      "type": "reexport",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/index.ts",
       "to": "packages/sourcevision/src/analyzers/zones.ts",
       "type": "reexport",
       "symbols": [
-        "analyzeZones"
+        "analyzeZones",
+        "AnalyzeZonesResult"
       ]
     },
     {
@@ -4548,11 +4990,72 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/analyzers/token-usage.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace.ts",
+      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Zones",
+        "Zone",
+        "ZoneCrossing",
+        "SubAnalysisRef"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zone-output.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Zone",
+        "ZoneCrossing",
+        "Finding",
+        "ZoneSummary"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zone-output.ts",
+      "to": "packages/sourcevision/src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/analyzers/zones.ts",
       "to": "packages/sourcevision/src/analyzers/enrich.ts",
       "type": "static",
       "symbols": [
-        "enrichZonesWithAI"
+        "enrichZonesWithAI",
+        "enrichZonesPerZone"
       ]
     },
     {
@@ -4560,7 +5063,8 @@
       "to": "packages/sourcevision/src/analyzers/enrich.ts",
       "type": "type",
       "symbols": [
-        "EnrichResult"
+        "EnrichResult",
+        "PerZoneEnrichResult"
       ]
     },
     {
@@ -4577,6 +5081,25 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "promoteZones",
+        "promoteCrossings",
+        "getSubAnalyzedPrefixes",
+        "isSubAnalyzedFile"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "type",
+      "symbols": [
+        "SubAnalysis"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -4585,7 +5108,9 @@
         "Zone",
         "ZoneCrossing",
         "Zones",
-        "Finding"
+        "Finding",
+        "AnalyzeTokenUsage",
+        "SubAnalysisRef"
       ]
     },
     {
@@ -4649,8 +5174,37 @@
       "to": "packages/sourcevision/src/analyzers/manifest.ts",
       "type": "static",
       "symbols": [
+        "readManifest",
+        "writeManifest",
         "updateManifestModule",
         "updateManifestError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "detectSubAnalyses",
+        "buildSubAnalysisRefs"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/zone-output.ts",
+      "type": "static",
+      "symbols": [
+        "emitZoneOutputs"
       ]
     },
     {
@@ -4700,6 +5254,14 @@
       "symbols": [
         "DATA_FILES",
         "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "AnalyzeTokenUsage"
       ]
     },
     {
@@ -5088,6 +5650,23 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/viewer/components/zone-map.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/zone-map.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ZONE_COLORS"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/viewer/graph/renderer.ts",
       "to": "packages/sourcevision/src/viewer/graph/physics.ts",
       "type": "static",
@@ -5434,10 +6013,37 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/views/overview.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "Finding"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/overview.ts",
       "to": "packages/sourcevision/src/viewer/components/collapsible-section.ts",
       "type": "static",
       "symbols": [
         "CollapsibleSection"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/overview.ts",
+      "to": "packages/sourcevision/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ZONE_COLORS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/overview.ts",
+      "to": "packages/sourcevision/src/viewer/components/health-gauge.ts",
+      "type": "static",
+      "symbols": [
+        "HealthGauge",
+        "PatternBadge",
+        "MetricCard"
       ]
     },
     {
@@ -5450,10 +6056,21 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/views/overview.ts",
+      "to": "packages/sourcevision/src/viewer/components/zone-map.ts",
+      "type": "static",
+      "symbols": [
+        "ZoneMap",
+        "ZoneDetail"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/overview.ts",
       "to": "packages/sourcevision/src/viewer/types.ts",
       "type": "type",
       "symbols": [
-        "LoadedData"
+        "LoadedData",
+        "NavigateTo",
+        "DetailItem"
       ]
     },
     {
@@ -5830,6 +6447,40 @@
       ]
     },
     {
+      "from": "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "type": "static",
+      "symbols": [
+        "computePerZoneAttemptConfigs",
+        "MAX_CONCURRENT_ZONES",
+        "PER_ZONE_MAX_FILES",
+        "PER_ZONE_MAX_CROSSINGS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-per-zone.ts",
+      "type": "static",
+      "symbols": [
+        "computeZoneStructureHash",
+        "enrichZonesPerZone"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "ImportEdge",
+        "FileEntry",
+        "Zone",
+        "ZoneCrossing",
+        "Zones"
+      ]
+    },
+    {
       "from": "packages/sourcevision/tests/unit/analyzers/imports.test.ts",
       "to": "packages/sourcevision/src/analyzers/imports.ts",
       "type": "static",
@@ -5906,6 +6557,84 @@
       ]
     },
     {
+      "from": "packages/sourcevision/tests/unit/analyzers/token-usage.test.ts",
+      "to": "packages/sourcevision/src/analyzers/claude-cli.ts",
+      "type": "static",
+      "symbols": [
+        "parseStreamTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/token-usage.test.ts",
+      "to": "packages/sourcevision/src/analyzers/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/token-usage.test.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/workspace.test.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "detectSubAnalyses",
+        "promoteZones",
+        "promoteCrossings",
+        "getSubAnalyzedFiles",
+        "buildSubAnalysisRefs",
+        "SubAnalysis"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/workspace.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Zone",
+        "ZoneCrossing",
+        "Zones",
+        "Inventory",
+        "FileEntry"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zone-output.test.ts",
+      "to": "packages/sourcevision/src/analyzers/zone-output.ts",
+      "type": "static",
+      "symbols": [
+        "generateZoneContext",
+        "buildZoneSummary",
+        "emitZoneOutputs"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zone-output.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "ImportEdge",
+        "Zones",
+        "Zone",
+        "ZoneCrossing",
+        "Finding",
+        "FileEntry"
+      ]
+    },
+    {
       "from": "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
       "to": "packages/sourcevision/src/analyzers/enrich.ts",
       "type": "static",
@@ -5935,7 +6664,10 @@
         "analyzeZones",
         "assignByProximity",
         "computeStructureHash",
-        "generateStructuralInsights"
+        "generateStructuralInsights",
+        "subdivideZone",
+        "SUBDIVISION_THRESHOLD",
+        "MAX_SUBDIVISION_DEPTH"
       ]
     },
     {
@@ -6158,11 +6890,13 @@
         "packages/sourcevision/src/viewer/components/detail-panel.ts",
         "packages/sourcevision/src/viewer/components/findings-list.ts",
         "packages/sourcevision/src/viewer/components/guide.ts",
+        "packages/sourcevision/src/viewer/components/health-gauge.ts",
         "packages/sourcevision/src/viewer/components/mini-charts.ts",
         "packages/sourcevision/src/viewer/components/search-filter.ts",
         "packages/sourcevision/src/viewer/components/sidebar.ts",
         "packages/sourcevision/src/viewer/components/theme-toggle.ts",
         "packages/sourcevision/src/viewer/components/tree-view.ts",
+        "packages/sourcevision/src/viewer/components/zone-map.ts",
         "packages/sourcevision/src/viewer/main.ts",
         "packages/sourcevision/src/viewer/views/architecture.ts",
         "packages/sourcevision/src/viewer/views/files.ts",
@@ -6286,6 +7020,7 @@
         "packages/rex/tests/integration/store-roundtrip.test.ts",
         "packages/rex/tests/unit/analyze/dedupe.test.ts",
         "packages/rex/tests/unit/analyze/diff.test.ts",
+        "packages/rex/tests/unit/analyze/guided.test.ts",
         "packages/rex/tests/unit/analyze/propose.test.ts",
         "packages/rex/tests/unit/analyze/reason-description.test.ts",
         "packages/rex/tests/unit/analyze/reason-ideas.test.ts",
@@ -6293,13 +7028,16 @@
         "packages/rex/tests/unit/analyze/reason.test.ts",
         "packages/rex/tests/unit/analyze/reconcile.test.ts",
         "packages/rex/tests/unit/analyze/scanners.test.ts",
+        "packages/rex/tests/unit/analyze/token-tracking.test.ts",
         "packages/rex/tests/unit/cli/commands/add.test.ts",
+        "packages/rex/tests/unit/cli/commands/analyze-guided.test.ts",
         "packages/rex/tests/unit/cli/commands/move.test.ts",
         "packages/rex/tests/unit/cli/commands/report.test.ts",
         "packages/rex/tests/unit/cli/commands/smart-add.test.ts",
         "packages/rex/tests/unit/cli/commands/status.test.ts",
         "packages/rex/tests/unit/cli/commands/sync.test.ts",
         "packages/rex/tests/unit/cli/commands/update.test.ts",
+        "packages/rex/tests/unit/cli/commands/usage.test.ts",
         "packages/rex/tests/unit/cli/commands/validate.test.ts",
         "packages/rex/tests/unit/cli/commands/verify.test.ts",
         "packages/rex/tests/unit/cli/errors.test.ts",
@@ -6315,6 +7053,7 @@
         "packages/rex/tests/unit/core/sync-engine.test.ts",
         "packages/rex/tests/unit/core/sync.test.ts",
         "packages/rex/tests/unit/core/timestamps.test.ts",
+        "packages/rex/tests/unit/core/token-usage.test.ts",
         "packages/rex/tests/unit/core/transitions.test.ts",
         "packages/rex/tests/unit/core/tree.test.ts",
         "packages/rex/tests/unit/core/verify.test.ts",
@@ -6332,10 +7071,14 @@
         "packages/sourcevision/tests/integration/llms-txt.test.ts",
         "packages/sourcevision/tests/integration/pipeline.test.ts",
         "packages/sourcevision/tests/unit/analyzers/components.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
         "packages/sourcevision/tests/unit/analyzers/imports.test.ts",
         "packages/sourcevision/tests/unit/analyzers/inventory.test.ts",
         "packages/sourcevision/tests/unit/analyzers/manifest.test.ts",
         "packages/sourcevision/tests/unit/analyzers/next-steps.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/token-usage.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/workspace.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/zone-output.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
         "packages/sourcevision/tests/unit/cli/errors.test.ts",
         "packages/sourcevision/tests/unit/cli/output.test.ts",
@@ -6367,6 +7110,7 @@
       "package": "zod",
       "importedBy": [
         "packages/hench/src/schema/validate.ts",
+        "packages/rex/src/analyze/guided.ts",
         "packages/rex/src/analyze/reason.ts",
         "packages/rex/src/cli/mcp.ts",
         "packages/rex/src/schema/validate.ts",
@@ -6380,42 +7124,42 @@
     }
   ],
   "summary": {
-    "totalEdges": 676,
+    "totalEdges": 747,
     "totalExternal": 12,
     "circularCount": 0,
     "circulars": [],
     "mostImported": [
       {
         "path": "packages/rex/src/schema/index.ts",
-        "count": 73
+        "count": 76
+      },
+      {
+        "path": "packages/sourcevision/src/schema/index.ts",
+        "count": 31
       },
       {
         "path": "packages/rex/src/core/tree.ts",
         "count": 26
       },
       {
-        "path": "packages/sourcevision/src/schema/index.ts",
+        "path": "packages/rex/src/store/index.ts",
         "count": 22
       },
       {
-        "path": "packages/rex/src/store/index.ts",
-        "count": 20
-      },
-      {
         "path": "packages/rex/src/cli/commands/constants.ts",
-        "count": 18
-      },
-      {
-        "path": "packages/rex/src/cli/errors.ts",
-        "count": 17
+        "count": 19
       },
       {
         "path": "packages/rex/src/cli/output.ts",
-        "count": 17
+        "count": 19
       },
       {
         "path": "packages/sourcevision/src/schema/v1.ts",
-        "count": 16
+        "count": 19
+      },
+      {
+        "path": "packages/rex/src/cli/errors.ts",
+        "count": 18
       },
       {
         "path": "packages/hench/src/schema/v1.ts",
@@ -6434,6 +7178,10 @@
         "count": 11
       },
       {
+        "path": "packages/sourcevision/src/viewer/components/constants.ts",
+        "count": 11
+      },
+      {
         "path": "packages/hench/src/store/config.ts",
         "count": 10
       },
@@ -6446,6 +7194,10 @@
         "count": 9
       },
       {
+        "path": "packages/rex/src/analyze/reason.ts",
+        "count": 9
+      },
+      {
         "path": "packages/rex/src/analyze/scanners.ts",
         "count": 9
       },
@@ -6454,18 +7206,10 @@
         "count": 9
       },
       {
-        "path": "packages/sourcevision/src/viewer/components/constants.ts",
-        "count": 9
-      },
-      {
-        "path": "packages/rex/src/store/file-adapter.ts",
-        "count": 8
-      },
-      {
         "path": "packages/sourcevision/src/cli/commands/constants.ts",
-        "count": 8
+        "count": 9
       }
     ],
-    "avgImportsPerFile": 3.22
+    "avgImportsPerFile": 3.29
   }
 }

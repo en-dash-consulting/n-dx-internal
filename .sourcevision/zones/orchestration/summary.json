@@ -1,0 +1,15 @@
+{
+  "id": "orchestration",
+  "name": "Orchestration Layer",
+  "description": "Top-level CLI entry points that delegate to the three main packages (sourcevision, rex, hench).",
+  "files": [
+    "ci.js",
+    "cli.js",
+    "config.js"
+  ],
+  "entryPoints": [],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 3,
+  "lineCount": 893
+}

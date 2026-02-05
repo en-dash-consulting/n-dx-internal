@@ -1,0 +1,29 @@
+{
+  "id": "hench-cli",
+  "name": "Hench CLI Interface",
+  "description": "Command-line interface layer for the hench autonomous agent, handling user commands and output formatting.",
+  "files": [
+    "packages/hench/src/agent/brief.ts",
+    "packages/hench/src/cli/commands/constants.ts",
+    "packages/hench/src/cli/commands/run.ts",
+    "packages/hench/src/cli/commands/show.ts",
+    "packages/hench/src/cli/commands/status.ts",
+    "packages/hench/src/cli/errors.ts",
+    "packages/hench/src/cli/index.ts",
+    "packages/hench/src/cli/output.ts",
+    "packages/hench/tests/unit/agent/brief.test.ts",
+    "packages/hench/tests/unit/cli/commands/constants.test.ts",
+    "packages/hench/tests/unit/cli/errors.test.ts",
+    "packages/hench/tests/unit/cli/output.test.ts"
+  ],
+  "entryPoints": [
+    "packages/hench/src/agent/brief.ts",
+    "packages/hench/src/cli/commands/constants.ts",
+    "packages/hench/src/cli/commands/run.ts",
+    "packages/hench/src/cli/output.ts"
+  ],
+  "cohesion": 0.72,
+  "coupling": 0.28,
+  "fileCount": 12,
+  "lineCount": 2016
+}

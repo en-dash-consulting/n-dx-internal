@@ -1,0 +1,19 @@
+{
+  "id": "packages-sourcevision:test-fixtures",
+  "name": "Test Fixtures",
+  "description": "Self-contained sample TypeScript project used as input data for integration and end-to-end tests, intentionally isolated with no imports from or exports to production code.",
+  "files": [
+    "packages/sourcevision/tests/fixtures/small-ts-project/src/config.ts",
+    "packages/sourcevision/tests/fixtures/small-ts-project/src/index.ts",
+    "packages/sourcevision/tests/fixtures/small-ts-project/src/models/user.ts",
+    "packages/sourcevision/tests/fixtures/small-ts-project/src/services/email-service.ts",
+    "packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts",
+    "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts",
+    "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/validate.ts"
+  ],
+  "entryPoints": [],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 7,
+  "lineCount": 56
+}

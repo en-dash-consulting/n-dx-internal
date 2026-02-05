@@ -1,0 +1,36 @@
+{
+  "proposals": [
+    {
+      "epic": {
+        "title": "User interface improvements",
+        "source": "llm"
+      },
+      "features": [
+        {
+          "title": "SourceVision visual assets",
+          "source": "llm",
+          "description": "Ensure proper display of branding and visual elements in the SourceVision interface",
+          "tasks": [
+            {
+              "title": "Fix logo rendering in SourceVision UI",
+              "source": "llm",
+              "sourceFile": "",
+              "description": "Debug and resolve issues preventing the SourceVision logo from displaying correctly in the user interface",
+              "acceptanceCriteria": [
+                "Logo displays correctly in all supported browsers",
+                "Logo scales appropriately on different screen sizes",
+                "Logo loads without console errors or broken image indicators"
+              ],
+              "priority": "medium",
+              "tags": [
+                "ui",
+                "assets",
+                "sourcevision"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

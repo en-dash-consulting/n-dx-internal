@@ -1,13 +1,45 @@
 {
   "zones": [
     {
-      "id": "hench-agent-core",
-      "name": "Hench Agent Core",
-      "description": "Agent orchestration layer: task briefing, multi-turn LLM loop, completion validation, review flow, and run persistence.",
+      "id": "hench",
+      "name": "Hench",
+      "description": "12 files, primarily TypeScript",
       "files": [
         "packages/hench/src/agent/brief.ts",
+        "packages/hench/src/cli/commands/constants.ts",
+        "packages/hench/src/cli/commands/run.ts",
+        "packages/hench/src/cli/commands/show.ts",
+        "packages/hench/src/cli/commands/status.ts",
+        "packages/hench/src/cli/errors.ts",
+        "packages/hench/src/cli/index.ts",
+        "packages/hench/src/cli/output.ts",
+        "packages/hench/tests/unit/agent/brief.test.ts",
+        "packages/hench/tests/unit/cli/commands/constants.test.ts",
+        "packages/hench/tests/unit/cli/errors.test.ts",
+        "packages/hench/tests/unit/cli/output.test.ts"
+      ],
+      "entryPoints": [
+        "packages/hench/src/agent/brief.ts",
+        "packages/hench/src/cli/commands/constants.ts",
+        "packages/hench/src/cli/commands/run.ts",
+        "packages/hench/src/cli/output.ts"
+      ],
+      "cohesion": 0.72,
+      "coupling": 0.28,
+      "insights": [
+        "Entry points like run.ts and status.ts should remain thin wrappers over core logic",
+        "Consider consolidating output.ts with the main CLI module to reduce surface area",
+        "CLI imports core types but core also imports CLI utilities—suggests shared types should be extracted to a common module",
+        "CLI error handling (errors.ts) could be consolidated with output.ts since both deal with user-facing messaging",
+        "init.ts command follows different pattern than other commands—uses direct fs operations vs. delegating to core"
+      ]
+    },
+    {
+      "id": "hench-2",
+      "name": "Hench 2",
+      "description": "32 files, primarily TypeScript",
+      "files": [
         "packages/hench/src/agent/cli-loop.ts",
-        "packages/hench/src/agent/completion.ts",
         "packages/hench/src/agent/loop.ts",
         "packages/hench/src/agent/prompt.ts",
         "packages/hench/src/agent/review.ts",
@@ -15,14 +47,7 @@
         "packages/hench/src/agent/summary.ts",
         "packages/hench/src/agent/test-runner.ts",
         "packages/hench/src/agent/token-budget.ts",
-        "packages/hench/src/cli/commands/constants.ts",
         "packages/hench/src/cli/commands/init.ts",
-        "packages/hench/src/cli/commands/run.ts",
-        "packages/hench/src/cli/commands/show.ts",
-        "packages/hench/src/cli/commands/status.ts",
-        "packages/hench/src/cli/errors.ts",
-        "packages/hench/src/cli/index.ts",
-        "packages/hench/src/cli/output.ts",
         "packages/hench/src/schema/index.ts",
         "packages/hench/src/schema/v1.ts",
         "packages/hench/src/schema/validate.ts",
@@ -31,12 +56,9 @@
         "packages/hench/src/store/json.ts",
         "packages/hench/src/store/project-config.ts",
         "packages/hench/src/store/runs.ts",
-        "packages/hench/src/tools/rex.ts",
         "packages/hench/tests/integration/store-roundtrip.test.ts",
         "packages/hench/tests/unit/agent/atomic-transition.test.ts",
-        "packages/hench/tests/unit/agent/brief.test.ts",
         "packages/hench/tests/unit/agent/cli-retry.test.ts",
-        "packages/hench/tests/unit/agent/completion.test.ts",
         "packages/hench/tests/unit/agent/loop.test.ts",
         "packages/hench/tests/unit/agent/prompt.test.ts",
         "packages/hench/tests/unit/agent/review.test.ts",
@@ -46,35 +68,64 @@
         "packages/hench/tests/unit/agent/test-runner.test.ts",
         "packages/hench/tests/unit/agent/token-budget.test.ts",
         "packages/hench/tests/unit/agent/token-tracking.test.ts",
-        "packages/hench/tests/unit/cli/commands/constants.test.ts",
         "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
-        "packages/hench/tests/unit/cli/errors.test.ts",
-        "packages/hench/tests/unit/cli/output.test.ts",
         "packages/hench/tests/unit/schema/validate.test.ts",
-        "packages/hench/tests/unit/store/project-config.test.ts",
+        "packages/hench/tests/unit/store/project-config.test.ts"
+      ],
+      "entryPoints": [
+        "packages/hench/src/agent/cli-loop.ts",
+        "packages/hench/src/agent/loop.ts",
+        "packages/hench/src/agent/stuck.ts",
+        "packages/hench/src/cli/commands/init.ts",
+        "packages/hench/src/schema/index.ts",
+        "packages/hench/src/schema/v1.ts",
+        "packages/hench/src/store/index.ts"
+      ],
+      "cohesion": 0.81,
+      "coupling": 0.19,
+      "insights": [
+        "High cohesion (0.81) — files are tightly interconnected",
+        "Contains 36% of project files (32/89) — may be too broad, consider splitting",
+        "Contains 36% of project files (32/90) — may be too broad, consider splitting",
+        "Contains 36% of project files (32/89) — may be too broad, consider splitting",
+        "Largest zone (32 files) contains the heart of the agent—consider if any submodules should be extracted",
+        "High cohesion (0.81) is good but monitor as the agent grows in complexity",
+        "Core zone serves as the central hub with imports flowing both in and out—classic 'god module' risk as complexity grows",
+        "Agent loop variants (cli-loop.ts vs loop.ts) suggest two execution modes that could share more infrastructure",
+        "Token budget management (token-budget.ts) is isolated but tightly coupled to prompt construction—could be a candidate for extraction",
+        "Naming inconsistency: agent/ directory mixes concerns—brief.ts is data preparation, loop.ts is execution, summary.ts is post-processing",
+        "test-runner.ts in agent/ suggests test execution is agent-driven but couples test infrastructure to agent lifecycle",
+        "This zone (32 files) is the architectural center of gravity—changes here have highest blast radius"
+      ]
+    },
+    {
+      "id": "hench-3",
+      "name": "Hench 3",
+      "description": "5 files, primarily TypeScript",
+      "files": [
+        "packages/hench/src/agent/completion.ts",
+        "packages/hench/src/tools/rex.ts",
+        "packages/hench/tests/unit/agent/completion.test.ts",
         "packages/hench/tests/unit/tools/completion-validation.test.ts",
         "packages/hench/tests/unit/tools/rex.test.ts"
       ],
       "entryPoints": [
-        "packages/hench/src/schema/index.ts",
-        "packages/hench/src/schema/v1.ts",
+        "packages/hench/src/agent/completion.ts",
         "packages/hench/src/tools/rex.ts"
       ],
-      "cohesion": 0.97,
-      "coupling": 0.03,
+      "cohesion": 0.67,
+      "coupling": 0.33,
       "insights": [
-        "High cohesion (0.97) — files are tightly interconnected",
-        "Clean control-plane zone that makes decisions and orchestrates workflows without directly executing filesystem or shell operations.",
-        "High cohesion (0.97) reflects tight internal coupling among loop, brief, prompt, and completion modules that collectively drive the agentic cycle.",
-        "Entry points (tools/rex.ts, schema/index.ts, schema/v1.ts) expose the rex integration tool and type contracts consumed by the tooling zone.",
-        "Hench has a hard npm dependency on rex (\"rex\": \"*\" in package.json) and imports 5 distinct rex internal modules (store/types, store/index, core/next-task, core/tree, core/timestamps, core/parent-completion, schema/v1) across 6 source files — this is a deep library-level coupling, not a subprocess or data-level relationship.",
-        "The hench→rex dependency serves three purposes: task selection (brief.ts uses findNextTask/findItem), status mutation (tools/rex.ts writes through PRDStore), and store initialization (run.ts calls resolveStore). All three would need to change if rex's internal APIs shift."
+        "Mixing source and test files in the same zone indicates tight coupling—tests validate completion edge cases",
+        "Rex tool integration here suggests completion logic depends on PRD state",
+        "Completion zone bridges core agent logic and rex tool—acts as a policy layer determining task completion semantics",
+        "Zone couples three distinct concerns: completion detection, rex integration, and validation testing—suggests unstable abstraction boundary"
       ]
     },
     {
-      "id": "hench-agent-tooling",
-      "name": "Hench Agent Tooling",
-      "description": "Sandboxed tool implementations (file I/O, shell, git) and security guard subsystem that validates every agent action.",
+      "id": "hench-4",
+      "name": "Hench 4",
+      "description": "12 files, primarily TypeScript",
       "files": [
         "packages/hench/src/agent/tools.ts",
         "packages/hench/src/guard/commands.ts",
@@ -97,185 +148,93 @@
       "coupling": 0.16,
       "insights": [
         "High cohesion (0.84) — files are tightly interconnected",
-        "Guard subsystem (~165 lines across 3 files) enforces path traversal prevention, command allowlisting, and shell operator rejection for every tool invocation.",
-        "Each tool (files.ts, git.ts, shell.ts) is a stateless async function with no inter-tool dependencies, enabling independent testing and extension.",
-        "Lower cohesion (0.84) compared to the core zone reflects the guard subsystem's role as a cross-cutting concern consumed by all tool implementations.",
-        "The single back-reference from tooling→core (rex.ts importing completion.ts for validateCompletion) creates the bidirectional coupling — this exists because the rex tool needs to validate task completion before marking status, mixing tool execution concerns with agent-level judgment.",
-        "guard/index.ts imports GuardConfig from schema/index.ts (in hench-agent-core zone), meaning the guard subsystem depends on the core zone for its configuration type — this is a necessary structural dependency since schema is the canonical type source."
+        "Guard subsystem is critical for safe autonomous execution—maintain high test coverage here",
+        "Tools are well-isolated from agent logic, enabling independent testing and evolution",
+        "Guard subsystem within tooling enforces security boundaries—this is an implicit sub-zone that could be promoted",
+        "Guard subsystem (commands.ts, paths.ts, index.ts) is security-critical and could benefit from being a standalone zone with stricter change review",
+        "Guard subsystem has no integration tests despite being security-critical—only unit tests present",
+        "tools/shell.ts and guard/commands.ts likely overlap in command validation logic"
       ]
     },
     {
-      "id": "rex-analysis",
-      "name": "Rex Analysis Pipeline",
-      "description": "Project scanning, deduplication, LLM-enriched proposal generation, and conflict reconciliation pipeline for PRD item discovery.",
+      "id": "packages-rex:rex-cli",
+      "name": "Rex PRD Management CLI",
+      "description": "A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.",
       "files": [
-        "packages/rex/src/analyze/dedupe.ts",
-        "packages/rex/src/analyze/diff.ts",
         "packages/rex/src/analyze/index.ts",
         "packages/rex/src/analyze/propose.ts",
-        "packages/rex/src/analyze/reason.ts",
         "packages/rex/src/analyze/reconcile.ts",
         "packages/rex/src/analyze/scanners.ts",
-        "packages/rex/src/cli/commands/analyze.ts",
-        "packages/rex/tests/unit/analyze/dedupe.test.ts",
-        "packages/rex/tests/unit/analyze/diff.test.ts",
-        "packages/rex/tests/unit/analyze/propose.test.ts",
-        "packages/rex/tests/unit/analyze/reason-description.test.ts",
-        "packages/rex/tests/unit/analyze/reason-ideas.test.ts",
-        "packages/rex/tests/unit/analyze/reason-multi-description.test.ts",
-        "packages/rex/tests/unit/analyze/reason.test.ts",
-        "packages/rex/tests/unit/analyze/reconcile.test.ts",
-        "packages/rex/tests/unit/analyze/scanners.test.ts"
-      ],
-      "entryPoints": [
-        "packages/rex/src/analyze/index.ts",
-        "packages/rex/src/cli/commands/analyze.ts"
-      ],
-      "cohesion": 0.77,
-      "coupling": 0.23,
-      "insights": [
-        "Clean linear pipeline: scanners → dedupe → propose → reason (LLM) → reconcile → diff, with each stage consuming the previous stage's output.",
-        "Highest coupling in the codebase (0.23) is structurally necessary: the analysis pipeline must read the existing PRD tree and schema to avoid proposing duplicates.",
-        "The analyze CLI command lives in this zone alongside its implementation, giving the feature good vertical cohesion.",
-        "rex-analysis has zero external package consumers — only rex CLI commands (analyze.ts and smart-add.ts) import it, making it a purely internal feature zone with a well-defined single entry point (analyze/index.ts).",
-        "scanSourceVision in scanners.ts defines its own local TypeScript interfaces (SVFinding, SVZone, SVZonesData, SVInventoryData, SVImportsData) that mirror sourcevision's output format rather than importing shared types — this is a deliberate data-contract decoupling that trades type safety for package independence."
-      ]
-    },
-    {
-      "id": "rex-prd-core",
-      "name": "Rex PRD Core",
-      "description": "PRD data model, tree operations, storage adapters (file and Notion), state machine, sync engine, schema validation, and all non-analyze CLI commands.",
-      "files": [
-        "packages/rex/src/cli/commands/adapter.ts",
         "packages/rex/src/cli/commands/add.ts",
+        "packages/rex/src/cli/commands/analyze.ts",
         "packages/rex/src/cli/commands/constants.ts",
         "packages/rex/src/cli/commands/init.ts",
-        "packages/rex/src/cli/commands/move.ts",
         "packages/rex/src/cli/commands/next.ts",
-        "packages/rex/src/cli/commands/prune.ts",
         "packages/rex/src/cli/commands/recommend.ts",
-        "packages/rex/src/cli/commands/report.ts",
-        "packages/rex/src/cli/commands/smart-add.ts",
         "packages/rex/src/cli/commands/status.ts",
-        "packages/rex/src/cli/commands/sync.ts",
         "packages/rex/src/cli/commands/update.ts",
         "packages/rex/src/cli/commands/validate.ts",
-        "packages/rex/src/cli/commands/verify.ts",
-        "packages/rex/src/cli/errors.ts",
         "packages/rex/src/cli/index.ts",
         "packages/rex/src/cli/mcp.ts",
-        "packages/rex/src/cli/output.ts",
         "packages/rex/src/core/canonical.ts",
         "packages/rex/src/core/dag.ts",
-        "packages/rex/src/core/move.ts",
         "packages/rex/src/core/next-task.ts",
-        "packages/rex/src/core/notion-map.ts",
-        "packages/rex/src/core/parent-completion.ts",
-        "packages/rex/src/core/prune.ts",
-        "packages/rex/src/core/structural.ts",
-        "packages/rex/src/core/sync-engine.ts",
-        "packages/rex/src/core/sync.ts",
-        "packages/rex/src/core/timestamps.ts",
-        "packages/rex/src/core/transitions.ts",
         "packages/rex/src/core/tree.ts",
-        "packages/rex/src/core/verify.ts",
         "packages/rex/src/schema/index.ts",
         "packages/rex/src/schema/v1.ts",
         "packages/rex/src/schema/validate.ts",
-        "packages/rex/src/store/adapter-registry.ts",
         "packages/rex/src/store/file-adapter.ts",
         "packages/rex/src/store/index.ts",
-        "packages/rex/src/store/notion-adapter.ts",
-        "packages/rex/src/store/notion-client.ts",
-        "packages/rex/src/store/project-config.ts",
         "packages/rex/src/store/types.ts",
         "packages/rex/src/workflow/default.ts",
-        "packages/rex/tests/integration/project-config.test.ts",
         "packages/rex/tests/integration/store-roundtrip.test.ts",
-        "packages/rex/tests/unit/cli/commands/add.test.ts",
-        "packages/rex/tests/unit/cli/commands/move.test.ts",
-        "packages/rex/tests/unit/cli/commands/report.test.ts",
-        "packages/rex/tests/unit/cli/commands/smart-add.test.ts",
-        "packages/rex/tests/unit/cli/commands/status.test.ts",
-        "packages/rex/tests/unit/cli/commands/sync.test.ts",
-        "packages/rex/tests/unit/cli/commands/update.test.ts",
-        "packages/rex/tests/unit/cli/commands/validate.test.ts",
-        "packages/rex/tests/unit/cli/commands/verify.test.ts",
-        "packages/rex/tests/unit/cli/errors.test.ts",
-        "packages/rex/tests/unit/cli/output.test.ts",
+        "packages/rex/tests/unit/analyze/propose.test.ts",
+        "packages/rex/tests/unit/analyze/reconcile.test.ts",
+        "packages/rex/tests/unit/analyze/scanners.test.ts",
         "packages/rex/tests/unit/core/canonical.test.ts",
         "packages/rex/tests/unit/core/dag.test.ts",
-        "packages/rex/tests/unit/core/move.test.ts",
         "packages/rex/tests/unit/core/next-task.test.ts",
-        "packages/rex/tests/unit/core/notion-map.test.ts",
-        "packages/rex/tests/unit/core/parent-completion.test.ts",
-        "packages/rex/tests/unit/core/prune.test.ts",
-        "packages/rex/tests/unit/core/structural.test.ts",
-        "packages/rex/tests/unit/core/sync-engine.test.ts",
-        "packages/rex/tests/unit/core/sync.test.ts",
-        "packages/rex/tests/unit/core/timestamps.test.ts",
-        "packages/rex/tests/unit/core/transitions.test.ts",
         "packages/rex/tests/unit/core/tree.test.ts",
-        "packages/rex/tests/unit/core/verify.test.ts",
         "packages/rex/tests/unit/schema/validate.test.ts",
-        "packages/rex/tests/unit/store/adapter-registry.test.ts",
-        "packages/rex/tests/unit/store/file-adapter.test.ts",
-        "packages/rex/tests/unit/store/notion-adapter.test.ts",
-        "packages/rex/tests/unit/store/notion-client.test.ts",
-        "packages/rex/tests/unit/store/resolve-store.test.ts",
-        "packages/rex/tests/unit/store/store-contract.test.ts"
-      ],
-      "entryPoints": [
-        "packages/rex/src/cli/commands/constants.ts",
-        "packages/rex/src/cli/errors.ts",
-        "packages/rex/src/cli/output.ts",
-        "packages/rex/src/core/tree.ts",
-        "packages/rex/src/schema/index.ts",
-        "packages/rex/src/schema/v1.ts",
-        "packages/rex/src/store/index.ts"
-      ],
-      "cohesion": 0.97,
-      "coupling": 0.03,
-      "insights": [
-        "High cohesion (0.97) — files are tightly interconnected",
-        "Foundational layer with 7 entry points serving distinct clients (CLI commands, analyze pipeline, external tools), which is appropriate for an 78-file infrastructure zone.",
-        "Store abstraction cleanly separates file-based and Notion persistence behind a PRDStore interface, enabling adapter swapping without touching consumers.",
-        "Generator-based tree traversal in core/tree.ts provides memory-efficient, composable operations across the PRD hierarchy.",
-        "Rex exposes its internals (store/types.ts, core/tree.ts, core/next-task.ts, core/timestamps.ts, core/parent-completion.ts, schema/v1.ts) as de facto public API consumed by hench, but has no explicit public API surface — hench imports via rex/dist/* paths directly into implementation modules.",
-        "The store layer (FileStore, NotionStore, SyncEngine, AdapterRegistry) is the most externally consumed subsystem — both rex CLI commands and hench's run.ts depend on resolveStore(), making it the primary integration point."
-      ]
-    },
-    {
-      "id": "root-orchestration",
-      "name": "Root Orchestration",
-      "description": "Top-level CLI dispatcher, CI pipeline runner, and unified configuration manager for the n-dx toolkit.",
-      "files": [
-        "ci.js",
-        "cli.js",
-        "config.js"
+        "packages/rex/tests/unit/store/file-adapter.test.ts"
       ],
       "entryPoints": [],
       "cohesion": 1,
       "coupling": 0,
       "insights": [
         "High cohesion (1) — files are tightly interconnected",
-        "Three standalone scripts with no shared internal module; each independently spawns sub-tool processes.",
-        "config.js is the largest file (~460 lines) and handles cross-package config reads and writes, making it a potential maintenance hotspot if new packages are added.",
-        "No entry points detected because these files are consumed as a top-level executable (cli.js shebang) and direct imports, not as library exports.",
-        "config.js breaks the subprocess-only pattern by directly reading/writing .rex/config.json, .hench/config.json, and .sourcevision/manifest.json via fs/promises, creating a second coupling mechanism (filesystem convention) alongside the subprocess spawning used by cli.js and ci.js.",
-        "ci.js introduces a third coupling variant: subprocess spawning with stdout capture and JSON parsing, meaning the three files use three distinct integration styles (inherit stdio, capture+parse JSON, direct file I/O)."
-      ]
+        "Contains 71% of project files (36/51) — may be too broad, consider splitting",
+        "The dependency graph flows cleanly from schema -> core -> store -> cli with no circular dependencies, indicating strong architectural discipline for a 36-file single-zone codebase.",
+        "The analyze module (scanners, propose, reconcile) is a well-isolated subsystem that could be extracted into its own zone if the project grows, since it has minimal coupling to core.",
+        "The MCP server in cli/mcp.ts at ~405 lines is the largest single file and serves as a second entry point alongside the CLI dispatcher, making it a natural seam for future zone splitting.",
+        "The store layer (file-adapter.ts) imports core/tree.js and core/canonical.js, creating a dependency inversion: store depends on core business logic instead of being a dumb persistence layer. Layering should be schema ← core ← store, but store reaches sideways into core.",
+        "PRIORITY_ORDER is duplicated three times (core/canonical.ts, core/next-task.ts, analyze/propose.ts) — a hidden coupling via copy-paste that risks drift if priority tiers change.",
+        "CLI commands init.ts and validate.ts bypass the store abstraction by directly using node:fs/promises for config file I/O, undermining the adapter pattern.",
+        "The core layer has no barrel export (no src/core/index.ts), so consumers import from individual files (core/tree.js, core/next-task.js), making the public API surface implicit rather than explicit.",
+        "REX_DIR constant is duplicated: declared in cli/commands/constants.ts and re-declared in cli/mcp.ts, creating a sync risk for the two entry points.",
+        "sortByPriority logic is duplicated between core/canonical.ts:14-27 (sortItems, recursive) and core/next-task.ts:11-18 (sortByPriority, shallow) — two subtly different sort implementations within the same core layer that can diverge.",
+        "MCP tool handlers in cli/mcp.ts reimplement the same orchestration logic as CLI commands (e.g., get_next_task duplicates cmdNext, update_task_status duplicates cmdUpdate) rather than sharing a common service layer, creating a parallel maintenance burden across ~400 lines.",
+        "The PRDItem interface in schema/v1.ts:21 has an index signature `[key: string]: unknown` alongside explicit fields, which defeats TypeScript's excess-property checking and allows arbitrary data to pass type checks silently — the `.passthrough()` on the Zod schema compounds this by accepting unknown keys at runtime too.",
+        "readLog() at store/file-adapter.ts:105 casts each parsed JSON line as LogEntry without validation (`JSON.parse(line) as LogEntry`), while appendLog() validates via Zod before writing — asymmetric serialization boundary means corrupted log files can inject malformed entries into the system.",
+        "The analyze --accept flow in cli/commands/analyze.ts:125-169 calls store.addItem() sequentially in a loop (one file write per item) with no batching or transaction, so a failure mid-loop leaves the PRD in a partially-updated state with no rollback.",
+        "update.ts:6-12 hardcodes VALID_STATUSES and VALID_PRIORITIES as string Sets instead of deriving them from the Zod enums in schema/validate.ts (ItemStatusSchema, PrioritySchema), creating a second source of truth that will drift if enum values change.",
+        "callSourceVisionMCP in recommend.ts:33-78 uses raw child_process.spawn with callback-based stream handling, but never sets a timeout — a hung sourcevision process will block the CLI indefinitely.",
+        "The PRDItemSchema in validate.ts:18 is typed as `z.ZodType<Record<string, unknown>>` erasing the inferred Zod type, so validateDocument returns `Record<string, unknown>` forcing every callsite to cast `as PRDDocument` — the Zod schema is well-typed internally but the export discards the type information.",
+        "PRIORITY_ORDER is defined three times (canonical.ts:7, next-task.ts:4, propose.ts:25) with two different type signatures — propose.ts uses Record<string, number> (loose) while the other two use Record<Priority, number> (strict), creating a silent type-safety gap",
+        "The adapter field in RexConfig is dead configuration — all 8 createStore() call sites hardcode the literal string \"file\" instead of reading config.adapter, making alternative adapters unreachable",
+        "Log event names for the same semantic operation differ between CLI and MCP: update.ts:68 emits \"item_updated\" while mcp.ts:129 emits \"status_changed\" for status changes, with no shared event-name constants",
+        "init.ts and validate.ts both bypass the store abstraction layer, using raw fs readFile/writeFile directly, making them incompatible with any non-file adapter"
+      ],
+      "childId": "packages-rex",
+      "depth": 1
     },
     {
-      "id": "sourcevision-analysis-engine",
-      "name": "Sourcevision Analysis Engine",
-      "description": "Core static analysis pipeline: file inventory, import graph extraction, Louvain zone detection, React component cataloging, AI enrichment, and output generation (CONTEXT.md, llms.txt).",
+      "id": "packages-sourcevision:analysis-engine",
+      "name": "Analysis Engine",
+      "description": "Core analysis pipeline including file inventory, import graph extraction, Louvain community detection, route parsing, AI enrichment, and CLI orchestration.",
       "files": [
-        "packages/sourcevision/src/analyzers/claude-cli.ts",
         "packages/sourcevision/src/analyzers/components.ts",
         "packages/sourcevision/src/analyzers/context.ts",
-        "packages/sourcevision/src/analyzers/enrich-config.ts",
-        "packages/sourcevision/src/analyzers/enrich-parsing.ts",
         "packages/sourcevision/src/analyzers/enrich.ts",
         "packages/sourcevision/src/analyzers/imports.ts",
         "packages/sourcevision/src/analyzers/index.ts",
@@ -291,76 +250,61 @@
         "packages/sourcevision/src/cli/commands/init.ts",
         "packages/sourcevision/src/cli/commands/reset.ts",
         "packages/sourcevision/src/cli/commands/validate.ts",
-        "packages/sourcevision/src/cli/errors.ts",
         "packages/sourcevision/src/cli/index.ts",
         "packages/sourcevision/src/cli/mcp.ts",
-        "packages/sourcevision/src/cli/output.ts",
         "packages/sourcevision/src/cli/serve.ts",
         "packages/sourcevision/src/schema/data-files.ts",
         "packages/sourcevision/src/schema/index.ts",
-        "packages/sourcevision/src/schema/validate.ts",
         "packages/sourcevision/src/util/merge.ts",
         "packages/sourcevision/src/util/sort.ts",
-        "packages/sourcevision/tests/e2e/cli-analyze.test.ts",
-        "packages/sourcevision/tests/e2e/cli-serve.test.ts",
         "packages/sourcevision/tests/integration/context.test.ts",
         "packages/sourcevision/tests/integration/llms-txt.test.ts",
-        "packages/sourcevision/tests/integration/pipeline.test.ts",
         "packages/sourcevision/tests/unit/analyzers/components.test.ts",
         "packages/sourcevision/tests/unit/analyzers/imports.test.ts",
         "packages/sourcevision/tests/unit/analyzers/inventory.test.ts",
         "packages/sourcevision/tests/unit/analyzers/manifest.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
-        "packages/sourcevision/tests/unit/cli/errors.test.ts",
-        "packages/sourcevision/tests/unit/cli/output.test.ts",
-        "packages/sourcevision/tests/unit/schema/data-files.test.ts",
-        "packages/sourcevision/tests/unit/schema/validate.test.ts",
         "packages/sourcevision/tests/unit/util/merge.test.ts",
         "packages/sourcevision/tests/unit/util/sort.test.ts"
       ],
       "entryPoints": [
-        "packages/sourcevision/src/analyzers/next-steps.ts",
-        "packages/sourcevision/src/schema/data-files.ts",
-        "packages/sourcevision/src/schema/validate.ts"
+        "packages/sourcevision/src/analyzers/components.ts",
+        "packages/sourcevision/src/analyzers/imports.ts",
+        "packages/sourcevision/src/analyzers/inventory.ts",
+        "packages/sourcevision/src/analyzers/zones.ts",
+        "packages/sourcevision/src/schema/data-files.ts"
       ],
-      "cohesion": 0.97,
-      "coupling": 0.03,
+      "cohesion": 0.94,
+      "coupling": 0.06,
       "insights": [
-        "High cohesion (0.97) — files are tightly interconnected",
-        "Schema layer (data-files.ts, validate.ts) serves as the clean contract boundary to the viewer — all cross-zone imports route through it",
-        "Enrichment subsystem (enrich.ts, enrich-config.ts, enrich-parsing.ts, claude-cli.ts) is ~800 lines with retry/batching/timeout logic and could benefit from extraction into a dedicated src/enrichment/ subdirectory",
-        "Entry points (data-files.ts, validate.ts, next-steps.ts) are precisely the files the viewer needs — filenames, validation, and recommendations — confirming a well-factored producer/consumer split",
-        "Strictly unidirectional dependency: analysis engine never imports from viewer zone — all cross-zone flow routes through schema/v1.ts, data-files.ts, and validate.ts as intermediaries"
-      ]
+        "High cohesion (0.94) — files are tightly interconnected",
+        "High cohesion (0.94) reflects a well-structured pipeline where analyzers, CLI commands, schema constants, and utilities form a tight internal dependency chain.",
+        "zones.ts orchestrates Louvain clustering, AI enrichment, and insight generation—consider splitting algorithmic and AI-enrichment concerns for testability.",
+        "The CLI commands/ directory acts as the orchestration layer calling all analyzer phases sequentially, making it the natural entry point for the entire tool.",
+        "src/util/ (sort.ts, merge.ts) is exclusively consumed by analyzers—this utility layer has zero viewer or test imports, reinforcing its role as an analyzer-private subsystem.",
+        "All analyzers accept typed parameters and return values rather than reading/writing JSON directly; the CLI commands layer handles all file I/O, keeping analyzers pure and composable.",
+        "enrich.ts (925 lines) has 7-8 distinct responsibilities: prompt construction, AI process lifecycle, JSON parsing, finding extraction, batch orchestration, meta-evaluation, and result merging — it should be split into at least 4 focused modules.",
+        "enrich.ts accepts `inventory` and `imports` parameters that are never read inside the function body — these are dead parameters that mislead callers about the function's data dependencies.",
+        "enrich.ts contains dead code at line 815-816: a ternary expression `(condition ? undefined : undefined)` that always evaluates to `undefined` regardless of branch.",
+        "next-steps.ts is a new untracked analyzer with zero test coverage — no unit, integration, or e2e tests exist for it anywhere in the test suite.",
+        "Rate-limit errors from the AI CLI are detected but trigger immediate retry with no backoff delay, burning through all 3 attempts instantly before giving up.",
+        "SV_DIR and TOOL_VERSION are independently defined in 3 files (cli/commands/constants.ts, analyzers/manifest.ts, cli/mcp.ts) — version drift risk if any is updated without the others",
+        "detectCirculars is implemented twice with near-identical DFS logic: src/analyzers/imports.ts:232 and src/util/merge.ts:129 — the imports.ts comment references merge.ts but re-implements rather than importing",
+        "computeSummary (inventory.ts:641) and computeInventorySummary (merge.ts:36) are functionally identical with different names — classic DRY violation",
+        "GENERIC_PREFIXES (inventory.ts:345) and GENERIC_SEGMENTS (zones.ts:29) serve the same purpose but differ: zones includes 'pkg', inventory does not — a file under pkg/ gets inconsistent category vs zone ID",
+        "enrich.ts (925 lines) is a god module mixing 7 responsibilities: pass config, prompt building, timeout computation, Claude CLI invocation, JSON parsing, finding extraction, batch orchestration + retry — highest maintenance burden in the codebase",
+        "_updatedFindings bypasses the EnrichResult interface via 'as' casts in enrich.ts:703 and zones.ts:496 — type safety escape hatch instead of extending the interface properly",
+        "metaEvaluationCount exists in schema/v1.ts:154 but is absent from the Zod validation schema in schema/validate.ts — writing succeeds but strict validation would strip or reject it",
+        "commands/analyze.ts (313 lines) imports from 8+ modules and repeats a 4-phase pattern of readFileSync→JSON.parse→analyze→writeFileSync — orchestration is monolithic with high cascade risk",
+        "Barrel export src/analyzers/index.ts omits enrich, louvain, context, llms-txt, and next-steps — false expectation of completeness, and no consumer actually imports via the barrel"
+      ],
+      "childId": "packages-sourcevision",
+      "depth": 1
     },
     {
-      "id": "sourcevision-test-fixture",
-      "name": "Sourcevision Test Fixture",
-      "description": "Minimal TypeScript project (7 files) used as a deterministic integration test baseline for validating the analysis pipeline produces correct inventory, import graphs, and zone output.",
-      "files": [
-        "packages/sourcevision/tests/fixtures/small-ts-project/src/config.ts",
-        "packages/sourcevision/tests/fixtures/small-ts-project/src/index.ts",
-        "packages/sourcevision/tests/fixtures/small-ts-project/src/models/user.ts",
-        "packages/sourcevision/tests/fixtures/small-ts-project/src/services/email-service.ts",
-        "packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts",
-        "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts",
-        "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/validate.ts"
-      ],
-      "entryPoints": [],
-      "cohesion": 1,
-      "coupling": 0,
-      "insights": [
-        "High cohesion (1) — files are tightly interconnected",
-        "Perfect cohesion (1.0) and zero coupling confirm complete isolation — this fixture is an inert input artifact, not a runtime dependency",
-        "The fixture covers layered architecture (models/services/utils) and shared-hub imports but omits circular dependencies, dynamic imports, and React components",
-        "Integration tests (pipeline.test.ts, llms-txt.test.ts, context.test.ts) rely on this single fixture — a second fixture with adversarial patterns would strengthen regression coverage",
-        "Fixture dependency graph is strictly acyclic with a single shared-hub pattern (user-service.ts imports from 3 modules) — no circular dependencies, dynamic imports, barrel files, or React/JSX present"
-      ]
-    },
-    {
-      "id": "sourcevision-viewer",
-      "name": "Sourcevision Viewer",
-      "description": "Preact-based interactive web UI with force-directed graph visualization, zone/file browsers, architecture views, and dual-mode data loading (dev server or drag-and-drop static files).",
+      "id": "packages-sourcevision:interactive-viewer",
+      "name": "Interactive Viewer",
+      "description": "Preact single-page application that visualizes analysis results through force-directed graphs, zone maps, route trees, and findings panels, consuming only schema types with zero analyzer dependencies.",
       "files": [
         "packages/sourcevision/src/schema/v1.ts",
         "packages/sourcevision/src/viewer/components/collapsible-section.ts",
@@ -375,7 +319,6 @@
         "packages/sourcevision/src/viewer/components/tree-view.ts",
         "packages/sourcevision/src/viewer/darkmode_logo.png",
         "packages/sourcevision/src/viewer/graph/physics.ts",
-        "packages/sourcevision/src/viewer/graph/renderer.ts",
         "packages/sourcevision/src/viewer/index.html",
         "packages/sourcevision/src/viewer/lightmode_logo.png",
         "packages/sourcevision/src/viewer/loader.ts",
@@ -396,7 +339,6 @@
         "packages/sourcevision/src/viewer/styles/tokens.css",
         "packages/sourcevision/src/viewer/styles/utils.css",
         "packages/sourcevision/src/viewer/types.ts",
-        "packages/sourcevision/src/viewer/utils.ts",
         "packages/sourcevision/src/viewer/views/architecture.ts",
         "packages/sourcevision/src/viewer/views/files.ts",
         "packages/sourcevision/src/viewer/views/graph.ts",
@@ -405,7 +347,6 @@
         "packages/sourcevision/src/viewer/views/routes.ts",
         "packages/sourcevision/src/viewer/views/suggestions.ts",
         "packages/sourcevision/src/viewer/views/zones.ts",
-        "packages/sourcevision/tests/unit/analyzers/next-steps.test.ts",
         "packages/sourcevision/tests/unit/viewer/bar-chart.test.ts",
         "packages/sourcevision/tests/unit/viewer/collapsible-section.test.ts",
         "packages/sourcevision/tests/unit/viewer/detail-panel.test.ts",
@@ -419,211 +360,418 @@
       "coupling": 0.04,
       "insights": [
         "High cohesion (0.96) — files are tightly interconnected",
-        "The graph subsystem (physics.ts + renderer.ts, ~600 lines of imperative SVG/math) bypasses the Preact VDOM for performance — this is the highest-risk viewer code and has minimal test coverage",
-        "schema/v1.ts is the sole entry point from the analysis zone, confirming the viewer is a pure consumer of JSON artifacts with no back-channel into the analysis pipeline",
-        "Modular CSS with design tokens (tokens.css) and dedicated accessibility styles (a11y.css) shows mature frontend engineering for a dev tool",
-        "Viewer has 5 component-level tests (BarChart, FlowDiagram, TreeView, DetailPanel, CollapsibleSection) but the graph subsystem (physics.ts + renderer.ts) has zero test coverage despite being the highest-risk imperative code"
+        "Contains 43% of project files (46/107) — may be too broad, consider splitting",
+        "Contains 43% of project files (46/106) — may be too broad, consider splitting",
+        "Highest cohesion (0.96) and lowest coupling (0.04) confirm the viewer is fully decoupled from the analysis engine, communicating only through serialized JSON conforming to schema/v1.ts.",
+        "The component/view separation follows a clean hierarchy: views import components, components are pure props-driven, and loader.ts is the single data ingestion point.",
+        "schema-compat.ts provides forward/backward compatibility for data format changes, which is essential since the viewer may load data produced by different analyzer versions.",
+        "The viewer imports schema/validate.ts directly (not through the barrel index.ts), creating an implicit dependency on Zod at bundle time—validate.ts and its Zod dependency are compiled into the viewer bundle even though schema/index.ts re-exports the same symbols.",
+        "The viewer's separate esbuild entry point (build.js) with Preact JSX transform means it cannot share compiled artifacts with the Node-side CLI/analyzer code—changes to shared schema types require rebuilding both targets.",
+        "views/graph.ts (628 lines) contains a 436-line imperative renderGraph function that manually constructs SVG DOM, binds event listeners, and manages mutable closure state — the physics extraction into graph/ was started but rendering was never extracted alongside it.",
+        "The LOD rendering logic (circle radius clamping, font-size formula, label visibility) is duplicated verbatim between the tick callback (lines 365-390) and the wheel handler (lines 420-441) in graph.ts.",
+        "The `meterClass` function is defined identically in both views/zones.ts and components/detail-panel.ts with the same 0.7/0.4 threshold constants — a simple copy-paste that should be a shared utility.",
+        "The `basename` extraction pattern (`.split('/').pop() || x`) appears 11 times across 6 viewer files — a missing utility function.",
+        "sidebar.ts inlines two full base64-encoded PNG logos as JavaScript string constants, bloating the component and preventing image optimization or lazy-loading.",
+        "View export naming is inconsistent: Overview and Graph lack the 'View' suffix used by all 6 other views (ZonesView, FilesView, ArchitectureView, ProblemsView, SuggestionsView, RoutesView)",
+        "ZONE_COLORS[i % ZONE_COLORS.length] modulo-index pattern is repeated 9 times across 5 files — no shared getZoneColor() utility exists",
+        "graph.ts at 627 lines is a split-brain architecture: Preact component (lines 38-189) manages state while renderGraph() (lines 192-627) does imperative SVG DOM creation with deeply interleaved closure-scoped mutable state",
+        "Record<string, unknown> is used as the detail panel data contract across 8 call sites in 5 files — relies on duck-typing (typeof detail.path === 'string' && !detail.zoneId) instead of a discriminated union",
+        "fileToZone map construction is independently implemented in graph.ts, files.ts, and detail-panel.ts — same iteration over zones.zones with slightly different shapes",
+        "FlowDiagram data preparation (pairCounts from crossings) is copy-pasted identically between views/zones.ts:59-78 and views/architecture.ts:54-74",
+        ".split('/').pop() || path appears 11 times across 7 files as ad-hoc basename extraction — no shared utility",
+        "CSS has unused classes: .zone-insights (cards.css:88-113), .component-tree/.component-node (cards.css:258-287), .route-node (routes.css:10-20), .route-layout (routes.css:52-56) — never referenced from TypeScript"
+      ],
+      "childId": "packages-sourcevision",
+      "depth": 1
+    },
+    {
+      "id": "packages-sourcevision:test-fixtures",
+      "name": "Test Fixtures",
+      "description": "Self-contained sample TypeScript project used as input data for integration and end-to-end tests, intentionally isolated with no imports from or exports to production code.",
+      "files": [
+        "packages/sourcevision/tests/fixtures/small-ts-project/src/config.ts",
+        "packages/sourcevision/tests/fixtures/small-ts-project/src/index.ts",
+        "packages/sourcevision/tests/fixtures/small-ts-project/src/models/user.ts",
+        "packages/sourcevision/tests/fixtures/small-ts-project/src/services/email-service.ts",
+        "packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts",
+        "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts",
+        "packages/sourcevision/tests/fixtures/small-ts-project/src/utils/validate.ts"
+      ],
+      "entryPoints": [],
+      "cohesion": 1,
+      "coupling": 0,
+      "insights": [
+        "High cohesion (1) — files are tightly interconnected",
+        "Perfect cohesion (1.0) and zero coupling (0.0) confirm this is a fully self-contained fixture project that exists solely as test input data.",
+        "No entry points means no production code imports these files—they are consumed only by test runners scanning the fixtures/ directory path.",
+        "The small-ts-project fixture models a realistic micro-application (models, services, utils, config) providing representative input for analyzer pipeline tests.",
+        "small-ts-project fixture (7 files) lacks edge cases: no circular dependencies, no binary files, no deeply nested directories, no non-TypeScript sources",
+        "remix-app fixture (5 files) only covers file-based routes — no config-based routes, no splat routes, no optional segments, no error boundaries",
+        "Fixtures are only used by integration/e2e tests; all unit tests create their own inline temp directories and files rather than referencing the fixture directories"
+      ],
+      "childId": "packages-sourcevision",
+      "depth": 1
+    },
+    {
+      "id": "packages-sourcevision:test-suite",
+      "name": "Test Suite",
+      "description": "Unit, integration, and end-to-end tests covering analyzer logic, schema validation, CLI workflows, and the serve command, with imports reaching into both analyzer and viewer zones.",
+      "files": [
+        "packages/sourcevision/src/schema/validate.ts",
+        "packages/sourcevision/tests/e2e/cli-analyze.test.ts",
+        "packages/sourcevision/tests/e2e/cli-serve.test.ts",
+        "packages/sourcevision/tests/integration/pipeline.test.ts",
+        "packages/sourcevision/tests/unit/schema/validate.test.ts"
+      ],
+      "entryPoints": [
+        "packages/sourcevision/src/schema/validate.ts"
+      ],
+      "cohesion": 0.46,
+      "coupling": 0.54,
+      "insights": [
+        "High coupling (0.54) — 4 imports target \"analysis-engine\"",
+        "Low cohesion (0.46) is expected for a test zone—tests naturally fan out across the codebase to import the modules they verify rather than forming tight internal clusters.",
+        "High coupling (0.54) correctly reflects that tests are consumers of production code; the 4 imports into analyzers and 1 into viewer match the test coverage distribution.",
+        "schema/validate.ts landing in this zone suggests it is primarily exercised by tests rather than production code paths—consider importing it in the CLI validate command to strengthen its production-zone gravity.",
+        "validate.ts is now imported in both the CLI validate command and the viewer loader, contradicting its previous test-zone gravity—it belongs logically in the schema layer shared by all three production zones.",
+        "The `renderToDiv` helper function is copy-pasted identically across all 5 viewer test files instead of being extracted to a shared test utility module.",
+        "Test data factory functions (makeFileEntry, makeInventory, makeEdge, makeImports) exist only in zones.test.ts while integration tests for llms-txt and context manually construct the same data structures verbosely.",
+        "The integration tests for llms-txt.ts and context.ts use synthetic inline data objects rather than running the actual pipeline — they are effectively unit tests misplaced in the integration directory.",
+        "zones.test.ts (1265 lines) is a mega-test spanning 3 source modules (zones.ts, louvain.ts, enrich.ts) — no dedicated louvain.test.ts or enrich.test.ts exist",
+        "components.test.ts (696 lines) tests both components.ts and route-detection.ts — no route-detection.test.ts exists, making route detection tests hard to discover",
+        "Core graph algorithms louvainPhase1, mergeBidirectionalCoupling, and capZoneCount have zero direct unit tests — only exercised indirectly through integration-level analyzeZones tests",
+        "Pure functions tryParseJSON, buildMetaPrompt, and getPassConfig in enrich.ts are trivially testable but completely untested",
+        "validateImports and validateZones are imported in validate.test.ts but have zero test cases — malformed data could silently pass validation"
+      ],
+      "childId": "packages-sourcevision",
+      "depth": 1
+    },
+    {
+      "id": "root",
+      "name": "Root",
+      "description": "3 files, primarily JavaScript",
+      "files": [
+        "ci.js",
+        "cli.js",
+        "config.js"
+      ],
+      "entryPoints": [],
+      "cohesion": 1,
+      "coupling": 0,
+      "insights": [
+        "High cohesion (1) — files are tightly interconnected",
+        "Acts as the glue layer coordinating all n-dx subcommands",
+        "Keep this layer thin—complexity should live in package CLIs",
+        "ci.js is orphaned from the main CLI entry point—no imports link it to cli.js or config.js"
       ]
     }
   ],
   "crossings": [
     {
+      "from": "packages/hench/src/agent/brief.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "fromZone": "hench",
+      "toZone": "hench-2"
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/agent/cli-loop.ts",
+      "fromZone": "hench",
+      "toZone": "hench-2"
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/agent/loop.ts",
+      "fromZone": "hench",
+      "toZone": "hench-2"
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/agent/stuck.ts",
+      "fromZone": "hench",
+      "toZone": "hench-2"
+    },
+    {
+      "from": "packages/hench/src/cli/commands/run.ts",
+      "to": "packages/hench/src/store/index.ts",
+      "fromZone": "hench",
+      "toZone": "hench-2"
+    },
+    {
+      "from": "packages/hench/src/cli/commands/show.ts",
+      "to": "packages/hench/src/store/index.ts",
+      "fromZone": "hench",
+      "toZone": "hench-2"
+    },
+    {
+      "from": "packages/hench/src/cli/commands/status.ts",
+      "to": "packages/hench/src/store/index.ts",
+      "fromZone": "hench",
+      "toZone": "hench-2"
+    },
+    {
+      "from": "packages/hench/src/cli/index.ts",
+      "to": "packages/hench/src/cli/commands/init.ts",
+      "fromZone": "hench",
+      "toZone": "hench-2"
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/brief.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "fromZone": "hench",
+      "toZone": "hench-2"
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/agent/brief.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench"
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench"
+    },
+    {
       "from": "packages/hench/src/agent/loop.ts",
-      "to": "packages/hench/src/agent/tools.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-agent-tooling"
+      "to": "packages/hench/src/agent/brief.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench"
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench"
+    },
+    {
+      "from": "packages/hench/src/agent/review.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench"
+    },
+    {
+      "from": "packages/hench/src/cli/commands/init.ts",
+      "to": "packages/hench/src/cli/commands/constants.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench"
+    },
+    {
+      "from": "packages/hench/src/cli/commands/init.ts",
+      "to": "packages/hench/src/cli/output.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench"
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
+      "to": "packages/hench/src/cli/commands/run.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench"
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/agent/completion.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench-3"
+    },
+    {
+      "from": "packages/hench/src/agent/cli-loop.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench-3"
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench-3"
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/atomic-transition.test.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench-3"
     },
     {
       "from": "packages/hench/src/agent/loop.ts",
       "to": "packages/hench/src/agent/tools.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-agent-tooling"
+      "fromZone": "hench-2",
+      "toZone": "hench-4"
+    },
+    {
+      "from": "packages/hench/src/agent/loop.ts",
+      "to": "packages/hench/src/agent/tools.ts",
+      "fromZone": "hench-2",
+      "toZone": "hench-4"
     },
     {
       "from": "packages/hench/src/agent/loop.ts",
       "to": "packages/hench/src/guard/index.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-agent-tooling"
+      "fromZone": "hench-2",
+      "toZone": "hench-4"
     },
     {
       "from": "packages/hench/tests/unit/agent/task-failure.test.ts",
       "to": "packages/hench/src/agent/tools.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-agent-tooling"
-    },
-    {
-      "from": "packages/hench/src/agent/tools.ts",
-      "to": "packages/hench/src/tools/rex.ts",
-      "fromZone": "hench-agent-tooling",
-      "toZone": "hench-agent-core"
+      "fromZone": "hench-2",
+      "toZone": "hench-4"
     },
     {
       "from": "packages/hench/src/guard/index.ts",
       "to": "packages/hench/src/schema/index.ts",
-      "fromZone": "hench-agent-tooling",
-      "toZone": "hench-agent-core"
+      "fromZone": "hench-4",
+      "toZone": "hench-2"
     },
     {
       "from": "packages/hench/tests/unit/tools/files.test.ts",
       "to": "packages/hench/src/schema/v1.ts",
-      "fromZone": "hench-agent-tooling",
-      "toZone": "hench-agent-core"
+      "fromZone": "hench-4",
+      "toZone": "hench-2"
     },
     {
       "from": "packages/hench/tests/unit/tools/shell.test.ts",
       "to": "packages/hench/src/schema/v1.ts",
-      "fromZone": "hench-agent-tooling",
-      "toZone": "hench-agent-core"
+      "fromZone": "hench-4",
+      "toZone": "hench-2"
     },
     {
-      "from": "packages/rex/src/analyze/diff.ts",
-      "to": "packages/rex/src/core/tree.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/analyze/diff.ts",
-      "to": "packages/rex/src/schema/index.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/analyze/reason.ts",
-      "to": "packages/rex/src/core/tree.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/analyze/reason.ts",
-      "to": "packages/rex/src/schema/index.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/analyze/reconcile.ts",
-      "to": "packages/rex/src/core/tree.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/analyze/reconcile.ts",
-      "to": "packages/rex/src/schema/index.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/analyze/scanners.ts",
-      "to": "packages/rex/src/schema/index.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/cli/commands/analyze.ts",
-      "to": "packages/rex/src/cli/commands/constants.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/cli/commands/analyze.ts",
-      "to": "packages/rex/src/cli/errors.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/cli/commands/analyze.ts",
-      "to": "packages/rex/src/cli/output.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/cli/commands/analyze.ts",
-      "to": "packages/rex/src/schema/index.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/cli/commands/analyze.ts",
-      "to": "packages/rex/src/store/index.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/tests/unit/analyze/diff.test.ts",
-      "to": "packages/rex/src/schema/v1.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/tests/unit/analyze/reconcile.test.ts",
-      "to": "packages/rex/src/schema/index.ts",
-      "fromZone": "rex-analysis",
-      "toZone": "rex-prd-core"
-    },
-    {
-      "from": "packages/rex/src/cli/commands/smart-add.ts",
-      "to": "packages/rex/src/analyze/index.ts",
-      "fromZone": "rex-prd-core",
-      "toZone": "rex-analysis"
-    },
-    {
-      "from": "packages/rex/src/cli/commands/smart-add.ts",
-      "to": "packages/rex/src/analyze/index.ts",
-      "fromZone": "rex-prd-core",
-      "toZone": "rex-analysis"
-    },
-    {
-      "from": "packages/rex/src/cli/index.ts",
-      "to": "packages/rex/src/cli/commands/analyze.ts",
-      "fromZone": "rex-prd-core",
-      "toZone": "rex-analysis"
-    },
-    {
-      "from": "packages/rex/tests/unit/cli/commands/smart-add.test.ts",
-      "to": "packages/rex/src/analyze/index.ts",
-      "fromZone": "rex-prd-core",
-      "toZone": "rex-analysis"
+      "from": "packages/hench/src/agent/tools.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "fromZone": "hench-4",
+      "toZone": "hench-3"
     },
     {
       "from": "packages/sourcevision/src/cli/commands/init.ts",
       "to": "packages/sourcevision/src/schema/v1.ts",
-      "fromZone": "sourcevision-analysis-engine",
-      "toZone": "sourcevision-viewer"
+      "fromZone": "packages-sourcevision:analysis-engine",
+      "toZone": "packages-sourcevision:interactive-viewer"
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/init.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "fromZone": "packages-sourcevision:analysis-engine",
+      "toZone": "packages-sourcevision:interactive-viewer"
     },
     {
       "from": "packages/sourcevision/src/schema/index.ts",
       "to": "packages/sourcevision/src/schema/v1.ts",
-      "fromZone": "sourcevision-analysis-engine",
-      "toZone": "sourcevision-viewer"
+      "fromZone": "packages-sourcevision:analysis-engine",
+      "toZone": "packages-sourcevision:interactive-viewer"
     },
     {
-      "from": "packages/sourcevision/src/schema/validate.ts",
+      "from": "packages/sourcevision/src/schema/index.ts",
       "to": "packages/sourcevision/src/schema/v1.ts",
-      "fromZone": "sourcevision-analysis-engine",
-      "toZone": "sourcevision-viewer"
+      "fromZone": "packages-sourcevision:analysis-engine",
+      "toZone": "packages-sourcevision:interactive-viewer"
+    },
+    {
+      "from": "packages/sourcevision/src/schema/index.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "fromZone": "packages-sourcevision:analysis-engine",
+      "toZone": "packages-sourcevision:test-suite"
+    },
+    {
+      "from": "packages/sourcevision/src/schema/index.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "fromZone": "packages-sourcevision:analysis-engine",
+      "toZone": "packages-sourcevision:test-suite"
     },
     {
       "from": "packages/sourcevision/src/viewer/loader.ts",
       "to": "packages/sourcevision/src/schema/data-files.ts",
-      "fromZone": "sourcevision-viewer",
-      "toZone": "sourcevision-analysis-engine"
+      "fromZone": "packages-sourcevision:interactive-viewer",
+      "toZone": "packages-sourcevision:analysis-engine"
     },
     {
       "from": "packages/sourcevision/src/viewer/loader.ts",
-      "to": "packages/sourcevision/src/schema/validate.ts",
-      "fromZone": "sourcevision-viewer",
-      "toZone": "sourcevision-analysis-engine"
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "fromZone": "packages-sourcevision:interactive-viewer",
+      "toZone": "packages-sourcevision:analysis-engine"
     },
     {
       "from": "packages/sourcevision/src/viewer/main.ts",
       "to": "packages/sourcevision/src/schema/data-files.ts",
-      "fromZone": "sourcevision-viewer",
-      "toZone": "sourcevision-analysis-engine"
+      "fromZone": "packages-sourcevision:interactive-viewer",
+      "toZone": "packages-sourcevision:analysis-engine"
     },
     {
-      "from": "packages/sourcevision/tests/unit/analyzers/next-steps.test.ts",
-      "to": "packages/sourcevision/src/analyzers/next-steps.ts",
-      "fromZone": "sourcevision-viewer",
-      "toZone": "sourcevision-analysis-engine"
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "fromZone": "packages-sourcevision:interactive-viewer",
+      "toZone": "packages-sourcevision:analysis-engine"
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/loader.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "fromZone": "packages-sourcevision:interactive-viewer",
+      "toZone": "packages-sourcevision:test-suite"
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/loader.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "fromZone": "packages-sourcevision:interactive-viewer",
+      "toZone": "packages-sourcevision:test-suite"
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/components.ts",
+      "fromZone": "packages-sourcevision:test-suite",
+      "toZone": "packages-sourcevision:analysis-engine"
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/components.ts",
+      "fromZone": "packages-sourcevision:test-suite",
+      "toZone": "packages-sourcevision:analysis-engine"
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/imports.ts",
+      "fromZone": "packages-sourcevision:test-suite",
+      "toZone": "packages-sourcevision:analysis-engine"
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/imports.ts",
+      "fromZone": "packages-sourcevision:test-suite",
+      "toZone": "packages-sourcevision:analysis-engine"
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "fromZone": "packages-sourcevision:test-suite",
+      "toZone": "packages-sourcevision:analysis-engine"
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "fromZone": "packages-sourcevision:test-suite",
+      "toZone": "packages-sourcevision:analysis-engine"
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "fromZone": "packages-sourcevision:test-suite",
+      "toZone": "packages-sourcevision:analysis-engine"
+    },
+    {
+      "from": "packages/sourcevision/tests/integration/pipeline.test.ts",
+      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "fromZone": "packages-sourcevision:test-suite",
+      "toZone": "packages-sourcevision:analysis-engine"
+    },
+    {
+      "from": "packages/sourcevision/src/schema/validate.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "fromZone": "packages-sourcevision:test-suite",
+      "toZone": "packages-sourcevision:interactive-viewer"
+    },
+    {
+      "from": "packages/sourcevision/src/schema/validate.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "fromZone": "packages-sourcevision:test-suite",
+      "toZone": "packages-sourcevision:interactive-viewer"
     }
   ],
   "unzoned": [
@@ -645,47 +793,6 @@
     "packages/hench/tests/e2e/cli-init.test.ts",
     "packages/hench/tsconfig.json",
     "packages/hench/vitest.config.ts",
-    "packages/rex/.claude/settings.local.json",
-    "packages/rex/.rex/config.json",
-    "packages/rex/.rex/execution-log.jsonl",
-    "packages/rex/.rex/prd.json",
-    "packages/rex/.rex/workflow.md",
-    "packages/rex/README.md",
-    "packages/rex/Rex.png",
-    "packages/rex/context.md",
-    "packages/rex/llms.txt",
-    "packages/rex/package.json",
-    "packages/rex/tests/e2e/cli-adapter.test.ts",
-    "packages/rex/tests/e2e/cli-analyze.test.ts",
-    "packages/rex/tests/e2e/cli-import.test.ts",
-    "packages/rex/tests/e2e/cli-init.test.ts",
-    "packages/rex/tests/e2e/cli-prune.test.ts",
-    "packages/rex/tests/e2e/cli-quiet.test.ts",
-    "packages/rex/tests/e2e/cli-smart-add.test.ts",
-    "packages/rex/tests/e2e/cli-sync.test.ts",
-    "packages/rex/tests/e2e/cli-workflow.test.ts",
-    "packages/rex/tests/e2e/fixtures/sample-prd/.rex/config.json",
-    "packages/rex/tests/e2e/fixtures/sample-prd/.rex/execution-log.jsonl",
-    "packages/rex/tests/e2e/fixtures/sample-prd/.rex/prd.json",
-    "packages/rex/tests/e2e/fixtures/sample-prd/.rex/workflow.md",
-    "packages/rex/tsconfig.json",
-    "packages/rex/vitest.config.ts",
-    "packages/sourcevision/.claude/settings.json",
-    "packages/sourcevision/.claude/settings.local.json",
-    "packages/sourcevision/README.md",
-    "packages/sourcevision/SourceVision.png",
-    "packages/sourcevision/build.js",
-    "packages/sourcevision/dev.js",
-    "packages/sourcevision/package.json",
-    "packages/sourcevision/tests/fixtures/remix-app/app/root.tsx",
-    "packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.login.tsx",
-    "packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.tsx",
-    "packages/sourcevision/tests/fixtures/remix-app/app/routes/_index.tsx",
-    "packages/sourcevision/tests/fixtures/remix-app/app/routes/users.$id.tsx",
-    "packages/sourcevision/tests/fixtures/remix-app/tsconfig.json",
-    "packages/sourcevision/tests/fixtures/small-ts-project/tsconfig.json",
-    "packages/sourcevision/tsconfig.json",
-    "packages/sourcevision/vitest.config.ts",
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
     "prd.md",
@@ -695,448 +802,445 @@
     "vitest.config.js"
   ],
   "insights": [
-    "Bidirectional coupling: \"rex-analysis\" ↔ \"rex-prd-core\" (14+4 crossings) — consider extracting shared interface",
-    "Bidirectional coupling: \"hench-agent-core\" ↔ \"hench-agent-tooling\" (4+4 crossings) — consider extracting shared interface",
-    "Bidirectional coupling: \"sourcevision-analysis-engine\" ↔ \"sourcevision-viewer\" (3+4 crossings) — consider extracting shared interface",
-    "Size imbalance: largest zone has 78 files vs smallest with 3 — uneven decomposition",
-    "The codebase follows a consistent pattern of splitting packages into a large core/infrastructure zone and a smaller specialized feature zone, seen in hench (core+tooling), rex (analysis+core), and sourcevision (3 zones).",
-    "Cross-zone coupling is low across the board (max 14 imports) and predominantly unidirectional, indicating healthy dependency flow from feature zones toward foundational zones.",
-    "All split-package zone pairs (hench/hench-2, rex/rex-2) show the expected pattern: the larger zone has higher cohesion and lower coupling, serving as the stable base.",
-    "All three sourcevision zones communicate exclusively through the schema layer (v1.ts types, validate.ts, data-files.ts constants), forming a clean producer-consumer architecture: analysis engine writes JSON, viewer reads JSON, test fixture provides input",
-    "Cross-zone import counts are symmetric and low (3-4 each direction between sourcevision and sourcevision-2), matching the rex and hench zone pairs — this monorepo consistently splits packages into a core processing zone and a presentation/integration zone",
-    "The sourcevision package's 3-zone split (engine, viewer, fixture) mirrors the hench package's 2-zone split (core, tooling) and rex's 2-zone split (analysis, PRD core), suggesting Louvain reliably finds the natural seams in each package",
-    "The dependency graph is strictly unidirectional at the package level: hench→rex (library imports), rex→sourcevision (filesystem data reads), root→all (subprocess spawning) — no reverse dependencies exist.",
-    "Sourcevision is the only fully leaf-node package: zero inbound code imports, zero outbound code imports — it communicates exclusively through .sourcevision/*.json data files read by rex's scanners and the recommend command.",
-    "The monorepo uses three distinct integration patterns at decreasing coupling strength: library imports (hench→rex), filesystem data contracts (rex→sourcevision via JSON files), and subprocess spawning (root-orchestration→all) — each chosen appropriately for the relationship's stability requirements.",
-    "Hench's lack of any sourcevision dependency means it cannot directly leverage codebase analysis for task execution — all sourcevision context must be pre-baked into rex PRD items by the plan phase before hench can act on it.",
-    "Hench has 9 runtime imports from rex (findNextTask, findItem, resolveStore, computeTimestampUpdates, findAutoCompletions, etc.) making it the only cross-package runtime dependency in the monorepo — sourcevision and rex are fully standalone",
-    "All three packages implement an identical CLIError class (Error subclass with optional suggestion string) in cli/errors.ts independently — this is intentional duplication preserving per-package deployability, not an extraction candidate",
-    "All three packages use Zod for schema validation with an identical { ok: true; data: T } | { ok: false; errors: ZodError } result type pattern but share no validation code — the pattern convergence is a de facto convention without a shared library",
-    "Rex and hench both implement identical project-config override logic (loadProjectOverrides + mergeWithOverrides from .n-dx.json) in store/project-config.ts — this duplicated config-merge code is a realistic extraction candidate into a shared workspace utility",
-    "The monorepo dependency graph is a strict DAG: sourcevision has zero cross-package imports, rex has zero cross-package imports, and hench depends on rex at runtime — no cycles exist at the package level"
+    "Bidirectional coupling: \"hench\" ↔ \"hench-2\" (9+8 crossings) — consider extracting shared interface",
+    "Bidirectional coupling: \"hench-2\" ↔ \"hench-4\" (4+3 crossings) — consider extracting shared interface",
+    "Size imbalance: largest zone has 32 files vs smallest with 3 — uneven decomposition",
+    "Bidirectional coupling: \"hench-cli\" ↔ \"hench-core\" (9+8 crossings) — consider extracting shared interface",
+    "Bidirectional coupling: \"hench-core\" ↔ \"hench-tooling\" (4+3 crossings) — consider extracting shared interface",
+    "Size imbalance: largest zone has 32 files vs smallest with 3 — uneven decomposition",
+    "Hench package naturally decomposed into 4 zones: CLI, core agent, completion, and tooling—this reflects good separation of concerns",
+    "The bidirectional imports between hench-cli and hench-core (17 total) warrant review to ensure the CLI remains a thin layer",
+    "Layering violation: orchestration → hench-cli → hench-core should be unidirectional, but bidirectional coupling suggests missing abstraction layer for shared types/interfaces",
+    "Hub-and-spoke pattern emerging with hench-core as hub—acceptable for now but creates single point of fragility",
+    "Clean boundary exists between hench-completion and other zones—completion logic is well-encapsulated",
+    "Missing rex and sourcevision packages in zone analysis—either excluded from scan or should be analyzed separately",
+    "Test file placement is inconsistent: some zones include tests (hench-completion, hench-tooling) while others exclude them—standardize approach",
+    "Implicit convention: **/constants.ts files exist in cli/commands/ but not in core modules—consider standardizing constant extraction across all zones",
+    "Risk area: hench-core has highest file count (32) with moderate cohesion (0.81)—any cohesion drop below 0.75 should trigger zone split discussion",
+    "Missing explicit error boundary between zones—errors propagate implicitly from core→cli without transformation layer",
+    "Findings 0, 1, 6, and 7 all describe the same root cause (missing shared interface layer)—consolidate into single actionable item",
+    "The 5 hench-* zones follow a consistent hub-and-spoke pattern with hench-core as hub, suggesting the architecture is intentional rather than accidental",
+    "No performance, security, or correctness issues identified—all findings are structural/organizational",
+    "Findings cluster into 3 actionable themes: (A) shared-types extraction (#0, #1, #6, #7, #13), (B) zone size rebalancing (#0 in hench-2), (C) documentation gaps (#9, #10)",
+    "The 'bidirectional coupling' findings are symptoms of missing type boundaries, not architectural decay—fixing shared-types resolves 4 findings at once",
+    "Findings cluster into 3 distinct issues: (A) bidirectional coupling needing shared types, (B) zone size imbalance, (C) documentation gaps—all other findings are duplicates or elaborations of these",
+    "The 29 cross-zone crossings across 6 pairs (~5 per pair) combined with cohesion scores 0.67-0.84 indicates healthy modularization with localized coupling, not systemic architecture problems"
   ],
   "findings": [
     {
       "type": "observation",
       "pass": 0,
       "scope": "global",
-      "text": "Bidirectional coupling: \"hench-agent-core\" ↔ \"hench-agent-tooling\" (4+4 crossings) — consider extracting shared interface",
+      "text": "Bidirectional coupling: \"hench\" ↔ \"hench-2\" (9+8 crossings) — consider extracting shared interface",
       "severity": "warning"
     },
     {
       "type": "observation",
       "pass": 0,
       "scope": "global",
-      "text": "Bidirectional coupling: \"rex-analysis\" ↔ \"rex-prd-core\" (14+4 crossings) — consider extracting shared interface",
+      "text": "Bidirectional coupling: \"hench-2\" ↔ \"hench-4\" (4+3 crossings) — consider extracting shared interface",
       "severity": "warning"
     },
     {
       "type": "observation",
       "pass": 0,
       "scope": "global",
-      "text": "Bidirectional coupling: \"sourcevision-analysis-engine\" ↔ \"sourcevision-viewer\" (3+4 crossings) — consider extracting shared interface",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "global",
-      "text": "Size imbalance: largest zone has 78 files vs smallest with 3 — uneven decomposition",
+      "text": "Size imbalance: largest zone has 32 files vs smallest with 3 — uneven decomposition",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 0,
-      "scope": "hench-agent-core",
-      "text": "High cohesion (0.97) — files are tightly interconnected",
+      "scope": "hench-2",
+      "text": "Contains 36% of project files (32/89) — may be too broad, consider splitting",
+      "severity": "warning"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "hench-2",
+      "text": "High cohesion (0.81) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 0,
-      "scope": "hench-agent-tooling",
+      "scope": "hench-4",
       "text": "High cohesion (0.84) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 0,
-      "scope": "rex-prd-core",
-      "text": "High cohesion (0.97) — files are tightly interconnected",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "root-orchestration",
+      "scope": "root",
       "text": "High cohesion (1) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
-      "pass": 0,
-      "scope": "sourcevision-analysis-engine",
-      "text": "High cohesion (0.97) — files are tightly interconnected",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "sourcevision-test-fixture",
-      "text": "High cohesion (1) — files are tightly interconnected",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "sourcevision-viewer",
-      "text": "High cohesion (0.96) — files are tightly interconnected",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
       "pass": 1,
       "scope": "global",
-      "text": "All six package-internal zone pairs (rex↔rex-2, hench↔hench-2, sourcevision↔sourcevision-2) show 3-4 cross-zone imports each, indicating consistent boundary discipline across the monorepo. No zone pair exceeds 14 imports (rex→rex-2), and that outlier reflects rex-2's larger size (78 files).",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "global",
-      "text": "Bidirectional coupling exists in hench (4+4) and rex (14+4) zone pairs but is type-contract based in both cases, not circular business logic; no runtime risk.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "global",
-      "text": "Rex-analysis has the highest coupling ratio (0.23) in the codebase; while structurally justified, growth of the analysis pipeline should be monitored to prevent it from becoming tightly bound to core internals.",
+      "text": "All hench zones maintain cohesion above 0.67, indicating the package has solid internal architecture",
       "severity": "warning"
     },
     {
       "type": "observation",
       "pass": 1,
       "scope": "global",
-      "text": "Test fixtures appearing as first-class architectural zones (sourcevision-3) is a Louvain artifact — the algorithm correctly identifies them as disconnected communities but they are not architectural zones. Consider filtering tests/fixtures/** paths before zone detection to produce cleaner output for consumers.",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "global",
-      "text": "The root orchestration zone has zero coupling to any package zone, maintaining clean separation between the CLI entry point and package internals.",
+      "text": "Cross-zone import pattern shows hench-core as the hub with spokes to CLI, completion, and tooling—classic layered architecture",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
       "scope": "global",
-      "text": "Three zones across the monorepo have coupling ≤ 0.04 to their sibling zones (sourcevision-viewer, hench-tooling at 0.84 cohesion, rex-analysis at 0.77 cohesion), with the two lower-cohesion zones in rex and hench suggesting those boundaries may be less natural than sourcevision's clean engine/viewer split.",
+      "text": "Root orchestration zone has no coupling to internal zones, confirming clean package boundaries",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "hench-agent-core",
-      "text": "Bidirectional coupling with hench-agent-tooling (4 imports each way) is type-contract based, not circular business logic, so it poses no runtime risk.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "hench-agent-core",
-      "text": "Schema types (including GuardConfig) are defined in this zone but consumed primarily by hench-agent-tooling; extracting a shared types layer would eliminate the bidirectional coupling between zones.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "hench-agent-core",
-      "text": "The agent loop files (loop.ts, cli-loop.ts, brief.ts) are well-sized at 250-560 lines each, avoiding monolithic orchestrators.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "hench-agent-tooling",
-      "text": "Security-by-default architecture: guard validates every tool call, with no bypass path. This is well-suited for an autonomous agent operating on user codebases.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "hench-agent-tooling",
-      "text": "The 0.16 coupling ratio is the second-highest in the codebase, driven by guard config types imported from the core zone's schema; a shared interface file would reduce this.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "hench-agent-tooling",
-      "text": "Tool dispatch in agent/tools.ts uses a switch statement across ~7 tools; this scales adequately now but a registry pattern would be warranted if the tool count exceeds 12.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "rex-analysis",
-      "text": "All 14 cross-zone imports into rex-prd-core are unidirectional (analysis reads core, core does not import analysis), which is the correct dependency direction for a pluggable feature.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "rex-analysis",
-      "text": "Cohesion at 0.77 is the lowest of all zones, indicating the analysis pipeline has some internal fragmentation; the CLI command file bridges two concerns (CLI orchestration and pipeline invocation).",
+      "scope": "hench-cli",
+      "text": "Bidirectional coupling with hench-2 (9 imports out, 8 in) suggests these zones could potentially be merged or boundaries clarified",
       "severity": "warning"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "rex-analysis",
-      "text": "reason.ts handles LLM integration with retry logic, JSON repair, and chunking in a single module; if it grows further, extracting JSON repair and chunking as standalone utilities would improve testability.",
+      "scope": "hench-cli",
+      "text": "Good cohesion (0.72) for a CLI layer that must integrate with core agent functionality",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "rex-prd-core",
-      "text": "High cohesion (0.97) and minimal outbound coupling (0.03) confirm this zone is a stable foundation that other zones depend on without being destabilized by them.",
+      "scope": "hench-completion",
+      "text": "Lower cohesion (0.67) reflects that completion logic bridges agent internals with external rex state",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "rex-prd-core",
-      "text": "State machine logic is well-distributed: transitions.ts enforces status rules, parent-completion.ts cascades, dag.ts prevents cycles — no single file owns too much responsibility.",
+      "scope": "hench-completion",
+      "text": "Test files grouped with source indicates community detection found strong import relationships—this is architecturally correct",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "rex-prd-core",
-      "text": "sync-engine.ts (552 lines) and notion-map.ts (726 lines) are the two largest files and handle inherently complex bidirectional sync; documenting the sync algorithm phases would aid future maintainers.",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "root-orchestration",
-      "text": "Perfect cohesion (1.0) and zero coupling confirm these files form a self-contained orchestration layer with no inbound dependencies from packages.",
+      "scope": "hench-core",
+      "text": "32 files is large—if growth continues, consider extracting schema/ or store/ into dedicated zones",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "root-orchestration",
-      "text": "ci.js and config.js are imported only by cli.js; consider co-locating them in a dedicated orchestration directory if more top-level commands are added.",
+      "scope": "hench-core",
+      "text": "Multiple entry points (7) suggests this zone serves as the primary integration point for other hench zones",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "sourcevision-analysis-engine",
-      "text": "Cohesion of 0.97 with only 3 cross-zone imports confirms tight internal wiring. All external surface goes through the schema layer, which is the ideal pattern for a pipeline that produces JSON artifacts.",
+      "scope": "hench-core",
+      "text": "Strong cohesion (0.81) indicates well-organized core functionality with appropriate internal dependencies",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "sourcevision-analysis-engine",
-      "text": "Large analyzer files (zones.ts ~400 lines, imports.ts ~350 lines) combine detection logic with metrics computation and insight generation. Splitting by concern (extraction vs. metrics vs. insights) would reduce cognitive load without changing the pipeline flow.",
+      "scope": "hench-tooling",
+      "text": "Guard system co-located with tools ensures security validation stays close to execution",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "sourcevision-analysis-engine",
-      "text": "The enrichment subsystem (enrich.ts + 3 helpers) mixes orchestration, prompt construction, CLI invocation, and response parsing in adjacent files without a clear subdirectory boundary. As this is the most failure-prone subsystem (network, auth, parse errors), isolating it would improve testability and error tracing.",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "sourcevision-test-fixture",
-      "text": "The fixture is intentionally simple (7 files, no cycles, no React) to serve as a baseline. This means the analysis pipeline's handling of circular dependencies, dynamic imports, and component detection is only tested against real-world codebases, not controlled fixtures.",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "sourcevision-test-fixture",
-      "text": "The fixture's layered structure (index → services → models + utils) with a shared hub (format.ts imported from two locations) exercises the most common real-world import pattern, making it a solid baseline despite its simplicity.",
+      "scope": "hench-tooling",
+      "text": "Highest cohesion (0.84) shows the tool and guard systems form a tight, well-bounded module",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "sourcevision-test-fixture",
-      "text": "Zero coupling means Louvain correctly identified this as a completely disconnected community. Consider excluding tests/fixtures/** from zone detection to avoid surfacing test data as an architectural zone in production output.",
+      "scope": "orchestration",
+      "text": "Only 3 files suggests appropriate scope for top-level coordination",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "sourcevision-viewer",
-      "text": "Coupling of 0.04 (4 imports into the analysis engine) routes exclusively through schema files (data-files.ts, validate.ts). The viewer never imports analyzers or CLI code, preserving its ability to run as a standalone static app.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "sourcevision-viewer",
-      "text": "The graph physics engine and SVG renderer (~600 lines) are imperative code that mutates DOM directly, sidestepping Preact's reconciliation. Unit tests cover only flow diagrams, not the core force simulation or zoom/pan/highlight logic. This is the highest-risk area for regressions.",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "sourcevision-viewer",
-      "text": "View files (graph.ts, zones.ts, files.ts) at 200-300 lines each mix rendering and state management. Extracting data-preparation logic into utility functions would improve testability without requiring an architectural change.",
+      "scope": "orchestration",
+      "text": "Zero coupling indicates clean separation from package internals, which is ideal for an orchestration layer",
       "severity": "info"
     },
     {
       "type": "pattern",
       "pass": 2,
       "scope": "global",
-      "text": "All cross-package data contracts (sourcevision JSON files, rex PRDStore interface, rex schema types) flow in a single direction matching the execution pipeline: sourcevision produces → rex consumes and produces → hench consumes — no package produces data consumed by an upstream package.",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "global",
-      "text": "All three packages converge on the same schema/validate.ts + schema/v1.ts + cli/errors.ts structural pattern, establishing a de facto package template without a shared generator or scaffolding tool",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "global",
-      "text": "Duplicated project-config merge logic in rex/src/store/project-config.ts and hench/src/store/project-config.ts performs identical .n-dx.json loading and deep-merge — extractable to a shared workspace package",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "global",
-      "text": "The three integration mechanisms (subprocess, filesystem JSON, library import) form a coupling gradient that mirrors package stability: most-stable sourcevision uses loosest coupling (data files), moderately-stable rex uses medium coupling (subprocess + data), and the tightest coupling (library imports) exists only between the two most co-evolved packages (hench→rex).",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "hench-agent-core",
-      "text": "The PRDStore interface from rex/dist/store/types.js is threaded through brief.ts, loop.ts, cli-loop.ts, and tools/rex.ts as a constructor parameter, acting as the primary dependency-inversion boundary between hench and rex.",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "hench-agent-tooling",
-      "text": "All tool implementations (files.ts, git.ts, shell.ts) are stateless functions with identical signatures (params + guard → result), but rex.ts breaks this pattern by also importing agent-layer logic (validateCompletion, formatValidationResult).",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "rex-analysis",
-      "text": "scanners.ts duplicates sourcevision type definitions locally instead of sharing them, creating a shadow type contract that could silently drift if sourcevision's JSON schema evolves.",
+      "text": "Missing shared-types zone: bidirectional imports between CLI/core and core/tooling suggest common interfaces should be extracted to eliminate cycles",
       "severity": "warning"
     },
     {
       "type": "pattern",
       "pass": 2,
-      "scope": "rex-prd-core",
-      "text": "The smart-add.ts command imports from the analyze zone, creating a second consumer of the analysis pipeline beyond the primary analyze.ts command — this prevents the analyze zone from being treated as a single-consumer internal module.",
+      "scope": "hench-completion",
+      "text": "Zone encapsulates completion heuristics separately from execution—clean separation of 'what is done' from 'how to do it'",
       "severity": "info"
     },
     {
       "type": "pattern",
       "pass": 2,
-      "scope": "root-orchestration",
-      "text": "Three files use three different integration mechanisms with sub-packages: cli.js spawns with inherited stdio, ci.js spawns and parses JSON stdout, config.js does direct filesystem I/O — no shared abstraction for package communication.",
+      "scope": "hench-core",
+      "text": "Zone acts as integration point for all other hench zones—any change here ripples outward",
       "severity": "info"
     },
     {
       "type": "pattern",
       "pass": 2,
-      "scope": "sourcevision-analysis-engine",
-      "text": "next-steps.ts lives inside analyzers/ but produces output consumed exclusively by the viewer — it is functionally a boundary module misplaced in the producer zone",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "sourcevision-test-fixture",
-      "text": "Fixture omits edge cases that the analysis engine handles: circular dependencies, dynamic import(), re-exports, barrel index files, and React component detection — a second adversarial fixture would improve regression coverage",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "sourcevision-viewer",
-      "text": "Graph subsystem (physics.ts, renderer.ts) bypasses Preact VDOM with imperative SVG/math and has zero test coverage — this is the most fragile viewer code path",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "global",
-      "text": "Hench→Rex runtime coupling (9 function imports across 6 files) is the sole cross-package dependency — if rex core APIs change, hench breaks with no compile-time safety beyond TypeScript path resolution against dist/",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "global",
-      "text": "Rex has no explicit public API module (index.ts barrel) despite being consumed as a library by hench — hench reaches into rex/dist/store/types, rex/dist/core/*, and rex/dist/schema/* directly, creating a fragile integration surface.",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "global",
-      "text": "Rex's shadow type definitions for sourcevision data (SVFinding, SVZone, etc. in scanners.ts) and the absence of a shared schema package mean the sourcevision↔rex data contract has no compile-time enforcement and could drift silently.",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "hench-agent-core",
-      "text": "Hench imports rex core utilities (findNextTask, findItem, walkTree, computeTimestampUpdates, findAutoCompletions) that are implementation details rather than public API — these are internal algorithms that could change without notice.",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "hench-agent-tooling",
-      "text": "tools/rex.ts importing agent/completion.ts is the sole cause of bidirectional coupling between hench zones — extracting validateCompletion into a shared module or the schema layer would make the dependency unidirectional.",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "rex-analysis",
-      "text": "The analysis pipeline imports only 3 symbols from rex-prd-core (PRDItem type, Priority type, walkTree function), while the reverse direction (CLI commands importing analyze) pulls in ~15 symbols — the dependency is heavily asymmetric despite being bidirectional.",
+      "scope": "hench-tooling",
+      "text": "Guard modules (commands, paths) form a cohesive security layer distinct from tool implementations—candidate for extraction if tooling grows",
       "severity": "info"
     },
     {
       "type": "relationship",
       "pass": 2,
-      "scope": "rex-prd-core",
-      "text": "Hench imports 5+ internal rex modules via rex/dist/* paths with no public API barrel file — any internal refactoring in rex could break hench without warning since there is no stable API boundary.",
+      "scope": "hench-cli,hench-core",
+      "text": "CLI zone depends on core for agent execution, but core reaches back into CLI for output formatting—violation of layered architecture",
       "severity": "warning"
     },
     {
       "type": "relationship",
       "pass": 2,
-      "scope": "root-orchestration",
-      "text": "config.js must understand the JSON schema of every package's config file, creating implicit coupling to all three packages' internal config formats without compile-time safety.",
+      "scope": "hench-cli,hench-core,hench-tooling",
+      "text": "Three-zone dependency triangle (CLI↔core↔tooling) creates implicit coupling—changes to shared concepts require coordinated updates",
+      "severity": "info"
+    },
+    {
+      "type": "relationship",
+      "pass": 2,
+      "scope": "hench-core,hench-tooling",
+      "text": "Core imports tooling (expected) but tooling also imports core types—tools should be self-contained with injected dependencies",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "global",
+      "text": "No explicit shared-types or contracts zone exists despite bidirectional coupling—extract common interfaces to break circular dependencies",
+      "severity": "critical"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "global",
+      "text": "Zone naming uses 'hench-' prefix redundantly when all non-orchestration zones are already in hench package—consider package-relative naming",
+      "severity": "info"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "hench-cli",
+      "text": "CLI layer (12 files) is relatively large for what should be a thin wrapper—consider if some logic should move to hench-core",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "hench-completion",
+      "text": "Test files in same zone as source (3 source + 2 test) artificially inflates cohesion metrics—zone boundaries should follow source structure only",
+      "severity": "info"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "hench-core",
+      "text": "32-file zone exceeds recommended zone size (15-20 files)—submodules like agent/, tools/, and run/ should be evaluated for promotion to separate zones",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "hench-core",
+      "text": "review.ts, stuck.ts, and summary.ts form an implicit 'agent-state' submodule that could be extracted to reduce core zone complexity",
+      "severity": "info"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "hench-tooling",
+      "text": "guard/ subdirectory has 4 files with distinct responsibility (security enforcement) from tools/ (capability provision)—should be separate zones",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "Document the implicit 'thin CLI wrapper' convention in CLAUDE.md to prevent future violations",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "Establish error transformation layer at zone boundaries—core should throw domain errors, CLI should catch and format for users",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "hench-cli",
+      "text": "init.ts performs filesystem operations directly rather than delegating to a core module, breaking the thin-wrapper pattern used by run.ts and status.ts",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "hench-completion",
+      "text": "completion.ts + rex.ts coupling indicates task completion semantics are spread across two files—consider a unified TaskCompletionPolicy abstraction",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "hench-core",
+      "text": "Consider splitting agent/ into lifecycle (loop, cli-loop), planning (brief, prompt), and analysis (review, summary, stuck) subdirectories",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "hench-core",
+      "text": "test-runner.ts embedded in agent/ creates implicit dependency on test framework—extract to tools/ if tests are treated as external operations",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "hench-tooling",
+      "text": "Add integration tests for guard subsystem to verify command filtering works correctly with actual shell tool invocations",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "hench-tooling",
+      "text": "Audit shell.ts and guard/commands.ts for duplicated command parsing/validation logic",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "orchestration",
+      "text": "ci.js appears to be a standalone script not integrated into the main orchestration flow—verify if it should be documented separately or wired into cli.js",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 5,
+      "scope": "global",
+      "text": "29 cross-zone crossings across 6 zone pairs averages ~5 crossings per pair—within acceptable range for a 64-file package",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 5,
+      "scope": "global",
+      "text": "Zone naming criticism (#8) is stylistic only—'hench-' prefix provides clarity when viewing zones.json in isolation; no refactoring needed",
+      "severity": "info"
+    },
+    {
+      "type": "pattern",
+      "pass": 5,
+      "scope": "global",
+      "text": "DUPLICATE CONSOLIDATION: Findings #0, #1, #6, #7, #12, #13, #14 all describe the same issue (bidirectional coupling requiring shared interface extraction)—these 7 findings collapse to 1 action item: create packages/hench/src/types/index.ts",
+      "severity": "info"
+    },
+    {
+      "type": "pattern",
+      "pass": 5,
+      "scope": "global",
+      "text": "Duplicate findings collapse: #0, #1, #6, #7, #13 all describe the same bidirectional coupling issue—single fix: create packages/hench/src/types/index.ts with shared interfaces",
+      "severity": "warning"
+    },
+    {
+      "type": "pattern",
+      "pass": 5,
+      "scope": "global",
+      "text": "Duplicate findings detected: #0, #1, #6, #7 all point to bidirectional coupling requiring shared interface extraction—treat as single issue with one fix",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Create packages/hench/src/types/index.ts exporting: RunContext, ToolResult, BriefingData, CompletionResult—then update imports in cli/, core/, tooling/ to use this shared module",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Documentation actions from findings #9, #10 should be deferred until after shared-types extraction proves the pattern; premature documentation of conventions not yet validated wastes effort",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Finding #7 (critical: no shared-types zone) directly contradicts finding #4 (info: classic layered architecture)—cannot simultaneously have critical architecture flaw AND well-structured layers; resolution: architecture is sound, shared-types is an optimization",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Finding #7 claims 'no explicit shared-types zone exists' as critical, but finding #4 praises the 'classic layered architecture'—these conflict; the coupling is a minor refinement opportunity, not a critical flaw",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Findings #4 and #7 conflict: #4 praises 'classic layered architecture' while #7 calls missing shared-types 'critical'—resolve by acknowledging the architecture is sound with one refinement needed",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Prioritized action plan: (1) Extract shared types to break cycles, (2) Split hench-2 zone if it grows past 40 files, (3) Add error transformation docs—in that order",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "SINGLE ACTIONABLE FIX: Create packages/hench/src/types/index.ts exporting RunContext, ToolResult, BriefingData, CompletionResult interfaces; update imports in cli/commands/*.ts, core/run.ts, and tools/*.ts to import from '../types'—this resolves findings #0, #1, #6, #7, #12, #13, #14 in one PR",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "hench",
+      "text": "Extract RunContext and ToolResult interfaces to a new hench/types.ts module, then re-export from both CLI and core to break bidirectional imports",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "hench-2",
+      "text": "Monitor file count: at 32 files (36% of project), this zone is at the upper threshold; if it reaches 40+ files, split into hench-core (run.ts, context.ts, loop.ts) and hench-tooling (tools/*.ts, execution.ts)",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "hench-2",
+      "text": "Split into hench-core (run loop, context) and hench-tooling (tool definitions, execution)—the 32 files span two distinct responsibilities",
       "severity": "warning"
     }
   ],
-  "enrichmentPass": 2,
-  "structureHash": "4d0d773b29f6dabf"
+  "enrichmentPass": 4,
+  "structureHash": "992847a65c2e1697"
 }
