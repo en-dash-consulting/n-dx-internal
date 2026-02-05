@@ -4469,7 +4469,7 @@
             {
               "id": "4097dd91-741f-48ae-bfcd-28b781a036c9",
               "title": "Fix validation failure exit codes",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Ensure CI fails with proper exit codes when validation fails",
               "acceptanceCriteria": [
@@ -4481,7 +4481,8 @@
                 "validation failure"
               ],
               "source": "llm",
-              "startedAt": "2026-02-05T14:28:42.831Z"
+              "startedAt": "2026-02-05T14:28:42.831Z",
+              "completedAt": "2026-02-05T14:59:06.856Z"
             }
           ]
         },
@@ -7337,7 +7338,7 @@
             {
               "id": "6bde7f91-149b-4487-b734-78f032ad061e",
               "title": "Handle document-level mapping",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Map entire PRD documents to and from Notion database structures",
               "acceptanceCriteria": [
@@ -7352,7 +7353,9 @@
                 "mapDocumentToNotion",
                 "mapNotionToDocument"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T14:59:41.565Z",
+              "completedAt": "2026-02-05T15:04:15.422Z"
             },
             {
               "id": "449ebc63-c229-4e07-a797-e0f7c3fbe4a9",
