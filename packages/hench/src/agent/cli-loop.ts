@@ -10,6 +10,7 @@ import { toolRexUpdateStatus, toolRexAppendLog, runPostTaskTests } from "../tool
 import { validateCompletion, formatValidationResult } from "../validation/completion.js";
 import { collectReviewDiff, promptReview, revertChanges } from "./review.js";
 import { checkTokenBudget } from "./token-budget.js";
+import { parseTokenUsage, parseStreamTokenUsage } from "./token-usage.js";
 import { section, subsection, stream, detail, info } from "../types/output.js";
 
 export interface CliLoopOptions {
@@ -142,29 +143,25 @@ export function processStreamLine(
         }
 
         // Extract per-turn token usage from message.usage
-        const usage = msg.usage as Record<string, number> | undefined;
-        if (usage) {
-          const inputTokens = usage.input_tokens ?? 0;
-          const outputTokens = usage.output_tokens ?? 0;
+        if (msg.usage && typeof msg.usage === "object") {
+          const parsed = parseTokenUsage(msg.usage as Record<string, unknown>);
 
-          result.tokenUsage.input += inputTokens;
-          result.tokenUsage.output += outputTokens;
+          result.tokenUsage.input += parsed.input;
+          result.tokenUsage.output += parsed.output;
 
           const turnUsage: TurnTokenUsage = {
             turn: turnCounter.value,
-            input: inputTokens,
-            output: outputTokens,
+            input: parsed.input,
+            output: parsed.output,
           };
 
-          const cacheCreation = usage.cache_creation_input_tokens;
-          const cacheRead = usage.cache_read_input_tokens;
-          if (cacheCreation) {
-            result.tokenUsage.cacheCreationInput = (result.tokenUsage.cacheCreationInput ?? 0) + cacheCreation;
-            turnUsage.cacheCreationInput = cacheCreation;
+          if (parsed.cacheCreationInput) {
+            result.tokenUsage.cacheCreationInput = (result.tokenUsage.cacheCreationInput ?? 0) + parsed.cacheCreationInput;
+            turnUsage.cacheCreationInput = parsed.cacheCreationInput;
           }
-          if (cacheRead) {
-            result.tokenUsage.cacheReadInput = (result.tokenUsage.cacheReadInput ?? 0) + cacheRead;
-            turnUsage.cacheReadInput = cacheRead;
+          if (parsed.cacheReadInput) {
+            result.tokenUsage.cacheReadInput = (result.tokenUsage.cacheReadInput ?? 0) + parsed.cacheReadInput;
+            turnUsage.cacheReadInput = parsed.cacheReadInput;
           }
 
           result.turnTokenUsage.push(turnUsage);
@@ -222,11 +219,12 @@ export function processStreamLine(
         result.costUsd = event.cost_usd;
       }
       // Extract total token usage from result event (fallback if per-turn not available)
-      if (typeof event.total_input_tokens === "number" && result.tokenUsage.input === 0) {
-        result.tokenUsage.input = event.total_input_tokens as number;
-      }
-      if (typeof event.total_output_tokens === "number" && result.tokenUsage.output === 0) {
-        result.tokenUsage.output = event.total_output_tokens as number;
+      if (result.tokenUsage.input === 0 && result.tokenUsage.output === 0) {
+        const fallback = parseStreamTokenUsage(event);
+        if (fallback) {
+          result.tokenUsage.input = fallback.input;
+          result.tokenUsage.output = fallback.output;
+        }
       }
       break;
     }

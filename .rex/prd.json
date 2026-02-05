@@ -2660,7 +2660,7 @@
             {
               "id": "f8c7d2fe-52eb-4960-a728-43f60523f37e",
               "title": "Enhance token usage parsing from API responses",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement robust token extraction that handles various API response formats and fields",
               "acceptanceCriteria": [
@@ -2676,7 +2676,9 @@
                 "parseTokenUsage",
                 "parseStreamTokenUsage"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T20:15:11.525Z",
+              "completedAt": "2026-02-05T20:20:53.527Z"
             },
             {
               "id": "a9a9d413-1372-4cc4-841a-44c0c214f46a",

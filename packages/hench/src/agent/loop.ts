@@ -11,6 +11,7 @@ import { saveRun } from "../store/index.js";
 import { buildRunSummary } from "./summary.js";
 import { collectReviewDiff, promptReview, revertChanges } from "./review.js";
 import { checkTokenBudget } from "./token-budget.js";
+import { parseTokenUsage } from "./token-usage.js";
 import { toolRexUpdateStatus, toolRexAppendLog, runPostTaskTests } from "../tools/index.js";
 import { section, subsection, stream, detail, info } from "../types/output.js";
 import type { ToolContext } from "../types/index.js";
@@ -197,27 +198,24 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
       });
 
       // Track token usage
-      run.tokenUsage.input += response.usage.input_tokens;
-      run.tokenUsage.output += response.usage.output_tokens;
-
-      const usageRaw = response.usage as unknown as Record<string, number>;
-      const cacheCreation = usageRaw.cache_creation_input_tokens as number | undefined;
-      const cacheRead = usageRaw.cache_read_input_tokens as number | undefined;
-      if (cacheCreation) {
-        run.tokenUsage.cacheCreationInput = (run.tokenUsage.cacheCreationInput ?? 0) + cacheCreation;
+      const parsed = parseTokenUsage(response.usage as unknown as Record<string, unknown>);
+      run.tokenUsage.input += parsed.input;
+      run.tokenUsage.output += parsed.output;
+      if (parsed.cacheCreationInput) {
+        run.tokenUsage.cacheCreationInput = (run.tokenUsage.cacheCreationInput ?? 0) + parsed.cacheCreationInput;
       }
-      if (cacheRead) {
-        run.tokenUsage.cacheReadInput = (run.tokenUsage.cacheReadInput ?? 0) + cacheRead;
+      if (parsed.cacheReadInput) {
+        run.tokenUsage.cacheReadInput = (run.tokenUsage.cacheReadInput ?? 0) + parsed.cacheReadInput;
       }
 
       // Per-turn breakdown
       const turnUsage: TurnTokenUsage = {
         turn: turn + 1,
-        input: response.usage.input_tokens,
-        output: response.usage.output_tokens,
+        input: parsed.input,
+        output: parsed.output,
       };
-      if (cacheCreation) turnUsage.cacheCreationInput = cacheCreation;
-      if (cacheRead) turnUsage.cacheReadInput = cacheRead;
+      if (parsed.cacheCreationInput) turnUsage.cacheCreationInput = parsed.cacheCreationInput;
+      if (parsed.cacheReadInput) turnUsage.cacheReadInput = parsed.cacheReadInput;
       run.turnTokenUsage!.push(turnUsage);
 
       // Check token budget
