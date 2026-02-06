@@ -5310,7 +5310,7 @@
             {
               "id": "97487bb1-d42b-4296-b85a-223870f54268",
               "title": "Add chunk size parameter to rex analyze command",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Allow users to specify how many proposals to present at once using --chunk-size flag",
               "acceptanceCriteria": [
@@ -5323,12 +5323,13 @@
                 "rex",
                 "cli"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-06T03:33:31.557Z"
             },
             {
               "id": "ae83f04a-1238-422a-a725-e7edaaaf7654",
               "title": "Implement interactive proposal chunking workflow",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Present proposals in user-specified chunks with options to accept current chunk, request more, or request fewer",
               "acceptanceCriteria": [
@@ -5343,7 +5344,8 @@
                 "ux"
               ],
               "source": "smart-add",
-              "startedAt": "2026-02-06T03:24:07.522Z"
+              "startedAt": "2026-02-06T03:24:07.522Z",
+              "completedAt": "2026-02-06T03:33:04.880Z"
             },
             {
               "id": "a59d064f-b71a-452a-89e6-251965e638ee",

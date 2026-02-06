@@ -50,6 +50,7 @@ Options:
   --guided              Interactive spec builder (for analyze/plan)
   --no-llm                Force algorithmic pipeline, skip LLM (for analyze)
   --model=<name>          Override LLM model (for analyze, smart add)
+  --chunk-size=<n>        Proposals per page in interactive review (for analyze)
   --analyze               Run SourceVision analysis (for init)
   --fail-on-error         Exit 1 on validation errors (for report)
   --push                  Push local changes to remote only (for sync)

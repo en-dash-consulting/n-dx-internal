@@ -177,6 +177,20 @@ export async function cmdAnalyze(
   // Support multiple --file flags; fall back to single flags.file for compat
   const filePaths: string[] = multiFlags.file ?? (flags.file ? [flags.file] : []);
 
+  // Parse --chunk-size: must be a positive integer when provided
+  let chunkSize: number | undefined;
+  if (flags["chunk-size"] !== undefined) {
+    const raw = flags["chunk-size"];
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      throw new CLIError(
+        `Invalid --chunk-size: "${raw}"`,
+        "Chunk size must be a positive integer (e.g. --chunk-size=10).",
+      );
+    }
+    chunkSize = parsed;
+  }
+
   // Resolve model: --model flag → config.model → DEFAULT_MODEL
   let model: string | undefined = flags.model;
   if (!model && await hasRexDir(dir)) {
@@ -388,7 +402,7 @@ export async function cmdAnalyze(
   } else if (process.stdin.isTTY) {
     // Interactive: chunked review for multiple proposals, simple y/n for single
     const { runChunkedReview } = await import("./chunked-review.js");
-    const { accepted, remaining } = await runChunkedReview(proposals);
+    const { accepted, remaining } = await runChunkedReview(proposals, chunkSize);
 
     if (accepted.length > 0) {
       await acceptProposals(dir, accepted);

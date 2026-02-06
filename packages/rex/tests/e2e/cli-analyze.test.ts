@@ -509,6 +509,71 @@ describe("Model", () => {
     expect(parsed).toHaveProperty("proposals");
   });
 
+  it("--chunk-size flag is accepted without error", async () => {
+    await mkdir(join(tmpDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tmpDir, "tests", "chunk.test.ts"),
+      `
+describe("Chunk", () => {
+  it("works", () => {});
+});
+`,
+    );
+
+    // --chunk-size should parse without error (non-TTY won't reach interactive review)
+    const output = run([
+      "analyze",
+      "--no-llm",
+      "--chunk-size=10",
+      "--format=json",
+      tmpDir,
+    ]);
+    const parsed = JSON.parse(output);
+
+    expect(parsed).toHaveProperty("scanned");
+    expect(parsed).toHaveProperty("proposals");
+  });
+
+  it("--chunk-size rejects non-positive-integer values", async () => {
+    try {
+      run(["analyze", "--no-llm", "--chunk-size=0", tmpDir]);
+      expect(true).toBe(false);
+    } catch (err) {
+      const stderr = (err as { stderr?: string }).stderr ?? "";
+      expect(stderr).toContain("Invalid --chunk-size");
+    }
+  });
+
+  it("--chunk-size rejects non-numeric values", async () => {
+    try {
+      run(["analyze", "--no-llm", "--chunk-size=abc", tmpDir]);
+      expect(true).toBe(false);
+    } catch (err) {
+      const stderr = (err as { stderr?: string }).stderr ?? "";
+      expect(stderr).toContain("Invalid --chunk-size");
+    }
+  });
+
+  it("--chunk-size rejects negative values", async () => {
+    try {
+      run(["analyze", "--no-llm", "--chunk-size=-3", tmpDir]);
+      expect(true).toBe(false);
+    } catch (err) {
+      const stderr = (err as { stderr?: string }).stderr ?? "";
+      expect(stderr).toContain("Invalid --chunk-size");
+    }
+  });
+
+  it("--chunk-size rejects float values", async () => {
+    try {
+      run(["analyze", "--no-llm", "--chunk-size=2.5", tmpDir]);
+      expect(true).toBe(false);
+    } catch (err) {
+      const stderr = (err as { stderr?: string }).stderr ?? "";
+      expect(stderr).toContain("Invalid --chunk-size");
+    }
+  });
+
   it("reads model from config.json when --model not provided", async () => {
     run(["init", tmpDir]);
 
