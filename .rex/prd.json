@@ -1244,7 +1244,7 @@
     {
       "id": "f69ce6c6-57f4-4fc6-8f06-beb5e538d8fc",
       "title": "CLI Robustness",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "llm",
       "children": [
@@ -1577,10 +1577,12 @@
         {
           "id": "5ff5ea73-7e97-456b-9d8a-32748edc9803",
           "title": "Smart Add Interface",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Enhanced user interface for proposal approval and management",
           "source": "llm",
+          "startedAt": "2026-02-06T15:45:56.704Z",
+          "completedAt": "2026-02-06T15:45:56.704Z",
           "children": [
             {
               "id": "b3a51434-b5f2-48e7-b6bd-0657a8a370e5",
@@ -1607,7 +1609,7 @@
             {
               "id": "35c1313b-473c-41d8-aca2-40e06306a029",
               "title": "Improve context and LLM text generation",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Context generation with XML markers and token budgets, and LLM-oriented markdown generation",
               "acceptanceCriteria": [
@@ -1622,7 +1624,8 @@
                 "generateLlmsTxt"
               ],
               "source": "llm",
-              "startedAt": "2026-02-06T15:39:51.226Z"
+              "startedAt": "2026-02-06T15:39:51.226Z",
+              "completedAt": "2026-02-06T15:45:56.676Z"
             }
           ]
         },
@@ -1698,7 +1701,9 @@
           "startedAt": "2026-02-06T14:35:29.871Z",
           "completedAt": "2026-02-06T14:41:57.717Z"
         }
-      ]
+      ],
+      "startedAt": "2026-02-06T15:45:56.722Z",
+      "completedAt": "2026-02-06T15:45:56.722Z"
     },
     {
       "id": "3bf3754c-c0d0-4fb7-9cbd-5ebbddb85d51",
