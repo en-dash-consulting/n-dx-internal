@@ -1,5 +1,14 @@
 import { dirname, join } from "node:path";
 import { readFile, access } from "node:fs/promises";
+import {
+  loadClaudeConfig as loadClaudeConfigFromDir,
+  resolveApiKey as sharedResolveApiKey,
+  resolveCliPath as sharedResolveCliPath,
+} from "@n-dx/claude-client";
+import type { ClaudeConfig } from "@n-dx/claude-client";
+
+// Re-export the shared ClaudeConfig type so existing consumers keep working
+export type { ClaudeConfig } from "@n-dx/claude-client";
 
 const PROJECT_CONFIG_FILE = ".n-dx.json";
 
@@ -76,23 +85,12 @@ export function mergeWithOverrides<T>(
 }
 
 /**
- * Claude configuration from the unified .n-dx.json config.
- * These settings apply across all packages.
- */
-export interface ClaudeConfig {
-  /** Path to Claude Code CLI binary. When set, used instead of looking for "claude" on PATH. */
-  cli_path?: string;
-  /** Anthropic API key. When set, used instead of reading from the ANTHROPIC_API_KEY env var. */
-  api_key?: string;
-  /** Custom API endpoint URL. When set, used instead of the default Anthropic API URL. */
-  api_endpoint?: string;
-  /** Default Claude model name. When set, used instead of the default model. */
-  model?: string;
-}
-
-/**
  * Load the "claude" section from .n-dx.json.
  * Returns an empty object if the file doesn't exist, is invalid, or has no claude section.
+ *
+ * Delegates to @n-dx/claude-client's loadClaudeConfig, adapting the hench
+ * convention of passing a configDir (e.g., /project/.hench) instead of the
+ * project root directory.
  *
  * @param configDir The package config directory (e.g., /project/.hench)
  */
@@ -100,32 +98,7 @@ export async function loadClaudeConfig(
   configDir: string,
 ): Promise<ClaudeConfig> {
   const projectDir = dirname(configDir);
-  const configPath = join(projectDir, PROJECT_CONFIG_FILE);
-  try {
-    await access(configPath);
-    const raw = await readFile(configPath, "utf-8");
-    const data = JSON.parse(raw);
-    if (data && typeof data === "object" && data.claude && typeof data.claude === "object") {
-      const claude = data.claude as Record<string, unknown>;
-      const result: ClaudeConfig = {};
-      if (typeof claude.cli_path === "string" && claude.cli_path) {
-        result.cli_path = claude.cli_path;
-      }
-      if (typeof claude.api_key === "string" && claude.api_key) {
-        result.api_key = claude.api_key;
-      }
-      if (typeof claude.api_endpoint === "string" && claude.api_endpoint) {
-        result.api_endpoint = claude.api_endpoint;
-      }
-      if (typeof claude.model === "string" && claude.model) {
-        result.model = claude.model;
-      }
-      return result;
-    }
-  } catch {
-    // File doesn't exist or is invalid — no claude config
-  }
-  return {};
+  return loadClaudeConfigFromDir(projectDir);
 }
 
 /**
@@ -139,7 +112,7 @@ export function resolveApiKey(
   claudeConfig: ClaudeConfig,
   apiKeyEnv: string,
 ): string | undefined {
-  return claudeConfig.api_key ?? process.env[apiKeyEnv];
+  return sharedResolveApiKey(claudeConfig, apiKeyEnv);
 }
 
 /**
@@ -150,5 +123,5 @@ export function resolveApiKey(
  * @returns The resolved binary path.
  */
 export function resolveCliPath(claudeConfig: ClaudeConfig): string {
-  return claudeConfig.cli_path ?? "claude";
+  return sharedResolveCliPath(claudeConfig);
 }

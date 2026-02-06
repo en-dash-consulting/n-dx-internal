@@ -33,6 +33,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.39.0
         version: 0.39.0
+      '@n-dx/claude-client':
+        specifier: workspace:*
+        version: link:../claude-client
       rex:
         specifier: '*'
         version: link:../rex

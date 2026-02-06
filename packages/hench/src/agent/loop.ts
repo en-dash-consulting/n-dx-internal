@@ -148,7 +148,12 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     });
   });
 
-  const client = new Anthropic({ apiKey });
+  // Build Anthropic client options — use custom endpoint from .n-dx.json if configured
+  const anthropicOpts: Record<string, unknown> = { apiKey };
+  if (claudeConfig.api_endpoint) {
+    anthropicOpts.baseURL = claudeConfig.api_endpoint;
+  }
+  const client = new Anthropic(anthropicOpts as ConstructorParameters<typeof Anthropic>[0]);
   const guard = new GuardRails(projectDir, config.guard);
 
   const toolCtx: ToolContext = {

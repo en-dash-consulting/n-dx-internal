@@ -2,6 +2,7 @@ import { defineConfig } from "vitest/config";
 import { resolve } from "node:path";
 
 const rexRoot = resolve(import.meta.dirname, "../rex");
+const claudeClientRoot = resolve(import.meta.dirname, "../claude-client");
 
 export default defineConfig({
   resolve: {
@@ -10,6 +11,8 @@ export default defineConfig({
       { find: /^rex$/, replacement: `${rexRoot}/src/public.ts` },
       // Map rex subpath imports to source .ts files for vitest
       { find: /^rex\/dist\/(.+)\.js$/, replacement: `${rexRoot}/src/$1.ts` },
+      // Map @n-dx/claude-client to source index.ts for vitest
+      { find: /^@n-dx\/claude-client$/, replacement: `${claudeClientRoot}/src/index.ts` },
       // Map local .js imports to .ts files
       { find: /^(\..+)\.js$/, replacement: "$1.ts" },
     ],

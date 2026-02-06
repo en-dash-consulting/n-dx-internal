@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@n-dx/claude-client": "workspace:*",
     "rex": "*",
     "zod": "^3.22.0"
   },
