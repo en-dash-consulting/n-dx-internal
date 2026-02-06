@@ -6,6 +6,7 @@ import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { runConfig } from "./config.js";
 import { runCI } from "./ci.js";
+import { runWeb } from "./web.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 
@@ -138,6 +139,18 @@ if (command === "ci") {
   }
 }
 
+if (command === "web") {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".sourcevision"]);
+  try {
+    const code = await runWeb(dir, rest, { run, tools, __dir });
+    process.exit(code);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
 if (command === "config") {
   try {
     await runConfig(rest);
@@ -167,6 +180,7 @@ Orchestration:
   status [dir]          Show PRD status (--format=json, --since, --until)
   usage [dir]           Token usage analytics (--format=json, --group=day|week|month)
   sync [dir]            Sync local PRD with remote adapter (--push, --pull)
+  web [dir]             Start dashboard (--port=N, --background, stop, status)
   ci [dir]              Run analysis pipeline and validate PRD health
   config [key] [value]  View and edit settings (--json, --help)
 

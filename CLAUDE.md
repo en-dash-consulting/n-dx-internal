@@ -17,6 +17,7 @@ packages/
   hench/           # autonomous agent
 cli.js             # n-dx entry point (orchestration + delegation)
 config.js          # unified config command (view/edit all package settings)
+web.js             # web dashboard orchestration (start/stop/status)
 ```
 
 Build and test:
@@ -40,6 +41,7 @@ ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals
 ndx plan --accept [dir]   # ...then accept proposals into PRD
 ndx work [dir]            # hench run (pass --task=ID, --dry-run, etc.)
 ndx status [dir]          # rex status (pass --format=json)
+ndx web [dir]             # start dashboard (--port=N, --background, stop, status)
 ndx config [key] [value]  # view/edit settings (--json, --help)
 ```
 
@@ -105,6 +107,7 @@ claude mcp add sourcevision -- node packages/sourcevision/dist/cli/index.js mcp 
 3. `ndx plan --accept .` — accept proposals into PRD
 4. `ndx work .` — execute next task autonomously
 5. `ndx status .` — check progress
+6. `ndx web .` — open dashboard (or `ndx web --background .` for daemon mode)
 
 ## Key Files
 
@@ -117,3 +120,5 @@ claude mcp add sourcevision -- node packages/sourcevision/dist/cli/index.js mcp 
 | `.rex/config.json` | Rex project configuration |
 | `.hench/config.json` | Hench agent configuration (model, max turns) |
 | `.hench/runs/` | Run history and transcripts |
+| `.n-dx.json` | Project-level config overrides (web.port, etc.) |
+| `.n-dx-web.pid` | Background web server PID file (auto-managed) |

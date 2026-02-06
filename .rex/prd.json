@@ -4741,10 +4741,12 @@
         {
           "id": "29a51b12-7b95-4b13-817b-18d1d7c27e31",
           "title": "Unified web viewer architecture",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Create a consolidated web interface that integrates sourcevision's existing viewer capabilities with Rex PRD management functionality",
           "source": "smart-add",
+          "startedAt": "2026-02-06T05:44:41.814Z",
+          "completedAt": "2026-02-06T05:44:41.814Z",
           "children": [
             {
               "id": "7f9313f6-432a-4ed4-a67c-2605da0357ed",
@@ -4769,7 +4771,7 @@
             {
               "id": "f8458852-4b09-43e3-93a2-45d0b4e49f28",
               "title": "Migrate sourcevision viewer components",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Extract and adapt existing sourcevision viewer components into the new unified web interface",
               "acceptanceCriteria": [
@@ -4783,7 +4785,9 @@
                 "sourcevision",
                 "frontend"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-06T05:36:25.446Z",
+              "completedAt": "2026-02-06T05:44:41.783Z"
             }
           ]
         },
@@ -4863,7 +4867,7 @@
         {
           "id": "8a65d7cd-40ea-4f87-bf10-23396c378a35",
           "title": "Web server and API integration",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Implement backend server to serve the web interface and provide API endpoints for Rex and sourcevision data",
           "source": "smart-add",
@@ -4892,7 +4896,7 @@
             {
               "id": "e68c5d72-833d-4766-908d-da8ab8517622",
               "title": "Add web command to n-dx CLI",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Extend n-dx orchestration with web server command that starts the unified viewer",
               "acceptanceCriteria": [
@@ -4906,9 +4910,13 @@
                 "cli",
                 "orchestration"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-06T05:45:02.646Z",
+              "completedAt": "2026-02-06T05:52:08.738Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-06T05:52:08.769Z",
+          "completedAt": "2026-02-06T05:52:08.769Z"
         }
       ]
     }
