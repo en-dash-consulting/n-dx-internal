@@ -75,16 +75,19 @@
             },
             {
               "id": "f6d75214-9714-41b0-8467-7ae40e412dc3",
-              "title": "Reset parent status when adding child items",
+              "title": "Implement bidirectional parent status cascade",
               "status": "pending",
               "level": "task",
-              "description": "Automatically reset the status of parent epics and features from 'completed' to 'pending' or 'in_progress' when new child items are added, ensuring tasks remain discoverable and actionable",
+              "description": "Automatically manage parent status in both directions: reset completed parents when new children are added, and auto-complete parents when all children are completed.",
               "acceptanceCriteria": [
                 "Parent epic status resets to 'pending' when new features or tasks are added",
                 "Parent feature status resets to 'pending' when new tasks are added",
                 "Only affects parents that are currently marked as 'completed'",
                 "Status reset cascades up the hierarchy if needed",
-                "Works for both manual add commands and LLM-generated proposals"
+                "Works for both manual add commands and LLM-generated proposals",
+                "Features auto-complete when all child tasks complete",
+                "Epics auto-complete when all child features complete",
+                "State propagation works correctly in both directions"
               ],
               "priority": "medium",
               "tags": [
@@ -200,20 +203,6 @@
               "source": "llm",
               "startedAt": "2026-02-04T18:19:39.486Z",
               "completedAt": "2026-02-04T18:26:17.771Z"
-            },
-            {
-              "id": "c8e37f18-7a10-4f27-ae6a-d62d6833584c",
-              "title": "Add automatic parent completion logic",
-              "status": "deferred",
-              "level": "task",
-              "description": "Auto-complete parent items when all children are completed",
-              "acceptanceCriteria": [
-                "Features complete when all tasks complete",
-                "Epics complete when all features complete",
-                "State propagation works correctly"
-              ],
-              "priority": "high",
-              "source": "llm"
             },
             {
               "id": "0df69478-9dd8-4b64-9564-da2a9fcd72e7",
@@ -1408,25 +1397,6 @@
               "source": "llm"
             },
             {
-              "id": "fdd4fece-07ba-47c9-9611-6603a8bed17f",
-              "title": "Refactor rex package to expose proper public API",
-              "status": "pending",
-              "level": "task",
-              "description": "Rex has no package.json exports field or public API barrel — hench imports 7 runtime functions from 5 internal dist/ paths. Add packages/rex/src/public.ts re-exporting the 7 consumed functions + 3 consumed types, add exports field to rex package.json mapping rex → dist/public.js, update hench imports to use rex (not rex/dist/...).",
-              "acceptanceCriteria": [
-                "Creates packages/rex/src/public.ts with re-exports of consumed functions",
-                "Updates rex package.json with proper exports field",
-                "Updates hench imports to use public API",
-                "All internal implementation details are encapsulated"
-              ],
-              "priority": "high",
-              "tags": [
-                "refactoring",
-                "architecture"
-              ],
-              "source": "llm"
-            },
-            {
               "id": "27ac198d-2a28-4c80-8870-d1ba3544840f",
               "title": "Ensure init commands create valid configuration files",
               "status": "pending",
@@ -1547,23 +1517,6 @@
                 "help"
               ],
               "source": "llm"
-            },
-            {
-              "id": "78488756-9b00-4690-a926-cd7869bcb0c0",
-              "title": "Implement loop controls with abort capability",
-              "status": "pending",
-              "level": "task",
-              "description": "Add configurable pause mechanism with abort signal support",
-              "acceptanceCriteria": [
-                "Resolves after the specified delay",
-                "Resolves immediately for 0ms delay",
-                "Can be aborted via AbortSignal"
-              ],
-              "priority": "medium",
-              "tags": [
-                "loopPause"
-              ],
-              "source": "llm"
             }
           ]
         },
@@ -1635,7 +1588,9 @@
               "description": "Context generation with XML markers and token budgets, and LLM-oriented markdown generation",
               "acceptanceCriteria": [
                 "Generates context with XML markers within reasonable token budget",
-                "Generates markdown with all required sections for LLM consumption"
+                "Generates markdown with all required sections for LLM consumption",
+                "mentions the description count",
+                "instructs LLM to group related and separate unrelated"
               ],
               "priority": "medium",
               "tags": [
@@ -1692,6 +1647,25 @@
               "source": "llm"
             }
           ]
+        },
+        {
+          "id": "fdd4fece-07ba-47c9-9611-6603a8bed17f",
+          "title": "Refactor rex package to expose proper public API",
+          "status": "pending",
+          "level": "task",
+          "description": "Rex has no package.json exports field or public API barrel — hench imports 7 runtime functions from 5 internal dist/ paths. Add packages/rex/src/public.ts re-exporting the 7 consumed functions + 3 consumed types, add exports field to rex package.json mapping rex → dist/public.js, update hench imports to use rex (not rex/dist/...).",
+          "acceptanceCriteria": [
+            "Creates packages/rex/src/public.ts with re-exports of consumed functions",
+            "Updates rex package.json with proper exports field",
+            "Updates hench imports to use public API",
+            "All internal implementation details are encapsulated"
+          ],
+          "priority": "high",
+          "tags": [
+            "refactoring",
+            "architecture"
+          ],
+          "source": "llm"
         }
       ]
     },
@@ -2380,13 +2354,20 @@
           "children": [
             {
               "id": "72444020-200d-4aee-bc4a-34b223d74925",
-              "title": "Enhance file format detection",
+              "title": "Improve file format detection and import",
               "status": "pending",
               "level": "task",
-              "description": "Detect file formats including handling full paths",
+              "description": "Enhance file format detection for full paths and support multiple JSON/YAML schemas for PRD import with deduplication.",
               "acceptanceCriteria": [
                 "Handles commands with full paths",
-                "Handles full paths"
+                "Handles full paths",
+                "parses JSON file matching Proposal schema directly",
+                "parses JSON file with flat items array",
+                "parses JSON file with nested objects",
+                "parses YAML file with title/description pairs",
+                "parses YAML file with name fields",
+                "deduplicates against existing PRD items",
+                "preserves description in JSON items"
               ],
               "priority": "low",
               "tags": [
@@ -2420,30 +2401,6 @@
               "source": "llm",
               "startedAt": "2026-02-06T02:43:21.210Z",
               "completedAt": "2026-02-06T02:46:40.234Z"
-            },
-            {
-              "id": "3f8e56b4-9ef6-46d4-a42b-37ed3ab8e4a2",
-              "title": "Support multiple file format schemas",
-              "status": "pending",
-              "level": "task",
-              "description": "Handle various JSON and YAML structures for PRD import",
-              "acceptanceCriteria": [
-                "parses JSON file matching Proposal schema directly",
-                "parses JSON file with flat items array",
-                "parses JSON file with nested objects",
-                "parses YAML file with title/description pairs",
-                "parses YAML file with name fields",
-                "deduplicates against existing PRD items",
-                "preserves description in JSON items"
-              ],
-              "priority": "medium",
-              "tags": [
-                "schemas",
-                "yaml",
-                "json",
-                "flexibility"
-              ],
-              "source": "llm"
             }
           ]
         },
@@ -2498,24 +2455,6 @@
               "source": "llm",
               "startedAt": "2026-02-05T19:02:53.660Z",
               "completedAt": "2026-02-05T19:07:13.641Z"
-            },
-            {
-              "id": "a0848c59-2d3b-4fcd-9360-591dec30cf18",
-              "title": "Optimize multi-description prompts",
-              "status": "pending",
-              "level": "task",
-              "description": "Better handling of multiple descriptions in single command",
-              "acceptanceCriteria": [
-                "mentions the description count",
-                "instructs LLM to group related and separate unrelated"
-              ],
-              "priority": "medium",
-              "tags": [
-                "prompts",
-                "multi-description",
-                "grouping"
-              ],
-              "source": "llm"
             }
           ]
         },
@@ -2572,29 +2511,6 @@
               "source": "llm",
               "startedAt": "2026-02-05T17:26:40.831Z",
               "completedAt": "2026-02-05T17:29:36.194Z"
-            },
-            {
-              "id": "8fc0a01d-86a7-467f-8eb4-76b72544fa5f",
-              "title": "Provide task selection explanations",
-              "status": "pending",
-              "level": "task",
-              "description": "Generate clear explanations for why specific tasks were selected",
-              "acceptanceCriteria": [
-                "explains basic selection with priority",
-                "explains default medium priority",
-                "includes resolved dependency info",
-                "reports no dependencies when none exist",
-                "counts skipped items by reason",
-                "explains depth-first traversal path",
-                "notes when higher-priority items exist but are blocked",
-                "explains in-progress task selection",
-                "explains parent completion selection"
-              ],
-              "priority": "medium",
-              "tags": [
-                "explainSelection"
-              ],
-              "source": "llm"
             },
             {
               "id": "81ac2225-0b57-4a0b-9a58-906a6979e07a",
@@ -2672,30 +2588,6 @@
               "completedAt": "2026-02-05T19:01:51.057Z"
             },
             {
-              "id": "0b59dd36-5d8c-4a1e-9644-0bbf2f3b94a5",
-              "title": "Improve convention export detection",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance detection of framework convention exports",
-              "acceptanceCriteria": [
-                "detects loader export",
-                "detects action export",
-                "detects default export",
-                "detects meta export",
-                "detects handle export",
-                "detects export-from",
-                "detects multiple convention exports",
-                "detects ErrorBoundary export",
-                "detects class ErrorBoundary export",
-                "detects shouldRevalidate"
-              ],
-              "priority": "medium",
-              "tags": [
-                "extractConventionExports"
-              ],
-              "source": "llm"
-            },
-            {
               "id": "f45f3139-ef04-4f67-a3ac-960f58eabce4",
               "title": "Enhance JSX usage analysis",
               "status": "completed",
@@ -2717,30 +2609,6 @@
               "completedAt": "2026-02-05T19:33:10.015Z"
             },
             {
-              "id": "628e5810-2917-4dfb-bf10-6187f2c8abab",
-              "title": "Improve route pattern parsing",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance file-based route pattern parsing for various frameworks",
-              "acceptanceCriteria": [
-                "parses index route",
-                "parses route nested under layout",
-                "parses nested index route",
-                "parses simple route",
-                "parses splat route",
-                "parses dynamic segment",
-                "parses optional dynamic segment",
-                "parses trailing underscore escape",
-                "parses pathless layout (leading underscore)",
-                "parses dot-delimited segments"
-              ],
-              "priority": "medium",
-              "tags": [
-                "parseFileRoutePattern"
-              ],
-              "source": "llm"
-            },
-            {
               "id": "e7d9825b-c235-4450-a39f-dc18e9406417",
               "title": "Enhance route tree building",
               "status": "completed",
@@ -2760,52 +2628,44 @@
               "completedAt": "2026-02-05T19:54:10.907Z"
             },
             {
-              "id": "232d7af4-1ca4-48d8-bec7-3e4cdb28c863",
-              "title": "Improve routes configuration parsing",
+              "id": "80899a72-fc4a-4b25-aa82-69bf85b00797",
+              "title": "Improve component and route analysis",
               "status": "pending",
               "level": "task",
-              "description": "Enhance parsing of routes configuration files",
+              "description": "Enhance React component analysis including convention export detection, route pattern parsing, routes configuration parsing, and routes config file discovery.",
               "acceptanceCriteria": [
+                "analyzes components and usages in a small project",
+                "analyzes Remix-style route modules",
+                "detects loader export",
+                "detects action export",
+                "detects default export",
+                "detects meta export",
+                "detects handle export",
+                "detects export-from",
+                "detects multiple convention exports",
+                "detects ErrorBoundary export",
+                "detects class ErrorBoundary export",
+                "detects shouldRevalidate",
+                "parses index route",
+                "parses route nested under layout",
+                "parses nested index route",
+                "parses simple route",
+                "parses splat route",
+                "parses dynamic segment",
+                "parses optional dynamic segment",
+                "parses trailing underscore escape",
+                "parses pathless layout (leading underscore)",
+                "parses dot-delimited segments",
                 "parses route() + index() basic config",
                 "parses layout() with nested children and sets parentLayout",
                 "parses ...prefix() and prepends path to children",
                 "unwraps satisfies RouteConfig wrapper",
                 "skips unparseable entries gracefully",
                 "nests children of route() under the parent route",
-                "handles configDir of . correctly"
-              ],
-              "priority": "medium",
-              "tags": [
-                "parseRoutesConfig"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "ed656f6d-9c40-47eb-adad-47cee4632890",
-              "title": "Enhance routes config discovery",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve discovery of routes configuration files",
-              "acceptanceCriteria": [
+                "handles configDir of . correctly",
                 "finds app/routes.ts first in priority order",
                 "falls back to src/routes.ts when app/ not present",
                 "finds routes.tsx variant"
-              ],
-              "priority": "low",
-              "tags": [
-                "findRoutesConfig"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "80899a72-fc4a-4b25-aa82-69bf85b00797",
-              "title": "Improve component analysis orchestration",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance overall component analysis workflow",
-              "acceptanceCriteria": [
-                "analyzes components and usages in a small project",
-                "analyzes Remix-style route modules"
               ],
               "priority": "medium",
               "tags": [
@@ -2894,34 +2754,21 @@
           "children": [
             {
               "id": "a89e8e90-e4a3-40f1-a966-118ab58c62a7",
-              "title": "Enhance language detection",
+              "title": "Harden file inventory classification",
               "status": "pending",
               "level": "task",
-              "description": "Improve file language detection based on extensions and names",
+              "description": "Improve file language detection, role classification, and structural hashing for accurate inventory results.",
               "acceptanceCriteria": [
                 "maps .ts to TypeScript",
                 "maps .py to Python",
                 "maps Makefile to Makefile",
-                "maps Dockerfile to Dockerfile"
+                "maps Dockerfile to Dockerfile",
+                "classifies .test.ts as test",
+                "is independent of zone ID or name (only file groupings matter)"
               ],
               "priority": "low",
               "tags": [
                 "detectLanguage"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "e0354006-5804-441d-8f97-3ec867cb9b47",
-              "title": "Improve file role classification",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance classification of file roles in the project",
-              "acceptanceCriteria": [
-                "classifies .test.ts as test"
-              ],
-              "priority": "low",
-              "tags": [
-                "classifyRole"
               ],
               "source": "llm"
             },
@@ -2941,21 +2788,6 @@
               "source": "llm",
               "startedAt": "2026-02-05T19:23:19.470Z",
               "completedAt": "2026-02-05T19:29:49.257Z"
-            },
-            {
-              "id": "e4b1322b-0533-4d46-9ede-431ed316a6d0",
-              "title": "Improve structure hash independence",
-              "status": "pending",
-              "level": "task",
-              "description": "Ensure structural hashing is based only on file groupings, not labels",
-              "acceptanceCriteria": [
-                "is independent of zone ID or name (only file groupings matter)"
-              ],
-              "priority": "medium",
-              "tags": [
-                "computeStructureHash"
-              ],
-              "source": "llm"
             }
           ]
         },
@@ -2990,33 +2822,19 @@
             },
             {
               "id": "e6b015e9-7116-4a58-aa03-bbf97c0b0ad4",
-              "title": "Improve findings grouping algorithms",
+              "title": "Improve findings grouping, sorting, and presentation",
               "status": "pending",
               "level": "task",
-              "description": "Enhance grouping logic to better organize findings by scope and type",
+              "description": "Enhance grouping logic to organize findings by scope and type, with priority-based sorting and clean presentation.",
               "acceptanceCriteria": [
                 "groups critical findings by scope",
-                "groups anti-pattern warnings by scope"
-              ],
-              "priority": "medium",
-              "tags": [
-                "deriveNextSteps"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "aa958d3b-34d8-4a36-b0d5-c31b66eb53c3",
-              "title": "Optimize sorting and presentation",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve how findings are sorted and presented to users",
-              "acceptanceCriteria": [
+                "groups anti-pattern warnings by scope",
                 "sorts high priority before medium before low",
                 "sorts by related findings count within same priority",
                 "truncates long text in titles",
                 "includes zone files in description when zone exists"
               ],
-              "priority": "low",
+              "priority": "medium",
               "tags": [
                 "deriveNextSteps"
               ],
@@ -3308,30 +3126,6 @@
                 "backwards-compat"
               ],
               "source": "llm"
-            },
-            {
-              "id": "8cbf42a1-d57f-4ad6-aedc-42745c2a5272",
-              "title": "Implement completion validation workflow",
-              "status": "pending",
-              "level": "task",
-              "description": "Validate task completion through automated tests and handle guided flow activation in TTY/non-TTY environments",
-              "acceptanceCriteria": [
-                "Rejects completion when validation or tests fail",
-                "Allows completion when validation passes",
-                "Passes testCommand to validation",
-                "Skips validation when no projectDir provided or for non-completed statuses",
-                "Invokes guided flow when empty PRD + no scan results + isTTY, or when --guided flag is set",
-                "Does NOT invoke guided flow when --no-llm is set",
-                "Prints hint when non-TTY without --guided flag; throws CLIError when --guided in non-TTY"
-              ],
-              "priority": "high",
-              "tags": [
-                "validation",
-                "completion",
-                "guided-flow",
-                "tty"
-              ],
-              "source": "llm"
             }
           ]
         },
@@ -3356,33 +3150,16 @@
                 "Saves and reloads config",
                 "Loads config from local file",
                 "Loads workflow content",
-                "Round-trips workflow content"
+                "Round-trips workflow content",
+                "Appends log entry",
+                "Log append and read",
+                "Appends and reads log entries"
               ],
               "priority": "high",
               "tags": [
                 "FileStore",
                 "NotionStore",
                 "PRDStore contract"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "5e6472aa-0a4e-41c3-bbb8-0e91980b3f2d",
-              "title": "Add logging capabilities",
-              "status": "pending",
-              "level": "task",
-              "description": "Append and read log entries for audit and debugging",
-              "acceptanceCriteria": [
-                "Appends log entry",
-                "Log append and read",
-                "Appends and reads log entries"
-              ],
-              "priority": "medium",
-              "tags": [
-                "toolRexAppendLog",
-                "Store roundtrip integration",
-                "FileStore",
-                "NotionStore"
               ],
               "source": "llm"
             }
@@ -3414,37 +3191,6 @@
                 "cmdUpdate",
                 "blockedBy",
                 "validation"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "0dc251e5-02b1-4f79-bd24-aa9344ac08e2",
-          "title": "Item Movement and Hierarchy",
-          "status": "pending",
-          "level": "feature",
-          "description": "Move items between different parts of the PRD hierarchy",
-          "source": "llm",
-          "children": [
-            {
-              "id": "a7b6aee4-621d-453e-94fd-6938d95ee0f4",
-              "title": "Implement item move command",
-              "status": "pending",
-              "level": "task",
-              "description": "Move items between hierarchy locations with validation, execution, and error handling",
-              "acceptanceCriteria": [
-                "Accepts valid moves (feature→epic, task→feature, subtask→task)",
-                "Rejects moving item under its own descendant, no-op moves, and non-root to root",
-                "Preserves children and item properties after move",
-                "Logs the move event",
-                "Throws CLIError with clear message on validation failure"
-              ],
-              "priority": "high",
-              "tags": [
-                "cmdMove",
-                "validateMove",
-                "moveItem"
               ],
               "source": "llm"
             }
@@ -3498,24 +3244,6 @@
                 "status"
               ],
               "source": "llm"
-            },
-            {
-              "id": "68c010e6-6b62-4e56-87eb-cf4b8a25f841",
-              "title": "Implement automatic timestamping",
-              "status": "pending",
-              "level": "task",
-              "description": "Track startedAt and completedAt timestamps when updating task status",
-              "acceptanceCriteria": [
-                "Timestamps added on status transitions",
-                "StartedAt set when task moves to in_progress",
-                "CompletedAt set when task moves to completed"
-              ],
-              "priority": "medium",
-              "tags": [
-                "prd",
-                "tracking"
-              ],
-              "source": "llm"
             }
           ]
         },
@@ -3529,10 +3257,10 @@
           "children": [
             {
               "id": "1ae1ab98-c9b0-47a6-ba63-dded0edb0d51",
-              "title": "Implement token usage tracking and aggregation",
+              "title": "Implement token usage tracking, reporting, and budget checking",
               "status": "pending",
               "level": "task",
-              "description": "Extract, filter, aggregate, and group token usage across rex, hench, and sourcevision with time-based filtering and grouping",
+              "description": "End-to-end token analytics: extract and aggregate usage across packages, format reports with budget warnings, and check token/cost budgets with custom pricing.",
               "acceptanceCriteria": [
                 "Extracts token events from rex, hench, and sourcevision with proper filtering and error handling",
                 "Skips invalid/malformed entries and non-JSON files",
@@ -3540,43 +3268,10 @@
                 "Filters by --since and --until using appropriate timestamps",
                 "Maps event types to commands (e.g., smart_add_token_usage → smart-add)",
                 "Groups events by package:command sorted by total tokens descending",
-                "Groups events by time period (day/week/month) with correct boundary handling"
-              ],
-              "priority": "medium",
-              "tags": [
-                "token-usage",
-                "aggregation",
-                "filtering",
-                "grouping"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "c59a5f18-f1ae-4f10-b881-45c7abf10f69",
-              "title": "Implement token usage reporting and formatting",
-              "status": "pending",
-              "level": "task",
-              "description": "Format and display token usage analytics and budget warnings",
-              "acceptanceCriteria": [
+                "Groups events by time period (day/week/month) with correct boundary handling",
                 "Formats zero usage appropriately",
                 "Omits packages with zero usage from breakdown",
-                "Formats warning and exceeded severity with appropriate headers"
-              ],
-              "priority": "low",
-              "tags": [
-                "token-usage",
-                "formatting",
-                "budget-warnings"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "05285c37-123f-4ad2-977f-ea882e8ecc66",
-              "title": "Implement budget checking and cost estimation",
-              "status": "pending",
-              "level": "task",
-              "description": "Cost estimation with custom pricing and budget checking for tokens and costs",
-              "acceptanceCriteria": [
+                "Formats warning and exceeded severity with appropriate headers",
                 "Accepts custom pricing and handles fractional token counts",
                 "Checks both token and cost budgets simultaneously",
                 "Exceeded takes precedence over warning",
@@ -3585,8 +3280,9 @@
               "priority": "medium",
               "tags": [
                 "token-usage",
-                "budget",
-                "cost-estimation"
+                "aggregation",
+                "filtering",
+                "grouping"
               ],
               "source": "llm"
             }
@@ -3673,35 +3369,17 @@
                 "maps blockedBy to comma-separated rich_text property",
                 "maps all PRD fields to Notion properties",
                 "maps acceptance criteria to a checklist in body",
-                "maps epic level correctly"
-              ],
-              "priority": "high",
-              "tags": [
-                "mapItemToNotion"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "252d001b-3feb-4b92-8b79-a3667ffbb6a4",
-              "title": "Handle optional field mapping",
-              "status": "pending",
-              "level": "task",
-              "description": "Properly handle optional fields when mapping between PRD and Notion",
-              "acceptanceCriteria": [
+                "maps epic level correctly",
                 "omits priority when not set",
                 "omits tags when not set",
                 "omits description property when not set",
                 "omits source when not set",
                 "omits blockedBy when not set",
-                "omits blockedBy when empty array",
-                "omits priority and tags when not present in Notion",
-                "omits source when not present in Notion",
-                "omits blockedBy when not present in Notion"
+                "omits blockedBy when empty array"
               ],
-              "priority": "medium",
+              "priority": "high",
               "tags": [
-                "mapItemToNotion",
-                "mapNotionToItem"
+                "mapItemToNotion"
               ],
               "source": "llm"
             },
@@ -3725,7 +3403,18 @@
                 "extracts source from Source property",
                 "extracts blockedBy from Blocked By property",
                 "handles single blockedBy value",
-                "handles text.content format for Description property"
+                "handles text.content format for Description property",
+                "omits priority and tags when not present in Notion",
+                "omits source when not present in Notion",
+                "omits blockedBy when not present in Notion",
+                "resolves known status names by exact match",
+                "resolves unknown status name via group fallback",
+                "falls back to pending for completely unknown status without group",
+                "falls back to pending for unknown status with unknown group",
+                "resolves custom status options via group map",
+                "integrates with mapNotionToItem for custom status options",
+                "forwards statusGroupMap when reconstructing document tree",
+                "maps priority and tags from Notion"
               ],
               "priority": "high",
               "tags": [
@@ -3784,30 +3473,6 @@
               "source": "llm"
             },
             {
-              "id": "d803bb08-2e15-4b05-bc41-84867c608566",
-              "title": "Handle custom status mapping",
-              "status": "pending",
-              "level": "task",
-              "description": "Support custom Notion status configurations with group-based fallback",
-              "acceptanceCriteria": [
-                "resolves known status names by exact match",
-                "resolves unknown status name via group fallback",
-                "falls back to pending for completely unknown status without group",
-                "falls back to pending for unknown status with unknown group",
-                "resolves custom status options via group map",
-                "integrates with mapNotionToItem for custom status options",
-                "forwards statusGroupMap when reconstructing document tree"
-              ],
-              "priority": "medium",
-              "tags": [
-                "resolveStatusFromNotion",
-                "buildStatusGroupMap",
-                "mapNotionToItem with statusGroupMap",
-                "mapNotionToDocument with statusGroupMap"
-              ],
-              "source": "llm"
-            },
-            {
               "id": "173a90ca-cfc3-4ed5-bfc2-a28e3a95341f",
               "title": "Validate database schema",
               "status": "pending",
@@ -3842,21 +3507,6 @@
               "completedAt": "2026-02-05T13:47:56.510Z"
             },
             {
-              "id": "c5d88dd1-87d4-4e99-bb18-f556a7652e89",
-              "title": "Enhance Notion document operations",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve Notion document loading with proper field mapping",
-              "acceptanceCriteria": [
-                "maps priority and tags from Notion"
-              ],
-              "priority": "medium",
-              "tags": [
-                "NotionStore"
-              ],
-              "source": "llm"
-            },
-            {
               "id": "714d8f4d-f3b7-4bcb-b9dc-cb542c286006",
               "title": "Improve Notion page management",
               "status": "pending",
@@ -3889,53 +3539,29 @@
           "children": [
             {
               "id": "c48c1ca6-9de1-417a-bfb9-a6e916a1e6e8",
-              "title": "Enhance adapter registry",
+              "title": "Implement adapter registry and store creation",
               "status": "pending",
               "level": "task",
-              "description": "Improve adapter registration and management with validation",
+              "description": "Complete adapter registration, store creation with configuration validation, secure config persistence, and store resolution from saved adapter config.",
               "acceptanceCriteria": [
                 "creates a FileStore for the ",
                 "registers a new adapter",
                 "rejects duplicate adapter names",
                 "rejects empty adapter name",
-                "removes a registered adapter"
-              ],
-              "priority": "medium",
-              "tags": [
-                "AdapterRegistry"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "331c61da-98d6-4341-ac5c-6353b38c4f61",
-              "title": "Improve store creation and configuration",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance store creation with proper configuration validation",
-              "acceptanceCriteria": [
+                "removes a registered adapter",
                 "creates a store from a registered adapter",
                 "passes config to the factory",
                 "validates required config fields",
-                "allows optional config fields to be missing"
-              ],
-              "priority": "medium",
-              "tags": [
-                "AdapterRegistry"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "6734fcb2-a307-4418-bb5d-cb66a0d06282",
-              "title": "Implement configuration persistence",
-              "status": "pending",
-              "level": "task",
-              "description": "Add secure configuration persistence with sensitive data protection",
-              "acceptanceCriteria": [
+                "allows optional config fields to be missing",
                 "overwrites config for the same adapter name",
                 "does not store tokens in plaintext — redacts sensitive fields",
-                "creates a store using saved adapter config"
+                "creates a store using saved adapter config",
+                "resolveRemoteStore creates store from adapters.json config",
+                "resolved store can load and save documents",
+                "resolved store can load config",
+                "produces same result as createStore for file adapter"
               ],
-              "priority": "high",
+              "priority": "medium",
               "tags": [
                 "AdapterRegistry"
               ],
@@ -3957,24 +3583,6 @@
               "priority": "medium",
               "tags": [
                 "cmdSync"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "2795e2af-709c-497d-8720-a9e79e946223",
-              "title": "Enhance store resolution",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve store resolution with configuration-based creation",
-              "acceptanceCriteria": [
-                "resolveRemoteStore creates store from adapters.json config",
-                "resolved store can load and save documents",
-                "resolved store can load config",
-                "produces same result as createStore for file adapter"
-              ],
-              "priority": "medium",
-              "tags": [
-                "resolveStore"
               ],
               "source": "llm"
             }
@@ -4012,39 +3620,25 @@
             },
             {
               "id": "7caae0b8-bb71-4374-a40d-8614a1b5080a",
-              "title": "Improve item management operations",
+              "title": "Verify store contract compliance",
               "status": "pending",
               "level": "task",
-              "description": "Enhance item addition and management across store implementations",
+              "description": "Ensure all store implementations meet the required contract for item management, configuration loading, and logging.",
               "acceptanceCriteria": [
                 "adds item to root",
                 "adds item under parent",
                 "adds item to root when no parentId",
                 "adds item under parent when parentId provided",
                 "updates item fields",
-                "archives removed items"
+                "archives removed items",
+                "loads a valid config with project name",
+                "appends and reads entries in chronological order"
               ],
               "priority": "high",
               "tags": [
                 "FileStore",
                 "PRDStore",
                 "NotionStore"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "897581a9-95e7-4f5c-82af-ff8744acb895",
-              "title": "Enhance configuration and logging",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve configuration management and logging across store implementations",
-              "acceptanceCriteria": [
-                "loads a valid config with project name",
-                "appends and reads entries in chronological order"
-              ],
-              "priority": "medium",
-              "tags": [
-                "PRDStore"
               ],
               "source": "llm"
             }
@@ -4661,6 +4255,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-06T13:20:43.820Z",
+      "completedAt": "2026-02-06T13:20:43.820Z",
       "children": [
         {
           "id": "e47412ba-b724-4b1c-9cce-707a1b6f36eb",
@@ -4737,9 +4333,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-06T13:20:43.820Z",
-      "completedAt": "2026-02-06T13:20:43.820Z"
+      ]
     },
     {
       "id": "a162e544-564b-4174-a096-1e774c05f95e",
