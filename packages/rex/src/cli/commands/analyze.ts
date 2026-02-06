@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { resolveStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
+import { parseIntSafe } from "../validate-input.js";
 import { info, warn, result } from "../output.js";
 import {
   preflightBudgetCheck,
@@ -204,18 +205,9 @@ export async function cmdAnalyze(
   const filePaths: string[] = multiFlags.file ?? (flags.file ? [flags.file] : []);
 
   // Parse --chunk-size: must be a positive integer when provided
-  let chunkSize: number | undefined;
-  if (flags["chunk-size"] !== undefined) {
-    const raw = flags["chunk-size"];
-    const parsed = Number(raw);
-    if (!Number.isInteger(parsed) || parsed < 1) {
-      throw new CLIError(
-        `Invalid --chunk-size: "${raw}"`,
-        "Chunk size must be a positive integer (e.g. --chunk-size=10).",
-      );
-    }
-    chunkSize = parsed;
-  }
+  const chunkSize = flags["chunk-size"] !== undefined
+    ? parseIntSafe(flags["chunk-size"], "chunk-size", { min: 1 })
+    : undefined;
 
   // Resolve model: --model flag → config.model → DEFAULT_MODEL
   let model: string | undefined = flags.model;

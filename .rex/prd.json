@@ -1351,7 +1351,7 @@
             {
               "id": "6bfb1e50-3b56-41ef-a93f-bd3e71a9f3aa",
               "title": "Implement command input validation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Validate command inputs (add, update, status) with clear error messages including valid options and usage hints",
               "acceptanceCriteria": [
@@ -1369,7 +1369,9 @@
                 "error-handling",
                 "user-experience"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-06T14:17:45.970Z",
+              "completedAt": "2026-02-06T14:25:51.416Z"
             },
             {
               "id": "4a10b43a-2675-452c-9692-926402d6e133",
