@@ -2244,7 +2244,7 @@
             {
               "id": "a6bae265-0984-4b7d-a133-5e36b6f0011d",
               "title": "Implement proposal quality validation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Validate and warn about proposal quality issues",
               "acceptanceCriteria": [
@@ -2260,12 +2260,14 @@
                 "quality",
                 "warnings"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T21:32:39.768Z",
+              "completedAt": "2026-02-05T21:35:43.753Z"
             },
             {
               "id": "87bb286d-7eb1-4a98-9394-c85e19f64459",
               "title": "Implement proposal quality validation system",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add validation checks for proposal completeness and quality standards",
               "acceptanceCriteria": [
@@ -2279,7 +2281,9 @@
               "tags": [
                 "validateProposalQuality"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T21:36:11.569Z",
+              "completedAt": "2026-02-05T21:38:47.706Z"
             },
             {
               "id": "d0f2be2c-a57a-4eac-946d-fee5a7bd0012",
@@ -2638,7 +2642,7 @@
             {
               "id": "66ccb0ca-13f1-44e2-bd6d-8fae2359b0c2",
               "title": "Implement token budget controls",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Enforce token budget limits and provide budget checking",
               "acceptanceCriteria": [
@@ -2649,7 +2653,9 @@
               "tags": [
                 "checkTokenBudget"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-06T02:46:51.245Z",
+              "completedAt": "2026-02-06T02:49:47.887Z"
             },
             {
               "id": "7514d08b-4b97-4eea-9108-8b10e06f81d5",
@@ -2740,7 +2746,7 @@
             {
               "id": "bfe24c09-b4f7-4a4f-9999-80a69cf1d5d9",
               "title": "Implement structured file parsing",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Parse JSON and YAML files with flexible schemas",
               "acceptanceCriteria": [
@@ -2760,7 +2766,9 @@
                 "parsing",
                 "import"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-06T02:43:21.210Z",
+              "completedAt": "2026-02-06T02:46:40.234Z"
             },
             {
               "id": "3f8e56b4-9ef6-46d4-a42b-37ed3ab8e4a2",
