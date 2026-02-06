@@ -4673,7 +4673,7 @@
             {
               "id": "0efd16aa-4cc9-4d5a-a7b6-22d614e9666b",
               "title": "Add Claude API configuration options to unified config",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Extend the existing unified config command to support Claude Code CLI path and Anthropic API key settings",
               "acceptanceCriteria": [
@@ -4687,7 +4687,9 @@
                 "config",
                 "api"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-06T12:51:06.707Z",
+              "completedAt": "2026-02-06T12:57:21.948Z"
             },
             {
               "id": "941e9fa4-9be4-4a2f-9a9b-7c01d8e20075",

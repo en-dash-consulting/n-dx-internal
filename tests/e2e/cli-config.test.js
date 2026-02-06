@@ -513,6 +513,158 @@ describe("n-dx config", () => {
     });
   });
 
+  // ── Claude configuration ─────────────────────────────────────────────────
+
+  describe("claude config", () => {
+    it("sets claude.cli_path in .n-dx.json", async () => {
+      const output = run(["claude.cli_path", "/usr/local/bin/claude", tmpDir]);
+      expect(output).toContain("claude.cli_path = /usr/local/bin/claude");
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.claude.cli_path).toBe("/usr/local/bin/claude");
+    });
+
+    it("sets claude.api_key in .n-dx.json", async () => {
+      const output = run(["claude.api_key", "sk-ant-test-key", tmpDir]);
+      expect(output).toContain("claude.api_key = sk-ant-test-key");
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.claude.api_key).toBe("sk-ant-test-key");
+    });
+
+    it("gets claude.cli_path after setting it", async () => {
+      run(["claude.cli_path", "/opt/claude", tmpDir]);
+      const output = run(["claude.cli_path", tmpDir]);
+      expect(output.trim()).toBe("/opt/claude");
+    });
+
+    it("gets claude.api_key after setting it", async () => {
+      run(["claude.api_key", "sk-ant-key123", tmpDir]);
+      const output = run(["claude.api_key", tmpDir]);
+      expect(output.trim()).toBe("sk-ant-key123");
+    });
+
+    it("shows claude section in --json output", async () => {
+      run(["claude.cli_path", "/usr/local/bin/claude", tmpDir]);
+      run(["claude.api_key", "sk-ant-key", tmpDir]);
+
+      const output = run(["--json", tmpDir]);
+      const parsed = JSON.parse(output);
+      expect(parsed.claude.cli_path).toBe("/usr/local/bin/claude");
+      expect(parsed.claude.api_key).toBe("sk-ant-key");
+    });
+
+    it("shows claude section with ndx config claude --json", async () => {
+      run(["claude.cli_path", "/usr/bin/claude", tmpDir]);
+
+      const output = run(["claude", "--json", tmpDir]);
+      const parsed = JSON.parse(output);
+      expect(parsed.cli_path).toBe("/usr/bin/claude");
+    });
+
+    it("shows claude section in show all output", async () => {
+      run(["claude.cli_path", "/usr/local/bin/claude", tmpDir]);
+
+      const output = run([tmpDir]);
+      expect(output).toContain("claude");
+      expect(output).toContain("cli_path");
+      expect(output).toContain("/usr/local/bin/claude");
+    });
+
+    it("creates .n-dx.json if it does not exist", async () => {
+      // No .n-dx.json exists yet
+      run(["claude.cli_path", "/usr/local/bin/claude", tmpDir]);
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.claude.cli_path).toBe("/usr/local/bin/claude");
+    });
+
+    it("preserves existing .n-dx.json content when setting claude values", async () => {
+      await writeFile(
+        join(tmpDir, ".n-dx.json"),
+        JSON.stringify({ hench: { model: "opus" } }, null, 2) + "\n",
+      );
+
+      run(["claude.api_key", "sk-ant-test", tmpDir]);
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.hench.model).toBe("opus");
+      expect(ndxConfig.claude.api_key).toBe("sk-ant-test");
+    });
+
+    it("does not write to package config files", async () => {
+      run(["claude.cli_path", "/usr/local/bin/claude", tmpDir]);
+
+      // .hench/config.json should not have claude settings
+      const henchConfig = JSON.parse(
+        await readFile(join(tmpDir, ".hench", "config.json"), "utf-8"),
+      );
+      expect(henchConfig.claude).toBeUndefined();
+      expect(henchConfig.cli_path).toBeUndefined();
+    });
+
+    it("errors when getting unset claude section", () => {
+      const stderr = runFail(["claude", tmpDir]);
+      expect(stderr).toContain("No claude configuration set");
+    });
+
+    it("errors when getting unset claude key", () => {
+      const stderr = runFail(["claude.cli_path", tmpDir]);
+      expect(stderr).toContain("not found");
+    });
+
+    it("updates existing claude value", async () => {
+      run(["claude.cli_path", "/old/path", tmpDir]);
+      run(["claude.cli_path", "/new/path", tmpDir]);
+
+      const output = run(["claude.cli_path", tmpDir]);
+      expect(output.trim()).toBe("/new/path");
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.claude.cli_path).toBe("/new/path");
+    });
+  });
+
+  // ── Help — Claude settings ───────────────────────────────────────────────
+
+  describe("help — claude settings", () => {
+    it("documents claude.cli_path", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("claude.cli_path");
+    });
+
+    it("documents claude.api_key", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("claude.api_key");
+    });
+
+    it("notes claude settings are shared across packages", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("shared across all packages");
+    });
+
+    it("warns about .gitignore for api_key", () => {
+      const output = run(["--help"]);
+      expect(output).toContain(".gitignore");
+    });
+
+    it("includes claude config examples", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("n-dx config claude.cli_path");
+      expect(output).toContain("n-dx config claude.api_key");
+    });
+  });
+
   // ── No config ──────────────────────────────────────────────────────────────
 
   describe("no config", () => {
