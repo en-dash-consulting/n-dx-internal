@@ -25,6 +25,7 @@ import {
 } from "../../analyze/index.js";
 import type { ScanResult, Proposal } from "../../analyze/index.js";
 import type { PRDItem, PRDDocument, AnalyzeTokenUsage } from "../../schema/index.js";
+import type { BatchAcceptanceRecord } from "./chunked-review.js";
 
 const PENDING_FILE = "pending-proposals.json";
 
@@ -98,6 +99,7 @@ async function clearPending(dir: string): Promise<void> {
 async function acceptProposals(
   dir: string,
   proposals: Proposal[],
+  batchRecord?: BatchAcceptanceRecord,
 ): Promise<void> {
   if (!(await hasRexDir(dir))) {
     throw new CLIError(
@@ -156,14 +158,31 @@ async function acceptProposals(
     }
   }
 
+  // Log batch acceptance with detailed record when available
+  const logDetail = batchRecord
+    ? JSON.stringify({
+        ...batchRecord,
+        addedItemCount: addedCount,
+      })
+    : `Added ${addedCount} items from analysis`;
+
   await store.appendLog({
     timestamp: new Date().toISOString(),
     event: "analyze_accept",
-    detail: `Added ${addedCount} items from analysis`,
+    detail: logDetail,
   });
 
   await clearPending(dir);
-  result(`Added ${addedCount} items to PRD.`);
+
+  // Show formatted summary when batch record is available, else simple message
+  if (batchRecord) {
+    const { formatBatchSummary } = await import("./chunked-review.js");
+    // Update the record with actual item count from insertion
+    const finalRecord = { ...batchRecord, acceptedItemCount: addedCount };
+    result(formatBatchSummary(finalRecord));
+  } else {
+    result(`Added ${addedCount} items to PRD.`);
+  }
 }
 
 export async function cmdAnalyze(
@@ -234,7 +253,11 @@ export async function cmdAnalyze(
     const cached = await loadPending(dir);
     if (cached && cached.length > 0) {
       info(`Accepting ${cached.length} cached proposals...`);
-      await acceptProposals(dir, cached);
+      const { createReviewState, buildBatchRecord } = await import("./chunked-review.js");
+      const state = createReviewState(cached, cached.length);
+      for (let i = 0; i < cached.length; i++) state.accepted.add(i);
+      const batchRecord = buildBatchRecord(state, "cached");
+      await acceptProposals(dir, cached, batchRecord);
       return;
     }
     // No cache — fall through to generate fresh proposals
@@ -397,15 +420,30 @@ export async function cmdAnalyze(
   }
 
   if (accept) {
-    // Non-interactive: accept immediately
-    await acceptProposals(dir, proposals);
+    // Non-interactive: accept immediately with auto-accept batch record
+    const { createReviewState, buildBatchRecord } = await import("./chunked-review.js");
+    const state = createReviewState(proposals, proposals.length);
+    for (let i = 0; i < proposals.length; i++) state.accepted.add(i);
+    const batchRecord = buildBatchRecord(state, "auto");
+    await acceptProposals(dir, proposals, batchRecord);
   } else if (process.stdin.isTTY) {
     // Interactive: chunked review for multiple proposals, simple y/n for single
     const { runChunkedReview } = await import("./chunked-review.js");
-    const { accepted, remaining } = await runChunkedReview(proposals, chunkSize);
+    const { accepted, remaining, batchRecord } = await runChunkedReview(proposals, chunkSize);
 
     if (accepted.length > 0) {
-      await acceptProposals(dir, accepted);
+      await acceptProposals(dir, accepted, batchRecord);
+    } else {
+      // Log the rejection decision even when nothing was accepted
+      if (await hasRexDir(dir)) {
+        const rexDir = join(dir, REX_DIR);
+        const store = await resolveStore(rexDir);
+        await store.appendLog({
+          timestamp: new Date().toISOString(),
+          event: "analyze_reject",
+          detail: JSON.stringify(batchRecord),
+        });
+      }
     }
 
     // Cache remaining proposals for later acceptance

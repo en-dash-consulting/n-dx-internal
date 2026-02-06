@@ -10,10 +10,13 @@ import {
   applyAction,
   getAcceptedProposals,
   getRemainingProposals,
+  buildBatchRecord,
+  formatBatchSummary,
 } from "../../../../src/cli/commands/chunked-review.js";
 import type {
   ChunkReviewState,
   ChunkAction,
+  BatchAcceptanceRecord,
 } from "../../../../src/cli/commands/chunked-review.js";
 import type { Proposal } from "../../../../src/analyze/index.js";
 
@@ -873,5 +876,195 @@ describe("dynamic chunk resizing", () => {
       const fewerResult = applyAction(moreResult.state, { kind: "fewer" });
       expect(fewerResult.done).toBe(false);
     });
+  });
+});
+
+// ─── buildBatchRecord ────────────────────────────────────────────────
+
+describe("buildBatchRecord", () => {
+  it("records accepted and rejected proposal titles", () => {
+    const proposals = makeProposals(5);
+    const state = createReviewState(proposals, 5);
+    state.accepted.add(0);
+    state.accepted.add(2);
+    state.accepted.add(4);
+
+    const record = buildBatchRecord(state);
+
+    expect(record.totalProposals).toBe(5);
+    expect(record.acceptedCount).toBe(3);
+    expect(record.rejectedCount).toBe(2);
+    expect(record.accepted).toEqual(["Epic 1", "Epic 3", "Epic 5"]);
+    expect(record.rejected).toEqual(["Epic 2", "Epic 4"]);
+    expect(record.mode).toBe("interactive");
+  });
+
+  it("handles all accepted", () => {
+    const proposals = makeProposals(3);
+    const state = createReviewState(proposals, 3);
+    state.accepted.add(0);
+    state.accepted.add(1);
+    state.accepted.add(2);
+
+    const record = buildBatchRecord(state);
+
+    expect(record.acceptedCount).toBe(3);
+    expect(record.rejectedCount).toBe(0);
+    expect(record.rejected).toEqual([]);
+    expect(record.mode).toBe("interactive");
+  });
+
+  it("handles none accepted", () => {
+    const proposals = makeProposals(3);
+    const state = createReviewState(proposals, 3);
+
+    const record = buildBatchRecord(state);
+
+    expect(record.acceptedCount).toBe(0);
+    expect(record.rejectedCount).toBe(3);
+    expect(record.accepted).toEqual([]);
+    expect(record.rejected).toEqual(["Epic 1", "Epic 2", "Epic 3"]);
+  });
+
+  it("includes timestamp", () => {
+    const proposals = makeProposals(2);
+    const state = createReviewState(proposals, 2);
+    state.accepted.add(0);
+
+    const record = buildBatchRecord(state);
+
+    expect(record.timestamp).toBeDefined();
+    // Should be a valid ISO timestamp
+    expect(new Date(record.timestamp).toISOString()).toBe(record.timestamp);
+  });
+
+  it("supports auto-accept mode override", () => {
+    const proposals = makeProposals(3);
+    const state = createReviewState(proposals, 3);
+    state.accepted.add(0);
+    state.accepted.add(1);
+    state.accepted.add(2);
+
+    const record = buildBatchRecord(state, "auto");
+
+    expect(record.mode).toBe("auto");
+  });
+
+  it("counts items including features and tasks", () => {
+    // makeProposal creates 1 feature with 1 task per feature by default
+    const proposals = makeProposals(2);
+    const state = createReviewState(proposals, 2);
+    state.accepted.add(0);
+    state.accepted.add(1);
+
+    const record = buildBatchRecord(state);
+
+    // 2 epics + 2 features + 2 tasks = 6 items
+    expect(record.acceptedItemCount).toBe(6);
+  });
+
+  it("counts items correctly for multi-feature proposals", () => {
+    const proposals = [makeProposal("Big Epic", 2, 3)];
+    const state = createReviewState(proposals, 1);
+    state.accepted.add(0);
+
+    const record = buildBatchRecord(state);
+
+    // 1 epic + 2 features + 6 tasks = 9 items
+    expect(record.acceptedItemCount).toBe(9);
+  });
+
+  it("reports zero item count when nothing accepted", () => {
+    const proposals = makeProposals(3);
+    const state = createReviewState(proposals, 3);
+
+    const record = buildBatchRecord(state);
+
+    expect(record.acceptedItemCount).toBe(0);
+  });
+});
+
+// ─── formatBatchSummary ──────────────────────────────────────────────
+
+describe("formatBatchSummary", () => {
+  it("shows summary with accepted and rejected", () => {
+    const record: BatchAcceptanceRecord = {
+      timestamp: "2026-02-06T00:00:00.000Z",
+      totalProposals: 5,
+      acceptedCount: 3,
+      rejectedCount: 2,
+      acceptedItemCount: 9,
+      accepted: ["Auth", "Dashboard", "Settings"],
+      rejected: ["Analytics", "Billing"],
+      mode: "interactive",
+    };
+
+    const summary = formatBatchSummary(record);
+
+    expect(summary).toContain("Accepted 3 of 5 proposals (9 items added to PRD)");
+    expect(summary).toContain("✓ Auth");
+    expect(summary).toContain("✓ Dashboard");
+    expect(summary).toContain("✓ Settings");
+    expect(summary).toContain("✗ Analytics");
+    expect(summary).toContain("✗ Billing");
+  });
+
+  it("shows all-accepted summary without rejected section", () => {
+    const record: BatchAcceptanceRecord = {
+      timestamp: "2026-02-06T00:00:00.000Z",
+      totalProposals: 3,
+      acceptedCount: 3,
+      rejectedCount: 0,
+      acceptedItemCount: 9,
+      accepted: ["Auth", "Dashboard", "Settings"],
+      rejected: [],
+      mode: "auto",
+    };
+
+    const summary = formatBatchSummary(record);
+
+    expect(summary).toContain("Accepted all 3 proposals (9 items added to PRD)");
+    expect(summary).toContain("✓ Auth");
+    expect(summary).not.toContain("✗");
+    expect(summary).not.toContain("Skipped");
+  });
+
+  it("shows none-accepted summary without accepted section", () => {
+    const record: BatchAcceptanceRecord = {
+      timestamp: "2026-02-06T00:00:00.000Z",
+      totalProposals: 2,
+      acceptedCount: 0,
+      rejectedCount: 2,
+      acceptedItemCount: 0,
+      accepted: [],
+      rejected: ["Auth", "Dashboard"],
+      mode: "interactive",
+    };
+
+    const summary = formatBatchSummary(record);
+
+    expect(summary).toContain("No proposals accepted");
+    expect(summary).not.toContain("✓");
+    expect(summary).toContain("✗ Auth");
+    expect(summary).toContain("✗ Dashboard");
+  });
+
+  it("shows single proposal summary", () => {
+    const record: BatchAcceptanceRecord = {
+      timestamp: "2026-02-06T00:00:00.000Z",
+      totalProposals: 1,
+      acceptedCount: 1,
+      rejectedCount: 0,
+      acceptedItemCount: 3,
+      accepted: ["Auth"],
+      rejected: [],
+      mode: "interactive",
+    };
+
+    const summary = formatBatchSummary(record);
+
+    // 1 out of 1 = all accepted, singular "proposal"
+    expect(summary).toContain("Accepted all 1 proposal (3 items added to PRD)");
+    expect(summary).toContain("✓ Auth");
   });
 });

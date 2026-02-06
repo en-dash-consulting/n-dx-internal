@@ -84,8 +84,8 @@ describe("Billing", () => {
     );
 
     const output = run(["import", "--no-llm", "--accept", tmpDir]);
-    expect(output).toContain("Added");
-    expect(output).toContain("items to PRD");
+    expect(output).toContain("Accepted");
+    expect(output).toContain("items added to PRD");
 
     const prd = JSON.parse(
       await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),

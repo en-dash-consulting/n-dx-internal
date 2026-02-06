@@ -366,6 +366,112 @@ export function getRemainingProposals(state: ChunkReviewState): Proposal[] {
   return state.proposals.filter((_, i) => !state.accepted.has(i));
 }
 
+// ─── Batch acceptance tracking ───────────────────────────────────────
+
+/**
+ * Record of a batch acceptance decision.
+ * Captures what was offered, what was accepted/rejected,
+ * and the mode of acceptance (interactive review vs auto-accept).
+ */
+export interface BatchAcceptanceRecord {
+  /** ISO 8601 timestamp of the decision. */
+  timestamp: string;
+  /** Total proposals offered in this batch. */
+  totalProposals: number;
+  /** Number of proposals accepted. */
+  acceptedCount: number;
+  /** Number of proposals rejected (not accepted). */
+  rejectedCount: number;
+  /** Total PRD items (epics + features + tasks) added from accepted proposals. */
+  acceptedItemCount: number;
+  /** Titles of accepted proposals (epic titles). */
+  accepted: string[];
+  /** Titles of rejected proposals (epic titles). */
+  rejected: string[];
+  /** How the decision was made. */
+  mode: "interactive" | "auto" | "cached";
+}
+
+/**
+ * Count the total items (epic + features + tasks) in a set of proposals.
+ */
+function countItems(proposals: Proposal[]): number {
+  let count = 0;
+  for (const p of proposals) {
+    count++; // epic
+    for (const f of p.features) {
+      count++; // feature
+      count += f.tasks.length; // tasks
+    }
+  }
+  return count;
+}
+
+/**
+ * Build a batch acceptance record from the final review state.
+ * Pure function — no I/O.
+ */
+export function buildBatchRecord(
+  state: ChunkReviewState,
+  mode: BatchAcceptanceRecord["mode"] = "interactive",
+): BatchAcceptanceRecord {
+  const accepted = getAcceptedProposals(state);
+  const remaining = getRemainingProposals(state);
+
+  return {
+    timestamp: new Date().toISOString(),
+    totalProposals: state.proposals.length,
+    acceptedCount: accepted.length,
+    rejectedCount: remaining.length,
+    acceptedItemCount: countItems(accepted),
+    accepted: accepted.map((p) => p.epic.title),
+    rejected: remaining.map((p) => p.epic.title),
+    mode,
+  };
+}
+
+/**
+ * Format a human-readable summary of a batch acceptance decision.
+ * Pure function — returns a multi-line string.
+ */
+export function formatBatchSummary(record: BatchAcceptanceRecord): string {
+  const lines: string[] = [];
+
+  // Header line
+  if (record.acceptedCount === 0) {
+    lines.push("No proposals accepted.");
+  } else if (record.acceptedCount === record.totalProposals) {
+    const label = record.totalProposals === 1 ? "proposal" : "proposals";
+    lines.push(
+      `Accepted all ${record.totalProposals} ${label} (${record.acceptedItemCount} items added to PRD).`,
+    );
+  } else {
+    const label = record.acceptedCount === 1 ? "proposal" : "proposals";
+    lines.push(
+      `Accepted ${record.acceptedCount} of ${record.totalProposals} ${label} (${record.acceptedItemCount} items added to PRD).`,
+    );
+  }
+
+  // Accepted list
+  if (record.accepted.length > 0) {
+    lines.push("");
+    for (const title of record.accepted) {
+      lines.push(`  ✓ ${title}`);
+    }
+  }
+
+  // Rejected list
+  if (record.rejected.length > 0) {
+    lines.push("");
+    lines.push("Skipped:");
+    for (const title of record.rejected) {
+      lines.push(`  ✗ ${title}`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
 // ─── Interactive I/O (thin wrapper) ──────────────────────────────────
 
 function promptLine(question: string): Promise<string> {
@@ -380,19 +486,25 @@ function promptLine(question: string): Promise<string> {
 
 /**
  * Run the interactive chunked review loop.
- * Returns the proposals the user accepted (may be empty).
+ * Returns the proposals the user accepted (may be empty) and a batch record.
  */
 export async function runChunkedReview(
   proposals: Proposal[],
   chunkSize: number = DEFAULT_CHUNK_SIZE,
-): Promise<{ accepted: Proposal[]; remaining: Proposal[] }> {
+): Promise<{ accepted: Proposal[]; remaining: Proposal[]; batchRecord: BatchAcceptanceRecord }> {
   // For single proposal or small batches, use simple y/n
   if (proposals.length <= 1) {
     const answer = await promptLine("Accept this proposal? (y/n) ");
-    if (["y", "yes"].includes(answer.toLowerCase())) {
-      return { accepted: proposals, remaining: [] };
+    const isYes = ["y", "yes"].includes(answer.toLowerCase());
+    const state = createReviewState(proposals, 1);
+    if (isYes) {
+      state.accepted.add(0);
     }
-    return { accepted: [], remaining: proposals };
+    const record = buildBatchRecord(state);
+    if (isYes) {
+      return { accepted: proposals, remaining: [], batchRecord: record };
+    }
+    return { accepted: [], remaining: proposals, batchRecord: record };
   }
 
   let state = createReviewState(proposals, chunkSize);
@@ -423,13 +535,11 @@ export async function runChunkedReview(
 
   const accepted = getAcceptedProposals(state);
   const remaining = getRemainingProposals(state);
+  const batchRecord = buildBatchRecord(state);
 
   // Summary
-  if (accepted.length > 0) {
-    info(`\nAccepting ${accepted.length} of ${proposals.length} proposals.`);
-  } else {
-    info("\nNo proposals accepted.");
-  }
+  info("");
+  info(formatBatchSummary(batchRecord));
 
-  return { accepted, remaining };
+  return { accepted, remaining, batchRecord };
 }

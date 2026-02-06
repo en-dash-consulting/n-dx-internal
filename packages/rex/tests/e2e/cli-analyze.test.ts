@@ -122,14 +122,96 @@ describe("Billing", () => {
     );
 
     const output = run(["analyze", "--no-llm", "--accept", tmpDir]);
-    expect(output).toContain("Added");
-    expect(output).toContain("items to PRD");
+    expect(output).toContain("Accepted");
+    expect(output).toContain("items added to PRD");
 
     // Verify items in prd.json
     const prd = JSON.parse(
       await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
     );
     expect(prd.items.length).toBeGreaterThan(0);
+  });
+
+  it("logs batch acceptance record to execution log", async () => {
+    run(["init", tmpDir]);
+
+    await mkdir(join(tmpDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tmpDir, "tests", "auth.test.ts"),
+      `
+describe("Auth", () => {
+  it("validates tokens", () => {});
+});
+`,
+    );
+
+    run(["analyze", "--no-llm", "--accept", tmpDir]);
+
+    // Read execution log and find the batch record
+    const logContent = await readFile(
+      join(tmpDir, ".rex", "execution-log.jsonl"),
+      "utf-8",
+    );
+    const logLines = logContent.trim().split("\n").map((l) => JSON.parse(l));
+    const acceptEntry = logLines.find(
+      (e: { event: string }) => e.event === "analyze_accept",
+    );
+
+    expect(acceptEntry).toBeDefined();
+    const detail = JSON.parse(acceptEntry.detail);
+    expect(detail).toHaveProperty("totalProposals");
+    expect(detail).toHaveProperty("acceptedCount");
+    expect(detail).toHaveProperty("rejectedCount");
+    expect(detail).toHaveProperty("accepted");
+    expect(detail).toHaveProperty("rejected");
+    expect(detail).toHaveProperty("mode");
+    expect(detail.mode).toBe("auto");
+    expect(detail.acceptedCount).toBeGreaterThan(0);
+    expect(detail.rejectedCount).toBe(0);
+    expect(detail.addedItemCount).toBeGreaterThan(0);
+  });
+
+  it("batch record includes accepted proposal titles", async () => {
+    run(["init", tmpDir]);
+
+    await writeFile(
+      join(tmpDir, "features.md"),
+      `# Dashboard
+- Display charts
+- Export data
+`,
+    );
+
+    await mkdir(join(tmpDir, "tests"), { recursive: true });
+    await writeFile(
+      join(tmpDir, "tests", "billing.test.ts"),
+      `
+describe("Billing", () => {
+  it("processes payments", () => {});
+});
+`,
+    );
+
+    run(["analyze", "--no-llm", "--accept", tmpDir]);
+
+    const logContent = await readFile(
+      join(tmpDir, ".rex", "execution-log.jsonl"),
+      "utf-8",
+    );
+    const logLines = logContent.trim().split("\n").map((l) => JSON.parse(l));
+    const acceptEntry = logLines.find(
+      (e: { event: string }) => e.event === "analyze_accept",
+    );
+
+    const detail = JSON.parse(acceptEntry.detail);
+    // accepted should be an array of epic titles
+    expect(Array.isArray(detail.accepted)).toBe(true);
+    expect(detail.accepted.length).toBe(detail.acceptedCount);
+    // Each accepted title should be a non-empty string
+    for (const title of detail.accepted) {
+      expect(typeof title).toBe("string");
+      expect(title.length).toBeGreaterThan(0);
+    }
   });
 
   it("reconciliation skips already-added items on second run", async () => {
@@ -225,8 +307,8 @@ describe("Cache", () => {
     // Second run with --accept picks up cached proposals without re-scanning
     const acceptOutput = run(["analyze", "--accept", tmpDir]);
     expect(acceptOutput).toContain("cached proposals");
-    expect(acceptOutput).toContain("Added");
-    expect(acceptOutput).toContain("items to PRD");
+    expect(acceptOutput).toContain("Accepted");
+    expect(acceptOutput).toContain("items added to PRD");
 
     // Pending file should be cleared
     try {
@@ -384,8 +466,8 @@ describe("Cache", () => {
       "--accept",
       tmpDir,
     ]);
-    expect(output).toContain("Added");
-    expect(output).toContain("items to PRD");
+    expect(output).toContain("Accepted");
+    expect(output).toContain("items added to PRD");
 
     // Verify items in prd.json (items are nested: epics → features → tasks)
     const prd = JSON.parse(
