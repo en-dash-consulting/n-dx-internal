@@ -2,6 +2,12 @@ export { PRDTree } from "./prd-tree.js";
 export type { PRDTreeProps } from "./prd-tree.js";
 export { TaskDetail } from "./task-detail.js";
 export type { TaskDetailProps } from "./task-detail.js";
+export { AddItemForm } from "./add-item-form.js";
+export type { AddItemFormProps, AddItemInput } from "./add-item-form.js";
+export { AnalyzePanel } from "./analyze-panel.js";
+export type { AnalyzePanelProps } from "./analyze-panel.js";
+export { BulkActions } from "./bulk-actions.js";
+export type { BulkActionsProps } from "./bulk-actions.js";
 export type {
   PRDItemData,
   PRDDocumentData,

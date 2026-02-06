@@ -3,22 +3,48 @@
  *
  * All endpoints are under /api/rex/.
  *
- * GET  /api/rex/prd              — full PRD document
- * GET  /api/rex/stats            — tree stats (total, completed, etc.)
- * GET  /api/rex/next             — next actionable task
- * GET  /api/rex/items/:id        — single item by ID
- * PATCH /api/rex/items/:id       — update item fields
- * GET  /api/rex/log              — execution log (?limit=N)
+ * GET   /api/rex/prd              — full PRD document
+ * GET   /api/rex/stats            — tree stats (total, completed, etc.)
+ * GET   /api/rex/next             — next actionable task
+ * GET   /api/rex/items/:id        — single item by ID
+ * POST  /api/rex/items            — add a new item
+ * PATCH /api/rex/items/:id        — update item fields
+ * PATCH /api/rex/items/bulk       — bulk update multiple items
+ * POST  /api/rex/analyze          — trigger analysis (scan project)
+ * GET   /api/rex/proposals        — get pending proposals
+ * POST  /api/rex/proposals/accept — accept pending proposals
+ * GET   /api/rex/log              — execution log (?limit=N)
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, appendFileSync } from "node:fs";
 import { join } from "node:path";
+import { randomUUID } from "node:crypto";
+import { execFile } from "node:child_process";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./types.js";
 import type { WebSocketBroadcaster } from "./websocket.js";
 
 const REX_PREFIX = "/api/rex/";
+
+const VALID_LEVELS = new Set(["epic", "feature", "task", "subtask"]);
+const VALID_STATUSES = new Set(["pending", "in_progress", "completed", "deferred", "blocked"]);
+const VALID_PRIORITIES = new Set(["critical", "high", "medium", "low"]);
+
+/** Valid parent levels for each item level. null = root allowed. */
+const LEVEL_HIERARCHY: Record<string, Array<string | null>> = {
+  epic: [null],
+  feature: ["epic"],
+  task: ["feature", "epic"],
+  subtask: ["task"],
+};
+
+/** Infer child level from parent level. */
+const CHILD_LEVEL: Record<string, string> = {
+  epic: "feature",
+  feature: "task",
+  task: "subtask",
+};
 
 interface PRDItemRecord {
   id: string;
@@ -46,6 +72,23 @@ function findItemById(items: PRDItemRecord[], id: string): PRDItemRecord | null 
     }
   }
   return null;
+}
+
+/** Insert a child item under the specified parent. */
+function insertChild(items: PRDItemRecord[], parentId: string, child: PRDItemRecord): boolean {
+  for (const item of items) {
+    if (item.id === parentId) {
+      if (!Array.isArray(item.children)) {
+        item.children = [];
+      }
+      item.children.push(child);
+      return true;
+    }
+    if (Array.isArray(item.children) && insertChild(item.children, parentId, child)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /** Walk the tree to update an item in place. */
@@ -297,6 +340,16 @@ export function handleRexRoute(
     return true;
   }
 
+  // POST /api/rex/items — add a new item
+  if (path === "items" && method === "POST") {
+    return handleItemAdd(req, res, ctx, broadcast);
+  }
+
+  // PATCH /api/rex/items/bulk — bulk status update
+  if (path === "items/bulk" && method === "PATCH") {
+    return handleBulkUpdate(req, res, ctx, broadcast);
+  }
+
   // Routes under /api/rex/items/:id
   const itemsMatch = path.match(/^items\/([^/?]+)/);
   if (itemsMatch) {
@@ -322,6 +375,21 @@ export function handleRexRoute(
     if (method === "PATCH") {
       return handleItemPatch(req, res, ctx, itemId, broadcast);
     }
+  }
+
+  // POST /api/rex/analyze — trigger analysis
+  if (path === "analyze" && method === "POST") {
+    return handleAnalyze(req, res, ctx, broadcast);
+  }
+
+  // GET /api/rex/proposals — get pending proposals
+  if (path === "proposals" && method === "GET") {
+    return handleGetProposals(res, ctx);
+  }
+
+  // POST /api/rex/proposals/accept — accept pending proposals
+  if (path === "proposals/accept" && method === "POST") {
+    return handleAcceptProposals(req, res, ctx, broadcast);
   }
 
   return false;
@@ -367,4 +435,433 @@ async function handleItemPatch(
     errorResponse(res, 400, String(err));
   }
   return true;
+}
+
+/** Handle POST /api/rex/items — add a new item */
+async function handleItemAdd(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): Promise<boolean> {
+  const doc = loadPRD(ctx);
+  if (!doc) {
+    errorResponse(res, 404, "No PRD data found");
+    return true;
+  }
+
+  try {
+    const body = await readBody(req);
+    const input = JSON.parse(body) as {
+      title?: string;
+      level?: string;
+      parentId?: string;
+      description?: string;
+      priority?: string;
+      tags?: string[];
+      acceptanceCriteria?: string[];
+    };
+
+    if (!input.title || input.title.trim().length === 0) {
+      errorResponse(res, 400, "Missing required field: title");
+      return true;
+    }
+
+    const parentId = input.parentId;
+
+    // Resolve level: explicit > inferred from parent > default to epic
+    let level: string;
+    if (input.level && VALID_LEVELS.has(input.level)) {
+      level = input.level;
+    } else if (parentId) {
+      const parent = findItemById(doc.items, parentId);
+      if (!parent) {
+        errorResponse(res, 400, `Parent "${parentId}" not found`);
+        return true;
+      }
+      const inferred = CHILD_LEVEL[parent.level];
+      if (!inferred) {
+        errorResponse(res, 400, `Cannot infer child level for parent type "${parent.level}"`);
+        return true;
+      }
+      level = inferred;
+    } else {
+      level = "epic";
+    }
+
+    // Validate parent-child level relationship
+    const allowedParents = LEVEL_HIERARCHY[level];
+    const canBeRoot = allowedParents.includes(null);
+
+    if (!canBeRoot && !parentId) {
+      const parentNames = allowedParents.filter((p): p is string => p !== null).join(" or ");
+      errorResponse(res, 400, `A ${level} requires a parent (${parentNames})`);
+      return true;
+    }
+
+    if (parentId) {
+      const parent = findItemById(doc.items, parentId);
+      if (!parent) {
+        errorResponse(res, 400, `Parent "${parentId}" not found`);
+        return true;
+      }
+      const allowedParentLevels = allowedParents.filter((p): p is string => p !== null);
+      if (allowedParentLevels.length > 0 && !allowedParentLevels.includes(parent.level)) {
+        errorResponse(res, 400, `A ${level} must be a child of a ${allowedParentLevels.join(" or ")}, not a ${parent.level}`);
+        return true;
+      }
+    }
+
+    const id = randomUUID();
+    const item: PRDItemRecord = {
+      id,
+      title: input.title.trim(),
+      status: "pending",
+      level,
+    };
+
+    if (input.description) item.description = input.description;
+    if (input.priority && VALID_PRIORITIES.has(input.priority)) item.priority = input.priority;
+    if (input.tags && Array.isArray(input.tags)) item.tags = input.tags;
+    if (input.acceptanceCriteria && Array.isArray(input.acceptanceCriteria)) {
+      item.acceptanceCriteria = input.acceptanceCriteria;
+    }
+
+    if (parentId) {
+      insertChild(doc.items, parentId, item);
+    } else {
+      doc.items.push(item);
+    }
+
+    savePRD(ctx, doc);
+
+    // Log the addition
+    appendLog(ctx, {
+      timestamp: new Date().toISOString(),
+      event: "item_added",
+      itemId: id,
+      detail: `Added ${level}: ${item.title} (via web)`,
+    });
+
+    if (broadcast) {
+      broadcast({
+        type: "rex:prd-changed",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    jsonResponse(res, 201, { ok: true, id, level, title: item.title });
+  } catch (err) {
+    errorResponse(res, 400, String(err));
+  }
+  return true;
+}
+
+/** Handle PATCH /api/rex/items/bulk — bulk status update */
+async function handleBulkUpdate(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): Promise<boolean> {
+  const doc = loadPRD(ctx);
+  if (!doc) {
+    errorResponse(res, 404, "No PRD data found");
+    return true;
+  }
+
+  try {
+    const body = await readBody(req);
+    const input = JSON.parse(body) as {
+      ids: string[];
+      updates: Record<string, unknown>;
+    };
+
+    if (!Array.isArray(input.ids) || input.ids.length === 0) {
+      errorResponse(res, 400, "Missing required field: ids (array of item IDs)");
+      return true;
+    }
+    if (!input.updates || typeof input.updates !== "object") {
+      errorResponse(res, 400, "Missing required field: updates");
+      return true;
+    }
+
+    // Validate status if provided
+    if (input.updates.status && !VALID_STATUSES.has(input.updates.status as string)) {
+      errorResponse(res, 400, `Invalid status: ${input.updates.status}`);
+      return true;
+    }
+
+    const results: Array<{ id: string; ok: boolean; error?: string }> = [];
+    for (const id of input.ids) {
+      // Clone updates for each item to get independent timestamps
+      const itemUpdates = { ...input.updates };
+      if (updateInTree(doc.items, id, itemUpdates)) {
+        results.push({ id, ok: true });
+      } else {
+        results.push({ id, ok: false, error: "not found" });
+      }
+    }
+
+    savePRD(ctx, doc);
+
+    // Log the bulk update
+    const successCount = results.filter((r) => r.ok).length;
+    appendLog(ctx, {
+      timestamp: new Date().toISOString(),
+      event: "bulk_update",
+      detail: `Bulk updated ${successCount}/${input.ids.length} items (via web)`,
+    });
+
+    if (broadcast) {
+      broadcast({
+        type: "rex:prd-changed",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    jsonResponse(res, 200, { ok: true, results });
+  } catch (err) {
+    errorResponse(res, 400, String(err));
+  }
+  return true;
+}
+
+/** Handle POST /api/rex/analyze — trigger analysis via CLI subprocess */
+async function handleAnalyze(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): Promise<boolean> {
+  try {
+    const body = await readBody(req);
+    const input = JSON.parse(body) as {
+      accept?: boolean;
+      noLlm?: boolean;
+      lite?: boolean;
+    };
+
+    const args = ["analyze", "--format=json"];
+    if (input.accept) args.push("--accept");
+    if (input.noLlm) args.push("--no-llm");
+    if (input.lite) args.push("--lite");
+    args.push(ctx.projectDir);
+
+    // Find the rex CLI binary
+    const rexBin = join(ctx.projectDir, "node_modules", ".bin", "rex");
+    const rexFallback = join(ctx.projectDir, "packages", "rex", "dist", "cli", "index.js");
+
+    const binPath = existsSync(rexBin) ? rexBin : "node";
+    const binArgs = existsSync(rexBin) ? args : [rexFallback, ...args];
+
+    await new Promise<void>((resolve, reject) => {
+      execFile(binPath, binArgs, {
+        cwd: ctx.projectDir,
+        timeout: 120_000,
+        maxBuffer: 10 * 1024 * 1024,
+        env: { ...process.env },
+      }, (error, stdout, stderr) => {
+        if (error) {
+          // Try to parse JSON from stdout even on error (CLI may exit non-zero but still output)
+          try {
+            const parsed = JSON.parse(stdout);
+            jsonResponse(res, 200, { ok: true, ...parsed });
+            resolve();
+            return;
+          } catch {
+            // Fall through to error response
+          }
+          errorResponse(res, 500, `Analysis failed: ${stderr || error.message}`);
+          resolve();
+          return;
+        }
+
+        try {
+          const result = JSON.parse(stdout);
+          if (broadcast) {
+            broadcast({
+              type: "rex:prd-changed",
+              timestamp: new Date().toISOString(),
+            });
+          }
+          jsonResponse(res, 200, { ok: true, ...result });
+        } catch {
+          // Non-JSON output — return as plain result
+          jsonResponse(res, 200, { ok: true, output: stdout.trim() });
+        }
+        resolve();
+      });
+    });
+  } catch (err) {
+    errorResponse(res, 400, String(err));
+  }
+  return true;
+}
+
+/** Handle GET /api/rex/proposals — get pending proposals */
+function handleGetProposals(
+  res: ServerResponse,
+  ctx: ServerContext,
+): boolean {
+  const pendingPath = join(ctx.rexDir, "pending-proposals.json");
+  if (!existsSync(pendingPath)) {
+    jsonResponse(res, 200, { proposals: [] });
+    return true;
+  }
+  try {
+    const raw = readFileSync(pendingPath, "utf-8");
+    const proposals = JSON.parse(raw);
+    jsonResponse(res, 200, { proposals });
+  } catch {
+    jsonResponse(res, 200, { proposals: [] });
+  }
+  return true;
+}
+
+/** Handle POST /api/rex/proposals/accept — accept pending proposals */
+async function handleAcceptProposals(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): Promise<boolean> {
+  const doc = loadPRD(ctx);
+  if (!doc) {
+    errorResponse(res, 404, "No PRD data found");
+    return true;
+  }
+
+  try {
+    const body = await readBody(req);
+    const input = JSON.parse(body) as {
+      /** Indices of proposals to accept. If not provided, accept all. */
+      indices?: number[];
+    };
+
+    const pendingPath = join(ctx.rexDir, "pending-proposals.json");
+    if (!existsSync(pendingPath)) {
+      errorResponse(res, 404, "No pending proposals");
+      return true;
+    }
+
+    const raw = readFileSync(pendingPath, "utf-8");
+    const allProposals = JSON.parse(raw) as Array<{
+      epic: { title: string; source: string; description?: string };
+      features: Array<{
+        title: string;
+        source: string;
+        description?: string;
+        tasks: Array<{
+          title: string;
+          source: string;
+          sourceFile: string;
+          description?: string;
+          acceptanceCriteria?: string[];
+          priority?: string;
+          tags?: string[];
+        }>;
+      }>;
+    }>;
+
+    // Filter to selected indices, or accept all
+    const toAccept = input.indices
+      ? input.indices.filter((i) => i >= 0 && i < allProposals.length).map((i) => allProposals[i])
+      : allProposals;
+
+    if (toAccept.length === 0) {
+      errorResponse(res, 400, "No valid proposals to accept");
+      return true;
+    }
+
+    let addedCount = 0;
+
+    for (const p of toAccept) {
+      const epicId = randomUUID();
+      const epicItem: PRDItemRecord = {
+        id: epicId,
+        title: p.epic.title,
+        level: "epic",
+        status: "pending",
+        source: p.epic.source,
+      };
+      if (p.epic.description) epicItem.description = p.epic.description;
+      doc.items.push(epicItem);
+      addedCount++;
+
+      for (const f of p.features) {
+        const featureId = randomUUID();
+        const featureItem: PRDItemRecord = {
+          id: featureId,
+          title: f.title,
+          level: "feature",
+          status: "pending",
+          source: f.source,
+        };
+        if (f.description) featureItem.description = f.description;
+        insertChild(doc.items, epicId, featureItem);
+        addedCount++;
+
+        for (const t of f.tasks) {
+          const taskId = randomUUID();
+          const taskItem: PRDItemRecord = {
+            id: taskId,
+            title: t.title,
+            level: "task",
+            status: "pending",
+            source: t.source,
+          };
+          if (t.description) taskItem.description = t.description;
+          if (t.acceptanceCriteria) taskItem.acceptanceCriteria = t.acceptanceCriteria;
+          if (t.priority) taskItem.priority = t.priority;
+          if (t.tags) taskItem.tags = t.tags;
+          insertChild(doc.items, featureId, taskItem);
+          addedCount++;
+        }
+      }
+    }
+
+    savePRD(ctx, doc);
+
+    // Remove accepted proposals from pending (keep remaining)
+    if (input.indices && input.indices.length < allProposals.length) {
+      const remaining = allProposals.filter((_, i) => !input.indices!.includes(i));
+      if (remaining.length > 0) {
+        writeFileSync(pendingPath, JSON.stringify(remaining, null, 2));
+      } else {
+        try { writeFileSync(pendingPath, "[]"); } catch { /* ignore */ }
+      }
+    } else {
+      // All accepted — clear pending
+      try { writeFileSync(pendingPath, "[]"); } catch { /* ignore */ }
+    }
+
+    appendLog(ctx, {
+      timestamp: new Date().toISOString(),
+      event: "analyze_accept",
+      detail: `Accepted ${toAccept.length} proposals (${addedCount} items) via web`,
+    });
+
+    if (broadcast) {
+      broadcast({
+        type: "rex:prd-changed",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    jsonResponse(res, 200, { ok: true, acceptedCount: toAccept.length, addedCount });
+  } catch (err) {
+    errorResponse(res, 400, String(err));
+  }
+  return true;
+}
+
+/** Append to execution log (sync, best-effort). */
+function appendLog(ctx: ServerContext, entry: Record<string, unknown>): void {
+  try {
+    const logPath = join(ctx.rexDir, "execution-log.jsonl");
+    appendFileSync(logPath, JSON.stringify(entry) + "\n");
+  } catch {
+    // Best-effort logging
+  }
 }

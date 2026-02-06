@@ -2,15 +2,19 @@
  * PRD view — displays Rex PRD hierarchy with interactive tree.
  *
  * Loads PRD data from /data/prd.json (served by the unified web server)
- * or accepts it via props. Manages task selection and detail panel content.
+ * or accepts it via props. Manages task selection, detail panel content,
+ * add item form, analyze panel, and bulk actions.
  */
 
-import { h } from "preact";
+import { h, Fragment } from "preact";
 import type { VNode } from "preact";
 import { useState, useEffect, useCallback } from "preact/hooks";
 import { PRDTree } from "../components/prd-tree/index.js";
 import { TaskDetail } from "../components/prd-tree/task-detail.js";
-import type { PRDDocumentData, PRDItemData } from "../components/prd-tree/index.js";
+import { AddItemForm } from "../components/prd-tree/add-item-form.js";
+import { AnalyzePanel } from "../components/prd-tree/analyze-panel.js";
+import { BulkActions } from "../components/prd-tree/bulk-actions.js";
+import type { PRDDocumentData, PRDItemData, AddItemInput } from "../components/prd-tree/index.js";
 import type { DetailItem } from "../types.js";
 
 export interface PRDViewProps {
@@ -22,6 +26,9 @@ export interface PRDViewProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onDetailContent?: (content: VNode<any> | null) => void;
 }
+
+/** Active tab in the command bar. */
+type CommandTab = null | "add" | "analyze";
 
 /** Walk the tree to find an item by ID. */
 function findItemById(items: PRDItemData[], id: string): PRDItemData | null {
@@ -40,8 +47,31 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
   const [loading, setLoading] = useState(!prdData);
   const [error, setError] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<CommandTab>(null);
+  const [addParentId, setAddParentId] = useState<string | null>(null);
+  const [bulkSelectedIds, setBulkSelectedIds] = useState<Set<string>>(new Set());
+  const [toast, setToast] = useState<string | null>(null);
 
   // Fetch PRD data
+  const fetchPRDData = useCallback(async () => {
+    try {
+      const res = await fetch("/data/prd.json");
+      if (!res.ok) {
+        if (res.status === 404) {
+          setError("No PRD data found. Run 'rex init' then 'rex analyze' to create one.");
+        } else {
+          setError(`Failed to load PRD data (${res.status})`);
+        }
+        return;
+      }
+      const json = await res.json();
+      setData(json);
+      setError(null);
+    } catch (_err) {
+      setError("Could not fetch PRD data. Is the server running?");
+    }
+  }, []);
+
   useEffect(() => {
     if (prdData) {
       setData(prdData);
@@ -49,36 +79,8 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
       return;
     }
 
-    let cancelled = false;
-
-    async function fetchPRD() {
-      try {
-        const res = await fetch("/data/prd.json");
-        if (!res.ok) {
-          if (res.status === 404) {
-            setError("No PRD data found. Run 'rex init' then 'rex analyze' to create one.");
-          } else {
-            setError(`Failed to load PRD data (${res.status})`);
-          }
-          setLoading(false);
-          return;
-        }
-        const json = await res.json();
-        if (!cancelled) {
-          setData(json);
-          setLoading(false);
-        }
-      } catch (_err) {
-        if (!cancelled) {
-          setError("Could not fetch PRD data. Is the server running?");
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchPRD();
-    return () => { cancelled = true; };
-  }, [prdData]);
+    fetchPRDData().then(() => setLoading(false));
+  }, [prdData, fetchPRDData]);
 
   // Handle item update via API
   const handleItemUpdate = useCallback(
@@ -94,16 +96,12 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
           return;
         }
         // Refresh PRD data
-        const prdRes = await fetch("/data/prd.json");
-        if (prdRes.ok) {
-          const newData = await prdRes.json();
-          setData(newData);
-        }
+        await fetchPRDData();
       } catch (err) {
         console.error("Failed to update item:", err);
       }
     },
-    [],
+    [fetchPRDData],
   );
 
   // Handle item selection — opens detail panel
@@ -164,6 +162,39 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
     );
   }, [data, selectedItemId, onDetailContent, handleItemUpdate, handleNavigateToItem]);
 
+  // Handle add item submission
+  const handleAddItem = useCallback(
+    async (input: AddItemInput) => {
+      const res = await fetch("/api/rex/items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ error: "Failed to add item" }));
+        throw new Error(errBody.error || `HTTP ${res.status}`);
+      }
+
+      const result = await res.json();
+
+      // Show toast
+      setToast(`Created ${result.level}: ${result.title}`);
+      setTimeout(() => setToast(null), 3000);
+
+      // Close form and refresh
+      setActiveTab(null);
+      setAddParentId(null);
+      await fetchPRDData();
+    },
+    [fetchPRDData],
+  );
+
+  // Handle analyze completion (refresh PRD data)
+  const handlePrdChanged = useCallback(async () => {
+    await fetchPRDData();
+  }, [fetchPRDData]);
+
   if (loading) {
     return h("div", { class: "loading" }, "Loading PRD...");
   }
@@ -180,10 +211,59 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
     );
   }
 
-  return h(PRDTree, {
-    document: data,
-    defaultExpandDepth: 2,
-    onSelectItem: handleSelectItem,
-    selectedItemId,
-  });
+  return h(
+    Fragment,
+    null,
+
+    // Command bar — action buttons
+    h("div", { class: "rex-command-bar" },
+      h("button", {
+        class: `rex-command-btn${activeTab === "add" ? " active" : ""}`,
+        onClick: () => {
+          setActiveTab(activeTab === "add" ? null : "add");
+          setAddParentId(null);
+        },
+        title: "Add a new item to the PRD",
+      }, "+ Add Item"),
+      h("button", {
+        class: `rex-command-btn${activeTab === "analyze" ? " active" : ""}`,
+        onClick: () => setActiveTab(activeTab === "analyze" ? null : "analyze"),
+        title: "Analyze project and generate proposals",
+      }, "\u2699 Analyze"),
+    ),
+
+    // Active panel
+    activeTab === "add"
+      ? h(AddItemForm, {
+          allItems: data.items,
+          onSubmit: handleAddItem,
+          onCancel: () => { setActiveTab(null); setAddParentId(null); },
+          defaultParentId: addParentId,
+        })
+      : null,
+
+    activeTab === "analyze"
+      ? h(AnalyzePanel, { onPrdChanged: handlePrdChanged })
+      : null,
+
+    // PRD tree
+    h(PRDTree, {
+      document: data,
+      defaultExpandDepth: 2,
+      onSelectItem: handleSelectItem,
+      selectedItemId,
+    }),
+
+    // Bulk actions bar (floating at bottom)
+    h(BulkActions, {
+      selectedIds: bulkSelectedIds,
+      onClearSelection: () => setBulkSelectedIds(new Set()),
+      onActionComplete: handlePrdChanged,
+    }),
+
+    // Toast notification
+    toast
+      ? h("div", { class: "rex-toast", role: "status" }, toast)
+      : null,
+  );
 }
