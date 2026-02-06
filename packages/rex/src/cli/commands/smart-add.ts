@@ -13,6 +13,7 @@ import {
   validateProposalQuality,
   DEFAULT_MODEL,
   setClaudeConfig,
+  getAuthMode,
 } from "../../analyze/index.js";
 import type { Proposal, QualityIssue } from "../../analyze/index.js";
 import type { PRDItem, ItemLevel } from "../../schema/index.js";
@@ -482,10 +483,18 @@ export async function cmdSmartAdd(
   const parentId = flags.parent;
   const filePaths: string[] = multiFlags.file ?? (flags.file ? [flags.file] : []);
 
-  // Load unified Claude config for CLI path resolution
+  // Load unified Claude config and initialize the client abstraction layer
   const rexConfigDir = join(dir, REX_DIR);
   const claudeConfig = await loadClaudeConfig(rexConfigDir);
   setClaudeConfig(claudeConfig);
+
+  // Display which authentication method will be used for LLM calls
+  if (flags.format !== "json") {
+    const authMode = getAuthMode();
+    if (authMode === "api") {
+      info("Using direct API authentication.");
+    }
+  }
 
   // --accept with no descriptions/files: replay cached proposals
   if (accept && descList.length === 0 && filePaths.length === 0 && !flags.format) {

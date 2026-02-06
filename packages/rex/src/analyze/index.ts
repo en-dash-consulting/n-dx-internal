@@ -16,6 +16,8 @@ export {
   DEFAULT_MODEL,
   MAX_RETRIES,
   setClaudeConfig,
+  setClaudeClient,
+  getAuthMode,
   CHUNK_CHAR_LIMIT,
   CHUNK_ITEM_LIMIT,
   FEW_SHOT_EXAMPLE,

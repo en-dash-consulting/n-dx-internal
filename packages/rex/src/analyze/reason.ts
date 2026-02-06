@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { z } from "zod";
@@ -6,7 +5,8 @@ import type { PRDItem, TokenUsage, AnalyzeTokenUsage } from "../schema/index.js"
 import type { ScanResult } from "./scanners.js";
 import type { Proposal, ProposalTask } from "./propose.js";
 import { walkTree } from "../core/tree.js";
-import type { ClaudeConfig } from "../store/project-config.js";
+import type { ClaudeConfig, ClaudeClient, AuthMode } from "@n-dx/claude-client";
+import { createClient, detectAuthMode } from "@n-dx/claude-client";
 
 export const DEFAULT_MODEL = "claude-sonnet-4-20250514";
 
@@ -21,11 +21,52 @@ export const MAX_RETRIES = 2;
 let _claudeConfig: ClaudeConfig | undefined;
 
 /**
+ * Module-level Claude client instance. Created lazily from the config
+ * when the first LLM call is made, or set explicitly at CLI entry points.
+ */
+let _claudeClient: ClaudeClient | undefined;
+
+/**
  * Set the module-level Claude configuration (CLI path, API key, etc.).
  * Call this at CLI entry points before any LLM operations.
+ * Also resets the cached client so the next call creates a fresh one
+ * using the new configuration.
  */
 export function setClaudeConfig(config: ClaudeConfig): void {
   _claudeConfig = config;
+  _claudeClient = undefined;
+}
+
+/**
+ * Set the module-level Claude client explicitly. This is useful when a
+ * client has already been created at the CLI entry point.
+ */
+export function setClaudeClient(client: ClaudeClient): void {
+  _claudeClient = client;
+}
+
+/**
+ * Get the current authentication mode being used for LLM calls.
+ * Returns "api" when using direct API key authentication, "cli" when
+ * using the Claude Code CLI binary. Returns undefined if no config
+ * has been set yet.
+ */
+export function getAuthMode(): AuthMode | undefined {
+  if (_claudeClient) return _claudeClient.mode;
+  if (_claudeConfig) return detectAuthMode({ claudeConfig: _claudeConfig });
+  return undefined;
+}
+
+/**
+ * Get or lazily create the module-level Claude client.
+ * Falls back to CLI mode when no configuration is available.
+ */
+function getClient(): ClaudeClient {
+  if (_claudeClient) return _claudeClient;
+
+  const config = _claudeConfig ?? {};
+  _claudeClient = createClient({ claudeConfig: config });
+  return _claudeClient;
 }
 
 // ── Token usage helpers ──
@@ -562,94 +603,30 @@ export function validateProposalQuality(proposals: Proposal[]): QualityIssue[] {
 
 // ── LLM interaction ──
 
-function spawnClaudeOnce(prompt: string, model: string, cliBinary = "claude"): Promise<ClaudeResult> {
-  return new Promise((resolve, reject) => {
-    const args = [
-      "-p", prompt,
-      "--output-format", "json",
-      "--model", model,
-    ];
-
-    const proc = spawn(cliBinary, args, {
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-
-    let stdout = "";
-    let stderr = "";
-
-    proc.stdout.on("data", (chunk: Buffer) => {
-      stdout += chunk.toString();
-    });
-    proc.stderr.on("data", (chunk: Buffer) => {
-      stderr += chunk.toString();
-    });
-
-    proc.on("error", (err) => {
-      if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-        const pathNote = cliBinary !== "claude"
-          ? `Claude CLI not found at configured path: ${cliBinary}. Check 'n-dx config claude.cli_path'.`
-          : "claude CLI not found. Install it with: npm install -g @anthropic-ai/claude-code, or set a custom path: n-dx config claude.cli_path /path/to/claude";
-        reject(new Error(pathNote));
-      } else {
-        reject(err);
-      }
-    });
-
-    proc.on("close", (code) => {
-      if (code !== 0) {
-        reject(new Error(stderr.trim() || `claude exited with code ${code}`));
-        return;
-      }
-
-      // --output-format json wraps result in { "result": "...", ... }
-      try {
-        const envelope = JSON.parse(stdout) as Record<string, unknown>;
-        const text = typeof envelope.result === "string" ? envelope.result : stdout;
-        const tokenUsage = parseTokenUsage(envelope);
-        resolve({ text, tokenUsage });
-      } catch {
-        resolve({ text: stdout });
-      }
-    });
-  });
-}
-
 /**
- * Spawn claude CLI with automatic retry on transient failures.
- * Retries up to MAX_RETRIES times with exponential backoff.
- * Non-retryable errors (ENOENT for missing CLI) are thrown immediately.
+ * Send a prompt to Claude using the unified client abstraction.
  *
- * Returns the result text and token usage from the CLI envelope.
+ * Uses the module-level `ClaudeClient` which supports both direct API
+ * and CLI modes transparently. The client is configured via
+ * `setClaudeConfig()` at CLI entry points. Retries are handled by the
+ * underlying client provider.
  *
  * @param prompt  The prompt to send to Claude
  * @param model   The model to use (e.g., "claude-sonnet-4-20250514")
- * @param claudeConfig  Optional unified Claude config for CLI path resolution
+ * @param claudeConfig  Optional config override (creates a one-off client)
  */
 export async function spawnClaude(prompt: string, model: string, claudeConfig?: ClaudeConfig): Promise<ClaudeResult> {
-  const effectiveConfig = claudeConfig ?? _claudeConfig;
-  const cliBinary = effectiveConfig?.cli_path ?? "claude";
-  let lastError: Error | null = null;
+  // When an explicit config is passed, create a one-off client for it
+  // instead of using the module-level client.
+  const client = claudeConfig
+    ? createClient({ claudeConfig })
+    : getClient();
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      return await spawnClaudeOnce(prompt, model, cliBinary);
-    } catch (err) {
-      lastError = err as Error;
-
-      // Don't retry if the CLI itself is missing
-      if (lastError.message.includes("CLI not found")) {
-        throw lastError;
-      }
-
-      // Don't retry on the last attempt
-      if (attempt < MAX_RETRIES) {
-        const delay = Math.min(1000 * 2 ** attempt, 10000);
-        await new Promise((r) => setTimeout(r, delay));
-      }
-    }
-  }
-
-  throw lastError!;
+  const result = await client.complete({ prompt, model });
+  return {
+    text: result.text,
+    tokenUsage: result.tokenUsage,
+  };
 }
 
 // ── Format detection ──

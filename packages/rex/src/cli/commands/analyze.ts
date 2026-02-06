@@ -24,6 +24,7 @@ import {
   formatDiff,
   DEFAULT_MODEL,
   setClaudeConfig,
+  getAuthMode,
 } from "../../analyze/index.js";
 import type { ScanResult, Proposal } from "../../analyze/index.js";
 import type { PRDItem, PRDDocument, AnalyzeTokenUsage } from "../../schema/index.js";
@@ -197,10 +198,19 @@ export async function cmdAnalyze(
   const accept = flags.accept === "true";
   const noLlm = flags["no-llm"] === "true";
 
-  // Load unified Claude config for CLI path resolution
+  // Load unified Claude config and initialize the client abstraction layer
   const rexConfigDir = join(dir, REX_DIR);
   const claudeConfig = await loadClaudeConfig(rexConfigDir);
   setClaudeConfig(claudeConfig);
+
+  // Display which authentication method will be used for LLM calls
+  if (!noLlm && flags.format !== "json") {
+    const authMode = getAuthMode();
+    if (authMode === "api") {
+      info("Using direct API authentication.");
+    }
+  }
+
   // Support multiple --file flags; fall back to single flags.file for compat
   const filePaths: string[] = multiFlags.file ?? (flags.file ? [flags.file] : []);
 
