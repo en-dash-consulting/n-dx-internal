@@ -1268,42 +1268,6 @@
           "source": "llm",
           "children": [
             {
-              "id": "4b2f9165-0f17-4060-b439-41e7ee7c4c33",
-              "title": "Improve CLI error formatting",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance formatCLIError and requireClaudeCLI error handling",
-              "acceptanceCriteria": [
-                "Error messages are user-friendly without stack traces",
-                "Missing dependencies show clear install instructions",
-                "Common errors include helpful suggestions"
-              ],
-              "priority": "high",
-              "tags": [
-                "cli",
-                "ux"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "600f90d8-4f96-4b93-acd2-d46e64a6aa14",
-              "title": "Add graceful Claude CLI requirement handling",
-              "status": "pending",
-              "level": "task",
-              "description": "Better handling when Claude CLI is not installed",
-              "acceptanceCriteria": [
-                "Clear error message when Claude CLI missing",
-                "Installation instructions provided",
-                "Fallback behavior when possible"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cli",
-                "dependencies"
-              ],
-              "source": "llm"
-            },
-            {
               "id": "79e45114-9bc1-4337-bfc7-c1c2e0d85a73",
               "title": "Enhance input validation with helpful errors",
               "status": "completed",
@@ -1322,24 +1286,6 @@
               "source": "llm",
               "startedAt": "2026-02-05T02:55:22.200Z",
               "completedAt": "2026-02-05T02:57:24.199Z"
-            },
-            {
-              "id": "3b8274e5-b7e0-411d-ab94-c31cfc6d606a",
-              "title": "Implement move operation validation",
-              "status": "pending",
-              "level": "task",
-              "description": "Prevent invalid move operations with clear error messages",
-              "acceptanceCriteria": [
-                "Throws CLIError for circular move",
-                "Throws CLIError for no-op move",
-                "Throws on circular move"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cmdMove",
-                "moveItem"
-              ],
-              "source": "llm"
             },
             {
               "id": "6bff530e-bae5-4b1c-bbdf-e3b13b092122",
@@ -1362,23 +1308,24 @@
               "completedAt": "2026-02-05T02:11:35.785Z"
             },
             {
-              "id": "058098a9-16d9-4089-8161-78ca9c1b01e1",
-              "title": "Improve directory validation",
+              "id": "4b2f9165-0f17-4060-b439-41e7ee7c4c33",
+              "title": "Improve CLI error handling and validation",
               "status": "pending",
               "level": "task",
-              "description": "Validate required directories exist and suggest initialization",
+              "description": "Enhance error formatting, graceful dependency handling, move operation validation, and directory validation with clear actionable messages",
               "acceptanceCriteria": [
-                "Throws CLIError when parent is not found",
-                "Throws CLIError when item not found",
-                "Includes n-dx init suggestion in the error"
+                "Error messages are user-friendly without stack traces",
+                "Missing dependencies show clear install instructions with fallback suggestions",
+                "Move operations throw CLIError for circular and no-op moves",
+                "Missing directories/items throw CLIError with n-dx init suggestion",
+                "Common errors include helpful suggestions"
               ],
-              "priority": "medium",
+              "priority": "high",
               "tags": [
-                "requireHenchDir",
-                "requireRexDir",
-                "requireSvDir",
-                "cmdAdd",
-                "cmdUpdate"
+                "cli",
+                "ux",
+                "error-handling",
+                "validation"
               ],
               "source": "llm"
             }
@@ -1413,35 +1360,19 @@
               "completedAt": "2026-02-05T01:42:36.160Z"
             },
             {
-              "id": "1b971f79-4d51-4afa-a11a-95f487d9d851",
-              "title": "Add constants validation",
-              "status": "pending",
-              "level": "task",
-              "description": "Test safeParseInt and other constant parsing utilities",
-              "acceptanceCriteria": [
-                "Integer parsing handles edge cases",
-                "Invalid inputs return appropriate defaults",
-                "Type safety is maintained"
-              ],
-              "priority": "low",
-              "tags": [
-                "validation",
-                "utils"
-              ],
-              "source": "llm"
-            },
-            {
               "id": "6bfb1e50-3b56-41ef-a93f-bd3e71a9f3aa",
-              "title": "Implement command validation with helpful errors",
+              "title": "Implement command input validation",
               "status": "pending",
               "level": "task",
-              "description": "Provide clear validation errors with actionable suggestions",
+              "description": "Validate command inputs (add, update, status) with clear error messages including valid options and usage hints",
               "acceptanceCriteria": [
-                "throws CLIError for invalid hierarchy",
-                "includes valid levels in suggestion for invalid level",
-                "throws CLIError when parent is required but missing",
-                "includes suggestion to check status when parent not found",
-                "succeeds for valid epic with title"
+                "Throws CLIError for invalid hierarchy with valid levels in suggestion",
+                "Throws CLIError when parent is required but missing, with suggestion to check status",
+                "Succeeds for valid epic with title",
+                "Integer parsing handles edge cases with appropriate defaults",
+                "Includes usage hint when update ID is missing",
+                "Throws CLIError when no updates specified, listing available flags",
+                "Throws CLIError for unrecognized output format, suggesting valid formats"
               ],
               "priority": "high",
               "tags": [
@@ -1453,59 +1384,26 @@
             },
             {
               "id": "4a10b43a-2675-452c-9692-926402d6e133",
-              "title": "Implement intelligent level inference",
+              "title": "Implement smart defaults and flexible hierarchy",
               "status": "pending",
               "level": "task",
-              "description": "Smart defaults and level inference for add command",
+              "description": "Intelligent level inference, flexible hierarchy (tasks under epics), and blockedBy support in add command",
               "acceptanceCriteria": [
-                "defaults to epic when no level and no parent",
-                "infers feature (not task) when parent is an epic and no level given",
-                "errors when parent not found during inference",
-                "explicit level overrides inference"
+                "Defaults to epic when no level and no parent",
+                "Infers feature when parent is an epic and no level given",
+                "Errors when parent not found during inference",
+                "Explicit level overrides inference",
+                "Accepts tasks directly under epics while still allowing tasks under features",
+                "Rejects adding tasks under subtasks or without any parent",
+                "Feature level remains optional — epics can have both features and tasks",
+                "Accepts --blockedBy as comma-separated IDs"
               ],
               "priority": "medium",
               "tags": [
                 "inference",
-                "defaults",
-                "usability"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "4c6290f7-c424-4a24-b59c-c0cb3958e247",
-              "title": "Support flexible hierarchy structures",
-              "status": "pending",
-              "level": "task",
-              "description": "Allow tasks directly under epics while maintaining validation",
-              "acceptanceCriteria": [
-                "accepts valid move (task directly under epic)",
-                "still allows adding a task under a feature",
-                "rejects adding a task under a subtask",
-                "rejects adding a task without any parent",
-                "feature level remains optional — epics can have both features and tasks"
-              ],
-              "priority": "medium",
-              "tags": [
                 "hierarchy",
                 "flexibility",
-                "validation"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "2ca7c819-77d4-407d-a639-0071bc1e3f49",
-              "title": "Support task dependencies",
-              "status": "pending",
-              "level": "task",
-              "description": "Handle blocked task relationships in add command",
-              "acceptanceCriteria": [
-                "accepts --blockedBy as comma-separated IDs"
-              ],
-              "priority": "medium",
-              "tags": [
-                "dependencies",
-                "blocking",
-                "relationships"
+                "dependencies"
               ],
               "source": "llm"
             },
@@ -1545,40 +1443,6 @@
                 "validation"
               ],
               "source": "llm"
-            },
-            {
-              "id": "c5e370a3-8849-4816-ac4d-f76d95417ffd",
-              "title": "Validate update command parameters",
-              "status": "pending",
-              "level": "task",
-              "description": "Ensure update command has required parameters and provide helpful suggestions",
-              "acceptanceCriteria": [
-                "includes usage hint when ID is missing",
-                "throws CLIError when no updates are specified",
-                "includes available flags in suggestion for no updates",
-                "succeeds for valid update"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cmdUpdate"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "2462bb6e-3ba7-4ffe-9391-17a35dac6505",
-              "title": "Handle unknown output formats",
-              "status": "pending",
-              "level": "task",
-              "description": "Provide clear error messages for unsupported format options",
-              "acceptanceCriteria": [
-                "throws CLIError for unrecognized format",
-                "suggests valid formats"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cmdStatus"
-              ],
-              "source": "llm"
             }
           ]
         },
@@ -1590,26 +1454,6 @@
           "description": "Robust configuration loading, validation, and project-level overrides",
           "source": "llm",
           "children": [
-            {
-              "id": "c70b3fac-76ff-4563-9b99-0a35dfad37f3",
-              "title": "Implement project-level configuration merging",
-              "status": "pending",
-              "level": "task",
-              "description": "Support .n-dx.json files that override default configurations",
-              "acceptanceCriteria": [
-                "Loads config without .n-dx.json",
-                "Merges .n-dx.json overrides into config",
-                "Deep merges nested guard overrides",
-                "Project config overrides array values entirely",
-                "Ignores .n-dx.json with no hench section",
-                "Ignores .n-dx.json with no rex section"
-              ],
-              "priority": "medium",
-              "tags": [
-                "project-config merge"
-              ],
-              "source": "llm"
-            },
             {
               "id": "bb7791ec-b388-44cd-8b8f-91754bbe0b87",
               "title": "Add configuration defaults and validation",
@@ -1641,125 +1485,66 @@
               "completedAt": "2026-02-05T02:08:35.294Z"
             },
             {
-              "id": "e7e40a00-1ddd-4588-92d8-43805607f123",
-              "title": "Enhance configuration display",
-              "status": "pending",
+              "id": "26961fc1-9711-4dee-beda-b698b1a48384",
+              "title": "Add task failure handling",
+              "status": "completed",
               "level": "task",
-              "description": "Improve how configuration is displayed and retrieved",
+              "description": "Properly handle various task failure scenarios with appropriate status updates.\n\n## Implementation\n\nAll three failure handling paths are implemented in `packages/hench/src/agent/loop.ts`:\n\n1. **Uncaught exception** (lines 325-334): catch block marks task as `deferred`, logs `task_failed` event\n2. **Timeout** (lines 315-323): when loop exits while still `running`, marks task as `deferred`, logs `task_failed` event  \n3. **Budget exceeded** (lines 222-234): per-turn budget check marks task as `pending` (recoverable), logs `budget_exceeded` event\n\nTests: `packages/hench/tests/unit/agent/task-failure.test.ts` (3 tests, all passing)",
               "acceptanceCriteria": [
-                "displays all package configs",
-                "skips missing packages gracefully",
-                "gets a string value by dotted key",
-                "gets a number value",
-                "gets a nested value",
-                "gets an array value",
-                "gets a whole package config by name"
-              ],
-              "priority": "medium",
-              "tags": [
-                "n-dx config",
-                "display"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "275e8400-3aff-4362-a496-c3b422eb5f7f",
-              "title": "Improve configuration setting capabilities",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance configuration modification and validation",
-              "acceptanceCriteria": [
-                "gets rex value",
-                "sets a rex value",
-                "sets a nested value",
-                "sets a string value",
-                "sets a number value with type coercion",
-                "adds a new optional field"
-              ],
-              "priority": "medium",
-              "tags": [
-                "n-dx config",
-                "set"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "d6a2f440-619a-4f20-ae31-e9e161d30518",
-              "title": "Enhance JSON output support",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve JSON output formatting for programmatic use",
-              "acceptanceCriteria": [
-                "outputs single value as JSON",
-                "outputs package config as JSON"
-              ],
-              "priority": "low",
-              "tags": [
-                "n-dx config",
-                "json"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "bb6130b9-3c07-4a13-84ec-f3b85657444e",
-              "title": "Strengthen configuration validation",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve validation rules and error handling for configuration changes",
-              "acceptanceCriteria": [
-                "errors on missing key",
-                "errors on missing package",
-                "prevents modifying schema version",
-                "prevents setting sourcevision (read-only)",
-                "prevents setting an object key directly",
-                "rejects unknown package name"
+                "Marks task as deferred on uncaught exception and logs error",
+                "Marks task as deferred on timeout and logs error",
+                "Marks task as pending on budget exceeded and logs error"
               ],
               "priority": "high",
               "tags": [
-                "n-dx config",
-                "validation"
+                "API loop task failure handling"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-05T02:12:18.093Z",
+              "completedAt": "2026-02-05T02:14:59.350Z"
             },
             {
-              "id": "449dd34d-3656-4376-83af-945a2b4d20b0",
-              "title": "Enhance configuration documentation",
+              "id": "c70b3fac-76ff-4563-9b99-0a35dfad37f3",
+              "title": "Implement project-level configuration",
               "status": "pending",
               "level": "task",
-              "description": "Improve help text and documentation for configuration options",
+              "description": "Support .n-dx.json project-level config files that merge with and override package configs",
               "acceptanceCriteria": [
-                "documents all rex config keys",
-                "documents all hench config keys",
-                "documents all hench guard keys",
-                "notes sourcevision is read-only",
-                "documents type coercion rules",
-                "includes usage examples",
-                "documents .n-dx.json project config"
+                "Reads .n-dx.json and merges with package configs",
+                "Project config takes precedence over package config",
+                "Deep merges nested objects; array override replaces entire array",
+                "Set writes to package config, not .n-dx.json",
+                "Ignores .n-dx.json with no hench/rex section"
               ],
-              "priority": "low",
+              "priority": "medium",
               "tags": [
-                "n-dx config",
-                "help"
+                "project-config",
+                "merge"
               ],
               "source": "llm"
             },
             {
-              "id": "924a8058-540b-4e4d-8047-57126c887800",
-              "title": "Implement project-level configuration support",
+              "id": "e7e40a00-1ddd-4588-92d8-43805607f123",
+              "title": "Implement config get/set with validation and docs",
               "status": "pending",
               "level": "task",
-              "description": "Add support for .n-dx.json project-level configuration files",
+              "description": "Config display, get/set by dotted key, JSON output, validation rules, and help text for all config options",
               "acceptanceCriteria": [
-                "reads .n-dx.json and merges with package configs",
-                "project config takes precedence over package config",
-                "deep merges nested objects",
-                "set writes to package config, not .n-dx.json",
-                "array override replaces entire array"
+                "Displays all package configs, skipping missing packages gracefully",
+                "Gets values by dotted key (string, number, nested, array, whole package)",
+                "Sets values with type coercion (string, number, nested, new optional fields)",
+                "Outputs single value and package config as JSON",
+                "Errors on missing key/package, prevents modifying schema version, rejects unknown packages",
+                "Prevents setting sourcevision (read-only) and object keys directly",
+                "Help text documents all rex/hench config keys, guard keys, type coercion rules, and .n-dx.json"
               ],
               "priority": "medium",
               "tags": [
                 "n-dx config",
-                "project config"
+                "get",
+                "set",
+                "validation",
+                "help"
               ],
               "source": "llm"
             },
@@ -1779,25 +1564,6 @@
                 "loopPause"
               ],
               "source": "llm"
-            },
-            {
-              "id": "26961fc1-9711-4dee-beda-b698b1a48384",
-              "title": "Add task failure handling",
-              "status": "completed",
-              "level": "task",
-              "description": "Properly handle various task failure scenarios with appropriate status updates.\n\n## Implementation\n\nAll three failure handling paths are implemented in `packages/hench/src/agent/loop.ts`:\n\n1. **Uncaught exception** (lines 325-334): catch block marks task as `deferred`, logs `task_failed` event\n2. **Timeout** (lines 315-323): when loop exits while still `running`, marks task as `deferred`, logs `task_failed` event  \n3. **Budget exceeded** (lines 222-234): per-turn budget check marks task as `pending` (recoverable), logs `budget_exceeded` event\n\nTests: `packages/hench/tests/unit/agent/task-failure.test.ts` (3 tests, all passing)",
-              "acceptanceCriteria": [
-                "Marks task as deferred on uncaught exception and logs error",
-                "Marks task as deferred on timeout and logs error",
-                "Marks task as pending on budget exceeded and logs error"
-              ],
-              "priority": "high",
-              "tags": [
-                "API loop task failure handling"
-              ],
-              "source": "llm",
-              "startedAt": "2026-02-05T02:12:18.093Z",
-              "completedAt": "2026-02-05T02:14:59.350Z"
             }
           ]
         },
@@ -1811,75 +1577,23 @@
           "children": [
             {
               "id": "3371ae43-1936-4085-a1a0-0a42fee0d3c5",
-              "title": "Standardize JSON report structure",
+              "title": "Implement JSON report command",
               "status": "pending",
               "level": "task",
-              "description": "Ensure all commands produce well-formatted JSON with consistent fields",
+              "description": "Structured JSON reports with health status, progress, level breakdown, and proper exit codes",
               "acceptanceCriteria": [
-                "outputs valid JSON with all fields",
-                "outputs valid JSON report",
-                "includes timestamp",
-                "includes ok field",
-                "includes progress section with percentage",
-                "includes breakdown by level"
+                "Outputs valid JSON with timestamp, ok field, progress percentage, and breakdown by level",
+                "ok is true for valid PRD; includes warnings without affecting ok status",
+                "Does not exit non-zero on validation errors unless --fail-on-error is set",
+                "Exits 0 when --fail-on-error and health is good; exits 1 when bad",
+                "Counts items per level and status; omits levels with zero items"
               ],
               "priority": "medium",
               "tags": [
                 "cmdReport",
-                "cmdUsage",
-                "json output"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "36b4808d-144d-45aa-b53e-d76363385456",
-              "title": "Implement health status reporting",
-              "status": "pending",
-              "level": "task",
-              "description": "Provide clear health indicators in JSON reports",
-              "acceptanceCriteria": [
-                "ok is true for valid PRD",
-                "does not exit non-zero on validation errors",
-                "includes warnings without affecting ok status"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cmdReport",
-                "health status"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "415d921b-bbc2-4d3a-a9f8-bdea8ffdc6c4",
-              "title": "Add level breakdown statistics",
-              "status": "pending",
-              "level": "task",
-              "description": "Include detailed statistics by hierarchy level and status",
-              "acceptanceCriteria": [
-                "counts items per level and status",
-                "omits levels with zero items"
-              ],
-              "priority": "low",
-              "tags": [
-                "cmdReport",
-                "level breakdown"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "216c25b9-3974-4e20-85ee-f409d790ac80",
-              "title": "Handle exit codes properly",
-              "status": "pending",
-              "level": "task",
-              "description": "Return appropriate exit codes based on validation results and flags",
-              "acceptanceCriteria": [
-                "exits 0 when --fail-on-error and health is good",
-                "exits 1 when --fail-on-error and health is bad"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cmdReport",
-                "exit codes"
+                "json",
+                "health-status",
+                "exit-codes"
               ],
               "source": "llm"
             }
@@ -1895,106 +1609,37 @@
           "children": [
             {
               "id": "b3a51434-b5f2-48e7-b6bd-0657a8a370e5",
-              "title": "Format proposal display",
+              "title": "Implement proposal review UI",
               "status": "pending",
               "level": "task",
-              "description": "Present proposals in a clear, hierarchical format with proper numbering",
+              "description": "Proposal display formatting, item counting, approval input parsing, and quality/budget warning display",
               "acceptanceCriteria": [
-                "does not number when only one proposal",
-                "indents features and tasks correctly",
-                "hides epic label when parentLevel is epic",
-                "excludes epic when parentLevel is epic"
+                "Proposals displayed with correct indentation, numbering (skipped for single proposal), and epic label handling",
+                "Item counts include epics and features even with no tasks",
+                "Parses comma/space-separated approval input with deduplication and out-of-range handling",
+                "Displays quality warnings with appropriate icons (error/warning) and paths on indented lines"
               ],
               "priority": "medium",
               "tags": [
-                "formatProposalTree"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "48db0f4b-e44a-4915-a555-b565cbafd89f",
-              "title": "Count proposal items accurately",
-              "status": "pending",
-              "level": "task",
-              "description": "Provide accurate counts of items in proposals for user reference",
-              "acceptanceCriteria": [
-                "counts all items in a single proposal",
-                "counts epics and features even with no tasks"
-              ],
-              "priority": "low",
-              "tags": [
-                "countProposalItems"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "e49fea20-9078-44f0-9395-1c3f1b082a84",
-              "title": "Parse user approval input",
-              "status": "pending",
-              "level": "task",
-              "description": "Handle various input formats for proposal approval selection",
-              "acceptanceCriteria": [
-                "parses comma-separated numbers as selective approval",
-                "parses space-separated numbers",
-                "parses comma+space separated numbers",
-                "deduplicates repeated numbers",
-                "handles whitespace padding",
-                "ignores out-of-range indices"
-              ],
-              "priority": "medium",
-              "tags": [
+                "formatProposalTree",
                 "parseApprovalInput",
-                "filterProposalsByIndex"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "21350c38-2e3c-4102-bc26-8b62809dc757",
-              "title": "Display quality and budget warnings",
-              "status": "pending",
-              "level": "task",
-              "description": "Show clear warnings for quality issues and budget concerns",
-              "acceptanceCriteria": [
-                "formats a single warning",
-                "formats multiple warnings",
-                "uses ✗ icon for errors",
-                "uses ⚠ icon for warnings",
-                "includes path on indented line below message"
-              ],
-              "priority": "medium",
-              "tags": [
-                "formatQualityWarnings",
-                "formatBudgetWarnings"
+                "formatQualityWarnings"
               ],
               "source": "llm"
             },
             {
               "id": "35c1313b-473c-41d8-aca2-40e06306a029",
-              "title": "Enhance context generation",
+              "title": "Improve context and LLM text generation",
               "status": "pending",
               "level": "task",
-              "description": "Improve context generation with proper formatting and token management",
+              "description": "Context generation with XML markers and token budgets, and LLM-oriented markdown generation",
               "acceptanceCriteria": [
-                "generates context with XML markers",
-                "stays within reasonable token budget"
+                "Generates context with XML markers within reasonable token budget",
+                "Generates markdown with all required sections for LLM consumption"
               ],
               "priority": "medium",
               "tags": [
-                "generateContext"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "ab2e3bb4-ef79-4c5d-8b36-95ebe990a05b",
-              "title": "Improve LLM text generation",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance LLM-oriented text generation with comprehensive sections",
-              "acceptanceCriteria": [
-                "generates markdown with all sections"
-              ],
-              "priority": "low",
-              "tags": [
+                "generateContext",
                 "generateLlmsTxt"
               ],
               "source": "llm"
@@ -2009,41 +1654,6 @@
           "description": "Improve CI integration and reporting capabilities",
           "source": "llm",
           "children": [
-            {
-              "id": "2274f92d-507b-4463-aa86-b46da39692e7",
-              "title": "Enhance JSON report format",
-              "status": "pending",
-              "level": "task",
-              "description": "Improve structured reporting for CI environments",
-              "acceptanceCriteria": [
-                "report includes sourcevision step",
-                "report includes validate step",
-                "report includes status step with stats",
-                "overall ok is true when all steps pass"
-              ],
-              "priority": "medium",
-              "tags": [
-                "n-dx ci",
-                "json"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "06866e85-ec53-4374-9a22-1df7c0377e0e",
-              "title": "Improve error handling for missing setup",
-              "status": "pending",
-              "level": "task",
-              "description": "Provide clear error messages when project is not properly initialized",
-              "acceptanceCriteria": [
-                "errors when .rex is missing"
-              ],
-              "priority": "high",
-              "tags": [
-                "n-dx ci",
-                "error handling"
-              ],
-              "source": "llm"
-            },
             {
               "id": "4097dd91-741f-48ae-bfcd-28b781a036c9",
               "title": "Fix validation failure exit codes",
@@ -2061,6 +1671,25 @@
               "source": "llm",
               "startedAt": "2026-02-05T14:28:42.831Z",
               "completedAt": "2026-02-05T14:59:06.856Z"
+            },
+            {
+              "id": "2274f92d-507b-4463-aa86-b46da39692e7",
+              "title": "Implement CI command with proper reporting and error handling",
+              "status": "pending",
+              "level": "task",
+              "description": "Structured JSON CI reports with step-level detail and clear errors for missing setup",
+              "acceptanceCriteria": [
+                "Report includes sourcevision, validate, and status steps with stats",
+                "Overall ok is true when all steps pass",
+                "Errors clearly when .rex is missing"
+              ],
+              "priority": "medium",
+              "tags": [
+                "n-dx ci",
+                "json",
+                "error handling"
+              ],
+              "source": "llm"
             }
           ]
         }
@@ -5167,7 +4796,7 @@
             {
               "id": "33c3b7ae-1072-4064-9ab7-37431ffeb554",
               "title": "Implement PRD hierarchy visualization",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Create interactive tree view for displaying epics, features, tasks, and subtasks with completion status and progress indicators",
               "acceptanceCriteria": [
@@ -5182,7 +4811,8 @@
                 "visualization",
                 "frontend"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-06T04:52:35.753Z"
             },
             {
               "id": "264f26ce-e433-4c4b-91c9-3981680ec771",
