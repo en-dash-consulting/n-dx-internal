@@ -1,6 +1,6 @@
 import { spawn, execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import type { PRDStore } from "rex/dist/store/types.js";
+import type { PRDStore } from "rex";
 import type { HenchConfig, RetryConfig, RunRecord, ToolCallRecord, TurnTokenUsage } from "../schema/index.js";
 import { assembleTaskBrief, formatTaskBrief } from "./brief.js";
 import { buildSystemPrompt } from "./prompt.js";

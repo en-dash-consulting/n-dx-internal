@@ -1,8 +1,6 @@
 import { randomUUID } from "node:crypto";
-import type { PRDStore } from "rex/dist/store/types.js";
-import type { ItemStatus } from "rex/dist/schema/v1.js";
-import { computeTimestampUpdates } from "rex/dist/core/timestamps.js";
-import { findAutoCompletions } from "rex/dist/core/parent-completion.js";
+import type { PRDStore, ItemStatus } from "rex";
+import { computeTimestampUpdates, findAutoCompletions } from "rex";
 import { validateCompletion, formatValidationResult } from "../validation/completion.js";
 
 export interface UpdateStatusOptions {

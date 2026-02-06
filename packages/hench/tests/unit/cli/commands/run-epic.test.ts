@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { PRDItem } from "rex/dist/schema/v1.js";
-import type { PRDStore } from "rex/dist/store/types.js";
+import type { PRDItem, PRDStore } from "rex";
 import {
   listEpics,
   findEpicByIdOrTitle,

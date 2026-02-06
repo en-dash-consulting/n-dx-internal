@@ -1,8 +1,7 @@
 import { join } from "node:path";
 import { createInterface } from "node:readline";
-import { resolveStore } from "rex/dist/store/index.js";
-import type { PRDItem } from "rex/dist/schema/v1.js";
-import type { PRDStore } from "rex/dist/store/types.js";
+import { resolveStore } from "rex";
+import type { PRDItem, PRDStore } from "rex";
 import { loadConfig, listRuns } from "../../store/index.js";
 import { agentLoop } from "../../agent/loop.js";
 import { cliLoop } from "../../agent/cli-loop.js";

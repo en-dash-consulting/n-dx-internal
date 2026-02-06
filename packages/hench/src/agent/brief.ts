@@ -1,8 +1,11 @@
-import { findNextTask, findActionableTasks, collectCompletedIds } from "rex/dist/core/next-task.js";
-import { findItem, walkTree } from "rex/dist/core/tree.js";
-import type { PRDStore } from "rex/dist/store/types.js";
-import type { PRDItem } from "rex/dist/schema/v1.js";
-import type { TreeEntry } from "rex/dist/core/tree.js";
+import {
+  findNextTask,
+  findActionableTasks,
+  collectCompletedIds,
+  findItem,
+  walkTree,
+} from "rex";
+import type { PRDStore, PRDItem, TreeEntry } from "rex";
 import type {
   TaskBrief,
   TaskBriefTask,

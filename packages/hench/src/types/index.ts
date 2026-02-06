@@ -6,7 +6,7 @@
  */
 
 import type { GuardRails } from "../guard/index.js";
-import type { PRDStore } from "rex/dist/store/types.js";
+import type { PRDStore } from "rex";
 
 /**
  * Context passed to tool implementations during agent execution.

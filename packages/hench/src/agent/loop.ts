@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import type { PRDStore } from "rex/dist/store/types.js";
+import type { PRDStore } from "rex";
 import type { HenchConfig, RunRecord, TurnTokenUsage } from "../schema/index.js";
 import { GuardRails } from "../guard/index.js";
 import { TOOL_DEFINITIONS, dispatchTool } from "../tools/dispatch.js";
