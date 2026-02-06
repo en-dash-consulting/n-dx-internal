@@ -4869,7 +4869,7 @@
             {
               "id": "7bce80df-5df2-4dc9-88d3-947c72b4dbd0",
               "title": "Create web server with API endpoints",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Build Express/Fastify server that exposes Rex and sourcevision data through REST API and serves the web interface",
               "acceptanceCriteria": [
@@ -4883,7 +4883,9 @@
                 "backend",
                 "api"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-06T05:13:59.888Z",
+              "completedAt": "2026-02-06T05:26:44.504Z"
             },
             {
               "id": "e68c5d72-833d-4766-908d-da8ab8517622",
