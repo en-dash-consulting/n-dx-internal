@@ -18,6 +18,8 @@ import { cmdInit } from "./init.js";
 import { info } from "../output.js";
 import { emptyAnalyzeTokenUsage, accumulateTokenUsage, formatTokenUsage } from "../../analyzers/token-usage.js";
 import type { AnalyzeTokenUsage } from "../../schema/index.js";
+import { loadClaudeConfig, resolveCliPath } from "../../util/project-config.js";
+import { setClaudeBinary } from "../../analyzers/claude-cli.js";
 
 type PhaseFilter =
   | { type: "all" }
@@ -59,6 +61,10 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
     cmdInit(absDir);
     info("");
   }
+
+  // Load unified Claude config for CLI path resolution
+  const claudeConfig = await loadClaudeConfig(absDir);
+  setClaudeBinary(resolveCliPath(claudeConfig));
 
   const filter = parsePhaseFilter(extraArgs);
 

@@ -15,6 +15,7 @@ export type { FileFormat, AddPromptOptions, QualityIssue, ClaudeResult, ReasonRe
 export {
   DEFAULT_MODEL,
   MAX_RETRIES,
+  setClaudeConfig,
   CHUNK_CHAR_LIMIT,
   CHUNK_ITEM_LIMIT,
   FEW_SHOT_EXAMPLE,

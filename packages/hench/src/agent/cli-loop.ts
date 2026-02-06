@@ -12,6 +12,8 @@ import { collectReviewDiff, promptReview, revertChanges } from "./review.js";
 import { checkTokenBudget } from "./token-budget.js";
 import { parseTokenUsage, parseStreamTokenUsage } from "./token-usage.js";
 import { section, subsection, stream, detail, info } from "../types/output.js";
+import { loadClaudeConfig, resolveCliPath } from "../store/project-config.js";
+import type { ClaudeConfig } from "../store/project-config.js";
 
 export interface CliLoopOptions {
   config: HenchConfig;
@@ -238,9 +240,10 @@ export function processStreamLine(
 function spawnClaude(
   args: string[],
   cwd: string,
+  cliBinary = "claude",
 ): Promise<CliRunResult> {
   return new Promise((resolve, reject) => {
-    const proc = spawn("claude", args, {
+    const proc = spawn(cliBinary, args, {
       cwd,
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -358,6 +361,10 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
 
   await saveRun(henchDir, run);
 
+  // Load unified Claude config for CLI path resolution
+  const claudeConfig = await loadClaudeConfig(henchDir);
+  const cliBinary = resolveCliPath(claudeConfig);
+
   // Capture HEAD before agent runs so we can diff against it even if agent commits
   const startingHead = getCurrentHead(projectDir);
 
@@ -394,7 +401,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
       section(`Agent Run${opts.model ? ` (${opts.model})` : ""}${attempt > 0 ? ` (retry ${attempt}/${retryConfig.maxRetries})` : ""}`);
       stream("CLI", `Spawning claude${opts.model ? ` (model: ${opts.model})` : ""}...`);
 
-      const result = await spawnClaude(args, projectDir);
+      const result = await spawnClaude(args, projectDir, cliBinary);
 
       accumulatedTurns += result.turns;
       accumulatedToolCalls = accumulatedToolCalls.concat(result.toolCalls);

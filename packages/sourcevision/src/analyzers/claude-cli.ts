@@ -12,12 +12,33 @@ export type ClaudeCallResult =
   | { ok: true; response: string; tokenUsage?: TokenUsage }
   | { ok: false; reason: "auth" | "timeout" | "rate-limit" | "unknown"; detail: string };
 
+/**
+ * Module-level Claude CLI binary path. Set via `setClaudeBinary()` at CLI
+ * entry points so that all enrichment calls use the resolved path.
+ */
+let _cliBinary = "claude";
+
+/**
+ * Set the Claude CLI binary path for all subsequent calls.
+ * Call this at CLI entry points after loading unified config.
+ */
+export function setClaudeBinary(binary: string): void {
+  _cliBinary = binary;
+}
+
+/**
+ * Get the current Claude CLI binary path.
+ */
+export function getClaudeBinary(): string {
+  return _cliBinary;
+}
+
 // ── Claude CLI call ──────────────────────────────────────────────────────────
 
 export async function tryCallClaude(prompt: string, _timeoutMs: number): Promise<ClaudeCallResult> {
   return new Promise((resolve) => {
     const child = spawn(
-      "claude",
+      _cliBinary,
       ["-p", "--output-format", "stream-json", "--verbose", "--include-partial-messages"],
       { stdio: ["pipe", "pipe", "pipe"] },
     );

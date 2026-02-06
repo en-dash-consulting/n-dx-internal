@@ -92,7 +92,7 @@ const ERROR_HINTS: Array<[RegExp, string, string]> = [
   [
     /ANTHROPIC_API_KEY/,
     "Anthropic API key not configured.",
-    "Set the ANTHROPIC_API_KEY environment variable, or use 'n-dx config hench.provider cli' for Claude CLI mode.",
+    "Set it via 'n-dx config claude.api_key <key>', the ANTHROPIC_API_KEY environment variable, or use 'n-dx config hench.provider cli' for Claude CLI mode.",
   ],
   [
     /not found/i,
@@ -144,16 +144,31 @@ export function handleCLIError(err: unknown): never {
 }
 
 /**
- * Check that the claude CLI binary is available on PATH.
+ * Check that the claude CLI binary is available.
+ * If a custom path is provided (from unified config), checks that specific path.
+ * Otherwise checks for "claude" on PATH.
  * Throws a CLIError with install instructions and API-provider fallback if missing.
  */
-export function requireClaudeCLI(): void {
+export function requireClaudeCLI(customPath?: string): void {
+  if (customPath) {
+    // Custom path from unified config — check that the file exists
+    if (!existsSync(customPath)) {
+      throw new CLIError(
+        `Claude CLI not found at configured path: ${customPath}`,
+        "Check the path in 'n-dx config claude.cli_path', or remove it to use PATH lookup.\n" +
+          "  Or switch to the API provider: n-dx config hench.provider api",
+      );
+    }
+    return;
+  }
+
   try {
     execFileSync("which", ["claude"], { stdio: "pipe" });
   } catch {
     throw new CLIError(
       "Claude CLI not found.",
       "Install it with: npm install -g @anthropic-ai/claude-code\n" +
+        "  Set a custom path: n-dx config claude.cli_path /path/to/claude\n" +
         "  Or switch to the API provider: n-dx config hench.provider api",
     );
   }

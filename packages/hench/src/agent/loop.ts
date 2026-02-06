@@ -15,6 +15,7 @@ import { parseTokenUsage } from "./token-usage.js";
 import { toolRexUpdateStatus, toolRexAppendLog, runPostTaskTests } from "../tools/index.js";
 import { section, subsection, stream, detail, info } from "../types/output.js";
 import type { ToolContext } from "../types/index.js";
+import { loadClaudeConfig, resolveApiKey } from "../store/project-config.js";
 
 export interface AgentLoopOptions {
   config: HenchConfig;
@@ -130,11 +131,12 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     await toolRexUpdateStatus(store, taskId, { status: "in_progress" });
   }
 
-  // Get API key
-  const apiKey = process.env[config.apiKeyEnv];
+  // Get API key: unified config (.n-dx.json) > environment variable
+  const claudeConfig = await loadClaudeConfig(henchDir);
+  const apiKey = resolveApiKey(claudeConfig, config.apiKeyEnv);
   if (!apiKey) {
     throw new Error(
-      `API key not found. Set ${config.apiKeyEnv} environment variable.`,
+      `API key not found. Set it via 'n-dx config claude.api_key <key>' or the ${config.apiKeyEnv} environment variable.`,
     );
   }
 

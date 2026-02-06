@@ -6,11 +6,27 @@ import type { PRDItem, TokenUsage, AnalyzeTokenUsage } from "../schema/index.js"
 import type { ScanResult } from "./scanners.js";
 import type { Proposal, ProposalTask } from "./propose.js";
 import { walkTree } from "../core/tree.js";
+import type { ClaudeConfig } from "../store/project-config.js";
 
 export const DEFAULT_MODEL = "claude-sonnet-4-20250514";
 
 /** Maximum number of LLM retry attempts for transient/parse failures. */
 export const MAX_RETRIES = 2;
+
+/**
+ * Module-level Claude configuration. Set once at CLI entry points via
+ * `setClaudeConfig()` so that all internal `spawnClaude()` calls inherit
+ * the resolved CLI path without threading config through every function.
+ */
+let _claudeConfig: ClaudeConfig | undefined;
+
+/**
+ * Set the module-level Claude configuration (CLI path, API key, etc.).
+ * Call this at CLI entry points before any LLM operations.
+ */
+export function setClaudeConfig(config: ClaudeConfig): void {
+  _claudeConfig = config;
+}
 
 // ── Token usage helpers ──
 
@@ -546,7 +562,7 @@ export function validateProposalQuality(proposals: Proposal[]): QualityIssue[] {
 
 // ── LLM interaction ──
 
-function spawnClaudeOnce(prompt: string, model: string): Promise<ClaudeResult> {
+function spawnClaudeOnce(prompt: string, model: string, cliBinary = "claude"): Promise<ClaudeResult> {
   return new Promise((resolve, reject) => {
     const args = [
       "-p", prompt,
@@ -554,7 +570,7 @@ function spawnClaudeOnce(prompt: string, model: string): Promise<ClaudeResult> {
       "--model", model,
     ];
 
-    const proc = spawn("claude", args, {
+    const proc = spawn(cliBinary, args, {
       stdio: ["ignore", "pipe", "pipe"],
     });
 
@@ -570,9 +586,10 @@ function spawnClaudeOnce(prompt: string, model: string): Promise<ClaudeResult> {
 
     proc.on("error", (err) => {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-        reject(new Error(
-          "claude CLI not found. Install it with: npm install -g @anthropic-ai/claude-code",
-        ));
+        const pathNote = cliBinary !== "claude"
+          ? `Claude CLI not found at configured path: ${cliBinary}. Check 'n-dx config claude.cli_path'.`
+          : "claude CLI not found. Install it with: npm install -g @anthropic-ai/claude-code, or set a custom path: n-dx config claude.cli_path /path/to/claude";
+        reject(new Error(pathNote));
       } else {
         reject(err);
       }
@@ -603,18 +620,24 @@ function spawnClaudeOnce(prompt: string, model: string): Promise<ClaudeResult> {
  * Non-retryable errors (ENOENT for missing CLI) are thrown immediately.
  *
  * Returns the result text and token usage from the CLI envelope.
+ *
+ * @param prompt  The prompt to send to Claude
+ * @param model   The model to use (e.g., "claude-sonnet-4-20250514")
+ * @param claudeConfig  Optional unified Claude config for CLI path resolution
  */
-export async function spawnClaude(prompt: string, model: string): Promise<ClaudeResult> {
+export async function spawnClaude(prompt: string, model: string, claudeConfig?: ClaudeConfig): Promise<ClaudeResult> {
+  const effectiveConfig = claudeConfig ?? _claudeConfig;
+  const cliBinary = effectiveConfig?.cli_path ?? "claude";
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      return await spawnClaudeOnce(prompt, model);
+      return await spawnClaudeOnce(prompt, model, cliBinary);
     } catch (err) {
       lastError = err as Error;
 
       // Don't retry if the CLI itself is missing
-      if (lastError.message.includes("claude CLI not found")) {
+      if (lastError.message.includes("CLI not found")) {
         throw lastError;
       }
 

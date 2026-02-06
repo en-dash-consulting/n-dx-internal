@@ -1,0 +1,91 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { loadClaudeConfig, resolveCliPath } from "../../src/store/project-config.js";
+import type { ClaudeConfig } from "../../src/store/project-config.js";
+import { setClaudeConfig } from "../../src/analyze/reason.js";
+
+describe("Claude config inheritance (rex)", () => {
+  let tmpDir: string;
+  let rexDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "rex-claude-cfg-"));
+    rexDir = join(tmpDir, ".rex");
+    await mkdir(rexDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  describe("loadClaudeConfig", () => {
+    it("returns empty config when .n-dx.json does not exist", async () => {
+      const config = await loadClaudeConfig(rexDir);
+      expect(config).toEqual({});
+    });
+
+    it("returns empty config when .n-dx.json has no claude section", async () => {
+      await writeFile(
+        join(tmpDir, ".n-dx.json"),
+        JSON.stringify({ rex: { project: "test" } }),
+      );
+      const config = await loadClaudeConfig(rexDir);
+      expect(config).toEqual({});
+    });
+
+    it("returns empty config when .n-dx.json is invalid JSON", async () => {
+      await writeFile(join(tmpDir, ".n-dx.json"), "not valid json");
+      const config = await loadClaudeConfig(rexDir);
+      expect(config).toEqual({});
+    });
+
+    it("loads cli_path from .n-dx.json claude section", async () => {
+      await writeFile(
+        join(tmpDir, ".n-dx.json"),
+        JSON.stringify({ claude: { cli_path: "/usr/local/bin/claude" } }),
+      );
+      const config = await loadClaudeConfig(rexDir);
+      expect(config.cli_path).toBe("/usr/local/bin/claude");
+    });
+
+    it("loads api_key from .n-dx.json claude section", async () => {
+      await writeFile(
+        join(tmpDir, ".n-dx.json"),
+        JSON.stringify({ claude: { api_key: "sk-ant-test-key" } }),
+      );
+      const config = await loadClaudeConfig(rexDir);
+      expect(config.api_key).toBe("sk-ant-test-key");
+    });
+
+    it("ignores empty string values", async () => {
+      await writeFile(
+        join(tmpDir, ".n-dx.json"),
+        JSON.stringify({ claude: { cli_path: "", api_key: "" } }),
+      );
+      const config = await loadClaudeConfig(rexDir);
+      expect(config.cli_path).toBeUndefined();
+      expect(config.api_key).toBeUndefined();
+    });
+  });
+
+  describe("resolveCliPath", () => {
+    it("returns custom path when set in config", () => {
+      const config: ClaudeConfig = { cli_path: "/opt/claude" };
+      expect(resolveCliPath(config)).toBe("/opt/claude");
+    });
+
+    it('falls back to "claude" when no custom path', () => {
+      const config: ClaudeConfig = {};
+      expect(resolveCliPath(config)).toBe("claude");
+    });
+  });
+
+  describe("setClaudeConfig", () => {
+    it("can be called without error", () => {
+      // Smoke test — setClaudeConfig sets the module-level default
+      expect(() => setClaudeConfig({ cli_path: "/test/claude" })).not.toThrow();
+    });
+  });
+});

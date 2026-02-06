@@ -7,7 +7,7 @@
 
 export { PASS_CONFIGS, getPassConfig, buildMetaPrompt, computeAttemptConfigs, computePerZoneAttemptConfigs, MAX_CONCURRENT_ZONES, PER_ZONE_MAX_FILES, PER_ZONE_MAX_CROSSINGS } from "./enrich-config.js";
 export type { PassConfig } from "./enrich-config.js";
-export { tryCallClaude, parseStreamTokenUsage } from "./claude-cli.js";
+export { tryCallClaude, parseStreamTokenUsage, setClaudeBinary, getClaudeBinary } from "./claude-cli.js";
 export type { ClaudeCallResult } from "./claude-cli.js";
 export { tryParseJSON, extractFindings, mergeZonesByName } from "./enrich-parsing.js";
 export type { EnrichResult } from "./enrich-parsing.js";
@@ -40,7 +40,7 @@ import {
   buildMetaPrompt,
 } from "./enrich-config.js";
 import type { PassConfig } from "./enrich-config.js";
-import { tryCallClaude } from "./claude-cli.js";
+import { tryCallClaude, getClaudeBinary } from "./claude-cli.js";
 import { tryParseJSON, extractFindings, mergeZonesByName, deduplicateZoneIds } from "./enrich-parsing.js";
 import type { EnrichResult } from "./enrich-parsing.js";
 import { emptyAnalyzeTokenUsage, accumulateTokenUsage } from "./token-usage.js";
@@ -317,11 +317,21 @@ export async function enrichZonesWithAI(
     pass: previousZones?.enrichmentPass ?? 0,
   };
 
-  // 1. Check for claude CLI
+  // 1. Check for claude CLI (respects unified config path)
+  const cliBinary = getClaudeBinary();
   try {
-    execFileSync("which", ["claude"], { stdio: "pipe" });
+    if (cliBinary !== "claude") {
+      // Custom path from config — check file exists
+      const { existsSync } = await import("node:fs");
+      if (!existsSync(cliBinary)) {
+        console.warn(`  [enrich] Claude CLI not found at configured path: ${cliBinary}`);
+        return empty;
+      }
+    } else {
+      execFileSync("which", ["claude"], { stdio: "pipe" });
+    }
   } catch {
-    console.warn("  [enrich] claude CLI not found — using algorithmic names");
+    console.warn("  [enrich] claude CLI not found — using algorithmic names. Install it or set path: n-dx config claude.cli_path /path/to/claude");
     return empty;
   }
 

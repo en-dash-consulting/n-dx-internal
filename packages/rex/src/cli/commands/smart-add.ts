@@ -12,9 +12,11 @@ import {
   reasonFromIdeasFile,
   validateProposalQuality,
   DEFAULT_MODEL,
+  setClaudeConfig,
 } from "../../analyze/index.js";
 import type { Proposal, QualityIssue } from "../../analyze/index.js";
 import type { PRDItem, ItemLevel } from "../../schema/index.js";
+import { loadClaudeConfig } from "../../store/project-config.js";
 
 const PENDING_FILE = "pending-smart-proposals.json";
 
@@ -479,6 +481,11 @@ export async function cmdSmartAdd(
   const accept = flags.accept === "true";
   const parentId = flags.parent;
   const filePaths: string[] = multiFlags.file ?? (flags.file ? [flags.file] : []);
+
+  // Load unified Claude config for CLI path resolution
+  const rexConfigDir = join(dir, REX_DIR);
+  const claudeConfig = await loadClaudeConfig(rexConfigDir);
+  setClaudeConfig(claudeConfig);
 
   // --accept with no descriptions/files: replay cached proposals
   if (accept && descList.length === 0 && filePaths.length === 0 && !flags.format) {

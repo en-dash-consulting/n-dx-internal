@@ -11,6 +11,7 @@ import { getStuckTaskIds } from "../../agent/stuck.js";
 import { HENCH_DIR, safeParseInt } from "./constants.js";
 import { CLIError, EpicNotFoundError, requireClaudeCLI } from "../errors.js";
 import { info, result as output } from "../output.js";
+import { loadClaudeConfig, resolveCliPath } from "../../store/project-config.js";
 
 // ---------------------------------------------------------------------------
 // Epic resolution helpers (exported for testing)
@@ -376,7 +377,9 @@ export async function cmdRun(
 
   // Fail fast if CLI provider selected but claude binary not available
   if (provider === "cli" && !dryRun) {
-    requireClaudeCLI();
+    const claudeConfig = await loadClaudeConfig(henchDir);
+    const customPath = claudeConfig.cli_path;
+    requireClaudeCLI(customPath);
   }
 
   const iterations = flags.iterations ? safeParseInt(flags.iterations, "iterations") : 1;
