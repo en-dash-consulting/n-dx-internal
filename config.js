@@ -8,7 +8,7 @@
  *   n-dx config --json [dir]             Output as JSON
  */
 
-import { readFile, writeFile, access, constants } from "node:fs/promises";
+import { readFile, writeFile, access, constants, chmod, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 
@@ -44,6 +44,19 @@ async function loadJSON(path) {
 
 async function saveJSON(path, data) {
   await writeFile(path, JSON.stringify(data, null, 2) + "\n", "utf-8");
+}
+
+/**
+ * Save .n-dx.json with owner-only permissions (0o600) when it contains
+ * sensitive data like API keys. Otherwise uses standard permissions.
+ */
+async function saveProjectJSON(path, data) {
+  await saveJSON(path, data);
+  const hasSensitiveData =
+    data?.claude?.api_key && typeof data.claude.api_key === "string";
+  if (hasSensitiveData) {
+    await chmod(path, 0o600);
+  }
 }
 
 /**
@@ -186,10 +199,15 @@ function validateApiKey(value) {
 /**
  * Test that an Anthropic API key works by making a lightweight API call.
  * Returns { ok: true } on success, { ok: false, error: string } on failure.
+ *
+ * @param apiKey  The API key to test
+ * @param endpoint  Optional custom API endpoint (default: https://api.anthropic.com)
+ * @param model  Optional model override for the test call
  */
-async function testApiConnection(apiKey) {
+async function testApiConnection(apiKey, endpoint, model) {
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const baseUrl = (endpoint || "https://api.anthropic.com").replace(/\/+$/, "");
+    const res = await fetch(`${baseUrl}/v1/messages`, {
       method: "POST",
       headers: {
         "x-api-key": apiKey,
@@ -197,7 +215,7 @@ async function testApiConnection(apiKey) {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: model || "claude-sonnet-4-20250514",
         max_tokens: 1,
         messages: [{ role: "user", content: "hi" }],
       }),
@@ -231,6 +249,41 @@ async function testApiConnection(apiKey) {
 }
 
 /**
+ * Validate claude.api_endpoint: check the URL is well-formed.
+ * Throws with a helpful message on failure.
+ */
+function validateApiEndpoint(value) {
+  if (typeof value !== "string") {
+    throw new Error("API endpoint must be a string URL.");
+  }
+  try {
+    const url = new URL(value);
+    if (!["http:", "https:"].includes(url.protocol)) {
+      throw new Error(
+        `Invalid protocol "${url.protocol}". Use http:// or https://.`
+      );
+    }
+  } catch (err) {
+    if (err.message.startsWith("Invalid protocol")) throw err;
+    throw new Error(
+      `Invalid URL: "${value}"\n` +
+        "  Provide a valid HTTP(S) URL (e.g., https://api.anthropic.com)."
+    );
+  }
+}
+
+/**
+ * Validate claude.model: check the model name is non-empty and looks reasonable.
+ * Throws with a helpful message on failure.
+ */
+function validateModel(value) {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error("Model name must be a non-empty string.");
+  }
+  // Warn-level: allow any string but hint at common patterns
+}
+
+/**
  * Validate CLI path by trying to run `<binary> --version`.
  * Returns { ok, version?, error? }.
  */
@@ -259,6 +312,8 @@ function testCliPath(cliPath) {
 const CLAUDE_VALIDATORS = {
   cli_path: validateCliPath,
   api_key: validateApiKey,
+  api_endpoint: validateApiEndpoint,
+  model: validateModel,
 };
 
 // ── Display ──────────────────────────────────────────────────────────────────
@@ -375,6 +430,16 @@ Claude settings (.n-dx.json — shared across all packages):
                                     Validated: must start with "sk-ant-". Use --force
                                     to skip validation.
                                     Note: stored in .n-dx.json — add to .gitignore.
+                                    File permissions set to 0600 (owner-only) for security.
+  claude.api_endpoint      string    Anthropic API base URL (optional)
+                                    Override the default API endpoint for proxies or
+                                    compatible services.
+                                    Default: https://api.anthropic.com
+                                    Validated: must be a valid HTTP(S) URL.
+  claude.model             string    Default Claude model for API calls (optional)
+                                    Override the default model used by all packages.
+                                    Examples: claude-sonnet-4-20250514, claude-opus-4-20250514
+                                    Default: claude-sonnet-4-20250514
 
 Web dashboard settings (.n-dx.json):
   web.port                 number    Dashboard server port (default: 3117)
@@ -420,6 +485,10 @@ Examples:
                                                Set Claude CLI binary path (validates path)
   n-dx config claude.cli_path /path --force    Set without validation
   n-dx config claude.api_key sk-ant-...        Set Anthropic API key (validates format)
+  n-dx config claude.api_endpoint https://proxy.example.com
+                                               Set custom API endpoint
+  n-dx config claude.model claude-opus-4-20250514
+                                               Set default model for API calls
   n-dx config --test-connection                Test API key and/or CLI path
   n-dx config --json                           Show all settings as JSON
   n-dx config hench --json                     Show hench settings as JSON
@@ -508,9 +577,14 @@ Examples:
 
     if (claudeConfig.api_key) {
       tested = true;
-      const result = await testApiConnection(claudeConfig.api_key);
+      const result = await testApiConnection(
+        claudeConfig.api_key,
+        claudeConfig.api_endpoint,
+        claudeConfig.model,
+      );
       if (result.ok) {
-        console.log("Testing API key... ✓ API key is valid.");
+        const endpoint = claudeConfig.api_endpoint || "https://api.anthropic.com";
+        console.log(`Testing API key... ✓ API key is valid (endpoint: ${endpoint}).`);
       } else {
         console.error("Testing API key... ✗ " + result.error);
         hasFailure = true;
@@ -584,11 +658,11 @@ Examples:
 
       setByPath(configs[pkg], settingPath, coerced);
 
-      // Write back to .n-dx.json
+      // Write back to .n-dx.json (with restricted permissions if it contains an API key)
       const configPath = join(dir, PROJECT_CONFIG_FILE);
       const current = await loadProjectConfig(dir);
       current[pkg] = configs[pkg];
-      await saveJSON(configPath, current);
+      await saveProjectJSON(configPath, current);
 
       console.log(`${keyArg} = ${formatValue(coerced)}`);
       return;

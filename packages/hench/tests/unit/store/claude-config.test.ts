@@ -72,24 +72,65 @@ describe("Claude config inheritance (hench)", () => {
       expect(config.api_key).toBe("sk-ant-123");
     });
 
+    it("loads api_endpoint from .n-dx.json claude section", async () => {
+      await writeFile(
+        join(tmpDir, ".n-dx.json"),
+        JSON.stringify({ claude: { api_endpoint: "https://proxy.example.com" } }),
+      );
+      const config = await loadClaudeConfig(henchDir);
+      expect(config.api_endpoint).toBe("https://proxy.example.com");
+    });
+
+    it("loads model from .n-dx.json claude section", async () => {
+      await writeFile(
+        join(tmpDir, ".n-dx.json"),
+        JSON.stringify({ claude: { model: "claude-opus-4-20250514" } }),
+      );
+      const config = await loadClaudeConfig(henchDir);
+      expect(config.model).toBe("claude-opus-4-20250514");
+    });
+
+    it("loads all claude config fields together", async () => {
+      await writeFile(
+        join(tmpDir, ".n-dx.json"),
+        JSON.stringify({
+          claude: {
+            cli_path: "/opt/claude",
+            api_key: "sk-ant-123",
+            api_endpoint: "https://proxy.example.com",
+            model: "claude-opus-4-20250514",
+          },
+        }),
+      );
+      const config = await loadClaudeConfig(henchDir);
+      expect(config.cli_path).toBe("/opt/claude");
+      expect(config.api_key).toBe("sk-ant-123");
+      expect(config.api_endpoint).toBe("https://proxy.example.com");
+      expect(config.model).toBe("claude-opus-4-20250514");
+    });
+
     it("ignores empty string values", async () => {
       await writeFile(
         join(tmpDir, ".n-dx.json"),
-        JSON.stringify({ claude: { cli_path: "", api_key: "" } }),
+        JSON.stringify({ claude: { cli_path: "", api_key: "", api_endpoint: "", model: "" } }),
       );
       const config = await loadClaudeConfig(henchDir);
       expect(config.cli_path).toBeUndefined();
       expect(config.api_key).toBeUndefined();
+      expect(config.api_endpoint).toBeUndefined();
+      expect(config.model).toBeUndefined();
     });
 
     it("ignores non-string values", async () => {
       await writeFile(
         join(tmpDir, ".n-dx.json"),
-        JSON.stringify({ claude: { cli_path: 123, api_key: true } }),
+        JSON.stringify({ claude: { cli_path: 123, api_key: true, api_endpoint: 456, model: false } }),
       );
       const config = await loadClaudeConfig(henchDir);
       expect(config.cli_path).toBeUndefined();
       expect(config.api_key).toBeUndefined();
+      expect(config.api_endpoint).toBeUndefined();
+      expect(config.model).toBeUndefined();
     });
   });
 

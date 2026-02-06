@@ -59,14 +59,34 @@ describe("Claude config inheritance (rex)", () => {
       expect(config.api_key).toBe("sk-ant-test-key");
     });
 
+    it("loads api_endpoint from .n-dx.json claude section", async () => {
+      await writeFile(
+        join(tmpDir, ".n-dx.json"),
+        JSON.stringify({ claude: { api_endpoint: "https://proxy.example.com" } }),
+      );
+      const config = await loadClaudeConfig(rexDir);
+      expect(config.api_endpoint).toBe("https://proxy.example.com");
+    });
+
+    it("loads model from .n-dx.json claude section", async () => {
+      await writeFile(
+        join(tmpDir, ".n-dx.json"),
+        JSON.stringify({ claude: { model: "claude-opus-4-20250514" } }),
+      );
+      const config = await loadClaudeConfig(rexDir);
+      expect(config.model).toBe("claude-opus-4-20250514");
+    });
+
     it("ignores empty string values", async () => {
       await writeFile(
         join(tmpDir, ".n-dx.json"),
-        JSON.stringify({ claude: { cli_path: "", api_key: "" } }),
+        JSON.stringify({ claude: { cli_path: "", api_key: "", api_endpoint: "", model: "" } }),
       );
       const config = await loadClaudeConfig(rexDir);
       expect(config.cli_path).toBeUndefined();
       expect(config.api_key).toBeUndefined();
+      expect(config.api_endpoint).toBeUndefined();
+      expect(config.model).toBeUndefined();
     });
   });
 

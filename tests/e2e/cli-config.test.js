@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, rm, readFile, writeFile, mkdir, chmod } from "node:fs/promises";
+import { mkdtemp, rm, readFile, writeFile, mkdir, chmod, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
@@ -785,6 +785,158 @@ describe("n-dx config", () => {
       const stderr = runFail(["--test-connection", tmpDir]);
       expect(stderr).toContain("Testing CLI path...");
       expect(stderr).toContain("✗");
+    });
+  });
+
+  // ── API endpoint and model configuration ────────────────────────────────
+
+  describe("claude.api_endpoint", () => {
+    it("sets claude.api_endpoint in .n-dx.json", async () => {
+      const output = run(["claude.api_endpoint", "https://proxy.example.com", tmpDir]);
+      expect(output).toContain("claude.api_endpoint = https://proxy.example.com");
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.claude.api_endpoint).toBe("https://proxy.example.com");
+    });
+
+    it("gets claude.api_endpoint after setting it", () => {
+      run(["claude.api_endpoint", "https://custom.api.com", tmpDir]);
+      const output = run(["claude.api_endpoint", tmpDir]);
+      expect(output.trim()).toBe("https://custom.api.com");
+    });
+
+    it("rejects invalid URL format", () => {
+      const stderr = runFail(["claude.api_endpoint", "not-a-url", tmpDir]);
+      expect(stderr).toContain("Invalid URL");
+    });
+
+    it("rejects non-HTTP URL", () => {
+      const stderr = runFail(["claude.api_endpoint", "ftp://example.com", tmpDir]);
+      expect(stderr).toContain("Invalid protocol");
+    });
+
+    it("accepts http:// URL", () => {
+      const output = run(["claude.api_endpoint", "http://localhost:8080", tmpDir]);
+      expect(output).toContain("claude.api_endpoint = http://localhost:8080");
+    });
+
+    it("skips validation with --force flag", () => {
+      const output = run(["claude.api_endpoint", "custom-endpoint", "--force", tmpDir]);
+      expect(output).toContain("claude.api_endpoint = custom-endpoint");
+    });
+
+    it("shows api_endpoint in --json output", async () => {
+      run(["claude.api_endpoint", "https://proxy.example.com", tmpDir]);
+      run(["claude.api_key", "sk-ant-test", tmpDir]);
+
+      const output = run(["--json", tmpDir]);
+      const parsed = JSON.parse(output);
+      expect(parsed.claude.api_endpoint).toBe("https://proxy.example.com");
+      expect(parsed.claude.api_key).toBe("sk-ant-test");
+    });
+  });
+
+  describe("claude.model", () => {
+    it("sets claude.model in .n-dx.json", async () => {
+      const output = run(["claude.model", "claude-opus-4-20250514", tmpDir]);
+      expect(output).toContain("claude.model = claude-opus-4-20250514");
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.claude.model).toBe("claude-opus-4-20250514");
+    });
+
+    it("gets claude.model after setting it", () => {
+      run(["claude.model", "claude-sonnet-4-20250514", tmpDir]);
+      const output = run(["claude.model", tmpDir]);
+      expect(output.trim()).toBe("claude-sonnet-4-20250514");
+    });
+
+    it("shows model in --json output", async () => {
+      run(["claude.model", "claude-opus-4-20250514", tmpDir]);
+
+      const output = run(["claude", "--json", tmpDir]);
+      const parsed = JSON.parse(output);
+      expect(parsed.model).toBe("claude-opus-4-20250514");
+    });
+  });
+
+  // ── Help — new claude settings ─────────────────────────────────────────
+
+  describe("help — api_endpoint and model", () => {
+    it("documents claude.api_endpoint", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("claude.api_endpoint");
+    });
+
+    it("documents claude.model", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("claude.model");
+    });
+
+    it("shows default endpoint", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("https://api.anthropic.com");
+    });
+
+    it("shows model examples", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("claude-sonnet-4-20250514");
+      expect(output).toContain("claude-opus-4-20250514");
+    });
+
+    it("includes api_endpoint example", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("n-dx config claude.api_endpoint");
+    });
+
+    it("includes model example", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("n-dx config claude.model");
+    });
+  });
+
+  // ── Secure file permissions ──────────────────────────────────────────────
+
+  describe("secure file permissions", () => {
+    it("sets .n-dx.json to 0600 when api_key is present", async () => {
+      run(["claude.api_key", "sk-ant-test-key-123", tmpDir]);
+
+      const fileStat = await stat(join(tmpDir, ".n-dx.json"));
+      // 0o600 = owner read/write only (decimal 384)
+      const mode = fileStat.mode & 0o777;
+      expect(mode).toBe(0o600);
+    });
+
+    it("does not restrict permissions when no api_key present", async () => {
+      run(["claude.cli_path", "/some/path", "--force", tmpDir]);
+
+      const fileStat = await stat(join(tmpDir, ".n-dx.json"));
+      const mode = fileStat.mode & 0o777;
+      // Should not be 0o600 — default file permissions apply
+      expect(mode).not.toBe(0o600);
+    });
+
+    it("restricts permissions when api_key is added to existing config", async () => {
+      // First set a non-sensitive value
+      run(["claude.cli_path", "/some/path", "--force", tmpDir]);
+      const beforeStat = await stat(join(tmpDir, ".n-dx.json"));
+      const beforeMode = beforeStat.mode & 0o777;
+      expect(beforeMode).not.toBe(0o600);
+
+      // Now add an API key
+      run(["claude.api_key", "sk-ant-secure-key", tmpDir]);
+      const afterStat = await stat(join(tmpDir, ".n-dx.json"));
+      const afterMode = afterStat.mode & 0o777;
+      expect(afterMode).toBe(0o600);
+    });
+
+    it("mentions 0600 permissions in help text", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("0600");
     });
   });
 

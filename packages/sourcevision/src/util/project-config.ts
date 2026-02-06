@@ -12,6 +12,10 @@ export interface ClaudeConfig {
   cli_path?: string;
   /** Anthropic API key. When set, used instead of reading from the ANTHROPIC_API_KEY env var. */
   api_key?: string;
+  /** Custom API endpoint URL. When set, used instead of the default Anthropic API URL. */
+  api_endpoint?: string;
+  /** Default Claude model name. When set, used instead of the default model. */
+  model?: string;
 }
 
 /**
@@ -36,6 +40,12 @@ export async function loadClaudeConfig(
       }
       if (typeof claude.api_key === "string" && claude.api_key) {
         result.api_key = claude.api_key;
+      }
+      if (typeof claude.api_endpoint === "string" && claude.api_endpoint) {
+        result.api_endpoint = claude.api_endpoint;
+      }
+      if (typeof claude.model === "string" && claude.model) {
+        result.model = claude.model;
       }
       return result;
     }
