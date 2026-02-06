@@ -5295,17 +5295,21 @@
     {
       "id": "c52ead17-736b-4488-a168-62778bc3d798",
       "title": "Interactive Proposal Management",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-06T04:00:51.672Z",
+      "completedAt": "2026-02-06T04:00:51.672Z",
       "children": [
         {
           "id": "33907346-1639-4f74-9e6f-b3ba456cc911",
           "title": "Chunked proposal acceptance",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Allow users to accept proposals in smaller or larger batches instead of all-or-nothing",
           "source": "smart-add",
+          "startedAt": "2026-02-06T04:00:51.629Z",
+          "completedAt": "2026-02-06T04:00:51.629Z",
           "children": [
             {
               "id": "97487bb1-d42b-4296-b85a-223870f54268",
@@ -5372,7 +5376,7 @@
             {
               "id": "efbf3759-abb6-406a-b96a-aa094309d3fb",
               "title": "Implement proposal batch acceptance tracking",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Track which proposals were accepted in which batches for better user feedback",
               "acceptanceCriteria": [
@@ -5385,7 +5389,9 @@
                 "rex",
                 "tracking"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-06T03:44:58.705Z",
+              "completedAt": "2026-02-06T04:00:51.597Z"
             }
           ]
         }
