@@ -35,6 +35,8 @@ export type ChunkAction =
   | { kind: "fewer" }        // decrease chunk size
   | { kind: "done" }         // finish review with current selections
   | { kind: "select"; indices: number[] }  // accept specific proposals by number
+  | { kind: "break_down"; indices: number[] }  // break down specific proposals into finer granularity
+  | { kind: "consolidate"; indices: number[] }  // consolidate specific proposals into coarser granularity
   | { kind: "unknown" };
 
 /**
@@ -138,6 +140,8 @@ export function formatActionMenu(state: ChunkReviewState): string {
   options.push("-fewer");
   options.push("A=accept all");
   options.push("R=reject all");
+  options.push("b#=break down");
+  options.push("c#=consolidate");
   options.push("d=done");
   options.push("#,#=select");
 
@@ -155,6 +159,21 @@ export function buildPrompt(state: ChunkReviewState): string {
     return `(${accepted}/${total} accepted) > `;
   }
   return "> ";
+}
+
+/**
+ * Parse a string of comma/space-separated 1-based numbers into
+ * deduplicated, sorted 0-based indices within the valid range.
+ */
+function parseNumericIndices(input: string, total: number): number[] {
+  return [...new Set(
+    input
+      .trim()
+      .split(/[\s,]+/)
+      .map((s) => parseInt(s, 10))
+      .filter((n) => !isNaN(n) && n >= 1 && n <= total)
+      .map((n) => n - 1),
+  )].sort((a, b) => a - b);
 }
 
 /**
@@ -195,6 +214,24 @@ export function parseChunkInput(
   // Done
   if (["d", "done", "finish", "q", "quit"].includes(trimmed)) return { kind: "done" };
 
+  // Break down: "b1,3" or "break down 1,3" or "b 1 3"
+  const breakMatch = raw.match(/^[bB](?:reak\s*down)?\s*(.+)$/i);
+  if (breakMatch) {
+    const indices = parseNumericIndices(breakMatch[1], state.proposals.length);
+    if (indices.length > 0) {
+      return { kind: "break_down", indices };
+    }
+  }
+
+  // Consolidate: "c1,3" or "consolidate 1,3" or "c 1 3"
+  const consolidateMatch = raw.match(/^[cC](?:onsolidate)?\s*(.+)$/i);
+  if (consolidateMatch) {
+    const indices = parseNumericIndices(consolidateMatch[1], state.proposals.length);
+    if (indices.length > 0) {
+      return { kind: "consolidate", indices };
+    }
+  }
+
   // Numeric selection (1-based, comma or space separated)
   const nums = trimmed
     .split(/[\s,]+/)
@@ -218,13 +255,27 @@ export function parseChunkInput(
 }
 
 /**
+ * A granularity adjustment request produced by a break_down or consolidate action.
+ * The caller is responsible for invoking the LLM and replacing proposals.
+ */
+export interface GranularityRequest {
+  kind: "break_down" | "consolidate";
+  /** 0-based indices of proposals to adjust. */
+  indices: number[];
+}
+
+/**
  * Apply an action to the review state, returning the updated state.
  * Returns null if the review session should end.
+ *
+ * When the action is "break_down" or "consolidate", the result includes a
+ * `granularityRequest` that the caller should handle by invoking the LLM
+ * and then calling `replaceProposals()` with the result.
  */
 export function applyAction(
   state: ChunkReviewState,
   action: ChunkAction,
-): { state: ChunkReviewState; done: boolean; message?: string } {
+): { state: ChunkReviewState; done: boolean; message?: string; granularityRequest?: GranularityRequest } {
   const total = state.proposals.length;
 
   switch (action.kind) {
@@ -342,14 +393,117 @@ export function applyAction(
       };
     }
 
+    case "break_down": {
+      // Signal to the caller that selected proposals need LLM breakdown.
+      // The caller replaces these proposals with finer-grained versions.
+      return {
+        state,
+        done: false,
+        message: `Breaking down proposal(s) ${action.indices.map((i) => i + 1).join(", ")}...`,
+        granularityRequest: { kind: "break_down", indices: action.indices },
+      };
+    }
+
+    case "consolidate": {
+      // Signal to the caller that selected proposals need LLM consolidation.
+      // The caller replaces these proposals with consolidated versions.
+      return {
+        state,
+        done: false,
+        message: `Consolidating proposal(s) ${action.indices.map((i) => i + 1).join(", ")}...`,
+        granularityRequest: { kind: "consolidate", indices: action.indices },
+      };
+    }
+
     case "unknown": {
       return {
         state,
         done: false,
-        message: "Unknown command. Use a/n/p/+/-/A/R/d or enter proposal numbers.",
+        message: "Unknown command. Use a/n/p/b#/c#/+/-/A/R/d or enter proposal numbers.",
       };
     }
   }
+}
+
+/**
+ * Replace specific proposals in the review state with new ones.
+ * Used after an LLM granularity adjustment (break_down or consolidate).
+ *
+ * - `indices`: 0-based indices of proposals to replace
+ * - `replacements`: new proposals to insert at the positions of the originals
+ *
+ * Accepted/rejected sets are updated: indices pointing to replaced proposals
+ * are removed, and remaining indices are shifted to account for length changes.
+ */
+export function replaceProposals(
+  state: ChunkReviewState,
+  indices: number[],
+  replacements: Proposal[],
+): ChunkReviewState {
+  // Sort indices descending so removals don't shift earlier indices
+  const sorted = [...indices].sort((a, b) => b - a);
+
+  // Build the new proposal array: remove originals, insert replacements at
+  // the position of the first (lowest) original index.
+  const newProposals = [...state.proposals];
+  for (const idx of sorted) {
+    newProposals.splice(idx, 1);
+  }
+  const insertAt = Math.min(...indices);
+  newProposals.splice(insertAt, 0, ...replacements);
+
+  // Rebuild accepted/rejected sets with shifted indices
+  const newAccepted = new Set<number>();
+  const newRejected = new Set<number>();
+
+  const removedSet = new Set(indices);
+
+  // Map old index → new index (accounting for removals and insertion)
+  for (const oldIdx of state.accepted) {
+    if (removedSet.has(oldIdx)) continue;
+    const newIdx = mapIndex(oldIdx, indices, replacements.length);
+    newAccepted.add(newIdx);
+  }
+  for (const oldIdx of state.rejected) {
+    if (removedSet.has(oldIdx)) continue;
+    const newIdx = mapIndex(oldIdx, indices, replacements.length);
+    newRejected.add(newIdx);
+  }
+
+  // Clamp offset to valid range
+  const maxOffset = Math.max(0, newProposals.length - state.chunkSize);
+  const offset = Math.min(state.offset, maxOffset);
+
+  return {
+    proposals: newProposals,
+    offset,
+    chunkSize: Math.min(state.chunkSize, newProposals.length),
+    accepted: newAccepted,
+    rejected: newRejected,
+  };
+}
+
+/**
+ * Map an old proposal index to its new position after removing `removedIndices`
+ * and inserting `insertCount` replacements at the first removed position.
+ */
+function mapIndex(
+  oldIdx: number,
+  removedIndices: number[],
+  insertCount: number,
+): number {
+  const insertAt = Math.min(...removedIndices);
+  const removedBefore = removedIndices.filter((r) => r < oldIdx).length;
+
+  // After removing, shift down
+  let newIdx = oldIdx - removedBefore;
+
+  // If the old index was after the insertion point, shift up by insertion count
+  if (oldIdx > insertAt) {
+    newIdx += insertCount;
+  }
+
+  return newIdx;
 }
 
 /**
@@ -485,12 +639,26 @@ function promptLine(question: string): Promise<string> {
 }
 
 /**
+ * Handler for granularity adjustment requests.
+ * Receives the proposals to adjust and the direction, returns the adjusted proposals.
+ * The interactive loop calls this when the user requests break_down or consolidate.
+ */
+export type GranularityHandler = (
+  proposals: Proposal[],
+  direction: "break_down" | "consolidate",
+) => Promise<Proposal[]>;
+
+/**
  * Run the interactive chunked review loop.
  * Returns the proposals the user accepted (may be empty) and a batch record.
+ *
+ * When `onGranularityAdjust` is provided, the review loop supports `b#` (break down)
+ * and `c#` (consolidate) commands that invoke the LLM to adjust proposal granularity.
  */
 export async function runChunkedReview(
   proposals: Proposal[],
   chunkSize: number = DEFAULT_CHUNK_SIZE,
+  onGranularityAdjust?: GranularityHandler,
 ): Promise<{ accepted: Proposal[]; remaining: Proposal[]; batchRecord: BatchAcceptanceRecord }> {
   // For single proposal or small batches, use simple y/n
   if (proposals.length <= 1) {
@@ -520,13 +688,44 @@ export async function runChunkedReview(
 
     const input = await promptLine(buildPrompt(state));
     const action = parseChunkInput(input, state);
-    const { state: newState, done, message } = applyAction(state, action);
+    const { state: newState, done, message, granularityRequest } = applyAction(state, action);
 
     if (message) {
       info(message);
     }
 
     state = newState;
+
+    // Handle granularity adjustments
+    if (granularityRequest) {
+      if (!onGranularityAdjust) {
+        info("Granularity adjustment is not available in this context.");
+      } else {
+        const targetProposals = granularityRequest.indices.map(
+          (i) => state.proposals[i],
+        );
+        try {
+          const adjusted = await onGranularityAdjust(
+            targetProposals,
+            granularityRequest.kind,
+          );
+          if (adjusted.length > 0) {
+            state = replaceProposals(state, granularityRequest.indices, adjusted);
+            const label = granularityRequest.kind === "break_down"
+              ? "broken down"
+              : "consolidated";
+            info(
+              `Replaced ${targetProposals.length} proposal(s) with ${adjusted.length} ${label} proposal(s).`,
+            );
+          } else {
+            info("LLM returned no proposals. Original proposals unchanged.");
+          }
+        } catch (err) {
+          info(`Granularity adjustment failed: ${(err as Error).message}`);
+          info("Original proposals unchanged.");
+        }
+      }
+    }
 
     if (done) {
       break;

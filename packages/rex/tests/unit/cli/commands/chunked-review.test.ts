@@ -10,6 +10,7 @@ import {
   applyAction,
   getAcceptedProposals,
   getRemainingProposals,
+  replaceProposals,
   buildBatchRecord,
   formatBatchSummary,
 } from "../../../../src/cli/commands/chunked-review.js";
@@ -17,6 +18,7 @@ import type {
   ChunkReviewState,
   ChunkAction,
   BatchAcceptanceRecord,
+  GranularityRequest,
 } from "../../../../src/cli/commands/chunked-review.js";
 import type { Proposal } from "../../../../src/analyze/index.js";
 
@@ -1066,5 +1068,387 @@ describe("formatBatchSummary", () => {
     // 1 out of 1 = all accepted, singular "proposal"
     expect(summary).toContain("Accepted all 1 proposal (3 items added to PRD)");
     expect(summary).toContain("✓ Auth");
+  });
+});
+
+// ─── Granularity adjustment: parseChunkInput ─────────────────────────
+
+describe("parseChunkInput granularity commands", () => {
+  const state = createReviewState(makeProposals(10), 5);
+
+  it("parses break down command with number", () => {
+    const action = parseChunkInput("b1", state);
+    expect(action.kind).toBe("break_down");
+    if (action.kind === "break_down") {
+      expect(action.indices).toEqual([0]);
+    }
+  });
+
+  it("parses break down with multiple numbers", () => {
+    const action = parseChunkInput("b1,3,5", state);
+    expect(action.kind).toBe("break_down");
+    if (action.kind === "break_down") {
+      expect(action.indices).toEqual([0, 2, 4]);
+    }
+  });
+
+  it("parses break down with spaces", () => {
+    const action = parseChunkInput("b 2 4", state);
+    expect(action.kind).toBe("break_down");
+    if (action.kind === "break_down") {
+      expect(action.indices).toEqual([1, 3]);
+    }
+  });
+
+  it("parses 'break down' spelled out", () => {
+    const action = parseChunkInput("break down 1,3", state);
+    expect(action.kind).toBe("break_down");
+    if (action.kind === "break_down") {
+      expect(action.indices).toEqual([0, 2]);
+    }
+  });
+
+  it("parses 'breakdown' as one word", () => {
+    const action = parseChunkInput("breakdown 2", state);
+    expect(action.kind).toBe("break_down");
+    if (action.kind === "break_down") {
+      expect(action.indices).toEqual([1]);
+    }
+  });
+
+  it("parses consolidate command with number", () => {
+    const action = parseChunkInput("c1", state);
+    expect(action.kind).toBe("consolidate");
+    if (action.kind === "consolidate") {
+      expect(action.indices).toEqual([0]);
+    }
+  });
+
+  it("parses consolidate with multiple numbers", () => {
+    const action = parseChunkInput("c1,2,3", state);
+    expect(action.kind).toBe("consolidate");
+    if (action.kind === "consolidate") {
+      expect(action.indices).toEqual([0, 1, 2]);
+    }
+  });
+
+  it("parses 'consolidate' spelled out", () => {
+    const action = parseChunkInput("consolidate 3,5", state);
+    expect(action.kind).toBe("consolidate");
+    if (action.kind === "consolidate") {
+      expect(action.indices).toEqual([2, 4]);
+    }
+  });
+
+  it("ignores out-of-range numbers in granularity commands", () => {
+    const action = parseChunkInput("b1,99", state);
+    expect(action.kind).toBe("break_down");
+    if (action.kind === "break_down") {
+      expect(action.indices).toEqual([0]);
+    }
+  });
+
+  it("falls through to unknown when all numbers out of range", () => {
+    const action = parseChunkInput("b99", state);
+    // No valid indices → doesn't match break_down, falls through
+    expect(action.kind).toBe("unknown");
+  });
+
+  it("deduplicates numbers in granularity commands", () => {
+    const action = parseChunkInput("c1,1,2", state);
+    expect(action.kind).toBe("consolidate");
+    if (action.kind === "consolidate") {
+      expect(action.indices).toEqual([0, 1]);
+    }
+  });
+});
+
+// ─── Granularity adjustment: applyAction ─────────────────────────────
+
+describe("applyAction granularity", () => {
+  it("break_down returns granularity request", () => {
+    const state = createReviewState(makeProposals(5), 5);
+    const { state: next, done, message, granularityRequest } = applyAction(
+      state,
+      { kind: "break_down", indices: [0, 2] },
+    );
+
+    expect(done).toBe(false);
+    expect(message).toContain("Breaking down");
+    expect(message).toContain("1, 3");
+    expect(granularityRequest).toBeDefined();
+    expect(granularityRequest!.kind).toBe("break_down");
+    expect(granularityRequest!.indices).toEqual([0, 2]);
+    // State is unchanged — caller handles the replacement
+    expect(next).toBe(state);
+  });
+
+  it("consolidate returns granularity request", () => {
+    const state = createReviewState(makeProposals(5), 5);
+    const { state: next, done, message, granularityRequest } = applyAction(
+      state,
+      { kind: "consolidate", indices: [1, 3, 4] },
+    );
+
+    expect(done).toBe(false);
+    expect(message).toContain("Consolidating");
+    expect(message).toContain("2, 4, 5");
+    expect(granularityRequest).toBeDefined();
+    expect(granularityRequest!.kind).toBe("consolidate");
+    expect(granularityRequest!.indices).toEqual([1, 3, 4]);
+  });
+
+  it("other actions do not return granularity request", () => {
+    const state = createReviewState(makeProposals(5), 5);
+    const { granularityRequest } = applyAction(state, { kind: "accept" });
+    expect(granularityRequest).toBeUndefined();
+  });
+});
+
+// ─── replaceProposals ────────────────────────────────────────────────
+
+describe("replaceProposals", () => {
+  it("replaces a single proposal with multiple", () => {
+    const proposals = makeProposals(5);
+    const state = createReviewState(proposals, 5);
+
+    const replacements = [
+      makeProposal("Replacement A"),
+      makeProposal("Replacement B"),
+      makeProposal("Replacement C"),
+    ];
+
+    const newState = replaceProposals(state, [2], replacements);
+
+    expect(newState.proposals).toHaveLength(7); // 5 - 1 + 3
+    expect(newState.proposals[0].epic.title).toBe("Epic 1");
+    expect(newState.proposals[1].epic.title).toBe("Epic 2");
+    expect(newState.proposals[2].epic.title).toBe("Replacement A");
+    expect(newState.proposals[3].epic.title).toBe("Replacement B");
+    expect(newState.proposals[4].epic.title).toBe("Replacement C");
+    expect(newState.proposals[5].epic.title).toBe("Epic 4");
+    expect(newState.proposals[6].epic.title).toBe("Epic 5");
+  });
+
+  it("replaces multiple proposals with fewer (consolidation)", () => {
+    const proposals = makeProposals(5);
+    const state = createReviewState(proposals, 5);
+
+    const replacements = [makeProposal("Consolidated")];
+
+    const newState = replaceProposals(state, [1, 2, 3], replacements);
+
+    expect(newState.proposals).toHaveLength(3); // 5 - 3 + 1
+    expect(newState.proposals[0].epic.title).toBe("Epic 1");
+    expect(newState.proposals[1].epic.title).toBe("Consolidated");
+    expect(newState.proposals[2].epic.title).toBe("Epic 5");
+  });
+
+  it("preserves accepted set with shifted indices", () => {
+    const proposals = makeProposals(5);
+    const state = createReviewState(proposals, 5);
+    state.accepted.add(0); // Epic 1 (before replacement, stays at 0)
+    state.accepted.add(4); // Epic 5 (will shift)
+
+    const replacements = [
+      makeProposal("R1"),
+      makeProposal("R2"),
+    ];
+
+    const newState = replaceProposals(state, [2], replacements);
+
+    // Epic 1 is still at index 0
+    expect(newState.accepted.has(0)).toBe(true);
+    // Epic 5 was at index 4, after replacing index 2 with 2 items:
+    // new indices: 0=Epic1, 1=Epic2, 2=R1, 3=R2, 4=Epic4, 5=Epic5
+    expect(newState.accepted.has(5)).toBe(true);
+    expect(newState.accepted.size).toBe(2);
+  });
+
+  it("removes accepted status of replaced proposals", () => {
+    const proposals = makeProposals(5);
+    const state = createReviewState(proposals, 5);
+    state.accepted.add(2); // Will be replaced
+
+    const newState = replaceProposals(state, [2], [makeProposal("New")]);
+
+    // The replaced proposal's acceptance should be gone
+    expect(newState.accepted.size).toBe(0);
+  });
+
+  it("removes rejected status of replaced proposals", () => {
+    const proposals = makeProposals(5);
+    const state = createReviewState(proposals, 5);
+    state.rejected.add(2); // Will be replaced
+
+    const newState = replaceProposals(state, [2], [makeProposal("New")]);
+
+    expect(newState.rejected.size).toBe(0);
+  });
+
+  it("clamps offset to valid range after consolidation", () => {
+    const proposals = makeProposals(10);
+    const state = { ...createReviewState(proposals, 5), offset: 5 };
+
+    // Replace 7 proposals with 1, leaving only 4 total
+    const newState = replaceProposals(
+      state,
+      [1, 2, 3, 4, 5, 6, 7],
+      [makeProposal("One")],
+    );
+
+    expect(newState.proposals).toHaveLength(4); // 10 - 7 + 1
+    expect(newState.offset).toBeLessThanOrEqual(
+      Math.max(0, newState.proposals.length - newState.chunkSize),
+    );
+  });
+
+  it("clamps chunk size to new proposal count", () => {
+    const proposals = makeProposals(5);
+    const state = createReviewState(proposals, 5);
+
+    // Replace 3 proposals with 1, leaving only 3 total
+    const newState = replaceProposals(
+      state,
+      [1, 2, 3],
+      [makeProposal("One")],
+    );
+
+    expect(newState.proposals).toHaveLength(3);
+    expect(newState.chunkSize).toBeLessThanOrEqual(3);
+  });
+
+  it("handles replacing first proposal", () => {
+    const proposals = makeProposals(3);
+    const state = createReviewState(proposals, 3);
+
+    const newState = replaceProposals(
+      state,
+      [0],
+      [makeProposal("New First"), makeProposal("New Second")],
+    );
+
+    expect(newState.proposals).toHaveLength(4);
+    expect(newState.proposals[0].epic.title).toBe("New First");
+    expect(newState.proposals[1].epic.title).toBe("New Second");
+    expect(newState.proposals[2].epic.title).toBe("Epic 2");
+    expect(newState.proposals[3].epic.title).toBe("Epic 3");
+  });
+
+  it("handles replacing last proposal", () => {
+    const proposals = makeProposals(3);
+    const state = createReviewState(proposals, 3);
+
+    const newState = replaceProposals(
+      state,
+      [2],
+      [makeProposal("New Last A"), makeProposal("New Last B")],
+    );
+
+    expect(newState.proposals).toHaveLength(4);
+    expect(newState.proposals[0].epic.title).toBe("Epic 1");
+    expect(newState.proposals[1].epic.title).toBe("Epic 2");
+    expect(newState.proposals[2].epic.title).toBe("New Last A");
+    expect(newState.proposals[3].epic.title).toBe("New Last B");
+  });
+});
+
+// ─── formatActionMenu with granularity options ───────────────────────
+
+describe("formatActionMenu granularity options", () => {
+  it("includes break down option", () => {
+    const state = createReviewState(makeProposals(5), 3);
+    const menu = formatActionMenu(state);
+    expect(menu).toContain("b#=break down");
+  });
+
+  it("includes consolidate option", () => {
+    const state = createReviewState(makeProposals(5), 3);
+    const menu = formatActionMenu(state);
+    expect(menu).toContain("c#=consolidate");
+  });
+});
+
+// ─── Granularity workflow integration ────────────────────────────────
+
+describe("granularity adjustment workflow", () => {
+  it("break down then accept workflow", () => {
+    const proposals = makeProposals(3);
+    let state = createReviewState(proposals, 3);
+
+    // User requests break down of proposal 2
+    const { granularityRequest } = applyAction(state, {
+      kind: "break_down",
+      indices: [1],
+    });
+    expect(granularityRequest).toBeDefined();
+
+    // Simulate LLM returning 2 broken-down proposals
+    const brokenDown = [
+      makeProposal("Epic 2 Part A"),
+      makeProposal("Epic 2 Part B"),
+    ];
+    state = replaceProposals(state, [1], brokenDown);
+    expect(state.proposals).toHaveLength(4);
+    expect(state.proposals[1].epic.title).toBe("Epic 2 Part A");
+    expect(state.proposals[2].epic.title).toBe("Epic 2 Part B");
+
+    // Accept all
+    const { state: finalState, done } = applyAction(state, { kind: "accept_all" });
+    expect(done).toBe(true);
+    expect(getAcceptedProposals(finalState)).toHaveLength(4);
+  });
+
+  it("consolidate then accept workflow", () => {
+    const proposals = makeProposals(5);
+    let state = createReviewState(proposals, 5);
+
+    // User requests consolidation of proposals 2, 3, 4
+    const { granularityRequest } = applyAction(state, {
+      kind: "consolidate",
+      indices: [1, 2, 3],
+    });
+    expect(granularityRequest).toBeDefined();
+
+    // Simulate LLM returning 1 consolidated proposal
+    const consolidated = [makeProposal("Combined Epic")];
+    state = replaceProposals(state, [1, 2, 3], consolidated);
+    expect(state.proposals).toHaveLength(3);
+    expect(state.proposals[0].epic.title).toBe("Epic 1");
+    expect(state.proposals[1].epic.title).toBe("Combined Epic");
+    expect(state.proposals[2].epic.title).toBe("Epic 5");
+
+    // Accept all
+    const { state: finalState, done } = applyAction(state, { kind: "accept_all" });
+    expect(done).toBe(true);
+    expect(getAcceptedProposals(finalState)).toHaveLength(3);
+  });
+
+  it("preserves selections across granularity adjustments", () => {
+    const proposals = makeProposals(5);
+    let state = createReviewState(proposals, 5);
+
+    // Accept proposals 1 and 5
+    state.accepted.add(0);
+    state.accepted.add(4);
+
+    // Replace proposal 3 with 2 broken-down proposals
+    state = replaceProposals(state, [2], [
+      makeProposal("Part A"),
+      makeProposal("Part B"),
+    ]);
+
+    // Original acceptances should be preserved
+    expect(state.accepted.has(0)).toBe(true); // Epic 1 still at 0
+    // Epic 5 shifted from index 4 to index 5 (one extra proposal inserted)
+    expect(state.accepted.has(5)).toBe(true);
+    expect(state.accepted.size).toBe(2);
+  });
+
+  it("unknown action message mentions granularity commands", () => {
+    const state = createReviewState(makeProposals(5), 3);
+    const { message } = applyAction(state, { kind: "unknown" });
+    expect(message).toContain("b#");
+    expect(message).toContain("c#");
   });
 });

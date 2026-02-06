@@ -200,6 +200,55 @@ export function parseApprovalInput(
   return { approved: unique };
 }
 
+/**
+ * Parse granularity adjustment input from the approval prompt.
+ * Accepts:
+ *   "b1,3" or "b 1 3" or "break down 1,3"  → break down proposals 1 and 3
+ *   "c1,3" or "c 1 3" or "consolidate 1,3"  → consolidate proposals 1 and 3
+ *
+ * Returns null if the input is not a granularity command.
+ */
+export function parseGranularityInput(
+  input: string,
+  totalProposals: number,
+): { direction: "break_down" | "consolidate"; indices: number[] } | null {
+  const raw = input.trim();
+
+  // Break down: "b1,3" or "break down 1,3" or "b 1 3"
+  const breakMatch = raw.match(/^[bB](?:reak\s*down)?\s*(.+)$/i);
+  if (breakMatch) {
+    const indices = parseNumericList(breakMatch[1], totalProposals);
+    if (indices.length > 0) {
+      return { direction: "break_down", indices };
+    }
+  }
+
+  // Consolidate: "c1,3" or "consolidate 1,3" or "c 1 3"
+  const consolidateMatch = raw.match(/^[cC](?:onsolidate)?\s*(.+)$/i);
+  if (consolidateMatch) {
+    const indices = parseNumericList(consolidateMatch[1], totalProposals);
+    if (indices.length > 0) {
+      return { direction: "consolidate", indices };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Parse comma/space-separated 1-based numbers into sorted, deduplicated 0-based indices.
+ */
+function parseNumericList(input: string, total: number): number[] {
+  return [...new Set(
+    input
+      .trim()
+      .split(/[\s,]+/)
+      .map((s) => parseInt(s, 10))
+      .filter((n) => !isNaN(n) && n >= 1 && n <= total)
+      .map((n) => n - 1),
+  )].sort((a, b) => a - b);
+}
+
 async function savePending(
   dir: string,
   proposals: Proposal[],
@@ -587,34 +636,103 @@ export async function cmdSmartAdd(
       result(`Added ${added} items to PRD.`);
     }
   } else if (process.stdin.isTTY) {
-    // Interactive approval flow
-    const prompt = proposals.length > 1
-      ? `Accept proposals? (y=all / n=none / 1,2,...=select) `
-      : `Accept this proposal? (y/n) `;
+    // Interactive approval flow with granularity adjustment support
+    const { adjustGranularity } = await import("../../analyze/index.js");
+    const resolvedModel = model ?? DEFAULT_MODEL;
 
-    const answer = await promptUser(prompt);
-    const decision = parseApprovalInput(answer, proposals.length);
+    let currentProposals = proposals;
+    let done = false;
 
-    if (decision === "all") {
-      const added = await acceptProposals(dir, proposals, parentId);
-      result(`Added ${added} items to PRD.`);
-    } else if (decision === "none") {
-      info("Proposals saved. Run `rex add --accept` to accept later.");
-    } else {
-      // Selective approval
-      const selected = filterProposalsByIndex(proposals, decision.approved);
-      const names = selected.map((p) => p.epic.title).join(", ");
-      info(`Accepting: ${names}`);
-      const added = await acceptProposals(dir, selected, parentId);
-      result(`Added ${added} items to PRD.`);
+    while (!done) {
+      const prompt = currentProposals.length > 1
+        ? `Accept proposals? (y=all / n=none / b#=break down / c#=consolidate / 1,2,...=select) `
+        : `Accept this proposal? (y/n / b1=break down / c1=consolidate) `;
 
-      // Cache remaining proposals for later
-      const rejected = proposals.filter((_, i) => !decision.approved.includes(i));
-      if (rejected.length > 0) {
-        await savePending(dir, rejected, parentId);
-        info(
-          `${rejected.length} proposal(s) saved. Run \`rex add --accept\` to accept later.`,
+      const answer = await promptUser(prompt);
+
+      // Check for granularity commands before parsing approval
+      const granularityResult = parseGranularityInput(answer, currentProposals.length);
+
+      if (granularityResult) {
+        const targetProposals = granularityResult.indices.map(
+          (i) => currentProposals[i],
         );
+        const label = granularityResult.direction === "break_down"
+          ? "Breaking down"
+          : "Consolidating";
+        info(`${label} proposal(s) ${granularityResult.indices.map((i) => i + 1).join(", ")}...`);
+
+        try {
+          const adjusted = await adjustGranularity(
+            targetProposals,
+            granularityResult.direction,
+            resolvedModel,
+          );
+          if (adjusted.proposals.length > 0) {
+            // Replace targeted proposals with adjusted ones
+            const newProposals = [...currentProposals];
+            // Remove originals (in reverse to preserve indices)
+            const sorted = [...granularityResult.indices].sort((a, b) => b - a);
+            for (const idx of sorted) {
+              newProposals.splice(idx, 1);
+            }
+            const insertAt = Math.min(...granularityResult.indices);
+            newProposals.splice(insertAt, 0, ...adjusted.proposals);
+            currentProposals = newProposals;
+
+            const actionLabel = granularityResult.direction === "break_down"
+              ? "broken down"
+              : "consolidated";
+            info(
+              `Replaced ${targetProposals.length} proposal(s) with ${adjusted.proposals.length} ${actionLabel} proposal(s).`,
+            );
+
+            // Re-display the proposal tree
+            const itemCount = countProposalItems(currentProposals, parentLevel);
+            info(`\nUpdated structure (${itemCount} items):`);
+            info(formatProposalTree(currentProposals, parentLevel));
+            info("");
+
+            // Update cache with adjusted proposals
+            if (await hasRexDir(dir)) {
+              await savePending(dir, currentProposals, parentId);
+            }
+          } else {
+            info("LLM returned no proposals. Original proposals unchanged.");
+          }
+        } catch (err) {
+          info(`Granularity adjustment failed: ${(err as Error).message}`);
+          info("Original proposals unchanged.");
+        }
+        continue; // Re-prompt
+      }
+
+      const decision = parseApprovalInput(answer, currentProposals.length);
+
+      if (decision === "all") {
+        const added = await acceptProposals(dir, currentProposals, parentId);
+        result(`Added ${added} items to PRD.`);
+        done = true;
+      } else if (decision === "none") {
+        info("Proposals saved. Run `rex add --accept` to accept later.");
+        done = true;
+      } else {
+        // Selective approval
+        const selected = filterProposalsByIndex(currentProposals, decision.approved);
+        const names = selected.map((p) => p.epic.title).join(", ");
+        info(`Accepting: ${names}`);
+        const added = await acceptProposals(dir, selected, parentId);
+        result(`Added ${added} items to PRD.`);
+
+        // Cache remaining proposals for later
+        const rejected = currentProposals.filter((_, i) => !decision.approved.includes(i));
+        if (rejected.length > 0) {
+          await savePending(dir, rejected, parentId);
+          info(
+            `${rejected.length} proposal(s) saved. Run \`rex add --accept\` to accept later.`,
+          );
+        }
+        done = true;
       }
     }
   } else {

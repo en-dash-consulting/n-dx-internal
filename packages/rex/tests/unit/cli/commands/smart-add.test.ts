@@ -4,6 +4,7 @@ import {
   countProposalItems,
   filterProposalsByIndex,
   parseApprovalInput,
+  parseGranularityInput,
   formatQualityWarnings,
 } from "../../../../src/cli/commands/smart-add.js";
 import type { Proposal, QualityIssue } from "../../../../src/analyze/index.js";
@@ -401,5 +402,78 @@ describe("formatQualityWarnings", () => {
     const pathLine = lines.find((l) => l.includes("at epic:"));
     expect(pathLine).toBeDefined();
     expect(pathLine!.startsWith("    at ")).toBe(true);
+  });
+});
+
+// ─── parseGranularityInput ───────────────────────────────────────────
+
+describe("parseGranularityInput", () => {
+  it("returns null for non-granularity input", () => {
+    expect(parseGranularityInput("y", 5)).toBeNull();
+    expect(parseGranularityInput("n", 5)).toBeNull();
+    expect(parseGranularityInput("1,2", 5)).toBeNull();
+    expect(parseGranularityInput("all", 5)).toBeNull();
+    expect(parseGranularityInput("", 5)).toBeNull();
+  });
+
+  it("parses break down with single number", () => {
+    const result = parseGranularityInput("b1", 5);
+    expect(result).toEqual({ direction: "break_down", indices: [0] });
+  });
+
+  it("parses break down with multiple numbers", () => {
+    const result = parseGranularityInput("b1,3,5", 5);
+    expect(result).toEqual({ direction: "break_down", indices: [0, 2, 4] });
+  });
+
+  it("parses break down with spaces", () => {
+    const result = parseGranularityInput("b 2 4", 5);
+    expect(result).toEqual({ direction: "break_down", indices: [1, 3] });
+  });
+
+  it("parses 'break down' spelled out", () => {
+    const result = parseGranularityInput("break down 1", 5);
+    expect(result).toEqual({ direction: "break_down", indices: [0] });
+  });
+
+  it("parses 'breakdown' as one word", () => {
+    const result = parseGranularityInput("breakdown 2,3", 5);
+    expect(result).toEqual({ direction: "break_down", indices: [1, 2] });
+  });
+
+  it("parses consolidate with single number", () => {
+    const result = parseGranularityInput("c1", 5);
+    expect(result).toEqual({ direction: "consolidate", indices: [0] });
+  });
+
+  it("parses consolidate with multiple numbers", () => {
+    const result = parseGranularityInput("c1,2,3", 5);
+    expect(result).toEqual({ direction: "consolidate", indices: [0, 1, 2] });
+  });
+
+  it("parses 'consolidate' spelled out", () => {
+    const result = parseGranularityInput("consolidate 3,5", 5);
+    expect(result).toEqual({ direction: "consolidate", indices: [2, 4] });
+  });
+
+  it("ignores out-of-range numbers", () => {
+    const result = parseGranularityInput("b1,99", 5);
+    expect(result).toEqual({ direction: "break_down", indices: [0] });
+  });
+
+  it("returns null when all numbers out of range", () => {
+    expect(parseGranularityInput("b99", 5)).toBeNull();
+  });
+
+  it("deduplicates numbers", () => {
+    const result = parseGranularityInput("c1,1,2", 5);
+    expect(result).toEqual({ direction: "consolidate", indices: [0, 1] });
+  });
+
+  it("is case-insensitive for command prefix", () => {
+    expect(parseGranularityInput("B1", 5)).toEqual({ direction: "break_down", indices: [0] });
+    expect(parseGranularityInput("C1", 5)).toEqual({ direction: "consolidate", indices: [0] });
+    expect(parseGranularityInput("Break Down 1", 5)).toEqual({ direction: "break_down", indices: [0] });
+    expect(parseGranularityInput("Consolidate 1", 5)).toEqual({ direction: "consolidate", indices: [0] });
   });
 });

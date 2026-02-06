@@ -1375,6 +1375,84 @@ export async function reasonFromDescriptions(
   return { proposals: parseProposalResponse(result.text), tokenUsage };
 }
 
+// ── Granularity adjustment ──
+
+/**
+ * Build an LLM prompt to break down proposals into finer-grained tasks.
+ * Each task is split into smaller subtasks; features may be expanded.
+ * Pure function — no I/O.
+ */
+export function buildBreakdownPrompt(proposals: Proposal[]): string {
+  const proposalJson = JSON.stringify(proposals, null, 2);
+
+  return `You are a product requirements analyst. The user wants to break down the following PRD proposals into finer-grained, more detailed tasks.
+
+Current proposals:
+${proposalJson}
+
+Your job:
+- Take each task in each feature and break it into 2-4 smaller, more specific subtasks.
+- If a feature has only 1 task, expand it into 2-3 tasks covering distinct aspects.
+- Preserve the epic and feature structure — do NOT change epic or feature titles.
+- Each new task must have a clear, actionable title (verb-first) and either a description or acceptanceCriteria.
+- Preserve the original intent and acceptance criteria — distribute them among the subtasks.
+- Keep priorities consistent with the originals.
+- Do NOT add entirely new functionality — only decompose what exists.
+
+${FEW_SHOT_EXAMPLE}
+
+Respond with ONLY a valid JSON array in the same format, no explanation or markdown fences.`;
+}
+
+/**
+ * Build an LLM prompt to consolidate proposals into coarser-grained tasks.
+ * Multiple fine-grained tasks are merged into broader ones.
+ * Pure function — no I/O.
+ */
+export function buildConsolidatePrompt(proposals: Proposal[]): string {
+  const proposalJson = JSON.stringify(proposals, null, 2);
+
+  return `You are a product requirements analyst. The user wants to consolidate the following PRD proposals into coarser-grained, higher-level tasks.
+
+Current proposals:
+${proposalJson}
+
+Your job:
+- Merge related tasks within each feature into broader, higher-level tasks.
+- Aim to reduce the total task count by roughly half.
+- If a feature has many tasks, combine related ones into a single task with merged acceptance criteria.
+- If multiple features are closely related, consider merging them into one feature.
+- Preserve the epic structure — do NOT change epic titles.
+- Each resulting task must have a clear, actionable title (verb-first) and either a description or acceptanceCriteria.
+- Preserve the original intent — the consolidated tasks should cover the same scope as the originals.
+- Keep priorities (use the highest priority among merged tasks).
+- Do NOT remove functionality — only consolidate what exists.
+
+${FEW_SHOT_EXAMPLE}
+
+Respond with ONLY a valid JSON array in the same format, no explanation or markdown fences.`;
+}
+
+/**
+ * Adjust the granularity of proposals by calling the LLM.
+ * - "break_down": splits tasks into finer-grained subtasks
+ * - "consolidate": merges tasks into coarser-grained units
+ */
+export async function adjustGranularity(
+  proposals: Proposal[],
+  direction: "break_down" | "consolidate",
+  model?: string,
+): Promise<ReasonResult> {
+  const prompt = direction === "break_down"
+    ? buildBreakdownPrompt(proposals)
+    : buildConsolidatePrompt(proposals);
+
+  const tokenUsage = emptyAnalyzeTokenUsage();
+  const result = await spawnClaude(prompt, model ?? DEFAULT_MODEL);
+  accumulateTokenUsage(tokenUsage, result.tokenUsage);
+  return { proposals: parseProposalResponse(result.text), tokenUsage };
+}
+
 // ── Ideas file import ──
 
 /**

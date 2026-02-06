@@ -72,6 +72,26 @@
               ],
               "priority": "medium",
               "source": "llm"
+            },
+            {
+              "id": "f6d75214-9714-41b0-8467-7ae40e412dc3",
+              "title": "Reset parent status when adding child items",
+              "status": "pending",
+              "level": "task",
+              "description": "Automatically reset the status of parent epics and features from 'completed' to 'pending' or 'in_progress' when new child items are added, ensuring tasks remain discoverable and actionable",
+              "acceptanceCriteria": [
+                "Parent epic status resets to 'pending' when new features or tasks are added",
+                "Parent feature status resets to 'pending' when new tasks are added",
+                "Only affects parents that are currently marked as 'completed'",
+                "Status reset cascades up the hierarchy if needed",
+                "Works for both manual add commands and LLM-generated proposals"
+              ],
+              "priority": "medium",
+              "tags": [
+                "hierarchy",
+                "status"
+              ],
+              "source": "smart-add"
             }
           ]
         },
@@ -5295,7 +5315,7 @@
     {
       "id": "c52ead17-736b-4488-a168-62778bc3d798",
       "title": "Interactive Proposal Management",
-      "status": "completed",
+      "status": "pending",
       "level": "epic",
       "source": "smart-add",
       "startedAt": "2026-02-06T04:00:51.672Z",
@@ -5304,7 +5324,7 @@
         {
           "id": "33907346-1639-4f74-9e6f-b3ba456cc911",
           "title": "Chunked proposal acceptance",
-          "status": "completed",
+          "status": "pending",
           "level": "feature",
           "description": "Allow users to accept proposals in smaller or larger batches instead of all-or-nothing",
           "source": "smart-add",
@@ -5392,6 +5412,66 @@
               "source": "smart-add",
               "startedAt": "2026-02-06T03:44:58.705Z",
               "completedAt": "2026-02-06T04:00:51.597Z"
+            },
+            {
+              "id": "d0d952ee-ed3b-4e20-9d55-c77fca4d60ce",
+              "title": "Add granularity adjustment to interactive add workflow",
+              "status": "completed",
+              "level": "task",
+              "description": "Extend the rex add command's interactive mode to allow users to request tasks be broken down into smaller subtasks or consolidated into larger ones during the approval flow",
+              "acceptanceCriteria": [
+                "Users can request task breakdown during add command approval",
+                "Users can request task consolidation during add command approval",
+                "Granularity adjustments preserve original intent and acceptance criteria",
+                "Interactive prompts clearly explain granularity options"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "ux",
+                "llm"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-06T04:08:42.923Z",
+              "completedAt": "2026-02-06T04:20:13.096Z"
+            },
+            {
+              "id": "4f44a47e-ff74-4016-b44b-ee45b51479af",
+              "title": "Implement task granularity assessment",
+              "status": "pending",
+              "level": "task",
+              "description": "Add LLM-powered analysis to evaluate whether proposed tasks are appropriately sized and suggest granularity improvements",
+              "acceptanceCriteria": [
+                "Analyzes task scope and complexity automatically",
+                "Suggests when tasks should be broken down",
+                "Suggests when tasks should be consolidated",
+                "Provides reasoning for granularity recommendations"
+              ],
+              "priority": "medium",
+              "tags": [
+                "llm",
+                "validation"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "39263ff2-8324-43a7-a5ef-23cdaaedef0a",
+              "title": "Add granularity controls to batch acceptance",
+              "status": "pending",
+              "level": "task",
+              "description": "Integrate granularity adjustment options into the existing chunked proposal workflow so users can refine task sizing across proposal batches",
+              "acceptanceCriteria": [
+                "Granularity options available in chunked proposal review",
+                "Batch operations preserve granularity adjustments",
+                "Users can apply granularity changes to multiple proposals at once",
+                "Granularity tracking persists across proposal chunks"
+              ],
+              "priority": "low",
+              "tags": [
+                "batch",
+                "ux"
+              ],
+              "source": "smart-add"
             }
           ]
         }
