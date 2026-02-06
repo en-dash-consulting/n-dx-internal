@@ -656,3 +656,222 @@ describe("chunked review workflow", () => {
     expect(state.chunkSize).toBe(5);
   });
 });
+
+// ─── Dynamic chunk resizing (position preservation + pagination) ────
+
+describe("dynamic chunk resizing", () => {
+  describe("more command preserves current position", () => {
+    it("keeps offset when expanding at the start", () => {
+      const proposals = makeProposals(20);
+      let state = createReviewState(proposals, 5);
+      expect(state.offset).toBe(0);
+
+      const { state: next } = applyAction(state, { kind: "more" });
+      // Offset should stay at 0 — user's position preserved
+      expect(next.offset).toBe(0);
+      expect(next.chunkSize).toBe(10);
+    });
+
+    it("keeps offset when expanding in the middle", () => {
+      const proposals = makeProposals(20);
+      let state = { ...createReviewState(proposals, 5), offset: 5 };
+
+      const { state: next } = applyAction(state, { kind: "more" });
+      // Offset should stay at 5 — current proposals stay visible
+      expect(next.offset).toBe(5);
+      expect(next.chunkSize).toBe(10);
+    });
+
+    it("clamps offset back when expanding near the end", () => {
+      const proposals = makeProposals(20);
+      let state = { ...createReviewState(proposals, 5), offset: 15 };
+      // Currently viewing proposals 16-20
+
+      const { state: next } = applyAction(state, { kind: "more" });
+      // newSize=10, so offset must clamp to 10 to show 11-20
+      expect(next.offset).toBe(10);
+      expect(next.chunkSize).toBe(10);
+      // Original proposals (16-20) are still visible in the chunk
+      const chunk = getCurrentChunk(next);
+      expect(chunk.indices).toContain(15); // index 15 = proposal 16
+      expect(chunk.indices).toContain(19); // index 19 = proposal 20
+    });
+
+    it("current proposals remain visible after expanding", () => {
+      const proposals = makeProposals(20);
+      let state = { ...createReviewState(proposals, 5), offset: 10 };
+      const beforeChunk = getCurrentChunk(state);
+
+      const { state: next } = applyAction(state, { kind: "more" });
+      const afterChunk = getCurrentChunk(next);
+
+      // Every proposal visible before should still be visible after
+      for (const idx of beforeChunk.indices) {
+        expect(afterChunk.indices).toContain(idx);
+      }
+    });
+  });
+
+  describe("fewer command preserves current position", () => {
+    it("keeps offset when shrinking at the start", () => {
+      const proposals = makeProposals(20);
+      let state = createReviewState(proposals, 10);
+
+      const { state: next } = applyAction(state, { kind: "fewer" });
+      expect(next.offset).toBe(0);
+      expect(next.chunkSize).toBe(5);
+    });
+
+    it("keeps offset when shrinking in the middle", () => {
+      const proposals = makeProposals(20);
+      let state = { ...createReviewState(proposals, 10), offset: 10 };
+
+      const { state: next } = applyAction(state, { kind: "fewer" });
+      // Offset preserved — still starts at 10
+      expect(next.offset).toBe(10);
+      expect(next.chunkSize).toBe(5);
+    });
+
+    it("first proposal in view stays visible after shrinking", () => {
+      const proposals = makeProposals(20);
+      let state = { ...createReviewState(proposals, 10), offset: 5 };
+      const firstVisibleBefore = getCurrentChunk(state).indices[0];
+
+      const { state: next } = applyAction(state, { kind: "fewer" });
+      const firstVisibleAfter = getCurrentChunk(next).indices[0];
+
+      // The first visible proposal should be the same
+      expect(firstVisibleAfter).toBe(firstVisibleBefore);
+    });
+  });
+
+  describe("pagination display updates after resize", () => {
+    it("updates pagination header after more", () => {
+      const proposals = makeProposals(20);
+      let state = createReviewState(proposals, 5);
+      expect(formatPaginationHeader(state)).toBe("Proposals 1-5 of 20");
+
+      const { state: next } = applyAction(state, { kind: "more" });
+      expect(formatPaginationHeader(next)).toBe("Proposals 1-10 of 20");
+    });
+
+    it("updates pagination header after fewer", () => {
+      const proposals = makeProposals(20);
+      let state = createReviewState(proposals, 10);
+      expect(formatPaginationHeader(state)).toBe("Proposals 1-10 of 20");
+
+      const { state: next } = applyAction(state, { kind: "fewer" });
+      expect(formatPaginationHeader(next)).toBe("Proposals 1-5 of 20");
+    });
+
+    it("updates pagination header after more on middle page", () => {
+      const proposals = makeProposals(20);
+      let state = { ...createReviewState(proposals, 5), offset: 10 };
+      expect(formatPaginationHeader(state)).toBe("Proposals 11-15 of 20");
+
+      const { state: next } = applyAction(state, { kind: "more" });
+      expect(formatPaginationHeader(next)).toBe("Proposals 11-20 of 20");
+    });
+
+    it("updates action menu after expanding to show all", () => {
+      const proposals = makeProposals(8);
+      let state = createReviewState(proposals, 3);
+      // Should show next since there are more pages
+      expect(formatActionMenu(state)).toContain("n=next");
+
+      // Expand to show all 8
+      let { state: next } = applyAction(state, { kind: "more" });
+      expect(next.chunkSize).toBe(8);
+      // No next button needed when all proposals visible
+      expect(formatActionMenu(next)).not.toContain("n=next");
+    });
+  });
+
+  describe("accepted selections preserved across resize", () => {
+    it("preserves accepted set after more", () => {
+      const proposals = makeProposals(20);
+      let state = createReviewState(proposals, 5);
+      // Accept proposals 1-5
+      let result = applyAction(state, { kind: "accept" });
+      state = result.state;
+      expect(state.accepted.size).toBe(5);
+
+      // Resize to show more
+      result = applyAction(state, { kind: "more" });
+      state = result.state;
+      // All previous acceptances should still be there
+      expect(state.accepted.size).toBe(5);
+      for (let i = 0; i < 5; i++) {
+        expect(state.accepted.has(i)).toBe(true);
+      }
+    });
+
+    it("preserves accepted set after fewer", () => {
+      const proposals = makeProposals(20);
+      let state = createReviewState(proposals, 10);
+      // Accept some specific proposals
+      state.accepted.add(2);
+      state.accepted.add(7);
+      state.accepted.add(15);
+
+      const { state: next } = applyAction(state, { kind: "fewer" });
+      expect(next.accepted.size).toBe(3);
+      expect(next.accepted.has(2)).toBe(true);
+      expect(next.accepted.has(7)).toBe(true);
+      expect(next.accepted.has(15)).toBe(true);
+    });
+
+    it("preserves rejected set after resize", () => {
+      const proposals = makeProposals(20);
+      let state = createReviewState(proposals, 5);
+      state.rejected.add(3);
+      state.rejected.add(8);
+
+      const { state: next } = applyAction(state, { kind: "more" });
+      expect(next.rejected.size).toBe(2);
+      expect(next.rejected.has(3)).toBe(true);
+      expect(next.rejected.has(8)).toBe(true);
+    });
+  });
+
+  describe("resize feedback messages", () => {
+    it("more reports new chunk size", () => {
+      const proposals = makeProposals(20);
+      let state = createReviewState(proposals, 5);
+      const { message } = applyAction(state, { kind: "more" });
+      expect(message).toBe("Showing 10 proposals per page.");
+    });
+
+    it("fewer reports new chunk size", () => {
+      const proposals = makeProposals(20);
+      let state = createReviewState(proposals, 10);
+      const { message } = applyAction(state, { kind: "fewer" });
+      expect(message).toBe("Showing 5 proposals per page.");
+    });
+
+    it("more at max reports already showing all", () => {
+      const proposals = makeProposals(5);
+      let state = createReviewState(proposals, 5);
+      const { message } = applyAction(state, { kind: "more" });
+      expect(message).toBe("Already showing all proposals.");
+    });
+
+    it("fewer at min reports already at minimum", () => {
+      const proposals = makeProposals(10);
+      let state = createReviewState(proposals, 1);
+      const { message } = applyAction(state, { kind: "fewer" });
+      expect(message).toBe("Already at minimum chunk size.");
+    });
+
+    it("resize does not end the review session", () => {
+      const proposals = makeProposals(20);
+      let state = createReviewState(proposals, 5);
+
+      const moreResult = applyAction(state, { kind: "more" });
+      expect(moreResult.done).toBe(false);
+
+      const fewerResult = applyAction(moreResult.state, { kind: "fewer" });
+      expect(fewerResult.done).toBe(false);
+    });
+  });
+});
