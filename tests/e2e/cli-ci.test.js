@@ -255,6 +255,73 @@ describe("n-dx ci", () => {
         await rm(emptyDir, { recursive: true, force: true });
       }
     });
+
+    it("returns structured JSON error when .rex is missing with --format=json", async () => {
+      const emptyDir = await mkdtemp(join(tmpdir(), "ndx-ci-empty-"));
+      try {
+        // Create .sourcevision so only .rex is missing
+        await mkdir(join(emptyDir, ".sourcevision"), { recursive: true });
+        const { stdout, code } = runResult(["--format=json", emptyDir]);
+        expect(code).toBe(1);
+        const report = JSON.parse(stdout);
+        expect(report.ok).toBe(false);
+        expect(report.error).toMatch(/\.rex/);
+      } finally {
+        await rm(emptyDir, { recursive: true, force: true });
+      }
+    });
+
+    it("returns structured JSON error when both dirs missing with --format=json", async () => {
+      const emptyDir = await mkdtemp(join(tmpdir(), "ndx-ci-empty-"));
+      try {
+        const { stdout, code } = runResult(["--format=json", emptyDir]);
+        expect(code).toBe(1);
+        const report = JSON.parse(stdout);
+        expect(report.ok).toBe(false);
+        expect(report.error).toMatch(/\.rex/);
+        expect(report.error).toMatch(/\.sourcevision/);
+      } finally {
+        await rm(emptyDir, { recursive: true, force: true });
+      }
+    });
+
+    it("JSON error includes hint for missing setup", async () => {
+      const emptyDir = await mkdtemp(join(tmpdir(), "ndx-ci-empty-"));
+      try {
+        await mkdir(join(emptyDir, ".sourcevision"), { recursive: true });
+        const { stdout, code } = runResult(["--format=json", emptyDir]);
+        expect(code).toBe(1);
+        const report = JSON.parse(stdout);
+        expect(report.hint).toContain("ndx init");
+      } finally {
+        await rm(emptyDir, { recursive: true, force: true });
+      }
+    });
+
+    it("includes timestamp in JSON error report", async () => {
+      const emptyDir = await mkdtemp(join(tmpdir(), "ndx-ci-empty-"));
+      try {
+        await mkdir(join(emptyDir, ".sourcevision"), { recursive: true });
+        const { stdout } = runResult(["--format=json", emptyDir]);
+        const report = JSON.parse(stdout);
+        expect(report.timestamp).toBeDefined();
+        expect(new Date(report.timestamp).getTime()).not.toBeNaN();
+      } finally {
+        await rm(emptyDir, { recursive: true, force: true });
+      }
+    });
+
+    it("text mode still shows clear error when .rex is missing", async () => {
+      const emptyDir = await mkdtemp(join(tmpdir(), "ndx-ci-empty-"));
+      try {
+        const { stderr, code } = runResult([emptyDir]);
+        expect(code).toBe(1);
+        expect(stderr).toContain("Missing");
+        expect(stderr).toMatch(/ndx init/);
+      } finally {
+        await rm(emptyDir, { recursive: true, force: true });
+      }
+    });
   });
 
   // ── Validation failure ─────────────────────────────────────────────────────

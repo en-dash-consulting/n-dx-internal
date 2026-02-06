@@ -158,8 +158,15 @@ if (command === "sync") {
 
 if (command === "ci") {
   const dir = resolveDir(rest);
-  requireInit(dir, [".rex", ".sourcevision"]);
   const flags = extractFlags(rest);
+  const isJSON = flags.some((f) => f === "--format=json");
+
+  // For JSON mode, let runCI handle missing dirs so it can produce structured output.
+  // For text mode, use the standard requireInit guard.
+  if (!isJSON) {
+    requireInit(dir, [".rex", ".sourcevision"]);
+  }
+
   try {
     const ok = await runCI(dir, flags, { run, tools });
     process.exit(ok ? 0 : 1);

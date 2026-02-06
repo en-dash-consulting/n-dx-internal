@@ -14,7 +14,8 @@
  */
 
 import { spawn } from "child_process";
-import { dirname, resolve } from "path";
+import { existsSync } from "fs";
+import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -50,6 +51,27 @@ function runCapture(script, args) {
 export async function runCI(dir, flags, { run, tools }) {
   const isQuiet = flags.includes("--quiet") || flags.includes("-q");
   const isJSON = flags.some((f) => f === "--format=json");
+
+  // ── Pre-flight: check required directories ──────────────────────────────
+  const requiredDirs = [".rex", ".sourcevision"];
+  const missingDirs = requiredDirs.filter((d) => !existsSync(join(dir, d)));
+  if (missingDirs.length > 0) {
+    const error = `Missing ${missingDirs.join(", ")} in ${dir}`;
+    const hint = `Run 'ndx init${dir === process.cwd() ? "" : " " + dir}' to set up the project.`;
+    if (isJSON) {
+      const report = {
+        timestamp: new Date().toISOString(),
+        ok: false,
+        error,
+        hint,
+        steps: [],
+      };
+      console.log(JSON.stringify(report, null, 2));
+      return false;
+    }
+    // Text mode: the caller (cli.js) handles this via requireInit
+    throw new Error(error);
+  }
 
   const steps = [];
   let allOk = true;

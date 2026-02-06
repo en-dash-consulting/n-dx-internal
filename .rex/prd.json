@@ -1612,7 +1612,7 @@
         {
           "id": "19b17ff7-0c57-426c-85c6-770b818f78a9",
           "title": "CI Command Enhancement",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Improve CI integration and reporting capabilities",
           "source": "llm",
@@ -1638,7 +1638,7 @@
             {
               "id": "2274f92d-507b-4463-aa86-b46da39692e7",
               "title": "Implement CI command with proper reporting and error handling",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Structured JSON CI reports with step-level detail and clear errors for missing setup",
               "acceptanceCriteria": [
@@ -1652,9 +1652,13 @@
                 "json",
                 "error handling"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-06T14:48:55.961Z",
+              "completedAt": "2026-02-06T14:57:18.586Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-06T14:57:18.614Z",
+          "completedAt": "2026-02-06T14:57:18.614Z"
         },
         {
           "id": "fdd4fece-07ba-47c9-9611-6603a8bed17f",
