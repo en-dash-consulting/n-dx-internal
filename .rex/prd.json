@@ -1247,6 +1247,8 @@
       "status": "completed",
       "level": "epic",
       "source": "llm",
+      "startedAt": "2026-02-06T15:45:56.722Z",
+      "completedAt": "2026-02-06T15:45:56.722Z",
       "children": [
         {
           "id": "8c669c14-56ac-476d-90e4-18bac1afce18",
@@ -1701,9 +1703,7 @@
           "startedAt": "2026-02-06T14:35:29.871Z",
           "completedAt": "2026-02-06T14:41:57.717Z"
         }
-      ],
-      "startedAt": "2026-02-06T15:45:56.722Z",
-      "completedAt": "2026-02-06T15:45:56.722Z"
+      ]
     },
     {
       "id": "3bf3754c-c0d0-4fb7-9cbd-5ebbddb85d51",
@@ -3037,7 +3037,7 @@
     {
       "id": "a53b2572-87a8-4eb2-804a-2b9ae668b930",
       "title": "PRD Management Enhancement",
-      "status": "pending",
+      "status": "in_progress",
       "level": "epic",
       "source": "llm",
       "children": [
@@ -3071,10 +3071,10 @@
             },
             {
               "id": "ccafa952-4145-4bdc-9731-0ebff91290d1",
-              "title": "Improve tree operations and statistics",
+              "title": "Harden tree operations and task selection",
               "status": "pending",
               "level": "task",
-              "description": "Harden tree traversal, search, manipulation (insert/update/remove), and statistics computation for correctness and performance",
+              "description": "Harden tree traversal, search, manipulation (insert/update/remove), and statistics computation for correctness and performance. Enhance next-task selection with keyword extraction for matching and priority-based sorting.",
               "acceptanceCriteria": [
                 "Progress statistics are accurate (counts all statuses, nested items)",
                 "Parent chains are correctly computed",
@@ -3083,33 +3083,17 @@
                 "ID collection is complete and accurate",
                 "Insertion respects hierarchy rules and creates children array if needed",
                 "Traversal visits all items depth-first with correct parent chains",
-                "findItem, updateInTree, and removeFromTree work for root and nested items"
-              ],
-              "priority": "medium",
-              "tags": [
-                "tree-ops",
-                "data-structure",
-                "performance"
-              ],
-              "source": "llm"
-            },
-            {
-              "id": "18d30912-8cf0-4e84-9dae-3f5e18403b64",
-              "title": "Improve next-task selection",
-              "status": "pending",
-              "level": "task",
-              "description": "Enhance task selection with keyword extraction for matching and priority-based sorting",
-              "acceptanceCriteria": [
-                "Keywords are extracted from criteria and test names",
+                "findItem, updateInTree, and removeFromTree work for root and nested items",
+                "Keywords are extracted from criteria and test names for task matching",
                 "Matching scores are accurate and useful with minimal false positives",
                 "Tasks are sorted by priority (critical first)"
               ],
               "priority": "medium",
               "tags": [
-                "nlp",
-                "matching",
-                "sorting",
-                "priority"
+                "tree-ops",
+                "data-structure",
+                "performance",
+                "task-selection"
               ],
               "source": "llm"
             },
@@ -3137,65 +3121,35 @@
         },
         {
           "id": "fb8d363f-e8c3-495a-8cb9-2ac680525b3e",
-          "title": "Schema Validation and Backwards Compatibility",
+          "title": "Schema Validation and Store Operations",
           "status": "pending",
           "level": "feature",
-          "description": "Robust validation with support for legacy data formats",
+          "description": "Robust schema validation with migration support, combined with reliable store operations for configuration and workflow persistence",
           "source": "llm",
           "children": [
             {
               "id": "1cc66bdf-4559-406e-9f7a-2bb1ecb5f43a",
-              "title": "Implement schema validation with migration support",
+              "title": "Implement schema validation and core store operations",
               "status": "pending",
               "level": "task",
-              "description": "Comprehensive schema validation for all data structures with backwards compatibility for legacy formats and clear error messages",
+              "description": "Comprehensive schema validation for all data structures with backwards compatibility for legacy formats, combined with core store operations for configuration and workflow management. Validation feeds into storage — the store validates what it persists, and migration support handles legacy formats on load.",
               "acceptanceCriteria": [
                 "Validates configs, run records, manifests, documents, inventory, imports, and zones",
                 "Rejects invalid values (bad status, priority, level, format, role, import type, finding type, number values)",
                 "Accepts legacy data formats with appropriate defaults (optional fields, missing retry section, backward-compat run fields)",
-                "Provides clear, actionable error messages for each validation failure"
+                "Provides clear, actionable error messages for each validation failure",
+                "Loads and round-trips workflow content",
+                "Loads and round-trips config (including from local file)",
+                "Appends and reads log entries in chronological order",
+                "Store operations validate data before persisting"
               ],
               "priority": "high",
               "tags": [
                 "validation",
                 "schema",
-                "backwards-compat"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "3deec703-1cd1-4a44-a27e-3932cd975dbf",
-          "title": "Store Operations and Data Persistence",
-          "status": "pending",
-          "level": "feature",
-          "description": "Reliable data storage with file and external adapter support",
-          "source": "llm",
-          "children": [
-            {
-              "id": "582a7221-2e8f-465f-b265-f46cfe85782b",
-              "title": "Implement core store operations",
-              "status": "pending",
-              "level": "task",
-              "description": "Basic store operations for configuration and workflow management",
-              "acceptanceCriteria": [
-                "Loads workflow",
-                "Saves and reloads workflow",
-                "Loads config",
-                "Saves and reloads config",
-                "Loads config from local file",
-                "Loads workflow content",
-                "Round-trips workflow content",
-                "Appends log entry",
-                "Log append and read",
-                "Appends and reads log entries"
-              ],
-              "priority": "high",
-              "tags": [
+                "backwards-compat",
                 "FileStore",
-                "NotionStore",
-                "PRDStore contract"
+                "PRDStore"
               ],
               "source": "llm"
             }
@@ -3203,41 +3157,10 @@
         },
         {
           "id": "782a6e2b-5535-4507-a247-1a13aa604bc1",
-          "title": "Dependency Management",
+          "title": "Status Transitions and Dependency Management",
           "status": "pending",
           "level": "feature",
-          "description": "Robust handling of task dependencies with proper validation",
-          "source": "llm",
-          "children": [
-            {
-              "id": "e4cda52c-2124-4ce4-8a18-4210af010937",
-              "title": "Implement blockedBy dependency management",
-              "status": "pending",
-              "level": "task",
-              "description": "Full blockedBy support in add and update commands: single ID, comma-separated multiple IDs, clearing, and validation",
-              "acceptanceCriteria": [
-                "Accepts single blockedBy ID in add command",
-                "Supports comma-separated blockedBy values in update command",
-                "Clears blockedBy with empty string",
-                "Rejects nonexistent IDs, self-references, and cycles"
-              ],
-              "priority": "high",
-              "tags": [
-                "cmdAdd",
-                "cmdUpdate",
-                "blockedBy",
-                "validation"
-              ],
-              "source": "llm"
-            }
-          ]
-        },
-        {
-          "id": "d793e0f1-8da6-4373-8e54-e7f11a540f63",
-          "title": "Task Status Management",
-          "status": "pending",
-          "level": "feature",
-          "description": "Proper handling of task status transitions with validation",
+          "description": "Robust handling of task status transitions and blockedBy dependencies with proper validation, error messages, and edge case handling",
           "source": "llm",
           "children": [
             {
@@ -3261,21 +3184,27 @@
               "completedAt": "2026-02-05T02:03:55.707Z"
             },
             {
-              "id": "1faf07df-6109-4f56-b963-e9a89f5c4a60",
-              "title": "Harden status transition logic",
+              "id": "e4cda52c-2124-4ce4-8a18-4210af010937",
+              "title": "Harden status transitions and dependency management",
               "status": "pending",
               "level": "task",
-              "description": "Improve status transition validation, error messages, and edge case handling",
+              "description": "Improve status transition validation, error messages, and edge case handling. Implement full blockedBy support in add and update commands with proper validation.",
               "acceptanceCriteria": [
                 "Includes --force hint and allowed transitions in transition error messages",
                 "Allows same-status no-op without error",
                 "Does not require --force for non-status updates on completed items",
                 "Does not add timestamps for non-status updates",
-                "Accepts blocked as a valid status in validation"
+                "Accepts blocked as a valid status in validation",
+                "Accepts single blockedBy ID in add command",
+                "Supports comma-separated blockedBy values in update command",
+                "Clears blockedBy with empty string",
+                "Rejects nonexistent IDs, self-references, and cycles"
               ],
-              "priority": "medium",
+              "priority": "high",
               "tags": [
+                "cmdAdd",
                 "cmdUpdate",
+                "blockedBy",
                 "validateTransition",
                 "status"
               ],
@@ -3353,8 +3282,64 @@
               "completedAt": "2026-02-05T12:37:11.942Z"
             }
           ]
+        },
+        {
+          "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+          "title": "PRD Enhancement Features in Web UI",
+          "status": "pending",
+          "level": "feature",
+          "description": "Expose PRD management enhancement capabilities through the Rex web dashboard",
+          "source": "manual",
+          "children": [
+            {
+              "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+              "title": "Add validation and dependency visualization to web UI",
+              "status": "pending",
+              "level": "task",
+              "description": "Add ability to run rex validate from the web UI and display results inline (orphaned items, circular dependencies, stuck tasks). Render blockedBy relationships as a visual dependency graph showing blocking chains, rather than just listing IDs in the detail panel.",
+              "acceptanceCriteria": [
+                "Validate button triggers rex validate and displays results in the UI",
+                "Validation issues are categorized and actionable (click to navigate to problem item)",
+                "Dependency graph renders blockedBy relationships visually",
+                "Graph highlights circular dependencies and blocking chains",
+                "Blocked items show their full dependency path"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-ui",
+                "validation",
+                "dependency-graph",
+                "frontend"
+              ],
+              "source": "manual"
+            },
+            {
+              "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+              "title": "Add token usage analytics dashboard to web UI",
+              "status": "pending",
+              "level": "task",
+              "description": "Build a dashboard view showing token consumption across packages (rex, hench, sourcevision), grouped by command and time period, with budget status indicators and trend visualization.",
+              "acceptanceCriteria": [
+                "Dashboard shows token usage aggregated by package and command",
+                "Time period grouping (day/week/month) with chart visualization",
+                "Budget status indicators show warning/exceeded thresholds",
+                "Filterable by date range and package",
+                "Cost estimates displayed alongside token counts"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-ui",
+                "token-usage",
+                "analytics",
+                "frontend"
+              ],
+              "source": "manual"
+            }
+          ]
         }
-      ]
+      ],
+      "tags": [],
+      "startedAt": "2026-02-06T17:33:11.608Z"
     },
     {
       "id": "d47b4acc-646f-4ef8-8d43-7387fc0bb5ed",
