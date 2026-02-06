@@ -1431,6 +1431,8 @@
           "level": "feature",
           "description": "Robust configuration loading, validation, and project-level overrides",
           "source": "llm",
+          "startedAt": "2026-02-06T15:17:39.610Z",
+          "completedAt": "2026-02-06T15:17:39.610Z",
           "children": [
             {
               "id": "bb7791ec-b388-44cd-8b8f-91754bbe0b87",
@@ -1530,9 +1532,7 @@
               "startedAt": "2026-02-06T15:01:50.498Z",
               "completedAt": "2026-02-06T15:05:57.827Z"
             }
-          ],
-          "startedAt": "2026-02-06T15:17:39.610Z",
-          "completedAt": "2026-02-06T15:17:39.610Z"
+          ]
         },
         {
           "id": "09535ec7-03d8-458c-89c6-2af2eebe1689",
@@ -1581,7 +1581,7 @@
             {
               "id": "b3a51434-b5f2-48e7-b6bd-0657a8a370e5",
               "title": "Implement proposal review UI",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Proposal display formatting, item counting, approval input parsing, and quality/budget warning display",
               "acceptanceCriteria": [
@@ -1596,7 +1596,9 @@
                 "parseApprovalInput",
                 "formatQualityWarnings"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-06T15:30:12.636Z",
+              "completedAt": "2026-02-06T15:34:55.822Z"
             },
             {
               "id": "35c1313b-473c-41d8-aca2-40e06306a029",
