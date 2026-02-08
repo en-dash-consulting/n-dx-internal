@@ -28,20 +28,33 @@ import type { NotionClient, NotionAdapterConfig } from "../../../src/store/notio
 function describeStoreContract(
   name: string,
   factory: () => {
-    setup: () => Promise<{ store: PRDStore; cleanup: () => Promise<void> }>;
+    setup: () => Promise<{
+      store: PRDStore;
+      cleanup: () => Promise<void>;
+      /**
+       * Optional hook to verify that a removed item was archived (soft-deleted)
+       * rather than hard-deleted. Only adapters with archival semantics (e.g.
+       * NotionStore) provide this.
+       */
+      checkArchived?: (itemId: string) => Promise<boolean>;
+    }>;
     /** Whether the adapter preserves arbitrary unknown fields on documents/items. */
     supportsPassthrough?: boolean;
+    /** Whether the adapter archives removed items (soft-delete vs hard-delete). */
+    supportsArchival?: boolean;
   },
 ) {
   describe(`PRDStore contract: ${name}`, () => {
     let store: PRDStore;
     let cleanup: () => Promise<void>;
+    let checkArchived: ((itemId: string) => Promise<boolean>) | undefined;
 
     beforeEach(async () => {
       const ctx = factory();
       const result = await ctx.setup();
       store = result.store;
       cleanup = result.cleanup;
+      checkArchived = result.checkArchived;
     });
 
     afterEach(async () => {
@@ -357,6 +370,33 @@ function describeStoreContract(
       it("throws when item does not exist", async () => {
         await expect(store.removeItem("nonexistent-id")).rejects.toThrow();
       });
+
+      it.skipIf(factory().supportsArchival !== true)(
+        "archives removed items instead of hard-deleting",
+        async () => {
+          // Add an item, then remove it via saveDocument (dropping it from the tree)
+          await store.addItem({
+            id: "ct-archive",
+            title: "Will be archived",
+            status: "pending",
+            level: "epic",
+          });
+
+          // Save a document without the item — adapter should archive it
+          const doc = await store.loadDocument();
+          doc.items = [];
+          await store.saveDocument(doc);
+
+          // The item should no longer be retrievable via the store
+          const item = await store.getItem("ct-archive");
+          expect(item).toBeNull();
+
+          // But the adapter should have archived (soft-deleted) it
+          expect(checkArchived).toBeDefined();
+          const archived = await checkArchived!("ct-archive");
+          expect(archived).toBe(true);
+        },
+      );
     });
 
     // ---- Configuration ---------------------------------------------------
@@ -562,6 +602,7 @@ class ContractMockNotionClient implements NotionClient {
 
 describeStoreContract("NotionStore", () => ({
   supportsPassthrough: false,
+  supportsArchival: true,
   setup: async () => {
     const tmpDir = await mkdtemp(join(tmpdir(), "rex-contract-notion-"));
     const rexDir = join(tmpDir, ".rex");
@@ -590,6 +631,17 @@ describeStoreContract("NotionStore", () => ({
     return {
       store,
       cleanup: async () => rm(tmpDir, { recursive: true, force: true }),
+      /** Check if an item was archived by looking up its Notion page by PRD ID. */
+      checkArchived: async (itemId: string): Promise<boolean> => {
+        for (const page of mockClient.pages.values()) {
+          const prdId =
+            page.properties?.["PRD ID"]?.rich_text?.[0]?.text?.content;
+          if (prdId === itemId) {
+            return page.archived === true;
+          }
+        }
+        return false;
+      },
     };
   },
 }));
