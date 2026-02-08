@@ -15,6 +15,7 @@ packages/
   sourcevision/    # analysis engine
   rex/             # PRD + task tracker
   hench/           # autonomous agent
+ci.js              # CI pipeline (analysis + PRD health validation)
 cli.js             # n-dx entry point (orchestration + delegation)
 config.js          # unified config command (view/edit all package settings)
 web.js             # web dashboard orchestration (start/stop/status)
@@ -41,7 +42,10 @@ ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals
 ndx plan --accept [dir]   # ...then accept proposals into PRD
 ndx work [dir]            # hench run (pass --task=ID, --dry-run, etc.)
 ndx status [dir]          # rex status (pass --format=json)
+ndx usage [dir]           # token usage analytics (--format=json, --group=day|week|month)
+ndx sync [dir]            # sync local PRD with remote adapter (--push, --pull)
 ndx web [dir]             # start dashboard (--port=N, --background, stop, status)
+ndx ci [dir]              # run analysis pipeline and validate PRD health (--format=json)
 ndx config [key] [value]  # view/edit settings (--json, --help)
 ```
 

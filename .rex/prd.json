@@ -2248,10 +2248,12 @@
         {
           "id": "c6c06d43-c2d9-4da8-b68a-ecfaf946d305",
           "title": "Token Usage Tracking",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Comprehensive tracking and reporting of Claude API token consumption",
           "source": "llm",
+          "startedAt": "2026-02-08T16:20:01.865Z",
+          "completedAt": "2026-02-08T16:20:01.865Z",
           "children": [
             {
               "id": "553cef28-1f04-4870-9d1a-678dbed19668",
@@ -2320,7 +2322,7 @@
             {
               "id": "7514d08b-4b97-4eea-9108-8b10e06f81d5",
               "title": "Improve token usage parsing",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Enhance parsing of token usage from Claude API streaming responses",
               "acceptanceCriteria": [
@@ -2333,7 +2335,9 @@
               "tags": [
                 "parseStreamTokenUsage"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-08T16:15:28.019Z",
+              "completedAt": "2026-02-08T16:20:01.836Z"
             },
             {
               "id": "f8c7d2fe-52eb-4960-a728-43f60523f37e",
@@ -3023,7 +3027,7 @@
             {
               "id": "08356c3f-deb5-4131-a0ad-327522d2e3ab",
               "title": "Integrate ci.js into main orchestration flow",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Verify if ci.js should be documented separately or wired into cli.js as part of the main orchestration flow",
               "acceptanceCriteria": [
@@ -3036,7 +3040,9 @@
                 "orchestration",
                 "integration"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-08T16:20:01.973Z",
+              "completedAt": "2026-02-08T16:22:03.685Z"
             }
           ]
         }
