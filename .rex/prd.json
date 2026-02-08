@@ -2590,7 +2590,7 @@
         {
           "id": "9cb0e329-c261-4103-b544-b556d98861e8",
           "title": "Component Analysis Enhancement",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Advanced React component detection and analysis",
           "source": "llm",
@@ -2666,7 +2666,7 @@
             {
               "id": "80899a72-fc4a-4b25-aa82-69bf85b00797",
               "title": "Improve component and route analysis",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Enhance React component analysis including convention export detection, route pattern parsing, routes configuration parsing, and routes config file discovery.",
               "acceptanceCriteria": [
@@ -2707,9 +2707,13 @@
               "tags": [
                 "analyzeComponents"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-08T02:20:01.772Z",
+              "completedAt": "2026-02-08T02:25:00.780Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-08T02:25:00.829Z",
+          "completedAt": "2026-02-08T02:25:00.829Z"
         },
         {
           "id": "90236be2-2366-4464-bc68-0e8617f71144",
@@ -3164,6 +3168,8 @@
           "level": "feature",
           "description": "Robust handling of task status transitions and blockedBy dependencies with proper validation, error messages, and edge case handling",
           "source": "llm",
+          "startedAt": "2026-02-07T22:03:22.357Z",
+          "completedAt": "2026-02-07T22:03:22.357Z",
           "children": [
             {
               "id": "73cbf527-e71e-497f-b37c-6d4878e19630",
@@ -3213,9 +3219,7 @@
               "source": "llm",
               "startedAt": "2026-02-07T22:03:22.142Z"
             }
-          ],
-          "startedAt": "2026-02-07T22:03:22.357Z",
-          "completedAt": "2026-02-07T22:03:22.357Z"
+          ]
         },
         {
           "id": "f7e6483d-d731-4923-b934-bba8d70151f2",
