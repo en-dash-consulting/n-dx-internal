@@ -44,6 +44,15 @@ export const PRDDocumentSchema = z
   })
   .passthrough();
 
+const BudgetThresholdsSchema = z
+  .object({
+    tokens: z.number().int().nonnegative().optional(),
+    cost: z.number().nonnegative().optional(),
+    warnAt: z.number().min(0).max(100).optional(),
+    abort: z.boolean().optional(),
+  })
+  .strict();
+
 export const RexConfigSchema = z
   .object({
     schema: z.string(),
@@ -52,6 +61,8 @@ export const RexConfigSchema = z
     validate: z.string().optional(),
     test: z.string().optional(),
     sourcevision: z.string().optional(),
+    model: z.string().optional(),
+    budget: BudgetThresholdsSchema.optional(),
     future: z.record(z.unknown()).optional(),
   })
   .passthrough();
@@ -93,4 +104,17 @@ export function validateLogEntry(
     return { ok: true, data: result.data };
   }
   return { ok: false, errors: result.error };
+}
+
+/**
+ * Format Zod validation errors into clear, actionable messages.
+ *
+ * Each error includes the field path and what was expected, making it
+ * easy to pinpoint and fix the issue.
+ */
+export function formatValidationErrors(errors: ZodError): string[] {
+  return errors.issues.map((issue) => {
+    const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
+    return `${path}: ${issue.message}`;
+  });
 }

@@ -6,6 +6,7 @@ import {
   validateZones,
   validateComponents,
   validateModule,
+  formatValidationErrors,
 } from "../../../src/schema/validate.js";
 
 describe("validateManifest", () => {
@@ -503,5 +504,231 @@ describe("validateModule", () => {
   it("returns error for unknown module", () => {
     const result = validateModule("unknown", {});
     expect(result.ok).toBe(false);
+  });
+
+  it("dispatches inventory validation", () => {
+    const result = validateModule("inventory", {
+      files: [],
+      summary: {
+        totalFiles: 0,
+        totalLines: 0,
+        byLanguage: {},
+        byRole: {},
+        byCategory: {},
+      },
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("dispatches imports validation", () => {
+    const result = validateModule("imports", {
+      edges: [],
+      external: [],
+      summary: {
+        totalEdges: 0,
+        totalExternal: 0,
+        circularCount: 0,
+        circulars: [],
+        mostImported: [],
+        avgImportsPerFile: 0,
+      },
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("dispatches zones validation", () => {
+    const result = validateModule("zones", {
+      zones: [],
+      crossings: [],
+      unzoned: [],
+    });
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe("validateManifest edge cases", () => {
+  it("accepts manifest with module info", () => {
+    const result = validateManifest({
+      schemaVersion: "1.0.0",
+      toolVersion: "0.1.0",
+      analyzedAt: "2024-01-01T00:00:00Z",
+      targetPath: "/test",
+      modules: {
+        inventory: { status: "complete", startedAt: "2024-01-01T00:00:00Z", completedAt: "2024-01-01T00:00:01Z" },
+        imports: { status: "error", error: "Parse failure" },
+      },
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects manifest with invalid module status", () => {
+    const result = validateManifest({
+      schemaVersion: "1.0.0",
+      toolVersion: "0.1.0",
+      analyzedAt: "2024-01-01T00:00:00Z",
+      targetPath: "/test",
+      modules: {
+        inventory: { status: "invalid_status" },
+      },
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  it("accepts all valid module status values", () => {
+    const statuses = ["pending", "running", "complete", "error"];
+    for (const status of statuses) {
+      const result = validateManifest({
+        schemaVersion: "1.0.0",
+        toolVersion: "0.1.0",
+        analyzedAt: "2024-01-01T00:00:00Z",
+        targetPath: "/test",
+        modules: { test: { status } },
+      });
+      expect(result.ok).toBe(true);
+    }
+  });
+});
+
+describe("validateInventory edge cases", () => {
+  it("accepts all valid file roles", () => {
+    const roles = ["source", "test", "config", "docs", "generated", "asset", "build", "other"];
+    for (const role of roles) {
+      const result = validateInventory({
+        files: [{
+          path: "test.ts",
+          size: 0,
+          language: "TypeScript",
+          lineCount: 0,
+          hash: "abc",
+          role,
+          category: "root",
+        }],
+        summary: { totalFiles: 1, totalLines: 0, byLanguage: {}, byRole: {}, byCategory: {} },
+      });
+      expect(result.ok).toBe(true);
+    }
+  });
+
+  it("rejects negative lineCount", () => {
+    const result = validateInventory({
+      files: [{
+        path: "test.ts",
+        size: 0,
+        language: "TypeScript",
+        lineCount: -5,
+        hash: "abc",
+        role: "source",
+        category: "root",
+      }],
+      summary: { totalFiles: 0, totalLines: 0, byLanguage: {}, byRole: {}, byCategory: {} },
+    });
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe("validateZones edge cases", () => {
+  it("accepts zones with findings including severity and related", () => {
+    const result = validateZones({
+      zones: [],
+      crossings: [],
+      unzoned: [],
+      findings: [{
+        type: "anti-pattern",
+        pass: 1,
+        scope: "global",
+        text: "Circular dependency detected",
+        severity: "critical",
+        related: ["zone-a", "zone-b"],
+      }],
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects findings with invalid severity", () => {
+    const result = validateZones({
+      zones: [],
+      crossings: [],
+      unzoned: [],
+      findings: [{
+        type: "observation",
+        pass: 0,
+        scope: "global",
+        text: "Test",
+        severity: "high",
+      }],
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  it("accepts all valid severity values", () => {
+    const severities = ["info", "warning", "critical"];
+    for (const severity of severities) {
+      const result = validateZones({
+        zones: [],
+        crossings: [],
+        unzoned: [],
+        findings: [{
+          type: "observation",
+          pass: 0,
+          scope: "global",
+          text: "Test",
+          severity,
+        }],
+      });
+      expect(result.ok).toBe(true);
+    }
+  });
+});
+
+describe("formatValidationErrors", () => {
+  it("formats field-level errors with path", () => {
+    const result = validateManifest({ schemaVersion: "1.0.0" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const messages = formatValidationErrors(result.errors);
+      expect(messages.length).toBeGreaterThan(0);
+      // Should mention the missing field
+      expect(messages.some((m) => m.includes("toolVersion") || m.includes("targetPath"))).toBe(true);
+    }
+  });
+
+  it("formats nested field errors for invalid values", () => {
+    const result = validateInventory({
+      files: [{
+        path: "test.ts",
+        size: -1,
+        language: "TypeScript",
+        lineCount: 0,
+        hash: "abc",
+        role: "source",
+        category: "root",
+      }],
+      summary: { totalFiles: 0, totalLines: 0, byLanguage: {}, byRole: {}, byCategory: {} },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const messages = formatValidationErrors(result.errors);
+      expect(messages.some((m) => m.includes("size"))).toBe(true);
+    }
+  });
+
+  it("provides actionable messages for invalid enum values", () => {
+    const result = validateImports({
+      edges: [{ from: "a.ts", to: "b.ts", type: "invalid_type", symbols: [] }],
+      external: [],
+      summary: {
+        totalEdges: 0,
+        totalExternal: 0,
+        circularCount: 0,
+        circulars: [],
+        mostImported: [],
+        avgImportsPerFile: 0,
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const messages = formatValidationErrors(result.errors);
+      expect(messages.some((m) => m.includes("type"))).toBe(true);
+    }
   });
 });

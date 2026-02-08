@@ -25,6 +25,7 @@ export {
   validateDocument,
   validateConfig,
   validateLogEntry,
+  formatValidationErrors,
 } from "./validate.js";
 
 export type { ValidationResult } from "./validate.js";

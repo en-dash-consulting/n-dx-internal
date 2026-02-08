@@ -12,5 +12,6 @@ export {
   validateZones,
   validateComponents,
   validateModule,
+  formatValidationErrors,
 } from "./validate.js";
 export type { ValidationResult } from "./validate.js";

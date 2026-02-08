@@ -9,11 +9,12 @@ import type { PRDStore } from "../../src/store/index.js";
 import type { PRDItem, PRDDocument } from "../../src/schema/index.js";
 
 describe("Store roundtrip integration", () => {
+  let tmpDir: string;
   let rexDir: string;
   let store: PRDStore;
 
   beforeEach(async () => {
-    const tmpDir = await mkdtemp(join(tmpdir(), "rex-integ-"));
+    tmpDir = await mkdtemp(join(tmpdir(), "rex-integ-"));
     rexDir = join(tmpDir, ".rex");
     await ensureRexDir(rexDir);
     store = createStore("file", rexDir);
@@ -34,7 +35,7 @@ describe("Store roundtrip integration", () => {
   });
 
   afterEach(async () => {
-    await rm(rexDir, { recursive: true, force: true });
+    await rm(tmpDir, { recursive: true, force: true });
   });
 
   it("full lifecycle: add items, read back, update, verify", async () => {
@@ -149,5 +150,109 @@ describe("Store roundtrip integration", () => {
     expect(last2.length).toBe(2);
     expect(last2[0].event).toBe("item_added");
     expect(last2[1].event).toBe("session_end");
+  });
+
+  it("log entries are returned in chronological order", async () => {
+    const t1 = "2024-01-01T00:00:00Z";
+    const t2 = "2024-01-01T01:00:00Z";
+    const t3 = "2024-01-01T02:00:00Z";
+
+    await store.appendLog({ timestamp: t1, event: "first" });
+    await store.appendLog({ timestamp: t2, event: "second" });
+    await store.appendLog({ timestamp: t3, event: "third" });
+
+    const entries = await store.readLog();
+    expect(entries[0].event).toBe("first");
+    expect(entries[1].event).toBe("second");
+    expect(entries[2].event).toBe("third");
+    expect(entries[0].timestamp).toBe(t1);
+    expect(entries[2].timestamp).toBe(t3);
+  });
+
+  it("log validates entries before persisting", async () => {
+    await expect(
+      store.appendLog({ event: "missing_timestamp" } as never),
+    ).rejects.toThrow("Invalid log entry");
+  });
+
+  it("document save validates before persisting", async () => {
+    const badDoc = {
+      schema: SCHEMA_VERSION,
+      title: "Bad",
+      items: [
+        {
+          id: "t1",
+          title: "Task",
+          status: "bad_status",
+          level: "task",
+        },
+      ],
+    } as unknown as PRDDocument;
+    await expect(store.saveDocument(badDoc)).rejects.toThrow("Invalid document");
+  });
+
+  it("loads and round-trips workflow content", async () => {
+    const workflow = await store.loadWorkflow();
+    expect(workflow).toBe("# Test Workflow");
+
+    const updatedWorkflow = "# Updated Workflow\n\n1. Step one\n2. Step two\n";
+    await store.saveWorkflow(updatedWorkflow);
+
+    const reloaded = await store.loadWorkflow();
+    expect(reloaded).toBe(updatedWorkflow);
+  });
+
+  it("loads and round-trips config", async () => {
+    const config = await store.loadConfig();
+    expect(config.schema).toBe(SCHEMA_VERSION);
+    expect(config.project).toBe("test");
+    expect(config.adapter).toBe("file");
+  });
+
+  it("loads config with local file overrides", async () => {
+    // Write .n-dx.json with rex overrides
+    await writeFile(
+      join(tmpDir, ".n-dx.json"),
+      JSON.stringify({
+        rex: {
+          project: "overridden-project",
+          validate: "pnpm build && pnpm typecheck",
+          test: "pnpm test",
+        },
+      }, null, 2) + "\n",
+    );
+
+    const config = await store.loadConfig();
+    expect(config.project).toBe("overridden-project");
+    expect(config.validate).toBe("pnpm build && pnpm typecheck");
+    expect(config.test).toBe("pnpm test");
+    // Non-overridden values remain
+    expect(config.adapter).toBe("file");
+  });
+
+  it("reads empty log when no log file exists", async () => {
+    // Create a fresh store without the log file
+    const tmpDir2 = await mkdtemp(join(tmpdir(), "rex-integ-nolog-"));
+    const rexDir2 = join(tmpDir2, ".rex");
+    await ensureRexDir(rexDir2);
+    const store2 = createStore("file", rexDir2);
+
+    await writeFile(join(rexDir2, "prd.json"), toCanonicalJSON({
+      schema: SCHEMA_VERSION,
+      title: "Test",
+      items: [],
+    }), "utf-8");
+
+    const entries = await store2.readLog();
+    expect(entries).toEqual([]);
+
+    await rm(tmpDir2, { recursive: true, force: true });
+  });
+
+  it("reports file adapter capabilities", () => {
+    const caps = store.capabilities();
+    expect(caps.adapter).toBe("file");
+    expect(caps.supportsTransactions).toBe(false);
+    expect(caps.supportsWatch).toBe(false);
   });
 });

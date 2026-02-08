@@ -31,6 +31,7 @@ export {
   RunRecordSchema,
   validateConfig,
   validateRunRecord,
+  formatValidationErrors,
 } from "./validate.js";
 
 export type { ValidationResult } from "./validate.js";

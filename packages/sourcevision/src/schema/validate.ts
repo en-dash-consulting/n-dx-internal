@@ -300,3 +300,16 @@ export function validateModule(
       };
   }
 }
+
+/**
+ * Format Zod validation errors into clear, actionable messages.
+ *
+ * Each error includes the field path and what was expected, making it
+ * easy to pinpoint and fix the issue.
+ */
+export function formatValidationErrors(errors: z.ZodError): string[] {
+  return errors.issues.map((issue) => {
+    const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
+    return `${path}: ${issue.message}`;
+  });
+}

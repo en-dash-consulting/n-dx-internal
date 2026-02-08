@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   validateConfig,
   validateRunRecord,
+  formatValidationErrors,
   HenchConfigSchema,
   RunRecordSchema,
 } from "../../../src/schema/validate.js";
@@ -367,5 +368,69 @@ describe("validateRunRecord", () => {
     };
     const result = validateRunRecord(run);
     expect(result.ok).toBe(false);
+  });
+
+  it("accepts all valid run status values", () => {
+    const statuses = ["running", "completed", "failed", "timeout", "budget_exceeded", "error_transient"];
+    for (const status of statuses) {
+      const run = { ...validRun, status };
+      const result = validateRunRecord(run);
+      expect(result.ok).toBe(true);
+    }
+  });
+
+  it("accepts legacy run without finishedAt (backward compat)", () => {
+    const { finishedAt, ...legacyRun } = { ...validRun, finishedAt: undefined };
+    const result = validateRunRecord(legacyRun);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.finishedAt).toBeUndefined();
+    }
+  });
+});
+
+describe("formatValidationErrors", () => {
+  it("formats missing field errors with path", () => {
+    const result = validateConfig({ schema: "hench/v1" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const messages = formatValidationErrors(result.errors);
+      expect(messages.length).toBeGreaterThan(0);
+      // Should mention the missing field name
+      expect(messages.some((m) => m.includes("model") || m.includes("maxTurns"))).toBe(true);
+    }
+  });
+
+  it("formats invalid value errors with field path", () => {
+    const run = {
+      id: "test",
+      taskId: "task-1",
+      taskTitle: "Test",
+      startedAt: "2025-01-01T00:00:00Z",
+      status: "bad_status",
+      turns: 5,
+      tokenUsage: { input: 1000, output: 500 },
+      toolCalls: [],
+      model: "sonnet",
+    };
+    const result = validateRunRecord(run);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const messages = formatValidationErrors(result.errors);
+      expect(messages.some((m) => m.includes("status"))).toBe(true);
+    }
+  });
+
+  it("provides actionable messages for nested validation errors", () => {
+    const config = {
+      ...DEFAULT_HENCH_CONFIG(),
+      guard: { blockedPaths: "not-an-array", allowedCommands: [], commandTimeout: 30000, maxFileSize: 1048576 },
+    };
+    const result = validateConfig(config);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const messages = formatValidationErrors(result.errors);
+      expect(messages.some((m) => m.includes("guard") && m.includes("blockedPaths"))).toBe(true);
+    }
   });
 });
