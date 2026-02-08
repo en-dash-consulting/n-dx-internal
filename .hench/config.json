@@ -1,6 +1,6 @@
 {
   "schema": "hench/v1",
-  "provider": "api",
+  "provider": "cli",
   "model": "sonnet",
   "maxTurns": 50,
   "maxTokens": 8192,
