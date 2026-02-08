@@ -3637,6 +3637,8 @@
           "level": "feature",
           "description": "Ensure all store implementations meet the required contract",
           "source": "llm",
+          "startedAt": "2026-02-08T15:28:49.613Z",
+          "completedAt": "2026-02-08T15:28:49.613Z",
           "children": [
             {
               "id": "c2a3ad4a-1a4a-4467-a979-e067f3dc1c6b",
@@ -3686,9 +3688,7 @@
               "startedAt": "2026-02-08T15:21:00.593Z",
               "completedAt": "2026-02-08T15:28:49.565Z"
             }
-          ],
-          "startedAt": "2026-02-08T15:28:49.613Z",
-          "completedAt": "2026-02-08T15:28:49.613Z"
+          ]
         },
         {
           "id": "ddfd2e07-e466-4a6c-bb66-daac71343c66",
@@ -4641,17 +4641,19 @@
     {
       "id": "f8fc3374-4926-43e7-be20-fb01dc821af9",
       "title": "API Key Authentication Support",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "66f9d899-eb90-448d-860f-02ba401b4de1",
           "title": "Direct Claude API Integration",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Allow rex, hench, and sourcevision to authenticate with Claude API using API keys instead of requiring Claude Code CLI",
           "source": "smart-add",
+          "startedAt": "2026-02-08T15:36:41.049Z",
+          "completedAt": "2026-02-08T15:36:41.049Z",
           "children": [
             {
               "id": "f0d8a0de-4f9b-4d01-b83f-31178cc8384f",
@@ -4761,7 +4763,7 @@
             {
               "id": "b6515a61-9f9c-4cd5-8bd0-4c433d01e405",
               "title": "Add authentication method detection and validation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement logic to automatically detect available authentication methods and validate configuration",
               "acceptanceCriteria": [
@@ -4775,11 +4777,15 @@
                 "validation",
                 "ux"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-08T15:29:45.929Z",
+              "completedAt": "2026-02-08T15:36:41.001Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-08T15:36:41.066Z",
+      "completedAt": "2026-02-08T15:36:41.066Z"
     }
   ]
 }
