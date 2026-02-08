@@ -2223,7 +2223,7 @@
             {
               "id": "9a6d5e8e-c1c7-46ff-9d6f-976b8dbee8b9",
               "title": "Improve project context reading",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Better processing of project documentation files",
               "acceptanceCriteria": [
@@ -2240,7 +2240,8 @@
                 "context",
                 "analysis"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-08T13:51:39.581Z"
             }
           ]
         },
@@ -2594,6 +2595,8 @@
           "level": "feature",
           "description": "Advanced React component detection and analysis",
           "source": "llm",
+          "startedAt": "2026-02-08T02:25:00.829Z",
+          "completedAt": "2026-02-08T02:25:00.829Z",
           "children": [
             {
               "id": "4c205b80-c5d2-48e9-96ea-960312de0f58",
@@ -2711,9 +2714,7 @@
               "startedAt": "2026-02-08T02:20:01.772Z",
               "completedAt": "2026-02-08T02:25:00.780Z"
             }
-          ],
-          "startedAt": "2026-02-08T02:25:00.829Z",
-          "completedAt": "2026-02-08T02:25:00.829Z"
+          ]
         },
         {
           "id": "90236be2-2366-4464-bc68-0e8617f71144",
@@ -2834,10 +2835,12 @@
         {
           "id": "97819b45-d93d-41de-98b9-330d3bf28832",
           "title": "Next Steps Analysis Enhancement",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Improve prioritization and grouping of architectural findings and recommendations",
           "source": "llm",
+          "startedAt": "2026-02-08T02:28:41.182Z",
+          "completedAt": "2026-02-08T02:28:41.182Z",
           "children": [
             {
               "id": "125ede5e-0e5b-446e-b237-b0efcd527562",
@@ -2863,7 +2866,7 @@
             {
               "id": "e6b015e9-7116-4a58-aa03-bbf97c0b0ad4",
               "title": "Improve findings grouping, sorting, and presentation",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Enhance grouping logic to organize findings by scope and type, with priority-based sorting and clean presentation.",
               "acceptanceCriteria": [
@@ -2878,7 +2881,8 @@
               "tags": [
                 "deriveNextSteps"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-08T02:25:52.520Z"
             },
             {
               "id": "ea49bd62-1aa3-4139-b549-90078dcc4590",
@@ -3128,15 +3132,17 @@
         {
           "id": "fb8d363f-e8c3-495a-8cb9-2ac680525b3e",
           "title": "Schema Validation and Store Operations",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Robust schema validation with migration support, combined with reliable store operations for configuration and workflow persistence",
           "source": "llm",
+          "startedAt": "2026-02-08T14:43:56.889Z",
+          "completedAt": "2026-02-08T14:43:56.889Z",
           "children": [
             {
               "id": "1cc66bdf-4559-406e-9f7a-2bb1ecb5f43a",
               "title": "Implement schema validation and core store operations",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Comprehensive schema validation for all data structures with backwards compatibility for legacy formats, combined with core store operations for configuration and workflow management. Validation feeds into storage — the store validates what it persists, and migration support handles legacy formats on load.",
               "acceptanceCriteria": [
@@ -3157,7 +3163,9 @@
                 "FileStore",
                 "PRDStore"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-08T14:33:10.376Z",
+              "completedAt": "2026-02-08T14:43:56.842Z"
             }
           ]
         },
@@ -3386,7 +3394,7 @@
             {
               "id": "afaa20c0-b9db-440e-9374-773e37651b4f",
               "title": "Map PRD items to Notion pages",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Convert PRD items to Notion page properties with proper field mapping",
               "acceptanceCriteria": [
@@ -3409,12 +3417,14 @@
               "tags": [
                 "mapItemToNotion"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-08T15:03:56.893Z",
+              "completedAt": "2026-02-08T15:06:37.651Z"
             },
             {
               "id": "344fb42e-0407-41ed-a8cb-9ffd1c82fee7",
               "title": "Map Notion pages to PRD items",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Convert Notion pages back to PRD item structure",
               "acceptanceCriteria": [
@@ -3448,7 +3458,9 @@
               "tags": [
                 "mapNotionToItem"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-08T14:59:03.793Z",
+              "completedAt": "2026-02-08T15:03:26.123Z"
             },
             {
               "id": "6bde7f91-149b-4487-b734-78f032ad061e",
@@ -3537,7 +3549,7 @@
             {
               "id": "714d8f4d-f3b7-4bcb-b9dc-cb542c286006",
               "title": "Improve Notion page management",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Enhance Notion page creation, updates, and management",
               "acceptanceCriteria": [
@@ -3553,7 +3565,9 @@
               "tags": [
                 "NotionStore"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-08T14:44:44.919Z",
+              "completedAt": "2026-02-08T14:59:03.685Z"
             }
           ]
         },
