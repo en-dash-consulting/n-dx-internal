@@ -18,6 +18,8 @@ import type { PRDItem, PRDDocument } from "../../../src/schema/index.js";
 import { SCHEMA_VERSION } from "../../../src/schema/index.js";
 import { toCanonicalJSON } from "../../../src/core/canonical.js";
 import { FileStore, ensureRexDir } from "../../../src/store/file-adapter.js";
+import { NotionStore, ensureNotionRexDir } from "../../../src/store/notion-adapter.js";
+import type { NotionClient, NotionAdapterConfig } from "../../../src/store/notion-client.js";
 
 // ---------------------------------------------------------------------------
 // Reusable contract test suite
@@ -27,6 +29,8 @@ function describeStoreContract(
   name: string,
   factory: () => {
     setup: () => Promise<{ store: PRDStore; cleanup: () => Promise<void> }>;
+    /** Whether the adapter preserves arbitrary unknown fields on documents/items. */
+    supportsPassthrough?: boolean;
   },
 ) {
   describe(`PRDStore contract: ${name}`, () => {
@@ -205,30 +209,35 @@ function describeStoreContract(
         expect(item.level).toBe("epic");
       });
 
-      it("round-trips passthrough fields on document and items", async () => {
-        const doc: PRDDocument = {
-          schema: SCHEMA_VERSION,
-          title: "Extended",
-          items: [
-            {
-              id: "ct-ext",
-              title: "Extended Item",
-              status: "pending",
-              level: "epic",
-              customMeta: { nested: true, count: 42 },
-            } as PRDItem,
-          ],
-          projectMeta: "preserved",
-        } as PRDDocument;
-        await store.saveDocument(doc);
+      // Passthrough fields are only preserved by adapters that store raw JSON
+      // (e.g. FileStore). Remote adapters like Notion only persist known properties.
+      it.skipIf(factory().supportsPassthrough === false)(
+        "round-trips passthrough fields on document and items",
+        async () => {
+          const doc: PRDDocument = {
+            schema: SCHEMA_VERSION,
+            title: "Extended",
+            items: [
+              {
+                id: "ct-ext",
+                title: "Extended Item",
+                status: "pending",
+                level: "epic",
+                customMeta: { nested: true, count: 42 },
+              } as PRDItem,
+            ],
+            projectMeta: "preserved",
+          } as PRDDocument;
+          await store.saveDocument(doc);
 
-        const reloaded = await store.loadDocument();
-        expect((reloaded as Record<string, unknown>).projectMeta).toBe("preserved");
-        expect((reloaded.items[0] as Record<string, unknown>).customMeta).toEqual({
-          nested: true,
-          count: 42,
-        });
-      });
+          const reloaded = await store.loadDocument();
+          expect((reloaded as Record<string, unknown>).projectMeta).toBe("preserved");
+          expect((reloaded.items[0] as Record<string, unknown>).customMeta).toEqual({
+            nested: true,
+            count: 42,
+          });
+        },
+      );
 
       it("saveDocument rejects an invalid document", async () => {
         const invalid = { schema: SCHEMA_VERSION, title: "Bad" } as unknown as PRDDocument;
@@ -447,6 +456,7 @@ function describeStoreContract(
 // ---------------------------------------------------------------------------
 
 describeStoreContract("FileStore", () => ({
+  supportsPassthrough: true,
   setup: async () => {
     const tmpDir = await mkdtemp(join(tmpdir(), "rex-contract-"));
     const rexDir = join(tmpDir, ".rex");
@@ -472,6 +482,111 @@ describeStoreContract("FileStore", () => ({
     await writeFile(join(rexDir, "workflow.md"), "# Workflow", "utf-8");
 
     const store = new FileStore(rexDir);
+    return {
+      store,
+      cleanup: async () => rm(tmpDir, { recursive: true, force: true }),
+    };
+  },
+}));
+
+// ---------------------------------------------------------------------------
+// Run the contract against the NotionStore adapter
+// ---------------------------------------------------------------------------
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * In-memory mock Notion client for contract tests.
+ * Mirrors the mock in notion-adapter.test.ts but kept local so the
+ * contract suite stays self-contained.
+ */
+class ContractMockNotionClient implements NotionClient {
+  pages: Map<string, any> = new Map();
+  blocks: Map<string, any[]> = new Map();
+  database: any = { id: "db-contract", properties: {} };
+  private nextId = 1;
+
+  async getDatabase(_databaseId: string): Promise<any> {
+    return this.database;
+  }
+
+  async queryDatabase(_databaseId: string): Promise<any[]> {
+    return [...this.pages.values()].filter((p) => !p.archived);
+  }
+
+  async getPage(pageId: string): Promise<any> {
+    const page = this.pages.get(pageId);
+    if (!page) throw new Error(`Page not found: ${pageId}`);
+    return page;
+  }
+
+  async createPage(params: {
+    parent: { database_id?: string; page_id?: string };
+    properties: Record<string, any>;
+    children?: any[];
+  }): Promise<any> {
+    const id = `notion-page-${this.nextId++}`;
+    const page = {
+      id,
+      parent: params.parent,
+      properties: params.properties,
+      archived: false,
+    };
+    this.pages.set(id, page);
+    if (params.children) {
+      this.blocks.set(id, params.children);
+    }
+    return page;
+  }
+
+  async updatePage(
+    pageId: string,
+    properties: Record<string, any>,
+  ): Promise<any> {
+    const page = this.pages.get(pageId);
+    if (!page) throw new Error(`Page not found: ${pageId}`);
+    page.properties = { ...page.properties, ...properties };
+    return page;
+  }
+
+  async archivePage(pageId: string): Promise<void> {
+    const page = this.pages.get(pageId);
+    if (page) page.archived = true;
+  }
+
+  async getBlockChildren(pageId: string): Promise<any[]> {
+    return this.blocks.get(pageId) ?? [];
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+describeStoreContract("NotionStore", () => ({
+  supportsPassthrough: false,
+  setup: async () => {
+    const tmpDir = await mkdtemp(join(tmpdir(), "rex-contract-notion-"));
+    const rexDir = join(tmpDir, ".rex");
+    await ensureNotionRexDir(rexDir);
+
+    // Seed local files (config, log, workflow — NotionStore needs these)
+    await writeFile(
+      join(rexDir, "config.json"),
+      toCanonicalJSON({
+        schema: SCHEMA_VERSION,
+        project: "contract-test",
+        adapter: "notion",
+      }),
+      "utf-8",
+    );
+    await writeFile(join(rexDir, "execution-log.jsonl"), "", "utf-8");
+    await writeFile(join(rexDir, "workflow.md"), "# Workflow", "utf-8");
+
+    const adapterConfig: NotionAdapterConfig = {
+      token: "secret_contract_test",
+      databaseId: "db-contract",
+    };
+    const mockClient = new ContractMockNotionClient();
+    const store = new NotionStore(rexDir, mockClient, adapterConfig);
+
     return {
       store,
       cleanup: async () => rm(tmpDir, { recursive: true, force: true }),

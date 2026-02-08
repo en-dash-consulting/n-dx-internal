@@ -43,6 +43,10 @@ export interface NotionPageProperties {
   Tags?: { multi_select: Array<{ name: string }> };
   Source?: { rich_text: NotionRichText[] };
   "Blocked By"?: { rich_text: NotionRichText[] };
+  /** ISO 8601 timestamp of when work started. Stored as rich_text. */
+  "Started At"?: { rich_text: NotionRichText[] };
+  /** ISO 8601 timestamp of when item was completed. Stored as rich_text. */
+  "Completed At"?: { rich_text: NotionRichText[] };
 }
 
 // ---------------------------------------------------------------------------
@@ -156,6 +160,8 @@ export const DATABASE_SCHEMA: Record<string, NotionPropertySchema> = {
   Tags: { type: "multi_select" },
   Source: { type: "rich_text" },
   "Blocked By": { type: "rich_text" },
+  "Started At": { type: "rich_text" },
+  "Completed At": { type: "rich_text" },
 };
 
 export interface NotionBlock {
@@ -260,6 +266,18 @@ export function mapItemToNotion(
   if (item.blockedBy && item.blockedBy.length > 0) {
     properties["Blocked By"] = {
       rich_text: [{ text: { content: item.blockedBy.join(", ") } }],
+    };
+  }
+
+  if (item.startedAt) {
+    properties["Started At"] = {
+      rich_text: [{ text: { content: item.startedAt } }],
+    };
+  }
+
+  if (item.completedAt) {
+    properties["Completed At"] = {
+      rich_text: [{ text: { content: item.completedAt } }],
     };
   }
 
@@ -395,6 +413,22 @@ export function mapNotionToItem(
       .split(",")
       .map((s: string) => s.trim())
       .filter((s: string) => s.length > 0);
+  }
+
+  // Started At
+  const startedAtProp =
+    props["Started At"]?.rich_text?.[0]?.plain_text ??
+    props["Started At"]?.rich_text?.[0]?.text?.content;
+  if (startedAtProp) {
+    item.startedAt = startedAtProp;
+  }
+
+  // Completed At
+  const completedAtProp =
+    props["Completed At"]?.rich_text?.[0]?.plain_text ??
+    props["Completed At"]?.rich_text?.[0]?.text?.content;
+  if (completedAtProp) {
+    item.completedAt = completedAtProp;
   }
 
   return item;

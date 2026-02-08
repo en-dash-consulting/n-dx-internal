@@ -104,6 +104,13 @@ export class NotionStore implements PRDStore {
     }
     this.invalidateCache();
 
+    // Persist document title to config (Notion stores items, not the doc wrapper)
+    const config = await this.loadConfig();
+    if (config.project !== doc.title) {
+      config.project = doc.title;
+      await this.saveConfig(config);
+    }
+
     // Build the ID map of existing items (PRD ID → Notion page ID)
     const existingPages = await this.client.queryDatabase(this.databaseId);
     const remoteIdMap = new Map<string, string>();
@@ -161,15 +168,19 @@ export class NotionStore implements PRDStore {
 
   async addItem(item: PRDItem, parentId?: string): Promise<void> {
     const idMap = await this.buildIdMap();
-    const parent = resolveParentPage(item, this.databaseId, idMap, parentId);
-    const { properties, children } = mapItemToNotion(item);
 
+    // Validate that the parent exists when parentId is provided
+    if (parentId && !idMap.has(parentId)) {
+      throw new Error(`Parent "${parentId}" not found`);
+    }
+
+    const parent = resolveParentPage(item, this.databaseId, idMap, parentId);
     const stamped = stampModified(item);
-    const stampedProps = mapItemToNotion(stamped).properties;
+    const { properties, children } = mapItemToNotion(stamped);
 
     await this.client.createPage({
       parent,
-      properties: stampedProps,
+      properties,
       children,
     });
     this.invalidateCache();

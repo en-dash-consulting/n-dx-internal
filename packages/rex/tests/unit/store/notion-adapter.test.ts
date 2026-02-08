@@ -448,6 +448,101 @@ describe("NotionStore", () => {
       // Feature should have epic as parent
       expect(featurePage!.parent.page_id).toBe("n-e1");
     });
+
+    it("throws when parentId does not exist", async () => {
+      const task: PRDItem = {
+        id: "t1",
+        title: "Orphan Task",
+        status: "pending",
+        level: "task",
+      };
+
+      await expect(store.addItem(task, "nonexistent-parent")).rejects.toThrow(
+        'Parent "nonexistent-parent" not found',
+      );
+    });
+
+    it("maps all item fields to Notion properties", async () => {
+      const item: PRDItem = {
+        id: "t1",
+        title: "Full Task",
+        status: "in_progress",
+        level: "task",
+        description: "Do the thing",
+        priority: "high",
+        tags: ["api", "auth"],
+        source: "hench",
+        blockedBy: ["t0"],
+      };
+
+      await store.addItem(item);
+
+      const pages = await mockClient.queryDatabase("db-test");
+      expect(pages).toHaveLength(1);
+      const props = pages[0].properties;
+      expect(props.Name.title[0].text.content).toBe("Full Task");
+      expect(props.Status.status.name).toBe("In progress");
+      expect(props.Level.select.name).toBe("task");
+      expect(props["PRD ID"].rich_text[0].text.content).toBe("t1");
+      expect(props.Description.rich_text[0].text.content).toBe("Do the thing");
+      expect(props.Priority.select.name).toBe("High");
+      expect(props.Tags.multi_select).toEqual([{ name: "api" }, { name: "auth" }]);
+      expect(props.Source.rich_text[0].text.content).toBe("hench");
+      expect(props["Blocked By"].rich_text[0].text.content).toBe("t0");
+    });
+
+    it("includes body blocks for description and acceptance criteria", async () => {
+      const item: PRDItem = {
+        id: "t1",
+        title: "Task with AC",
+        status: "pending",
+        level: "task",
+        description: "Task description",
+        acceptanceCriteria: ["Tests pass", "Code reviewed"],
+      };
+
+      await store.addItem(item);
+
+      const pages = await mockClient.queryDatabase("db-test");
+      const pageId = pages[0].id;
+      const blocks = mockClient.blocks.get(pageId);
+      expect(blocks).toBeDefined();
+      expect(blocks!.length).toBeGreaterThan(0);
+
+      // Should have description paragraph
+      const descBlock = blocks!.find(
+        (b: any) => b.type === "paragraph",
+      );
+      expect(descBlock).toBeDefined();
+
+      // Should have acceptance criteria heading + to_do items
+      const headingBlock = blocks!.find(
+        (b: any) => b.type === "heading_2",
+      );
+      expect(headingBlock).toBeDefined();
+
+      const todoBlocks = blocks!.filter((b: any) => b.type === "to_do");
+      expect(todoBlocks).toHaveLength(2);
+    });
+
+    it("invalidates status group cache after add", async () => {
+      // Prime the cache
+      await store.loadDocument();
+
+      const item: PRDItem = {
+        id: "e1",
+        title: "Epic",
+        status: "pending",
+        level: "epic",
+      };
+      await store.addItem(item);
+
+      // The next loadDocument should re-fetch the database (cache invalidated)
+      const spy = vi.spyOn(mockClient, "getDatabase");
+      await store.loadDocument();
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
   });
 
   describe("updateItem", () => {
@@ -464,6 +559,65 @@ describe("NotionStore", () => {
 
       const page = mockClient.pages.get("n-t1");
       expect(page!.properties.Status.status.name).toBe("Done");
+    });
+
+    it("merges multiple fields in a single update", async () => {
+      mockClient.seedPage({
+        id: "n-t1",
+        prdId: "t1",
+        title: "Task",
+        level: "task",
+        status: "Not started",
+      });
+
+      await store.updateItem("t1", {
+        title: "Updated Task",
+        status: "in_progress",
+        priority: "high",
+      });
+
+      const page = mockClient.pages.get("n-t1");
+      expect(page!.properties.Name.title[0].text.content).toBe("Updated Task");
+      expect(page!.properties.Status.status.name).toBe("In progress");
+      expect(page!.properties.Priority.select.name).toBe("High");
+    });
+
+    it("preserves unchanged fields during update", async () => {
+      mockClient.seedPage({
+        id: "n-t1",
+        prdId: "t1",
+        title: "Task",
+        level: "task",
+        status: "Not started",
+        priority: "High",
+        tags: ["api"],
+      });
+
+      await store.updateItem("t1", { status: "completed" });
+
+      const page = mockClient.pages.get("n-t1");
+      expect(page!.properties.Status.status.name).toBe("Done");
+      // Priority should still be set (merged from existing item)
+      expect(page!.properties.Priority.select.name).toBe("High");
+    });
+
+    it("invalidates status group cache after update", async () => {
+      mockClient.seedPage({
+        id: "n-t1",
+        prdId: "t1",
+        title: "Task",
+        level: "task",
+      });
+
+      // Prime the cache
+      await store.loadDocument();
+
+      await store.updateItem("t1", { status: "completed" });
+
+      const spy = vi.spyOn(mockClient, "getDatabase");
+      await store.loadDocument();
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
     });
 
     it("throws for unknown id", async () => {
@@ -486,6 +640,60 @@ describe("NotionStore", () => {
 
       const page = mockClient.pages.get("n-t1");
       expect(page!.archived).toBe(true);
+    });
+
+    it("removed item is no longer returned by getItem", async () => {
+      mockClient.seedPage({
+        id: "n-t1",
+        prdId: "t1",
+        title: "Task",
+        level: "task",
+      });
+
+      await store.removeItem("t1");
+
+      const item = await store.getItem("t1");
+      expect(item).toBeNull();
+    });
+
+    it("removed item is excluded from loadDocument", async () => {
+      mockClient.seedPage({
+        id: "n-e1",
+        prdId: "e1",
+        title: "Epic",
+        level: "epic",
+      });
+      mockClient.seedPage({
+        id: "n-t1",
+        prdId: "t1",
+        title: "Task",
+        level: "task",
+      });
+
+      await store.removeItem("t1");
+
+      const doc = await store.loadDocument();
+      expect(doc.items).toHaveLength(1);
+      expect(doc.items[0].id).toBe("e1");
+    });
+
+    it("invalidates status group cache after remove", async () => {
+      mockClient.seedPage({
+        id: "n-t1",
+        prdId: "t1",
+        title: "Task",
+        level: "task",
+      });
+
+      // Prime the cache
+      await store.loadDocument();
+
+      await store.removeItem("t1");
+
+      const spy = vi.spyOn(mockClient, "getDatabase");
+      await store.loadDocument();
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
     });
 
     it("throws for unknown id", async () => {

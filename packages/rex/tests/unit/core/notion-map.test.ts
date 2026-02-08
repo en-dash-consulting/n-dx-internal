@@ -222,6 +222,8 @@ describe("mapItemToNotion", () => {
       source: "manual",
       blockedBy: ["t0"],
       acceptanceCriteria: ["Tests pass", "Code reviewed"],
+      startedAt: "2024-06-01T00:00:00Z",
+      completedAt: "2024-06-02T12:00:00Z",
     });
     const result = mapItemToNotion(item);
 
@@ -238,9 +240,18 @@ describe("mapItemToNotion", () => {
     ]);
     expect(result.properties.Source!.rich_text[0].text.content).toBe("manual");
     expect(result.properties["Blocked By"]!.rich_text[0].text.content).toBe("t0");
+    expect(result.properties["Started At"]!.rich_text[0].text.content).toBe("2024-06-01T00:00:00Z");
+    expect(result.properties["Completed At"]!.rich_text[0].text.content).toBe("2024-06-02T12:00:00Z");
 
     // Body blocks: description paragraph + heading + 2 to_do
     expect(result.children).toHaveLength(4);
+  });
+
+  it("omits startedAt and completedAt when not set", () => {
+    const item = makeItem({ id: "t1", title: "Task" });
+    const result = mapItemToNotion(item);
+    expect(result.properties["Started At"]).toBeUndefined();
+    expect(result.properties["Completed At"]).toBeUndefined();
   });
 
   it("maps acceptance criteria to a checklist in body", () => {
@@ -630,6 +641,68 @@ describe("mapNotionToItem", () => {
     expect(item.blockedBy).toBeUndefined();
   });
 
+  it("extracts startedAt from Started At property", () => {
+    const notionPage = {
+      id: "p1",
+      properties: {
+        Name: { title: [{ plain_text: "Task" }] },
+        Status: { status: { name: "In progress" } },
+        Level: { select: { name: "task" } },
+        "PRD ID": { rich_text: [{ plain_text: "t1" }] },
+        "Started At": { rich_text: [{ plain_text: "2024-06-01T00:00:00Z" }] },
+      },
+    };
+    const item = mapNotionToItem(notionPage);
+    expect(item.startedAt).toBe("2024-06-01T00:00:00Z");
+  });
+
+  it("extracts completedAt from Completed At property", () => {
+    const notionPage = {
+      id: "p1",
+      properties: {
+        Name: { title: [{ plain_text: "Task" }] },
+        Status: { status: { name: "Done" } },
+        Level: { select: { name: "task" } },
+        "PRD ID": { rich_text: [{ plain_text: "t1" }] },
+        "Completed At": { rich_text: [{ plain_text: "2024-06-02T12:00:00Z" }] },
+      },
+    };
+    const item = mapNotionToItem(notionPage);
+    expect(item.completedAt).toBe("2024-06-02T12:00:00Z");
+  });
+
+  it("omits startedAt and completedAt when not present", () => {
+    const notionPage = {
+      id: "p1",
+      properties: {
+        Name: { title: [{ plain_text: "Task" }] },
+        Status: { status: { name: "Not started" } },
+        Level: { select: { name: "task" } },
+        "PRD ID": { rich_text: [{ plain_text: "t1" }] },
+      },
+    };
+    const item = mapNotionToItem(notionPage);
+    expect(item.startedAt).toBeUndefined();
+    expect(item.completedAt).toBeUndefined();
+  });
+
+  it("handles text.content format for Started At and Completed At", () => {
+    const notionPage = {
+      id: "p1",
+      properties: {
+        Name: { title: [{ text: { content: "Task" } }] },
+        Status: { status: { name: "Done" } },
+        Level: { select: { name: "task" } },
+        "PRD ID": { rich_text: [{ text: { content: "t1" } }] },
+        "Started At": { rich_text: [{ text: { content: "2024-06-01T00:00:00Z" } }] },
+        "Completed At": { rich_text: [{ text: { content: "2024-06-02T12:00:00Z" } }] },
+      },
+    };
+    const item = mapNotionToItem(notionPage);
+    expect(item.startedAt).toBe("2024-06-01T00:00:00Z");
+    expect(item.completedAt).toBe("2024-06-02T12:00:00Z");
+  });
+
   it("handles text.content format for Description property", () => {
     const notionPage = {
       id: "p1",
@@ -661,28 +734,40 @@ describe("mapNotionToItem", () => {
       source: "analyze",
       blockedBy: ["t0", "t2"],
       acceptanceCriteria: ["AC1", "AC2"],
+      startedAt: "2024-06-01T00:00:00Z",
+      completedAt: "2024-06-02T12:00:00Z",
     });
 
     const { properties, children } = mapItemToNotion(original);
+
+    // Helper to convert rich_text to plain_text format (as Notion API returns)
+    const toPlainText = (richText: Array<{ text: { content: string } }>) =>
+      richText.map((rt) => ({ plain_text: rt.text.content }));
 
     // Build a Notion page object from the mapped properties
     const notionPage = {
       id: "notion-abc",
       properties: {
-        Name: { title: properties.Name.title.map((rt) => ({ plain_text: rt.text.content })) },
+        Name: { title: toPlainText(properties.Name.title) },
         Status: properties.Status,
         Level: properties.Level,
-        "PRD ID": { rich_text: properties["PRD ID"].rich_text.map((rt) => ({ plain_text: rt.text.content })) },
+        "PRD ID": { rich_text: toPlainText(properties["PRD ID"].rich_text) },
         Description: properties.Description
-          ? { rich_text: properties.Description.rich_text.map((rt) => ({ plain_text: rt.text.content })) }
+          ? { rich_text: toPlainText(properties.Description.rich_text) }
           : undefined,
         Priority: properties.Priority,
         Tags: properties.Tags,
         Source: properties.Source
-          ? { rich_text: properties.Source.rich_text.map((rt) => ({ plain_text: rt.text.content })) }
+          ? { rich_text: toPlainText(properties.Source.rich_text) }
           : undefined,
         "Blocked By": properties["Blocked By"]
-          ? { rich_text: properties["Blocked By"].rich_text.map((rt) => ({ plain_text: rt.text.content })) }
+          ? { rich_text: toPlainText(properties["Blocked By"].rich_text) }
+          : undefined,
+        "Started At": properties["Started At"]
+          ? { rich_text: toPlainText(properties["Started At"].rich_text) }
+          : undefined,
+        "Completed At": properties["Completed At"]
+          ? { rich_text: toPlainText(properties["Completed At"].rich_text) }
           : undefined,
       },
       children: children?.map((block) => {
@@ -724,6 +809,8 @@ describe("mapNotionToItem", () => {
     expect(roundTripped.source).toBe(original.source);
     expect(roundTripped.blockedBy).toEqual(original.blockedBy);
     expect(roundTripped.acceptanceCriteria).toEqual(original.acceptanceCriteria);
+    expect(roundTripped.startedAt).toBe(original.startedAt);
+    expect(roundTripped.completedAt).toBe(original.completedAt);
   });
 
   it("round-trips all status values", () => {
@@ -785,6 +872,8 @@ describe("mapNotionToItem", () => {
     expect(roundTripped.source).toBeUndefined();
     expect(roundTripped.blockedBy).toBeUndefined();
     expect(roundTripped.acceptanceCriteria).toBeUndefined();
+    expect(roundTripped.startedAt).toBeUndefined();
+    expect(roundTripped.completedAt).toBeUndefined();
   });
 
   it("round-trips empty tags array (omits it)", () => {
@@ -889,6 +978,12 @@ function buildMockNotionPage(
         : undefined,
       "Blocked By": properties["Blocked By"]
         ? { rich_text: properties["Blocked By"].rich_text.map((rt) => ({ plain_text: rt.text.content })) }
+        : undefined,
+      "Started At": properties["Started At"]
+        ? { rich_text: properties["Started At"].rich_text.map((rt) => ({ plain_text: rt.text.content })) }
+        : undefined,
+      "Completed At": properties["Completed At"]
+        ? { rich_text: properties["Completed At"].rich_text.map((rt) => ({ plain_text: rt.text.content })) }
         : undefined,
     },
     children: children?.map((block) => {
