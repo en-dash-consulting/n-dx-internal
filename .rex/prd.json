@@ -4579,17 +4579,19 @@
     {
       "id": "e8da8d04-1016-42ae-96f4-5d94e2eb0391",
       "title": "Report Generation and Export",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "7474c596-ce78-4e71-9628-c2d004a8c5c1",
           "title": "PDF Export Functionality",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Generate comprehensive PDF reports from sourcevision analysis data for sharing and documentation purposes",
           "source": "smart-add",
+          "startedAt": "2026-02-08T15:43:45.818Z",
+          "completedAt": "2026-02-08T15:43:45.818Z",
           "children": [
             {
               "id": "c8d334c5-f072-4260-8cad-1ce6f02b27a2",
@@ -4616,7 +4618,7 @@
             {
               "id": "9aaf4ed7-577f-45ee-a812-05f46ef3f8c8",
               "title": "Add PDF export command to sourcevision CLI",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Expose the PDF generation functionality through a new sourcevision command that allows users to export analysis results",
               "acceptanceCriteria": [
@@ -4632,11 +4634,15 @@
                 "cli",
                 "export"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-08T15:37:19.409Z",
+              "completedAt": "2026-02-08T15:43:45.769Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-08T15:43:45.835Z",
+      "completedAt": "2026-02-08T15:43:45.835Z"
     },
     {
       "id": "f8fc3374-4926-43e7-be20-fb01dc821af9",
@@ -4644,6 +4650,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-08T15:36:41.066Z",
+      "completedAt": "2026-02-08T15:36:41.066Z",
       "children": [
         {
           "id": "66f9d899-eb90-448d-860f-02ba401b4de1",
@@ -4783,9 +4791,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-08T15:36:41.066Z",
-      "completedAt": "2026-02-08T15:36:41.066Z"
+      ]
     }
   ]
 }

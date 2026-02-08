@@ -4,11 +4,12 @@
  * Sourcevision CLI
  *
  * Commands:
- *   init             - Initialize .sourcevision/ in current project
- *   analyze [dir]    - Run analysis pipeline
- *   serve [dir]      - Start local viewer server
- *   validate [dir]   - Validate .sourcevision/ output files
- *   mcp [dir]        - Start MCP server for AI tool integration
+ *   init               - Initialize .sourcevision/ in current project
+ *   analyze [dir]      - Run analysis pipeline
+ *   serve [dir]        - Start local viewer server
+ *   validate [dir]     - Validate .sourcevision/ output files
+ *   export-pdf [dir]   - Export analysis as a PDF report
+ *   mcp [dir]          - Start MCP server for AI tool integration
  */
 
 import { resolve } from "node:path";
@@ -17,6 +18,7 @@ import { cmdInit } from "./commands/init.js";
 import { cmdReset } from "./commands/reset.js";
 import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdValidate } from "./commands/validate.js";
+import { cmdExportPdf } from "./commands/export-pdf.js";
 import { CLIError, handleCLIError, requireSvDir } from "./errors.js";
 import { setQuiet } from "./output.js";
 
@@ -27,11 +29,14 @@ const command = args[0];
 
 let port = 3117;
 let quiet = false;
+let outputPath: string | undefined;
 const passthrough: string[] = [];
 
 for (const a of args.slice(1)) {
   if (a.startsWith("--port=")) {
     port = parseInt(a.split("=")[1], 10);
+  } else if (a.startsWith("--output=") || a.startsWith("-o=")) {
+    outputPath = a.split("=").slice(1).join("=");
   } else if (a === "--quiet" || a === "-q") {
     quiet = true;
   } else if (a.startsWith("--phase=") || a.startsWith("--only=") || a === "--fast" || a === "--full") {
@@ -79,6 +84,9 @@ try {
       break;
     case "reset":
       cmdReset(targetArg || ".");
+      break;
+    case "export-pdf":
+      await cmdExportPdf(targetArg || ".", { output: outputPath });
       break;
     case "mcp":
       await cmdMcp(targetArg || ".");

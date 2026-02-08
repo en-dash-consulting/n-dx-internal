@@ -9,11 +9,13 @@ Usage:
   sourcevision analyze [dir]     Run analysis pipeline (default: .)
   sourcevision serve [dir]       Start local viewer (default: .)
   sourcevision validate [dir]    Validate .sourcevision/ output files
+  sourcevision export-pdf [dir]  Export analysis as a PDF report
   sourcevision reset [dir]       Remove .sourcevision/ and start fresh
   sourcevision mcp [dir]         Start MCP server for AI tool integration
 
 Options:
   --port=N       Server port for serve (default: 3117)
+  --output=PATH  Output file path for export-pdf (default: .sourcevision/report.pdf)
   --phase=N      Run only phase N of analyze (1=inventory, 2=imports, 3=zones, 4=components)
   --only=MODULE  Run only named module (inventory, imports, zones, components)
   --fast         Skip AI zone-name enrichment (use algorithmic names)

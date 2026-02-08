@@ -21,10 +21,11 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@n-dx/claude-client": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.25.3",
+    "@n-dx/claude-client": "workspace:*",
     "d3-force": "^3.0.0",
     "d3-selection": "^3.0.0",
+    "pdfkit": "^0.17.2",
     "preact": "^10.19.0",
     "typescript": "^5.3.0",
     "zod": "^3.22.0"
@@ -33,6 +34,7 @@
     "@types/d3-force": "^3.0.0",
     "@types/d3-selection": "^3.0.0",
     "@types/node": "^25.1.0",
+    "@types/pdfkit": "^0.17.4",
     "esbuild": "^0.20.0",
     "jsdom": "^27.4.0",
     "vitest": "^4.0.18"
