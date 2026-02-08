@@ -26,6 +26,14 @@ export function setClaudeConfig(config: ClaudeConfig): void {
 }
 
 /**
+ * Set the module-level Claude client explicitly. This is useful when a
+ * client has already been created at the CLI entry point, or for testing.
+ */
+export function setClaudeClient(client: ClaudeClient): void {
+  _claudeClient = client;
+}
+
+/**
  * Get the current authentication mode being used for LLM calls.
  * Returns "api" when using direct API key authentication, "cli" when
  * using the Claude Code CLI binary. Returns undefined if no config
