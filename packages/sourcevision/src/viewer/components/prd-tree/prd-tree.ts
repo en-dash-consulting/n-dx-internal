@@ -8,7 +8,7 @@
 import { h, Fragment, VNode } from "preact";
 import { useState, useMemo, useCallback } from "preact/hooks";
 import type { PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority } from "./types.js";
-import { computeBranchStats, completionRatio, formatTimestamp } from "./compute.js";
+import { computeBranchStats, completionRatio, formatTimestamp, itemMatchesFilter } from "./compute.js";
 import { StatusFilter, defaultStatusFilter } from "./status-filter.js";
 
 // ── Status rendering ────────────────────────────────────────────────
@@ -57,20 +57,6 @@ function collectIdsToDepth(
     }
   }
   return ids;
-}
-
-// ── Filter helper ───────────────────────────────────────────────────
-
-/**
- * Check if an item or any of its descendants match the status filter.
- * Container items (epics/features) are shown if any descendant matches.
- */
-function itemMatchesFilter(item: PRDItemData, activeStatuses: Set<ItemStatus>): boolean {
-  if (activeStatuses.has(item.status)) return true;
-  if (item.children) {
-    return item.children.some((child) => itemMatchesFilter(child, activeStatuses));
-  }
-  return false;
 }
 
 // ── Sub-components ──────────────────────────────────────────────────

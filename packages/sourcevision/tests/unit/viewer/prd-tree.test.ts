@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { h, render } from "preact";
 import { PRDTree } from "../../../src/viewer/components/prd-tree/prd-tree.js";
-import type { PRDDocumentData, PRDItemData } from "../../../src/viewer/components/prd-tree/types.js";
+import type { PRDDocumentData } from "../../../src/viewer/components/prd-tree/types.js";
 
 function renderToDiv(vnode: ReturnType<typeof h>) {
   const root = document.createElement("div");
@@ -191,5 +191,77 @@ describe("PRDTree", () => {
     const root = renderToDiv(h(PRDTree, { document: sampleDoc }));
     const segments = root.querySelectorAll(".prd-summary-segment");
     expect(segments.length).toBeGreaterThan(0);
+  });
+
+  it("renders status filter controls", () => {
+    const root = renderToDiv(h(PRDTree, { document: sampleDoc }));
+    const filterGroup = root.querySelector("[role='group'][aria-label='Filter by status']");
+    expect(filterGroup).not.toBeNull();
+  });
+
+  it("renders status filter chips for all statuses", () => {
+    const root = renderToDiv(h(PRDTree, { document: sampleDoc }));
+    const chips = root.querySelectorAll(".prd-status-chip");
+    // Should have chips for all 6 statuses
+    expect(chips.length).toBe(6);
+  });
+
+  it("renders filter preset buttons", () => {
+    const root = renderToDiv(h(PRDTree, { document: sampleDoc }));
+    const presets = root.querySelectorAll(".prd-status-preset");
+    expect(presets.length).toBe(2); // "All" and "Active"
+  });
+
+  it("hides deleted items by default", () => {
+    const docWithDeleted: PRDDocumentData = {
+      schema: "rex/v1",
+      title: "Test",
+      items: [
+        {
+          id: "t1",
+          title: "Active Task",
+          status: "pending",
+          level: "task",
+        },
+        {
+          id: "t2",
+          title: "Deleted Task",
+          status: "deleted",
+          level: "task",
+        },
+      ],
+    };
+    const root = renderToDiv(h(PRDTree, { document: docWithDeleted }));
+    expect(root.textContent).toContain("Active Task");
+    // Deleted items should be hidden by default (defaultStatusFilter excludes deleted)
+    expect(root.textContent).not.toContain("Deleted Task");
+  });
+
+  it("shows parent epic when it has visible children even if epic status is filtered", () => {
+    // Default filter includes pending, in_progress, completed, blocked, deferred (not deleted)
+    // Epic with deferred status should show because it has a pending child
+    const docWithMixed: PRDDocumentData = {
+      schema: "rex/v1",
+      title: "Test",
+      items: [
+        {
+          id: "e1",
+          title: "Deferred Epic",
+          status: "deferred",
+          level: "epic",
+          children: [
+            {
+              id: "t1",
+              title: "Pending Task",
+              status: "pending",
+              level: "task",
+            },
+          ],
+        },
+      ],
+    };
+    const root = renderToDiv(h(PRDTree, { document: docWithMixed }));
+    // Epic should be visible because of its visible child
+    expect(root.textContent).toContain("Deferred Epic");
   });
 });

@@ -78,6 +78,44 @@ export function countChildStatuses(
   return counts;
 }
 
+/**
+ * Check if an item or any of its descendants match the status filter.
+ * Container items (epics/features) are shown if any descendant matches.
+ */
+export function itemMatchesFilter(item: PRDItemData, activeStatuses: Set<ItemStatus>): boolean {
+  if (activeStatuses.has(item.status)) return true;
+  if (item.children) {
+    return item.children.some((child) => itemMatchesFilter(child, activeStatuses));
+  }
+  return false;
+}
+
+/**
+ * Return a filtered copy of the item tree, keeping only nodes whose status
+ * is in `activeStatuses` or that have at least one visible descendant.
+ * Parent nodes that survive only because of their children retain only the
+ * matching subset in their `children` array.
+ */
+export function filterTree(
+  items: PRDItemData[],
+  activeStatuses: Set<ItemStatus>,
+): PRDItemData[] {
+  const result: PRDItemData[] = [];
+  for (const item of items) {
+    const filteredChildren = item.children
+      ? filterTree(item.children, activeStatuses)
+      : undefined;
+    const hasVisibleChildren = filteredChildren && filteredChildren.length > 0;
+    if (activeStatuses.has(item.status) || hasVisibleChildren) {
+      result.push({
+        ...item,
+        children: filteredChildren,
+      });
+    }
+  }
+  return result;
+}
+
 /** Format a compact timestamp from ISO string. */
 export function formatTimestamp(iso: string): string {
   const d = new Date(iso);

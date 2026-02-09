@@ -23,4 +23,6 @@ export {
   completionRatio,
   countChildStatuses,
   formatTimestamp,
+  itemMatchesFilter,
+  filterTree,
 } from "./compute.js";
