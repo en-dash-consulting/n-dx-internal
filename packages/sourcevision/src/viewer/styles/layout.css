@@ -19,8 +19,7 @@
 }
 
 .sidebar.sidebar-collapsed .sidebar-header,
-.sidebar.sidebar-collapsed .sidebar-nav,
-.sidebar.sidebar-collapsed .sidebar-progress {
+.sidebar.sidebar-collapsed .sidebar-nav {
   opacity: 0;
   pointer-events: none;
   position: absolute;

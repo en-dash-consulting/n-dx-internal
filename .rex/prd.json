@@ -5416,7 +5416,7 @@
     {
       "id": "0999a286-d7db-44e5-87b1-d6ce8ea03376",
       "title": "Sidebar Navigation Enhancement",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
@@ -5427,6 +5427,8 @@
           "level": "feature",
           "description": "Improve sidebar navigation with active page indication and centralized global controls",
           "source": "smart-add",
+          "startedAt": "2026-02-09T20:41:37.051Z",
+          "completedAt": "2026-02-09T20:41:37.051Z",
           "children": [
             {
               "id": "71063da9-5fb4-4901-8b82-ff19a75363d6",
@@ -5474,22 +5476,22 @@
               "startedAt": "2026-02-09T20:27:34.453Z",
               "completedAt": "2026-02-09T20:33:33.433Z"
             }
-          ],
-          "startedAt": "2026-02-09T20:41:37.051Z",
-          "completedAt": "2026-02-09T20:41:37.051Z"
+          ]
         },
         {
           "id": "fdfebde2-7c1e-44c0-a61a-c38e52641d75",
           "title": "SourceVision Analysis Progress Integration",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Move the analysis progress indicator to proper SourceVision section",
           "source": "smart-add",
+          "startedAt": "2026-02-09T20:47:10.490Z",
+          "completedAt": "2026-02-09T20:47:10.490Z",
           "children": [
             {
               "id": "886ca38a-73c8-4cff-a3f3-ddc44cd5c510",
               "title": "Relocate analysis progress indicator to SourceVision section",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Move the current analysis progress indicator from its current location to the SourceVision section of the sidebar for better organization",
               "acceptanceCriteria": [
@@ -5503,11 +5505,15 @@
                 "sourcevision",
                 "progress"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-09T20:42:22.094Z",
+              "completedAt": "2026-02-09T20:47:10.446Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-09T20:47:10.523Z",
+      "completedAt": "2026-02-09T20:47:10.523Z"
     },
     {
       "id": "81307b53-e961-4cd5-9dbc-9f218517a4c8",

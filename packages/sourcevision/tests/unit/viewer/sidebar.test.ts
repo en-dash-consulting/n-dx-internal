@@ -406,4 +406,93 @@ describe("Sidebar", () => {
       expect(chevrons[1].classList.contains("nav-section-chevron-open")).toBe(false);
     });
   });
+
+  describe("analysis progress indicator", () => {
+    const mockManifest = {
+      schemaVersion: "1",
+      toolVersion: "0.1.0",
+      analyzedAt: "2026-01-01T00:00:00Z",
+      targetPath: "/test",
+      modules: {
+        inventory: { status: "complete" },
+        imports: { status: "complete" },
+        zones: { status: "running" },
+        components: { status: "pending" },
+      },
+    } as any;
+
+    it("renders progress indicator inside the SourceVision section when manifest is present", () => {
+      renderSidebar({ manifest: mockManifest, view: "overview" as const });
+      const svSection = root.querySelector("#nav-section-SOURCEVISION");
+      expect(svSection).not.toBeNull();
+      const progress = svSection?.querySelector(".sidebar-progress");
+      expect(progress).not.toBeNull();
+    });
+
+    it("does not render progress indicator when manifest is null", () => {
+      renderSidebar({ manifest: null, view: "overview" as const });
+      const progress = root.querySelector(".sidebar-progress");
+      expect(progress).toBeNull();
+    });
+
+    it("progress indicator is not in REX or HENCH sections", () => {
+      renderSidebar({ manifest: mockManifest, view: "overview" as const });
+      const rexSection = root.querySelector("#nav-section-REX");
+      const henchSection = root.querySelector("#nav-section-HENCH");
+      expect(rexSection?.querySelector(".sidebar-progress")).toBeNull();
+      expect(henchSection?.querySelector(".sidebar-progress")).toBeNull();
+    });
+
+    it("shows correct progress count", () => {
+      renderSidebar({ manifest: mockManifest, view: "overview" as const });
+      const label = root.querySelector(".progress-label");
+      expect(label?.textContent).toBe("Analysis: 2/4");
+    });
+
+    it("navigates to overview when progress indicator is clicked", () => {
+      renderSidebar({ manifest: mockManifest, view: "zones" as const });
+      const progress = root.querySelector<HTMLElement>(".sidebar-progress");
+      progress?.click();
+      expect(onNavigate).toHaveBeenCalledWith("overview");
+    });
+
+    it("progress indicator has accessible role and label", () => {
+      renderSidebar({ manifest: mockManifest, view: "overview" as const });
+      const progress = root.querySelector(".sidebar-progress");
+      expect(progress?.getAttribute("role")).toBe("button");
+      expect(progress?.getAttribute("aria-label")).toContain("Analysis progress");
+      expect(progress?.getAttribute("aria-label")).toContain("click to view");
+    });
+
+    it("renders module status icons", () => {
+      renderSidebar({ manifest: mockManifest, view: "overview" as const });
+      const modules = root.querySelectorAll(".progress-module");
+      expect(modules.length).toBe(4);
+      // First two should be done (✓)
+      expect(modules[0].classList.contains("done")).toBe(true);
+      expect(modules[1].classList.contains("done")).toBe(true);
+      // Last two should not be done
+      expect(modules[2].classList.contains("done")).toBe(false);
+      expect(modules[3].classList.contains("done")).toBe(false);
+    });
+
+    it("progress bar reflects completion percentage", () => {
+      renderSidebar({ manifest: mockManifest, view: "overview" as const });
+      const fill = root.querySelector<HTMLElement>(".progress-fill");
+      expect(fill?.style.width).toBe("50%");
+    });
+
+    it("progress indicator collapses with the SourceVision section", async () => {
+      renderSidebar({ manifest: mockManifest, view: "overview" as const });
+      const headers = root.querySelectorAll<HTMLElement>(".nav-section-header");
+      // Collapse SOURCEVISION section
+      headers[0].click();
+      await flush();
+      const svSection = root.querySelector("#nav-section-SOURCEVISION");
+      expect(svSection?.classList.contains("nav-section-items-collapsed")).toBe(true);
+      // Progress is inside the collapsed section
+      const progress = svSection?.querySelector(".sidebar-progress");
+      expect(progress).not.toBeNull();
+    });
+  });
 });

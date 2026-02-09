@@ -58,7 +58,6 @@
 
   .sidebar.sidebar-collapsed .sidebar-header,
   .sidebar.sidebar-collapsed .sidebar-nav,
-  .sidebar.sidebar-collapsed .sidebar-progress,
   .sidebar.sidebar-collapsed .sidebar-controls {
     opacity: 1;
     pointer-events: auto;
@@ -191,8 +190,6 @@
     width: 95vw;
     max-height: 85vh;
   }
-
-  .sidebar-progress { display: none; }
 
   /* Sidebar controls visible only when mobile menu is open */
   .sidebar-controls { display: none; }

@@ -332,7 +332,39 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
                   ? h("span", { class: "nav-badge" }, `P${entry.minPass}`)
                   : null
               );
-            })
+            }),
+            // Analysis progress indicator (inside SourceVision section)
+            section.product === "sourcevision" && manifest
+              ? h("div", {
+                  class: "sidebar-progress",
+                  role: "button",
+                  tabIndex: isExpanded ? 0 : -1,
+                  "aria-label": `Analysis progress: ${completedCount} of ${moduleNames.length} complete — click to view`,
+                  onClick: () => handleNav("overview"),
+                  onKeyDown: (e: KeyboardEvent) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleNav("overview");
+                    }
+                  },
+                },
+                  h("div", { class: "progress-label" }, `Analysis: ${completedCount}/${moduleNames.length}`),
+                  h("div", { class: "progress-bar", role: "progressbar", "aria-valuenow": String(completedCount), "aria-valuemin": "0", "aria-valuemax": String(moduleNames.length) },
+                    h("div", {
+                      class: "progress-fill",
+                      style: `width: ${(completedCount / moduleNames.length) * 100}%`,
+                    })
+                  ),
+                  h("div", { class: "progress-modules" },
+                    moduleNames.map((m) => {
+                      const status = modules[m]?.status;
+                      const icon = status === "complete" ? "\u2713" : status === "error" ? "\u2717" : "\u25CB";
+                      const cls = status === "complete" ? "done" : status === "error" ? "error" : "";
+                      return h("span", { key: m, class: `progress-module ${cls}`, title: m }, icon);
+                    })
+                  ),
+                )
+              : null,
           )
         );
       })
@@ -341,25 +373,6 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
       h(SidebarThemeToggle, null),
       h(FAQ, null),
     ),
-    manifest
-      ? h("div", { class: "sidebar-progress", "aria-label": `Analysis progress: ${completedCount} of ${moduleNames.length} complete` },
-          h("div", { class: "progress-label" }, `Analysis: ${completedCount}/${moduleNames.length}`),
-          h("div", { class: "progress-bar", role: "progressbar", "aria-valuenow": String(completedCount), "aria-valuemin": "0", "aria-valuemax": String(moduleNames.length) },
-            h("div", {
-              class: "progress-fill",
-              style: `width: ${(completedCount / moduleNames.length) * 100}%`,
-            })
-          ),
-          h("div", { class: "progress-modules" },
-            moduleNames.map((m) => {
-              const status = modules[m]?.status;
-              const icon = status === "complete" ? "\u2713" : status === "error" ? "\u2717" : "\u25CB";
-              const cls = status === "complete" ? "done" : status === "error" ? "error" : "";
-              return h("span", { key: m, class: `progress-module ${cls}`, title: m }, icon);
-            })
-          ),
-        )
-      : null,
     // Mobile backdrop
     mobileOpen
       ? h("div", {

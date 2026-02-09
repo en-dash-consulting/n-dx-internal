@@ -29,10 +29,22 @@
   color: var(--text-dim);
 }
 
-/* Sidebar progress indicator */
+/* Sidebar progress indicator (inside SourceVision section) */
 .sidebar-progress {
-  padding: 12px 16px;
-  border-top: 1px solid var(--border);
+  padding: 8px 12px;
+  margin: 4px 0 2px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-normal);
+}
+
+.sidebar-progress:hover {
+  background: var(--bg-hover);
+}
+
+.sidebar-progress:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
 .progress-label {
