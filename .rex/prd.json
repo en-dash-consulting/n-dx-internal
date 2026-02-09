@@ -2458,10 +2458,12 @@
         {
           "id": "f0648a2a-df92-4773-9238-3b758387f9f4",
           "title": "Prompt Engineering",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Optimize prompts for better LLM responses",
           "source": "llm",
+          "startedAt": "2026-02-09T14:09:06.145Z",
+          "completedAt": "2026-02-09T14:27:04.154Z",
           "children": [
             {
               "id": "04470729-8b31-44f3-86fe-606446f7b9d9",
@@ -2921,10 +2923,11 @@
         {
           "id": "8ddf135c-6f39-4a94-bba1-83c0a2674cc7",
           "title": "Scanner Enhancements",
-          "status": "pending",
+          "status": "in_progress",
           "level": "feature",
           "description": "Improve individual scanner output quality and filtering",
           "source": "llm",
+          "startedAt": "2026-02-09T15:12:52.788Z",
           "children": [
             {
               "id": "e6615ff0-9b2f-4e35-bd69-51e0b06e68db",
@@ -2945,16 +2948,44 @@
               "source": "llm",
               "startedAt": "2026-02-05T13:24:32.287Z",
               "completedAt": "2026-02-05T13:29:18.183Z"
+            },
+            {
+              "id": "8c6b13f8-3fa8-48b8-9a32-458e880d87bd",
+              "title": "Filter low-signal items from scanner output",
+              "status": "completed",
+              "level": "task",
+              "description": "Add filtering to reduce noise in scanner outputs: exclude type-only imports from mostImported rankings, filter info-severity findings from CONTEXT.md next-steps, and skip test files from zone cohesion/coupling calculations",
+              "priority": "high",
+              "startedAt": "2026-02-09T15:17:16.955Z",
+              "completedAt": "2026-02-09T15:23:12.990Z"
+            },
+            {
+              "id": "e4345e18-1bd5-4028-9c38-69092afacdb6",
+              "title": "Deduplicate near-identical findings across enrichment passes",
+              "status": "pending",
+              "level": "task",
+              "description": "Add finding deduplication to zones scanner: detect and merge findings with similar text across different passes, keeping the highest-severity version",
+              "priority": "medium"
+            },
+            {
+              "id": "ed9582a2-6b8a-437d-826b-f7636488dc3d",
+              "title": "Enhance next-steps impact scoring with zone metrics",
+              "status": "pending",
+              "level": "task",
+              "description": "Improve deriveNextSteps priority scoring by incorporating zone cohesion and coupling metrics alongside the existing related-count threshold",
+              "priority": "medium"
             }
           ]
         },
         {
           "id": "3e493079-5986-4fa7-875f-9dc6879183af",
           "title": "Zone Architecture Enhancement",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Improve zone-based code organization and reduce coupling",
           "source": "llm",
+          "startedAt": "2026-02-09T15:12:52.695Z",
+          "completedAt": "2026-02-09T15:12:52.695Z",
           "children": [
             {
               "id": "bc578874-916e-4148-b3de-84ddba2fbd54",
@@ -2999,7 +3030,7 @@
             {
               "id": "471ba9ad-3e03-4c07-a3a9-06bc25d8e148",
               "title": "Reorganize agent directory structure",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Split agent/ into lifecycle (loop, cli-loop), planning (brief, prompt), and analysis (review, summary, stuck) subdirectories for better organization",
               "acceptanceCriteria": [
@@ -3012,7 +3043,9 @@
                 "hench-core",
                 "organization"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-09T15:04:34.700Z",
+              "completedAt": "2026-02-09T15:12:52.663Z"
             },
             {
               "id": "43438e05-3a59-4719-94bf-363948ecdbb0",
@@ -3061,11 +3094,12 @@
     {
       "id": "a53b2572-87a8-4eb2-804a-2b9ae668b930",
       "title": "PRD Management Enhancement",
-      "status": "in_progress",
+      "status": "completed",
       "level": "epic",
       "tags": [],
       "source": "llm",
       "startedAt": "2026-02-06T17:33:11.608Z",
+      "completedAt": "2026-02-09T14:09:06.086Z",
       "children": [
         {
           "id": "5ea113f8-18e8-44b4-afd8-b0c381520a36",
@@ -3299,11 +3333,12 @@
         {
           "id": "428fed3c-fa27-455f-a39e-f882f344fab3",
           "title": "PRD Validation and Maintenance",
-          "status": "in_progress",
+          "status": "completed",
           "level": "feature",
           "description": "Enhanced validation and cleanup tools for PRD integrity",
           "source": "llm",
           "startedAt": "2026-02-09T13:56:35.704Z",
+          "completedAt": "2026-02-09T14:09:06.055Z",
           "children": [
             {
               "id": "4741b835-bbcf-4cfd-b5b5-27e1bc0cb5a5",

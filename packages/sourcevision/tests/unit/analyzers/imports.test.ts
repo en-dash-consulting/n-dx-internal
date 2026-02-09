@@ -263,6 +263,42 @@ describe("analyzeImports", () => {
     expect(imports.summary.totalEdges).toBe(2);
     expect(imports.summary.totalExternal).toBe(1);
   });
+
+  it("excludes type-only imports from mostImported rankings", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-imp-type-"));
+    await mkdir(join(tmpDir, "src"), { recursive: true });
+
+    // types.ts is imported by a.ts (type-only) and b.ts (type-only)
+    // utils.ts is imported by a.ts (static)
+    await writeFile(
+      join(tmpDir, "src", "a.ts"),
+      `import type { Foo } from "./types.js";\nimport { util } from "./utils.js";\nexport const a: Foo = util;\n`
+    );
+    await writeFile(
+      join(tmpDir, "src", "b.ts"),
+      `import type { Bar } from "./types.js";\nexport const b: Bar = 1;\n`
+    );
+    await writeFile(
+      join(tmpDir, "src", "types.ts"),
+      `export type Foo = number;\nexport type Bar = number;\n`
+    );
+    await writeFile(
+      join(tmpDir, "src", "utils.ts"),
+      `export const util = 42;\n`
+    );
+
+    const inventory = await analyzeInventory(tmpDir);
+    const imports = await analyzeImports(tmpDir, inventory);
+
+    // Should have 3 edges total: a→types (type), b→types (type), a→utils (static)
+    expect(imports.edges).toHaveLength(3);
+
+    // mostImported should only count non-type edges.
+    // utils.ts has 1 static import, types.ts has 0 non-type imports.
+    expect(imports.summary.mostImported).toHaveLength(1);
+    expect(imports.summary.mostImported[0].path).toBe("src/utils.ts");
+    expect(imports.summary.mostImported[0].count).toBe(1);
+  });
 });
 
 // ── incremental imports ──────────────────────────────────────────────────────

@@ -526,6 +526,14 @@ export async function analyzeZones(
 
   const graph = buildUndirectedGraph(filteredEdges);
 
+  // Build set of test files — test→source edges inflate coupling metrics,
+  // so we exclude test files from cohesion/coupling metric computation
+  // while keeping them as zone members.
+  const testFiles = new Set<string>();
+  for (const f of inventory.files) {
+    if (f.role === "test") testFiles.add(f.path);
+  }
+
   // Run Louvain
   let community = louvainPhase1(graph);
   community = mergeBidirectionalCoupling(community, graph);
@@ -571,10 +579,13 @@ export async function analyzeZones(
       }
     }
 
-    // Cohesion / coupling from import graph
+    // Cohesion / coupling from import graph.
+    // Skip test files: test→source edges represent test dependencies,
+    // not architectural coupling, and inflate coupling metrics.
     let internalEdges = 0;
     let totalEdgesFromZone = 0;
     for (const node of members) {
+      if (testFiles.has(node)) continue;
       const neighbors = graph.get(node);
       if (!neighbors) continue;
       for (const [neighbor] of neighbors) {

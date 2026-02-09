@@ -443,8 +443,11 @@ export async function analyzeImports(
   const external = Array.from(externalMap.values());
 
   // Always recompute summary
+  // Exclude type-only imports from mostImported: they don't create runtime
+  // dependencies and inflate rankings for schema/type-definition files.
   const importCounts = new Map<string, number>();
   for (const e of edges) {
+    if (e.type === "type") continue;
     importCounts.set(e.to, (importCounts.get(e.to) || 0) + 1);
   }
 

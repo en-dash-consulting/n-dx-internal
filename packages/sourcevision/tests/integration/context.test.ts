@@ -140,6 +140,30 @@ describe("generateContext", () => {
     expect(result).toContain("Route modules: 1");
   });
 
+  it("excludes low-priority next steps from context output", () => {
+    const zonesWithFindings: Zones = {
+      ...zones,
+      findings: [
+        // Warning anti-pattern → medium priority next step
+        { type: "anti-pattern", pass: 1, scope: "core", text: "Medium priority issue", severity: "warning" },
+        // Info suggestion → low priority next step (should be excluded)
+        { type: "suggestion", pass: 1, scope: "core", text: "Low priority suggestion", severity: "info" },
+      ],
+    };
+
+    const result = generateContext(manifest, inventory, imports, zonesWithFindings);
+
+    // Medium priority step should be present
+    expect(result).toContain("Medium priority issue");
+    // Low priority step should be excluded from CONTEXT.md next-steps
+    // (the finding may appear in <findings> but not in <next-steps>)
+    const nextStepsSection = result.slice(
+      result.indexOf("<next-steps>"),
+      result.indexOf("</next-steps>")
+    );
+    expect(nextStepsSection).not.toContain("Low priority suggestion");
+  });
+
   it("instructs LLM to group related and separate unrelated", () => {
     const result = generateContext(manifest, inventory, imports, zones);
     expect(result).toContain("group related");

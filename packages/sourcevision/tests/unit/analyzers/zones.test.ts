@@ -408,6 +408,46 @@ describe("analyzeZones", () => {
 
     expect(run1).toEqual(run2);
   });
+
+  it("excludes test files from cohesion/coupling metric computation", async () => {
+    // Two source files form a tight cluster (cohesion=1),
+    // plus a test file that imports from an external zone.
+    // Without test-file exclusion, the test→external edge would inflate coupling.
+    const inventory = makeInventory([
+      makeFileEntry("src/core/a.ts"),
+      makeFileEntry("src/core/b.ts"),
+      makeFileEntry("src/core/a.test.ts", { role: "test" }),
+      makeFileEntry("src/other/x.ts"),
+      makeFileEntry("src/other/y.ts"),
+      makeFileEntry("src/other/z.ts"),
+    ]);
+    const imports = makeImports([
+      // Core cluster: a↔b
+      makeEdge("src/core/a.ts", "src/core/b.ts"),
+      makeEdge("src/core/b.ts", "src/core/a.ts"),
+      // Test imports from external zone
+      makeEdge("src/core/a.test.ts", "src/core/a.ts"),
+      makeEdge("src/core/a.test.ts", "src/other/x.ts"),
+      // Other cluster
+      makeEdge("src/other/x.ts", "src/other/y.ts"),
+      makeEdge("src/other/y.ts", "src/other/z.ts"),
+      makeEdge("src/other/x.ts", "src/other/z.ts"),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // Find the zone containing core files
+    const coreZone = result.zones.find((z) => z.files.includes("src/core/a.ts"));
+    expect(coreZone).toBeDefined();
+
+    // Test file should still be a zone member (not excluded from membership)
+    expect(coreZone!.files).toContain("src/core/a.test.ts");
+
+    // But coupling should only reflect source-file edges:
+    // a.ts and b.ts both only connect to each other → coupling should be 0
+    // (if test file were counted, the test→other/x.ts edge would add coupling)
+    expect(coreZone!.coupling).toBe(0);
+  });
 });
 
 // ── assignByProximity ────────────────────────────────────────────────────────

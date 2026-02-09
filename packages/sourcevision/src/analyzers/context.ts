@@ -167,7 +167,11 @@ export function generateContext(
 
   // ── Next Steps ──────────────────────────────────────────────────────
 
-  const nextSteps = deriveNextSteps(zones);
+  // Only show high and medium priority next steps in the dense context
+  // format — low-priority items are noise for LLMs consuming CONTEXT.md.
+  const nextSteps = deriveNextSteps(zones).filter(
+    (s) => s.priority !== "low"
+  );
   if (nextSteps.length > 0) {
     lines.push("<next-steps>");
     lines.push("");
