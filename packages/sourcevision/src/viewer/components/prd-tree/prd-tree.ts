@@ -9,6 +9,7 @@ import { h, Fragment, VNode } from "preact";
 import { useState, useMemo, useCallback } from "preact/hooks";
 import type { PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority } from "./types.js";
 import { computeBranchStats, completionRatio, formatTimestamp } from "./compute.js";
+import { StatusFilter, defaultStatusFilter } from "./status-filter.js";
 
 // ── Status rendering ────────────────────────────────────────────────
 
@@ -21,6 +22,7 @@ const STATUS_CONFIG: Record<
   pending: { icon: "○", cssClass: "prd-status-pending", label: "Pending" },
   deferred: { icon: "◌", cssClass: "prd-status-deferred", label: "Deferred" },
   blocked: { icon: "⊘", cssClass: "prd-status-blocked", label: "Blocked" },
+  deleted: { icon: "✕", cssClass: "prd-status-deleted", label: "Deleted" },
 };
 
 const PRIORITY_CONFIG: Record<Priority, { cssClass: string }> = {
@@ -55,6 +57,20 @@ function collectIdsToDepth(
     }
   }
   return ids;
+}
+
+// ── Filter helper ───────────────────────────────────────────────────
+
+/**
+ * Check if an item or any of its descendants match the status filter.
+ * Container items (epics/features) are shown if any descendant matches.
+ */
+function itemMatchesFilter(item: PRDItemData, activeStatuses: Set<ItemStatus>): boolean {
+  if (activeStatuses.has(item.status)) return true;
+  if (item.children) {
+    return item.children.some((child) => itemMatchesFilter(child, activeStatuses));
+  }
+  return false;
 }
 
 // ── Sub-components ──────────────────────────────────────────────────
@@ -233,47 +249,51 @@ interface TreeNodesProps {
   depth: number;
   expanded: Set<string>;
   selectedItemId?: string | null;
+  activeStatuses: Set<ItemStatus>;
   onToggle: (id: string) => void;
   onSelectItem?: (item: PRDItemData) => void;
 }
 
-function TreeNodes({ items, depth, expanded, selectedItemId, onToggle, onSelectItem }: TreeNodesProps) {
+function TreeNodes({ items, depth, expanded, selectedItemId, activeStatuses, onToggle, onSelectItem }: TreeNodesProps) {
   return h(
     Fragment,
     null,
-    items.map((item) => {
-      const children = item.children ?? [];
-      const hasChildren = children.length > 0;
-      const isOpen = expanded.has(item.id);
+    items
+      .filter((item) => itemMatchesFilter(item, activeStatuses))
+      .map((item) => {
+        const children = item.children ?? [];
+        const hasChildren = children.length > 0;
+        const isOpen = expanded.has(item.id);
 
-      return h(
-        "div",
-        { key: item.id, class: "prd-node" },
-        h(NodeRow, {
-          item,
-          depth,
-          isExpanded: isOpen,
-          hasChildren,
-          isSelected: selectedItemId === item.id,
-          onToggle: () => onToggle(item.id),
-          onSelect: onSelectItem,
-        }),
-        hasChildren && isOpen
-          ? h(
-              "div",
-              { class: "prd-children", role: "group" },
-              h(TreeNodes, {
-                items: children,
-                depth: depth + 1,
-                expanded,
-                selectedItemId,
-                onToggle,
-                onSelectItem,
-              }),
-            )
-          : null,
-      );
-    }),
+        return h(
+          "div",
+          { key: item.id, class: "prd-node" },
+          h(NodeRow, {
+            item,
+            depth,
+            isExpanded: isOpen,
+            hasChildren,
+            isSelected: selectedItemId === item.id,
+            onToggle: () => onToggle(item.id),
+            onSelect: onSelectItem,
+          }),
+          hasChildren && isOpen
+            ? h(
+                "div",
+                { class: "prd-children", role: "group" },
+                h(TreeNodes, {
+                  items: children,
+                  depth: depth + 1,
+                  expanded,
+                  selectedItemId,
+                  activeStatuses,
+                  onToggle,
+                  onSelectItem,
+                }),
+              )
+            : null,
+        );
+      }),
   );
 }
 
@@ -290,6 +310,7 @@ function SummaryBar({ items }: { items: PRDItemData[] }) {
     { status: "pending", count: stats.pending, label: "Pending" },
     { status: "blocked", count: stats.blocked, label: "Blocked" },
     { status: "deferred", count: stats.deferred, label: "Deferred" },
+    { status: "deleted", count: stats.deleted, label: "Deleted" },
   ];
   const segments = allSegments.filter((s) => s.count > 0);
 
@@ -387,6 +408,10 @@ export function PRDTree({ document: doc, defaultExpandDepth = 2, onSelectItem, s
     collectIdsToDepth(doc.items, defaultExpandDepth),
   );
 
+  const [activeStatuses, setActiveStatuses] = useState<Set<ItemStatus>>(() =>
+    defaultStatusFilter(),
+  );
+
   const toggle = useCallback(
     (id: string) => {
       setExpanded((prev) => {
@@ -421,6 +446,8 @@ export function PRDTree({ document: doc, defaultExpandDepth = 2, onSelectItem, s
       h("h2", { class: "prd-title" }, doc.title),
       h(Toolbar, { onExpandAll: expandAll, onCollapseAll: collapseAll }),
     ),
+    // Status filter
+    h(StatusFilter, { activeStatuses, onChange: setActiveStatuses }),
     // Summary
     h(SummaryBar, { items: doc.items }),
     // Tree
@@ -432,6 +459,7 @@ export function PRDTree({ document: doc, defaultExpandDepth = 2, onSelectItem, s
         depth: 0,
         expanded,
         selectedItemId,
+        activeStatuses,
         onToggle: toggle,
         onSelectItem,
       }),

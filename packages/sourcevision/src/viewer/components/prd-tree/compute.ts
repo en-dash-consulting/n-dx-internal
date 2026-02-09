@@ -17,6 +17,7 @@ export function computeBranchStats(items: PRDItemData[]): BranchStats {
     pending: 0,
     deferred: 0,
     blocked: 0,
+    deleted: 0,
   };
 
   function walk(nodes: PRDItemData[]): void {
@@ -38,6 +39,9 @@ export function computeBranchStats(items: PRDItemData[]): BranchStats {
             break;
           case "blocked":
             stats.blocked++;
+            break;
+          case "deleted":
+            stats.deleted++;
             break;
         }
       }
@@ -66,6 +70,7 @@ export function countChildStatuses(
     completed: 0,
     deferred: 0,
     blocked: 0,
+    deleted: 0,
   };
   for (const child of children) {
     counts[child.status]++;

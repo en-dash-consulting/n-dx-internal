@@ -28,6 +28,7 @@ const STATUS_OPTIONS: Array<{ value: ItemStatus; label: string; icon: string }> 
   { value: "completed", label: "Completed", icon: "●" },
   { value: "blocked", label: "Blocked", icon: "⊘" },
   { value: "deferred", label: "Deferred", icon: "◌" },
+  { value: "deleted", label: "Deleted", icon: "✕" },
 ];
 
 // ── Component ────────────────────────────────────────────────────────

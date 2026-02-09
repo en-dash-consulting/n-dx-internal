@@ -1714,11 +1714,11 @@
     {
       "id": "3bf3754c-c0d0-4fb7-9cbd-5ebbddb85d51",
       "title": "Analysis Pipeline Optimization",
-      "status": "in_progress",
+      "status": "completed",
       "level": "epic",
       "source": "llm",
       "startedAt": "2026-02-09T16:13:11.752Z",
-      "completedAt": "2026-02-09T16:13:11.752Z",
+      "completedAt": "2026-02-09T18:45:45.951Z",
       "children": [
         {
           "id": "8a4773af-894f-4245-9bbf-7bf676abd527",
@@ -2985,11 +2985,12 @@
             {
               "id": "e4345e18-1bd5-4028-9c38-69092afacdb6",
               "title": "Deduplicate near-identical findings across enrichment passes",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Add finding deduplication to zones scanner: detect and merge findings with similar text across different passes, keeping the highest-severity version",
               "priority": "medium",
-              "startedAt": "2026-02-09T18:39:30.216Z"
+              "startedAt": "2026-02-09T18:39:30.216Z",
+              "completedAt": "2026-02-09T18:45:26.263Z"
             },
             {
               "id": "ed9582a2-6b8a-437d-826b-f7636488dc3d",
@@ -5133,7 +5134,7 @@
             {
               "id": "ca70d859-0747-4e0b-a5ff-5d42048a8861",
               "title": "Add status filter UI controls to Rex dashboard",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement checkbox or dropdown interface in the Rex dashboard tree view that allows users to select which statuses to display",
               "acceptanceCriteria": [
@@ -5148,7 +5149,9 @@
                 "ui",
                 "filtering"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-09T18:45:46.086Z",
+              "completedAt": "2026-02-09T18:52:16.223Z"
             },
             {
               "id": "187d834c-b6dc-49b4-82fc-299c2c6d414c",

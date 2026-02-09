@@ -8,6 +8,8 @@ export { AnalyzePanel } from "./analyze-panel.js";
 export type { AnalyzePanelProps } from "./analyze-panel.js";
 export { BulkActions } from "./bulk-actions.js";
 export type { BulkActionsProps } from "./bulk-actions.js";
+export { StatusFilter, defaultStatusFilter, ALL_STATUSES } from "./status-filter.js";
+export type { StatusFilterProps } from "./status-filter.js";
 export type {
   PRDItemData,
   PRDDocumentData,

@@ -11,7 +11,8 @@ export type ItemStatus =
   | "in_progress"
   | "completed"
   | "deferred"
-  | "blocked";
+  | "blocked"
+  | "deleted";
 
 export type Priority = "critical" | "high" | "medium" | "low";
 
@@ -44,4 +45,5 @@ export interface BranchStats {
   pending: number;
   deferred: number;
   blocked: number;
+  deleted: number;
 }
