@@ -3121,12 +3121,12 @@
     {
       "id": "a53b2572-87a8-4eb2-804a-2b9ae668b930",
       "title": "PRD Management Enhancement",
-      "status": "in_progress",
+      "status": "completed",
       "level": "epic",
       "tags": [],
       "source": "llm",
       "startedAt": "2026-02-09T18:57:50.151Z",
-      "completedAt": "2026-02-09T14:09:06.086Z",
+      "completedAt": "2026-02-09T19:49:06.353Z",
       "children": [
         {
           "id": "5ea113f8-18e8-44b4-afd8-b0c381520a36",
@@ -3360,12 +3360,12 @@
         {
           "id": "428fed3c-fa27-455f-a39e-f882f344fab3",
           "title": "PRD Validation and Maintenance",
-          "status": "in_progress",
+          "status": "completed",
           "level": "feature",
           "description": "Enhanced validation and cleanup tools for PRD integrity",
           "source": "llm",
           "startedAt": "2026-02-09T18:57:45.040Z",
-          "completedAt": "2026-02-09T14:09:06.055Z",
+          "completedAt": "2026-02-09T19:49:06.320Z",
           "children": [
             {
               "id": "4741b835-bbcf-4cfd-b5b5-27e1bc0cb5a5",
@@ -3400,10 +3400,12 @@
             {
               "id": "a2453828-c113-4e6b-80c4-103b06db9df9",
               "title": "Auto-fix command for common PRD issues",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add a rex fix command that auto-repairs common validation issues: (1) add missing timestamps to items based on status, (2) clear orphan blockedBy references, (3) align parent status with child states. Support --dry-run flag and JSON output.",
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-02-09T19:37:11.836Z",
+              "completedAt": "2026-02-09T19:49:06.274Z"
             }
           ]
         },
@@ -5358,6 +5360,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-09T19:36:27.229Z",
+      "completedAt": "2026-02-09T19:36:27.229Z",
       "children": [
         {
           "id": "ecc16e53-4db6-455f-a6d4-fba32422af14",
@@ -5399,9 +5403,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-09T19:36:27.229Z",
-      "completedAt": "2026-02-09T19:36:27.229Z"
+      ]
     }
   ]
 }

@@ -20,6 +20,7 @@ Commands:
   prune [dir]             Remove completed subtrees (archive to .rex/archive.json)
   usage [dir]             Detailed token usage analytics and cost estimation
   validate [dir]          Check PRD integrity (DAG, schema)
+  fix [dir]               Auto-fix common validation issues (timestamps, refs, status)
   report [dir]            Generate JSON health report for CI dashboards
   verify [dir]            Run tests for acceptance criteria
   recommend [dir]         Get SourceVision recommendations
@@ -38,7 +39,7 @@ Options:
   --priority=<p>          Priority (for update/add)
   --description="..."     Description (for add/update)
   --task=<id>             Target a specific task (for verify)
-  --dry-run               Preview without making changes (for prune, reshape, verify)
+  --dry-run               Preview without making changes (for fix, prune, reshape, verify)
   --smart                 LLM-assisted prune (for prune)
   --coverage              Show test coverage per task (for status)
   --tokens=false          Hide token usage summary (shown by default, for status)

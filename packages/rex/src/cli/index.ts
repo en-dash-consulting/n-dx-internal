@@ -224,6 +224,11 @@ async function main(): Promise<void> {
         await cmdValidate(resolveDir(), flags);
         break;
       }
+      case "fix": {
+        const { cmdFix } = await import("./commands/fix.js");
+        await cmdFix(resolveDir(), flags);
+        break;
+      }
       case "sync": {
         const { cmdSync } = await import("./commands/sync.js");
         await cmdSync(resolveDir(), flags);
