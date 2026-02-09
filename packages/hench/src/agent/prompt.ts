@@ -57,6 +57,12 @@ export function buildSystemPrompt(
     lines.push("7. Log a summary of what you did\n");
   }
 
+  lines.push("## Error Handling");
+  lines.push("- If tests fail after your changes, read the failure output carefully, fix the issue, and re-run.");
+  lines.push("- If you encounter a test failure you did NOT cause (pre-existing), note it in the log and continue.");
+  lines.push("- If validation/build fails, fix it before committing — never commit broken code.");
+  lines.push("- If you're stuck after 3 attempts at the same problem, log what you tried and move on.\n");
+
   if (!isCli) {
     lines.push("## Tool Notes");
     lines.push("- File paths are relative to the project root.");

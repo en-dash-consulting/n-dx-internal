@@ -69,9 +69,9 @@ describe("buildAssessmentPrompt", () => {
     const proposals = [makeProposal("Auth")];
     const prompt = buildAssessmentPrompt(proposals);
 
-    expect(prompt).toContain("single unit of work");
+    expect(prompt).toMatch(/focused session|1-4 hours/);
     expect(prompt).toContain("acceptance criteria");
-    expect(prompt).toContain("independently testable");
+    expect(prompt.toLowerCase()).toContain("independently testable");
   });
 
   it("provides example response format", () => {

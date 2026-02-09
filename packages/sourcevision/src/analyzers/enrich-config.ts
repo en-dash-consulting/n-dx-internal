@@ -36,19 +36,41 @@ export interface PassConfig {
 export const PASS_CONFIGS: PassConfig[] = [
   { focus: "", expectedTypes: ["observation"] }, // pass 0 = algorithmic only
   {
-    focus: "For each zone, provide a meaningful name, description, and 2-3 actionable observations about its role and quality. Assign severity to each finding: most observations are \"info\", flag anything concerning as \"warning\".",
+    focus: `For each zone, provide:
+1. A meaningful, descriptive name (not generic like "utilities" or "misc" — reflect the zone's actual domain role)
+2. A one-sentence description of the zone's architectural purpose
+3. 2-3 actionable observations about its role and quality
+
+Severity guide: most observations are "info". Flag zones with low cohesion (<0.4) or high coupling (>0.6) as "warning".`,
     expectedTypes: ["observation"],
   },
   {
-    focus: "Focus on relationships BETWEEN zones. What architectural patterns exist? Where are the clean boundaries vs leaky abstractions? Assign severity: relationships are \"info\", leaky abstractions are \"warning\".",
+    focus: `Focus on relationships BETWEEN zones:
+- What architectural patterns exist? (e.g. layered architecture, hub-and-spoke, circular dependencies)
+- Where are the clean boundaries? Which zone pairs have well-defined interfaces?
+- Where are the leaky abstractions? Which zones reach into each other's internals?
+
+Severity guide: clean relationships are "info". Leaky abstractions or missing interfaces are "warning". Circular dependencies between zones are "critical".`,
     expectedTypes: ["pattern", "relationship"],
   },
   {
-    focus: "Identify concrete problems: tight coupling that should be broken, missing abstraction layers, files that belong in a different zone, zones that should be split or merged. Most anti-patterns should be \"warning\" or \"critical\" severity.",
+    focus: `Identify concrete problems:
+- Tight coupling that should be broken (zones that depend on each other's internal details)
+- Missing abstraction layers (zones communicating through implementation details instead of interfaces)
+- Files that belong in a different zone based on their actual purpose
+- Zones that should be split (too many unrelated concerns) or merged (too few files, same concern)
+
+Severity guide: misplaced files are "warning". Missing abstractions and tight coupling are "warning" or "critical" based on blast radius.`,
     expectedTypes: ["anti-pattern"],
   },
   {
-    focus: "Look for subtle patterns: naming inconsistencies, risk areas (high coupling + low cohesion), implicit conventions, and specific refactoring opportunities. Suggestions are \"info\", urgent refactors are \"warning\".",
+    focus: `Look for subtle patterns and improvement opportunities:
+- Naming inconsistencies (files/exports that don't match the zone's naming conventions)
+- Risk areas: zones with BOTH high coupling AND low cohesion are fragile — flag them
+- Implicit conventions that should be documented or enforced
+- Specific refactoring opportunities with clear before/after descriptions
+
+Severity guide: naming inconsistencies are "info". Risk areas and urgent refactors are "warning".`,
     expectedTypes: ["suggestion"],
   },
 ];
@@ -58,10 +80,21 @@ export function getPassConfig(pass: number, existingFindingsCount?: number): Pas
   // Pass 5+ = meta-evaluation
   return {
     focus: `You are reviewing all ${existingFindingsCount ?? 0} findings from previous analysis passes. Your tasks:
-1. SEVERITY REASSESSMENT: Review each finding and assign or update severity (info/warning/critical) based on impact
-2. META-PATTERNS: Look across all findings for higher-order patterns not captured by any individual finding
-3. ACTIONABLE SUGGESTIONS: Convert vague observations into specific, actionable refactoring steps
-4. CONTRADICTIONS: Flag any findings that contradict each other
+
+1. SEVERITY REASSESSMENT: Re-evaluate each finding's severity based on cumulative evidence.
+   - Upgrade to "critical" if multiple findings point to the same root cause.
+   - Downgrade to "info" if a finding seemed concerning in isolation but is actually fine in context.
+
+2. META-PATTERNS: Look across ALL findings for higher-order patterns not captured individually.
+   - Are there systemic issues (e.g. all zones have the same coupling problem)?
+   - Are there architecture-level concerns (e.g. no clear layering, everything depends on everything)?
+
+3. ACTIONABLE SUGGESTIONS: Convert vague observations into specific refactoring steps.
+   - Each suggestion should name concrete files/zones and describe what to move/extract/merge.
+   - Prefer small, incremental changes over big-bang rewrites.
+
+4. CONTRADICTIONS: Flag findings that contradict each other and explain which one is correct.
+
 Return updated severity assignments, new meta-findings, and improved suggestions.`,
     expectedTypes: ["suggestion", "anti-pattern", "pattern"],
   };
@@ -114,14 +147,14 @@ ${globalStr || "  (none)"}
 Cross-zone crossings: ${crossings.length} total across ${new Set(crossings.map(c => c.fromZone + "\u2192" + c.toZone)).size} zone pairs.
 
 Your tasks:
-1. SEVERITY REASSESSMENT: For any findings where severity should change, include severityUpdates.
-2. META-PATTERNS: Look across ALL findings for higher-order patterns.
-3. ACTIONABLE SUGGESTIONS: Convert vague observations into specific refactoring steps.
-4. CONTRADICTIONS: Flag findings that contradict each other.
+1. SEVERITY REASSESSMENT: Re-evaluate findings where severity should change based on cumulative evidence. Upgrade if multiple findings point to the same root cause. Downgrade if a finding seemed concerning in isolation but is fine in context.
+2. META-PATTERNS: Identify higher-order patterns across ALL findings (systemic issues, architectural concerns).
+3. ACTIONABLE SUGGESTIONS: Convert vague observations into specific refactoring steps naming concrete files/zones.
+4. CONTRADICTIONS: Flag findings that contradict each other and explain which is correct.
 
 Each finding MUST include a "severity" field: "info" (informational), "warning" (should fix), or "critical" (must fix).
 
-Respond with ONLY a JSON object:
+Respond with ONLY a JSON object (no markdown, no explanation):
 {"severityUpdates":[{"findingIndex":0,"newSeverity":"warning"}],"zones":[{"id":"zone-id","newInsights":[],"findings":[{"type":"suggestion","scope":"zone-id","text":"...","severity":"warning"}]}],"insights":["meta-observation"],"findings":[{"type":"pattern","scope":"global","text":"...","severity":"info"}]}
 
 Empty arrays are fine. Do NOT repeat existing findings.`;

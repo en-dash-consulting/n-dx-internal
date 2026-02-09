@@ -49,7 +49,7 @@ describe("buildBreakdownPrompt", () => {
     const proposals = [makeProposal("Auth")];
     const prompt = buildBreakdownPrompt(proposals);
 
-    expect(prompt).toContain("break down");
+    expect(prompt.toLowerCase()).toContain("break down");
     expect(prompt).toContain("finer-grained");
     expect(prompt).toContain("2-4 smaller");
   });
@@ -66,7 +66,9 @@ describe("buildBreakdownPrompt", () => {
     const proposals = [makeProposal("Auth")];
     const prompt = buildBreakdownPrompt(proposals);
 
-    expect(prompt).toContain("Preserve the original intent");
+    // Must instruct to preserve original acceptance criteria
+    expect(prompt).toContain("original acceptance criteria");
+    expect(prompt).toMatch(/do not lose|distribute|preserve/i);
   });
 
   it("instructs not to add new functionality", () => {

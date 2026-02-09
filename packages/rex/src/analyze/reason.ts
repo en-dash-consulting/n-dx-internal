@@ -815,6 +815,46 @@ const FORMAT_HINTS: Record<FileFormat, string> = {
     "The document is in YAML format. Extract meaningful requirements from the structured data fields.",
 };
 
+// ── Shared prompt fragments ──
+
+/**
+ * The JSON schema definition shared across all PRD prompts.
+ * Centralised here to ensure consistency and reduce prompt token count
+ * (one source of truth instead of repeating the shape in every prompt).
+ */
+export const PRD_SCHEMA = `Each element must be an object with:
+- "epic": { "title": string }
+- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }`;
+
+/**
+ * Shared task-quality guidelines that every PRD prompt should include.
+ * Extracted so that improvements to task quality expectations propagate
+ * everywhere at once.
+ */
+export const TASK_QUALITY_RULES = `Task quality:
+- Task titles MUST be specific and actionable, verb-first (e.g. "Implement OAuth2 callback handler", NOT "OAuth2" or "Authentication stuff").
+- Every task MUST have BOTH a description AND acceptanceCriteria. Omit neither.
+- Descriptions explain the "why" and expected outcome — not just restating the title. Give enough context for someone unfamiliar with the codebase to understand the intent.
+- Acceptance criteria MUST be concrete, verifiable pass/fail checks. Avoid subjective criteria like "works well" or "is fast".
+- Each task should represent a single unit of work completable in one focused session (1-4 hours).
+- Assign priority based on: blocking dependencies → user-facing impact → technical debt.`;
+
+/**
+ * Common anti-patterns to avoid in LLM responses. Included in prompts to
+ * steer the model away from frequently observed failure modes.
+ */
+export const ANTI_PATTERNS = `Avoid these common mistakes:
+- Do NOT produce tasks with only a title and no description or criteria — every task needs substance.
+- Do NOT use vague titles like "Implement the feature", "Fix the bug", "Update code" — be specific about WHAT is being implemented/fixed/updated.
+- Do NOT create single-task features — if a feature has only one task, either break the task down or merge it into a related feature.
+- Do NOT duplicate tasks already in the existing PRD (check the summary below).
+- Do NOT wrap your response in markdown fences — return raw JSON only.`;
+
+/**
+ * Strict output format instruction shared by all PRD prompts.
+ */
+export const OUTPUT_INSTRUCTION = `Respond with ONLY a valid JSON array. No explanation, no markdown fences, no commentary — just the JSON.`;
+
 // ── Few-shot example for LLM prompts ──
 
 /**
@@ -1026,20 +1066,18 @@ export async function reasonFromFile(
 
   const prompt = `You are a product requirements analyst. Read the following document and extract a structured PRD (Product Requirements Document) as a JSON array.
 
-Each element must be an object with:
-- "epic": { "title": string }
-- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
+${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
 
-Guidelines:
-- Group related items into epics and features logically
-- Derive tasks from actionable items in the document
-- Every task MUST have either a description or acceptanceCriteria (preferably both)
-- Task titles must be specific and actionable (verb-first, e.g. "Implement X", "Add Y")
-- Each task should represent a single unit of work completable in one session
-- Assign priority based on: blocking dependencies → user-facing impact → technical debt
-- Do NOT include items that duplicate anything already in the existing PRD
+Structuring guidelines:
+- Group related items into epics and features logically.
+- Derive tasks from actionable items in the document.
+- If the document covers multiple distinct areas, create separate epics for each.
+
+${TASK_QUALITY_RULES}
+
+${ANTI_PATTERNS}
 
 ${FORMAT_HINTS[format]}
 
@@ -1049,7 +1087,7 @@ ${existingSummary}
 Document to analyze:
 ${content}
 
-Respond with ONLY a valid JSON array, no explanation or markdown fences.`;
+${OUTPUT_INSTRUCTION}`;
 
   const result = await spawnClaude(prompt, model ?? DEFAULT_MODEL);
   accumulateTokenUsage(tokenUsage, result.tokenUsage);
@@ -1194,23 +1232,24 @@ export async function reasonFromScanResults(
 
     const prompt = `You are a product requirements analyst. Given the following raw scan results from automated code analysis, organize them into a clean, well-structured PRD as a JSON array.
 
-Each element must be an object with:
-- "epic": { "title": string }
-- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
+${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
 
-Guidelines:
+Structuring guidelines:
 - Near-duplicate items have already been merged. Focus on semantic grouping and structure.
 - If any remaining items are clearly about the same thing, merge them into a single item.
-- Create meaningful epic groupings (not just "Tests" or "Documentation")
-- Rewrite vague titles to be clear and actionable (verb-first, e.g. "Implement X", "Add Y")
-- Every task MUST have either a description or acceptanceCriteria (preferably both)
-- Each task should represent a single unit of work completable in one session
-- Preserve priority levels from the scan results
-- Assign priority based on: blocking dependencies → user-facing impact → technical debt
-- Do NOT include items that duplicate anything in the existing PRD
-- Use the project context below to understand the project's purpose, architecture, and terminology; align epic/feature names with the project's domain
+- Create meaningful epic groupings that reflect the project's domain (not generic names like "Tests" or "Documentation").
+- Group related work into features under appropriate epics.
+
+${TASK_QUALITY_RULES}
+
+Scan-specific rules:
+- Preserve priority levels from the scan results where they exist.
+- Rewrite vague scan-generated titles to be clear and actionable.
+- Use the project context below to align epic/feature names with the project's domain terminology.
+
+${ANTI_PATTERNS}
 ${chunkNote}${contextBlock}
 Existing PRD:
 ${existingSummary}
@@ -1218,7 +1257,7 @@ ${existingSummary}
 Scan results:
 ${scanSummary}
 
-Respond with ONLY a valid JSON array, no explanation or markdown fences.`;
+${OUTPUT_INSTRUCTION}`;
 
     const claudeResult = await spawnClaude(prompt, model);
     accumulateTokenUsage(tokenUsage, claudeResult.tokenUsage);
@@ -1271,9 +1310,7 @@ Do NOT create a new epic — instead use the parent's title as the epic title in
 
   return `You are a product requirements analyst. Given the following natural-language description, create a structured PRD breakdown as a JSON array.
 
-Each element must be an object with:
-- "epic": { "title": string }
-- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
+${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
 
@@ -1281,20 +1318,15 @@ Structuring guidelines:
 - Break the description into a logical hierarchy of epics, features, and tasks.
 - If the description is broad or covers multiple distinct areas, create multiple epics rather than forcing everything under one.
 - Group related work into features under appropriate epics.
-- Each task should represent a single unit of work completable in one session.
-- Assign priority based on: blocking dependencies → user-facing impact → technical debt.
 
-Task quality:
-- Task titles must be specific and actionable (verb-first, e.g. "Implement X", "Add Y").
-- Every task MUST have either a description or acceptanceCriteria (preferably both).
-- Descriptions should explain the "why" and expected outcome, not just restate the title. A good description gives enough context for someone unfamiliar with the codebase to understand the intent.
-- Acceptance criteria should be concrete and verifiable — each criterion is a pass/fail check.
-- Add acceptance criteria where requirements are clear.
+${TASK_QUALITY_RULES}
 
 Deduplication:
 - Do NOT include items that duplicate anything already in the existing PRD below.
 - Do NOT create duplicate tasks within your own response — if two aspects of the description overlap, merge them into a single task with combined criteria.
 - Use the project context to understand terminology and architecture.
+
+${ANTI_PATTERNS}
 ${parentConstraint}
 ${contextBlock}
 Existing PRD:
@@ -1303,7 +1335,7 @@ ${existingSummary}
 Description to add:
 ${description}
 
-Respond with ONLY a valid JSON array, no explanation or markdown fences.`;
+${OUTPUT_INSTRUCTION}`;
 }
 
 function findItemInTree(
@@ -1379,32 +1411,25 @@ Do NOT create a new epic — instead use the parent's title as the epic title in
     .map((d, i) => `${i + 1}. ${d}`)
     .join("\n");
 
-  return `You are a product requirements analyst. You have been given multiple feature descriptions at once. Analyze ALL of them and create a unified, coherent PRD breakdown as a JSON array.
+  return `You are a product requirements analyst. You have been given ${descriptions.length} feature descriptions at once. Analyze ALL of them and create a unified, coherent PRD breakdown as a JSON array.
 
-Each element must be an object with:
-- "epic": { "title": string }
-- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
+${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
 
 Structuring guidelines:
-- You are receiving ${descriptions.length} separate descriptions. Treat each one as a distinct piece of work.
+- Treat each description as a distinct piece of work.
 - Group related descriptions under the same epic when they naturally belong together.
 - Keep unrelated descriptions in separate epics.
-- Each task should represent a single unit of work completable in one session.
-- Assign priority based on: blocking dependencies → user-facing impact → technical debt.
 
-Task quality:
-- Task titles must be specific and actionable (verb-first, e.g. "Implement X", "Add Y").
-- Every task MUST have either a description or acceptanceCriteria (preferably both).
-- Descriptions should explain the "why" and expected outcome, not just restate the title. A good description gives enough context for someone unfamiliar with the codebase to understand the intent.
-- Acceptance criteria should be concrete and verifiable — each criterion is a pass/fail check.
-- Add acceptance criteria where requirements are clear.
+${TASK_QUALITY_RULES}
 
 Deduplication:
 - Do NOT include items that duplicate anything already in the existing PRD below.
 - Do NOT create duplicate items across descriptions — if two descriptions overlap, merge them into a single task with combined criteria.
 - Use the project context to understand terminology and architecture.
+
+${ANTI_PATTERNS}
 ${parentConstraint}
 ${contextBlock}
 Existing PRD:
@@ -1413,7 +1438,7 @@ ${existingSummary}
 Descriptions to add:
 ${numbered}
 
-Respond with ONLY a valid JSON array, no explanation or markdown fences.`;
+${OUTPUT_INSTRUCTION}`;
 }
 
 /**
@@ -1453,23 +1478,24 @@ export async function reasonFromDescriptions(
 export function buildBreakdownPrompt(proposals: Proposal[]): string {
   const proposalJson = JSON.stringify(proposals, null, 2);
 
-  return `You are a product requirements analyst. The user wants to break down the following PRD proposals into finer-grained, more detailed tasks.
+  return `You are a product requirements analyst. Break down the following PRD proposals into finer-grained, more detailed tasks.
 
 Current proposals:
 ${proposalJson}
 
-Your job:
-- Take each task in each feature and break it into 2-4 smaller, more specific subtasks.
+Rules:
+- Split each task into 2-4 smaller, more specific subtasks.
 - If a feature has only 1 task, expand it into 2-3 tasks covering distinct aspects.
 - Preserve the epic and feature structure — do NOT change epic or feature titles.
-- Each new task must have a clear, actionable title (verb-first) and either a description or acceptanceCriteria.
-- Preserve the original intent and acceptance criteria — distribute them among the subtasks.
+- Each new task MUST have a verb-first title AND both a description and acceptanceCriteria.
+- Distribute the original acceptance criteria among the subtasks — do not lose any.
 - Keep priorities consistent with the originals.
 - Do NOT add entirely new functionality — only decompose what exists.
+- Do NOT produce tasks with only a title — every task needs both description and criteria.
 
 ${FEW_SHOT_EXAMPLE}
 
-Respond with ONLY a valid JSON array in the same format, no explanation or markdown fences.`;
+${OUTPUT_INSTRUCTION}`;
 }
 
 /**
@@ -1480,25 +1506,26 @@ Respond with ONLY a valid JSON array in the same format, no explanation or markd
 export function buildConsolidatePrompt(proposals: Proposal[]): string {
   const proposalJson = JSON.stringify(proposals, null, 2);
 
-  return `You are a product requirements analyst. The user wants to consolidate the following PRD proposals into coarser-grained, higher-level tasks.
+  return `You are a product requirements analyst. Consolidate the following PRD proposals into coarser-grained, higher-level tasks.
 
 Current proposals:
 ${proposalJson}
 
-Your job:
+Rules:
 - Merge related tasks within each feature into broader, higher-level tasks.
 - Aim to reduce the total task count by roughly half.
-- If a feature has many tasks, combine related ones into a single task with merged acceptance criteria.
-- If multiple features are closely related, consider merging them into one feature.
+- If a feature has many tasks, combine related ones with merged acceptance criteria.
+- If multiple features are closely related, merge them into one feature.
 - Preserve the epic structure — do NOT change epic titles.
-- Each resulting task must have a clear, actionable title (verb-first) and either a description or acceptanceCriteria.
+- Each resulting task MUST have a verb-first title AND both a description and acceptanceCriteria.
 - Preserve the original intent — the consolidated tasks should cover the same scope as the originals.
-- Keep priorities (use the highest priority among merged tasks).
+- Keep the highest priority among merged tasks.
 - Do NOT remove functionality — only consolidate what exists.
+- Do NOT produce tasks with only a title — every task needs both description and criteria.
 
 ${FEW_SHOT_EXAMPLE}
 
-Respond with ONLY a valid JSON array in the same format, no explanation or markdown fences.`;
+${OUTPUT_INSTRUCTION}`;
 }
 
 /**
@@ -1568,28 +1595,37 @@ export function buildAssessmentPrompt(proposals: Proposal[]): string {
     2,
   );
 
-  return `You are a product requirements analyst specializing in task sizing and work breakdown. Analyze the following PRD proposals and assess whether each one has tasks at the right level of granularity.
+  return `You are a product requirements analyst specializing in task sizing. Assess whether each proposal's tasks are at the right granularity.
 
 Proposals to assess:
 ${proposalJson}
 
-For EACH proposal (by proposalIndex), evaluate the granularity of its tasks and provide:
-1. "recommendation": one of "break_down", "consolidate", or "keep"
-   - "break_down": tasks are too large/broad and should be split into smaller, more specific units
-   - "consolidate": tasks are too fine-grained and should be merged into larger, more meaningful units
+For EACH proposal (by proposalIndex), provide:
+1. "recommendation": "break_down" | "consolidate" | "keep"
+   - "break_down": tasks are too large/broad — split into smaller units
+   - "consolidate": tasks are too fine-grained — merge into larger units
    - "keep": tasks are appropriately sized
-2. "reasoning": a concise explanation of why this recommendation was made
-3. "issues": specific problems found (empty array if recommendation is "keep")
+2. "reasoning": concise explanation (1-2 sentences)
+3. "issues": specific problems found (empty array if "keep")
 
-Assessment criteria:
-- Each task should represent a single unit of work completable in one focused session (roughly 1-4 hours of work)
-- Tasks with more than 3 acceptance criteria may be too broad and should be broken down
-- Tasks with vague descriptions like "implement the feature" are too broad
-- Tasks that are a single line change or trivial config tweak are too fine-grained
-- Features with more than 6 tasks may indicate tasks are too fine-grained
-- Features with only 1 task may indicate it should be broken down further
-- Multiple tasks that would naturally be done together should be consolidated
-- Tasks should be independently testable and deployable where possible
+Assessment criteria — a well-sized task is:
+- Completable in one focused session (1-4 hours)
+- Independently testable and deployable where possible
+- Specific enough that the implementer knows exactly what to do
+
+Red flags for TOO BROAD:
+- More than 3 acceptance criteria
+- Vague titles like "implement the feature" or "add API endpoints"
+- Covers multiple distinct components or concerns
+
+Red flags for TOO FINE-GRAINED:
+- Single line change or trivial config tweak
+- Feature has more than 6 tasks
+- Multiple tasks that would naturally be done in the same edit session
+
+Red flags for MISSING SUBSTANCE:
+- Feature has only 1 task (should be broken down or merged)
+- Tasks lack description or acceptance criteria
 
 Respond with ONLY a valid JSON array of assessment objects, one per proposal:
 [
@@ -1748,31 +1784,28 @@ Do NOT create a new epic — instead use the parent's title as the epic title in
     }
   }
 
-  return `You are a product requirements analyst reading raw brainstorming notes. These are NOT formal specs — they are rough ideas, bullet points, half-formed thoughts, stream-of-consciousness fragments, and informal shorthand. Your job is to distill every idea into a well-structured PRD as a JSON array.
+  return `You are a product requirements analyst reading raw brainstorming notes. These are NOT formal specs — they are rough ideas, bullet points, half-formed thoughts, and informal shorthand. Distill every idea into a well-structured PRD as a JSON array.
 
-Each element must be an object with:
-- "epic": { "title": string }
-- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
+${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
 
 Interpreting rough notes:
 - Capture EVERY idea, no matter how brief or fragmentary. A single word like "caching" is still an idea worth structuring.
 - Questions ("what about dark mode?") are feature requests in disguise — treat them as such.
-- Shorthand and abbreviations are common in notes. Expand "auth" → "authentication", "perf" → "performance", etc. using the project context to infer meaning.
-- When an idea is ambiguous or could mean multiple things, pick the most likely interpretation given the project context and note your assumption in the task description (e.g. "Assuming this refers to client-side caching based on project architecture").
+- Expand shorthand and abbreviations ("auth" → "authentication", "perf" → "performance") using the project context to infer meaning.
+- When an idea is ambiguous, pick the most likely interpretation given the project context and note your assumption in the task description.
 - Contradictory notes (e.g. "use Redis" and "keep it simple, no external deps") should both be captured as separate options with a note about the trade-off.
-- If notes mention a problem without a solution ("login is slow"), turn it into an investigative task (e.g. "Profile and optimize login flow").
-- Vague ideas ("make it better", "improve UX") should be fleshed out into concrete, actionable tasks based on what the project context suggests.
+- Problems without solutions ("login is slow") become investigative tasks (e.g. "Profile and optimize login flow").
+- Vague ideas ("make it better") should be fleshed out into concrete tasks based on the project context.
 
-Structuring guidelines:
-- Group related ideas into logical epics and features.
-- Task titles must be specific and actionable (verb-first, e.g. "Implement X", "Add Y").
-- Every task MUST have either a description or acceptanceCriteria (preferably both).
-- Each task should represent a single unit of work completable in one session.
-- Assign priority based on: blocking dependencies → user-facing impact → technical debt.
+${TASK_QUALITY_RULES}
+
+Deduplication:
 - Do NOT include items that duplicate anything already in the existing PRD below.
 - Use the project context to understand terminology, architecture, and domain-specific jargon in the notes.
+
+${ANTI_PATTERNS}
 ${parentConstraint}
 ${contextBlock}
 Existing PRD:
@@ -1781,7 +1814,7 @@ ${existingSummary}
 Brainstorming notes:
 ${content}
 
-Respond with ONLY a valid JSON array, no explanation or markdown fences.`;
+${OUTPUT_INSTRUCTION}`;
 }
 
 /**

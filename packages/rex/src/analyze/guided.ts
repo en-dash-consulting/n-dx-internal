@@ -5,6 +5,9 @@ import {
   readProjectContext,
   parseProposalResponse,
   FEW_SHOT_EXAMPLE,
+  PRD_SCHEMA,
+  TASK_QUALITY_RULES,
+  OUTPUT_INSTRUCTION,
   DEFAULT_MODEL,
   emptyAnalyzeTokenUsage,
   accumulateTokenUsage,
@@ -68,21 +71,23 @@ The user is building a new project and has provided the following description:
   }
 
   prompt += `
-Your task: Evaluate whether you have enough information to generate a comprehensive product spec (epics, features, and tasks). Consider:
-- Who are the target users?
-- What are the core features vs nice-to-haves?
-- Are there technical constraints or preferences?
-- What does success look like?
-- Are there integrations, data models, or workflows to define?
+Your task: Evaluate whether you have enough information to generate a comprehensive product spec (epics, features, and tasks).
 
-If you need more information, respond with a JSON object:
+Key areas to probe (only ask about what's missing):
+- Target users and their primary use cases
+- Core features vs nice-to-haves (priorities)
+- Technical constraints or preferences (language, framework, infra)
+- Success criteria (what does "done" look like?)
+- Integrations, data models, or workflows that need defining
+
+If you need more information, respond with:
 { "status": "clarifying", "questions": ["question1", "question2", ...] }
-Ask 2-4 focused questions. Don't repeat questions already answered.
+Ask 2-4 focused, specific questions. Don't repeat questions already answered. Avoid generic questions — each should unlock concrete requirements.
 
 If you have enough information, respond with:
 { "status": "ready", "summary": "Brief summary of what you understand the project to be" }
 
-Respond with ONLY the JSON object, no markdown fences or explanation.`;
+Respond with ONLY the JSON object. No markdown fences, no explanation.`;
 
   return prompt;
 }
@@ -124,19 +129,16 @@ function buildSpecPrompt(
 ): string {
   let prompt = `You are a product requirements analyst. Create a comprehensive PRD breakdown as a JSON array from the following project specification.
 
-Each element must be an object with:
-- "epic": { "title": string }
-- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
+${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
 
-Guidelines:
-- Create a complete initial PRD covering all aspects discussed
-- Task titles must be specific and actionable (verb-first)
-- Every task MUST have a description and acceptanceCriteria
-- Assign priority: critical for blocking/foundational, high for core features, medium for enhancements, low for nice-to-haves
-- Group related work into epics, break epics into features, features into tasks
-- Each task should be a single unit of work completable in one session
+Structuring guidelines:
+- Create a complete initial PRD covering ALL aspects discussed — do not leave gaps.
+- Group related work into epics, break epics into features, features into tasks.
+- Assign priority: critical for blocking/foundational, high for core features, medium for enhancements, low for nice-to-haves.
+
+${TASK_QUALITY_RULES}
 
 Project description:
 ${context.description}
@@ -153,7 +155,7 @@ ${context.description}
     prompt += `\nProject context:\n${projectContext}\n`;
   }
 
-  prompt += "\nRespond with ONLY a valid JSON array, no explanation or markdown fences.";
+  prompt += `\n${OUTPUT_INSTRUCTION}`;
 
   return prompt;
 }

@@ -52,7 +52,8 @@ describe("buildMultiAddPrompt", () => {
       tmpDir,
     );
 
-    expect(prompt).toContain("3 separate descriptions");
+    // Should mention the count of descriptions being processed
+    expect(prompt).toMatch(/3\s+\w*\s*descriptions/);
   });
 
   it("instructs LLM to group related and separate unrelated", async () => {
