@@ -21,6 +21,7 @@ import { RexDashboard } from "./views/rex-dashboard.js";
 import { TokenUsageView } from "./views/token-usage.js";
 import { ValidationView } from "./views/validation.js";
 import { AnalysisView } from "./views/analysis.js";
+import { HenchRunsView } from "./views/hench-runs.js";
 
 initTheme();
 
@@ -210,10 +211,7 @@ function App() {
       case "validation":
         return h(ValidationView, null);
       case "hench-runs":
-        return h("div", { class: "view-placeholder" },
-          h("h2", null, "Hench Runs"),
-          h("p", { style: "color: var(--text-dim)" }, "Execution history coming soon.")
-        );
+        return h(HenchRunsView, null);
       default:
         return null;
     }
