@@ -32,6 +32,16 @@ function getInitialView(): ViewId {
   return VALID_VIEWS.has(hash) ? hash : "overview";
 }
 
+const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
+
+function getInitialSidebarCollapsed(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 function App() {
   const [view, setView] = useState<ViewId>(getInitialView);
   const [data, setData] = useState<LoadedData>({
@@ -48,8 +58,17 @@ function App() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [refreshToast, setRefreshToast] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(getInitialSidebarCollapsed);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [prdDetailContent, setPrdDetailContent] = useState<VNode<any> | null>(null);
+
+  const handleToggleSidebar = useCallback(() => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try { localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next)); } catch { /* noop */ }
+      return next;
+    });
+  }, []);
 
   const navigateTo: NavigateTo = useCallback((targetView, opts) => {
     const file = opts?.file ?? null;
@@ -219,7 +238,7 @@ function App() {
 
   return h(Fragment, null,
     h("a", { href: "#main-content", class: "skip-link" }, "Skip to main content"),
-    h(Sidebar, { view, onNavigate: handleSidebarNav, manifest: data.manifest, zones: data.zones }),
+    h(Sidebar, { view, onNavigate: handleSidebarNav, manifest: data.manifest, zones: data.zones, sidebarCollapsed, onToggleSidebar: handleToggleSidebar }),
     h("main", {
       id: "main-content",
       class: "main",

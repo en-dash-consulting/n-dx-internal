@@ -5121,17 +5121,21 @@
     {
       "id": "9b09ae02-a76e-4cbe-8acd-b4f34512fd88",
       "title": "Rex Dashboard Filtering Enhancement",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-09T19:11:15.973Z",
+      "completedAt": "2026-02-09T19:11:15.973Z",
       "children": [
         {
           "id": "0a8093cf-e35f-424a-9fb6-3d6bda39f935",
           "title": "Status-based Tree Filtering",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Add filtering controls to the Rex web dashboard tree view that allow users to show/hide items based on their status (pending, in_progress, completed, blocked, deferred, deleted)",
           "source": "smart-add",
+          "startedAt": "2026-02-09T19:11:15.938Z",
+          "completedAt": "2026-02-09T19:11:15.938Z",
           "children": [
             {
               "id": "ca70d859-0747-4e0b-a5ff-5d42048a8861",
@@ -5180,7 +5184,7 @@
             {
               "id": "f95f94cf-5e6f-489c-b889-cc70d9da782a",
               "title": "Add quick filter presets for common status combinations",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Provide one-click filter presets like 'Active Work' (pending + in_progress), 'All Complete', 'Blocked Items', etc. to improve user experience",
               "acceptanceCriteria": [
@@ -5196,7 +5200,8 @@
                 "presets"
               ],
               "source": "smart-add",
-              "startedAt": "2026-02-09T19:06:07.332Z"
+              "startedAt": "2026-02-09T19:06:07.332Z",
+              "completedAt": "2026-02-09T19:11:15.897Z"
             }
           ]
         }
@@ -5220,7 +5225,7 @@
             {
               "id": "4a335773-b752-453f-987e-de92af8638e5",
               "title": "Implement collapsible sidebar with responsive behavior",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add expand/collapse functionality to sidebar sections and implement mobile-friendly overlay behavior with full toggle capabilities",
               "acceptanceCriteria": [
@@ -5241,7 +5246,9 @@
                 "responsive",
                 "mobile"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-09T19:11:39.645Z",
+              "completedAt": "2026-02-09T19:20:35.626Z"
             },
             {
               "id": "4f5a3916-91a7-445b-bff0-c8ebd8cc09c9",
@@ -5291,7 +5298,7 @@
                 "Color contrast meets WCAG 2.1 AA standards",
                 "Page structure is logical when CSS is disabled"
               ],
-              "priority": "medium",
+              "priority": "low",
               "tags": [
                 "accessibility",
                 "keyboard",
@@ -5314,9 +5321,8 @@
             {
               "id": "9f0c0eb3-72de-4d8d-8e7e-80a2f69ad289",
               "title": "Establish comprehensive branding and visual hierarchy",
-              "level": "task",
               "status": "pending",
-              "source": "smart-add",
+              "level": "task",
               "description": "Integrate n-dx and product-specific logos while implementing consistent typography, spacing, and visual weight to create clear information hierarchy",
               "acceptanceCriteria": [
                 "N-dx logo is prominently displayed in main header/sidebar",
@@ -5330,7 +5336,7 @@
                 "Color scheme supports clear content hierarchy",
                 "Interactive elements have consistent hover and active states"
               ],
-              "priority": "low",
+              "priority": "medium",
               "tags": [
                 "branding",
                 "logo",
@@ -5339,7 +5345,53 @@
                 "typography",
                 "spacing",
                 "visual-hierarchy"
-              ]
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12ad32d8-608f-4df0-b5e9-37095a26a457",
+      "title": "Hench Task Association and Tracking",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "ecc16e53-4db6-455f-a6d4-fba32422af14",
+          "title": "Task-Run Association",
+          "status": "pending",
+          "level": "feature",
+          "description": "Link hench runs to specific PRD tasks for better tracking and audit trails",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "fc50c6e4-6b64-45fc-923c-ccac4a0aa448",
+              "title": "Implement complete task-run association with graceful handling",
+              "status": "pending",
+              "level": "task",
+              "description": "Create end-to-end association between hench runs and PRD tasks, including display of task information, metadata storage, and robust handling of task lifecycle changes",
+              "acceptanceCriteria": [
+                "Hench displays task ID and title when starting a run",
+                "Task information is shown before any work begins",
+                "Output format is consistent and easily readable",
+                "Run metadata includes associated task ID",
+                "Task association is stored when run is created",
+                "Metadata persists across run lifecycle",
+                "Runs display 'Task deleted' or similar when task no longer exists",
+                "Historical run records remain accessible",
+                "No crashes or errors when referencing deleted tasks"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "ux",
+                "persistence",
+                "robustness"
+              ],
+              "source": "smart-add"
             }
           ]
         }
