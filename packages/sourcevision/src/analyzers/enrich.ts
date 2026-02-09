@@ -9,7 +9,7 @@ export { PASS_CONFIGS, getPassConfig, buildMetaPrompt, computeAttemptConfigs, co
 export type { PassConfig } from "./enrich-config.js";
 export { callClaude, setClaudeConfig, setClaudeClient, getAuthMode, ClaudeClientError, DEFAULT_MODEL } from "./claude-client.js";
 export type { CallClaudeResult } from "./claude-client.js";
-export { tryParseJSON, extractFindings, mergeZonesByName } from "./enrich-parsing.js";
+export { tryParseJSON, extractFindings, mergeZonesByName, deduplicateFindings } from "./enrich-parsing.js";
 export type { EnrichResult } from "./enrich-parsing.js";
 export { emptyAnalyzeTokenUsage, accumulateTokenUsage, formatTokenUsage } from "./token-usage.js";
 export { enrichZonesPerZone, computeZoneStructureHash } from "./enrich-per-zone.js";

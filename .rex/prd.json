@@ -1714,7 +1714,7 @@
     {
       "id": "3bf3754c-c0d0-4fb7-9cbd-5ebbddb85d51",
       "title": "Analysis Pipeline Optimization",
-      "status": "completed",
+      "status": "in_progress",
       "level": "epic",
       "source": "llm",
       "startedAt": "2026-02-09T16:13:11.752Z",
@@ -2239,7 +2239,7 @@
             {
               "id": "9a6d5e8e-c1c7-46ff-9d6f-976b8dbee8b9",
               "title": "Improve project context reading",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Better processing of project documentation files",
               "acceptanceCriteria": [
@@ -2257,7 +2257,8 @@
                 "analysis"
               ],
               "source": "llm",
-              "startedAt": "2026-02-08T13:51:39.581Z"
+              "startedAt": "2026-02-08T13:51:39.581Z",
+              "completedAt": "2026-02-09T18:38:05.782Z"
             }
           ]
         },
@@ -2902,7 +2903,7 @@
             {
               "id": "e6b015e9-7116-4a58-aa03-bbf97c0b0ad4",
               "title": "Improve findings grouping, sorting, and presentation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Enhance grouping logic to organize findings by scope and type, with priority-based sorting and clean presentation.",
               "acceptanceCriteria": [
@@ -2918,7 +2919,8 @@
                 "deriveNextSteps"
               ],
               "source": "llm",
-              "startedAt": "2026-02-08T02:25:52.520Z"
+              "startedAt": "2026-02-08T02:25:52.520Z",
+              "completedAt": "2026-02-09T18:39:22.407Z"
             },
             {
               "id": "ea49bd62-1aa3-4139-b549-90078dcc4590",
@@ -2983,10 +2985,11 @@
             {
               "id": "e4345e18-1bd5-4028-9c38-69092afacdb6",
               "title": "Deduplicate near-identical findings across enrichment passes",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Add finding deduplication to zones scanner: detect and merge findings with similar text across different passes, keeping the highest-severity version",
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-02-09T18:39:30.216Z"
             },
             {
               "id": "ed9582a2-6b8a-437d-826b-f7636488dc3d",
@@ -4926,6 +4929,8 @@
         "ux",
         "navigation"
       ],
+      "startedAt": "2026-02-09T18:30:32.446Z",
+      "completedAt": "2026-02-09T18:30:32.446Z",
       "children": [
         {
           "id": "abbf736c-5dfb-42b9-a67b-867f52c1be2c",
@@ -5108,9 +5113,86 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-09T18:30:32.446Z",
-      "completedAt": "2026-02-09T18:30:32.446Z"
+      ]
+    },
+    {
+      "id": "9b09ae02-a76e-4cbe-8acd-b4f34512fd88",
+      "title": "Rex Dashboard Filtering Enhancement",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "0a8093cf-e35f-424a-9fb6-3d6bda39f935",
+          "title": "Status-based Tree Filtering",
+          "status": "pending",
+          "level": "feature",
+          "description": "Add filtering controls to the Rex web dashboard tree view that allow users to show/hide items based on their status (pending, in_progress, completed, blocked, deferred, deleted)",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "ca70d859-0747-4e0b-a5ff-5d42048a8861",
+              "title": "Add status filter UI controls to Rex dashboard",
+              "status": "pending",
+              "level": "task",
+              "description": "Implement checkbox or dropdown interface in the Rex dashboard tree view that allows users to select which statuses to display",
+              "acceptanceCriteria": [
+                "Filter controls are prominently displayed above or beside the tree view",
+                "All status options (pending, in_progress, completed, blocked, deferred, deleted) are available",
+                "Multiple statuses can be selected simultaneously",
+                "Filter state persists during the session"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "ui",
+                "filtering"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "187d834c-b6dc-49b4-82fc-299c2c6d414c",
+              "title": "Implement tree filtering logic for status-based display",
+              "status": "pending",
+              "level": "task",
+              "description": "Add client-side filtering functionality that hides/shows tree nodes based on selected status filters while maintaining proper hierarchy visualization",
+              "acceptanceCriteria": [
+                "Filtered items are completely hidden from the tree display",
+                "Parent nodes remain visible if they have visible children",
+                "Empty parent nodes are hidden when all children are filtered out",
+                "Tree structure and indentation remain correct after filtering"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "frontend",
+                "tree-view"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "f95f94cf-5e6f-489c-b889-cc70d9da782a",
+              "title": "Add quick filter presets for common status combinations",
+              "status": "pending",
+              "level": "task",
+              "description": "Provide one-click filter presets like 'Active Work' (pending + in_progress), 'All Complete', 'Blocked Items', etc. to improve user experience",
+              "acceptanceCriteria": [
+                "At least 4 useful preset combinations are available",
+                "Presets include 'Active Work', 'Completed', 'Blocked/Deferred', and 'All Items'",
+                "Clicking a preset immediately updates the tree view",
+                "Current filter state is clearly indicated in the UI"
+              ],
+              "priority": "low",
+              "tags": [
+                "web",
+                "ux",
+                "presets"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

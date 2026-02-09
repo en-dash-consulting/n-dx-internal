@@ -205,6 +205,148 @@ export function mergeZonesByName(zones: Zone[]): Zone[] {
   return merged;
 }
 
+// ── Finding deduplication ────────────────────────────────────────────────────
+
+const SEVERITY_RANK: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+
+/** Normalize finding text for comparison: lowercase, collapse whitespace. */
+function normalizeText(text: string): string {
+  return text.toLowerCase().trim().replace(/\s+/g, " ");
+}
+
+/**
+ * Compute bigram Dice similarity between two normalized strings.
+ * Returns 0.0–1.0 where 1.0 is identical.
+ */
+function bigramSimilarity(a: string, b: string): number {
+  if (a === b) return 1.0;
+  if (a.length < 2 || b.length < 2) return a === b ? 1.0 : 0;
+
+  const bigramsA = new Set<string>();
+  for (let i = 0; i < a.length - 1; i++) bigramsA.add(a.slice(i, i + 2));
+
+  const bigramsB = new Set<string>();
+  for (let i = 0; i < b.length - 1; i++) bigramsB.add(b.slice(i, i + 2));
+
+  let intersection = 0;
+  for (const gram of bigramsA) {
+    if (bigramsB.has(gram)) intersection++;
+  }
+
+  return (2 * intersection) / (bigramsA.size + bigramsB.size);
+}
+
+/** Similarity threshold above which two findings are considered near-duplicates. */
+const FINDING_SIMILARITY_THRESHOLD = 0.8;
+
+/**
+ * Pick the "best" finding from a cluster of near-duplicates.
+ * Prefers: highest severity → most related items → lowest pass number.
+ */
+function pickBest(cluster: Finding[]): Finding {
+  if (cluster.length === 1) return cluster[0];
+
+  return cluster.reduce((best, f) => {
+    const bestSev = SEVERITY_RANK[best.severity ?? ""] ?? 3;
+    const fSev = SEVERITY_RANK[f.severity ?? ""] ?? 3;
+    if (fSev < bestSev) return f;
+    if (fSev > bestSev) return best;
+
+    // Same severity: prefer more related items
+    const bestRelated = best.related?.length ?? 0;
+    const fRelated = f.related?.length ?? 0;
+    if (fRelated > bestRelated) return f;
+    if (fRelated < bestRelated) return best;
+
+    // Same related count: prefer lower pass number (earlier discovery)
+    return f.pass < best.pass ? f : best;
+  });
+}
+
+/**
+ * Deduplicate findings by detecting near-identical text within the same
+ * scope and type. When duplicates are found across different passes,
+ * the highest-severity version is kept.
+ *
+ * Matching is scoped to `(scope, type)` pairs — findings in different
+ * scopes or with different types are never merged.
+ *
+ * Uses bigram Dice similarity (threshold 0.8) for fuzzy text matching,
+ * with case-insensitive and whitespace-normalized comparison.
+ */
+export function deduplicateFindings(findings: Finding[]): Finding[] {
+  if (findings.length === 0) return [];
+
+  // Group findings by (scope, type) — only merge within same group
+  const groups = new Map<string, Finding[]>();
+  for (const f of findings) {
+    const key = `${f.scope}\0${f.type}`;
+    const group = groups.get(key);
+    if (group) {
+      group.push(f);
+    } else {
+      groups.set(key, [f]);
+    }
+  }
+
+  const result: Finding[] = [];
+
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      result.push(group[0]);
+      continue;
+    }
+
+    // Union-find clustering for near-duplicate detection
+    const n = group.length;
+    const parent = Array.from({ length: n }, (_, i) => i);
+
+    function find(i: number): number {
+      while (parent[i] !== i) {
+        parent[i] = parent[parent[i]]; // path compression
+        i = parent[i];
+      }
+      return i;
+    }
+
+    function union(a: number, b: number): void {
+      const ra = find(a);
+      const rb = find(b);
+      if (ra !== rb) parent[ra] = rb;
+    }
+
+    // Pre-normalize texts once
+    const normalized = group.map((f) => normalizeText(f.text));
+
+    // Compare all pairs within this group
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        if (bigramSimilarity(normalized[i], normalized[j]) >= FINDING_SIMILARITY_THRESHOLD) {
+          union(i, j);
+        }
+      }
+    }
+
+    // Collect clusters and pick best from each
+    const clusters = new Map<number, Finding[]>();
+    for (let i = 0; i < n; i++) {
+      const root = find(i);
+      const cluster = clusters.get(root);
+      if (cluster) {
+        cluster.push(group[i]);
+      } else {
+        clusters.set(root, [group[i]]);
+      }
+    }
+
+    for (const cluster of clusters.values()) {
+      result.push(pickBest(cluster));
+    }
+  }
+
+  return result;
+}
+
 // ── Zone ID deduplication ────────────────────────────────────────────────────
 
 /** Ensure no two zones share the same ID (appends -2, -3, etc.) */

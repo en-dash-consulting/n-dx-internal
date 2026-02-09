@@ -32,6 +32,7 @@ import {
 } from "./louvain.js";
 import { enrichZonesWithAI, enrichZonesPerZone } from "./enrich.js";
 import type { EnrichResult, PerZoneEnrichResult } from "./enrich.js";
+import { deduplicateFindings } from "./enrich-parsing.js";
 
 /** Result from analyzeZones, including the zones data and optional token usage. */
 export interface AnalyzeZonesResult {
@@ -911,7 +912,7 @@ export async function analyzeZones(
     }
   }
 
-  const allFindings = [...structuralFindings, ...prevAiFindings, ...aiFindings];
+  const allFindings = deduplicateFindings([...structuralFindings, ...prevAiFindings, ...aiFindings]);
 
   // ── Back-populate findings into insights for backward compatibility ──
   // AI enrichment may produce structured findings without corresponding legacy
