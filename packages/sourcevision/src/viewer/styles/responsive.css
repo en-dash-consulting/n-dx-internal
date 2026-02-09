@@ -62,6 +62,13 @@
   .sidebar.sidebar-collapsed .sidebar-controls {
     opacity: 1;
     pointer-events: auto;
+    position: static;
+    visibility: visible;
+  }
+
+  /* Hide collapsed rail on mobile — use full overlay instead */
+  .sidebar-rail {
+    display: none;
   }
 
   .sidebar.mobile-open {

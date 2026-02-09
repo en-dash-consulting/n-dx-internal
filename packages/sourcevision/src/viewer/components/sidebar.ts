@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useState, useEffect, useCallback, useRef } from "preact/hooks";
+import { useState, useEffect, useCallback, useRef, useMemo } from "preact/hooks";
 import type { Manifest, Zones } from "../../schema/v1.js";
 import type { ViewId } from "../types.js";
 import { ENRICHMENT_THRESHOLDS } from "./constants.js";
@@ -86,6 +86,21 @@ function getInitialExpanded(view: ViewId): string {
   return sectionForView(view);
 }
 
+/** Map section product to its first nav item for collapsed-rail click */
+const SECTION_DEFAULT_VIEW: Record<string, ViewId> = {};
+for (const section of SECTIONS) {
+  if (section.product && section.items.length > 0) {
+    SECTION_DEFAULT_VIEW[section.product] = section.items[0].id;
+  }
+}
+
+/** Map product names to their logo components */
+const SECTION_LOGOS = {
+  sourcevision: SourceVisionLogo,
+  rex: RexLogo,
+  hench: HenchLogo,
+} as const;
+
 export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, onToggleSidebar }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string>(() => getInitialExpanded(view));
@@ -101,6 +116,22 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
   const completedCount = moduleNames.filter(
     (m) => modules[m]?.status === "complete"
   ).length;
+
+  /** The product that owns the current view */
+  const activeProduct = useMemo(() => {
+    const owning = sectionForView(view);
+    const section = SECTIONS.find((s) => s.label === owning);
+    return section?.product ?? null;
+  }, [view]);
+
+  /** The label of the currently active nav item */
+  const activeLabel = useMemo(() => {
+    for (const section of SECTIONS) {
+      const found = section.items.find((item) => item.id === view);
+      if (found) return found.label;
+    }
+    return null;
+  }, [view]);
 
   const handleNav = useCallback((id: ViewId) => {
     onNavigate(id);
@@ -155,13 +186,72 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
     role: "navigation",
     "aria-label": "Main navigation",
   },
-    // Sidebar toggle button (always visible, anchored at top)
-    h("button", {
-      class: "sidebar-toggle-btn",
-      onClick: onToggleSidebar,
-      "aria-label": sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar",
-      title: `${sidebarCollapsed ? "Expand" : "Collapse"} sidebar (\u2318B)`,
-    }, sidebarCollapsed ? "\u25B6" : "\u25C0"),
+    // ── Collapsed rail: visible only when sidebar is collapsed (desktop) ──
+    sidebarCollapsed
+      ? h("div", { class: "sidebar-rail", "aria-label": "Collapsed navigation" },
+          // Toggle button at top
+          h("button", {
+            class: "sidebar-rail-toggle",
+            onClick: onToggleSidebar,
+            "aria-label": "Expand sidebar",
+            title: "Expand sidebar (\u2318B)",
+          }, "\u25B6"),
+
+          // n-dx logo
+          h("div", {
+            class: "sidebar-rail-logo",
+            onClick: () => handleNav("overview"),
+            role: "button",
+            tabIndex: 0,
+            title: "n-dx — Overview",
+            "aria-label": "Go to Overview",
+            onKeyDown: (e: KeyboardEvent) => {
+              if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleNav("overview"); }
+            },
+          }, h(NdxLogo, { size: 28 })),
+
+          // Section icons
+          h("nav", { class: "sidebar-rail-nav", "aria-label": "Section navigation" },
+            SECTIONS.filter((s) => s.product).map((section) => {
+              const product = section.product!;
+              const isActive = activeProduct === product;
+              const Logo = SECTION_LOGOS[product];
+              const defaultView = SECTION_DEFAULT_VIEW[product];
+              return h("button", {
+                key: product,
+                class: `sidebar-rail-section${isActive ? " sidebar-rail-section-active" : ""} sidebar-rail-section-${product}`,
+                onClick: () => handleNav(defaultView),
+                title: `${section.label}${isActive && activeLabel ? ` — ${activeLabel}` : ""}`,
+                "aria-label": `${section.label}${isActive ? " (current section)" : ""}`,
+                "aria-current": isActive ? "true" : undefined,
+              },
+                h(Logo, { size: 18, class: "sidebar-rail-icon" }),
+                isActive
+                  ? h("span", { class: "sidebar-rail-indicator", "aria-hidden": "true" })
+                  : null,
+              );
+            })
+          ),
+
+          // Active page label (rotated vertically)
+          activeLabel
+            ? h("div", {
+                class: `sidebar-rail-page-label sidebar-rail-page-label-${activeProduct ?? "sourcevision"}`,
+                "aria-hidden": "true",
+              }, activeLabel)
+            : null,
+        )
+      : null,
+
+    // ── Expanded sidebar toggle button ──
+    !sidebarCollapsed
+      ? h("button", {
+          class: "sidebar-toggle-btn",
+          onClick: onToggleSidebar,
+          "aria-label": "Collapse sidebar",
+          title: "Collapse sidebar (\u2318B)",
+        }, "\u25C0")
+      : null,
 
     h("div", { class: "sidebar-header" },
       h("div", { class: "sidebar-brand" },

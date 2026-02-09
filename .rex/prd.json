@@ -5423,7 +5423,7 @@
         {
           "id": "c32f6e7d-847f-463f-9c20-bdab777a4308",
           "title": "Enhanced Navigation Context and Controls",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Improve sidebar navigation with active page indication and centralized global controls",
           "source": "smart-add",
@@ -5431,7 +5431,7 @@
             {
               "id": "71063da9-5fb4-4901-8b82-ff19a75363d6",
               "title": "Implement active page indication in collapsed sidebar",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Display the current active page/section title or icon when sidebar is collapsed so users maintain navigation context",
               "acceptanceCriteria": [
@@ -5446,7 +5446,9 @@
                 "ui",
                 "navigation"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-09T20:34:16.715Z",
+              "completedAt": "2026-02-09T20:41:37.007Z"
             },
             {
               "id": "8141f772-0b50-4ff3-8f7a-8f13246b68e3",
@@ -5472,7 +5474,9 @@
               "startedAt": "2026-02-09T20:27:34.453Z",
               "completedAt": "2026-02-09T20:33:33.433Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-09T20:41:37.051Z",
+          "completedAt": "2026-02-09T20:41:37.051Z"
         },
         {
           "id": "fdfebde2-7c1e-44c0-a61a-c38e52641d75",

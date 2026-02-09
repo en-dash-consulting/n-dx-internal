@@ -11,12 +11,11 @@
   overflow: hidden;
 }
 
-/* Sidebar collapsed state — desktop only */
+/* Sidebar collapsed state — shows narrow rail with section icons */
 .sidebar.sidebar-collapsed {
-  width: 0;
-  min-width: 0;
-  border-right: none;
-  overflow: hidden;
+  width: 48px;
+  min-width: 48px;
+  overflow: visible;
 }
 
 .sidebar.sidebar-collapsed .sidebar-header,
@@ -24,9 +23,11 @@
 .sidebar.sidebar-collapsed .sidebar-progress {
   opacity: 0;
   pointer-events: none;
+  position: absolute;
+  visibility: hidden;
 }
 
-/* Sidebar toggle button */
+/* Sidebar toggle button (expanded state only) */
 .sidebar-toggle-btn {
   position: absolute;
   top: 8px;
@@ -43,7 +44,7 @@
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  transition: background 0.15s, color 0.15s, right 0.2s, left 0.2s;
+  transition: background 0.15s, color 0.15s;
   padding: 0;
 }
 
@@ -52,14 +53,156 @@
   color: #fff;
 }
 
-/* When collapsed, pin the toggle to the edge */
-.sidebar.sidebar-collapsed .sidebar-toggle-btn {
-  position: fixed;
-  top: 8px;
-  left: 8px;
-  right: auto;
-  z-index: 200;
+/* ── Collapsed sidebar rail ── */
+.sidebar-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 48px;
+  height: 100%;
+  padding-top: 6px;
+  gap: 2px;
+  position: relative;
 }
+
+/* Rail toggle (expand) button */
+.sidebar-rail-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-hover);
+  color: var(--text-dim);
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+  transition: background var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.sidebar-rail-toggle:hover {
+  background: var(--accent-dim);
+  color: #fff;
+  border-color: var(--accent-dim);
+}
+
+/* n-dx logo in rail */
+.sidebar-rail-logo {
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  transition: transform var(--transition-normal);
+}
+
+.sidebar-rail-logo:hover {
+  transform: scale(1.08);
+}
+
+/* Rail section navigation */
+.sidebar-rail-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
+/* Individual section icon button in rail */
+.sidebar-rail-section {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.sidebar-rail-section:hover {
+  background: var(--bg-hover);
+  border-color: var(--border);
+}
+
+/* Product-specific hover colors */
+.sidebar-rail-section-sourcevision:hover {
+  color: var(--brand-teal);
+  border-color: var(--brand-teal);
+}
+
+.sidebar-rail-section-rex:hover {
+  color: var(--brand-purple);
+  border-color: var(--brand-purple);
+}
+
+.sidebar-rail-section-hench:hover {
+  color: var(--brand-orange);
+  border-color: var(--brand-orange);
+}
+
+/* Active section in rail */
+.sidebar-rail-section-active {
+  background: var(--bg-hover);
+}
+
+.sidebar-rail-section-active.sidebar-rail-section-sourcevision {
+  color: var(--brand-teal);
+  border-color: color-mix(in srgb, var(--brand-teal) 40%, transparent);
+}
+
+.sidebar-rail-section-active.sidebar-rail-section-rex {
+  color: var(--brand-purple);
+  border-color: color-mix(in srgb, var(--brand-purple) 40%, transparent);
+}
+
+.sidebar-rail-section-active.sidebar-rail-section-hench {
+  color: var(--brand-orange);
+  border-color: color-mix(in srgb, var(--brand-orange) 40%, transparent);
+}
+
+/* Active indicator dot below icon */
+.sidebar-rail-indicator {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Vertical page label in collapsed rail */
+.sidebar-rail-page-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-muted);
+  white-space: nowrap;
+  margin-top: 12px;
+  padding: 0 2px;
+  max-height: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+  transition: color var(--transition-normal);
+}
+
+.sidebar-rail-page-label-sourcevision { color: color-mix(in srgb, var(--brand-teal) 60%, var(--text-muted)); }
+.sidebar-rail-page-label-rex { color: color-mix(in srgb, var(--brand-purple) 60%, var(--text-muted)); }
+.sidebar-rail-page-label-hench { color: color-mix(in srgb, var(--brand-orange) 60%, var(--text-muted)); }
 
 .sidebar-header {
   padding: var(--space-4);

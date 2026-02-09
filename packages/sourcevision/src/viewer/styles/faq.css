@@ -191,8 +191,10 @@
   color: var(--accent);
 }
 
-/* Hide sidebar controls when collapsed (desktop) */
+/* Hide sidebar controls when collapsed (desktop) — rail replaces them */
 .sidebar.sidebar-collapsed .sidebar-controls {
   opacity: 0;
   pointer-events: none;
+  position: absolute;
+  visibility: hidden;
 }

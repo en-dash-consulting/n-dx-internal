@@ -151,8 +151,9 @@ describe("Sidebar", () => {
 
     it("toggle button shows expand label when sidebar is collapsed", () => {
       renderSidebar({ sidebarCollapsed: true });
-      const toggleBtn = root.querySelector(".sidebar-toggle-btn");
-      expect(toggleBtn?.getAttribute("aria-label")).toBe("Expand sidebar");
+      // When collapsed, the rail toggle replaces the main toggle button
+      const railToggle = root.querySelector(".sidebar-rail-toggle");
+      expect(railToggle?.getAttribute("aria-label")).toBe("Expand sidebar");
     });
 
     it("calls onToggleSidebar when toggle button is clicked", () => {
@@ -267,6 +268,126 @@ describe("Sidebar", () => {
       const rexNavItems = rexItemsContainer?.querySelectorAll<HTMLElement>(".nav-item");
       rexNavItems?.forEach((item) => {
         expect(item.getAttribute("tabindex")).toBe("-1");
+      });
+    });
+  });
+
+  describe("collapsed rail", () => {
+    it("renders the rail when sidebar is collapsed", () => {
+      renderSidebar({ sidebarCollapsed: true });
+      const rail = root.querySelector(".sidebar-rail");
+      expect(rail).not.toBeNull();
+    });
+
+    it("does not render the rail when sidebar is expanded", () => {
+      renderSidebar({ sidebarCollapsed: false });
+      const rail = root.querySelector(".sidebar-rail");
+      expect(rail).toBeNull();
+    });
+
+    it("rail contains n-dx logo", () => {
+      renderSidebar({ sidebarCollapsed: true });
+      const logo = root.querySelector(".sidebar-rail-logo");
+      expect(logo).not.toBeNull();
+    });
+
+    it("rail contains section icons for all three products", () => {
+      renderSidebar({ sidebarCollapsed: true });
+      const sections = root.querySelectorAll(".sidebar-rail-section");
+      expect(sections.length).toBe(3);
+      expect(root.querySelector(".sidebar-rail-section-sourcevision")).not.toBeNull();
+      expect(root.querySelector(".sidebar-rail-section-rex")).not.toBeNull();
+      expect(root.querySelector(".sidebar-rail-section-hench")).not.toBeNull();
+    });
+
+    it("highlights the active section with active class", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "overview" as const });
+      const svSection = root.querySelector(".sidebar-rail-section-sourcevision");
+      expect(svSection?.classList.contains("sidebar-rail-section-active")).toBe(true);
+      const rexSection = root.querySelector(".sidebar-rail-section-rex");
+      expect(rexSection?.classList.contains("sidebar-rail-section-active")).toBe(false);
+    });
+
+    it("highlights rex section when rex view is active", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "prd" as const });
+      const rexSection = root.querySelector(".sidebar-rail-section-rex");
+      expect(rexSection?.classList.contains("sidebar-rail-section-active")).toBe(true);
+      const svSection = root.querySelector(".sidebar-rail-section-sourcevision");
+      expect(svSection?.classList.contains("sidebar-rail-section-active")).toBe(false);
+    });
+
+    it("highlights hench section when hench view is active", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "hench-runs" as const });
+      const henchSection = root.querySelector(".sidebar-rail-section-hench");
+      expect(henchSection?.classList.contains("sidebar-rail-section-active")).toBe(true);
+    });
+
+    it("active section has an indicator dot", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "overview" as const });
+      const activeSection = root.querySelector(".sidebar-rail-section-active");
+      const indicator = activeSection?.querySelector(".sidebar-rail-indicator");
+      expect(indicator).not.toBeNull();
+    });
+
+    it("inactive sections do not have indicator dots", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "overview" as const });
+      const inactiveSections = root.querySelectorAll(".sidebar-rail-section:not(.sidebar-rail-section-active)");
+      inactiveSections.forEach((section) => {
+        expect(section.querySelector(".sidebar-rail-indicator")).toBeNull();
+      });
+    });
+
+    it("displays the active page label vertically", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "overview" as const });
+      const pageLabel = root.querySelector(".sidebar-rail-page-label");
+      expect(pageLabel).not.toBeNull();
+      expect(pageLabel?.textContent).toBe("Overview");
+    });
+
+    it("page label updates when navigating to different views", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "prd" as const });
+      const pageLabel = root.querySelector(".sidebar-rail-page-label");
+      expect(pageLabel?.textContent).toBe("Tasks");
+    });
+
+    it("page label has product-specific color class", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "prd" as const });
+      const pageLabel = root.querySelector(".sidebar-rail-page-label");
+      expect(pageLabel?.classList.contains("sidebar-rail-page-label-rex")).toBe(true);
+    });
+
+    it("clicking a rail section icon navigates to its first view", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "overview" as const });
+      const rexSection = root.querySelector<HTMLElement>(".sidebar-rail-section-rex");
+      rexSection?.click();
+      expect(onNavigate).toHaveBeenCalledWith("rex-dashboard");
+    });
+
+    it("clicking the n-dx logo navigates to overview", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "prd" as const });
+      const logo = root.querySelector<HTMLElement>(".sidebar-rail-logo");
+      logo?.click();
+      expect(onNavigate).toHaveBeenCalledWith("overview");
+    });
+
+    it("rail toggle calls onToggleSidebar when clicked", () => {
+      renderSidebar({ sidebarCollapsed: true, onToggleSidebar });
+      const railToggle = root.querySelector<HTMLElement>(".sidebar-rail-toggle");
+      railToggle?.click();
+      expect(onToggleSidebar).toHaveBeenCalledTimes(1);
+    });
+
+    it("active section has aria-current attribute", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "overview" as const });
+      const activeSection = root.querySelector(".sidebar-rail-section-active");
+      expect(activeSection?.getAttribute("aria-current")).toBe("true");
+    });
+
+    it("inactive sections do not have aria-current", () => {
+      renderSidebar({ sidebarCollapsed: true, view: "overview" as const });
+      const inactiveSections = root.querySelectorAll(".sidebar-rail-section:not(.sidebar-rail-section-active)");
+      inactiveSections.forEach((section) => {
+        expect(section.hasAttribute("aria-current")).toBe(false);
       });
     });
   });
