@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "preact/hooks"
 import type { Manifest, Zones } from "../../schema/v1.js";
 import type { ViewId } from "../types.js";
 import { ENRICHMENT_THRESHOLDS } from "./constants.js";
-import { NdxLogo, SourceVisionLogo, RexLogo, HenchLogo } from "./logos.js";
+import { NdxLogoPng, ProductLogoPng } from "./logos.js";
 import { SidebarThemeToggle } from "./theme-toggle.js";
 import { FAQ } from "./faq.js";
 
@@ -94,20 +94,10 @@ for (const section of SECTIONS) {
   }
 }
 
-/** Map product names to their logo components */
-const SECTION_LOGOS = {
-  sourcevision: SourceVisionLogo,
-  rex: RexLogo,
-  hench: HenchLogo,
-} as const;
 
 export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, onToggleSidebar }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string>(() => getInitialExpanded(view));
-
-  const gitInfo = manifest
-    ? [manifest.gitBranch, manifest.gitSha?.slice(0, 7)].filter(Boolean).join(" @ ")
-    : null;
 
   const enrichmentPass = zones?.enrichmentPass ?? 0;
 
@@ -189,82 +179,79 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
     // ── Collapsed rail: visible only when sidebar is collapsed (desktop) ──
     sidebarCollapsed
       ? h("div", { class: "sidebar-rail", "aria-label": "Collapsed navigation" },
-          // Toggle button at top
-          h("button", {
-            class: "sidebar-rail-toggle",
-            onClick: onToggleSidebar,
-            "aria-label": "Expand sidebar",
-            title: "Expand sidebar (\u2318B)",
-          }, "\u25B6"),
-
           // n-dx logo
           h("div", {
             class: "sidebar-rail-logo",
             onClick: () => handleNav("overview"),
             role: "button",
             tabIndex: 0,
-            title: "n-dx — Overview",
+            title: "n-dx \u2014 Overview",
             "aria-label": "Go to Overview",
             onKeyDown: (e: KeyboardEvent) => {
               if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleNav("overview"); }
             },
-          }, h(NdxLogo, { size: 28 })),
+          }, h(NdxLogoPng, { size: 34 })),
+
+          h("div", { class: "sidebar-rail-divider", "aria-hidden": "true" }),
 
           // Section icons
           h("nav", { class: "sidebar-rail-nav", "aria-label": "Section navigation" },
             SECTIONS.filter((s) => s.product).map((section) => {
               const product = section.product!;
               const isActive = activeProduct === product;
-              const Logo = SECTION_LOGOS[product];
               const defaultView = SECTION_DEFAULT_VIEW[product];
               return h("button", {
                 key: product,
                 class: `sidebar-rail-section${isActive ? " sidebar-rail-section-active" : ""} sidebar-rail-section-${product}`,
                 onClick: () => handleNav(defaultView),
-                title: `${section.label}${isActive && activeLabel ? ` — ${activeLabel}` : ""}`,
+                title: `${section.label}${isActive && activeLabel ? ` \u2014 ${activeLabel}` : ""}`,
                 "aria-label": `${section.label}${isActive ? " (current section)" : ""}`,
                 "aria-current": isActive ? "true" : undefined,
               },
-                h(Logo, { size: 18, class: "sidebar-rail-icon" }),
                 isActive
-                  ? h("span", { class: "sidebar-rail-indicator", "aria-hidden": "true" })
+                  ? h("span", { class: "sidebar-rail-accent", "aria-hidden": "true" })
                   : null,
+                h(ProductLogoPng, { product, size: 28, class: "sidebar-rail-icon" }),
               );
             })
           ),
 
-          // Active page label (rotated vertically)
-          activeLabel
-            ? h("div", {
-                class: `sidebar-rail-page-label sidebar-rail-page-label-${activeProduct ?? "sourcevision"}`,
-                "aria-hidden": "true",
-              }, activeLabel)
-            : null,
+          // Expand button at bottom
+          h("button", {
+            class: "sidebar-rail-expand",
+            onClick: onToggleSidebar,
+            "aria-label": "Expand sidebar",
+            title: "Expand sidebar (\u2318B)",
+          },
+            h("svg", { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", "stroke-width": "1.5", "stroke-linecap": "round" },
+              h("path", { d: "M5 2l6 6-6 6" }),
+            ),
+          ),
         )
       : null,
 
-    // ── Expanded sidebar toggle button ──
+    // ── Expanded sidebar collapse button ──
     !sidebarCollapsed
       ? h("button", {
           class: "sidebar-toggle-btn",
           onClick: onToggleSidebar,
           "aria-label": "Collapse sidebar",
           title: "Collapse sidebar (\u2318B)",
-        }, "\u25C0")
+        },
+          h("svg", { width: 14, height: 14, viewBox: "0 0 14 14", fill: "none", stroke: "currentColor", "stroke-width": "1.5", "stroke-linecap": "round" },
+            h("path", { d: "M9 2L4 7l5 5" }),
+          ),
+        )
       : null,
 
     h("div", { class: "sidebar-header" },
       h("div", { class: "sidebar-brand" },
-        h(NdxLogo, { size: 32, class: "sidebar-logo" }),
+        h(NdxLogoPng, { size: 36, class: "sidebar-logo" }),
         h("div", { class: "sidebar-brand-text" },
           h("h1", null, "n-dx"),
+          h("div", { class: "sidebar-subtitle" }, "Developer Experience,", h("br", null), "by En Dash"),
         ),
       ),
-      manifest
-        ? h("div", { class: "meta" },
-            gitInfo || manifest.targetPath.split("/").pop()
-          )
-        : null,
       h("button", {
         class: "mobile-menu-btn",
         onClick: () => setMobileOpen(!mobileOpen),
@@ -275,10 +262,6 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
     h("nav", { class: "sidebar-nav", "aria-label": "View navigation" },
       SECTIONS.map((section) => {
         const isExpanded = expandedSection === section.label;
-        const SectionLogo = section.product === "sourcevision" ? SourceVisionLogo
-          : section.product === "rex" ? RexLogo
-          : section.product === "hench" ? HenchLogo
-          : null;
         return h("div", { key: section.label, class: "nav-section" },
           // Section header (clickable)
           h("div", {
@@ -295,12 +278,21 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
               }
             },
           },
-            h("span", {
-              class: `nav-section-chevron${isExpanded ? " nav-section-chevron-open" : ""}`,
-              "aria-hidden": "true",
-            }, "\u25B8"),
-            SectionLogo ? h(SectionLogo, { size: 14, class: "nav-section-logo" }) : null,
+            section.product
+              ? h(ProductLogoPng, { product: section.product, size: 22, class: "nav-section-logo" })
+              : null,
             h("span", { class: "nav-section-label" }, section.label),
+            h("svg", {
+              class: `nav-section-chevron${isExpanded ? " nav-section-chevron-open" : ""}`,
+              width: 12,
+              height: 12,
+              viewBox: "0 0 12 12",
+              fill: "none",
+              stroke: "currentColor",
+              "stroke-width": "1.5",
+              "stroke-linecap": "round",
+              "aria-hidden": "true",
+            }, h("path", { d: "M3 4.5l3 3 3-3" })),
           ),
           // Section items (collapsible)
           h("div", {

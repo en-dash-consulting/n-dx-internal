@@ -13,8 +13,8 @@
 
 /* Sidebar collapsed state — shows narrow rail with section icons */
 .sidebar.sidebar-collapsed {
-  width: 48px;
-  min-width: 48px;
+  width: 60px;
+  min-width: 60px;
   overflow: visible;
 }
 
@@ -26,30 +26,30 @@
   visibility: hidden;
 }
 
-/* Sidebar toggle button (expanded state only) */
+/* Sidebar toggle button (expanded state — pinned to bottom-right) */
 .sidebar-toggle-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  bottom: 12px;
+  right: 12px;
   z-index: 10;
-  background: var(--bg-hover);
+  background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
   padding: 0;
 }
 
 .sidebar-toggle-btn:hover {
-  background: var(--accent-dim);
-  color: #fff;
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: var(--text-muted);
 }
 
 /* ── Collapsed sidebar rail ── */
@@ -57,36 +57,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 48px;
+  width: 60px;
   height: 100%;
-  padding-top: 6px;
-  gap: 2px;
+  padding: 14px 0;
+  gap: 0;
   position: relative;
-}
-
-/* Rail toggle (expand) button */
-.sidebar-rail-toggle {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-hover);
-  color: var(--text-dim);
-  font-size: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  margin-bottom: 4px;
-  flex-shrink: 0;
-  transition: background var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
-}
-
-.sidebar-rail-toggle:hover {
-  background: var(--accent-dim);
-  color: #fff;
-  border-color: var(--accent-dim);
 }
 
 /* n-dx logo in rail */
@@ -94,12 +69,21 @@
   cursor: pointer;
   flex-shrink: 0;
   border-radius: var(--radius-md);
-  margin-bottom: 8px;
-  transition: transform var(--transition-normal);
+  padding: 2px;
+  transition: opacity var(--transition-normal);
 }
 
 .sidebar-rail-logo:hover {
-  transform: scale(1.08);
+  opacity: 0.8;
+}
+
+/* Thin divider between logo and section icons */
+.sidebar-rail-divider {
+  width: 32px;
+  height: 1px;
+  background: var(--border);
+  margin: 12px 0;
+  flex-shrink: 0;
 }
 
 /* Rail section navigation */
@@ -107,17 +91,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   width: 100%;
+  flex: 1;
 }
 
 /* Individual section icon button in rail */
 .sidebar-rail-section {
   position: relative;
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-md);
-  border: 1px solid transparent;
+  border: none;
   background: transparent;
   color: var(--text-dim);
   cursor: pointer;
@@ -125,28 +110,11 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  transition: background var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
+  transition: background var(--transition-normal);
 }
 
 .sidebar-rail-section:hover {
   background: var(--bg-hover);
-  border-color: var(--border);
-}
-
-/* Product-specific hover colors */
-.sidebar-rail-section-sourcevision:hover {
-  color: var(--brand-teal);
-  border-color: var(--brand-teal);
-}
-
-.sidebar-rail-section-rex:hover {
-  color: var(--brand-purple);
-  border-color: var(--brand-purple);
-}
-
-.sidebar-rail-section-hench:hover {
-  color: var(--brand-orange);
-  border-color: var(--brand-orange);
 }
 
 /* Active section in rail */
@@ -154,54 +122,59 @@
   background: var(--bg-hover);
 }
 
-.sidebar-rail-section-active.sidebar-rail-section-sourcevision {
-  color: var(--brand-teal);
-  border-color: color-mix(in srgb, var(--brand-teal) 40%, transparent);
-}
-
-.sidebar-rail-section-active.sidebar-rail-section-rex {
-  color: var(--brand-purple);
-  border-color: color-mix(in srgb, var(--brand-purple) 40%, transparent);
-}
-
-.sidebar-rail-section-active.sidebar-rail-section-hench {
-  color: var(--brand-orange);
-  border-color: color-mix(in srgb, var(--brand-orange) 40%, transparent);
-}
-
-/* Active indicator dot below icon */
-.sidebar-rail-indicator {
+/* Left-edge accent bar for active state */
+.sidebar-rail-accent {
   position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: currentColor;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--brand-teal);
 }
 
-/* Vertical page label in collapsed rail */
-.sidebar-rail-page-label {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  font-size: var(--font-xs);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-wider);
-  color: var(--text-muted);
-  white-space: nowrap;
-  margin-top: 12px;
-  padding: 0 2px;
-  max-height: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  user-select: none;
-  transition: color var(--transition-normal);
+.sidebar-rail-section-rex .sidebar-rail-accent {
+  background: var(--brand-purple);
 }
 
-.sidebar-rail-page-label-sourcevision { color: color-mix(in srgb, var(--brand-teal) 60%, var(--text-muted)); }
-.sidebar-rail-page-label-rex { color: color-mix(in srgb, var(--brand-purple) 60%, var(--text-muted)); }
-.sidebar-rail-page-label-hench { color: color-mix(in srgb, var(--brand-orange) 60%, var(--text-muted)); }
+.sidebar-rail-section-hench .sidebar-rail-accent {
+  background: var(--brand-orange);
+}
+
+/* Rail icon image */
+.sidebar-rail-icon {
+  opacity: 0.7;
+  transition: opacity var(--transition-normal);
+}
+
+.sidebar-rail-section:hover .sidebar-rail-icon,
+.sidebar-rail-section-active .sidebar-rail-icon {
+  opacity: 1;
+}
+
+/* Expand button at bottom of rail */
+.sidebar-rail-expand {
+  margin-top: auto;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.sidebar-rail-expand:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: var(--text-muted);
+}
 
 .sidebar-header {
   padding: var(--space-4);
@@ -209,16 +182,18 @@
 }
 
 .sidebar-header h1 {
-  font-size: var(--font-lg);
+  font-size: var(--font-xl);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-wide);
   line-height: 1;
 }
 
-.sidebar-header .meta {
-  font-size: var(--font-sm);
-  color: var(--text-muted, var(--text-dim));
-  margin-top: var(--space-1);
+.sidebar-subtitle {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
 }
 
 .sidebar-nav {
@@ -236,11 +211,11 @@
 .nav-section-header {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3) var(--space-1);
+  gap: var(--space-2);
+  padding: 8px var(--space-3);
   cursor: pointer;
   user-select: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   transition: background var(--transition-normal);
 }
 
@@ -248,35 +223,33 @@
   background: var(--bg-hover);
 }
 
-.nav-section-header:first-child {
-  padding-top: var(--space-1);
-}
-
-/* Chevron indicator */
+/* Chevron indicator — SVG, sits on far right */
 .nav-section-chevron {
-  font-size: var(--font-xs);
-  color: var(--text-dim);
-  transition: transform 0.2s ease;
+  margin-left: auto;
   flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.2s ease, color var(--transition-normal);
 }
 
 .nav-section-chevron-open {
-  transform: rotate(90deg);
+  transform: rotate(180deg);
+}
+
+.nav-section-header:hover .nav-section-chevron {
+  color: var(--text-dim);
 }
 
 /* Section label inside header */
 .nav-section-header .nav-section-label {
-  font-size: var(--font-xs);
+  font-size: var(--font-sm);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-wider);
   color: var(--text-dim);
-  opacity: 0.85;
-  padding: 0;
-  transition: opacity var(--transition-normal);
+  transition: color var(--transition-normal);
 }
 
 .nav-section-header:hover .nav-section-label {
-  opacity: 1;
+  color: var(--text);
 }
 
 /* Collapsible section items container */
@@ -332,7 +305,7 @@
   font-weight: var(--weight-medium);
 }
 
-/* Sidebar logo (SVG, not img) */
+/* Sidebar logo */
 .sidebar-logo {
   flex-shrink: 0;
   border-radius: var(--radius-md);

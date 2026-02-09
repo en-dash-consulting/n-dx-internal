@@ -128,6 +128,40 @@ export function HenchLogo({ size = 20, class: cls }: LogoProps) {
   );
 }
 
+/* ── PNG-based logo components ── */
+
+const PRODUCT_PNG: Record<string, string> = {
+  sourcevision: "/SourceVision-F.png",
+  rex: "/Rex-F.png",
+  hench: "/Hench-F.png",
+};
+
+/** PNG logo for n-dx brand mark */
+export function NdxLogoPng({ size = 36, class: cls }: LogoProps) {
+  return h("img", {
+    src: "/n-dx.png",
+    width: size,
+    height: size,
+    alt: "",
+    "aria-hidden": "true",
+    class: `logo logo-ndx-png${cls ? ` ${cls}` : ""}`,
+  });
+}
+
+/** PNG logo for a product section (sourcevision, rex, hench) */
+export function ProductLogoPng({ product, size = 20, class: cls }: LogoProps & { product: string }) {
+  const src = PRODUCT_PNG[product];
+  if (!src) return null;
+  return h("img", {
+    src,
+    width: size,
+    height: size,
+    alt: "",
+    "aria-hidden": "true",
+    class: `logo logo-product-png${cls ? ` ${cls}` : ""}`,
+  });
+}
+
 /**
  * Renders a branded section header with a product logo and title.
  * Used in both the sidebar (compact mode) and view page headers (full mode).
@@ -137,16 +171,8 @@ export function BrandedHeader({ product, title, class: cls }: {
   title: string;
   class?: string;
 }) {
-  const logos = {
-    sourcevision: SourceVisionLogo,
-    rex: RexLogo,
-    hench: HenchLogo,
-  };
-
-  const Logo = logos[product];
-
   return h("div", { class: `branded-header${cls ? ` ${cls}` : ""}` },
-    h(Logo, { size: 16, class: "branded-header-logo" }),
+    h(ProductLogoPng, { product, size: 16, class: "branded-header-logo" }),
     h("span", { class: "branded-header-label" }, title),
   );
 }

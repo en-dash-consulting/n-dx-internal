@@ -42,6 +42,18 @@ function buildHtml(jsCode, cssCode) {
   if (existsSync(resolve(__dirname, "SourceVision-F.png"))) {
     copyFileSync(resolve(__dirname, "SourceVision-F.png"), resolve(outDir, "SourceVision-F.png"));
   }
+  // Copy logos from sibling packages and project root
+  const monorepoRoot = resolve(__dirname, "../..");
+  const logoPaths = [
+    [resolve(__dirname, "../rex/Rex-F.png"), "Rex-F.png"],
+    [resolve(__dirname, "../hench/Hench-F.png"), "Hench-F.png"],
+    [resolve(monorepoRoot, "n-dx.png"), "n-dx.png"],
+  ];
+  for (const [src, dest] of logoPaths) {
+    if (existsSync(src)) {
+      copyFileSync(src, resolve(outDir, dest));
+    }
+  }
 }
 
 async function bundleCss() {

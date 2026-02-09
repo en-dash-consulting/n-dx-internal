@@ -4708,20 +4708,20 @@
     {
       "id": "e8da8d04-1016-42ae-96f4-5d94e2eb0391",
       "title": "Report Generation and Export",
-      "status": "completed",
+      "status": "in_progress",
       "level": "epic",
       "source": "smart-add",
-      "startedAt": "2026-02-08T15:43:45.835Z",
+      "startedAt": "2026-02-09T21:19:49.255Z",
       "completedAt": "2026-02-08T15:43:45.835Z",
       "children": [
         {
           "id": "7474c596-ce78-4e71-9628-c2d004a8c5c1",
           "title": "PDF Export Functionality",
-          "status": "completed",
+          "status": "in_progress",
           "level": "feature",
           "description": "Generate comprehensive PDF reports from sourcevision analysis data for sharing and documentation purposes",
           "source": "smart-add",
-          "startedAt": "2026-02-08T15:43:45.818Z",
+          "startedAt": "2026-02-09T21:19:46.867Z",
           "completedAt": "2026-02-08T15:43:45.818Z",
           "children": [
             {
@@ -5212,9 +5212,11 @@
     {
       "id": "b1e130e0-cc75-400b-9a3c-ca1cb5ed2897",
       "title": "Web UI Design and User Experience Enhancement",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-09T21:01:23.519Z",
+      "completedAt": "2026-02-09T21:01:23.519Z",
       "children": [
         {
           "id": "545bde64-ebf9-47f9-936c-2e68831d7c30",
@@ -5281,15 +5283,17 @@
         {
           "id": "f6f162ea-e7ed-4711-bf98-9cbe7b8f4c8b",
           "title": "Accessibility and User Interface Standards",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Ensure the web interface meets accessibility standards and provides a consistent, professional user experience with proper semantic markup",
           "source": "smart-add",
+          "startedAt": "2026-02-09T21:01:23.485Z",
+          "completedAt": "2026-02-09T21:01:23.485Z",
           "children": [
             {
               "id": "2f839e10-c3b4-4523-a485-e47f70d94ad9",
               "title": "Implement comprehensive accessibility features",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add keyboard navigation, semantic HTML, and ARIA attributes to ensure full accessibility support for assistive technologies",
               "acceptanceCriteria": [
@@ -5312,7 +5316,9 @@
                 "semantics",
                 "aria"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-09T20:47:47.449Z",
+              "completedAt": "2026-02-09T21:01:23.445Z"
             }
           ]
         },
@@ -5419,6 +5425,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-09T20:47:10.523Z",
+      "completedAt": "2026-02-09T20:47:10.523Z",
       "children": [
         {
           "id": "c32f6e7d-847f-463f-9c20-bdab777a4308",
@@ -5511,9 +5519,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-09T20:47:10.523Z",
-      "completedAt": "2026-02-09T20:47:10.523Z"
+      ]
     },
     {
       "id": "81307b53-e961-4cd5-9dbc-9f218517a4c8",

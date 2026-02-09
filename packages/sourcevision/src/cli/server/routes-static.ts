@@ -98,12 +98,12 @@ export function handleStaticRoute(
   }
 
   // PNG assets
-  if (url === "/SourceVision.png" || url === "/SourceVision-F.png") {
+  if (url.endsWith(".png") && /^\/[\w-]+\.png$/.test(url)) {
     const filename = url.slice(1);
     const pngPath = assets.findAssetPath(filename);
     if (pngPath) {
       const content = readFileSync(pngPath);
-      res.writeHead(200, { "Content-Type": "image/png" });
+      res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" });
       res.end(content);
     } else {
       res.writeHead(404);

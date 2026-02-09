@@ -6,6 +6,13 @@
   display: block;
 }
 
+/* PNG logo base */
+.logo-ndx-png,
+.logo-product-png {
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+
 /* n-dx main logo */
 .logo-ndx-bg {
   fill: var(--logo-bg);
@@ -36,44 +43,14 @@
 
 /* Section logos in nav headers */
 .nav-section-logo {
-  color: var(--text-dim);
   opacity: 0.7;
-  transition: color var(--transition-normal), opacity var(--transition-normal);
+  transition: opacity var(--transition-normal);
   flex-shrink: 0;
 }
 
-.nav-section-header:hover .nav-section-logo {
-  opacity: 1;
-}
-
-/* Product-specific accent colors on section headers */
-.nav-section-sourcevision:hover .nav-section-logo {
-  color: var(--brand-teal);
-}
-
-.nav-section-rex:hover .nav-section-logo {
-  color: var(--brand-purple);
-}
-
-.nav-section-hench:hover .nav-section-logo {
-  color: var(--brand-orange);
-}
-
-/* Active section logos get their brand color */
+.nav-section-header:hover .nav-section-logo,
 .nav-section-header[aria-expanded="true"] .nav-section-logo {
   opacity: 1;
-}
-
-.nav-section-sourcevision[aria-expanded="true"] .nav-section-logo {
-  color: var(--brand-teal);
-}
-
-.nav-section-rex[aria-expanded="true"] .nav-section-logo {
-  color: var(--brand-purple);
-}
-
-.nav-section-hench[aria-expanded="true"] .nav-section-logo {
-  color: var(--brand-orange);
 }
 
 /* Branded page headers for view content areas */
