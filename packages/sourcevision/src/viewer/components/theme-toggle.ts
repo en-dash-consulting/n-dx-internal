@@ -30,6 +30,7 @@ export function ThemeToggle() {
     class: "theme-toggle-btn",
     onClick: toggle,
     title: theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
+    "aria-label": theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
   }, theme === "dark" ? "\u2600" : "\u263E");
 }
 

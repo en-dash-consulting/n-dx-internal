@@ -200,15 +200,15 @@ export function AnalyzePanel({ onPrdChanged }: AnalyzePanelProps) {
 
     // Progress indicator
     state === "running"
-      ? h("div", { class: "rex-analyze-progress" },
-          h("div", { class: "rex-analyze-spinner" }),
+      ? h("div", { class: "rex-analyze-progress", role: "status", "aria-live": "polite" },
+          h("div", { class: "rex-analyze-spinner", "aria-hidden": "true" }),
           h("span", null, "Scanning project and building proposals..."),
         )
       : null,
 
     // Error display
     error
-      ? h("div", { class: "rex-analyze-error" }, error)
+      ? h("div", { class: "rex-analyze-error", role: "alert", "aria-live": "assertive" }, error)
       : null,
 
     // Results
@@ -284,12 +284,25 @@ function ProposalCard({ proposal, index, selected, onToggle }: ProposalCardProps
     { class: `rex-proposal-card${selected ? " selected" : ""}` },
 
     // Card header
-    h("div", { class: "rex-proposal-header", onClick: onToggle },
+    h("div", {
+      class: "rex-proposal-header",
+      onClick: onToggle,
+      role: "button",
+      tabIndex: 0,
+      "aria-label": `${selected ? "Deselect" : "Select"} proposal: ${proposal.epic.title}`,
+      onKeyDown: (e: KeyboardEvent) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggle();
+        }
+      },
+    },
       h("input", {
         type: "checkbox",
         checked: selected,
         onChange: onToggle,
         onClick: (e: Event) => e.stopPropagation(),
+        "aria-label": `Select proposal: ${proposal.epic.title}`,
       }),
       h("div", { class: "rex-proposal-info" },
         h("span", { class: "prd-level-badge prd-level-epic" }, "Epic"),

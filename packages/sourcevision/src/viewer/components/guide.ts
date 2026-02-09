@@ -1,5 +1,5 @@
 import { h, Fragment } from "preact";
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 
 interface GuideProps {
   view: string;
@@ -60,18 +60,30 @@ export function Guide({ view }: GuideProps) {
   const [open, setOpen] = useState(false);
   const content = GUIDE_CONTENT[view] || GUIDE_CONTENT.overview;
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open]);
+
   return h(Fragment, null,
     h("button", {
       class: "guide-btn",
       onClick: () => setOpen(!open),
       title: "View guide",
+      "aria-label": "View guide for this page",
+      "aria-expanded": String(open),
     }, "?"),
     open
-      ? h("div", { class: "guide-overlay", onClick: () => setOpen(false) },
+      ? h("div", { class: "guide-overlay", onClick: () => setOpen(false), role: "dialog", "aria-modal": "true", "aria-label": `Guide: ${content.title}` },
           h("div", { class: "guide-modal", onClick: (e: Event) => e.stopPropagation() },
             h("div", { class: "guide-header" },
               h("h2", null, content.title),
-              h("button", { class: "guide-close", onClick: () => setOpen(false) }, "\u2715"),
+              h("button", { class: "guide-close", onClick: () => setOpen(false), "aria-label": "Close guide" }, "\u2715"),
             ),
             h("div", { class: "guide-body" },
               h("section", null,

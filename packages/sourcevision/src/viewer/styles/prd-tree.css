@@ -137,11 +137,11 @@
   font-size: 11px;
   cursor: pointer;
   transition: all 0.15s;
-  opacity: 0.5;
+  opacity: 0.65;
 }
 
 .prd-status-chip:hover {
-  opacity: 0.8;
+  opacity: 0.9;
   border-color: var(--text-dim);
 }
 
@@ -651,8 +651,10 @@
   cursor: pointer;
 }
 
-.task-priority-select:focus {
+.task-priority-select:focus-visible {
   border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
 }
 
 .task-priority-select.prd-priority-critical { color: var(--red); }
@@ -725,6 +727,11 @@
   color: var(--text);
   font-size: 11px;
   outline: none;
+}
+
+.task-tag-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
 }
 
 .task-tag-confirm {
@@ -993,10 +1000,12 @@
   box-sizing: border-box;
 }
 
-.rex-add-form-input:focus,
-.rex-add-form-textarea:focus,
-.rex-add-form-select:focus {
+.rex-add-form-input:focus-visible,
+.rex-add-form-textarea:focus-visible,
+.rex-add-form-select:focus-visible {
   border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
 }
 
 .rex-add-form-textarea {

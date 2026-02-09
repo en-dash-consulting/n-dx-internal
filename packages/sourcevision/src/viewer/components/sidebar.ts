@@ -369,7 +369,7 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
         );
       })
     ),
-    h("div", { class: "sidebar-controls", "aria-label": "Global controls" },
+    h("div", { class: "sidebar-controls", role: "group", "aria-label": "Global controls" },
       h(SidebarThemeToggle, null),
       h(FAQ, null),
     ),

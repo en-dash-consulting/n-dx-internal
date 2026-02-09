@@ -90,16 +90,24 @@ function ProgressBar({ ratio }: { ratio: number }) {
 
   return h(
     "div",
-    { class: "prd-progress-wrapper", title: `${pct}% complete` },
+    {
+      class: "prd-progress-wrapper",
+      title: `${pct}% complete`,
+      role: "progressbar",
+      "aria-valuenow": String(pct),
+      "aria-valuemin": "0",
+      "aria-valuemax": "100",
+      "aria-label": `${pct}% complete`,
+    },
     h(
       "div",
-      { class: "prd-progress-track" },
+      { class: "prd-progress-track", "aria-hidden": "true" },
       h("div", {
         class: `prd-progress-fill ${barClass}`,
         style: `width: ${pct}%`,
       }),
     ),
-    h("span", { class: "prd-progress-pct" }, `${pct}%`),
+    h("span", { class: "prd-progress-pct", "aria-hidden": "true" }, `${pct}%`),
   );
 }
 
@@ -174,6 +182,20 @@ function NodeRow({ item, depth, isExpanded, hasChildren, isSelected, onToggle, o
     if (hasChildren && e.key === "ArrowLeft" && isExpanded) {
       e.preventDefault();
       onToggle();
+    }
+    // Arrow up/down to navigate between visible tree items
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      const target = e.currentTarget as HTMLElement;
+      const tree = target.closest('[role="tree"]');
+      if (!tree) return;
+      const items = Array.from(tree.querySelectorAll<HTMLElement>('[role="treeitem"]'));
+      const idx = items.indexOf(target);
+      if (idx < 0) return;
+      const next = e.key === "ArrowDown" ? idx + 1 : idx - 1;
+      if (next >= 0 && next < items.length) {
+        items[next].focus();
+      }
     }
   };
 

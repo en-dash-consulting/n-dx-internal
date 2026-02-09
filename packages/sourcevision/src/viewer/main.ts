@@ -199,7 +199,7 @@ function App() {
 
   const renderView = () => {
     if (loading) {
-      return h("div", { class: "loading" }, "Loading...");
+      return h("div", { class: "loading", role: "status", "aria-live": "polite" }, "Loading...");
     }
 
     switch (view) {
@@ -254,7 +254,7 @@ function App() {
     ),
     h(DetailPanel, { detail, data, navigateTo, onClose: () => { setDetail(null); setPrdDetailContent(null); }, prdDetailContent }),
     refreshToast
-      ? h("div", { class: "refresh-toast", role: "status" }, "Data updated")
+      ? h("div", { class: "refresh-toast", role: "status", "aria-live": "polite" }, "Data updated")
       : null,
     (showDrop && !hasData)
       ? h("div", { class: "drop-overlay", role: "dialog", "aria-label": "File drop zone" },

@@ -270,7 +270,7 @@
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-wider);
   color: var(--text-dim);
-  opacity: 0.7;
+  opacity: 0.85;
   padding: 0;
   transition: opacity var(--transition-normal);
 }
@@ -313,7 +313,7 @@
 
 /* Sidebar locked nav items */
 .nav-item.locked {
-  opacity: 0.4;
+  opacity: 0.55;
   cursor: default;
 }
 

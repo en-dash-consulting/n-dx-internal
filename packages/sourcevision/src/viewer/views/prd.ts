@@ -255,7 +255,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
 
     // Toast notification
     toast
-      ? h("div", { class: "rex-toast", role: "status" }, toast)
+      ? h("div", { class: "rex-toast", role: "status", "aria-live": "polite" }, toast)
       : null,
   );
 }

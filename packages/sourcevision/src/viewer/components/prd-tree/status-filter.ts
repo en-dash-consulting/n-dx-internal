@@ -152,7 +152,7 @@ export function StatusFilter({ activeStatuses, onChange }: StatusFilterProps) {
     // Status chips
     h(
       "div",
-      { class: "prd-status-filter-chips" },
+      { class: "prd-status-filter-chips", role: "toolbar", "aria-label": "Status chip toggles" },
       ALL_STATUSES.map((status) => {
         const display = STATUS_DISPLAY[status];
         const isActive = activeStatuses.has(status);
@@ -165,6 +165,18 @@ export function StatusFilter({ activeStatuses, onChange }: StatusFilterProps) {
             title: `${isActive ? "Hide" : "Show"} ${display.label.toLowerCase()} items`,
             "aria-pressed": String(isActive),
             type: "button",
+            onKeyDown: (e: KeyboardEvent) => {
+              if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                e.preventDefault();
+                const next = (e.currentTarget as HTMLElement).nextElementSibling as HTMLElement | null;
+                next?.focus();
+              }
+              if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                e.preventDefault();
+                const prev = (e.currentTarget as HTMLElement).previousElementSibling as HTMLElement | null;
+                prev?.focus();
+              }
+            },
           },
           h("span", { class: "prd-status-chip-icon" }, display.icon),
           h("span", { class: "prd-status-chip-label" }, display.label),

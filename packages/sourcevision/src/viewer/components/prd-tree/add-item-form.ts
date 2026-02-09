@@ -176,7 +176,7 @@ export function AddItemForm({ allItems, onSubmit, onCancel, defaultParentId }: A
 
     // Error display
     error
-      ? h("div", { class: "rex-add-form-error" }, error)
+      ? h("div", { class: "rex-add-form-error", role: "alert", "aria-live": "assertive" }, error)
       : null,
 
     // Level selector
