@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback, useRef } from "preact/hooks";
 import type { Manifest, Zones } from "../../schema/v1.js";
 import type { ViewId } from "../types.js";
 import { ENRICHMENT_THRESHOLDS } from "./constants.js";
+import { NdxLogo, SourceVisionLogo, RexLogo, HenchLogo } from "./logos.js";
 
-const LOGO_SRC = "./SourceVision-F.png";
 const STORAGE_KEY = "sidebar-expanded-section";
 
 interface SidebarProps {
@@ -17,16 +17,17 @@ interface SidebarProps {
 }
 
 type NavItem = { type: "item"; id: ViewId; icon: string; label: string; minPass: number };
-type NavSection = { type: "section"; label: string };
+type NavSection = { type: "section"; label: string; product?: "sourcevision" | "rex" | "hench" };
 type NavEntry = NavItem | NavSection;
 
 interface SectionGroup {
   label: string;
+  product?: "sourcevision" | "rex" | "hench";
   items: NavItem[];
 }
 
 const NAV_ENTRIES: NavEntry[] = [
-  { type: "section", label: "SOURCEVISION" },
+  { type: "section", label: "SOURCEVISION", product: "sourcevision" },
   { type: "item", id: "overview", icon: "\u25A3", label: "Overview", minPass: 0 },
   { type: "item", id: "graph", icon: "\u2B95", label: "Import Graph", minPass: 0 },
   { type: "item", id: "zones", icon: "\u2B22", label: "Zones", minPass: 0 },
@@ -35,13 +36,13 @@ const NAV_ENTRIES: NavEntry[] = [
   { type: "item", id: "architecture", icon: "\u25E8", label: "Architecture", minPass: ENRICHMENT_THRESHOLDS.architecture },
   { type: "item", id: "problems", icon: "\u26A0", label: "Problems", minPass: ENRICHMENT_THRESHOLDS.problems },
   { type: "item", id: "suggestions", icon: "\u2728", label: "Suggestions", minPass: ENRICHMENT_THRESHOLDS.suggestions },
-  { type: "section", label: "REX" },
+  { type: "section", label: "REX", product: "rex" },
   { type: "item", id: "rex-dashboard", icon: "\u25A8", label: "Dashboard", minPass: 0 },
   { type: "item", id: "prd", icon: "\u2611", label: "Tasks", minPass: 0 },
   { type: "item", id: "rex-analysis", icon: "\u2699", label: "Analysis", minPass: 0 },
   { type: "item", id: "validation", icon: "\u2714", label: "Validation", minPass: 0 },
   { type: "item", id: "token-usage", icon: "\u229A", label: "Token Usage", minPass: 0 },
-  { type: "section", label: "HENCH" },
+  { type: "section", label: "HENCH", product: "hench" },
   { type: "item", id: "hench-runs", icon: "\u25B6", label: "Runs", minPass: 0 },
 ];
 
@@ -51,7 +52,7 @@ function buildSections(): SectionGroup[] {
   let current: SectionGroup | null = null;
   for (const entry of NAV_ENTRIES) {
     if (entry.type === "section") {
-      current = { label: entry.label, items: [] };
+      current = { label: entry.label, product: entry.product, items: [] };
       sections.push(current);
     } else if (current) {
       current.items.push(entry);
@@ -161,9 +162,11 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
     }, sidebarCollapsed ? "\u25B6" : "\u25C0"),
 
     h("div", { class: "sidebar-header" },
-      h("div", { class: "flex-row" },
-        h("img", { src: LOGO_SRC, class: "sidebar-logo", alt: "n-dx" }),
-        h("h1", null, "n-dx"),
+      h("div", { class: "sidebar-brand" },
+        h(NdxLogo, { size: 32, class: "sidebar-logo" }),
+        h("div", { class: "sidebar-brand-text" },
+          h("h1", null, "n-dx"),
+        ),
       ),
       manifest
         ? h("div", { class: "meta" },
@@ -180,10 +183,14 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
     h("nav", { class: "sidebar-nav", "aria-label": "View navigation" },
       SECTIONS.map((section) => {
         const isExpanded = expandedSection === section.label;
+        const SectionLogo = section.product === "sourcevision" ? SourceVisionLogo
+          : section.product === "rex" ? RexLogo
+          : section.product === "hench" ? HenchLogo
+          : null;
         return h("div", { key: section.label, class: "nav-section" },
           // Section header (clickable)
           h("div", {
-            class: "nav-section-header",
+            class: `nav-section-header${section.product ? ` nav-section-${section.product}` : ""}`,
             role: "button",
             tabIndex: 0,
             "aria-expanded": String(isExpanded),
@@ -200,6 +207,7 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
               class: `nav-section-chevron${isExpanded ? " nav-section-chevron-open" : ""}`,
               "aria-hidden": "true",
             }, "\u25B8"),
+            SectionLogo ? h(SectionLogo, { size: 14, class: "nav-section-logo" }) : null,
             h("span", { class: "nav-section-label" }, section.label),
           ),
           // Section items (collapsible)

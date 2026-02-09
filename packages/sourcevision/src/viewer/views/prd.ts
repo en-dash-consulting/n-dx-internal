@@ -13,6 +13,7 @@ import { PRDTree } from "../components/prd-tree/index.js";
 import { TaskDetail } from "../components/prd-tree/task-detail.js";
 import { AddItemForm } from "../components/prd-tree/add-item-form.js";
 import { BulkActions } from "../components/prd-tree/bulk-actions.js";
+import { BrandedHeader } from "../components/logos.js";
 import type { PRDDocumentData, PRDItemData, AddItemInput } from "../components/prd-tree/index.js";
 import type { DetailItem } from "../types.js";
 
@@ -208,6 +209,12 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
   return h(
     Fragment,
     null,
+
+    // Branded header
+    h("div", { class: "view-header" },
+      h(BrandedHeader, { product: "rex", title: "Rex", class: "branded-header-rex" }),
+      h("h2", { class: "section-header" }, "Tasks"),
+    ),
 
     // Command bar — action buttons
     h("div", { class: "rex-command-bar" },

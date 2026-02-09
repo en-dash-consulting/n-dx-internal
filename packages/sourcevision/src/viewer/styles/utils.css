@@ -1,20 +1,22 @@
 /* Section headers */
 .section-header {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-size: var(--font-3xl);
+  font-weight: var(--weight-bold);
+  margin-bottom: var(--space-4);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
 }
 
 .section-header-sm {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-size: var(--font-lg);
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-4);
 }
 
 .section-sub {
-  font-size: 13px;
+  font-size: var(--font-base);
   color: var(--text-dim);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 /* Loading state */
@@ -92,17 +94,22 @@
   border: 1px solid var(--border);
   background: var(--bg-surface);
   color: var(--text-dim);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-md);
+  font-weight: var(--weight-semibold);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: border-color var(--transition-normal), color var(--transition-normal), background var(--transition-normal);
 }
 
 .guide-btn:hover, .theme-toggle-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.guide-btn:active, .theme-toggle-btn:active {
+  background: var(--bg-hover);
 }
 
 .guide-overlay {

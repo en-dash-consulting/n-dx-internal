@@ -10,6 +10,7 @@ import { h } from "preact";
 import { useState, useEffect, useCallback, useMemo } from "preact/hooks";
 import { MetricCard } from "../components/data-display/health-gauge.js";
 import type { ViewId } from "../types.js";
+import { BrandedHeader } from "../components/logos.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -167,9 +168,12 @@ export function RexDashboard({ navigateTo }: RexDashboardProps) {
   return h("div", { class: "rex-dashboard" },
     // Header
     h("div", { class: "rex-dashboard-header" },
-      h("h2", null, data.title),
-      h("div", { class: "rex-dashboard-meta" },
-        `${percentComplete}% complete`,
+      h(BrandedHeader, { product: "rex", title: "Rex", class: "branded-header-rex" }),
+      h("div", { class: "rex-dashboard-title-row" },
+        h("h2", null, data.title),
+        h("div", { class: "rex-dashboard-meta" },
+          `${percentComplete}% complete`,
+        ),
       ),
     ),
 

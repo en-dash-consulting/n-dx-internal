@@ -5219,10 +5219,12 @@
         {
           "id": "545bde64-ebf9-47f9-936c-2e68831d7c30",
           "title": "Sidebar Navigation and Layout Optimization",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Improve sidebar usability and implement responsive layout that works across all device sizes while preventing horizontal scrolling",
           "source": "smart-add",
+          "startedAt": "2026-02-09T19:58:32.477Z",
+          "completedAt": "2026-02-09T19:58:32.477Z",
           "children": [
             {
               "id": "4a335773-b752-453f-987e-de92af8638e5",
@@ -5255,7 +5257,7 @@
             {
               "id": "4f5a3916-91a7-445b-bff0-c8ebd8cc09c9",
               "title": "Implement responsive main content layout",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Ensure main content section automatically adjusts width and prevents horizontal scrolling by implementing proper CSS grid/flexbox layouts",
               "acceptanceCriteria": [
@@ -5271,7 +5273,8 @@
                 "css"
               ],
               "source": "smart-add",
-              "startedAt": "2026-02-09T19:49:50.791Z"
+              "startedAt": "2026-02-09T19:49:50.791Z",
+              "completedAt": "2026-02-09T19:58:32.434Z"
             }
           ]
         },
@@ -5316,7 +5319,7 @@
         {
           "id": "f5464d5e-1d5e-4e83-be3a-3e9aca398177",
           "title": "Brand Identity and Visual Design System",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Implement consistent branding with appropriate logos and establish clear visual hierarchy throughout the interface using a cohesive design system",
           "source": "smart-add",
@@ -5324,7 +5327,7 @@
             {
               "id": "9f0c0eb3-72de-4d8d-8e7e-80a2f69ad289",
               "title": "Establish comprehensive branding and visual hierarchy",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Integrate n-dx and product-specific logos while implementing consistent typography, spacing, and visual weight to create clear information hierarchy",
               "acceptanceCriteria": [
@@ -5349,9 +5352,13 @@
                 "spacing",
                 "visual-hierarchy"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-09T19:58:54.595Z",
+              "completedAt": "2026-02-09T20:12:59.685Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-09T20:12:59.725Z",
+          "completedAt": "2026-02-09T20:12:59.725Z"
         }
       ]
     },
@@ -5401,6 +5408,142 @@
               "source": "smart-add",
               "startedAt": "2026-02-09T19:28:00.003Z",
               "completedAt": "2026-02-09T19:36:27.151Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "0999a286-d7db-44e5-87b1-d6ce8ea03376",
+      "title": "Sidebar Navigation Enhancement",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "c32f6e7d-847f-463f-9c20-bdab777a4308",
+          "title": "Enhanced Navigation Context and Controls",
+          "status": "pending",
+          "level": "feature",
+          "description": "Improve sidebar navigation with active page indication and centralized global controls",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "71063da9-5fb4-4901-8b82-ff19a75363d6",
+              "title": "Implement active page indication in collapsed sidebar",
+              "status": "pending",
+              "level": "task",
+              "description": "Display the current active page/section title or icon when sidebar is collapsed so users maintain navigation context",
+              "acceptanceCriteria": [
+                "Collapsed sidebar shows current page title or representative icon",
+                "Active indicator updates when navigating between pages",
+                "Indicator is visually distinct and easily readable"
+              ],
+              "priority": "medium",
+              "tags": [
+                "ui",
+                "navigation"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "8141f772-0b50-4ff3-8f7a-8f13246b68e3",
+              "title": "Add global controls to sidebar",
+              "status": "pending",
+              "level": "task",
+              "description": "Implement centralized global application controls including theme toggle and help/FAQ section in the sidebar",
+              "acceptanceCriteria": [
+                "Theme toggle is accessible from any page via sidebar",
+                "Theme preference persists across browser sessions",
+                "All UI components respect the selected theme",
+                "FAQ is accessible from sidebar on any page",
+                "FAQ contains answers to common workflow questions",
+                "FAQ links to relevant documentation sections"
+              ],
+              "priority": "medium",
+              "tags": [
+                "ui",
+                "theming",
+                "help"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "fdfebde2-7c1e-44c0-a61a-c38e52641d75",
+          "title": "SourceVision Analysis Progress Integration",
+          "status": "pending",
+          "level": "feature",
+          "description": "Move the analysis progress indicator to proper SourceVision section",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "886ca38a-73c8-4cff-a3f3-ddc44cd5c510",
+              "title": "Relocate analysis progress indicator to SourceVision section",
+              "status": "pending",
+              "level": "task",
+              "description": "Move the current analysis progress indicator from its current location to the SourceVision section of the sidebar for better organization",
+              "acceptanceCriteria": [
+                "Analysis progress shows under SourceVision section header",
+                "Progress indicator updates in real-time during analysis",
+                "Clicking indicator navigates to relevant analysis view"
+              ],
+              "priority": "medium",
+              "tags": [
+                "ui",
+                "sourcevision",
+                "progress"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "81307b53-e961-4cd5-9dbc-9f218517a4c8",
+      "title": "Rex Task Interactivity and Navigation",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "e404cc14-7f47-4cb5-b27a-6653223f0db9",
+          "title": "Unified Rex Task Navigation",
+          "status": "pending",
+          "level": "feature",
+          "description": "Implement comprehensive clickable and navigable Rex task interface across all application views",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "9b16ecb5-4a4e-4b37-b018-5280342e6e26",
+              "title": "Implement comprehensive Rex task navigation system",
+              "status": "pending",
+              "level": "task",
+              "description": "Create a unified navigation system for Rex tasks that works consistently across dashboard, detailed views, and Hench run integration",
+              "acceptanceCriteria": [
+                "Tasks are visually indicated as clickable with hover states",
+                "Clicking a task navigates to detailed task view",
+                "Right-click or context menu provides quick actions",
+                "All Rex task references use same navigation pattern",
+                "Task links include consistent visual styling",
+                "Navigation preserves current context where appropriate",
+                "Each Hench run clearly displays associated Rex task",
+                "Clicking task reference navigates to Rex task detail",
+                "Task status is reflected in run display",
+                "Bidirectional navigation between run and task works"
+              ],
+              "priority": "high",
+              "tags": [
+                "ui",
+                "rex",
+                "navigation",
+                "consistency",
+                "hench",
+                "integration"
+              ],
+              "source": "smart-add"
             }
           ]
         }

@@ -4,6 +4,7 @@ import type { LoadedData } from "../types.js";
 import type { Finding } from "../../schema/v1.js";
 import { FindingsList } from "../components/data-display/findings-list.js";
 import { ENRICHMENT_THRESHOLDS } from "../components/constants.js";
+import { BrandedHeader } from "../components/logos.js";
 
 interface SuggestionsProps {
   data: LoadedData;
@@ -46,7 +47,10 @@ export function SuggestionsView({ data }: SuggestionsProps) {
   }, [findings]);
 
   return h("div", null,
-    h("h2", { class: "section-header" }, "Suggestions"),
+    h("div", { class: "view-header" },
+      h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
+      h("h2", { class: "section-header" }, "Suggestions"),
+    ),
     h("p", { class: "section-sub" },
       `${findings.length} suggestions for improvement`
     ),

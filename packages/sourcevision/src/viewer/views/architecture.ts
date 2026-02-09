@@ -6,6 +6,7 @@ import { FindingsList } from "../components/data-display/findings-list.js";
 import { BarChart, FlowDiagram } from "../components/data-display/mini-charts.js";
 import { ENRICHMENT_THRESHOLDS } from "../components/constants.js";
 import { buildFlowNodes, buildFlowEdges } from "../utils.js";
+import { BrandedHeader } from "../components/logos.js";
 
 interface ArchitectureProps {
   data: LoadedData;
@@ -78,7 +79,10 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
   const biDirectional = findings.filter((f) => /bidirectional/i.test(f.text)).length;
 
   return h("div", null,
-    h("h2", { class: "section-header" }, "Architecture"),
+    h("div", { class: "view-header" },
+      h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
+      h("h2", { class: "section-header" }, "Architecture"),
+    ),
     h("p", { class: "section-sub" },
       `${findings.length} findings from ${zones?.zones.length ?? 0} zones`
     ),

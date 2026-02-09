@@ -10,6 +10,7 @@ import { h, Fragment } from "preact";
 import { useState, useEffect, useMemo, useCallback } from "preact/hooks";
 import { MetricCard } from "../components/data-display/health-gauge.js";
 import { BarChart } from "../components/data-display/mini-charts.js";
+import { BrandedHeader } from "../components/logos.js";
 
 // ---------------------------------------------------------------------------
 // Types (mirroring API response shapes)
@@ -441,6 +442,7 @@ export function TokenUsageView() {
   return h("div", { class: "token-usage-container" },
     // Header
     h("div", { class: "token-header" },
+      h(BrandedHeader, { product: "rex", title: "Rex", class: "branded-header-rex" }),
       h("h2", null, "Token Usage"),
       h("div", { class: "token-controls" },
         // Date range filters

@@ -7,6 +7,7 @@ import { CollapsibleSection } from "../components/data-display/collapsible-secti
 import { HealthGauge, PatternBadge, MetricCard } from "../components/data-display/health-gauge.js";
 import { ZoneMap, ZoneDetail } from "../components/data-display/zone-map.js";
 import { ZONE_COLORS } from "../components/constants.js";
+import { BrandedHeader } from "../components/logos.js";
 
 interface OverviewProps {
   data: LoadedData;
@@ -130,15 +131,19 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
   return h("div", { class: "overview-container" },
     // Header with project info
     manifest
-      ? h("div", { class: "overview-header" },
-          h("h2", null, manifest.targetPath.split("/").pop()),
+      ? h("div", { class: "overview-header view-header" },
+          h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
+          h("h2", { class: "view-title" }, manifest.targetPath.split("/").pop()),
           h("p", { class: "overview-meta" },
             manifest.gitBranch ? `${manifest.gitBranch} ` : "",
             manifest.gitSha ? `(${manifest.gitSha.slice(0, 7)}) \u2022 ` : "",
             new Date(manifest.analyzedAt).toLocaleString()
           )
         )
-      : h("h2", null, "Overview"),
+      : h("div", { class: "view-header" },
+          h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
+          h("h2", { class: "view-title" }, "Overview"),
+        ),
 
     // Getting Started guide for incomplete analysis
     showGettingStarted

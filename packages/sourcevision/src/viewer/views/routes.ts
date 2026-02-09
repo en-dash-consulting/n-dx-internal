@@ -6,6 +6,7 @@ import { TreeView, type TreeNode } from "../components/data-display/tree-view.js
 import { SearchFilter } from "../components/search-filter.js";
 import { CollapsibleSection } from "../components/data-display/collapsible-section.js";
 import { BarChart } from "../components/data-display/mini-charts.js";
+import { BrandedHeader } from "../components/logos.js";
 
 interface RoutesViewProps {
   data: LoadedData;
@@ -192,7 +193,10 @@ export function RoutesView({ data }: RoutesViewProps) {
   };
 
   return h("div", null,
-    h("h2", { class: "section-header" }, "Routes & Components"),
+    h("div", { class: "view-header" },
+      h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
+      h("h2", { class: "section-header" }, "Routes & Components"),
+    ),
 
     h("div", { class: "stat-grid" },
       h("div", { class: "stat-card" },

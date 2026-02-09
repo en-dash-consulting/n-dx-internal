@@ -8,6 +8,56 @@
   --brand-orange: #ff5926;
   --sidebar-w: 220px;
   --panel-w: 320px;
+
+  /* ── Typography scale (modular, 1.25 ratio) ── */
+  --font-xs: 10px;
+  --font-sm: 11px;
+  --font-base: 13px;
+  --font-md: 14px;
+  --font-lg: 16px;
+  --font-xl: 18px;
+  --font-2xl: 20px;
+  --font-3xl: 24px;
+
+  /* Font weights */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Line heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+
+  /* Letter spacing */
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+  --tracking-wider: 0.08em;
+
+  /* ── Spacing scale (4px grid) ── */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ── Border radii ── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* ── Transitions ── */
+  --transition-fast: 0.1s ease;
+  --transition-normal: 0.15s ease;
+  --transition-slow: 0.25s ease;
 }
 
 /* Dark theme (default) */
@@ -15,15 +65,23 @@
   --bg: #0c0e1a;
   --bg-surface: #151829;
   --bg-hover: #1e2240;
+  --bg-active: #262b4a;
   --border: #2a2f4a;
+  --border-strong: #3d4470;
   --text: #e8eaf0;
   --text-dim: #9ea3bc;
+  --text-muted: #6b7094;
   --accent: var(--brand-teal);
   --accent-dim: #008f75;
+  --accent-subtle: color-mix(in srgb, var(--brand-teal) 8%, transparent);
   --green: var(--brand-green);
   --orange: var(--brand-orange);
   --red: var(--brand-rose);
   --purple: var(--brand-purple);
+
+  /* Logo background — purple in dark mode */
+  --logo-bg: var(--brand-purple);
+  --logo-bg-hover: #7d52ff;
 }
 
 /* Light theme */
@@ -31,13 +89,21 @@
   --bg: #f5f6fa;
   --bg-surface: #ffffff;
   --bg-hover: #eef0f6;
+  --bg-active: #e4e7f0;
   --border: #d8dce6;
+  --border-strong: #bcc2d4;
   --text: #1a1d2e;
   --text-dim: #5c6078;
+  --text-muted: #8b90a8;
   --accent: #008f60;
   --accent-dim: #007a52;
+  --accent-subtle: color-mix(in srgb, #008f60 6%, transparent);
   --green: var(--brand-green);
   --orange: var(--brand-orange);
   --red: var(--brand-rose);
   --purple: var(--brand-purple);
+
+  /* Logo background — navy in light mode */
+  --logo-bg: var(--brand-navy);
+  --logo-bg-hover: #002499;
 }

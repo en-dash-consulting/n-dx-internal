@@ -8,6 +8,7 @@
 
 import { h, Fragment } from "preact";
 import { useState, useEffect, useCallback, useRef, useMemo } from "preact/hooks";
+import { BrandedHeader } from "../components/logos.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -696,6 +697,7 @@ export function ValidationView() {
     h("div", { class: "val-container" },
       // Header
       h("div", { class: "val-header" },
+        h(BrandedHeader, { product: "rex", title: "Rex", class: "branded-header-rex" }),
         h("h2", { class: "val-title" }, "Validation & Dependencies"),
         h("div", { class: "val-tabs" },
           h("button", {

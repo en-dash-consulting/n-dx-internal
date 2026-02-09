@@ -12,6 +12,7 @@
 import { h } from "preact";
 import { useState, useEffect, useCallback, useMemo } from "preact/hooks";
 import { MetricCard } from "../components/data-display/health-gauge.js";
+import { BrandedHeader } from "../components/logos.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -456,6 +457,7 @@ export function HenchRunsView() {
   if (runs.length === 0) {
     return h("div", { class: "hench-runs-container" },
       h("div", { class: "hench-runs-header" },
+        h(BrandedHeader, { product: "hench", title: "Hench", class: "branded-header-hench" }),
         h("h2", null, "Execution History"),
       ),
       h("div", { class: "hench-empty" },
@@ -482,8 +484,11 @@ export function HenchRunsView() {
   // ── List view ──
   return h("div", { class: "hench-runs-container" },
     h("div", { class: "hench-runs-header" },
-      h("h2", null, "Execution History"),
-      h("div", { class: "hench-runs-count" }, `${runs.length} run${runs.length === 1 ? "" : "s"}`),
+      h(BrandedHeader, { product: "hench", title: "Hench", class: "branded-header-hench" }),
+      h("div", { class: "hench-runs-title-row" },
+        h("h2", null, "Execution History"),
+        h("div", { class: "hench-runs-count" }, `${runs.length} run${runs.length === 1 ? "" : "s"}`),
+      ),
     ),
 
     // Aggregate metrics

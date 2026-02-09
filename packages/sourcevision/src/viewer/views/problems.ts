@@ -5,6 +5,7 @@ import type { Finding } from "../../schema/v1.js";
 import { FindingsList } from "../components/data-display/findings-list.js";
 import { BarChart } from "../components/data-display/mini-charts.js";
 import { ENRICHMENT_THRESHOLDS } from "../components/constants.js";
+import { BrandedHeader } from "../components/logos.js";
 
 interface ProblemsProps {
   data: LoadedData;
@@ -57,7 +58,10 @@ export function ProblemsView({ data }: ProblemsProps) {
   }, [findings]);
 
   return h("div", null,
-    h("h2", { class: "section-header" }, "Problems"),
+    h("div", { class: "view-header" },
+      h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
+      h("h2", { class: "section-header" }, "Problems"),
+    ),
     h("p", { class: "section-sub" },
       `${findings.length} anti-patterns detected`
     ),

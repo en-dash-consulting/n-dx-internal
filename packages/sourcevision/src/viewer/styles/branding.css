@@ -1,0 +1,132 @@
+/* ── Branding: logos, branded headers, section identity ── */
+
+/* Base logo styling */
+.logo {
+  flex-shrink: 0;
+  display: block;
+}
+
+/* n-dx main logo */
+.logo-ndx-bg {
+  fill: var(--logo-bg);
+  transition: fill var(--transition-normal);
+}
+
+.sidebar-brand:hover .logo-ndx-bg {
+  fill: var(--logo-bg-hover);
+}
+
+/* Sidebar brand area */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar-logo {
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+/* Section logos in nav headers */
+.nav-section-logo {
+  color: var(--text-dim);
+  opacity: 0.7;
+  transition: color var(--transition-normal), opacity var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.nav-section-header:hover .nav-section-logo {
+  opacity: 1;
+}
+
+/* Product-specific accent colors on section headers */
+.nav-section-sourcevision:hover .nav-section-logo {
+  color: var(--brand-teal);
+}
+
+.nav-section-rex:hover .nav-section-logo {
+  color: var(--brand-purple);
+}
+
+.nav-section-hench:hover .nav-section-logo {
+  color: var(--brand-orange);
+}
+
+/* Active section logos get their brand color */
+.nav-section-header[aria-expanded="true"] .nav-section-logo {
+  opacity: 1;
+}
+
+.nav-section-sourcevision[aria-expanded="true"] .nav-section-logo {
+  color: var(--brand-teal);
+}
+
+.nav-section-rex[aria-expanded="true"] .nav-section-logo {
+  color: var(--brand-purple);
+}
+
+.nav-section-hench[aria-expanded="true"] .nav-section-logo {
+  color: var(--brand-orange);
+}
+
+/* Branded page headers for view content areas */
+.branded-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.branded-header-logo {
+  flex-shrink: 0;
+}
+
+.branded-header-label {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+/* Product-specific branded header colors */
+.branded-header-sv { color: var(--brand-teal); }
+.branded-header-sv .branded-header-logo { color: var(--brand-teal); }
+
+.branded-header-rex { color: var(--brand-purple); }
+.branded-header-rex .branded-header-logo { color: var(--brand-purple); }
+
+.branded-header-hench { color: var(--brand-orange); }
+.branded-header-hench .branded-header-logo { color: var(--brand-orange); }
+
+/* View page titles that follow a branded header */
+.view-header {
+  margin-bottom: var(--space-6);
+}
+
+.view-header .branded-header {
+  margin-bottom: var(--space-1);
+}
+
+/* When .section-header is inside .view-header, suppress its own bottom margin */
+.view-header .section-header {
+  margin-bottom: 0;
+}
+
+.view-title {
+  font-size: var(--font-3xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.view-subtitle {
+  font-size: var(--font-base);
+  color: var(--text-dim);
+  margin-top: var(--space-1);
+}

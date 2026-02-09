@@ -4,6 +4,7 @@ import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
 import type { FileEntry } from "../../schema/v1.js";
 import { ZONE_COLORS } from "../components/constants.js";
 import { buildFileToZoneMap } from "../utils.js";
+import { BrandedHeader } from "../components/logos.js";
 
 interface FilesViewProps {
   data: LoadedData;
@@ -148,7 +149,10 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
   const remaining = filtered.length - showCount;
 
   return h("div", null,
-    h("h2", { class: "section-header" }, "Files"),
+    h("div", { class: "view-header" },
+      h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
+      h("h2", { class: "section-header" }, "Files"),
+    ),
     h("p", { class: "section-sub" },
       `${inventory.summary.totalFiles} files, ${inventory.summary.totalLines.toLocaleString()} lines`
     ),

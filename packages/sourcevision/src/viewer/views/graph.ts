@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useMemo } from "preact/hooks";
 import type { LoadedData, DetailItem } from "../types.js";
 import { ZONE_COLORS } from "../components/constants.js";
 import { GraphRenderer, type GraphNode, type GraphLink } from "../graph/renderer.js";
+import { BrandedHeader } from "../components/logos.js";
 
 interface GraphProps {
   data: LoadedData;
@@ -137,7 +138,10 @@ export function Graph({ data, onSelect, selectedFile, selectedZone }: GraphProps
   }, [zones]);
 
   return h("div", null,
-    h("h2", { class: "section-header" }, "Import Graph"),
+    h("div", { class: "view-header" },
+      h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
+      h("h2", { class: "section-header" }, "Import Graph"),
+    ),
     h("p", { class: "section-sub" },
       `${imports.edges.length} edges between ${new Set([...imports.edges.map(e => e.from), ...imports.edges.map(e => e.to)]).size} files`,
       zones ? ` across ${zones.zones.length} zones` : ""

@@ -9,6 +9,7 @@
 import { h, Fragment } from "preact";
 import { useState, useEffect, useCallback } from "preact/hooks";
 import { AnalyzePanel } from "../components/prd-tree/analyze-panel.js";
+import { BrandedHeader } from "../components/logos.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -62,6 +63,7 @@ export function AnalysisView() {
 
     // View header
     h("div", { class: "rex-analysis-view-header" },
+      h(BrandedHeader, { product: "rex", title: "Rex", class: "branded-header-rex" }),
       h("h2", null, "Analysis"),
       h("p", { class: "rex-analysis-view-subtitle" },
         "Scan the project to discover new work items and review proposals before adding them to the PRD.",

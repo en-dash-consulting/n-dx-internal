@@ -7,6 +7,7 @@ import { CollapsibleSection } from "../components/data-display/collapsible-secti
 import { SearchFilter } from "../components/search-filter.js";
 import { FlowDiagram } from "../components/data-display/mini-charts.js";
 import { meterClass, buildFlowNodes, buildFlowEdges } from "../utils.js";
+import { BrandedHeader } from "../components/logos.js";
 
 interface ZonesViewProps {
   data: LoadedData;
@@ -73,7 +74,10 @@ export function ZonesView({ data, onSelect }: ZonesViewProps) {
   }, [zones.zones, search]);
 
   return h("div", null,
-    h("h2", { class: "section-header" }, "Zones"),
+    h("div", { class: "view-header" },
+      h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
+      h("h2", { class: "section-header" }, "Zones"),
+    ),
     h("p", { class: "section-sub" },
       `${zones.zones.length} zones, ${zones.crossings.length} cross-zone dependencies, ${zones.unzoned.length} unzoned files`
     ),
