@@ -1725,6 +1725,8 @@
           "level": "feature",
           "description": "Improve the quality and accuracy of code analysis",
           "source": "llm",
+          "startedAt": "2026-02-09T15:29:11.123Z",
+          "completedAt": "2026-02-09T15:29:11.123Z",
           "children": [
             {
               "id": "e96c0946-3976-47aa-9670-d93e929df9b1",
@@ -2032,9 +2034,7 @@
               "startedAt": "2026-02-05T18:29:13.448Z",
               "completedAt": "2026-02-05T18:37:44.423Z"
             }
-          ],
-          "startedAt": "2026-02-09T15:29:11.123Z",
-          "completedAt": "2026-02-09T15:29:11.123Z"
+          ]
         },
         {
           "id": "d9c40582-36ed-4426-862a-5dad0a402e3c",
@@ -2518,10 +2518,11 @@
         {
           "id": "3ad7b27b-3eda-4de3-b546-c2bbeadc8d48",
           "title": "Task Selection and Prioritization",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Advanced algorithms for selecting optimal next tasks",
           "source": "llm",
+          "startedAt": "2026-02-09T15:33:53.407Z",
           "children": [
             {
               "id": "65c11692-f57b-463d-8e9f-79706efbd04d",
@@ -2606,7 +2607,8 @@
               "startedAt": "2026-02-05T21:01:43.806Z",
               "completedAt": "2026-02-05T21:04:38.560Z"
             }
-          ]
+          ],
+          "completedAt": "2026-02-09T15:42:15.466Z"
         },
         {
           "id": "9cb0e329-c261-4103-b544-b556d98861e8",

@@ -16,24 +16,99 @@ function bestAncestorPriority(parents: PRDItem[]): number {
   return Math.min(...parents.map((p) => PRIORITY_ORDER[p.priority ?? "medium"]));
 }
 
-/** Shared comparator for sorting actionable tasks. */
-function compareEntries(a: TreeEntry, b: TreeEntry): number {
-  // in_progress always wins — finish what you started
-  const aInProgress = a.item.status === "in_progress" ? 0 : 1;
-  const bInProgress = b.item.status === "in_progress" ? 0 : 1;
-  if (aInProgress !== bInProgress) return aInProgress - bInProgress;
+// ---------------------------------------------------------------------------
+// Advanced scoring helpers (exported for testing)
+// ---------------------------------------------------------------------------
 
-  // Then by own priority
-  const pa = PRIORITY_ORDER[a.item.priority ?? "medium"];
-  const pb = PRIORITY_ORDER[b.item.priority ?? "medium"];
-  if (pa !== pb) return pa - pb;
+/**
+ * Ratio of completed/deferred siblings to total siblings under the immediate
+ * parent. Tasks in nearly-finished features score higher, encouraging
+ * feature completion before starting new work.
+ *
+ * Returns 0 for root-level items (no parent) or only-children.
+ */
+export function siblingCompletionRatio(entry: TreeEntry): number {
+  const parent = entry.parents[entry.parents.length - 1];
+  if (!parent?.children || parent.children.length <= 1) return 0;
+  const done = parent.children.filter(
+    (c) => c.status === "completed" || c.status === "deferred",
+  ).length;
+  return done / parent.children.length;
+}
 
-  // Tiebreak: highest-priority ancestor
-  const ancestorA = bestAncestorPriority(a.parents);
-  const ancestorB = bestAncestorPriority(b.parents);
-  if (ancestorA !== ancestorB) return ancestorA - ancestorB;
+/**
+ * Count how many items in the tree list `taskId` in their `blockedBy` array.
+ * Tasks that unblock more downstream work are more valuable to complete.
+ */
+export function countDependents(taskId: string, items: PRDItem[]): number {
+  let count = 0;
+  for (const { item } of walkTree(items)) {
+    if (item.blockedBy && item.blockedBy.includes(taskId)) {
+      count++;
+    }
+  }
+  return count;
+}
 
-  return a.item.title.localeCompare(b.item.title);
+/**
+ * Build a map of taskId → dependent count for all tasks that appear in any
+ * blockedBy list. Pre-computed once to avoid O(n²) per comparison.
+ */
+function buildDependentCounts(items: PRDItem[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const { item } of walkTree(items)) {
+    if (item.blockedBy) {
+      for (const dep of item.blockedBy) {
+        counts.set(dep, (counts.get(dep) ?? 0) + 1);
+      }
+    }
+  }
+  return counts;
+}
+
+/**
+ * Create a comparator for sorting actionable tasks.
+ *
+ * Sort order:
+ *   1. in_progress status (finish what you started)
+ *   2. Own priority (critical > high > medium > low)
+ *   3. Ancestor priority (highest-priority parent chain wins)
+ *   4. Sibling completion ratio (nearly-done features first)
+ *   5. Unblock potential (tasks that unblock more downstream work)
+ *   6. Alphabetical title (stable tiebreaker)
+ */
+function makeComparator(items: PRDItem[]): (a: TreeEntry, b: TreeEntry) => number {
+  const depCounts = buildDependentCounts(items);
+
+  return (a: TreeEntry, b: TreeEntry): number => {
+    // 1. in_progress always wins — finish what you started
+    const aInProgress = a.item.status === "in_progress" ? 0 : 1;
+    const bInProgress = b.item.status === "in_progress" ? 0 : 1;
+    if (aInProgress !== bInProgress) return aInProgress - bInProgress;
+
+    // 2. Then by own priority
+    const pa = PRIORITY_ORDER[a.item.priority ?? "medium"];
+    const pb = PRIORITY_ORDER[b.item.priority ?? "medium"];
+    if (pa !== pb) return pa - pb;
+
+    // 3. Tiebreak: highest-priority ancestor
+    const ancestorA = bestAncestorPriority(a.parents);
+    const ancestorB = bestAncestorPriority(b.parents);
+    if (ancestorA !== ancestorB) return ancestorA - ancestorB;
+
+    // 4. Tiebreak: sibling completion ratio (higher = finish the feature)
+    const sibA = siblingCompletionRatio(a);
+    const sibB = siblingCompletionRatio(b);
+    if (sibA !== sibB) return sibB - sibA; // higher ratio wins
+
+    // 5. Tiebreak: unblock potential (more dependents = more valuable)
+    const depA = depCounts.get(a.item.id) ?? 0;
+    const depB = depCounts.get(b.item.id) ?? 0;
+    if (depA !== depB) return depB - depA; // more dependents wins
+
+    // 6. Stable alphabetical tiebreaker
+    return a.item.title.localeCompare(b.item.title);
+  };
 }
 
 export interface SelectionExplanation {
@@ -123,8 +198,8 @@ function collectActionable(
 /**
  * Collect ALL actionable tasks flattened and sorted globally by priority.
  * Returns every leaf task that is pending/in_progress with resolved
- * dependencies, sorted: in_progress first, then by priority, then by
- * ancestor priority, then alphabetically.
+ * dependencies, sorted by: in_progress status, priority, ancestor priority,
+ * sibling completion ratio, unblock potential, then alphabetically.
  */
 export function findActionableTasks(
   items: PRDItem[],
@@ -132,7 +207,7 @@ export function findActionableTasks(
   limit = 20,
 ): TreeEntry[] {
   const results = collectActionable(items, completedIds);
-  results.sort(compareEntries);
+  results.sort(makeComparator(items));
   return results.slice(0, limit);
 }
 
@@ -142,7 +217,7 @@ export function findNextTask(
 ): TreeEntry | null {
   const results = collectActionable(items, completedIds);
   if (results.length === 0) return null;
-  results.sort(compareEntries);
+  results.sort(makeComparator(items));
   return results[0];
 }
 
