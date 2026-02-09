@@ -4939,6 +4939,8 @@
             "sidebar",
             "navigation"
           ],
+          "startedAt": "2026-02-09T18:08:32.225Z",
+          "completedAt": "2026-02-09T18:08:32.225Z",
           "children": [
             {
               "id": "b55eac06-5884-43a5-9601-df0cfa39cbe2",
@@ -4968,9 +4970,7 @@
               "startedAt": "2026-02-09T18:04:40.183Z",
               "completedAt": "2026-02-09T18:08:32.185Z"
             }
-          ],
-          "startedAt": "2026-02-09T18:08:32.225Z",
-          "completedAt": "2026-02-09T18:08:32.225Z"
+          ]
         },
         {
           "id": "12e7cfc8-0007-43bf-a0f4-d28b0825e3e1",
@@ -5031,7 +5031,7 @@
             {
               "id": "2048ebbf-fa7c-44ed-8929-32d16aa7aa49",
               "title": "Extract Analysis/Proposals into its own Rex view",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Currently the Analyze button and proposal review UI are embedded in the PRD/Tasks view. Extract this into a dedicated \"Analysis\" view within the Rex section. Shows: trigger analysis button, pending proposals list with accept/reject, analysis history. This declutters the task tree view and gives the analysis pipeline its own space.",
               "priority": "medium",
@@ -5039,7 +5039,9 @@
                 "web",
                 "rex",
                 "analysis"
-              ]
+              ],
+              "startedAt": "2026-02-09T18:09:13.612Z",
+              "completedAt": "2026-02-09T18:14:43.331Z"
             },
             {
               "id": "41001195-4568-4ca6-9bbc-37c23c970670",

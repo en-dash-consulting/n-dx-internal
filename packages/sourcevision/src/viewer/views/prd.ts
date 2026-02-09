@@ -3,7 +3,7 @@
  *
  * Loads PRD data from /data/prd.json (served by the unified web server)
  * or accepts it via props. Manages task selection, detail panel content,
- * add item form, analyze panel, and bulk actions.
+ * add item form, and bulk actions.
  */
 
 import { h, Fragment } from "preact";
@@ -12,7 +12,6 @@ import { useState, useEffect, useCallback } from "preact/hooks";
 import { PRDTree } from "../components/prd-tree/index.js";
 import { TaskDetail } from "../components/prd-tree/task-detail.js";
 import { AddItemForm } from "../components/prd-tree/add-item-form.js";
-import { AnalyzePanel } from "../components/prd-tree/analyze-panel.js";
 import { BulkActions } from "../components/prd-tree/bulk-actions.js";
 import type { PRDDocumentData, PRDItemData, AddItemInput } from "../components/prd-tree/index.js";
 import type { DetailItem } from "../types.js";
@@ -28,7 +27,7 @@ export interface PRDViewProps {
 }
 
 /** Active tab in the command bar. */
-type CommandTab = null | "add" | "analyze";
+type CommandTab = null | "add";
 
 /** Walk the tree to find an item by ID. */
 function findItemById(items: PRDItemData[], id: string): PRDItemData | null {
@@ -190,11 +189,6 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
     [fetchPRDData],
   );
 
-  // Handle analyze completion (refresh PRD data)
-  const handlePrdChanged = useCallback(async () => {
-    await fetchPRDData();
-  }, [fetchPRDData]);
-
   if (loading) {
     return h("div", { class: "loading" }, "Loading PRD...");
   }
@@ -225,11 +219,6 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
         },
         title: "Add a new item to the PRD",
       }, "+ Add Item"),
-      h("button", {
-        class: `rex-command-btn${activeTab === "analyze" ? " active" : ""}`,
-        onClick: () => setActiveTab(activeTab === "analyze" ? null : "analyze"),
-        title: "Analyze project and generate proposals",
-      }, "\u2699 Analyze"),
     ),
 
     // Active panel
@@ -240,10 +229,6 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
           onCancel: () => { setActiveTab(null); setAddParentId(null); },
           defaultParentId: addParentId,
         })
-      : null,
-
-    activeTab === "analyze"
-      ? h(AnalyzePanel, { onPrdChanged: handlePrdChanged })
       : null,
 
     // PRD tree
@@ -258,7 +243,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
     h(BulkActions, {
       selectedIds: bulkSelectedIds,
       onClearSelection: () => setBulkSelectedIds(new Set()),
-      onActionComplete: handlePrdChanged,
+      onActionComplete: fetchPRDData,
     }),
 
     // Toast notification

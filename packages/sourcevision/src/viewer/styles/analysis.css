@@ -1,0 +1,93 @@
+/* ── Analysis View ──────────────────────────────────────────────────── */
+
+.rex-analysis-view {
+  max-width: 820px;
+}
+
+.rex-analysis-view-header {
+  margin-bottom: 20px;
+}
+
+.rex-analysis-view-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.rex-analysis-view-subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ── Analysis History ──────────────────────────────────────────────── */
+
+.rex-analysis-history {
+  margin-top: 24px;
+}
+
+.rex-analysis-history-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.rex-analysis-history-empty {
+  font-size: 13px;
+  color: var(--text-dim);
+  padding: 12px 0;
+}
+
+.rex-analysis-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rex-analysis-history-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: background 0.1s;
+}
+
+.rex-analysis-history-entry:hover {
+  background: var(--bg-hover);
+}
+
+.rex-analysis-history-time {
+  color: var(--text-dim);
+  font-size: 11px;
+  white-space: nowrap;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.rex-analysis-history-event {
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.rex-analysis-history-event.success {
+  color: var(--green);
+}
+
+.rex-analysis-history-event.error {
+  color: var(--red);
+}
+
+.rex-analysis-history-event.running {
+  color: var(--accent);
+}
+
+.rex-analysis-history-detail {
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}

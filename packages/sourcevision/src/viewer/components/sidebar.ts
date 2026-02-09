@@ -30,6 +30,7 @@ const NAV_ENTRIES: NavEntry[] = [
   { type: "section", label: "REX" },
   { type: "item", id: "rex-dashboard", icon: "\u25A8", label: "Dashboard", minPass: 0 },
   { type: "item", id: "prd", icon: "\u2611", label: "Tasks", minPass: 0 },
+  { type: "item", id: "rex-analysis", icon: "\u2699", label: "Analysis", minPass: 0 },
   { type: "item", id: "validation", icon: "\u2714", label: "Validation", minPass: 0 },
   { type: "item", id: "token-usage", icon: "\u229A", label: "Token Usage", minPass: 0 },
   { type: "section", label: "HENCH" },

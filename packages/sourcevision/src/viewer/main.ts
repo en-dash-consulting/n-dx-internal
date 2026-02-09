@@ -20,10 +20,11 @@ import { PRDView } from "./views/prd.js";
 import { RexDashboard } from "./views/rex-dashboard.js";
 import { TokenUsageView } from "./views/token-usage.js";
 import { ValidationView } from "./views/validation.js";
+import { AnalysisView } from "./views/analysis.js";
 
 initTheme();
 
-const VALID_VIEWS = new Set<ViewId>(["overview", "graph", "zones", "files", "routes", "architecture", "problems", "suggestions", "rex-dashboard", "prd", "token-usage", "validation", "hench-runs"]);
+const VALID_VIEWS = new Set<ViewId>(["overview", "graph", "zones", "files", "routes", "architecture", "problems", "suggestions", "rex-dashboard", "prd", "rex-analysis", "token-usage", "validation", "hench-runs"]);
 
 function getInitialView(): ViewId {
   const hash = location.hash.replace("#", "") as ViewId;
@@ -202,6 +203,8 @@ function App() {
         return h(RexDashboard, { navigateTo: handleSidebarNav });
       case "prd":
         return h(PRDView, { onSelectItem: setDetail, onDetailContent: setPrdDetailContent });
+      case "rex-analysis":
+        return h(AnalysisView, null);
       case "token-usage":
         return h(TokenUsageView, null);
       case "validation":
