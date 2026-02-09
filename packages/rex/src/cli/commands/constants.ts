@@ -16,6 +16,7 @@ Commands:
   echo "desc" | add       Pipe text as description (combinable with other sources)
   update <id> [dir]       Update item status/priority
   move <id> [dir]         Move item to new parent (reparent)
+  reshape [dir]           LLM-powered PRD restructuring (merge, update, reparent, split)
   prune [dir]             Remove completed subtrees (archive to .rex/archive.json)
   usage [dir]             Detailed token usage analytics and cost estimation
   validate [dir]          Check PRD integrity (DAG, schema)
@@ -37,7 +38,8 @@ Options:
   --priority=<p>          Priority (for update/add)
   --description="..."     Description (for add/update)
   --task=<id>             Target a specific task (for verify)
-  --dry-run               Preview without making changes (for prune, verify)
+  --dry-run               Preview without making changes (for prune, reshape, verify)
+  --smart                 LLM-assisted prune (for prune)
   --coverage              Show test coverage per task (for status)
   --tokens=false          Hide token usage summary (shown by default, for status)
   --since=<ISO>           Filter token usage after timestamp (for status, usage)

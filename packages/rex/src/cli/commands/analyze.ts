@@ -335,7 +335,11 @@ export async function cmdAnalyze(
     const svZones = svResults.filter((r) => r.kind === "feature" && r.source === "sourcevision").length;
     const pkgFiles = new Set(pkgResults.map((r) => r.sourceFile)).size;
 
-    const { results: newResults, stats } = reconcile(allResults, existing);
+    const { results: newResults, stats, updateCandidates = [] } = reconcile(
+      allResults,
+      existing,
+      { detectUpdates: existing.length > 0 },
+    );
 
     if (!noLlm) {
       try {
@@ -355,7 +359,7 @@ export async function cmdAnalyze(
     if (flags.format === "json") {
       result(
         JSON.stringify(
-          { scanned: { testFiles, docFiles, svZones, pkgFiles }, stats, proposals, tokenUsage },
+          { scanned: { testFiles, docFiles, svZones, pkgFiles }, stats, proposals, updateCandidates, tokenUsage },
           null,
           2,
         ),
@@ -369,6 +373,41 @@ export async function cmdAnalyze(
     info(
       `Found: ${stats.total} proposals (${stats.newCount} new, ${stats.alreadyTracked} already tracked)`,
     );
+
+    // Show update candidates for existing items with richer info
+    if (updateCandidates.length > 0) {
+      info(`\n${updateCandidates.length} existing item${updateCandidates.length === 1 ? "" : "s"} could be updated:`);
+      for (const uc of updateCandidates) {
+        info(`  ${uc.itemTitle} (${uc.itemId.slice(0, 8)})`);
+        info(`    ${uc.field}: ${uc.current.slice(0, 60)} → ${uc.proposed.slice(0, 60)}`);
+      }
+
+      // Apply update candidates if --accept and we have a store
+      if (accept && await hasRexDir(dir)) {
+        const rexDir = join(dir, REX_DIR);
+        const store = await resolveStore(rexDir);
+        let updatedCount = 0;
+        for (const uc of updateCandidates) {
+          const updates: Partial<PRDItem> = {};
+          if (uc.field === "description") {
+            updates.description = uc.proposed;
+          } else if (uc.field === "acceptanceCriteria") {
+            updates.acceptanceCriteria = uc.proposed.split("; ");
+          }
+          await store.updateItem(uc.itemId, updates);
+          updatedCount++;
+        }
+        if (updatedCount > 0) {
+          info(`Updated ${updatedCount} existing item${updatedCount === 1 ? "" : "s"} with richer info.`);
+          await store.appendLog({
+            timestamp: new Date().toISOString(),
+            event: "analyze_update",
+            detail: `Updated ${updatedCount} items: ${updateCandidates.map((uc) => uc.itemTitle).join(", ")}`,
+          });
+        }
+      }
+    }
+
     info("");
   }
 

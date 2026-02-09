@@ -1,0 +1,213 @@
+import { join } from "node:path";
+import { writeFile } from "node:fs/promises";
+import { resolveStore } from "../../store/index.js";
+import { applyReshape } from "../../core/reshape.js";
+import type { ReshapeProposal } from "../../core/reshape.js";
+import { toCanonicalJSON } from "../../core/canonical.js";
+import { reasonForReshape, formatReshapeProposal } from "../../analyze/reshape-reason.js";
+import { setClaudeConfig } from "../../analyze/reason.js";
+import { loadClaudeConfig } from "../../store/project-config.js";
+import { REX_DIR } from "./constants.js";
+import { CLIError } from "../errors.js";
+import { info, result } from "../output.js";
+import { formatTokenUsage } from "./analyze.js";
+import type { PRDItem } from "../../schema/index.js";
+
+const ARCHIVE_FILE = "archive.json";
+
+interface ReshapeArchive {
+  schema: "rex/archive/v1";
+  batches: ReshapeArchiveBatch[];
+}
+
+interface ReshapeArchiveBatch {
+  timestamp: string;
+  source: "prune" | "reshape";
+  items: PRDItem[];
+  count: number;
+  reason?: string;
+  actions?: ReshapeProposal[];
+}
+
+async function loadArchive(archivePath: string): Promise<ReshapeArchive> {
+  try {
+    const { readFile } = await import("node:fs/promises");
+    const raw = await readFile(archivePath, "utf-8");
+    return JSON.parse(raw) as ReshapeArchive;
+  } catch {
+    return { schema: "rex/archive/v1", batches: [] };
+  }
+}
+
+export async function cmdReshape(
+  dir: string,
+  flags: Record<string, string>,
+): Promise<void> {
+  const rexDir = join(dir, REX_DIR);
+  const store = await resolveStore(rexDir);
+  const doc = await store.loadDocument();
+
+  if (doc.items.length === 0) {
+    throw new CLIError(
+      "PRD is empty — nothing to reshape.",
+      "Run 'rex analyze' first to build your PRD.",
+    );
+  }
+
+  // Load Claude config
+  const claudeConfig = await loadClaudeConfig(rexDir);
+  setClaudeConfig(claudeConfig);
+
+  const model = flags.model;
+  const dryRun = flags["dry-run"] === "true";
+  const accept = flags.accept === "true";
+
+  // Get reshape proposals from LLM
+  info("Analyzing PRD structure...");
+  const { proposals, tokenUsage } = await reasonForReshape(doc.items, { dir, model });
+
+  // Show token usage
+  const usageLine = formatTokenUsage(tokenUsage);
+  if (usageLine) {
+    info(`Token usage: ${usageLine}`);
+  }
+
+  if (proposals.length === 0) {
+    result("No reshape proposals — PRD structure looks good.");
+    return;
+  }
+
+  // Display proposals
+  info(`\nFound ${proposals.length} reshape proposal${proposals.length === 1 ? "" : "s"}:\n`);
+  for (let i = 0; i < proposals.length; i++) {
+    info(`${i + 1}. ${formatReshapeProposal(proposals[i], doc.items)}`);
+    info("");
+  }
+
+  if (flags.format === "json") {
+    result(JSON.stringify({
+      dryRun,
+      proposals: proposals.map((p) => ({
+        id: p.id,
+        ...p.action,
+      })),
+      tokenUsage,
+    }, null, 2));
+    if (dryRun) return;
+  }
+
+  if (dryRun) {
+    result(`\n${proposals.length} proposal${proposals.length === 1 ? "" : "s"} (dry run — no changes made).`);
+    return;
+  }
+
+  // Determine which proposals to apply
+  let accepted: ReshapeProposal[];
+  if (accept) {
+    accepted = proposals;
+  } else if (process.stdin.isTTY) {
+    accepted = await interactiveReview(proposals, doc.items);
+  } else {
+    info("Proposals shown above. Run with --accept to apply, or use interactively in a TTY.");
+    return;
+  }
+
+  if (accepted.length === 0) {
+    result("No proposals accepted.");
+    return;
+  }
+
+  // Apply accepted proposals
+  const reshapeResult = applyReshape(doc.items, accepted);
+
+  // Report errors
+  for (const err of reshapeResult.errors) {
+    info(`  Warning: ${err.error}`);
+  }
+
+  // Archive removed items
+  if (reshapeResult.archivedItems.length > 0) {
+    const archivePath = join(rexDir, ARCHIVE_FILE);
+    const archive = await loadArchive(archivePath);
+    archive.batches.push({
+      timestamp: new Date().toISOString(),
+      source: "reshape",
+      items: reshapeResult.archivedItems,
+      count: reshapeResult.archivedItems.length,
+      reason: `Reshape: ${accepted.map((p) => p.action.action).join(", ")}`,
+      actions: accepted,
+    });
+    await writeFile(archivePath, toCanonicalJSON(archive), "utf-8");
+  }
+
+  // Save document
+  await store.saveDocument(doc);
+
+  // Log the reshape
+  await store.appendLog({
+    timestamp: new Date().toISOString(),
+    event: "reshape",
+    detail: JSON.stringify({
+      applied: reshapeResult.applied.length,
+      deleted: reshapeResult.deletedIds.length,
+      errors: reshapeResult.errors.length,
+      actions: reshapeResult.applied.map((p) => p.action.action),
+    }),
+  });
+
+  // Output
+  if (flags.format === "json") {
+    result(JSON.stringify({
+      applied: reshapeResult.applied.length,
+      deletedIds: reshapeResult.deletedIds,
+      archivedCount: reshapeResult.archivedItems.length,
+      errors: reshapeResult.errors.map((e) => e.error),
+    }, null, 2));
+  } else {
+    result(`Applied ${reshapeResult.applied.length} reshape action${reshapeResult.applied.length === 1 ? "" : "s"}.`);
+    if (reshapeResult.deletedIds.length > 0) {
+      info(`  ${reshapeResult.deletedIds.length} item${reshapeResult.deletedIds.length === 1 ? "" : "s"} archived.`);
+    }
+    if (reshapeResult.errors.length > 0) {
+      info(`  ${reshapeResult.errors.length} error${reshapeResult.errors.length === 1 ? "" : "s"} (see above).`);
+    }
+  }
+}
+
+async function interactiveReview(
+  proposals: ReshapeProposal[],
+  items: PRDItem[],
+): Promise<ReshapeProposal[]> {
+  const readline = await import("node:readline");
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  const ask = (q: string): Promise<string> =>
+    new Promise((resolve) => rl.question(q, resolve));
+
+  const accepted: ReshapeProposal[] = [];
+
+  try {
+    for (let i = 0; i < proposals.length; i++) {
+      const p = proposals[i];
+      info(`\n[${i + 1}/${proposals.length}] ${formatReshapeProposal(p, items)}`);
+      const answer = await ask("  Accept? (y/n/a=all/q=quit) ");
+      const choice = answer.trim().toLowerCase();
+
+      if (choice === "q") break;
+      if (choice === "a") {
+        accepted.push(...proposals.slice(i));
+        break;
+      }
+      if (choice === "y" || choice === "yes") {
+        accepted.push(p);
+      }
+    }
+  } finally {
+    rl.close();
+  }
+
+  return accepted;
+}

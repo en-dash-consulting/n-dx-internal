@@ -1,7 +1,7 @@
 export type { ScanResult, ScanOptions } from "./scanners.js";
 export { scanTests, scanDocs, scanSourceVision, scanPackageJson } from "./scanners.js";
 
-export type { ReconcileStats } from "./reconcile.js";
+export type { ReconcileStats, UpdateCandidate, ReconcileOptions } from "./reconcile.js";
 export { reconcile } from "./reconcile.js";
 
 export type { Proposal, ProposalFeature, ProposalTask } from "./propose.js";
@@ -57,3 +57,6 @@ export {
 
 export type { GuidedContext, ClarifyResponse } from "./guided.js";
 export { runGuidedSpec, clarify, generateSpecFromContext } from "./guided.js";
+
+export type { ReshapeReasonOptions, ReshapeReasonResult } from "./reshape-reason.js";
+export { reasonForReshape, parseReshapeResponse, formatReshapeProposal } from "./reshape-reason.js";
