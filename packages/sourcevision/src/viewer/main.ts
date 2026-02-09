@@ -82,9 +82,34 @@ function App() {
           setSelectedFile(s.file ?? null);
           setSelectedZone(s.zone ?? null);
         }
+      } else {
+        // Handle history entries created by direct hash assignment (e.g. window.location.hash = "#prd")
+        // These entries have no state object, so parse the hash from the URL
+        const hash = location.hash.replace("#", "") as ViewId;
+        if (VALID_VIEWS.has(hash)) {
+          setView(hash);
+          setSelectedFile(null);
+          setSelectedZone(null);
+          // Backfill the state so future back/forward through this entry works fully
+          history.replaceState({ view: hash, file: null, zone: null }, "", `#${hash}`);
+        }
       }
     };
     window.addEventListener("popstate", handlePopState);
+
+    // Handle direct hash changes (e.g. window.location.hash = "#prd" from validation view).
+    // hashchange fires when the hash is set directly but popstate does not.
+    const handleHashChange = () => {
+      const hash = location.hash.replace("#", "") as ViewId;
+      if (VALID_VIEWS.has(hash)) {
+        setView(hash);
+        setSelectedFile(null);
+        setSelectedZone(null);
+        // Backfill state so future back/forward through this entry works
+        history.replaceState({ view: hash, file: null, zone: null }, "", `#${hash}`);
+      }
+    };
+    window.addEventListener("hashchange", handleHashChange);
 
     let initialLoad = true;
     onDataChange((newData) => {
@@ -111,6 +136,7 @@ function App() {
     return () => {
       stopPolling();
       window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("hashchange", handleHashChange);
     };
   }, []);
 
