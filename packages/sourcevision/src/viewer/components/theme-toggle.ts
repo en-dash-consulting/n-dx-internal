@@ -8,7 +8,7 @@ export function initTheme() {
   document.documentElement.setAttribute("data-theme", preferred);
 }
 
-export function ThemeToggle() {
+function useThemeToggle() {
   const [theme, setTheme] = useState(
     () => document.documentElement.getAttribute("data-theme") || "dark"
   );
@@ -20,9 +20,27 @@ export function ThemeToggle() {
     setTheme(next);
   };
 
+  return { theme, toggle };
+}
+
+export function ThemeToggle() {
+  const { theme, toggle } = useThemeToggle();
+
   return h("button", {
     class: "theme-toggle-btn",
     onClick: toggle,
     title: theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
+  }, theme === "dark" ? "\u2600" : "\u263E");
+}
+
+/** Theme toggle styled for the sidebar controls area */
+export function SidebarThemeToggle() {
+  const { theme, toggle } = useThemeToggle();
+
+  return h("button", {
+    class: "sidebar-control-btn",
+    onClick: toggle,
+    title: theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
+    "aria-label": theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
   }, theme === "dark" ? "\u2600" : "\u263E");
 }

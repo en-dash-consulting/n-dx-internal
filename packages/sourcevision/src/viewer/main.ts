@@ -7,7 +7,7 @@ import { ALL_DATA_FILES } from "../schema/data-files.js";
 import { Sidebar } from "./components/sidebar.js";
 import { DetailPanel } from "./components/detail-panel.js";
 import { Guide } from "./components/guide.js";
-import { ThemeToggle, initTheme } from "./components/theme-toggle.js";
+import { initTheme } from "./components/theme-toggle.js";
 import { Overview } from "./views/overview.js";
 import { Graph } from "./views/graph.js";
 import { ZonesView } from "./views/zones.js";
@@ -247,7 +247,6 @@ function App() {
     },
       h("div", { class: "header-buttons-wrapper" },
         h("div", { class: "header-buttons" },
-          h(ThemeToggle, null),
           h(Guide, { view }),
         ),
       ),

@@ -5451,7 +5451,7 @@
             {
               "id": "8141f772-0b50-4ff3-8f7a-8f13246b68e3",
               "title": "Add global controls to sidebar",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement centralized global application controls including theme toggle and help/FAQ section in the sidebar",
               "acceptanceCriteria": [
@@ -5468,7 +5468,9 @@
                 "theming",
                 "help"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-09T20:27:34.453Z",
+              "completedAt": "2026-02-09T20:33:33.433Z"
             }
           ]
         },
@@ -5509,6 +5511,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-09T20:26:42.949Z",
+      "completedAt": "2026-02-09T20:26:42.949Z",
       "children": [
         {
           "id": "e404cc14-7f47-4cb5-b27a-6653223f0db9",
@@ -5553,9 +5557,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-09T20:26:42.949Z",
-      "completedAt": "2026-02-09T20:26:42.949Z"
+      ]
     }
   ]
 }

@@ -58,7 +58,8 @@
 
   .sidebar.sidebar-collapsed .sidebar-header,
   .sidebar.sidebar-collapsed .sidebar-nav,
-  .sidebar.sidebar-collapsed .sidebar-progress {
+  .sidebar.sidebar-collapsed .sidebar-progress,
+  .sidebar.sidebar-collapsed .sidebar-controls {
     opacity: 1;
     pointer-events: auto;
   }
@@ -185,6 +186,16 @@
   }
 
   .sidebar-progress { display: none; }
+
+  /* Sidebar controls visible only when mobile menu is open */
+  .sidebar-controls { display: none; }
+  .sidebar.mobile-open .sidebar-controls { display: flex; }
+
+  /* FAQ modal full-width on mobile */
+  .faq-modal {
+    width: 95vw;
+    max-height: 85vh;
+  }
 
   /* Touch-friendly section headers on mobile */
   .nav-section-header {

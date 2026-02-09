@@ -4,6 +4,8 @@ import type { Manifest, Zones } from "../../schema/v1.js";
 import type { ViewId } from "../types.js";
 import { ENRICHMENT_THRESHOLDS } from "./constants.js";
 import { NdxLogo, SourceVisionLogo, RexLogo, HenchLogo } from "./logos.js";
+import { SidebarThemeToggle } from "./theme-toggle.js";
+import { FAQ } from "./faq.js";
 
 const STORAGE_KEY = "sidebar-expanded-section";
 
@@ -244,6 +246,10 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
           )
         );
       })
+    ),
+    h("div", { class: "sidebar-controls", "aria-label": "Global controls" },
+      h(SidebarThemeToggle, null),
+      h(FAQ, null),
     ),
     manifest
       ? h("div", { class: "sidebar-progress", "aria-label": `Analysis progress: ${completedCount} of ${moduleNames.length} complete` },
