@@ -1,0 +1,152 @@
+/* ── Rex Task Link ────────────────────────────────────────────────── */
+/* Shared clickable task reference used across dashboard, runs, etc. */
+
+.rex-task-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+  max-width: 100%;
+  line-height: 1.3;
+}
+
+.rex-task-link:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+}
+
+.rex-task-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: 6px;
+}
+
+.rex-task-link:active {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+/* Compact variant */
+.rex-task-link-compact {
+  padding: 2px 6px;
+  font-size: 12px;
+  gap: 4px;
+}
+
+/* Status icon */
+.rex-task-link-status {
+  flex-shrink: 0;
+  font-size: 11px;
+  width: 14px;
+  text-align: center;
+}
+
+/* Title */
+.rex-task-link-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Arrow indicator */
+.rex-task-link-arrow {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.rex-task-link:hover .rex-task-link-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Context Menu ────────────────────────────────────────────────── */
+
+.rex-context-menu {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  min-width: 180px;
+  max-width: 280px;
+  padding: 4px 0;
+  overflow: hidden;
+  animation: rex-context-in 0.12s ease;
+}
+
+@keyframes rex-context-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.rex-context-menu-header {
+  padding: 8px 12px 4px;
+}
+
+.rex-context-menu-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rex-context-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.rex-context-menu-section-label {
+  padding: 4px 12px 2px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+}
+
+.rex-context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.rex-context-menu-item:hover {
+  background: var(--bg-hover);
+}
+
+.rex-context-menu-status-icon {
+  font-size: 10px;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}

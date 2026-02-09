@@ -9,8 +9,9 @@
 import { h } from "preact";
 import { useState, useEffect, useCallback, useMemo } from "preact/hooks";
 import { MetricCard } from "../components/data-display/health-gauge.js";
-import type { ViewId } from "../types.js";
+import type { ViewId, NavigateTo } from "../types.js";
 import { BrandedHeader } from "../components/logos.js";
+import { RexTaskLink } from "../components/rex-task-link.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -80,7 +81,7 @@ const STATUS_LABELS: Record<string, string> = {
 // ── Props ────────────────────────────────────────────────────────────
 
 export interface RexDashboardProps {
-  navigateTo?: (view: ViewId) => void;
+  navigateTo?: NavigateTo;
 }
 
 // ── Component ────────────────────────────────────────────────────────
@@ -242,11 +243,13 @@ export function RexDashboard({ navigateTo }: RexDashboardProps) {
                   class: `rex-dashboard-epic-item${epic.status === "completed" ? " completed" : ""}`,
                 },
                   h("div", { class: "rex-dashboard-epic-header" },
-                    h("span", {
-                      class: `prd-status-icon prd-status-${epic.status.replace("_", "-")}`,
-                      title: STATUS_LABELS[epic.status] ?? epic.status,
-                    }, STATUS_ICONS[epic.status] ?? "○"),
-                    h("span", { class: "rex-dashboard-epic-title" }, epic.title),
+                    h(RexTaskLink, {
+                      task: { id: epic.id, title: epic.title, status: epic.status, level: "epic", priority: epic.priority },
+                      navigateTo,
+                      compact: true,
+                      showStatus: true,
+                      class: "rex-dashboard-epic-link",
+                    }),
                     h("span", { class: "rex-dashboard-epic-pct" }, `${epic.percentComplete}%`),
                   ),
                   h("div", { class: "rex-dashboard-epic-bar" },
@@ -275,20 +278,7 @@ export function RexDashboard({ navigateTo }: RexDashboardProps) {
         h("div", { class: "rex-dashboard-next" },
           h("h3", null, "Up Next"),
           nextTask
-            ? h("div", {
-                class: "rex-dashboard-next-card",
-                onClick: navigateTo ? () => navigateTo("prd" as ViewId) : undefined,
-                role: navigateTo ? "button" : undefined,
-                tabIndex: navigateTo ? 0 : undefined,
-                onKeyDown: navigateTo
-                  ? (e: KeyboardEvent) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        navigateTo("prd" as ViewId);
-                      }
-                    }
-                  : undefined,
-              },
+            ? h("div", { class: "rex-dashboard-next-card" },
                 h("div", { class: "rex-dashboard-next-header" },
                   h("span", {
                     class: `prd-status-icon prd-status-${nextTask.status.replace("_", "-")}`,
@@ -302,7 +292,12 @@ export function RexDashboard({ navigateTo }: RexDashboardProps) {
                       )
                     : null,
                 ),
-                h("div", { class: "rex-dashboard-next-title" }, nextTask.title),
+                h(RexTaskLink, {
+                  task: { id: nextTask.id, title: nextTask.title, status: nextTask.status, level: nextTask.level, priority: nextTask.priority },
+                  navigateTo,
+                  showStatus: false,
+                  class: "rex-dashboard-next-link",
+                }),
                 nextTask.description
                   ? h("div", { class: "rex-dashboard-next-desc" },
                       nextTask.description.length > 120

@@ -111,6 +111,14 @@
   margin-bottom: 8px;
 }
 
+.rex-dashboard-epic-link {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  font-size: 13px;
+}
+
 .rex-dashboard-epic-title {
   flex: 1;
   font-weight: 500;
@@ -202,7 +210,6 @@
   background: color-mix(in srgb, var(--accent) 6%, var(--bg));
   border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
   border-radius: 8px;
-  cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
 
@@ -211,9 +218,11 @@
   background: color-mix(in srgb, var(--accent) 10%, var(--bg));
 }
 
-.rex-dashboard-next-card:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+.rex-dashboard-next-link {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 2px 0;
+  margin-bottom: 4px;
 }
 
 .rex-dashboard-next-header {

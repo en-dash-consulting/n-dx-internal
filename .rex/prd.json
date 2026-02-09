@@ -5323,6 +5323,8 @@
           "level": "feature",
           "description": "Implement consistent branding with appropriate logos and establish clear visual hierarchy throughout the interface using a cohesive design system",
           "source": "smart-add",
+          "startedAt": "2026-02-09T20:12:59.725Z",
+          "completedAt": "2026-02-09T20:12:59.725Z",
           "children": [
             {
               "id": "9f0c0eb3-72de-4d8d-8e7e-80a2f69ad289",
@@ -5356,9 +5358,7 @@
               "startedAt": "2026-02-09T19:58:54.595Z",
               "completedAt": "2026-02-09T20:12:59.685Z"
             }
-          ],
-          "startedAt": "2026-02-09T20:12:59.725Z",
-          "completedAt": "2026-02-09T20:12:59.725Z"
+          ]
         }
       ]
     },
@@ -5437,7 +5437,9 @@
               "acceptanceCriteria": [
                 "Collapsed sidebar shows current page title or representative icon",
                 "Active indicator updates when navigating between pages",
-                "Indicator is visually distinct and easily readable"
+                "Indicator is visually distinct and easily readable",
+                "Logos used in sections should be the logo in the packages/foobar with foobar-F.png file naming dir and the n-dx logo should be the logo in the root of this repository",
+                "Section with currently-active page should indicate as such even if collapse"
               ],
               "priority": "medium",
               "tags": [
@@ -5504,22 +5506,24 @@
     {
       "id": "81307b53-e961-4cd5-9dbc-9f218517a4c8",
       "title": "Rex Task Interactivity and Navigation",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "e404cc14-7f47-4cb5-b27a-6653223f0db9",
           "title": "Unified Rex Task Navigation",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Implement comprehensive clickable and navigable Rex task interface across all application views",
           "source": "smart-add",
+          "startedAt": "2026-02-09T20:26:42.915Z",
+          "completedAt": "2026-02-09T20:26:42.915Z",
           "children": [
             {
               "id": "9b16ecb5-4a4e-4b37-b018-5280342e6e26",
               "title": "Implement comprehensive Rex task navigation system",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create a unified navigation system for Rex tasks that works consistently across dashboard, detailed views, and Hench run integration",
               "acceptanceCriteria": [
@@ -5543,11 +5547,15 @@
                 "hench",
                 "integration"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-09T20:16:55.719Z",
+              "completedAt": "2026-02-09T20:26:42.871Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-09T20:26:42.949Z",
+      "completedAt": "2026-02-09T20:26:42.949Z"
     }
   ]
 }

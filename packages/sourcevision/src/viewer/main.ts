@@ -220,7 +220,7 @@ function App() {
       case "suggestions":
         return h(SuggestionsView, { data });
       case "rex-dashboard":
-        return h(RexDashboard, { navigateTo: handleSidebarNav });
+        return h(RexDashboard, { navigateTo });
       case "prd":
         return h(PRDView, { onSelectItem: setDetail, onDetailContent: setPrdDetailContent });
       case "rex-analysis":
@@ -230,7 +230,7 @@ function App() {
       case "validation":
         return h(ValidationView, null);
       case "hench-runs":
-        return h(HenchRunsView, null);
+        return h(HenchRunsView, { navigateTo });
       default:
         return null;
     }

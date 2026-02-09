@@ -109,6 +109,15 @@
   white-space: nowrap;
 }
 
+/* Task link inside run card */
+.hench-run-task-link {
+  flex: 1;
+  min-width: 0;
+  padding: 1px 4px;
+  margin: -1px 0;
+  font-size: 13px;
+}
+
 .hench-run-time {
   font-size: 12px;
   color: var(--text-dim);
@@ -353,6 +362,27 @@
   color: var(--red);
   overflow-x: auto;
   margin: 0;
+}
+
+/* Rex task section in detail view */
+.hench-detail-task-section {
+  margin-bottom: 20px;
+}
+
+.hench-detail-task-card {
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.hench-detail-task-id {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  opacity: 0.7;
+  word-break: break-all;
 }
 
 /* Summary box */

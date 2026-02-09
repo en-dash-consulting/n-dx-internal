@@ -13,6 +13,8 @@ import { h } from "preact";
 import { useState, useEffect, useCallback, useMemo } from "preact/hooks";
 import { MetricCard } from "../components/data-display/health-gauge.js";
 import { BrandedHeader } from "../components/logos.js";
+import { RexTaskLink } from "../components/rex-task-link.js";
+import type { NavigateTo } from "../types.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -20,6 +22,7 @@ interface RunSummary {
   id: string;
   taskId: string;
   taskTitle: string;
+  taskStatus?: string;
   startedAt: string;
   finishedAt?: string;
   status: string;
@@ -154,10 +157,11 @@ function RunMetrics({ runs }: { runs: RunSummary[] }) {
 }
 
 /** Individual run card in the list. */
-function RunCard({ run, isSelected, onClick }: {
+function RunCard({ run, isSelected, onClick, navigateTo }: {
   run: RunSummary;
   isSelected: boolean;
   onClick: () => void;
+  navigateTo?: NavigateTo;
 }) {
   const status = getStatusConfig(run.status);
   const totalTokens = (run.tokenUsage.input ?? 0)
@@ -179,14 +183,26 @@ function RunCard({ run, isSelected, onClick }: {
       }
     },
   },
-    // Top row: status + task title + timestamp
+    // Top row: status + task link + timestamp
     h("div", { class: "hench-run-header" },
       h("span", {
         class: "hench-run-status",
         style: `color: ${status.color}`,
         title: status.label,
       }, status.icon),
-      h("span", { class: "hench-run-title" }, run.taskTitle),
+      navigateTo && run.taskId
+        ? h(RexTaskLink, {
+            task: {
+              id: run.taskId,
+              title: run.taskTitle,
+              status: run.taskStatus ?? "pending",
+            },
+            navigateTo,
+            compact: true,
+            showStatus: false,
+            class: "hench-run-task-link",
+          })
+        : h("span", { class: "hench-run-title" }, run.taskTitle),
       h("span", { class: "hench-run-time" }, fmtTimestamp(run.startedAt)),
     ),
 
@@ -206,7 +222,7 @@ function RunCard({ run, isSelected, onClick }: {
 }
 
 /** Detail panel for the selected run. */
-function RunDetailView({ run, onBack }: { run: RunDetail; onBack: () => void }) {
+function RunDetailView({ run, onBack, navigateTo }: { run: RunDetail; onBack: () => void; navigateTo?: NavigateTo }) {
   const status = getStatusConfig(run.status);
   const totalTokens = (run.tokenUsage.input ?? 0)
     + (run.tokenUsage.output ?? 0)
@@ -230,6 +246,26 @@ function RunDetailView({ run, onBack }: { run: RunDetail; onBack: () => void }) 
         h("h2", null, run.taskTitle),
       ),
     ),
+
+    // Rex Task link — bidirectional navigation
+    run.taskId
+      ? h("div", { class: "hench-detail-section hench-detail-task-section" },
+          h("h3", null, "Rex Task"),
+          h("div", { class: "hench-detail-task-card" },
+            h(RexTaskLink, {
+              task: {
+                id: run.taskId,
+                title: run.taskTitle,
+                status: run.taskStatus ?? "pending",
+              },
+              navigateTo,
+              showStatus: true,
+              showLevel: false,
+            }),
+            h("div", { class: "hench-detail-task-id" }, run.taskId),
+          ),
+        )
+      : null,
 
     // Info grid
     h("div", { class: "hench-detail-info" },
@@ -258,10 +294,6 @@ function RunDetailView({ run, onBack }: { run: RunDetail; onBack: () => void }) 
       h("div", { class: "hench-info-row" },
         h("span", { class: "hench-info-label" }, "Tokens"),
         h("span", { class: "hench-info-value" }, fmtTokens(totalTokens)),
-      ),
-      h("div", { class: "hench-info-row" },
-        h("span", { class: "hench-info-label" }, "Task ID"),
-        h("span", { class: "hench-info-value hench-info-mono" }, run.taskId),
       ),
       h("div", { class: "hench-info-row" },
         h("span", { class: "hench-info-label" }, "Run ID"),
@@ -355,7 +387,11 @@ function RunDetailView({ run, onBack }: { run: RunDetail; onBack: () => void }) 
 
 // ── Main view ────────────────────────────────────────────────────────
 
-export function HenchRunsView() {
+export interface HenchRunsViewProps {
+  navigateTo?: NavigateTo;
+}
+
+export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
   const [runs, setRuns] = useState<RunSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -471,7 +507,7 @@ export function HenchRunsView() {
   // ── Detail view ──
   if (selectedRunId && !detailLoading && runDetail) {
     return h("div", { class: "hench-runs-container" },
-      h(RunDetailView, { run: runDetail, onBack: handleBack }),
+      h(RunDetailView, { run: runDetail, onBack: handleBack, navigateTo }),
     );
   }
 
@@ -518,6 +554,7 @@ export function HenchRunsView() {
           run,
           isSelected: selectedRunId === run.id,
           onClick: () => handleSelectRun(run.id),
+          navigateTo,
         }),
       ),
       filteredRuns.length === 0
