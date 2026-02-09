@@ -22,11 +22,12 @@ import type { ItemStatus } from "../schema/index.js";
  * - blocked → pending, in_progress, deferred (unblock)
  */
 const ALLOWED_TRANSITIONS: Record<ItemStatus, Set<ItemStatus>> = {
-  pending: new Set(["in_progress", "deferred", "blocked", "completed"]),
-  in_progress: new Set(["completed", "blocked", "deferred", "pending"]),
-  completed: new Set([]),
-  deferred: new Set(["pending", "in_progress", "blocked"]),
-  blocked: new Set(["pending", "in_progress", "deferred"]),
+  pending: new Set(["in_progress", "deferred", "blocked", "completed", "deleted"]),
+  in_progress: new Set(["completed", "blocked", "deferred", "pending", "deleted"]),
+  completed: new Set(["deleted"]),
+  deferred: new Set(["pending", "in_progress", "blocked", "deleted"]),
+  blocked: new Set(["pending", "in_progress", "deferred", "deleted"]),
+  deleted: new Set([]),
 };
 
 export interface TransitionResult {

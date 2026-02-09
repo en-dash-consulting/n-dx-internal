@@ -194,7 +194,7 @@ describe("validateDocument", () => {
   });
 
   it("accepts all valid status values", () => {
-    const statuses = ["pending", "in_progress", "completed", "deferred", "blocked"];
+    const statuses = ["pending", "in_progress", "completed", "deferred", "blocked", "deleted"];
     for (const status of statuses) {
       const result = validateDocument({
         schema: "rex/v1",

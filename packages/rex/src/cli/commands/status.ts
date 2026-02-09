@@ -24,6 +24,7 @@ const STATUS_ICONS: Record<string, string> = {
   completed: "●",
   deferred: "◌",
   blocked: "⊘",
+  deleted: "✕",
 };
 
 const FILLED = "█";

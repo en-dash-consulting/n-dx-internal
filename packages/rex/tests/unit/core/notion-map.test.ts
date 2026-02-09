@@ -1373,13 +1373,14 @@ describe("DATABASE_SCHEMA", () => {
 
   it("includes all status options", () => {
     const options = DATABASE_SCHEMA.Status.options!;
-    expect(options).toHaveLength(5);
+    expect(options).toHaveLength(6);
     const names = options.map((o) => o.name);
     expect(names).toContain("Not started");
     expect(names).toContain("In progress");
     expect(names).toContain("Done");
     expect(names).toContain("Deferred");
     expect(names).toContain("Blocked");
+    expect(names).toContain("Deleted");
   });
 
   it("includes all priority options", () => {

@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { resolveStore, resolveRemoteStore, SyncEngine } from "../store/index.js";
 import { SCHEMA_VERSION, LEVEL_HIERARCHY } from "../schema/index.js";
-import { computeStats, findItem } from "../core/tree.js";
+import { computeStats, findItem, deleteItem, cleanBlockedByRefs } from "../core/tree.js";
 import { findNextTask, collectCompletedIds, explainSelection } from "../core/next-task.js";
 import { validateTransition } from "../core/transitions.js";
 import { computeTimestampUpdates } from "../core/timestamps.js";
@@ -116,7 +116,7 @@ export async function startMcpServer(dir: string): Promise<void> {
     "Update the status of a PRD item",
     {
       id: z.string().describe("Item ID"),
-      status: z.enum(["pending", "in_progress", "completed", "deferred", "blocked"]).describe("New status"),
+      status: z.enum(["pending", "in_progress", "completed", "deferred", "blocked", "deleted"]).describe("New status"),
       force: z.boolean().optional().describe("Force the transition even if it violates transition rules (e.g. completed → pending)"),
     },
     async ({ id, status, force }) => {
@@ -148,6 +148,36 @@ export async function startMcpServer(dir: string): Promise<void> {
               isError: true,
             };
           }
+        }
+
+        // Handle deletion: remove item and children from tree
+        if (status === "deleted") {
+          const doc = await store.loadDocument();
+          const deletedIds = deleteItem(doc.items, id);
+          cleanBlockedByRefs(doc.items, new Set(deletedIds));
+          await store.saveDocument(doc);
+
+          await store.appendLog({
+            timestamp: new Date().toISOString(),
+            event: "item_deleted",
+            itemId: id,
+            detail: `Deleted ${existing.level}: ${existing.title} (${deletedIds.length} item(s) removed)`,
+          });
+
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: JSON.stringify({
+                  id,
+                  title: existing.title,
+                  deleted: true,
+                  removedCount: deletedIds.length,
+                  removedIds: deletedIds,
+                }),
+              },
+            ],
+          };
         }
 
         const tsUpdates = computeTimestampUpdates(existing.status, status as ItemStatus, existing);

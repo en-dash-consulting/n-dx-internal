@@ -7,7 +7,7 @@ import { validateTransition } from "../../core/transitions.js";
 import { computeTimestampUpdates } from "../../core/timestamps.js";
 import { findAutoCompletions } from "../../core/parent-completion.js";
 import { validateDAG } from "../../core/dag.js";
-import { findItem } from "../../core/tree.js";
+import { findItem, deleteItem, cleanBlockedByRefs } from "../../core/tree.js";
 import type { PRDItem, ItemStatus, Priority } from "../../schema/index.js";
 
 const VALID_STATUSES = new Set([
@@ -16,6 +16,7 @@ const VALID_STATUSES = new Set([
   "completed",
   "deferred",
   "blocked",
+  "deleted",
 ]);
 const VALID_PRIORITIES = new Set(["critical", "high", "medium", "low"]);
 
@@ -65,6 +66,28 @@ export async function cmdUpdate(
           "Use --force to override this check.",
         );
       }
+    }
+
+    // Handle deletion: remove item and children from tree
+    if (flags.status === "deleted") {
+      const doc = await store.loadDocument();
+      const deletedIds = deleteItem(doc.items, id);
+      cleanBlockedByRefs(doc.items, new Set(deletedIds));
+      await store.saveDocument(doc);
+
+      await store.appendLog({
+        timestamp: new Date().toISOString(),
+        event: "item_deleted",
+        itemId: id,
+        detail: `Deleted ${existing.level}: ${existing.title} (${deletedIds.length} item(s) removed)`,
+      });
+
+      if (flags.format === "json") {
+        result(JSON.stringify({ deleted: deletedIds }, null, 2));
+      } else {
+        result(`Deleted ${existing.level}: ${existing.title} (${deletedIds.length} item(s) removed)`);
+      }
+      return;
     }
 
     updates.status = flags.status as ItemStatus;

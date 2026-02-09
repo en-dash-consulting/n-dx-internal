@@ -4,7 +4,7 @@ import type { ItemStatus } from "../../../src/schema/index.js";
 
 describe("validateTransition", () => {
   // --- No-op (same status) always allowed ---
-  it.each<ItemStatus>(["pending", "in_progress", "completed", "deferred", "blocked"])(
+  it.each<ItemStatus>(["pending", "in_progress", "completed", "deferred", "blocked", "deleted"])(
     "allows no-op transition: %s → %s",
     (status) => {
       const result = validateTransition(status, status);
@@ -69,6 +69,24 @@ describe("validateTransition", () => {
     expect(result.message).toContain("--force");
   });
 
+  // --- Deletion from any status ---
+  it.each<ItemStatus>(["pending", "in_progress", "completed", "deferred", "blocked"])(
+    "allows %s → deleted",
+    (from) => {
+      expect(validateTransition(from, "deleted").allowed).toBe(true);
+    },
+  );
+
+  // --- Deleted is terminal ---
+  it.each<ItemStatus>(["pending", "in_progress", "completed", "deferred", "blocked"])(
+    "blocks deleted → %s",
+    (to) => {
+      const result = validateTransition("deleted", to);
+      expect(result.allowed).toBe(false);
+      expect(result.message).toContain("--force");
+    },
+  );
+
   // --- Error messages are clear ---
   it("includes allowed transitions in error message", () => {
     const result = validateTransition("deferred", "completed");
@@ -90,8 +108,12 @@ describe("allowedTargets", () => {
     expect(targets).not.toContain("pending");
   });
 
-  it("returns empty array for completed", () => {
-    expect(allowedTargets("completed")).toEqual([]);
+  it("returns only deleted for completed", () => {
+    expect(allowedTargets("completed")).toEqual(["deleted"]);
+  });
+
+  it("returns empty array for deleted", () => {
+    expect(allowedTargets("deleted")).toEqual([]);
   });
 
   it("returns valid targets for blocked", () => {

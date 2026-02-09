@@ -77,6 +77,7 @@ export const STATUS_OPTIONS: Record<ItemStatus, NotionStatusOption> = {
   completed:   { name: "Done",         color: "green",   group: "Complete" },
   deferred:    { name: "Deferred",     color: "yellow",  group: "To-do" },
   blocked:     { name: "Blocked",      color: "red",     group: "In progress" },
+  deleted:     { name: "Deleted",     color: "default", group: "Complete" },
 };
 
 /**
