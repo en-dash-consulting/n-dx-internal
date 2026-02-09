@@ -5355,22 +5355,24 @@
     {
       "id": "12ad32d8-608f-4df0-b5e9-37095a26a457",
       "title": "Hench Task Association and Tracking",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "ecc16e53-4db6-455f-a6d4-fba32422af14",
           "title": "Task-Run Association",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Link hench runs to specific PRD tasks for better tracking and audit trails",
           "source": "smart-add",
+          "startedAt": "2026-02-09T19:36:27.196Z",
+          "completedAt": "2026-02-09T19:36:27.196Z",
           "children": [
             {
               "id": "fc50c6e4-6b64-45fc-923c-ccac4a0aa448",
               "title": "Implement complete task-run association with graceful handling",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create end-to-end association between hench runs and PRD tasks, including display of task information, metadata storage, and robust handling of task lifecycle changes",
               "acceptanceCriteria": [
@@ -5391,11 +5393,15 @@
                 "persistence",
                 "robustness"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-09T19:28:00.003Z",
+              "completedAt": "2026-02-09T19:36:27.151Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-09T19:36:27.229Z",
+      "completedAt": "2026-02-09T19:36:27.229Z"
     }
   ]
 }

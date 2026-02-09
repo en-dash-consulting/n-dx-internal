@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { listRuns } from "../../store/index.js";
 import { HENCH_DIR, safeParseInt } from "./constants.js";
 import { info, result } from "../output.js";
+import { batchLookupTasksInRex, formatTaskLine } from "./task-lookup.js";
 
 export async function cmdStatus(
   dir: string,
@@ -21,6 +22,10 @@ export async function cmdStatus(
     return;
   }
 
+  // Batch-check which tasks still exist in rex
+  const taskIds = runs.map((r) => r.taskId);
+  const existingIds = await batchLookupTasksInRex(dir, taskIds);
+
   info(`Recent runs (${runs.length}):\n`);
 
   for (const run of runs) {
@@ -31,7 +36,10 @@ export async function cmdStatus(
         )
       : "running";
 
-    result(`${icon} ${run.id.slice(0, 8)}  ${run.taskTitle}`);
+    const taskExists = existingIds !== null ? existingIds.has(run.taskId) : null;
+    const taskLine = formatTaskLine(run.taskTitle, run.taskId, taskExists);
+
+    result(`${icon} ${run.id.slice(0, 8)}  ${taskLine}`);
     info(`  ${run.status} | ${run.turns} turns | ${duration} | ${run.model}`);
     const totalTokens = run.tokenUsage.input + run.tokenUsage.output;
     info(`  tokens: ${run.tokenUsage.input} in / ${run.tokenUsage.output} out (${totalTokens} total)`);

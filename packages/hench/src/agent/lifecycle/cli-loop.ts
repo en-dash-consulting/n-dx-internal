@@ -12,6 +12,7 @@ import { collectReviewDiff, promptReview, revertChanges } from "../analysis/revi
 import { checkTokenBudget } from "./token-budget.js";
 import { parseTokenUsage, parseStreamTokenUsage } from "./token-usage.js";
 import { section, subsection, stream, detail, info } from "../../types/output.js";
+import { displayTaskInfo } from "./task-display.js";
 import { loadClaudeConfig, resolveCliPath } from "../../store/project-config.js";
 import type { ClaudeConfig } from "../../store/project-config.js";
 
@@ -313,6 +314,9 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   });
   const briefText = formatTaskBrief(brief);
   const systemPrompt = buildSystemPrompt(brief.project, config);
+
+  // Display task info before any work begins
+  displayTaskInfo(brief);
 
   if (dryRun) {
     section("Dry Run (CLI)");

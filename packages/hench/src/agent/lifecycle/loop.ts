@@ -14,6 +14,7 @@ import { checkTokenBudget } from "./token-budget.js";
 import { parseTokenUsage } from "./token-usage.js";
 import { toolRexUpdateStatus, toolRexAppendLog, runPostTaskTests } from "../../tools/index.js";
 import { section, subsection, stream, detail, info } from "../../types/output.js";
+import { displayTaskInfo } from "./task-display.js";
 import type { ToolContext } from "../../types/index.js";
 import { loadClaudeConfig, resolveApiKey } from "../../store/project-config.js";
 import { resolveModel } from "@n-dx/claude-client";
@@ -99,6 +100,9 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     epicId: opts.epicId,
   });
   const briefText = formatTaskBrief(brief);
+
+  // Display task info before any work begins
+  displayTaskInfo(brief);
 
   if (dryRun) {
     section("Dry Run");

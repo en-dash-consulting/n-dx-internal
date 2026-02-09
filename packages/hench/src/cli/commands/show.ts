@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { loadRun } from "../../store/index.js";
 import { HENCH_DIR } from "./constants.js";
 import { info, result } from "../output.js";
+import { lookupTaskInRex, formatTaskLine } from "./task-lookup.js";
 
 export async function cmdShow(
   dir: string,
@@ -16,8 +17,12 @@ export async function cmdShow(
     return;
   }
 
+  // Check if the task still exists in rex
+  const taskLookup = await lookupTaskInRex(dir, run.taskId);
+  const taskLine = formatTaskLine(run.taskTitle, run.taskId, taskLookup.exists);
+
   result(`Run: ${run.id}`);
-  result(`Task: ${run.taskTitle} (${run.taskId})`);
+  result(`Task: ${taskLine}`);
   info(`Model: ${run.model}`);
   result(`Status: ${run.status}`);
   info(`Started: ${run.startedAt}`);
