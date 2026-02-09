@@ -3,10 +3,11 @@
  *
  * Renders a row of toggleable status chips that control which items
  * are visible in the tree. All statuses are enabled by default.
+ * Quick filter presets provide one-click access to common combinations.
  */
 
 import { h } from "preact";
-import { useCallback } from "preact/hooks";
+import { useCallback, useMemo } from "preact/hooks";
 import type { ItemStatus } from "./types.js";
 
 /** All available statuses in display order. */
@@ -28,6 +29,65 @@ const STATUS_DISPLAY: Record<ItemStatus, { icon: string; label: string; cssClass
   deferred:    { icon: "\u25CC", label: "Deferred",    cssClass: "prd-status-deferred" },
   deleted:     { icon: "\u2715", label: "Deleted",     cssClass: "prd-status-deleted" },
 };
+
+// ── Filter presets ───────────────────────────────────────────────────
+
+export interface FilterPreset {
+  /** Unique key for the preset. */
+  key: string;
+  /** Label shown on the button. */
+  label: string;
+  /** Tooltip describing the preset. */
+  title: string;
+  /** Statuses included in this preset. */
+  statuses: ReadonlySet<ItemStatus>;
+}
+
+/** Predefined filter presets in display order. */
+export const FILTER_PRESETS: readonly FilterPreset[] = [
+  {
+    key: "all",
+    label: "All Items",
+    title: "Show all statuses including deleted",
+    statuses: new Set<ItemStatus>(ALL_STATUSES),
+  },
+  {
+    key: "active",
+    label: "Active Work",
+    title: "Show pending, in progress, and blocked items",
+    statuses: new Set<ItemStatus>(["pending", "in_progress", "blocked"]),
+  },
+  {
+    key: "completed",
+    label: "Completed",
+    title: "Show only completed items",
+    statuses: new Set<ItemStatus>(["completed"]),
+  },
+  {
+    key: "blocked-deferred",
+    label: "Blocked/Deferred",
+    title: "Show blocked and deferred items that need attention",
+    statuses: new Set<ItemStatus>(["blocked", "deferred"]),
+  },
+];
+
+/**
+ * Determine which preset (if any) matches the current active statuses.
+ * Returns the preset key or null if no preset matches exactly.
+ */
+export function activePresetKey(activeStatuses: Set<ItemStatus>): string | null {
+  for (const preset of FILTER_PRESETS) {
+    if (
+      activeStatuses.size === preset.statuses.size &&
+      [...preset.statuses].every((s) => activeStatuses.has(s))
+    ) {
+      return preset.key;
+    }
+  }
+  return null;
+}
+
+// ── Component ────────────────────────────────────────────────────────
 
 export interface StatusFilterProps {
   /** Currently active (visible) statuses. */
@@ -52,21 +112,43 @@ export function StatusFilter({ activeStatuses, onChange }: StatusFilterProps) {
     [activeStatuses, onChange],
   );
 
-  const allActive = activeStatuses.size === ALL_STATUSES.length;
-
-  const handleShowAll = useCallback(() => {
-    onChange(new Set(ALL_STATUSES));
-  }, [onChange]);
-
-  const handleShowActive = useCallback(() => {
-    onChange(new Set<ItemStatus>(["pending", "in_progress", "blocked"]));
-  }, [onChange]);
+  const currentPreset = useMemo(
+    () => activePresetKey(activeStatuses),
+    [activeStatuses],
+  );
 
   return h(
     "div",
     { class: "prd-status-filter", role: "group", "aria-label": "Filter by status" },
     // Filter label
     h("span", { class: "prd-status-filter-label" }, "Filter:"),
+    // Quick presets
+    h(
+      "div",
+      { class: "prd-status-filter-presets" },
+      FILTER_PRESETS.map((preset) =>
+        h(
+          "button",
+          {
+            key: preset.key,
+            class: `prd-status-preset${currentPreset === preset.key ? " active" : ""}`,
+            onClick: () => onChange(new Set(preset.statuses)),
+            title: preset.title,
+            "aria-pressed": String(currentPreset === preset.key),
+            type: "button",
+          },
+          preset.label,
+        ),
+      ),
+      // Custom indicator when no preset matches
+      currentPreset === null
+        ? h(
+            "span",
+            { class: "prd-status-preset-custom", title: "Custom filter combination" },
+            "Custom",
+          )
+        : null,
+    ),
     // Status chips
     h(
       "div",
@@ -88,31 +170,6 @@ export function StatusFilter({ activeStatuses, onChange }: StatusFilterProps) {
           h("span", { class: "prd-status-chip-label" }, display.label),
         );
       }),
-    ),
-    // Quick presets
-    h(
-      "div",
-      { class: "prd-status-filter-presets" },
-      h(
-        "button",
-        {
-          class: `prd-status-preset${allActive ? " active" : ""}`,
-          onClick: handleShowAll,
-          title: "Show all statuses",
-          type: "button",
-        },
-        "All",
-      ),
-      h(
-        "button",
-        {
-          class: `prd-status-preset${!allActive && activeStatuses.size === 3 && activeStatuses.has("pending") && activeStatuses.has("in_progress") && activeStatuses.has("blocked") ? " active" : ""}`,
-          onClick: handleShowActive,
-          title: "Show only actionable items (pending, in progress, blocked)",
-          type: "button",
-        },
-        "Active",
-      ),
     ),
   );
 }

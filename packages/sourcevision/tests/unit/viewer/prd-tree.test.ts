@@ -209,7 +209,7 @@ describe("PRDTree", () => {
   it("renders filter preset buttons", () => {
     const root = renderToDiv(h(PRDTree, { document: sampleDoc }));
     const presets = root.querySelectorAll(".prd-status-preset");
-    expect(presets.length).toBe(2); // "All" and "Active"
+    expect(presets.length).toBe(4); // "All Items", "Active Work", "Completed", "Blocked/Deferred"
   });
 
   it("hides deleted items by default", () => {

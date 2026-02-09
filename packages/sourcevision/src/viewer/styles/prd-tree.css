@@ -198,11 +198,11 @@
 .prd-status-filter-presets {
   display: flex;
   gap: 4px;
-  margin-left: 4px;
+  flex-wrap: wrap;
 }
 
 .prd-status-preset {
-  padding: 3px 8px;
+  padding: 3px 10px;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--bg-surface);
@@ -221,6 +221,19 @@
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   border-color: var(--accent);
   color: var(--accent);
+  font-weight: 600;
+}
+
+.prd-status-preset-custom {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border: 1px dashed var(--text-dim);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 10px;
+  font-style: italic;
+  opacity: 0.7;
 }
 
 /* Deleted status */
