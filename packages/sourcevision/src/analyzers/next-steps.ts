@@ -99,12 +99,16 @@ export function deriveNextSteps(zones: Zones): NextStep[] {
       }
     }
 
+    const zone = zones.zones.find((z) => z.id === f.scope);
+    const files = zone ? zone.files.slice(0, 3) : [];
+    const filesStr = files.length > 0 ? ` Files: ${files.join(", ")}` : "";
+
     const relImpact = related.some((idx) => isHighImpact(findings[idx]));
 
     steps.push({
       priority: relImpact ? "high" : "medium",
       title: summarizeFindings(findings, related),
-      description: f.text,
+      description: `${f.text}${filesStr}`,
       category: "extract",
       relatedFindings: related,
       scope: f.scope,
@@ -145,10 +149,14 @@ export function deriveNextSteps(zones: Zones): NextStep[] {
 
     usedFindings.add(i);
 
+    const zone = zones.zones.find((z) => z.id === f.scope);
+    const files = zone ? zone.files.slice(0, 3) : [];
+    const filesStr = files.length > 0 ? ` Files: ${files.join(", ")}` : "";
+
     steps.push({
       priority: isHighImpact(f) ? "high" : "medium",
       title: truncateText(f.text, 80),
-      description: f.text,
+      description: `${f.text}${filesStr}`,
       category: categorizeFromType(f.type),
       relatedFindings: [i],
       scope: f.scope,
