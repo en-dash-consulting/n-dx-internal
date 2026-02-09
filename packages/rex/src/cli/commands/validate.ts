@@ -122,12 +122,35 @@ export async function cmdValidate(
       ),
     });
 
-    if (structural.warnings.length > 0) {
+    // Categorise warnings by type for clearer reporting
+    const blockedWarnings = structural.warnings.filter((w) => w.startsWith("Blocked without"));
+    const timestampWarnings = structural.warnings.filter((w) => w.startsWith("Timestamp inconsistency"));
+    const parentChildWarnings = structural.warnings.filter((w) => w.startsWith("Parent-child inconsistency"));
+
+    if (blockedWarnings.length > 0) {
       checks.push({
         name: "blocked item dependencies",
         pass: false,
         severity: "warn",
-        errors: structural.warnings,
+        errors: blockedWarnings,
+      });
+    }
+
+    if (timestampWarnings.length > 0) {
+      checks.push({
+        name: "timestamp consistency",
+        pass: false,
+        severity: "warn",
+        errors: timestampWarnings,
+      });
+    }
+
+    if (parentChildWarnings.length > 0) {
+      checks.push({
+        name: "parent-child status consistency",
+        pass: false,
+        severity: "warn",
+        errors: parentChildWarnings,
       });
     }
   }

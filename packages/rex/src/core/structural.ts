@@ -80,6 +80,14 @@ export function validateStructure(
     }
   }
 
+  // Timestamp and status-field consistency
+  const timestampWarnings = findTimestampInconsistencies(items);
+  warnings.push(...timestampWarnings);
+
+  // Parent-child status consistency
+  const parentChildWarnings = findParentChildInconsistencies(items);
+  warnings.push(...parentChildWarnings);
+
   return {
     valid: errors.length === 0,
     errors,
@@ -167,6 +175,82 @@ function findCycles(items: PRDItem[]): string[][] {
   }
 
   return cycles;
+}
+
+/**
+ * Find timestamp and status-field inconsistencies.
+ *
+ * Detects:
+ * - Completed items without completedAt
+ * - Non-completed items with stale completedAt
+ * - completedAt before startedAt
+ */
+function findTimestampInconsistencies(items: PRDItem[]): string[] {
+  const warnings: string[] = [];
+
+  for (const { item } of walkTree(items)) {
+    // Completed items should have completedAt
+    if (item.status === "completed" && !item.completedAt) {
+      warnings.push(
+        `Timestamp inconsistency: "${item.id}" (${item.title}) — ` +
+        `status is "completed" but completedAt is missing.`,
+      );
+    }
+
+    // Non-completed items should not have completedAt
+    if (item.status !== "completed" && item.completedAt) {
+      warnings.push(
+        `Timestamp inconsistency: "${item.id}" (${item.title}) — ` +
+        `status is "${item.status}" but completedAt is set. ` +
+        `Consider clearing completedAt or updating the status.`,
+      );
+    }
+
+    // completedAt must be after startedAt
+    if (item.startedAt && item.completedAt) {
+      const started = new Date(item.startedAt).getTime();
+      const completed = new Date(item.completedAt).getTime();
+      if (completed < started) {
+        warnings.push(
+          `Timestamp inconsistency: "${item.id}" (${item.title}) — ` +
+          `completedAt is before startedAt.`,
+        );
+      }
+    }
+  }
+
+  return warnings;
+}
+
+/**
+ * Find parent-child status inconsistencies.
+ *
+ * Detects:
+ * - Completed parent with non-terminal children (pending, in_progress, blocked)
+ */
+function findParentChildInconsistencies(items: PRDItem[]): string[] {
+  const warnings: string[] = [];
+  const terminalStatuses = new Set<string>(["completed", "deferred"]);
+
+  for (const { item } of walkTree(items)) {
+    if (item.status !== "completed") continue;
+    if (!item.children || item.children.length === 0) continue;
+
+    const nonTerminal = item.children.filter((c) => !terminalStatuses.has(c.status));
+    if (nonTerminal.length > 0) {
+      const childSummary = nonTerminal
+        .slice(0, 3)
+        .map((c) => `"${c.title}" (${c.status})`)
+        .join(", ");
+      const more = nonTerminal.length > 3 ? ` +${nonTerminal.length - 3} more` : "";
+      warnings.push(
+        `Parent-child inconsistency: "${item.id}" (${item.title}) — ` +
+        `status is "completed" but has non-terminal children: ${childSummary}${more}.`,
+      );
+    }
+  }
+
+  return warnings;
 }
 
 /**

@@ -36,6 +36,8 @@ const VALID_PRD: PRDDocument = {
           level: "task",
           status: "completed",
           priority: "medium",
+          startedAt: "2026-01-01T00:00:00.000Z",
+          completedAt: "2026-01-02T00:00:00.000Z",
         },
       ],
     },
@@ -373,6 +375,109 @@ describe("cmdValidate", () => {
       expect(stuckCheck).toBeDefined();
       expect(stuckCheck.pass).toBe(false);
       expect(stuckCheck.severity).toBe("warn");
+    });
+
+    it("reports timestamp inconsistency warnings in text mode", async () => {
+      writeConfig(tmpDir, VALID_CONFIG);
+      writePRD(tmpDir, {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "e1",
+            title: "Epic",
+            level: "epic",
+            status: "pending",
+            children: [
+              {
+                id: "t1",
+                title: "Completed no timestamp",
+                level: "task",
+                status: "completed",
+              },
+            ],
+          },
+        ],
+      });
+
+      await cmdValidate(tmpDir, {});
+      const output = stdoutSpy.mock.calls.map((c) => c[0]).join("\n");
+      expect(output).toContain("⚠ timestamp consistency");
+      expect(output).toContain("completedAt");
+    });
+
+    it("reports parent-child inconsistency warnings in text mode", async () => {
+      writeConfig(tmpDir, VALID_CONFIG);
+      writePRD(tmpDir, {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "e1",
+            title: "Completed epic",
+            level: "epic",
+            status: "completed",
+            startedAt: "2026-01-01T00:00:00.000Z",
+            completedAt: "2026-01-10T00:00:00.000Z",
+            children: [
+              {
+                id: "t1",
+                title: "Still pending",
+                level: "task",
+                status: "pending",
+              },
+            ],
+          },
+        ],
+      });
+
+      await cmdValidate(tmpDir, {});
+      const output = stdoutSpy.mock.calls.map((c) => c[0]).join("\n");
+      expect(output).toContain("⚠ parent-child status consistency");
+      expect(output).toContain("non-terminal");
+    });
+
+    it("reports timestamp warnings in JSON output with severity=warn", async () => {
+      writeConfig(tmpDir, VALID_CONFIG);
+      writePRD(tmpDir, {
+        schema: "rex/v1",
+        title: "Test",
+        items: [
+          {
+            id: "e1",
+            title: "Epic",
+            level: "epic",
+            status: "pending",
+            children: [
+              {
+                id: "t1",
+                title: "Completed no ts",
+                level: "task",
+                status: "completed",
+              },
+            ],
+          },
+        ],
+      });
+
+      await cmdValidate(tmpDir, { format: "json" });
+
+      const jsonCall = stdoutSpy.mock.calls.find((c) => {
+        try {
+          JSON.parse(c[0]);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+      expect(jsonCall).toBeDefined();
+      const report = JSON.parse(jsonCall![0]);
+      const tsCheck = report.checks.find((c: { name: string }) => c.name === "timestamp consistency");
+      expect(tsCheck).toBeDefined();
+      expect(tsCheck.pass).toBe(false);
+      expect(tsCheck.severity).toBe("warn");
+      // Warnings don't cause failure
+      expect(report.ok).toBe(true);
     });
 
     it("includes a summary field in JSON output", async () => {

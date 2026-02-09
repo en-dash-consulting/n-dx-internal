@@ -3254,15 +3254,17 @@
         {
           "id": "f7e6483d-d731-4923-b934-bba8d70151f2",
           "title": "Token Usage Analytics",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Comprehensive token usage tracking and analytics across all packages",
           "source": "llm",
+          "startedAt": "2026-02-09T13:55:42.467Z",
+          "completedAt": "2026-02-09T13:55:42.467Z",
           "children": [
             {
               "id": "1ae1ab98-c9b0-47a6-ba63-dded0edb0d51",
               "title": "Implement token usage tracking, reporting, and budget checking",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "End-to-end token analytics: extract and aggregate usage across packages, format reports with budget warnings, and check token/cost budgets with custom pricing.",
               "acceptanceCriteria": [
@@ -3288,17 +3290,20 @@
                 "filtering",
                 "grouping"
               ],
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-09T13:51:31.571Z",
+              "completedAt": "2026-02-09T13:55:42.418Z"
             }
           ]
         },
         {
           "id": "428fed3c-fa27-455f-a39e-f882f344fab3",
           "title": "PRD Validation and Maintenance",
-          "status": "pending",
+          "status": "in_progress",
           "level": "feature",
           "description": "Enhanced validation and cleanup tools for PRD integrity",
           "source": "llm",
+          "startedAt": "2026-02-09T13:56:35.704Z",
           "children": [
             {
               "id": "4741b835-bbcf-4cfd-b5b5-27e1bc0cb5a5",
@@ -3319,6 +3324,24 @@
               "source": "llm",
               "startedAt": "2026-02-05T03:42:40.333Z",
               "completedAt": "2026-02-05T12:37:11.942Z"
+            },
+            {
+              "id": "9fcb6935-a870-4e5a-9e0a-7a93dade0a3e",
+              "title": "Timestamp and status-field consistency validation",
+              "status": "completed",
+              "level": "task",
+              "description": "Add new validation checks to structural.ts: (1) completed items must have completedAt, (2) in_progress items must have startedAt, (3) startedAt must be before completedAt when both exist, (4) no future timestamps, (5) parent cannot be completed when children are pending/in_progress. Wire into validate command output. TDD: write failing tests first.",
+              "priority": "high",
+              "startedAt": "2026-02-09T14:01:32.953Z",
+              "completedAt": "2026-02-09T14:07:52.152Z"
+            },
+            {
+              "id": "a2453828-c113-4e6b-80c4-103b06db9df9",
+              "title": "Auto-fix command for common PRD issues",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a rex fix command that auto-repairs common validation issues: (1) add missing timestamps to items based on status, (2) clear orphan blockedBy references, (3) align parent status with child states. Support --dry-run flag and JSON output.",
+              "priority": "medium"
             }
           ]
         },
@@ -3608,6 +3631,8 @@
           "level": "feature",
           "description": "Comprehensive store architecture with adapter support",
           "source": "llm",
+          "startedAt": "2026-02-09T13:50:56.013Z",
+          "completedAt": "2026-02-09T13:50:56.013Z",
           "children": [
             {
               "id": "c48c1ca6-9de1-417a-bfb9-a6e916a1e6e8",
@@ -3662,9 +3687,7 @@
               "startedAt": "2026-02-09T13:46:09.437Z",
               "completedAt": "2026-02-09T13:50:55.963Z"
             }
-          ],
-          "startedAt": "2026-02-09T13:50:56.013Z",
-          "completedAt": "2026-02-09T13:50:56.013Z"
+          ]
         },
         {
           "id": "650a6619-ba5f-4e24-bb4d-6d389521c2ef",
