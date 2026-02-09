@@ -20,6 +20,7 @@ type NavEntry =
 const NAV_ENTRIES: NavEntry[] = [
   { type: "section", label: "ANALYSIS" },
   { type: "item", id: "overview", icon: "\u25A3", label: "Overview", minPass: 0 },
+  { type: "item", id: "rex-dashboard", icon: "\u25A8", label: "Rex Dashboard", minPass: 0 },
   { type: "item", id: "prd", icon: "\u2611", label: "Tasks", minPass: 0 },
   { type: "item", id: "graph", icon: "\u2B95", label: "Import Graph", minPass: 0 },
   { type: "item", id: "zones", icon: "\u2B22", label: "Zones", minPass: 0 },

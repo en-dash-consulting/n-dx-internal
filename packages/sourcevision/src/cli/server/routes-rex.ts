@@ -5,6 +5,7 @@
  *
  * GET   /api/rex/prd              — full PRD document
  * GET   /api/rex/stats            — tree stats (total, completed, etc.)
+ * GET   /api/rex/dashboard        — dashboard data (stats + per-epic + next task + priority dist)
  * GET   /api/rex/next             — next actionable task
  * GET   /api/rex/items/:id        — single item by ID
  * POST  /api/rex/items            — add a new item
@@ -246,6 +247,64 @@ function savePRD(ctx: ServerContext, doc: PRDDocRecord): void {
   writeFileSync(prdPath, JSON.stringify(doc, null, 2) + "\n");
 }
 
+interface EpicStats {
+  id: string;
+  title: string;
+  status: string;
+  priority?: string;
+  stats: TreeStats;
+  percentComplete: number;
+}
+
+/** Compute per-epic stats. Each epic's descendants (tasks/subtasks) are counted. */
+function computeEpicStats(items: PRDItemRecord[]): EpicStats[] {
+  return items
+    .filter((item) => item.level === "epic")
+    .map((epic) => {
+      const stats = computeStats(epic.children ?? []);
+      return {
+        id: epic.id,
+        title: epic.title,
+        status: epic.status,
+        priority: epic.priority as string | undefined,
+        stats,
+        percentComplete: stats.total > 0
+          ? Math.round((stats.completed / stats.total) * 100)
+          : 0,
+      };
+    });
+}
+
+interface PriorityDistribution {
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  unset: number;
+}
+
+/** Count tasks/subtasks by priority. */
+function computePriorityDistribution(items: PRDItemRecord[]): PriorityDistribution {
+  const dist: PriorityDistribution = { critical: 0, high: 0, medium: 0, low: 0, unset: 0 };
+
+  function walk(list: PRDItemRecord[]): void {
+    for (const item of list) {
+      if (item.level === "task" || item.level === "subtask") {
+        const p = (item.priority as string) ?? "";
+        if (p === "critical") dist.critical++;
+        else if (p === "high") dist.high++;
+        else if (p === "medium") dist.medium++;
+        else if (p === "low") dist.low++;
+        else dist.unset++;
+      }
+      if (Array.isArray(item.children)) walk(item.children);
+    }
+  }
+
+  walk(items);
+  return dist;
+}
+
 /** Handle Rex API requests. Returns true if the request was handled. */
 export function handleRexRoute(
   req: IncomingMessage,
@@ -287,6 +346,31 @@ export function handleRexRoute(
       percentComplete: stats.total > 0
         ? Math.round((stats.completed / stats.total) * 100)
         : 0,
+    });
+    return true;
+  }
+
+  // GET /api/rex/dashboard — dashboard data (overall + per-epic + next task + priority distribution)
+  if (path === "dashboard" && method === "GET") {
+    const doc = loadPRD(ctx);
+    if (!doc) {
+      errorResponse(res, 404, "No PRD data found");
+      return true;
+    }
+    const stats = computeStats(doc.items);
+    const completedIds = collectCompletedIds(doc.items);
+    const next = findNextTask(doc.items, completedIds);
+    const epics = computeEpicStats(doc.items);
+    const priorities = computePriorityDistribution(doc.items);
+    jsonResponse(res, 200, {
+      title: doc.title,
+      stats,
+      percentComplete: stats.total > 0
+        ? Math.round((stats.completed / stats.total) * 100)
+        : 0,
+      epics,
+      nextTask: next,
+      priorities,
     });
     return true;
   }
