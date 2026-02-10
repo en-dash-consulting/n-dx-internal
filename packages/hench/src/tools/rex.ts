@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { PRDStore, ItemStatus } from "rex";
-import { computeTimestampUpdates, findAutoCompletions } from "rex";
+import { computeTimestampUpdates, findAutoCompletions } from "../prd/ops.js";
 import { validateCompletion, formatValidationResult } from "../validation/completion.js";
 
 export interface UpdateStatusOptions {

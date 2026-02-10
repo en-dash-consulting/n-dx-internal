@@ -4,7 +4,7 @@ import {
   collectCompletedIds,
   findItem,
   walkTree,
-} from "rex";
+} from "../../prd/ops.js";
 import type { PRDStore, PRDItem, TreeEntry } from "rex";
 import type {
   TaskBrief,
