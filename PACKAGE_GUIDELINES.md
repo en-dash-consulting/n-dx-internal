@@ -28,7 +28,7 @@ Each package's public API reflects how it is **consumed**, not what it contains:
 |---|---|---|
 | Library (runtime imports) | Functions + types | rex: `resolveStore`, `findNextTask`, etc. |
 | MCP server + filesystem reads | MCP factory + schema types | sourcevision: `createSourcevisionMcpServer`, `Manifest`, etc. |
-| CLI + filesystem reads | Types + schema constants only | hench: `HenchConfig`, `RunRecord`, `HENCH_SCHEMA_VERSION` |
+| CLI + filesystem reads | Types + schema constants + config factory | hench: `HenchConfig`, `RunRecord`, `DEFAULT_HENCH_CONFIG` |
 | Coordination facade | Server entry + server types | web: `startServer`, `ServerOptions` |
 
 **Decision tree** — when adding a new export, ask:
@@ -39,7 +39,7 @@ Each package's public API reflects how it is **consumed**, not what it contains:
 
 ### What NOT to export
 
-- **Default config factories** (`DEFAULT_CONFIG`, `DEFAULT_HENCH_CONFIG`, etc.) — These require initialization context (project name, directory) that makes them unsuitable as public API. All packages keep config factories as internal implementation details.
+- **Default config factories** — Rex exports `DEFAULT_CONFIG(project)` and hench exports `DEFAULT_HENCH_CONFIG()` from their public APIs for external tooling. Sourcevision has no persistent config. Config factories that require complex initialization context beyond simple parameters remain internal.
 - **Zod validation schemas** — Exporting them forces Zod as a transitive dependency on type-only consumers. Packages that need runtime validation import directly from `dist/schema/validate.js`.
 - **Internal utilities** — Helper functions that serve a single consumer within the package.
 

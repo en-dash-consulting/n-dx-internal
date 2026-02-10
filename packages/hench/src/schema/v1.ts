@@ -1,3 +1,5 @@
+import { PROJECT_DIRS } from "@n-dx/claude-client";
+
 export const HENCH_SCHEMA_VERSION = "hench/v1";
 
 export interface GuardConfig {
@@ -39,10 +41,10 @@ export function DEFAULT_HENCH_CONFIG(): HenchConfig {
     maxTurns: 50,
     maxTokens: 8192,
     tokenBudget: 0,
-    rexDir: ".rex",
+    rexDir: PROJECT_DIRS.REX,
     apiKeyEnv: "ANTHROPIC_API_KEY",
     guard: {
-      blockedPaths: [".hench/**", ".rex/**", ".git/**", "node_modules/**"],
+      blockedPaths: [`${PROJECT_DIRS.HENCH}/**`, `${PROJECT_DIRS.REX}/**`, ".git/**", "node_modules/**"],
       allowedCommands: ["npm", "npx", "node", "git", "tsc", "vitest"],
       commandTimeout: 30000,
       maxFileSize: 1048576,

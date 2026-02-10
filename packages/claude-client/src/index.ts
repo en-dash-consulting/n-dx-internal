@@ -117,3 +117,7 @@ export {
   diagnoseAuth,
 } from "./auth.js";
 export type { AuthDetectionResult, AuthDiagnostics } from "./auth.js";
+
+// Project directory constants
+export { PROJECT_DIRS } from "./project-dirs.js";
+export type { ProjectDir } from "./project-dirs.js";

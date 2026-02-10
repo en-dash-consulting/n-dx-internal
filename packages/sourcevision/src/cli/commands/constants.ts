@@ -1,5 +1,7 @@
+import { PROJECT_DIRS } from "@n-dx/claude-client";
+
 export const TOOL_VERSION = "0.1.0";
-export const SV_DIR = ".sourcevision";
+export const SV_DIR = PROJECT_DIRS.SOURCEVISION;
 
 export function usage(): void {
   console.log(`sourcevision — codebase analysis tool

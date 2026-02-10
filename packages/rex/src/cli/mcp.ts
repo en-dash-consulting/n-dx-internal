@@ -15,11 +15,9 @@ import { cascadeParentReset } from "../core/cascade-reset.js";
 import { validateMove, moveItem } from "../core/move.js";
 import { validateMerge, previewMerge, mergeItems } from "../core/merge.js";
 import { verify } from "../core/verify.js";
-import { TOOL_VERSION } from "./commands/constants.js";
+import { REX_DIR, TOOL_VERSION } from "./commands/constants.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../schema/index.js";
 import type { PRDStore } from "../store/index.js";
-
-const REX_DIR = ".rex";
 
 /**
  * Create a configured Rex MCP server without connecting a transport.

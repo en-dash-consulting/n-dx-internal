@@ -9,6 +9,7 @@
 
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
+import { PROJECT_DIRS } from "@n-dx/claude-client";
 import type { LogEntry } from "../schema/index.js";
 
 // ---------------------------------------------------------------------------
@@ -151,7 +152,7 @@ export async function extractHenchTokenUsage(
   filter: TokenUsageFilter = {},
 ): Promise<PackageTokenUsage> {
   const usage = emptyPackageUsage();
-  const runsDir = join(projectDir, ".hench", "runs");
+  const runsDir = join(projectDir, PROJECT_DIRS.HENCH, "runs");
 
   let files: string[];
   try {
@@ -206,7 +207,7 @@ export async function extractSvTokenUsage(
   filter: TokenUsageFilter = {},
 ): Promise<PackageTokenUsage> {
   const usage = emptyPackageUsage();
-  const manifestPath = join(projectDir, ".sourcevision", "manifest.json");
+  const manifestPath = join(projectDir, PROJECT_DIRS.SOURCEVISION, "manifest.json");
 
   try {
     const raw = await readFile(manifestPath, "utf-8");
@@ -282,7 +283,7 @@ export async function extractHenchTokenEvents(
   filter: TokenUsageFilter = {},
 ): Promise<TokenEvent[]> {
   const events: TokenEvent[] = [];
-  const runsDir = join(projectDir, ".hench", "runs");
+  const runsDir = join(projectDir, PROJECT_DIRS.HENCH, "runs");
 
   let files: string[];
   try {
@@ -326,7 +327,7 @@ export async function extractSvTokenEvents(
   filter: TokenUsageFilter = {},
 ): Promise<TokenEvent[]> {
   const events: TokenEvent[] = [];
-  const manifestPath = join(projectDir, ".sourcevision", "manifest.json");
+  const manifestPath = join(projectDir, PROJECT_DIRS.SOURCEVISION, "manifest.json");
 
   try {
     const raw = await readFile(manifestPath, "utf-8");

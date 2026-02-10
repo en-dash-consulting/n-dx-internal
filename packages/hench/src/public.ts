@@ -1,7 +1,7 @@
 /**
  * Public API for the hench package.
  *
- * ## API philosophy: types-only
+ * ## API philosophy: types + schema constants + config factory
  *
  * Hench is a **CLI tool**, not a library. Other packages interact with it
  * exclusively through:
@@ -10,21 +10,24 @@
  * 2. **Filesystem reads** — the web dashboard and rex's token-usage module
  *    read `.hench/config.json` and `.hench/runs/*.json` directly from disk
  *
- * This public API therefore exports **only types and schema constants** —
- * enough for consumers to validate JSON file shapes at compile time without
- * creating runtime coupling.
+ * This public API exports types, schema constants, and the default config
+ * factory — enough for consumers to validate JSON file shapes at compile
+ * time and generate default configurations without creating unnecessary
+ * runtime coupling to the agent engine.
  *
- * This is intentionally different from rex (which exports runtime functions)
- * and sourcevision (which exports its MCP factory). Each package's public
- * surface reflects its actual consumption pattern — see PACKAGE_GUIDELINES.md
- * for the full decision tree.
+ * Each package's public surface reflects its actual consumption pattern —
+ * see PACKAGE_GUIDELINES.md for the full decision tree.
  *
- * Runtime functions (agent loops, tool dispatch, guard rails, default
- * configuration) are intentionally kept internal. Consumers should use
- * the CLI binary rather than calling hench as a library.
+ * Runtime functions (agent loops, tool dispatch, guard rails) are
+ * intentionally kept internal. Consumers should use the CLI binary
+ * rather than calling hench as a library.
  *
  * @module hench/public
  */
+
+// ---- Schema constants & config factory ------------------------------------
+
+export { HENCH_SCHEMA_VERSION, DEFAULT_HENCH_CONFIG } from "./schema/v1.js";
 
 // ---- Schema types (config, run records) ------------------------------------
 
@@ -44,8 +47,6 @@ export type {
   PostRunTestRecord,
   RunSummaryData,
 } from "./schema/v1.js";
-
-export { HENCH_SCHEMA_VERSION } from "./schema/v1.js";
 
 // ---- Task brief types ------------------------------------------------------
 

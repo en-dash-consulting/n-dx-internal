@@ -6499,11 +6499,13 @@
     {
       "id": "b9b5f52c-51c5-44b4-b2a1-6b6df5444969",
       "title": "Address suggestion issues (4 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Directory constants (REX_DIR, HENCH_DIR, SV_DIR) hardcoded with string literals instead of shared constants — creates silent drift risk when CLI and MCP implementations diverge\n- Standardize hench public API exports to match rex/sourcevision pattern by exporting runtime functions alongside schema types in src/public.ts\n- Extract hardcoded directory constants (REX_DIR, HENCH_DIR, SV_DIR) into claude-client foundation package as shared PROJECT_CONSTANTS export\n- Standardize DEFAULT_CONFIG export pattern by adding to rex and sourcevision public APIs to match hench implementation",
       "priority": "critical",
-      "source": "sourcevision"
+      "source": "sourcevision",
+      "startedAt": "2026-02-10T18:19:12.896Z",
+      "completedAt": "2026-02-10T18:29:38.183Z"
     },
     {
       "id": "2c763628-bbea-40a1-91e4-65f66e5ddaf4",

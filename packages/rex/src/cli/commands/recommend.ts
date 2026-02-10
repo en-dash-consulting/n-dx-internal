@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { access, readFile } from "node:fs/promises";
+import { PROJECT_DIRS } from "@n-dx/claude-client";
 import { resolveStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
 import { info, result } from "../output.js";
@@ -23,7 +24,7 @@ interface Recommendation {
 
 async function detectSourceVision(dir: string): Promise<boolean> {
   try {
-    await access(join(dir, ".sourcevision"));
+    await access(join(dir, PROJECT_DIRS.SOURCEVISION));
     return true;
   } catch {
     return false;
@@ -44,7 +45,7 @@ async function readFindings(
   dir: string,
   severities: string[],
 ): Promise<Finding[]> {
-  const zonesPath = join(dir, ".sourcevision", "zones.json");
+  const zonesPath = join(dir, PROJECT_DIRS.SOURCEVISION, "zones.json");
   const raw = await readFile(zonesPath, "utf-8");
   const data = JSON.parse(raw);
 

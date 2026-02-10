@@ -13,10 +13,9 @@
  *
  * ## Configuration
  *
- * Default configuration (`DEFAULT_CONFIG`) is intentionally NOT exported.
- * It's only used internally by `rex init` and has a project-name parameter
- * that makes it unsuitable as a public API. This matches the pattern across
- * all three packages: config factories are internal implementation details.
+ * `DEFAULT_CONFIG(project)` is exported for consumers that need to generate
+ * default Rex configurations programmatically (e.g., init scripts, tooling).
+ * Note it requires a project name parameter.
  *
  * ## Architectural isolation
  *
@@ -54,7 +53,7 @@ export type { PRDStore } from "./store/types.js";
 
 // ---- Schema types & constants -----------------------------------------------
 
-export type { PRDItem, PRDDocument, ItemLevel, ItemStatus, Priority } from "./schema/v1.js";
+export type { PRDItem, PRDDocument, ItemLevel, ItemStatus, Priority, RexConfig } from "./schema/v1.js";
 export {
   PRIORITY_ORDER,
   LEVEL_HIERARCHY,
@@ -65,6 +64,7 @@ export {
   isPriority,
   isItemLevel,
   isItemStatus,
+  DEFAULT_CONFIG,
 } from "./schema/v1.js";
 
 // ---- Core: tree utilities ---------------------------------------------------

@@ -1,5 +1,6 @@
 import { readFile, readdir, access } from "node:fs/promises";
 import { join, relative, dirname, basename, extname } from "node:path";
+import { PROJECT_DIRS } from "@n-dx/claude-client";
 import type { Priority } from "../schema/index.js";
 
 export interface ScanResult {
@@ -24,9 +25,9 @@ export interface ScanOptions {
 const SKIP_DIRS = new Set([
   "node_modules",
   "dist",
-  ".rex",
+  PROJECT_DIRS.REX,
   ".git",
-  ".sourcevision",
+  PROJECT_DIRS.SOURCEVISION,
   "coverage",
   ".next",
   ".turbo",
@@ -36,7 +37,7 @@ const SKIP_DIRS = new Set([
 const SKIP_DOC_DIRS = new Set([
   "build",
   "out",
-  ".hench",
+  PROJECT_DIRS.HENCH,
   ".cache",
   ".parcel-cache",
   ".vite",
@@ -553,7 +554,7 @@ function generateFixSuggestion(finding: SVFinding, zone?: SVZone): string[] {
 }
 
 export async function scanSourceVision(dir: string): Promise<ScanResult[]> {
-  const svDir = join(dir, ".sourcevision");
+  const svDir = join(dir, PROJECT_DIRS.SOURCEVISION);
   try {
     await access(svDir);
   } catch {

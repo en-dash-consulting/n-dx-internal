@@ -11,6 +11,7 @@
 import { execFile } from "node:child_process";
 import { readdir, stat } from "node:fs/promises";
 import { join, basename, extname, relative } from "node:path";
+import { PROJECT_DIRS } from "@n-dx/claude-client";
 import { walkTree } from "./tree.js";
 import { extractKeywords, scoreMatch, STOP_WORDS } from "./keywords.js";
 import type { PRDItem } from "../schema/index.js";
@@ -96,7 +97,7 @@ const TEST_FILE_RE = /[._](test|spec)\.[jt]sx?$/;
  */
 export async function findTestFiles(dir: string): Promise<string[]> {
   const results: string[] = [];
-  const SKIP_DIRS = new Set(["node_modules", "dist", ".git", ".hench", ".rex", ".sourcevision", "coverage"]);
+  const SKIP_DIRS = new Set(["node_modules", "dist", ".git", PROJECT_DIRS.HENCH, PROJECT_DIRS.REX, PROJECT_DIRS.SOURCEVISION, "coverage"]);
 
   async function walk(currentDir: string): Promise<void> {
     let entries;

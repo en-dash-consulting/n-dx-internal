@@ -1,6 +1,7 @@
+import { PROJECT_DIRS } from "@n-dx/claude-client";
 import { CLIError } from "../errors.js";
 
-export const HENCH_DIR = ".hench";
+export const HENCH_DIR = PROJECT_DIRS.HENCH;
 export const TOOL_VERSION = "0.1.0";
 
 export function safeParseInt(value: string, name: string): number {

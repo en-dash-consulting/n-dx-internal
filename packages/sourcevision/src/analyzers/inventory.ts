@@ -6,6 +6,7 @@
 import { readFile, readdir, stat } from "node:fs/promises";
 import { join, relative, extname, basename, dirname } from "node:path";
 import { createHash } from "node:crypto";
+import { PROJECT_DIRS } from "@n-dx/claude-client";
 import type { FileEntry, FileRole, Inventory } from "../schema/index.js";
 import { sortInventory, toCanonicalJSON } from "../util/sort.js";
 import { computeInventorySummary } from "../util/merge.js";
@@ -15,7 +16,7 @@ import { computeInventorySummary } from "../util/merge.js";
 const SKIP_DIRS = new Set([
   ".git",
   "node_modules",
-  ".sourcevision",
+  PROJECT_DIRS.SOURCEVISION,
   "dist",
   "build",
   "__pycache__",

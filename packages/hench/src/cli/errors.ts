@@ -5,9 +5,10 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { PROJECT_DIRS } from "@n-dx/claude-client";
 import { TaskNotActionableError } from "../agent/planning/brief.js";
 
-const HENCH_DIR = ".hench";
+const HENCH_DIR = PROJECT_DIRS.HENCH;
 
 /** An error with an optional actionable suggestion for the user. */
 export class CLIError extends Error {

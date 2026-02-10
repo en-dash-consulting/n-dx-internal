@@ -1,4 +1,6 @@
-export const REX_DIR = ".rex";
+import { PROJECT_DIRS } from "@n-dx/claude-client";
+
+export const REX_DIR = PROJECT_DIRS.REX;
 export const TOOL_VERSION = "0.1.0";
 
 export function usage(): void {
