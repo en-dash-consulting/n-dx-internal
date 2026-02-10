@@ -1,8 +1,28 @@
 /**
  * CLI provider — calls Claude via the `claude` CLI binary.
  *
- * Implements the ClaudeClient interface by spawning the Claude Code CLI
- * and parsing its output (JSON or stream-json format).
+ * One half of the dual provider architecture. The CLI provider spawns the
+ * Claude Code CLI binary and parses its output (JSON or stream-json format).
+ *
+ * ## When this provider is selected
+ *
+ * - Explicitly via `createClient({ mode: "cli" })`
+ * - As the automatic fallback when no API key is available
+ *
+ * ## Use cases
+ *
+ * - Local development where Claude Code is already installed
+ * - Environments where the CLI handles authentication (OAuth, session tokens)
+ * - When leveraging CLI-specific features (output formats, CLI flags)
+ *
+ * ## Error handling
+ *
+ * Stderr output is classified into error categories (auth, rate-limit, unknown)
+ * with automatic retry on transient failures using exponential backoff with
+ * a configurable maximum delay cap.
+ *
+ * @see {@link createClient} in `create-client.ts` for provider selection logic
+ * @see {@link createApiClient} in `api-provider.ts` for the alternative provider
  */
 
 import { spawn } from "node:child_process";

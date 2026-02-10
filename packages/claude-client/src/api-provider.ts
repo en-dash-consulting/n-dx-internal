@@ -1,8 +1,28 @@
 /**
  * API provider — calls Claude via the Anthropic SDK directly.
  *
- * Implements the ClaudeClient interface by making HTTP requests to the
- * Anthropic Messages API using @anthropic-ai/sdk.
+ * One half of the dual provider architecture. The API provider makes direct
+ * HTTP requests to the Anthropic Messages API using `@anthropic-ai/sdk`.
+ *
+ * ## When this provider is selected
+ *
+ * - Explicitly via `createClient({ mode: "api" })`
+ * - Automatically when an API key is available (from config or env)
+ *
+ * ## Use cases
+ *
+ * - CI/CD pipelines where the Claude CLI isn't installed
+ * - Production environments with direct API access
+ * - Scenarios requiring fine-grained control over API parameters
+ *
+ * ## Error handling
+ *
+ * Errors are classified into categories (auth, timeout, rate-limit, unknown)
+ * with automatic retry on transient failures (429, 500, 502, 503, 529)
+ * using exponential backoff.
+ *
+ * @see {@link createClient} in `create-client.ts` for provider selection logic
+ * @see {@link createCliClient} in `cli-provider.ts` for the alternative provider
  */
 
 import Anthropic from "@anthropic-ai/sdk";

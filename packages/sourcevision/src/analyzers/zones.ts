@@ -1,6 +1,21 @@
 /**
  * Deterministic zone analyzer using Louvain community detection.
- * Replaces the Claude-based phase 3 with pure TypeScript.
+ *
+ * Zones represent natural architectural boundaries discovered from the import
+ * graph. Each zone has two key metrics:
+ *
+ * - **Cohesion** (0–1): ratio of internal edges to total edges from the zone.
+ *   A value of 1.0 means all imports stay within the zone — perfect encapsulation.
+ *
+ * - **Coupling** (0–1): ratio of external edges to total edges. A value of 0.0
+ *   means no imports cross the zone boundary — complete independence.
+ *
+ * These metrics validate architectural quality: well-structured packages with
+ * clean abstractions naturally achieve high cohesion and low coupling, confirming
+ * that the Louvain algorithm correctly identified the intended boundaries.
+ *
+ * @see {@link "./louvain.ts"} for the community detection algorithm
+ * @see {@link generateStructuralInsights} for automated metric interpretation
  */
 
 import { dirname } from "node:path";
@@ -375,7 +390,22 @@ export function computeStructureHash(zones: Zone[]): string {
 
 /**
  * Generate deterministic, actionable insights from graph metrics.
+ *
  * Recomputed every run — same structure always produces the same insights.
+ * These insights translate raw cohesion/coupling numbers into architectural
+ * guidance:
+ *
+ * - **High cohesion** (≥0.8): files are tightly interconnected — good sign.
+ *   Perfect cohesion (1.0) means the zone is fully self-contained.
+ * - **Low cohesion** (<0.4): files are loosely related — consider splitting.
+ * - **High coupling** (>0.5): heavy cross-zone imports — may need refactoring.
+ * - **Size imbalance**: uneven zone sizes suggest decomposition issues.
+ * - **Hub files**: files imported across 3+ zones are cross-cutting dependencies.
+ * - **Bidirectional coupling**: zone pairs that import from each other.
+ *
+ * When all zones achieve perfect cohesion, it validates that the Louvain
+ * community detection successfully identified the codebase's natural
+ * architectural boundaries.
  */
 export function generateStructuralInsights(
   zones: Zone[],
@@ -629,9 +659,15 @@ export async function analyzeZones(
       }
     }
 
-    // Cohesion / coupling from import graph.
-    // Skip test files: test→source edges represent test dependencies,
-    // not architectural coupling, and inflate coupling metrics.
+    // Cohesion / coupling metrics from the import graph.
+    //
+    // Cohesion = internalEdges / totalEdges — measures how self-contained
+    //   the zone is. 1.0 means every import stays within the zone.
+    // Coupling = 1 - cohesion — measures external dependency. 0.0 means
+    //   no imports cross the zone boundary.
+    //
+    // Test files are excluded: test→source edges represent test dependencies,
+    // not architectural coupling, and would inflate coupling metrics.
     let internalEdges = 0;
     let totalEdgesFromZone = 0;
     for (const node of members) {

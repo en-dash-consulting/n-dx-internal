@@ -1,10 +1,29 @@
 /**
  * @n-dx/claude-client — Unified Claude API client abstraction layer.
  *
- * Provides a single ClaudeClient interface that works with both the Claude
- * Code CLI and the Anthropic Messages API. Consumers call `createClient()`
- * and get back a provider-agnostic client that handles retries, error
- * classification, and token usage tracking.
+ * ## Architecture
+ *
+ * This package encapsulates all Claude API concerns behind a single
+ * {@link ClaudeClient} interface, achieving zero coupling with other
+ * packages. The dual provider architecture (CLI + API) ensures the
+ * client works in any environment:
+ *
+ * - **API provider** — direct `@anthropic-ai/sdk` calls for CI/production
+ * - **CLI provider** — spawns `claude` binary for local development
+ *
+ * Provider selection is automatic (based on credential availability)
+ * or explicit. Both providers share identical retry, error classification,
+ * and token usage tracking semantics.
+ *
+ * ## Package structure
+ *
+ * - `create-client.ts` — factory with auto-detection logic
+ * - `api-provider.ts` — Anthropic SDK provider
+ * - `cli-provider.ts` — Claude Code CLI provider
+ * - `config.ts` — credential resolution and model mapping
+ * - `token-usage.ts` — usage parsing for both provider formats
+ * - `auth.ts` — auth detection and diagnostics
+ * - `types.ts` — shared interfaces
  *
  * @example
  * ```ts

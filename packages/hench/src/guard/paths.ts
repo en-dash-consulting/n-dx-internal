@@ -1,3 +1,24 @@
+/**
+ * Path validation — defense-in-depth filesystem access control.
+ *
+ * Every file path the agent touches is validated through three checks:
+ *
+ * 1. **Null-byte rejection** — prevents poison-null-byte attacks where
+ *    embedded `\0` characters cause `path.resolve()` to silently
+ *    truncate, potentially bypassing later checks.
+ *
+ * 2. **Directory escape prevention** — resolved paths must remain within
+ *    the project directory. Relative paths with `..` that escape the
+ *    project root are rejected.
+ *
+ * 3. **Glob-based blocked patterns** — configurable patterns (e.g.,
+ *    `.git/**`, `.hench/**`, `node_modules/**`) block access to
+ *    sensitive directories. Uses {@link simpleGlobMatch} instead of
+ *    external dependencies.
+ *
+ * @module
+ */
+
 import { resolve, relative } from "node:path";
 
 export class GuardError extends Error {

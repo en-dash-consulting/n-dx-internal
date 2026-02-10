@@ -1,19 +1,50 @@
+/**
+ * Command validation — allowlist-based filtering with hazard detection.
+ *
+ * Commands pass through three checks in order:
+ *
+ * 1. **Shell operator blocking** — rejects metacharacters that enable
+ *    command chaining (`; && ||`), subshells (`` ` ``), or variable
+ *    expansion (`$`). Since commands run via `sh -c`, these would allow
+ *    arbitrary code execution.
+ *
+ * 2. **Executable allowlist** — only the base command name must appear in
+ *    the configured `allowedCommands` list. Paths like `/usr/bin/node`
+ *    are resolved to `node` before checking.
+ *
+ * 3. **Dangerous pattern detection** — even allowed commands are screened
+ *    for hazardous argument patterns (e.g., `rm -rf /`, `sudo`, `eval`).
+ *
+ * @module
+ */
+
 import { GuardError } from "./paths.js";
 
-// Shell metacharacters that enable command chaining or subshells
+/** Shell metacharacters that enable command chaining or subshells. */
 const SHELL_OPERATORS = /[;&|`$]/;
 
+/**
+ * Patterns matching dangerous command invocations.
+ * These are checked even when the base executable is in the allowlist.
+ */
 const DANGEROUS_PATTERNS = [
-  /\brm\s+(-\w+\s+)*\//,
-  /\bsudo\b/,
-  /\bchmod\s+[0-7]*7[0-7]*\b/,
-  />\s*\/dev\//,
-  /\beval\b/,
-  /\bexec\b/,
-  /\bsource\b/,
-  /\b\.\s+\//,
+  /\brm\s+(-\w+\s+)*\//,          // rm with absolute path
+  /\bsudo\b/,                      // privilege escalation
+  /\bchmod\s+[0-7]*7[0-7]*\b/,    // world-writable permissions
+  />\s*\/dev\//,                   // writes to device files
+  /\beval\b/,                      // dynamic code execution
+  /\bexec\b/,                      // process replacement
+  /\bsource\b/,                    // script sourcing
+  /\b\.\s+\//,                     // dot-sourcing
 ];
 
+/**
+ * Validate a command against the guard's security policies.
+ *
+ * @param command - The raw command string to validate.
+ * @param allowedCommands - List of permitted executable names.
+ * @throws {GuardError} if the command fails any security check.
+ */
 export function validateCommand(
   command: string,
   allowedCommands: string[],

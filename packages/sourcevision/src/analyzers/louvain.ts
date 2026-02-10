@@ -1,6 +1,36 @@
 /**
  * Louvain community detection for zone analysis.
- * Extracted from zones.ts — graph building, modularity optimization, and community merging.
+ *
+ * Identifies natural architectural boundaries (zones) from the import graph
+ * using the Louvain modularity optimization algorithm. The algorithm groups
+ * tightly-interconnected files into communities while minimizing cross-group
+ * edges, mirroring how developers naturally organize code.
+ *
+ * ## Why Louvain works for codebases
+ *
+ * Import graphs exhibit strong community structure: files within a feature
+ * or package import each other frequently but rarely reach across boundaries.
+ * Louvain detects this automatically, producing zones that match intuitive
+ * architectural groupings without any configuration.
+ *
+ * ## Achieving perfect cohesion
+ *
+ * When the algorithm finds zones with cohesion 1.0 and coupling 0.0, it means
+ * all import edges for that zone's files stay within the zone — a sign of
+ * excellent encapsulation. This typically happens with well-structured packages
+ * that expose clean public interfaces.
+ *
+ * ## Pipeline
+ *
+ * 1. {@link buildUndirectedGraph} — convert directed imports to weighted edges
+ * 2. {@link louvainPhase1} — modularity optimization (deterministic)
+ * 3. {@link mergeBidirectionalCoupling} — combine over-coupled communities
+ * 4. {@link mergeSmallCommunities} — absorb tiny fragments into neighbors
+ * 5. {@link capZoneCount} — enforce maximum zone limit
+ *
+ * All steps are deterministic: same import graph → same zones every time.
+ *
+ * @module
  */
 
 import type { ImportEdge } from "../schema/index.js";
