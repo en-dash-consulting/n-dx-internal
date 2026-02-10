@@ -1,8 +1,9 @@
-import type { PRDItem, Priority } from "../schema/index.js";
+import type { PRDItem, Priority, Requirement } from "../schema/index.js";
 import { PRIORITY_ORDER } from "../schema/index.js";
 import type { TreeEntry } from "./tree.js";
 import { walkTree } from "./tree.js";
 import { extractKeywords, scoreMatch } from "./keywords.js";
+import { collectRequirements } from "./requirements.js";
 
 /** Safe ancestor priority: returns medium (2) when no parents exist. */
 function bestAncestorPriority(parents: PRDItem[]): number {
@@ -63,19 +64,114 @@ function buildDependentCounts(items: PRDItem[]): Map<string, number> {
   return counts;
 }
 
+// ---------------------------------------------------------------------------
+// Requirements-aware scoring
+// ---------------------------------------------------------------------------
+
+/**
+ * Risk tolerance levels control how aggressively requirements influence
+ * task prioritization. Higher tolerance = less priority boost from requirements.
+ *
+ * - `low`: critical and security requirements get strong priority boosts
+ * - `medium`: balanced — requirements influence but don't dominate
+ * - `high`: requirements have minimal influence on ordering
+ */
+export type RiskTolerance = "low" | "medium" | "high";
+
+/**
+ * Multiplier for requirements score based on risk tolerance.
+ * Lower tolerance = stronger boost from requirements.
+ */
+const RISK_TOLERANCE_MULTIPLIER: Record<RiskTolerance, number> = {
+  low: 3,
+  medium: 2,
+  high: 1,
+};
+
+/**
+ * Compute a requirements-based priority score for a task.
+ *
+ * Considers:
+ * - Number of requirements (own + inherited from parent chain)
+ * - Highest-priority requirement attached
+ * - Presence of critical-category requirements (security, performance)
+ *
+ * Returns a score where higher = more important. Items with no requirements
+ * score 0, so this acts as a boost rather than a penalty.
+ */
+export function requirementsScore(
+  entry: TreeEntry,
+  items: PRDItem[],
+  riskTolerance: RiskTolerance = "medium",
+): number {
+  const traced = collectRequirements(items, entry.item.id);
+  if (traced.length === 0) return 0;
+
+  let score = 0;
+  const multiplier = RISK_TOLERANCE_MULTIPLIER[riskTolerance];
+
+  for (const tr of traced) {
+    const req = tr.requirement;
+
+    // Base score: each requirement adds value
+    score += 1;
+
+    // Critical-priority requirements add more weight
+    const reqPriority = req.priority ?? "medium";
+    if (reqPriority === "critical") score += 3 * multiplier;
+    else if (reqPriority === "high") score += 2 * multiplier;
+    else if (reqPriority === "medium") score += 1;
+
+    // Security and performance categories are inherently high-value
+    if (req.category === "security") score += 2 * multiplier;
+    if (req.category === "performance") score += 1 * multiplier;
+  }
+
+  return score;
+}
+
+/**
+ * Options to configure task prioritization behavior.
+ */
+export interface PrioritizationOptions {
+  /**
+   * How much requirements influence task ordering.
+   * Default: "medium".
+   */
+  riskTolerance?: RiskTolerance;
+}
+
 /**
  * Create a comparator for sorting actionable tasks.
  *
  * Sort order:
  *   1. in_progress status (finish what you started)
  *   2. Own priority (critical > high > medium > low)
- *   3. Ancestor priority (highest-priority parent chain wins)
- *   4. Sibling completion ratio (nearly-done features first)
- *   5. Unblock potential (tasks that unblock more downstream work)
- *   6. Alphabetical title (stable tiebreaker)
+ *   3. Requirements score (tasks with critical/security requirements get boosted)
+ *   4. Ancestor priority (highest-priority parent chain wins)
+ *   5. Sibling completion ratio (nearly-done features first)
+ *   6. Unblock potential (tasks that unblock more downstream work)
+ *   7. Alphabetical title (stable tiebreaker)
  */
-function makeComparator(items: PRDItem[]): (a: TreeEntry, b: TreeEntry) => number {
+function makeComparator(
+  items: PRDItem[],
+  options?: PrioritizationOptions,
+): (a: TreeEntry, b: TreeEntry) => number {
   const depCounts = buildDependentCounts(items);
+  const riskTolerance = options?.riskTolerance ?? "medium";
+
+  // Pre-compute requirements scores for all items to avoid repeated tree walks
+  const reqScores = new Map<string, number>();
+  function precomputeReqScores(list: PRDItem[], parents: PRDItem[]): void {
+    for (const item of list) {
+      const entry: TreeEntry = { item, parents };
+      reqScores.set(item.id, requirementsScore(entry, items, riskTolerance));
+      if (item.children) {
+        precomputeReqScores(item.children, [...parents, item]);
+      }
+    }
+  }
+  precomputeReqScores(items, []);
 
   return (a: TreeEntry, b: TreeEntry): number => {
     // 1. in_progress always wins — finish what you started
@@ -88,22 +184,27 @@ function makeComparator(items: PRDItem[]): (a: TreeEntry, b: TreeEntry) => numbe
     const pb = PRIORITY_ORDER[b.item.priority ?? "medium"];
     if (pa !== pb) return pa - pb;
 
-    // 3. Tiebreak: highest-priority ancestor
+    // 3. Requirements score (higher = more important)
+    const reqA = reqScores.get(a.item.id) ?? 0;
+    const reqB = reqScores.get(b.item.id) ?? 0;
+    if (reqA !== reqB) return reqB - reqA; // higher score wins
+
+    // 4. Tiebreak: highest-priority ancestor
     const ancestorA = bestAncestorPriority(a.parents);
     const ancestorB = bestAncestorPriority(b.parents);
     if (ancestorA !== ancestorB) return ancestorA - ancestorB;
 
-    // 4. Tiebreak: sibling completion ratio (higher = finish the feature)
+    // 5. Tiebreak: sibling completion ratio (higher = finish the feature)
     const sibA = siblingCompletionRatio(a);
     const sibB = siblingCompletionRatio(b);
     if (sibA !== sibB) return sibB - sibA; // higher ratio wins
 
-    // 5. Tiebreak: unblock potential (more dependents = more valuable)
+    // 6. Tiebreak: unblock potential (more dependents = more valuable)
     const depA = depCounts.get(a.item.id) ?? 0;
     const depB = depCounts.get(b.item.id) ?? 0;
     if (depA !== depB) return depB - depA; // more dependents wins
 
-    // 6. Stable alphabetical tiebreaker
+    // 7. Stable alphabetical tiebreaker
     return a.item.title.localeCompare(b.item.title);
   };
 }
@@ -195,26 +296,30 @@ function collectActionable(
 /**
  * Collect ALL actionable tasks flattened and sorted globally by priority.
  * Returns every leaf task that is pending/in_progress with resolved
- * dependencies, sorted by: in_progress status, priority, ancestor priority,
- * sibling completion ratio, unblock potential, then alphabetically.
+ * dependencies, sorted by: in_progress status, priority, requirements score,
+ * ancestor priority, sibling completion ratio, unblock potential, then alphabetically.
+ *
+ * @param options.riskTolerance — Controls how much requirements influence ordering.
  */
 export function findActionableTasks(
   items: PRDItem[],
   completedIds: Set<string>,
   limit = 20,
+  options?: PrioritizationOptions,
 ): TreeEntry[] {
   const results = collectActionable(items, completedIds);
-  results.sort(makeComparator(items));
+  results.sort(makeComparator(items, options));
   return results.slice(0, limit);
 }
 
 export function findNextTask(
   items: PRDItem[],
   completedIds: Set<string>,
+  options?: PrioritizationOptions,
 ): TreeEntry | null {
   const results = collectActionable(items, completedIds);
   if (results.length === 0) return null;
-  results.sort(makeComparator(items));
+  results.sort(makeComparator(items, options));
   return results[0];
 }
 

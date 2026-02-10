@@ -7001,7 +7001,7 @@
         {
           "id": "917ecf71-d780-48e8-adcb-1236daf1bb49",
           "title": "Requirements Integration and Traceability",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Integrate technical and non-functional requirements into the workflow system with comprehensive management, validation, and traceability features",
           "source": "smart-add",
@@ -7037,7 +7037,7 @@
             {
               "id": "cf02498f-248c-406a-a227-31124ad0f467",
               "title": "Build requirements management and prioritization system",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create comprehensive requirements management interface and enhance task prioritization to consider requirements criticality and dependencies",
               "acceptanceCriteria": [
@@ -7059,9 +7059,66 @@
                 "hench",
                 "prioritization"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-10T22:10:17.673Z",
+              "completedAt": "2026-02-10T22:24:56.327Z",
+              "children": [
+                {
+                  "id": "a4618fb1-18da-49f6-b13d-f7fce10872cf",
+                  "title": "Add requirements CRUD API endpoints to web server",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add REST API endpoints for requirements management: GET requirements for an item, POST to add, PATCH to update, DELETE to remove. Also add coverage/traceability endpoints.",
+                  "acceptanceCriteria": [
+                    "GET /api/rex/items/:id/requirements returns requirements with inheritance",
+                    "POST /api/rex/items/:id/requirements adds a new requirement",
+                    "PATCH /api/rex/items/:id/requirements/:reqId updates a requirement",
+                    "DELETE /api/rex/items/:id/requirements/:reqId removes a requirement",
+                    "GET /api/rex/requirements/coverage returns coverage stats",
+                    "GET /api/rex/requirements/traceability returns traceability matrix"
+                  ],
+                  "priority": "high",
+                  "startedAt": "2026-02-10T22:24:53.464Z",
+                  "completedAt": "2026-02-10T22:24:53.464Z"
+                },
+                {
+                  "id": "7b2aff7d-f4f5-48fa-9714-36968c5dc5cc",
+                  "title": "Build requirements management UI and dashboard views",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Create Preact UI components: requirements section in task detail panel, requirements editor for adding/editing requirements with structured templates, requirements coverage dashboard with filtering and traceability view.",
+                  "acceptanceCriteria": [
+                    "Task detail panel shows requirements section with category badges and validation type",
+                    "Requirements editor allows creation with structured template (title, category, type, criteria)",
+                    "Requirements can be filtered by category and validation type",
+                    "Dashboard shows requirements coverage and compliance overview",
+                    "Requirements visually linked to associated PRD items via traceability view"
+                  ],
+                  "priority": "high",
+                  "startedAt": "2026-02-10T22:24:55.012Z",
+                  "completedAt": "2026-02-10T22:24:55.012Z"
+                },
+                {
+                  "id": "6e156feb-c447-47e1-ab4a-1e53eeabd103",
+                  "title": "Enhance task prioritization with requirements-based weighting",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add requirements-aware task selection: tasks with critical requirements get priority boost, tasks blocking requirements-heavy items are elevated, configurable weighting for risk tolerance.",
+                  "acceptanceCriteria": [
+                    "Task selection weights tasks based on associated requirements priority",
+                    "Tasks blocking critical requirements are automatically elevated",
+                    "Requirement dependencies influence task scheduling",
+                    "Prioritization logic can be configured via riskTolerance setting"
+                  ],
+                  "priority": "high",
+                  "startedAt": "2026-02-10T22:24:56.277Z",
+                  "completedAt": "2026-02-10T22:24:56.277Z"
+                }
+              ]
             }
-          ]
+          ],
+          "startedAt": "2026-02-10T22:24:56.353Z",
+          "completedAt": "2026-02-10T22:24:56.353Z"
         }
       ]
     },

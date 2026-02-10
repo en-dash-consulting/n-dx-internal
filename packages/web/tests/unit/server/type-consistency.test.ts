@@ -43,8 +43,12 @@ import {
   VALID_LEVELS,
   VALID_STATUSES,
   VALID_PRIORITIES,
+  VALID_REQUIREMENT_CATEGORIES as LOCAL_VALID_REQ_CATEGORIES,
+  VALID_VALIDATION_TYPES as LOCAL_VALID_VALIDATION_TYPES,
   isPriority,
   isItemLevel,
+  isRequirementCategory,
+  isValidationType,
 } from "../../../src/server/rex-domain.js";
 
 describe("Rex domain constant consistency", () => {
@@ -170,6 +174,30 @@ describe("Rex domain constant consistency", () => {
     expect(canonicalIsValidationType("metric")).toBe(true);
     expect(canonicalIsValidationType("invalid")).toBe(false);
     expect(canonicalIsValidationType(undefined)).toBe(false);
+  });
+
+  it("VALID_REQUIREMENT_CATEGORIES matches canonical", () => {
+    expect(LOCAL_VALID_REQ_CATEGORIES).toEqual(CANONICAL_VALID_REQ_CATEGORIES);
+  });
+
+  it("VALID_VALIDATION_TYPES matches canonical", () => {
+    expect(LOCAL_VALID_VALIDATION_TYPES).toEqual(CANONICAL_VALID_VALIDATION_TYPES);
+  });
+
+  it("isRequirementCategory type guard matches canonical behaviour", () => {
+    const testValues = ["technical", "performance", "security", "accessibility", "compatibility", "quality", "invalid", ""];
+    for (const v of testValues) {
+      expect(isRequirementCategory(v)).toBe(canonicalIsReqCategory(v));
+    }
+    expect(isRequirementCategory(undefined)).toBe(canonicalIsReqCategory(undefined));
+  });
+
+  it("isValidationType type guard matches canonical behaviour", () => {
+    const testValues = ["automated", "manual", "metric", "invalid", ""];
+    for (const v of testValues) {
+      expect(isValidationType(v)).toBe(canonicalIsValidationType(v));
+    }
+    expect(isValidationType(undefined)).toBe(canonicalIsValidationType(undefined));
   });
 
   it("viewer type mirrors have expected shape", () => {

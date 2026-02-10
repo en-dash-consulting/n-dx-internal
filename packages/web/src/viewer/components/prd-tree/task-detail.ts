@@ -8,7 +8,7 @@
 
 import { h, Fragment } from "preact";
 import { useState, useCallback } from "preact/hooks";
-import type { PRDItemData, ItemStatus, Priority } from "./types.js";
+import type { PRDItemData, ItemStatus, Priority, RequirementData, RequirementCategory, RequirementValidationType } from "./types.js";
 import { formatTimestamp } from "./compute.js";
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -309,6 +309,299 @@ function ChildrenSummary({
   );
 }
 
+// ── Requirements components ───────────────────────────────────────────
+
+const CATEGORY_LABELS: Record<RequirementCategory, string> = {
+  technical: "Technical",
+  performance: "Performance",
+  security: "Security",
+  accessibility: "Accessibility",
+  compatibility: "Compatibility",
+  quality: "Quality",
+};
+
+const CATEGORY_ICONS: Record<RequirementCategory, string> = {
+  technical: "\u2699",   // gear
+  performance: "\u26a1", // lightning
+  security: "\ud83d\udd12",   // lock
+  accessibility: "\u267f",  // wheelchair
+  compatibility: "\ud83d\udd17", // link
+  quality: "\u2605",   // star
+};
+
+const VALIDATION_TYPE_LABELS: Record<RequirementValidationType, string> = {
+  automated: "Automated",
+  manual: "Manual",
+  metric: "Metric",
+};
+
+const CATEGORY_OPTIONS: RequirementCategory[] = [
+  "technical", "performance", "security", "accessibility", "compatibility", "quality",
+];
+
+const VALIDATION_TYPE_OPTIONS: RequirementValidationType[] = [
+  "automated", "manual", "metric",
+];
+
+/** Display a single requirement with category badge and validation type. */
+function RequirementItem({ req }: { req: RequirementData }) {
+  return h(
+    "div",
+    { class: `task-requirement-item req-category-${req.category}` },
+    h(
+      "div",
+      { class: "task-requirement-header" },
+      h("span", { class: `req-category-badge req-cat-${req.category}` },
+        CATEGORY_ICONS[req.category] || "",
+        " ",
+        CATEGORY_LABELS[req.category] || req.category,
+      ),
+      h("span", { class: `req-validation-badge req-val-${req.validationType}` },
+        VALIDATION_TYPE_LABELS[req.validationType] || req.validationType,
+      ),
+      req.priority
+        ? h("span", { class: `prd-priority-badge prd-priority-${req.priority}` }, req.priority)
+        : null,
+    ),
+    h("div", { class: "task-requirement-title" }, req.title),
+    req.description
+      ? h("div", { class: "task-requirement-description" }, req.description)
+      : null,
+    req.acceptanceCriteria && req.acceptanceCriteria.length > 0
+      ? h(
+          "ul",
+          { class: "task-requirement-criteria" },
+          req.acceptanceCriteria.map((c, i) =>
+            h("li", { key: i }, c),
+          ),
+        )
+      : null,
+    req.validationCommand
+      ? h("div", { class: "task-requirement-command" },
+          h("span", { class: "label" }, "Validation: "),
+          h("code", null, req.validationCommand),
+          req.threshold !== undefined
+            ? h("span", { class: "req-threshold" }, ` (threshold: ${req.threshold})`)
+            : null,
+        )
+      : null,
+  );
+}
+
+/** Requirements list with optional add button. */
+function RequirementsList({
+  requirements,
+  onAdd,
+  onRemove,
+}: {
+  requirements: RequirementData[];
+  onAdd?: (req: Omit<RequirementData, "id">) => void;
+  onRemove?: (reqId: string) => void;
+}) {
+  const [showAdd, setShowAdd] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newCategory, setNewCategory] = useState<RequirementCategory>("technical");
+  const [newValidationType, setNewValidationType] = useState<RequirementValidationType>("automated");
+  const [newDescription, setNewDescription] = useState("");
+  const [newCriteria, setNewCriteria] = useState("");
+  const [newCommand, setNewCommand] = useState("");
+  const [newPriority, setNewPriority] = useState<Priority | "">("medium");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+
+  const handleSubmit = useCallback(() => {
+    if (!newTitle.trim() || !onAdd) return;
+    const criteria = newCriteria
+      .split("\n")
+      .map((c) => c.trim())
+      .filter(Boolean);
+
+    const req: Omit<RequirementData, "id"> = {
+      title: newTitle.trim(),
+      category: newCategory,
+      validationType: newValidationType,
+      acceptanceCriteria: criteria,
+    };
+    if (newDescription.trim()) req.description = newDescription.trim();
+    if (newCommand.trim()) req.validationCommand = newCommand.trim();
+    if (newPriority) req.priority = newPriority as Priority;
+
+    onAdd(req);
+    setNewTitle("");
+    setNewDescription("");
+    setNewCriteria("");
+    setNewCommand("");
+    setNewPriority("medium");
+    setShowAdd(false);
+  }, [newTitle, newCategory, newValidationType, newDescription, newCriteria, newCommand, newPriority, onAdd]);
+
+  const filteredReqs = filterCategory === "all"
+    ? requirements
+    : requirements.filter((r) => r.category === filterCategory);
+
+  if (requirements.length === 0 && !showAdd) {
+    return h(
+      "div",
+      { class: "task-requirements-empty" },
+      onAdd
+        ? h(
+            "button",
+            { class: "task-req-add-btn", onClick: () => setShowAdd(true) },
+            "+ Add requirement",
+          )
+        : h("span", { class: "task-requirements-none" }, "No requirements"),
+    );
+  }
+
+  return h(
+    "div",
+    { class: "task-requirements-list" },
+
+    // Filter bar (only if more than 2 requirements)
+    requirements.length > 2
+      ? h(
+          "div",
+          { class: "task-req-filter" },
+          h(
+            "select",
+            {
+              class: "task-req-filter-select",
+              value: filterCategory,
+              onChange: (e: Event) => setFilterCategory((e.target as HTMLSelectElement).value),
+              "aria-label": "Filter requirements by category",
+            },
+            h("option", { value: "all" }, `All (${requirements.length})`),
+            ...CATEGORY_OPTIONS
+              .filter((cat) => requirements.some((r) => r.category === cat))
+              .map((cat) =>
+                h("option", { key: cat, value: cat },
+                  `${CATEGORY_LABELS[cat]} (${requirements.filter((r) => r.category === cat).length})`,
+                ),
+              ),
+          ),
+        )
+      : null,
+
+    // Requirements list
+    filteredReqs.map((req) =>
+      h(
+        "div",
+        { key: req.id, class: "task-requirement-wrapper" },
+        h(RequirementItem, { req }),
+        onRemove
+          ? h(
+              "button",
+              {
+                class: "task-req-remove-btn",
+                onClick: () => onRemove(req.id),
+                "aria-label": `Remove requirement ${req.title}`,
+                title: "Remove",
+              },
+              "\u00d7",
+            )
+          : null,
+      ),
+    ),
+
+    // Add button / form
+    onAdd
+      ? showAdd
+        ? h(
+            "div",
+            { class: "task-req-add-form" },
+            h("div", { class: "task-section-label" }, "New Requirement"),
+            h("input", {
+              class: "task-req-input",
+              type: "text",
+              placeholder: "Requirement title",
+              value: newTitle,
+              onInput: (e: Event) => setNewTitle((e.target as HTMLInputElement).value),
+              ref: (el: HTMLInputElement | null) => el?.focus(),
+            }),
+            h(
+              "div",
+              { class: "task-req-selectors" },
+              h(
+                "select",
+                {
+                  class: "task-req-select",
+                  value: newCategory,
+                  onChange: (e: Event) => setNewCategory((e.target as HTMLSelectElement).value as RequirementCategory),
+                  "aria-label": "Requirement category",
+                },
+                CATEGORY_OPTIONS.map((cat) =>
+                  h("option", { key: cat, value: cat }, CATEGORY_LABELS[cat]),
+                ),
+              ),
+              h(
+                "select",
+                {
+                  class: "task-req-select",
+                  value: newValidationType,
+                  onChange: (e: Event) => setNewValidationType((e.target as HTMLSelectElement).value as RequirementValidationType),
+                  "aria-label": "Validation type",
+                },
+                VALIDATION_TYPE_OPTIONS.map((vt) =>
+                  h("option", { key: vt, value: vt }, VALIDATION_TYPE_LABELS[vt]),
+                ),
+              ),
+              h(
+                "select",
+                {
+                  class: "task-req-select",
+                  value: newPriority,
+                  onChange: (e: Event) => setNewPriority((e.target as HTMLSelectElement).value as Priority | ""),
+                  "aria-label": "Requirement priority",
+                },
+                h("option", { value: "" }, "No priority"),
+                PRIORITY_OPTIONS.map((opt) =>
+                  h("option", { key: opt.value, value: opt.value }, opt.label),
+                ),
+              ),
+            ),
+            h("textarea", {
+              class: "task-req-textarea",
+              placeholder: "Description (optional)",
+              value: newDescription,
+              onInput: (e: Event) => setNewDescription((e.target as HTMLTextAreaElement).value),
+              rows: 2,
+            }),
+            h("textarea", {
+              class: "task-req-textarea",
+              placeholder: "Acceptance criteria (one per line)",
+              value: newCriteria,
+              onInput: (e: Event) => setNewCriteria((e.target as HTMLTextAreaElement).value),
+              rows: 3,
+            }),
+            h("input", {
+              class: "task-req-input",
+              type: "text",
+              placeholder: "Validation command (optional)",
+              value: newCommand,
+              onInput: (e: Event) => setNewCommand((e.target as HTMLInputElement).value),
+            }),
+            h(
+              "div",
+              { class: "task-req-form-actions" },
+              h("button", {
+                class: "task-req-submit-btn",
+                onClick: handleSubmit,
+                disabled: !newTitle.trim(),
+              }, "Add"),
+              h("button", {
+                class: "task-req-cancel-btn",
+                onClick: () => setShowAdd(false),
+              }, "Cancel"),
+            ),
+          )
+        : h(
+            "button",
+            { class: "task-req-add-btn", onClick: () => setShowAdd(true) },
+            "+ Add requirement",
+          )
+      : null,
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────
 
 export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem }: TaskDetailProps) {
@@ -394,6 +687,33 @@ export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem }: TaskD
       { class: "task-section" },
       h("div", { class: "task-section-label" }, "Tags"),
       h(TagEditor, { tags: item.tags ?? [], onUpdate: handleTagsUpdate }),
+    ),
+
+    // Requirements
+    h(
+      "div",
+      { class: "task-section" },
+      h("div", { class: "task-section-label" },
+        `Requirements (${(item.requirements ?? []).length})`,
+      ),
+      h(RequirementsList, {
+        requirements: item.requirements ?? [],
+        onAdd: onUpdate
+          ? (req: Omit<RequirementData, "id">) => {
+              // Optimistic update: add with a temporary id
+              const tempId = "req-" + Date.now().toString(36);
+              const newReq: RequirementData = { ...req, id: tempId };
+              const existing = item.requirements ?? [];
+              onUpdate(item.id, { requirements: [...existing, newReq] });
+            }
+          : undefined,
+        onRemove: onUpdate
+          ? (reqId: string) => {
+              const existing = item.requirements ?? [];
+              onUpdate(item.id, { requirements: existing.filter((r) => r.id !== reqId) });
+            }
+          : undefined,
+      }),
     ),
 
     // Dependencies

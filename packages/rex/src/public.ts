@@ -87,8 +87,9 @@ export {
   collectCompletedIds,
   extractTaskKeywords,
   matchTasksByKeywords,
+  requirementsScore,
 } from "./core/next-task.js";
-export type { TaskMatch } from "./core/next-task.js";
+export type { TaskMatch, PrioritizationOptions, RiskTolerance } from "./core/next-task.js";
 
 // ---- Core: keywords ---------------------------------------------------------
 

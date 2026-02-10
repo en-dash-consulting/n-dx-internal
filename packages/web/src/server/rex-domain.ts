@@ -74,6 +74,47 @@ export const VALID_STATUSES = new Set<string>([
 
 export const VALID_PRIORITIES = new Set<Priority>(["critical", "high", "medium", "low"]);
 
+// ── Requirement types & validation ────────────────────────────────
+
+/** @see packages/rex/src/schema/v1.ts — RequirementCategory */
+export type RequirementCategory =
+  | "technical"
+  | "performance"
+  | "security"
+  | "accessibility"
+  | "compatibility"
+  | "quality";
+
+/** @see packages/rex/src/schema/v1.ts — RequirementValidationType */
+export type RequirementValidationType = "automated" | "manual" | "metric";
+
+/** @see packages/rex/src/schema/v1.ts — VALID_REQUIREMENT_CATEGORIES */
+export const VALID_REQUIREMENT_CATEGORIES = new Set<RequirementCategory>([
+  "technical",
+  "performance",
+  "security",
+  "accessibility",
+  "compatibility",
+  "quality",
+]);
+
+/** @see packages/rex/src/schema/v1.ts — VALID_VALIDATION_TYPES */
+export const VALID_VALIDATION_TYPES = new Set<RequirementValidationType>([
+  "automated",
+  "manual",
+  "metric",
+]);
+
+/** Type guard: narrows a string to RequirementCategory. */
+export function isRequirementCategory(value: string | undefined): value is RequirementCategory {
+  return value !== undefined && VALID_REQUIREMENT_CATEGORIES.has(value as RequirementCategory);
+}
+
+/** Type guard: narrows a string to RequirementValidationType. */
+export function isValidationType(value: string | undefined): value is RequirementValidationType {
+  return value !== undefined && VALID_VALIDATION_TYPES.has(value as RequirementValidationType);
+}
+
 // ── Type guards ────────────────────────────────────────────────────
 
 /** Type guard: narrows a string to Priority if it's a valid priority value. */
