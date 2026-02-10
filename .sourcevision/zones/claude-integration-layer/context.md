@@ -6,19 +6,19 @@
 
 Zone: Claude Integration Layer (`claude-integration-layer`)
 Files: 15, Cohesion: 1.00, Coupling: 0.00
-Description: Unified client abstraction for interacting with Claude AI through both CLI and API providers with comprehensive authentication, configuration, and token usage tracking.
-Lines: 2254
+Description: Unified Claude API client abstraction supporting dual provider architecture (API and CLI modes) with automatic failover.
+Lines: 2335
 
 </zone>
 
 <files>
 
-packages/claude-client/src/api-provider.ts (TypeScript, 137 lines, source)
+packages/claude-client/src/api-provider.ts (TypeScript, 157 lines, source)
 packages/claude-client/src/auth.ts (TypeScript, 238 lines, source)
-packages/claude-client/src/cli-provider.ts (TypeScript, 210 lines, source)
+packages/claude-client/src/cli-provider.ts (TypeScript, 230 lines, source)
 packages/claude-client/src/config.ts (TypeScript, 94 lines, source)
-packages/claude-client/src/create-client.ts (TypeScript, 64 lines, source)
-packages/claude-client/src/index.ts (TypeScript, 76 lines, source)
+packages/claude-client/src/create-client.ts (TypeScript, 86 lines, source)
+packages/claude-client/src/index.ts (TypeScript, 95 lines, source)
 packages/claude-client/src/token-usage.ts (TypeScript, 131 lines, source)
 packages/claude-client/src/types.ts (TypeScript, 105 lines, source)
 packages/claude-client/tests/unit/api-provider.test.ts (TypeScript, 66 lines, test)
@@ -84,24 +84,22 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] Dual provider architecture (CLI + API) ensures fallback options and different execution contexts
-[observation] [info] Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns
-[observation] [info] Token usage tracking includes comprehensive cost estimation and budget enforcement mechanisms
-[pattern] [info] Clean abstraction boundary - consuming packages import only high-level interfaces, not implementation details
+[suggestion] [info] Inconsistent package naming: @n-dx/claude-client uses scoped naming while rex, hench, sourcevision use unscoped names
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Provides dual-mode access to Claude through both CLI binary and direct API calls for maximum flexibility
-- Implements comprehensive token usage tracking and budget management across different model types
-- Centralizes Claude authentication and configuration validation with support for custom endpoints
-- Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns
-- Dual provider architecture (CLI + API) ensures fallback options and different execution contexts
-- Token usage tracking includes comprehensive cost estimation and budget enforcement mechanisms
-- Provides abstracted interface to Claude API that insulates consuming packages from direct API dependencies
-- Token usage tracking and budget management creates shared state across consuming packages
-- Clean abstraction boundary - consuming packages import only high-level interfaces, not implementation details
+- Provides transport-agnostic Claude access with automatic provider selection based on credential availability
+- Encapsulates all Claude API concerns behind a single interface achieving zero coupling with other packages
+- Implements comprehensive authentication detection, token usage tracking, and error classification
+- Excellent architectural isolation with 15 focused files providing complete Claude API abstraction
+- Acts as shared foundation consumed by both rex and hench packages for Claude API access
+- Provides clean dependency inversion allowing packages to focus on domain logic
+- Serves as clean dependency foundation for rex and hench, eliminating Claude API concerns from domain packages
+- Uses scoped package naming (@n-dx/claude-client) inconsistent with other packages (rex, hench, sourcevision)
+- Only package with exports field providing both import and types mappings - other packages inconsistently implement module exports
+- Inconsistent package naming: @n-dx/claude-client uses scoped naming while rex, hench, sourcevision use unscoped names
 
 </insights>

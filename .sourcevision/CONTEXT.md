@@ -6,22 +6,25 @@
 <architecture>
 
 Project: n-dx
-Git: main @ 91c46b1
-Files: 596, Lines: 165669
-Languages: TypeScript(380) JSON(90) Markdown(69) CSS(25) Other(14)
+Git: feature/from-recommend @ a67e98f
+Files: 474, Lines: 125015
+Languages: TypeScript(384) CSS(25) JSON(24) Other(14) JavaScript(12)
 Zones: 8, Described: 8
-Import edges: 1127, External packages: 15
+Import edges: 1145, External packages: 15
 
 </architecture>
 
 <zones>
 
-[claude-client] Claude Client (15 files, coh=1.00 coup=0.00)
-  15 files, primarily TypeScript
-  files: packages/claude-client/src/api-provider.ts, packages/claude-client/src/auth.ts, packages/claude-client/src/cli-provider.ts, packages/claude-client/src/config.ts, packages/claude-client/src/create-client.ts, packages/claude-client/src/index.ts, packages/claude-client/src/token-usage.ts, packages/claude-client/src/types.ts, packages/claude-client/tests/unit/api-provider.test.ts, packages/claude-client/tests/unit/auth.test.ts +5
-[hench] Hench (80 files, coh=1.00 coup=0.00)
-  80 files, primarily TypeScript
+[autonomous-agent-system] Autonomous Agent System (80 files, coh=1.00 coup=0.00)
+  Complete autonomous execution engine with task lifecycle management, planning, tool dispatch, and validation workflows.
   files: packages/hench/src/agent/analysis/review.ts, packages/hench/src/agent/analysis/stuck.ts, packages/hench/src/agent/analysis/summary.ts, packages/hench/src/agent/completion.ts, packages/hench/src/agent/index.ts, packages/hench/src/agent/lifecycle/cli-loop.ts, packages/hench/src/agent/lifecycle/loop.ts, packages/hench/src/agent/lifecycle/task-display.ts, packages/hench/src/agent/lifecycle/token-budget.ts, packages/hench/src/agent/lifecycle/token-usage.ts +70
+[claude-integration-layer] Claude Integration Layer (15 files, coh=1.00 coup=0.00)
+  Unified Claude API client abstraction supporting dual provider architecture (API and CLI modes) with automatic failover.
+  files: packages/claude-client/src/api-provider.ts, packages/claude-client/src/auth.ts, packages/claude-client/src/cli-provider.ts, packages/claude-client/src/config.ts, packages/claude-client/src/create-client.ts, packages/claude-client/src/index.ts, packages/claude-client/src/token-usage.ts, packages/claude-client/src/types.ts, packages/claude-client/tests/unit/api-provider.test.ts, packages/claude-client/tests/unit/auth.test.ts +5
+[orchestration-layer] Orchestration Layer (4 files, coh=1.00 coup=0.00)
+  Top-level command router and tool coordination that delegates workflow commands to specialized packages.
+  files: ci.js, cli.js, config.js, web.js
 [packages-rex:rex-cli] Rex PRD Management CLI (36 files, coh=1.00 coup=0.00)
   A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.
   files: packages/rex/src/analyze/index.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/scanners.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/constants.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/next.ts, packages/rex/src/cli/commands/recommend.ts +26
@@ -37,10 +40,7 @@ Import edges: 1127, External packages: 15
 [packages-sourcevision:test-suite] Test Suite (5 files, coh=0.46 coup=0.54)
   Unit, integration, and end-to-end tests covering analyzer logic, schema validation, CLI workflows, and the serve command, with imports reaching into both analyzer and viewer zones.
   files: packages/sourcevision/src/schema/validate.ts, packages/sourcevision/tests/e2e/cli-analyze.test.ts, packages/sourcevision/tests/e2e/cli-serve.test.ts, packages/sourcevision/tests/integration/pipeline.test.ts, packages/sourcevision/tests/unit/schema/validate.test.ts
-[root] Root (4 files, coh=1.00 coup=0.00)
-  4 files, primarily JavaScript
-  files: ci.js, cli.js, config.js, web.js
-[unzoned] 158 files: .claude/settings.local.json, .gitignore, .hench/config.json, .npmrc, .rex/config.json ...
+[unzoned] 32 files: .claude/settings.local.json, .gitignore, .hench/config.json, .npmrc, .rex/config.json ...
 
 Detailed zone context: .sourcevision/zones/{id}/context.md
 
@@ -51,11 +51,11 @@ Detailed zone context: .sourcevision/zones/{id}/context.md
 Most imported:
   packages/rex/src/core/tree.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/reshape-reason.ts, packages/rex/src/cli/commands/add.ts +28
   packages/rex/src/cli/errors.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/move.ts, packages/rex/src/cli/commands/prune.ts +18
+  packages/rex/src/store/index.ts ← packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/fix.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/move.ts +22
   packages/rex/src/cli/output.ts ← packages/rex/src/analyze/guided.ts, packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/chunked-review.ts +17
-  packages/rex/src/store/index.ts ← packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/fix.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/move.ts +21
   packages/rex/src/cli/commands/constants.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/fix.ts, packages/rex/src/cli/commands/init.ts +16
-  packages/rex/src/schema/index.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/reshape-reason.ts, packages/rex/src/analyze/scanners.ts +86
-  packages/rex/src/core/canonical.ts ← packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/prune.ts, packages/rex/src/cli/commands/reshape.ts, packages/rex/src/store/adapter-registry.ts, packages/rex/src/store/file-adapter.ts +10
+  packages/rex/src/schema/index.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts +88
+  packages/rex/src/core/canonical.ts ← packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/prune.ts, packages/rex/src/cli/commands/reshape.ts, packages/rex/src/store/adapter-registry.ts, packages/rex/src/store/file-adapter.ts +11
   packages/sourcevision/src/viewer/components/logos.ts ← packages/sourcevision/src/viewer/components/sidebar.ts, packages/sourcevision/src/viewer/views/analysis.ts, packages/sourcevision/src/viewer/views/architecture.ts, packages/sourcevision/src/viewer/views/files.ts, packages/sourcevision/src/viewer/views/graph.ts +10
   packages/hench/src/store/config.ts ← packages/hench/src/cli/commands/task-lookup.ts, packages/hench/src/store/index.ts, packages/hench/tests/integration/store-roundtrip.test.ts, packages/hench/tests/unit/agent/api-auth.test.ts, packages/hench/tests/unit/agent/api-auth.test.ts +9
   packages/rex/src/analyze/reason.ts ← packages/rex/src/analyze/guided.ts, packages/rex/src/analyze/guided.ts, packages/rex/src/analyze/index.ts, packages/rex/src/analyze/index.ts, packages/rex/src/analyze/reshape-reason.ts +12
@@ -78,55 +78,13 @@ Conventions: action(2) default(4) loader(2) meta(1)
 
 <findings>
 
-[critical] Security guard system provides multi-layered protection with configurable policies for safe autonomous operation [autonomous-agent-system]
-[critical] Dual provider architecture (CLI + API) ensures fallback options and different execution contexts [claude-integration-layer]
-[critical] Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns [claude-integration-layer]
-[critical] All zones achieve perfect cohesion metrics, suggesting the community detection algorithm successfully identified natural architectural boundaries
-[warning] Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided [autonomous-agent-system]
-[warning] Cross-zone type imports create compile-time coupling that defeats runtime decoupling strategies - zones appear independent at runtime but are tightly coupled during TypeScript compilation
-[warning] PRIORITY_ORDER constants duplicated across multiple zones with inconsistent typing - shared constants should be extracted to a common location to prevent type drift and maintenance burden
-[warning] PRIORITY_ORDER constant duplicated with different type signatures (Record<Priority,number> vs Record<string,number>) across core/canonical.ts, core/next-task.ts, and analyze/propose.ts creating type safety gaps and maintenance burden [packages-rex:rex-cli]
-[critical] Schema index.ts barrel export creates hidden bidirectional coupling by re-exporting from both viewer zone (v1.ts) and test-suite zone (validate.ts) - every analyzer importing schema creates transitive dependencies across three zones [packages-sourcevision:analysis-engine]
-[warning] Direct import of schema/validate.ts from test-suite zone violates zone boundaries and forces Zod bundling into browser code where validation could be optional [packages-sourcevision:interactive-viewer]
-[warning] schema/validate.ts is misplaced in test-suite zone despite being imported by production CLI and viewer code - this file should be in analysis-engine zone based on its actual usage patterns [packages-sourcevision:test-suite]
-[warning] Extract PRIORITY_ORDER constant to shared location with consistent typing - currently duplicated in 4 locations with inconsistent types (typed Priority vs untyped string Record)
-[warning] Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic
-[warning] Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated
-[critical] Architecture forces choice between runtime coupling and maintenance burden - current solution chooses duplication over dependency, creating divergence risk that outweighs benefits of runtime independence for core domain types
-... +4 more
+[critical] Multi-package web server (with rex, hench, and sourcevision routes) is architecturally misplaced inside packages/sourcevision/ rather than at the orchestration layer where cross-package concerns belong. This creates artificial coupling and violates the clean three-layer architecture.
 
 </findings>
 
 <next-steps>
 
-[high] Schema index.ts barrel export creates hidden bidirectional coupling by re-expor…
-  files: packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/context.ts, packages/sourcevision/src/analyzers/enrich.ts
+[high] Multi-package web server (with rex, hench, and sourcevision routes) is architec…
   category: fix
-[high] All zones achieve perfect cohesion metrics, suggesting the … (+4 related)
-  category: fix
-[high] Dual provider architecture (CLI + API) ensures fallback opt… (+1 related)
-  category: fix
-[high] Security guard system provides multi-layered protection with configurable polic…
-  category: fix
-[medium] schema/validate.ts is misplaced in test-suite zone despite being imported by pr…
-  files: packages/sourcevision/src/schema/validate.ts, packages/sourcevision/tests/e2e/cli-analyze.test.ts, packages/sourcevision/tests/e2e/cli-serve.test.ts
-  category: refactor
-[medium] Direct import of schema/validate.ts from test-suite zone violates zone boundari…
-  files: packages/sourcevision/src/schema/v1.ts, packages/sourcevision/src/viewer/components/collapsible-section.ts, packages/sourcevision/src/viewer/components/constants.ts
-  category: refactor
-[medium] Cross-zone type imports create compile-time coupling that d… (+1 related)
-  category: refactor
-[medium] Zone architecture achieves perfect runtime decoupling (no c… (+1 related)
-  category: extract
-[medium] Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupl…
-  category: refactor
-[medium] PRIORITY_ORDER constant duplicated with different type signatures (Record<Prior…
-  files: packages/rex/src/analyze/index.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reconcile.ts
-  category: refactor
-[medium] Extract PRIORITY_ORDER constant to shared location with consistent typing - cur…
-  category: refactor
-[medium] Consider decomposing hench zone into functional subzones: CLI interface (packag…
-  files: packages/hench/src/agent/analysis/review.ts, packages/hench/src/agent/analysis/stuck.ts, packages/hench/src/agent/analysis/summary.ts
-  category: refactor
 
 </next-steps>

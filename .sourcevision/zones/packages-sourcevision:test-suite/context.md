@@ -8,13 +8,13 @@ Zone: Test Suite (`packages-sourcevision:test-suite`)
 Files: 5, Cohesion: 0.46, Coupling: 0.54
 Description: Unit, integration, and end-to-end tests covering analyzer logic, schema validation, CLI workflows, and the serve command, with imports reaching into both analyzer and viewer zones.
 Entry points: packages/sourcevision/src/schema/validate.ts
-Lines: 1375
+Lines: 1376
 
 </zone>
 
 <files>
 
-packages/sourcevision/src/schema/validate.ts (TypeScript, 315 lines, source)
+packages/sourcevision/src/schema/validate.ts (TypeScript, 316 lines, source)
 packages/sourcevision/tests/e2e/cli-analyze.test.ts (TypeScript, 154 lines, test)
 packages/sourcevision/tests/e2e/cli-serve.test.ts (TypeScript, 79 lines, test)
 packages/sourcevision/tests/integration/pipeline.test.ts (TypeScript, 93 lines, test)
@@ -38,12 +38,6 @@ Incoming (other zones → this zone):
   ← packages-sourcevision:interactive-viewer: packages/sourcevision/src/viewer/loader.ts → packages/sourcevision/src/schema/validate.ts; packages/sourcevision/src/viewer/loader.ts → packages/sourcevision/src/schema/validate.ts
 
 </imports>
-
-<findings>
-
-[anti-pattern] [warning] schema/validate.ts is misplaced in test-suite zone despite being imported by production CLI and viewer code - this file should be in analysis-engine zone based on its actual usage patterns
-
-</findings>
 
 <insights>
 

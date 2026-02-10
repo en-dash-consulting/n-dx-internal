@@ -7,14 +7,14 @@
 Zone: Rex PRD Management CLI (`packages-rex:rex-cli`)
 Files: 36, Cohesion: 1.00, Coupling: 0.00
 Description: A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.
-Lines: 9585
+Lines: 9642
 
 </zone>
 
 <files>
 
 packages/rex/src/analyze/index.ts (TypeScript, 62 lines, source)
-packages/rex/src/analyze/propose.ts (TypeScript, 311 lines, source)
+packages/rex/src/analyze/propose.ts (TypeScript, 307 lines, source)
 packages/rex/src/analyze/reconcile.ts (TypeScript, 124 lines, source)
 packages/rex/src/analyze/scanners.ts (TypeScript, 935 lines, source)
 packages/rex/src/cli/commands/add.ts (TypeScript, 159 lines, source)
@@ -25,15 +25,15 @@ packages/rex/src/cli/commands/next.ts (TypeScript, 69 lines, source)
 packages/rex/src/cli/commands/recommend.ts (TypeScript, 145 lines, source)
 packages/rex/src/cli/commands/status.ts (TypeScript, 280 lines, source)
 packages/rex/src/cli/commands/update.ts (TypeScript, 200 lines, source)
-packages/rex/src/cli/commands/validate.ts (TypeScript, 199 lines, source)
+packages/rex/src/cli/commands/validate.ts (TypeScript, 200 lines, source)
 packages/rex/src/cli/index.ts (TypeScript, 298 lines, source)
-packages/rex/src/cli/mcp.ts (TypeScript, 694 lines, source)
-packages/rex/src/core/canonical.ts (TypeScript, 27 lines, source)
+packages/rex/src/cli/mcp.ts (TypeScript, 720 lines, source)
+packages/rex/src/core/canonical.ts (TypeScript, 21 lines, source)
 packages/rex/src/core/dag.ts (TypeScript, 84 lines, source)
-packages/rex/src/core/next-task.ts (TypeScript, 452 lines, source)
+packages/rex/src/core/next-task.ts (TypeScript, 446 lines, source)
 packages/rex/src/core/tree.ts (TypeScript, 185 lines, source)
 packages/rex/src/schema/index.ts (TypeScript, 31 lines, source)
-packages/rex/src/schema/v1.ts (TypeScript, 113 lines, source)
+packages/rex/src/schema/v1.ts (TypeScript, 159 lines, source)
 packages/rex/src/schema/validate.ts (TypeScript, 121 lines, source)
 packages/rex/src/store/file-adapter.ts (TypeScript, 152 lines, source)
 packages/rex/src/store/index.ts (TypeScript, 105 lines, source)
@@ -62,6 +62,8 @@ Internal:
   packages/rex/src/analyze/index.ts → packages/rex/src/analyze/scanners.ts {scanTests, scanDocs, scanSourceVision, scanPackageJson}
   packages/rex/src/analyze/index.ts → packages/rex/src/analyze/scanners.ts {ScanResult, ScanOptions}
   packages/rex/src/analyze/propose.ts → packages/rex/src/analyze/scanners.ts {ScanResult}
+  packages/rex/src/analyze/propose.ts → packages/rex/src/schema/index.ts {PRIORITY_ORDER}
+  packages/rex/src/analyze/propose.ts → packages/rex/src/schema/index.ts {Priority}
   packages/rex/src/analyze/reconcile.ts → packages/rex/src/analyze/scanners.ts {ScanResult}
   packages/rex/src/analyze/reconcile.ts → packages/rex/src/core/tree.ts {walkTree}
   packages/rex/src/analyze/reconcile.ts → packages/rex/src/schema/index.ts {PRDItem}
@@ -102,8 +104,9 @@ Internal:
   packages/rex/src/cli/commands/update.ts → packages/rex/src/store/index.ts {resolveStore}
   packages/rex/src/cli/commands/validate.ts → packages/rex/src/cli/commands/constants.ts {REX_DIR}
   packages/rex/src/cli/commands/validate.ts → packages/rex/src/core/dag.ts {validateDAG}
-  packages/rex/src/cli/commands/validate.ts → packages/rex/src/schema/index.ts {SCHEMA_VERSION, validateDocument, validateConfig}
+  packages/rex/src/cli/commands/validate.ts → packages/rex/src/schema/index.ts {SCHEMA_VERSION}
   packages/rex/src/cli/commands/validate.ts → packages/rex/src/schema/index.ts {PRDDocument}
+  packages/rex/src/cli/commands/validate.ts → packages/rex/src/schema/validate.ts {validateDocument, validateConfig}
   packages/rex/src/cli/index.ts → packages/rex/src/cli/commands/add.ts {*}
   packages/rex/src/cli/index.ts → packages/rex/src/cli/commands/analyze.ts {*}
   packages/rex/src/cli/index.ts → packages/rex/src/cli/commands/constants.ts {usage}
@@ -122,22 +125,22 @@ Internal:
   packages/rex/src/cli/mcp.ts → packages/rex/src/schema/index.ts {PRDItem, ItemLevel, ItemStatus, Priority}
   packages/rex/src/cli/mcp.ts → packages/rex/src/store/index.ts {resolveStore, resolveRemoteStore, SyncEngine}
   packages/rex/src/cli/mcp.ts → packages/rex/src/store/index.ts {PRDStore}
-  packages/rex/src/core/canonical.ts → packages/rex/src/schema/index.ts {PRDItem, Priority}
+  packages/rex/src/core/canonical.ts → packages/rex/src/schema/index.ts {PRIORITY_ORDER}
+  packages/rex/src/core/canonical.ts → packages/rex/src/schema/index.ts {PRDItem}
   packages/rex/src/core/dag.ts → packages/rex/src/core/tree.ts {walkTree, collectAllIds}
   packages/rex/src/core/dag.ts → packages/rex/src/schema/index.ts {PRDItem}
   packages/rex/src/core/next-task.ts → packages/rex/src/core/tree.ts {walkTree}
   packages/rex/src/core/next-task.ts → packages/rex/src/core/tree.ts {TreeEntry}
+  packages/rex/src/core/next-task.ts → packages/rex/src/schema/index.ts {PRIORITY_ORDER}
   packages/rex/src/core/next-task.ts → packages/rex/src/schema/index.ts {PRDItem, Priority}
   packages/rex/src/core/tree.ts → packages/rex/src/schema/index.ts {LEVEL_HIERARCHY}
   packages/rex/src/core/tree.ts → packages/rex/src/schema/index.ts {PRDItem, ItemLevel}
-  packages/rex/src/schema/index.ts → packages/rex/src/schema/v1.ts {SCHEMA_VERSION, LEVEL_HIERARCHY, DEFAULT_CONFIG}
+  packages/rex/src/schema/index.ts → packages/rex/src/schema/v1.ts {SCHEMA_VERSION, LEVEL_HIERARCHY, PRIORITY_ORDER, DEFAULT_CONFIG}
   packages/rex/src/schema/index.ts → packages/rex/src/schema/v1.ts {ItemLevel, ItemStatus, Priority, PRDItem, PRDDocument, RexConfig, BudgetThresholds, LogEntry, TokenUsage, AnalyzeTokenUsage}
-  packages/rex/src/schema/index.ts → packages/rex/src/schema/validate.ts {PRDItemSchema, PRDDocumentSchema, RexConfigSchema, LogEntrySchema, validateDocument, validateConfig, validateLogEntry, formatValidationErrors}
-  packages/rex/src/schema/index.ts → packages/rex/src/schema/validate.ts {ValidationResult}
   packages/rex/src/store/file-adapter.ts → packages/rex/src/core/canonical.ts {toCanonicalJSON}
   packages/rex/src/store/file-adapter.ts → packages/rex/src/core/tree.ts {findItem, insertChild, updateInTree, removeFromTree}
-  packages/rex/src/store/file-adapter.ts → packages/rex/src/schema/index.ts {validateDocument, validateConfig, validateLogEntry}
   packages/rex/src/store/file-adapter.ts → packages/rex/src/schema/index.ts {PRDDocument, PRDItem, RexConfig, LogEntry}
+  packages/rex/src/store/file-adapter.ts → packages/rex/src/schema/validate.ts {validateDocument, validateConfig, validateLogEntry}
   packages/rex/src/store/file-adapter.ts → packages/rex/src/store/types.ts {PRDStore, StoreCapabilities}
   packages/rex/src/store/index.ts → packages/rex/src/store/file-adapter.ts {FileStore, ensureRexDir}
   packages/rex/src/store/index.ts → packages/rex/src/store/file-adapter.ts {FileStore}
@@ -169,12 +172,6 @@ Internal:
   packages/rex/tests/unit/store/file-adapter.test.ts → packages/rex/src/store/file-adapter.ts {FileStore, ensureRexDir}
 
 </imports>
-
-<findings>
-
-[anti-pattern] [warning] PRIORITY_ORDER constant duplicated with different type signatures (Record<Priority,number> vs Record<string,number>) across core/canonical.ts, core/next-task.ts, and analyze/propose.ts creating type safety gaps and maintenance burden
-
-</findings>
 
 <insights>
 

@@ -2615,6 +2615,22 @@
       ]
     },
     {
+      "from": "packages/rex/src/analyze/propose.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "PRIORITY_ORDER"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/propose.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Priority"
+      ]
+    },
+    {
       "from": "packages/rex/src/analyze/reason.ts",
       "to": "packages/rex/src/analyze/propose.ts",
       "type": "type",
@@ -3367,9 +3383,7 @@
       "to": "packages/rex/src/schema/index.ts",
       "type": "static",
       "symbols": [
-        "SCHEMA_VERSION",
-        "validateDocument",
-        "validateConfig"
+        "SCHEMA_VERSION"
       ]
     },
     {
@@ -3380,6 +3394,15 @@
         "PRDDocument",
         "PRDItem",
         "ItemLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/report.ts",
+      "to": "packages/rex/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateDocument",
+        "validateConfig"
       ]
     },
     {
@@ -3902,9 +3925,7 @@
       "to": "packages/rex/src/schema/index.ts",
       "type": "static",
       "symbols": [
-        "SCHEMA_VERSION",
-        "validateDocument",
-        "validateConfig"
+        "SCHEMA_VERSION"
       ]
     },
     {
@@ -3913,6 +3934,15 @@
       "type": "type",
       "symbols": [
         "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate.ts",
+      "to": "packages/rex/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateDocument",
+        "validateConfig"
       ]
     },
     {
@@ -4301,10 +4331,17 @@
     {
       "from": "packages/rex/src/core/canonical.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "PRIORITY_ORDER"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/canonical.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
-        "PRDItem",
-        "Priority"
+        "PRDItem"
       ]
     },
     {
@@ -4426,6 +4463,14 @@
       "type": "type",
       "symbols": [
         "TreeEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/next-task.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "PRIORITY_ORDER"
       ]
     },
     {
@@ -4708,6 +4753,14 @@
     },
     {
       "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/cli/mcp.ts",
+      "type": "reexport",
+      "symbols": [
+        "createRexMcpServer"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
       "to": "packages/rex/src/core/cascade-reset.ts",
       "type": "reexport",
       "symbols": [
@@ -4790,10 +4843,22 @@
     {
       "from": "packages/rex/src/public.ts",
       "to": "packages/rex/src/schema/v1.ts",
+      "type": "reexport",
+      "symbols": [
+        "PRIORITY_ORDER",
+        "LEVEL_HIERARCHY"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/schema/v1.ts",
       "type": "type",
       "symbols": [
         "PRDItem",
-        "ItemStatus"
+        "PRDDocument",
+        "ItemLevel",
+        "ItemStatus",
+        "Priority"
       ]
     },
     {
@@ -4819,6 +4884,7 @@
       "symbols": [
         "SCHEMA_VERSION",
         "LEVEL_HIERARCHY",
+        "PRIORITY_ORDER",
         "DEFAULT_CONFIG"
       ]
     },
@@ -4837,29 +4903,6 @@
         "LogEntry",
         "TokenUsage",
         "AnalyzeTokenUsage"
-      ]
-    },
-    {
-      "from": "packages/rex/src/schema/index.ts",
-      "to": "packages/rex/src/schema/validate.ts",
-      "type": "reexport",
-      "symbols": [
-        "PRDItemSchema",
-        "PRDDocumentSchema",
-        "RexConfigSchema",
-        "LogEntrySchema",
-        "validateDocument",
-        "validateConfig",
-        "validateLogEntry",
-        "formatValidationErrors"
-      ]
-    },
-    {
-      "from": "packages/rex/src/schema/index.ts",
-      "to": "packages/rex/src/schema/validate.ts",
-      "type": "type",
-      "symbols": [
-        "ValidationResult"
       ]
     },
     {
@@ -4924,22 +4967,22 @@
     {
       "from": "packages/rex/src/store/file-adapter.ts",
       "to": "packages/rex/src/schema/index.ts",
-      "type": "static",
-      "symbols": [
-        "validateDocument",
-        "validateConfig",
-        "validateLogEntry"
-      ]
-    },
-    {
-      "from": "packages/rex/src/store/file-adapter.ts",
-      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "PRDDocument",
         "PRDItem",
         "RexConfig",
         "LogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/file-adapter.ts",
+      "to": "packages/rex/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateDocument",
+        "validateConfig",
+        "validateLogEntry"
       ]
     },
     {
@@ -5131,22 +5174,22 @@
     {
       "from": "packages/rex/src/store/notion-adapter.ts",
       "to": "packages/rex/src/schema/index.ts",
-      "type": "static",
-      "symbols": [
-        "validateDocument",
-        "validateConfig",
-        "validateLogEntry"
-      ]
-    },
-    {
-      "from": "packages/rex/src/store/notion-adapter.ts",
-      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "PRDDocument",
         "PRDItem",
         "RexConfig",
         "LogEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/store/notion-adapter.ts",
+      "to": "packages/rex/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "validateDocument",
+        "validateConfig",
+        "validateLogEntry"
       ]
     },
     {
@@ -5882,6 +5925,55 @@
         "formatCLIError",
         "handleCLIError",
         "requireRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/mcp.test.ts",
+      "to": "packages/rex/src/cli/mcp.ts",
+      "type": "static",
+      "symbols": [
+        "createRexMcpServer",
+        "startMcpServer"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/mcp.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/mcp.test.ts",
+      "to": "packages/rex/src/public.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/mcp.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/mcp.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/mcp.test.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "ensureRexDir"
       ]
     },
     {
@@ -7682,7 +7774,8 @@
       "to": "packages/sourcevision/src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
-        "SV_DIR"
+        "SV_DIR",
+        "TOOL_VERSION"
       ]
     },
     {
@@ -7981,6 +8074,14 @@
         "Imports",
         "Zones",
         "Components"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/public.ts",
+      "to": "packages/sourcevision/src/cli/mcp.ts",
+      "type": "reexport",
+      "symbols": [
+        "createSourcevisionMcpServer"
       ]
     },
     {
@@ -9753,6 +9854,8 @@
         "analyzeZones",
         "assignByProximity",
         "computeStructureHash",
+        "computeZoneContentHash",
+        "computeGlobalContentHash",
         "generateStructuralInsights",
         "subdivideZone",
         "SUBDIVISION_THRESHOLD",
@@ -9769,6 +9872,7 @@
         "ImportEdge",
         "FileEntry",
         "Zone",
+        "Zones",
         "ZoneCrossing",
         "Finding",
         "FindingType"
@@ -9799,6 +9903,31 @@
       "type": "static",
       "symbols": [
         "CLIError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/cli/mcp.test.ts",
+      "to": "packages/sourcevision/src/cli/mcp.ts",
+      "type": "static",
+      "symbols": [
+        "createSourcevisionMcpServer",
+        "startMcpServer"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/cli/mcp.test.ts",
+      "to": "packages/sourcevision/src/public.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/cli/mcp.test.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES"
       ]
     },
     {
@@ -9935,6 +10064,25 @@
       "type": "type",
       "symbols": [
         "ServerContext"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/server/type-consistency.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "PRIORITY_ORDER",
+        "LEVEL_HIERARCHY"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/server/type-consistency.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Priority",
+        "ItemLevel",
+        "ItemStatus"
       ]
     },
     {
@@ -10170,9 +10318,13 @@
       "package": "@modelcontextprotocol/sdk",
       "importedBy": [
         "packages/rex/src/cli/mcp.ts",
-        "packages/sourcevision/src/cli/mcp.ts"
+        "packages/rex/tests/unit/cli/mcp.test.ts",
+        "packages/sourcevision/src/cli/mcp.ts",
+        "packages/sourcevision/tests/unit/cli/mcp.test.ts"
       ],
       "symbols": [
+        "Client",
+        "InMemoryTransport",
         "McpServer",
         "StdioServerTransport"
       ]
@@ -10478,6 +10630,7 @@
         "packages/rex/tests/unit/cli/commands/validate.test.ts",
         "packages/rex/tests/unit/cli/commands/verify.test.ts",
         "packages/rex/tests/unit/cli/errors.test.ts",
+        "packages/rex/tests/unit/cli/mcp.test.ts",
         "packages/rex/tests/unit/cli/output.test.ts",
         "packages/rex/tests/unit/cli/validate-input.test.ts",
         "packages/rex/tests/unit/core/canonical.test.ts",
@@ -10528,6 +10681,7 @@
         "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
         "packages/sourcevision/tests/unit/cli/errors.test.ts",
         "packages/sourcevision/tests/unit/cli/export-pdf.test.ts",
+        "packages/sourcevision/tests/unit/cli/mcp.test.ts",
         "packages/sourcevision/tests/unit/cli/output.test.ts",
         "packages/sourcevision/tests/unit/export/pdf-report.test.ts",
         "packages/sourcevision/tests/unit/schema/data-files.test.ts",
@@ -10537,6 +10691,7 @@
         "packages/sourcevision/tests/unit/server/routes-sourcevision.test.ts",
         "packages/sourcevision/tests/unit/server/routes-token-usage.test.ts",
         "packages/sourcevision/tests/unit/server/routes-validation.test.ts",
+        "packages/sourcevision/tests/unit/server/type-consistency.test.ts",
         "packages/sourcevision/tests/unit/server/websocket.test.ts",
         "packages/sourcevision/tests/unit/util/merge.test.ts",
         "packages/sourcevision/tests/unit/util/sort.test.ts",
@@ -10587,7 +10742,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 1127,
+    "totalEdges": 1145,
     "totalExternal": 15,
     "circularCount": 0,
     "circulars": [],
@@ -10601,11 +10756,11 @@
         "count": 23
       },
       {
-        "path": "packages/rex/src/cli/output.ts",
-        "count": 22
+        "path": "packages/rex/src/store/index.ts",
+        "count": 23
       },
       {
-        "path": "packages/rex/src/store/index.ts",
+        "path": "packages/rex/src/cli/output.ts",
         "count": 22
       },
       {
@@ -10614,11 +10769,11 @@
       },
       {
         "path": "packages/rex/src/schema/index.ts",
-        "count": 20
+        "count": 21
       },
       {
         "path": "packages/rex/src/core/canonical.ts",
-        "count": 15
+        "count": 16
       },
       {
         "path": "packages/sourcevision/src/viewer/components/logos.ts",
@@ -10634,7 +10789,7 @@
       },
       {
         "path": "packages/sourcevision/src/schema/data-files.ts",
-        "count": 11
+        "count": 12
       },
       {
         "path": "packages/sourcevision/src/viewer/components/constants.ts",
@@ -10673,6 +10828,6 @@
         "count": 7
       }
     ],
-    "avgImportsPerFile": 3.49
+    "avgImportsPerFile": 3.5
   }
 }

@@ -5743,7 +5743,7 @@
             {
               "id": "79e9634f-ee12-435f-b2b2-327eb2ca5409",
               "title": "Add StreamableHTTPServerTransport handler for rex MCP",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Refactor `packages/rex/src/cli/mcp.ts` so the McpServer and tool registrations can be reused with either stdio or HTTP transport. Export a function that creates the server without connecting a transport, so the web server layer can mount it on a StreamableHTTPServerTransport. Keep the existing `startMcpServer()` with stdio for backward compatibility.",
               "acceptanceCriteria": [
@@ -5751,12 +5751,14 @@
                 "Existing `rex mcp .` stdio command still works",
                 "Server factory function is exported for external transport mounting"
               ],
-              "priority": "high"
+              "priority": "high",
+              "startedAt": "2026-02-10T02:36:14.763Z",
+              "completedAt": "2026-02-10T02:42:31.613Z"
             },
             {
               "id": "dfa83390-2927-4ce7-8bbd-45c9b60345d1",
               "title": "Add StreamableHTTPServerTransport handler for sourcevision MCP",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Same as the rex task — refactor `packages/sourcevision/src/cli/mcp.ts` so the McpServer can be mounted on either stdio or HTTP transport. Export a factory function. Keep stdio backward-compatible.",
               "acceptanceCriteria": [
@@ -5764,7 +5766,9 @@
                 "Existing `sv mcp .` stdio command still works",
                 "Server factory function is exported for external transport mounting"
               ],
-              "priority": "high"
+              "priority": "high",
+              "startedAt": "2026-02-10T02:45:15.884Z",
+              "completedAt": "2026-02-10T02:48:19.247Z"
             },
             {
               "id": "3e31381a-d48d-4223-88f3-d9a121893d46",
@@ -5852,14 +5856,15 @@
             {
               "id": "4f06c7f7-a88c-40fa-ba8c-8cadf8e38899",
               "title": "Audit viewer code and map what belongs where",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Catalog all viewer-related code currently in `packages/sourcevision/`: server code (start.ts, routes-*.ts, websocket.ts, types.ts), viewer assets (HTML, CSS, JS), and their dependencies on sourcevision internals vs rex/hench. Determine which pieces are sourcevision-specific vs n-dx-level. This informs the extraction plan.",
               "acceptanceCriteria": [
                 "Clear inventory of all viewer files and their cross-package dependencies",
                 "Decision documented: packages/web vs monorepo root vs other location"
               ],
-              "priority": "high"
+              "priority": "high",
+              "startedAt": "2026-02-10T03:35:10.243Z"
             },
             {
               "id": "ae7d3e36-b63f-43e9-9e81-9211ba0a83f8",
@@ -5890,7 +5895,7 @@
                 "API endpoint or MCP tool supports the consolidation operation",
                 "Execution log records the merge with original item IDs"
               ],
-              "priority": "medium",
+              "priority": "low",
               "tags": [
                 "rex",
                 "viewer",

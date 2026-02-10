@@ -2,23 +2,23 @@
   "files": [
     {
       "path": ".claude/settings.local.json",
-      "size": 1423,
+      "size": 1541,
       "language": "JSON",
-      "lineCount": 43,
-      "hash": "78a0894ce383c4c243c758ef8dac1f0b33757d11447d68af83fe680fc88af4d0",
+      "lineCount": 46,
+      "hash": "997c260a864d53737220ff471667c25f97c1613b95cf0a284e4187a5871ec156",
       "role": "other",
       "category": ".claude",
-      "lastModified": 1770673839844
+      "lastModified": 1770688393303
     },
     {
       "path": ".gitignore",
-      "size": 69,
+      "size": 81,
       "language": "Other",
-      "lineCount": 6,
-      "hash": "fd6afea2388e57279116489e69e8c944c1c318ba6a566457900db2f91010a625",
+      "lineCount": 8,
+      "hash": "2dff814aed3bc149d1f5d014ebc6ad4aebc5b98007738ae8ea02d6ba173ab319",
       "role": "config",
       "category": "root",
-      "lastModified": 1770656019343
+      "lastModified": 1770687444848
     },
     {
       "path": ".hench/config.json",
@@ -52,13 +52,13 @@
     },
     {
       "path": ".rex/execution-log.jsonl",
-      "size": 399351,
+      "size": 430963,
       "language": "Other",
-      "lineCount": 1365,
-      "hash": "f6f7f8655233ebb2af98402b844def621644b42cff5d6e7860172c6540c34a64",
+      "lineCount": 1445,
+      "hash": "0b65be37b4b345c9556e22c1304983fb68457caa5269b3ee14188d94f1b67a0d",
       "role": "other",
       "category": ".rex",
-      "lastModified": 1770670922387
+      "lastModified": 1770691725230
     },
     {
       "path": ".rex/pending-proposals.json",
@@ -72,13 +72,13 @@
     },
     {
       "path": ".rex/prd.json",
-      "size": 246679,
+      "size": 282521,
       "language": "JSON",
-      "lineCount": 5579,
-      "hash": "bacd73d982b4d231056ff5db818096d864260575643b70d2dfa1dbbe8686cb87",
+      "lineCount": 6035,
+      "hash": "c9eda328e4d2fb8ba274c31427e40c23e115f243bdc66481e8b5e0b9480a58e3",
       "role": "other",
       "category": ".rex",
-      "lastModified": 1770671989258
+      "lastModified": 1770691725222
     },
     {
       "path": ".rex/workflow.md",
@@ -89,1266 +89,6 @@
       "role": "docs",
       "category": ".rex",
       "lastModified": 1770145383568
-    },
-    {
-      "path": ".sv2/CONTEXT.md",
-      "size": 13703,
-      "language": "Markdown",
-      "lineCount": 145,
-      "hash": "79bbe1e5b27bfe83b67610872e9e1c38160e65d0bd2bd1c491cd9d572d7ed7e4",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902591
-    },
-    {
-      "path": ".sv2/components.json",
-      "size": 3216,
-      "language": "JSON",
-      "lineCount": 130,
-      "hash": "8216f92706fb879f3086b4f8d3ae2f0ea1ea97a6374bbf920b59c35b7b3e9f7b",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902574
-    },
-    {
-      "path": ".sv2/imports.json",
-      "size": 256880,
-      "language": "JSON",
-      "lineCount": 9793,
-      "hash": "7d20de6e54ac327aa309e4ea5323d388857fb7913e74529fbc1c7386cfcd7e54",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655889309
-    },
-    {
-      "path": ".sv2/inventory.json",
-      "size": 142002,
-      "language": "JSON",
-      "lineCount": 4449,
-      "hash": "1574966018a64aa91e57e10960c24841f05ccb8f930d20ad320e0b19b1a84f2f",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655889304
-    },
-    {
-      "path": ".sv2/llms.txt",
-      "size": 47514,
-      "language": "Text",
-      "lineCount": 740,
-      "hash": "f9ad955039e8f2fd1164053be40e67a87c3c0f5fc5791aab302020591734785d",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902589
-    },
-    {
-      "path": ".sv2/manifest.json",
-      "size": 1195,
-      "language": "JSON",
-      "lineCount": 46,
-      "hash": "ec5d6a3740b58638b83f5b2f060a4a964a312c5a53086a0720e6942f26df8f12",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902599
-    },
-    {
-      "path": ".sv2/zones.json",
-      "size": 91399,
-      "language": "JSON",
-      "lineCount": 1694,
-      "hash": "73de6ccba105b8c4e243bd39b960f7a7202e784de90a727750932ad618bfbc59",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902565
-    },
-    {
-      "path": ".sv2/zones/agent-core/context.md",
-      "size": 16139,
-      "language": "Markdown",
-      "lineCount": 145,
-      "hash": "85e242d06eda1556897ee3eec51acf5571d1d09f84d38b3bbc6bf05ff9226f84",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655842630
-    },
-    {
-      "path": ".sv2/zones/agent-core/summary.json",
-      "size": 2051,
-      "language": "JSON",
-      "lineCount": 47,
-      "hash": "34e10adeff62db887e185d5888ed075da4b516a7a91194a318745de816048003",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655842631
-    },
-    {
-      "path": ".sv2/zones/agent-tools-layer/context.md",
-      "size": 6069,
-      "language": "Markdown",
-      "lineCount": 87,
-      "hash": "1bc3053256a7e6a0590294c0cc64a0a26dbc967af10ae85043ee70c0a6000566",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770498451392
-    },
-    {
-      "path": ".sv2/zones/agent-tools-layer/summary.json",
-      "size": 1030,
-      "language": "JSON",
-      "lineCount": 29,
-      "hash": "c60be730dc5cde65b101d6e3351ae38a4d4daba72dba61bfedc46f0325fe5c0e",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770498451392
-    },
-    {
-      "path": ".sv2/zones/application-entry/context.md",
-      "size": 1883,
-      "language": "Markdown",
-      "lineCount": 54,
-      "hash": "5b9e28b68d35c9792a70a54aa2b4d789f804802b579c51b5fd325b02f815ed8e",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770498451392
-    },
-    {
-      "path": ".sv2/zones/application-entry/summary.json",
-      "size": 343,
-      "language": "JSON",
-      "lineCount": 16,
-      "hash": "9eb15aa6498deda1fe7b21574b79f218f4ca5883e789f777c22d9c7b63b989fe",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770498451392
-    },
-    {
-      "path": ".sv2/zones/application-orchestration/context.md",
-      "size": 14353,
-      "language": "Markdown",
-      "lineCount": 147,
-      "hash": "cc95c65df4dcba1f24279cd806b3bc298a61a232d5fcbc25a5e910e6756c9df0",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770498451393
-    },
-    {
-      "path": ".sv2/zones/application-orchestration/summary.json",
-      "size": 2104,
-      "language": "JSON",
-      "lineCount": 50,
-      "hash": "7924367f1745c2bb83385fd145ddefa9dddd5664479ed5698bad4eaecbaa9c2a",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770498451393
-    },
-    {
-      "path": ".sv2/zones/claude-api-client/context.md",
-      "size": 6996,
-      "language": "Markdown",
-      "lineCount": 97,
-      "hash": "8ba48578b88b0c73161ed68e1b64722a7f201f7db771c48a4af29c0e1a099a2d",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770498451394
-    },
-    {
-      "path": ".sv2/zones/claude-api-client/summary.json",
-      "size": 977,
-      "language": "JSON",
-      "lineCount": 25,
-      "hash": "61bef9de3379277215b50510d899c8c7b6e111f442d9a9daa7bdb048ff733edd",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770498451394
-    },
-    {
-      "path": ".sv2/zones/claude-client/context.md",
-      "size": 7952,
-      "language": "Markdown",
-      "lineCount": 103,
-      "hash": "725c46531aad42a3d593f54997d76c1e2fd181e4984c7309ab45ec6cf5b35ea3",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902592
-    },
-    {
-      "path": ".sv2/zones/claude-client/summary.json",
-      "size": 1003,
-      "language": "JSON",
-      "lineCount": 27,
-      "hash": "c9b367c16aad7c58e3f49f1f63cdd4ed708b619fe35847ad7bf50dfe622f5d27",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902592
-    },
-    {
-      "path": ".sv2/zones/claude-integration/context.md",
-      "size": 8431,
-      "language": "Markdown",
-      "lineCount": 106,
-      "hash": "da11ae009ded1c1b6129ad49851e6b6756541f7ec47af1cc26fb3f4b64298568",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655842631
-    },
-    {
-      "path": ".sv2/zones/claude-integration/summary.json",
-      "size": 1081,
-      "language": "JSON",
-      "lineCount": 27,
-      "hash": "fcacf28dfc2a38b6cde38193863ddbfdd5771af0822c6e0a65036086d2ae24ed",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655842631
-    },
-    {
-      "path": ".sv2/zones/cli-infrastructure/context.md",
-      "size": 15655,
-      "language": "Markdown",
-      "lineCount": 153,
-      "hash": "ca4169fed41b9eda93a1ec211f36bfc964e2559f67e093c9bb3d9bfbf7113dc4",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655842632
-    },
-    {
-      "path": ".sv2/zones/cli-infrastructure/summary.json",
-      "size": 1960,
-      "language": "JSON",
-      "lineCount": 47,
-      "hash": "5d04384505c88cd8329513ff57dbec686ebdcd8ddb138dd437e61193b555a6c4",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655842632
-    },
-    {
-      "path": ".sv2/zones/completion-validation/context.md",
-      "size": 4011,
-      "language": "Markdown",
-      "lineCount": 68,
-      "hash": "6195daec237ee51733f01d1c3a35ad94af8bda07b77f52fad84bbb38127492a8",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770498451394
-    },
-    {
-      "path": ".sv2/zones/completion-validation/summary.json",
-      "size": 754,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "f478be97dda38764fb6230b076962f7462b3fbcaab46a8f9fc4cfd5dc7c8b334",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770498451394
-    },
-    {
-      "path": ".sv2/zones/hench-2/context.md",
-      "size": 3838,
-      "language": "Markdown",
-      "lineCount": 61,
-      "hash": "da7fb02241267f0cb0a58386ac981567525f50e78f6164707aa88dc436a3e3dd",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902594
-    },
-    {
-      "path": ".sv2/zones/hench-2/summary.json",
-      "size": 662,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "c78cb3ae82098be3789c8b26494e0aafb1af303634cec776798c6499ab77fc23",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902594
-    },
-    {
-      "path": ".sv2/zones/hench-3/context.md",
-      "size": 14510,
-      "language": "Markdown",
-      "lineCount": 141,
-      "hash": "2c26785bbba7bbf517812ed377cc9d632c714c84064bdecc9e20a950b13d79d5",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902595
-    },
-    {
-      "path": ".sv2/zones/hench-3/summary.json",
-      "size": 1883,
-      "language": "JSON",
-      "lineCount": 47,
-      "hash": "02c3be4f1145a714e9b0e36a8cde12932ca41c5cf455d8a05736d52ef616f825",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902595
-    },
-    {
-      "path": ".sv2/zones/hench-4/context.md",
-      "size": 5920,
-      "language": "Markdown",
-      "lineCount": 82,
-      "hash": "764e41a058dc2b976b4e08335721002dfdb58286f67765859cba7dbc90b8339b",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902595
-    },
-    {
-      "path": ".sv2/zones/hench-4/summary.json",
-      "size": 930,
-      "language": "JSON",
-      "lineCount": 29,
-      "hash": "ad8679f202e22168fbb78e89f2ae7e4c6a0e2fa45578f9981cb09b42bf60cf1e",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902596
-    },
-    {
-      "path": ".sv2/zones/hench-5/context.md",
-      "size": 4160,
-      "language": "Markdown",
-      "lineCount": 67,
-      "hash": "3d894d3b582f9d9065dd7e18b358fe99fc09ae713f5f349b368b2acb7ef177e2",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902596
-    },
-    {
-      "path": ".sv2/zones/hench-5/summary.json",
-      "size": 619,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "5ffc01ed687c34103815dda7a39cee32cafcca00b1b4126c96237554c932be34",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902596
-    },
-    {
-      "path": ".sv2/zones/hench-cli/context.md",
-      "size": 6383,
-      "language": "Markdown",
-      "lineCount": 83,
-      "hash": "d283b9682e28504660d2dee23d3bbeb4c573d6b31e45dc23c617c2159ca04c37",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770266166478
-    },
-    {
-      "path": ".sv2/zones/hench-cli/summary.json",
-      "size": 1058,
-      "language": "JSON",
-      "lineCount": 29,
-      "hash": "1b55a5ff592931b0344d389e285d683c6e5c81cba2f9737bd3afdec09105d669",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770266166478
-    },
-    {
-      "path": ".sv2/zones/hench-completion/context.md",
-      "size": 2677,
-      "language": "Markdown",
-      "lineCount": 55,
-      "hash": "978df843c62719ec3a5e6f5461cd1c1568d8da655c0e7c6bd03066ac6f1b9ccc",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770311983956
-    },
-    {
-      "path": ".sv2/zones/hench-completion/summary.json",
-      "size": 507,
-      "language": "JSON",
-      "lineCount": 17,
-      "hash": "db9a7f42ccac4391edbd60ac2784f77ce433bc9acaab2f0e5a3d6dc804ec0810",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770311983956
-    },
-    {
-      "path": ".sv2/zones/hench-core/context.md",
-      "size": 20772,
-      "language": "Markdown",
-      "lineCount": 225,
-      "hash": "27c9e7f2f468ee6c6c4276da26b8f9f5a8a87584af2ec6aca17b39da70e40651",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770311983957
-    },
-    {
-      "path": ".sv2/zones/hench-core/summary.json",
-      "size": 2887,
-      "language": "JSON",
-      "lineCount": 66,
-      "hash": "2bcb9345d212d1267d73d489d11a3dc9b102f643ba27d49e2749fc8315729d03",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770311983957
-    },
-    {
-      "path": ".sv2/zones/hench-guard/context.md",
-      "size": 6500,
-      "language": "Markdown",
-      "lineCount": 89,
-      "hash": "0d573da5e6a72930ac0255ee849ce5625328246a8482ece7325a4b8e5e2a740a",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770311983957
-    },
-    {
-      "path": ".sv2/zones/hench-guard/summary.json",
-      "size": 934,
-      "language": "JSON",
-      "lineCount": 27,
-      "hash": "7e38da822c4860f570c570424e5aea253988e62793b738ef6eff77da8dd1bb91",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770311983957
-    },
-    {
-      "path": ".sv2/zones/hench-integration/context.md",
-      "size": 3302,
-      "language": "Markdown",
-      "lineCount": 60,
-      "hash": "7347af69c5dd94dc73420aa6230b5147f23c606d5f910aba7ac5567af0c493fc",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770300189144
-    },
-    {
-      "path": ".sv2/zones/hench-integration/summary.json",
-      "size": 650,
-      "language": "JSON",
-      "lineCount": 20,
-      "hash": "326de94e915002a096e9adbb729abaf5c306fb8e803a34173dd88170326f92e1",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770300189145
-    },
-    {
-      "path": ".sv2/zones/hench-tooling/context.md",
-      "size": 6031,
-      "language": "Markdown",
-      "lineCount": 88,
-      "hash": "7bee9d9ed948ff0661430f1d6790fd6b35ba5acbef146b02c713fd0ca322021e",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770300189145
-    },
-    {
-      "path": ".sv2/zones/hench-tooling/summary.json",
-      "size": 934,
-      "language": "JSON",
-      "lineCount": 27,
-      "hash": "7bc05be6139445061292f39fa84d81fc9dfb44b9f0ecee7fed4823e53b1b3c7d",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770300189145
-    },
-    {
-      "path": ".sv2/zones/hench/context.md",
-      "size": 15743,
-      "language": "Markdown",
-      "lineCount": 143,
-      "hash": "aa8ba03425d26e2431ed0198654196be28684e5b1407229cddab5ca6384f0c94",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902593
-    },
-    {
-      "path": ".sv2/zones/hench/summary.json",
-      "size": 1980,
-      "language": "JSON",
-      "lineCount": 47,
-      "hash": "41970ed6ef456d66810a0aba1d4087c5f7c74eaa8a1742b4202238060d3afa6c",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902593
-    },
-    {
-      "path": ".sv2/zones/orchestration-layer/context.md",
-      "size": 2365,
-      "language": "Markdown",
-      "lineCount": 54,
-      "hash": "9a770a0f4853bce16bd7ea1e455bea1e99be46ea7d4846caf236f4b1ea5c647c",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655842632
-    },
-    {
-      "path": ".sv2/zones/orchestration-layer/summary.json",
-      "size": 326,
-      "language": "JSON",
-      "lineCount": 16,
-      "hash": "255c9f17edc808f5baa6c3db25cfd650da7eeb96fff2ca33dc57c69cf8ac4dda",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655842632
-    },
-    {
-      "path": ".sv2/zones/orchestration/context.md",
-      "size": 1211,
-      "language": "Markdown",
-      "lineCount": 45,
-      "hash": "3eddfe46f493eb5a261626e02cf20853b0c9003e9e744e58b380dc680138c558",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770300189145
-    },
-    {
-      "path": ".sv2/zones/orchestration/summary.json",
-      "size": 320,
-      "language": "JSON",
-      "lineCount": 15,
-      "hash": "2424aa24ba31039ae13ce7bf5a41079d1c00944739921cc03428e1e682495041",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770300189145
-    },
-    {
-      "path": ".sv2/zones/packages-rex:rex-cli/context.md",
-      "size": 19402,
-      "language": "Markdown",
-      "lineCount": 198,
-      "hash": "cf852109edca445c045d04e7938a0c2848431bff94004090590e83931d8b5ed7",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902596
-    },
-    {
-      "path": ".sv2/zones/packages-rex:rex-cli/summary.json",
-      "size": 2067,
-      "language": "JSON",
-      "lineCount": 48,
-      "hash": "9d99c74022a02155a6868017915665ce29cc1799d42869d1e8c6e16497ff9fcd",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902596
-    },
-    {
-      "path": ".sv2/zones/packages-sourcevision:analysis-engine/context.md",
-      "size": 21484,
-      "language": "Markdown",
-      "lineCount": 176,
-      "hash": "c03030807d84a3c26c2eb7aa68737c6ad73ce66f1d9b5f7b6ae979e83f1becc2",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902597
-    },
-    {
-      "path": ".sv2/zones/packages-sourcevision:analysis-engine/summary.json",
-      "size": 2505,
-      "language": "JSON",
-      "lineCount": 51,
-      "hash": "4450ba1fc72cf9b8c02a7e77ae677ce648ab78945e55a4dc0a43eb2248a62602",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902597
-    },
-    {
-      "path": ".sv2/zones/packages-sourcevision:interactive-viewer/context.md",
-      "size": 15093,
-      "language": "Markdown",
-      "lineCount": 150,
-      "hash": "b5a0907bfed03f8dba09d55910a5c83fa5f19e10d0e941f5bd0055304ee2a0ac",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902597
-    },
-    {
-      "path": ".sv2/zones/packages-sourcevision:interactive-viewer/summary.json",
-      "size": 3221,
-      "language": "JSON",
-      "lineCount": 60,
-      "hash": "bb6f0c72a2b77fd77e42adde980c9a3622ccf046f31ef03eb51dbc3e09a7ad5d",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902598
-    },
-    {
-      "path": ".sv2/zones/packages-sourcevision:test-fixtures/context.md",
-      "size": 3381,
-      "language": "Markdown",
-      "lineCount": 49,
-      "hash": "671f37c8cc718b3045a30a7d03a91b116ac33c68b468c9c99eef644d8ad85820",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902598
-    },
-    {
-      "path": ".sv2/zones/packages-sourcevision:test-fixtures/summary.json",
-      "size": 953,
-      "language": "JSON",
-      "lineCount": 19,
-      "hash": "ff027d5bb4400612e9313bc985d83c7d5ca3700a93c6bdd305b6d7ee2cef13bc",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902598
-    },
-    {
-      "path": ".sv2/zones/packages-sourcevision:test-suite/context.md",
-      "size": 5519,
-      "language": "Markdown",
-      "lineCount": 58,
-      "hash": "3f21bae8916ec549240f486f1426cbfed1c4e1335a0228ce372e66dded480f5f",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902598
-    },
-    {
-      "path": ".sv2/zones/packages-sourcevision:test-suite/summary.json",
-      "size": 739,
-      "language": "JSON",
-      "lineCount": 19,
-      "hash": "31b646de8e8e8cad40202f1897feb8218678443c88a0ec0e8c1126c302d82333",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902598
-    },
-    {
-      "path": ".sv2/zones/root-orchestration/context.md",
-      "size": 1670,
-      "language": "Markdown",
-      "lineCount": 48,
-      "hash": "b1061831a2954f308f9cab1c2e3da640f9b9ad1bd3da3877b7d086536f269245",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770311983959
-    },
-    {
-      "path": ".sv2/zones/root-orchestration/summary.json",
-      "size": 342,
-      "language": "JSON",
-      "lineCount": 15,
-      "hash": "55b6244af5de1b750fc5caa71cbeca2273e9f0cd887269e5d04960ccb72211cc",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770311983959
-    },
-    {
-      "path": ".sv2/zones/root/context.md",
-      "size": 1831,
-      "language": "Markdown",
-      "lineCount": 51,
-      "hash": "e25a76674466c156f5b4ccf3cb68424ff62618648b73958a1f855b68179cf39d",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655902598
-    },
-    {
-      "path": ".sv2/zones/root/summary.json",
-      "size": 256,
-      "language": "JSON",
-      "lineCount": 16,
-      "hash": "38da593f438cc494a25997dc2869369f12bf325c4e64546552ac24f64264a6b4",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655902598
-    },
-    {
-      "path": ".sv2/zones/specialized-tools/context.md",
-      "size": 5281,
-      "language": "Markdown",
-      "lineCount": 79,
-      "hash": "f978a4f13ca79dc3e09ca49a5f93c45eb52c3394d5d50e0d0112015c86db051c",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655842635
-    },
-    {
-      "path": ".sv2/zones/specialized-tools/summary.json",
-      "size": 735,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "08c890519853bdaeaf4c481ac20c54d4656fe79d24232b8c5aecf44c8dc118c6",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655842635
-    },
-    {
-      "path": ".sv2/zones/task-completion/context.md",
-      "size": 4486,
-      "language": "Markdown",
-      "lineCount": 70,
-      "hash": "fd2bcda544f0b8151b20a5ad05919527b7a52db2e498340e27dc038a172c95bc",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655842635
-    },
-    {
-      "path": ".sv2/zones/task-completion/summary.json",
-      "size": 731,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "2bbe182e5e3d5c884a06ddce61cfe24831bb256357600254ae3dc0f79dae7dc2",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655842636
-    },
-    {
-      "path": ".sv2/zones/tool-security/context.md",
-      "size": 6721,
-      "language": "Markdown",
-      "lineCount": 92,
-      "hash": "ab0e09bfbcc2454fb1d4c37c67e27624372dde4cce6fc368a220a09172c17d45",
-      "role": "docs",
-      "category": ".sv2",
-      "lastModified": 1770655842636
-    },
-    {
-      "path": ".sv2/zones/tool-security/summary.json",
-      "size": 1042,
-      "language": "JSON",
-      "lineCount": 29,
-      "hash": "edffd68069059b98230ef554bc6d2f3156bbf15b21c84a24942c3426e821a7dd",
-      "role": "other",
-      "category": ".sv2",
-      "lastModified": 1770655842636
-    },
-    {
-      "path": ".sv3/CONTEXT.md",
-      "size": 10345,
-      "language": "Markdown",
-      "lineCount": 102,
-      "hash": "988306a76af45b7f69ca1c51250b3cb05789be0705fc0e6b3a00ec84e0119e5c",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625381
-    },
-    {
-      "path": ".sv3/components.json",
-      "size": 3216,
-      "language": "JSON",
-      "lineCount": 130,
-      "hash": "8216f92706fb879f3086b4f8d3ae2f0ea1ea97a6374bbf920b59c35b7b3e9f7b",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625365
-    },
-    {
-      "path": ".sv3/imports.json",
-      "size": 281106,
-      "language": "JSON",
-      "lineCount": 10678,
-      "hash": "22aadb8fea6c02d75478f29ee3e56934a5ece37afa70d1697a8c9da08b74de4e",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686586374
-    },
-    {
-      "path": ".sv3/inventory.json",
-      "size": 173336,
-      "language": "JSON",
-      "lineCount": 5450,
-      "hash": "d9d21ef42beeb20caa4662a27f5544d5b1ea24461b5b4de7030ec0481465b9a5",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686586370
-    },
-    {
-      "path": ".sv3/llms.txt",
-      "size": 46652,
-      "language": "Text",
-      "lineCount": 706,
-      "hash": "451aa38dc8123480a0f5560895b565f12b349f8cd61d4962fa2dc8881c63ae75",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625379
-    },
-    {
-      "path": ".sv3/manifest.json",
-      "size": 1274,
-      "language": "JSON",
-      "lineCount": 48,
-      "hash": "2fc7f30383aa9ca28f9aca3e9d173894c3bae1c01983b6bdc1e06880ed83feba",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625390
-    },
-    {
-      "path": ".sv3/zones.json",
-      "size": 54370,
-      "language": "JSON",
-      "lineCount": 928,
-      "hash": "7779ba64783eb948c0d6afacbfaed7568875c6404499c1f051ff172fe563e651",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625356
-    },
-    {
-      "path": ".sv3/zones/agent-tools-and-security/context.md",
-      "size": 7206,
-      "language": "Markdown",
-      "lineCount": 93,
-      "hash": "d0072e7f93c74b2e3423b3f87fcb5ec58c6838db44a87fd182794f98a628db05",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672592444
-    },
-    {
-      "path": ".sv3/zones/agent-tools-and-security/summary.json",
-      "size": 1047,
-      "language": "JSON",
-      "lineCount": 29,
-      "hash": "03740773fc6d701720a50afcc05e08adc60d2d6c30437e970c3b698634020545",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672592444
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/context.md",
-      "size": 33361,
-      "language": "Markdown",
-      "lineCount": 353,
-      "hash": "61e6c3d621902c590c730878ce9f90528ed6393f6a792ee908eb39020013cfb2",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625382
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/summary.json",
-      "size": 4454,
-      "language": "JSON",
-      "lineCount": 92,
-      "hash": "e6573651a9126e0d983bb082468e11ce77432df5abfd400e3f47a3af1a9e67ab",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625383
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/zones/tests-2/context.md",
-      "size": 2108,
-      "language": "Markdown",
-      "lineCount": 40,
-      "hash": "3f10a00cb124b6777e5a547d97d39864bf90494bb24443aa435e66881432d18e",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625384
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/zones/tests-2/summary.json",
-      "size": 668,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "f493c815e15040637f88127628d8ac88d1a903c4c8f6078129b7ca9e82121e86",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625385
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/zones/tests-3/context.md",
-      "size": 3245,
-      "language": "Markdown",
-      "lineCount": 54,
-      "hash": "e417b119930022d4a8508f7dba5260aeae7b82ac028d482bba75c02c14c2e272",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625385
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/zones/tests-3/summary.json",
-      "size": 936,
-      "language": "JSON",
-      "lineCount": 29,
-      "hash": "7b11623a5ed048e21258e09578927d91f95fe9a772d7419ba74b9d9dfc92a13c",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625385
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/zones/tests-4/context.md",
-      "size": 8902,
-      "language": "Markdown",
-      "lineCount": 108,
-      "hash": "55f5c4b89fa9320226ec19428cbe6751a1f42a2cfa4a71d54385ac4ffe6b5acf",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625385
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/zones/tests-4/summary.json",
-      "size": 1813,
-      "language": "JSON",
-      "lineCount": 44,
-      "hash": "3354305ccf9ad504c020d240c0f8807cd69a7dc25c0b1cb5c1ce83650c3a2734",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625385
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/zones/tests/context.md",
-      "size": 12375,
-      "language": "Markdown",
-      "lineCount": 128,
-      "hash": "854c44d529c37f56e24dd87c4fbb11e5d383dce4cbbf84e01f936043913eeb51",
-      "role": "test",
-      "category": ".sv3",
-      "lastModified": 1770686625384
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/zones/tests/summary.json",
-      "size": 2101,
-      "language": "JSON",
-      "lineCount": 50,
-      "hash": "62ee735e7385e57a6e546d2b3a636f1f1b9801fd10d301a72324591f33e6bf73",
-      "role": "test",
-      "category": ".sv3",
-      "lastModified": 1770686625384
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/zones/tools/context.md",
-      "size": 1590,
-      "language": "Markdown",
-      "lineCount": 36,
-      "hash": "bd4772c68f932cbd02517fadbf7e9787cc88130585bdc9d25fba4f7a7c8b1d6f",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625386
-    },
-    {
-      "path": ".sv3/zones/autonomous-agent-core/zones/tools/summary.json",
-      "size": 623,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "5406a760724cd579443e69f1e5f913b4ea0ee99bc964f3da2e2e070fd5d3b3cd",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625386
-    },
-    {
-      "path": ".sv3/zones/claude-api-abstraction/context.md",
-      "size": 7652,
-      "language": "Markdown",
-      "lineCount": 99,
-      "hash": "ae73fc89e258ce2256c196970a033feb8887ddd64abdf36a9498719bef237bbc",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625386
-    },
-    {
-      "path": ".sv3/zones/claude-api-abstraction/summary.json",
-      "size": 1155,
-      "language": "JSON",
-      "lineCount": 27,
-      "hash": "c0dd75ae73a063a81beefe4cdcf00e92c472fe1d205dae6191a9bddd2d619fdd",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625386
-    },
-    {
-      "path": ".sv3/zones/claude-client/context.md",
-      "size": 8838,
-      "language": "Markdown",
-      "lineCount": 109,
-      "hash": "f799fbab0734827d15fe6a8571cec1060ee40b1506ad05602e0b3d7edccb61b8",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672894540
-    },
-    {
-      "path": ".sv3/zones/claude-client/summary.json",
-      "size": 1003,
-      "language": "JSON",
-      "lineCount": 27,
-      "hash": "c9b367c16aad7c58e3f49f1f63cdd4ed708b619fe35847ad7bf50dfe622f5d27",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672894540
-    },
-    {
-      "path": ".sv3/zones/hench-2/context.md",
-      "size": 4352,
-      "language": "Markdown",
-      "lineCount": 65,
-      "hash": "2d53a8e0ef14ab99d15e77208645d0bc5ea8c90ff1715537a54c9b283f67f9f1",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672894541
-    },
-    {
-      "path": ".sv3/zones/hench-2/summary.json",
-      "size": 662,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "c78cb3ae82098be3789c8b26494e0aafb1af303634cec776798c6499ab77fc23",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672894542
-    },
-    {
-      "path": ".sv3/zones/hench-3/context.md",
-      "size": 6251,
-      "language": "Markdown",
-      "lineCount": 83,
-      "hash": "7f53f12cf6989542dd93e58e3257c089b605960b8be7f5e236c2f38657c0b7e0",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672894542
-    },
-    {
-      "path": ".sv3/zones/hench-3/summary.json",
-      "size": 930,
-      "language": "JSON",
-      "lineCount": 29,
-      "hash": "62779d53dbc4a4f06a8d4f105d4dd6939ae09d71b7ffba5f302fa51010fa6ea6",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672894542
-    },
-    {
-      "path": ".sv3/zones/hench-4/context.md",
-      "size": 14041,
-      "language": "Markdown",
-      "lineCount": 146,
-      "hash": "5b87513179398ad48bdf7b6ad028e3a2a319f4e83146a2c96b99fcb02f8e68f8",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672894543
-    },
-    {
-      "path": ".sv3/zones/hench-4/summary.json",
-      "size": 1809,
-      "language": "JSON",
-      "lineCount": 44,
-      "hash": "bfa6db826be1213cef95584a6594b2c44d7e658381314d8e79f57008dc419067",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672894543
-    },
-    {
-      "path": ".sv3/zones/hench-5/context.md",
-      "size": 4397,
-      "language": "Markdown",
-      "lineCount": 66,
-      "hash": "64f8b3c1e085aac4e289b51371b03f082318832532baef72ad236a8daa886809",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672894543
-    },
-    {
-      "path": ".sv3/zones/hench-5/summary.json",
-      "size": 619,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "5ffc01ed687c34103815dda7a39cee32cafcca00b1b4126c96237554c932be34",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672894543
-    },
-    {
-      "path": ".sv3/zones/hench-cli-interface/context.md",
-      "size": 15300,
-      "language": "Markdown",
-      "lineCount": 153,
-      "hash": "59821582bb383f84d1c36ed442ae06c7cdd7a9bca75a4f67a119f4cc43dea540",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672592445
-    },
-    {
-      "path": ".sv3/zones/hench-cli-interface/summary.json",
-      "size": 1893,
-      "language": "JSON",
-      "lineCount": 44,
-      "hash": "a8a3d210e012b050879513cd0836c35c96dd4fc4cbee004ab37ba4cd1fe4c92c",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672592445
-    },
-    {
-      "path": ".sv3/zones/hench-system-tools/context.md",
-      "size": 5692,
-      "language": "Markdown",
-      "lineCount": 78,
-      "hash": "0e873bd6353e2d2d5126b6b09afeb5ffd5ea51013a05814ff53dc106e6d3a135",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672592446
-    },
-    {
-      "path": ".sv3/zones/hench-system-tools/summary.json",
-      "size": 727,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "033f329235ac58fd5c639d948ed82e0b15cf2f9331bf4c47e862b07116d0241f",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672592446
-    },
-    {
-      "path": ".sv3/zones/hench/context.md",
-      "size": 19350,
-      "language": "Markdown",
-      "lineCount": 170,
-      "hash": "58fb98f17924dd1564ab888e1c0814c97c09d58053359bdd7d1717fa882827df",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672894541
-    },
-    {
-      "path": ".sv3/zones/hench/summary.json",
-      "size": 2095,
-      "language": "JSON",
-      "lineCount": 50,
-      "hash": "3979285f1559e0f2d2ce95e953c42d1a0e58a81129a9c0082f170e94a565643c",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672894541
-    },
-    {
-      "path": ".sv3/zones/monorepo-orchestration/context.md",
-      "size": 1435,
-      "language": "Markdown",
-      "lineCount": 47,
-      "hash": "406761c15af46d767de893e8fba489eabf90aed7d2c9036158fe54b94743074b",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625387
-    },
-    {
-      "path": ".sv3/zones/monorepo-orchestration/summary.json",
-      "size": 426,
-      "language": "JSON",
-      "lineCount": 16,
-      "hash": "8dc1178e1d25dc543ef17ebf06225712eca1dc7c08ece3967df8d588b0aa8f6a",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625387
-    },
-    {
-      "path": ".sv3/zones/packages-rex:rex-cli/context.md",
-      "size": 19502,
-      "language": "Markdown",
-      "lineCount": 198,
-      "hash": "edc506196b602e189d821111853a3657af9853de6073c242e91b6a0b5df64477",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625387
-    },
-    {
-      "path": ".sv3/zones/packages-rex:rex-cli/summary.json",
-      "size": 2067,
-      "language": "JSON",
-      "lineCount": 48,
-      "hash": "3d3b65809edc8ce7b530e286bef5a1ae1d6a07864401d6f82fd0b823d95cb186",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625388
-    },
-    {
-      "path": ".sv3/zones/packages-sourcevision:analysis-engine/context.md",
-      "size": 21491,
-      "language": "Markdown",
-      "lineCount": 176,
-      "hash": "03d502f9ab64a332f22ffcad838214eec7a2f16f399bf665e4a0f0b15d4b51c5",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625388
-    },
-    {
-      "path": ".sv3/zones/packages-sourcevision:analysis-engine/summary.json",
-      "size": 2505,
-      "language": "JSON",
-      "lineCount": 51,
-      "hash": "41edb10932430abb3f95bcbc64962fe51725c77ec51da3c1bc90c5da1a17165f",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625388
-    },
-    {
-      "path": ".sv3/zones/packages-sourcevision:interactive-viewer/context.md",
-      "size": 15226,
-      "language": "Markdown",
-      "lineCount": 151,
-      "hash": "8c520a27a325fccd905e91b64ebe65a11f85df4a5bc9201810d04927b9e7ebd5",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625388
-    },
-    {
-      "path": ".sv3/zones/packages-sourcevision:interactive-viewer/summary.json",
-      "size": 3221,
-      "language": "JSON",
-      "lineCount": 60,
-      "hash": "2360b34fb838644e9ca51d13f14e9422bc2ce75767369c470ad905a7e946d9b4",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625389
-    },
-    {
-      "path": ".sv3/zones/packages-sourcevision:test-fixtures/context.md",
-      "size": 3381,
-      "language": "Markdown",
-      "lineCount": 49,
-      "hash": "671f37c8cc718b3045a30a7d03a91b116ac33c68b468c9c99eef644d8ad85820",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625389
-    },
-    {
-      "path": ".sv3/zones/packages-sourcevision:test-fixtures/summary.json",
-      "size": 953,
-      "language": "JSON",
-      "lineCount": 19,
-      "hash": "ff027d5bb4400612e9313bc985d83c7d5ca3700a93c6bdd305b6d7ee2cef13bc",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625389
-    },
-    {
-      "path": ".sv3/zones/packages-sourcevision:test-suite/context.md",
-      "size": 5519,
-      "language": "Markdown",
-      "lineCount": 58,
-      "hash": "3f21bae8916ec549240f486f1426cbfed1c4e1335a0228ce372e66dded480f5f",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770686625389
-    },
-    {
-      "path": ".sv3/zones/packages-sourcevision:test-suite/summary.json",
-      "size": 739,
-      "language": "JSON",
-      "lineCount": 19,
-      "hash": "31b646de8e8e8cad40202f1897feb8218678443c88a0ec0e8c1126c302d82333",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770686625389
-    },
-    {
-      "path": ".sv3/zones/root/context.md",
-      "size": 1740,
-      "language": "Markdown",
-      "lineCount": 52,
-      "hash": "0309f3bfbf95f03f53f850044c4aa1ba9af5008ecb38e107dc4a27549aa26a57",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672894545
-    },
-    {
-      "path": ".sv3/zones/root/summary.json",
-      "size": 256,
-      "language": "JSON",
-      "lineCount": 16,
-      "hash": "38da593f438cc494a25997dc2869369f12bf325c4e64546552ac24f64264a6b4",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672894545
-    },
-    {
-      "path": ".sv3/zones/task-completion-validation/context.md",
-      "size": 5260,
-      "language": "Markdown",
-      "lineCount": 75,
-      "hash": "038b137ae9d4f0a0d2d59fa4fedc8ffe48b1458f8f75dd41bf619c3b8a47777b",
-      "role": "docs",
-      "category": ".sv3",
-      "lastModified": 1770672592448
-    },
-    {
-      "path": ".sv3/zones/task-completion-validation/summary.json",
-      "size": 785,
-      "language": "JSON",
-      "lineCount": 22,
-      "hash": "4d32fb5c4f1a680df0583067edf35060ea86ce2e85ba25a8402e61480b5bd73e",
-      "role": "other",
-      "category": ".sv3",
-      "lastModified": 1770672592448
     },
     {
       "path": "CLAUDE.md",
@@ -1432,13 +172,13 @@
     },
     {
       "path": "packages/claude-client/src/api-provider.ts",
-      "size": 4230,
+      "size": 4992,
       "language": "TypeScript",
-      "lineCount": 137,
-      "hash": "2b93490cf6b48784b550666eae63d9f980497811ac359cee59c95106f9f32e6d",
+      "lineCount": 157,
+      "hash": "4e1d4e1e3867d803ef4d9faeb0ba0d3715002141e35ea5571690d059b37cf133",
       "role": "source",
       "category": "claude-client",
-      "lastModified": 1770502359811
+      "lastModified": 1770688413307
     },
     {
       "path": "packages/claude-client/src/auth.ts",
@@ -1452,13 +192,13 @@
     },
     {
       "path": "packages/claude-client/src/cli-provider.ts",
-      "size": 6377,
+      "size": 7177,
       "language": "TypeScript",
-      "lineCount": 210,
-      "hash": "a5feed75820ab5f378d8532aef64fce11f6a28448293738fe8a4d33ec6ac9f8d",
+      "lineCount": 230,
+      "hash": "ddd81e818a88afd8a8453c476ad583b1f13e6921d166135a15cf4ecce23b5f4c",
       "role": "source",
       "category": "claude-client",
-      "lastModified": 1770414580045
+      "lastModified": 1770688421010
     },
     {
       "path": "packages/claude-client/src/config.ts",
@@ -1472,23 +212,23 @@
     },
     {
       "path": "packages/claude-client/src/create-client.ts",
-      "size": 2247,
+      "size": 3202,
       "language": "TypeScript",
-      "lineCount": 64,
-      "hash": "67fc160e887cfb3532ad813a25bfff6de0a5956309f9344693c10bf1a46639c8",
+      "lineCount": 86,
+      "hash": "7796851b9fc33703c9ac9c86a6d354184038d2c9afe5af13695cde5b77c9a207",
       "role": "source",
       "category": "claude-client",
-      "lastModified": 1770414607231
+      "lastModified": 1770688431817
     },
     {
       "path": "packages/claude-client/src/index.ts",
-      "size": 1851,
+      "size": 2596,
       "language": "TypeScript",
-      "lineCount": 76,
-      "hash": "f0a706acc26f7b8d114429dec841b5eef85743c2d2b6048f94ff73a0bb380134",
+      "lineCount": 95,
+      "hash": "a9deb7cc09dec0900519c4c58f86ce441b35edb4622e44274e7a1e76435e1cbc",
       "role": "source",
       "category": "claude-client",
-      "lastModified": 1770564784921
+      "lastModified": 1770688445493
     },
     {
       "path": "packages/claude-client/src/token-usage.ts",
@@ -1842,13 +582,13 @@
     },
     {
       "path": "packages/hench/src/cli/index.ts",
-      "size": 2719,
+      "size": 3538,
       "language": "TypeScript",
-      "lineCount": 105,
-      "hash": "6fe77107433a0e8cd9ee5566597da0679115a0ec82dc36b35b1cedb4cabff3f5",
+      "lineCount": 124,
+      "hash": "affffa616b0a752085b29a3290b67de3df3dbab309185652a2d0120c7e547115",
       "role": "source",
       "category": "hench",
-      "lastModified": 1770192141194
+      "lastModified": 1770688971519
     },
     {
       "path": "packages/hench/src/cli/output.ts",
@@ -1862,33 +602,33 @@
     },
     {
       "path": "packages/hench/src/guard/commands.ts",
-      "size": 1422,
+      "size": 2888,
       "language": "TypeScript",
-      "lineCount": 56,
-      "hash": "906c23c992f8a866ad71e076f2d4b7ec043ecee06d488aacc344ddc9f942ed16",
+      "lineCount": 87,
+      "hash": "66113a295e8fea9b94cd50dd1bf8189c7fdb63e978f7aad9b0f599d7fac063d6",
       "role": "source",
       "category": "hench",
-      "lastModified": 1770135151293
+      "lastModified": 1770688383664
     },
     {
       "path": "packages/hench/src/guard/index.ts",
-      "size": 873,
+      "size": 2737,
       "language": "TypeScript",
-      "lineCount": 32,
-      "hash": "5285b4ac88cbe0cf88ac2bab5397126f333e570dd4dc32c5143aef9d7b7ff6a3",
+      "lineCount": 76,
+      "hash": "9bed92d7dbf1f67432d0280173ea6b9d7fc77af3c9749aec7b7e9ff24d7488b1",
       "role": "source",
       "category": "hench",
-      "lastModified": 1770125624383
+      "lastModified": 1770688369812
     },
     {
       "path": "packages/hench/src/guard/paths.ts",
-      "size": 2853,
+      "size": 3632,
       "language": "TypeScript",
-      "lineCount": 98,
-      "hash": "a17a6dd67315dc92bbd4ad0d03d05ae916307670299554df2559a9eaf5709ccc",
+      "lineCount": 119,
+      "hash": "abf2117dc022c9ff5419553fccb0200f671ce268d12b29541632a1d6d7c05dbb",
       "role": "source",
       "category": "hench",
-      "lastModified": 1770255655219
+      "lastModified": 1770688393047
     },
     {
       "path": "packages/hench/src/schema/index.ts",
@@ -2612,13 +1352,13 @@
     },
     {
       "path": "packages/rex/src/analyze/propose.ts",
-      "size": 9832,
+      "size": 9934,
       "language": "TypeScript",
-      "lineCount": 311,
-      "hash": "926e472448c2bdd5e7cc9d0174e214a0c35ad7365afb3e10526d314541e2574c",
+      "lineCount": 307,
+      "hash": "366b7b6e7717145e269d2ef7a0434e00f65ed76be9aba2dcc6d2d0d00854ae13",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770320652914
+      "lastModified": 1770688041134
     },
     {
       "path": "packages/rex/src/analyze/reason.ts",
@@ -2772,13 +1512,13 @@
     },
     {
       "path": "packages/rex/src/cli/commands/report.ts",
-      "size": 7260,
+      "size": 7303,
       "language": "TypeScript",
-      "lineCount": 261,
-      "hash": "b94846523ee359d378e6f7d0c51f7459c7872d82fd992850f4f69fad94bf35f2",
+      "lineCount": 262,
+      "hash": "a28e7673bdfa1119d5040d04d2b24034d171bb70d35ba82cd05175389c1f8a0a",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770256840487
+      "lastModified": 1770689991049
     },
     {
       "path": "packages/rex/src/cli/commands/reshape.ts",
@@ -2842,13 +1582,13 @@
     },
     {
       "path": "packages/rex/src/cli/commands/validate.ts",
-      "size": 5510,
+      "size": 5553,
       "language": "TypeScript",
-      "lineCount": 199,
-      "hash": "687983a6bb83eb8182f451af7d51f03d5245dec5a5c62bb6327061895d5b1c9b",
+      "lineCount": 200,
+      "hash": "0385ad00c597e12440cb8500eb717fffd23cd72b5cb185fd8171b932e9d89073",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770645831884
+      "lastModified": 1770689989995
     },
     {
       "path": "packages/rex/src/cli/commands/verify.ts",
@@ -2882,13 +1622,13 @@
     },
     {
       "path": "packages/rex/src/cli/mcp.ts",
-      "size": 20476,
+      "size": 21426,
       "language": "TypeScript",
-      "lineCount": 694,
-      "hash": "317661d43b9bf44dab48c2341eee6c070124ea17e2a890cef8e5b1873b88a110",
+      "lineCount": 720,
+      "hash": "6b26b99e574b5a294c145d309c4d4c31ac4e952cc2dc4d71ed588f40d579b6d9",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770659097472
+      "lastModified": 1770691117323
     },
     {
       "path": "packages/rex/src/cli/output.ts",
@@ -2912,13 +1652,13 @@
     },
     {
       "path": "packages/rex/src/core/canonical.ts",
-      "size": 747,
+      "size": 686,
       "language": "TypeScript",
-      "lineCount": 27,
-      "hash": "d8efce26589c3a399288c5d908a5a63d37e9927160a643e5ac89bc1e3a7f1b43",
+      "lineCount": 21,
+      "hash": "c650829312cbf501da2829ef86bad9e26cfbed8a71d6b1a66a8d2063720549c5",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770089606559
+      "lastModified": 1770688041134
     },
     {
       "path": "packages/rex/src/core/cascade-reset.ts",
@@ -2972,13 +1712,13 @@
     },
     {
       "path": "packages/rex/src/core/next-task.ts",
-      "size": 14222,
+      "size": 14171,
       "language": "TypeScript",
-      "lineCount": 452,
-      "hash": "8da79c86038486a75f7abd83c9c6b0380dd259fe4a1cf83e6fa9d99ab106a2ba",
+      "lineCount": 446,
+      "hash": "45cfe2a9b25f6b056b51f09e2a24d745edc91efdd65d4b0a4a02e76eb49a48de",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770651555211
+      "lastModified": 1770688041134
     },
     {
       "path": "packages/rex/src/core/notion-map.ts",
@@ -3112,33 +1852,33 @@
     },
     {
       "path": "packages/rex/src/public.ts",
-      "size": 1752,
+      "size": 2595,
       "language": "TypeScript",
-      "lineCount": 51,
-      "hash": "8266f6bece7dff3cffe7a33c59645d221717d194613ca4265d60f9830ffa2324",
+      "lineCount": 69,
+      "hash": "a677e971cc272518d28a035bec20b58eb0fdc5e14718ddcce343f5ce8377cde5",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770641665751
+      "lastModified": 1770691121833
     },
     {
       "path": "packages/rex/src/schema/index.ts",
-      "size": 509,
+      "size": 774,
       "language": "TypeScript",
       "lineCount": 31,
-      "hash": "8cb7c174e173b4693fff738fa63b83152fadf9fae3d3fbbfdd3b91b1ad751993",
+      "hash": "1e2daa344fb731fd430651116e4cfa6d4859917d8bdc6fa1261f1e1aaa0132c4",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770561440278
+      "lastModified": 1770689978532
     },
     {
       "path": "packages/rex/src/schema/v1.ts",
-      "size": 2847,
+      "size": 4696,
       "language": "TypeScript",
-      "lineCount": 113,
-      "hash": "5a5cc204cc82d3fec1e61a118aace5264a1175257f6b8dfe1fa9836fe441c56a",
+      "lineCount": 159,
+      "hash": "078c70e960e0268e89cbdc9558a339cb3936b9fb9ae06261558476a4256b183c",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770659040067
+      "lastModified": 1770690869280
     },
     {
       "path": "packages/rex/src/schema/validate.ts",
@@ -3162,13 +1902,13 @@
     },
     {
       "path": "packages/rex/src/store/file-adapter.ts",
-      "size": 4865,
+      "size": 4868,
       "language": "TypeScript",
       "lineCount": 152,
-      "hash": "b704961a5a128332cfffd432cdc919cefd083ef3c466c15e3f2d211ed3e547f3",
+      "hash": "148bc5842365e15e1882045f133297108684c98d491f87911d07ac1a30bc2347",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770517033830
+      "lastModified": 1770689987286
     },
     {
       "path": "packages/rex/src/store/index.ts",
@@ -3182,13 +1922,13 @@
     },
     {
       "path": "packages/rex/src/store/notion-adapter.ts",
-      "size": 10625,
+      "size": 10628,
       "language": "TypeScript",
       "lineCount": 310,
-      "hash": "ae1bbcfa3973b9b5c508cd9db118f2a8394235ae739f77c06d917cad77e59091",
+      "hash": "e53f0a93e36888fbea086fb498fd8e1be94d2aadc757f02abbcfe44630a2ca9d",
       "role": "source",
       "category": "rex",
-      "lastModified": 1770562410225
+      "lastModified": 1770689988549
     },
     {
       "path": "packages/rex/src/store/notion-client.ts",
@@ -3659,6 +2399,16 @@
       "role": "test",
       "category": "rex",
       "lastModified": 1770303453673
+    },
+    {
+      "path": "packages/rex/tests/unit/cli/mcp.test.ts",
+      "size": 5984,
+      "language": "TypeScript",
+      "lineCount": 165,
+      "hash": "0f69721b4684880c36b80d9df7652a8594b68eecfe218c0e742059c18a0ba336",
+      "role": "test",
+      "category": "rex",
+      "lastModified": 1770691247219
     },
     {
       "path": "packages/rex/tests/unit/cli/output.test.ts",
@@ -4182,13 +2932,13 @@
     },
     {
       "path": "packages/sourcevision/src/analyzers/louvain.ts",
-      "size": 14178,
+      "size": 15505,
       "language": "TypeScript",
-      "lineCount": 440,
-      "hash": "436a42f6f4ed6d6c0ae61afd10c7a2fa791df5ca24065d1a3a6fd095c793ddb8",
+      "lineCount": 470,
+      "hash": "60b79b45e95aa7097991dbfb80828a0bc2e233f306da069ae4eddc2d9f218941",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1770085121169
+      "lastModified": 1770688472459
     },
     {
       "path": "packages/sourcevision/src/analyzers/manifest.ts",
@@ -4252,13 +3002,13 @@
     },
     {
       "path": "packages/sourcevision/src/analyzers/zones.ts",
-      "size": 32340,
+      "size": 37079,
       "language": "TypeScript",
-      "lineCount": 1015,
-      "hash": "f14f1811b0638a9d88c04a08a8bf07a93a875caf4bc09ccd355ec24f2af5f187",
+      "lineCount": 1120,
+      "hash": "8aff4ab8195d44309aea4f9e6749c116005c3c473e79a7176354a562c2531c2a",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1770673812142
+      "lastModified": 1770691847985
     },
     {
       "path": "packages/sourcevision/src/cli/commands/analyze.ts",
@@ -4342,13 +3092,13 @@
     },
     {
       "path": "packages/sourcevision/src/cli/mcp.ts",
-      "size": 11574,
+      "size": 12450,
       "language": "TypeScript",
-      "lineCount": 380,
-      "hash": "e766aaf065edcb21efe14bfe075956d578ad9698e03ef02851c74326cdbacbe2",
+      "lineCount": 407,
+      "hash": "7fbff983e5edc09cac561aef93dbed56790f96a9ba744fa7848868497a2b7d41",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1770097306733
+      "lastModified": 1770691591505
     },
     {
       "path": "packages/sourcevision/src/cli/output.ts",
@@ -4402,13 +3152,13 @@
     },
     {
       "path": "packages/sourcevision/src/cli/server/routes-rex.ts",
-      "size": 27936,
+      "size": 30269,
       "language": "TypeScript",
-      "lineCount": 951,
-      "hash": "1ed12a2efffc5c90b69dc637070f9f9c2ee588bfc9f195f4f6b265e6ec4af329",
+      "lineCount": 999,
+      "hash": "ff54a58d9b6e9143ada19b8595a078061cf6e4bd7e59210b2383ba5ae9a93cb6",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1770659691500
+      "lastModified": 1770690827328
     },
     {
       "path": "packages/sourcevision/src/cli/server/routes-sourcevision.ts",
@@ -4442,13 +3192,13 @@
     },
     {
       "path": "packages/sourcevision/src/cli/server/routes-validation.ts",
-      "size": 15090,
+      "size": 15724,
       "language": "TypeScript",
-      "lineCount": 543,
-      "hash": "fdfdcbe7e8febd56b080c50f10828d815f51cbeecd378bee8e6dbe9bc8db2a25",
+      "lineCount": 556,
+      "hash": "ff6b39126f3d2bb50ceface94ea1519d7b4438fd0f15d54c89f248abb40ef075",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1770566582153
+      "lastModified": 1770690835859
     },
     {
       "path": "packages/sourcevision/src/cli/server/start.ts",
@@ -4491,6 +3241,16 @@
       "lastModified": 1770565311368
     },
     {
+      "path": "packages/sourcevision/src/public.ts",
+      "size": 443,
+      "language": "TypeScript",
+      "lineCount": 13,
+      "hash": "7f16a016555422f4c0620dc46a1c140490e9803f095941f7ac09f8e692185dd6",
+      "role": "source",
+      "category": "sourcevision",
+      "lastModified": 1770691653540
+    },
+    {
       "path": "packages/sourcevision/src/schema/data-files.ts",
       "size": 314,
       "language": "TypeScript",
@@ -4512,23 +3272,23 @@
     },
     {
       "path": "packages/sourcevision/src/schema/v1.ts",
-      "size": 9445,
+      "size": 9571,
       "language": "TypeScript",
-      "lineCount": 314,
-      "hash": "06f1c9a9ee72c9365fa07c46d374c156c3f3fb106ee16148333108a6060f3748",
+      "lineCount": 316,
+      "hash": "49edd6e66d8793c06bd013b50d94732d0963533e92da23dec8dc932611eab97e",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1770264336134
+      "lastModified": 1770691811188
     },
     {
       "path": "packages/sourcevision/src/schema/validate.ts",
-      "size": 9157,
+      "size": 9211,
       "language": "TypeScript",
-      "lineCount": 315,
-      "hash": "3a5f3ad1e87e141d25b9cc1f5232ced4708182fbee6de165c19d9e6fc4470042",
+      "lineCount": 316,
+      "hash": "3a0cb2a6698d49cd398ac39896b8b39d7c7c16832e95f00d9c0c1cb0ed04fb3d",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1770561601317
+      "lastModified": 1770691812257
     },
     {
       "path": "packages/sourcevision/src/util/merge.ts",
@@ -4542,13 +3302,13 @@
     },
     {
       "path": "packages/sourcevision/src/util/sort.ts",
-      "size": 4639,
+      "size": 4829,
       "language": "TypeScript",
-      "lineCount": 160,
-      "hash": "8e15ffbec0b4c9093833fcd6fc7ee8447f9877d3c0d99dca63dc9d8d9a09417e",
+      "lineCount": 162,
+      "hash": "a6cf07b93087f74d5546676d6ffa3a944188a736e547f65ea0f38c1f39f45411",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1770134776206
+      "lastModified": 1770691814776
     },
     {
       "path": "packages/sourcevision/src/viewer/components/constants.ts",
@@ -4742,13 +3502,13 @@
     },
     {
       "path": "packages/sourcevision/src/viewer/components/prd-tree/types.ts",
-      "size": 1036,
+      "size": 1474,
       "language": "TypeScript",
-      "lineCount": 49,
-      "hash": "efd167cd88067aab12564bae48f2ba8999b19940d3d67f27af40cad8db4e98c0",
+      "lineCount": 57,
+      "hash": "2a1cd09eca8b56d5ebc0ad9e9fa9a0ddcd0ac3d20b68d28b6e2af8e7018e3191",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1770662848254
+      "lastModified": 1770690112777
     },
     {
       "path": "packages/sourcevision/src/viewer/components/rex-task-link.ts",
@@ -4775,10 +3535,10 @@
       "size": 15342,
       "language": "TypeScript",
       "lineCount": 377,
-      "hash": "30844570f7e2dd8ec531f3d112774ddbe1e9744ce6486cc8feba0c66f54bb1c2",
+      "hash": "bdf6f9808ce37978a1851c3792c270ad2b7b428c04fdb6d71fc44693078be834",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1770672188652
+      "lastModified": 1770688041136
     },
     {
       "path": "packages/sourcevision/src/viewer/components/theme-toggle.ts",
@@ -5582,13 +4342,13 @@
     },
     {
       "path": "packages/sourcevision/tests/unit/analyzers/zones.test.ts",
-      "size": 54687,
+      "size": 68711,
       "language": "TypeScript",
-      "lineCount": 1547,
-      "hash": "147485be8f606b3d3f579d52aa583c4fd40ce3ce690227610a09848731151cae",
+      "lineCount": 1886,
+      "hash": "36203e2eea895c52aeb727adc675c426979b417713cb5db57a2afa117c4e9e04",
       "role": "test",
       "category": "sourcevision",
-      "lastModified": 1770673883410
+      "lastModified": 1770691904550
     },
     {
       "path": "packages/sourcevision/tests/unit/cli/errors.test.ts",
@@ -5609,6 +4369,16 @@
       "role": "test",
       "category": "sourcevision",
       "lastModified": 1770565253128
+    },
+    {
+      "path": "packages/sourcevision/tests/unit/cli/mcp.test.ts",
+      "size": 6933,
+      "language": "TypeScript",
+      "lineCount": 199,
+      "hash": "d2a641fa2dcd74d7865f29b07a813ad822f49a981be0d8371070fb6b64b224df",
+      "role": "test",
+      "category": "sourcevision",
+      "lastModified": 1770691648977
     },
     {
       "path": "packages/sourcevision/tests/unit/cli/output.test.ts",
@@ -5699,6 +4469,16 @@
       "role": "test",
       "category": "sourcevision",
       "lastModified": 1770566649222
+    },
+    {
+      "path": "packages/sourcevision/tests/unit/server/type-consistency.test.ts",
+      "size": 5585,
+      "language": "TypeScript",
+      "lineCount": 132,
+      "hash": "79426b4d6ca69e3dc3660c6139aaf8baf651c5f8055ed0e92afd991150580ad7",
+      "role": "test",
+      "category": "sourcevision",
+      "lastModified": 1770690864016
     },
     {
       "path": "packages/sourcevision/tests/unit/server/websocket.test.ts",
@@ -5962,26 +4742,26 @@
     }
   ],
   "summary": {
-    "totalFiles": 596,
-    "totalLines": 165669,
+    "totalFiles": 474,
+    "totalLines": 125015,
     "byLanguage": {
-      "JSON": 90,
+      "JSON": 24,
       "Other": 14,
-      "Markdown": 69,
-      "Text": 3,
+      "Markdown": 11,
       "JavaScript": 12,
-      "TypeScript": 380,
+      "TypeScript": 384,
+      "Text": 1,
       "HTML": 1,
       "CSS": 25,
       "YAML": 2
     },
     "byRole": {
-      "other": 104,
+      "other": 39,
       "config": 17,
-      "docs": 70,
-      "test": 177,
-      "source": 218,
+      "docs": 11,
+      "source": 219,
       "asset": 9,
+      "test": 178,
       "generated": 1
     },
     "byCategory": {
@@ -5989,12 +4769,10 @@
       "root": 15,
       ".hench": 1,
       ".rex": 5,
-      ".sv2": 71,
-      ".sv3": 55,
       "claude-client": 18,
       "hench": 86,
-      "rex": 152,
-      "sourcevision": 187,
+      "rex": 153,
+      "sourcevision": 190,
       "tests": 5
     }
   }

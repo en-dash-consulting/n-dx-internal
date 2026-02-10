@@ -6,8 +6,8 @@
 
 Zone: Autonomous Agent System (`autonomous-agent-system`)
 Files: 80, Cohesion: 1.00, Coupling: 0.00
-Description: Complete autonomous task execution system featuring AI agent lifecycle management, security guards, tool dispatch, and comprehensive run tracking with validation.
-Lines: 14439
+Description: Complete autonomous execution engine with task lifecycle management, planning, tool dispatch, and validation workflows.
+Lines: 14554
 
 </zone>
 
@@ -33,11 +33,11 @@ packages/hench/src/cli/commands/show.ts (TypeScript, 114 lines, source)
 packages/hench/src/cli/commands/status.ts (TypeScript, 76 lines, source)
 packages/hench/src/cli/commands/task-lookup.ts (TypeScript, 83 lines, source)
 packages/hench/src/cli/errors.ts (TypeScript, 188 lines, source)
-packages/hench/src/cli/index.ts (TypeScript, 105 lines, source)
+packages/hench/src/cli/index.ts (TypeScript, 124 lines, source)
 packages/hench/src/cli/output.ts (TypeScript, 19 lines, source)
-packages/hench/src/guard/commands.ts (TypeScript, 56 lines, source)
-packages/hench/src/guard/index.ts (TypeScript, 32 lines, source)
-packages/hench/src/guard/paths.ts (TypeScript, 98 lines, source)
+packages/hench/src/guard/commands.ts (TypeScript, 87 lines, source)
+packages/hench/src/guard/index.ts (TypeScript, 76 lines, source)
+packages/hench/src/guard/paths.ts (TypeScript, 119 lines, source)
 packages/hench/src/schema/index.ts (TypeScript, 37 lines, source)
 packages/hench/src/schema/v1.ts (TypeScript, 197 lines, source)
 packages/hench/src/schema/validate.ts (TypeScript, 152 lines, source)
@@ -321,34 +321,30 @@ Internal:
 
 <findings>
 
+[observation] [info] Contains 61% of project files (80/131) — subdivided into 5 sub-zones
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] Agent lifecycle includes stuck detection, progress analysis, and completion validation to ensure reliable task execution
-[observation] [info] Perfect zone cohesion (1.0) with zero coupling indicates excellent internal architecture and external interface design
-[observation] [info] Security guard system provides multi-layered protection with configurable policies for safe autonomous operation
-[pattern] [info] Type-only imports from claude-client maintain clean separation while enabling configuration sharing
-[relationship] [info] Dynamic import pattern for rex prevents tight coupling while enabling integration
-[anti-pattern] [warning] Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided
+[suggestion] [info] Inconsistent rex import patterns: static imports in some files, dynamic imports in task-lookup.ts - standardize approach
+[suggestion] [info] Uses wildcard version 'rex': '*' instead of workspace protocol for local dependency consistency
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Implements sophisticated agent lifecycle with planning, execution, analysis, and completion validation phases
-- Features comprehensive security system with command whitelisting, path restrictions, and resource limits
-- Provides rich tool ecosystem including shell execution, git operations, file management, and rex integration
-- Perfect zone cohesion (1.0) with zero coupling indicates excellent internal architecture and external interface design
-- Security guard system provides multi-layered protection with configurable policies for safe autonomous operation
-- Agent lifecycle includes stuck detection, progress analysis, and completion validation to ensure reliable task execution
-- Maintains architectural independence by importing only type definitions and configuration interfaces from integration layer
-- Uses dynamic imports for rex package to avoid circular dependencies while maintaining loose coupling
-- Demonstrates dependency inversion principle by depending on abstractions rather than concrete implementations
-- Dynamic import pattern for rex prevents tight coupling while enabling integration
-- Type-only imports from claude-client maintain clean separation while enabling configuration sharing
-- Hench tools layer directly imports Rex package types and functions creating hidden coupling through the dynamic import mechanism - while the dynamic import prevents circular dependencies, the type imports still create compile-time coupling that defeats the zone boundary abstraction
-- Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided
-- Security command filtering uses inclusive terminology - 'allowlist' consistently replaces outdated 'whitelist' patterns, demonstrating modern security vocabulary adoption
-- Agent uses proper semantic naming convention - analyzer functions are named analyzeX() following consistent TypeScript conventions (analyzeInventory, analyzeImports, etc.)
+- Contains 61% of project files (80/131) — subdivided into 5 sub-zones
+- Comprehensive agent architecture spanning 80 files with clear separation between lifecycle, planning, and analysis concerns
+- Implements sophisticated token budget management and stuck task detection for robust autonomous operation
+- Provides dual execution modes (API and CLI) with complete tool ecosystem for project manipulation
+- Large subsystem with strong internal cohesion indicates well-organized autonomous execution capabilities
+- Imports rex package types and functions directly for type-safe PRD manipulation
+- Maintains architectural isolation by avoiding direct sourcevision imports despite functional overlap
+- Direct import coupling with rex package for PRD operations while maintaining clean boundaries with sourcevision
+- Hench package imports rex functions directly from package name 'rex', not internal dist/ paths, indicating proper public API usage
+- Web server functionality (routes-rex.ts, routes-hench.ts, websocket.ts, viewer HTML/CSS/JS) is misplaced inside packages/sourcevision/ despite importing from rex and hench packages. This violates zone boundaries - orchestration concerns should live at the orchestration layer, not embedded within a single package.
+- Uses mix of dynamic imports (await import('rex')) and static imports from same package, creating inconsistent dependency patterns
+- Direct dependency on rex package ('rex': '*') in package.json uses wildcard version instead of workspace protocol
+- Inconsistent rex import patterns: static imports in some files, dynamic imports in task-lookup.ts - standardize approach
+- Uses wildcard version 'rex': '*' instead of workspace protocol for local dependency consistency
 
 </insights>
 

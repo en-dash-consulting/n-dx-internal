@@ -1,46 +1,9 @@
 {
   "zones": [
     {
-      "id": "claude-client",
-      "name": "Claude Client",
-      "description": "15 files, primarily TypeScript",
-      "files": [
-        "packages/claude-client/src/api-provider.ts",
-        "packages/claude-client/src/auth.ts",
-        "packages/claude-client/src/cli-provider.ts",
-        "packages/claude-client/src/config.ts",
-        "packages/claude-client/src/create-client.ts",
-        "packages/claude-client/src/index.ts",
-        "packages/claude-client/src/token-usage.ts",
-        "packages/claude-client/src/types.ts",
-        "packages/claude-client/tests/unit/api-provider.test.ts",
-        "packages/claude-client/tests/unit/auth.test.ts",
-        "packages/claude-client/tests/unit/cli-provider.test.ts",
-        "packages/claude-client/tests/unit/config.test.ts",
-        "packages/claude-client/tests/unit/create-client.test.ts",
-        "packages/claude-client/tests/unit/token-usage.test.ts",
-        "packages/claude-client/tests/unit/types.test.ts"
-      ],
-      "entryPoints": [],
-      "cohesion": 1,
-      "coupling": 0,
-      "insights": [
-        "High cohesion (1) — files are tightly interconnected",
-        "Provides dual-mode access to Claude through both CLI binary and direct API calls for maximum flexibility",
-        "Implements comprehensive token usage tracking and budget management across different model types",
-        "Centralizes Claude authentication and configuration validation with support for custom endpoints",
-        "Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns",
-        "Dual provider architecture (CLI + API) ensures fallback options and different execution contexts",
-        "Token usage tracking includes comprehensive cost estimation and budget enforcement mechanisms",
-        "Provides abstracted interface to Claude API that insulates consuming packages from direct API dependencies",
-        "Token usage tracking and budget management creates shared state across consuming packages",
-        "Clean abstraction boundary - consuming packages import only high-level interfaces, not implementation details"
-      ]
-    },
-    {
-      "id": "hench",
-      "name": "Hench",
-      "description": "80 files, primarily TypeScript",
+      "id": "autonomous-agent-system",
+      "name": "Autonomous Agent System",
+      "description": "Complete autonomous execution engine with task lifecycle management, planning, tool dispatch, and validation workflows.",
       "files": [
         "packages/hench/src/agent/analysis/review.ts",
         "packages/hench/src/agent/analysis/stuck.ts",
@@ -292,23 +255,85 @@
       ],
       "insights": [
         "High cohesion (1) — files are tightly interconnected",
-        "Implements sophisticated agent lifecycle with planning, execution, analysis, and completion validation phases",
-        "Features comprehensive security system with command whitelisting, path restrictions, and resource limits",
-        "Provides rich tool ecosystem including shell execution, git operations, file management, and rex integration",
-        "Perfect zone cohesion (1.0) with zero coupling indicates excellent internal architecture and external interface design",
-        "Security guard system provides multi-layered protection with configurable policies for safe autonomous operation",
-        "Agent lifecycle includes stuck detection, progress analysis, and completion validation to ensure reliable task execution",
-        "Maintains architectural independence by importing only type definitions and configuration interfaces from integration layer",
-        "Uses dynamic imports for rex package to avoid circular dependencies while maintaining loose coupling",
-        "Demonstrates dependency inversion principle by depending on abstractions rather than concrete implementations",
-        "Dynamic import pattern for rex prevents tight coupling while enabling integration",
-        "Type-only imports from claude-client maintain clean separation while enabling configuration sharing",
-        "Hench tools layer directly imports Rex package types and functions creating hidden coupling through the dynamic import mechanism - while the dynamic import prevents circular dependencies, the type imports still create compile-time coupling that defeats the zone boundary abstraction",
-        "Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided",
-        "Security command filtering uses inclusive terminology - 'allowlist' consistently replaces outdated 'whitelist' patterns, demonstrating modern security vocabulary adoption",
-        "Agent uses proper semantic naming convention - analyzer functions are named analyzeX() following consistent TypeScript conventions (analyzeInventory, analyzeImports, etc.)",
-        "Zone size of 80 files suggests potential for further decomposition into functional subzones (CLI, core agent, tool integrations)",
-        "Consider decomposing hench zone into functional subzones: CLI interface (packages/hench/src/cli/), core agent logic (packages/hench/src/core/), and tool integrations (packages/hench/src/tools/) to improve maintainability of the 80-file zone"
+        "Contains 61% of project files (80/131) — subdivided into 5 sub-zones",
+        "Comprehensive agent architecture spanning 80 files with clear separation between lifecycle, planning, and analysis concerns",
+        "Implements sophisticated token budget management and stuck task detection for robust autonomous operation",
+        "Provides dual execution modes (API and CLI) with complete tool ecosystem for project manipulation",
+        "Large subsystem with strong internal cohesion indicates well-organized autonomous execution capabilities",
+        "Imports rex package types and functions directly for type-safe PRD manipulation",
+        "Maintains architectural isolation by avoiding direct sourcevision imports despite functional overlap",
+        "Direct import coupling with rex package for PRD operations while maintaining clean boundaries with sourcevision",
+        "Hench package imports rex functions directly from package name 'rex', not internal dist/ paths, indicating proper public API usage",
+        "Web server functionality (routes-rex.ts, routes-hench.ts, websocket.ts, viewer HTML/CSS/JS) is misplaced inside packages/sourcevision/ despite importing from rex and hench packages. This violates zone boundaries - orchestration concerns should live at the orchestration layer, not embedded within a single package.",
+        "Uses mix of dynamic imports (await import('rex')) and static imports from same package, creating inconsistent dependency patterns",
+        "Direct dependency on rex package ('rex': '*') in package.json uses wildcard version instead of workspace protocol",
+        "Inconsistent rex import patterns: static imports in some files, dynamic imports in task-lookup.ts - standardize approach",
+        "Uses wildcard version 'rex': '*' instead of workspace protocol for local dependency consistency"
+      ]
+    },
+    {
+      "id": "claude-integration-layer",
+      "name": "Claude Integration Layer",
+      "description": "Unified Claude API client abstraction supporting dual provider architecture (API and CLI modes) with automatic failover.",
+      "files": [
+        "packages/claude-client/src/api-provider.ts",
+        "packages/claude-client/src/auth.ts",
+        "packages/claude-client/src/cli-provider.ts",
+        "packages/claude-client/src/config.ts",
+        "packages/claude-client/src/create-client.ts",
+        "packages/claude-client/src/index.ts",
+        "packages/claude-client/src/token-usage.ts",
+        "packages/claude-client/src/types.ts",
+        "packages/claude-client/tests/unit/api-provider.test.ts",
+        "packages/claude-client/tests/unit/auth.test.ts",
+        "packages/claude-client/tests/unit/cli-provider.test.ts",
+        "packages/claude-client/tests/unit/config.test.ts",
+        "packages/claude-client/tests/unit/create-client.test.ts",
+        "packages/claude-client/tests/unit/token-usage.test.ts",
+        "packages/claude-client/tests/unit/types.test.ts"
+      ],
+      "entryPoints": [],
+      "cohesion": 1,
+      "coupling": 0,
+      "insights": [
+        "High cohesion (1) — files are tightly interconnected",
+        "Provides transport-agnostic Claude access with automatic provider selection based on credential availability",
+        "Encapsulates all Claude API concerns behind a single interface achieving zero coupling with other packages",
+        "Implements comprehensive authentication detection, token usage tracking, and error classification",
+        "Excellent architectural isolation with 15 focused files providing complete Claude API abstraction",
+        "Acts as shared foundation consumed by both rex and hench packages for Claude API access",
+        "Provides clean dependency inversion allowing packages to focus on domain logic",
+        "Serves as clean dependency foundation for rex and hench, eliminating Claude API concerns from domain packages",
+        "Uses scoped package naming (@n-dx/claude-client) inconsistent with other packages (rex, hench, sourcevision)",
+        "Only package with exports field providing both import and types mappings - other packages inconsistently implement module exports",
+        "Inconsistent package naming: @n-dx/claude-client uses scoped naming while rex, hench, sourcevision use unscoped names"
+      ]
+    },
+    {
+      "id": "orchestration-layer",
+      "name": "Orchestration Layer",
+      "description": "Top-level command router and tool coordination that delegates workflow commands to specialized packages.",
+      "files": [
+        "ci.js",
+        "cli.js",
+        "config.js",
+        "web.js"
+      ],
+      "entryPoints": [],
+      "cohesion": 1,
+      "coupling": 0,
+      "insights": [
+        "High cohesion (1) — files are tightly interconnected",
+        "Acts as the unified entry point handling initialization, planning, and execution workflows",
+        "Provides error handling with user-friendly hints and suggestions for common failure scenarios",
+        "Coordinates sequential tool execution (sourcevision → rex → hench) for end-to-end workflows",
+        "Perfect cohesion (1.0) and zero coupling indicate clean separation between orchestration logic and tool implementations",
+        "Implements command dispatch pattern via shell spawning rather than direct imports for loose coupling",
+        "Uses compiled CLI entry points (/dist/cli/) to avoid build-time dependencies between packages",
+        "Command dispatch architecture delegates to pre-built CLIs via child_process.spawn, avoiding import-time coupling",
+        "Uses hardcoded relative paths (packages/*/dist/cli/index.js) in cli.js:55-59 creating implicit coupling to build output structure",
+        "Tool dispatch table uses string keys matching package names, creating implicit naming contract between orchestration and package structure",
+        "Hardcoded tool paths in cli.js create brittle coupling to dist/ structure - consider using package.json bin field resolution"
       ]
     },
     {
@@ -600,32 +625,6 @@
       ],
       "childId": "packages-sourcevision",
       "depth": 1
-    },
-    {
-      "id": "root",
-      "name": "Root",
-      "description": "4 files, primarily JavaScript",
-      "files": [
-        "ci.js",
-        "cli.js",
-        "config.js",
-        "web.js"
-      ],
-      "entryPoints": [],
-      "cohesion": 1,
-      "coupling": 0,
-      "insights": [
-        "High cohesion (1) — files are tightly interconnected",
-        "Acts as the primary entry point coordinating all three tools through a unified command interface",
-        "Implements robust error handling with user-friendly suggestions for common setup issues",
-        "Provides sophisticated configuration management with validation and cross-tool settings",
-        "Perfect zone cohesion (1.0) with zero coupling indicates this layer maintains clear separation of concerns",
-        "CLI orchestration includes comprehensive pre-flight checks and dependency validation before delegating to sub-tools",
-        "Configuration system supports both project-level overrides and package-specific settings with proper security for API keys",
-        "Acts as pure orchestration layer with minimal business logic, delegating all domain-specific operations to specialized packages",
-        "Internal cohesion achieved through shared orchestration patterns and unified CLI interface design",
-        "Pure delegation pattern - orchestration layer contains no business logic, only coordination and user interface concerns"
-      ]
     }
   ],
   "crossings": [
@@ -778,132 +777,6 @@
     ".rex/pending-proposals.json",
     ".rex/prd.json",
     ".rex/workflow.md",
-    ".sv2/CONTEXT.md",
-    ".sv2/components.json",
-    ".sv2/imports.json",
-    ".sv2/inventory.json",
-    ".sv2/llms.txt",
-    ".sv2/manifest.json",
-    ".sv2/zones.json",
-    ".sv2/zones/agent-core/context.md",
-    ".sv2/zones/agent-core/summary.json",
-    ".sv2/zones/agent-tools-layer/context.md",
-    ".sv2/zones/agent-tools-layer/summary.json",
-    ".sv2/zones/application-entry/context.md",
-    ".sv2/zones/application-entry/summary.json",
-    ".sv2/zones/application-orchestration/context.md",
-    ".sv2/zones/application-orchestration/summary.json",
-    ".sv2/zones/claude-api-client/context.md",
-    ".sv2/zones/claude-api-client/summary.json",
-    ".sv2/zones/claude-client/context.md",
-    ".sv2/zones/claude-client/summary.json",
-    ".sv2/zones/claude-integration/context.md",
-    ".sv2/zones/claude-integration/summary.json",
-    ".sv2/zones/cli-infrastructure/context.md",
-    ".sv2/zones/cli-infrastructure/summary.json",
-    ".sv2/zones/completion-validation/context.md",
-    ".sv2/zones/completion-validation/summary.json",
-    ".sv2/zones/hench-2/context.md",
-    ".sv2/zones/hench-2/summary.json",
-    ".sv2/zones/hench-3/context.md",
-    ".sv2/zones/hench-3/summary.json",
-    ".sv2/zones/hench-4/context.md",
-    ".sv2/zones/hench-4/summary.json",
-    ".sv2/zones/hench-5/context.md",
-    ".sv2/zones/hench-5/summary.json",
-    ".sv2/zones/hench-cli/context.md",
-    ".sv2/zones/hench-cli/summary.json",
-    ".sv2/zones/hench-completion/context.md",
-    ".sv2/zones/hench-completion/summary.json",
-    ".sv2/zones/hench-core/context.md",
-    ".sv2/zones/hench-core/summary.json",
-    ".sv2/zones/hench-guard/context.md",
-    ".sv2/zones/hench-guard/summary.json",
-    ".sv2/zones/hench-integration/context.md",
-    ".sv2/zones/hench-integration/summary.json",
-    ".sv2/zones/hench-tooling/context.md",
-    ".sv2/zones/hench-tooling/summary.json",
-    ".sv2/zones/hench/context.md",
-    ".sv2/zones/hench/summary.json",
-    ".sv2/zones/orchestration-layer/context.md",
-    ".sv2/zones/orchestration-layer/summary.json",
-    ".sv2/zones/orchestration/context.md",
-    ".sv2/zones/orchestration/summary.json",
-    ".sv2/zones/packages-rex:rex-cli/context.md",
-    ".sv2/zones/packages-rex:rex-cli/summary.json",
-    ".sv2/zones/packages-sourcevision:analysis-engine/context.md",
-    ".sv2/zones/packages-sourcevision:analysis-engine/summary.json",
-    ".sv2/zones/packages-sourcevision:interactive-viewer/context.md",
-    ".sv2/zones/packages-sourcevision:interactive-viewer/summary.json",
-    ".sv2/zones/packages-sourcevision:test-fixtures/context.md",
-    ".sv2/zones/packages-sourcevision:test-fixtures/summary.json",
-    ".sv2/zones/packages-sourcevision:test-suite/context.md",
-    ".sv2/zones/packages-sourcevision:test-suite/summary.json",
-    ".sv2/zones/root-orchestration/context.md",
-    ".sv2/zones/root-orchestration/summary.json",
-    ".sv2/zones/root/context.md",
-    ".sv2/zones/root/summary.json",
-    ".sv2/zones/specialized-tools/context.md",
-    ".sv2/zones/specialized-tools/summary.json",
-    ".sv2/zones/task-completion/context.md",
-    ".sv2/zones/task-completion/summary.json",
-    ".sv2/zones/tool-security/context.md",
-    ".sv2/zones/tool-security/summary.json",
-    ".sv3/CONTEXT.md",
-    ".sv3/components.json",
-    ".sv3/imports.json",
-    ".sv3/inventory.json",
-    ".sv3/llms.txt",
-    ".sv3/manifest.json",
-    ".sv3/zones.json",
-    ".sv3/zones/agent-tools-and-security/context.md",
-    ".sv3/zones/agent-tools-and-security/summary.json",
-    ".sv3/zones/autonomous-agent-core/context.md",
-    ".sv3/zones/autonomous-agent-core/summary.json",
-    ".sv3/zones/autonomous-agent-core/zones/tests-2/context.md",
-    ".sv3/zones/autonomous-agent-core/zones/tests-2/summary.json",
-    ".sv3/zones/autonomous-agent-core/zones/tests-3/context.md",
-    ".sv3/zones/autonomous-agent-core/zones/tests-3/summary.json",
-    ".sv3/zones/autonomous-agent-core/zones/tests-4/context.md",
-    ".sv3/zones/autonomous-agent-core/zones/tests-4/summary.json",
-    ".sv3/zones/autonomous-agent-core/zones/tests/context.md",
-    ".sv3/zones/autonomous-agent-core/zones/tests/summary.json",
-    ".sv3/zones/autonomous-agent-core/zones/tools/context.md",
-    ".sv3/zones/autonomous-agent-core/zones/tools/summary.json",
-    ".sv3/zones/claude-api-abstraction/context.md",
-    ".sv3/zones/claude-api-abstraction/summary.json",
-    ".sv3/zones/claude-client/context.md",
-    ".sv3/zones/claude-client/summary.json",
-    ".sv3/zones/hench-2/context.md",
-    ".sv3/zones/hench-2/summary.json",
-    ".sv3/zones/hench-3/context.md",
-    ".sv3/zones/hench-3/summary.json",
-    ".sv3/zones/hench-4/context.md",
-    ".sv3/zones/hench-4/summary.json",
-    ".sv3/zones/hench-5/context.md",
-    ".sv3/zones/hench-5/summary.json",
-    ".sv3/zones/hench-cli-interface/context.md",
-    ".sv3/zones/hench-cli-interface/summary.json",
-    ".sv3/zones/hench-system-tools/context.md",
-    ".sv3/zones/hench-system-tools/summary.json",
-    ".sv3/zones/hench/context.md",
-    ".sv3/zones/hench/summary.json",
-    ".sv3/zones/monorepo-orchestration/context.md",
-    ".sv3/zones/monorepo-orchestration/summary.json",
-    ".sv3/zones/packages-rex:rex-cli/context.md",
-    ".sv3/zones/packages-rex:rex-cli/summary.json",
-    ".sv3/zones/packages-sourcevision:analysis-engine/context.md",
-    ".sv3/zones/packages-sourcevision:analysis-engine/summary.json",
-    ".sv3/zones/packages-sourcevision:interactive-viewer/context.md",
-    ".sv3/zones/packages-sourcevision:interactive-viewer/summary.json",
-    ".sv3/zones/packages-sourcevision:test-fixtures/context.md",
-    ".sv3/zones/packages-sourcevision:test-fixtures/summary.json",
-    ".sv3/zones/packages-sourcevision:test-suite/context.md",
-    ".sv3/zones/packages-sourcevision:test-suite/summary.json",
-    ".sv3/zones/root/context.md",
-    ".sv3/zones/root/summary.json",
-    ".sv3/zones/task-completion-validation/context.md",
-    ".sv3/zones/task-completion-validation/summary.json",
     "CLAUDE.md",
     "README.md",
     "n-dx.png",
@@ -930,45 +803,43 @@
   ],
   "insights": [
     "Size imbalance: largest zone has 80 files vs smallest with 4 — uneven decomposition",
-    "All zones exhibit perfect cohesion (1.0) and zero coupling, indicating exceptional architectural design with clear boundaries",
-    "The three-tier architecture (orchestration → integration → execution) creates a clean separation between user interface, external service integration, and autonomous operations",
-    "Zero cross-zone imports demonstrate that each zone is self-contained while communicating through well-defined interfaces",
-    "No cross-zone imports found, indicating excellent architectural discipline and proper abstraction boundaries",
-    "All zones achieve perfect cohesion metrics, suggesting the community detection algorithm successfully identified natural architectural boundaries",
-    "The codebase follows a clean three-layer pattern: orchestration (user interface), integration (external services), and execution (autonomous operations)",
-    "Three-tier architecture with unidirectional dependency flow: orchestration → integration → execution",
-    "Each zone maintains architectural independence through interface-based communication rather than direct dependencies",
-    "Dynamic import patterns used strategically to break potential circular dependencies while maintaining functional integration",
-    "The absence of direct imports between zones indicates successful application of dependency inversion and interface segregation principles",
-    "Unidirectional dependency architecture prevents circular dependencies and maintains clear separation of concerns",
-    "Interface-based communication between zones enables independent evolution and testing",
-    "Schema validation creates an improper three-way dependency: analysis-engine re-exports from viewer and test-suite zones, causing every analyzer to transitively depend on code from unrelated architectural layers",
-    "Type-level coupling exists between autonomous-agent-system and packages-rex despite runtime decoupling through dynamic imports - TypeScript compilation still creates inter-zone dependencies that violate the architectural boundaries",
-    "Cross-zone type imports create compile-time coupling that defeats runtime decoupling strategies - zones appear independent at runtime but are tightly coupled during TypeScript compilation",
-    "PRIORITY_ORDER constants duplicated across multiple zones with inconsistent typing - shared constants should be extracted to a common location to prevent type drift and maintenance burden",
-    "PRIORITY_ORDER constant is duplicated with identical structure but inconsistent typing - packages/rex exports use typed Priority union while packages/sourcevision uses untyped string Record, creating type system inconsistency across zone boundaries",
-    "Priority type definition is duplicated between rex/schema and sourcevision/viewer with identical string union values but separate declarations - shared types should be extracted to eliminate duplication",
-    "Analyzer function naming follows consistent analyzeX() pattern across the codebase (analyzeInventory, analyzeImports, analyzeZones, analyzeComponents) demonstrating good naming convention adherence",
-    "Extract PRIORITY_ORDER constant to shared location with consistent typing - currently duplicated in 4 locations with inconsistent types (typed Priority vs untyped string Record)",
-    "Priority type union is duplicated between rex/schema/v1.ts and sourcevision/viewer/components/prd-tree/types.ts - consolidate to single source of truth",
-    "The PRIORITY_ORDER duplication represents a systemic architectural anti-pattern where business logic constants are copy-pasted across modules instead of being centralized, creating multiple sources of truth that can drift apart",
-    "Type system inconsistency emerges from the same Priority concept being defined twice (rex/schema vs sourcevision/types) and used with different type safety levels (strict Record<Priority,number> vs loose Record<string,number>), creating a maintenance hazard where changes in one location don't propagate to others",
-    "Cross-zone compile-time coupling via type imports contradicts the runtime architectural goals of zone independence, suggesting the zone boundaries may be incorrectly drawn or that shared types need a different packaging strategy",
-    "Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic",
-    "Systematic duplication of business logic constants (PRIORITY_ORDER) across 4 locations with inconsistent typing creates multiple sources of truth that risk diverging during maintenance - refactor to single shared constant in packages/rex/src/schema/v1.ts and import consistently",
-    "Type system fragmentation where identical Priority union is defined in both packages/rex/src/schema/v1.ts:7 and packages/sourcevision/src/viewer/components/prd-tree/types.ts:17 - consolidate to single exported type to prevent drift and ensure consistency",
-    "The codebase exhibits a 'false modularity' pattern where zones appear architecturally independent but share fundamental business logic through duplication rather than proper abstraction",
-    "Perfect cohesion metrics combined with systematic constant duplication suggests the zone boundaries were drawn too strictly, preventing natural sharing of core domain concepts",
-    "The architecture prioritizes runtime decoupling over maintainability, creating a maintenance debt through systematic duplication of business logic",
-    "Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated",
-    "Architecture forces choice between runtime coupling and maintenance burden - current solution chooses duplication over dependency, creating divergence risk that outweighs benefits of runtime independence for core domain types",
-    "Create shared foundation package at packages/shared/src/types.ts containing Priority union and PRIORITY_ORDER constant, then refactor packages/rex/src/schema/v1.ts:7, packages/sourcevision/src/viewer/components/prd-tree/types.ts:17, packages/sourcevision/src/analyzers/prd-integration.ts, and packages/hench/src/core/types.ts to import from single source"
+    "Zero cross-zone imports demonstrate excellent architectural boundaries and package independence",
+    "Each zone has perfect cohesion (1.0) indicating strong internal coherence within domain boundaries",
+    "The three-layer architecture (orchestration → integration → execution) provides clear separation of concerns",
+    "Perfect architectural isolation with no circular dependencies enables independent development and testing of each subsystem",
+    "Implements hybrid coupling strategy: orchestration uses process isolation, domain packages use direct imports",
+    "Claude-client serves as clean shared dependency eliminating API coupling between rex and hench",
+    "Rex package acts as both CLI tool and importable library, supporting dual access patterns",
+    "Hybrid architectural pattern combines process-based orchestration with selective direct imports for performance-critical paths",
+    "Clean dependency inversion through claude-client shared foundation prevents circular dependencies between domain packages",
+    "Rex package correctly implements public API exports field mapping rex → dist/public.js, resolving the previously identified coupling issue",
+    "Web server architecture violates zone boundaries by placing multi-package orchestration logic inside sourcevision package rather than orchestration layer",
+    "Multi-package web server (with rex, hench, and sourcevision routes) is architecturally misplaced inside packages/sourcevision/ rather than at the orchestration layer where cross-package concerns belong. This creates artificial coupling and violates the clean three-layer architecture.",
+    "Package export strategy inconsistency: only claude-client and rex provide exports field, while hench and sourcevision rely solely on bin field",
+    "Binary naming follows package names exactly (rex→rex, hench→hench, sourcevision→sourcevision) but orchestrator creates additional alias (sv→sourcevision)",
+    "Workspace dependency patterns inconsistent: claude-client uses 'workspace:*' protocol, rex uses '*' wildcard for hench dependency",
+    "Inconsistent package export strategies across packages - standardize exports field usage for programmatic consumption",
+    "Mixed workspace dependency protocols: 'workspace:*' vs '*' wildcard - standardize to workspace protocol for local packages"
   ],
   "findings": [
     {
       "type": "observation",
       "pass": 0,
-      "scope": "claude-client",
+      "scope": "autonomous-agent-system",
+      "text": "Contains 61% of project files (80/131) — subdivided into 5 sub-zones",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "autonomous-agent-system",
+      "text": "High cohesion (1) — files are tightly interconnected",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "claude-integration-layer",
       "text": "High cohesion (1) — files are tightly interconnected",
       "severity": "info"
     },
@@ -982,256 +853,86 @@
     {
       "type": "observation",
       "pass": 0,
-      "scope": "hench",
-      "text": "High cohesion (1) — files are tightly interconnected",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "root",
+      "scope": "orchestration-layer",
       "text": "High cohesion (1) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "autonomous-agent-system",
-      "text": "Agent lifecycle includes stuck detection, progress analysis, and completion validation to ensure reliable task execution",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "autonomous-agent-system",
-      "text": "Perfect zone cohesion (1.0) with zero coupling indicates excellent internal architecture and external interface design",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "autonomous-agent-system",
-      "text": "Security guard system provides multi-layered protection with configurable policies for safe autonomous operation",
-      "severity": "critical"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "claude-integration-layer",
-      "text": "Dual provider architecture (CLI + API) ensures fallback options and different execution contexts",
-      "severity": "critical"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "claude-integration-layer",
-      "text": "Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns",
-      "severity": "critical"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "claude-integration-layer",
-      "text": "Token usage tracking includes comprehensive cost estimation and budget enforcement mechanisms",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
       "scope": "global",
-      "text": "All zones achieve perfect cohesion metrics, suggesting the community detection algorithm successfully identified natural architectural boundaries",
-      "severity": "critical"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "global",
-      "text": "No cross-zone imports found, indicating excellent architectural discipline and proper abstraction boundaries",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "global",
-      "text": "The codebase follows a clean three-layer pattern: orchestration (user interface), integration (external services), and execution (autonomous operations)",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "orchestration-layer",
-      "text": "CLI orchestration includes comprehensive pre-flight checks and dependency validation before delegating to sub-tools",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "orchestration-layer",
-      "text": "Configuration system supports both project-level overrides and package-specific settings with proper security for API keys",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "orchestration-layer",
-      "text": "Perfect zone cohesion (1.0) with zero coupling indicates this layer maintains clear separation of concerns",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "autonomous-agent-system",
-      "text": "Type-only imports from claude-client maintain clean separation while enabling configuration sharing",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "claude-integration-layer",
-      "text": "Clean abstraction boundary - consuming packages import only high-level interfaces, not implementation details",
+      "text": "Perfect architectural isolation with no circular dependencies enables independent development and testing of each subsystem",
       "severity": "info"
     },
     {
       "type": "pattern",
       "pass": 2,
       "scope": "global",
-      "text": "Unidirectional dependency architecture prevents circular dependencies and maintains clear separation of concerns",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "orchestration-layer",
-      "text": "Pure delegation pattern - orchestration layer contains no business logic, only coordination and user interface concerns",
-      "severity": "info"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "autonomous-agent-system",
-      "text": "Dynamic import pattern for rex prevents tight coupling while enabling integration",
+      "text": "Hybrid architectural pattern combines process-based orchestration with selective direct imports for performance-critical paths",
       "severity": "info"
     },
     {
       "type": "relationship",
       "pass": 2,
       "scope": "global",
-      "text": "Interface-based communication between zones enables independent evolution and testing",
+      "text": "Clean dependency inversion through claude-client shared foundation prevents circular dependencies between domain packages",
       "severity": "info"
     },
     {
       "type": "anti-pattern",
       "pass": 3,
+      "scope": "global",
+      "text": "Multi-package web server (with rex, hench, and sourcevision routes) is architecturally misplaced inside packages/sourcevision/ rather than at the orchestration layer where cross-package concerns belong. This creates artificial coupling and violates the clean three-layer architecture.",
+      "severity": "critical"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
       "scope": "autonomous-agent-system",
-      "text": "Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "Cross-zone type imports create compile-time coupling that defeats runtime decoupling strategies - zones appear independent at runtime but are tightly coupled during TypeScript compilation",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "PRIORITY_ORDER constants duplicated across multiple zones with inconsistent typing - shared constants should be extracted to a common location to prevent type drift and maintenance burden",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "packages-rex:rex-cli",
-      "text": "PRIORITY_ORDER constant duplicated with different type signatures (Record<Priority,number> vs Record<string,number>) across core/canonical.ts, core/next-task.ts, and analyze/propose.ts creating type safety gaps and maintenance burden",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "packages-sourcevision:analysis-engine",
-      "text": "Schema index.ts barrel export creates hidden bidirectional coupling by re-exporting from both viewer zone (v1.ts) and test-suite zone (validate.ts) - every analyzer importing schema creates transitive dependencies across three zones",
-      "severity": "critical"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "packages-sourcevision:interactive-viewer",
-      "text": "Direct import of schema/validate.ts from test-suite zone violates zone boundaries and forces Zod bundling into browser code where validation could be optional",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "packages-sourcevision:test-suite",
-      "text": "schema/validate.ts is misplaced in test-suite zone despite being imported by production CLI and viewer code - this file should be in analysis-engine zone based on its actual usage patterns",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "global",
-      "text": "Extract PRIORITY_ORDER constant to shared location with consistent typing - currently duplicated in 4 locations with inconsistent types (typed Priority vs untyped string Record)",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "global",
-      "text": "Priority type union is duplicated between rex/schema/v1.ts and sourcevision/viewer/components/prd-tree/types.ts - consolidate to single source of truth",
+      "text": "Inconsistent rex import patterns: static imports in some files, dynamic imports in task-lookup.ts - standardize approach",
       "severity": "info"
     },
     {
-      "type": "pattern",
-      "pass": 5,
-      "scope": "global",
-      "text": "Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic",
-      "severity": "warning"
-    },
-    {
-      "type": "pattern",
-      "pass": 5,
-      "scope": "global",
-      "text": "Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 5,
-      "scope": "global",
-      "text": "Architecture forces choice between runtime coupling and maintenance burden - current solution chooses duplication over dependency, creating divergence risk that outweighs benefits of runtime independence for core domain types",
-      "severity": "critical"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 5,
-      "scope": "global",
-      "text": "Systematic duplication of business logic constants (PRIORITY_ORDER) across 4 locations with inconsistent typing creates multiple sources of truth that risk diverging during maintenance - refactor to single shared constant in packages/rex/src/schema/v1.ts and import consistently",
-      "severity": "critical"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 5,
-      "scope": "global",
-      "text": "Type system fragmentation where identical Priority union is defined in both packages/rex/src/schema/v1.ts:7 and packages/sourcevision/src/viewer/components/prd-tree/types.ts:17 - consolidate to single exported type to prevent drift and ensure consistency",
-      "severity": "critical"
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "autonomous-agent-system",
+      "text": "Uses wildcard version 'rex': '*' instead of workspace protocol for local dependency consistency",
+      "severity": "info"
     },
     {
       "type": "suggestion",
-      "pass": 5,
-      "scope": "global",
-      "text": "Create shared foundation package at packages/shared/src/types.ts containing Priority union and PRIORITY_ORDER constant, then refactor packages/rex/src/schema/v1.ts:7, packages/sourcevision/src/viewer/components/prd-tree/types.ts:17, packages/sourcevision/src/analyzers/prd-integration.ts, and packages/hench/src/core/types.ts to import from single source",
-      "severity": "critical"
+      "pass": 4,
+      "scope": "claude-integration-layer",
+      "text": "Inconsistent package naming: @n-dx/claude-client uses scoped naming while rex, hench, sourcevision use unscoped names",
+      "severity": "info"
     },
     {
       "type": "suggestion",
-      "pass": 5,
-      "scope": "hench",
-      "text": "Consider decomposing hench zone into functional subzones: CLI interface (packages/hench/src/cli/), core agent logic (packages/hench/src/core/), and tool integrations (packages/hench/src/tools/) to improve maintainability of the 80-file zone",
-      "severity": "warning"
+      "pass": 4,
+      "scope": "global",
+      "text": "Inconsistent package export strategies across packages - standardize exports field usage for programmatic consumption",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "Mixed workspace dependency protocols: 'workspace:*' vs '*' wildcard - standardize to workspace protocol for local packages",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "orchestration-layer",
+      "text": "Hardcoded tool paths in cli.js create brittle coupling to dist/ structure - consider using package.json bin field resolution",
+      "severity": "info"
     }
   ],
   "enrichmentPass": 4,
-  "structureHash": "4d0d599445e1fb02"
+  "structureHash": "4d0d599445e1fb02",
+  "zoneContentHashes": {
+    "root": "940aad957a87c79d",
+    "claude-client": "4b831571ae3e5a29",
+    "hench": "a6b2b28d4ea56373"
+  }
 }

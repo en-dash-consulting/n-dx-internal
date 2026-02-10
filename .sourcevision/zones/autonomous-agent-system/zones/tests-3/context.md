@@ -8,16 +8,16 @@ Zone: Tests 3 (`hench/tests-3`)
 Files: 11, Cohesion: 0.69, Coupling: 0.31
 Description: 11 files, primarily TypeScript
 Entry points: packages/hench/src/guard/index.ts, packages/hench/src/tools/dispatch.ts, packages/hench/src/tools/files.ts, packages/hench/src/tools/shell.ts, packages/hench/src/agent/tools.ts
-Lines: 1331
+Lines: 1427
 
 </zone>
 
 <files>
 
 packages/hench/src/agent/tools.ts (TypeScript, 8 lines, source)
-packages/hench/src/guard/commands.ts (TypeScript, 56 lines, source)
-packages/hench/src/guard/index.ts (TypeScript, 32 lines, source)
-packages/hench/src/guard/paths.ts (TypeScript, 98 lines, source)
+packages/hench/src/guard/commands.ts (TypeScript, 87 lines, source)
+packages/hench/src/guard/index.ts (TypeScript, 76 lines, source)
+packages/hench/src/guard/paths.ts (TypeScript, 119 lines, source)
 packages/hench/src/tools/dispatch.ts (TypeScript, 201 lines, source)
 packages/hench/src/tools/files.ts (TypeScript, 133 lines, source)
 packages/hench/src/tools/shell.ts (TypeScript, 17 lines, source)

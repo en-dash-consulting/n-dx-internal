@@ -8,7 +8,7 @@ Zone: Tests 4 (`hench/tests-4`)
 Files: 27, Cohesion: 0.80, Coupling: 0.20
 Description: 27 files, primarily TypeScript
 Entry points: packages/hench/src/store/index.ts, packages/hench/src/store/project-config.ts, packages/hench/src/cli/commands/run.ts, packages/hench/src/store/config.ts
-Lines: 4142
+Lines: 4161
 
 </zone>
 
@@ -21,7 +21,7 @@ packages/hench/src/cli/commands/show.ts (TypeScript, 114 lines, source)
 packages/hench/src/cli/commands/status.ts (TypeScript, 76 lines, source)
 packages/hench/src/cli/commands/task-lookup.ts (TypeScript, 83 lines, source)
 packages/hench/src/cli/errors.ts (TypeScript, 188 lines, source)
-packages/hench/src/cli/index.ts (TypeScript, 105 lines, source)
+packages/hench/src/cli/index.ts (TypeScript, 124 lines, source)
 packages/hench/src/cli/output.ts (TypeScript, 19 lines, source)
 packages/hench/src/store/config.ts (TypeScript, 49 lines, source)
 packages/hench/src/store/index.ts (TypeScript, 9 lines, source)

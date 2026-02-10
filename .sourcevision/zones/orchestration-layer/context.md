@@ -6,7 +6,7 @@
 
 Zone: Orchestration Layer (`orchestration-layer`)
 Files: 4, Cohesion: 1.00, Coupling: 0.00
-Description: Top-level command orchestration that delegates operations across sourcevision, rex, and hench packages while providing unified CLI interface and workflow management.
+Description: Top-level command router and tool coordination that delegates workflow commands to specialized packages.
 Lines: 1604
 
 </zone>
@@ -32,24 +32,22 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] CLI orchestration includes comprehensive pre-flight checks and dependency validation before delegating to sub-tools
-[observation] [info] Configuration system supports both project-level overrides and package-specific settings with proper security for API keys
-[observation] [info] Perfect zone cohesion (1.0) with zero coupling indicates this layer maintains clear separation of concerns
-[pattern] [info] Pure delegation pattern - orchestration layer contains no business logic, only coordination and user interface concerns
+[suggestion] [info] Hardcoded tool paths in cli.js create brittle coupling to dist/ structure - consider using package.json bin field resolution
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Acts as the primary entry point coordinating all three tools through a unified command interface
-- Implements robust error handling with user-friendly suggestions for common setup issues
-- Provides sophisticated configuration management with validation and cross-tool settings
-- Perfect zone cohesion (1.0) with zero coupling indicates this layer maintains clear separation of concerns
-- CLI orchestration includes comprehensive pre-flight checks and dependency validation before delegating to sub-tools
-- Configuration system supports both project-level overrides and package-specific settings with proper security for API keys
-- Acts as pure orchestration layer with minimal business logic, delegating all domain-specific operations to specialized packages
-- Internal cohesion achieved through shared orchestration patterns and unified CLI interface design
-- Pure delegation pattern - orchestration layer contains no business logic, only coordination and user interface concerns
+- Acts as the unified entry point handling initialization, planning, and execution workflows
+- Provides error handling with user-friendly hints and suggestions for common failure scenarios
+- Coordinates sequential tool execution (sourcevision → rex → hench) for end-to-end workflows
+- Perfect cohesion (1.0) and zero coupling indicate clean separation between orchestration logic and tool implementations
+- Implements command dispatch pattern via shell spawning rather than direct imports for loose coupling
+- Uses compiled CLI entry points (/dist/cli/) to avoid build-time dependencies between packages
+- Command dispatch architecture delegates to pre-built CLIs via child_process.spawn, avoiding import-time coupling
+- Uses hardcoded relative paths (packages/*/dist/cli/index.js) in cli.js:55-59 creating implicit coupling to build output structure
+- Tool dispatch table uses string keys matching package names, creating implicit naming contract between orchestration and package structure
+- Hardcoded tool paths in cli.js create brittle coupling to dist/ structure - consider using package.json bin field resolution
 
 </insights>

@@ -1,7 +1,7 @@
 {
   "id": "autonomous-agent-system",
   "name": "Autonomous Agent System",
-  "description": "Complete autonomous task execution system featuring AI agent lifecycle management, security guards, tool dispatch, and comprehensive run tracking with validation.",
+  "description": "Complete autonomous execution engine with task lifecycle management, planning, tool dispatch, and validation workflows.",
   "files": [
     "packages/hench/src/agent/analysis/review.ts",
     "packages/hench/src/agent/analysis/stuck.ts",
@@ -88,5 +88,5 @@
   "cohesion": 1,
   "coupling": 0,
   "fileCount": 80,
-  "lineCount": 14439
+  "lineCount": 14554
 }

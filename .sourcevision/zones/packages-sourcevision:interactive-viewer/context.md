@@ -8,13 +8,13 @@ Zone: Interactive Viewer (`packages-sourcevision:interactive-viewer`)
 Files: 46, Cohesion: 0.96, Coupling: 0.04
 Description: Preact single-page application that visualizes analysis results through force-directed graphs, zone maps, route trees, and findings panels, consuming only schema types with zero analyzer dependencies.
 Entry points: packages/sourcevision/src/schema/v1.ts
-Lines: 6186
+Lines: 6188
 
 </zone>
 
 <files>
 
-packages/sourcevision/src/schema/v1.ts (TypeScript, 314 lines, source)
+packages/sourcevision/src/schema/v1.ts (TypeScript, 316 lines, source)
 packages/sourcevision/src/viewer/components/constants.ts (TypeScript, 16 lines, source)
 packages/sourcevision/src/viewer/components/detail-panel.ts (TypeScript, 309 lines, source)
 packages/sourcevision/src/viewer/components/guide.ts (TypeScript, 106 lines, source)
@@ -123,12 +123,6 @@ Incoming (other zones → this zone):
   ← packages-sourcevision:test-suite: packages/sourcevision/src/schema/validate.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/schema/validate.ts → packages/sourcevision/src/schema/v1.ts
 
 </imports>
-
-<findings>
-
-[anti-pattern] [warning] Direct import of schema/validate.ts from test-suite zone violates zone boundaries and forces Zod bundling into browser code where validation could be optional
-
-</findings>
 
 <insights>
 
