@@ -671,4 +671,213 @@ describe("Rex API routes", () => {
       expect(data.message).toBe("Nothing to prune");
     });
   });
+
+  // ── Accept Edited Proposals ─────────────────────────────────────
+
+  describe("POST /api/rex/proposals/accept-edited", () => {
+    it("accepts edited proposals and creates PRD items", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/proposals/accept-edited`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposals: [{
+            epic: { title: "New Epic", description: "Epic desc" },
+            features: [{
+              title: "New Feature",
+              description: "Feature desc",
+              tasks: [{
+                title: "New Task",
+                description: "Task desc",
+                priority: "high",
+                tags: ["ui", "core"],
+                selected: true,
+              }],
+              selected: true,
+            }],
+            selected: true,
+          }],
+        }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.ok).toBe(true);
+      expect(data.acceptedCount).toBe(1);
+      expect(data.addedCount).toBe(3); // epic + feature + task
+
+      // Verify PRD was updated
+      const prdRes = await fetch(`http://localhost:${port}/api/rex/prd`);
+      const prd = await prdRes.json();
+      const newEpic = prd.items.find((i: { title: string }) => i.title === "New Epic");
+      expect(newEpic).toBeTruthy();
+      expect(newEpic.description).toBe("Epic desc");
+      expect(newEpic.children[0].title).toBe("New Feature");
+      expect(newEpic.children[0].children[0].title).toBe("New Task");
+      expect(newEpic.children[0].children[0].priority).toBe("high");
+      expect(newEpic.children[0].children[0].tags).toEqual(["ui", "core"]);
+    });
+
+    it("skips deselected items", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/proposals/accept-edited`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposals: [{
+            epic: { title: "Partial Epic" },
+            features: [
+              {
+                title: "Selected Feature",
+                tasks: [
+                  { title: "Selected Task", selected: true },
+                  { title: "Deselected Task", selected: false },
+                ],
+                selected: true,
+              },
+              {
+                title: "Deselected Feature",
+                tasks: [{ title: "Task in Deselected", selected: true }],
+                selected: false,
+              },
+            ],
+            selected: true,
+          }],
+        }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.addedCount).toBe(3); // epic + 1 feature + 1 task (not deselected feature/task)
+    });
+
+    it("validates required titles for selected items", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/proposals/accept-edited`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposals: [{
+            epic: { title: "" }, // empty title
+            features: [],
+            selected: true,
+          }],
+        }),
+      });
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error).toContain("Validation failed");
+      expect(data.error).toContain("epic title is required");
+    });
+
+    it("skips validation for deselected items with empty titles", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/proposals/accept-edited`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposals: [
+            {
+              epic: { title: "" },
+              features: [],
+              selected: false, // deselected — should not fail validation
+            },
+            {
+              epic: { title: "Valid Epic" },
+              features: [],
+              selected: true,
+            },
+          ],
+        }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.ok).toBe(true);
+      expect(data.addedCount).toBe(1); // only the valid epic
+    });
+
+    it("supports validate-only mode", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/proposals/accept-edited`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposals: [{
+            epic: { title: "" },
+            features: [],
+            selected: true,
+          }],
+          validateOnly: true,
+        }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.ok).toBe(false);
+      expect(data.errors).toHaveLength(1);
+      expect(data.errors[0]).toContain("epic title is required");
+    });
+
+    it("returns 400 when no proposals provided", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/proposals/accept-edited`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proposals: [] }),
+      });
+      expect(res.status).toBe(400);
+    });
+
+    it("returns 400 when nothing is selected", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/proposals/accept-edited`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposals: [{
+            epic: { title: "Unselected" },
+            features: [],
+            selected: false,
+          }],
+        }),
+      });
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error).toContain("No items selected");
+    });
+
+    it("clears pending proposals file after acceptance", async () => {
+      // Write pending proposals
+      await writeFile(
+        join(rexDir, "pending-proposals.json"),
+        JSON.stringify([{ epic: { title: "Pending" }, features: [] }]),
+      );
+
+      await fetch(`http://localhost:${port}/api/rex/proposals/accept-edited`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposals: [{
+            epic: { title: "Accepted Epic" },
+            features: [],
+            selected: true,
+          }],
+        }),
+      });
+
+      const pending = JSON.parse(readFileSync(join(rexDir, "pending-proposals.json"), "utf-8"));
+      expect(pending).toEqual([]);
+    });
+
+    it("logs acceptance in execution log", async () => {
+      await fetch(`http://localhost:${port}/api/rex/proposals/accept-edited`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposals: [{
+            epic: { title: "Logged Epic" },
+            features: [],
+            selected: true,
+          }],
+        }),
+      });
+
+      const logPath = join(rexDir, "execution-log.jsonl");
+      const logContent = readFileSync(logPath, "utf-8");
+      const lines = logContent.trim().split("\n").filter(Boolean);
+      const lastEntry = JSON.parse(lines[lines.length - 1]);
+      expect(lastEntry.event).toBe("proposals_edited_accept");
+      expect(lastEntry.detail).toContain("proposal editor");
+    });
+  });
 });

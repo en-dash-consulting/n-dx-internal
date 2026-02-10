@@ -7,6 +7,8 @@
 
 import { h, Fragment } from "preact";
 import { useState, useCallback } from "preact/hooks";
+import { ProposalEditor } from "./proposal-editor.js";
+import type { RawProposal } from "./proposal-editor.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -48,6 +50,7 @@ export function AnalyzePanel({ onPrdChanged }: AnalyzePanelProps) {
   const [accepting, setAccepting] = useState(false);
   const [acceptedIndices, setAcceptedIndices] = useState<Set<number>>(new Set());
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+  const [editing, setEditing] = useState(false);
 
   // Load any pending proposals on first render
   const loadPending = useCallback(async () => {
@@ -172,6 +175,26 @@ export function AnalyzePanel({ onPrdChanged }: AnalyzePanelProps) {
     setSelectedIndices(new Set());
   }, []);
 
+  const handleEditorAccepted = useCallback(() => {
+    setEditing(false);
+    setProposals([]);
+    setState("idle");
+    onPrdChanged();
+  }, [onPrdChanged]);
+
+  // When in editing mode, render the ProposalEditor
+  if (editing && proposals.length > 0) {
+    return h(
+      "div",
+      { class: "rex-analyze-panel" },
+      h(ProposalEditor, {
+        proposals: proposals as RawProposal[],
+        onAccepted: handleEditorAccepted,
+        onCancel: () => setEditing(false),
+      }),
+    );
+  }
+
   return h(
     "div",
     { class: "rex-analyze-panel" },
@@ -249,8 +272,13 @@ export function AnalyzePanel({ onPrdChanged }: AnalyzePanelProps) {
             ),
           ),
 
-          // Accept button
+          // Accept bar with Review & Edit and Accept buttons
           h("div", { class: "rex-analyze-accept-bar" },
+            h("button", {
+              class: "rex-analyze-btn rex-analyze-btn-review",
+              onClick: () => setEditing(true),
+              disabled: accepting,
+            }, "\u270E Review & Edit"),
             h("button", {
               class: "rex-analyze-btn rex-analyze-btn-accept",
               onClick: handleAccept,

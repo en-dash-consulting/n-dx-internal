@@ -17,6 +17,7 @@
  * POST  /api/rex/analyze          — trigger analysis (scan project)
  * GET   /api/rex/proposals        — get pending proposals
  * POST  /api/rex/proposals/accept — accept pending proposals
+ * POST  /api/rex/proposals/accept-edited — accept edited proposals (inline-edited data)
  * GET   /api/rex/log              — execution log (?limit=N)
  */
 
@@ -493,6 +494,11 @@ export function handleRexRoute(
   // POST /api/rex/proposals/accept — accept pending proposals
   if (path === "proposals/accept" && method === "POST") {
     return handleAcceptProposals(req, res, ctx, broadcast);
+  }
+
+  // POST /api/rex/proposals/accept-edited — accept edited proposals (inline-edited data)
+  if (path === "proposals/accept-edited" && method === "POST") {
+    return handleAcceptEditedProposals(req, res, ctx, broadcast);
   }
 
   return false;
@@ -1800,6 +1806,176 @@ async function handleAcceptProposals(
     }
 
     jsonResponse(res, 200, { ok: true, acceptedCount: toAccept.length, addedCount });
+  } catch (err) {
+    errorResponse(res, 400, String(err));
+  }
+  return true;
+}
+
+/** Edited proposal shape sent from the proposal editor. */
+interface EditedProposalTask {
+  title: string;
+  description?: string;
+  acceptanceCriteria?: string[];
+  priority?: string;
+  tags?: string[];
+  selected: boolean;
+}
+
+interface EditedProposalFeature {
+  title: string;
+  description?: string;
+  tasks: EditedProposalTask[];
+  selected: boolean;
+}
+
+interface EditedProposal {
+  epic: { title: string; description?: string };
+  features: EditedProposalFeature[];
+  selected: boolean;
+}
+
+/** Validate an edited proposal tree. Returns an array of error messages. */
+function validateEditedProposals(proposals: EditedProposal[]): string[] {
+  const errors: string[] = [];
+  for (let pi = 0; pi < proposals.length; pi++) {
+    const p = proposals[pi];
+    if (!p.selected) continue;
+    if (!p.epic?.title?.trim()) {
+      errors.push(`Proposal ${pi + 1}: epic title is required`);
+    }
+    for (let fi = 0; fi < (p.features ?? []).length; fi++) {
+      const f = p.features[fi];
+      if (!f.selected) continue;
+      if (!f.title?.trim()) {
+        errors.push(`Proposal ${pi + 1}, feature ${fi + 1}: title is required`);
+      }
+      for (let ti = 0; ti < (f.tasks ?? []).length; ti++) {
+        const t = f.tasks[ti];
+        if (!t.selected) continue;
+        if (!t.title?.trim()) {
+          errors.push(`Proposal ${pi + 1}, feature ${fi + 1}, task ${ti + 1}: title is required`);
+        }
+      }
+    }
+  }
+  return errors;
+}
+
+/** Handle POST /api/rex/proposals/accept-edited — accept edited proposals with inline changes */
+async function handleAcceptEditedProposals(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): Promise<boolean> {
+  const doc = loadPRD(ctx);
+  if (!doc) {
+    errorResponse(res, 404, "No PRD data found");
+    return true;
+  }
+
+  try {
+    const body = await readBody(req);
+    const input = JSON.parse(body) as {
+      proposals: EditedProposal[];
+      /** If true, only validate — don't commit changes. */
+      validateOnly?: boolean;
+    };
+
+    if (!Array.isArray(input.proposals) || input.proposals.length === 0) {
+      errorResponse(res, 400, "No proposals provided");
+      return true;
+    }
+
+    // Validate
+    const errors = validateEditedProposals(input.proposals);
+    if (input.validateOnly) {
+      jsonResponse(res, 200, { ok: errors.length === 0, errors });
+      return true;
+    }
+    if (errors.length > 0) {
+      errorResponse(res, 400, `Validation failed: ${errors.join("; ")}`);
+      return true;
+    }
+
+    let addedCount = 0;
+    const selectedProposals = input.proposals.filter((p) => p.selected);
+
+    for (const p of selectedProposals) {
+      const epicId = randomUUID();
+      const epicItem: PRDItemRecord = {
+        id: epicId,
+        title: p.epic.title.trim(),
+        level: "epic",
+        status: "pending",
+        source: "web-proposal-editor",
+      };
+      if (p.epic.description?.trim()) epicItem.description = p.epic.description.trim();
+      doc.items.push(epicItem);
+      addedCount++;
+
+      for (const f of p.features) {
+        if (!f.selected) continue;
+        const featureId = randomUUID();
+        const featureItem: PRDItemRecord = {
+          id: featureId,
+          title: f.title.trim(),
+          level: "feature",
+          status: "pending",
+          source: "web-proposal-editor",
+        };
+        if (f.description?.trim()) featureItem.description = f.description.trim();
+        insertChild(doc.items, epicId, featureItem);
+        addedCount++;
+
+        for (const t of f.tasks) {
+          if (!t.selected) continue;
+          const taskId = randomUUID();
+          const taskItem: PRDItemRecord = {
+            id: taskId,
+            title: t.title.trim(),
+            level: "task",
+            status: "pending",
+            source: "web-proposal-editor",
+          };
+          if (t.description?.trim()) taskItem.description = t.description.trim();
+          if (t.acceptanceCriteria?.length) taskItem.acceptanceCriteria = t.acceptanceCriteria;
+          if (t.priority && isPriority(t.priority)) taskItem.priority = t.priority;
+          if (t.tags?.length) taskItem.tags = t.tags;
+          insertChild(doc.items, featureId, taskItem);
+          addedCount++;
+        }
+      }
+    }
+
+    if (addedCount === 0) {
+      errorResponse(res, 400, "No items selected for acceptance");
+      return true;
+    }
+
+    savePRD(ctx, doc);
+
+    // Clear pending proposals file
+    const pendingPath = join(ctx.rexDir, "pending-proposals.json");
+    if (existsSync(pendingPath)) {
+      try { writeFileSync(pendingPath, "[]"); } catch { /* ignore */ }
+    }
+
+    appendLog(ctx, {
+      timestamp: new Date().toISOString(),
+      event: "proposals_edited_accept",
+      detail: `Accepted ${selectedProposals.length} edited proposals (${addedCount} items) via proposal editor`,
+    });
+
+    if (broadcast) {
+      broadcast({
+        type: "rex:prd-changed",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    jsonResponse(res, 200, { ok: true, acceptedCount: selectedProposals.length, addedCount });
   } catch (err) {
     errorResponse(res, 400, String(err));
   }
