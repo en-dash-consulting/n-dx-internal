@@ -140,6 +140,69 @@ describe("rex prune", () => {
     expect(doc.items[0].children[0].title).toBe("Active Task");
   });
 
+  it("--yes flag skips confirmation and prunes", () => {
+    const epicOut = run(["add", "epic", "--title=Auto Epic", tmpDir]);
+    const epicId = epicOut.match(/ID: (.+)/)?.[1]?.trim();
+    run(["update", epicId!, "--status=in_progress", "--force", tmpDir]);
+    run(["update", epicId!, "--status=completed", "--force", tmpDir]);
+
+    const output = run(["prune", "--yes", "--no-consolidate", tmpDir]);
+    expect(output).toContain("Pruned 1 completed item");
+    expect(output).toContain("Auto Epic");
+  });
+
+  it("-y short flag skips confirmation and prunes", () => {
+    const epicOut = run(["add", "epic", "--title=Short Flag Epic", tmpDir]);
+    const epicId = epicOut.match(/ID: (.+)/)?.[1]?.trim();
+    run(["update", epicId!, "--status=in_progress", "--force", tmpDir]);
+    run(["update", epicId!, "--status=completed", "--force", tmpDir]);
+
+    const output = run(["prune", "-y", "--no-consolidate", tmpDir]);
+    expect(output).toContain("Pruned 1 completed item");
+    expect(output).toContain("Short Flag Epic");
+  });
+
+  it("dry-run shows impact counts with subtree details", () => {
+    // Create an epic with a task (2-item subtree)
+    const epicOut = run(["add", "epic", "--title=Impact Epic", tmpDir]);
+    const epicId = epicOut.match(/ID: (.+)/)?.[1]?.trim();
+
+    const taskOut = run(["add", "task", "--title=Impact Task", `--parent=${epicId}`, tmpDir]);
+    const taskId = taskOut.match(/ID: (.+)/)?.[1]?.trim();
+
+    run(["update", epicId!, "--status=in_progress", "--force", tmpDir]);
+    run(["update", taskId!, "--status=in_progress", "--force", tmpDir]);
+    run(["update", taskId!, "--status=completed", "--force", tmpDir]);
+    run(["update", epicId!, "--status=completed", "--force", tmpDir]);
+
+    const dryOutput = run(["prune", "--dry-run", "--no-consolidate", tmpDir]);
+    expect(dryOutput).toContain("Would prune:");
+    expect(dryOutput).toContain("Impact Epic");
+    expect(dryOutput).toContain("2 items including children");
+    expect(dryOutput).toContain("Impact: 2 total items");
+    expect(dryOutput).toContain("1 epic");
+  });
+
+  it("dry-run JSON output includes totalItems count", () => {
+    const epicOut = run(["add", "epic", "--title=Total Epic", tmpDir]);
+    const epicId = epicOut.match(/ID: (.+)/)?.[1]?.trim();
+
+    const taskOut = run(["add", "task", "--title=Total Task", `--parent=${epicId}`, tmpDir]);
+    const taskId = taskOut.match(/ID: (.+)/)?.[1]?.trim();
+
+    run(["update", epicId!, "--status=in_progress", "--force", tmpDir]);
+    run(["update", taskId!, "--status=in_progress", "--force", tmpDir]);
+    run(["update", taskId!, "--status=completed", "--force", tmpDir]);
+    run(["update", epicId!, "--status=completed", "--force", tmpDir]);
+
+    const output = run(["prune", "--dry-run", "--format=json", "--no-consolidate", tmpDir]);
+    const parsed = JSON.parse(output);
+    expect(parsed.dryRun).toBe(true);
+    expect(parsed.totalItems).toBe(2);
+    expect(parsed.items).toHaveLength(1);
+    expect(parsed.items[0].title).toBe("Total Epic");
+  });
+
   it("logs prune events to execution log", async () => {
     const epicOut = run(["add", "epic", "--title=Log Epic", tmpDir]);
     const epicId = epicOut.match(/ID: (.+)/)?.[1]?.trim();

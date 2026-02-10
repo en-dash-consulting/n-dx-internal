@@ -52,6 +52,8 @@ function parseArgs(argv: string[]): {
       flags.help = "true";
     } else if (arg === "-q") {
       flags.quiet = "true";
+    } else if (arg === "-y") {
+      flags.yes = "true";
     } else if (!command) {
       command = arg;
     } else {

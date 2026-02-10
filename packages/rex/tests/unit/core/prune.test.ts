@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { PRDItem } from "../../../src/schema/v1.js";
-import { isFullyCompleted, findPrunableItems, pruneItems } from "../../../src/core/prune.js";
+import { isFullyCompleted, findPrunableItems, pruneItems, countSubtree } from "../../../src/core/prune.js";
 
 function item(overrides: Partial<PRDItem> & { id: string; title: string; level: PRDItem["level"] }): PRDItem {
   return { status: "pending", ...overrides };
@@ -261,5 +261,47 @@ describe("pruneItems", () => {
     expect(prunedEpic.children![0].id).toBe("f1");
     expect(prunedEpic.children![0].children).toHaveLength(1);
     expect(prunedEpic.children![0].children![0].id).toBe("t1");
+  });
+});
+
+describe("countSubtree", () => {
+  it("counts a single leaf item as 1", () => {
+    expect(countSubtree(item({ id: "1", title: "Leaf", level: "task" }))).toBe(1);
+  });
+
+  it("counts item and all children", () => {
+    const epic = item({
+      id: "e1", title: "Epic", level: "epic", status: "completed",
+      children: [
+        item({ id: "f1", title: "Feature", level: "feature", status: "completed" }),
+        item({ id: "f2", title: "Feature 2", level: "feature", status: "completed" }),
+      ],
+    });
+    expect(countSubtree(epic)).toBe(3);
+  });
+
+  it("counts deeply nested subtrees", () => {
+    const epic = item({
+      id: "e1", title: "Epic", level: "epic", status: "completed",
+      children: [
+        item({
+          id: "f1", title: "Feature", level: "feature", status: "completed",
+          children: [
+            item({
+              id: "t1", title: "Task", level: "task", status: "completed",
+              children: [
+                item({ id: "s1", title: "Subtask", level: "subtask", status: "completed" }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    });
+    expect(countSubtree(epic)).toBe(4);
+  });
+
+  it("counts item with empty children array as 1", () => {
+    const leaf = item({ id: "1", title: "Leaf", level: "task", children: [] });
+    expect(countSubtree(leaf)).toBe(1);
   });
 });

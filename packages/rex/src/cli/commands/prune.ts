@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { writeFile } from "node:fs/promises";
 import { resolveStore } from "../../store/index.js";
-import { findPrunableItems, pruneItems } from "../../core/prune.js";
+import { findPrunableItems, pruneItems, countSubtree } from "../../core/prune.js";
 import { applyReshape } from "../../core/reshape.js";
 import type { ReshapeProposal } from "../../core/reshape.js";
 import { toCanonicalJSON } from "../../core/canonical.js";
@@ -43,6 +43,65 @@ async function loadArchive(archivePath: string): Promise<PruneArchive> {
   }
 }
 
+/**
+ * Ask a single yes/no question in a TTY. Returns true for "y"/"yes".
+ */
+async function confirmPrompt(question: string): Promise<boolean> {
+  const readline = await import("node:readline");
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  const answer = await new Promise<string>((resolve) =>
+    rl.question(question, resolve),
+  );
+  rl.close();
+
+  return answer.trim().toLowerCase() === "y" || answer.trim().toLowerCase() === "yes";
+}
+
+/**
+ * Format a pruning impact summary for interactive preview.
+ *
+ * Groups prunable items by level and shows individual/total counts.
+ */
+function formatPrunePreview(prunable: PRDItem[]): {
+  lines: string[];
+  totalItems: number;
+  byLevel: Record<string, number>;
+} {
+  let totalItems = 0;
+  const byLevel: Record<string, number> = {};
+
+  const lines: string[] = [];
+  for (const item of prunable) {
+    const subtreeCount = countSubtree(item);
+    totalItems += subtreeCount;
+    byLevel[item.level] = (byLevel[item.level] || 0) + 1;
+
+    const childInfo = subtreeCount > 1 ? ` (${subtreeCount} items including children)` : "";
+    lines.push(`  ${icon(item.level)} ${item.title} [${item.id.slice(0, 8)}]${childInfo}`);
+  }
+
+  return { lines, totalItems, byLevel };
+}
+
+/**
+ * Format a level summary like "2 epics, 3 tasks".
+ */
+function formatLevelSummary(byLevel: Record<string, number>): string {
+  const order = ["epic", "feature", "task", "subtask"];
+  const parts: string[] = [];
+  for (const level of order) {
+    const count = byLevel[level];
+    if (count) {
+      parts.push(`${count} ${level}${count === 1 ? "" : "s"}`);
+    }
+  }
+  return parts.join(", ");
+}
+
 export async function cmdPrune(
   dir: string,
   flags: Record<string, string>,
@@ -61,6 +120,7 @@ export async function cmdPrune(
   const dryRun = flags["dry-run"] === "true";
   const skipConsolidate = flags["no-consolidate"] === "true";
   const accept = flags.accept === "true";
+  const autoConfirm = flags.yes === "true" || flags.y === "true";
 
   if (dryRun) {
     // Preview mode — show what would be pruned without mutating.
@@ -69,10 +129,13 @@ export async function cmdPrune(
 
     if (hasPrunable) {
       if (flags.format !== "json") {
+        const preview = formatPrunePreview(prunable);
         result("Would prune:");
-        for (const item of prunable) {
-          result(`  ${icon(item.level)} ${item.title} (${item.id.slice(0, 8)})`);
+        for (const line of preview.lines) {
+          result(line);
         }
+        result("");
+        result(`Impact: ${preview.totalItems} total item${preview.totalItems === 1 ? "" : "s"} (${formatLevelSummary(preview.byLevel)})`);
       }
     } else {
       if (flags.format !== "json") {
@@ -129,6 +192,7 @@ export async function cmdPrune(
       result(JSON.stringify({
         dryRun: true,
         items: hasPrunable ? prunable.map(summarize) : [],
+        ...(hasPrunable ? { totalItems: formatPrunePreview(prunable).totalItems } : {}),
         ...(consolidationProposals.length > 0 ? {
           consolidation: {
             proposals: consolidationProposals.map((p) => ({ id: p.id, ...p.action })),
@@ -140,10 +204,10 @@ export async function cmdPrune(
     return;
   }
 
-  // Prune completed subtrees
-  const pruneResult = pruneItems(doc.items);
+  // Preview what will be pruned before executing
+  const prunable = findPrunableItems(doc.items);
 
-  if (pruneResult.prunedCount === 0) {
+  if (prunable.length === 0) {
     result("Nothing to prune.");
     // Still run consolidation even if nothing was pruned — the PRD may
     // benefit from regrouping regardless.
@@ -153,7 +217,47 @@ export async function cmdPrune(
     return;
   }
 
+  const preview = formatPrunePreview(prunable);
+
+  // Interactive confirmation: show preview and ask before mutating
+  // Skip confirmation for: JSON format, --yes flag, non-TTY, --accept flag
+  const needsConfirmation = flags.format !== "json" && !autoConfirm && !accept && process.stdin.isTTY;
+
+  if (needsConfirmation) {
+    info("Pruning preview:\n");
+    for (const line of preview.lines) {
+      info(line);
+    }
+    info("");
+    info(`Will remove ${preview.totalItems} completed item${preview.totalItems === 1 ? "" : "s"} (${formatLevelSummary(preview.byLevel)}).`);
+    info("Items will be archived to archive.json for recovery.\n");
+
+    const confirmed = await confirmPrompt("Proceed with prune? (y/n) ");
+    if (!confirmed) {
+      result("Prune cancelled.");
+      return;
+    }
+    info("");
+  }
+
+  // Progress helper: shows step-by-step output in human-readable mode only
+  const isJson = flags.format === "json";
+  const progress = (msg: string): void => { if (!isJson) info(msg); };
+
+  // Prune completed subtrees
+  progress("Pruning completed subtrees...");
+  const pruneResult = pruneItems(doc.items);
+
+  if (pruneResult.prunedCount === 0) {
+    result("Nothing to prune.");
+    if (!skipConsolidate && doc.items.length > 0) {
+      await consolidateAfterPrune(dir, rexDir, store, doc, flags);
+    }
+    return;
+  }
+
   // Archive pruned items
+  progress("Archiving pruned items...");
   const archivePath = join(rexDir, ARCHIVE_FILE);
   const archive = await loadArchive(archivePath);
   archive.batches.push({
@@ -165,6 +269,7 @@ export async function cmdPrune(
   await writeFile(archivePath, toCanonicalJSON(archive), "utf-8");
 
   // Persist the pruned document
+  progress("Saving pruned document...");
   await store.saveDocument(doc);
 
   // Log the prune action
@@ -269,6 +374,7 @@ async function consolidateAfterPrune(
     }
 
     // Apply via reshape
+    info("Applying consolidation...");
     const reshapeResult = applyReshape(doc.items, accepted);
 
     for (const err of reshapeResult.errors) {
@@ -277,6 +383,7 @@ async function consolidateAfterPrune(
 
     // Archive any items removed during consolidation
     if (reshapeResult.archivedItems.length > 0) {
+      info("Archiving consolidated items...");
       const archivePath = join(rexDir, ARCHIVE_FILE);
       const archive = await loadArchive(archivePath);
       archive.batches.push({
@@ -291,6 +398,7 @@ async function consolidateAfterPrune(
     }
 
     // Save document
+    info("Saving consolidated document...");
     await store.saveDocument(doc);
 
     // Log the consolidation
@@ -407,6 +515,7 @@ async function smartPrune(
   }
 
   // Apply via reshape
+  info("Applying smart prune...");
   const reshapeResult = applyReshape(doc.items, accepted);
 
   for (const err of reshapeResult.errors) {
@@ -415,6 +524,7 @@ async function smartPrune(
 
   // Archive
   if (reshapeResult.archivedItems.length > 0) {
+    info("Archiving pruned items...");
     const archivePath = join(rexDir, ARCHIVE_FILE);
     const archive = await loadArchive(archivePath);
     archive.batches.push({
@@ -428,6 +538,7 @@ async function smartPrune(
     await writeFile(archivePath, toCanonicalJSON(archive), "utf-8");
   }
 
+  info("Saving document...");
   await store.saveDocument(doc);
 
   await store.appendLog({

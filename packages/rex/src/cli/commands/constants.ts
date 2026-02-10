@@ -43,6 +43,7 @@ Options:
   --task=<id>             Target a specific task (for verify)
   --dry-run               Preview without making changes (for fix, prune, reshape, verify)
   --smart                 LLM-assisted prune (for prune)
+  --yes, -y               Skip confirmation prompt (for prune)
   --no-consolidate        Skip post-prune consolidation pass (for prune)
   --all                   Show all items including completed (for status)
   --coverage              Show test coverage per task (for status)

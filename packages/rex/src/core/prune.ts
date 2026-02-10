@@ -18,7 +18,7 @@ export interface PruneResult {
 /**
  * Count the total number of items in a subtree (item + all descendants).
  */
-function countSubtree(item: PRDItem): number {
+export function countSubtree(item: PRDItem): number {
   let count = 1;
   if (item.children) {
     for (const child of item.children) {
