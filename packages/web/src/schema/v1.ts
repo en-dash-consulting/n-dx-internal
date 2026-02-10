@@ -204,6 +204,8 @@ export interface Zones {
   structureHash?: string;
   /** Per-zone content hashes for detecting code changes within stable zones */
   zoneContentHashes?: Record<string, string>;
+  /** Records the last pass reset: { from: previousPass, to: currentPass } */
+  lastReset?: { from: number; to: number };
 }
 
 // ── Token Usage ─────────────────────────────────────────────────────────────

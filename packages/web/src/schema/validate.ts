@@ -156,6 +156,7 @@ export const ZonesSchema = z.object({
   metaEvaluationCount: z.number().int().nonnegative().optional(),
   structureHash: z.string().optional(),
   zoneContentHashes: z.record(z.string()).optional(),
+  lastReset: z.object({ from: z.number().int().positive(), to: z.number().int().positive() }).optional(),
 });
 
 // ── Components ──────────────────────────────────────────────────────────────

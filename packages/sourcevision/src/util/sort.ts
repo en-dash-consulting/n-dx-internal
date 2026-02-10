@@ -119,6 +119,7 @@ export function sortZonesData(zones: Zones): Zones {
     ...(zones.metaEvaluationCount != null ? { metaEvaluationCount: zones.metaEvaluationCount } : {}),
     ...(zones.structureHash ? { structureHash: zones.structureHash } : {}),
     ...(zones.zoneContentHashes ? { zoneContentHashes: zones.zoneContentHashes } : {}),
+    ...(zones.lastReset ? { lastReset: zones.lastReset } : {}),
   };
 }
 

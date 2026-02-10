@@ -1255,6 +1255,82 @@ describe("analyzeZones structureChanged", () => {
     expect(result.zones.enrichmentPass).toBe(0);
   });
 
+  it("calls onReset callback when structure changes and previousZones had enrichmentPass", async () => {
+    const inventory = makeInventory([
+      makeFileEntry("src/a/x.ts"),
+      makeFileEntry("src/a/y.ts"),
+      makeFileEntry("src/a/z.ts"),
+    ]);
+    const imports = makeImports([
+      makeEdge("src/a/x.ts", "src/a/y.ts"),
+      makeEdge("src/a/y.ts", "src/a/z.ts"),
+      makeEdge("src/a/x.ts", "src/a/z.ts"),
+    ]);
+
+    const firstResult = await analyzeZones(inventory, imports, { enrich: false });
+    const previousZones: Zones = {
+      ...firstResult.zones,
+      enrichmentPass: 5,
+      structureHash: "different-hash-to-force-reset",
+    };
+
+    const onReset = vi.fn();
+    const result = await analyzeZones(inventory, imports, {
+      enrich: false,
+      previousZones,
+      onReset,
+    });
+
+    expect(onReset).toHaveBeenCalledOnce();
+    expect(onReset).toHaveBeenCalledWith(5, 1);
+    // lastReset should also be set in the output zones data
+    expect(result.zones.lastReset).toEqual({ from: 5, to: 1 });
+  });
+
+  it("does not call onReset when structure is unchanged", async () => {
+    const inventory = makeInventory([
+      makeFileEntry("src/a/x.ts"),
+      makeFileEntry("src/a/y.ts"),
+      makeFileEntry("src/a/z.ts"),
+    ]);
+    const imports = makeImports([
+      makeEdge("src/a/x.ts", "src/a/y.ts"),
+      makeEdge("src/a/y.ts", "src/a/z.ts"),
+      makeEdge("src/a/x.ts", "src/a/z.ts"),
+    ]);
+
+    const { zones: firstRun } = await analyzeZones(inventory, imports, { enrich: false });
+    const previousZones: Zones = { ...firstRun, enrichmentPass: 3 };
+
+    const onReset = vi.fn();
+    const result = await analyzeZones(inventory, imports, {
+      enrich: false,
+      previousZones,
+      onReset,
+    });
+
+    expect(onReset).not.toHaveBeenCalled();
+    expect(result.zones.lastReset).toBeUndefined();
+  });
+
+  it("does not call onReset on first run (no previousZones)", async () => {
+    const inventory = makeInventory([
+      makeFileEntry("src/a/x.ts"),
+      makeFileEntry("src/a/y.ts"),
+      makeFileEntry("src/a/z.ts"),
+    ]);
+    const imports = makeImports([
+      makeEdge("src/a/x.ts", "src/a/y.ts"),
+      makeEdge("src/a/y.ts", "src/a/z.ts"),
+      makeEdge("src/a/x.ts", "src/a/z.ts"),
+    ]);
+
+    const onReset = vi.fn();
+    await analyzeZones(inventory, imports, { enrich: false, onReset });
+
+    expect(onReset).not.toHaveBeenCalled();
+  });
+
   it("preserves enrichmentPass when structure is unchanged in fast mode", async () => {
     const inventory = makeInventory([
       makeFileEntry("src/a/x.ts"),

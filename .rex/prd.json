@@ -6409,22 +6409,26 @@
     {
       "id": "e3aa5235-b63b-4298-bbcf-b78c72638387",
       "title": "SourceVision Pass Reset UX Improvements",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-10T20:32:59.887Z",
+      "completedAt": "2026-02-10T20:32:59.887Z",
       "children": [
         {
           "id": "f8963f11-6f0f-464a-a5e4-a7df16cfc992",
           "title": "Pass Reset Status Indication",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Improve user feedback when SourceVision detects changes and resets to lower analysis passes",
           "source": "smart-add",
+          "startedAt": "2026-02-10T20:32:59.824Z",
+          "completedAt": "2026-02-10T20:32:59.824Z",
           "children": [
             {
               "id": "e1aba2dc-31e7-470b-954b-8f107012dc92",
               "title": "Add pass reset notification during analysis",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Display a clear message when SourceVision detects changes and resets from a higher pass (e.g., Pass 5) to a lower pass (e.g., Pass 2) during the same analyze command execution",
               "acceptanceCriteria": [
@@ -6438,7 +6442,9 @@
                 "ux",
                 "feedback"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-10T20:28:21.826Z",
+              "completedAt": "2026-02-10T20:32:59.772Z"
             },
             {
               "id": "cf8aecd3-da57-4085-8d40-c4b0d55dbfb9",
@@ -6553,7 +6559,7 @@
             {
               "id": "a6dd7b7c-9e74-4626-8e27-e4aa11e771ea",
               "title": "Implement floating FAQ button for page-specific help",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Create a floating FAQ button that appears in the content area header, providing contextual help for the current page/section",
               "acceptanceCriteria": [
@@ -6569,7 +6575,8 @@
                 "floating-button"
               ],
               "source": "smart-add",
-              "startedAt": "2026-02-10T20:11:55.019Z"
+              "startedAt": "2026-02-10T20:11:55.019Z",
+              "completedAt": "2026-02-10T20:34:13.649Z"
             }
           ]
         }

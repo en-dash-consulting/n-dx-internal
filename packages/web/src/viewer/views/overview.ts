@@ -201,6 +201,11 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
               ? h("span", { class: "enrichment-badge" },
                   `Pass ${zones.enrichmentPass}${zones.metaEvaluationCount ? ` + ${zones.metaEvaluationCount} meta` : ""}`
                 )
+              : null,
+            zones.lastReset
+              ? h("span", { class: "enrichment-badge reset-badge" },
+                  `Reset from Pass ${zones.lastReset.from} → ${zones.lastReset.to}`
+                )
               : null
           ),
 

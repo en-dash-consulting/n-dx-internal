@@ -208,13 +208,16 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
           info(`  Found ${subAnalyses.length} sub-analysis: ${subAnalyses.map((s) => s.prefix).join(", ")}`);
         }
 
-        let zonesResult = await analyzeZones(inventory, importsData, { enrich, previousZones, perZone, subAnalyses });
+        let zonesResult = await analyzeZones(inventory, importsData, {
+          enrich,
+          previousZones,
+          perZone,
+          subAnalyses,
+          onReset(fromPass, toPass) {
+            info(`  Detected changes, resetting from Pass ${fromPass} to Pass ${toPass}`);
+          },
+        });
         let zones = zonesResult.zones;
-
-        // Show actual pass number after analysis completes (avoids showing stale pass on structure reset)
-        if (enrich && zonesResult.structureChanged && previousZones?.enrichmentPass) {
-          info(`  Structure changed — reset from pass ${previousZones.enrichmentPass} to pass ${zones.enrichmentPass ?? 1}`);
-        }
         if (zonesResult.tokenUsage) {
           accumulateFromAggregate(tokenUsage, zonesResult.tokenUsage);
         }
@@ -231,7 +234,15 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
           for (let p = 0; p < passesNeeded; p++) {
             info(`\n[phase 3] Enrichment pass ${currentPass + p + 2}...`);
             const prevZones = zones;
-            zonesResult = await analyzeZones(inventory, importsData, { enrich: true, previousZones: prevZones, perZone, subAnalyses });
+            zonesResult = await analyzeZones(inventory, importsData, {
+              enrich: true,
+              previousZones: prevZones,
+              perZone,
+              subAnalyses,
+              onReset(fromPass, toPass) {
+                info(`  Detected changes, resetting from Pass ${fromPass} to Pass ${toPass}`);
+              },
+            });
             zones = zonesResult.zones;
             if (zonesResult.tokenUsage) {
               accumulateFromAggregate(tokenUsage, zonesResult.tokenUsage);

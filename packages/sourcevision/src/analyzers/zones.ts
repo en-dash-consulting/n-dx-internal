@@ -589,6 +589,8 @@ export async function analyzeZones(
     previousZones?: Zones;
     perZone?: boolean;
     subAnalyses?: SubAnalysis[];
+    /** Called when structure change is detected, before AI enrichment begins. */
+    onReset?: (fromPass: number, toPass: number) => void;
   }
 ): Promise<AnalyzeZonesResult> {
   const enrich = options?.enrich ?? true;
@@ -774,6 +776,11 @@ export async function analyzeZones(
   const structureHash = computeStructureHash(expandedZones);
   const structureChanged = previousZones?.structureHash !== structureHash;
   const validPrevious = structureChanged ? undefined : previousZones;
+
+  // Notify caller of pass reset before AI enrichment begins
+  if (structureChanged && previousZones?.enrichmentPass && options?.onReset) {
+    options.onReset(previousZones.enrichmentPass, 1);
+  }
 
   // ── Content hashes for stale-finding detection ──
   // Build file → content hash map from inventory (hashes already computed during inventory phase)
@@ -1105,6 +1112,11 @@ export async function analyzeZones(
   // Cap enrichmentPass at 4 for UI display purposes
   const displayPass = enrichmentPass > 4 ? 4 : enrichmentPass;
 
+  // Record reset info for web UI consumption
+  const lastReset = (structureChanged && previousZones?.enrichmentPass)
+    ? { from: previousZones.enrichmentPass, to: 1 }
+    : undefined;
+
   return {
     zones: sortZonesData({
       zones: allZones,
@@ -1116,6 +1128,7 @@ export async function analyzeZones(
       ...(metaEvaluationCount ? { metaEvaluationCount } : {}),
       structureHash,
       zoneContentHashes,
+      ...(lastReset ? { lastReset } : {}),
     }),
     tokenUsage: enrichTokenUsage,
     structureChanged,
