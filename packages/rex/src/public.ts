@@ -13,9 +13,10 @@
 export { resolveStore } from "./store/index.js";
 export type { PRDStore } from "./store/types.js";
 
-// ---- Schema types -----------------------------------------------------------
+// ---- Schema types & constants -----------------------------------------------
 
-export type { PRDItem, ItemStatus } from "./schema/v1.js";
+export type { PRDItem, PRDDocument, ItemLevel, ItemStatus, Priority } from "./schema/v1.js";
+export { PRIORITY_ORDER, LEVEL_HIERARCHY } from "./schema/v1.js";
 
 // ---- Core: tree utilities ---------------------------------------------------
 

@@ -1,4 +1,23 @@
 #!/usr/bin/env node
+/**
+ * Hench CLI entry point.
+ *
+ * Package architecture — functional subzones:
+ *
+ *   cli/         CLI interface: arg parsing, command dispatch, output formatting
+ *   agent/       Core agent logic: run loops, brief assembly, review & analysis
+ *     lifecycle/ Agent execution loops and token tracking
+ *     planning/  Task brief assembly and system prompt generation
+ *     analysis/  Post-run review, summary, and stuck detection
+ *   tools/       Tool integrations: shell exec, file ops, git, Rex, test runner
+ *   guard/       Security: command allowlisting, path validation, shell blocking
+ *   store/       Persistence: run records, config I/O
+ *   schema/      Config schema and validation
+ *   types/       Shared type definitions
+ *   validation/  Completion validation rules
+ *
+ * @module hench/cli
+ */
 
 import { resolve } from "node:path";
 import { usage } from "./commands/constants.js";
