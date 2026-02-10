@@ -68,12 +68,17 @@ function findItemById(items: PRDItemRecord[], id: string): PRDItemRecord | null 
   return null;
 }
 
+// ── Rex domain types (mirrors routes-rex.ts local types) ────────────
+
+/** @see packages/rex/src/schema/v1.ts — ItemLevel */
+type ItemLevel = "epic" | "feature" | "task" | "subtask";
+
 // ── Validation checks ────────────────────────────────────────────────
 
 /** Valid parent levels for each item level. null = root allowed.
  *  Duplicated from packages/rex/src/schema/v1.ts — LEVEL_HIERARCHY.
  *  @see routes-rex.ts header comment for rationale. */
-const LEVEL_HIERARCHY: Record<string, Array<string | null>> = {
+const LEVEL_HIERARCHY: Record<ItemLevel, Array<ItemLevel | null>> = {
   epic: [null],
   feature: ["epic"],
   task: ["feature", "epic"],
@@ -107,15 +112,21 @@ interface StuckResult {
   reason: string;
 }
 
+/** Type guard: narrows a string to ItemLevel. */
+function isItemLevel(value: string): value is ItemLevel {
+  return (value === "epic" || value === "feature" || value === "task" || value === "subtask");
+}
+
 function findOrphanedItems(items: PRDItemRecord[]): OrphanResult[] {
   const orphans: OrphanResult[] = [];
   for (const { item, parentLevel } of walkTree(items)) {
+    if (!isItemLevel(item.level)) continue;
     const allowedParents = LEVEL_HIERARCHY[item.level];
     if (!allowedParents) continue;
-    if (!allowedParents.includes(parentLevel)) {
+    if (!allowedParents.includes(parentLevel as ItemLevel | null)) {
       const placement = parentLevel === null ? "root" : `under ${parentLevel}`;
       const expected = allowedParents
-        .map((l) => (l === null ? "root" : l))
+        .map((l: ItemLevel | null) => (l === null ? "root" : l))
         .join(" or ");
       orphans.push({
         itemId: item.id,

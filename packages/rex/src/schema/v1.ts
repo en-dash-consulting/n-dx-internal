@@ -18,8 +18,11 @@
  *   verified by compile-time consistency tests.
  *
  * - **Sourcevision server routes** duplicate domain constants (PRIORITY_ORDER,
- *   LEVEL_HIERARCHY) to avoid a package dependency. Each duplicate is
- *   annotated with `@see` references to this file.
+ *   LEVEL_HIERARCHY) and type aliases (Priority, ItemLevel) to avoid a
+ *   package dependency. Each duplicate uses local type aliases with type
+ *   guards at the JSON boundary, ensuring type-safe constant lookups while
+ *   handling unvalidated input. Each duplicate is annotated with `@see`
+ *   references to this file.
  *
  * When modifying types or constants here, also update:
  *   - packages/sourcevision/src/viewer/components/prd-tree/types.ts

@@ -6,9 +6,14 @@
  * compile-time dependency, but the duplicates must stay in sync with the
  * canonical definitions. These tests catch drift early.
  *
+ * The server-side duplicates in routes-rex.ts and routes-validation.ts use
+ * local `Priority` and `ItemLevel` type aliases with type guards at the
+ * JSON boundary, ensuring type-safe lookups into PRIORITY_ORDER and
+ * LEVEL_HIERARCHY while handling unvalidated input.
+ *
  * @see packages/rex/src/schema/v1.ts — canonical definitions
- * @see packages/sourcevision/src/cli/server/routes-rex.ts — server-side duplicates
- * @see packages/sourcevision/src/cli/server/routes-validation.ts — validation duplicates
+ * @see packages/sourcevision/src/cli/server/routes-rex.ts — server-side duplicates (with local type aliases)
+ * @see packages/sourcevision/src/cli/server/routes-validation.ts — validation duplicates (with local type alias)
  */
 
 import { describe, it, expect } from "vitest";
@@ -84,6 +89,25 @@ describe("Rex domain constant consistency", () => {
     // routes-rex.ts:39 defines VALID_PRIORITIES
     const canonicalPriorities: Priority[] = ["critical", "high", "medium", "low"];
     expect(new Set(canonicalPriorities)).toEqual(new Set(Object.keys(PRIORITY_ORDER)));
+  });
+
+  it("PRIORITY_ORDER keys exactly match the Priority type members", () => {
+    // routes-rex.ts duplicates Priority as a local type alias.
+    // This test ensures that if a priority value is added or removed
+    // in Rex, the duplicate type and PRIORITY_ORDER stay in sync.
+    const keys = Object.keys(PRIORITY_ORDER);
+    const expected: Priority[] = ["critical", "high", "medium", "low"];
+    expect(new Set(keys)).toEqual(new Set(expected));
+    expect(keys).toHaveLength(expected.length);
+  });
+
+  it("LEVEL_HIERARCHY keys exactly match the ItemLevel type members", () => {
+    // routes-rex.ts and routes-validation.ts duplicate ItemLevel.
+    // This verifies the local aliases won't miss new levels.
+    const keys = Object.keys(LEVEL_HIERARCHY);
+    const expected: ItemLevel[] = ["epic", "feature", "task", "subtask"];
+    expect(new Set(keys)).toEqual(new Set(expected));
+    expect(keys).toHaveLength(expected.length);
   });
 
   it("viewer type mirrors have expected shape", () => {

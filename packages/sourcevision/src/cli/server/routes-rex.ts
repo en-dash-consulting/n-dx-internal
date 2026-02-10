@@ -29,7 +29,8 @@ import type { WebSocketBroadcaster } from "./websocket.js";
 const REX_PREFIX = "/api/rex/";
 
 // --------------------------------------------------------------------------
-// Rex domain constants — intentionally duplicated from packages/rex/src/schema/v1.ts.
+// Rex domain types and constants — intentionally duplicated from
+// packages/rex/src/schema/v1.ts.
 //
 // Sourcevision does not depend on Rex as a package to keep the two
 // independent at both compile-time and runtime. This is a deliberate
@@ -45,13 +46,30 @@ const REX_PREFIX = "/api/rex/";
 // If the canonical definitions in Rex change, update these to match.
 // @see packages/rex/src/schema/v1.ts — canonical source of truth
 // --------------------------------------------------------------------------
-const VALID_LEVELS = new Set(["epic", "feature", "task", "subtask"]);
+
+/** @see packages/rex/src/schema/v1.ts — Priority */
+type Priority = "critical" | "high" | "medium" | "low";
+
+/** @see packages/rex/src/schema/v1.ts — ItemLevel */
+type ItemLevel = "epic" | "feature" | "task" | "subtask";
+
+const VALID_LEVELS = new Set<ItemLevel>(["epic", "feature", "task", "subtask"]);
 const VALID_STATUSES = new Set(["pending", "in_progress", "completed", "deferred", "blocked"]);
-const VALID_PRIORITIES = new Set(["critical", "high", "medium", "low"]);
+const VALID_PRIORITIES = new Set<Priority>(["critical", "high", "medium", "low"]);
+
+/** Type guard: narrows a string to Priority if it's a valid priority value. */
+function isPriority(value: string | undefined): value is Priority {
+  return value !== undefined && VALID_PRIORITIES.has(value as Priority);
+}
+
+/** Type guard: narrows a string to ItemLevel if it's a valid level value. */
+function isItemLevel(value: string | undefined): value is ItemLevel {
+  return value !== undefined && VALID_LEVELS.has(value as ItemLevel);
+}
 
 /** Valid parent levels for each item level. null = root allowed.
  *  @see packages/rex/src/schema/v1.ts — LEVEL_HIERARCHY */
-const LEVEL_HIERARCHY: Record<string, Array<string | null>> = {
+const LEVEL_HIERARCHY: Record<ItemLevel, Array<ItemLevel | null>> = {
   epic: [null],
   feature: ["epic"],
   task: ["feature", "epic"],
@@ -59,7 +77,7 @@ const LEVEL_HIERARCHY: Record<string, Array<string | null>> = {
 };
 
 /** Infer child level from parent level. */
-const CHILD_LEVEL: Record<string, string> = {
+const CHILD_LEVEL: Partial<Record<ItemLevel, ItemLevel>> = {
   epic: "feature",
   feature: "task",
   task: "subtask",
@@ -181,7 +199,7 @@ function computeStats(items: PRDItemRecord[]): TreeStats {
  * @see packages/rex/src/schema/v1.ts — PRIORITY_ORDER
  * @see routes-rex.ts header comment for rationale.
  */
-const PRIORITY_ORDER: Record<string, number> = {
+const PRIORITY_ORDER: Record<Priority, number> = {
   critical: 0,
   high: 1,
   medium: 2,
@@ -215,13 +233,13 @@ function findNextTask(items: PRDItemRecord[], completedIds: Set<string>): PRDIte
         if (allChildrenDone) {
           candidates.push({
             item,
-            priority: PRIORITY_ORDER[(item.priority as string) ?? "medium"] ?? 2,
+            priority: PRIORITY_ORDER[isPriority(item.priority as string | undefined) ? item.priority as Priority : "medium"],
           });
         }
       } else {
         candidates.push({
           item,
-          priority: PRIORITY_ORDER[(item.priority as string) ?? "medium"] ?? 2,
+          priority: PRIORITY_ORDER[isPriority(item.priority as string | undefined) ? item.priority as Priority : "medium"],
         });
       }
     }
@@ -580,7 +598,7 @@ async function handleItemAdd(
 
     // Resolve level: explicit > inferred from parent > default to epic
     let level: string;
-    if (input.level && VALID_LEVELS.has(input.level)) {
+    if (input.level && isItemLevel(input.level)) {
       level = input.level;
     } else if (parentId) {
       const parent = findItemById(doc.items, parentId);
@@ -588,9 +606,10 @@ async function handleItemAdd(
         errorResponse(res, 400, `Parent "${parentId}" not found`);
         return true;
       }
-      const inferred = CHILD_LEVEL[parent.level];
+      const parentLevel = parent.level;
+      const inferred = isItemLevel(parentLevel) ? CHILD_LEVEL[parentLevel] : undefined;
       if (!inferred) {
-        errorResponse(res, 400, `Cannot infer child level for parent type "${parent.level}"`);
+        errorResponse(res, 400, `Cannot infer child level for parent type "${parentLevel}"`);
         return true;
       }
       level = inferred;
@@ -599,11 +618,15 @@ async function handleItemAdd(
     }
 
     // Validate parent-child level relationship
-    const allowedParents = LEVEL_HIERARCHY[level];
+    const allowedParents = isItemLevel(level) ? LEVEL_HIERARCHY[level] : undefined;
+    if (!allowedParents) {
+      errorResponse(res, 400, `Unknown level: "${level}"`);
+      return true;
+    }
     const canBeRoot = allowedParents.includes(null);
 
     if (!canBeRoot && !parentId) {
-      const parentNames = allowedParents.filter((p): p is string => p !== null).join(" or ");
+      const parentNames = allowedParents.filter((p): p is ItemLevel => p !== null).join(" or ");
       errorResponse(res, 400, `A ${level} requires a parent (${parentNames})`);
       return true;
     }
@@ -614,8 +637,8 @@ async function handleItemAdd(
         errorResponse(res, 400, `Parent "${parentId}" not found`);
         return true;
       }
-      const allowedParentLevels = allowedParents.filter((p): p is string => p !== null);
-      if (allowedParentLevels.length > 0 && !allowedParentLevels.includes(parent.level)) {
+      const allowedParentLevels = allowedParents.filter((p): p is ItemLevel => p !== null);
+      if (allowedParentLevels.length > 0 && !allowedParentLevels.includes(parent.level as ItemLevel)) {
         errorResponse(res, 400, `A ${level} must be a child of a ${allowedParentLevels.join(" or ")}, not a ${parent.level}`);
         return true;
       }
@@ -630,7 +653,7 @@ async function handleItemAdd(
     };
 
     if (input.description) item.description = input.description;
-    if (input.priority && VALID_PRIORITIES.has(input.priority)) item.priority = input.priority;
+    if (input.priority && isPriority(input.priority)) item.priority = input.priority;
     if (input.tags && Array.isArray(input.tags)) item.tags = input.tags;
     if (input.acceptanceCriteria && Array.isArray(input.acceptanceCriteria)) {
       item.acceptanceCriteria = input.acceptanceCriteria;

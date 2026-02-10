@@ -4727,7 +4727,7 @@
             {
               "id": "c8d334c5-f072-4260-8cad-1ce6f02b27a2",
               "title": "Implement PDF report generation for sourcevision health metrics",
-              "status": "deferred",
+              "status": "pending",
               "level": "task",
               "description": "Create a PDF export feature that compiles sourcevision analysis results into a formatted health report including file inventory, zone architecture, component catalog, and import graph insights",
               "acceptanceCriteria": [
@@ -5709,7 +5709,7 @@
     {
       "id": "cbc09cb4-d975-4c17-8254-0c97f11c8da2",
       "title": "Address pattern issues (2 findings)",
-      "status": "pending",
+      "status": "deleted",
       "level": "feature",
       "description": "- Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic\n- Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated",
       "priority": "high",
@@ -5984,6 +5984,48 @@
           ]
         }
       ]
+    },
+    {
+      "id": "42236330-dbea-4f88-ab7a-4544cda68cc6",
+      "title": "Address observation issues (8 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Contains 61% of project files (80/131) — may be too broad, consider splitting\n- Perfect zone cohesion (1.0) with zero coupling indicates excellent internal architecture and external interface design\n- Security guard system provides multi-layered protection with configurable policies for safe autonomous operation\n- Dual provider architecture (CLI + API) ensures fallback options and different execution contexts\n- Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns\n- Token usage tracking includes comprehensive cost estimation and budget enforcement mechanisms\n- All zones achieve perfect cohesion metrics, suggesting the community detection algorithm successfully identified natural architectural boundaries\n- No cross-zone imports found, indicating excellent architectural discipline and proper abstraction boundaries",
+      "priority": "critical",
+      "source": "sourcevision",
+      "startedAt": "2026-02-10T02:24:42.890Z",
+      "completedAt": "2026-02-10T02:29:15.302Z"
+    },
+    {
+      "id": "aa0e4e31-1cd6-406a-b61b-60c443669e8c",
+      "title": "Address anti-pattern issues (12 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided\n- Cross-zone type imports create compile-time coupling that defeats runtime decoupling strategies - zones appear independent at runtime but are tightly coupled during TypeScript compilation\n- PRIORITY_ORDER constants duplicated across multiple zones with inconsistent typing - shared constants should be extracted to a common location to prevent type drift and maintenance burden\n- PRIORITY_ORDER constant duplicated with different type signatures (Record<Priority,number> vs Record<string,number>) across core/canonical.ts, core/next-task.ts, and analyze/propose.ts creating type safety gaps and maintenance burden\n- Schema index.ts barrel export creates hidden bidirectional coupling by re-exporting from both viewer zone (v1.ts) and test-suite zone (validate.ts) - every analyzer importing schema creates transitive dependencies across three zones\n- Direct import of schema/validate.ts from test-suite zone violates zone boundaries and forces Zod bundling into browser code where validation could be optional\n- schema/validate.ts is misplaced in test-suite zone despite being imported by production CLI and viewer code - this file should be in analysis-engine zone based on its actual usage patterns\n- Architecture creates false dichotomy between coupling and duplication - core domain types like Priority could be shared without compromising zone independence by treating them as stable contracts rather than implementation details\n- Architecture forces choice between runtime coupling and maintenance burden - current solution chooses duplication over dependency, creating divergence risk that outweighs benefits of runtime independence for core domain types\n- Architecture prioritizes runtime independence over type safety and maintainability - the systematic duplication of Priority and PRIORITY_ORDER across 5 locations creates a maintenance nightmare that outweighs any benefits of zero dependencies\n- Systematic duplication of business logic constants (PRIORITY_ORDER) across 4 locations with inconsistent typing creates multiple sources of truth that risk diverging during maintenance - refactor to single shared constant in packages/rex/src/schema/v1.ts and import consistently\n- Type system fragmentation where identical Priority union is defined in both packages/rex/src/schema/v1.ts:7 and packages/sourcevision/src/viewer/components/prd-tree/types.ts:17 - consolidate to single exported type to prevent drift and ensure consistency",
+      "priority": "critical",
+      "source": "sourcevision",
+      "startedAt": "2026-02-10T02:16:22.016Z",
+      "completedAt": "2026-02-10T02:24:13.740Z"
+    },
+    {
+      "id": "ebb3bcca-a71c-4f6e-bbde-c89c9a3f786d",
+      "title": "Address suggestion issues (5 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Extract PRIORITY_ORDER constant to shared location with consistent typing - currently duplicated in 4 locations with inconsistent types (typed Priority vs untyped string Record)\n- Create shared foundation package at packages/shared/src/types.ts containing Priority union and PRIORITY_ORDER constant, then refactor packages/rex/src/schema/v1.ts:7, packages/sourcevision/src/viewer/components/prd-tree/types.ts:17, packages/sourcevision/src/analyzers/prd-integration.ts, and packages/hench/src/core/types.ts to import from single source\n- Consider decomposing hench zone into functional subzones: CLI interface (packages/hench/src/cli/), core agent logic (packages/hench/src/core/), and tool integrations (packages/hench/src/tools/) to improve maintainability of the 80-file zone\n- Implement Priority type import in packages/hench/src/core/types.ts:1 by adding 'import { Priority } from \"../../../rex/src/schema/v1.js\"' and removing the duplicate union definition on line 3\n- Refactor packages/hench/src/core/types.ts to import Priority from packages/rex/src/schema/v1.ts instead of duplicating the union type definition",
+      "priority": "critical",
+      "source": "sourcevision",
+      "startedAt": "2026-02-10T02:29:38.279Z",
+      "completedAt": "2026-02-10T02:35:30.462Z"
+    },
+    {
+      "id": "069f13e7-c85e-40a7-8ab8-b517f41d1f9d",
+      "title": "Address pattern issues (3 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Perfect architectural metrics (cohesion=1, coupling=0) mask underlying design debt - zones achieve statistical perfection while creating practical maintenance burdens through forced duplication of shared business concepts\n- Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic\n- Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated",
+      "priority": "high",
+      "source": "sourcevision"
     }
   ]
 }
