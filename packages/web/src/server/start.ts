@@ -118,6 +118,11 @@ export function startServer(
       watch(dirname(assets.viewerPath), (_eventType, filename) => {
         if (filename === "index.html") {
           watcher.refresh();
+          // Notify connected browsers to reload via WebSocket
+          ws.broadcast({
+            type: "viewer:reload",
+            timestamp: new Date().toISOString(),
+          });
         }
       });
     } catch {

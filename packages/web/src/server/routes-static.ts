@@ -9,7 +9,24 @@ import { fileURLToPath } from "node:url";
 import type { ServerContext } from "./types.js";
 
 const LIVE_RELOAD_SNIPPET = `<script>
-(function(){var last="";setInterval(function(){fetch("/data/status").then(function(r){return r.json()}).then(function(d){var cur=JSON.stringify(d);if(last&&cur!==last)location.reload();last=cur}).catch(function(){})},1500)})();
+(function(){
+  var proto = location.protocol === "https:" ? "wss:" : "ws:";
+  var url = proto + "//" + location.host;
+  var reconnectDelay = 1000;
+  function connect() {
+    var ws = new WebSocket(url);
+    ws.onmessage = function(e) {
+      try {
+        var msg = JSON.parse(e.data);
+        if (msg.type === "viewer:reload") location.reload();
+      } catch(err) {}
+    };
+    ws.onclose = function() {
+      setTimeout(connect, reconnectDelay);
+    };
+  }
+  connect();
+})();
 </script>`;
 
 export interface StaticAssets {
