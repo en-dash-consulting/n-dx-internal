@@ -190,7 +190,7 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
             onKeyDown: (e: KeyboardEvent) => {
               if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleNav("overview"); }
             },
-          }, h(NdxLogoPng, { size: 34 })),
+          }, h(NdxLogoPng, { size: 48 })),
 
           h("div", { class: "sidebar-rail-divider", "aria-hidden": "true" }),
 
@@ -211,7 +211,7 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
                 isActive
                   ? h("span", { class: "sidebar-rail-accent", "aria-hidden": "true" })
                   : null,
-                h(ProductLogoPng, { product, size: 28, class: "sidebar-rail-icon" }),
+                h(ProductLogoPng, { product, size: 48, class: "sidebar-rail-icon" }),
               );
             })
           ),
@@ -279,7 +279,7 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
             },
           },
             section.product
-              ? h(ProductLogoPng, { product: section.product, size: 22, class: "nav-section-logo" })
+              ? h(ProductLogoPng, { product: section.product, size: 40, class: "nav-section-logo" })
               : null,
             h("span", { class: "nav-section-label" }, section.label),
             h("svg", {
