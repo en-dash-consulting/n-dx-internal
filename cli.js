@@ -185,6 +185,18 @@ if (command === "dev") {
   process.exit(code);
 }
 
+if (command === "start") {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".sourcevision"]);
+  try {
+    const code = await runWeb(dir, rest, { run, tools, __dir, commandName: "start" });
+    process.exit(code);
+  } catch (err) {
+    console.error(formatError(err));
+    process.exit(1);
+  }
+}
+
 if (command === "web") {
   const dir = resolveDir(rest);
   requireInit(dir, [".sourcevision"]);
@@ -226,8 +238,9 @@ Orchestration:
   status [dir]          Show PRD status (--format=json, --since, --until)
   usage [dir]           Token usage analytics (--format=json, --group=day|week|month)
   sync [dir]            Sync local PRD with remote adapter (--push, --pull)
+  start [dir]           Start server: dashboard + MCP (--port=N, --background, stop, status)
   dev [dir]             Start dev server with live reload (--port=N, --scope=<pkg>)
-  web [dir]             Start dashboard (--port=N, --background, stop, status)
+  web [dir]             Alias for start (--port=N, --background, stop, status)
   ci [dir]              Run analysis pipeline and validate PRD health
   config [key] [value]  View and edit settings (--json, --help)
 

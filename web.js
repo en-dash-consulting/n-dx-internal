@@ -1,18 +1,20 @@
 /**
- * Web server orchestration for n-dx.
+ * Server orchestration for n-dx.
  *
- * Starts the unified dashboard (@n-dx/web serve) with support for:
+ * Starts the unified server (@n-dx/web serve) with support for:
  *   - Configurable port (--port, config, default 3117)
  *   - Background/daemon mode (--background)
  *   - PID file management (.n-dx-web.pid)
- *   - Graceful stop (ndx web stop)
+ *   - Graceful stop (ndx start stop / ndx web stop)
+ *
+ * Used by both `ndx start` (unified: dashboard + MCP) and `ndx web` (alias).
  *
  * Usage:
- *   ndx web [dir]                    Start dashboard in foreground
- *   ndx web --port=4000 [dir]        Start on custom port
- *   ndx web --background [dir]       Start detached (daemon mode)
- *   ndx web stop [dir]               Stop a background server
- *   ndx web status [dir]             Check if server is running
+ *   ndx start [dir]                  Start server (dashboard + MCP) in foreground
+ *   ndx start --port=4000 [dir]      Start on custom port
+ *   ndx start --background [dir]     Start detached (daemon mode)
+ *   ndx start stop [dir]             Stop a background server
+ *   ndx start status [dir]           Check if server is running
  */
 
 import { spawn } from "child_process";
@@ -124,7 +126,7 @@ function isProcessRunning(pid) {
 /**
  * Stop a running background server.
  */
-async function stopServer(dir) {
+async function stopServer(dir, label = "n-dx server") {
   const info = await readPidFile(dir);
   if (!info) {
     console.log("No background server found.");
@@ -139,7 +141,7 @@ async function stopServer(dir) {
 
   try {
     process.kill(info.pid, "SIGTERM");
-    console.log(`Stopped n-dx dashboard (PID ${info.pid}, port ${info.port}).`);
+    console.log(`Stopped ${label} (PID ${info.pid}, port ${info.port}).`);
     await removePidFile(dir);
     return true;
   } catch (err) {
@@ -151,7 +153,7 @@ async function stopServer(dir) {
 /**
  * Show status of a background server.
  */
-async function showStatus(dir, port) {
+async function showStatus(dir, port, label = "n-dx server") {
   const info = await readPidFile(dir);
   if (!info) {
     console.log("No background server recorded.");
@@ -166,7 +168,7 @@ async function showStatus(dir, port) {
   const portActive = await isPortInUse(info.port);
 
   if (running && portActive) {
-    console.log(`n-dx dashboard is running (PID ${info.pid}, port ${info.port}).`);
+    console.log(`${label} is running (PID ${info.pid}, port ${info.port}).`);
     console.log(`  URL: http://localhost:${info.port}`);
     console.log(`  Started: ${info.startedAt}`);
   } else if (running) {
@@ -180,7 +182,7 @@ async function showStatus(dir, port) {
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 /**
- * Run the web command.
+ * Run the server command (used by both `ndx start` and `ndx web`).
  *
  * @param {string} dir          Project directory
  * @param {string[]} rest       Remaining CLI arguments
@@ -188,8 +190,9 @@ async function showStatus(dir, port) {
  * @param {Function} deps.run   Run a tool script (foreground)
  * @param {object} deps.tools   Tool script paths
  * @param {string} deps.__dir   Root directory of n-dx
+ * @param {string} [deps.commandName="web"]  CLI command name for messaging ("start" or "web")
  */
-export async function runWeb(dir, rest, { run, tools, __dir }) {
+export async function runWeb(dir, rest, { run, tools, __dir, commandName = "web" }) {
   const absDir = resolve(dir);
 
   // Parse flags and detect subcommand
@@ -226,20 +229,24 @@ export async function runWeb(dir, rest, { run, tools, __dir }) {
 
   const isBackground = flags.background || flags.daemon || flags.bg;
 
+  // Labels for user-facing messages
+  const label = commandName === "start" ? "n-dx server" : "n-dx dashboard";
+  const stopCmd = `ndx ${commandName} stop`;
+
   // --- Subcommand: stop ---
   if (subcommand === "stop") {
-    const ok = await stopServer(absDir);
+    const ok = await stopServer(absDir, label);
     return ok ? 0 : 1;
   }
 
   // --- Subcommand: status ---
   if (subcommand === "status") {
-    await showStatus(absDir, port);
+    await showStatus(absDir, port, label);
     return 0;
   }
 
   if (subcommand) {
-    console.error(`Unknown web subcommand: ${subcommand}`);
+    console.error(`Unknown ${commandName} subcommand: ${subcommand}`);
     console.error("Available: stop, status");
     return 1;
   }
@@ -247,9 +254,9 @@ export async function runWeb(dir, rest, { run, tools, __dir }) {
   // --- Check for stale PID / already running ---
   const existing = await readPidFile(absDir);
   if (existing && isProcessRunning(existing.pid)) {
-    console.error(`n-dx dashboard is already running (PID ${existing.pid}, port ${existing.port}).`);
+    console.error(`${label} is already running (PID ${existing.pid}, port ${existing.port}).`);
     console.error(`  URL: http://localhost:${existing.port}`);
-    console.error("Use 'ndx web stop' to stop it first.");
+    console.error(`Use '${stopCmd}' to stop it first.`);
     return 1;
   } else if (existing) {
     // Stale PID file — clean up
@@ -276,9 +283,9 @@ export async function runWeb(dir, rest, { run, tools, __dir }) {
     child.unref();
 
     await writePidFile(absDir, child.pid, port);
-    console.log(`n-dx dashboard started in background (PID ${child.pid}).`);
+    console.log(`${label} started in background (PID ${child.pid}).`);
     console.log(`  URL: http://localhost:${port}`);
-    console.log("Use 'ndx web stop' to stop it.");
+    console.log(`Use '${stopCmd}' to stop it.`);
     return 0;
   }
 

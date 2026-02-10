@@ -5805,7 +5805,7 @@
             {
               "id": "3e08d89e-3488-4220-b9c8-c5511b6c2be5",
               "title": "Implement `ndx start` command with web + MCP",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Add `ndx start` to cli.js that starts the unified server (web dashboard + MCP HTTP endpoints). Supports `--port`, `--background`, `stop`, `status` (same UX as current `ndx web`). Make `ndx web` either an alias for `ndx start` or keep it as web-only for backward compatibility.",
               "acceptanceCriteria": [
@@ -5815,7 +5815,8 @@
                 "PID file management works correctly"
               ],
               "priority": "high",
-              "startedAt": "2026-02-10T04:54:21.510Z"
+              "startedAt": "2026-02-10T04:54:21.510Z",
+              "completedAt": "2026-02-10T05:01:42.515Z"
             },
             {
               "id": "16b5e4ae-b595-4ac0-9c5a-d2664336540d",
@@ -6055,6 +6056,15 @@
       "status": "pending",
       "level": "feature",
       "description": "- Perfect architectural metrics (cohesion=1, coupling=0) mask underlying design debt - zones achieve statistical perfection while creating practical maintenance burdens through forced duplication of shared business concepts\n- Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic\n- Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated",
+      "priority": "high",
+      "source": "sourcevision"
+    },
+    {
+      "id": "7d194bf1-472f-4680-81e2-6ee15f1c2033",
+      "title": "Address observation issues (1 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Hardcoded tool paths in cli.js create brittle coupling to dist/ structure - consider using package.json bin field resolution",
       "priority": "high",
       "source": "sourcevision"
     }
