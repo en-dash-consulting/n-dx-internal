@@ -2047,3 +2047,173 @@
 .prune-confirmation-btn-prune:hover:not(:disabled) {
   filter: brightness(1.1);
 }
+
+/* ── Prune Criteria Configuration ──────────────────────────────── */
+
+.prune-criteria-desc {
+  margin: 0 0 14px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.prune-criteria-section {
+  margin-bottom: 14px;
+}
+
+.prune-criteria-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.prune-criteria-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.prune-criteria-chip {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.prune-criteria-chip:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+.prune-criteria-chip.active {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.prune-criteria-select {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.prune-criteria-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.prune-criteria-hint {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+/* ── Active Criteria Summary ───────────────────────────────────── */
+
+.prune-criteria-active {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 11px;
+}
+
+.prune-criteria-active-label {
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.prune-criteria-active-value {
+  color: var(--text);
+  padding: 1px 8px;
+  background: var(--bg-surface);
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+.prune-criteria-edit-btn {
+  margin-left: auto;
+  padding: 2px 10px;
+  font-size: 11px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.prune-criteria-edit-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Dry-Run Badge ─────────────────────────────────────────────── */
+
+.prune-dryrun-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.prune-dryrun-icon {
+  font-size: 8px;
+}
+
+/* ── Storage Estimation ────────────────────────────────────────── */
+
+.prune-storage-stat {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.prune-storage-savings {
+  font-weight: 700;
+  color: var(--green);
+  margin-right: 2px;
+}
+
+.prune-storage-pct {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* ── Item Age Display ──────────────────────────────────────────── */
+
+.prune-confirmation-item-age {
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.8;
+  flex-shrink: 0;
+}

@@ -412,6 +412,59 @@ describe("Rex API routes", () => {
       const res = await fetch(`http://localhost:${port}/api/rex/prune/preview`);
       expect(res.status).toBe(404);
     });
+
+    it("returns estimated storage savings and level breakdown", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/prune/preview`);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.ok).toBe(true);
+      // Should include storage estimation fields
+      expect(data.estimatedBytes).toBeGreaterThan(0);
+      expect(data.totalPrdBytes).toBeGreaterThan(0);
+      expect(data.estimatedBytes).toBeLessThanOrEqual(data.totalPrdBytes);
+      // Should include level breakdown
+      expect(data.levelBreakdown).toBeDefined();
+      expect(data.levelBreakdown.task).toBe(1); // task-3 is a completed task
+      // Should echo back criteria defaults
+      expect(data.criteria).toBeDefined();
+      expect(data.criteria.minAgeDays).toBe(0);
+      expect(data.criteria.statuses).toEqual(["completed"]);
+    });
+
+    it("filters by minAge query parameter", async () => {
+      // task-3 was completed on 2026-01-01 — more than 30 days ago
+      // With minAge=0, it should be prunable
+      const res0 = await fetch(`http://localhost:${port}/api/rex/prune/preview?minAge=0`);
+      const data0 = await res0.json();
+      expect(data0.hasPrunableItems).toBe(true);
+      expect(data0.items).toHaveLength(1);
+
+      // With minAge=99999, nothing should be old enough
+      const resHigh = await fetch(`http://localhost:${port}/api/rex/prune/preview?minAge=99999`);
+      const dataHigh = await resHigh.json();
+      expect(dataHigh.hasPrunableItems).toBe(false);
+      expect(dataHigh.items).toHaveLength(0);
+    });
+
+    it("filters by statuses query parameter", async () => {
+      // Default: only "completed" — should find task-3
+      const resDefault = await fetch(`http://localhost:${port}/api/rex/prune/preview`);
+      const dataDefault = await resDefault.json();
+      expect(dataDefault.hasPrunableItems).toBe(true);
+
+      // Filter by "deferred" only — should find nothing
+      const resDeferred = await fetch(`http://localhost:${port}/api/rex/prune/preview?statuses=deferred`);
+      const dataDeferred = await resDeferred.json();
+      expect(dataDeferred.hasPrunableItems).toBe(false);
+      expect(dataDeferred.criteria.statuses).toEqual(["deferred"]);
+    });
+
+    it("returns completedAt in prunable items", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/prune/preview`);
+      const data = await res.json();
+      expect(data.items).toHaveLength(1);
+      expect(data.items[0].completedAt).toBe("2026-01-01T00:00:00.000Z");
+    });
   });
 
   describe("POST /api/rex/prune", () => {
@@ -518,6 +571,39 @@ describe("Rex API routes", () => {
         body: JSON.stringify({}),
       });
       expect(res.status).toBe(404);
+    });
+
+    it("prunes with criteria filtering", async () => {
+      // task-3 is completed, should be prunable with default criteria
+      const res = await fetch(`http://localhost:${port}/api/rex/prune`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          confirmCount: 1,
+          criteria: { statuses: ["completed"], minAgeDays: 0 },
+        }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.ok).toBe(true);
+      expect(data.prunedCount).toBe(1);
+      expect(data.prunedItems[0].id).toBe("task-3");
+    });
+
+    it("respects minAge criteria during prune execution", async () => {
+      // task-3 completed on 2026-01-01 — with minAge=99999 nothing should be pruned
+      const res = await fetch(`http://localhost:${port}/api/rex/prune`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          criteria: { statuses: ["completed"], minAgeDays: 99999 },
+        }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.ok).toBe(true);
+      expect(data.prunedCount).toBe(0);
+      expect(data.message).toBe("Nothing to prune");
     });
   });
 });

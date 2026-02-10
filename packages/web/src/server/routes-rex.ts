@@ -470,9 +470,9 @@ export function handleRexRoute(
     }
   }
 
-  // GET /api/rex/prune/preview — preview prunable items
+  // GET /api/rex/prune/preview — preview prunable items (supports criteria params)
   if (path === "prune/preview" && method === "GET") {
-    return handlePrunePreview(res, ctx);
+    return handlePrunePreview(req, res, ctx);
   }
 
   // POST /api/rex/prune — execute prune with optional backup
@@ -1137,6 +1137,33 @@ function pruneItemsLocal(items: PRDItemRecord[]): { pruned: PRDItemRecord[]; pru
   return { pruned, prunedCount };
 }
 
+/**
+ * Remove specific subtrees by ID from the item tree.
+ * Used by criteria-based pruning where we've pre-identified which items to remove.
+ */
+function pruneItemsByIds(
+  items: PRDItemRecord[],
+  ids: Set<string>,
+): { pruned: PRDItemRecord[]; prunedCount: number } {
+  const pruned: PRDItemRecord[] = [];
+  let prunedCount = 0;
+
+  for (let i = items.length - 1; i >= 0; i--) {
+    const item = items[i];
+    if (ids.has(item.id)) {
+      pruned.unshift(item);
+      prunedCount += countSubtreeLocal(item);
+      items.splice(i, 1);
+    } else if (Array.isArray(item.children) && item.children.length > 0) {
+      const childResult = pruneItemsByIds(item.children, ids);
+      pruned.push(...childResult.pruned);
+      prunedCount += childResult.prunedCount;
+    }
+  }
+
+  return { pruned, prunedCount };
+}
+
 /** Summarize a prunable item for API response. */
 function summarizeItem(item: PRDItemRecord): {
   id: string;
@@ -1145,6 +1172,7 @@ function summarizeItem(item: PRDItemRecord): {
   status: string;
   childCount: number;
   totalCount: number;
+  completedAt?: string;
 } {
   return {
     id: item.id,
@@ -1153,7 +1181,74 @@ function summarizeItem(item: PRDItemRecord): {
     status: item.status,
     childCount: Array.isArray(item.children) ? item.children.length : 0,
     totalCount: countSubtreeLocal(item),
+    ...(item.completedAt ? { completedAt: item.completedAt as string } : {}),
   };
+}
+
+// ── Pruning criteria ──────────────────────────────────────────────────
+
+/** Criteria for filtering which items are eligible for pruning. */
+interface PruneCriteria {
+  /** Minimum age in days since completion. 0 = no age filter. */
+  minAgeDays: number;
+  /** Statuses considered eligible. Default: ["completed"]. */
+  statuses: string[];
+}
+
+const DEFAULT_PRUNE_CRITERIA: PruneCriteria = {
+  minAgeDays: 0,
+  statuses: ["completed"],
+};
+
+/**
+ * Check whether an item matches the pruning criteria.
+ *
+ * An item is eligible if:
+ * - Its status (and all descendants') is in the criteria statuses
+ * - It was completed at least `minAgeDays` ago (if completedAt is set)
+ */
+function matchesPruneCriteria(item: PRDItemRecord, criteria: PruneCriteria, now: Date): boolean {
+  // Status check
+  if (!criteria.statuses.includes(item.status)) return false;
+
+  // Age check — only applies when minAgeDays > 0 and completedAt is present
+  if (criteria.minAgeDays > 0 && item.completedAt) {
+    const completedAt = new Date(item.completedAt as string);
+    const ageMs = now.getTime() - completedAt.getTime();
+    const ageDays = ageMs / (1000 * 60 * 60 * 24);
+    if (ageDays < criteria.minAgeDays) return false;
+  }
+
+  // All children must also match
+  if (Array.isArray(item.children) && item.children.length > 0) {
+    return item.children.every((child) => matchesPruneCriteria(child, criteria, now));
+  }
+  return true;
+}
+
+/**
+ * Find top-level prunable subtrees applying criteria.
+ * Like findPrunableItemsLocal but uses criteria matching instead of isFullyCompleted.
+ */
+function findPrunableWithCriteria(
+  items: PRDItemRecord[],
+  criteria: PruneCriteria,
+  now: Date,
+): PRDItemRecord[] {
+  const prunable: PRDItemRecord[] = [];
+  for (const entry of walkTreeLocal(items)) {
+    if (!matchesPruneCriteria(entry.item, criteria, now)) continue;
+    // Skip items whose parent also matches (they'd be pruned as part of parent)
+    const parent = entry.parentId ? findItemById(items, entry.parentId) : null;
+    if (parent && matchesPruneCriteria(parent, criteria, now)) continue;
+    prunable.push(entry.item);
+  }
+  return prunable;
+}
+
+/** Estimate the JSON byte size of a PRD item subtree. */
+function estimateSubtreeBytes(item: PRDItemRecord): number {
+  return JSON.stringify(item).length;
 }
 
 // --------------------------------------------------------------------------
@@ -1180,8 +1275,17 @@ function loadArchiveSync(archivePath: string): PruneArchiveRecord {
   return { schema: "rex/archive/v1", batches: [] };
 }
 
-/** Handle GET /api/rex/prune/preview — preview prunable items */
+/**
+ * Handle GET /api/rex/prune/preview — preview prunable items.
+ *
+ * Supports query params for pruning criteria:
+ *   ?minAge=N      — minimum completion age in days (default: 0)
+ *   ?statuses=a,b  — comma-separated statuses to include (default: "completed")
+ *
+ * Response includes storage estimation (estimatedBytes) and level breakdown.
+ */
 function handlePrunePreview(
+  req: IncomingMessage,
   res: ServerResponse,
   ctx: ServerContext,
 ): boolean {
@@ -1191,14 +1295,51 @@ function handlePrunePreview(
     return true;
   }
 
-  const prunable = findPrunableItemsLocal(doc.items);
+  // Parse criteria from query params
+  const url = req.url || "";
+  const qIdx = url.indexOf("?");
+  const criteria = { ...DEFAULT_PRUNE_CRITERIA };
+  if (qIdx !== -1) {
+    const params = new URLSearchParams(url.slice(qIdx));
+    const minAgeStr = params.get("minAge");
+    if (minAgeStr) {
+      const parsed = parseInt(minAgeStr, 10);
+      if (!isNaN(parsed) && parsed >= 0) criteria.minAgeDays = parsed;
+    }
+    const statusesStr = params.get("statuses");
+    if (statusesStr) {
+      criteria.statuses = statusesStr.split(",").filter(Boolean);
+    }
+  }
+
+  const now = new Date();
+  const prunable = findPrunableWithCriteria(doc.items, criteria, now);
   const totalCount = prunable.reduce((sum, item) => sum + countSubtreeLocal(item), 0);
+
+  // Estimate storage savings
+  const estimatedBytes = prunable.reduce((sum, item) => sum + estimateSubtreeBytes(item), 0);
+
+  // Compute level breakdown
+  const levelBreakdown: Record<string, number> = {};
+  for (const item of prunable) {
+    levelBreakdown[item.level] = (levelBreakdown[item.level] || 0) + 1;
+  }
+
+  // Total PRD size for context
+  const totalPrdBytes = JSON.stringify(doc).length;
 
   jsonResponse(res, 200, {
     ok: true,
     items: prunable.map(summarizeItem),
     totalItemCount: totalCount,
     hasPrunableItems: prunable.length > 0,
+    estimatedBytes,
+    totalPrdBytes,
+    levelBreakdown,
+    criteria: {
+      minAgeDays: criteria.minAgeDays,
+      statuses: criteria.statuses,
+    },
   });
   return true;
 }
@@ -1223,10 +1364,19 @@ async function handlePruneExecute(
       backup?: boolean;
       /** Confirmation token — must match the expected count to prevent stale operations. */
       confirmCount?: number;
+      /** Pruning criteria — if provided, filters items before pruning. */
+      criteria?: { minAgeDays?: number; statuses?: string[] };
     };
 
+    // Build criteria from input or use defaults
+    const criteria: PruneCriteria = {
+      minAgeDays: input.criteria?.minAgeDays ?? 0,
+      statuses: input.criteria?.statuses ?? ["completed"],
+    };
+    const now = new Date();
+
     // Preview first to validate
-    const prunable = findPrunableItemsLocal(doc.items);
+    const prunable = findPrunableWithCriteria(doc.items, criteria, now);
     if (prunable.length === 0) {
       jsonResponse(res, 200, { ok: true, prunedCount: 0, message: "Nothing to prune" });
       return true;
@@ -1248,8 +1398,9 @@ async function handlePruneExecute(
       writeFileSync(backupPath, JSON.stringify(doc, null, 2) + "\n");
     }
 
-    // Execute prune
-    const result = pruneItemsLocal(doc.items);
+    // Execute prune — remove items matching criteria
+    const prunableIds = new Set(prunable.map((p) => p.id));
+    const result = pruneItemsByIds(doc.items, prunableIds);
 
     // Archive pruned items
     const archivePath = join(ctx.rexDir, "archive.json");
@@ -1259,6 +1410,7 @@ async function handlePruneExecute(
       source: "prune",
       items: result.pruned,
       count: result.prunedCount,
+      ...(criteria.minAgeDays > 0 ? { reason: `age >= ${criteria.minAgeDays}d` } : {}),
     });
     writeFileSync(archivePath, JSON.stringify(archive, null, 2) + "\n");
 
@@ -1270,7 +1422,7 @@ async function handlePruneExecute(
     appendLog(ctx, {
       timestamp: new Date().toISOString(),
       event: "items_pruned",
-      detail: `Pruned ${result.prunedCount} completed items: ${titles} (via web)`,
+      detail: `Pruned ${result.prunedCount} items: ${titles} (via web, criteria: statuses=${criteria.statuses.join(",")}, minAge=${criteria.minAgeDays}d)`,
     });
 
     if (broadcast) {
