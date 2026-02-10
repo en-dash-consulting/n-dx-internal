@@ -916,4 +916,54 @@ describe("Rex API routes", () => {
       expect(data.confidence).toBe(0);
     });
   });
+
+  describe("POST /api/rex/batch-import", () => {
+    it("rejects request with no items", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/batch-import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: [] }),
+      });
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error).toContain("At least one import item");
+    });
+
+    it("rejects request with missing items array", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/batch-import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error).toContain("At least one import item");
+    });
+
+    it("rejects item with empty content", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/batch-import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [{ content: "", format: "text" }],
+        }),
+      });
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error).toContain("empty content");
+    });
+
+    it("rejects item with whitespace-only content", async () => {
+      const res = await fetch(`http://localhost:${port}/api/rex/batch-import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [{ content: "   ", format: "text" }],
+        }),
+      });
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error).toContain("empty content");
+    });
+  });
 });

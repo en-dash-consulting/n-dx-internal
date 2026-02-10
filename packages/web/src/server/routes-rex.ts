@@ -19,6 +19,7 @@
  * POST  /api/rex/proposals/accept — accept pending proposals
  * POST  /api/rex/proposals/accept-edited — accept edited proposals (inline-edited data)
  * POST  /api/rex/smart-add-preview — generate proposals from natural language (real-time preview)
+ * POST  /api/rex/batch-import     — process multiple ideas from various sources with consolidated review
  * GET   /api/rex/log              — execution log (?limit=N)
  * POST  /api/rex/execute/epic-by-epic — start epic-by-epic execution
  * GET   /api/rex/execute/status       — current execution state
@@ -27,7 +28,8 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readFileSync, writeFileSync, existsSync, appendFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, appendFileSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { execFile, type ChildProcess } from "node:child_process";
@@ -509,6 +511,11 @@ export function handleRexRoute(
   // POST /api/rex/smart-add-preview — generate proposals from natural language (real-time preview)
   if (path === "smart-add-preview" && method === "POST") {
     return handleSmartAddPreview(req, res, ctx);
+  }
+
+  // POST /api/rex/batch-import — process multiple ideas from various sources
+  if (path === "batch-import" && method === "POST") {
+    return handleBatchImport(req, res, ctx, broadcast);
   }
 
   // POST /api/rex/execute/epic-by-epic — start epic-by-epic execution
@@ -2123,6 +2130,161 @@ function computeConfidence(proposals: Record<string, unknown>[]): number {
   }
 
   return Math.min(100, score);
+}
+
+// --------------------------------------------------------------------------
+// Batch import — process multiple ideas from various sources
+// --------------------------------------------------------------------------
+
+/** Format extension for batch import items. */
+const BATCH_FORMAT_EXT: Record<string, string> = {
+  text: ".txt",
+  markdown: ".md",
+  json: ".json",
+};
+
+/** Handle POST /api/rex/batch-import — process multiple ideas with consolidated review */
+async function handleBatchImport(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): Promise<boolean> {
+  const doc = loadPRD(ctx);
+  if (!doc) {
+    errorResponse(res, 404, "No PRD data found");
+    return true;
+  }
+
+  try {
+    const body = await readBody(req);
+    const input = JSON.parse(body) as {
+      items: Array<{
+        content: string;
+        format?: "text" | "markdown" | "json";
+        source?: string;
+      }>;
+      parentId?: string;
+      /** If true, accept proposals immediately without returning for review. */
+      accept?: boolean;
+    };
+
+    if (!Array.isArray(input.items) || input.items.length === 0) {
+      errorResponse(res, 400, "At least one import item is required");
+      return true;
+    }
+
+    // Validate items
+    for (let i = 0; i < input.items.length; i++) {
+      const item = input.items[i];
+      if (!item.content || typeof item.content !== "string" || item.content.trim().length === 0) {
+        errorResponse(res, 400, `Item ${i + 1} has empty content`);
+        return true;
+      }
+    }
+
+    // Write items to temp files and build --file args for rex CLI
+    const tmpDir = mkdtempSync(join(tmpdir(), "rex-batch-"));
+    const filePaths: string[] = [];
+    const itemSources: string[] = [];
+
+    try {
+      for (let i = 0; i < input.items.length; i++) {
+        const item = input.items[i];
+        const format = item.format ?? "text";
+        const ext = BATCH_FORMAT_EXT[format] ?? ".txt";
+        const fileName = `batch-${i}${ext}`;
+        const filePath = join(tmpDir, fileName);
+        writeFileSync(filePath, item.content, "utf-8");
+        filePaths.push(filePath);
+        itemSources.push(item.source ?? fileName);
+      }
+
+      // Build rex CLI args: smart-add --format=json --file=<f1> --file=<f2> ...
+      const args = ["smart-add", "--format=json"];
+      if (input.parentId) args.push("--parent", input.parentId);
+      if (input.accept) args.push("--accept");
+      for (const fp of filePaths) {
+        args.push(`--file=${fp}`);
+      }
+      args.push(ctx.projectDir);
+
+      const rexBin = join(ctx.projectDir, "node_modules", ".bin", "rex");
+      const rexFallback = join(ctx.projectDir, "packages", "rex", "dist", "cli", "index.js");
+
+      const binPath = existsSync(rexBin) ? rexBin : "node";
+      const binArgs = existsSync(rexBin) ? args : [rexFallback, ...args];
+
+      const cliResult = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        execFile(binPath, binArgs, {
+          cwd: ctx.projectDir,
+          timeout: 120_000, // 2 minutes — batch may take longer
+          maxBuffer: 10 * 1024 * 1024,
+          env: { ...process.env },
+        }, (error, stdout, stderr) => {
+          if (error) {
+            if (stdout && stdout.trim()) {
+              resolve({ stdout, stderr });
+            } else {
+              reject(new Error(stderr || error.message));
+            }
+            return;
+          }
+          resolve({ stdout, stderr });
+        });
+      });
+
+      // Parse the JSON output from rex CLI
+      let parsed: Record<string, unknown>;
+      try {
+        parsed = JSON.parse(cliResult.stdout);
+      } catch {
+        jsonResponse(res, 200, {
+          proposals: [],
+          confidence: 0,
+          qualityIssues: [],
+          itemCount: input.items.length,
+          itemSources,
+        });
+        return true;
+      }
+
+      const proposals = parsed.proposals ?? [];
+      const proposalArray = Array.isArray(proposals) ? proposals : [];
+      const confidence = computeConfidence(proposalArray as Record<string, unknown>[]);
+
+      // If accept mode was used, proposals were already committed
+      if (input.accept && parsed.added) {
+        appendLog(ctx, {
+          timestamp: new Date().toISOString(),
+          event: "batch_import_accept",
+          detail: `Batch imported ${input.items.length} items (${parsed.added} PRD items added) from: ${itemSources.join(", ")}`,
+        });
+
+        if (broadcast) {
+          broadcast({
+            type: "rex:prd-changed",
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+
+      jsonResponse(res, 200, {
+        proposals: proposalArray,
+        confidence,
+        qualityIssues: parsed.qualityIssues ?? [],
+        itemCount: input.items.length,
+        itemSources,
+        added: parsed.added ?? 0,
+      });
+    } finally {
+      // Clean up temp files
+      try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    }
+  } catch (err) {
+    errorResponse(res, 500, String(err));
+  }
+  return true;
 }
 
 // --------------------------------------------------------------------------

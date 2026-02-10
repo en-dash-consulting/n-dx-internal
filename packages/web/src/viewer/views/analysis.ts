@@ -1,15 +1,16 @@
 /**
  * Analysis view — dedicated Rex view for triggering analysis, smart add,
- * and reviewing proposals.
+ * batch import, and reviewing proposals.
  *
- * Shows: smart add (natural language → proposals), project analysis,
- * pending proposals list with accept/reject, and recent analysis history.
+ * Shows: smart add (natural language → proposals), batch import (multi-file/text),
+ * project analysis, pending proposals list with accept/reject, and recent analysis history.
  */
 
 import { h, Fragment } from "preact";
 import { useState, useEffect, useCallback } from "preact/hooks";
 import { AnalyzePanel } from "../components/prd-tree/analyze-panel.js";
 import { SmartAddInput } from "../components/prd-tree/smart-add-input.js";
+import { BatchImportPanel } from "../components/prd-tree/batch-import-panel.js";
 import { BrandedHeader } from "../components/logos.js";
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -21,7 +22,7 @@ interface LogEntry {
   detail?: string;
 }
 
-type AnalysisTab = "smart-add" | "scan";
+type AnalysisTab = "smart-add" | "batch-import" | "scan";
 
 // ── Component ────────────────────────────────────────────────────────
 
@@ -42,7 +43,8 @@ export function AnalysisView() {
             e.event.includes("analyze") ||
             e.event.includes("proposal") ||
             e.event.includes("plan") ||
-            e.event.includes("smart_add"),
+            e.event.includes("smart_add") ||
+            e.event.includes("batch_import"),
         );
         setLogEntries(analysisEvents.reverse());
       }
@@ -83,6 +85,11 @@ export function AnalysisView() {
         type: "button",
       }, "Smart Add"),
       h("button", {
+        class: `rex-analysis-tab${activeTab === "batch-import" ? " active" : ""}`,
+        onClick: () => setActiveTab("batch-import"),
+        type: "button",
+      }, "Batch Import"),
+      h("button", {
         class: `rex-analysis-tab${activeTab === "scan" ? " active" : ""}`,
         onClick: () => setActiveTab("scan"),
         type: "button",
@@ -92,7 +99,9 @@ export function AnalysisView() {
     // Tab content
     activeTab === "smart-add"
       ? h(SmartAddInput, { onPrdChanged: handlePrdChanged })
-      : h(AnalyzePanel, { onPrdChanged: handlePrdChanged }),
+      : activeTab === "batch-import"
+        ? h(BatchImportPanel, { onPrdChanged: handlePrdChanged })
+        : h(AnalyzePanel, { onPrdChanged: handlePrdChanged }),
 
     // Analysis history
     h("div", { class: "rex-analysis-history" },

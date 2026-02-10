@@ -3368,3 +3368,251 @@
 .smart-add-btn-accept:hover:not(:disabled) {
   opacity: 0.9;
 }
+
+/* ── Batch Import Panel ─────────────────────────────────────────── */
+
+.batch-import-panel {
+  padding: var(--space-4);
+}
+
+.batch-import-header {
+  margin-bottom: var(--space-4);
+}
+
+.batch-import-title {
+  font-size: var(--font-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+  margin: 0 0 var(--space-1);
+}
+
+.batch-import-subtitle {
+  font-size: var(--font-sm);
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* Drop zone */
+.batch-import-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  margin-bottom: var(--space-3);
+}
+
+.batch-import-dropzone:hover,
+.batch-import-dropzone-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.batch-import-dropzone-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.batch-import-dropzone-text {
+  font-size: var(--font-sm);
+  color: var(--text-dim);
+  margin: 0 0 var(--space-1);
+}
+
+.batch-import-dropzone-hint {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.batch-import-browse-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: inherit;
+  padding: 0;
+}
+
+.batch-import-browse-btn:hover {
+  opacity: 0.8;
+}
+
+/* Add text entry button */
+.batch-import-add-text-btn {
+  display: block;
+  width: 100%;
+  padding: var(--space-2);
+  font-size: var(--font-sm);
+  color: var(--text-dim);
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  margin-bottom: var(--space-3);
+}
+
+.batch-import-add-text-btn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+/* Queue */
+.batch-import-queue {
+  margin-bottom: var(--space-3);
+}
+
+.batch-import-queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.batch-import-queue-title {
+  font-size: var(--font-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text);
+}
+
+.batch-import-clear-btn {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.batch-import-clear-btn:hover {
+  color: var(--red);
+}
+
+/* Queue item */
+.batch-import-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+}
+
+.batch-import-item-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.batch-import-format-badge {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+}
+
+.batch-import-format-text {
+  background: color-mix(in srgb, var(--blue) 15%, transparent);
+  color: var(--blue);
+}
+
+.batch-import-format-markdown {
+  background: color-mix(in srgb, var(--green) 15%, transparent);
+  color: var(--green);
+}
+
+.batch-import-format-json {
+  background: color-mix(in srgb, var(--orange) 15%, transparent);
+  color: var(--orange);
+}
+
+.batch-import-item-source {
+  flex: 1;
+  font-size: var(--font-sm);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.batch-import-item-size {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.batch-import-format-select {
+  font-size: var(--font-xs);
+  padding: 1px var(--space-1);
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.batch-import-remove-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: var(--font-sm);
+  padding: 0 var(--space-1);
+  line-height: 1;
+}
+
+.batch-import-remove-btn:hover {
+  color: var(--red);
+}
+
+/* Editable text area for text entries */
+.batch-import-item-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-sm);
+  font-family: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: none;
+  resize: vertical;
+  min-height: 60px;
+  line-height: var(--leading-normal);
+}
+
+.batch-import-item-textarea:focus {
+  outline: none;
+  background: var(--bg-surface);
+}
+
+.batch-import-item-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* File content preview */
+.batch-import-item-preview {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-xs);
+  color: var(--text-dim);
+  font-family: var(--font-mono, monospace);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 80px;
+  overflow: hidden;
+}
+
+/* Process button */
+.batch-import-process {
+  margin-top: var(--space-3);
+}
+
+.batch-import-process-btn {
+  width: 100%;
+}

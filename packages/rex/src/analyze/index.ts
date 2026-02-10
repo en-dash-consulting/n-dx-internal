@@ -11,7 +11,7 @@ export { similarity, deduplicateScanResults } from "./dedupe.js";
 
 export { formatDiff } from "./diff.js";
 
-export type { FileFormat, AddPromptOptions, QualityIssue, ClaudeResult, ReasonResult, GranularityAssessment, GranularityAssessmentResult } from "./reason.js";
+export type { FileFormat, AddPromptOptions, QualityIssue, ClaudeResult, ReasonResult, GranularityAssessment, GranularityAssessmentResult, BatchImportItem, BatchImportResult } from "./reason.js";
 export {
   DEFAULT_MODEL,
   MAX_RETRIES,
@@ -49,6 +49,7 @@ export {
   detectFileFormat,
   parseStructuredFile,
   mergeProposals,
+  reasonFromBatch,
   chunkScanResults,
   summarizeScanResults,
   estimateItemSize,

@@ -1871,3 +1871,134 @@ export async function reasonFromIdeasFile(
   accumulateTokenUsage(tokenUsage, result.tokenUsage);
   return { proposals: parseProposalResponse(result.text), tokenUsage };
 }
+
+// ── Batch import ──
+
+/**
+ * A single item in a batch import. Each item carries its own content and
+ * a format hint that determines how it is processed.
+ */
+export interface BatchImportItem {
+  /** Raw content — file body or free-form text. */
+  content: string;
+  /** Format hint: "text" and "markdown" go through the LLM ideas pipeline,
+   *  "json" is tried as structured parsing first and falls back to LLM. */
+  format: "text" | "markdown" | "json";
+  /** Human-readable origin label (e.g. file name). Purely informational. */
+  source?: string;
+}
+
+/** Result of a batch import — proposals plus per-item status. */
+export interface BatchImportResult {
+  /** Merged, deduplicated proposals across all items. */
+  proposals: Proposal[];
+  /** Per-item processing status (same order as input). */
+  itemResults: Array<{
+    source?: string;
+    proposalCount: number;
+    error?: string;
+  }>;
+  /** Aggregated token usage across all LLM calls. */
+  tokenUsage: AnalyzeTokenUsage;
+}
+
+/**
+ * Process multiple import items through the smart-add pipeline and return
+ * consolidated, deduplicated proposals.
+ *
+ * JSON items are attempted via direct schema parsing first (no LLM). Text
+ * and markdown items are batched into a single LLM call using the ideas
+ * prompt for efficiency.
+ */
+export async function reasonFromBatch(
+  items: BatchImportItem[],
+  existingItems: PRDItem[],
+  options?: { model?: string; dir?: string; parentId?: string },
+): Promise<BatchImportResult> {
+  const tokenUsage = emptyAnalyzeTokenUsage();
+  const itemResults: BatchImportResult["itemResults"] = new Array(items.length);
+
+  if (items.length === 0) {
+    return { proposals: [], itemResults: [], tokenUsage };
+  }
+
+  const dir = options?.dir ?? process.cwd();
+  const allProposals: Proposal[] = [];
+
+  // Separate items into structured (JSON that can be parsed without LLM)
+  // and unstructured (text/markdown/fallback JSON that need LLM processing)
+  const unstructuredSections: string[] = [];
+  const unstructuredIndices: number[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const trimmed = item.content.trim();
+
+    if (trimmed.length === 0) {
+      itemResults[i] = { source: item.source, proposalCount: 0 };
+      continue;
+    }
+
+    // Try structured parsing for JSON items
+    if (item.format === "json") {
+      const structured = parseStructuredFile(trimmed, "json", existingItems);
+      if (structured !== null && structured.length > 0) {
+        allProposals.push(...structured);
+        itemResults[i] = { source: item.source, proposalCount: structured.length };
+        continue;
+      }
+      // Fall through to LLM processing
+    }
+
+    // Collect for batched LLM processing
+    const label = item.source ?? `Item ${i + 1}`;
+    unstructuredSections.push(`--- ${label} ---\n${trimmed}`);
+    unstructuredIndices.push(i);
+  }
+
+  // Process all unstructured items in a single LLM call
+  if (unstructuredSections.length > 0) {
+    const combined = unstructuredSections.join("\n\n");
+    try {
+      const prompt = await buildIdeasPrompt(combined, existingItems, dir, {
+        parentId: options?.parentId,
+      });
+      const llmResult = await spawnClaude(prompt, options?.model ?? DEFAULT_MODEL);
+      accumulateTokenUsage(tokenUsage, llmResult.tokenUsage);
+      const proposals = parseProposalResponse(llmResult.text);
+      allProposals.push(...proposals);
+
+      // Distribute proposal count: first item gets the total (LLM processes
+      // all unstructured items as a single batch), rest get 0.
+      for (let j = 0; j < unstructuredIndices.length; j++) {
+        const idx = unstructuredIndices[j];
+        itemResults[idx] = {
+          source: items[idx].source,
+          proposalCount: j === 0 ? proposals.length : 0,
+        };
+      }
+    } catch (err) {
+      // Mark all unstructured items as failed
+      for (const idx of unstructuredIndices) {
+        itemResults[idx] = {
+          source: items[idx].source,
+          proposalCount: 0,
+          error: (err as Error).message,
+        };
+      }
+    }
+  }
+
+  // Fill any gaps (shouldn't happen, but defensive)
+  for (let i = 0; i < items.length; i++) {
+    if (!itemResults[i]) {
+      itemResults[i] = { source: items[i].source, proposalCount: 0 };
+    }
+  }
+
+  return {
+    proposals: mergeProposals(allProposals),
+    itemResults,
+    tokenUsage,
+  };
+}
