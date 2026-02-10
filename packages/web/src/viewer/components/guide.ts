@@ -6,6 +6,7 @@ interface GuideProps {
 }
 
 const GUIDE_CONTENT: Record<string, { title: string; description: string; lookFor: string; actions: string }> = {
+  // ── SourceVision views ──
   overview: {
     title: "Overview",
     description: "Dashboard showing high-level project statistics: file counts, languages, import density, zone structure, and module completion status.",
@@ -53,6 +54,44 @@ const GUIDE_CONTENT: Record<string, { title: string; description: string; lookFo
     description: "Improvement suggestions from AI analysis. Requires enrichment pass 4.",
     lookFor: "Quick wins vs larger refactors. Suggestions that align with your current sprint goals. Patterns that could benefit from abstraction.",
     actions: "Prioritize suggestions by scope (global vs zone-specific). Start with suggestions that reduce coupling or improve cohesion.",
+  },
+  // ── Rex views ──
+  "rex-dashboard": {
+    title: "Rex Dashboard",
+    description: "PRD completion overview showing epic progress, priority distribution, and recent activity. Each epic displays a segmented progress bar with status breakdowns.",
+    lookFor: "Epics with low completion rates or many blocked tasks. Imbalanced priority distribution (too many critical items may indicate scope creep). Stalled items that haven't progressed.",
+    actions: "Click an epic to see its tasks. Review blocked items and resolve dependencies. Use the execution panel to run the next task autonomously.",
+  },
+  prd: {
+    title: "Tasks",
+    description: "Interactive PRD tree showing the full hierarchy: epics → features → tasks → subtasks. Each item shows its status, priority, and tags. Supports multi-select for bulk operations.",
+    lookFor: "Tasks stuck in 'in_progress' for too long. Blocked items with unresolved dependencies. Orphaned subtasks without clear parent context. Items missing acceptance criteria.",
+    actions: "Click items to view details in the side panel. Use bulk actions to update multiple items at once. Merge duplicate tasks. Add new items at any level of the hierarchy.",
+  },
+  "rex-analysis": {
+    title: "Analysis",
+    description: "Review AI-generated proposals for your PRD. Rex analyzes your codebase using SourceVision data and suggests epics, features, and tasks to add.",
+    lookFor: "Proposals that overlap with existing PRD items. Suggestions that don't align with project priorities. Overly granular or overly broad proposals.",
+    actions: "Accept relevant proposals to add them to the PRD. Edit proposals before accepting to refine scope. Reject proposals that don't fit. Run new analysis after codebase changes.",
+  },
+  "token-usage": {
+    title: "Token Usage",
+    description: "Analytics dashboard showing token consumption across autonomous agent runs. Tracks input/output tokens, costs, and usage trends over time.",
+    lookFor: "Runs with unusually high token counts (may indicate stuck loops). Cost trends over time. Token distribution across epics to understand where effort is spent.",
+    actions: "Review high-cost runs for optimization opportunities. Compare token usage across similar tasks. Use the grouping controls to view usage by day, week, or month.",
+  },
+  validation: {
+    title: "Validation",
+    description: "PRD integrity checks that verify the health of your task tree. Detects orphaned items, circular dependencies, invalid references, and structural issues.",
+    lookFor: "Critical validation errors (must be fixed). Orphaned items disconnected from the tree. Circular blockedBy references that create deadlocks. Items with invalid status transitions.",
+    actions: "Fix critical errors first — they can prevent task execution. Resolve orphaned items by reparenting or deleting them. Clear circular dependencies by editing blockedBy fields.",
+  },
+  // ── Hench views ──
+  "hench-runs": {
+    title: "Execution History",
+    description: "Timeline of autonomous agent runs showing status, duration, token usage, and task associations. Each run records the full execution transcript.",
+    lookFor: "Failed runs that need investigation. Runs with high turn counts (may indicate the agent struggled). Patterns in which tasks succeed vs fail autonomously.",
+    actions: "Click a run to see its full details and token breakdown. Review failed runs to understand what went wrong. Use insights to improve task descriptions and acceptance criteria.",
   },
 };
 

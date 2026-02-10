@@ -122,13 +122,115 @@ const FAQ_SECTIONS: FAQSection[] = [
   },
 ];
 
-export function FAQ() {
-  const [open, setOpen] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<string | null>(FAQ_SECTIONS[0].title);
+/**
+ * Map view IDs to the FAQ section title that is most relevant.
+ * Used by HeaderFAQ to auto-expand the contextual section.
+ */
+const VIEW_TO_FAQ_SECTION: Record<string, string> = {
+  // SourceVision views
+  overview: "SourceVision",
+  graph: "SourceVision",
+  zones: "SourceVision",
+  files: "SourceVision",
+  routes: "SourceVision",
+  architecture: "SourceVision",
+  problems: "SourceVision",
+  suggestions: "SourceVision",
+  // Rex views
+  "rex-dashboard": "Rex (PRD Management)",
+  prd: "Rex (PRD Management)",
+  "rex-analysis": "Rex (PRD Management)",
+  "token-usage": "Rex (PRD Management)",
+  validation: "Rex (PRD Management)",
+  // Hench views
+  "hench-runs": "Hench (Autonomous Agent)",
+};
+
+/** Shared FAQ modal body — used by both sidebar FAQ and header FAQ */
+function FAQModal({ onClose, initialSection }: { onClose: () => void; initialSection: string | null }) {
+  const [expandedSection, setExpandedSection] = useState<string | null>(initialSection);
 
   const toggleSection = useCallback((title: string) => {
     setExpandedSection((prev) => (prev === title ? null : title));
   }, []);
+
+  return h("div", {
+      class: "faq-overlay",
+      onClick: onClose,
+      role: "dialog",
+      "aria-label": "Help and FAQ",
+      "aria-modal": "true",
+    },
+    h("div", {
+      class: "faq-modal",
+      onClick: (e: Event) => e.stopPropagation(),
+    },
+      h("div", { class: "faq-header" },
+        h("h2", null, "Help & FAQ"),
+        h("button", {
+          class: "faq-close",
+          onClick: onClose,
+          "aria-label": "Close FAQ",
+        }, "\u2715"),
+      ),
+      h("div", { class: "faq-body" },
+        FAQ_SECTIONS.map((section) => {
+          const isExpanded = expandedSection === section.title;
+          return h("div", { key: section.title, class: "faq-section" },
+            h("div", {
+              class: "faq-section-header",
+              role: "button",
+              tabIndex: 0,
+              "aria-expanded": String(isExpanded),
+              onClick: () => toggleSection(section.title),
+              onKeyDown: (e: KeyboardEvent) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  toggleSection(section.title);
+                }
+              },
+            },
+              h("span", {
+                class: `faq-section-chevron${isExpanded ? " faq-section-chevron-open" : ""}`,
+                "aria-hidden": "true",
+              }, "\u25B8"),
+              h("span", null, section.title),
+            ),
+            isExpanded
+              ? h("div", { class: "faq-section-items" },
+                  section.items.map((item, i) =>
+                    h("div", { key: i, class: "faq-item" },
+                      h("div", { class: "faq-question" }, item.question),
+                      h("div", { class: "faq-answer" }, item.answer),
+                      item.docLink
+                        ? h("a", {
+                            class: "faq-doc-link",
+                            href: `#${item.docLink.hash}`,
+                            onClick: onClose,
+                          }, `\u2192 ${item.docLink.label}`)
+                        : null,
+                    )
+                  ),
+                )
+              : null,
+          );
+        }),
+      ),
+      h("div", { class: "faq-footer" },
+        h("p", null,
+          "For CLI reference, run ",
+          h("code", null, "ndx --help"),
+          " or ",
+          h("code", null, "ndx <command> --help"),
+        ),
+      ),
+    ),
+  );
+}
+
+/** Sidebar FAQ button — global entry point, opens with "Getting Started" expanded. */
+export function FAQ() {
+  const [open, setOpen] = useState(false);
 
   // Close on Escape
   useEffect(() => {
@@ -147,79 +249,53 @@ export function FAQ() {
       title: "Help & FAQ",
       "aria-label": "Open help and FAQ",
     }, "?"),
-    open
-      ? h("div", {
-          class: "faq-overlay",
-          onClick: () => setOpen(false),
-          role: "dialog",
-          "aria-label": "Help and FAQ",
-          "aria-modal": "true",
-        },
-          h("div", {
-            class: "faq-modal",
-            onClick: (e: Event) => e.stopPropagation(),
-          },
-            h("div", { class: "faq-header" },
-              h("h2", null, "Help & FAQ"),
-              h("button", {
-                class: "faq-close",
-                onClick: () => setOpen(false),
-                "aria-label": "Close FAQ",
-              }, "\u2715"),
-            ),
-            h("div", { class: "faq-body" },
-              FAQ_SECTIONS.map((section) => {
-                const isExpanded = expandedSection === section.title;
-                return h("div", { key: section.title, class: "faq-section" },
-                  h("div", {
-                    class: "faq-section-header",
-                    role: "button",
-                    tabIndex: 0,
-                    "aria-expanded": String(isExpanded),
-                    onClick: () => toggleSection(section.title),
-                    onKeyDown: (e: KeyboardEvent) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        toggleSection(section.title);
-                      }
-                    },
-                  },
-                    h("span", {
-                      class: `faq-section-chevron${isExpanded ? " faq-section-chevron-open" : ""}`,
-                      "aria-hidden": "true",
-                    }, "\u25B8"),
-                    h("span", null, section.title),
-                  ),
-                  isExpanded
-                    ? h("div", { class: "faq-section-items" },
-                        section.items.map((item, i) =>
-                          h("div", { key: i, class: "faq-item" },
-                            h("div", { class: "faq-question" }, item.question),
-                            h("div", { class: "faq-answer" }, item.answer),
-                            item.docLink
-                              ? h("a", {
-                                  class: "faq-doc-link",
-                                  href: `#${item.docLink.hash}`,
-                                  onClick: () => setOpen(false),
-                                }, `\u2192 ${item.docLink.label}`)
-                              : null,
-                          )
-                        ),
-                      )
-                    : null,
-                );
-              }),
-            ),
-            h("div", { class: "faq-footer" },
-              h("p", null,
-                "For CLI reference, run ",
-                h("code", null, "ndx --help"),
-                " or ",
-                h("code", null, "ndx <command> --help"),
-              ),
-            ),
-          ),
-        )
-      : null,
+    open ? h(FAQModal, { onClose: () => setOpen(false), initialSection: FAQ_SECTIONS[0].title }) : null,
+  );
+}
+
+/**
+ * Header FAQ button — contextual entry point in the content area header.
+ * Auto-expands the FAQ section relevant to the current view.
+ */
+export function HeaderFAQ({ view }: { view: string }) {
+  const [open, setOpen] = useState(false);
+
+  // Determine which FAQ section to auto-expand based on current view
+  const contextSection = VIEW_TO_FAQ_SECTION[view] ?? FAQ_SECTIONS[0].title;
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open]);
+
+  return h(Fragment, null,
+    h("button", {
+      class: "header-faq-btn",
+      onClick: () => setOpen(true),
+      title: "Help & FAQ",
+      "aria-label": "Open contextual help and FAQ",
+    },
+      h("svg", {
+        width: 14,
+        height: 14,
+        viewBox: "0 0 16 16",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "1.5",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "aria-hidden": "true",
+      },
+        h("circle", { cx: 8, cy: 8, r: 7 }),
+        h("path", { d: "M5.5 6a2.5 2.5 0 0 1 4.9.5c0 1.5-2.4 2-2.4 3" }),
+        h("circle", { cx: 8, cy: 12, r: 0.5, fill: "currentColor", stroke: "none" }),
+      ),
+    ),
+    open ? h(FAQModal, { onClose: () => setOpen(false), initialSection: contextSection }) : null,
   );
 }

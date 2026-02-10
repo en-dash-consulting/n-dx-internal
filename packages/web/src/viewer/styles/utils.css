@@ -99,7 +99,7 @@
   pointer-events: all;
 }
 
-.guide-btn, .theme-toggle-btn {
+.guide-btn, .header-faq-btn, .theme-toggle-btn {
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -113,14 +113,15 @@
   align-items: center;
   justify-content: center;
   transition: border-color var(--transition-normal), color var(--transition-normal), background var(--transition-normal);
+  padding: 0;
 }
 
-.guide-btn:hover, .theme-toggle-btn:hover {
+.guide-btn:hover, .header-faq-btn:hover, .theme-toggle-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.guide-btn:active, .theme-toggle-btn:active {
+.guide-btn:active, .header-faq-btn:active, .theme-toggle-btn:active {
   background: var(--bg-hover);
 }
 
