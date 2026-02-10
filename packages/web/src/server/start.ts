@@ -14,6 +14,7 @@ import { handleTokenUsageRoute } from "./routes-token-usage.js";
 import { handleValidationRoute } from "./routes-validation.js";
 import { handleHenchRoute } from "./routes-hench.js";
 import { handleWorkflowRoute } from "./routes-workflow.js";
+import { handleAdaptiveRoute } from "./routes-adaptive.js";
 import { handleMcpRoute } from "./routes-mcp.js";
 import { createWebSocketManager } from "./websocket.js";
 import { ALL_DATA_FILES } from "../schema/data-files.js";
@@ -187,6 +188,16 @@ export function startServer(
       if (workflowResult instanceof Promise) {
         if (await workflowResult) return;
       } else if (workflowResult) {
+        return;
+      }
+    }
+
+    // 3c. Hench Adaptive Workflow Adjustment API
+    if (inScope("hench")) {
+      const adaptiveResult = handleAdaptiveRoute(req, res, ctx);
+      if (adaptiveResult instanceof Promise) {
+        if (await adaptiveResult) return;
+      } else if (adaptiveResult) {
         return;
       }
     }

@@ -6823,7 +6823,7 @@
     {
       "id": "a19a8bac-6c65-4590-b2b7-543d9e01843c",
       "title": "Interactive Workflow Shaping and Requirements Integration",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
@@ -6950,10 +6950,12 @@
         {
           "id": "ad93cf70-3442-4408-b4a3-f3b8c8d1ad16",
           "title": "Intelligent Workflow Optimization",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Analyze workflow execution patterns and automatically optimize configurations based on project characteristics, historical performance, and adaptive learning",
           "source": "smart-add",
+          "startedAt": "2026-02-10T23:01:55.120Z",
+          "completedAt": "2026-02-10T23:01:55.120Z",
           "children": [
             {
               "id": "f163ff52-22f8-417a-975d-7dc2a33ea0e3",
@@ -6985,7 +6987,7 @@
             {
               "id": "f6d852ea-6cbf-4d94-8de8-96b4091f31d3",
               "title": "Implement adaptive workflow adjustment based on project evolution",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create a system that automatically adjusts workflow parameters as the project evolves, considering factors like codebase size, team velocity, and complexity metrics",
               "acceptanceCriteria": [
@@ -7000,7 +7002,9 @@
                 "adaptive",
                 "automation"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-10T22:51:49.416Z",
+              "completedAt": "2026-02-10T23:01:55.068Z"
             }
           ]
         },
@@ -7126,7 +7130,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-10T23:01:55.180Z",
+      "completedAt": "2026-02-10T23:01:55.180Z"
     },
     {
       "id": "be267023-2d02-452c-8248-b8eef65a2f2c",

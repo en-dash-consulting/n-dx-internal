@@ -68,6 +68,20 @@ export type {
   TemplateConfigOverlay,
 } from "./schema/templates.js";
 
+// ---- Adaptive workflow adjustment types ------------------------------------
+
+export { DEFAULT_ADAPTIVE_SETTINGS } from "./agent/analysis/adaptive.js";
+
+export type {
+  AdaptiveSettings,
+  AdjustmentCategory,
+  AdjustmentPriority,
+  ProjectMetrics,
+  WorkflowAdjustment,
+  AdjustmentNotification,
+  AdaptiveAnalysis,
+} from "./agent/analysis/adaptive.js";
+
 // ---- Agent lifecycle types -------------------------------------------------
 
 export type { AgentLoopOptions, AgentLoopResult } from "./agent/lifecycle/loop.js";
