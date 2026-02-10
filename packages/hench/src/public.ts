@@ -1,27 +1,32 @@
 /**
  * Public API for the hench package.
  *
- * Hench is primarily a **CLI tool** (`hench run`, `hench status`, etc.),
- * but this barrel exports the types and key functions that downstream
- * packages or integration tests may need.  Adding this module completes
- * the `public.ts` + `package.json exports` pattern established by rex,
- * sourcevision, and web.
+ * ## API philosophy: types-only
  *
- * ## What is exported
+ * Hench is a **CLI tool**, not a library. Other packages interact with it
+ * exclusively through:
  *
- * - **Schema types** — `HenchConfig`, `RunRecord`, `RunStatus`, etc.
- *   These define the shape of `.hench/config.json` and run log files
- *   (`.hench/runs/*.json`).  The web dashboard reads these files
- *   directly from disk; exporting the types here lets it validate
- *   the shape at compile time without importing hench at runtime.
+ * 1. **Subprocess spawning** — `cli.js` and `web.js` invoke `hench run`
+ * 2. **Filesystem reads** — the web dashboard and rex's token-usage module
+ *    read `.hench/config.json` and `.hench/runs/*.json` directly from disk
  *
- * - **Agent lifecycle types** — `AgentLoopOptions`, `CliLoopOptions`,
- *   `TaskBrief`, etc.  Useful for writing integration tests or
- *   building alternative execution engines.
+ * This public API therefore exports **only types and schema constants** —
+ * enough for consumers to validate JSON file shapes at compile time without
+ * creating runtime coupling.
  *
- * Runtime functions (agent loops, tool dispatch, guard rails) are
- * intentionally kept internal — consumers should use the CLI binary
- * rather than calling hench as a library.
+ * This is intentionally different from rex, which exports runtime functions
+ * because hench consumes it as a library (via `prd/ops.ts` gateway).
+ * Each package's public surface reflects its actual consumption pattern:
+ *
+ * | Package       | Consumed as       | Public API style               |
+ * |---------------|-------------------|--------------------------------|
+ * | rex           | Library (by hench)| Runtime functions + types       |
+ * | sourcevision  | MCP server + CLI  | MCP factory + types             |
+ * | hench         | CLI + JSON files  | Types + schema constants only   |
+ *
+ * Runtime functions (agent loops, tool dispatch, guard rails, default
+ * configuration) are intentionally kept internal. Consumers should use
+ * the CLI binary rather than calling hench as a library.
  *
  * @module hench/public
  */
@@ -45,7 +50,7 @@ export type {
   RunSummaryData,
 } from "./schema/v1.js";
 
-export { HENCH_SCHEMA_VERSION, DEFAULT_HENCH_CONFIG } from "./schema/v1.js";
+export { HENCH_SCHEMA_VERSION } from "./schema/v1.js";
 
 // ---- Task brief types ------------------------------------------------------
 

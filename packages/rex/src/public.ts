@@ -1,9 +1,27 @@
 /**
  * Public API for the rex package.
  *
- * This barrel re-exports the subset of rex internals consumed by
- * downstream packages (hench, cli.js, etc.). All other modules are
- * implementation details and should not be imported directly.
+ * ## API philosophy: runtime functions + types
+ *
+ * Rex is consumed as a **library** by hench (via `prd/ops.ts` gateway).
+ * This public API therefore exports runtime functions for store access,
+ * tree manipulation, and task selection — everything hench needs to
+ * manage PRD state programmatically.
+ *
+ * Each package's public surface reflects its actual consumption pattern:
+ *
+ * | Package       | Consumed as       | Public API style               |
+ * |---------------|-------------------|--------------------------------|
+ * | rex           | Library (by hench)| Runtime functions + types       |
+ * | sourcevision  | MCP server + CLI  | MCP factory + types             |
+ * | hench         | CLI + JSON files  | Types + schema constants only   |
+ *
+ * ## Configuration
+ *
+ * Default configuration (`DEFAULT_CONFIG`) is intentionally NOT exported.
+ * It's only used internally by `rex init` and has a project-name parameter
+ * that makes it unsuitable as a public API. This matches the pattern across
+ * all three packages: config factories are internal implementation details.
  *
  * ## Architectural isolation
  *
@@ -15,17 +33,12 @@
  *   hench → rex → claude-client ← sourcevision
  * ```
  *
- * Rex can be built, tested, and published independently. Changes here
- * never create import cycles because no rex module imports from a
- * downstream package.
- *
  * ## Cross-package imports
  *
  * Hench uses `import type { PRDStore, PRDItem, ... } from "rex"` for
  * compile-time type safety. These `import type` statements are erased
  * during compilation and create zero runtime coupling — the packages
- * remain independently deployable. This is the correct pattern for
- * sharing domain contracts across Node.js packages.
+ * remain independently deployable.
  *
  * Runtime imports from rex are funnelled through a single gateway module
  * (`hench/src/prd/ops.ts`) to keep the cross-package surface explicit
