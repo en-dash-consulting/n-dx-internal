@@ -5856,7 +5856,7 @@
             {
               "id": "4f06c7f7-a88c-40fa-ba8c-8cadf8e38899",
               "title": "Audit viewer code and map what belongs where",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Catalog all viewer-related code currently in `packages/sourcevision/`: server code (start.ts, routes-*.ts, websocket.ts, types.ts), viewer assets (HTML, CSS, JS), and their dependencies on sourcevision internals vs rex/hench. Determine which pieces are sourcevision-specific vs n-dx-level. This informs the extraction plan.",
               "acceptanceCriteria": [
@@ -5864,7 +5864,8 @@
                 "Decision documented: packages/web vs monorepo root vs other location"
               ],
               "priority": "high",
-              "startedAt": "2026-02-10T03:35:10.243Z"
+              "startedAt": "2026-02-10T03:35:10.243Z",
+              "completedAt": "2026-02-10T03:39:32.503Z"
             },
             {
               "id": "ae7d3e36-b63f-43e9-9e81-9211ba0a83f8",
