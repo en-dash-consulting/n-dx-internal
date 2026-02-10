@@ -191,6 +191,39 @@ describe("deriveZoneId", () => {
       ])
     ).toBe("schema");
   });
+
+  it("skips parent ID segments when parentId is provided", () => {
+    // Without parentId, first non-generic is "hench"
+    expect(
+      deriveZoneId([
+        "packages/hench/src/agent/core.ts",
+        "packages/hench/src/agent/loop.ts",
+      ])
+    ).toBe("hench");
+
+    // With parentId="hench", skips "hench" and finds "agent"
+    expect(
+      deriveZoneId(
+        [
+          "packages/hench/src/agent/core.ts",
+          "packages/hench/src/agent/loop.ts",
+        ],
+        "hench"
+      )
+    ).toBe("agent");
+  });
+
+  it("skips hierarchical parent segments", () => {
+    expect(
+      deriveZoneId(
+        [
+          "packages/hench/src/agent/briefs/build.ts",
+          "packages/hench/src/agent/briefs/validate.ts",
+        ],
+        "hench/agent"
+      )
+    ).toBe("briefs");
+  });
 });
 
 // ── deriveZoneName ──────────────────────────────────────────────────────────
@@ -328,6 +361,40 @@ describe("analyzeZones", () => {
 
     expect(result.unzoned).toContain("README.md");
     expect(result.unzoned).toContain(".gitignore");
+  });
+
+  it("merges communities that derive the same zone ID into one zone", async () => {
+    // Two distinct clusters under the same package directory.
+    // Without the same-ID merge, Louvain would create two zones
+    // both named "mypkg" → "mypkg" and "mypkg-2".
+    // With the merge, they become a single "mypkg" zone.
+    const inventory = makeInventory([
+      makeFileEntry("packages/mypkg/src/agent/a.ts"),
+      makeFileEntry("packages/mypkg/src/agent/b.ts"),
+      makeFileEntry("packages/mypkg/src/agent/c.ts"),
+      makeFileEntry("packages/mypkg/src/cli/x.ts"),
+      makeFileEntry("packages/mypkg/src/cli/y.ts"),
+      makeFileEntry("packages/mypkg/src/cli/z.ts"),
+    ]);
+    const imports = makeImports([
+      // Cluster 1: agent files tightly connected
+      makeEdge("packages/mypkg/src/agent/a.ts", "packages/mypkg/src/agent/b.ts"),
+      makeEdge("packages/mypkg/src/agent/b.ts", "packages/mypkg/src/agent/c.ts"),
+      makeEdge("packages/mypkg/src/agent/a.ts", "packages/mypkg/src/agent/c.ts"),
+      // Cluster 2: cli files tightly connected
+      makeEdge("packages/mypkg/src/cli/x.ts", "packages/mypkg/src/cli/y.ts"),
+      makeEdge("packages/mypkg/src/cli/y.ts", "packages/mypkg/src/cli/z.ts"),
+      makeEdge("packages/mypkg/src/cli/x.ts", "packages/mypkg/src/cli/z.ts"),
+      // Weak cross-cluster link
+      makeEdge("packages/mypkg/src/agent/a.ts", "packages/mypkg/src/cli/x.ts"),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // Should be merged into a single zone since both derive "mypkg"
+    expect(result.zones).toHaveLength(1);
+    expect(result.zones[0].id).toBe("mypkg");
+    expect(result.zones[0].files).toHaveLength(6);
   });
 
   it("merges small communities into neighbors", async () => {

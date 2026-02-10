@@ -1,34 +1,31 @@
 {
   "schemaVersion": "1.0.0",
   "toolVersion": "0.1.0",
-  "analyzedAt": "2026-02-09T16:51:42.575Z",
+  "analyzedAt": "2026-02-10T01:33:34.594Z",
+  "gitSha": "91c46b10724e841e507a0408baf4f47517d71349",
+  "gitBranch": "main",
   "targetPath": "/Users/nick/development/endash/n-dx",
   "modules": {
     "inventory": {
       "status": "complete",
-      "startedAt": "2026-02-09T16:51:29.289Z",
-      "completedAt": "2026-02-09T16:51:29.304Z"
+      "startedAt": "2026-02-10T01:33:19.894Z",
+      "completedAt": "2026-02-10T01:33:19.914Z"
     },
     "imports": {
       "status": "complete",
-      "startedAt": "2026-02-09T16:51:29.305Z",
-      "completedAt": "2026-02-09T16:51:29.309Z"
+      "startedAt": "2026-02-10T01:33:19.914Z",
+      "completedAt": "2026-02-10T01:33:19.919Z"
     },
     "zones": {
       "status": "complete",
-      "startedAt": "2026-02-09T16:51:29.309Z",
-      "completedAt": "2026-02-09T16:51:42.566Z"
+      "startedAt": "2026-02-10T01:33:19.919Z",
+      "completedAt": "2026-02-10T01:33:34.587Z"
     },
     "components": {
       "status": "complete",
-      "startedAt": "2026-02-09T16:51:42.568Z",
-      "completedAt": "2026-02-09T16:51:42.575Z"
+      "startedAt": "2026-02-10T01:33:34.588Z",
+      "completedAt": "2026-02-10T01:33:34.594Z"
     }
-  },
-  "tokenUsage": {
-    "calls": 1,
-    "inputTokens": 0,
-    "outputTokens": 0
   },
   "children": [
     {
@@ -42,5 +39,10 @@
       "manifestPath": "packages/sourcevision/.sourcevision/manifest.json"
     }
   ],
-  "zoneOutputs": true
+  "zoneOutputs": true,
+  "tokenUsage": {
+    "calls": 1,
+    "inputTokens": 0,
+    "outputTokens": 0
+  }
 }

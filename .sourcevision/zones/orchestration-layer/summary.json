@@ -1,7 +1,7 @@
 {
   "id": "orchestration-layer",
   "name": "Orchestration Layer",
-  "description": "Top-level command coordination and cross-package workflow management.",
+  "description": "Top-level command orchestration that delegates operations across sourcevision, rex, and hench packages while providing unified CLI interface and workflow management.",
   "files": [
     "ci.js",
     "cli.js",

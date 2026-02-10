@@ -635,6 +635,14 @@
     },
     {
       "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
+      "to": "packages/hench/src/agent/lifecycle/task-display.ts",
+      "type": "static",
+      "symbols": [
+        "displayTaskInfo"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
       "to": "packages/hench/src/agent/lifecycle/token-budget.ts",
       "type": "static",
       "symbols": [
@@ -755,6 +763,14 @@
     },
     {
       "from": "packages/hench/src/agent/lifecycle/loop.ts",
+      "to": "packages/hench/src/agent/lifecycle/task-display.ts",
+      "type": "static",
+      "symbols": [
+        "displayTaskInfo"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/lifecycle/loop.ts",
       "to": "packages/hench/src/agent/lifecycle/token-budget.ts",
       "type": "static",
       "symbols": [
@@ -858,6 +874,24 @@
         "stream",
         "detail",
         "info"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/lifecycle/task-display.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "TaskBrief"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/lifecycle/task-display.ts",
+      "to": "packages/hench/src/types/output.ts",
+      "type": "static",
+      "symbols": [
+        "subsection",
+        "stream",
+        "detail"
       ]
     },
     {
@@ -1047,6 +1081,15 @@
     },
     {
       "from": "packages/hench/src/cli/commands/show.ts",
+      "to": "packages/hench/src/cli/commands/task-lookup.ts",
+      "type": "static",
+      "symbols": [
+        "lookupTaskInRex",
+        "formatTaskLine"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/show.ts",
       "to": "packages/hench/src/cli/output.ts",
       "type": "static",
       "symbols": [
@@ -1073,6 +1116,15 @@
     },
     {
       "from": "packages/hench/src/cli/commands/status.ts",
+      "to": "packages/hench/src/cli/commands/task-lookup.ts",
+      "type": "static",
+      "symbols": [
+        "batchLookupTasksInRex",
+        "formatTaskLine"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/status.ts",
       "to": "packages/hench/src/cli/output.ts",
       "type": "static",
       "symbols": [
@@ -1086,6 +1138,22 @@
       "type": "static",
       "symbols": [
         "listRuns"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/task-lookup.ts",
+      "to": "packages/hench/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "HENCH_DIR"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/commands/task-lookup.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
       ]
     },
     {
@@ -1838,6 +1906,22 @@
       ]
     },
     {
+      "from": "packages/hench/tests/unit/agent/task-display.test.ts",
+      "to": "packages/hench/src/agent/lifecycle/task-display.ts",
+      "type": "static",
+      "symbols": [
+        "displayTaskInfo"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/task-display.test.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "TaskBrief"
+      ]
+    },
+    {
       "from": "packages/hench/tests/unit/agent/task-failure.test.ts",
       "to": "packages/hench/src/agent/lifecycle/loop.ts",
       "type": "dynamic",
@@ -2011,6 +2095,54 @@
       "type": "static",
       "symbols": [
         "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
+      "to": "packages/hench/src/cli/commands/show.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
+      "to": "packages/hench/src/cli/commands/status.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
+      "to": "packages/hench/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "RunRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "static",
+      "symbols": [
+        "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
+      "to": "packages/hench/src/store/runs.ts",
+      "type": "static",
+      "symbols": [
+        "saveRun"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/cli/commands/task-lookup.test.ts",
+      "to": "packages/hench/src/cli/commands/task-lookup.ts",
+      "type": "static",
+      "symbols": [
+        "formatTaskLine"
       ]
     },
     {
@@ -2422,7 +2554,28 @@
       "to": "packages/rex/src/analyze/reconcile.ts",
       "type": "type",
       "symbols": [
-        "ReconcileStats"
+        "ReconcileStats",
+        "UpdateCandidate",
+        "ReconcileOptions"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/reshape-reason.ts",
+      "type": "reexport",
+      "symbols": [
+        "reasonForReshape",
+        "parseReshapeResponse",
+        "formatReshapeProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/reshape-reason.ts",
+      "type": "type",
+      "symbols": [
+        "ReshapeReasonOptions",
+        "ReshapeReasonResult"
       ]
     },
     {
@@ -2526,6 +2679,46 @@
       "type": "type",
       "symbols": [
         "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reshape-reason.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "spawnClaude",
+        "extractJson",
+        "repairTruncatedJson",
+        "readProjectContext",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "DEFAULT_MODEL"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reshape-reason.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "type",
+      "symbols": [
+        "ReshapeProposal",
+        "ReshapeAction"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reshape-reason.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reshape-reason.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "AnalyzeTokenUsage"
       ]
     },
     {
@@ -2804,6 +2997,49 @@
       ]
     },
     {
+      "from": "packages/rex/src/cli/commands/fix.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/fix.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/fix.ts",
+      "to": "packages/rex/src/core/fix.ts",
+      "type": "static",
+      "symbols": [
+        "detectIssues",
+        "applyFixes"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/fix.ts",
+      "to": "packages/rex/src/core/fix.ts",
+      "type": "type",
+      "symbols": [
+        "FixAction",
+        "FixKind"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/fix.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
       "from": "packages/rex/src/cli/commands/init.ts",
       "to": "packages/rex/src/cli/commands/constants.ts",
       "type": "static",
@@ -2939,6 +3175,30 @@
     },
     {
       "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/analyze/reshape-reason.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/cli/commands/analyze.ts",
+      "type": "static",
+      "symbols": [
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
       "to": "packages/rex/src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
@@ -2981,6 +3241,22 @@
     },
     {
       "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "static",
+      "symbols": [
+        "applyReshape"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "type",
+      "symbols": [
+        "ReshapeProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -2993,6 +3269,14 @@
       "type": "static",
       "symbols": [
         "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/store/project-config.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
       ]
     },
     {
@@ -3096,6 +3380,104 @@
         "PRDDocument",
         "PRDItem",
         "ItemLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "setClaudeConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/analyze/reshape-reason.ts",
+      "type": "static",
+      "symbols": [
+        "reasonForReshape",
+        "formatReshapeProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/cli/commands/analyze.ts",
+      "type": "static",
+      "symbols": [
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "static",
+      "symbols": [
+        "applyReshape"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "type",
+      "symbols": [
+        "ReshapeProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reshape.ts",
+      "to": "packages/rex/src/store/project-config.ts",
+      "type": "static",
+      "symbols": [
+        "loadClaudeConfig"
       ]
     },
     {
@@ -3397,7 +3779,9 @@
       "to": "packages/rex/src/core/tree.ts",
       "type": "static",
       "symbols": [
-        "findItem"
+        "findItem",
+        "deleteItem",
+        "cleanBlockedByRefs"
       ]
     },
     {
@@ -3622,6 +4006,14 @@
     },
     {
       "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/fix.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
       "to": "packages/rex/src/cli/commands/init.ts",
       "type": "dynamic",
       "symbols": [
@@ -3663,6 +4055,14 @@
     {
       "from": "packages/rex/src/cli/index.ts",
       "to": "packages/rex/src/cli/commands/report.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/reshape.ts",
       "type": "dynamic",
       "symbols": [
         "*"
@@ -3823,7 +4223,9 @@
       "type": "static",
       "symbols": [
         "computeStats",
-        "findItem"
+        "findItem",
+        "deleteItem",
+        "cleanBlockedByRefs"
       ]
     },
     {
@@ -3945,6 +4347,24 @@
       "type": "type",
       "symbols": [
         "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/fix.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree",
+        "collectAllIds"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/fix.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemStatus"
       ]
     },
     {
@@ -4088,6 +4508,33 @@
     },
     {
       "from": "packages/rex/src/core/prune.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reshape.ts",
+      "to": "packages/rex/src/core/move.ts",
+      "type": "static",
+      "symbols": [
+        "moveItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reshape.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem",
+        "removeFromTree",
+        "updateInTree",
+        "insertChild"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reshape.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -5190,6 +5637,22 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/cli/commands/fix.test.ts",
+      "to": "packages/rex/src/cli/commands/fix.ts",
+      "type": "static",
+      "symbols": [
+        "cmdFix"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/fix.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/cli/commands/move.test.ts",
       "to": "packages/rex/src/cli/commands/move.ts",
       "type": "static",
@@ -5480,6 +5943,26 @@
     },
     {
       "from": "packages/rex/tests/unit/core/dag.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/fix.test.ts",
+      "to": "packages/rex/src/core/fix.ts",
+      "type": "static",
+      "symbols": [
+        "detectTimestampIssues",
+        "detectOrphanBlockedBy",
+        "detectParentChildMisalignment",
+        "detectIssues",
+        "applyFixes"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/fix.test.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -6368,7 +6851,8 @@
       "symbols": [
         "tryParseJSON",
         "extractFindings",
-        "mergeZonesByName"
+        "mergeZonesByName",
+        "deduplicateFindings"
       ]
     },
     {
@@ -6633,6 +7117,7 @@
       "type": "type",
       "symbols": [
         "Zones",
+        "Zone",
         "Finding",
         "NextStep"
       ]
@@ -6705,6 +7190,14 @@
       "type": "static",
       "symbols": [
         "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "deduplicateFindings"
       ]
     },
     {
@@ -7287,6 +7780,23 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/cli/server/routes-hench.ts",
+      "to": "packages/sourcevision/src/cli/server/types.ts",
+      "type": "static",
+      "symbols": [
+        "jsonResponse",
+        "errorResponse"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/server/routes-hench.ts",
+      "to": "packages/sourcevision/src/cli/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/cli/server/routes-rex.ts",
       "to": "packages/sourcevision/src/cli/server/types.ts",
       "type": "static",
@@ -7386,6 +7896,14 @@
       "symbols": [
         "createDataWatcher",
         "handleDataRoute"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/server/start.ts",
+      "to": "packages/sourcevision/src/cli/server/routes-hench.ts",
+      "type": "static",
+      "symbols": [
+        "handleHenchRoute"
       ]
     },
     {
@@ -7706,7 +8224,9 @@
         "computeBranchStats",
         "completionRatio",
         "countChildStatuses",
-        "formatTimestamp"
+        "formatTimestamp",
+        "itemMatchesFilter",
+        "filterTree"
       ]
     },
     {
@@ -7723,6 +8243,27 @@
       "type": "type",
       "symbols": [
         "PRDTreeProps"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/status-filter.ts",
+      "type": "reexport",
+      "symbols": [
+        "StatusFilter",
+        "defaultStatusFilter",
+        "ALL_STATUSES",
+        "FILTER_PRESETS",
+        "activePresetKey"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/status-filter.ts",
+      "type": "type",
+      "symbols": [
+        "StatusFilterProps",
+        "FilterPreset"
       ]
     },
     {
@@ -7761,7 +8302,17 @@
       "symbols": [
         "computeBranchStats",
         "completionRatio",
-        "formatTimestamp"
+        "formatTimestamp",
+        "itemMatchesFilter"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/prd-tree/prd-tree.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/status-filter.ts",
+      "type": "static",
+      "symbols": [
+        "StatusFilter",
+        "defaultStatusFilter"
       ]
     },
     {
@@ -7774,6 +8325,14 @@
         "ItemStatus",
         "ItemLevel",
         "Priority"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/prd-tree/status-filter.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus"
       ]
     },
     {
@@ -7795,6 +8354,14 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/viewer/components/rex-task-link.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/viewer/components/sidebar.ts",
       "to": "packages/sourcevision/src/schema/v1.ts",
       "type": "type",
@@ -7809,6 +8376,31 @@
       "type": "static",
       "symbols": [
         "ENRICHMENT_THRESHOLDS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/sidebar.ts",
+      "to": "packages/sourcevision/src/viewer/components/faq.ts",
+      "type": "static",
+      "symbols": [
+        "FAQ"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/sidebar.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "NdxLogoPng",
+        "ProductLogoPng"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/components/sidebar.ts",
+      "to": "packages/sourcevision/src/viewer/components/theme-toggle.ts",
+      "type": "static",
+      "symbols": [
+        "SidebarThemeToggle"
       ]
     },
     {
@@ -7922,7 +8514,6 @@
       "to": "packages/sourcevision/src/viewer/components/theme-toggle.ts",
       "type": "static",
       "symbols": [
-        "ThemeToggle",
         "initTheme"
       ]
     },
@@ -7952,6 +8543,14 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/analysis.ts",
+      "type": "static",
+      "symbols": [
+        "AnalysisView"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
       "to": "packages/sourcevision/src/viewer/views/architecture.ts",
       "type": "static",
       "symbols": [
@@ -7976,6 +8575,14 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/hench-runs.ts",
+      "type": "static",
+      "symbols": [
+        "HenchRunsView"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
       "to": "packages/sourcevision/src/viewer/views/overview.ts",
       "type": "static",
       "symbols": [
@@ -7996,6 +8603,14 @@
       "type": "static",
       "symbols": [
         "ProblemsView"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/main.ts",
+      "to": "packages/sourcevision/src/viewer/views/rex-dashboard.ts",
+      "type": "static",
+      "symbols": [
+        "RexDashboard"
       ]
     },
     {
@@ -8083,6 +8698,22 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/viewer/views/analysis.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/analysis.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/analyze-panel.ts",
+      "type": "static",
+      "symbols": [
+        "AnalyzePanel"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/viewer/views/architecture.ts",
       "to": "packages/sourcevision/src/schema/v1.ts",
       "type": "type",
@@ -8113,6 +8744,14 @@
       "symbols": [
         "BarChart",
         "FlowDiagram"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/architecture.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
       ]
     },
     {
@@ -8152,6 +8791,14 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/views/files.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/files.ts",
       "to": "packages/sourcevision/src/viewer/types.ts",
       "type": "type",
       "symbols": [
@@ -8178,6 +8825,14 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/views/graph.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/graph.ts",
       "to": "packages/sourcevision/src/viewer/graph/renderer.ts",
       "type": "static",
       "symbols": [
@@ -8200,6 +8855,38 @@
       "symbols": [
         "LoadedData",
         "DetailItem"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/hench-runs.ts",
+      "to": "packages/sourcevision/src/viewer/components/data-display/health-gauge.ts",
+      "type": "static",
+      "symbols": [
+        "MetricCard"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/hench-runs.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/hench-runs.ts",
+      "to": "packages/sourcevision/src/viewer/components/rex-task-link.ts",
+      "type": "static",
+      "symbols": [
+        "RexTaskLink"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/hench-runs.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "NavigateTo"
       ]
     },
     {
@@ -8256,6 +8943,14 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/views/overview.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/overview.ts",
       "to": "packages/sourcevision/src/viewer/types.ts",
       "type": "type",
       "symbols": [
@@ -8266,18 +8961,18 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/views/prd.ts",
-      "to": "packages/sourcevision/src/viewer/components/prd-tree/add-item-form.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
       "type": "static",
       "symbols": [
-        "AddItemForm"
+        "BrandedHeader"
       ]
     },
     {
       "from": "packages/sourcevision/src/viewer/views/prd.ts",
-      "to": "packages/sourcevision/src/viewer/components/prd-tree/analyze-panel.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/add-item-form.ts",
       "type": "static",
       "symbols": [
-        "AnalyzePanel"
+        "AddItemForm"
       ]
     },
     {
@@ -8356,10 +9051,51 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/views/problems.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/problems.ts",
       "to": "packages/sourcevision/src/viewer/types.ts",
       "type": "type",
       "symbols": [
         "LoadedData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/rex-dashboard.ts",
+      "to": "packages/sourcevision/src/viewer/components/data-display/health-gauge.ts",
+      "type": "static",
+      "symbols": [
+        "MetricCard"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/rex-dashboard.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/rex-dashboard.ts",
+      "to": "packages/sourcevision/src/viewer/components/rex-task-link.ts",
+      "type": "static",
+      "symbols": [
+        "RexTaskLink"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/rex-dashboard.ts",
+      "to": "packages/sourcevision/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId",
+        "NavigateTo"
       ]
     },
     {
@@ -8406,6 +9142,14 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/views/routes.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/routes.ts",
       "to": "packages/sourcevision/src/viewer/components/search-filter.ts",
       "type": "static",
       "symbols": [
@@ -8446,6 +9190,14 @@
     },
     {
       "from": "packages/sourcevision/src/viewer/views/suggestions.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/suggestions.ts",
       "to": "packages/sourcevision/src/viewer/types.ts",
       "type": "type",
       "symbols": [
@@ -8466,6 +9218,22 @@
       "type": "static",
       "symbols": [
         "BarChart"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/token-usage.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/validation.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
       ]
     },
     {
@@ -8499,6 +9267,14 @@
       "type": "static",
       "symbols": [
         "FlowDiagram"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/viewer/views/zones.ts",
+      "to": "packages/sourcevision/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
       ]
     },
     {
@@ -8726,6 +9502,22 @@
         "buildRouteTree",
         "findRoutesConfig",
         "parseRoutesConfig"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "deduplicateFindings"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Finding"
       ]
     },
     {
@@ -9202,6 +9994,48 @@
       ]
     },
     {
+      "from": "packages/sourcevision/tests/unit/viewer/accessibility.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/guide.ts",
+      "type": "static",
+      "symbols": [
+        "Guide"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/accessibility.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/prd-tree.ts",
+      "type": "static",
+      "symbols": [
+        "PRDTree"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/accessibility.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/status-filter.ts",
+      "type": "static",
+      "symbols": [
+        "StatusFilter",
+        "defaultStatusFilter"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/accessibility.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocumentData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/accessibility.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/theme-toggle.ts",
+      "type": "static",
+      "symbols": [
+        "ThemeToggle",
+        "SidebarThemeToggle"
+      ]
+    },
+    {
       "from": "packages/sourcevision/tests/unit/viewer/bar-chart.test.ts",
       "to": "packages/sourcevision/src/viewer/components/data-display/mini-charts.ts",
       "type": "static",
@@ -9241,7 +10075,9 @@
         "computeBranchStats",
         "completionRatio",
         "countChildStatuses",
-        "formatTimestamp"
+        "formatTimestamp",
+        "itemMatchesFilter",
+        "filterTree"
       ]
     },
     {
@@ -9249,7 +10085,8 @@
       "to": "packages/sourcevision/src/viewer/components/prd-tree/types.ts",
       "type": "type",
       "symbols": [
-        "PRDItemData"
+        "PRDItemData",
+        "ItemStatus"
       ]
     },
     {
@@ -9265,8 +10102,35 @@
       "to": "packages/sourcevision/src/viewer/components/prd-tree/types.ts",
       "type": "type",
       "symbols": [
-        "PRDDocumentData",
-        "PRDItemData"
+        "PRDDocumentData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/sidebar.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/sidebar.ts",
+      "type": "static",
+      "symbols": [
+        "Sidebar"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/status-filter.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/status-filter.ts",
+      "type": "static",
+      "symbols": [
+        "StatusFilter",
+        "ALL_STATUSES",
+        "FILTER_PRESETS",
+        "activePresetKey",
+        "defaultStatusFilter"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/viewer/status-filter.test.ts",
+      "to": "packages/sourcevision/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus"
       ]
     },
     {
@@ -9423,32 +10287,42 @@
         "packages/sourcevision/src/viewer/components/data-display/tree-view.ts",
         "packages/sourcevision/src/viewer/components/data-display/zone-map.ts",
         "packages/sourcevision/src/viewer/components/detail-panel.ts",
+        "packages/sourcevision/src/viewer/components/faq.ts",
         "packages/sourcevision/src/viewer/components/guide.ts",
+        "packages/sourcevision/src/viewer/components/logos.ts",
         "packages/sourcevision/src/viewer/components/prd-tree/add-item-form.ts",
         "packages/sourcevision/src/viewer/components/prd-tree/analyze-panel.ts",
         "packages/sourcevision/src/viewer/components/prd-tree/bulk-actions.ts",
         "packages/sourcevision/src/viewer/components/prd-tree/prd-tree.ts",
+        "packages/sourcevision/src/viewer/components/prd-tree/status-filter.ts",
         "packages/sourcevision/src/viewer/components/prd-tree/task-detail.ts",
+        "packages/sourcevision/src/viewer/components/rex-task-link.ts",
         "packages/sourcevision/src/viewer/components/search-filter.ts",
         "packages/sourcevision/src/viewer/components/sidebar.ts",
         "packages/sourcevision/src/viewer/components/theme-toggle.ts",
         "packages/sourcevision/src/viewer/main.ts",
+        "packages/sourcevision/src/viewer/views/analysis.ts",
         "packages/sourcevision/src/viewer/views/architecture.ts",
         "packages/sourcevision/src/viewer/views/files.ts",
         "packages/sourcevision/src/viewer/views/graph.ts",
+        "packages/sourcevision/src/viewer/views/hench-runs.ts",
         "packages/sourcevision/src/viewer/views/overview.ts",
         "packages/sourcevision/src/viewer/views/prd.ts",
         "packages/sourcevision/src/viewer/views/problems.ts",
+        "packages/sourcevision/src/viewer/views/rex-dashboard.ts",
         "packages/sourcevision/src/viewer/views/routes.ts",
         "packages/sourcevision/src/viewer/views/suggestions.ts",
         "packages/sourcevision/src/viewer/views/token-usage.ts",
         "packages/sourcevision/src/viewer/views/validation.ts",
         "packages/sourcevision/src/viewer/views/zones.ts",
+        "packages/sourcevision/tests/unit/viewer/accessibility.test.ts",
         "packages/sourcevision/tests/unit/viewer/bar-chart.test.ts",
         "packages/sourcevision/tests/unit/viewer/collapsible-section.test.ts",
         "packages/sourcevision/tests/unit/viewer/detail-panel.test.ts",
         "packages/sourcevision/tests/unit/viewer/flow-diagram.test.ts",
         "packages/sourcevision/tests/unit/viewer/prd-tree.test.ts",
+        "packages/sourcevision/tests/unit/viewer/sidebar.test.ts",
+        "packages/sourcevision/tests/unit/viewer/status-filter.test.ts",
         "packages/sourcevision/tests/unit/viewer/tree-view.test.ts"
       ],
       "symbols": [
@@ -9471,6 +10345,7 @@
         "packages/hench/src/agent/lifecycle/loop.ts",
         "packages/hench/src/agent/planning/brief.ts",
         "packages/hench/src/cli/commands/run.ts",
+        "packages/hench/src/cli/commands/task-lookup.ts",
         "packages/hench/src/tools/rex.ts",
         "packages/hench/src/types/index.ts",
         "packages/hench/tests/unit/agent/api-auth.test.ts",
@@ -9540,6 +10415,7 @@
         "packages/hench/tests/unit/agent/review.test.ts",
         "packages/hench/tests/unit/agent/stuck.test.ts",
         "packages/hench/tests/unit/agent/summary.test.ts",
+        "packages/hench/tests/unit/agent/task-display.test.ts",
         "packages/hench/tests/unit/agent/task-failure.test.ts",
         "packages/hench/tests/unit/agent/token-budget.test.ts",
         "packages/hench/tests/unit/agent/token-tracking.test.ts",
@@ -9547,6 +10423,8 @@
         "packages/hench/tests/unit/cli/commands/constants.test.ts",
         "packages/hench/tests/unit/cli/commands/run-epic.test.ts",
         "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
+        "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
+        "packages/hench/tests/unit/cli/commands/task-lookup.test.ts",
         "packages/hench/tests/unit/cli/errors.test.ts",
         "packages/hench/tests/unit/cli/output.test.ts",
         "packages/hench/tests/unit/guard/commands.test.ts",
@@ -9589,6 +10467,7 @@
         "packages/rex/tests/unit/cli/commands/add.test.ts",
         "packages/rex/tests/unit/cli/commands/analyze-guided.test.ts",
         "packages/rex/tests/unit/cli/commands/chunked-review.test.ts",
+        "packages/rex/tests/unit/cli/commands/fix.test.ts",
         "packages/rex/tests/unit/cli/commands/move.test.ts",
         "packages/rex/tests/unit/cli/commands/report.test.ts",
         "packages/rex/tests/unit/cli/commands/smart-add.test.ts",
@@ -9603,6 +10482,7 @@
         "packages/rex/tests/unit/cli/validate-input.test.ts",
         "packages/rex/tests/unit/core/canonical.test.ts",
         "packages/rex/tests/unit/core/dag.test.ts",
+        "packages/rex/tests/unit/core/fix.test.ts",
         "packages/rex/tests/unit/core/keywords.test.ts",
         "packages/rex/tests/unit/core/move.test.ts",
         "packages/rex/tests/unit/core/next-task-matching.test.ts",
@@ -9636,6 +10516,7 @@
         "packages/sourcevision/tests/integration/llms-txt.test.ts",
         "packages/sourcevision/tests/integration/pipeline.test.ts",
         "packages/sourcevision/tests/unit/analyzers/components.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts",
         "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
         "packages/sourcevision/tests/unit/analyzers/imports.test.ts",
         "packages/sourcevision/tests/unit/analyzers/inventory.test.ts",
@@ -9659,12 +10540,15 @@
         "packages/sourcevision/tests/unit/server/websocket.test.ts",
         "packages/sourcevision/tests/unit/util/merge.test.ts",
         "packages/sourcevision/tests/unit/util/sort.test.ts",
+        "packages/sourcevision/tests/unit/viewer/accessibility.test.ts",
         "packages/sourcevision/tests/unit/viewer/bar-chart.test.ts",
         "packages/sourcevision/tests/unit/viewer/collapsible-section.test.ts",
         "packages/sourcevision/tests/unit/viewer/detail-panel.test.ts",
         "packages/sourcevision/tests/unit/viewer/flow-diagram.test.ts",
         "packages/sourcevision/tests/unit/viewer/prd-tree-compute.test.ts",
         "packages/sourcevision/tests/unit/viewer/prd-tree.test.ts",
+        "packages/sourcevision/tests/unit/viewer/sidebar.test.ts",
+        "packages/sourcevision/tests/unit/viewer/status-filter.test.ts",
         "packages/sourcevision/tests/unit/viewer/tree-view.test.ts",
         "packages/sourcevision/vitest.config.ts",
         "tests/e2e/cli-ci.test.js",
@@ -9690,6 +10574,7 @@
         "packages/hench/src/schema/validate.ts",
         "packages/rex/src/analyze/guided.ts",
         "packages/rex/src/analyze/reason.ts",
+        "packages/rex/src/analyze/reshape-reason.ts",
         "packages/rex/src/cli/mcp.ts",
         "packages/rex/src/schema/validate.ts",
         "packages/sourcevision/src/cli/mcp.ts",
@@ -9702,46 +10587,50 @@
     }
   ],
   "summary": {
-    "totalEdges": 1026,
+    "totalEdges": 1127,
     "totalExternal": 15,
     "circularCount": 0,
     "circulars": [],
     "mostImported": [
       {
         "path": "packages/rex/src/core/tree.ts",
-        "count": 26
+        "count": 29
       },
       {
         "path": "packages/rex/src/cli/errors.ts",
-        "count": 22
+        "count": 23
       },
       {
         "path": "packages/rex/src/cli/output.ts",
-        "count": 20
+        "count": 22
+      },
+      {
+        "path": "packages/rex/src/store/index.ts",
+        "count": 22
+      },
+      {
+        "path": "packages/rex/src/cli/commands/constants.ts",
+        "count": 21
       },
       {
         "path": "packages/rex/src/schema/index.ts",
         "count": 20
       },
       {
-        "path": "packages/rex/src/store/index.ts",
-        "count": 20
-      },
-      {
-        "path": "packages/rex/src/cli/commands/constants.ts",
-        "count": 19
-      },
-      {
         "path": "packages/rex/src/core/canonical.ts",
-        "count": 14
+        "count": 15
+      },
+      {
+        "path": "packages/sourcevision/src/viewer/components/logos.ts",
+        "count": 15
       },
       {
         "path": "packages/hench/src/store/config.ts",
-        "count": 12
+        "count": 14
       },
       {
         "path": "packages/rex/src/analyze/reason.ts",
-        "count": 11
+        "count": 14
       },
       {
         "path": "packages/sourcevision/src/schema/data-files.ts",
@@ -9780,14 +10669,10 @@
         "count": 8
       },
       {
-        "path": "packages/sourcevision/src/analyzers/claude-client.ts",
-        "count": 7
-      },
-      {
-        "path": "packages/sourcevision/src/cli/output.ts",
+        "path": "packages/hench/src/cli/commands/constants.ts",
         "count": 7
       }
     ],
-    "avgImportsPerFile": 3.42
+    "avgImportsPerFile": 3.49
   }
 }

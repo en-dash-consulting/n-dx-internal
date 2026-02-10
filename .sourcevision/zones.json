@@ -26,256 +26,289 @@
       "coupling": 0,
       "insights": [
         "High cohesion (1) — files are tightly interconnected",
-        "Perfect cohesion with 15 files suggests a well-designed client library with clear responsibilities",
-        "Zero coupling indicates proper encapsulation and minimal external dependencies",
-        "Comprehensive feature set covering API providers, authentication, CLI integration, and token usage monitoring",
-        "Exemplary client library design with perfect cohesion and encapsulation",
-        "Demonstrates adapter pattern with multiple providers (API, CLI) unified behind consistent interface",
-        "Clean adapter pattern implementation allowing swappable Claude API providers while maintaining consistent client interface",
-        "Token usage monitoring in token-usage.ts suggests this zone has dual responsibility as both client library and usage analytics service",
-        "Auth module implements multiple authentication strategies but lacks clear strategy pattern interface documentation",
-        "token-usage.ts mixing client concerns with analytics creates implicit service responsibility - consider extracting to dedicated analytics zone"
+        "Provides dual-mode access to Claude through both CLI binary and direct API calls for maximum flexibility",
+        "Implements comprehensive token usage tracking and budget management across different model types",
+        "Centralizes Claude authentication and configuration validation with support for custom endpoints",
+        "Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns",
+        "Dual provider architecture (CLI + API) ensures fallback options and different execution contexts",
+        "Token usage tracking includes comprehensive cost estimation and budget enforcement mechanisms",
+        "Provides abstracted interface to Claude API that insulates consuming packages from direct API dependencies",
+        "Token usage tracking and budget management creates shared state across consuming packages",
+        "Clean abstraction boundary - consuming packages import only high-level interfaces, not implementation details"
       ]
     },
     {
       "id": "hench",
       "name": "Hench",
-      "description": "24 files, primarily TypeScript",
+      "description": "80 files, primarily TypeScript",
       "files": [
         "packages/hench/src/agent/analysis/review.ts",
         "packages/hench/src/agent/analysis/stuck.ts",
         "packages/hench/src/agent/analysis/summary.ts",
+        "packages/hench/src/agent/completion.ts",
         "packages/hench/src/agent/index.ts",
         "packages/hench/src/agent/lifecycle/cli-loop.ts",
-        "packages/hench/src/agent/lifecycle/token-budget.ts",
-        "packages/hench/src/agent/lifecycle/token-usage.ts",
-        "packages/hench/src/agent/planning/brief.ts",
-        "packages/hench/src/agent/planning/prompt.ts",
-        "packages/hench/src/schema/index.ts",
-        "packages/hench/src/schema/v1.ts",
-        "packages/hench/src/schema/validate.ts",
-        "packages/hench/tests/e2e/cli-init.test.ts",
-        "packages/hench/tests/unit/agent/brief.test.ts",
-        "packages/hench/tests/unit/agent/cli-retry.test.ts",
-        "packages/hench/tests/unit/agent/prompt.test.ts",
-        "packages/hench/tests/unit/agent/review.test.ts",
-        "packages/hench/tests/unit/agent/stuck.test.ts",
-        "packages/hench/tests/unit/agent/summary.test.ts",
-        "packages/hench/tests/unit/agent/token-budget.test.ts",
-        "packages/hench/tests/unit/agent/token-tracking.test.ts",
-        "packages/hench/tests/unit/agent/token-usage.test.ts",
-        "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
-        "packages/hench/tests/unit/schema/validate.test.ts"
-      ],
-      "entryPoints": [
-        "packages/hench/src/agent/analysis/review.ts",
-        "packages/hench/src/agent/analysis/stuck.ts",
-        "packages/hench/src/agent/analysis/summary.ts",
-        "packages/hench/src/agent/lifecycle/cli-loop.ts",
-        "packages/hench/src/agent/lifecycle/token-budget.ts",
-        "packages/hench/src/agent/lifecycle/token-usage.ts",
-        "packages/hench/src/agent/planning/brief.ts",
-        "packages/hench/src/agent/planning/prompt.ts",
-        "packages/hench/src/schema/index.ts",
-        "packages/hench/src/schema/v1.ts"
-      ],
-      "cohesion": 0.71,
-      "coupling": 0.29,
-      "insights": [
-        "10 entry points — wide API surface, consider consolidating exports",
-        "Good cohesion (0.71) indicates well-structured agent architecture with logical groupings",
-        "Moderate coupling (0.29) reflects reasonable interdependencies for core agent functionality",
-        "Ten entry points suggest multiple specialized interfaces for analysis, planning, and execution phases",
-        "Well-architected agent core with strong cohesion and manageable coupling",
-        "Acts as central nervous system with structured lifecycle management across analysis, planning, and execution phases",
-        "Heavy bidirectional coupling with cli-infrastructure (30 total imports) suggests agent logic bleeding into CLI concerns",
-        "Analysis, planning, and lifecycle management are fundamentally different concerns that should be architecturally separated",
-        "Token management logic scattered across lifecycle files creates maintenance burden and testing complexity",
-        "Zone mixes three distinct architectural layers: analysis (review, summary), planning (brief, context), and lifecycle (loops, token management) that should be separate zones",
-        "Token budget and usage tracking logic duplicated across lifecycle files instead of centralized service",
-        "Token budget files (token-budget.ts, token-usage.ts) in lifecycle subfolder create implicit coupling between execution flow and resource management concerns",
-        "Analysis subfolder (review.ts, stuck.ts, summary.ts) implements post-execution analysis rather than core agent logic, suggesting architectural layer confusion",
-        "Planning subfolder contains brief.ts and context.ts which are pre-execution concerns mixed with lifecycle management",
-        "Token management files in lifecycle/ subfolder violate single responsibility - extract to dedicated resource-management zone",
-        "Analysis subfolder implements post-execution concerns mixed with core logic - separate into analysis-reporting zone",
-        "Move packages/hench/src/tools/rex.ts to dedicated shared-tools zone to eliminate hub dependency pattern across 3 zones",
-        "Extract packages/hench/src/tools/rex.ts into shared-interfaces zone to break hub dependency pattern affecting zones hench, hench-3, and hench-4"
-      ]
-    },
-    {
-      "id": "hench-2",
-      "name": "Hench 2",
-      "description": "7 files, primarily TypeScript",
-      "files": [
-        "packages/hench/src/agent/completion.ts",
-        "packages/hench/src/tools/rex.ts",
-        "packages/hench/src/validation/completion.ts",
-        "packages/hench/src/validation/index.ts",
-        "packages/hench/tests/unit/agent/completion.test.ts",
-        "packages/hench/tests/unit/tools/completion-validation.test.ts",
-        "packages/hench/tests/unit/tools/rex.test.ts"
-      ],
-      "entryPoints": [
-        "packages/hench/src/tools/rex.ts",
-        "packages/hench/src/validation/completion.ts"
-      ],
-      "cohesion": 0.67,
-      "coupling": 0.33,
-      "insights": [
-        "Good cohesion (0.67) shows focused responsibility around task completion and validation",
-        "Moderate coupling (0.33) indicates proper integration with Rex task management system",
-        "Test coverage across completion validation demonstrates quality engineering practices",
-        "Well-focused zone with good cohesion and comprehensive test coverage",
-        "Implements command pattern with validation pipeline ensuring task state integrity",
-        "Command pattern with validation pipeline provides robust task completion workflow with proper state management",
-        "Validation logic split between validation/ subfolder and completion.ts creates inconsistent responsibility boundaries",
-        "Test files follow different naming convention (completion-validation.test.ts vs rex.test.ts) indicating unclear testing strategy",
-        "validation/completion.ts and agent/completion.ts create split validation responsibility - consolidate validation logic in single location",
-        "Test naming inconsistency between completion-validation.test.ts and rex.test.ts suggests unclear testing conventions"
-      ]
-    },
-    {
-      "id": "hench-3",
-      "name": "Hench 3",
-      "description": "27 files, primarily TypeScript",
-      "files": [
         "packages/hench/src/agent/lifecycle/loop.ts",
+        "packages/hench/src/agent/lifecycle/task-display.ts",
+        "packages/hench/src/agent/lifecycle/token-budget.ts",
+        "packages/hench/src/agent/lifecycle/token-usage.ts",
+        "packages/hench/src/agent/planning/brief.ts",
+        "packages/hench/src/agent/planning/prompt.ts",
+        "packages/hench/src/agent/tools.ts",
         "packages/hench/src/cli/commands/constants.ts",
         "packages/hench/src/cli/commands/init.ts",
         "packages/hench/src/cli/commands/run.ts",
         "packages/hench/src/cli/commands/show.ts",
         "packages/hench/src/cli/commands/status.ts",
+        "packages/hench/src/cli/commands/task-lookup.ts",
         "packages/hench/src/cli/errors.ts",
         "packages/hench/src/cli/index.ts",
         "packages/hench/src/cli/output.ts",
+        "packages/hench/src/guard/commands.ts",
+        "packages/hench/src/guard/index.ts",
+        "packages/hench/src/guard/paths.ts",
+        "packages/hench/src/schema/index.ts",
+        "packages/hench/src/schema/v1.ts",
+        "packages/hench/src/schema/validate.ts",
         "packages/hench/src/store/config.ts",
         "packages/hench/src/store/index.ts",
         "packages/hench/src/store/json.ts",
         "packages/hench/src/store/project-config.ts",
         "packages/hench/src/store/runs.ts",
+        "packages/hench/src/tools/dispatch.ts",
+        "packages/hench/src/tools/exec-shell.ts",
+        "packages/hench/src/tools/files.ts",
+        "packages/hench/src/tools/git.ts",
+        "packages/hench/src/tools/index.ts",
+        "packages/hench/src/tools/rex.ts",
+        "packages/hench/src/tools/shell.ts",
+        "packages/hench/src/tools/test-runner.ts",
         "packages/hench/src/types/index.ts",
         "packages/hench/src/types/output.ts",
+        "packages/hench/src/validation/completion.ts",
+        "packages/hench/src/validation/index.ts",
+        "packages/hench/tests/e2e/cli-init.test.ts",
         "packages/hench/tests/integration/store-roundtrip.test.ts",
         "packages/hench/tests/unit/agent/api-auth.test.ts",
         "packages/hench/tests/unit/agent/atomic-transition.test.ts",
+        "packages/hench/tests/unit/agent/brief.test.ts",
+        "packages/hench/tests/unit/agent/cli-retry.test.ts",
+        "packages/hench/tests/unit/agent/completion.test.ts",
         "packages/hench/tests/unit/agent/loop.test.ts",
+        "packages/hench/tests/unit/agent/prompt.test.ts",
+        "packages/hench/tests/unit/agent/review.test.ts",
+        "packages/hench/tests/unit/agent/stuck.test.ts",
+        "packages/hench/tests/unit/agent/summary.test.ts",
+        "packages/hench/tests/unit/agent/task-display.test.ts",
         "packages/hench/tests/unit/agent/task-failure.test.ts",
+        "packages/hench/tests/unit/agent/token-budget.test.ts",
+        "packages/hench/tests/unit/agent/token-tracking.test.ts",
+        "packages/hench/tests/unit/agent/token-usage.test.ts",
         "packages/hench/tests/unit/cli/commands/constants.test.ts",
         "packages/hench/tests/unit/cli/commands/run-epic.test.ts",
+        "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
+        "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
+        "packages/hench/tests/unit/cli/commands/task-lookup.test.ts",
         "packages/hench/tests/unit/cli/errors.test.ts",
         "packages/hench/tests/unit/cli/output.test.ts",
-        "packages/hench/tests/unit/store/claude-config.test.ts",
-        "packages/hench/tests/unit/store/project-config.test.ts"
-      ],
-      "entryPoints": [
-        "packages/hench/src/agent/lifecycle/loop.ts",
-        "packages/hench/src/cli/commands/run.ts",
-        "packages/hench/src/store/config.ts",
-        "packages/hench/src/store/index.ts",
-        "packages/hench/src/store/project-config.ts",
-        "packages/hench/src/types/index.ts",
-        "packages/hench/src/types/output.ts"
-      ],
-      "cohesion": 0.77,
-      "coupling": 0.23,
-      "insights": [
-        "Strong cohesion (0.77) indicates well-organized CLI and infrastructure components",
-        "Low coupling (0.23) shows good separation from core agent logic while maintaining necessary integration",
-        "Seven entry points provide comprehensive CLI command surface and configuration management",
-        "Excellent CLI architecture with strong cohesion and minimal coupling",
-        "Exhibits inverted dependency pattern where CLI commands depend on abstractions rather than concrete implementations",
-        "Bidirectional coupling with agent-core may indicate CLI commands directly manipulating agent internals instead of using clean interfaces",
-        "CLI commands directly import agent lifecycle components bypassing proper service abstractions",
-        "Error handling and configuration logic embedded within CLI layer instead of dedicated services",
-        "CLI commands import packages/hench/src/agent/lifecycle/loop.ts directly, violating layer separation and creating tight coupling",
-        "Error handling logic embedded in CLI layer instead of using domain service abstractions",
-        "Constants.ts in commands subfolder suggests configuration mixed with command implementation rather than centralized constant management",
-        "Loop.ts in agent/lifecycle imported by CLI violates expected dependency direction - CLI should not orchestrate agent internals directly",
-        "Error handling in cli/errors.ts is domain-specific rather than infrastructure-generic, creating tight coupling to business logic",
-        "commands/constants.ts mixing configuration with command logic - extract to centralized configuration management",
-        "CLI importing agent/lifecycle/loop.ts creates architectural layer violation - implement service interface to decouple CLI from agent internals",
-        "cli/errors.ts contains domain-specific error types rather than infrastructure errors - creates tight coupling between presentation and business layers"
-      ]
-    },
-    {
-      "id": "hench-4",
-      "name": "Hench 4",
-      "description": "11 files, primarily TypeScript",
-      "files": [
-        "packages/hench/src/agent/tools.ts",
-        "packages/hench/src/guard/commands.ts",
-        "packages/hench/src/guard/index.ts",
-        "packages/hench/src/guard/paths.ts",
-        "packages/hench/src/tools/dispatch.ts",
-        "packages/hench/src/tools/files.ts",
-        "packages/hench/src/tools/shell.ts",
         "packages/hench/tests/unit/guard/commands.test.ts",
         "packages/hench/tests/unit/guard/paths.test.ts",
+        "packages/hench/tests/unit/schema/validate.test.ts",
+        "packages/hench/tests/unit/store/claude-config.test.ts",
+        "packages/hench/tests/unit/store/project-config.test.ts",
+        "packages/hench/tests/unit/tools/completion-validation.test.ts",
         "packages/hench/tests/unit/tools/files.test.ts",
-        "packages/hench/tests/unit/tools/shell.test.ts"
-      ],
-      "entryPoints": [
-        "packages/hench/src/agent/tools.ts",
-        "packages/hench/src/guard/index.ts",
-        "packages/hench/src/tools/dispatch.ts",
-        "packages/hench/src/tools/files.ts",
-        "packages/hench/src/tools/shell.ts"
-      ],
-      "cohesion": 0.68,
-      "coupling": 0.33,
-      "insights": [
-        "Zone handles security through path/command validation before tool execution",
-        "Central dispatch pattern routes all tool calls through single entry point",
-        "Good separation between security checks (guard) and tool implementations",
-        "Strong cohesion (0.68) with proper separation between security validation and tool dispatch logic",
-        "Guard rails provide comprehensive protection against path traversal and command injection",
-        "Backward compatibility shim in agent/tools.ts maintains API stability during refactoring",
-        "Acts as security gateway for entire tool ecosystem with no bypass mechanisms",
-        "Implements defense-in-depth with both path validation and command filtering",
-        "Security zone properly gates all tool access without creating backdoors or escape hatches",
-        "Zone implements fail-safe security model where denied operations throw exceptions rather than returning error codes, preventing accidental bypass through error handling bugs",
-        "Security validation occurs at multiple granularities (command-level, path-level, argument-level) creating defense-in-depth without performance penalty",
-        "Guard implementation uses allowlist approach exclusively - no blacklist patterns that could be circumvented",
-        "Consider adding structured error types for different validation failures to enable better error handling in consuming zones"
-      ]
-    },
-    {
-      "id": "hench-5",
-      "name": "Hench 5",
-      "description": "6 files, primarily TypeScript",
-      "files": [
-        "packages/hench/src/tools/exec-shell.ts",
-        "packages/hench/src/tools/git.ts",
-        "packages/hench/src/tools/index.ts",
-        "packages/hench/src/tools/test-runner.ts",
         "packages/hench/tests/unit/tools/git.test.ts",
+        "packages/hench/tests/unit/tools/rex.test.ts",
+        "packages/hench/tests/unit/tools/shell.test.ts",
         "packages/hench/tests/unit/tools/test-runner.test.ts"
       ],
-      "entryPoints": [
-        "packages/hench/src/tools/exec-shell.ts",
-        "packages/hench/src/tools/git.ts",
-        "packages/hench/src/tools/index.ts"
+      "entryPoints": [],
+      "cohesion": 1,
+      "coupling": 0,
+      "subZones": [
+        {
+          "id": "hench/tests",
+          "name": "Tests",
+          "description": "29 files, primarily TypeScript",
+          "files": [
+            "packages/hench/src/agent/analysis/review.ts",
+            "packages/hench/src/agent/analysis/stuck.ts",
+            "packages/hench/src/agent/analysis/summary.ts",
+            "packages/hench/src/agent/index.ts",
+            "packages/hench/src/agent/lifecycle/cli-loop.ts",
+            "packages/hench/src/agent/lifecycle/loop.ts",
+            "packages/hench/src/agent/lifecycle/task-display.ts",
+            "packages/hench/src/agent/lifecycle/token-budget.ts",
+            "packages/hench/src/agent/lifecycle/token-usage.ts",
+            "packages/hench/src/agent/planning/brief.ts",
+            "packages/hench/src/agent/planning/prompt.ts",
+            "packages/hench/src/schema/index.ts",
+            "packages/hench/src/schema/v1.ts",
+            "packages/hench/src/schema/validate.ts",
+            "packages/hench/src/types/index.ts",
+            "packages/hench/src/types/output.ts",
+            "packages/hench/tests/e2e/cli-init.test.ts",
+            "packages/hench/tests/unit/agent/brief.test.ts",
+            "packages/hench/tests/unit/agent/cli-retry.test.ts",
+            "packages/hench/tests/unit/agent/prompt.test.ts",
+            "packages/hench/tests/unit/agent/review.test.ts",
+            "packages/hench/tests/unit/agent/stuck.test.ts",
+            "packages/hench/tests/unit/agent/summary.test.ts",
+            "packages/hench/tests/unit/agent/task-display.test.ts",
+            "packages/hench/tests/unit/agent/token-budget.test.ts",
+            "packages/hench/tests/unit/agent/token-tracking.test.ts",
+            "packages/hench/tests/unit/agent/token-usage.test.ts",
+            "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
+            "packages/hench/tests/unit/schema/validate.test.ts"
+          ],
+          "entryPoints": [
+            "packages/hench/src/types/index.ts",
+            "packages/hench/src/agent/analysis/stuck.ts",
+            "packages/hench/src/agent/lifecycle/cli-loop.ts",
+            "packages/hench/src/agent/lifecycle/loop.ts",
+            "packages/hench/src/agent/planning/brief.ts",
+            "packages/hench/src/types/output.ts",
+            "packages/hench/src/schema/index.ts",
+            "packages/hench/src/schema/v1.ts"
+          ],
+          "cohesion": 0.78,
+          "coupling": 0.22,
+          "depth": 1
+        },
+        {
+          "id": "hench/tests-2",
+          "name": "Tests 2",
+          "description": "7 files, primarily TypeScript",
+          "files": [
+            "packages/hench/src/agent/completion.ts",
+            "packages/hench/src/tools/rex.ts",
+            "packages/hench/src/validation/completion.ts",
+            "packages/hench/src/validation/index.ts",
+            "packages/hench/tests/unit/agent/completion.test.ts",
+            "packages/hench/tests/unit/tools/completion-validation.test.ts",
+            "packages/hench/tests/unit/tools/rex.test.ts"
+          ],
+          "entryPoints": [
+            "packages/hench/src/validation/completion.ts",
+            "packages/hench/src/tools/rex.ts"
+          ],
+          "cohesion": 0.74,
+          "coupling": 0.26,
+          "depth": 1
+        },
+        {
+          "id": "hench/tests-3",
+          "name": "Tests 3",
+          "description": "11 files, primarily TypeScript",
+          "files": [
+            "packages/hench/src/agent/tools.ts",
+            "packages/hench/src/guard/commands.ts",
+            "packages/hench/src/guard/index.ts",
+            "packages/hench/src/guard/paths.ts",
+            "packages/hench/src/tools/dispatch.ts",
+            "packages/hench/src/tools/files.ts",
+            "packages/hench/src/tools/shell.ts",
+            "packages/hench/tests/unit/guard/commands.test.ts",
+            "packages/hench/tests/unit/guard/paths.test.ts",
+            "packages/hench/tests/unit/tools/files.test.ts",
+            "packages/hench/tests/unit/tools/shell.test.ts"
+          ],
+          "entryPoints": [
+            "packages/hench/src/guard/index.ts",
+            "packages/hench/src/tools/dispatch.ts",
+            "packages/hench/src/tools/files.ts",
+            "packages/hench/src/tools/shell.ts",
+            "packages/hench/src/agent/tools.ts"
+          ],
+          "cohesion": 0.69,
+          "coupling": 0.31,
+          "depth": 1
+        },
+        {
+          "id": "hench/tests-4",
+          "name": "Tests 4",
+          "description": "27 files, primarily TypeScript",
+          "files": [
+            "packages/hench/src/cli/commands/constants.ts",
+            "packages/hench/src/cli/commands/init.ts",
+            "packages/hench/src/cli/commands/run.ts",
+            "packages/hench/src/cli/commands/show.ts",
+            "packages/hench/src/cli/commands/status.ts",
+            "packages/hench/src/cli/commands/task-lookup.ts",
+            "packages/hench/src/cli/errors.ts",
+            "packages/hench/src/cli/index.ts",
+            "packages/hench/src/cli/output.ts",
+            "packages/hench/src/store/config.ts",
+            "packages/hench/src/store/index.ts",
+            "packages/hench/src/store/json.ts",
+            "packages/hench/src/store/project-config.ts",
+            "packages/hench/src/store/runs.ts",
+            "packages/hench/tests/integration/store-roundtrip.test.ts",
+            "packages/hench/tests/unit/agent/api-auth.test.ts",
+            "packages/hench/tests/unit/agent/atomic-transition.test.ts",
+            "packages/hench/tests/unit/agent/loop.test.ts",
+            "packages/hench/tests/unit/agent/task-failure.test.ts",
+            "packages/hench/tests/unit/cli/commands/constants.test.ts",
+            "packages/hench/tests/unit/cli/commands/run-epic.test.ts",
+            "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
+            "packages/hench/tests/unit/cli/commands/task-lookup.test.ts",
+            "packages/hench/tests/unit/cli/errors.test.ts",
+            "packages/hench/tests/unit/cli/output.test.ts",
+            "packages/hench/tests/unit/store/claude-config.test.ts",
+            "packages/hench/tests/unit/store/project-config.test.ts"
+          ],
+          "entryPoints": [
+            "packages/hench/src/store/index.ts",
+            "packages/hench/src/store/project-config.ts",
+            "packages/hench/src/cli/commands/run.ts",
+            "packages/hench/src/store/config.ts"
+          ],
+          "cohesion": 0.8,
+          "coupling": 0.2,
+          "depth": 1
+        },
+        {
+          "id": "hench/tools",
+          "name": "Tools",
+          "description": "6 files, primarily TypeScript",
+          "files": [
+            "packages/hench/src/tools/exec-shell.ts",
+            "packages/hench/src/tools/git.ts",
+            "packages/hench/src/tools/index.ts",
+            "packages/hench/src/tools/test-runner.ts",
+            "packages/hench/tests/unit/tools/git.test.ts",
+            "packages/hench/tests/unit/tools/test-runner.test.ts"
+          ],
+          "entryPoints": [
+            "packages/hench/src/tools/index.ts",
+            "packages/hench/src/tools/git.ts",
+            "packages/hench/src/tools/exec-shell.ts"
+          ],
+          "cohesion": 0.56,
+          "coupling": 0.44,
+          "depth": 1
+        }
       ],
-      "cohesion": 0.5,
-      "coupling": 0.5,
       "insights": [
-        "Zone groups tools with specialized command-line interfaces (git, test runners)",
-        "Moderate cohesion (0.5) suggests tools could be more tightly integrated",
-        "Each tool handles its own command parsing and execution logic",
-        "Moderate cohesion (0.5) and coupling (0.5) indicates loosely related tools that could benefit from stronger unifying patterns",
-        "Git tool properly restricts allowed subcommands for security",
-        "Test runner provides automatic detection of test frameworks and scoped execution",
-        "Operates as leaf nodes in tool architecture with minimal cross-dependencies",
-        "Each tool maintains isolated command surface without shared state",
-        "Clean consumer relationship with tool-security zone - accepts validation without coupling to implementation",
-        "Test runner and git tools share no common interface despite similar command-line execution patterns",
-        "Tool implementations lack standardized error handling or result formatting conventions",
-        "Each specialized tool implements its own command parsing and execution without shared abstractions, leading to inconsistent interfaces and duplicated validation logic",
-        "Tools implement divergent error handling strategies - git tool throws exceptions while test-runner returns result objects with error flags",
-        "Command parsing logic duplicated across git.ts and test-runner.ts without shared validation utilities",
-        "Each tool maintains its own subprocess management approach creating inconsistent behavior for timeouts and cancellation",
-        "Extract common command execution interface to standardize error handling and subprocess management across all specialized tools",
-        "Consolidate duplicate argument parsing logic between git.ts and test-runner.ts into shared utility module"
+        "High cohesion (1) — files are tightly interconnected",
+        "Implements sophisticated agent lifecycle with planning, execution, analysis, and completion validation phases",
+        "Features comprehensive security system with command whitelisting, path restrictions, and resource limits",
+        "Provides rich tool ecosystem including shell execution, git operations, file management, and rex integration",
+        "Perfect zone cohesion (1.0) with zero coupling indicates excellent internal architecture and external interface design",
+        "Security guard system provides multi-layered protection with configurable policies for safe autonomous operation",
+        "Agent lifecycle includes stuck detection, progress analysis, and completion validation to ensure reliable task execution",
+        "Maintains architectural independence by importing only type definitions and configuration interfaces from integration layer",
+        "Uses dynamic imports for rex package to avoid circular dependencies while maintaining loose coupling",
+        "Demonstrates dependency inversion principle by depending on abstractions rather than concrete implementations",
+        "Dynamic import pattern for rex prevents tight coupling while enabling integration",
+        "Type-only imports from claude-client maintain clean separation while enabling configuration sharing",
+        "Hench tools layer directly imports Rex package types and functions creating hidden coupling through the dynamic import mechanism - while the dynamic import prevents circular dependencies, the type imports still create compile-time coupling that defeats the zone boundary abstraction",
+        "Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided",
+        "Security command filtering uses inclusive terminology - 'allowlist' consistently replaces outdated 'whitelist' patterns, demonstrating modern security vocabulary adoption",
+        "Agent uses proper semantic naming convention - analyzer functions are named analyzeX() following consistent TypeScript conventions (analyzeInventory, analyzeImports, etc.)",
+        "Zone size of 80 files suggests potential for further decomposition into functional subzones (CLI, core agent, tool integrations)",
+        "Consider decomposing hench zone into functional subzones: CLI interface (packages/hench/src/cli/), core agent logic (packages/hench/src/core/), and tool integrations (packages/hench/src/tools/) to improve maintainability of the 80-file zone"
       ]
     },
     {
@@ -583,337 +616,19 @@
       "coupling": 0,
       "insights": [
         "High cohesion (1) — files are tightly interconnected",
-        "Perfect cohesion indicates clear separation between CLI orchestration, CI pipeline, configuration management, and web server coordination",
-        "Zero coupling suggests this zone serves as a pure coordination layer without tight dependencies",
-        "Four focused entry points (ci, cli, config, web) provide clean interface boundaries for the monorepo",
-        "Excellent architectural design with perfect cohesion and zero coupling",
-        "Serves as a clean facade pattern, providing unified entry points while delegating to specialized packages",
-        "Implements facade pattern with four distinct entry points (ci, cli, config, web) that coordinate package interactions without creating dependencies",
-        "File naming convention breaks at config.js which handles unified configuration rather than orchestration, suggesting potential misclassification",
-        "web.js implements daemon process management (PID files, background mode) which is infrastructure concern rather than pure orchestration",
-        "config.js implements cross-package configuration management rather than orchestration - consider renaming zone to 'coordination-layer' or moving config.js to separate zone"
+        "Acts as the primary entry point coordinating all three tools through a unified command interface",
+        "Implements robust error handling with user-friendly suggestions for common setup issues",
+        "Provides sophisticated configuration management with validation and cross-tool settings",
+        "Perfect zone cohesion (1.0) with zero coupling indicates this layer maintains clear separation of concerns",
+        "CLI orchestration includes comprehensive pre-flight checks and dependency validation before delegating to sub-tools",
+        "Configuration system supports both project-level overrides and package-specific settings with proper security for API keys",
+        "Acts as pure orchestration layer with minimal business logic, delegating all domain-specific operations to specialized packages",
+        "Internal cohesion achieved through shared orchestration patterns and unified CLI interface design",
+        "Pure delegation pattern - orchestration layer contains no business logic, only coordination and user interface concerns"
       ]
     }
   ],
   "crossings": [
-    {
-      "from": "packages/hench/src/agent/index.ts",
-      "to": "packages/hench/src/validation/completion.ts",
-      "fromZone": "hench",
-      "toZone": "hench-2"
-    },
-    {
-      "from": "packages/hench/src/agent/index.ts",
-      "to": "packages/hench/src/validation/completion.ts",
-      "fromZone": "hench",
-      "toZone": "hench-2"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "to": "packages/hench/src/validation/completion.ts",
-      "fromZone": "hench",
-      "toZone": "hench-2"
-    },
-    {
-      "from": "packages/hench/src/agent/analysis/review.ts",
-      "to": "packages/hench/src/types/output.ts",
-      "fromZone": "hench",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/src/agent/index.ts",
-      "to": "packages/hench/src/agent/lifecycle/loop.ts",
-      "fromZone": "hench",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/src/agent/index.ts",
-      "to": "packages/hench/src/agent/lifecycle/loop.ts",
-      "fromZone": "hench",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "to": "packages/hench/src/store/index.ts",
-      "fromZone": "hench",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "to": "packages/hench/src/store/project-config.ts",
-      "fromZone": "hench",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "to": "packages/hench/src/store/project-config.ts",
-      "fromZone": "hench",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "to": "packages/hench/src/types/output.ts",
-      "fromZone": "hench",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
-      "to": "packages/hench/src/cli/commands/run.ts",
-      "fromZone": "hench",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
-      "to": "packages/hench/src/store/config.ts",
-      "fromZone": "hench",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "to": "packages/hench/src/tools/index.ts",
-      "fromZone": "hench",
-      "toZone": "hench-5"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/agent/analysis/review.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/agent/analysis/summary.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/agent/lifecycle/token-budget.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/agent/lifecycle/token-usage.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/agent/planning/brief.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/agent/planning/prompt.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/schema/index.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/cli/commands/run.ts",
-      "to": "packages/hench/src/agent/analysis/stuck.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/cli/commands/run.ts",
-      "to": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/cli/commands/run.ts",
-      "to": "packages/hench/src/agent/planning/brief.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/cli/commands/run.ts",
-      "to": "packages/hench/src/agent/planning/brief.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/cli/errors.ts",
-      "to": "packages/hench/src/agent/planning/brief.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/store/config.ts",
-      "to": "packages/hench/src/schema/index.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/store/config.ts",
-      "to": "packages/hench/src/schema/index.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/store/runs.ts",
-      "to": "packages/hench/src/schema/index.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/store/runs.ts",
-      "to": "packages/hench/src/schema/index.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/tests/integration/store-roundtrip.test.ts",
-      "to": "packages/hench/src/schema/v1.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/tests/integration/store-roundtrip.test.ts",
-      "to": "packages/hench/src/schema/v1.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/tests/unit/agent/api-auth.test.ts",
-      "to": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/tests/unit/agent/atomic-transition.test.ts",
-      "to": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/tests/unit/cli/errors.test.ts",
-      "to": "packages/hench/src/agent/planning/brief.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/tests/unit/agent/atomic-transition.test.ts",
-      "to": "packages/hench/src/tools/rex.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench-2"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/guard/index.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench-4"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/tools/dispatch.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench-4"
-    },
-    {
-      "from": "packages/hench/src/types/index.ts",
-      "to": "packages/hench/src/guard/index.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench-4"
-    },
-    {
-      "from": "packages/hench/tests/unit/agent/task-failure.test.ts",
-      "to": "packages/hench/src/agent/tools.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench-4"
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/tools/index.ts",
-      "fromZone": "hench-3",
-      "toZone": "hench-5"
-    },
-    {
-      "from": "packages/hench/src/guard/index.ts",
-      "to": "packages/hench/src/schema/index.ts",
-      "fromZone": "hench-4",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/tests/unit/tools/files.test.ts",
-      "to": "packages/hench/src/schema/v1.ts",
-      "fromZone": "hench-4",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/tests/unit/tools/shell.test.ts",
-      "to": "packages/hench/src/schema/v1.ts",
-      "fromZone": "hench-4",
-      "toZone": "hench"
-    },
-    {
-      "from": "packages/hench/src/tools/dispatch.ts",
-      "to": "packages/hench/src/tools/rex.ts",
-      "fromZone": "hench-4",
-      "toZone": "hench-2"
-    },
-    {
-      "from": "packages/hench/src/agent/tools.ts",
-      "to": "packages/hench/src/types/index.ts",
-      "fromZone": "hench-4",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/src/tools/dispatch.ts",
-      "to": "packages/hench/src/types/index.ts",
-      "fromZone": "hench-4",
-      "toZone": "hench-3"
-    },
-    {
-      "from": "packages/hench/src/tools/dispatch.ts",
-      "to": "packages/hench/src/tools/git.ts",
-      "fromZone": "hench-4",
-      "toZone": "hench-5"
-    },
-    {
-      "from": "packages/hench/src/tools/shell.ts",
-      "to": "packages/hench/src/tools/exec-shell.ts",
-      "fromZone": "hench-4",
-      "toZone": "hench-5"
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/rex.ts",
-      "fromZone": "hench-5",
-      "toZone": "hench-2"
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/rex.ts",
-      "fromZone": "hench-5",
-      "toZone": "hench-2"
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/dispatch.ts",
-      "fromZone": "hench-5",
-      "toZone": "hench-4"
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/files.ts",
-      "fromZone": "hench-5",
-      "toZone": "hench-4"
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/shell.ts",
-      "fromZone": "hench-5",
-      "toZone": "hench-4"
-    },
     {
       "from": "packages/sourcevision/src/cli/commands/init.ts",
       "to": "packages/sourcevision/src/schema/v1.ts",
@@ -1057,16 +772,141 @@
     ".claude/settings.local.json",
     ".gitignore",
     ".hench/config.json",
-    ".n-dx.json",
-    ".n-dx2.json",
     ".npmrc",
     ".rex/config.json",
     ".rex/execution-log.jsonl",
     ".rex/pending-proposals.json",
     ".rex/prd.json",
     ".rex/workflow.md",
+    ".sv2/CONTEXT.md",
+    ".sv2/components.json",
+    ".sv2/imports.json",
+    ".sv2/inventory.json",
+    ".sv2/llms.txt",
+    ".sv2/manifest.json",
+    ".sv2/zones.json",
+    ".sv2/zones/agent-core/context.md",
+    ".sv2/zones/agent-core/summary.json",
+    ".sv2/zones/agent-tools-layer/context.md",
+    ".sv2/zones/agent-tools-layer/summary.json",
+    ".sv2/zones/application-entry/context.md",
+    ".sv2/zones/application-entry/summary.json",
+    ".sv2/zones/application-orchestration/context.md",
+    ".sv2/zones/application-orchestration/summary.json",
+    ".sv2/zones/claude-api-client/context.md",
+    ".sv2/zones/claude-api-client/summary.json",
+    ".sv2/zones/claude-client/context.md",
+    ".sv2/zones/claude-client/summary.json",
+    ".sv2/zones/claude-integration/context.md",
+    ".sv2/zones/claude-integration/summary.json",
+    ".sv2/zones/cli-infrastructure/context.md",
+    ".sv2/zones/cli-infrastructure/summary.json",
+    ".sv2/zones/completion-validation/context.md",
+    ".sv2/zones/completion-validation/summary.json",
+    ".sv2/zones/hench-2/context.md",
+    ".sv2/zones/hench-2/summary.json",
+    ".sv2/zones/hench-3/context.md",
+    ".sv2/zones/hench-3/summary.json",
+    ".sv2/zones/hench-4/context.md",
+    ".sv2/zones/hench-4/summary.json",
+    ".sv2/zones/hench-5/context.md",
+    ".sv2/zones/hench-5/summary.json",
+    ".sv2/zones/hench-cli/context.md",
+    ".sv2/zones/hench-cli/summary.json",
+    ".sv2/zones/hench-completion/context.md",
+    ".sv2/zones/hench-completion/summary.json",
+    ".sv2/zones/hench-core/context.md",
+    ".sv2/zones/hench-core/summary.json",
+    ".sv2/zones/hench-guard/context.md",
+    ".sv2/zones/hench-guard/summary.json",
+    ".sv2/zones/hench-integration/context.md",
+    ".sv2/zones/hench-integration/summary.json",
+    ".sv2/zones/hench-tooling/context.md",
+    ".sv2/zones/hench-tooling/summary.json",
+    ".sv2/zones/hench/context.md",
+    ".sv2/zones/hench/summary.json",
+    ".sv2/zones/orchestration-layer/context.md",
+    ".sv2/zones/orchestration-layer/summary.json",
+    ".sv2/zones/orchestration/context.md",
+    ".sv2/zones/orchestration/summary.json",
+    ".sv2/zones/packages-rex:rex-cli/context.md",
+    ".sv2/zones/packages-rex:rex-cli/summary.json",
+    ".sv2/zones/packages-sourcevision:analysis-engine/context.md",
+    ".sv2/zones/packages-sourcevision:analysis-engine/summary.json",
+    ".sv2/zones/packages-sourcevision:interactive-viewer/context.md",
+    ".sv2/zones/packages-sourcevision:interactive-viewer/summary.json",
+    ".sv2/zones/packages-sourcevision:test-fixtures/context.md",
+    ".sv2/zones/packages-sourcevision:test-fixtures/summary.json",
+    ".sv2/zones/packages-sourcevision:test-suite/context.md",
+    ".sv2/zones/packages-sourcevision:test-suite/summary.json",
+    ".sv2/zones/root-orchestration/context.md",
+    ".sv2/zones/root-orchestration/summary.json",
+    ".sv2/zones/root/context.md",
+    ".sv2/zones/root/summary.json",
+    ".sv2/zones/specialized-tools/context.md",
+    ".sv2/zones/specialized-tools/summary.json",
+    ".sv2/zones/task-completion/context.md",
+    ".sv2/zones/task-completion/summary.json",
+    ".sv2/zones/tool-security/context.md",
+    ".sv2/zones/tool-security/summary.json",
+    ".sv3/CONTEXT.md",
+    ".sv3/components.json",
+    ".sv3/imports.json",
+    ".sv3/inventory.json",
+    ".sv3/llms.txt",
+    ".sv3/manifest.json",
+    ".sv3/zones.json",
+    ".sv3/zones/agent-tools-and-security/context.md",
+    ".sv3/zones/agent-tools-and-security/summary.json",
+    ".sv3/zones/autonomous-agent-core/context.md",
+    ".sv3/zones/autonomous-agent-core/summary.json",
+    ".sv3/zones/autonomous-agent-core/zones/tests-2/context.md",
+    ".sv3/zones/autonomous-agent-core/zones/tests-2/summary.json",
+    ".sv3/zones/autonomous-agent-core/zones/tests-3/context.md",
+    ".sv3/zones/autonomous-agent-core/zones/tests-3/summary.json",
+    ".sv3/zones/autonomous-agent-core/zones/tests-4/context.md",
+    ".sv3/zones/autonomous-agent-core/zones/tests-4/summary.json",
+    ".sv3/zones/autonomous-agent-core/zones/tests/context.md",
+    ".sv3/zones/autonomous-agent-core/zones/tests/summary.json",
+    ".sv3/zones/autonomous-agent-core/zones/tools/context.md",
+    ".sv3/zones/autonomous-agent-core/zones/tools/summary.json",
+    ".sv3/zones/claude-api-abstraction/context.md",
+    ".sv3/zones/claude-api-abstraction/summary.json",
+    ".sv3/zones/claude-client/context.md",
+    ".sv3/zones/claude-client/summary.json",
+    ".sv3/zones/hench-2/context.md",
+    ".sv3/zones/hench-2/summary.json",
+    ".sv3/zones/hench-3/context.md",
+    ".sv3/zones/hench-3/summary.json",
+    ".sv3/zones/hench-4/context.md",
+    ".sv3/zones/hench-4/summary.json",
+    ".sv3/zones/hench-5/context.md",
+    ".sv3/zones/hench-5/summary.json",
+    ".sv3/zones/hench-cli-interface/context.md",
+    ".sv3/zones/hench-cli-interface/summary.json",
+    ".sv3/zones/hench-system-tools/context.md",
+    ".sv3/zones/hench-system-tools/summary.json",
+    ".sv3/zones/hench/context.md",
+    ".sv3/zones/hench/summary.json",
+    ".sv3/zones/monorepo-orchestration/context.md",
+    ".sv3/zones/monorepo-orchestration/summary.json",
+    ".sv3/zones/packages-rex:rex-cli/context.md",
+    ".sv3/zones/packages-rex:rex-cli/summary.json",
+    ".sv3/zones/packages-sourcevision:analysis-engine/context.md",
+    ".sv3/zones/packages-sourcevision:analysis-engine/summary.json",
+    ".sv3/zones/packages-sourcevision:interactive-viewer/context.md",
+    ".sv3/zones/packages-sourcevision:interactive-viewer/summary.json",
+    ".sv3/zones/packages-sourcevision:test-fixtures/context.md",
+    ".sv3/zones/packages-sourcevision:test-fixtures/summary.json",
+    ".sv3/zones/packages-sourcevision:test-suite/context.md",
+    ".sv3/zones/packages-sourcevision:test-suite/summary.json",
+    ".sv3/zones/root/context.md",
+    ".sv3/zones/root/summary.json",
+    ".sv3/zones/task-completion-validation/context.md",
+    ".sv3/zones/task-completion-validation/summary.json",
     "CLAUDE.md",
     "README.md",
+    "n-dx.png",
     "package.json",
     "packages/claude-client/package.json",
     "packages/claude-client/tsconfig.json",
@@ -1089,78 +929,40 @@
     "vitest.config.js"
   ],
   "insights": [
-    "Hub: packages/hench/src/tools/rex.ts is imported by 3 zones — cross-cutting dependency",
-    "Bidirectional coupling: \"hench\" ↔ \"hench-3\" (9+21 crossings) — consider extracting shared interface",
-    "Bidirectional coupling: \"hench-3\" ↔ \"hench-4\" (4+2 crossings) — consider extracting shared interface",
-    "Bidirectional coupling: \"hench-4\" ↔ \"hench-5\" (2+3 crossings) — consider extracting shared interface",
-    "Size imbalance: largest zone has 27 files vs smallest with 4 — uneven decomposition",
-    "Bidirectional coupling: \"agent-core\" ↔ \"cli-infrastructure\" (9+21 crossings) — consider extracting shared interface",
-    "Bidirectional coupling: \"cli-infrastructure\" ↔ \"tool-security\" (4+2 crossings) — consider extracting shared interface",
-    "Bidirectional coupling: \"specialized-tools\" ↔ \"tool-security\" (3+2 crossings) — consider extracting shared interface",
-    "Size imbalance: largest zone has 27 files vs smallest with 4 — uneven decomposition",
-    "Bidirectional coupling: \"hench\" ↔ \"hench-3\" (9+21 crossings) — consider extracting shared interface",
-    "Bidirectional coupling: \"hench-3\" ↔ \"hench-4\" (4+2 crossings) — consider extracting shared interface",
-    "Bidirectional coupling: \"hench-4\" ↔ \"hench-5\" (2+3 crossings) — consider extracting shared interface",
-    "Size imbalance: largest zone has 27 files vs smallest with 4 — uneven decomposition",
-    "The hench package demonstrates excellent modular design with five distinct zones handling core logic, completion, CLI, and specialized concerns",
-    "Strong cross-zone communication patterns (hench-3 ↔ hench with 30 total imports) indicate proper layering between CLI and core functionality",
-    "Zero coupling in root orchestration and claude-client zones shows excellent architectural boundaries",
-    "Strong security-first architecture with guardrails protecting all tool execution paths",
-    "Clear layering from security validation → dispatch → specialized implementation",
-    "Tool system exhibits good extensibility with consistent patterns for adding new capabilities",
-    "Exceptionally well-architected codebase with strong zone cohesion across all analyzed components",
-    "Clean separation of concerns between orchestration, client libraries, and agent subsystems",
-    "High interconnectivity between hench zones (21 imports hench-3→hench, 9 reverse) suggests tight coupling in agent subsystem",
-    "Tool dispatch architecture properly isolates security concerns from implementation details",
-    "Bidirectional imports between zones may indicate circular dependencies that could complicate testing and maintenance",
-    "Layered architecture emerges with orchestration → CLI → agent core → specialized tools flow",
-    "Multiple adapter patterns (Claude providers, tool dispatch) provide clean abstraction boundaries",
-    "Command pattern appears consistently across CLI infrastructure and task completion zones",
-    "Tool architecture follows secure-by-design layered pattern: security validation → dispatch → specialized implementation",
-    "Cross-zone tool communication flows unidirectionally through central dispatch without backflow",
-    "Security zone acts as architectural chokepoint ensuring no tool execution bypasses validation",
-    "Clear layered architecture with orchestration layer at top, CLI infrastructure in middle, and agent core at bottom provides good separation of concerns",
-    "Hub-and-spoke pattern centered on packages/hench/src/tools/rex.ts creates single point of dependency across multiple zones",
-    "Missing interface abstraction between agent-core and cli-infrastructure zones leads to tight coupling through direct imports",
-    "Tool ecosystem demonstrates proper layered security architecture with no privilege escalation paths",
-    "Clear separation between security concerns (tool-security) and functionality (specialized-tools) with well-defined interfaces",
-    "Agent-core and cli-infrastructure zones exhibit architectural layer violation where presentation layer (CLI) directly depends on business logic internals",
-    "Missing service layer between CLI commands and agent lifecycle creates maintenance burden and testing complexity",
-    "Token management concerns scattered across multiple zones indicate need for centralized token service abstraction",
-    "Tool architecture exhibits asymmetric security model where specialized-tools zone trusts tool-security validation completely without implementing any internal safeguards",
-    "Cross-zone tool communication creates implicit dependency chain where changes in tool-security validation rules could break specialized-tools implementations without compile-time detection",
-    "The hub pattern around packages/hench/src/tools/rex.ts suggests potential violation of single responsibility principle as it serves as both domain logic and architectural coordination point",
-    "CLI commands bypass service layer to directly manipulate agent lifecycle internals, violating clean architecture principles",
-    "Token management logic distributed across agent-core lifecycle files and task-completion validation without centralized abstraction",
-    "Tool ecosystem lacks standardized interface contract between security validation and tool implementation layers, creating fragile coupling through implicit assumptions about validation behavior",
-    "Multiple bidirectional coupling patterns between hench zones (hench↔hench-3, hench-3↔hench-4, hench-4↔hench-5) create circular dependency chains that complicate module loading and increase risk of deadlocks",
-    "Zone naming conventions inconsistent - orchestration-layer contains non-orchestration files while agent-core mixes multiple architectural concerns",
-    "Resource management (token budgets, usage tracking) scattered across agent-core and task-completion zones without centralized service abstraction",
-    "Validation responsibilities fragmented across multiple zones (task-completion, cli-infrastructure) creating unclear ownership boundaries",
-    "Testing conventions vary significantly across zones with no apparent standardization strategy",
-    "Tool ecosystem exhibits split-brain architecture where tool-security zone enforces strict validation while specialized-tools zone implements ad-hoc validation creating redundant security layers",
-    "Cross-zone tool invocation path creates mandatory serialization through dispatch layer even for tools that could operate independently, introducing unnecessary performance overhead",
-    "Security model assumes all specialized tools are equally privileged despite git operations being inherently more dangerous than test execution",
-    "Tool architecture lacks circuit breaker pattern - failed security validations in one tool don't prevent continued execution of other tools in same session",
-    "Establish consistent zone naming convention - current zones mix functional (task-completion) and architectural (cli-infrastructure) naming styles",
-    "Create centralized resource-management zone to consolidate token budget, usage tracking, and other resource concerns scattered across agent-core and task-completion",
-    "Standardize validation architecture - currently split across task-completion/validation and cli-infrastructure creates unclear responsibility ownership",
-    "Implement privilege differentiation in tool-security zone to apply stricter validation for high-risk tools like git operations while allowing streamlined validation for low-risk tools",
-    "Add tool execution session management to track validation failures and implement progressive restrictions for tools that repeatedly fail security checks",
-    "Consider bypassing dispatch layer for tools that require no external resources (like pure computation tools) to reduce serialization overhead",
-    "Circular dependency chains form a systemic architectural anti-pattern throughout the hench subsystem, requiring comprehensive refactoring to establish proper layered architecture",
-    "Resource management concerns (tokens, validation, lifecycle) are distributed across 4+ zones without centralized coordination, creating maintenance complexity",
-    "The codebase exhibits a dual personality: excellent separation of concerns at the package level, but problematic tight coupling within the hench agent subsystem",
-    "Agent subsystem violates dependency inversion principle - high-level modules (cli-infrastructure, orchestration-layer) depend directly on low-level modules (agent-core) instead of abstractions",
-    "Hub-spoke topology around rex.ts combined with bidirectional hench zone coupling creates dependency graph cycles that will cause module loading failures in strict dependency injection systems",
-    "Implement strict layering: orchestration-layer → service-interfaces → agent-core, with cli-infrastructure consuming only service-interfaces to eliminate direct coupling",
-    "Consolidate resource management into dedicated resource-management zone containing token budgets (from agent-core), usage tracking (from task-completion), and validation state (from tool-security)",
-    "Dependency inversion violation is systemic - multiple findings (15, 25, 28) confirm CLI bypasses abstractions to directly manipulate agent internals",
-    "Circular dependency crisis - bidirectional coupling patterns (0, 1, 2, 16) combined with hub topology (3, 13) create module loading deadlock risk",
-    "Resource management fragmentation - token budgets, usage tracking, and validation state scattered across 4 zones without coordination",
-    "Critical architectural debt: circular dependency chains (hench zones) + hub topology (rex.ts) + dependency inversion violations (CLI→agent-core) form triple threat to module loading stability",
-    "Immediate action required: Create service-interfaces zone containing AgentService, ResourceManager, and ToolRegistry abstractions to break circular dependencies before they cause runtime failures",
-    "Zone naming inconsistency reveals architectural confusion - mixing domain concepts (task-completion) with technical layers (cli-infrastructure) indicates unclear separation of concerns"
+    "Size imbalance: largest zone has 80 files vs smallest with 4 — uneven decomposition",
+    "All zones exhibit perfect cohesion (1.0) and zero coupling, indicating exceptional architectural design with clear boundaries",
+    "The three-tier architecture (orchestration → integration → execution) creates a clean separation between user interface, external service integration, and autonomous operations",
+    "Zero cross-zone imports demonstrate that each zone is self-contained while communicating through well-defined interfaces",
+    "No cross-zone imports found, indicating excellent architectural discipline and proper abstraction boundaries",
+    "All zones achieve perfect cohesion metrics, suggesting the community detection algorithm successfully identified natural architectural boundaries",
+    "The codebase follows a clean three-layer pattern: orchestration (user interface), integration (external services), and execution (autonomous operations)",
+    "Three-tier architecture with unidirectional dependency flow: orchestration → integration → execution",
+    "Each zone maintains architectural independence through interface-based communication rather than direct dependencies",
+    "Dynamic import patterns used strategically to break potential circular dependencies while maintaining functional integration",
+    "The absence of direct imports between zones indicates successful application of dependency inversion and interface segregation principles",
+    "Unidirectional dependency architecture prevents circular dependencies and maintains clear separation of concerns",
+    "Interface-based communication between zones enables independent evolution and testing",
+    "Schema validation creates an improper three-way dependency: analysis-engine re-exports from viewer and test-suite zones, causing every analyzer to transitively depend on code from unrelated architectural layers",
+    "Type-level coupling exists between autonomous-agent-system and packages-rex despite runtime decoupling through dynamic imports - TypeScript compilation still creates inter-zone dependencies that violate the architectural boundaries",
+    "Cross-zone type imports create compile-time coupling that defeats runtime decoupling strategies - zones appear independent at runtime but are tightly coupled during TypeScript compilation",
+    "PRIORITY_ORDER constants duplicated across multiple zones with inconsistent typing - shared constants should be extracted to a common location to prevent type drift and maintenance burden",
+    "PRIORITY_ORDER constant is duplicated with identical structure but inconsistent typing - packages/rex exports use typed Priority union while packages/sourcevision uses untyped string Record, creating type system inconsistency across zone boundaries",
+    "Priority type definition is duplicated between rex/schema and sourcevision/viewer with identical string union values but separate declarations - shared types should be extracted to eliminate duplication",
+    "Analyzer function naming follows consistent analyzeX() pattern across the codebase (analyzeInventory, analyzeImports, analyzeZones, analyzeComponents) demonstrating good naming convention adherence",
+    "Extract PRIORITY_ORDER constant to shared location with consistent typing - currently duplicated in 4 locations with inconsistent types (typed Priority vs untyped string Record)",
+    "Priority type union is duplicated between rex/schema/v1.ts and sourcevision/viewer/components/prd-tree/types.ts - consolidate to single source of truth",
+    "The PRIORITY_ORDER duplication represents a systemic architectural anti-pattern where business logic constants are copy-pasted across modules instead of being centralized, creating multiple sources of truth that can drift apart",
+    "Type system inconsistency emerges from the same Priority concept being defined twice (rex/schema vs sourcevision/types) and used with different type safety levels (strict Record<Priority,number> vs loose Record<string,number>), creating a maintenance hazard where changes in one location don't propagate to others",
+    "Cross-zone compile-time coupling via type imports contradicts the runtime architectural goals of zone independence, suggesting the zone boundaries may be incorrectly drawn or that shared types need a different packaging strategy",
+    "Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic",
+    "Systematic duplication of business logic constants (PRIORITY_ORDER) across 4 locations with inconsistent typing creates multiple sources of truth that risk diverging during maintenance - refactor to single shared constant in packages/rex/src/schema/v1.ts and import consistently",
+    "Type system fragmentation where identical Priority union is defined in both packages/rex/src/schema/v1.ts:7 and packages/sourcevision/src/viewer/components/prd-tree/types.ts:17 - consolidate to single exported type to prevent drift and ensure consistency",
+    "The codebase exhibits a 'false modularity' pattern where zones appear architecturally independent but share fundamental business logic through duplication rather than proper abstraction",
+    "Perfect cohesion metrics combined with systematic constant duplication suggests the zone boundaries were drawn too strictly, preventing natural sharing of core domain concepts",
+    "The architecture prioritizes runtime decoupling over maintainability, creating a maintenance debt through systematic duplication of business logic",
+    "Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated",
+    "Architecture forces choice between runtime coupling and maintenance burden - current solution chooses duplication over dependency, creating divergence risk that outweighs benefits of runtime independence for core domain types",
+    "Create shared foundation package at packages/shared/src/types.ts containing Priority union and PRIORITY_ORDER constant, then refactor packages/rex/src/schema/v1.ts:7, packages/sourcevision/src/viewer/components/prd-tree/types.ts:17, packages/sourcevision/src/analyzers/prd-integration.ts, and packages/hench/src/core/types.ts to import from single source"
   ],
   "findings": [
     {
@@ -1174,43 +976,15 @@
       "type": "observation",
       "pass": 0,
       "scope": "global",
-      "text": "Bidirectional coupling: \"hench\" ↔ \"hench-3\" (9+21 crossings) — consider extracting shared interface",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "global",
-      "text": "Bidirectional coupling: \"hench-3\" ↔ \"hench-4\" (4+2 crossings) — consider extracting shared interface",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "global",
-      "text": "Bidirectional coupling: \"hench-4\" ↔ \"hench-5\" (2+3 crossings) — consider extracting shared interface",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "global",
-      "text": "Hub: packages/hench/src/tools/rex.ts is imported by 3 zones — cross-cutting dependency",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "global",
-      "text": "Size imbalance: largest zone has 27 files vs smallest with 4 — uneven decomposition",
+      "text": "Size imbalance: largest zone has 80 files vs smallest with 4 — uneven decomposition",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 0,
       "scope": "hench",
-      "text": "10 entry points — wide API surface, consider consolidating exports",
-      "severity": "warning"
+      "text": "High cohesion (1) — files are tightly interconnected",
+      "severity": "info"
     },
     {
       "type": "observation",
@@ -1222,473 +996,242 @@
     {
       "type": "observation",
       "pass": 1,
-      "scope": "agent-core",
-      "text": "Well-architected agent core with strong cohesion and manageable coupling",
+      "scope": "autonomous-agent-system",
+      "text": "Agent lifecycle includes stuck detection, progress analysis, and completion validation to ensure reliable task execution",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "autonomous-agent-system",
+      "text": "Perfect zone cohesion (1.0) with zero coupling indicates excellent internal architecture and external interface design",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "autonomous-agent-system",
+      "text": "Security guard system provides multi-layered protection with configurable policies for safe autonomous operation",
       "severity": "critical"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "claude-integration",
-      "text": "Exemplary client library design with perfect cohesion and encapsulation",
-      "severity": "info"
+      "scope": "claude-integration-layer",
+      "text": "Dual provider architecture (CLI + API) ensures fallback options and different execution contexts",
+      "severity": "critical"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "cli-infrastructure",
-      "text": "Excellent CLI architecture with strong cohesion and minimal coupling",
-      "severity": "info"
+      "scope": "claude-integration-layer",
+      "text": "Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns",
+      "severity": "critical"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "global",
-      "text": "Bidirectional imports between zones may indicate circular dependencies that could complicate testing and maintenance",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "global",
-      "text": "Clean separation of concerns between orchestration, client libraries, and agent subsystems",
+      "scope": "claude-integration-layer",
+      "text": "Token usage tracking includes comprehensive cost estimation and budget enforcement mechanisms",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
       "scope": "global",
-      "text": "Exceptionally well-architected codebase with strong zone cohesion across all analyzed components",
+      "text": "All zones achieve perfect cohesion metrics, suggesting the community detection algorithm successfully identified natural architectural boundaries",
       "severity": "critical"
     },
     {
       "type": "observation",
       "pass": 1,
       "scope": "global",
-      "text": "High interconnectivity between hench zones (21 imports hench-3→hench, 9 reverse) suggests tight coupling in agent subsystem",
-      "severity": "warning"
+      "text": "No cross-zone imports found, indicating excellent architectural discipline and proper abstraction boundaries",
+      "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
       "scope": "global",
-      "text": "Tool dispatch architecture properly isolates security concerns from implementation details",
+      "text": "The codebase follows a clean three-layer pattern: orchestration (user interface), integration (external services), and execution (autonomous operations)",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
       "scope": "orchestration-layer",
-      "text": "Excellent architectural design with perfect cohesion and zero coupling",
+      "text": "CLI orchestration includes comprehensive pre-flight checks and dependency validation before delegating to sub-tools",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "specialized-tools",
-      "text": "Git tool properly restricts allowed subcommands for security",
-      "severity": "critical"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "specialized-tools",
-      "text": "Moderate cohesion (0.5) and coupling (0.5) indicates loosely related tools that could benefit from stronger unifying patterns",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "specialized-tools",
-      "text": "Test runner provides automatic detection of test frameworks and scoped execution",
+      "scope": "orchestration-layer",
+      "text": "Configuration system supports both project-level overrides and package-specific settings with proper security for API keys",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "task-completion",
-      "text": "Well-focused zone with good cohesion and comprehensive test coverage",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "tool-security",
-      "text": "Backward compatibility shim in agent/tools.ts maintains API stability during refactoring",
-      "severity": "critical"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "tool-security",
-      "text": "Guard rails provide comprehensive protection against path traversal and command injection",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "tool-security",
-      "text": "Strong cohesion (0.68) with proper separation between security validation and tool dispatch logic",
+      "scope": "orchestration-layer",
+      "text": "Perfect zone cohesion (1.0) with zero coupling indicates this layer maintains clear separation of concerns",
       "severity": "info"
     },
     {
       "type": "pattern",
       "pass": 2,
-      "scope": "claude-integration",
-      "text": "Clean adapter pattern implementation allowing swappable Claude API providers while maintaining consistent client interface",
-      "severity": "critical"
+      "scope": "autonomous-agent-system",
+      "text": "Type-only imports from claude-client maintain clean separation while enabling configuration sharing",
+      "severity": "info"
     },
     {
       "type": "pattern",
       "pass": 2,
-      "scope": "global",
-      "text": "Clear layered architecture with orchestration layer at top, CLI infrastructure in middle, and agent core at bottom provides good separation of concerns",
+      "scope": "claude-integration-layer",
+      "text": "Clean abstraction boundary - consuming packages import only high-level interfaces, not implementation details",
       "severity": "info"
     },
     {
       "type": "pattern",
       "pass": 2,
       "scope": "global",
-      "text": "Tool ecosystem demonstrates proper layered security architecture with no privilege escalation paths",
+      "text": "Unidirectional dependency architecture prevents circular dependencies and maintains clear separation of concerns",
       "severity": "info"
     },
     {
       "type": "pattern",
       "pass": 2,
       "scope": "orchestration-layer",
-      "text": "Implements facade pattern with four distinct entry points (ci, cli, config, web) that coordinate package interactions without creating dependencies",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "task-completion",
-      "text": "Command pattern with validation pipeline provides robust task completion workflow with proper state management",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "tool-security",
-      "text": "Security zone properly gates all tool access without creating backdoors or escape hatches",
+      "text": "Pure delegation pattern - orchestration layer contains no business logic, only coordination and user interface concerns",
       "severity": "info"
     },
     {
       "type": "relationship",
       "pass": 2,
-      "scope": "agent-core",
-      "text": "Heavy bidirectional coupling with cli-infrastructure (30 total imports) suggests agent logic bleeding into CLI concerns",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "cli-infrastructure",
-      "text": "Bidirectional coupling with agent-core may indicate CLI commands directly manipulating agent internals instead of using clean interfaces",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "global",
-      "text": "Clear separation between security concerns (tool-security) and functionality (specialized-tools) with well-defined interfaces",
+      "scope": "autonomous-agent-system",
+      "text": "Dynamic import pattern for rex prevents tight coupling while enabling integration",
       "severity": "info"
     },
     {
       "type": "relationship",
       "pass": 2,
       "scope": "global",
-      "text": "Hub-and-spoke pattern centered on packages/hench/src/tools/rex.ts creates single point of dependency across multiple zones",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "global",
-      "text": "Missing interface abstraction between agent-core and cli-infrastructure zones leads to tight coupling through direct imports",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "specialized-tools",
-      "text": "Clean consumer relationship with tool-security zone - accepts validation without coupling to implementation",
+      "text": "Interface-based communication between zones enables independent evolution and testing",
       "severity": "info"
     },
     {
       "type": "anti-pattern",
       "pass": 3,
-      "scope": "agent-core",
-      "text": "Token budget and usage tracking logic duplicated across lifecycle files instead of centralized service",
+      "scope": "autonomous-agent-system",
+      "text": "Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided",
       "severity": "warning"
     },
     {
       "type": "anti-pattern",
       "pass": 3,
-      "scope": "agent-core",
-      "text": "Zone mixes three distinct architectural layers: analysis (review, summary), planning (brief, context), and lifecycle (loops, token management) that should be separate zones",
+      "scope": "global",
+      "text": "Cross-zone type imports create compile-time coupling that defeats runtime decoupling strategies - zones appear independent at runtime but are tightly coupled during TypeScript compilation",
       "severity": "warning"
     },
     {
       "type": "anti-pattern",
       "pass": 3,
-      "scope": "cli-infrastructure",
-      "text": "CLI commands import packages/hench/src/agent/lifecycle/loop.ts directly, violating layer separation and creating tight coupling",
+      "scope": "global",
+      "text": "PRIORITY_ORDER constants duplicated across multiple zones with inconsistent typing - shared constants should be extracted to a common location to prevent type drift and maintenance burden",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "packages-rex:rex-cli",
+      "text": "PRIORITY_ORDER constant duplicated with different type signatures (Record<Priority,number> vs Record<string,number>) across core/canonical.ts, core/next-task.ts, and analyze/propose.ts creating type safety gaps and maintenance burden",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 3,
+      "scope": "packages-sourcevision:analysis-engine",
+      "text": "Schema index.ts barrel export creates hidden bidirectional coupling by re-exporting from both viewer zone (v1.ts) and test-suite zone (validate.ts) - every analyzer importing schema creates transitive dependencies across three zones",
       "severity": "critical"
     },
     {
       "type": "anti-pattern",
       "pass": 3,
-      "scope": "cli-infrastructure",
-      "text": "Error handling logic embedded in CLI layer instead of using domain service abstractions",
+      "scope": "packages-sourcevision:interactive-viewer",
+      "text": "Direct import of schema/validate.ts from test-suite zone violates zone boundaries and forces Zod bundling into browser code where validation could be optional",
       "severity": "warning"
     },
     {
       "type": "anti-pattern",
       "pass": 3,
-      "scope": "global",
-      "text": "CLI commands bypass service layer to directly manipulate agent lifecycle internals, violating clean architecture principles",
-      "severity": "critical"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "Multiple bidirectional coupling patterns between hench zones (hench↔hench-3, hench-3↔hench-4, hench-4↔hench-5) create circular dependency chains that complicate module loading and increase risk of deadlocks",
-      "severity": "critical"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "Token management logic distributed across agent-core lifecycle files and task-completion validation without centralized abstraction",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "Tool ecosystem lacks standardized interface contract between security validation and tool implementation layers, creating fragile coupling through implicit assumptions about validation behavior",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "specialized-tools",
-      "text": "Each specialized tool implements its own command parsing and execution without shared abstractions, leading to inconsistent interfaces and duplicated validation logic",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "agent-core",
-      "text": "Analysis subfolder implements post-execution concerns mixed with core logic - separate into analysis-reporting zone",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "agent-core",
-      "text": "Token management files in lifecycle/ subfolder violate single responsibility - extract to dedicated resource-management zone",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "claude-integration",
-      "text": "token-usage.ts mixing client concerns with analytics creates implicit service responsibility - consider extracting to dedicated analytics zone",
-      "severity": "info"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "cli-infrastructure",
-      "text": "CLI importing agent/lifecycle/loop.ts creates architectural layer violation - implement service interface to decouple CLI from agent internals",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "cli-infrastructure",
-      "text": "cli/errors.ts contains domain-specific error types rather than infrastructure errors - creates tight coupling between presentation and business layers",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "cli-infrastructure",
-      "text": "commands/constants.ts mixing configuration with command logic - extract to centralized configuration management",
-      "severity": "info"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "global",
-      "text": "Add tool execution session management to track validation failures and implement progressive restrictions for tools that repeatedly fail security checks",
-      "severity": "info"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "global",
-      "text": "Consider bypassing dispatch layer for tools that require no external resources (like pure computation tools) to reduce serialization overhead",
-      "severity": "info"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "global",
-      "text": "Create centralized resource-management zone to consolidate token budget, usage tracking, and other resource concerns scattered across agent-core and task-completion",
+      "scope": "packages-sourcevision:test-suite",
+      "text": "schema/validate.ts is misplaced in test-suite zone despite being imported by production CLI and viewer code - this file should be in analysis-engine zone based on its actual usage patterns",
       "severity": "warning"
     },
     {
       "type": "suggestion",
       "pass": 4,
       "scope": "global",
-      "text": "Establish consistent zone naming convention - current zones mix functional (task-completion) and architectural (cli-infrastructure) naming styles",
-      "severity": "info"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "global",
-      "text": "Implement privilege differentiation in tool-security zone to apply stricter validation for high-risk tools like git operations while allowing streamlined validation for low-risk tools",
+      "text": "Extract PRIORITY_ORDER constant to shared location with consistent typing - currently duplicated in 4 locations with inconsistent types (typed Priority vs untyped string Record)",
       "severity": "warning"
     },
     {
       "type": "suggestion",
       "pass": 4,
       "scope": "global",
-      "text": "Standardize validation architecture - currently split across task-completion/validation and cli-infrastructure creates unclear responsibility ownership",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "orchestration-layer",
-      "text": "config.js implements cross-package configuration management rather than orchestration - consider renaming zone to 'coordination-layer' or moving config.js to separate zone",
-      "severity": "info"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "specialized-tools",
-      "text": "Consolidate duplicate argument parsing logic between git.ts and test-runner.ts into shared utility module",
-      "severity": "info"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "specialized-tools",
-      "text": "Extract common command execution interface to standardize error handling and subprocess management across all specialized tools",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "task-completion",
-      "text": "Test naming inconsistency between completion-validation.test.ts and rex.test.ts suggests unclear testing conventions",
-      "severity": "info"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "task-completion",
-      "text": "validation/completion.ts and agent/completion.ts create split validation responsibility - consolidate validation logic in single location",
-      "severity": "info"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "tool-security",
-      "text": "Consider adding structured error types for different validation failures to enable better error handling in consuming zones",
+      "text": "Priority type union is duplicated between rex/schema/v1.ts and sourcevision/viewer/components/prd-tree/types.ts - consolidate to single source of truth",
       "severity": "info"
     },
     {
       "type": "pattern",
       "pass": 5,
       "scope": "global",
-      "text": "Agent subsystem violates dependency inversion principle - high-level modules (cli-infrastructure, orchestration-layer) depend directly on low-level modules (agent-core) instead of abstractions",
-      "severity": "critical"
+      "text": "Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic",
+      "severity": "warning"
     },
     {
       "type": "pattern",
       "pass": 5,
       "scope": "global",
-      "text": "Zone naming inconsistency reveals architectural confusion - mixing domain concepts (task-completion) with technical layers (cli-infrastructure) indicates unclear separation of concerns",
+      "text": "Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated",
       "severity": "warning"
     },
     {
       "type": "anti-pattern",
       "pass": 5,
       "scope": "global",
-      "text": "Critical architectural debt: circular dependency chains (hench zones) + hub topology (rex.ts) + dependency inversion violations (CLI→agent-core) form triple threat to module loading stability",
+      "text": "Architecture forces choice between runtime coupling and maintenance burden - current solution chooses duplication over dependency, creating divergence risk that outweighs benefits of runtime independence for core domain types",
       "severity": "critical"
     },
     {
       "type": "anti-pattern",
       "pass": 5,
       "scope": "global",
-      "text": "Hub-spoke topology around rex.ts combined with bidirectional hench zone coupling creates dependency graph cycles that will cause module loading failures in strict dependency injection systems",
+      "text": "Systematic duplication of business logic constants (PRIORITY_ORDER) across 4 locations with inconsistent typing creates multiple sources of truth that risk diverging during maintenance - refactor to single shared constant in packages/rex/src/schema/v1.ts and import consistently",
       "severity": "critical"
     },
     {
-      "type": "suggestion",
-      "pass": 5,
-      "scope": "agent-core",
-      "text": "Create service abstraction layer between agent-core internals and cli-infrastructure to eliminate direct lifecycle manipulation from CLI commands",
-      "severity": "critical"
-    },
-    {
-      "type": "suggestion",
-      "pass": 5,
-      "scope": "agent-core",
-      "text": "Extract AgentLifecycleInterface from packages/hench/src/agent/lifecycle/* to break direct coupling with cli-infrastructure zone",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
+      "type": "anti-pattern",
       "pass": 5,
       "scope": "global",
-      "text": "Consolidate resource management into dedicated resource-management zone containing token budgets (from agent-core), usage tracking (from task-completion), and validation state (from tool-security)",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 5,
-      "scope": "global",
-      "text": "Immediate action required: Create service-interfaces zone containing AgentService, ResourceManager, and ToolRegistry abstractions to break circular dependencies before they cause runtime failures",
+      "text": "Type system fragmentation where identical Priority union is defined in both packages/rex/src/schema/v1.ts:7 and packages/sourcevision/src/viewer/components/prd-tree/types.ts:17 - consolidate to single exported type to prevent drift and ensure consistency",
       "severity": "critical"
     },
     {
       "type": "suggestion",
       "pass": 5,
       "scope": "global",
-      "text": "Implement strict layering: orchestration-layer → service-interfaces → agent-core, with cli-infrastructure consuming only service-interfaces to eliminate direct coupling",
+      "text": "Create shared foundation package at packages/shared/src/types.ts containing Priority union and PRIORITY_ORDER constant, then refactor packages/rex/src/schema/v1.ts:7, packages/sourcevision/src/viewer/components/prd-tree/types.ts:17, packages/sourcevision/src/analyzers/prd-integration.ts, and packages/hench/src/core/types.ts to import from single source",
       "severity": "critical"
     },
     {
       "type": "suggestion",
       "pass": 5,
       "scope": "hench",
-      "text": "Extract packages/hench/src/tools/rex.ts into shared-interfaces zone to break hub dependency pattern affecting zones hench, hench-3, and hench-4",
-      "severity": "critical"
-    },
-    {
-      "type": "suggestion",
-      "pass": 5,
-      "scope": "hench",
-      "text": "Move packages/hench/src/tools/rex.ts to dedicated shared-tools zone to eliminate hub dependency pattern across 3 zones",
-      "severity": "critical"
-    },
-    {
-      "type": "suggestion",
-      "pass": 5,
-      "scope": "tool-security",
-      "text": "Create standardized IToolValidator interface in packages/hench/src/security/interfaces/ to formalize validation contracts between tool-security and specialized-tools zones",
+      "text": "Consider decomposing hench zone into functional subzones: CLI interface (packages/hench/src/cli/), core agent logic (packages/hench/src/core/), and tool integrations (packages/hench/src/tools/) to improve maintainability of the 80-file zone",
       "severity": "warning"
     }
   ],
   "enrichmentPass": 4,
-  "structureHash": "87137b52f39bf4fd"
+  "structureHash": "4d0d599445e1fb02"
 }

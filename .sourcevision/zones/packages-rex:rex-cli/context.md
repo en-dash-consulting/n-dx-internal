@@ -7,34 +7,34 @@
 Zone: Rex PRD Management CLI (`packages-rex:rex-cli`)
 Files: 36, Cohesion: 1.00, Coupling: 0.00
 Description: A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.
-Lines: 9367
+Lines: 9585
 
 </zone>
 
 <files>
 
-packages/rex/src/analyze/index.ts (TypeScript, 59 lines, source)
+packages/rex/src/analyze/index.ts (TypeScript, 62 lines, source)
 packages/rex/src/analyze/propose.ts (TypeScript, 311 lines, source)
-packages/rex/src/analyze/reconcile.ts (TypeScript, 56 lines, source)
+packages/rex/src/analyze/reconcile.ts (TypeScript, 124 lines, source)
 packages/rex/src/analyze/scanners.ts (TypeScript, 935 lines, source)
 packages/rex/src/cli/commands/add.ts (TypeScript, 159 lines, source)
-packages/rex/src/cli/commands/analyze.ts (TypeScript, 486 lines, source)
-packages/rex/src/cli/commands/constants.ts (TypeScript, 61 lines, source)
+packages/rex/src/cli/commands/analyze.ts (TypeScript, 525 lines, source)
+packages/rex/src/cli/commands/constants.ts (TypeScript, 64 lines, source)
 packages/rex/src/cli/commands/init.ts (TypeScript, 71 lines, source)
 packages/rex/src/cli/commands/next.ts (TypeScript, 69 lines, source)
 packages/rex/src/cli/commands/recommend.ts (TypeScript, 145 lines, source)
-packages/rex/src/cli/commands/status.ts (TypeScript, 279 lines, source)
-packages/rex/src/cli/commands/update.ts (TypeScript, 177 lines, source)
+packages/rex/src/cli/commands/status.ts (TypeScript, 280 lines, source)
+packages/rex/src/cli/commands/update.ts (TypeScript, 200 lines, source)
 packages/rex/src/cli/commands/validate.ts (TypeScript, 199 lines, source)
-packages/rex/src/cli/index.ts (TypeScript, 288 lines, source)
-packages/rex/src/cli/mcp.ts (TypeScript, 664 lines, source)
+packages/rex/src/cli/index.ts (TypeScript, 298 lines, source)
+packages/rex/src/cli/mcp.ts (TypeScript, 694 lines, source)
 packages/rex/src/core/canonical.ts (TypeScript, 27 lines, source)
 packages/rex/src/core/dag.ts (TypeScript, 84 lines, source)
 packages/rex/src/core/next-task.ts (TypeScript, 452 lines, source)
-packages/rex/src/core/tree.ts (TypeScript, 145 lines, source)
+packages/rex/src/core/tree.ts (TypeScript, 185 lines, source)
 packages/rex/src/schema/index.ts (TypeScript, 31 lines, source)
 packages/rex/src/schema/v1.ts (TypeScript, 113 lines, source)
-packages/rex/src/schema/validate.ts (TypeScript, 120 lines, source)
+packages/rex/src/schema/validate.ts (TypeScript, 121 lines, source)
 packages/rex/src/store/file-adapter.ts (TypeScript, 152 lines, source)
 packages/rex/src/store/index.ts (TypeScript, 105 lines, source)
 packages/rex/src/store/types.ts (TypeScript, 177 lines, source)
@@ -58,7 +58,7 @@ Internal:
   packages/rex/src/analyze/index.ts → packages/rex/src/analyze/propose.ts {buildProposals}
   packages/rex/src/analyze/index.ts → packages/rex/src/analyze/propose.ts {Proposal, ProposalFeature, ProposalTask}
   packages/rex/src/analyze/index.ts → packages/rex/src/analyze/reconcile.ts {reconcile}
-  packages/rex/src/analyze/index.ts → packages/rex/src/analyze/reconcile.ts {ReconcileStats}
+  packages/rex/src/analyze/index.ts → packages/rex/src/analyze/reconcile.ts {ReconcileStats, UpdateCandidate, ReconcileOptions}
   packages/rex/src/analyze/index.ts → packages/rex/src/analyze/scanners.ts {scanTests, scanDocs, scanSourceVision, scanPackageJson}
   packages/rex/src/analyze/index.ts → packages/rex/src/analyze/scanners.ts {ScanResult, ScanOptions}
   packages/rex/src/analyze/propose.ts → packages/rex/src/analyze/scanners.ts {ScanResult}
@@ -97,7 +97,7 @@ Internal:
   packages/rex/src/cli/commands/status.ts → packages/rex/src/store/index.ts {resolveStore}
   packages/rex/src/cli/commands/update.ts → packages/rex/src/cli/commands/constants.ts {REX_DIR}
   packages/rex/src/cli/commands/update.ts → packages/rex/src/core/dag.ts {validateDAG}
-  packages/rex/src/cli/commands/update.ts → packages/rex/src/core/tree.ts {findItem}
+  packages/rex/src/cli/commands/update.ts → packages/rex/src/core/tree.ts {findItem, deleteItem, cleanBlockedByRefs}
   packages/rex/src/cli/commands/update.ts → packages/rex/src/schema/index.ts {PRDItem, ItemStatus, Priority}
   packages/rex/src/cli/commands/update.ts → packages/rex/src/store/index.ts {resolveStore}
   packages/rex/src/cli/commands/validate.ts → packages/rex/src/cli/commands/constants.ts {REX_DIR}
@@ -117,7 +117,7 @@ Internal:
   packages/rex/src/cli/mcp.ts → packages/rex/src/cli/commands/constants.ts {TOOL_VERSION}
   packages/rex/src/cli/mcp.ts → packages/rex/src/core/dag.ts {validateDAG}
   packages/rex/src/cli/mcp.ts → packages/rex/src/core/next-task.ts {findNextTask, collectCompletedIds, explainSelection}
-  packages/rex/src/cli/mcp.ts → packages/rex/src/core/tree.ts {computeStats, findItem}
+  packages/rex/src/cli/mcp.ts → packages/rex/src/core/tree.ts {computeStats, findItem, deleteItem, cleanBlockedByRefs}
   packages/rex/src/cli/mcp.ts → packages/rex/src/schema/index.ts {SCHEMA_VERSION, LEVEL_HIERARCHY}
   packages/rex/src/cli/mcp.ts → packages/rex/src/schema/index.ts {PRDItem, ItemLevel, ItemStatus, Priority}
   packages/rex/src/cli/mcp.ts → packages/rex/src/store/index.ts {resolveStore, resolveRemoteStore, SyncEngine}
@@ -169,6 +169,12 @@ Internal:
   packages/rex/tests/unit/store/file-adapter.test.ts → packages/rex/src/store/file-adapter.ts {FileStore, ensureRexDir}
 
 </imports>
+
+<findings>
+
+[anti-pattern] [warning] PRIORITY_ORDER constant duplicated with different type signatures (Record<Priority,number> vs Record<string,number>) across core/canonical.ts, core/next-task.ts, and analyze/propose.ts creating type safety gaps and maintenance burden
+
+</findings>
 
 <insights>
 

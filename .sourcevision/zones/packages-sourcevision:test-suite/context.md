@@ -39,6 +39,12 @@ Incoming (other zones → this zone):
 
 </imports>
 
+<findings>
+
+[anti-pattern] [warning] schema/validate.ts is misplaced in test-suite zone despite being imported by production CLI and viewer code - this file should be in analysis-engine zone based on its actual usage patterns
+
+</findings>
+
 <insights>
 
 - High coupling (0.54) — 4 imports target "analysis-engine"

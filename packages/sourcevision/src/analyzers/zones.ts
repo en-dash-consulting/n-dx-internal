@@ -54,8 +54,17 @@ const GENERIC_SEGMENTS = new Set([
 /**
  * Derive a zone ID from the most common directory segment among files.
  * Root-level files → "root".
+ *
+ * When `parentId` is provided (for sub-zone derivation), the parent's ID
+ * segments are treated as generic and skipped, producing deeper, more
+ * specific names (e.g., "agent" instead of "hench").
  */
-export function deriveZoneId(files: string[]): string {
+export function deriveZoneId(files: string[], parentId?: string): string {
+  // When deriving sub-zone IDs, treat parent's ID segments as generic
+  const skip = parentId
+    ? new Set([...GENERIC_SEGMENTS, ...parentId.split("/").map(s => s.toLowerCase())])
+    : GENERIC_SEGMENTS;
+
   const segmentCounts = new Map<string, number>();
 
   for (const file of files) {
@@ -66,21 +75,24 @@ export function deriveZoneId(files: string[]): string {
     }
 
     const parts = dir.split("/");
-    // Find first non-generic segment
+    // Find first non-skip segment
+    let found = false;
     for (const part of parts) {
-      if (!GENERIC_SEGMENTS.has(part)) {
-        const normalized = part.toLowerCase().replace(/_/g, "-");
+      const normalized = part.toLowerCase().replace(/_/g, "-");
+      if (!skip.has(part) && !skip.has(normalized)) {
         segmentCounts.set(
           normalized,
           (segmentCounts.get(normalized) ?? 0) + 1
         );
+        found = true;
         break;
       }
     }
-    // If all segments were generic, use the last one
-    if ([...parts].every((p) => GENERIC_SEGMENTS.has(p))) {
+    // If all segments were skipped, use the last one
+    if (!found && parts.length > 0) {
       const last = parts[parts.length - 1];
-      segmentCounts.set(last, (segmentCounts.get(last) ?? 0) + 1);
+      const normalized = last.toLowerCase().replace(/_/g, "-");
+      segmentCounts.set(normalized, (segmentCounts.get(normalized) ?? 0) + 1);
     }
   }
 
@@ -282,7 +294,7 @@ export function subdivideZone(
     .sort(([, a], [, b]) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
 
   for (const [, members] of sortedCommunities) {
-    let subId = deriveZoneId(members);
+    let subId = deriveZoneId(members, zone.id);
     if (usedIds.has(subId)) {
       let suffix = 2;
       while (usedIds.has(`${subId}-${suffix}`)) suffix++;
@@ -540,6 +552,43 @@ export async function analyzeZones(
   community = mergeBidirectionalCoupling(community, graph);
   community = mergeSmallCommunities(community, graph);
   community = capZoneCount(community, graph, 15);
+
+  // Merge communities that derive the same zone ID.
+  // Prevents a single package from fragmenting into multiple root-level zones
+  // (e.g., "hench", "hench-2", "hench-3"). After merging, the combined zone
+  // may be subdivided into properly named sub-zones.
+  {
+    const tempMembers = new Map<string, string[]>();
+    for (const [node, comm] of community) {
+      let list = tempMembers.get(comm);
+      if (!list) { list = []; tempMembers.set(comm, list); }
+      list.push(node);
+    }
+
+    const idToCommunities = new Map<string, string[]>();
+    for (const [comm, members] of tempMembers) {
+      const id = deriveZoneId(members);
+      let list = idToCommunities.get(id);
+      if (!list) { list = []; idToCommunities.set(id, list); }
+      list.push(comm);
+    }
+
+    for (const [, comms] of idToCommunities) {
+      if (comms.length <= 1) continue;
+      // Merge smaller communities into the largest one
+      comms.sort((a, b) => {
+        const sizeA = tempMembers.get(a)?.length ?? 0;
+        const sizeB = tempMembers.get(b)?.length ?? 0;
+        return sizeB - sizeA || a.localeCompare(b);
+      });
+      const target = comms[0];
+      for (let i = 1; i < comms.length; i++) {
+        for (const node of tempMembers.get(comms[i])!) {
+          community.set(node, target);
+        }
+      }
+    }
+  }
 
   // Gather community → members
   const communityMembers = new Map<string, string[]>();

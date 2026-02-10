@@ -6,10 +6,11 @@
 <architecture>
 
 Project: n-dx
-Files: 441, Lines: 112407
-Languages: TypeScript(356) JSON(26) CSS(19) Other(13) JavaScript(12)
-Zones: 12, Described: 12
-Import edges: 1026, External packages: 15
+Git: main @ 91c46b1
+Files: 596, Lines: 165669
+Languages: TypeScript(380) JSON(90) Markdown(69) CSS(25) Other(14)
+Zones: 8, Described: 8
+Import edges: 1127, External packages: 15
 
 </architecture>
 
@@ -18,21 +19,9 @@ Import edges: 1026, External packages: 15
 [claude-client] Claude Client (15 files, coh=1.00 coup=0.00)
   15 files, primarily TypeScript
   files: packages/claude-client/src/api-provider.ts, packages/claude-client/src/auth.ts, packages/claude-client/src/cli-provider.ts, packages/claude-client/src/config.ts, packages/claude-client/src/create-client.ts, packages/claude-client/src/index.ts, packages/claude-client/src/token-usage.ts, packages/claude-client/src/types.ts, packages/claude-client/tests/unit/api-provider.test.ts, packages/claude-client/tests/unit/auth.test.ts +5
-[hench] Hench (24 files, coh=0.71 coup=0.29)
-  24 files, primarily TypeScript
-  files: packages/hench/src/agent/analysis/review.ts, packages/hench/src/agent/analysis/stuck.ts, packages/hench/src/agent/analysis/summary.ts, packages/hench/src/agent/index.ts, packages/hench/src/agent/lifecycle/cli-loop.ts, packages/hench/src/agent/lifecycle/token-budget.ts, packages/hench/src/agent/lifecycle/token-usage.ts, packages/hench/src/agent/planning/brief.ts, packages/hench/src/agent/planning/prompt.ts, packages/hench/src/schema/index.ts +14
-[hench-2] Hench 2 (7 files, coh=0.67 coup=0.33)
-  7 files, primarily TypeScript
-  files: packages/hench/src/agent/completion.ts, packages/hench/src/tools/rex.ts, packages/hench/src/validation/completion.ts, packages/hench/src/validation/index.ts, packages/hench/tests/unit/agent/completion.test.ts, packages/hench/tests/unit/tools/completion-validation.test.ts, packages/hench/tests/unit/tools/rex.test.ts
-[hench-3] Hench 3 (27 files, coh=0.77 coup=0.23)
-  27 files, primarily TypeScript
-  files: packages/hench/src/agent/lifecycle/loop.ts, packages/hench/src/cli/commands/constants.ts, packages/hench/src/cli/commands/init.ts, packages/hench/src/cli/commands/run.ts, packages/hench/src/cli/commands/show.ts, packages/hench/src/cli/commands/status.ts, packages/hench/src/cli/errors.ts, packages/hench/src/cli/index.ts, packages/hench/src/cli/output.ts, packages/hench/src/store/config.ts +17
-[hench-4] Hench 4 (11 files, coh=0.68 coup=0.33)
-  11 files, primarily TypeScript
-  files: packages/hench/src/agent/tools.ts, packages/hench/src/guard/commands.ts, packages/hench/src/guard/index.ts, packages/hench/src/guard/paths.ts, packages/hench/src/tools/dispatch.ts, packages/hench/src/tools/files.ts, packages/hench/src/tools/shell.ts, packages/hench/tests/unit/guard/commands.test.ts, packages/hench/tests/unit/guard/paths.test.ts, packages/hench/tests/unit/tools/files.test.ts +1
-[hench-5] Hench 5 (6 files, coh=0.50 coup=0.50)
-  6 files, primarily TypeScript
-  files: packages/hench/src/tools/exec-shell.ts, packages/hench/src/tools/git.ts, packages/hench/src/tools/index.ts, packages/hench/src/tools/test-runner.ts, packages/hench/tests/unit/tools/git.test.ts, packages/hench/tests/unit/tools/test-runner.test.ts
+[hench] Hench (80 files, coh=1.00 coup=0.00)
+  80 files, primarily TypeScript
+  files: packages/hench/src/agent/analysis/review.ts, packages/hench/src/agent/analysis/stuck.ts, packages/hench/src/agent/analysis/summary.ts, packages/hench/src/agent/completion.ts, packages/hench/src/agent/index.ts, packages/hench/src/agent/lifecycle/cli-loop.ts, packages/hench/src/agent/lifecycle/loop.ts, packages/hench/src/agent/lifecycle/task-display.ts, packages/hench/src/agent/lifecycle/token-budget.ts, packages/hench/src/agent/lifecycle/token-usage.ts +70
 [packages-rex:rex-cli] Rex PRD Management CLI (36 files, coh=1.00 coup=0.00)
   A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.
   files: packages/rex/src/analyze/index.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/scanners.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/constants.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/next.ts, packages/rex/src/cli/commands/recommend.ts +26
@@ -51,7 +40,7 @@ Import edges: 1026, External packages: 15
 [root] Root (4 files, coh=1.00 coup=0.00)
   4 files, primarily JavaScript
   files: ci.js, cli.js, config.js, web.js
-[unzoned] 33 files: .claude/settings.local.json, .gitignore, .hench/config.json, .n-dx.json, .n-dx2.json ...
+[unzoned] 158 files: .claude/settings.local.json, .gitignore, .hench/config.json, .npmrc, .rex/config.json ...
 
 Detailed zone context: .sourcevision/zones/{id}/context.md
 
@@ -60,16 +49,16 @@ Detailed zone context: .sourcevision/zones/{id}/context.md
 <imports>
 
 Most imported:
-  packages/rex/src/core/tree.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/report.ts +25
-  packages/rex/src/cli/errors.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/move.ts, packages/rex/src/cli/commands/prune.ts +17
-  packages/rex/src/cli/output.ts ← packages/rex/src/analyze/guided.ts, packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/chunked-review.ts +15
-  packages/rex/src/schema/index.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/scanners.ts, packages/rex/src/cli/commands/add.ts +80
-  packages/rex/src/store/index.ts ← packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/move.ts, packages/rex/src/cli/commands/next.ts +19
-  packages/rex/src/cli/commands/constants.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/move.ts +14
-  packages/rex/src/core/canonical.ts ← packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/prune.ts, packages/rex/src/store/adapter-registry.ts, packages/rex/src/store/file-adapter.ts, packages/rex/src/store/notion-adapter.ts +9
-  packages/hench/src/store/config.ts ← packages/hench/src/store/index.ts, packages/hench/tests/integration/store-roundtrip.test.ts, packages/hench/tests/unit/agent/api-auth.test.ts, packages/hench/tests/unit/agent/api-auth.test.ts, packages/hench/tests/unit/agent/atomic-transition.test.ts +7
-  packages/rex/src/analyze/reason.ts ← packages/rex/src/analyze/guided.ts, packages/rex/src/analyze/guided.ts, packages/rex/src/analyze/index.ts, packages/rex/src/analyze/index.ts, packages/rex/tests/integration/claude-config.test.ts +9
-  packages/sourcevision/src/schema/data-files.ts ← packages/sourcevision/src/analyzers/workspace.ts, packages/sourcevision/src/cli/commands/analyze.ts, packages/sourcevision/src/cli/commands/export-pdf.ts, packages/sourcevision/src/cli/commands/validate.ts, packages/sourcevision/src/cli/mcp.ts +6
+  packages/rex/src/core/tree.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/reshape-reason.ts, packages/rex/src/cli/commands/add.ts +28
+  packages/rex/src/cli/errors.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/move.ts, packages/rex/src/cli/commands/prune.ts +18
+  packages/rex/src/cli/output.ts ← packages/rex/src/analyze/guided.ts, packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/chunked-review.ts +17
+  packages/rex/src/store/index.ts ← packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/fix.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/move.ts +21
+  packages/rex/src/cli/commands/constants.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/fix.ts, packages/rex/src/cli/commands/init.ts +16
+  packages/rex/src/schema/index.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/reshape-reason.ts, packages/rex/src/analyze/scanners.ts +86
+  packages/rex/src/core/canonical.ts ← packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/prune.ts, packages/rex/src/cli/commands/reshape.ts, packages/rex/src/store/adapter-registry.ts, packages/rex/src/store/file-adapter.ts +10
+  packages/sourcevision/src/viewer/components/logos.ts ← packages/sourcevision/src/viewer/components/sidebar.ts, packages/sourcevision/src/viewer/views/analysis.ts, packages/sourcevision/src/viewer/views/architecture.ts, packages/sourcevision/src/viewer/views/files.ts, packages/sourcevision/src/viewer/views/graph.ts +10
+  packages/hench/src/store/config.ts ← packages/hench/src/cli/commands/task-lookup.ts, packages/hench/src/store/index.ts, packages/hench/tests/integration/store-roundtrip.test.ts, packages/hench/tests/unit/agent/api-auth.test.ts, packages/hench/tests/unit/agent/api-auth.test.ts +9
+  packages/rex/src/analyze/reason.ts ← packages/rex/src/analyze/guided.ts, packages/rex/src/analyze/guided.ts, packages/rex/src/analyze/index.ts, packages/rex/src/analyze/index.ts, packages/rex/src/analyze/reshape-reason.ts +12
 
 </imports>
 
@@ -89,57 +78,55 @@ Conventions: action(2) default(4) loader(2) meta(1)
 
 <findings>
 
-[warning] Bidirectional coupling: "hench" ↔ "hench-3" (9+21 crossings) — consider extracting shared interface
-[warning] Bidirectional coupling: "hench-3" ↔ "hench-4" (4+2 crossings) — consider extracting shared interface
-[warning] Bidirectional coupling: "hench-4" ↔ "hench-5" (2+3 crossings) — consider extracting shared interface
-[warning] 10 entry points — wide API surface, consider consolidating exports [hench]
-[critical] Well-architected agent core with strong cohesion and manageable coupling [agent-core]
-[warning] Bidirectional imports between zones may indicate circular dependencies that could complicate testing and maintenance
-[critical] Exceptionally well-architected codebase with strong zone cohesion across all analyzed components
-[warning] High interconnectivity between hench zones (21 imports hench-3→hench, 9 reverse) suggests tight coupling in agent subsystem
-[critical] Git tool properly restricts allowed subcommands for security [specialized-tools]
-[warning] Moderate cohesion (0.5) and coupling (0.5) indicates loosely related tools that could benefit from stronger unifying patterns [specialized-tools]
-[critical] Backward compatibility shim in agent/tools.ts maintains API stability during refactoring [tool-security]
-[critical] Clean adapter pattern implementation allowing swappable Claude API providers while maintaining consistent client interface [claude-integration]
-[warning] Heavy bidirectional coupling with cli-infrastructure (30 total imports) suggests agent logic bleeding into CLI concerns [agent-core]
-[warning] Bidirectional coupling with agent-core may indicate CLI commands directly manipulating agent internals instead of using clean interfaces [cli-infrastructure]
-[warning] Hub-and-spoke pattern centered on packages/hench/src/tools/rex.ts creates single point of dependency across multiple zones
-... +30 more
+[critical] Security guard system provides multi-layered protection with configurable policies for safe autonomous operation [autonomous-agent-system]
+[critical] Dual provider architecture (CLI + API) ensures fallback options and different execution contexts [claude-integration-layer]
+[critical] Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns [claude-integration-layer]
+[critical] All zones achieve perfect cohesion metrics, suggesting the community detection algorithm successfully identified natural architectural boundaries
+[warning] Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided [autonomous-agent-system]
+[warning] Cross-zone type imports create compile-time coupling that defeats runtime decoupling strategies - zones appear independent at runtime but are tightly coupled during TypeScript compilation
+[warning] PRIORITY_ORDER constants duplicated across multiple zones with inconsistent typing - shared constants should be extracted to a common location to prevent type drift and maintenance burden
+[warning] PRIORITY_ORDER constant duplicated with different type signatures (Record<Priority,number> vs Record<string,number>) across core/canonical.ts, core/next-task.ts, and analyze/propose.ts creating type safety gaps and maintenance burden [packages-rex:rex-cli]
+[critical] Schema index.ts barrel export creates hidden bidirectional coupling by re-exporting from both viewer zone (v1.ts) and test-suite zone (validate.ts) - every analyzer importing schema creates transitive dependencies across three zones [packages-sourcevision:analysis-engine]
+[warning] Direct import of schema/validate.ts from test-suite zone violates zone boundaries and forces Zod bundling into browser code where validation could be optional [packages-sourcevision:interactive-viewer]
+[warning] schema/validate.ts is misplaced in test-suite zone despite being imported by production CLI and viewer code - this file should be in analysis-engine zone based on its actual usage patterns [packages-sourcevision:test-suite]
+[warning] Extract PRIORITY_ORDER constant to shared location with consistent typing - currently duplicated in 4 locations with inconsistent types (typed Priority vs untyped string Record)
+[warning] Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic
+[warning] Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated
+[critical] Architecture forces choice between runtime coupling and maintenance burden - current solution chooses duplication over dependency, creating divergence risk that outweighs benefits of runtime independence for core domain types
+... +4 more
 
 </findings>
 
 <next-steps>
 
-[high] Exceptionally well-architected codebase with strong zone co… (+7 related)
+[high] Schema index.ts barrel export creates hidden bidirectional coupling by re-expor…
+  files: packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/context.ts, packages/sourcevision/src/analyzers/enrich.ts
   category: fix
-[high] Well-architected agent core with strong cohesion and manage… (+1 related)
+[high] All zones achieve perfect cohesion metrics, suggesting the … (+4 related)
   category: fix
-[high] Extract packages/hench/src/tools/rex.ts into shared-interfa… (+1 related)
+[high] Dual provider architecture (CLI + API) ensures fallback opt… (+1 related)
+  category: fix
+[high] Security guard system provides multi-layered protection with configurable polic…
+  category: fix
+[medium] schema/validate.ts is misplaced in test-suite zone despite being imported by pr…
+  files: packages/sourcevision/src/schema/validate.ts, packages/sourcevision/tests/e2e/cli-analyze.test.ts, packages/sourcevision/tests/e2e/cli-serve.test.ts
+  category: refactor
+[medium] Direct import of schema/validate.ts from test-suite zone violates zone boundari…
+  files: packages/sourcevision/src/schema/v1.ts, packages/sourcevision/src/viewer/components/collapsible-section.ts, packages/sourcevision/src/viewer/components/constants.ts
+  category: refactor
+[medium] Cross-zone type imports create compile-time coupling that d… (+1 related)
+  category: refactor
+[medium] Zone architecture achieves perfect runtime decoupling (no c… (+1 related)
+  category: extract
+[medium] Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupl…
+  category: refactor
+[medium] PRIORITY_ORDER constant duplicated with different type signatures (Record<Prior…
+  files: packages/rex/src/analyze/index.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reconcile.ts
+  category: refactor
+[medium] Extract PRIORITY_ORDER constant to shared location with consistent typing - cur…
+  category: refactor
+[medium] Consider decomposing hench zone into functional subzones: CLI interface (packag…
   files: packages/hench/src/agent/analysis/review.ts, packages/hench/src/agent/analysis/stuck.ts, packages/hench/src/agent/analysis/summary.ts
-  category: fix
-[high] Git tool properly restricts allowed subcommands for security
-  category: fix
-[high] Backward compatibility shim in agent/tools.ts maintains API stability during re…
-  category: fix
-[high] Clean adapter pattern implementation allowing swappable Claude API providers wh…
-  category: fix
-[high] CLI commands import packages/hench/src/agent/lifecycle/loop.ts directly, violat…
-  category: fix
-[medium] Hub-and-spoke pattern centered on packages/hench/src/tools/… (+2 related)
-  category: extract
-[medium] Token budget and usage tracking logic duplicated across lif… (+1 related)
-  category: refactor
-[medium] Token management logic distributed across agent-core lifecy… (+1 related)
-  category: refactor
-[medium] Error handling logic embedded in CLI layer instead of using domain service abst…
-  category: refactor
-[medium] Each specialized tool implements its own command parsing and execution without …
-  category: refactor
-[medium] Heavy bidirectional coupling with cli-infrastructure (30 total imports) suggest…
-  category: extract
-[medium] Bidirectional coupling with agent-core may indicate CLI commands directly manip…
-  category: extract
-[medium] Analysis subfolder implements post-execution concerns mixed with core logic - s…
   category: refactor
 
 </next-steps>
