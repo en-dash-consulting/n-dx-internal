@@ -6443,7 +6443,7 @@
             {
               "id": "cf8aecd3-da57-4085-8d40-c4b0d55dbfb9",
               "title": "Fix pass status display inconsistency after reset",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Ensure the pass status output reflects the actual current pass immediately after a reset, rather than showing the previous higher pass number",
               "acceptanceCriteria": [
@@ -6457,7 +6457,9 @@
                 "status",
                 "consistency"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-10T19:48:05.281Z",
+              "completedAt": "2026-02-10T20:11:33.245Z"
             }
           ]
         }
@@ -6551,7 +6553,7 @@
             {
               "id": "a6dd7b7c-9e74-4626-8e27-e4aa11e771ea",
               "title": "Implement floating FAQ button for page-specific help",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Create a floating FAQ button that appears in the content area header, providing contextual help for the current page/section",
               "acceptanceCriteria": [
@@ -6566,7 +6568,8 @@
                 "help",
                 "floating-button"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-10T20:11:55.019Z"
             }
           ]
         }
@@ -6590,7 +6593,7 @@
             {
               "id": "377d0c69-c006-4324-b462-bed82d698739",
               "title": "Add pruning interface to Rex dashboard",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create a dedicated pruning section in the Rex dashboard that shows archivable items and allows users to configure pruning criteria",
               "acceptanceCriteria": [
@@ -6605,12 +6608,14 @@
                 "ui",
                 "pruning"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-10T18:38:55.919Z",
+              "completedAt": "2026-02-10T18:47:49.797Z"
             },
             {
               "id": "277e3243-02f3-4f64-a903-4d9a0abc84e7",
               "title": "Implement visual diff for pruning operations",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Show before/after tree structure with highlighted changes when users initiate pruning operations",
               "acceptanceCriteria": [
@@ -6625,12 +6630,14 @@
                 "ui",
                 "diff"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-10T18:48:12.537Z",
+              "completedAt": "2026-02-10T19:01:19.410Z"
             },
             {
               "id": "79cf9a3f-8e1e-4454-910b-ce3043feebf2",
               "title": "Add confirmation flow for destructive pruning operations",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement multi-step confirmation process for pruning operations with clear impact messaging",
               "acceptanceCriteria": [
@@ -6645,7 +6652,9 @@
                 "ui",
                 "safety"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-10T18:30:27.245Z",
+              "completedAt": "2026-02-10T18:38:11.987Z"
             },
             {
               "id": "61c178cc-d07e-4f59-8f2b-7ae496a4e5e6",
@@ -6680,7 +6689,7 @@
             {
               "id": "63a696d6-7814-4cb6-8c68-71ff2cbfbc23",
               "title": "Create smart add interface in Rex dashboard",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Add a prominent smart add section to the Rex dashboard with natural language input field and context selection",
               "acceptanceCriteria": [
@@ -6695,7 +6704,8 @@
                 "ui",
                 "smart-add"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-10T19:11:59.701Z"
             },
             {
               "id": "7e6f03b5-dcf9-4f4e-a9bb-7a69a12cb058",
@@ -6720,7 +6730,7 @@
             {
               "id": "e158fc9c-8367-452b-839e-f41d7aa176ff",
               "title": "Add proposal review and editing interface",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Allow users to review, edit, and selectively accept generated proposals before adding to PRD",
               "acceptanceCriteria": [
@@ -6735,7 +6745,9 @@
                 "ui",
                 "review"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-10T19:01:52.824Z",
+              "completedAt": "2026-02-10T19:09:19.299Z"
             },
             {
               "id": "7316018e-0db5-460e-9554-68ec66314c62",
@@ -6776,6 +6788,284 @@
                 "smart-add"
               ],
               "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a19a8bac-6c65-4590-b2b7-543d9e01843c",
+      "title": "Interactive Workflow Shaping and Requirements Integration",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "26afc8aa-e8bd-4e94-b0d7-cc82aef6589d",
+          "title": "Interactive Workflow Configuration System",
+          "status": "pending",
+          "level": "feature",
+          "description": "Provide comprehensive workflow configuration capabilities through CLI, web UI, and template systems, enabling users to customize hench execution parameters and adopt proven configurations",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "a7771ed2-5231-4181-a13d-79325681ab51",
+              "title": "Build comprehensive workflow configuration interfaces",
+              "status": "pending",
+              "level": "task",
+              "description": "Create both CLI and web UI interfaces for configuring hench workflow parameters, including interactive menus, visual form controls, and real-time preview of configuration changes",
+              "acceptanceCriteria": [
+                "CLI presents configurable workflow options in interactive menu format",
+                "Users can modify execution strategies, retry policies, and task selection criteria",
+                "Web UI displays current workflow configuration in editable form with form controls",
+                "Configuration changes show preview of impact on workflow behavior",
+                "Changes are validated and applied immediately to workflow configuration",
+                "Configuration changes persist across hench runs"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "web",
+                "ui",
+                "hench",
+                "configuration"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "d8730c3d-f5f7-4262-920a-9c7292bf1871",
+              "title": "Implement workflow template system with predefined configurations",
+              "status": "pending",
+              "level": "task",
+              "description": "Create a template system that provides pre-configured workflow setups for common development patterns, allowing users to quickly adopt proven workflow configurations",
+              "acceptanceCriteria": [
+                "System provides multiple workflow templates for different development scenarios",
+                "Users can select and apply templates through CLI and web interface",
+                "Templates can be customized and saved as new user-defined configurations",
+                "Template metadata includes description and recommended use cases"
+              ],
+              "priority": "medium",
+              "tags": [
+                "hench",
+                "templates",
+                "configuration"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "ad93cf70-3442-4408-b4a3-f3b8c8d1ad16",
+          "title": "Intelligent Workflow Optimization",
+          "status": "pending",
+          "level": "feature",
+          "description": "Analyze workflow execution patterns and automatically optimize configurations based on project characteristics, historical performance, and adaptive learning",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "f163ff52-22f8-417a-975d-7dc2a33ea0e3",
+              "title": "Build workflow analysis and optimization engine",
+              "status": "pending",
+              "level": "task",
+              "description": "Develop a comprehensive system that analyzes execution history, identifies optimization opportunities, and presents smart suggestions with optional application",
+              "acceptanceCriteria": [
+                "Engine analyzes historical run data to identify workflow bottlenecks",
+                "System detects recurring failure patterns and suggests preventive measures",
+                "Analysis considers project context and codebase characteristics",
+                "Interface displays optimization suggestions with clear rationale",
+                "Users can preview the impact of suggested changes before applying",
+                "Suggestions can be applied individually or in batches",
+                "System tracks which suggestions were accepted or rejected for learning"
+              ],
+              "priority": "medium",
+              "tags": [
+                "hench",
+                "analytics",
+                "optimization",
+                "ui",
+                "suggestions"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "f6d852ea-6cbf-4d94-8de8-96b4091f31d3",
+              "title": "Implement adaptive workflow adjustment based on project evolution",
+              "status": "pending",
+              "level": "task",
+              "description": "Create a system that automatically adjusts workflow parameters as the project evolves, considering factors like codebase size, team velocity, and complexity metrics",
+              "acceptanceCriteria": [
+                "System monitors project evolution metrics and workflow performance",
+                "Workflow parameters are automatically adjusted based on changing conditions",
+                "Users receive notifications about automatic adjustments with rationale",
+                "Automatic adjustments can be disabled or manually overridden"
+              ],
+              "priority": "low",
+              "tags": [
+                "hench",
+                "adaptive",
+                "automation"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "917ecf71-d780-48e8-adcb-1236daf1bb49",
+          "title": "Requirements Integration and Traceability",
+          "status": "pending",
+          "level": "feature",
+          "description": "Integrate technical and non-functional requirements into the workflow system with comprehensive management, validation, and traceability features",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "21b15807-0af4-452c-abc9-468690970bc1",
+              "title": "Extend rex schema and implement requirements validation system",
+              "status": "pending",
+              "level": "task",
+              "description": "Enhance rex PRD schema to support technical and non-functional requirements, and build validation logic that ensures hench task execution compliance with associated requirements",
+              "acceptanceCriteria": [
+                "Schema includes structured fields for different requirement categories",
+                "Requirements can be associated with specific epics, features, or tasks",
+                "Requirement definitions include measurable acceptance criteria",
+                "Schema migration preserves existing PRD data while adding new fields",
+                "Hench validates technical requirements before completing tasks",
+                "Non-functional requirements are checked through automated or guided validation",
+                "Validation failures prevent task completion and provide clear feedback",
+                "Requirements traceability is maintained throughout task execution"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "schema",
+                "requirements",
+                "hench",
+                "validation"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "cf02498f-248c-406a-a227-31124ad0f467",
+              "title": "Build requirements management and prioritization system",
+              "status": "pending",
+              "level": "task",
+              "description": "Create comprehensive requirements management interface and enhance task prioritization to consider requirements criticality and dependencies",
+              "acceptanceCriteria": [
+                "Interface allows creation and editing of requirements with structured templates",
+                "Requirements are visually linked to associated PRD items",
+                "Dashboard shows requirements coverage and compliance status",
+                "Requirements can be categorized and filtered for easy management",
+                "Task selection algorithm weights tasks based on associated requirements priority",
+                "Tasks blocking critical requirements are automatically elevated in priority",
+                "Requirement dependencies influence task scheduling and sequencing",
+                "Prioritization logic can be configured based on project risk tolerance"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "rex",
+                "requirements",
+                "dashboard",
+                "hench",
+                "prioritization"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "be267023-2d02-452c-8248-b8eef65a2f2c",
+      "title": "Sequential Epic Execution",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-10T19:29:23.741Z",
+      "completedAt": "2026-02-10T19:29:23.741Z",
+      "children": [
+        {
+          "id": "80a31fb8-00d8-487b-b80d-04b598ee0011",
+          "title": "Epic-by-Epic CLI Execution",
+          "status": "completed",
+          "level": "feature",
+          "description": "Enable sequential epic processing through CLI commands with automatic progression and completion detection",
+          "source": "smart-add",
+          "startedAt": "2026-02-10T19:29:23.685Z",
+          "completedAt": "2026-02-10T19:29:23.685Z",
+          "children": [
+            {
+              "id": "528c2df2-4e8d-48fa-b296-4a9b28f6e647",
+              "title": "Implement epic-by-epic execution mode in hench and orchestration",
+              "status": "completed",
+              "level": "task",
+              "description": "Add --epic-by-epic flag support to hench run and n-dx work commands with logic to detect epic completion and automatically advance to next epic with pending tasks",
+              "acceptanceCriteria": [
+                "Accepts --epic-by-epic flag in hench run command",
+                "Maintains current epic context across multiple task executions",
+                "Detects when all tasks in current epic are completed or blocked",
+                "Automatically selects next epic with actionable tasks",
+                "Passes flag through n-dx work orchestration command",
+                "Displays current epic being processed in output",
+                "Shows epic completion and advancement messages",
+                "Provides summary of epics processed when execution completes",
+                "Respects task dependencies within and across epics"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "orchestration",
+                "cli",
+                "workflow",
+                "task-selection"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-10T19:23:05.766Z",
+              "completedAt": "2026-02-10T19:29:23.638Z"
+            }
+          ]
+        },
+        {
+          "id": "d001b4cf-b90c-48ae-b8c2-e1a422841516",
+          "title": "Web UI Epic-by-Epic Execution",
+          "status": "completed",
+          "level": "feature",
+          "description": "Enable epic-by-epic execution mode from the web dashboard with visual progress tracking and control interfaces",
+          "source": "smart-add",
+          "startedAt": "2026-02-10T19:22:25.616Z",
+          "completedAt": "2026-02-10T19:22:25.616Z",
+          "children": [
+            {
+              "id": "7ca365dd-2f22-4a64-9de0-97cdf2c5209c",
+              "title": "Build epic-by-epic execution interface and API",
+              "status": "completed",
+              "level": "task",
+              "description": "Create complete web UI controls and backend API endpoints to support epic-by-epic execution with real-time progress tracking and execution control",
+              "acceptanceCriteria": [
+                "Provides start epic-by-epic execution button in Rex dashboard",
+                "Shows current epic being processed with visual indicator",
+                "Displays progress bar for epic completion",
+                "Includes pause/resume controls for execution",
+                "Shows list of epics with completion status indicators",
+                "Highlights currently active epic during execution",
+                "Displays task completion counts for each epic",
+                "POST /api/rex/execute/epic-by-epic endpoint to start execution",
+                "GET /api/rex/execute/status endpoint for current execution state",
+                "POST /api/rex/execute/pause and resume endpoints",
+                "WebSocket or SSE support for real-time progress updates"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-ui",
+                "api",
+                "rex",
+                "workflow",
+                "visualization",
+                "web-server",
+                "real-time"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-10T19:14:03.319Z",
+              "completedAt": "2026-02-10T19:22:25.570Z"
             }
           ]
         }
