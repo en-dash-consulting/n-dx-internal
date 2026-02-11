@@ -29,6 +29,7 @@ const STATUS_OPTIONS: Array<{ value: ItemStatus; label: string; icon: string }> 
   { value: "pending", label: "Pending", icon: "○" },
   { value: "in_progress", label: "In Progress", icon: "◐" },
   { value: "completed", label: "Completed", icon: "●" },
+  { value: "failing", label: "Failing", icon: "⚠" },
   { value: "blocked", label: "Blocked", icon: "⊘" },
   { value: "deferred", label: "Deferred", icon: "◌" },
   { value: "deleted", label: "Deleted", icon: "✕" },
@@ -67,9 +68,11 @@ function findItemById(items: PRDItemData[], id: string): PRDItemData | null {
 function StatusSelector({
   current,
   onChange,
+  onRequestReason,
 }: {
   current: ItemStatus;
   onChange: (status: ItemStatus) => void;
+  onRequestReason?: (status: ItemStatus) => void;
 }) {
   return h(
     "div",
@@ -80,7 +83,13 @@ function StatusSelector({
         {
           key: opt.value,
           class: `task-status-btn prd-status-${opt.value}${current === opt.value ? " active" : ""}`,
-          onClick: () => onChange(opt.value),
+          onClick: () => {
+            if (opt.value === "failing" && onRequestReason) {
+              onRequestReason(opt.value);
+            } else {
+              onChange(opt.value);
+            }
+          },
           role: "radio",
           "aria-checked": String(current === opt.value),
           title: opt.label,
@@ -606,6 +615,9 @@ function RequirementsList({
 
 export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem }: TaskDetailProps) {
   const [saving, setSaving] = useState(false);
+  const [pendingFailStatus, setPendingFailStatus] = useState(false);
+  const [failureReason, setFailureReason] = useState("");
+  const [editingFailureReason, setEditingFailureReason] = useState(false);
 
   const handleStatusChange = useCallback(
     (status: ItemStatus) => {
@@ -617,6 +629,36 @@ export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem }: TaskD
     },
     [item.id, item.status, onUpdate],
   );
+
+  const handleRequestReason = useCallback(
+    (status: ItemStatus) => {
+      if (!onUpdate || (status === item.status && !item.failureReason)) return;
+      setPendingFailStatus(true);
+      setFailureReason("");
+    },
+    [item.status, item.failureReason, onUpdate],
+  );
+
+  const handleFailureSubmit = useCallback(() => {
+    if (!onUpdate || !failureReason.trim()) return;
+    setSaving(true);
+    onUpdate(item.id, { status: "failing" as ItemStatus, failureReason: failureReason.trim() });
+    setPendingFailStatus(false);
+    setEditingFailureReason(false);
+    setFailureReason("");
+    setTimeout(() => setSaving(false), 500);
+  }, [item.id, failureReason, onUpdate]);
+
+  const handleFailureCancel = useCallback(() => {
+    setPendingFailStatus(false);
+    setEditingFailureReason(false);
+    setFailureReason("");
+  }, []);
+
+  const handleEditFailureReason = useCallback(() => {
+    setEditingFailureReason(true);
+    setFailureReason(item.failureReason || "");
+  }, [item.failureReason]);
 
   const handlePriorityChange = useCallback(
     (priority: Priority) => {
@@ -651,7 +693,44 @@ export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem }: TaskD
       "div",
       { class: "task-section" },
       h("div", { class: "task-section-label" }, saving ? "Status (saving...)" : "Status"),
-      h(StatusSelector, { current: item.status, onChange: handleStatusChange }),
+      h(StatusSelector, {
+        current: item.status,
+        onChange: handleStatusChange,
+        onRequestReason: onUpdate ? handleRequestReason : undefined,
+      }),
+
+      // Inline failure reason input form
+      (pendingFailStatus || editingFailureReason)
+        ? h(
+            "div",
+            { class: "task-failure-input-form" },
+            h("input", {
+              class: "task-failure-input",
+              type: "text",
+              placeholder: "Describe what's failing...",
+              value: failureReason,
+              onInput: (e: Event) => setFailureReason((e.target as HTMLInputElement).value),
+              onKeyDown: (e: KeyboardEvent) => {
+                if (e.key === "Enter" && failureReason.trim()) { e.preventDefault(); handleFailureSubmit(); }
+                if (e.key === "Escape") { handleFailureCancel(); }
+              },
+              ref: (el: HTMLInputElement | null) => el?.focus(),
+            }),
+            h(
+              "div",
+              { class: "task-failure-form-actions" },
+              h("button", {
+                class: "task-failure-submit-btn",
+                onClick: handleFailureSubmit,
+                disabled: !failureReason.trim(),
+              }, "Set Failing"),
+              h("button", {
+                class: "task-failure-cancel-btn",
+                onClick: handleFailureCancel,
+              }, "Cancel"),
+            ),
+          )
+        : null,
     ),
 
     // Description
@@ -670,6 +749,27 @@ export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem }: TaskD
           "div",
           { class: "task-section" },
           h(AcceptanceCriteria, { criteria: item.acceptanceCriteria }),
+        )
+      : null,
+
+    // Failure reason
+    item.status === "failing" && item.failureReason && !editingFailureReason
+      ? h(
+          "div",
+          { class: "task-section task-failure-reason" },
+          h(
+            "div",
+            { class: "task-failure-reason-header" },
+            h("div", { class: "task-section-label prd-status-failing" }, "Failure Reason"),
+            onUpdate
+              ? h("button", {
+                  class: "task-failure-edit-btn",
+                  onClick: handleEditFailureReason,
+                  title: "Edit reason",
+                }, "Edit")
+              : null,
+          ),
+          h("div", { class: "task-failure-text" }, item.failureReason),
         )
       : null,
 

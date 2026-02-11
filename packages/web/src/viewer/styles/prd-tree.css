@@ -64,6 +64,7 @@
 .prd-status-bg-in_progress { background: var(--accent); }
 .prd-status-bg-pending { background: var(--text-dim); opacity: 0.4; }
 .prd-status-bg-blocked { background: var(--red); }
+.prd-status-bg-failing { background: var(--red); opacity: 0.7; }
 .prd-status-bg-deferred { background: var(--orange); opacity: 0.5; }
 
 .prd-summary-stats {
@@ -99,6 +100,7 @@
 .prd-status-dot.prd-status-in-progress { background: var(--accent); }
 .prd-status-dot.prd-status-pending { background: var(--text-dim); opacity: 0.4; }
 .prd-status-dot.prd-status-blocked { background: var(--red); }
+.prd-status-dot.prd-status-failing { background: var(--red); opacity: 0.7; }
 .prd-status-dot.prd-status-deferred { background: var(--orange); opacity: 0.5; }
 
 /* Status filter */
@@ -168,6 +170,12 @@
   color: var(--text-dim);
 }
 
+.prd-status-chip.active.prd-status-failing {
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  border-color: var(--red);
+  color: var(--red);
+}
+
 .prd-status-chip.active.prd-status-blocked {
   background: color-mix(in srgb, var(--red) 15%, transparent);
   border-color: var(--red);
@@ -234,6 +242,105 @@
   font-size: 10px;
   font-style: italic;
   opacity: 0.7;
+}
+
+/* Failing status */
+.prd-failure-reason { color: var(--red); font-style: italic; }
+.task-failure-reason { border-left: 3px solid var(--red); padding-left: 8px; }
+.task-failure-text { color: var(--red); font-style: italic; }
+
+.task-failure-reason-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-failure-edit-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-size: 10px;
+  padding: 1px 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.task-failure-edit-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.task-failure-input-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.task-failure-input {
+  width: 100%;
+  padding: 6px 8px;
+  background: var(--bg-hover);
+  border: 1px solid var(--red);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.task-failure-input:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: -1px;
+}
+
+.task-failure-input::placeholder {
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+
+.task-failure-form-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.task-failure-submit-btn {
+  padding: 4px 12px;
+  background: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.task-failure-submit-btn:hover {
+  opacity: 0.9;
+}
+
+.task-failure-submit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.task-failure-cancel-btn {
+  padding: 4px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.task-failure-cancel-btn:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
 }
 
 /* Deleted status */
@@ -316,6 +423,7 @@
 .prd-status-in-progress { color: var(--accent); }
 .prd-status-pending { color: var(--text-dim); opacity: 0.6; }
 .prd-status-deferred { color: var(--orange); opacity: 0.6; }
+.prd-status-failing { color: var(--red); }
 .prd-status-blocked { color: var(--red); }
 
 /* Level badge */
@@ -570,6 +678,12 @@
   background: var(--bg-hover);
   color: var(--text-dim);
   border-color: var(--text-dim);
+}
+
+.task-status-btn.active.prd-status-failing {
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  color: var(--red);
+  border-color: var(--red);
 }
 
 .task-status-btn.active.prd-status-blocked {
