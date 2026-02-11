@@ -13,7 +13,7 @@ const ModuleInfoSchema = z.object({
   chunks: z.number().int().positive().optional(),
 });
 
-export const ManifestSchema = z.object({
+const ManifestSchema = z.object({
   schemaVersion: z.string(),
   toolVersion: z.string(),
   analyzedAt: z.string(),
@@ -55,7 +55,7 @@ const InventorySummarySchema = z.object({
   byCategory: z.record(z.string(), z.number().int().nonnegative()),
 });
 
-export const InventorySchema = z.object({
+const InventorySchema = z.object({
   files: z.array(FileEntrySchema),
   summary: InventorySummarySchema,
 });
@@ -101,7 +101,7 @@ const ImportsSummarySchema = z.object({
   avgImportsPerFile: z.number().nonnegative(),
 });
 
-export const ImportsSchema = z.object({
+const ImportsSchema = z.object({
   edges: z.array(ImportEdgeSchema),
   external: z.array(ExternalImportSchema),
   summary: ImportsSummarySchema,
@@ -117,7 +117,7 @@ const FindingTypeSchema = z.enum([
   "suggestion",
 ]);
 
-export const FindingSchema = z.object({
+const FindingSchema = z.object({
   type: FindingTypeSchema,
   pass: z.number().int().nonnegative(),
   scope: z.string(),
@@ -146,7 +146,7 @@ const ZoneCrossingSchema = z.object({
   toZone: z.string(),
 });
 
-export const ZonesSchema = z.object({
+const ZonesSchema = z.object({
   zones: z.array(ZoneSchema),
   crossings: z.array(ZoneCrossingSchema),
   unzoned: z.array(z.string()),
@@ -224,7 +224,7 @@ const ComponentsSummarySchema = z.object({
   layoutDepth: z.number().int().nonnegative(),
 });
 
-export const ComponentsSchema = z.object({
+const ComponentsSchema = z.object({
   components: z.array(ComponentDefinitionSchema),
   usageEdges: z.array(ComponentUsageEdgeSchema),
   routeModules: z.array(RouteModuleSchema),
@@ -276,7 +276,7 @@ const CallGraphSummarySchema = z.object({
   cycleCount: z.number().int().nonnegative(),
 });
 
-export const CallGraphSchema = z.object({
+const CallGraphSchema = z.object({
   functions: z.array(FunctionNodeSchema),
   edges: z.array(CallEdgeSchema),
   summary: CallGraphSummarySchema,
@@ -327,52 +327,4 @@ export function validateCallGraph(
   data: unknown
 ): ValidationResult<V1.CallGraph> {
   return validate(CallGraphSchema, data);
-}
-
-/** Validate any module output by name */
-export function validateModule(
-  name: string,
-  data: unknown
-): ValidationResult<unknown> {
-  switch (name) {
-    case "manifest":
-      return validate(ManifestSchema, data);
-    case "inventory":
-      return validate(InventorySchema, data);
-    case "imports":
-      return validate(ImportsSchema, data);
-    case "zones":
-      return validate(ZonesSchema, data);
-    case "components":
-      return validate(ComponentsSchema, data);
-    case "callGraph":
-      return validate(CallGraphSchema, data);
-    default:
-      return {
-        ok: false,
-        errors: new z.ZodError([
-          {
-            code: "custom",
-            path: [],
-            message: `Unknown module: ${name}`,
-          },
-        ]),
-      };
-  }
-}
-
-/**
- * Format Zod validation errors into clear, actionable messages.
- *
- * Each error includes the field path and what was expected, making it
- * easy to pinpoint and fix the issue.
- *
- * @remarks Exported for external consumers; currently not used within
- * the n-dx codebase but part of the public validation API.
- */
-export function formatValidationErrors(errors: z.ZodError): string[] {
-  return errors.issues.map((issue) => {
-    const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
-    return `${path}: ${issue.message}`;
-  });
 }

@@ -7806,6 +7806,209 @@
           "completedAt": "2026-02-11T14:54:55.356Z"
         }
       ]
+    },
+    {
+      "id": "ecbbbb0f-87cf-4437-a2e7-8ee508714e32",
+      "title": "Resolve SourceVision architectural findings (Feb 2026)",
+      "status": "pending",
+      "level": "epic",
+      "description": "Systematically address all actionable SourceVision findings from the latest analysis pass. Organized by theme rather than finding type, with verifiable acceptance criteria tied to re-analysis outcomes.",
+      "priority": "high",
+      "tags": [
+        "tech-debt",
+        "sourcevision",
+        "architecture"
+      ],
+      "children": [
+        {
+          "id": "2f29348f-9ded-4c6f-a637-14d6c210846c",
+          "title": "Break circular dependencies in rex/core",
+          "status": "completed",
+          "level": "feature",
+          "description": "Eliminate the 2 circular dependency chains between tree.ts ↔ delete.ts and tree.ts ↔ stats.ts caused by backward-compatibility re-exports.",
+          "acceptanceCriteria": [
+            "sourcevision analyze reports 0 circular dependency chains in imports.json"
+          ],
+          "priority": "high",
+          "startedAt": "2026-02-11T16:38:28.510Z",
+          "completedAt": "2026-02-11T16:38:28.510Z",
+          "children": [
+            {
+              "id": "7cd9c5dc-8885-4392-b480-10d4679c7c0f",
+              "title": "Remove re-exports from tree.ts and update all callers",
+              "status": "completed",
+              "level": "task",
+              "description": "tree.ts re-exports computeStats from stats.ts and deleteItem from delete.ts for backward compatibility, creating circular dependency chains. Remove these re-exports and update all call sites (~31 files) to import directly from the correct module (stats.ts or delete.ts).",
+              "acceptanceCriteria": [
+                "tree.ts no longer imports from delete.ts or stats.ts",
+                "All callers of computeStats import from core/stats.ts",
+                "All callers of deleteItem import from core/delete.ts",
+                "pnpm typecheck passes",
+                "pnpm test passes"
+              ],
+              "priority": "high",
+              "startedAt": "2026-02-11T16:34:44.275Z",
+              "completedAt": "2026-02-11T16:38:28.436Z"
+            }
+          ]
+        },
+        {
+          "id": "b6af7300-9330-4523-97fc-119ea106a002",
+          "title": "Audit and clean dead/unused exports",
+          "status": "pending",
+          "level": "feature",
+          "description": "Audit modules flagged for unused exports. For each, either remove genuinely dead code, internalize module-private helpers, or confirm the export is needed and document why.",
+          "acceptanceCriteria": [
+            "Re-analysis shows no legitimate unused-export findings (excluding class methods and dynamically-used components)"
+          ],
+          "priority": "high",
+          "children": [
+            {
+              "id": "76e50481-6fc8-4147-9729-1477971267d7",
+              "title": "Decide on adjustments.ts: integrate or remove",
+              "status": "pending",
+              "level": "task",
+              "description": "packages/hench/src/store/adjustments.ts has 9 unused exports and is documented as \"infrastructure for a planned adaptive workflow feature — not yet integrated into the agent loop.\" Decide: if the feature is still planned, keep but mark with a tracking issue; if abandoned, delete the module entirely.",
+              "acceptanceCriteria": [
+                "Module is either deleted or has a documented plan for integration",
+                "No unused exports remain if kept"
+              ],
+              "priority": "medium"
+            },
+            {
+              "id": "ab1b81d0-ed74-49f6-9a7a-c835e8016de4",
+              "title": "Audit validate.ts — remove or justify uncalled validators",
+              "status": "completed",
+              "level": "task",
+              "description": "packages/web/src/schema/validate.ts exports 8 validators flagged as unused (validateManifest, validateInventory, validateImports, validateZones, validateComponents, etc.). Audit each: if called from server routes or tests, keep; if truly dead, remove.",
+              "acceptanceCriteria": [
+                "Each exported validator is either confirmed used (with a call site) or removed",
+                "pnpm typecheck passes"
+              ],
+              "priority": "medium",
+              "startedAt": "2026-02-11T16:38:45.703Z",
+              "completedAt": "2026-02-11T16:40:45.318Z"
+            },
+            {
+              "id": "9ee0e1d6-8343-43f5-9fd0-65c799dfb230",
+              "title": "Audit health-gauge.ts — confirm components are rendered or remove",
+              "status": "pending",
+              "level": "task",
+              "description": "packages/web/src/viewer/components/data-display/health-gauge.ts exports 4 components (HealthGauge, HealthBadge, PatternBadge, MetricCard) flagged as unused. Check if they are rendered in any viewer page. Remove if dead, or document the dynamic usage pattern if alive.",
+              "acceptanceCriteria": [
+                "Each component is either confirmed rendered (with usage site) or removed",
+                "pnpm typecheck passes"
+              ],
+              "priority": "low"
+            },
+            {
+              "id": "8974f0a6-cba3-4ecc-a513-01df0cd8497f",
+              "title": "Internalize module-private helpers in reason.ts",
+              "status": "pending",
+              "level": "task",
+              "description": "packages/rex/src/analyze/reason.ts has 54 exports across 2005 lines. 4 exports are flagged as unused (reasonFromScanResults, adjustGranularity, assessGranularity, reasonFromBatch). Audit: if these are only used within the module or by tests, remove the export keyword. If used cross-module, keep.",
+              "acceptanceCriteria": [
+                "No exports exist solely for internal use — only genuinely public API is exported",
+                "pnpm typecheck passes",
+                "pnpm test passes"
+              ],
+              "priority": "low"
+            }
+          ]
+        },
+        {
+          "id": "fa02737e-8d0d-4112-9363-473c74630b95",
+          "title": "Decompose zones.test.ts god function",
+          "status": "pending",
+          "level": "feature",
+          "description": "Split the 2111-line zones.test.ts (flagged for calling 82 unique functions) into focused test files organized by concern.",
+          "acceptanceCriteria": [
+            "No single test file calls more than ~30 unique functions",
+            "All existing tests still pass after the split"
+          ],
+          "priority": "medium",
+          "children": [
+            {
+              "id": "2ec4de61-7d1e-4b89-940e-266ff403c3e4",
+              "title": "Split zones.test.ts into focused test files by concern",
+              "status": "pending",
+              "level": "task",
+              "description": "packages/sourcevision/tests/unit/analyzers/zones.test.ts is 2111 lines and calls 82 unique functions. Split into separate test files organized by concern (e.g., zone-detection.test.ts, zone-merging.test.ts, zone-hierarchy.test.ts, zone-edge-cases.test.ts). Each file should test a cohesive subset of zone analysis behavior.",
+              "acceptanceCriteria": [
+                "zones.test.ts is replaced by 3+ focused test files",
+                "No single test file exceeds ~800 lines or calls >30 unique functions",
+                "All original test cases are preserved",
+                "pnpm test passes"
+              ],
+              "priority": "medium"
+            }
+          ]
+        },
+        {
+          "id": "149e7d72-8c46-4a5a-a290-9e9a9e30870b",
+          "title": "Suppress false positives in SourceVision analysis",
+          "status": "pending",
+          "level": "feature",
+          "description": "Address false-positive unused-export findings for class instance methods and confirmed-used type guards so they stop appearing in future analyses.",
+          "acceptanceCriteria": [
+            "Re-analysis produces no false-positive unused-export findings for class methods (renderer.ts, notion-adapter.ts) or type guards (v1.ts)"
+          ],
+          "priority": "medium",
+          "children": [
+            {
+              "id": "bcce9423-06c0-4773-a067-65e47b998d13",
+              "title": "Fix false-positive detection for class instance methods",
+              "status": "pending",
+              "level": "task",
+              "description": "SourceVision flags class instance methods as \"unused exports\" because they're called via instance.method() not import { method }. Affected files: renderer.ts (39 false positives), notion-adapter.ts (19 false positives). Either improve the call-graph analyzer to recognize class method usage, or add suppression annotations (@public JSDoc or sourcevision-ignore comments).",
+              "acceptanceCriteria": [
+                "renderer.ts and notion-adapter.ts no longer produce false-positive unused-export findings",
+                "Fix applies generally to all classes, not just these two"
+              ],
+              "priority": "medium"
+            },
+            {
+              "id": "36efadb8-1dbe-43e1-96a7-323878c30474",
+              "title": "Fix false-positive detection for type guards used via re-exports",
+              "status": "pending",
+              "level": "task",
+              "description": "packages/rex/src/schema/v1.ts exports 5 type guards (isRequirementCategory, isValidationType, isPriority, isItemLevel, isItemStatus) confirmed used in web/src/server/routes-rex.ts and routes-validation.ts. SourceVision flags them as unused because it may not follow the import chain. Either fix the import-graph traversal or add suppression.",
+              "acceptanceCriteria": [
+                "v1.ts type guards no longer flagged as unused exports"
+              ],
+              "priority": "low"
+            }
+          ]
+        },
+        {
+          "id": "cb4f4c95-5b7e-4035-b0fc-e1fce0824d66",
+          "title": "Re-run analysis and validate finding reduction",
+          "status": "pending",
+          "level": "feature",
+          "description": "Final validation pass: re-run sourcevision analyze after all fixes and confirm the total finding count has dropped significantly.",
+          "acceptanceCriteria": [
+            "sourcevision analyze completes with fewer warnings/critical findings than the current 24",
+            "No critical-severity findings remain"
+          ],
+          "priority": "medium",
+          "children": [
+            {
+              "id": "280fdf83-f7f6-4550-957f-cd6912206207",
+              "title": "Run sourcevision analyze and confirm finding reduction",
+              "status": "blocked",
+              "level": "task",
+              "description": "After all other tasks in this epic are complete, re-run sourcevision analyze on the full project. Compare the findings report against the baseline (24 findings: 2 critical anti-patterns, 2 critical suggestions, 6 warnings, etc.). Confirm that critical findings are resolved and overall count is significantly reduced.",
+              "acceptanceCriteria": [
+                "sourcevision analyze completes successfully",
+                "0 critical-severity findings remain",
+                "Total finding count is lower than 24",
+                "No new critical or warning findings introduced"
+              ],
+              "priority": "medium"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
