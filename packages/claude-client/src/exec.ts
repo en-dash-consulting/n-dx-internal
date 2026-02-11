@@ -11,15 +11,21 @@
  *
  * ## Scope
  *
- * These helpers cover the **fire-and-collect** pattern: run a command, wait
- * for it to finish, return structured output. They do **not** cover the
- * **streaming** pattern (e.g. spawning Claude CLI and parsing events as they
- * arrive). Streaming use-cases should continue to use `spawn` directly.
+ * Two complementary patterns:
+ *
+ * 1. **Fire-and-collect** (`exec`, `execStdout`, `execShellCmd`) — run a
+ *    command, wait for it to finish, return structured output.
+ * 2. **Spawn-and-delegate** (`spawnTool`) — spawn a Node script with
+ *    inherited stdio (or piped output), wait for its exit code.
+ *
+ * Both patterns return structured results and never reject unexpectedly.
+ * For fully **streaming** use-cases (e.g. spawning Claude CLI and parsing
+ * events as they arrive), use `spawn` directly.
  *
  * @module @n-dx/claude-client/exec
  */
 
-import { execFile, execFileSync } from "node:child_process";
+import { execFile, execFileSync, spawn } from "node:child_process";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -169,4 +175,106 @@ export function isExecutableOnPath(name: string): boolean {
   } catch {
     return false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Spawn-and-delegate
+// ---------------------------------------------------------------------------
+
+/** Options for {@link spawnTool}. */
+export interface SpawnToolOptions {
+  /** Working directory for the child process. */
+  cwd?: string;
+  /** Environment variables. Defaults to inheriting parent env. */
+  env?: NodeJS.ProcessEnv;
+  /**
+   * How to wire stdio.
+   *
+   * - `"inherit"` — child shares the parent's stdin/stdout/stderr (default).
+   * - `"pipe"` — capture stdout and stderr; return them in the result.
+   */
+  stdio?: "inherit" | "pipe";
+  /**
+   * When true, spawn the process detached and un-ref it so the parent
+   * can exit without waiting. Implies `stdio: "ignore"` (overrides
+   * the `stdio` option). Returns immediately with `exitCode: 0`.
+   */
+  detached?: boolean;
+}
+
+/** Result from {@link spawnTool}. */
+export interface SpawnToolResult {
+  exitCode: number | null;
+  /** Populated only when `stdio: "pipe"`. */
+  stdout: string;
+  /** Populated only when `stdio: "pipe"`. */
+  stderr: string;
+}
+
+/**
+ * Spawn a Node script (or other executable) as a child process.
+ *
+ * Covers the **spawn-and-delegate** pattern used by orchestration and
+ * delegation code: start a tool, optionally inherit stdio, wait for it
+ * to finish.
+ *
+ * Unlike {@link exec}, this uses `spawn` (not `execFile`) so it supports
+ * long-running processes without buffer limits when stdio is inherited.
+ *
+ * @param cmd  The executable to run (e.g. `process.execPath` for Node).
+ * @param args Command-line arguments.
+ * @param opts Options controlling cwd, env, and stdio wiring.
+ */
+export function spawnTool(
+  cmd: string,
+  args: string[],
+  opts: SpawnToolOptions = {},
+): Promise<SpawnToolResult> {
+  const { cwd, env, detached = false } = opts;
+
+  // Detached mode: fire and forget
+  if (detached) {
+    const child = spawn(cmd, args, {
+      cwd,
+      env,
+      stdio: "ignore",
+      detached: true,
+    });
+    child.unref();
+    return Promise.resolve({
+      exitCode: 0,
+      stdout: "",
+      stderr: "",
+    });
+  }
+
+  const stdio = opts.stdio ?? "inherit";
+
+  return new Promise((resolve) => {
+    const child = spawn(cmd, args, {
+      cwd,
+      env,
+      stdio: stdio === "pipe" ? ["ignore", "pipe", "pipe"] : "inherit",
+    });
+
+    let stdout = "";
+    let stderr = "";
+
+    if (stdio === "pipe") {
+      child.stdout!.on("data", (chunk: Buffer) => {
+        stdout += chunk.toString();
+      });
+      child.stderr!.on("data", (chunk: Buffer) => {
+        stderr += chunk.toString();
+      });
+    }
+
+    child.on("error", () => {
+      resolve({ exitCode: 1, stdout, stderr });
+    });
+
+    child.on("close", (code) => {
+      resolve({ exitCode: code ?? 1, stdout, stderr });
+    });
+  });
 }

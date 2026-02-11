@@ -16,9 +16,12 @@ export {
   getCurrentHead,
   getCurrentBranch,
   isExecutableOnPath,
+  spawnTool,
 } from "@n-dx/claude-client";
 
 export type {
   ExecResult,
   ExecOptions,
+  SpawnToolOptions,
+  SpawnToolResult,
 } from "@n-dx/claude-client";

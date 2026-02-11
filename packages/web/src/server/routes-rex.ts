@@ -38,7 +38,7 @@ import { readFileSync, writeFileSync, existsSync, appendFileSync, mkdtempSync, r
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { execFile, type ChildProcess } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { exec as foundationExec } from "@n-dx/claude-client";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./types.js";
@@ -2450,13 +2450,10 @@ function runHenchForEpic(ctx: ServerContext, epicId: string): Promise<{ code: nu
     const binPath = existsSync(henchBin) ? henchBin : "node";
     const binArgs = existsSync(henchBin) ? args : [henchFallback, ...args];
 
-    const child = execFile(binPath, binArgs, {
+    const child = spawn(binPath, binArgs, {
       cwd: ctx.projectDir,
-      timeout: 0, // No timeout — execution can be long
-      maxBuffer: 50 * 1024 * 1024,
+      stdio: "inherit",
       env: { ...process.env },
-    }, () => {
-      // Handled by close event
     });
 
     henchProcess = child;

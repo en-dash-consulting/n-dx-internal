@@ -126,11 +126,14 @@ export {
   getCurrentHead,
   getCurrentBranch,
   isExecutableOnPath,
+  spawnTool,
 } from "./exec.js";
 
 export type {
   ExecResult,
   ExecOptions,
+  SpawnToolOptions,
+  SpawnToolResult,
 } from "./exec.js";
 
 // Project directory constants

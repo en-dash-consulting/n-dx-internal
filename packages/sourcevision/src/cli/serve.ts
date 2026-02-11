@@ -7,16 +7,15 @@
 
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn } from "node:child_process";
+import { spawnTool } from "@n-dx/claude-client";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export function startServe(dir: string, port: number = 3117): void {
+export async function startServe(dir: string, port: number = 3117): Promise<void> {
   const webCli = resolve(__dirname, "../../../web/dist/cli/index.js");
-  const child = spawn(
+  const result = await spawnTool(
     process.execPath,
     [webCli, "serve", "--scope=sourcevision", `--port=${port}`, dir],
-    { stdio: "inherit" },
   );
-  child.on("close", (code) => process.exit(code ?? 1));
+  process.exit(result.exitCode ?? 1);
 }

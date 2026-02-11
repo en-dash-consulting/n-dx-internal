@@ -1,16 +1,45 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+import { EventEmitter } from "node:events";
+import type { Readable } from "node:stream";
+
 // Mock child_process before importing the module under test
 vi.mock("node:child_process", () => ({
   execFile: vi.fn(),
   execFileSync: vi.fn(),
+  spawn: vi.fn(),
 }));
 
-import { execFile, execFileSync } from "node:child_process";
-import { exec, execStdout, execShellCmd, getCurrentHead } from "../../src/exec.js";
+import { execFile, execFileSync, spawn } from "node:child_process";
+import { exec, execStdout, execShellCmd, getCurrentHead, spawnTool } from "../../src/exec.js";
 
 const mockExecFile = vi.mocked(execFile);
 const mockExecFileSync = vi.mocked(execFileSync);
+const mockSpawn = vi.mocked(spawn);
+
+/** Create a mock ChildProcess with event emitter and optional pipe streams. */
+function createMockChild(opts?: { pipe?: boolean }) {
+  const child = new EventEmitter() as EventEmitter & {
+    stdout: Readable | null;
+    stderr: Readable | null;
+    unref: ReturnType<typeof vi.fn>;
+    pid: number;
+  };
+  child.unref = vi.fn();
+  child.pid = 12345;
+
+  if (opts?.pipe) {
+    const stdout = new EventEmitter() as Readable;
+    const stderr = new EventEmitter() as Readable;
+    child.stdout = stdout;
+    child.stderr = stderr;
+  } else {
+    child.stdout = null;
+    child.stderr = null;
+  }
+
+  return child;
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -176,5 +205,118 @@ describe("getCurrentHead", () => {
     });
 
     expect(getCurrentHead("/tmp")).toBeUndefined();
+  });
+});
+
+describe("spawnTool", () => {
+  it("resolves with exit code on success (inherit stdio)", async () => {
+    const child = createMockChild();
+    mockSpawn.mockReturnValue(child as never);
+
+    const promise = spawnTool("node", ["script.js"], { cwd: "/project" });
+
+    // Simulate process exit
+    child.emit("close", 0);
+
+    const result = await promise;
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toBe("");
+    expect(mockSpawn).toHaveBeenCalledWith("node", ["script.js"], {
+      cwd: "/project",
+      env: undefined,
+      stdio: "inherit",
+    });
+  });
+
+  it("resolves with non-zero exit code on failure", async () => {
+    const child = createMockChild();
+    mockSpawn.mockReturnValue(child as never);
+
+    const promise = spawnTool("node", ["bad.js"]);
+    child.emit("close", 1);
+
+    const result = await promise;
+    expect(result.exitCode).toBe(1);
+  });
+
+  it("captures stdout and stderr when stdio is pipe", async () => {
+    const child = createMockChild({ pipe: true });
+    mockSpawn.mockReturnValue(child as never);
+
+    const promise = spawnTool("node", ["script.js"], { stdio: "pipe" });
+
+    // Simulate output
+    child.stdout!.emit("data", Buffer.from("hello "));
+    child.stdout!.emit("data", Buffer.from("world\n"));
+    child.stderr!.emit("data", Buffer.from("warning\n"));
+    child.emit("close", 0);
+
+    const result = await promise;
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe("hello world\n");
+    expect(result.stderr).toBe("warning\n");
+    expect(mockSpawn).toHaveBeenCalledWith("node", ["script.js"], {
+      cwd: undefined,
+      env: undefined,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+  });
+
+  it("resolves with exitCode 1 on spawn error", async () => {
+    const child = createMockChild();
+    mockSpawn.mockReturnValue(child as never);
+
+    const promise = spawnTool("nonexistent", []);
+    child.emit("error", new Error("ENOENT"));
+
+    const result = await promise;
+    expect(result.exitCode).toBe(1);
+  });
+
+  it("handles detached mode — fire and forget", async () => {
+    const child = createMockChild();
+    mockSpawn.mockReturnValue(child as never);
+
+    const result = await spawnTool("node", ["daemon.js"], { detached: true });
+
+    expect(result.exitCode).toBe(0);
+    expect(child.unref).toHaveBeenCalled();
+    expect(mockSpawn).toHaveBeenCalledWith("node", ["daemon.js"], {
+      cwd: undefined,
+      env: undefined,
+      stdio: "ignore",
+      detached: true,
+    });
+  });
+
+  it("defaults exitCode to 1 when close code is null", async () => {
+    const child = createMockChild();
+    mockSpawn.mockReturnValue(child as never);
+
+    const promise = spawnTool("node", ["script.js"]);
+    child.emit("close", null);
+
+    const result = await promise;
+    expect(result.exitCode).toBe(1);
+  });
+
+  it("passes env to spawn options", async () => {
+    const child = createMockChild();
+    mockSpawn.mockReturnValue(child as never);
+
+    const env = { ...process.env, FOO: "bar" };
+    const promise = spawnTool("node", ["script.js"], { env });
+    child.emit("close", 0);
+
+    await promise;
+
+    expect(mockSpawn).toHaveBeenCalledWith("node", ["script.js"], {
+      cwd: undefined,
+      env,
+      stdio: "inherit",
+    });
   });
 });
