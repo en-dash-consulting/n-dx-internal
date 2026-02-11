@@ -7645,29 +7645,35 @@
     {
       "id": "fe440559-d45f-476c-ad98-13dc19616bc8",
       "title": "Address observation issues (1 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 30 files — high-impact module, changes may have wide ripple effects",
       "priority": "high",
-      "source": "sourcevision"
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T14:40:24.799Z",
+      "completedAt": "2026-02-11T14:46:22.838Z"
     },
     {
       "id": "679ff52d-fddf-43ac-bfd7-17bbfdc52ca3",
       "title": "Address pattern issues (1 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Domain layer isolation pattern allows rex and sourcevision to evolve independently while sharing foundation infrastructure",
       "priority": "critical",
-      "source": "sourcevision"
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T14:25:09.487Z",
+      "completedAt": "2026-02-11T14:32:15.555Z"
     },
     {
       "id": "f587dda4-9619-4d8d-8f1e-a01b072f1761",
       "title": "Address relationship issues (1 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Tightly coupled modules: packages/rex/src/cli/commands/chunked-review.ts and packages/rex/tests/unit/cli/commands/chunked-review.test.ts — 370 cross-file calls (unidirectional). Consider extracting shared interface or merging",
       "priority": "critical",
-      "source": "sourcevision"
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T14:32:33.935Z",
+      "completedAt": "2026-02-11T14:39:45.271Z"
     },
     {
       "id": "4a95dd1c-a5a9-47b5-a10d-6a5bba23dd91",
@@ -7678,6 +7684,7 @@
       "priority": "critical",
       "source": "sourcevision",
       "startedAt": "2026-02-11T14:05:49.651Z",
+      "completedAt": "2026-02-11T14:24:15.101Z",
       "children": [
         {
           "id": "302aabf9-0383-407d-86c7-ca5e0d6a664e",
@@ -7740,17 +7747,65 @@
           "startedAt": "2026-02-11T14:17:23.158Z",
           "completedAt": "2026-02-11T14:24:15.025Z"
         }
-      ],
-      "completedAt": "2026-02-11T14:24:15.101Z"
+      ]
     },
     {
       "id": "3df811cc-a1e2-440c-85a5-1c8fe1ac06d6",
       "title": "Address suggestion issues (11 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Console.log statements concentrated in orchestration files (86 occurrences) suggest debugging artifacts that should be replaced with structured logging\n- Implement shared utility extraction: move basename extraction, tree traversal, and data preparation functions from packages/web, packages/rex, and packages/sourcevision into @n-dx/claude-client foundation to eliminate triplication\n- Hub function: walkTree in packages/rex/src/core/tree.ts is called from 20 files — changes here have wide impact, consider if responsibilities can be narrowed\n- 39 potentially unused exports in packages/web/src/viewer/graph/renderer.ts have no incoming calls: constructor, highlightNode, centerOnNode, selectNode, clearSelection (+34 more)\n- 19 potentially unused exports in packages/rex/src/store/notion-adapter.ts have no incoming calls: constructor, path, getStatusGroupMap, invalidateCache, loadDocument (+14 more)\n- 9 potentially unused exports in packages/hench/src/store/adjustments.ts have no incoming calls: loadAdaptiveStateAsync, saveAdaptiveStateAsync, recordAdjustment, updateSettings, lockKey (+4 more)\n- 8 potentially unused exports in packages/web/src/schema/validate.ts have no incoming calls: validateManifest, validateInventory, validateImports, validateZones, validateComponents (+3 more)\n- 7 potentially unused exports in packages/web/src/viewer/components/logos.ts have no incoming calls: NdxLogo, SourceVisionLogo, RexLogo, HenchLogo, NdxLogoPng (+2 more)\n- 5 potentially unused exports in packages/rex/src/schema/v1.ts have no incoming calls: isRequirementCategory, isValidationType, isPriority, isItemLevel, isItemStatus\n- Extract shared tree traversal interface from core/tree.ts to reduce the 20-file dependency fan-out and improve testability\n- Consolidate duplicate tree utilities into @n-dx/claude-client foundation package to eliminate redundancy across web, rex, and sourcevision packages",
       "priority": "high",
-      "source": "sourcevision"
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T14:46:44.663Z",
+      "children": [
+        {
+          "id": "673d1237-b34c-4b3c-b045-725765338c69",
+          "title": "Replace console.log with structured output in orchestration files",
+          "status": "completed",
+          "level": "task",
+          "description": "Migrate orchestration files (cli.js, web.js, ci.js, config.js) from raw console.log/console.error to the structured output utilities from @n-dx/claude-client (info, result from output.ts). This ensures --quiet mode works consistently and provides a single logging abstraction. Note: many console.log calls are legitimate user-facing output, so the migration should use info() for status messages and result() for data output.",
+          "acceptanceCriteria": [
+            "Orchestration files use info() and result() from @n-dx/claude-client output.ts instead of raw console.log",
+            "console.error calls for user-facing errors are preserved (error output should always show)",
+            "--quiet flag suppresses info() messages in orchestration files",
+            "All existing tests continue to pass"
+          ],
+          "priority": "medium",
+          "startedAt": "2026-02-11T14:49:06.326Z",
+          "completedAt": "2026-02-11T14:54:52.839Z"
+        },
+        {
+          "id": "8328aa27-dd94-4380-8294-cbf96b44ec2d",
+          "title": "Remove unused exports from hench adjustments.ts",
+          "status": "completed",
+          "level": "task",
+          "description": "The adaptive workflow infrastructure in packages/hench/src/store/adjustments.ts has 9 exported functions/types with no incoming calls (loadAdaptiveStateAsync, saveAdaptiveStateAsync, recordAdjustment, updateSettings, lockKey, etc.). Remove exports or mark as internal for functions that are not part of the public API and have no callers.",
+          "acceptanceCriteria": [
+            "Unused exports in adjustments.ts are either removed or marked as internal",
+            "No breaking changes to public API",
+            "All tests pass"
+          ],
+          "priority": "medium",
+          "startedAt": "2026-02-11T14:54:54.013Z",
+          "completedAt": "2026-02-11T14:54:54.013Z"
+        },
+        {
+          "id": "670d5834-6f6c-4de8-b020-adc49cbf6be0",
+          "title": "Document false-positive unused export findings and close remaining suggestions",
+          "status": "completed",
+          "level": "task",
+          "description": "Several findings are false positives or already addressed: (1) renderer.ts, logos.ts, validate.ts - browser components/class methods not detected by static import analysis, (2) notion-adapter.ts - class methods are part of AdapterRegistry interface contract, (3) v1.ts type guards - used via public.ts re-exports, (4) walkTree hub function - already decomposed in prior task, (5) shared utility extraction - already consolidated in claude-client, (6) tree traversal consolidation - gateway pattern is architecturally correct per CLAUDE.md. Add @internal JSDoc tags where appropriate to indicate intended audience.",
+          "acceptanceCriteria": [
+            "@internal JSDoc tags added to exports that are implementation details but must remain exported for structural reasons",
+            "No behavioral changes"
+          ],
+          "priority": "low",
+          "startedAt": "2026-02-11T14:54:55.356Z",
+          "completedAt": "2026-02-11T14:54:55.356Z"
+        }
+      ],
+      "completedAt": "2026-02-11T14:54:55.413Z"
     }
   ]
 }

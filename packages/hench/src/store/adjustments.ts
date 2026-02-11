@@ -3,6 +3,10 @@
  * and override state for the adaptive workflow system.
  *
  * State is stored in `.hench/adaptive.json`.
+ *
+ * @internal This module is infrastructure for a planned adaptive workflow
+ * feature. It is not yet integrated into the agent loop. All exports are
+ * internal — do not depend on them from outside this package.
  */
 
 import { join } from "node:path";
@@ -13,8 +17,10 @@ import { DEFAULT_ADAPTIVE_SETTINGS } from "../agent/analysis/adaptive.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
+/** @internal */
 export type AdjustmentDecision = "applied" | "dismissed" | "overridden";
 
+/** @internal */
 export interface AdjustmentRecord {
   /** The adjustment ID (matches WorkflowAdjustment.id). */
   adjustmentId: string;
@@ -36,6 +42,7 @@ export interface AdjustmentRecord {
   timestamp: string;
 }
 
+/** @internal */
 export interface AdaptiveState {
   settings: AdaptiveSettings;
   history: AdjustmentRecord[];
@@ -59,7 +66,7 @@ function defaultState(): AdaptiveState {
 
 // ── Load / Save ──────────────────────────────────────────────────────
 
-/** Load adaptive state from disk (sync). Returns defaults if missing. */
+/** Load adaptive state from disk (sync). Returns defaults if missing. @internal */
 export function loadAdaptiveState(henchDir: string): AdaptiveState {
   const path = filePath(henchDir);
   try {
@@ -72,7 +79,7 @@ export function loadAdaptiveState(henchDir: string): AdaptiveState {
   }
 }
 
-/** Load adaptive state from disk (async). Returns defaults if missing. */
+/** Load adaptive state from disk (async). Returns defaults if missing. @internal */
 export async function loadAdaptiveStateAsync(henchDir: string): Promise<AdaptiveState> {
   const path = filePath(henchDir);
   try {
@@ -85,12 +92,12 @@ export async function loadAdaptiveStateAsync(henchDir: string): Promise<Adaptive
   }
 }
 
-/** Save adaptive state to disk (sync). */
+/** Save adaptive state to disk (sync). @internal */
 export function saveAdaptiveState(henchDir: string, state: AdaptiveState): void {
   writeFileSync(filePath(henchDir), JSON.stringify(state, null, 2) + "\n", "utf-8");
 }
 
-/** Save adaptive state to disk (async). */
+/** Save adaptive state to disk (async). @internal */
 export async function saveAdaptiveStateAsync(
   henchDir: string,
   state: AdaptiveState,
@@ -100,7 +107,7 @@ export async function saveAdaptiveStateAsync(
 
 // ── Operations ───────────────────────────────────────────────────────
 
-/** Record an adjustment decision. */
+/** Record an adjustment decision. @internal */
 export function recordAdjustment(
   henchDir: string,
   record: AdjustmentRecord,
@@ -110,7 +117,7 @@ export function recordAdjustment(
   saveAdaptiveState(henchDir, state);
 }
 
-/** Update adaptive settings. */
+/** Update adaptive settings. @internal */
 export function updateSettings(
   henchDir: string,
   updates: Partial<AdaptiveSettings>,
@@ -121,7 +128,7 @@ export function updateSettings(
   return state.settings;
 }
 
-/** Lock a config key from automatic adjustment. */
+/** Lock a config key from automatic adjustment. @internal */
 export function lockKey(henchDir: string, key: string): void {
   const state = loadAdaptiveState(henchDir);
   if (!state.settings.lockedKeys.includes(key)) {
@@ -130,14 +137,14 @@ export function lockKey(henchDir: string, key: string): void {
   saveAdaptiveState(henchDir, state);
 }
 
-/** Unlock a config key for automatic adjustment. */
+/** Unlock a config key for automatic adjustment. @internal */
 export function unlockKey(henchDir: string, key: string): void {
   const state = loadAdaptiveState(henchDir);
   state.settings.lockedKeys = state.settings.lockedKeys.filter((k) => k !== key);
   saveAdaptiveState(henchDir, state);
 }
 
-/** Set a manual override for a config key. */
+/** Set a manual override for a config key. @internal */
 export function setOverride(henchDir: string, key: string, value: unknown): void {
   const state = loadAdaptiveState(henchDir);
   state.overrides[key] = value;
@@ -147,7 +154,7 @@ export function setOverride(henchDir: string, key: string, value: unknown): void
   saveAdaptiveState(henchDir, state);
 }
 
-/** Remove a manual override. */
+/** Remove a manual override. @internal */
 export function removeOverride(henchDir: string, key: string): void {
   const state = loadAdaptiveState(henchDir);
   delete state.overrides[key];
@@ -155,7 +162,7 @@ export function removeOverride(henchDir: string, key: string): void {
   saveAdaptiveState(henchDir, state);
 }
 
-/** Get summary statistics from adjustment history. */
+/** Get summary statistics from adjustment history. @internal */
 export function getAdjustmentStats(state: AdaptiveState): {
   total: number;
   applied: number;

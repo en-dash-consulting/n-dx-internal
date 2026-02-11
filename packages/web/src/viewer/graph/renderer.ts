@@ -4,6 +4,10 @@
  * Extracted from viewer/views/graph.ts. Owns all DOM manipulation, event
  * handlers, LOD, and physics integration. Uses AbortController for clean
  * teardown of all event listeners.
+ *
+ * @remarks Class methods (highlightNode, centerOnNode, selectNode, etc.) are
+ * exported as part of the GraphRenderer class. Static analysis may flag these
+ * as unused because they are called via class instances, not via static imports.
  */
 
 import {

@@ -366,6 +366,9 @@ export function validateModule(
  *
  * Each error includes the field path and what was expected, making it
  * easy to pinpoint and fix the issue.
+ *
+ * @remarks Exported for external consumers; currently not used within
+ * the n-dx codebase but part of the public validation API.
  */
 export function formatValidationErrors(errors: z.ZodError): string[] {
   return errors.issues.map((issue) => {

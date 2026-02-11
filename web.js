@@ -25,6 +25,17 @@ import { join, resolve } from "path";
 const DEFAULT_PORT = 3117;
 const PID_FILE = ".n-dx-web.pid";
 
+// ── Output helpers ───────────────────────────────────────────────────────────
+// Orchestration files avoid importing from packages (they spawn CLIs instead).
+// These local helpers mirror @n-dx/claude-client's output.ts for consistency.
+
+/** Print informational output. Suppressed in quiet mode. */
+function log(...args) {
+  if (!_quiet) console.log(...args);
+}
+
+let _quiet = false;
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 async function fileExists(path) {
@@ -129,19 +140,19 @@ function isProcessRunning(pid) {
 async function stopServer(dir, label = "n-dx server") {
   const info = await readPidFile(dir);
   if (!info) {
-    console.log("No background server found.");
+    log("No background server found.");
     return true;
   }
 
   if (!isProcessRunning(info.pid)) {
-    console.log("Server process is no longer running (stale PID file).");
+    log("Server process is no longer running (stale PID file).");
     await removePidFile(dir);
     return true;
   }
 
   try {
     process.kill(info.pid, "SIGTERM");
-    console.log(`Stopped ${label} (PID ${info.pid}, port ${info.port}).`);
+    log(`Stopped ${label} (PID ${info.pid}, port ${info.port}).`);
     await removePidFile(dir);
     return true;
   } catch (err) {
@@ -156,10 +167,10 @@ async function stopServer(dir, label = "n-dx server") {
 async function showStatus(dir, port, label = "n-dx server") {
   const info = await readPidFile(dir);
   if (!info) {
-    console.log("No background server recorded.");
+    log("No background server recorded.");
     // Still check if something is on the port
     if (await isPortInUse(port)) {
-      console.log(`Note: Port ${port} is in use by another process.`);
+      log(`Note: Port ${port} is in use by another process.`);
     }
     return;
   }
@@ -168,13 +179,13 @@ async function showStatus(dir, port, label = "n-dx server") {
   const portActive = await isPortInUse(info.port);
 
   if (running && portActive) {
-    console.log(`${label} is running (PID ${info.pid}, port ${info.port}).`);
-    console.log(`  URL: http://localhost:${info.port}`);
-    console.log(`  Started: ${info.startedAt}`);
+    log(`${label} is running (PID ${info.pid}, port ${info.port}).`);
+    log(`  URL: http://localhost:${info.port}`);
+    log(`  Started: ${info.startedAt}`);
   } else if (running) {
-    console.log(`Server process is running (PID ${info.pid}) but port ${info.port} is not responding.`);
+    log(`Server process is running (PID ${info.pid}) but port ${info.port} is not responding.`);
   } else {
-    console.log("Server process is no longer running (stale PID file).");
+    log("Server process is no longer running (stale PID file).");
     await removePidFile(dir);
   }
 }
@@ -207,11 +218,15 @@ export async function runWeb(dir, rest, { run, tools, __dir, commandName = "web"
       } else {
         flags[arg.slice(2)] = true;
       }
+    } else if (arg === "-q") {
+      flags.quiet = true;
     } else if (!arg.startsWith("-") && arg !== dir) {
       // Non-flag, non-dir arg is a subcommand
       if (!subcommand) subcommand = arg;
     }
   }
+
+  _quiet = !!(flags.quiet);
 
   // Resolve port: --port flag > .n-dx.json config > default
   let port = DEFAULT_PORT;
@@ -283,9 +298,9 @@ export async function runWeb(dir, rest, { run, tools, __dir, commandName = "web"
     child.unref();
 
     await writePidFile(absDir, child.pid, port);
-    console.log(`${label} started in background (PID ${child.pid}).`);
-    console.log(`  URL: http://localhost:${port}`);
-    console.log(`Use '${stopCmd}' to stop it.`);
+    log(`${label} started in background (PID ${child.pid}).`);
+    log(`  URL: http://localhost:${port}`);
+    log(`Use '${stopCmd}' to stop it.`);
     return 0;
   }
 

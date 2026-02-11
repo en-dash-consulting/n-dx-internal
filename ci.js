@@ -96,7 +96,7 @@ export async function runCI(dir, flags, { run, tools }) {
     info("  ✓ sourcevision analyze");
   } else {
     info(`  ✗ sourcevision analyze`);
-    if (!isJSON) printIndented(svAnalyze.stderr || svAnalyze.stdout);
+    if (!isJSON) printIndented(svAnalyze.stderr || svAnalyze.stdout, info);
   }
 
   // ── Step 2: sourcevision validate ───────────────────────────────────────
@@ -117,7 +117,7 @@ export async function runCI(dir, flags, { run, tools }) {
     info("  ✓ sourcevision validate");
   } else {
     info(`  ✗ sourcevision validate`);
-    if (!isJSON) printIndented(svValidate.stdout || svValidate.stderr);
+    if (!isJSON) printIndented(svValidate.stdout || svValidate.stderr, info);
   }
 
   // ── Step 3: rex validate ────────────────────────────────────────────────
@@ -160,9 +160,9 @@ export async function runCI(dir, flags, { run, tools }) {
     if (!isJSON) {
       for (const check of validateChecks) {
         if (!check.pass && check.severity !== "warn") {
-          console.log(`    ✗ ${check.name}`);
+          info(`    ✗ ${check.name}`);
           for (const err of check.errors) {
-            console.log(`      ${err}`);
+            info(`      ${err}`);
           }
         }
       }
@@ -261,9 +261,9 @@ function trimOutput(str) {
 }
 
 /** Print multiline output with indentation. */
-function printIndented(str) {
+function printIndented(str, logFn) {
   if (!str) return;
   for (const line of str.trim().split("\n").slice(0, 10)) {
-    console.log(`    ${line}`);
+    logFn(`    ${line}`);
   }
 }

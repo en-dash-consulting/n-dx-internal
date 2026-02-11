@@ -345,12 +345,12 @@ function flattenConfig(obj, prefix = "") {
   return entries;
 }
 
-function printSection(label, config) {
-  console.log(`\n  ${label}`);
+function printSection(label, config, logFn = console.log) {
+  logFn(`\n  ${label}`);
   const entries = flattenConfig(config);
   const maxPath = Math.max(...entries.map((e) => e.path.length));
   for (const { path, value } of entries) {
-    console.log(`    ${path.padEnd(maxPath + 2)}${formatValue(value)}`);
+    logFn(`    ${path.padEnd(maxPath + 2)}${formatValue(value)}`);
   }
 }
 
