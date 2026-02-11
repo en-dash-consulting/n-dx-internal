@@ -455,6 +455,111 @@ describe("tightly coupled modules", () => {
     expect(couplingFindings[0].type).toBe("relationship");
   });
 
+  it("downgrades unidirectional coupling to info severity", () => {
+    // A route file making many calls to its companion types module is normal —
+    // this is a consumer-provider relationship, not tangled architecture.
+    const functions: FunctionNode[] = [];
+    const edges: CallEdge[] = [];
+
+    // routes-rex.ts calls many functions in types.ts (unidirectional)
+    for (let i = 0; i < 40; i++) {
+      functions.push(makeFn({ file: "src/server/routes-rex.ts", name: `handler${i}` }));
+      functions.push(makeFn({ file: "src/server/types.ts", name: `type${i}` }));
+      edges.push(makeEdge({
+        callerFile: "src/server/routes-rex.ts",
+        caller: `handler${i}`,
+        callee: `type${i}`,
+        calleeFile: "src/server/types.ts",
+      }));
+    }
+    // No calls from types.ts back to routes-rex.ts → purely unidirectional
+
+    const cg = makeCallGraph(functions, edges);
+    const findings = generateCallGraphFindings(cg);
+
+    const couplingFindings = findings.filter(
+      (f) => f.type === "relationship" && f.text.includes("Tightly coupled"),
+    );
+    expect(couplingFindings.length).toBeGreaterThanOrEqual(1);
+    // Unidirectional coupling should be info, not warning
+    expect(couplingFindings[0].severity).toBe("info");
+    expect(couplingFindings[0].text).toContain("unidirectional");
+  });
+
+  it("flags bidirectional coupling between two implementation files at warning", () => {
+    // Two large files calling each other is a real architectural concern.
+    const functions: FunctionNode[] = [];
+    const edges: CallEdge[] = [];
+
+    for (let i = 0; i < 10; i++) {
+      functions.push(makeFn({ file: "src/engine.ts", name: `engine${i}` }));
+      functions.push(makeFn({ file: "src/renderer.ts", name: `render${i}` }));
+    }
+
+    // engine→renderer: 20 calls
+    for (let i = 0; i < 10; i++) {
+      for (const callee of [`render${i}`, `render${(i + 1) % 10}`]) {
+        edges.push(makeEdge({
+          callerFile: "src/engine.ts",
+          caller: `engine${i}`,
+          callee,
+          calleeFile: "src/renderer.ts",
+        }));
+      }
+    }
+    // renderer→engine: 15 calls (bidirectional!)
+    for (let i = 0; i < 5; i++) {
+      for (const callee of [`engine${i}`, `engine${i + 5}`, `engine${(i + 3) % 10}`]) {
+        edges.push(makeEdge({
+          callerFile: "src/renderer.ts",
+          caller: `render${i}`,
+          callee,
+          calleeFile: "src/engine.ts",
+        }));
+      }
+    }
+
+    const cg = makeCallGraph(functions, edges);
+    const findings = generateCallGraphFindings(cg);
+
+    const couplingFindings = findings.filter(
+      (f) => f.type === "relationship" && f.text.includes("Tightly coupled"),
+    );
+    expect(couplingFindings.length).toBeGreaterThanOrEqual(1);
+    expect(couplingFindings[0].severity).toBe("warning");
+    expect(couplingFindings[0].text).toContain("bidirectional");
+  });
+
+  it("flags extreme bidirectional coupling at critical severity", () => {
+    const functions: FunctionNode[] = [];
+    const edges: CallEdge[] = [];
+
+    // Create massive bidirectional coupling > 3x threshold (> 90 total)
+    for (let i = 0; i < 50; i++) {
+      functions.push(makeFn({ file: "src/a.ts", name: `a${i}` }));
+      functions.push(makeFn({ file: "src/b.ts", name: `b${i}` }));
+      // a→b
+      edges.push(makeEdge({
+        callerFile: "src/a.ts", caller: `a${i}`,
+        callee: `b${i}`, calleeFile: "src/b.ts",
+      }));
+      // b→a
+      edges.push(makeEdge({
+        callerFile: "src/b.ts", caller: `b${i}`,
+        callee: `a${i}`, calleeFile: "src/a.ts",
+      }));
+    }
+
+    const cg = makeCallGraph(functions, edges);
+    const findings = generateCallGraphFindings(cg);
+
+    const couplingFindings = findings.filter(
+      (f) => f.type === "relationship" && f.text.includes("Tightly coupled"),
+    );
+    expect(couplingFindings.length).toBeGreaterThanOrEqual(1);
+    expect(couplingFindings[0].severity).toBe("critical");
+  });
+
   it("does not flag loosely connected file pairs", () => {
     const functions = [
       makeFn({ file: "src/a.ts", name: "a1" }),
@@ -905,6 +1010,162 @@ describe("refactoring suggestions", () => {
       (f) => f.text.includes("src/hotspot.ts")
     );
     expect(hotspotFindings.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("downgrades fan-in for utility modules to info severity", () => {
+    // tree.ts in src/core/ with 15 caller files should be info, not warning.
+    // For non-utility files the warning threshold is 10 (5 * 2); for utility
+    // modules it is 20 (5 * 4). 15 callers exceeds the base threshold but is
+    // below the utility warning threshold.
+    const functions: FunctionNode[] = [];
+    const edges: CallEdge[] = [];
+
+    functions.push(makeFn({ file: "src/core/tree.ts", name: "walkTree", isExported: true }));
+
+    for (let i = 0; i < 15; i++) {
+      const callerFile = `src/consumers/consumer${i}.ts`;
+      functions.push(makeFn({ file: callerFile, name: `use${i}` }));
+      edges.push(makeEdge({
+        callerFile,
+        caller: `use${i}`,
+        callee: "walkTree",
+        calleeFile: "src/core/tree.ts",
+      }));
+    }
+
+    const cg = makeCallGraph(functions, edges);
+    const findings = generateCallGraphFindings(cg);
+
+    // Fan-in hotspot finding should exist but at info severity
+    const hotspotFindings = findings.filter(
+      (f) => f.type === "observation" && f.text.includes("src/core/tree.ts"),
+    );
+    expect(hotspotFindings.length).toBeGreaterThanOrEqual(1);
+    expect(hotspotFindings[0].severity).toBe("info");
+    expect(hotspotFindings[0].text).toContain("utility module");
+  });
+
+  it("flags non-utility files at warning for the same fan-in count", () => {
+    // Same 15 callers, but the file is NOT in a utility directory.
+    // The base warning threshold is 10 (5 * 2), so 15 callers → warning.
+    const functions: FunctionNode[] = [];
+    const edges: CallEdge[] = [];
+
+    functions.push(makeFn({ file: "src/api/router.ts", name: "dispatch", isExported: true }));
+
+    for (let i = 0; i < 15; i++) {
+      const callerFile = `src/consumers/consumer${i}.ts`;
+      functions.push(makeFn({ file: callerFile, name: `use${i}` }));
+      edges.push(makeEdge({
+        callerFile,
+        caller: `use${i}`,
+        callee: "dispatch",
+        calleeFile: "src/api/router.ts",
+      }));
+    }
+
+    const cg = makeCallGraph(functions, edges);
+    const findings = generateCallGraphFindings(cg);
+
+    const hotspotFindings = findings.filter(
+      (f) => f.type === "observation" && f.text.includes("src/api/router.ts"),
+    );
+    expect(hotspotFindings.length).toBeGreaterThanOrEqual(1);
+    expect(hotspotFindings[0].severity).toBe("warning");
+    expect(hotspotFindings[0].text).not.toContain("utility module");
+  });
+
+  it("downgrades hub function in utility module to info severity", () => {
+    // walkTree in src/utils/tree.ts called from 15 files should be info.
+    // For non-utility files the warning threshold is 12 (6 * 2); for utility
+    // modules it is 24 (6 * 4). 15 callers is below utility threshold.
+    const functions: FunctionNode[] = [];
+    const edges: CallEdge[] = [];
+
+    functions.push(makeFn({ file: "src/utils/tree.ts", name: "walkTree", isExported: true }));
+
+    for (let i = 0; i < 15; i++) {
+      const callerFile = `src/modules/mod${i}.ts`;
+      functions.push(makeFn({ file: callerFile, name: `consume${i}` }));
+      edges.push(makeEdge({
+        callerFile,
+        caller: `consume${i}`,
+        callee: "walkTree",
+        calleeFile: "src/utils/tree.ts",
+      }));
+    }
+
+    const cg = makeCallGraph(functions, edges);
+    const findings = generateCallGraphFindings(cg);
+
+    const hubFindings = findings.filter(
+      (f) => f.type === "suggestion" && f.text.includes("walkTree"),
+    );
+    expect(hubFindings.length).toBeGreaterThanOrEqual(1);
+    expect(hubFindings[0].severity).toBe("info");
+    expect(hubFindings[0].text).toContain("utility module");
+  });
+
+  it("flags hub function in non-utility module at warning for same caller count", () => {
+    // Same 15 callers, but the file is in src/api/ (not a utility directory).
+    // The base warning threshold is 12 (6 * 2), so 15 callers → warning.
+    const functions: FunctionNode[] = [];
+    const edges: CallEdge[] = [];
+
+    functions.push(makeFn({ file: "src/api/handler.ts", name: "dispatch", isExported: true }));
+
+    for (let i = 0; i < 15; i++) {
+      const callerFile = `src/modules/mod${i}.ts`;
+      functions.push(makeFn({ file: callerFile, name: `consume${i}` }));
+      edges.push(makeEdge({
+        callerFile,
+        caller: `consume${i}`,
+        callee: "dispatch",
+        calleeFile: "src/api/handler.ts",
+      }));
+    }
+
+    const cg = makeCallGraph(functions, edges);
+    const findings = generateCallGraphFindings(cg);
+
+    const hubFindings = findings.filter(
+      (f) => f.type === "suggestion" && f.text.includes("dispatch"),
+    );
+    expect(hubFindings.length).toBeGreaterThanOrEqual(1);
+    expect(hubFindings[0].severity).toBe("warning");
+    expect(hubFindings[0].text).not.toContain("utility module");
+  });
+
+  it("applies utility heuristic to /helpers/ and /lib/ paths", () => {
+    // Verify that /helpers/ and /lib/ directories are also recognized.
+    for (const dir of ["helpers", "lib"]) {
+      const file = `src/${dir}/format.ts`;
+      const functions: FunctionNode[] = [];
+      const edges: CallEdge[] = [];
+
+      functions.push(makeFn({ file, name: "format", isExported: true }));
+
+      for (let i = 0; i < 15; i++) {
+        const callerFile = `src/views/view${i}.ts`;
+        functions.push(makeFn({ file: callerFile, name: `render${i}` }));
+        edges.push(makeEdge({
+          callerFile,
+          caller: `render${i}`,
+          callee: "format",
+          calleeFile: file,
+        }));
+      }
+
+      const cg = makeCallGraph(functions, edges);
+      const findings = generateCallGraphFindings(cg);
+
+      const hotspotFindings = findings.filter(
+        (f) => f.type === "observation" && f.text.includes(file),
+      );
+      expect(hotspotFindings.length).toBeGreaterThanOrEqual(1);
+      expect(hotspotFindings[0].severity).toBe("info");
+      expect(hotspotFindings[0].text).toContain("utility module");
+    }
   });
 });
 

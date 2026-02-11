@@ -67,6 +67,19 @@ const BUILTIN_METHOD_NAMES = new Set([
   "createElement", "getElementById", "preventDefault", "stopPropagation",
 ]);
 
+/** Path segments that identify utility/infrastructure modules where high fan-in is expected. */
+const UTILITY_PATH_SEGMENTS = ["/core/", "/utils/", "/helpers/", "/lib/"];
+
+/** Basename patterns that identify types/constants files where unidirectional coupling is expected. */
+const TYPES_FILE_PATTERNS = [
+  /(?:^|\/)types\.[tj]sx?$/,
+  /(?:^|\/)constants\.[tj]sx?$/,
+  /(?:^|\/)enums\.[tj]sx?$/,
+  /\.types\.[tj]sx?$/,
+  /\.constants\.[tj]sx?$/,
+  /\.d\.ts$/,
+];
+
 /** Files where uncalled exports are expected (entry points, configs, etc.). */
 const ENTRY_POINT_PATTERNS = [
   /(?:^|\/)index\.[tj]sx?$/,
@@ -215,17 +228,27 @@ function detectTightlyCoupledModules(edges: CallEdge[], testFiles: Set<string>):
       ? `bidirectional (${pair.ab}↔${pair.ba})`
       : `unidirectional`;
 
-    // Critical only for bidirectional coupling — unidirectional high-call-count
-    // pairs (e.g., route handler → utility module) are normal consumer-provider
-    // relationships, not architectural problems requiring immediate attention.
-    const isCritical = isBidirectional && total > TIGHT_COUPLING_THRESHOLD * 3;
+    // Determine severity based on coupling direction and target file type:
+    // - Bidirectional coupling above 3x threshold → critical (tangled modules)
+    // - Bidirectional coupling → warning (should investigate)
+    // - Unidirectional coupling → info (normal consumer-provider relationship)
+    //   A 3000-line route file making 129 calls to its companion types module
+    //   is expected, not problematic.
+    let severity: Finding["severity"];
+    if (isBidirectional && total > TIGHT_COUPLING_THRESHOLD * 3) {
+      severity = "critical";
+    } else if (isBidirectional) {
+      severity = "warning";
+    } else {
+      severity = "info";
+    }
 
     findings.push({
       type: "relationship",
       pass: 0,
       scope: "global",
       text: `Tightly coupled modules: ${pair.a} and ${pair.b} — ${total} cross-file calls (${direction}). Consider extracting shared interface or merging`,
-      severity: isCritical ? "critical" : "warning",
+      severity,
       related: [pair.a, pair.b],
     });
   }
@@ -414,11 +437,24 @@ function isEntryPointFile(filePath: string): boolean {
   return ENTRY_POINT_PATTERNS.some((p) => p.test(filePath));
 }
 
+/** Check if a file lives in a utility/infrastructure directory. */
+function isUtilityModule(filePath: string): boolean {
+  return UTILITY_PATH_SEGMENTS.some((seg) => filePath.includes(seg));
+}
+
+/** Check if a file is a types/constants module (companion helper, not logic). */
+function isTypesFile(filePath: string): boolean {
+  return TYPES_FILE_PATTERNS.some((p) => p.test(filePath));
+}
+
 // ── Hub functions ───────────────────────────────────────────────────────────
 
 /**
  * Identify functions called from many different files.
  * These are high-impact functions where changes ripple widely.
+ *
+ * Functions in utility modules (/core/, /utils/, /helpers/, /lib/) get a 2x
+ * higher warning threshold — hub status is expected for foundational utilities.
  */
 function detectHubFunctions(edges: CallEdge[]): Finding[] {
   // Count unique caller files per callee
@@ -444,12 +480,22 @@ function detectHubFunctions(edges: CallEdge[]): Finding[] {
     .sort((a, b) => b.callerFiles.size - a.callerFiles.size);
 
   for (const { name, file, callerFiles } of sorted.slice(0, 5)) {
+    const isUtility = isUtilityModule(file);
+    // Utility modules get a 2x higher warning threshold since being a hub
+    // is expected for foundational functions like walkTree, resolve, etc.
+    const warningThreshold = isUtility
+      ? HUB_FUNCTION_FILE_THRESHOLD * 4
+      : HUB_FUNCTION_FILE_THRESHOLD * 2;
+
+    const severity: Finding["severity"] = callerFiles.size >= warningThreshold ? "warning" : "info";
+    const utilityNote = isUtility ? " (utility module — high fan-in expected)" : "";
+
     findings.push({
       type: "suggestion",
       pass: 0,
       scope: "global",
-      text: `Hub function: ${name} in ${file} is called from ${callerFiles.size} files — changes here have wide impact, consider if responsibilities can be narrowed`,
-      severity: callerFiles.size >= HUB_FUNCTION_FILE_THRESHOLD * 2 ? "warning" : "info",
+      text: `Hub function: ${name} in ${file} is called from ${callerFiles.size} files${utilityNote} — changes here have wide impact, consider if responsibilities can be narrowed`,
+      severity,
       related: [file, ...Array.from(callerFiles).sort().slice(0, 3)],
     });
   }
@@ -462,6 +508,9 @@ function detectHubFunctions(edges: CallEdge[]): Finding[] {
 /**
  * Identify files that receive calls from many different files (fan-in hotspots).
  * These are architectural bottlenecks where many modules depend on one file.
+ *
+ * Utility modules (files in /core/, /utils/, /helpers/, /lib/) get a 2x higher
+ * warning threshold — high fan-in is expected and correct for foundational code.
  */
 function detectHotspotFiles(edges: CallEdge[]): Finding[] {
   // Count unique caller files per callee file
@@ -482,12 +531,22 @@ function detectHotspotFiles(edges: CallEdge[]): Finding[] {
     .sort((a, b) => b[1].size - a[1].size);
 
   for (const [file, callers] of sorted.slice(0, 5)) {
+    const isUtility = isUtilityModule(file);
+    // Utility modules get a 2x higher warning threshold since high fan-in
+    // is expected for foundational code like tree.ts, walkTree, etc.
+    const warningThreshold = isUtility
+      ? HOTSPOT_FILE_THRESHOLD * 4
+      : HOTSPOT_FILE_THRESHOLD * 2;
+
+    const severity: Finding["severity"] = callers.size >= warningThreshold ? "warning" : "info";
+    const utilityNote = isUtility ? " (utility module — high fan-in expected)" : "";
+
     findings.push({
       type: "observation",
       pass: 0,
       scope: "global",
-      text: `Fan-in hotspot: ${file} receives calls from ${callers.size} files — high-impact module, changes may have wide ripple effects`,
-      severity: callers.size >= HOTSPOT_FILE_THRESHOLD * 2 ? "warning" : "info",
+      text: `Fan-in hotspot: ${file} receives calls from ${callers.size} files${utilityNote} — high-impact module, changes may have wide ripple effects`,
+      severity,
       related: [file, ...Array.from(callers).sort().slice(0, 3)],
     });
   }
