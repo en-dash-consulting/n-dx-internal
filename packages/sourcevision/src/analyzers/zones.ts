@@ -637,91 +637,61 @@ export function generateStructuralInsights(
   return { zoneInsights, globalInsights };
 }
 
-// ── Main entry point ────────────────────────────────────────────────────────
+// ── Helper: merge same-ID communities ────────────────────────────────────────
 
-export async function analyzeZones(
-  inventory: Inventory,
-  imports: Imports,
-  options?: {
-    enrich?: boolean;
-    previousZones?: Zones;
-    perZone?: boolean;
-    subAnalyses?: SubAnalysis[];
-    /** Called when structure change is detected, before AI enrichment begins. */
-    onReset?: (fromPass: number, toPass: number) => void;
-  }
-): Promise<AnalyzeZonesResult> {
-  const enrich = options?.enrich ?? true;
-  const perZone = options?.perZone ?? false;
-  const previousZones = options?.previousZones;
-  const subAnalyses = options?.subAnalyses ?? [];
-
-  // ── Exclude sub-analyzed files from Louvain ──
-  // Files already grouped by sub-analyses shouldn't be re-analyzed at root level.
-  // Use prefix matching (not explicit file lists) because sub-analyses may be stale.
-  const subAnalyzedPrefixes = getSubAnalyzedPrefixes(subAnalyses);
-  const filteredEdges = subAnalyzedPrefixes.length > 0
-    ? imports.edges.filter(
-        (e) =>
-          !isSubAnalyzedFile(e.from, subAnalyzedPrefixes) &&
-          !isSubAnalyzedFile(e.to, subAnalyzedPrefixes)
-      )
-    : imports.edges;
-
-  const graph = buildUndirectedGraph(filteredEdges);
-
-  // Build set of test files — test→source edges inflate coupling metrics,
-  // so we exclude test files from cohesion/coupling metric computation
-  // while keeping them as zone members.
-  const testFiles = new Set<string>();
-  for (const f of inventory.files) {
-    if (f.role === "test") testFiles.add(f.path);
+/**
+ * Merge Louvain communities that derive the same zone ID.
+ * Prevents a single package from fragmenting into multiple root-level zones
+ * (e.g., "hench", "hench-2", "hench-3"). After merging, the combined zone
+ * may be subdivided into properly named sub-zones.
+ */
+function mergeSameIdCommunities(
+  community: Map<string, string>
+): void {
+  const tempMembers = new Map<string, string[]>();
+  for (const [node, comm] of community) {
+    let list = tempMembers.get(comm);
+    if (!list) { list = []; tempMembers.set(comm, list); }
+    list.push(node);
   }
 
-  // Run Louvain
-  let community = louvainPhase1(graph);
-  community = mergeBidirectionalCoupling(community, graph);
-  community = mergeSmallCommunities(community, graph);
-  community = capZoneCount(community, graph, 15);
+  const idToCommunities = new Map<string, string[]>();
+  for (const [comm, members] of tempMembers) {
+    const id = deriveZoneId(members);
+    let list = idToCommunities.get(id);
+    if (!list) { list = []; idToCommunities.set(id, list); }
+    list.push(comm);
+  }
 
-  // Merge communities that derive the same zone ID.
-  // Prevents a single package from fragmenting into multiple root-level zones
-  // (e.g., "hench", "hench-2", "hench-3"). After merging, the combined zone
-  // may be subdivided into properly named sub-zones.
-  {
-    const tempMembers = new Map<string, string[]>();
-    for (const [node, comm] of community) {
-      let list = tempMembers.get(comm);
-      if (!list) { list = []; tempMembers.set(comm, list); }
-      list.push(node);
-    }
-
-    const idToCommunities = new Map<string, string[]>();
-    for (const [comm, members] of tempMembers) {
-      const id = deriveZoneId(members);
-      let list = idToCommunities.get(id);
-      if (!list) { list = []; idToCommunities.set(id, list); }
-      list.push(comm);
-    }
-
-    for (const [, comms] of idToCommunities) {
-      if (comms.length <= 1) continue;
-      // Merge smaller communities into the largest one
-      comms.sort((a, b) => {
-        const sizeA = tempMembers.get(a)?.length ?? 0;
-        const sizeB = tempMembers.get(b)?.length ?? 0;
-        return sizeB - sizeA || a.localeCompare(b);
-      });
-      const target = comms[0];
-      for (let i = 1; i < comms.length; i++) {
-        for (const node of tempMembers.get(comms[i])!) {
-          community.set(node, target);
-        }
+  for (const [, comms] of idToCommunities) {
+    if (comms.length <= 1) continue;
+    comms.sort((a, b) => {
+      const sizeA = tempMembers.get(a)?.length ?? 0;
+      const sizeB = tempMembers.get(b)?.length ?? 0;
+      return sizeB - sizeA || a.localeCompare(b);
+    });
+    const target = comms[0];
+    for (let i = 1; i < comms.length; i++) {
+      for (const node of tempMembers.get(comms[i])!) {
+        community.set(node, target);
       }
     }
   }
+}
 
-  // Gather community → members
+// ── Helper: build zones from communities ─────────────────────────────────────
+
+/**
+ * Convert Louvain community assignments into Zone objects with metrics.
+ * Computes entry points, cohesion/coupling, and recursive subdivision.
+ */
+function buildZonesFromCommunities(
+  community: Map<string, string>,
+  graph: Map<string, Map<string, number>>,
+  imports: Imports,
+  inventory: Inventory,
+  testFiles: Set<string>
+): Zone[] {
   const communityMembers = new Map<string, string[]>();
   for (const [node, comm] of community) {
     let list = communityMembers.get(comm);
@@ -732,7 +702,6 @@ export async function analyzeZones(
     list.push(node);
   }
 
-  // Build zones with algorithmic IDs
   const usedIds = new Set<string>();
   const zones: Zone[] = [];
 
@@ -749,7 +718,6 @@ export async function analyzeZones(
     }
     usedIds.add(id);
 
-    // Entry points: files imported from outside this zone
     const memberSet = new Set(members);
     const entryPoints: string[] = [];
     for (const edge of imports.edges) {
@@ -761,15 +729,9 @@ export async function analyzeZones(
     }
 
     // Cohesion / coupling metrics from the import graph.
-    //
-    // Cohesion = internalEdges / totalEdges — measures how self-contained
-    //   the zone is. 1.0 means every import stays within the zone.
-    // Coupling = 1 - cohesion — measures external dependency. 0.0 means
-    //   no imports cross the zone boundary.
-    //
-    // Test files are excluded: test→source edges represent test dependencies,
+    // Test files excluded: test→source edges represent test dependencies,
     // not architectural coupling, and would inflate coupling metrics.
-    let internalEdges = 0;
+    let internalEdgeCount = 0;
     let totalEdgesFromZone = 0;
     for (const node of members) {
       if (testFiles.has(node)) continue;
@@ -777,14 +739,14 @@ export async function analyzeZones(
       if (!neighbors) continue;
       for (const [neighbor] of neighbors) {
         totalEdgesFromZone++;
-        if (memberSet.has(neighbor)) internalEdges++;
+        if (memberSet.has(neighbor)) internalEdgeCount++;
       }
     }
     const cohesion =
-      totalEdgesFromZone > 0 ? internalEdges / totalEdgesFromZone : 1;
+      totalEdgesFromZone > 0 ? internalEdgeCount / totalEdgesFromZone : 1;
     const coupling =
       totalEdgesFromZone > 0
-        ? (totalEdgesFromZone - internalEdges) / totalEdgesFromZone
+        ? (totalEdgesFromZone - internalEdgeCount) / totalEdgesFromZone
         : 0;
 
     const zone: Zone = {
@@ -797,7 +759,6 @@ export async function analyzeZones(
       coupling: Math.round(coupling * 100) / 100,
     };
 
-    // Recursively subdivide large zones
     const subZones = subdivideZone(zone, imports, inventory);
     if (subZones.length > 0) {
       zone.subZones = subZones;
@@ -806,55 +767,77 @@ export async function analyzeZones(
     zones.push(zone);
   }
 
-  // ── Assign unzoned files by directory proximity ──
-  // Exclude both zoned files and sub-analyzed files (by prefix)
+  return zones;
+}
 
+// ── Helper: collect unzoned files ────────────────────────────────────────────
+
+/** Gather inventory files not assigned to any zone or sub-analysis. */
+function collectUnzonedFiles(
+  zones: Zone[],
+  inventory: Inventory,
+  subAnalyzedPrefixes: string[]
+): string[] {
   const zonedFiles = new Set<string>();
   for (const zone of zones) {
     for (const f of zone.files) zonedFiles.add(f);
   }
-  const initialUnzoned: string[] = [];
+  const unzoned: string[] = [];
   for (const entry of inventory.files) {
-    // Skip files that are in zones OR covered by sub-analyses
     if (
       !zonedFiles.has(entry.path) &&
       !isSubAnalyzedFile(entry.path, subAnalyzedPrefixes)
     ) {
-      initialUnzoned.push(entry.path);
+      unzoned.push(entry.path);
     }
   }
+  return unzoned;
+}
 
-  const { zones: expandedZones, remaining: unzoned } = assignByProximity(
-    zones,
-    initialUnzoned
-  );
+// ── Helper: compute content hashes ───────────────────────────────────────────
 
-  // ── Structure hash & change detection ──
-
-  const structureHash = computeStructureHash(expandedZones);
-  const structureChanged = previousZones?.structureHash !== structureHash;
-  const validPrevious = structureChanged ? undefined : previousZones;
-
-  // Notify caller of pass reset before AI enrichment begins
-  if (structureChanged && previousZones?.enrichmentPass && options?.onReset) {
-    options.onReset(previousZones.enrichmentPass, 1);
-  }
-
-  // ── Content hashes for stale-finding detection ──
-  // Build file → content hash map from inventory (hashes already computed during inventory phase)
+/** Compute per-zone and global content hashes for stale-finding detection. */
+function computeContentHashes(
+  zones: Zone[],
+  inventory: Inventory
+): { zoneContentHashes: Record<string, string>; globalContentHash: string } {
   const fileHashes = new Map<string, string>();
   for (const f of inventory.files) {
     fileHashes.set(f.path, f.hash);
   }
-  // Compute per-zone content hashes
   const zoneContentHashes: Record<string, string> = {};
-  for (const zone of expandedZones) {
+  for (const zone of zones) {
     zoneContentHashes[zone.id] = computeZoneContentHash(zone, fileHashes);
   }
   const globalContentHash = computeGlobalContentHash(zoneContentHashes);
+  return { zoneContentHashes, globalContentHash };
+}
 
-  // ── AI enrichment or preserve previous ──
+// ── Helper: AI enrichment ────────────────────────────────────────────────────
 
+/** Result of enrichment or preservation of previous zone data. */
+interface EnrichmentResult {
+  finalZones: Zone[];
+  aiZoneInsights: Map<string, string[]>;
+  aiGlobalInsights: string[];
+  aiFindings: Finding[];
+  enrichmentPass: number;
+  metaUpdatedFindings: Finding[] | null;
+  enrichTokenUsage?: AnalyzeTokenUsage;
+}
+
+/**
+ * Run AI enrichment (per-zone or batch) or preserve previous zone names
+ * when running in fast mode with unchanged structure.
+ */
+async function applyEnrichment(
+  expandedZones: Zone[],
+  imports: Imports,
+  inventory: Inventory,
+  validPrevious: Zones | undefined,
+  enrich: boolean,
+  perZone: boolean
+): Promise<EnrichmentResult> {
   let finalZones = expandedZones;
   let aiZoneInsights = new Map<string, string[]>();
   let aiGlobalInsights: string[] = [];
@@ -884,13 +867,8 @@ export async function analyzeZones(
     }
 
     if (perZone) {
-      // Per-zone enrichment mode: enrich each zone individually
       const result = await enrichZonesPerZone(
-        expandedZones,
-        preCrossings,
-        inventory,
-        imports,
-        validPrevious
+        expandedZones, preCrossings, inventory, imports, validPrevious
       );
       finalZones = result.zones;
       aiZoneInsights = result.newZoneInsights;
@@ -899,13 +877,8 @@ export async function analyzeZones(
       enrichmentPass = result.pass;
       enrichTokenUsage = result.tokenUsage;
     } else {
-      // Batch mode (default): enrich zones in batches
       const result = await enrichZonesWithAI(
-        expandedZones,
-        preCrossings,
-        inventory,
-        imports,
-        validPrevious
+        expandedZones, preCrossings, inventory, imports, validPrevious
       );
       finalZones = result.zones;
       aiZoneInsights = result.newZoneInsights;
@@ -913,7 +886,6 @@ export async function analyzeZones(
       aiFindings = result.newFindings;
       enrichmentPass = result.pass;
       enrichTokenUsage = result.tokenUsage;
-      // Meta-evaluation may return updated findings with reassessed severities
       if (result._updatedFindings) {
         metaUpdatedFindings = result._updatedFindings;
       }
@@ -927,12 +899,7 @@ export async function analyzeZones(
           p.files.length > 0 && p.files.some((f) => zone.files.includes(f))
       );
       if (prev) {
-        return {
-          ...zone,
-          id: prev.id,
-          name: prev.name,
-          description: prev.description,
-        };
+        return { ...zone, id: prev.id, name: prev.name, description: prev.description };
       }
       return zone;
     });
@@ -951,29 +918,30 @@ export async function analyzeZones(
     enrichmentPass = validPrevious.enrichmentPass ?? 0;
   }
 
-  // ── Promote zones from sub-analyses ──
-  // Sub-analysis zones are added with prefixed IDs (e.g., "packages-rex:api")
-  // and marked with childId + depth fields
+  return {
+    finalZones,
+    aiZoneInsights,
+    aiGlobalInsights,
+    aiFindings,
+    enrichmentPass,
+    metaUpdatedFindings,
+    enrichTokenUsage,
+  };
+}
 
-  const promotedZones: Zone[] = [];
-  const promotedCrossings: ZoneCrossing[] = [];
+// ── Helper: build crossings ──────────────────────────────────────────────────
 
-  for (const sub of subAnalyses) {
-    promotedZones.push(...promoteZones(sub));
-    promotedCrossings.push(...promoteCrossings(sub));
-  }
-
-  // Combine root zones with promoted zones
-  const allZones = [...finalZones, ...promotedZones];
-
-  // ── Build final crossings with enriched zone IDs ──
-
+/** Build zone crossings from import edges and promoted sub-analysis crossings. */
+function buildCrossings(
+  allZones: Zone[],
+  imports: Imports,
+  promotedCrossings: ZoneCrossing[]
+): ZoneCrossing[] {
   const fileToZone = new Map<string, string>();
   for (const zone of allZones) {
     for (const file of zone.files) fileToZone.set(file, zone.id);
   }
 
-  // Build crossings from all import edges (root + cross-boundary)
   const crossings: ZoneCrossing[] = [...promotedCrossings];
   for (const edge of imports.edges) {
     const fromZone = fileToZone.get(edge.from);
@@ -982,31 +950,25 @@ export async function analyzeZones(
       crossings.push({ from: edge.from, to: edge.to, fromZone, toZone });
     }
   }
+  return crossings;
+}
 
-  // ── Generate structural insights ──
-  // Only generate insights for root zones (not promoted sub-analysis zones)
+// ── Helper: merge insights ───────────────────────────────────────────────────
 
-  // Count files not covered by sub-analyses for proper percentage calculations
-  const rootFileCount = inventory.files.filter(
-    (f) => !isSubAnalyzedFile(f.path, subAnalyzedPrefixes)
-  ).length;
-
-  const structural = generateStructuralInsights(
-    finalZones,
-    crossings.filter((c) => !c.fromZone.includes(":") && !c.toZone.includes(":")),
-    imports,
-    rootFileCount
-  );
-
-  // ── Merge insights: structural (fresh) + accumulated AI ──
-
-  // Extract previous AI insights by stripping the structural prefix
-  // from the previous zone's combined insights array.
+/**
+ * Merge zone insights: structural (fresh, deterministic) + accumulated AI
+ * from previous runs + new AI from current enrichment.
+ */
+function mergeZoneInsights(
+  finalZones: Zone[],
+  structural: { zoneInsights: Map<string, string[]> },
+  aiZoneInsights: Map<string, string[]>,
+  validPrevious: Zones | undefined
+): void {
   for (const zone of finalZones) {
     const structuralForZone = structural.zoneInsights.get(zone.id) ?? [];
     const newAiForZone = aiZoneInsights.get(zone.id) ?? [];
 
-    // Get accumulated AI insights from previous run
     let prevAi: string[] = [];
     if (validPrevious) {
       const prevZone = validPrevious.zones.find(
@@ -1015,7 +977,6 @@ export async function analyzeZones(
           (p.files.length > 0 && p.files.some((f) => zone.files.includes(f)))
       );
       if (prevZone?.insights) {
-        // Strip leading structural insights (they're deterministic and identical)
         let startIdx = 0;
         for (
           let i = 0;
@@ -1035,8 +996,17 @@ export async function analyzeZones(
     const allInsights = [...structuralForZone, ...prevAi, ...newAiForZone];
     zone.insights = allInsights.length > 0 ? allInsights : undefined;
   }
+}
 
-  // Global insights
+/**
+ * Merge global insights: structural + previous AI + new AI.
+ * Returns the combined global insights array.
+ */
+function mergeGlobalInsights(
+  structural: { globalInsights: string[] },
+  aiGlobalInsights: string[],
+  validPrevious: Zones | undefined
+): string[] {
   let prevGlobalAi: string[] = [];
   if (validPrevious?.insights) {
     const sg = structural.globalInsights;
@@ -1055,17 +1025,31 @@ export async function analyzeZones(
     prevGlobalAi = validPrevious.insights.slice(startIdx);
   }
 
-  const allGlobalInsights = [
+  return [
     ...structural.globalInsights,
     ...prevGlobalAi,
     ...aiGlobalInsights,
   ];
+}
 
-  // ── Build findings: structural (pass 0) + preserved previous + new AI ──
+// ── Helper: assemble findings ────────────────────────────────────────────────
 
+/**
+ * Build the complete findings array: structural (pass 0) + preserved previous
+ * AI findings + new AI findings. Handles stale-content detection and deduplication.
+ */
+function assembleFindings(
+  finalZones: Zone[],
+  structural: { zoneInsights: Map<string, string[]>; globalInsights: string[] },
+  aiFindings: Finding[],
+  metaUpdatedFindings: Finding[] | null,
+  validPrevious: Zones | undefined,
+  previousZones: Zones | undefined,
+  zoneContentHashes: Record<string, string>,
+  globalContentHash: string
+): Finding[] {
   const structuralFindings: Finding[] = [];
 
-  // Convert structural zone insights to findings at pass 0
   for (const zone of finalZones) {
     const zoneStructural = structural.zoneInsights.get(zone.id) ?? [];
     for (const text of zoneStructural) {
@@ -1085,7 +1069,6 @@ export async function analyzeZones(
     }
   }
 
-  // Convert structural global insights to findings
   for (const text of structural.globalInsights) {
     structuralFindings.push({
       type: "observation",
@@ -1098,12 +1081,9 @@ export async function analyzeZones(
     });
   }
 
-  // Preserved previous AI findings (from prior runs, excluding structural which are recomputed).
-  // Drop findings scoped to zones whose content changed — the underlying code may have fixed the issue.
-  // If meta-evaluation returned updated findings, use those instead (they have reassessed severities).
+  // Check content staleness for preserved previous findings
   const prevContentHashes = previousZones?.zoneContentHashes;
   function isContentStale(finding: Finding): boolean {
-    // Backward compat: if previous run didn't have content hashes, preserve everything
     if (!prevContentHashes) return false;
     if (finding.scope === "global") {
       const prevGlobal = computeGlobalContentHash(prevContentHashes);
@@ -1111,14 +1091,12 @@ export async function analyzeZones(
     }
     const prevHash = prevContentHashes[finding.scope];
     const currHash = zoneContentHashes[finding.scope];
-    // If zone didn't exist before or doesn't exist now, it's stale
     if (!prevHash || !currHash) return true;
     return prevHash !== currHash;
   }
 
   const prevAiFindings: Finding[] = [];
   if (metaUpdatedFindings) {
-    // Meta-evaluation updated the full findings array — use only AI findings (pass > 0)
     for (const f of metaUpdatedFindings) {
       if (f.pass > 0 && !isContentStale(f)) {
         prevAiFindings.push(f);
@@ -1132,13 +1110,21 @@ export async function analyzeZones(
     }
   }
 
-  const allFindings = deduplicateFindings([...structuralFindings, ...prevAiFindings, ...aiFindings]);
+  return deduplicateFindings([...structuralFindings, ...prevAiFindings, ...aiFindings]);
+}
 
-  // ── Back-populate findings into insights for backward compatibility ──
-  // AI enrichment may produce structured findings without corresponding legacy
-  // insight strings. Ensure every finding's text appears in the appropriate
-  // insights array so consumers reading only the legacy format stay in sync.
+// ── Helper: back-populate insights ───────────────────────────────────────────
 
+/**
+ * Ensure every finding's text appears in the appropriate insights array.
+ * AI enrichment may produce structured findings without corresponding legacy
+ * insight strings — this keeps backward compatibility for legacy consumers.
+ */
+function backPopulateInsights(
+  finalZones: Zone[],
+  allFindings: Finding[],
+  allGlobalInsights: string[]
+): void {
   const zoneInsightSets = new Map<string, Set<string>>();
   for (const zone of finalZones) {
     zoneInsightSets.set(zone.id, new Set(zone.insights ?? []));
@@ -1163,14 +1149,125 @@ export async function analyzeZones(
       }
     }
   }
+}
 
-  // Track meta-evaluation count: enrichmentPass stays at 4 for UI, metaEvaluationCount tracks pass 5+
+// ── Main entry point ────────────────────────────────────────────────────────
+
+export async function analyzeZones(
+  inventory: Inventory,
+  imports: Imports,
+  options?: {
+    enrich?: boolean;
+    previousZones?: Zones;
+    perZone?: boolean;
+    subAnalyses?: SubAnalysis[];
+    /** Called when structure change is detected, before AI enrichment begins. */
+    onReset?: (fromPass: number, toPass: number) => void;
+  }
+): Promise<AnalyzeZonesResult> {
+  const enrich = options?.enrich ?? true;
+  const perZone = options?.perZone ?? false;
+  const previousZones = options?.previousZones;
+  const subAnalyses = options?.subAnalyses ?? [];
+
+  // ── Exclude sub-analyzed files from Louvain ──
+  const subAnalyzedPrefixes = getSubAnalyzedPrefixes(subAnalyses);
+  const filteredEdges = subAnalyzedPrefixes.length > 0
+    ? imports.edges.filter(
+        (e) =>
+          !isSubAnalyzedFile(e.from, subAnalyzedPrefixes) &&
+          !isSubAnalyzedFile(e.to, subAnalyzedPrefixes)
+      )
+    : imports.edges;
+
+  const graph = buildUndirectedGraph(filteredEdges);
+
+  // Build set of test files for metric exclusion
+  const testFiles = new Set<string>();
+  for (const f of inventory.files) {
+    if (f.role === "test") testFiles.add(f.path);
+  }
+
+  // ── Louvain community detection ──
+  let community = louvainPhase1(graph);
+  community = mergeBidirectionalCoupling(community, graph);
+  community = mergeSmallCommunities(community, graph);
+  community = capZoneCount(community, graph, 15);
+  mergeSameIdCommunities(community);
+
+  // ── Build zones from communities ──
+  const zones = buildZonesFromCommunities(
+    community, graph, imports, inventory, testFiles
+  );
+
+  // ── Assign unzoned files by directory proximity ──
+  const initialUnzoned = collectUnzonedFiles(zones, inventory, subAnalyzedPrefixes);
+  const { zones: expandedZones, remaining: unzoned } = assignByProximity(
+    zones, initialUnzoned
+  );
+
+  // ── Structure hash & change detection ──
+  const structureHash = computeStructureHash(expandedZones);
+  const structureChanged = previousZones?.structureHash !== structureHash;
+  const validPrevious = structureChanged ? undefined : previousZones;
+
+  if (structureChanged && previousZones?.enrichmentPass && options?.onReset) {
+    options.onReset(previousZones.enrichmentPass, 1);
+  }
+
+  // ── Content hashes for stale-finding detection ──
+  const { zoneContentHashes, globalContentHash } =
+    computeContentHashes(expandedZones, inventory);
+
+  // ── AI enrichment or preserve previous ──
+  const enrichResult = await applyEnrichment(
+    expandedZones, imports, inventory, validPrevious, enrich, perZone
+  );
+  const { finalZones, aiZoneInsights, aiGlobalInsights, aiFindings,
+    enrichmentPass, metaUpdatedFindings, enrichTokenUsage } = enrichResult;
+
+  // ── Promote zones from sub-analyses ──
+  const promotedZones: Zone[] = [];
+  const promotedCrossings: ZoneCrossing[] = [];
+  for (const sub of subAnalyses) {
+    promotedZones.push(...promoteZones(sub));
+    promotedCrossings.push(...promoteCrossings(sub));
+  }
+  const allZones = [...finalZones, ...promotedZones];
+
+  // ── Build final crossings ──
+  const crossings = buildCrossings(allZones, imports, promotedCrossings);
+
+  // ── Generate structural insights ──
+  const rootFileCount = inventory.files.filter(
+    (f) => !isSubAnalyzedFile(f.path, subAnalyzedPrefixes)
+  ).length;
+  const structural = generateStructuralInsights(
+    finalZones,
+    crossings.filter((c) => !c.fromZone.includes(":") && !c.toZone.includes(":")),
+    imports,
+    rootFileCount
+  );
+
+  // ── Merge insights ──
+  mergeZoneInsights(finalZones, structural, aiZoneInsights, validPrevious);
+  const allGlobalInsights = mergeGlobalInsights(
+    structural, aiGlobalInsights, validPrevious
+  );
+
+  // ── Assemble findings ──
+  const allFindings = assembleFindings(
+    finalZones, structural, aiFindings, metaUpdatedFindings,
+    validPrevious, previousZones, zoneContentHashes, globalContentHash
+  );
+
+  // ── Back-populate findings into insights for backward compatibility ──
+  backPopulateInsights(finalZones, allFindings, allGlobalInsights);
+
+  // ── Build result ──
   const prevMetaCount = previousZones?.metaEvaluationCount ?? 0;
   const metaEvaluationCount = enrichmentPass >= 5 ? prevMetaCount + 1 : prevMetaCount > 0 ? prevMetaCount : undefined;
-  // Cap enrichmentPass at 4 for UI display purposes
   const displayPass = enrichmentPass > 4 ? 4 : enrichmentPass;
-
-  // Record reset info for web UI consumption
   const lastReset = (structureChanged && previousZones?.enrichmentPass)
     ? { from: previousZones.enrichmentPass, to: 1 }
     : undefined;

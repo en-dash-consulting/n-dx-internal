@@ -7500,6 +7500,257 @@
           ]
         }
       ]
+    },
+    {
+      "id": "14930586-b113-451c-8879-1af1da9b42b2",
+      "title": "Address anti-pattern issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Architectural tension between zero-coupling goals and practical implementation needs forces systematic code duplication in interface layer",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T12:12:32.384Z",
+      "completedAt": "2026-02-11T12:22:59.715Z"
+    },
+    {
+      "id": "45798975-fd8c-4af2-89bf-de7bb2a5d172",
+      "title": "Address pattern issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Systematic duplication pattern: zero-coupling architecture forces reimplementation of utilities across zones, violating DRY principle at system level",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T12:24:42.883Z",
+      "completedAt": "2026-02-11T12:39:44.421Z"
+    },
+    {
+      "id": "28faa1e4-6a02-4616-aa11-e4a9f1a27dd6",
+      "title": "Address suggestion issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Consolidate duplicate tree utilities in web package by creating a shared internal module that both server/mcp-deps.ts and components can import from",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T12:40:14.449Z",
+      "completedAt": "2026-02-11T12:45:02.811Z"
+    },
+    {
+      "id": "35103035-97a1-45c4-a891-d40fbae6d8ce",
+      "title": "SourceVision Call Graph Analysis",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-11T13:22:19.966Z",
+      "completedAt": "2026-02-11T13:22:19.966Z",
+      "children": [
+        {
+          "id": "01490ebc-ec8c-4b4d-b4b3-3120815757ef",
+          "title": "Call graph extraction and analysis",
+          "status": "completed",
+          "level": "feature",
+          "description": "Build comprehensive call graph analysis that tracks function calls, method invocations, and cross-module dependencies beyond simple imports",
+          "source": "smart-add",
+          "startedAt": "2026-02-11T13:22:19.915Z",
+          "completedAt": "2026-02-11T13:22:19.915Z",
+          "children": [
+            {
+              "id": "65a2d97f-0a8d-445b-88c4-94cb80a4eefd",
+              "title": "Implement call graph extraction and storage infrastructure",
+              "status": "completed",
+              "level": "task",
+              "description": "Parse TypeScript/JavaScript ASTs to extract function calls and build efficient data structures for storing and querying call graph relationships",
+              "acceptanceCriteria": [
+                "Extracts direct function calls with caller-callee relationships",
+                "Identifies method invocations on objects and classes",
+                "Handles property access chains and destructured calls",
+                "Processes both local and imported function references",
+                "Stores caller-callee relationships with source location metadata",
+                "Supports efficient queries for direct and transitive dependencies",
+                "Handles cyclic call relationships without infinite loops",
+                "Integrates with existing sourcevision data storage format"
+              ],
+              "priority": "high",
+              "tags": [
+                "analysis",
+                "ast",
+                "call-graph",
+                "data-structure",
+                "storage"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-11T12:46:34.255Z",
+              "completedAt": "2026-02-11T12:56:38.915Z"
+            },
+            {
+              "id": "8f924457-7ac0-43cb-8f0e-cfb66b9fedc6",
+              "title": "Integrate call graph analysis into sourcevision pipeline and web UI",
+              "status": "completed",
+              "level": "task",
+              "description": "Integrate call graph extraction into the main analysis pipeline and create interactive visualization with zone analysis enhancements",
+              "acceptanceCriteria": [
+                "Call graph analysis runs as part of sourcevision analyze",
+                "Results are stored in sourcevision manifest and data files",
+                "Analysis progress is reported to user during execution",
+                "Handles analysis failures gracefully without breaking main pipeline",
+                "Displays functions as nodes with call relationships as directed edges",
+                "Supports filtering by file, zone, or function name patterns",
+                "Provides zoom, pan, and layout controls like import graph viewer",
+                "Shows call frequency and complexity metrics on hover",
+                "Zone detection considers both import and call relationships",
+                "Call graph metrics contribute to zone cohesion scores",
+                "Cross-zone call patterns are identified and reported",
+                "Zone summaries include call graph connectivity statistics"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "pipeline",
+                "integration",
+                "web-ui",
+                "visualization",
+                "d3",
+                "zones",
+                "metrics"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-11T12:57:36.488Z",
+              "completedAt": "2026-02-11T13:13:39.992Z"
+            },
+            {
+              "id": "2cd1fd02-c436-4602-936a-e1badd2472ee",
+              "title": "Generate architectural findings and recommendations from call graph data",
+              "status": "completed",
+              "level": "task",
+              "description": "Analyze call graph patterns to identify architectural issues and generate actionable recommendations for code quality improvements",
+              "acceptanceCriteria": [
+                "Identifies functions with excessive outgoing calls (god functions)",
+                "Detects tightly coupled modules through dense call patterns",
+                "Finds potentially dead code with no incoming calls",
+                "Suggests refactoring opportunities based on call patterns"
+              ],
+              "priority": "low",
+              "tags": [
+                "findings",
+                "recommendations",
+                "architecture"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-11T13:14:04.213Z",
+              "completedAt": "2026-02-11T13:22:19.841Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fe440559-d45f-476c-ad98-13dc19616bc8",
+      "title": "Address observation issues (1 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 30 files — high-impact module, changes may have wide ripple effects",
+      "priority": "high",
+      "source": "sourcevision"
+    },
+    {
+      "id": "679ff52d-fddf-43ac-bfd7-17bbfdc52ca3",
+      "title": "Address pattern issues (1 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Domain layer isolation pattern allows rex and sourcevision to evolve independently while sharing foundation infrastructure",
+      "priority": "critical",
+      "source": "sourcevision"
+    },
+    {
+      "id": "f587dda4-9619-4d8d-8f1e-a01b072f1761",
+      "title": "Address relationship issues (1 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Tightly coupled modules: packages/rex/src/cli/commands/chunked-review.ts and packages/rex/tests/unit/cli/commands/chunked-review.test.ts — 370 cross-file calls (unidirectional). Consider extracting shared interface or merging",
+      "priority": "critical",
+      "source": "sourcevision"
+    },
+    {
+      "id": "4a95dd1c-a5a9-47b5-a10d-6a5bba23dd91",
+      "title": "Address anti-pattern issues (4 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- God modules at architectural boundaries (enrich.ts 925 lines, MCP server 400 lines) create maintenance bottlenecks and violate single responsibility principle\n- Multiple packages duplicate utility functions (basename extraction, tree traversal, data preparation) instead of using shared abstractions or gateway pattern consistently\n- Dead code accumulation in integration layers: 39+19+9+8+7+5+4=91 unused exports concentrated in adapter, validation, and UI component modules indicates systematic over-engineering at system boundaries\n- God function: analyzeZones in packages/sourcevision/src/analyzers/zones.ts calls 88 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "critical",
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T14:05:49.651Z",
+      "children": [
+        {
+          "id": "302aabf9-0383-407d-86c7-ca5e0d6a664e",
+          "title": "Decompose analyzeZones god function into focused helpers",
+          "status": "completed",
+          "level": "task",
+          "description": "Extract logical sub-sections of analyzeZones() (553 lines) into focused helper functions: Louvain setup, zone creation with metrics, enrichment/preservation, insight merging, and findings assembly.",
+          "acceptanceCriteria": [
+            "analyzeZones() is under 200 lines and delegates to well-named helpers",
+            "Each extracted helper has a clear single responsibility",
+            "All existing tests pass without modification",
+            "No functional behavior changes"
+          ],
+          "priority": "critical",
+          "startedAt": "2026-02-11T14:07:37.608Z",
+          "completedAt": "2026-02-11T14:10:54.327Z"
+        },
+        {
+          "id": "7eba2695-065c-4057-8b51-f58661f738a3",
+          "title": "Split Rex MCP server into tool modules",
+          "status": "completed",
+          "level": "task",
+          "description": "Split rex MCP server (806 lines) by extracting tool handler functions into separate modules (status tools, item operations, sync/log tools, resources).",
+          "acceptanceCriteria": [
+            "mcp.ts is under 200 lines and imports tool handlers from dedicated modules",
+            "Tool behavior is identical (no functional changes)",
+            "All existing tests pass"
+          ],
+          "priority": "high",
+          "startedAt": "2026-02-11T14:11:01.427Z",
+          "completedAt": "2026-02-11T14:14:14.364Z"
+        },
+        {
+          "id": "98693d1e-6550-40f9-9af3-8d74f9acc731",
+          "title": "Split enrich.ts orchestration functions into focused modules",
+          "status": "completed",
+          "level": "task",
+          "description": "Split enrich.ts (624 lines) by extracting enrichBatch() and enrichZonesWithAI() sub-sections into focused modules: prompt construction, meta-evaluation, result merging.",
+          "acceptanceCriteria": [
+            "enrich.ts is under 200 lines",
+            "Each extracted module has a single responsibility",
+            "All existing tests pass"
+          ],
+          "priority": "high",
+          "startedAt": "2026-02-11T14:14:20.145Z",
+          "completedAt": "2026-02-11T14:17:15.350Z"
+        },
+        {
+          "id": "8c23ba99-ab41-469f-b22b-cd6833ef4360",
+          "title": "Remove verified dead exports from integration layers",
+          "status": "completed",
+          "level": "task",
+          "description": "Audit the 91 reported unused exports in adapter, validation, and UI component modules. Remove genuinely unused exports after verifying with grep. Leave exports that are part of public API contracts.",
+          "acceptanceCriteria": [
+            "Dead exports verified by grep are removed",
+            "Public API exports are preserved",
+            "Build and tests pass"
+          ],
+          "priority": "medium",
+          "startedAt": "2026-02-11T14:17:23.158Z",
+          "completedAt": "2026-02-11T14:24:15.025Z"
+        }
+      ],
+      "completedAt": "2026-02-11T14:24:15.101Z"
+    },
+    {
+      "id": "3df811cc-a1e2-440c-85a5-1c8fe1ac06d6",
+      "title": "Address suggestion issues (11 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Console.log statements concentrated in orchestration files (86 occurrences) suggest debugging artifacts that should be replaced with structured logging\n- Implement shared utility extraction: move basename extraction, tree traversal, and data preparation functions from packages/web, packages/rex, and packages/sourcevision into @n-dx/claude-client foundation to eliminate triplication\n- Hub function: walkTree in packages/rex/src/core/tree.ts is called from 20 files — changes here have wide impact, consider if responsibilities can be narrowed\n- 39 potentially unused exports in packages/web/src/viewer/graph/renderer.ts have no incoming calls: constructor, highlightNode, centerOnNode, selectNode, clearSelection (+34 more)\n- 19 potentially unused exports in packages/rex/src/store/notion-adapter.ts have no incoming calls: constructor, path, getStatusGroupMap, invalidateCache, loadDocument (+14 more)\n- 9 potentially unused exports in packages/hench/src/store/adjustments.ts have no incoming calls: loadAdaptiveStateAsync, saveAdaptiveStateAsync, recordAdjustment, updateSettings, lockKey (+4 more)\n- 8 potentially unused exports in packages/web/src/schema/validate.ts have no incoming calls: validateManifest, validateInventory, validateImports, validateZones, validateComponents (+3 more)\n- 7 potentially unused exports in packages/web/src/viewer/components/logos.ts have no incoming calls: NdxLogo, SourceVisionLogo, RexLogo, HenchLogo, NdxLogoPng (+2 more)\n- 5 potentially unused exports in packages/rex/src/schema/v1.ts have no incoming calls: isRequirementCategory, isValidationType, isPriority, isItemLevel, isItemStatus\n- Extract shared tree traversal interface from core/tree.ts to reduce the 20-file dependency fan-out and improve testability\n- Consolidate duplicate tree utilities into @n-dx/claude-client foundation package to eliminate redundancy across web, rex, and sourcevision packages",
+      "priority": "high",
+      "source": "sourcevision"
     }
   ]
 }

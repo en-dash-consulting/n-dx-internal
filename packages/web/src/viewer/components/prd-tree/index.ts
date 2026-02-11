@@ -22,7 +22,7 @@ export { ExecutionPanel } from "./execution-panel.js";
 export type { ExecutionPanelProps } from "./execution-panel.js";
 export { PruneDiffTree } from "./prune-diff-tree.js";
 export type { PruneDiffTreeProps, EpicImpact } from "./prune-diff-tree.js";
-export { StatusFilter, defaultStatusFilter, ALL_STATUSES, FILTER_PRESETS, activePresetKey } from "./status-filter.js";
+export { StatusFilter, defaultStatusFilter } from "./status-filter.js";
 export type { StatusFilterProps, FilterPreset } from "./status-filter.js";
 export type {
   PRDItemData,

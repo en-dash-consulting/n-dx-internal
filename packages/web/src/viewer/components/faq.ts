@@ -228,31 +228,6 @@ function FAQModal({ onClose, initialSection }: { onClose: () => void; initialSec
   );
 }
 
-/** Sidebar FAQ button — global entry point, opens with "Getting Started" expanded. */
-export function FAQ() {
-  const [open, setOpen] = useState(false);
-
-  // Close on Escape
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open]);
-
-  return h(Fragment, null,
-    h("button", {
-      class: "sidebar-control-btn",
-      onClick: () => setOpen(true),
-      title: "Help & FAQ",
-      "aria-label": "Open help and FAQ",
-    }, "?"),
-    open ? h(FAQModal, { onClose: () => setOpen(false), initialSection: FAQ_SECTIONS[0].title }) : null,
-  );
-}
-
 /**
  * Header FAQ button — contextual entry point in the content area header.
  * Auto-expands the FAQ section relevant to the current view.
