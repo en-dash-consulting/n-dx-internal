@@ -268,15 +268,24 @@ function collectActionable(
 
   function collect(list: PRDItem[], parentChain: PRDItem[]): void {
     for (const item of list) {
-      if (item.status === "completed" || item.status === "deferred" || item.status === "blocked" || item.status === "deleted") continue;
+      // Blocked/deleted parents are fully inactive — skip them and children.
+      if (item.status === "blocked" || item.status === "deleted") continue;
 
+      // Unresolved dependencies — skip item and children.
       if (item.blockedBy && item.blockedBy.length > 0) {
         if (!item.blockedBy.every((dep) => completedIds.has(dep))) continue;
       }
 
+      // Always recurse into children — even for completed/deferred parents,
+      // a child may be failing and need to be retried.
       if (item.children && item.children.length > 0) {
         collect(item.children, [...parentChain, item]);
+      }
 
+      // Completed/deferred items themselves aren't actionable.
+      if (item.status === "completed" || item.status === "deferred") continue;
+
+      if (item.children && item.children.length > 0) {
         const allChildrenDone = item.children.every(
           (c) => c.status === "completed" || c.status === "deferred",
         );
