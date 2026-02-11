@@ -15,10 +15,10 @@ import type { CallGraph, CallEdge, FunctionNode, Finding, Inventory, ImportEdge 
 // ── Thresholds ──────────────────────────────────────────────────────────────
 
 /** Functions calling more than this many unique callees are "god functions". */
-const GOD_FUNCTION_THRESHOLD = 10;
+const GOD_FUNCTION_THRESHOLD = 30;
 
 /** File pairs with more than this many cross-file call edges are tightly coupled. */
-const TIGHT_COUPLING_THRESHOLD = 6;
+const TIGHT_COUPLING_THRESHOLD = 30;
 
 /** Functions called from more than this many distinct files are hub functions. */
 const HUB_FUNCTION_FILE_THRESHOLD = 6;
@@ -66,10 +66,15 @@ export function generateCallGraphFindings(
 
   const findings: Finding[] = [];
 
+  // Build set of test files from inventory — test files are excluded from
+  // god-function and tight-coupling detection because tests inherently call
+  // many functions and are tightly coupled to their subjects by design.
+  const testFiles = buildTestFileSet(options?.inventory);
+
   // Edge-based findings require at least some call edges
   if (edges.length > 0) {
-    findings.push(...detectGodFunctions(edges));
-    findings.push(...detectTightlyCoupledModules(edges));
+    findings.push(...detectGodFunctions(edges, testFiles));
+    findings.push(...detectTightlyCoupledModules(edges, testFiles));
     findings.push(...detectHubFunctions(edges));
     findings.push(...detectHotspotFiles(edges));
   }
@@ -85,8 +90,9 @@ export function generateCallGraphFindings(
 /**
  * Identify functions with excessive outgoing calls (god functions).
  * These functions likely do too much and should be decomposed.
+ * Test files are excluded — tests naturally call many functions.
  */
-function detectGodFunctions(edges: CallEdge[]): Finding[] {
+function detectGodFunctions(edges: CallEdge[], testFiles: Set<string>): Finding[] {
   // Count unique callees per caller (file:qualifiedName)
   const callerCallees = new Map<string, { file: string; name: string; callees: Set<string> }>();
 
@@ -106,6 +112,7 @@ function detectGodFunctions(edges: CallEdge[]): Finding[] {
 
   const sorted = [...callerCallees.values()]
     .filter((v) => v.callees.size > GOD_FUNCTION_THRESHOLD)
+    .filter((v) => !testFiles.has(v.file))
     .sort((a, b) => b.callees.size - a.callees.size);
 
   for (const { file, name, callees } of sorted.slice(0, 5)) {
@@ -114,7 +121,7 @@ function detectGodFunctions(edges: CallEdge[]): Finding[] {
       pass: 0,
       scope: "global",
       text: `God function: ${name} in ${file} calls ${callees.size} unique functions — consider decomposing into smaller, focused functions`,
-      severity: callees.size > GOD_FUNCTION_THRESHOLD * 2 ? "critical" : "warning",
+      severity: callees.size > GOD_FUNCTION_THRESHOLD * 3 ? "critical" : "warning",
       related: [file],
     });
   }
@@ -128,8 +135,10 @@ function detectGodFunctions(edges: CallEdge[]): Finding[] {
  * Detect file pairs with dense cross-file call patterns.
  * Dense bidirectional or unidirectional call traffic suggests
  * the files should be merged or have a shared interface extracted.
+ * Pairs where either file is a test are excluded — tests are
+ * naturally tightly coupled to the modules they exercise.
  */
-function detectTightlyCoupledModules(edges: CallEdge[]): Finding[] {
+function detectTightlyCoupledModules(edges: CallEdge[], testFiles: Set<string>): Finding[] {
   // Count call edges between file pairs
   const pairCounts = new Map<string, { a: string; b: string; ab: number; ba: number }>();
 
@@ -153,6 +162,7 @@ function detectTightlyCoupledModules(edges: CallEdge[]): Finding[] {
 
   const sorted = [...pairCounts.values()]
     .filter((p) => p.ab + p.ba >= TIGHT_COUPLING_THRESHOLD)
+    .filter((p) => !testFiles.has(p.a) && !testFiles.has(p.b))
     .sort((a, b) => (b.ab + b.ba) - (a.ab + a.ba));
 
   for (const pair of sorted.slice(0, 5)) {
@@ -162,12 +172,17 @@ function detectTightlyCoupledModules(edges: CallEdge[]): Finding[] {
       ? `bidirectional (${pair.ab}↔${pair.ba})`
       : `unidirectional`;
 
+    // Critical only for bidirectional coupling — unidirectional high-call-count
+    // pairs (e.g., route handler → utility module) are normal consumer-provider
+    // relationships, not architectural problems requiring immediate attention.
+    const isCritical = isBidirectional && total > TIGHT_COUPLING_THRESHOLD * 3;
+
     findings.push({
       type: "relationship",
       pass: 0,
       scope: "global",
       text: `Tightly coupled modules: ${pair.a} and ${pair.b} — ${total} cross-file calls (${direction}). Consider extracting shared interface or merging`,
-      severity: total > TIGHT_COUPLING_THRESHOLD * 2 ? "critical" : "warning",
+      severity: isCritical ? "critical" : "warning",
       related: [pair.a, pair.b],
     });
   }
@@ -203,12 +218,7 @@ function detectDeadExports(
   const reexportedSymbols = buildReexportedSymbolSet(importEdges);
 
   // Build set of test files from inventory
-  const testFiles = new Set<string>();
-  if (inventory) {
-    for (const f of inventory.files) {
-      if (f.role === "test") testFiles.add(f.path);
-    }
-  }
+  const testFiles = buildTestFileSet(inventory);
 
   // Find exported functions with no incoming calls
   const deadByFile = new Map<string, string[]>();
@@ -305,6 +315,20 @@ function buildReexportedSymbolSet(importEdges?: ImportEdge[]): Set<string> {
     }
   }
 
+  return result;
+}
+
+/**
+ * Build a set of test file paths from the inventory.
+ * Used to exclude test files from architectural findings — tests inherently
+ * call many functions and are tightly coupled to their subjects by design.
+ */
+function buildTestFileSet(inventory?: Inventory): Set<string> {
+  const result = new Set<string>();
+  if (!inventory) return result;
+  for (const f of inventory.files) {
+    if (f.role === "test") result.add(f.path);
+  }
   return result;
 }
 

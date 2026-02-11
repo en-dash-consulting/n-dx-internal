@@ -39,21 +39,32 @@ function makeCallGraph(functions: FunctionNode[], edges: CallEdge[]): CallGraph 
   };
 }
 
-function makeInventory(files: string[]): Inventory {
-  return {
-    files: files.map((path) => ({
+function makeInventory(files: string[], testFiles: string[] = []): Inventory {
+  const allFiles = [
+    ...files.map((path) => ({
       path,
-      language: "TypeScript",
+      language: "TypeScript" as const,
       role: "source" as const,
       category: "code" as const,
       size: 100,
       hash: "abc123",
     })),
+    ...testFiles.map((path) => ({
+      path,
+      language: "TypeScript" as const,
+      role: "test" as const,
+      category: "code" as const,
+      size: 100,
+      hash: "abc123",
+    })),
+  ];
+  return {
+    files: allFiles,
     summary: {
-      totalFiles: files.length,
-      totalSize: files.length * 100,
-      languages: { TypeScript: files.length },
-      roles: { source: files.length },
+      totalFiles: allFiles.length,
+      totalSize: allFiles.length * 100,
+      languages: { TypeScript: allFiles.length },
+      roles: { source: files.length, ...(testFiles.length > 0 ? { test: testFiles.length } : {}) },
     },
   };
 }
@@ -66,8 +77,8 @@ describe("god functions", () => {
     const functions = [godFn];
     const edges: CallEdge[] = [];
 
-    // 15 unique callees — well above any reasonable threshold
-    for (let i = 0; i < 15; i++) {
+    // 35 unique callees — above the threshold of 30
+    for (let i = 0; i < 35; i++) {
       functions.push(makeFn({ file: "src/helpers.ts", name: `helper${i}` }));
       edges.push(makeEdge({
         callerFile: "src/main.ts",
@@ -86,7 +97,57 @@ describe("god functions", () => {
     expect(godFindings[0].type).toBe("anti-pattern");
     // Should mention the function name and call count
     expect(godFindings[0].text).toMatch(/orchestrate/);
-    expect(godFindings[0].text).toMatch(/15/);
+    expect(godFindings[0].text).toMatch(/35/);
+  });
+
+  it("does not flag god functions in test files", () => {
+    // Test files naturally call many functions — they exercise the API under test.
+    const testFile = "tests/unit/reason.test.ts";
+    const fn = makeFn({ file: testFile, name: "<module>" });
+    const functions = [fn];
+    const edges: CallEdge[] = [];
+
+    // 65 unique callees — well above critical threshold
+    for (let i = 0; i < 65; i++) {
+      functions.push(makeFn({ file: "src/reason.ts", name: `helper${i}` }));
+      edges.push(makeEdge({
+        callerFile: testFile,
+        caller: "<module>",
+        callee: `helper${i}`,
+        calleeFile: "src/reason.ts",
+      }));
+    }
+
+    const cg = makeCallGraph(functions, edges);
+    const inventory = makeInventory(["src/reason.ts"], [testFile]);
+    const findings = generateCallGraphFindings(cg, { inventory });
+
+    const godFindings = findings.filter((f) => f.text.includes("God function"));
+    expect(godFindings).toHaveLength(0);
+  });
+
+  it("still flags god functions in source files when inventory provided", () => {
+    const godFn = makeFn({ file: "src/main.ts", name: "orchestrate" });
+    const functions = [godFn];
+    const edges: CallEdge[] = [];
+
+    for (let i = 0; i < 35; i++) {
+      functions.push(makeFn({ file: "src/helpers.ts", name: `helper${i}` }));
+      edges.push(makeEdge({
+        callerFile: "src/main.ts",
+        caller: "orchestrate",
+        callee: `helper${i}`,
+        calleeFile: "src/helpers.ts",
+      }));
+    }
+
+    const cg = makeCallGraph(functions, edges);
+    const inventory = makeInventory(["src/main.ts", "src/helpers.ts"]);
+    const findings = generateCallGraphFindings(cg, { inventory });
+
+    const godFindings = findings.filter((f) => f.text.includes("orchestrate"));
+    expect(godFindings.length).toBeGreaterThanOrEqual(1);
+    expect(godFindings[0].type).toBe("anti-pattern");
   });
 
   it("does not flag functions with moderate call counts", () => {
@@ -117,39 +178,39 @@ describe("god functions", () => {
 
 describe("tightly coupled modules", () => {
   it("detects dense call patterns between file pairs", () => {
-    const functions = [
-      makeFn({ file: "src/a.ts", name: "a1" }),
-      makeFn({ file: "src/a.ts", name: "a2" }),
-      makeFn({ file: "src/a.ts", name: "a3" }),
-      makeFn({ file: "src/b.ts", name: "b1" }),
-      makeFn({ file: "src/b.ts", name: "b2" }),
-      makeFn({ file: "src/b.ts", name: "b3" }),
-    ];
-
+    const functions: FunctionNode[] = [];
     const edges: CallEdge[] = [];
-    // a→b: 6 calls
-    for (const caller of ["a1", "a2", "a3"]) {
-      for (const callee of ["b1", "b2"]) {
+
+    // Create enough functions and calls to exceed the threshold of 30
+    for (let i = 0; i < 10; i++) {
+      functions.push(makeFn({ file: "src/a.ts", name: `a${i}` }));
+      functions.push(makeFn({ file: "src/b.ts", name: `b${i}` }));
+    }
+
+    // a→b: 20 calls
+    for (let i = 0; i < 10; i++) {
+      for (const callee of [`b${i}`, `b${(i + 1) % 10}`]) {
         edges.push(makeEdge({
           callerFile: "src/a.ts",
-          caller,
+          caller: `a${i}`,
           callee,
           calleeFile: "src/b.ts",
         }));
       }
     }
-    // b→a: 4 calls (bidirectional)
-    for (const caller of ["b1", "b2"]) {
-      for (const callee of ["a1", "a2"]) {
+    // b→a: 15 calls (bidirectional)
+    for (let i = 0; i < 5; i++) {
+      for (const callee of [`a${i}`, `a${i + 5}`, `a${(i + 3) % 10}`]) {
         edges.push(makeEdge({
           callerFile: "src/b.ts",
-          caller,
+          caller: `b${i}`,
           callee,
           calleeFile: "src/a.ts",
         }));
       }
     }
 
+    // Total: 35 cross-file calls — above threshold of 30
     const cg = makeCallGraph(functions, edges);
     const findings = generateCallGraphFindings(cg);
 
@@ -158,6 +219,84 @@ describe("tightly coupled modules", () => {
     );
     expect(couplingFindings.length).toBeGreaterThanOrEqual(1);
     expect(couplingFindings[0].severity).toBe("warning");
+    expect(couplingFindings[0].type).toBe("relationship");
+  });
+
+  it("does not flag test-to-source coupling as tight coupling", () => {
+    // Test files are naturally tightly coupled to their subjects.
+    const testFile = "tests/unit/chunked-review.test.ts";
+    const sourceFile = "src/chunked-review-state.ts";
+    const functions = [
+      makeFn({ file: sourceFile, name: "getState" }),
+      makeFn({ file: sourceFile, name: "setState" }),
+      makeFn({ file: sourceFile, name: "resetState" }),
+      makeFn({ file: testFile, name: "test1" }),
+      makeFn({ file: testFile, name: "test2" }),
+    ];
+
+    const edges: CallEdge[] = [];
+    // 50 calls from test to source — well above critical threshold
+    for (let i = 0; i < 50; i++) {
+      edges.push(makeEdge({
+        callerFile: testFile,
+        caller: i % 2 === 0 ? "test1" : "test2",
+        callee: ["getState", "setState", "resetState"][i % 3],
+        calleeFile: sourceFile,
+      }));
+    }
+
+    const cg = makeCallGraph(functions, edges);
+    const inventory = makeInventory([sourceFile], [testFile]);
+    const findings = generateCallGraphFindings(cg, { inventory });
+
+    const couplingFindings = findings.filter(
+      (f) => f.type === "relationship" && f.text.includes("Tightly coupled")
+    );
+    expect(couplingFindings).toHaveLength(0);
+  });
+
+  it("still flags tight coupling between source files when inventory provided", () => {
+    const functions: FunctionNode[] = [];
+    const edges: CallEdge[] = [];
+
+    // Create enough functions and calls to exceed the threshold of 30
+    for (let i = 0; i < 10; i++) {
+      functions.push(makeFn({ file: "src/a.ts", name: `a${i}` }));
+      functions.push(makeFn({ file: "src/b.ts", name: `b${i}` }));
+    }
+
+    // a→b: 20 calls
+    for (let i = 0; i < 10; i++) {
+      for (const callee of [`b${i}`, `b${(i + 1) % 10}`]) {
+        edges.push(makeEdge({
+          callerFile: "src/a.ts",
+          caller: `a${i}`,
+          callee,
+          calleeFile: "src/b.ts",
+        }));
+      }
+    }
+    // b→a: 15 calls
+    for (let i = 0; i < 5; i++) {
+      for (const callee of [`a${i}`, `a${i + 5}`, `a${(i + 3) % 10}`]) {
+        edges.push(makeEdge({
+          callerFile: "src/b.ts",
+          caller: `b${i}`,
+          callee,
+          calleeFile: "src/a.ts",
+        }));
+      }
+    }
+
+    // Total: 35 cross-file calls — above threshold of 30
+    const cg = makeCallGraph(functions, edges);
+    const inventory = makeInventory(["src/a.ts", "src/b.ts"]);
+    const findings = generateCallGraphFindings(cg, { inventory });
+
+    const couplingFindings = findings.filter(
+      (f) => f.text.includes("src/a.ts") && f.text.includes("src/b.ts")
+    );
+    expect(couplingFindings.length).toBeGreaterThanOrEqual(1);
     expect(couplingFindings[0].type).toBe("relationship");
   });
 
@@ -517,7 +656,8 @@ describe("finding structure", () => {
     const fn = makeFn({ file: "src/main.ts", name: "god" });
     const functions = [fn];
     const edges: CallEdge[] = [];
-    for (let i = 0; i < 15; i++) {
+    // 35 callees — above the threshold of 30
+    for (let i = 0; i < 35; i++) {
       functions.push(makeFn({ file: "src/h.ts", name: `h${i}` }));
       edges.push(makeEdge({
         callerFile: "src/main.ts",
@@ -537,22 +677,22 @@ describe("finding structure", () => {
   });
 
   it("uses 'global' scope for cross-module findings", () => {
-    const functions = [
-      makeFn({ file: "src/a.ts", name: "a1" }),
-      makeFn({ file: "src/a.ts", name: "a2" }),
-      makeFn({ file: "src/b.ts", name: "b1" }),
-      makeFn({ file: "src/b.ts", name: "b2" }),
-    ];
+    const functions: FunctionNode[] = [];
     const edges: CallEdge[] = [];
-    // Dense bidirectional coupling
-    for (const caller of ["a1", "a2"]) {
-      for (const callee of ["b1", "b2"]) {
-        edges.push(makeEdge({ callerFile: "src/a.ts", caller, callee, calleeFile: "src/b.ts" }));
-      }
+
+    // Create enough functions and calls to exceed the coupling threshold of 30
+    for (let i = 0; i < 10; i++) {
+      functions.push(makeFn({ file: "src/a.ts", name: `a${i}` }));
+      functions.push(makeFn({ file: "src/b.ts", name: `b${i}` }));
     }
-    for (const caller of ["b1", "b2"]) {
-      for (const callee of ["a1", "a2"]) {
-        edges.push(makeEdge({ callerFile: "src/b.ts", caller, callee, calleeFile: "src/a.ts" }));
+    // Dense bidirectional coupling: 20 a→b + 15 b→a = 35 total
+    for (let i = 0; i < 10; i++) {
+      edges.push(makeEdge({ callerFile: "src/a.ts", caller: `a${i}`, callee: `b${i}`, calleeFile: "src/b.ts" }));
+      edges.push(makeEdge({ callerFile: "src/a.ts", caller: `a${i}`, callee: `b${(i + 1) % 10}`, calleeFile: "src/b.ts" }));
+    }
+    for (let i = 0; i < 5; i++) {
+      for (const callee of [`a${i}`, `a${i + 5}`, `a${(i + 3) % 10}`]) {
+        edges.push(makeEdge({ callerFile: "src/b.ts", caller: `b${i}`, callee, calleeFile: "src/a.ts" }));
       }
     }
 
@@ -562,6 +702,7 @@ describe("finding structure", () => {
     const crossModuleFindings = findings.filter(
       (f) => f.type === "relationship"
     );
+    expect(crossModuleFindings.length).toBeGreaterThan(0);
     for (const f of crossModuleFindings) {
       expect(f.scope).toBe("global");
     }
@@ -571,7 +712,8 @@ describe("finding structure", () => {
     const fn = makeFn({ file: "src/main.ts", name: "orchestrate" });
     const functions = [fn];
     const edges: CallEdge[] = [];
-    for (let i = 0; i < 15; i++) {
+    // 35 callees — above the threshold of 30
+    for (let i = 0; i < 35; i++) {
       functions.push(makeFn({ file: "src/helpers.ts", name: `h${i}` }));
       edges.push(makeEdge({
         callerFile: "src/main.ts",

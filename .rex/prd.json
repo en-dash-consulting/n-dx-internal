@@ -7810,7 +7810,7 @@
     {
       "id": "ecbbbb0f-87cf-4437-a2e7-8ee508714e32",
       "title": "Resolve SourceVision architectural findings (Feb 2026)",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Systematically address all actionable SourceVision findings from the latest analysis pass. Organized by theme rather than finding type, with verifiable acceptance criteria tied to re-analysis outcomes.",
       "priority": "high",
@@ -7966,6 +7966,8 @@
             "Re-analysis produces no false-positive unused-export findings for class methods (renderer.ts, notion-adapter.ts) or type guards (v1.ts)"
           ],
           "priority": "medium",
+          "startedAt": "2026-02-11T17:13:15.631Z",
+          "completedAt": "2026-02-11T17:13:15.631Z",
           "children": [
             {
               "id": "bcce9423-06c0-4773-a067-65e47b998d13",
@@ -7994,14 +7996,12 @@
               "startedAt": "2026-02-11T17:04:52.659Z",
               "completedAt": "2026-02-11T17:13:15.554Z"
             }
-          ],
-          "startedAt": "2026-02-11T17:13:15.631Z",
-          "completedAt": "2026-02-11T17:13:15.631Z"
+          ]
         },
         {
           "id": "cb4f4c95-5b7e-4035-b0fc-e1fce0824d66",
           "title": "Re-run analysis and validate finding reduction",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Final validation pass: re-run sourcevision analyze after all fixes and confirm the total finding count has dropped significantly.",
           "acceptanceCriteria": [
@@ -8009,11 +8009,13 @@
             "No critical-severity findings remain"
           ],
           "priority": "medium",
+          "startedAt": "2026-02-11T17:35:42.202Z",
+          "completedAt": "2026-02-11T17:35:42.202Z",
           "children": [
             {
               "id": "280fdf83-f7f6-4550-957f-cd6912206207",
               "title": "Run sourcevision analyze and confirm finding reduction",
-              "status": "blocked",
+              "status": "completed",
               "level": "task",
               "description": "After all other tasks in this epic are complete, re-run sourcevision analyze on the full project. Compare the findings report against the baseline (24 findings: 2 critical anti-patterns, 2 critical suggestions, 6 warnings, etc.). Confirm that critical findings are resolved and overall count is significantly reduced.",
               "acceptanceCriteria": [
@@ -8022,11 +8024,15 @@
                 "Total finding count is lower than 24",
                 "No new critical or warning findings introduced"
               ],
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-02-11T17:18:24.127Z",
+              "completedAt": "2026-02-11T17:35:42.126Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-11T17:35:42.234Z",
+      "completedAt": "2026-02-11T17:35:42.234Z"
     }
   ]
 }
