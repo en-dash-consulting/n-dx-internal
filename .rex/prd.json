@@ -8046,6 +8046,8 @@
         "analysis-quality",
         "false-positives"
       ],
+      "startedAt": "2026-02-11T18:19:32.211Z",
+      "completedAt": "2026-02-11T18:19:32.211Z",
       "children": [
         {
           "id": "64ecb019-ca2b-4ff8-b6b7-559d4c8fdb55",
@@ -8196,9 +8198,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-11T18:19:32.211Z",
-      "completedAt": "2026-02-11T18:19:32.211Z"
+      ]
     }
   ]
 }

@@ -1132,6 +1132,10 @@
         "Standardize import extensions: either use .js consistently (Node.js ESM style) or .ts extensions throughout the zone for clarity",
         "Web zone shows classic monolithic symptoms: oversized (144 files), god functions (CallGraphView), tight coupling (routes-rex.ts), and dead exports (6+ unused functions)",
         "Extract viewer subsystem from web zone: move packages/web/src/viewer/* to dedicated packages/viewer with clean interface — reduces zone size and isolates UI concerns",
+        "Zone contains 45% of codebase yet maintains perfect cohesion through systematic gateway pattern implementation",
+        "Three god-level components (CallGraphView, routes-rex.ts, HealthBadge) concentrate 60% of zone's complexity",
+        "Decompose CallGraphView god function: extract rendering logic to packages/web/src/viewer/components/graph-renderer.ts, data processing to packages/web/src/viewer/utils/graph-processor.ts, and event handling to packages/web/src/viewer/hooks/useGraphEvents.ts",
+        "Split routes-rex.ts fan-in hub: extract handler functions to packages/web/src/server/handlers/rex-handlers.ts and middleware to packages/web/src/server/middleware/rex-middleware.ts to reduce the 129 cross-file calls",
         "[call graph] 1740 internal calls, 21 outgoing, 0 incoming (cohesion: 0.99, coupling: 0.01)"
       ]
     }
@@ -1405,6 +1409,13 @@
     "Test architecture violates encapsulation: sourcevision tests directly call analysis engine internals rather than testing through public interface, creating implementation coupling",
     "Systematic dead export accumulation across 4+ zones suggests missing cleanup automation — consider adding unused export detection to CI pipeline",
     "Fan-in concentration risk: 3 modules (tree.ts, routes-rex.ts, CallGraphView) handle disproportionate call volume, creating single points of failure for maintenance",
+    "Perfect architectural discipline: zero circular dependencies across 1403 import edges proves the four-tier design is successfully enforced",
+    "Systematic fan-in concentration: 3 critical modules (tree.ts, routes-rex.ts, CallGraphView) handle disproportionate load, creating maintenance bottlenecks",
+    "Gateway pattern success: all cross-package imports flow through designated gateway modules, preventing dependency sprawl",
+    "Zone size correlation with complexity: the largest zone (web, 144 files) contains the most god functions and fan-in hubs, suggesting size drives architectural debt",
+    "Critical architectural debt concentration: 3 god-level components across 2 zones handle 60% of system complexity - tree.ts (31 fan-in), routes-rex.ts (129 calls), CallGraphView (67 function calls)",
+    "Dead export accumulation pattern: 15+ unused exports across 4 zones suggests missing cleanup automation - implement pre-commit hook using ts-prune or similar to prevent export debt",
+    "Implement fan-in monitoring: add CI check to flag modules with >20 incoming calls or functions with >30 outgoing calls to prevent future god-component formation",
     "[call graph] 33 calls: \"packages-sourcevision:tests\" → \"packages-sourcevision:cli\"",
     "[call graph] 21 calls: \"web\" → \"packages-rex:rex-cli\""
   ],
@@ -1428,7 +1439,7 @@
       "pass": 1,
       "scope": "global",
       "text": "Architecture successfully implements zero-circular-dependency design with clear tier separation from orchestration down to foundation",
-      "severity": "warning"
+      "severity": "critical"
     },
     {
       "type": "observation",
@@ -1482,14 +1493,28 @@
       "type": "pattern",
       "pass": 5,
       "scope": "global",
+      "text": "Critical architectural debt concentration: 3 god-level components across 2 zones handle 60% of system complexity - tree.ts (31 fan-in), routes-rex.ts (129 calls), CallGraphView (67 function calls)",
+      "severity": "critical"
+    },
+    {
+      "type": "pattern",
+      "pass": 5,
+      "scope": "global",
       "text": "Systematic dead export accumulation across 4+ zones suggests missing cleanup automation — consider adding unused export detection to CI pipeline",
-      "severity": "info"
+      "severity": "critical"
     },
     {
       "type": "relationship",
       "pass": 2,
       "scope": "global",
       "text": "Interface-based zone coupling: dashboard-platform's 21 outgoing calls represent clean service composition rather than tight coupling — dependency injection through gateway modules",
+      "severity": "critical"
+    },
+    {
+      "type": "relationship",
+      "pass": 5,
+      "scope": "global",
+      "text": "Dead export accumulation pattern: 15+ unused exports across 4 zones suggests missing cleanup automation - implement pre-commit hook using ts-prune or similar to prevent export debt",
       "severity": "info"
     },
     {
@@ -1508,7 +1533,7 @@
       "pass": 3,
       "scope": "global",
       "text": "Test coupling to implementation: packages-sourcevision test suite has direct calls to analysis engine internals rather than testing through public interface",
-      "severity": "warning"
+      "severity": "critical"
     },
     {
       "type": "anti-pattern",
@@ -1540,6 +1565,13 @@
       "scope": "global",
       "text": "Establish consistent import extension strategy across all zones: either use .js extensions everywhere (Node.js ESM) or .ts extensions (TypeScript-style)",
       "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Implement fan-in monitoring: add CI check to flag modules with >20 incoming calls or functions with >30 outgoing calls to prevent future god-component formation",
+      "severity": "warning"
     },
     {
       "type": "suggestion",
@@ -1608,8 +1640,15 @@
       "type": "suggestion",
       "pass": 5,
       "scope": "rex",
-      "text": "Decompose packages/rex/src/core/tree.ts: extract tree traversal (walkTree), tree validation, and tree transformation into separate modules to reduce fan-in from 31 to <15 per module",
+      "text": "Validate tree.ts centralization: audit the 31 calling files to ensure they use walkTree appropriately and aren't bypassing the abstraction with direct tree manipulation",
       "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "web",
+      "text": "Decompose CallGraphView god function: extract rendering logic to packages/web/src/viewer/components/graph-renderer.ts, data processing to packages/web/src/viewer/utils/graph-processor.ts, and event handling to packages/web/src/viewer/hooks/useGraphEvents.ts",
+      "severity": "critical"
     },
     {
       "type": "suggestion",
@@ -1617,10 +1656,17 @@
       "scope": "web",
       "text": "Extract viewer subsystem from web zone: move packages/web/src/viewer/* to dedicated packages/viewer with clean interface — reduces zone size and isolates UI concerns",
       "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "web",
+      "text": "Split routes-rex.ts fan-in hub: extract handler functions to packages/web/src/server/handlers/rex-handlers.ts and middleware to packages/web/src/server/middleware/rex-middleware.ts to reduce the 129 cross-file calls",
+      "severity": "warning"
     }
   ],
   "enrichmentPass": 4,
-  "metaEvaluationCount": 7,
+  "metaEvaluationCount": 8,
   "structureHash": "bd609d116fb8fded",
   "zoneContentHashes": {
     "root": "1197a51f0798ee0d",

@@ -481,7 +481,9 @@ Outgoing (this zone → other zones):
 
 [observation] [info] Contains 45% of project files (144/322) — subdivided into 3 sub-zones
 [observation] [info] High cohesion (1) — files are tightly interconnected
+[suggestion] [critical] Decompose CallGraphView god function: extract rendering logic to packages/web/src/viewer/components/graph-renderer.ts, data processing to packages/web/src/viewer/utils/graph-processor.ts, and event handling to packages/web/src/viewer/hooks/useGraphEvents.ts
 [suggestion] [warning] Extract viewer subsystem from web zone: move packages/web/src/viewer/* to dedicated packages/viewer with clean interface — reduces zone size and isolates UI concerns
+[suggestion] [warning] Split routes-rex.ts fan-in hub: extract handler functions to packages/web/src/server/handlers/rex-handlers.ts and middleware to packages/web/src/server/middleware/rex-middleware.ts to reduce the 129 cross-file calls
 
 </findings>
 
@@ -502,6 +504,10 @@ Outgoing (this zone → other zones):
 - Standardize import extensions: either use .js consistently (Node.js ESM style) or .ts extensions throughout the zone for clarity
 - Web zone shows classic monolithic symptoms: oversized (144 files), god functions (CallGraphView), tight coupling (routes-rex.ts), and dead exports (6+ unused functions)
 - Extract viewer subsystem from web zone: move packages/web/src/viewer/* to dedicated packages/viewer with clean interface — reduces zone size and isolates UI concerns
+- Zone contains 45% of codebase yet maintains perfect cohesion through systematic gateway pattern implementation
+- Three god-level components (CallGraphView, routes-rex.ts, HealthBadge) concentrate 60% of zone's complexity
+- Decompose CallGraphView god function: extract rendering logic to packages/web/src/viewer/components/graph-renderer.ts, data processing to packages/web/src/viewer/utils/graph-processor.ts, and event handling to packages/web/src/viewer/hooks/useGraphEvents.ts
+- Split routes-rex.ts fan-in hub: extract handler functions to packages/web/src/server/handlers/rex-handlers.ts and middleware to packages/web/src/server/middleware/rex-middleware.ts to reduce the 129 cross-file calls
 - [call graph] 1740 internal calls, 21 outgoing, 0 incoming (cohesion: 0.99, coupling: 0.01)
 
 </insights>

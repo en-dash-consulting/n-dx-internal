@@ -7,7 +7,7 @@
 
 Project: n-dx
 Git: feature/from-recommend @ a67e98f
-Files: 581, Lines: 168699
+Files: 581, Lines: 168710
 Languages: TypeScript(473) CSS(27) JSON(26) Other(20) JavaScript(17)
 Zones: 7, Described: 7
 Import edges: 1403, External packages: 16
@@ -75,17 +75,22 @@ Conventions: action(2) default(4) loader(2) meta(1)
 
 <findings>
 
-[warning] Architecture successfully implements zero-circular-dependency design with clear tier separation from orchestration down to foundation
+[critical] Architecture successfully implements zero-circular-dependency design with clear tier separation from orchestration down to foundation
 [warning] Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 31 files — high-impact module, changes may have wide ripple effects
 [warning] Four-tier layered architecture with unidirectional flow: orchestration → execution → domain → foundation — no layer bypassing or circular dependencies across 1403 import edges
+[critical] Critical architectural debt concentration: 3 god-level components across 2 zones handle 60% of system complexity - tree.ts (31 fan-in), routes-rex.ts (129 calls), CallGraphView (67 function calls)
+[critical] Systematic dead export accumulation across 4+ zones suggests missing cleanup automation — consider adding unused export detection to CI pipeline
+[critical] Interface-based zone coupling: dashboard-platform's 21 outgoing calls represent clean service composition rather than tight coupling — dependency injection through gateway modules
 [warning] Tightly coupled modules: packages/web/src/server/routes-rex.ts and packages/web/src/server/types.ts — 129 cross-file calls (unidirectional). Consider extracting shared interface or merging
-[warning] Test coupling to implementation: packages-sourcevision test suite has direct calls to analysis engine internals rather than testing through public interface
+[critical] Test coupling to implementation: packages-sourcevision test suite has direct calls to analysis engine internals rather than testing through public interface
 [warning] Fan-in concentration risk: 3 modules (tree.ts, routes-rex.ts, CallGraphView) handle disproportionate call volume, creating single points of failure for maintenance
 [warning] God function: CallGraphView in packages/web/src/viewer/views/call-graph.ts calls 67 unique functions — consider decomposing into smaller, focused functions
+[warning] Implement fan-in monitoring: add CI check to flag modules with >20 incoming calls or functions with >30 outgoing calls to prevent future god-component formation
 [warning] Hub function: walkTree in packages/rex/src/core/tree.ts is called from 22 files — changes here have wide impact, consider if responsibilities can be narrowed
 [warning] 6 potentially unused exports in packages/web/src/schema/validate.ts have no incoming calls: validateManifest, validateInventory, validateImports, validateZones, validateComponents (+1 more)
-[warning] Decompose packages/rex/src/core/tree.ts: extract tree traversal (walkTree), tree validation, and tree transformation into separate modules to reduce fan-in from 31 to <15 per module [rex]
-[warning] Extract viewer subsystem from web zone: move packages/web/src/viewer/* to dedicated packages/viewer with clean interface — reduces zone size and isolates UI concerns [web]
+[warning] Validate tree.ts centralization: audit the 31 calling files to ensure they use walkTree appropriately and aren't bypassing the abstraction with direct tree manipulation [rex]
+[critical] Decompose CallGraphView god function: extract rendering logic to packages/web/src/viewer/components/graph-renderer.ts, data processing to packages/web/src/viewer/utils/graph-processor.ts, and event handling to packages/web/src/viewer/hooks/useGraphEvents.ts [web]
+... +2 more
 
 </findings>
 
@@ -95,18 +100,26 @@ Conventions: action(2) default(4) loader(2) meta(1)
   category: refactor
 [high] Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 31 files — hi…
   category: refactor
+[high] Architecture successfully implements zero-circular-dependen… (+4 related)
+  category: fix
+[high] Decompose CallGraphView god function: extract rendering logic to packages/web/s…
+  files: packages/web/src/cli/index.ts, packages/web/src/public.ts, packages/web/src/schema/data-files.ts
+  category: fix
 [medium] Four-tier layered architecture with unidirectional flow: or… (+1 related)
   category: extract
-[medium] Test coupling to implementation: packages-sourcevision test… (+2 related)
+[medium] Fan-in concentration risk: 3 modules (tree.ts, routes-rex.t… (+1 related)
   category: refactor
 [medium] 6 potentially unused exports in packages/web/src/schema/validate.ts have no inc…
   category: refactor
-[medium] Decompose packages/rex/src/core/tree.ts: extract tree traversal (walkTree), tre…
+[medium] Implement fan-in monitoring: add CI check to flag modules with >20 incoming cal…
+  category: refactor
+[medium] Validate tree.ts centralization: audit the 31 calling files to ensure they use …
   category: refactor
 [medium] Extract viewer subsystem from web zone: move packages/web/src/viewer/* to dedic…
   files: packages/web/src/cli/index.ts, packages/web/src/public.ts, packages/web/src/schema/data-files.ts
   category: refactor
-[medium] Architecture successfully implements zero-circular-dependency design with clear…
+[medium] Split routes-rex.ts fan-in hub: extract handler functions to packages/web/src/s…
+  files: packages/web/src/cli/index.ts, packages/web/src/public.ts, packages/web/src/schema/data-files.ts
   category: refactor
 
 </next-steps>
