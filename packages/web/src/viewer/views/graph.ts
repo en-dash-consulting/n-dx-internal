@@ -99,6 +99,11 @@ export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }
     }
   }, []);
 
+  // Zoom controls
+  const handleZoomIn = useCallback(() => { graphRef.current?.zoomIn(); }, []);
+  const handleZoomOut = useCallback(() => { graphRef.current?.zoomOut(); }, []);
+  const handleResetView = useCallback(() => { graphRef.current?.resetView(); }, []);
+
   // Toggle collapse on a specific zone (from legend click)
   const handleZoneLegendClick = useCallback((zoneId: string) => {
     if (!graphRef.current) return;
@@ -264,6 +269,27 @@ export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }
         onClick: handleToggleZones,
         title: zonesVisible ? "Hide zone groups" : "Show zone groups",
       }, zonesVisible ? "Zones" : "Zones off"),
+      // Zoom controls
+      h("div", { class: "graph-zoom-controls" },
+        h("button", {
+          class: "graph-zoom-btn",
+          onClick: handleZoomIn,
+          title: "Zoom in",
+          "aria-label": "Zoom in",
+        }, "+"),
+        h("button", {
+          class: "graph-zoom-btn",
+          onClick: handleZoomOut,
+          title: "Zoom out",
+          "aria-label": "Zoom out",
+        }, "\u2212"),
+        h("button", {
+          class: "graph-zoom-btn graph-zoom-fit",
+          onClick: handleResetView,
+          title: "Fit to content",
+          "aria-label": "Fit to content",
+        }, "\u2922"),
+      ),
       // Legend overlay — click items to collapse/expand zones
       legendItems.length > 0
         ? h("div", { class: "graph-legend" },

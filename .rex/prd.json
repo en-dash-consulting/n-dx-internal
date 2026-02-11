@@ -7323,17 +7323,19 @@
     {
       "id": "f5284d6e-06f9-4011-926f-9dd62de38194",
       "title": "SourceVision Import Graph Visualization Enhancement",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "9e57dd9f-9e44-4068-b5a2-84d29cdbb3e9",
           "title": "Interactive Graph Controls",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Make the import graph interactive with draggable nodes, clickable elements, and navigation controls for better user exploration",
           "source": "smart-add",
+          "startedAt": "2026-02-11T04:08:43.326Z",
+          "completedAt": "2026-02-11T04:08:43.326Z",
           "children": [
             {
               "id": "39144f79-e12e-46ff-979b-2a95359091bc",
@@ -7363,7 +7365,7 @@
             {
               "id": "a50b5e5d-7ef9-4a45-b847-114977184230",
               "title": "Implement zoom and pan controls",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add zoom in/out and pan functionality to navigate large import graphs that don't fit on screen",
               "acceptanceCriteria": [
@@ -7377,7 +7379,9 @@
                 "navigation",
                 "accessibility"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-11T04:04:07.559Z",
+              "completedAt": "2026-02-11T04:08:43.273Z"
             }
           ]
         },
@@ -7432,6 +7436,8 @@
           "level": "feature",
           "description": "Group related files and apply intelligent layout algorithms to make complex import relationships easier to understand",
           "source": "smart-add",
+          "startedAt": "2026-02-11T04:03:13.848Z",
+          "completedAt": "2026-02-11T04:03:13.848Z",
           "children": [
             {
               "id": "5bf87a91-de47-425a-a736-2a54827150e1",
@@ -7480,11 +7486,11 @@
               "startedAt": "2026-02-11T03:55:05.610Z",
               "completedAt": "2026-02-11T04:03:13.779Z"
             }
-          ],
-          "startedAt": "2026-02-11T04:03:13.848Z",
-          "completedAt": "2026-02-11T04:03:13.848Z"
+          ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-11T04:08:43.389Z",
+      "completedAt": "2026-02-11T04:08:43.389Z"
     }
   ]
 }

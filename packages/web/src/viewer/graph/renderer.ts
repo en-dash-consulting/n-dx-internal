@@ -394,6 +394,22 @@ export class GraphRenderer {
     return this.collapsedZones.has(zoneId);
   }
 
+  /** Zoom in by the given factor (default 1.25 = 25% closer). Zooms toward center. */
+  zoomIn(factor = 1.25): void {
+    this.applyZoomFromCenter(1 / factor);
+  }
+
+  /** Zoom out by the given factor (default 1.25 = 25% further). Zooms from center. */
+  zoomOut(factor = 1.25): void {
+    this.applyZoomFromCenter(factor);
+  }
+
+  /** Reset the viewport to fit all content. */
+  resetView(): void {
+    this.fitToContent();
+    this.updateLOD();
+  }
+
   destroy(): void {
     this.ac.abort();
   }
@@ -868,7 +884,22 @@ export class GraphRenderer {
     return -1;
   }
 
-  // ── Private: Zoom (mouse wheel) ────────────────────────────────────────────
+  // ── Private: Zoom ──────────────────────────────────────────────────────────
+
+  /** Apply a zoom factor centered on the current viewport center. */
+  private applyZoomFromCenter(factor: number): void {
+    const cx = this.viewX + this.viewW / 2;
+    const cy = this.viewY + this.viewH / 2;
+    const newW = this.viewW * factor;
+    const newH = this.viewH * factor;
+    this.viewX = cx - newW / 2;
+    this.viewY = cy - newH / 2;
+    this.viewW = newW;
+    this.viewH = newH;
+    this.scale = this.viewW / this.width;
+    this.updateViewBox();
+    this.updateLOD();
+  }
 
   private setupZoom(): void {
     this.svg.addEventListener("wheel", (e: WheelEvent) => {

@@ -229,6 +229,50 @@
   stroke-dasharray: 4 2;
 }
 
+/* ── Zoom controls ──────────────────────────────────────────────────── */
+
+.graph-zoom-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 10;
+}
+
+.graph-zoom-btn {
+  width: 32px;
+  height: 32px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.graph-zoom-btn:first-child { border-radius: 6px 6px 0 0; }
+.graph-zoom-btn:last-child { border-radius: 0 0 6px 6px; }
+.graph-zoom-btn:not(:first-child) { border-top: none; }
+
+.graph-zoom-btn:hover {
+  background: var(--bg-hover, var(--border));
+  color: var(--text);
+}
+
+.graph-zoom-btn:active {
+  background: var(--border);
+}
+
+.graph-zoom-fit {
+  font-size: 14px;
+}
+
 /* Touch interaction — prevent default browser behaviours */
 .graph-container svg { touch-action: none; }
 
