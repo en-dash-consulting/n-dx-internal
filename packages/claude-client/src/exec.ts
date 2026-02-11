@@ -212,6 +212,23 @@ export interface SpawnToolResult {
 }
 
 /**
+ * Handle returned by {@link spawnManaged}.
+ *
+ * Unlike {@link spawnTool} (which returns a bare `Promise`), this gives
+ * callers a reference to the underlying process so they can send signals
+ * (e.g. `handle.kill("SIGINT")`) while still awaiting the completion
+ * promise.
+ */
+export interface ManagedChild {
+  /** Resolves when the child exits. */
+  readonly done: Promise<SpawnToolResult>;
+  /** Send a signal to the child process. Returns `true` if the signal was sent. */
+  kill(signal?: NodeJS.Signals): boolean;
+  /** The child's PID (undefined if the process failed to spawn). */
+  readonly pid: number | undefined;
+}
+
+/**
  * Spawn a Node script (or other executable) as a child process.
  *
  * Covers the **spawn-and-delegate** pattern used by orchestration and
@@ -277,4 +294,70 @@ export function spawnTool(
       resolve({ exitCode: code ?? 1, stdout, stderr });
     });
   });
+}
+
+/**
+ * Spawn a long-running child process and return a managed handle.
+ *
+ * Like {@link spawnTool}, but returns a {@link ManagedChild} handle that
+ * exposes both a completion promise (`done`) **and** the ability to send
+ * signals to the child (via `kill()`).  This is the correct abstraction
+ * when the caller needs to cancel or pause the child — e.g. the web
+ * dashboard pausing a hench execution.
+ *
+ * Never use raw `spawn` from `node:child_process` for this pattern.
+ *
+ * @param cmd  The executable to run.
+ * @param args Command-line arguments.
+ * @param opts Options controlling cwd, env, and stdio wiring.
+ */
+export function spawnManaged(
+  cmd: string,
+  args: string[],
+  opts: SpawnToolOptions = {},
+): ManagedChild {
+  const { cwd, env } = opts;
+  const stdio = opts.stdio ?? "inherit";
+
+  const child = spawn(cmd, args, {
+    cwd,
+    env,
+    stdio: stdio === "pipe" ? ["ignore", "pipe", "pipe"] : "inherit",
+  });
+
+  const done = new Promise<SpawnToolResult>((resolve) => {
+    let stdout = "";
+    let stderr = "";
+
+    if (stdio === "pipe") {
+      child.stdout!.on("data", (chunk: Buffer) => {
+        stdout += chunk.toString();
+      });
+      child.stderr!.on("data", (chunk: Buffer) => {
+        stderr += chunk.toString();
+      });
+    }
+
+    child.on("error", () => {
+      resolve({ exitCode: 1, stdout, stderr });
+    });
+
+    child.on("close", (code, signal) => {
+      resolve({ exitCode: code, stdout, stderr });
+    });
+  });
+
+  return {
+    done,
+    kill(signal?: NodeJS.Signals): boolean {
+      try {
+        return child.kill(signal);
+      } catch {
+        return false;
+      }
+    },
+    get pid() {
+      return child.pid;
+    },
+  };
 }

@@ -38,8 +38,7 @@ import { readFileSync, writeFileSync, existsSync, appendFileSync, mkdtempSync, r
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { spawn, type ChildProcess } from "node:child_process";
-import { exec as foundationExec } from "@n-dx/claude-client";
+import { exec as foundationExec, spawnManaged, type ManagedChild } from "@n-dx/claude-client";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./types.js";
 import type { WebSocketBroadcaster } from "./websocket.js";
@@ -2385,7 +2384,7 @@ let executionState: ExecutionState = {
 };
 
 /** Reference to the current hench child process (if any). */
-let henchProcess: ChildProcess | null = null;
+let henchProcess: ManagedChild | null = null;
 
 /** Context and broadcast saved during execution for resume. */
 let savedCtx: ServerContext | null = null;
@@ -2441,33 +2440,25 @@ function refreshEpicProgress(ctx: ServerContext): void {
  * Run the hench CLI for one epic.
  * Returns a promise that resolves when hench exits.
  */
-function runHenchForEpic(ctx: ServerContext, epicId: string): Promise<{ code: number | null; signal: string | null }> {
-  return new Promise((resolve) => {
-    const henchBin = join(ctx.projectDir, "node_modules", ".bin", "hench");
-    const henchFallback = join(ctx.projectDir, "packages", "hench", "dist", "cli", "index.js");
-    const args = ["run", "--epic=" + epicId, "--loop", "--auto", ctx.projectDir];
+async function runHenchForEpic(ctx: ServerContext, epicId: string): Promise<{ code: number | null; signal: string | null }> {
+  const henchBin = join(ctx.projectDir, "node_modules", ".bin", "hench");
+  const henchFallback = join(ctx.projectDir, "packages", "hench", "dist", "cli", "index.js");
+  const args = ["run", "--epic=" + epicId, "--loop", "--auto", ctx.projectDir];
 
-    const binPath = existsSync(henchBin) ? henchBin : "node";
-    const binArgs = existsSync(henchBin) ? args : [henchFallback, ...args];
+  const binPath = existsSync(henchBin) ? henchBin : "node";
+  const binArgs = existsSync(henchBin) ? args : [henchFallback, ...args];
 
-    const child = spawn(binPath, binArgs, {
-      cwd: ctx.projectDir,
-      stdio: "inherit",
-      env: { ...process.env },
-    });
-
-    henchProcess = child;
-
-    child.on("close", (code, signal) => {
-      if (henchProcess === child) henchProcess = null;
-      resolve({ code, signal });
-    });
-
-    child.on("error", (err) => {
-      if (henchProcess === child) henchProcess = null;
-      resolve({ code: 1, signal: err.message });
-    });
+  const handle = spawnManaged(binPath, binArgs, {
+    cwd: ctx.projectDir,
+    stdio: "inherit",
+    env: { ...process.env },
   });
+
+  henchProcess = handle;
+
+  const result = await handle.done;
+  if (henchProcess === handle) henchProcess = null;
+  return { code: result.exitCode, signal: null };
 }
 
 /**
@@ -2669,11 +2660,7 @@ function handleExecutionPause(
 
   // Kill the current hench process if running
   if (henchProcess) {
-    try {
-      henchProcess.kill("SIGINT");
-    } catch {
-      // Process may have already exited
-    }
+    henchProcess.kill("SIGINT");
     henchProcess = null;
   }
 

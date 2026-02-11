@@ -11,7 +11,7 @@ vi.mock("node:child_process", () => ({
 }));
 
 import { execFile, execFileSync, spawn } from "node:child_process";
-import { exec, execStdout, execShellCmd, getCurrentHead, spawnTool } from "../../src/exec.js";
+import { exec, execStdout, execShellCmd, getCurrentHead, spawnTool, spawnManaged } from "../../src/exec.js";
 
 const mockExecFile = vi.mocked(execFile);
 const mockExecFileSync = vi.mocked(execFileSync);
@@ -318,5 +318,82 @@ describe("spawnTool", () => {
       env,
       stdio: "inherit",
     });
+  });
+});
+
+describe("spawnManaged", () => {
+  it("resolves done promise when child exits (inherit stdio)", async () => {
+    const child = createMockChild();
+    mockSpawn.mockReturnValue(child as never);
+
+    const handle = spawnManaged("node", ["script.js"], { cwd: "/project" });
+
+    expect(handle.pid).toBe(12345);
+    child.emit("close", 0);
+
+    const result = await handle.done;
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toBe("");
+  });
+
+  it("captures piped stdout and stderr", async () => {
+    const child = createMockChild({ pipe: true });
+    mockSpawn.mockReturnValue(child as never);
+
+    const handle = spawnManaged("node", ["script.js"], { stdio: "pipe" });
+
+    child.stdout!.emit("data", Buffer.from("output\n"));
+    child.stderr!.emit("data", Buffer.from("warning\n"));
+    child.emit("close", 0);
+
+    const result = await handle.done;
+    expect(result.stdout).toBe("output\n");
+    expect(result.stderr).toBe("warning\n");
+  });
+
+  it("kill sends signal to child process", async () => {
+    const child = createMockChild() as ReturnType<typeof createMockChild> & {
+      kill: ReturnType<typeof vi.fn>;
+    };
+    child.kill = vi.fn().mockReturnValue(true);
+    mockSpawn.mockReturnValue(child as never);
+
+    const handle = spawnManaged("node", ["script.js"]);
+
+    expect(handle.kill("SIGINT")).toBe(true);
+    expect(child.kill).toHaveBeenCalledWith("SIGINT");
+
+    child.emit("close", null, "SIGINT");
+    const result = await handle.done;
+    expect(result.exitCode).toBeNull();
+  });
+
+  it("kill returns false when child already exited", async () => {
+    const child = createMockChild() as ReturnType<typeof createMockChild> & {
+      kill: ReturnType<typeof vi.fn>;
+    };
+    child.kill = vi.fn().mockImplementation(() => {
+      throw new Error("process already exited");
+    });
+    mockSpawn.mockReturnValue(child as never);
+
+    const handle = spawnManaged("node", ["script.js"]);
+
+    expect(handle.kill("SIGTERM")).toBe(false);
+
+    child.emit("close", 0);
+    await handle.done;
+  });
+
+  it("resolves with exitCode 1 on spawn error", async () => {
+    const child = createMockChild();
+    mockSpawn.mockReturnValue(child as never);
+
+    const handle = spawnManaged("nonexistent", []);
+    child.emit("error", new Error("ENOENT"));
+
+    const result = await handle.done;
+    expect(result.exitCode).toBe(1);
   });
 });

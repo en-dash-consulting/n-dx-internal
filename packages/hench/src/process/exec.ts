@@ -17,6 +17,7 @@ export {
   getCurrentBranch,
   isExecutableOnPath,
   spawnTool,
+  spawnManaged,
 } from "@n-dx/claude-client";
 
 export type {
@@ -24,4 +25,5 @@ export type {
   ExecOptions,
   SpawnToolOptions,
   SpawnToolResult,
+  ManagedChild,
 } from "@n-dx/claude-client";

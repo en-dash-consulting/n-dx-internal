@@ -127,6 +127,7 @@ export {
   getCurrentBranch,
   isExecutableOnPath,
   spawnTool,
+  spawnManaged,
 } from "./exec.js";
 
 export type {
@@ -134,6 +135,7 @@ export type {
   ExecOptions,
   SpawnToolOptions,
   SpawnToolResult,
+  ManagedChild,
 } from "./exec.js";
 
 // Project directory constants
