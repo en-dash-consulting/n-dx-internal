@@ -7374,7 +7374,7 @@
             {
               "id": "a50b5e5d-7ef9-4a45-b847-114977184230",
               "title": "Implement zoom and pan controls",
-              "status": "failing",
+              "status": "completed",
               "level": "task",
               "description": "Add zoom in/out and pan functionality to navigate large import graphs that don't fit on screen",
               "acceptanceCriteria": [
@@ -7390,7 +7390,7 @@
               ],
               "source": "smart-add",
               "startedAt": "2026-02-11T04:04:07.559Z",
-              "completedAt": "2026-02-11T04:08:43.273Z",
+              "completedAt": "2026-02-11T06:53:20.563Z",
               "failureReason": "panning with mouse doesn't work"
             }
           ]

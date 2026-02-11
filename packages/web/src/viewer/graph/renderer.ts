@@ -92,6 +92,10 @@ export class GraphRenderer {
   // Selection state — persists until explicitly cleared
   private selectedNodeId: string | null = null;
 
+  // Pan gesture flag — set true when a pan actually moved the view;
+  // zone hull click handlers check this to suppress clicks after panning.
+  private wasPanning = false;
+
   // Label management state
   private labelsHidden = false;       // user toggle
   private labelRects: LabelRect[];    // reused per frame to avoid GC
@@ -516,6 +520,12 @@ export class GraphRenderer {
         // Don't trigger if clicking a node inside the hull
         const target = e.target as Element;
         if (target.tagName === "circle") return;
+
+        // Suppress zone select if this click completed a pan gesture
+        if (this.wasPanning) {
+          this.wasPanning = false;
+          return;
+        }
 
         e.stopPropagation();
         if (this.onZoneSelect) {
@@ -1044,10 +1054,18 @@ export class GraphRenderer {
     }, { signal });
 
     this.svg.addEventListener("mousedown", (e: MouseEvent) => {
+      // Only handle primary (left) button
+      if (e.button !== 0) return;
+
+      // Reset pan gesture flag at the start of each interaction
+      this.wasPanning = false;
+
       const target = e.target as Element;
       const idx = this.findNodeIndex(target);
 
       if (idx >= 0) {
+        // Prevent browser text selection / native drag during node drag
+        e.preventDefault();
         dragNode = this.nodes[idx];
         dragNodeIdx = idx;
         mouseDownPos = { x: e.clientX, y: e.clientY };
@@ -1060,6 +1078,9 @@ export class GraphRenderer {
         this.clearSelection();
       }
 
+      // Prevent browser text selection / native drag during pan
+      e.preventDefault();
+
       // Background pan
       isPanning = true;
       panStartX = e.clientX;
@@ -1069,7 +1090,9 @@ export class GraphRenderer {
       this.svg.classList.add("grabbing");
     }, { signal });
 
-    this.svg.addEventListener("mousemove", (e: MouseEvent) => {
+    // mousemove and mouseup are attached to window so dragging/panning
+    // continues even when the pointer leaves the SVG boundary.
+    const onMouseMove = (e: MouseEvent) => {
       // Node drag
       if (dragNode && mouseDownPos) {
         const dx = e.clientX - mouseDownPos.x;
@@ -1099,14 +1122,17 @@ export class GraphRenderer {
       if (isPanning) {
         const dx = e.clientX - panStartX;
         const dy = e.clientY - panStartY;
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+          this.wasPanning = true;
+        }
         const rect = this.svg.getBoundingClientRect();
         this.viewX = panStartVX - (dx / rect.width) * this.viewW;
         this.viewY = panStartVY - (dy / rect.height) * this.viewH;
         this.updateViewBox();
       }
-    }, { signal });
+    };
 
-    this.svg.addEventListener("mouseup", () => {
+    const onMouseUp = () => {
       if (dragNode) {
         if (!isDragging && dragNodeIdx >= 0) {
           // Click (no drag) — select node and show details
@@ -1142,7 +1168,10 @@ export class GraphRenderer {
         isPanning = false;
         this.svg.classList.remove("grabbing");
       }
-    }, { signal });
+    };
+
+    window.addEventListener("mousemove", onMouseMove, { signal });
+    window.addEventListener("mouseup", onMouseUp, { signal });
   }
 
   // ── Private: Touch interaction ─────────────────────────────────────────────

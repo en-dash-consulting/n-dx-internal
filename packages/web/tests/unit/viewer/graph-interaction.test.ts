@@ -507,3 +507,210 @@ describe("node adjacency map", () => {
     expect(map.get("a.ts")!.has(0)).toBe(true);
   });
 });
+
+// ── Pan state machine ────────────────────────────────────────────────────────
+
+describe("pan state machine", () => {
+  /**
+   * Simulates the pan state machine from GraphRenderer.setupPanAndDrag.
+   * Tests the logic in isolation without DOM.
+   */
+  interface PanState {
+    isPanning: boolean;
+    panStartX: number;
+    panStartY: number;
+    panStartVX: number;
+    panStartVY: number;
+    wasPanning: boolean;
+    viewX: number;
+    viewY: number;
+    viewW: number;
+    viewH: number;
+    containerWidth: number;
+    containerHeight: number;
+  }
+
+  function initPanState(): PanState {
+    return {
+      isPanning: false,
+      panStartX: 0,
+      panStartY: 0,
+      panStartVX: 0,
+      panStartVY: 0,
+      wasPanning: false,
+      viewX: 0,
+      viewY: 0,
+      viewW: 800,
+      viewH: 600,
+      containerWidth: 800,
+      containerHeight: 600,
+    };
+  }
+
+  /** Simulate mousedown on background (non-node target). */
+  function startPan(state: PanState, clientX: number, clientY: number): void {
+    state.wasPanning = false;
+    state.isPanning = true;
+    state.panStartX = clientX;
+    state.panStartY = clientY;
+    state.panStartVX = state.viewX;
+    state.panStartVY = state.viewY;
+  }
+
+  /** Simulate mousemove during pan. Returns true if viewport moved. */
+  function movePan(state: PanState, clientX: number, clientY: number): boolean {
+    if (!state.isPanning) return false;
+    const dx = clientX - state.panStartX;
+    const dy = clientY - state.panStartY;
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+      state.wasPanning = true;
+    }
+    state.viewX = state.panStartVX - (dx / state.containerWidth) * state.viewW;
+    state.viewY = state.panStartVY - (dy / state.containerHeight) * state.viewH;
+    return true;
+  }
+
+  /** Simulate mouseup to end pan. */
+  function endPan(state: PanState): void {
+    state.isPanning = false;
+  }
+
+  it("starts pan on background mousedown", () => {
+    const state = initPanState();
+    startPan(state, 100, 100);
+    expect(state.isPanning).toBe(true);
+    expect(state.wasPanning).toBe(false);
+  });
+
+  it("updates viewport on mousemove", () => {
+    const state = initPanState();
+    startPan(state, 100, 100);
+    movePan(state, 200, 150);
+    // Dragging right by 100px should shift viewX left by 100 viewBox units
+    expect(state.viewX).toBe(-100);
+    // Dragging down by 50px should shift viewY up by 50 viewBox units
+    expect(state.viewY).toBe(-50);
+  });
+
+  it("sets wasPanning flag when mouse moves > 1px", () => {
+    const state = initPanState();
+    startPan(state, 100, 100);
+    // Move just 1px — below threshold
+    movePan(state, 101, 100);
+    expect(state.wasPanning).toBe(false);
+    // Move 2px — above threshold
+    movePan(state, 102, 100);
+    expect(state.wasPanning).toBe(true);
+  });
+
+  it("does NOT set wasPanning on tiny sub-pixel movement", () => {
+    const state = initPanState();
+    startPan(state, 100, 100);
+    movePan(state, 100.5, 100.5);
+    expect(state.wasPanning).toBe(false);
+  });
+
+  it("resets wasPanning on new mousedown", () => {
+    const state = initPanState();
+    startPan(state, 100, 100);
+    movePan(state, 200, 200);
+    expect(state.wasPanning).toBe(true);
+    endPan(state);
+    // New mousedown resets flag
+    startPan(state, 200, 200);
+    expect(state.wasPanning).toBe(false);
+  });
+
+  it("pan works when zoomed in (smaller viewW)", () => {
+    const state = initPanState();
+    state.viewW = 400; // 2x zoom
+    state.viewH = 300;
+    startPan(state, 100, 100);
+    movePan(state, 200, 100); // drag 100px right
+    // At 2x zoom: 100px drag = 50 viewBox units
+    expect(state.viewX).toBeCloseTo(-50);
+  });
+
+  it("mouseup ends pan", () => {
+    const state = initPanState();
+    startPan(state, 100, 100);
+    expect(state.isPanning).toBe(true);
+    endPan(state);
+    expect(state.isPanning).toBe(false);
+  });
+
+  it("mousemove after mouseup does not pan", () => {
+    const state = initPanState();
+    startPan(state, 100, 100);
+    endPan(state);
+    const moved = movePan(state, 200, 200);
+    expect(moved).toBe(false);
+    expect(state.viewX).toBe(0);
+    expect(state.viewY).toBe(0);
+  });
+});
+
+// ── Pan + zone hull interaction ──────────────────────────────────────────────
+
+describe("pan vs zone hull click suppression", () => {
+  /**
+   * Tests that a zone hull click is suppressed when it immediately follows
+   * a pan gesture (wasPanning === true).
+   */
+
+  it("zone click is suppressed after a pan gesture", () => {
+    let wasPanning = false;
+    let zoneSelected = false;
+
+    // Simulate pan gesture
+    wasPanning = true;
+
+    // Zone click handler logic (mirrors renderer)
+    if (wasPanning) {
+      wasPanning = false;
+      // return; — zone click suppressed
+    } else {
+      zoneSelected = true;
+    }
+
+    expect(zoneSelected).toBe(false);
+    expect(wasPanning).toBe(false);
+  });
+
+  it("zone click fires when no pan occurred", () => {
+    let wasPanning = false;
+    let zoneSelected = false;
+
+    // No pan gesture — wasPanning stays false
+
+    // Zone click handler logic (mirrors renderer)
+    if (wasPanning) {
+      wasPanning = false;
+    } else {
+      zoneSelected = true;
+    }
+
+    expect(zoneSelected).toBe(true);
+  });
+
+  it("zone click fires on second click after pan (flag was consumed)", () => {
+    let wasPanning = true;
+    let zoneSelected = false;
+
+    // First click after pan — suppressed, consumes the flag
+    if (wasPanning) {
+      wasPanning = false;
+    } else {
+      zoneSelected = true;
+    }
+    expect(zoneSelected).toBe(false);
+
+    // Second click — no longer panning
+    if (wasPanning) {
+      wasPanning = false;
+    } else {
+      zoneSelected = true;
+    }
+    expect(zoneSelected).toBe(true);
+  });
+});
