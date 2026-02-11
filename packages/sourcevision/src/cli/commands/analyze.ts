@@ -11,7 +11,7 @@ import { analyzeZones } from "../../analyzers/zones.js";
 import { analyzeComponents } from "../../analyzers/components.js";
 import { analyzeCallGraph, computeZoneCallStats } from "../../analyzers/callgraph.js";
 import { generateCallGraphFindings } from "../../analyzers/callgraph-findings.js";
-import { deduplicateFindings } from "../../analyzers/enrich-parsing.js";
+import { deduplicateFindings, enforceSeverityRules } from "../../analyzers/enrich-parsing.js";
 import type { CallGraph, ImportEdge, Inventory } from "../../schema/index.js";
 import { readManifest, writeManifest, updateManifestModule, updateManifestError } from "../../analyzers/manifest.js";
 import { generateLlmsTxt } from "../../analyzers/llms-txt.js";
@@ -536,14 +536,16 @@ function enrichZonesWithCallGraph(svDir: string, callGraph: CallGraph, inventory
             f.text.includes("no incoming calls")
           ))
       );
-      zonesData.findings = deduplicateFindings([...existingFindings, ...callGraphFindings]);
+      zonesData.findings = enforceSeverityRules(deduplicateFindings([...existingFindings, ...callGraphFindings]));
     }
 
     writeFileSync(zonesPath, toCanonicalJSON(zonesData));
     const findingCount = callGraphFindings.length;
     info(`  Enriched zones.json with call graph statistics${findingCount > 0 ? ` and ${findingCount} finding${findingCount !== 1 ? "s" : ""}` : ""}`);
-  } catch {
+  } catch (err) {
     // Non-critical — don't fail if zone enrichment doesn't work
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`  Warning: call graph zone enrichment failed: ${msg}`);
   }
 }
 

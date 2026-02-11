@@ -323,6 +323,16 @@ function detectDeadExports(
     // These are in use even without a call graph edge.
     if (importedSymbols.has(`${fn.file}:${fn.name}`)) continue;
 
+    // Defensive fallback: direct edge scan catches any set-building edge cases.
+    // O(n) per exported function but only runs for the small number that passed
+    // all other checks — a safety net that makes the cross-reference impossible
+    // to silently fail.
+    if (importEdges?.some(e =>
+      e.to === fn.file &&
+      e.type !== "reexport" && e.type !== "type" &&
+      e.symbols.includes(fn.name)
+    )) continue;
+
     // Check if this function is called anywhere
     const key = `${fn.file}:${fn.qualifiedName}`;
     const keyByName = `${fn.file}:${fn.name}`;

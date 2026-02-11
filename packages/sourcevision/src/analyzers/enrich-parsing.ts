@@ -205,6 +205,52 @@ export function mergeZonesByName(zones: Zone[]): Zone[] {
   return merged;
 }
 
+// ── Programmatic severity enforcement ────────────────────────────────────────
+
+const POSITIVE_INDICATORS = [
+  "successfully", "exemplary", "masterful", "clean separation",
+  "well-defined", "well-isolated", "clean design", "good architecture",
+  "perfectly maintained", "exceptional", "zero-circular",
+  "clean.*hierarchy", "correctly implements", "proper implementation",
+];
+
+const TEST_COUPLING_INDICATORS = [
+  "test coupling to implementation",
+  "test.*suite.*direct calls.*internals",
+  "unit test.*coupling",
+  "test-to-implementation coupling",
+];
+
+/**
+ * Enforce deterministic severity rules that the LLM can't override.
+ * Runs after findings are parsed to correct misclassified severities:
+ *
+ * - Positive/praise findings from LLM passes → downgrade to "info"
+ * - Test-coupling anti-patterns → downgrade to "info" (expected by design)
+ * - Pass 0 (deterministic heuristic) findings are never modified
+ */
+export function enforceSeverityRules(findings: Finding[]): Finding[] {
+  return findings.map(f => {
+    // Rule 1: LLM findings with positive language → info
+    if (f.pass >= 1 && f.severity !== "info") {
+      const lower = f.text.toLowerCase();
+      if (POSITIVE_INDICATORS.some(p => new RegExp(p, "i").test(lower))) {
+        return { ...f, severity: "info" };
+      }
+    }
+
+    // Rule 2: Test-coupling anti-patterns → info
+    if (f.pass >= 1 && f.type === "anti-pattern") {
+      const lower = f.text.toLowerCase();
+      if (TEST_COUPLING_INDICATORS.some(p => new RegExp(p, "i").test(lower))) {
+        return { ...f, severity: "info" };
+      }
+    }
+
+    return f;
+  });
+}
+
 // ── Finding deduplication ────────────────────────────────────────────────────
 
 const SEVERITY_RANK: Record<string, number> = { critical: 0, warning: 1, info: 2 };
@@ -241,12 +287,21 @@ const FINDING_SIMILARITY_THRESHOLD = 0.8;
 
 /**
  * Pick the "best" finding from a cluster of near-duplicates.
- * Prefers: highest severity → most related items → lowest pass number.
+ * Prefers: pass 0 findings (calibrated heuristics) → highest severity →
+ * most related items → lowest pass number.
+ *
+ * Pass 0 findings have severity calibrated by code thresholds, so LLM
+ * duplicates should never override them. This prevents the meta-evaluation
+ * pass from escalating a heuristic "info" to "critical".
  */
 function pickBest(cluster: Finding[]): Finding {
   if (cluster.length === 1) return cluster[0];
 
   return cluster.reduce((best, f) => {
+    // Pass 0 findings are authoritative — prefer them over LLM duplicates
+    if (best.pass === 0 && f.pass !== 0) return best;
+    if (f.pass === 0 && best.pass !== 0) return f;
+
     const bestSev = SEVERITY_RANK[best.severity ?? ""] ?? 3;
     const fSev = SEVERITY_RANK[f.severity ?? ""] ?? 3;
     if (fSev < bestSev) return f;

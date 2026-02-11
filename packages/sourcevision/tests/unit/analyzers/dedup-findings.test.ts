@@ -37,11 +37,24 @@ describe("deduplicateFindings", () => {
     expect(result[0].text).toBe("Low cohesion detected");
   });
 
-  it("keeps the highest severity version when merging", () => {
+  it("prefers pass 0 finding over higher-severity LLM duplicates", () => {
     const findings = [
       makeFinding({ text: "Circular dependency found", scope: "global", pass: 0, severity: "info" }),
       makeFinding({ text: "Circular dependency found", scope: "global", pass: 2, severity: "critical" }),
       makeFinding({ text: "Circular dependency found", scope: "global", pass: 1, severity: "warning" }),
+    ];
+    const result = deduplicateFindings(findings);
+    expect(result).toHaveLength(1);
+    // Pass 0 findings are authoritative — their calibrated severity is preserved
+    expect(result[0].severity).toBe("info");
+    expect(result[0].pass).toBe(0);
+  });
+
+  it("keeps highest severity when merging non-pass-0 duplicates", () => {
+    const findings = [
+      makeFinding({ text: "Circular dependency found", scope: "global", pass: 1, severity: "info" }),
+      makeFinding({ text: "Circular dependency found", scope: "global", pass: 2, severity: "critical" }),
+      makeFinding({ text: "Circular dependency found", scope: "global", pass: 3, severity: "warning" }),
     ];
     const result = deduplicateFindings(findings);
     expect(result).toHaveLength(1);
@@ -76,30 +89,43 @@ describe("deduplicateFindings", () => {
     expect(result).toHaveLength(2);
   });
 
-  it("preserves related arrays from the kept finding", () => {
+  it("preserves pass 0 finding even when LLM duplicate has related arrays", () => {
     const findings = [
       makeFinding({ text: "Coupling issue", scope: "zone-a", pass: 0, severity: "info" }),
       makeFinding({ text: "Coupling issue", scope: "zone-a", pass: 1, severity: "warning", related: ["zone-b", "zone-c"] }),
     ];
     const result = deduplicateFindings(findings);
     expect(result).toHaveLength(1);
-    expect(result[0].related).toEqual(["zone-b", "zone-c"]);
+    // Pass 0 is authoritative — its severity and data are preserved
+    expect(result[0].pass).toBe(0);
+    expect(result[0].severity).toBe("info");
   });
 
-  it("prefers the finding with the most related items when severity is equal", () => {
+  it("prefers the finding with the most related items when severity is equal (non-pass-0)", () => {
     const findings = [
-      makeFinding({ text: "Coupling issue", scope: "zone-a", pass: 0, severity: "warning", related: ["zone-b"] }),
-      makeFinding({ text: "Coupling issue", scope: "zone-a", pass: 1, severity: "warning", related: ["zone-b", "zone-c", "zone-d"] }),
+      makeFinding({ text: "Coupling issue", scope: "zone-a", pass: 1, severity: "warning", related: ["zone-b"] }),
+      makeFinding({ text: "Coupling issue", scope: "zone-a", pass: 2, severity: "warning", related: ["zone-b", "zone-c", "zone-d"] }),
     ];
     const result = deduplicateFindings(findings);
     expect(result).toHaveLength(1);
     expect(result[0].related).toEqual(["zone-b", "zone-c", "zone-d"]);
   });
 
-  it("handles findings without severity", () => {
+  it("preserves pass 0 finding even when it lacks severity", () => {
     const findings = [
       makeFinding({ text: "Same finding", scope: "zone-a", pass: 0, severity: undefined }),
       makeFinding({ text: "Same finding", scope: "zone-a", pass: 1, severity: "warning" }),
+    ];
+    const result = deduplicateFindings(findings);
+    expect(result).toHaveLength(1);
+    // Pass 0 is authoritative — preserved even without severity
+    expect(result[0].pass).toBe(0);
+  });
+
+  it("handles findings without severity (non-pass-0)", () => {
+    const findings = [
+      makeFinding({ text: "Same finding", scope: "zone-a", pass: 1, severity: undefined }),
+      makeFinding({ text: "Same finding", scope: "zone-a", pass: 2, severity: "warning" }),
     ];
     const result = deduplicateFindings(findings);
     expect(result).toHaveLength(1);
@@ -148,9 +174,10 @@ describe("deduplicateFindings", () => {
     const elapsed = Date.now() - start;
     // Each pair of duplicates merges into 1, so 100 results
     expect(result).toHaveLength(100);
-    // Should always prefer warning over info
+    // Pass 0 findings are authoritative — their severity is preserved
     for (const f of result) {
-      expect(f.severity).toBe("warning");
+      expect(f.severity).toBe("info");
+      expect(f.pass).toBe(0);
     }
     expect(elapsed).toBeLessThan(1000);
   });

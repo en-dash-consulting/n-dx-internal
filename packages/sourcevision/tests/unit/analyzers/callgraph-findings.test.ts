@@ -1262,3 +1262,44 @@ describe("finding structure", () => {
     expect(findings).toEqual([]);
   });
 });
+
+// ── Defensive fallback edge scan ────────────────────────────────────────
+
+describe("defensive fallback edge scan", () => {
+  it("catches symbols missed by set lookup via direct edge scan", () => {
+    // This test verifies the defensive fallback catches edge cases
+    // where the set-based lookup might fail
+    const functions = [
+      makeFn({ file: "src/component.ts", name: "MyComponent", isExported: true }),
+    ];
+    const edges: CallEdge[] = [];
+    const importEdges: ImportEdge[] = [
+      { from: "src/app.ts", to: "src/component.ts", type: "static", symbols: ["MyComponent"] },
+    ];
+
+    const cg = makeCallGraph(functions, edges);
+    const inventory = makeInventory(["src/component.ts", "src/app.ts"]);
+    const findings = generateCallGraphFindings(cg, { inventory, importEdges });
+
+    const componentFindings = findings.filter(f => f.text.includes("MyComponent"));
+    expect(componentFindings).toHaveLength(0);
+  });
+
+  it("does not suppress findings when no import edge matches", () => {
+    const functions = [
+      makeFn({ file: "src/unused.ts", name: "unused", isExported: true }),
+    ];
+    const edges: CallEdge[] = [];
+    const importEdges: ImportEdge[] = [
+      // Import edge targets a different file
+      { from: "src/app.ts", to: "src/other.ts", type: "static", symbols: ["unused"] },
+    ];
+
+    const cg = makeCallGraph(functions, edges);
+    const inventory = makeInventory(["src/unused.ts", "src/app.ts", "src/other.ts"]);
+    const findings = generateCallGraphFindings(cg, { inventory, importEdges });
+
+    const unusedFindings = findings.filter(f => f.text.includes("unused"));
+    expect(unusedFindings.length).toBeGreaterThanOrEqual(1);
+  });
+});

@@ -5,6 +5,7 @@ import {
   extractFindings,
   buildMetaPrompt,
 } from "../../../src/analyzers/enrich.js";
+import { enforceSeverityRules } from "../../../src/analyzers/enrich-parsing.js";
 import type {
   Zone,
   ZoneCrossing,
@@ -797,5 +798,65 @@ describe("buildMetaPrompt", () => {
 
     const prompt = buildMetaPrompt(sampleZones, findings, sampleCrossings);
     expect(prompt).toContain("[source: pass 7: LLM analysis; method: LLM analysis]");
+  });
+});
+
+// ── enforceSeverityRules ────────────────────────────────────────────────────
+
+describe("enforceSeverityRules", () => {
+  it("downgrades positive LLM findings to info", () => {
+    const findings: Finding[] = [
+      { type: "observation", pass: 1, scope: "global", text: "Architecture successfully implements zero-circular-dependency design", severity: "critical" },
+    ];
+    const result = enforceSeverityRules(findings);
+    expect(result[0].severity).toBe("info");
+  });
+
+  it("downgrades test-coupling anti-patterns to info", () => {
+    const findings: Finding[] = [
+      { type: "anti-pattern", pass: 3, scope: "global", text: "Test coupling to implementation: test suite has direct calls to internals", severity: "critical" },
+    ];
+    const result = enforceSeverityRules(findings);
+    expect(result[0].severity).toBe("info");
+  });
+
+  it("does not modify pass 0 findings", () => {
+    const findings: Finding[] = [
+      { type: "anti-pattern", pass: 0, scope: "global", text: "God function: something successfully calls 50 functions", severity: "warning" },
+    ];
+    const result = enforceSeverityRules(findings);
+    expect(result[0].severity).toBe("warning");
+  });
+
+  it("does not modify legitimate LLM warnings", () => {
+    const findings: Finding[] = [
+      { type: "anti-pattern", pass: 3, scope: "global", text: "Tight coupling between zones X and Y", severity: "warning" },
+    ];
+    const result = enforceSeverityRules(findings);
+    expect(result[0].severity).toBe("warning");
+  });
+
+  it("matches positive indicators case-insensitively", () => {
+    const findings: Finding[] = [
+      { type: "observation", pass: 2, scope: "global", text: "EXEMPLARY module isolation across all zones", severity: "warning" },
+    ];
+    const result = enforceSeverityRules(findings);
+    expect(result[0].severity).toBe("info");
+  });
+
+  it("does not modify findings already at info severity", () => {
+    const findings: Finding[] = [
+      { type: "observation", pass: 1, scope: "global", text: "Clean separation of concerns", severity: "info" },
+    ];
+    const result = enforceSeverityRules(findings);
+    expect(result[0].severity).toBe("info");
+  });
+
+  it("handles test-coupling with regex pattern", () => {
+    const findings: Finding[] = [
+      { type: "anti-pattern", pass: 2, scope: "global", text: "Unit test coupling to implementation details detected", severity: "warning" },
+    ];
+    const result = enforceSeverityRules(findings);
+    expect(result[0].severity).toBe("info");
   });
 });
