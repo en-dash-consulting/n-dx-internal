@@ -296,6 +296,68 @@ export interface Components {
   summary: ComponentsSummary;
 }
 
+// ── Call Graph ──────────────────────────────────────────────────────────────
+
+export type CallType = "direct" | "method" | "property-chain" | "computed";
+
+/** A function or method definition that can be a caller or callee. */
+export interface FunctionNode {
+  /** File path (relative to project root) */
+  file: string;
+  /** Function or method name. Anonymous functions use "<anonymous>". */
+  name: string;
+  /** Line number of the definition */
+  line: number;
+  /** Column number of the definition */
+  column: number;
+  /** Fully qualified name including class/object context: "MyClass.method", "utils.helper" */
+  qualifiedName: string;
+  /** Whether this function is exported from its module */
+  isExported: boolean;
+}
+
+/** A call edge from one function to another. */
+export interface CallEdge {
+  /** File containing the caller */
+  callerFile: string;
+  /** Qualified name of the calling function */
+  caller: string;
+  /** File containing the callee (null if external/unresolved) */
+  calleeFile: string | null;
+  /** Qualified name of the called function */
+  callee: string;
+  /** How the call was made */
+  type: CallType;
+  /** Line number of the call site */
+  line: number;
+  /** Column number of the call site */
+  column: number;
+}
+
+export interface CallGraphSummary {
+  /** Total number of function/method definitions found */
+  totalFunctions: number;
+  /** Total number of call edges */
+  totalCalls: number;
+  /** Number of files with call relationships */
+  filesWithCalls: number;
+  /** Functions with the most callers (most depended-on) */
+  mostCalled: Array<{ qualifiedName: string; file: string; callerCount: number }>;
+  /** Functions with the most callees (most complex/orchestrating) */
+  mostCalling: Array<{ qualifiedName: string; file: string; calleeCount: number }>;
+  /** Number of call cycles detected */
+  cycleCount: number;
+}
+
+export interface CallGraph {
+  /** All function/method definitions discovered */
+  functions: FunctionNode[];
+  /** All call edges between functions */
+  edges: CallEdge[];
+  /** Summary statistics */
+  summary: CallGraphSummary;
+}
+
 // ── Next Steps ──────────────────────────────────────────────────────────────
 
 export interface NextStep {
@@ -315,4 +377,5 @@ export interface SourcevisionOutput {
   imports: Imports;
   zones: Zones;
   components?: Components;
+  callGraph?: CallGraph;
 }

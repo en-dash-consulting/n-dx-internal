@@ -6,11 +6,13 @@ export {
   ZonesSchema,
   FindingSchema,
   ComponentsSchema,
+  CallGraphSchema,
   validateManifest,
   validateInventory,
   validateImports,
   validateZones,
   validateComponents,
+  validateCallGraph,
   validateModule,
   formatValidationErrors,
 } from "./validate.js";

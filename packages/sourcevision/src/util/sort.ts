@@ -17,6 +17,9 @@ import type {
   ComponentUsageEdge,
   RouteModule,
   Components,
+  FunctionNode,
+  CallEdge,
+  CallGraph,
 } from "../schema/index.js";
 
 function cmp(a: string, b: string): number {
@@ -154,6 +157,44 @@ export function sortComponents(data: Components): Components {
     routeModules: sortRouteModules(data.routeModules),
     routeTree: data.routeTree,
     summary: data.summary,
+  };
+}
+
+// ── Call graph sorting ───────────────────────────────────────────────────────
+
+export function sortFunctionNodes(
+  functions: FunctionNode[]
+): FunctionNode[] {
+  return [...functions].sort(
+    (a, b) => cmp(a.file, b.file) || a.line - b.line || a.column - b.column
+  );
+}
+
+export function sortCallEdges(edges: CallEdge[]): CallEdge[] {
+  return [...edges].sort(
+    (a, b) =>
+      cmp(a.callerFile, b.callerFile) ||
+      cmp(a.caller, b.caller) ||
+      a.line - b.line ||
+      a.column - b.column ||
+      cmp(a.callee, b.callee)
+  );
+}
+
+/** Sort all arrays in a CallGraph for canonical output */
+export function sortCallGraph(data: CallGraph): CallGraph {
+  return {
+    functions: sortFunctionNodes(data.functions),
+    edges: sortCallEdges(data.edges),
+    summary: {
+      ...data.summary,
+      mostCalled: [...data.summary.mostCalled].sort(
+        (a, b) => b.callerCount - a.callerCount || cmp(a.qualifiedName, b.qualifiedName)
+      ),
+      mostCalling: [...data.summary.mostCalling].sort(
+        (a, b) => b.calleeCount - a.calleeCount || cmp(a.qualifiedName, b.qualifiedName)
+      ),
+    },
   };
 }
 

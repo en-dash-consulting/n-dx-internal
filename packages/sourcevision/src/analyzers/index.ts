@@ -22,3 +22,4 @@ export {
   parseRoutesConfig,
   findRoutesDir,
 } from "./route-detection.js";
+export { analyzeCallGraph, extractFunctions, extractCalls } from "./callgraph.js";

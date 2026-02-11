@@ -87,6 +87,12 @@ export type {
   RouteExportKind,
   RouteTreeNode,
   ComponentsSummary,
+  // callgraph.json
+  CallGraph,
+  CallEdge,
+  CallType,
+  FunctionNode,
+  CallGraphSummary,
   // aggregate
   SourcevisionOutput,
   TokenUsage,
