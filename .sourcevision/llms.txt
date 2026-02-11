@@ -5,12 +5,12 @@
 
 ## Project Overview
 
-- **Files**: 578
-- **Lines of code**: 168,299
-- **Languages**: TypeScript (470), CSS (27), JSON (26), Other (20), JavaScript (17)
-- **Zones**: 9 (9 with descriptions)
+- **Files**: 581
+- **Lines of code**: 168,699
+- **Languages**: TypeScript (473), CSS (27), JSON (26), Other (20), JavaScript (17)
+- **Zones**: 7 (7 with descriptions)
 - **Git**: feature/from-recommend @ a67e98f
-- **Analyzed**: 2026-02-11T15:31:44.890Z
+- **Analyzed**: 2026-02-11T17:33:27.193Z
 
 ## Architecture Zones
 
@@ -24,9 +24,9 @@
 
 ### Hench (`hench`)
 
-100 files, primarily TypeScript
+99 files, primarily TypeScript
 
-- Files: 100
+- Files: 99
 - Cohesion: 1.00, Coupling: 0.00
 - Detail: `.sourcevision/zones/hench/context.md`
 
@@ -38,40 +38,23 @@ A self-contained CLI tool and MCP server for managing hierarchical product requi
 - Cohesion: 1.00, Coupling: 0.00
 - Detail: `.sourcevision/zones/packages-rex:rex-cli/context.md`
 
-### Analysis Engine (`packages-sourcevision:analysis-engine`)
+### Cli (`packages-sourcevision:cli`)
 
-Core analysis pipeline including file inventory, import graph extraction, Louvain community detection, route parsing, AI enrichment, and CLI orchestration.
+12 files, primarily TypeScript
 
-- Files: 33
+- Files: 12
+- Cohesion: 0.74, Coupling: 0.26
+- Entry points: packages/sourcevision/src/cli/commands/constants.ts, packages/sourcevision/src/cli/commands/init.ts, packages/sourcevision/src/cli/errors.ts, packages/sourcevision/src/cli/output.ts
+- Detail: `.sourcevision/zones/packages-sourcevision:cli/context.md`
+
+### Tests (`packages-sourcevision:tests`)
+
+66 files, primarily TypeScript
+
+- Files: 68
 - Cohesion: 0.94, Coupling: 0.06
-- Entry points: packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/imports.ts, packages/sourcevision/src/analyzers/inventory.ts, packages/sourcevision/src/analyzers/zones.ts, packages/sourcevision/src/schema/data-files.ts
-- Detail: `.sourcevision/zones/packages-sourcevision:analysis-engine/context.md`
-
-### Interactive Viewer (`packages-sourcevision:interactive-viewer`)
-
-Preact single-page application that visualizes analysis results through force-directed graphs, zone maps, route trees, and findings panels, consuming only schema types with zero analyzer dependencies.
-
-- Files: 46
-- Cohesion: 0.96, Coupling: 0.04
-- Entry points: packages/sourcevision/src/schema/v1.ts
-- Detail: `.sourcevision/zones/packages-sourcevision:interactive-viewer/context.md`
-
-### Test Fixtures (`packages-sourcevision:test-fixtures`)
-
-Self-contained sample TypeScript project used as input data for integration and end-to-end tests, intentionally isolated with no imports from or exports to production code.
-
-- Files: 7
-- Cohesion: 1.00, Coupling: 0.00
-- Detail: `.sourcevision/zones/packages-sourcevision:test-fixtures/context.md`
-
-### Test Suite (`packages-sourcevision:test-suite`)
-
-Unit, integration, and end-to-end tests covering analyzer logic, schema validation, CLI workflows, and the serve command, with imports reaching into both analyzer and viewer zones.
-
-- Files: 5
-- Cohesion: 0.46, Coupling: 0.54
-- Entry points: packages/sourcevision/src/schema/validate.ts
-- Detail: `.sourcevision/zones/packages-sourcevision:test-suite/context.md`
+- Entry points: packages/sourcevision/src/cli/commands/analyze.ts, packages/sourcevision/src/cli/mcp.ts, packages/sourcevision/src/export/pdf-report.ts, packages/sourcevision/src/schema/data-files.ts, packages/sourcevision/src/schema/index.ts (+1 more)
+- Detail: `.sourcevision/zones/packages-sourcevision:tests/context.md`
 
 ### Root (`root`)
 
@@ -106,7 +89,7 @@ Unit, integration, and end-to-end tests covering analyzer logic, schema validati
 
 ### External Packages
 
-- `vitest` (used by 208 files)
+- `vitest` (used by 211 files)
 - `preact` (used by 61 files)
 - `@n-dx/claude-client` (used by 35 files)
 - `rex` (used by 16 files)
@@ -116,13 +99,6 @@ Unit, integration, and end-to-end tests covering analyzer logic, schema validati
 - `typescript` (used by 4 files)
 - `child_process` (used by 3 files)
 - `fs` (used by 3 files)
-
-### Circular Dependencies
-
-Found 2 circular dependency chain(s):
-
-- `packages/rex/src/core/tree.ts` → `packages/rex/src/core/delete.ts`
-- `packages/rex/src/core/tree.ts` → `packages/rex/src/core/stats.ts`
 
 ## Route Structure
 
@@ -147,41 +123,43 @@ Found 2 circular dependency chain(s):
 
 ### Anti-patterns
 
-- Hotspot cascade effect: tree.ts fan-in (30 files) + walkTree hub function (20 files) + chunked-review coupling (370 calls) create a critical dependency bottleneck affecting 50+ files across rex and dependent packages [critical]
-- God function: <module> in packages/sourcevision/tests/unit/analyzers/zones.test.ts calls 82 unique functions — consider decomposing into smaller, focused functions [critical]
+- Test coupling to implementation: packages-sourcevision test suite has direct calls to analysis engine internals rather than testing through public interface [warning]
+- Zone size imbalance: 36x difference between largest (144 files) and smallest (4 files) zones indicates uneven responsibility distribution [info]
+- Fan-in concentration risk: 3 modules (tree.ts, routes-rex.ts, CallGraphView) handle disproportionate call volume, creating single points of failure for maintenance [warning]
+- God function: CallGraphView in packages/web/src/viewer/views/call-graph.ts calls 67 unique functions — consider decomposing into smaller, focused functions [warning]
 
 ### Patterns
 
-- Systematic over-engineering at system boundaries: dead code concentrates in adapters (notion-adapter.ts 19 exports), UI components (renderer.ts 39 exports), and validation layers (validate.ts 8 exports) while core domain logic remains clean [warning]
+- Four-tier layered architecture with unidirectional flow: orchestration → execution → domain → foundation — no layer bypassing or circular dependencies across 1403 import edges [warning]
+- Systematic dead export accumulation across 4+ zones suggests missing cleanup automation — consider adding unused export detection to CI pipeline [info]
 
 ### Relationships
 
-- Tightly coupled modules: packages/rex/src/cli/commands/chunked-review-state.ts and packages/rex/tests/unit/cli/commands/chunked-review.test.ts — 370 cross-file calls (unidirectional). Consider extracting shared interface or merging [critical]
+- Interface-based zone coupling: dashboard-platform's 21 outgoing calls represent clean service composition rather than tight coupling — dependency injection through gateway modules [info]
+- Tightly coupled modules: packages/web/src/server/routes-rex.ts and packages/web/src/server/types.ts — 129 cross-file calls (unidirectional). Consider extracting shared interface or merging [warning]
 
 ### Observations
 
 - High cohesion (1) — files are tightly interconnected [info] (claude-client)
-- 2 circular dependency chains detected — see imports.json for details [warning]
 - Size imbalance: largest zone has 144 files vs smallest with 4 — uneven decomposition [info]
+- Architecture successfully implements zero-circular-dependency design with clear tier separation from orchestration down to foundation [warning]
 - Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 31 files — high-impact module, changes may have wide ripple effects [warning]
 - High cohesion (1) — files are tightly interconnected [info] (hench)
 - High cohesion (1) — files are tightly interconnected [info] (root)
-- Contains 45% of project files (144/323) — subdivided into 3 sub-zones [info] (web)
+- Contains 45% of project files (144/322) — subdivided into 3 sub-zones [info] (web)
 - High cohesion (1) — files are tightly interconnected [info] (web)
 
 ### Suggestions
 
-- Implement graduated refactoring strategy: 1) Extract tree.ts operations into focused modules, 2) Break chunked-review test coupling, 3) Decompose analyzeZones god function, 4) Remove dead code from web package adapters [critical]
+- Establish consistent import extension strategy across all zones: either use .js extensions everywhere (Node.js ESM) or .ts extensions (TypeScript-style) [info]
 - Hub function: walkTree in packages/rex/src/core/tree.ts is called from 22 files — changes here have wide impact, consider if responsibilities can be narrowed [warning]
-- 39 potentially unused exports in packages/web/src/viewer/graph/renderer.ts have no incoming calls: constructor, highlightNode, centerOnNode, selectNode, clearSelection (+34 more) [warning]
-- 19 potentially unused exports in packages/rex/src/store/notion-adapter.ts have no incoming calls: constructor, path, getStatusGroupMap, invalidateCache, loadDocument (+14 more) [warning]
-- 9 potentially unused exports in packages/hench/src/store/adjustments.ts have no incoming calls: loadAdaptiveStateAsync, saveAdaptiveStateAsync, recordAdjustment, updateSettings, lockKey (+4 more) [warning]
-- 8 potentially unused exports in packages/web/src/schema/validate.ts have no incoming calls: validateManifest, validateInventory, validateImports, validateZones, validateComponents (+3 more) [warning]
-- 5 potentially unused exports in packages/rex/src/schema/v1.ts have no incoming calls: isRequirementCategory, isValidationType, isPriority, isItemLevel, isItemStatus [warning]
-- 4 potentially unused exports in packages/rex/src/analyze/reason.ts have no incoming calls: reasonFromScanResults, adjustGranularity, assessGranularity, reasonFromBatch [info]
-- 4 potentially unused exports in packages/web/src/viewer/components/data-display/health-gauge.ts have no incoming calls: HealthGauge, HealthBadge, PatternBadge, MetricCard [info]
-- Break 370-call coupling between packages/rex/src/cli/commands/chunked-review.ts and its test by extracting shared ChunkedReviewState interface to packages/rex/src/core/review-state.ts [critical] (rex)
-- ... and 2 more
+- 6 potentially unused exports in packages/web/src/schema/validate.ts have no incoming calls: validateManifest, validateInventory, validateImports, validateZones, validateComponents (+1 more) [warning]
+- 3 potentially unused exports in packages/web/src/viewer/components/data-display/health-gauge.ts have no incoming calls: HealthGauge, PatternBadge, MetricCard [info]
+- 3 potentially unused exports in packages/web/src/viewer/components/logos.ts have no incoming calls: NdxLogoPng, ProductLogoPng, BrandedHeader [info]
+- 2 potentially unused exports in packages/hench/src/store/suggestions.ts have no incoming calls: loadSuggestionHistoryAsync, saveSuggestionHistoryAsync [info]
+- Potentially unused export: cmdConfig in packages/hench/src/cli/commands/config.ts has no incoming calls — verify if still needed [info]
+- Decompose packages/rex/src/core/tree.ts: extract tree traversal (walkTree), tree validation, and tree transformation into separate modules to reduce fan-in from 31 to <15 per module [warning] (rex)
+- Extract viewer subsystem from web zone: move packages/web/src/viewer/* to dedicated packages/viewer with clean interface — reduces zone size and isolates UI concerns [warning] (web)
 
 ## Next Steps
 
@@ -193,34 +171,32 @@ Prioritized work items derived from analysis:
 
 1. **Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 31 files — hi…**
 
-1. **Hotspot cascade effect: tree.ts fan-in (30 files) + walkTre… (+3 related)**
-
-1. **Break 370-call coupling between packages/rex/src/cli/comman… (+1 related)**
-
 ### Medium Priority
 
-1. **39 potentially unused exports in packages/web/src/viewer/graph/renderer.ts have…**
+1. **Four-tier layered architecture with unidirectional flow: or… (+1 related)**
 
-1. **19 potentially unused exports in packages/rex/src/store/notion-adapter.ts have …**
+1. **Test coupling to implementation: packages-sourcevision test… (+2 related)**
 
-1. **9 potentially unused exports in packages/hench/src/store/adjustments.ts have no…**
+1. **6 potentially unused exports in packages/web/src/schema/validate.ts have no inc…**
 
-1. **8 potentially unused exports in packages/web/src/schema/validate.ts have no inc…**
+1. **Decompose packages/rex/src/core/tree.ts: extract tree traversal (walkTree), tre…**
 
-1. **5 potentially unused exports in packages/rex/src/schema/v1.ts have no incoming …**
-
-1. **Systematic over-engineering at system boundaries: dead code concentrates in ada…**
-
-1. **Remove unused exports from packages/web/src/viewer/graph/renderer.ts (39 export…**
+1. **Extract viewer subsystem from web zone: move packages/web/src/viewer/* to dedic…**
    Files: `packages/web/src/cli/index.ts`, `packages/web/src/public.ts`, `packages/web/src/schema/data-files.ts`
 
-1. **2 circular dependency chains detected — see imports.json for details**
+1. **Architecture successfully implements zero-circular-dependency design with clear…**
 
 ### Low Priority
 
-1. **4 potentially unused exports in packages/rex/src/analyze/reason.ts have no inco…**
+1. **3 potentially unused exports in packages/web/src/viewer/components/data-display…**
 
-1. **4 potentially unused exports in packages/web/src/viewer/components/data-display…**
+1. **3 potentially unused exports in packages/web/src/viewer/components/logos.ts hav…**
+
+1. **2 potentially unused exports in packages/hench/src/store/suggestions.ts have no…**
+
+1. **Potentially unused export: cmdConfig in packages/hench/src/cli/commands/config.…**
+
+1. **Establish consistent import extension strategy across all zones: either use .js…**
 
 ## File Inventory
 
@@ -315,7 +291,6 @@ Prioritized work items derived from analysis:
 | `packages/hench/src/schema/templates.ts` | source | hench |
 | `packages/hench/src/schema/v1.ts` | source | hench |
 | `packages/hench/src/schema/validate.ts` | source | hench |
-| `packages/hench/src/store/adjustments.ts` | source | hench |
 | `packages/hench/src/store/config.ts` | source | hench |
 | `packages/hench/src/store/index.ts` | source | hench |
 | `packages/hench/src/store/json.ts` | source | hench |
@@ -550,89 +525,93 @@ Prioritized work items derived from analysis:
 | `packages/sourcevision/SourceVision-F.png` | asset |  |
 | `packages/sourcevision/SourceVision.png` | asset |  |
 | `packages/sourcevision/package.json` | config |  |
-| `packages/sourcevision/src/analyzers/callgraph-findings.ts` | source |  |
-| `packages/sourcevision/src/analyzers/callgraph.ts` | source |  |
-| `packages/sourcevision/src/analyzers/claude-client.ts` | source |  |
-| `packages/sourcevision/src/analyzers/components.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/context.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/enrich-batch.ts` | source |  |
-| `packages/sourcevision/src/analyzers/enrich-config.ts` | source |  |
-| `packages/sourcevision/src/analyzers/enrich-parsing.ts` | source |  |
-| `packages/sourcevision/src/analyzers/enrich-per-zone.ts` | source |  |
-| `packages/sourcevision/src/analyzers/enrich.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/imports.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/index.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/inventory.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/llms-txt.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/louvain.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/manifest.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/next-steps.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/route-detection.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/analyzers/token-usage.ts` | source |  |
-| `packages/sourcevision/src/analyzers/workspace.ts` | source |  |
-| `packages/sourcevision/src/analyzers/zone-output.ts` | source |  |
-| `packages/sourcevision/src/analyzers/zones.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/cli/commands/analyze.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/cli/commands/constants.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/cli/commands/export-pdf.ts` | source |  |
-| `packages/sourcevision/src/cli/commands/init.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/cli/commands/reset.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/cli/commands/validate.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/cli/errors.ts` | source |  |
-| `packages/sourcevision/src/cli/index.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/cli/mcp.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/cli/output.ts` | source |  |
-| `packages/sourcevision/src/cli/serve.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/export/pdf-report.ts` | source |  |
-| `packages/sourcevision/src/public.ts` | source |  |
-| `packages/sourcevision/src/schema/data-files.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/schema/index.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/schema/v1.ts` | source | packages-sourcevision:interactive-viewer |
-| `packages/sourcevision/src/schema/validate.ts` | source | packages-sourcevision:test-suite |
-| `packages/sourcevision/src/util/merge.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/src/util/sort.ts` | source | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/tests/e2e/cli-analyze.test.ts` | test | packages-sourcevision:test-suite |
-| `packages/sourcevision/tests/e2e/cli-serve.test.ts` | test | packages-sourcevision:test-suite |
+| `packages/sourcevision/src/analyzers/callgraph-findings.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/callgraph.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/claude-client.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/components.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/context.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/enrich-batch.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/enrich-config.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/enrich-parsing.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/enrich-per-zone.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/enrich.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/imports.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/index.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/inventory.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/llms-txt.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/louvain.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/manifest.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/next-steps.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/route-detection.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/token-usage.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/workspace.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/zone-output.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/zones.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/cli/commands/analyze.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/cli/commands/constants.ts` | source | packages-sourcevision:cli |
+| `packages/sourcevision/src/cli/commands/export-pdf.ts` | source | packages-sourcevision:cli |
+| `packages/sourcevision/src/cli/commands/init.ts` | source | packages-sourcevision:cli |
+| `packages/sourcevision/src/cli/commands/reset.ts` | source | packages-sourcevision:cli |
+| `packages/sourcevision/src/cli/commands/validate.ts` | source | packages-sourcevision:cli |
+| `packages/sourcevision/src/cli/errors.ts` | source | packages-sourcevision:cli |
+| `packages/sourcevision/src/cli/index.ts` | source | packages-sourcevision:cli |
+| `packages/sourcevision/src/cli/mcp.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/cli/output.ts` | source | packages-sourcevision:cli |
+| `packages/sourcevision/src/cli/serve.ts` | source | packages-sourcevision:cli |
+| `packages/sourcevision/src/export/pdf-report.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/public.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/schema/data-files.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/schema/index.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/schema/v1.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/schema/validate.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/util/merge.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/src/util/sort.ts` | source | packages-sourcevision:tests |
+| `packages/sourcevision/tests/e2e/cli-analyze.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/e2e/cli-serve.test.ts` | test | packages-sourcevision:tests |
 | `packages/sourcevision/tests/fixtures/remix-app/app/root.tsx` | test |  |
 | `packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.login.tsx` | test |  |
 | `packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.tsx` | test |  |
 | `packages/sourcevision/tests/fixtures/remix-app/app/routes/_index.tsx` | test |  |
 | `packages/sourcevision/tests/fixtures/remix-app/app/routes/users.$id.tsx` | test |  |
 | `packages/sourcevision/tests/fixtures/remix-app/tsconfig.json` | test |  |
-| `packages/sourcevision/tests/fixtures/small-ts-project/src/config.ts` | test | packages-sourcevision:test-fixtures |
-| `packages/sourcevision/tests/fixtures/small-ts-project/src/index.ts` | test | packages-sourcevision:test-fixtures |
-| `packages/sourcevision/tests/fixtures/small-ts-project/src/models/user.ts` | test | packages-sourcevision:test-fixtures |
-| `packages/sourcevision/tests/fixtures/small-ts-project/src/services/email-service.ts` | test | packages-sourcevision:test-fixtures |
-| `packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts` | test | packages-sourcevision:test-fixtures |
-| `packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts` | test | packages-sourcevision:test-fixtures |
-| `packages/sourcevision/tests/fixtures/small-ts-project/src/utils/validate.ts` | test | packages-sourcevision:test-fixtures |
+| `packages/sourcevision/tests/fixtures/small-ts-project/src/config.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/fixtures/small-ts-project/src/index.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/fixtures/small-ts-project/src/models/user.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/fixtures/small-ts-project/src/services/email-service.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/fixtures/small-ts-project/src/utils/validate.ts` | test | packages-sourcevision:tests |
 | `packages/sourcevision/tests/fixtures/small-ts-project/tsconfig.json` | test |  |
-| `packages/sourcevision/tests/integration/claude-config.test.ts` | test |  |
-| `packages/sourcevision/tests/integration/context.test.ts` | test | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/tests/integration/llms-txt.test.ts` | test | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/tests/integration/pipeline.test.ts` | test | packages-sourcevision:test-suite |
-| `packages/sourcevision/tests/unit/analyzers/callgraph-findings.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/analyzers/callgraph.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/analyzers/components.test.ts` | test | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/analyzers/imports.test.ts` | test | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/tests/unit/analyzers/inventory.test.ts` | test | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/tests/unit/analyzers/manifest.test.ts` | test | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/tests/unit/analyzers/next-steps.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/analyzers/token-usage.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/analyzers/workspace.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/analyzers/zone-output.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/analyzers/zones.test.ts` | test | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/tests/unit/cli/errors.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/cli/export-pdf.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/cli/mcp.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/cli/output.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/export/pdf-report.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/schema/data-files.test.ts` | test |  |
-| `packages/sourcevision/tests/unit/schema/validate.test.ts` | test | packages-sourcevision:test-suite |
-| `packages/sourcevision/tests/unit/util/merge.test.ts` | test | packages-sourcevision:analysis-engine |
-| `packages/sourcevision/tests/unit/util/sort.test.ts` | test | packages-sourcevision:analysis-engine |
+| `packages/sourcevision/tests/integration/claude-config.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/integration/context.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/integration/llms-txt.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/integration/pipeline.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/callgraph-findings.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/callgraph.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/components.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/imports.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/inventory.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/manifest.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/next-steps.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/token-usage.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/workspace.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/zone-insights.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/zone-output.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/analyzers/zones-helpers.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/cli/errors.test.ts` | test | packages-sourcevision:cli |
+| `packages/sourcevision/tests/unit/cli/export-pdf.test.ts` | test | packages-sourcevision:cli |
+| `packages/sourcevision/tests/unit/cli/mcp.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/cli/output.test.ts` | test | packages-sourcevision:cli |
+| `packages/sourcevision/tests/unit/export/pdf-report.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/schema/data-files.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/schema/validate.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/util/merge.test.ts` | test | packages-sourcevision:tests |
+| `packages/sourcevision/tests/unit/util/sort.test.ts` | test | packages-sourcevision:tests |
 | `packages/sourcevision/tsconfig.json` | config |  |
 | `packages/sourcevision/vitest.config.ts` | config |  |
 | `packages/web/SourceVision-F.png` | asset |  |

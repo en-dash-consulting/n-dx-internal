@@ -1,6 +1,50 @@
 {
   "edges": [
     {
+      "from": "src/analyzers/callgraph-findings.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "CallGraph",
+        "CallEdge",
+        "FunctionNode",
+        "Finding",
+        "Inventory",
+        "ImportEdge"
+      ]
+    },
+    {
+      "from": "src/analyzers/callgraph.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "FunctionNode",
+        "CallEdge",
+        "CallType",
+        "CallGraph",
+        "CallGraphSummary",
+        "Inventory",
+        "Imports",
+        "ImportEdge"
+      ]
+    },
+    {
+      "from": "src/analyzers/callgraph.ts",
+      "to": "src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "sortCallGraph"
+      ]
+    },
+    {
+      "from": "src/analyzers/claude-client.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage"
+      ]
+    },
+    {
       "from": "src/analyzers/components.ts",
       "to": "src/analyzers/route-detection.ts",
       "type": "static",
@@ -35,7 +79,7 @@
       "to": "src/util/sort.ts",
       "type": "static",
       "symbols": [
-        "sortComponentsData"
+        "sortComponents"
       ]
     },
     {
@@ -59,7 +103,133 @@
       ]
     },
     {
-      "from": "src/analyzers/enrich.ts",
+      "from": "src/analyzers/enrich-batch.ts",
+      "to": "src/analyzers/claude-client.ts",
+      "type": "static",
+      "symbols": [
+        "callClaude",
+        "ClaudeClientError"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-batch.ts",
+      "to": "src/analyzers/enrich-config.ts",
+      "type": "static",
+      "symbols": [
+        "computeAttemptConfigs",
+        "buildMetaPrompt"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-batch.ts",
+      "to": "src/analyzers/enrich-config.ts",
+      "type": "type",
+      "symbols": [
+        "PassConfig"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-batch.ts",
+      "to": "src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "tryParseJSON",
+        "extractFindings"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-batch.ts",
+      "to": "src/analyzers/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-batch.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing",
+        "Zones",
+        "Finding",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-config.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing",
+        "Finding",
+        "FindingType"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-parsing.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "Finding",
+        "FindingType",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-per-zone.ts",
+      "to": "src/analyzers/claude-client.ts",
+      "type": "static",
+      "symbols": [
+        "callClaude",
+        "ClaudeClientError"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-per-zone.ts",
+      "to": "src/analyzers/enrich-config.ts",
+      "type": "static",
+      "symbols": [
+        "MAX_CONCURRENT_ZONES",
+        "PER_ZONE_MAX_FILES",
+        "PER_ZONE_MAX_CROSSINGS",
+        "getPassConfig",
+        "computePerZoneAttemptConfigs"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-per-zone.ts",
+      "to": "src/analyzers/enrich-config.ts",
+      "type": "type",
+      "symbols": [
+        "PassConfig"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-per-zone.ts",
+      "to": "src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "tryParseJSON",
+        "extractFindings",
+        "deduplicateZoneIds"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-per-zone.ts",
+      "to": "src/analyzers/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich-per-zone.ts",
       "to": "src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -69,6 +239,147 @@
         "ZoneCrossing",
         "Zones",
         "Finding",
+        "ZoneTokenUsage",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/claude-client.ts",
+      "type": "reexport",
+      "symbols": [
+        "callClaude",
+        "setClaudeConfig",
+        "setClaudeClient",
+        "getAuthMode",
+        "ClaudeClientError",
+        "DEFAULT_MODEL"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/claude-client.ts",
+      "type": "type",
+      "symbols": [
+        "CallClaudeResult"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/enrich-batch.ts",
+      "type": "static",
+      "symbols": [
+        "enrichBatch",
+        "runMetaEvaluation",
+        "aggregateBatchResults"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/enrich-batch.ts",
+      "type": "type",
+      "symbols": [
+        "BatchResult"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/enrich-config.ts",
+      "type": "reexport",
+      "symbols": [
+        "PASS_CONFIGS",
+        "getPassConfig",
+        "buildMetaPrompt",
+        "computeAttemptConfigs",
+        "computePerZoneAttemptConfigs",
+        "MAX_CONCURRENT_ZONES",
+        "PER_ZONE_MAX_FILES",
+        "PER_ZONE_MAX_CROSSINGS"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/enrich-config.ts",
+      "type": "static",
+      "symbols": [
+        "ZONES_PER_BATCH",
+        "getPassConfig"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/enrich-config.ts",
+      "type": "type",
+      "symbols": [
+        "PassConfig"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/enrich-parsing.ts",
+      "type": "reexport",
+      "symbols": [
+        "tryParseJSON",
+        "extractFindings",
+        "mergeZonesByName",
+        "deduplicateFindings"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "extractFindings",
+        "mergeZonesByName",
+        "deduplicateZoneIds"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/enrich-parsing.ts",
+      "type": "type",
+      "symbols": [
+        "EnrichResult"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/enrich-per-zone.ts",
+      "type": "reexport",
+      "symbols": [
+        "enrichZonesPerZone",
+        "computeZoneStructureHash"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/enrich-per-zone.ts",
+      "type": "type",
+      "symbols": [
+        "PerZoneEnrichResult"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/analyzers/token-usage.ts",
+      "type": "reexport",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "src/analyzers/enrich.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "Zone",
+        "ZoneCrossing",
+        "Zones",
         "FindingType"
       ]
     },
@@ -82,8 +393,15 @@
         "ExternalImport",
         "Imports",
         "ImportsSummary",
-        "Inventory",
-        "CircularDependency"
+        "Inventory"
+      ]
+    },
+    {
+      "from": "src/analyzers/imports.ts",
+      "to": "src/util/merge.ts",
+      "type": "static",
+      "symbols": [
+        "detectCirculars"
       ]
     },
     {
@@ -92,6 +410,42 @@
       "type": "static",
       "symbols": [
         "sortImports"
+      ]
+    },
+    {
+      "from": "src/analyzers/index.ts",
+      "to": "src/analyzers/callgraph-findings.ts",
+      "type": "reexport",
+      "symbols": [
+        "generateCallGraphFindings"
+      ]
+    },
+    {
+      "from": "src/analyzers/index.ts",
+      "to": "src/analyzers/callgraph-findings.ts",
+      "type": "type",
+      "symbols": [
+        "CallGraphFindingsOptions"
+      ]
+    },
+    {
+      "from": "src/analyzers/index.ts",
+      "to": "src/analyzers/callgraph.ts",
+      "type": "reexport",
+      "symbols": [
+        "analyzeCallGraph",
+        "extractFunctions",
+        "extractCalls",
+        "computeZoneCallStats"
+      ]
+    },
+    {
+      "from": "src/analyzers/index.ts",
+      "to": "src/analyzers/callgraph.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneCallStats",
+        "CrossZoneCallPattern"
       ]
     },
     {
@@ -154,10 +508,28 @@
     },
     {
       "from": "src/analyzers/index.ts",
+      "to": "src/analyzers/token-usage.ts",
+      "type": "reexport",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "src/analyzers/index.ts",
       "to": "src/analyzers/zones.ts",
       "type": "reexport",
       "symbols": [
         "analyzeZones"
+      ]
+    },
+    {
+      "from": "src/analyzers/index.ts",
+      "to": "src/analyzers/zones.ts",
+      "type": "type",
+      "symbols": [
+        "AnalyzeZonesResult"
       ]
     },
     {
@@ -167,8 +539,15 @@
       "symbols": [
         "FileEntry",
         "FileRole",
-        "Inventory",
-        "InventorySummary"
+        "Inventory"
+      ]
+    },
+    {
+      "from": "src/analyzers/inventory.ts",
+      "to": "src/util/merge.ts",
+      "type": "static",
+      "symbols": [
+        "computeInventorySummary"
       ]
     },
     {
@@ -210,6 +589,15 @@
     },
     {
       "from": "src/analyzers/manifest.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR",
+        "TOOL_VERSION"
+      ]
+    },
+    {
+      "from": "src/analyzers/manifest.ts",
       "to": "src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -223,7 +611,9 @@
       "type": "type",
       "symbols": [
         "Zones",
-        "Finding"
+        "Zone",
+        "Finding",
+        "NextStep"
       ]
     },
     {
@@ -237,11 +627,80 @@
       ]
     },
     {
+      "from": "src/analyzers/token-usage.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "src/analyzers/workspace.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "src/analyzers/workspace.ts",
+      "to": "src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES"
+      ]
+    },
+    {
+      "from": "src/analyzers/workspace.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Zones",
+        "Zone",
+        "ZoneCrossing",
+        "SubAnalysisRef"
+      ]
+    },
+    {
+      "from": "src/analyzers/zone-output.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Zone",
+        "ZoneCrossing",
+        "Finding",
+        "ZoneSummary"
+      ]
+    },
+    {
+      "from": "src/analyzers/zone-output.ts",
+      "to": "src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "src/analyzers/zones.ts",
+      "to": "src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "deduplicateFindings"
+      ]
+    },
+    {
       "from": "src/analyzers/zones.ts",
       "to": "src/analyzers/enrich.ts",
       "type": "static",
       "symbols": [
-        "enrichZonesWithAI"
+        "enrichZonesWithAI",
+        "enrichZonesPerZone"
       ]
     },
     {
@@ -249,7 +708,8 @@
       "to": "src/analyzers/enrich.ts",
       "type": "type",
       "symbols": [
-        "EnrichResult"
+        "EnrichResult",
+        "PerZoneEnrichResult"
       ]
     },
     {
@@ -266,6 +726,25 @@
     },
     {
       "from": "src/analyzers/zones.ts",
+      "to": "src/analyzers/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "promoteZones",
+        "promoteCrossings",
+        "getSubAnalyzedPrefixes",
+        "isSubAnalyzedFile"
+      ]
+    },
+    {
+      "from": "src/analyzers/zones.ts",
+      "to": "src/analyzers/workspace.ts",
+      "type": "type",
+      "symbols": [
+        "SubAnalysis"
+      ]
+    },
+    {
+      "from": "src/analyzers/zones.ts",
       "to": "src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -274,7 +753,9 @@
         "Zone",
         "ZoneCrossing",
         "Zones",
-        "Finding"
+        "Finding",
+        "AnalyzeTokenUsage",
+        "SubAnalysisRef"
       ]
     },
     {
@@ -283,6 +764,32 @@
       "type": "static",
       "symbols": [
         "sortZonesData"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/analyzers/callgraph-findings.ts",
+      "type": "static",
+      "symbols": [
+        "generateCallGraphFindings"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/analyzers/callgraph.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeCallGraph",
+        "computeZoneCallStats"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/analyzers/claude-client.ts",
+      "type": "static",
+      "symbols": [
+        "setClaudeConfig",
+        "getAuthMode"
       ]
     },
     {
@@ -299,6 +806,14 @@
       "type": "static",
       "symbols": [
         "generateContext"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "deduplicateFindings"
       ]
     },
     {
@@ -338,8 +853,37 @@
       "to": "src/analyzers/manifest.ts",
       "type": "static",
       "symbols": [
+        "readManifest",
+        "writeManifest",
         "updateManifestModule",
         "updateManifestError"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/analyzers/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/analyzers/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "detectSubAnalyses",
+        "buildSubAnalysisRefs"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/analyzers/zone-output.ts",
+      "type": "static",
+      "symbols": [
+        "emitZoneOutputs"
       ]
     },
     {
@@ -368,11 +912,38 @@
     },
     {
       "from": "src/cli/commands/analyze.ts",
+      "to": "src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
       "to": "src/schema/data-files.ts",
       "type": "static",
       "symbols": [
         "DATA_FILES",
         "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "CallGraph",
+        "ImportEdge",
+        "Inventory",
+        "AnalyzeTokenUsage"
       ]
     },
     {
@@ -384,12 +955,73 @@
       ]
     },
     {
+      "from": "src/cli/commands/export-pdf.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/export-pdf.ts",
+      "to": "src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "src/cli/commands/export-pdf.ts",
+      "to": "src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "src/cli/commands/export-pdf.ts",
+      "to": "src/export/pdf-report.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "src/cli/commands/export-pdf.ts",
+      "to": "src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES"
+      ]
+    },
+    {
+      "from": "src/cli/commands/export-pdf.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Components"
+      ]
+    },
+    {
       "from": "src/cli/commands/init.ts",
       "to": "src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
         "TOOL_VERSION",
         "SV_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/init.ts",
+      "to": "src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
       ]
     },
     {
@@ -409,11 +1041,36 @@
       ]
     },
     {
+      "from": "src/cli/commands/reset.ts",
+      "to": "src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
+      ]
+    },
+    {
       "from": "src/cli/commands/validate.ts",
       "to": "src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
         "SV_DIR"
+      ]
+    },
+    {
+      "from": "src/cli/commands/validate.ts",
+      "to": "src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "src/cli/commands/validate.ts",
+      "to": "src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
       ]
     },
     {
@@ -437,6 +1094,14 @@
       ]
     },
     {
+      "from": "src/cli/errors.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
       "from": "src/cli/index.ts",
       "to": "src/cli/commands/analyze.ts",
       "type": "static",
@@ -449,8 +1114,15 @@
       "to": "src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
-        "usage",
-        "SV_DIR"
+        "usage"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/export-pdf.ts",
+      "type": "static",
+      "symbols": [
+        "cmdExportPdf"
       ]
     },
     {
@@ -479,10 +1151,28 @@
     },
     {
       "from": "src/cli/index.ts",
+      "to": "src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "handleCLIError",
+        "requireSvDir"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
       "to": "src/cli/mcp.ts",
       "type": "dynamic",
       "symbols": [
         "*"
+      ]
+    },
+    {
+      "from": "src/cli/index.ts",
+      "to": "src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "setQuiet"
       ]
     },
     {
@@ -511,6 +1201,15 @@
     },
     {
       "from": "src/cli/mcp.ts",
+      "to": "src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR",
+        "TOOL_VERSION"
+      ]
+    },
+    {
+      "from": "src/cli/mcp.ts",
       "to": "src/schema/data-files.ts",
       "type": "static",
       "symbols": [
@@ -530,12 +1229,88 @@
       ]
     },
     {
-      "from": "src/cli/serve.ts",
-      "to": "src/schema/data-files.ts",
-      "type": "static",
+      "from": "src/export/pdf-report.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
       "symbols": [
+        "Manifest",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Zone",
+        "Components",
+        "ImportType"
+      ]
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/cli/mcp.ts",
+      "type": "reexport",
+      "symbols": [
+        "createSourcevisionMcpServer"
+      ]
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/schema/data-files.ts",
+      "type": "reexport",
+      "symbols": [
+        "DATA_FILES",
         "ALL_DATA_FILES",
         "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/schema/v1.ts",
+      "type": "reexport",
+      "symbols": [
+        "SV_SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "ModuleInfo",
+        "ModuleStatus",
+        "SubAnalysisRef",
+        "AnalyzeTokenUsage",
+        "Inventory",
+        "FileEntry",
+        "FileRole",
+        "InventorySummary",
+        "Imports",
+        "ImportEdge",
+        "ImportType",
+        "ExternalImport",
+        "CircularDependency",
+        "ImportsSummary",
+        "Zones",
+        "Zone",
+        "ZoneSummary",
+        "ZoneCrossing",
+        "ZoneTokenUsage",
+        "Finding",
+        "FindingType",
+        "Components",
+        "ComponentDefinition",
+        "ComponentKind",
+        "ComponentUsageEdge",
+        "RouteModule",
+        "RouteExportKind",
+        "RouteTreeNode",
+        "ComponentsSummary",
+        "CallGraph",
+        "CallEdge",
+        "CallType",
+        "FunctionNode",
+        "CallGraphSummary",
+        "SourcevisionOutput",
+        "TokenUsage",
+        "NextStep"
       ]
     },
     {
@@ -557,12 +1332,22 @@
         "ZonesSchema",
         "FindingSchema",
         "ComponentsSchema",
+        "CallGraphSchema",
         "validateManifest",
         "validateInventory",
         "validateImports",
         "validateZones",
         "validateComponents",
+        "validateCallGraph",
         "validateModule",
+        "formatValidationErrors"
+      ]
+    },
+    {
+      "from": "src/schema/index.ts",
+      "to": "src/schema/validate.ts",
+      "type": "type",
+      "symbols": [
         "ValidationResult"
       ]
     },
@@ -614,569 +1399,10 @@
         "ComponentDefinition",
         "ComponentUsageEdge",
         "RouteModule",
-        "Components"
-      ]
-    },
-    {
-      "from": "src/viewer/components/detail-panel.ts",
-      "to": "src/viewer/components/constants.ts",
-      "type": "static",
-      "symbols": [
-        "ZONE_COLORS"
-      ]
-    },
-    {
-      "from": "src/viewer/components/detail-panel.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData",
-        "NavigateTo"
-      ]
-    },
-    {
-      "from": "src/viewer/components/findings-list.ts",
-      "to": "src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "Finding"
-      ]
-    },
-    {
-      "from": "src/viewer/components/findings-list.ts",
-      "to": "src/viewer/components/collapsible-section.ts",
-      "type": "static",
-      "symbols": [
-        "CollapsibleSection"
-      ]
-    },
-    {
-      "from": "src/viewer/components/findings-list.ts",
-      "to": "src/viewer/components/search-filter.ts",
-      "type": "static",
-      "symbols": [
-        "SearchFilter"
-      ]
-    },
-    {
-      "from": "src/viewer/components/sidebar.ts",
-      "to": "src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "Manifest",
-        "Zones"
-      ]
-    },
-    {
-      "from": "src/viewer/components/sidebar.ts",
-      "to": "src/viewer/components/constants.ts",
-      "type": "static",
-      "symbols": [
-        "ENRICHMENT_THRESHOLDS"
-      ]
-    },
-    {
-      "from": "src/viewer/components/sidebar.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "ViewId"
-      ]
-    },
-    {
-      "from": "src/viewer/loader.ts",
-      "to": "src/schema/data-files.ts",
-      "type": "static",
-      "symbols": [
-        "DATA_FILES"
-      ]
-    },
-    {
-      "from": "src/viewer/loader.ts",
-      "to": "src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "Manifest",
-        "Inventory",
-        "Imports",
-        "Zones",
-        "Components"
-      ]
-    },
-    {
-      "from": "src/viewer/loader.ts",
-      "to": "src/schema/validate.ts",
-      "type": "static",
-      "symbols": [
-        "validateManifest",
-        "validateInventory",
-        "validateImports",
-        "validateZones",
-        "validateComponents"
-      ]
-    },
-    {
-      "from": "src/viewer/loader.ts",
-      "to": "src/viewer/schema-compat.ts",
-      "type": "static",
-      "symbols": [
-        "migrateData"
-      ]
-    },
-    {
-      "from": "src/viewer/loader.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/schema/data-files.ts",
-      "type": "static",
-      "symbols": [
-        "ALL_DATA_FILES"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/components/detail-panel.ts",
-      "type": "static",
-      "symbols": [
-        "DetailPanel"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/components/guide.ts",
-      "type": "static",
-      "symbols": [
-        "Guide"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/components/sidebar.ts",
-      "type": "static",
-      "symbols": [
-        "Sidebar"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/components/theme-toggle.ts",
-      "type": "static",
-      "symbols": [
-        "ThemeToggle",
-        "initTheme"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/loader.ts",
-      "type": "static",
-      "symbols": [
-        "loadFromServer",
-        "loadFromFiles",
-        "detectMode",
-        "onDataChange",
-        "startPolling",
-        "stopPolling"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData",
-        "ViewId",
-        "NavigateTo"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/views/architecture.ts",
-      "type": "static",
-      "symbols": [
-        "ArchitectureView"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/views/files.ts",
-      "type": "static",
-      "symbols": [
-        "FilesView"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/views/graph.ts",
-      "type": "static",
-      "symbols": [
-        "Graph"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/views/overview.ts",
-      "type": "static",
-      "symbols": [
-        "Overview"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/views/problems.ts",
-      "type": "static",
-      "symbols": [
-        "ProblemsView"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/views/routes.ts",
-      "type": "static",
-      "symbols": [
-        "RoutesView"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/views/suggestions.ts",
-      "type": "static",
-      "symbols": [
-        "SuggestionsView"
-      ]
-    },
-    {
-      "from": "src/viewer/main.ts",
-      "to": "src/viewer/views/zones.ts",
-      "type": "static",
-      "symbols": [
-        "ZonesView"
-      ]
-    },
-    {
-      "from": "src/viewer/schema-compat.ts",
-      "to": "src/schema/v1.ts",
-      "type": "static",
-      "symbols": [
-        "SCHEMA_VERSION"
-      ]
-    },
-    {
-      "from": "src/viewer/schema-compat.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData"
-      ]
-    },
-    {
-      "from": "src/viewer/types.ts",
-      "to": "src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "Manifest",
-        "Inventory",
-        "Imports",
-        "Zones",
-        "Components"
-      ]
-    },
-    {
-      "from": "src/viewer/views/architecture.ts",
-      "to": "src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "Finding"
-      ]
-    },
-    {
-      "from": "src/viewer/views/architecture.ts",
-      "to": "src/viewer/components/constants.ts",
-      "type": "static",
-      "symbols": [
-        "ZONE_COLORS",
-        "ENRICHMENT_THRESHOLDS"
-      ]
-    },
-    {
-      "from": "src/viewer/views/architecture.ts",
-      "to": "src/viewer/components/findings-list.ts",
-      "type": "static",
-      "symbols": [
-        "FindingsList"
-      ]
-    },
-    {
-      "from": "src/viewer/views/architecture.ts",
-      "to": "src/viewer/components/mini-charts.ts",
-      "type": "static",
-      "symbols": [
-        "BarChart",
-        "FlowDiagram"
-      ]
-    },
-    {
-      "from": "src/viewer/views/architecture.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData",
-        "NavigateTo"
-      ]
-    },
-    {
-      "from": "src/viewer/views/files.ts",
-      "to": "src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "FileEntry"
-      ]
-    },
-    {
-      "from": "src/viewer/views/files.ts",
-      "to": "src/viewer/components/constants.ts",
-      "type": "static",
-      "symbols": [
-        "ZONE_COLORS"
-      ]
-    },
-    {
-      "from": "src/viewer/views/files.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData",
-        "NavigateTo"
-      ]
-    },
-    {
-      "from": "src/viewer/views/graph.ts",
-      "to": "src/viewer/components/constants.ts",
-      "type": "static",
-      "symbols": [
-        "ZONE_COLORS"
-      ]
-    },
-    {
-      "from": "src/viewer/views/graph.ts",
-      "to": "src/viewer/graph/physics.ts",
-      "type": "static",
-      "symbols": [
-        "SimState",
-        "TickCallbacks",
-        "initZoneClusteredPositions",
-        "tick"
-      ]
-    },
-    {
-      "from": "src/viewer/views/graph.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData"
-      ]
-    },
-    {
-      "from": "src/viewer/views/overview.ts",
-      "to": "src/viewer/components/collapsible-section.ts",
-      "type": "static",
-      "symbols": [
-        "CollapsibleSection"
-      ]
-    },
-    {
-      "from": "src/viewer/views/overview.ts",
-      "to": "src/viewer/components/mini-charts.ts",
-      "type": "static",
-      "symbols": [
-        "BarChart"
-      ]
-    },
-    {
-      "from": "src/viewer/views/overview.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData"
-      ]
-    },
-    {
-      "from": "src/viewer/views/problems.ts",
-      "to": "src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "Finding"
-      ]
-    },
-    {
-      "from": "src/viewer/views/problems.ts",
-      "to": "src/viewer/components/constants.ts",
-      "type": "static",
-      "symbols": [
-        "ENRICHMENT_THRESHOLDS"
-      ]
-    },
-    {
-      "from": "src/viewer/views/problems.ts",
-      "to": "src/viewer/components/findings-list.ts",
-      "type": "static",
-      "symbols": [
-        "FindingsList"
-      ]
-    },
-    {
-      "from": "src/viewer/views/problems.ts",
-      "to": "src/viewer/components/mini-charts.ts",
-      "type": "static",
-      "symbols": [
-        "BarChart"
-      ]
-    },
-    {
-      "from": "src/viewer/views/problems.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData"
-      ]
-    },
-    {
-      "from": "src/viewer/views/routes.ts",
-      "to": "src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "RouteTreeNode",
-        "RouteExportKind",
-        "ComponentUsageEdge"
-      ]
-    },
-    {
-      "from": "src/viewer/views/routes.ts",
-      "to": "src/viewer/components/collapsible-section.ts",
-      "type": "static",
-      "symbols": [
-        "CollapsibleSection"
-      ]
-    },
-    {
-      "from": "src/viewer/views/routes.ts",
-      "to": "src/viewer/components/mini-charts.ts",
-      "type": "static",
-      "symbols": [
-        "BarChart"
-      ]
-    },
-    {
-      "from": "src/viewer/views/routes.ts",
-      "to": "src/viewer/components/search-filter.ts",
-      "type": "static",
-      "symbols": [
-        "SearchFilter"
-      ]
-    },
-    {
-      "from": "src/viewer/views/routes.ts",
-      "to": "src/viewer/components/tree-view.ts",
-      "type": "static",
-      "symbols": [
-        "TreeView",
-        "TreeNode"
-      ]
-    },
-    {
-      "from": "src/viewer/views/routes.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData"
-      ]
-    },
-    {
-      "from": "src/viewer/views/suggestions.ts",
-      "to": "src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "Finding"
-      ]
-    },
-    {
-      "from": "src/viewer/views/suggestions.ts",
-      "to": "src/viewer/components/constants.ts",
-      "type": "static",
-      "symbols": [
-        "ENRICHMENT_THRESHOLDS"
-      ]
-    },
-    {
-      "from": "src/viewer/views/suggestions.ts",
-      "to": "src/viewer/components/findings-list.ts",
-      "type": "static",
-      "symbols": [
-        "FindingsList"
-      ]
-    },
-    {
-      "from": "src/viewer/views/suggestions.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData"
-      ]
-    },
-    {
-      "from": "src/viewer/views/zones.ts",
-      "to": "src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "Zone",
-        "Finding"
-      ]
-    },
-    {
-      "from": "src/viewer/views/zones.ts",
-      "to": "src/viewer/components/collapsible-section.ts",
-      "type": "static",
-      "symbols": [
-        "CollapsibleSection"
-      ]
-    },
-    {
-      "from": "src/viewer/views/zones.ts",
-      "to": "src/viewer/components/constants.ts",
-      "type": "static",
-      "symbols": [
-        "ZONE_COLORS"
-      ]
-    },
-    {
-      "from": "src/viewer/views/zones.ts",
-      "to": "src/viewer/components/mini-charts.ts",
-      "type": "static",
-      "symbols": [
-        "FlowDiagram"
-      ]
-    },
-    {
-      "from": "src/viewer/views/zones.ts",
-      "to": "src/viewer/components/search-filter.ts",
-      "type": "static",
-      "symbols": [
-        "SearchFilter"
-      ]
-    },
-    {
-      "from": "src/viewer/views/zones.ts",
-      "to": "src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData",
-        "NavigateTo"
+        "Components",
+        "FunctionNode",
+        "CallEdge",
+        "CallGraph"
       ]
     },
     {
@@ -1248,6 +1474,16 @@
       ]
     },
     {
+      "from": "tests/integration/claude-config.test.ts",
+      "to": "src/analyzers/claude-client.ts",
+      "type": "static",
+      "symbols": [
+        "setClaudeConfig",
+        "setClaudeClient",
+        "getAuthMode"
+      ]
+    },
+    {
       "from": "tests/integration/context.test.ts",
       "to": "src/analyzers/context.ts",
       "type": "static",
@@ -1331,6 +1567,60 @@
       ]
     },
     {
+      "from": "tests/unit/analyzers/callgraph-findings.test.ts",
+      "to": "src/analyzers/callgraph-findings.ts",
+      "type": "static",
+      "symbols": [
+        "generateCallGraphFindings"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/callgraph-findings.test.ts",
+      "to": "src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "CallGraph",
+        "FunctionNode",
+        "CallEdge",
+        "Inventory",
+        "ImportEdge"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/callgraph.test.ts",
+      "to": "src/analyzers/callgraph.ts",
+      "type": "static",
+      "symbols": [
+        "extractFunctions",
+        "extractCalls",
+        "analyzeCallGraph"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/callgraph.test.ts",
+      "to": "src/analyzers/imports.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeImports"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/callgraph.test.ts",
+      "to": "src/analyzers/inventory.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeInventory"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/callgraph.test.ts",
+      "to": "src/analyzers/inventory.ts",
+      "type": "type",
+      "symbols": [
+        "InventoryResult"
+      ]
+    },
+    {
       "from": "tests/unit/analyzers/components.test.ts",
       "to": "src/analyzers/components.ts",
       "type": "static",
@@ -1366,6 +1656,64 @@
         "buildRouteTree",
         "findRoutesConfig",
         "parseRoutesConfig"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/dedup-findings.test.ts",
+      "to": "src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "deduplicateFindings"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/dedup-findings.test.ts",
+      "to": "src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Finding"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/enrich-per-zone.test.ts",
+      "to": "src/analyzers/claude-client.ts",
+      "type": "static",
+      "symbols": [
+        "callClaude"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/enrich-per-zone.test.ts",
+      "to": "src/analyzers/enrich-config.ts",
+      "type": "static",
+      "symbols": [
+        "computePerZoneAttemptConfigs",
+        "MAX_CONCURRENT_ZONES",
+        "PER_ZONE_MAX_FILES",
+        "PER_ZONE_MAX_CROSSINGS"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/enrich-per-zone.test.ts",
+      "to": "src/analyzers/enrich-per-zone.ts",
+      "type": "static",
+      "symbols": [
+        "computeZoneStructureHash",
+        "enrichZonesPerZone"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/enrich-per-zone.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "ImportEdge",
+        "FileEntry",
+        "Zone",
+        "ZoneCrossing",
+        "Zones"
       ]
     },
     {
@@ -1428,7 +1776,122 @@
       ]
     },
     {
-      "from": "tests/unit/analyzers/zones.test.ts",
+      "from": "tests/unit/analyzers/next-steps.test.ts",
+      "to": "src/analyzers/next-steps.ts",
+      "type": "static",
+      "symbols": [
+        "deriveNextSteps"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/next-steps.test.ts",
+      "to": "src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Zones",
+        "Finding"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/token-usage.test.ts",
+      "to": "src/analyzers/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "formatTokenUsage"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/token-usage.test.ts",
+      "to": "src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/workspace.test.ts",
+      "to": "src/analyzers/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "detectSubAnalyses",
+        "promoteZones",
+        "promoteCrossings",
+        "getSubAnalyzedFiles",
+        "buildSubAnalysisRefs"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/workspace.test.ts",
+      "to": "src/analyzers/workspace.ts",
+      "type": "type",
+      "symbols": [
+        "SubAnalysis"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/workspace.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Zone",
+        "ZoneCrossing",
+        "Zones",
+        "Inventory",
+        "FileEntry"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-detection.test.ts",
+      "to": "src/analyzers/louvain.ts",
+      "type": "static",
+      "symbols": [
+        "buildUndirectedGraph"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-detection.test.ts",
+      "to": "src/analyzers/zones.ts",
+      "type": "static",
+      "symbols": [
+        "deriveZoneId",
+        "deriveZoneName",
+        "analyzeZones",
+        "assignByProximity"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-detection.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-detection.test.ts",
+      "to": "tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeFileEntry",
+        "makeInventory",
+        "makeEdge",
+        "makeImports"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-enrichment.test.ts",
+      "to": "src/analyzers/claude-client.ts",
+      "type": "static",
+      "symbols": [
+        "callClaude"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-enrichment.test.ts",
       "to": "src/analyzers/enrich.ts",
       "type": "static",
       "symbols": [
@@ -1438,30 +1901,122 @@
       ]
     },
     {
-      "from": "tests/unit/analyzers/zones.test.ts",
-      "to": "src/analyzers/louvain.ts",
-      "type": "static",
+      "from": "tests/unit/analyzers/zone-enrichment.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
       "symbols": [
-        "buildUndirectedGraph",
-        "louvainPhase1",
-        "mergeSmallCommunities"
+        "Zone",
+        "ZoneCrossing"
       ]
     },
     {
-      "from": "tests/unit/analyzers/zones.test.ts",
+      "from": "tests/unit/analyzers/zone-enrichment.test.ts",
+      "to": "tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeFileEntry",
+        "makeInventory",
+        "makeEdge",
+        "makeImports"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-insights.test.ts",
       "to": "src/analyzers/zones.ts",
       "type": "static",
       "symbols": [
-        "deriveZoneId",
-        "deriveZoneName",
         "analyzeZones",
-        "assignByProximity",
-        "computeStructureHash",
         "generateStructuralInsights"
       ]
     },
     {
-      "from": "tests/unit/analyzers/zones.test.ts",
+      "from": "tests/unit/analyzers/zone-insights.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "Zones",
+        "ZoneCrossing",
+        "Finding",
+        "FindingType",
+        "ImportEdge"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-insights.test.ts",
+      "to": "tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeFileEntry",
+        "makeInventory",
+        "makeEdge",
+        "makeImports",
+        "makeZone"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-output.test.ts",
+      "to": "src/analyzers/zone-output.ts",
+      "type": "static",
+      "symbols": [
+        "generateZoneContext",
+        "buildZoneSummary",
+        "emitZoneOutputs"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-output.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "ImportEdge",
+        "Zones",
+        "Zone",
+        "ZoneCrossing",
+        "Finding",
+        "FileEntry"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-subdivision.test.ts",
+      "to": "src/analyzers/zones.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeZones",
+        "computeStructureHash",
+        "computeZoneContentHash",
+        "computeGlobalContentHash",
+        "subdivideZone",
+        "SUBDIVISION_THRESHOLD",
+        "MAX_SUBDIVISION_DEPTH"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-subdivision.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "Zones",
+        "ImportEdge"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-subdivision.test.ts",
+      "to": "tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeFileEntry",
+        "makeInventory",
+        "makeEdge",
+        "makeImports",
+        "makeZone"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zones-helpers.ts",
       "to": "src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -1469,10 +2024,101 @@
         "Imports",
         "ImportEdge",
         "FileEntry",
-        "Zone",
-        "ZoneCrossing",
-        "Finding",
-        "FindingType"
+        "Zone"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/errors.test.ts",
+      "to": "src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "formatCLIError",
+        "handleCLIError",
+        "requireSvDir"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/export-pdf.test.ts",
+      "to": "src/cli/commands/export-pdf.ts",
+      "type": "static",
+      "symbols": [
+        "cmdExportPdf"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/export-pdf.test.ts",
+      "to": "src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/mcp.test.ts",
+      "to": "src/cli/mcp.ts",
+      "type": "static",
+      "symbols": [
+        "createSourcevisionMcpServer",
+        "startMcpServer"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/mcp.test.ts",
+      "to": "src/public.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/mcp.test.ts",
+      "to": "src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/output.test.ts",
+      "to": "src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "setQuiet",
+        "isQuiet",
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "tests/unit/export/pdf-report.test.ts",
+      "to": "src/export/pdf-report.ts",
+      "type": "static",
+      "symbols": [
+        "generatePdfReport",
+        "computeImportHealthScore"
+      ]
+    },
+    {
+      "from": "tests/unit/export/pdf-report.test.ts",
+      "to": "src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Manifest",
+        "Inventory",
+        "Imports",
+        "Zones",
+        "Components"
+      ]
+    },
+    {
+      "from": "tests/unit/schema/data-files.test.ts",
+      "to": "src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES",
+        "ALL_DATA_FILES",
+        "SUPPLEMENTARY_FILES"
       ]
     },
     {
@@ -1485,7 +2131,8 @@
         "validateImports",
         "validateZones",
         "validateComponents",
-        "validateModule"
+        "validateModule",
+        "formatValidationErrors"
       ]
     },
     {
@@ -1535,112 +2182,76 @@
         "sortFindings",
         "toCanonicalJSON"
       ]
-    },
-    {
-      "from": "tests/unit/viewer/bar-chart.test.ts",
-      "to": "src/viewer/components/mini-charts.ts",
-      "type": "static",
-      "symbols": [
-        "BarChart"
-      ]
-    },
-    {
-      "from": "tests/unit/viewer/collapsible-section.test.ts",
-      "to": "src/viewer/components/collapsible-section.ts",
-      "type": "static",
-      "symbols": [
-        "CollapsibleSection"
-      ]
-    },
-    {
-      "from": "tests/unit/viewer/detail-panel.test.ts",
-      "to": "src/viewer/components/detail-panel.ts",
-      "type": "static",
-      "symbols": [
-        "DetailPanel"
-      ]
-    },
-    {
-      "from": "tests/unit/viewer/flow-diagram.test.ts",
-      "to": "src/viewer/components/mini-charts.ts",
-      "type": "static",
-      "symbols": [
-        "FlowDiagram"
-      ]
-    },
-    {
-      "from": "tests/unit/viewer/tree-view.test.ts",
-      "to": "src/viewer/components/tree-view.ts",
-      "type": "static",
-      "symbols": [
-        "TreeView",
-        "TreeNode"
-      ]
     }
   ],
   "external": [
     {
       "package": "@modelcontextprotocol/sdk",
       "importedBy": [
-        "src/cli/mcp.ts"
+        "src/cli/mcp.ts",
+        "tests/unit/cli/mcp.test.ts"
       ],
       "symbols": [
+        "Client",
+        "InMemoryTransport",
         "McpServer",
         "StdioServerTransport"
       ]
     },
     {
-      "package": "esbuild",
+      "package": "@n-dx/claude-client",
       "importedBy": [
-        "build.js"
+        "src/analyzers/claude-client.ts",
+        "src/analyzers/inventory.ts",
+        "src/analyzers/manifest.ts",
+        "src/cli/commands/analyze.ts",
+        "src/cli/commands/constants.ts",
+        "src/cli/commands/init.ts",
+        "src/cli/errors.ts",
+        "src/cli/output.ts",
+        "src/cli/serve.ts",
+        "src/util/sort.ts",
+        "tests/integration/claude-config.test.ts",
+        "tests/unit/analyzers/enrich-per-zone.test.ts",
+        "tests/unit/analyzers/zone-enrichment.test.ts"
       ],
       "symbols": [
-        "*"
+        "*",
+        "AuthMode",
+        "BaseCLIError",
+        "ClaudeClient",
+        "ClaudeClientError",
+        "ClaudeConfig",
+        "CompletionResult",
+        "PROJECT_DIRS",
+        "createClient",
+        "detectAuthMode",
+        "getCurrentBranch",
+        "getCurrentHead",
+        "info",
+        "isQuiet",
+        "loadClaudeConfig",
+        "resolveApiKey",
+        "resolveCliPath",
+        "result",
+        "setQuiet",
+        "spawnTool",
+        "toCanonicalJSON"
       ]
     },
     {
-      "package": "preact",
+      "package": "pdfkit",
       "importedBy": [
-        "src/viewer/components/collapsible-section.ts",
-        "src/viewer/components/detail-panel.ts",
-        "src/viewer/components/findings-list.ts",
-        "src/viewer/components/guide.ts",
-        "src/viewer/components/mini-charts.ts",
-        "src/viewer/components/search-filter.ts",
-        "src/viewer/components/sidebar.ts",
-        "src/viewer/components/theme-toggle.ts",
-        "src/viewer/components/tree-view.ts",
-        "src/viewer/main.ts",
-        "src/viewer/views/architecture.ts",
-        "src/viewer/views/files.ts",
-        "src/viewer/views/graph.ts",
-        "src/viewer/views/overview.ts",
-        "src/viewer/views/problems.ts",
-        "src/viewer/views/routes.ts",
-        "src/viewer/views/suggestions.ts",
-        "src/viewer/views/zones.ts",
-        "tests/unit/viewer/bar-chart.test.ts",
-        "tests/unit/viewer/collapsible-section.test.ts",
-        "tests/unit/viewer/detail-panel.test.ts",
-        "tests/unit/viewer/flow-diagram.test.ts",
-        "tests/unit/viewer/tree-view.test.ts"
+        "src/export/pdf-report.ts"
       ],
       "symbols": [
-        "ComponentChildren",
-        "Fragment",
-        "VNode",
-        "h",
-        "render",
-        "useCallback",
-        "useEffect",
-        "useMemo",
-        "useRef",
-        "useState"
+        "default"
       ]
     },
     {
       "package": "typescript",
       "importedBy": [
+        "src/analyzers/callgraph.ts",
         "src/analyzers/components.ts",
         "src/analyzers/imports.ts",
         "src/analyzers/route-detection.ts"
@@ -1654,26 +2265,40 @@
       "importedBy": [
         "tests/e2e/cli-analyze.test.ts",
         "tests/e2e/cli-serve.test.ts",
+        "tests/integration/claude-config.test.ts",
         "tests/integration/context.test.ts",
         "tests/integration/llms-txt.test.ts",
         "tests/integration/pipeline.test.ts",
+        "tests/unit/analyzers/callgraph-findings.test.ts",
+        "tests/unit/analyzers/callgraph.test.ts",
         "tests/unit/analyzers/components.test.ts",
+        "tests/unit/analyzers/dedup-findings.test.ts",
+        "tests/unit/analyzers/enrich-per-zone.test.ts",
         "tests/unit/analyzers/imports.test.ts",
         "tests/unit/analyzers/inventory.test.ts",
         "tests/unit/analyzers/manifest.test.ts",
-        "tests/unit/analyzers/zones.test.ts",
+        "tests/unit/analyzers/next-steps.test.ts",
+        "tests/unit/analyzers/token-usage.test.ts",
+        "tests/unit/analyzers/workspace.test.ts",
+        "tests/unit/analyzers/zone-detection.test.ts",
+        "tests/unit/analyzers/zone-enrichment.test.ts",
+        "tests/unit/analyzers/zone-insights.test.ts",
+        "tests/unit/analyzers/zone-output.test.ts",
+        "tests/unit/analyzers/zone-subdivision.test.ts",
+        "tests/unit/cli/errors.test.ts",
+        "tests/unit/cli/export-pdf.test.ts",
+        "tests/unit/cli/mcp.test.ts",
+        "tests/unit/cli/output.test.ts",
+        "tests/unit/export/pdf-report.test.ts",
+        "tests/unit/schema/data-files.test.ts",
         "tests/unit/schema/validate.test.ts",
         "tests/unit/util/merge.test.ts",
         "tests/unit/util/sort.test.ts",
-        "tests/unit/viewer/bar-chart.test.ts",
-        "tests/unit/viewer/collapsible-section.test.ts",
-        "tests/unit/viewer/detail-panel.test.ts",
-        "tests/unit/viewer/flow-diagram.test.ts",
-        "tests/unit/viewer/tree-view.test.ts",
         "vitest.config.ts"
       ],
       "symbols": [
         "afterEach",
+        "beforeEach",
         "defineConfig",
         "describe",
         "expect",
@@ -1693,57 +2318,57 @@
     }
   ],
   "summary": {
-    "totalEdges": 170,
+    "totalEdges": 221,
     "totalExternal": 6,
     "circularCount": 0,
     "circulars": [],
     "mostImported": [
       {
-        "path": "src/schema/index.ts",
-        "count": 20
-      },
-      {
-        "path": "src/schema/v1.ts",
-        "count": 14
-      },
-      {
-        "path": "src/viewer/types.ts",
-        "count": 13
-      },
-      {
-        "path": "src/analyzers/inventory.ts",
-        "count": 9
-      },
-      {
-        "path": "src/viewer/components/constants.ts",
-        "count": 8
+        "path": "src/cli/commands/constants.ts",
+        "count": 10
       },
       {
         "path": "src/util/sort.ts",
-        "count": 7
-      },
-      {
-        "path": "src/viewer/components/mini-charts.ts",
-        "count": 7
+        "count": 9
       },
       {
         "path": "src/schema/data-files.ts",
-        "count": 6
+        "count": 8
+      },
+      {
+        "path": "src/analyzers/claude-client.ts",
+        "count": 7
+      },
+      {
+        "path": "src/analyzers/enrich-parsing.ts",
+        "count": 7
+      },
+      {
+        "path": "src/analyzers/inventory.ts",
+        "count": 7
+      },
+      {
+        "path": "src/cli/output.ts",
+        "count": 7
       },
       {
         "path": "src/analyzers/imports.ts",
-        "count": 5
+        "count": 6
       },
       {
-        "path": "src/cli/commands/constants.ts",
-        "count": 5
+        "path": "src/analyzers/token-usage.ts",
+        "count": 6
       },
       {
-        "path": "src/schema/validate.ts",
-        "count": 5
+        "path": "src/analyzers/zones.ts",
+        "count": 6
       },
       {
-        "path": "src/viewer/components/collapsible-section.ts",
+        "path": "src/cli/errors.ts",
+        "count": 6
+      },
+      {
+        "path": "src/analyzers/enrich-config.ts",
         "count": 5
       },
       {
@@ -1751,15 +2376,19 @@
         "count": 4
       },
       {
-        "path": "src/analyzers/zones.ts",
+        "path": "src/analyzers/next-steps.ts",
         "count": 4
       },
       {
-        "path": "src/analyzers/context.ts",
-        "count": 3
+        "path": "src/schema/validate.ts",
+        "count": 4
       },
       {
-        "path": "src/analyzers/enrich.ts",
+        "path": "tests/unit/analyzers/zones-helpers.ts",
+        "count": 4
+      },
+      {
+        "path": "src/analyzers/callgraph.ts",
         "count": 3
       },
       {
@@ -1767,18 +2396,14 @@
         "count": 3
       },
       {
-        "path": "src/analyzers/next-steps.ts",
-        "count": 3
-      },
-      {
         "path": "src/analyzers/route-detection.ts",
         "count": 3
       },
       {
-        "path": "src/viewer/components/search-filter.ts",
+        "path": "src/util/merge.ts",
         "count": 3
       }
     ],
-    "avgImportsPerFile": 2.88
+    "avgImportsPerFile": 3.11
   }
 }

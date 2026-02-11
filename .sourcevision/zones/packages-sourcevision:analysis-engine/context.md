@@ -8,7 +8,7 @@ Zone: Analysis Engine (`packages-sourcevision:analysis-engine`)
 Files: 33, Cohesion: 0.94, Coupling: 0.06
 Description: Core analysis pipeline including file inventory, import graph extraction, Louvain community detection, route parsing, AI enrichment, and CLI orchestration.
 Entry points: packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/imports.ts, packages/sourcevision/src/analyzers/inventory.ts, packages/sourcevision/src/analyzers/zones.ts, packages/sourcevision/src/schema/data-files.ts
-Lines: 11729
+Lines: 9618
 
 </zone>
 
@@ -44,7 +44,6 @@ packages/sourcevision/tests/unit/analyzers/components.test.ts (TypeScript, 887 l
 packages/sourcevision/tests/unit/analyzers/imports.test.ts (TypeScript, 574 lines, test)
 packages/sourcevision/tests/unit/analyzers/inventory.test.ts (TypeScript, 612 lines, test)
 packages/sourcevision/tests/unit/analyzers/manifest.test.ts (TypeScript, 81 lines, test)
-packages/sourcevision/tests/unit/analyzers/zones.test.ts (TypeScript, 2111 lines, test)
 packages/sourcevision/tests/unit/util/merge.test.ts (TypeScript, 146 lines, test)
 packages/sourcevision/tests/unit/util/sort.test.ts (TypeScript, 176 lines, test)
 
@@ -95,7 +94,7 @@ Internal:
   packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/constants.ts {SV_DIR}
   packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/init.ts {cmdInit}
   packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/schema/data-files.ts {DATA_FILES, SUPPLEMENTARY_FILES}
-  packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/schema/index.ts {CallGraph, Inventory, AnalyzeTokenUsage}
+  packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/schema/index.ts {CallGraph, ImportEdge, Inventory, AnalyzeTokenUsage}
   packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/util/sort.ts {toCanonicalJSON}
   packages/sourcevision/src/cli/commands/init.ts → packages/sourcevision/src/cli/commands/constants.ts {TOOL_VERSION, SV_DIR}
   packages/sourcevision/src/cli/commands/reset.ts → packages/sourcevision/src/cli/commands/constants.ts {SV_DIR}
@@ -131,10 +130,6 @@ Internal:
   packages/sourcevision/tests/unit/analyzers/inventory.test.ts → packages/sourcevision/src/analyzers/inventory.ts {detectLanguage, classifyRole, deriveCategory, isBinary, analyzeInventory, IgnoreFilter, loadIgnoreFilter}
   packages/sourcevision/tests/unit/analyzers/inventory.test.ts → packages/sourcevision/src/analyzers/inventory.ts {InventoryResult}
   packages/sourcevision/tests/unit/analyzers/manifest.test.ts → packages/sourcevision/src/analyzers/manifest.ts {readManifest, writeManifest, updateManifestModule, updateManifestError}
-  packages/sourcevision/tests/unit/analyzers/zones.test.ts → packages/sourcevision/src/analyzers/enrich.ts {enrichZonesWithAI, computeAttemptConfigs, extractFindings}
-  packages/sourcevision/tests/unit/analyzers/zones.test.ts → packages/sourcevision/src/analyzers/louvain.ts {buildUndirectedGraph, louvainPhase1, mergeSmallCommunities}
-  packages/sourcevision/tests/unit/analyzers/zones.test.ts → packages/sourcevision/src/analyzers/zones.ts {deriveZoneId, deriveZoneName, analyzeZones, assignByProximity, computeStructureHash, computeZoneContentHash, computeGlobalContentHash, generateStructuralInsights, subdivideZone, SUBDIVISION_THRESHOLD, MAX_SUBDIVISION_DEPTH}
-  packages/sourcevision/tests/unit/analyzers/zones.test.ts → packages/sourcevision/src/schema/index.ts {Inventory, Imports, ImportEdge, FileEntry, Zone, Zones, ZoneCrossing, Finding, FindingType}
   packages/sourcevision/tests/unit/util/merge.test.ts → packages/sourcevision/src/schema/index.ts {Inventory, Imports, ImportEdge}
   packages/sourcevision/tests/unit/util/merge.test.ts → packages/sourcevision/src/util/merge.ts {mergeInventories, mergeImports, detectCirculars, chunkByTopDir}
   packages/sourcevision/tests/unit/util/sort.test.ts → packages/sourcevision/src/schema/index.ts {FileEntry, ImportEdge, ExternalImport, Inventory, Imports, Finding}
@@ -172,6 +167,6 @@ Incoming (other zones → this zone):
 - metaEvaluationCount exists in schema/v1.ts:154 but is absent from the Zod validation schema in schema/validate.ts — writing succeeds but strict validation would strip or reject it
 - commands/analyze.ts (313 lines) imports from 8+ modules and repeats a 4-phase pattern of readFileSync→JSON.parse→analyze→writeFileSync — orchestration is monolithic with high cascade risk
 - Barrel export src/analyzers/index.ts omits enrich, louvain, context, llms-txt, and next-steps — false expectation of completeness, and no consumer actually imports via the barrel
-- [call graph] 1074 internal calls, 86 outgoing, 67 incoming (cohesion: 0.93, coupling: 0.07)
+- [call graph] 499 internal calls, 86 outgoing, 189 incoming (cohesion: 0.85, coupling: 0.15)
 
 </insights>

@@ -38,15 +38,13 @@ Internal:
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Clean separation of orchestration from library dependencies maintains the four-tier architecture
-- Each file serves as a specialized coordinator (CLI, web server, CI pipeline, configuration)
-- Perfect cohesion indicates these files work together as a unified orchestration interface
-- Zero coupling to other zones demonstrates proper architectural isolation at the orchestration tier
-- Contains only top-level entry points that spawn CLIs rather than importing library dependencies
-- Acts as pure coordination layer with no domain knowledge embedded
-- Orchestration layer properly isolates coordination logic from domain implementation through CLI delegation pattern
-- Inconsistent error handling patterns across orchestration files - some use process.exit(1) while others throw errors
-- Mixed error handling strategies: cli.js uses process.exit(1), config.js throws Error objects, and web.js uses .catch() patterns - standardize to consistent error handling approach
+- Clean separation of concerns with orchestration scripts that spawn CLI processes rather than importing libraries
+- Unified entry point pattern through cli.js provides consistent user experience across all n-dx tools
+- Configuration management centralized in config.js enables cross-package settings coordination
+- Perfect cohesion and zero coupling demonstrates excellent architectural boundaries between orchestration and execution layers
+- Command delegation architecture: cli.js dispatches to ci.js, config.js, and web.js without importing domain packages — zero library coupling maintains layer isolation
+- Mixed file extension pattern: uses .js for executable scripts (cli.js, config.js) but potentially inconsistent with TypeScript-first architecture
+- Consider standardizing orchestration scripts to .ts extensions for consistency with TypeScript-first architecture, especially since other packages use .ts for public APIs
 - [call graph] 152 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

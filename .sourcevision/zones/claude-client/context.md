@@ -111,15 +111,11 @@ Internal:
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Serves as the single dependency source for Claude API operations across all packages
-- Perfect cohesion with zero coupling indicates clean abstraction boundaries
-- Contains critical shared infrastructure for AI model interactions and configuration management
-- Foundation layer properly isolates AI client complexity from domain packages
-- Serves as the only shared dependency across all domain packages through @n-dx/claude-client imports
-- Provides unified Claude API client and project utilities consumed by rex, sourcevision, and hench
-- Foundation layer successfully implements shared infrastructure pattern with consistent @n-dx/claude-client imports across all domain packages
-- Foundation layer exhibits extensive JSDoc coverage (768 occurrences across 230 files) suggesting mature documentation practices
-- High density of JSDoc comments (32+ per file average) indicates over-documentation that may obscure rather than clarify code intent
+- Serves as the dependency foundation for all other packages, providing consistent API access patterns
+- Authentication and configuration management centralized here prevents duplication across domain packages
+- Clean abstraction over multiple Claude API providers (direct API vs CLI) enables flexible deployment options
+- Perfect cohesion indicates well-designed shared foundation with no external dependencies leaking into domain logic
+- Pure foundation pattern: 179 internal calls with zero outgoing dependencies — provides shared utilities without upward coupling to domain logic
 - [call graph] 179 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

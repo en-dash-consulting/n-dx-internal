@@ -7,7 +7,7 @@
 Zone: Web (`web`)
 Files: 144, Cohesion: 1.00, Coupling: 0.00
 Description: 112 files, primarily TypeScript
-Lines: 49381
+Lines: 49288
 
 </zone>
 
@@ -17,7 +17,7 @@ packages/web/src/cli/index.ts (TypeScript, 56 lines, source)
 packages/web/src/public.ts (TypeScript, 51 lines, source)
 packages/web/src/schema/data-files.ts (TypeScript, 12 lines, source)
 packages/web/src/schema/v1.ts (TypeScript, 372 lines, source)
-packages/web/src/schema/validate.ts (TypeScript, 378 lines, source)
+packages/web/src/schema/validate.ts (TypeScript, 330 lines, source)
 packages/web/src/server/index.ts (TypeScript, 38 lines, source)
 packages/web/src/server/mcp-deps.ts (TypeScript, 87 lines, source)
 packages/web/src/server/routes-adaptive.ts (TypeScript, 873 lines, source)
@@ -36,7 +36,7 @@ packages/web/src/server/websocket.ts (TypeScript, 274 lines, source)
 packages/web/src/viewer/components/constants.ts (TypeScript, 16 lines, source)
 packages/web/src/viewer/components/data-display/collapsible-section.ts (TypeScript, 70 lines, source)
 packages/web/src/viewer/components/data-display/findings-list.ts (TypeScript, 197 lines, source)
-packages/web/src/viewer/components/data-display/health-gauge.ts (TypeScript, 132 lines, source)
+packages/web/src/viewer/components/data-display/health-gauge.ts (TypeScript, 111 lines, source)
 packages/web/src/viewer/components/data-display/mini-charts.ts (TypeScript, 183 lines, source)
 packages/web/src/viewer/components/data-display/tree-view.ts (TypeScript, 135 lines, source)
 packages/web/src/viewer/components/data-display/zone-map.ts (TypeScript, 382 lines, source)
@@ -100,7 +100,7 @@ packages/web/src/viewer/styles/token-usage.css (CSS, 463 lines, other)
 packages/web/src/viewer/styles/tokens.css (CSS, 109 lines, other)
 packages/web/src/viewer/styles/utils.css (CSS, 228 lines, other)
 packages/web/src/viewer/styles/validation.css (CSS, 784 lines, other)
-packages/web/src/viewer/styles/zone-map.css (CSS, 513 lines, other)
+packages/web/src/viewer/styles/zone-map.css (CSS, 489 lines, other)
 packages/web/src/viewer/types.ts (TypeScript, 64 lines, source)
 packages/web/src/viewer/utils.ts (TypeScript, 124 lines, source)
 packages/web/src/viewer/views/analysis.ts (TypeScript, 157 lines, source)
@@ -479,37 +479,30 @@ Outgoing (this zone → other zones):
 
 <findings>
 
-[observation] [info] Contains 45% of project files (144/323) — subdivided into 3 sub-zones
+[observation] [info] Contains 45% of project files (144/322) — subdivided into 3 sub-zones
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[suggestion] [warning] Remove unused exports from packages/web/src/viewer/graph/renderer.ts (39 exports), packages/web/src/schema/validate.ts (8 exports), and packages/web/src/viewer/components/logos.ts (7 exports) to reduce maintenance burden
+[suggestion] [warning] Extract viewer subsystem from web zone: move packages/web/src/viewer/* to dedicated packages/viewer with clean interface — reduces zone size and isolates UI concerns
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Contains 45% of project files (144/323) — subdivided into 3 sub-zones
 - Contains 45% of project files (144/322) — subdivided into 3 sub-zones
-- Largest zone with 144 files serving as the primary user interface
-- Perfect cohesion despite high complexity suggests good component organization
-- Zero coupling in zone analysis contradicts expected imports from rex/sourcevision packages
-- Web package likely imports from other domains through gateway pattern but shows zero coupling in zone analysis
-- Implements dual gateway pattern: mcp-deps.ts for rex/sourcevision runtime imports and file-based coupling for most data access
-- Routes data access primarily through filesystem (.rex/prd.json, .sourcevision/) rather than direct package imports
-- Interface layer uses hybrid coupling strategy: minimal runtime imports (9 from rex, 1 from sourcevision) through gateway plus extensive filesystem-based data access
-- Web package duplicates tree traversal utilities that already exist in rex package - tree-utils.ts re-implements findItem functionality locally instead of using the gateway pattern
-- Viewer-side PRDItemData type is an intentional duplicate of rex types for browser compatibility, but creates maintenance burden if types diverge
-- CSS files contain unused classes (.zone-insights, .component-tree, .route-node, .route-layout) that are never referenced, indicating dead code
-- tree-utils.ts duplicates tree traversal logic that already exists in rex package instead of using gateway pattern or shared utilities
-- CSS contains unused classes (.zone-insights, .component-tree, .route-node, .route-layout) that are never referenced from TypeScript code
-- Interface layer exhibits heavy reliance on class-based architecture (70 class definitions) while other zones prefer functional patterns
-- Inconsistent architectural paradigm: web components use class-based patterns while domain packages prefer functional approaches - creates cognitive load for developers switching contexts
-- Missing default exports in component modules (only 29 default exports detected) forces verbose named import syntax throughout the interface layer
-- Web zone contains the most dead code (39 unused exports in renderer.ts) suggesting over-engineering or incomplete refactoring
-- Consolidate duplicate tree utilities into @n-dx/claude-client foundation package to eliminate redundancy across web, rex, and sourcevision packages
-- Dead code concentration in web package (39+19+8+7+5 = 78 unused exports) represents 85% of total dead code, indicating over-engineered UI and adapter layers
-- Remove unused exports from packages/web/src/viewer/graph/renderer.ts (39 exports), packages/web/src/schema/validate.ts (8 exports), and packages/web/src/viewer/components/logos.ts (7 exports) to reduce maintenance burden
-- [call graph] 1746 internal calls, 21 outgoing, 0 incoming (cohesion: 0.99, coupling: 0.01)
+- Serves as the integration hub that brings together rex, sourcevision, and hench through a unified dashboard
+- MCP server implementation provides standardized tool access for Claude Code integration across all domain packages
+- Gateway pattern in mcp-deps.ts properly isolates cross-package imports to a single, auditable module
+- Largest package (144 files) with perfect cohesion demonstrates successful aggregation of multiple domain concerns without architectural compromise
+- Acts as integration hub with controlled coupling: 21 outgoing calls through gateway pattern maintains architectural discipline while aggregating domain services
+- Controlled aggregation pattern: single gateway module (mcp-deps.ts) manages all cross-package imports — prevents leaky abstractions across 144 files
+- Size disproportion: contains 45% of total project files (144/322) suggesting potential over-aggregation of concerns
+- Gateway isolation success: mcp-deps.ts properly constrains cross-package coupling to 21 calls across entire 144-file zone
+- Zone size indicates potential violation of single responsibility - 144 files may aggregate too many distinct concerns under dashboard umbrella
+- Import extension inconsistency: public.ts uses .js extensions for local imports in TypeScript files, mixing compilation strategies
+- Standardize import extensions: either use .js consistently (Node.js ESM style) or .ts extensions throughout the zone for clarity
+- Web zone shows classic monolithic symptoms: oversized (144 files), god functions (CallGraphView), tight coupling (routes-rex.ts), and dead exports (6+ unused functions)
+- Extract viewer subsystem from web zone: move packages/web/src/viewer/* to dedicated packages/viewer with clean interface — reduces zone size and isolates UI concerns
+- [call graph] 1740 internal calls, 21 outgoing, 0 incoming (cohesion: 0.99, coupling: 0.01)
 
 </insights>
 

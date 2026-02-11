@@ -1,12 +1,49 @@
 {
   "zones": [
     {
-      "id": "analysis-engine",
-      "name": "Analysis Engine",
-      "description": "Core analysis pipeline including file inventory, import graph extraction, Louvain community detection, route parsing, AI enrichment, and CLI orchestration.",
+      "id": "cli",
+      "name": "Cli",
+      "description": "12 files, primarily TypeScript",
       "files": [
+        "src/cli/commands/constants.ts",
+        "src/cli/commands/export-pdf.ts",
+        "src/cli/commands/init.ts",
+        "src/cli/commands/reset.ts",
+        "src/cli/commands/validate.ts",
+        "src/cli/errors.ts",
+        "src/cli/index.ts",
+        "src/cli/output.ts",
+        "src/cli/serve.ts",
+        "tests/unit/cli/errors.test.ts",
+        "tests/unit/cli/export-pdf.test.ts",
+        "tests/unit/cli/output.test.ts"
+      ],
+      "entryPoints": [
+        "src/cli/commands/constants.ts",
+        "src/cli/commands/init.ts",
+        "src/cli/errors.ts",
+        "src/cli/output.ts"
+      ],
+      "cohesion": 0.74,
+      "coupling": 0.26,
+      "insights": [
+        "[call graph] 71 internal calls, 1 outgoing, 33 incoming (cohesion: 0.99, coupling: 0.01)"
+      ]
+    },
+    {
+      "id": "tests",
+      "name": "Tests",
+      "description": "66 files, primarily TypeScript",
+      "files": [
+        "src/analyzers/callgraph-findings.ts",
+        "src/analyzers/callgraph.ts",
+        "src/analyzers/claude-client.ts",
         "src/analyzers/components.ts",
         "src/analyzers/context.ts",
+        "src/analyzers/enrich-batch.ts",
+        "src/analyzers/enrich-config.ts",
+        "src/analyzers/enrich-parsing.ts",
+        "src/analyzers/enrich-per-zone.ts",
         "src/analyzers/enrich.ts",
         "src/analyzers/imports.ts",
         "src/analyzers/index.ts",
@@ -16,276 +53,282 @@
         "src/analyzers/manifest.ts",
         "src/analyzers/next-steps.ts",
         "src/analyzers/route-detection.ts",
+        "src/analyzers/token-usage.ts",
+        "src/analyzers/workspace.ts",
+        "src/analyzers/zone-output.ts",
         "src/analyzers/zones.ts",
         "src/cli/commands/analyze.ts",
-        "src/cli/commands/constants.ts",
-        "src/cli/commands/init.ts",
-        "src/cli/commands/reset.ts",
-        "src/cli/commands/validate.ts",
-        "src/cli/index.ts",
         "src/cli/mcp.ts",
-        "src/cli/serve.ts",
+        "src/export/pdf-report.ts",
+        "src/public.ts",
         "src/schema/data-files.ts",
         "src/schema/index.ts",
+        "src/schema/v1.ts",
+        "src/schema/validate.ts",
         "src/util/merge.ts",
         "src/util/sort.ts",
-        "tests/integration/context.test.ts",
-        "tests/integration/llms-txt.test.ts",
-        "tests/unit/analyzers/components.test.ts",
-        "tests/unit/analyzers/imports.test.ts",
-        "tests/unit/analyzers/inventory.test.ts",
-        "tests/unit/analyzers/manifest.test.ts",
-        "tests/unit/analyzers/zones.test.ts",
-        "tests/unit/util/merge.test.ts",
-        "tests/unit/util/sort.test.ts"
-      ],
-      "entryPoints": [
-        "src/analyzers/components.ts",
-        "src/analyzers/imports.ts",
-        "src/analyzers/inventory.ts",
-        "src/analyzers/zones.ts",
-        "src/schema/data-files.ts"
-      ],
-      "cohesion": 0.94,
-      "coupling": 0.06,
-      "insights": [
-        "High cohesion (0.94) — files are tightly interconnected",
-        "High cohesion (0.94) reflects a well-structured pipeline where analyzers, CLI commands, schema constants, and utilities form a tight internal dependency chain.",
-        "zones.ts orchestrates Louvain clustering, AI enrichment, and insight generation—consider splitting algorithmic and AI-enrichment concerns for testability.",
-        "The CLI commands/ directory acts as the orchestration layer calling all analyzer phases sequentially, making it the natural entry point for the entire tool.",
-        "src/util/ (sort.ts, merge.ts) is exclusively consumed by analyzers—this utility layer has zero viewer or test imports, reinforcing its role as an analyzer-private subsystem.",
-        "All analyzers accept typed parameters and return values rather than reading/writing JSON directly; the CLI commands layer handles all file I/O, keeping analyzers pure and composable.",
-        "enrich.ts (925 lines) has 7-8 distinct responsibilities: prompt construction, AI process lifecycle, JSON parsing, finding extraction, batch orchestration, meta-evaluation, and result merging — it should be split into at least 4 focused modules.",
-        "enrich.ts accepts `inventory` and `imports` parameters that are never read inside the function body — these are dead parameters that mislead callers about the function's data dependencies.",
-        "enrich.ts contains dead code at line 815-816: a ternary expression `(condition ? undefined : undefined)` that always evaluates to `undefined` regardless of branch.",
-        "next-steps.ts is a new untracked analyzer with zero test coverage — no unit, integration, or e2e tests exist for it anywhere in the test suite.",
-        "Rate-limit errors from the AI CLI are detected but trigger immediate retry with no backoff delay, burning through all 3 attempts instantly before giving up.",
-        "SV_DIR and TOOL_VERSION are independently defined in 3 files (cli/commands/constants.ts, analyzers/manifest.ts, cli/mcp.ts) — version drift risk if any is updated without the others",
-        "detectCirculars is implemented twice with near-identical DFS logic: src/analyzers/imports.ts:232 and src/util/merge.ts:129 — the imports.ts comment references merge.ts but re-implements rather than importing",
-        "computeSummary (inventory.ts:641) and computeInventorySummary (merge.ts:36) are functionally identical with different names — classic DRY violation",
-        "GENERIC_PREFIXES (inventory.ts:345) and GENERIC_SEGMENTS (zones.ts:29) serve the same purpose but differ: zones includes 'pkg', inventory does not — a file under pkg/ gets inconsistent category vs zone ID",
-        "enrich.ts (925 lines) is a god module mixing 7 responsibilities: pass config, prompt building, timeout computation, Claude CLI invocation, JSON parsing, finding extraction, batch orchestration + retry — highest maintenance burden in the codebase",
-        "_updatedFindings bypasses the EnrichResult interface via 'as' casts in enrich.ts:703 and zones.ts:496 — type safety escape hatch instead of extending the interface properly",
-        "metaEvaluationCount exists in schema/v1.ts:154 but is absent from the Zod validation schema in schema/validate.ts — writing succeeds but strict validation would strip or reject it",
-        "commands/analyze.ts (313 lines) imports from 8+ modules and repeats a 4-phase pattern of readFileSync→JSON.parse→analyze→writeFileSync — orchestration is monolithic with high cascade risk",
-        "Barrel export src/analyzers/index.ts omits enrich, louvain, context, llms-txt, and next-steps — false expectation of completeness, and no consumer actually imports via the barrel"
-      ]
-    },
-    {
-      "id": "interactive-viewer",
-      "name": "Interactive Viewer",
-      "description": "Preact single-page application that visualizes analysis results through force-directed graphs, zone maps, route trees, and findings panels, consuming only schema types with zero analyzer dependencies.",
-      "files": [
-        "src/schema/v1.ts",
-        "src/viewer/components/collapsible-section.ts",
-        "src/viewer/components/constants.ts",
-        "src/viewer/components/detail-panel.ts",
-        "src/viewer/components/findings-list.ts",
-        "src/viewer/components/guide.ts",
-        "src/viewer/components/mini-charts.ts",
-        "src/viewer/components/search-filter.ts",
-        "src/viewer/components/sidebar.ts",
-        "src/viewer/components/theme-toggle.ts",
-        "src/viewer/components/tree-view.ts",
-        "src/viewer/darkmode_logo.png",
-        "src/viewer/graph/physics.ts",
-        "src/viewer/index.html",
-        "src/viewer/lightmode_logo.png",
-        "src/viewer/loader.ts",
-        "src/viewer/main.ts",
-        "src/viewer/schema-compat.ts",
-        "src/viewer/styles/a11y.css",
-        "src/viewer/styles/base.css",
-        "src/viewer/styles/cards.css",
-        "src/viewer/styles/components.css",
-        "src/viewer/styles/detail.css",
-        "src/viewer/styles/forms.css",
-        "src/viewer/styles/graph.css",
-        "src/viewer/styles/index.css",
-        "src/viewer/styles/layout.css",
-        "src/viewer/styles/responsive.css",
-        "src/viewer/styles/routes.css",
-        "src/viewer/styles/tables.css",
-        "src/viewer/styles/tokens.css",
-        "src/viewer/styles/utils.css",
-        "src/viewer/types.ts",
-        "src/viewer/views/architecture.ts",
-        "src/viewer/views/files.ts",
-        "src/viewer/views/graph.ts",
-        "src/viewer/views/overview.ts",
-        "src/viewer/views/problems.ts",
-        "src/viewer/views/routes.ts",
-        "src/viewer/views/suggestions.ts",
-        "src/viewer/views/zones.ts",
-        "tests/unit/viewer/bar-chart.test.ts",
-        "tests/unit/viewer/collapsible-section.test.ts",
-        "tests/unit/viewer/detail-panel.test.ts",
-        "tests/unit/viewer/flow-diagram.test.ts",
-        "tests/unit/viewer/tree-view.test.ts"
-      ],
-      "entryPoints": [
-        "src/schema/v1.ts"
-      ],
-      "cohesion": 0.96,
-      "coupling": 0.04,
-      "insights": [
-        "High cohesion (0.96) — files are tightly interconnected",
-        "Contains 43% of project files (46/107) — may be too broad, consider splitting",
-        "Contains 43% of project files (46/106) — may be too broad, consider splitting",
-        "Highest cohesion (0.96) and lowest coupling (0.04) confirm the viewer is fully decoupled from the analysis engine, communicating only through serialized JSON conforming to schema/v1.ts.",
-        "The component/view separation follows a clean hierarchy: views import components, components are pure props-driven, and loader.ts is the single data ingestion point.",
-        "schema-compat.ts provides forward/backward compatibility for data format changes, which is essential since the viewer may load data produced by different analyzer versions.",
-        "The viewer imports schema/validate.ts directly (not through the barrel index.ts), creating an implicit dependency on Zod at bundle time—validate.ts and its Zod dependency are compiled into the viewer bundle even though schema/index.ts re-exports the same symbols.",
-        "The viewer's separate esbuild entry point (build.js) with Preact JSX transform means it cannot share compiled artifacts with the Node-side CLI/analyzer code—changes to shared schema types require rebuilding both targets.",
-        "views/graph.ts (628 lines) contains a 436-line imperative renderGraph function that manually constructs SVG DOM, binds event listeners, and manages mutable closure state — the physics extraction into graph/ was started but rendering was never extracted alongside it.",
-        "The LOD rendering logic (circle radius clamping, font-size formula, label visibility) is duplicated verbatim between the tick callback (lines 365-390) and the wheel handler (lines 420-441) in graph.ts.",
-        "The `meterClass` function is defined identically in both views/zones.ts and components/detail-panel.ts with the same 0.7/0.4 threshold constants — a simple copy-paste that should be a shared utility.",
-        "The `basename` extraction pattern (`.split('/').pop() || x`) appears 11 times across 6 viewer files — a missing utility function.",
-        "sidebar.ts inlines two full base64-encoded PNG logos as JavaScript string constants, bloating the component and preventing image optimization or lazy-loading.",
-        "View export naming is inconsistent: Overview and Graph lack the 'View' suffix used by all 6 other views (ZonesView, FilesView, ArchitectureView, ProblemsView, SuggestionsView, RoutesView)",
-        "ZONE_COLORS[i % ZONE_COLORS.length] modulo-index pattern is repeated 9 times across 5 files — no shared getZoneColor() utility exists",
-        "graph.ts at 627 lines is a split-brain architecture: Preact component (lines 38-189) manages state while renderGraph() (lines 192-627) does imperative SVG DOM creation with deeply interleaved closure-scoped mutable state",
-        "Record<string, unknown> is used as the detail panel data contract across 8 call sites in 5 files — relies on duck-typing (typeof detail.path === 'string' && !detail.zoneId) instead of a discriminated union",
-        "fileToZone map construction is independently implemented in graph.ts, files.ts, and detail-panel.ts — same iteration over zones.zones with slightly different shapes",
-        "FlowDiagram data preparation (pairCounts from crossings) is copy-pasted identically between views/zones.ts:59-78 and views/architecture.ts:54-74",
-        ".split('/').pop() || path appears 11 times across 7 files as ad-hoc basename extraction — no shared utility",
-        "CSS has unused classes: .zone-insights (cards.css:88-113), .component-tree/.component-node (cards.css:258-287), .route-node (routes.css:10-20), .route-layout (routes.css:52-56) — never referenced from TypeScript"
-      ]
-    },
-    {
-      "id": "test-fixtures",
-      "name": "Test Fixtures",
-      "description": "Self-contained sample TypeScript project used as input data for integration and end-to-end tests, intentionally isolated with no imports from or exports to production code.",
-      "files": [
+        "tests/e2e/cli-analyze.test.ts",
+        "tests/e2e/cli-serve.test.ts",
         "tests/fixtures/small-ts-project/src/config.ts",
         "tests/fixtures/small-ts-project/src/index.ts",
         "tests/fixtures/small-ts-project/src/models/user.ts",
         "tests/fixtures/small-ts-project/src/services/email-service.ts",
         "tests/fixtures/small-ts-project/src/services/user-service.ts",
         "tests/fixtures/small-ts-project/src/utils/format.ts",
-        "tests/fixtures/small-ts-project/src/utils/validate.ts"
-      ],
-      "entryPoints": [],
-      "cohesion": 1,
-      "coupling": 0,
-      "insights": [
-        "High cohesion (1) — files are tightly interconnected",
-        "Perfect cohesion (1.0) and zero coupling (0.0) confirm this is a fully self-contained fixture project that exists solely as test input data.",
-        "No entry points means no production code imports these files—they are consumed only by test runners scanning the fixtures/ directory path.",
-        "The small-ts-project fixture models a realistic micro-application (models, services, utils, config) providing representative input for analyzer pipeline tests.",
-        "small-ts-project fixture (7 files) lacks edge cases: no circular dependencies, no binary files, no deeply nested directories, no non-TypeScript sources",
-        "remix-app fixture (5 files) only covers file-based routes — no config-based routes, no splat routes, no optional segments, no error boundaries",
-        "Fixtures are only used by integration/e2e tests; all unit tests create their own inline temp directories and files rather than referencing the fixture directories"
-      ]
-    },
-    {
-      "id": "test-suite",
-      "name": "Test Suite",
-      "description": "Unit, integration, and end-to-end tests covering analyzer logic, schema validation, CLI workflows, and the serve command, with imports reaching into both analyzer and viewer zones.",
-      "files": [
-        "src/schema/validate.ts",
-        "tests/e2e/cli-analyze.test.ts",
-        "tests/e2e/cli-serve.test.ts",
+        "tests/fixtures/small-ts-project/src/utils/validate.ts",
+        "tests/integration/claude-config.test.ts",
+        "tests/integration/context.test.ts",
+        "tests/integration/llms-txt.test.ts",
         "tests/integration/pipeline.test.ts",
-        "tests/unit/schema/validate.test.ts"
+        "tests/unit/analyzers/callgraph-findings.test.ts",
+        "tests/unit/analyzers/callgraph.test.ts",
+        "tests/unit/analyzers/components.test.ts",
+        "tests/unit/analyzers/dedup-findings.test.ts",
+        "tests/unit/analyzers/enrich-per-zone.test.ts",
+        "tests/unit/analyzers/imports.test.ts",
+        "tests/unit/analyzers/inventory.test.ts",
+        "tests/unit/analyzers/manifest.test.ts",
+        "tests/unit/analyzers/next-steps.test.ts",
+        "tests/unit/analyzers/token-usage.test.ts",
+        "tests/unit/analyzers/workspace.test.ts",
+        "tests/unit/analyzers/zone-detection.test.ts",
+        "tests/unit/analyzers/zone-enrichment.test.ts",
+        "tests/unit/analyzers/zone-insights.test.ts",
+        "tests/unit/analyzers/zone-output.test.ts",
+        "tests/unit/analyzers/zone-subdivision.test.ts",
+        "tests/unit/analyzers/zones-helpers.ts",
+        "tests/unit/cli/mcp.test.ts",
+        "tests/unit/export/pdf-report.test.ts",
+        "tests/unit/schema/data-files.test.ts",
+        "tests/unit/schema/validate.test.ts",
+        "tests/unit/util/merge.test.ts",
+        "tests/unit/util/sort.test.ts"
       ],
       "entryPoints": [
-        "src/schema/validate.ts"
+        "src/cli/commands/analyze.ts",
+        "src/cli/mcp.ts",
+        "src/export/pdf-report.ts",
+        "src/schema/data-files.ts",
+        "src/schema/index.ts",
+        "src/schema/v1.ts"
       ],
-      "cohesion": 0.46,
-      "coupling": 0.54,
+      "cohesion": 0.94,
+      "coupling": 0.06,
+      "subZones": [
+        {
+          "id": "tests/analyzers",
+          "name": "Analyzers",
+          "description": "56 files, primarily TypeScript",
+          "files": [
+            "src/analyzers/callgraph-findings.ts",
+            "src/analyzers/callgraph.ts",
+            "src/analyzers/claude-client.ts",
+            "src/analyzers/components.ts",
+            "src/analyzers/context.ts",
+            "src/analyzers/enrich-batch.ts",
+            "src/analyzers/enrich-config.ts",
+            "src/analyzers/enrich-parsing.ts",
+            "src/analyzers/enrich-per-zone.ts",
+            "src/analyzers/enrich.ts",
+            "src/analyzers/imports.ts",
+            "src/analyzers/index.ts",
+            "src/analyzers/inventory.ts",
+            "src/analyzers/llms-txt.ts",
+            "src/analyzers/louvain.ts",
+            "src/analyzers/manifest.ts",
+            "src/analyzers/next-steps.ts",
+            "src/analyzers/route-detection.ts",
+            "src/analyzers/token-usage.ts",
+            "src/analyzers/workspace.ts",
+            "src/analyzers/zone-output.ts",
+            "src/analyzers/zones.ts",
+            "src/cli/commands/analyze.ts",
+            "src/cli/mcp.ts",
+            "src/export/pdf-report.ts",
+            "src/public.ts",
+            "src/schema/data-files.ts",
+            "src/schema/index.ts",
+            "src/schema/v1.ts",
+            "src/util/merge.ts",
+            "src/util/sort.ts",
+            "tests/integration/claude-config.test.ts",
+            "tests/integration/context.test.ts",
+            "tests/integration/llms-txt.test.ts",
+            "tests/unit/analyzers/callgraph-findings.test.ts",
+            "tests/unit/analyzers/callgraph.test.ts",
+            "tests/unit/analyzers/components.test.ts",
+            "tests/unit/analyzers/dedup-findings.test.ts",
+            "tests/unit/analyzers/enrich-per-zone.test.ts",
+            "tests/unit/analyzers/imports.test.ts",
+            "tests/unit/analyzers/inventory.test.ts",
+            "tests/unit/analyzers/manifest.test.ts",
+            "tests/unit/analyzers/next-steps.test.ts",
+            "tests/unit/analyzers/token-usage.test.ts",
+            "tests/unit/analyzers/workspace.test.ts",
+            "tests/unit/analyzers/zone-detection.test.ts",
+            "tests/unit/analyzers/zone-enrichment.test.ts",
+            "tests/unit/analyzers/zone-insights.test.ts",
+            "tests/unit/analyzers/zone-output.test.ts",
+            "tests/unit/analyzers/zone-subdivision.test.ts",
+            "tests/unit/analyzers/zones-helpers.ts",
+            "tests/unit/cli/mcp.test.ts",
+            "tests/unit/export/pdf-report.test.ts",
+            "tests/unit/schema/data-files.test.ts",
+            "tests/unit/util/merge.test.ts",
+            "tests/unit/util/sort.test.ts"
+          ],
+          "entryPoints": [
+            "src/schema/v1.ts",
+            "src/analyzers/components.ts",
+            "src/analyzers/imports.ts",
+            "src/analyzers/inventory.ts",
+            "src/analyzers/zones.ts"
+          ],
+          "cohesion": 0.98,
+          "coupling": 0.02,
+          "depth": 1
+        },
+        {
+          "id": "tests/e2e",
+          "name": "E2e",
+          "description": "4 files, primarily TypeScript",
+          "files": [
+            "src/schema/validate.ts",
+            "tests/e2e/cli-analyze.test.ts",
+            "tests/integration/pipeline.test.ts",
+            "tests/unit/schema/validate.test.ts"
+          ],
+          "entryPoints": [
+            "src/schema/validate.ts"
+          ],
+          "cohesion": 0.5,
+          "coupling": 0.5,
+          "depth": 1
+        },
+        {
+          "id": "tests/fixtures",
+          "name": "Fixtures",
+          "description": "6 files, primarily TypeScript",
+          "files": [
+            "tests/fixtures/small-ts-project/src/index.ts",
+            "tests/fixtures/small-ts-project/src/models/user.ts",
+            "tests/fixtures/small-ts-project/src/services/email-service.ts",
+            "tests/fixtures/small-ts-project/src/services/user-service.ts",
+            "tests/fixtures/small-ts-project/src/utils/format.ts",
+            "tests/fixtures/small-ts-project/src/utils/validate.ts"
+          ],
+          "entryPoints": [],
+          "cohesion": 1,
+          "coupling": 0,
+          "depth": 1
+        }
+      ],
       "insights": [
-        "High coupling (0.54) — 4 imports target \"analysis-engine\"",
-        "Low cohesion (0.46) is expected for a test zone—tests naturally fan out across the codebase to import the modules they verify rather than forming tight internal clusters.",
-        "High coupling (0.54) correctly reflects that tests are consumers of production code; the 4 imports into analyzers and 1 into viewer match the test coverage distribution.",
-        "schema/validate.ts landing in this zone suggests it is primarily exercised by tests rather than production code paths—consider importing it in the CLI validate command to strengthen its production-zone gravity.",
-        "validate.ts is now imported in both the CLI validate command and the viewer loader, contradicting its previous test-zone gravity—it belongs logically in the schema layer shared by all three production zones.",
-        "The `renderToDiv` helper function is copy-pasted identically across all 5 viewer test files instead of being extracted to a shared test utility module.",
-        "Test data factory functions (makeFileEntry, makeInventory, makeEdge, makeImports) exist only in zones.test.ts while integration tests for llms-txt and context manually construct the same data structures verbosely.",
-        "The integration tests for llms-txt.ts and context.ts use synthetic inline data objects rather than running the actual pipeline — they are effectively unit tests misplaced in the integration directory.",
-        "zones.test.ts (1265 lines) is a mega-test spanning 3 source modules (zones.ts, louvain.ts, enrich.ts) — no dedicated louvain.test.ts or enrich.test.ts exist",
-        "components.test.ts (696 lines) tests both components.ts and route-detection.ts — no route-detection.test.ts exists, making route detection tests hard to discover",
-        "Core graph algorithms louvainPhase1, mergeBidirectionalCoupling, and capZoneCount have zero direct unit tests — only exercised indirectly through integration-level analyzeZones tests",
-        "Pure functions tryParseJSON, buildMetaPrompt, and getPassConfig in enrich.ts are trivially testable but completely untested",
-        "validateImports and validateZones are imported in validate.test.ts but have zero test cases — malformed data could silently pass validation"
+        "High cohesion (0.94) — files are tightly interconnected",
+        "Contains 70% of project files (68/97) — subdivided into 3 sub-zones",
+        "[call graph] 1999 internal calls, 33 outgoing, 1 incoming (cohesion: 0.98, coupling: 0.02)"
       ]
     }
   ],
   "crossings": [
     {
+      "from": "src/cli/commands/export-pdf.ts",
+      "to": "src/export/pdf-report.ts",
+      "fromZone": "cli",
+      "toZone": "tests"
+    },
+    {
+      "from": "src/cli/commands/export-pdf.ts",
+      "to": "src/schema/data-files.ts",
+      "fromZone": "cli",
+      "toZone": "tests"
+    },
+    {
+      "from": "src/cli/commands/export-pdf.ts",
+      "to": "src/schema/index.ts",
+      "fromZone": "cli",
+      "toZone": "tests"
+    },
+    {
       "from": "src/cli/commands/init.ts",
       "to": "src/schema/v1.ts",
-      "fromZone": "analysis-engine",
-      "toZone": "interactive-viewer"
+      "fromZone": "cli",
+      "toZone": "tests"
     },
     {
-      "from": "src/schema/index.ts",
-      "to": "src/schema/v1.ts",
-      "fromZone": "analysis-engine",
-      "toZone": "interactive-viewer"
-    },
-    {
-      "from": "src/schema/index.ts",
-      "to": "src/schema/validate.ts",
-      "fromZone": "analysis-engine",
-      "toZone": "test-suite"
-    },
-    {
-      "from": "src/viewer/loader.ts",
+      "from": "src/cli/commands/validate.ts",
       "to": "src/schema/data-files.ts",
-      "fromZone": "interactive-viewer",
-      "toZone": "analysis-engine"
+      "fromZone": "cli",
+      "toZone": "tests"
     },
     {
-      "from": "src/viewer/main.ts",
-      "to": "src/schema/data-files.ts",
-      "fromZone": "interactive-viewer",
-      "toZone": "analysis-engine"
+      "from": "src/cli/commands/validate.ts",
+      "to": "src/schema/index.ts",
+      "fromZone": "cli",
+      "toZone": "tests"
     },
     {
-      "from": "src/viewer/loader.ts",
-      "to": "src/schema/validate.ts",
-      "fromZone": "interactive-viewer",
-      "toZone": "test-suite"
+      "from": "src/cli/index.ts",
+      "to": "src/cli/commands/analyze.ts",
+      "fromZone": "cli",
+      "toZone": "tests"
     },
     {
-      "from": "tests/integration/pipeline.test.ts",
-      "to": "src/analyzers/components.ts",
-      "fromZone": "test-suite",
-      "toZone": "analysis-engine"
+      "from": "src/cli/index.ts",
+      "to": "src/cli/mcp.ts",
+      "fromZone": "cli",
+      "toZone": "tests"
     },
     {
-      "from": "tests/integration/pipeline.test.ts",
-      "to": "src/analyzers/imports.ts",
-      "fromZone": "test-suite",
-      "toZone": "analysis-engine"
+      "from": "src/analyzers/manifest.ts",
+      "to": "src/cli/commands/constants.ts",
+      "fromZone": "tests",
+      "toZone": "cli"
     },
     {
-      "from": "tests/integration/pipeline.test.ts",
-      "to": "src/analyzers/inventory.ts",
-      "fromZone": "test-suite",
-      "toZone": "analysis-engine"
+      "from": "src/analyzers/workspace.ts",
+      "to": "src/cli/commands/constants.ts",
+      "fromZone": "tests",
+      "toZone": "cli"
     },
     {
-      "from": "tests/integration/pipeline.test.ts",
-      "to": "src/analyzers/zones.ts",
-      "fromZone": "test-suite",
-      "toZone": "analysis-engine"
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/cli/commands/constants.ts",
+      "fromZone": "tests",
+      "toZone": "cli"
     },
     {
-      "from": "src/schema/validate.ts",
-      "to": "src/schema/v1.ts",
-      "fromZone": "test-suite",
-      "toZone": "interactive-viewer"
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/cli/commands/init.ts",
+      "fromZone": "tests",
+      "toZone": "cli"
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/cli/errors.ts",
+      "fromZone": "tests",
+      "toZone": "cli"
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/cli/output.ts",
+      "fromZone": "tests",
+      "toZone": "cli"
+    },
+    {
+      "from": "src/cli/mcp.ts",
+      "to": "src/cli/commands/constants.ts",
+      "fromZone": "tests",
+      "toZone": "cli"
     }
   ],
   "unzoned": [
+    ".claude/settings.json",
     ".claude/settings.local.json",
-    ".gitignore",
+    "ARCHITECTURE.md",
     "README.md",
-    "build.js",
-    "dev.js",
-    "package-lock.json",
+    "SourceVision-F.png",
+    "SourceVision.png",
     "package.json",
     "tests/fixtures/remix-app/app/root.tsx",
     "tests/fixtures/remix-app/app/routes/_auth.login.tsx",
@@ -295,782 +338,180 @@
     "tests/fixtures/remix-app/tsconfig.json",
     "tests/fixtures/small-ts-project/tsconfig.json",
     "tsconfig.json",
+    "tsconfig.tsbuildinfo",
     "vitest.config.ts"
   ],
   "insights": [
-    "Bidirectional coupling: \"analysis-engine\" ↔ \"test-suite\" (1+4 crossings) — consider extracting shared interface",
-    "Bidirectional coupling: \"analysis-engine\" ↔ \"interactive-viewer\" (2+2 crossings) — consider extracting shared interface",
-    "Bidirectional coupling: \"interactive-viewer\" ↔ \"test-suite\" (1+1 crossings) — consider extracting shared interface",
-    "Size imbalance: largest zone has 46 files vs smallest with 5 — uneven decomposition",
-    "The architecture enforces a clean data-flow boundary: analyzers produce JSON files conforming to schema/v1.ts, and the viewer consumes them—the two zones never import each other's implementation modules.",
-    "Schema files are split across zones by usage gravity (v1.ts → viewer, data-files.ts → analyzers, validate.ts → tests), which reflects actual dependency patterns but means the schema is not a single cohesive zone.",
-    "The 2 bidirectional imports between analyzers and viewer zones flow through the shared schema layer, maintaining the intended producer/consumer separation without direct coupling.",
-    "The schema layer (src/schema/) functions as a formal anti-corruption layer: analyzers write through it, the viewer validates through it, and the CLI orchestrates through it—no zone bypasses this boundary at runtime.",
-    "The dependency graph is strictly acyclic: Schema ← Analyzers ← CLI → Viewer → Schema, with the CLI as the sole orchestration root and no reverse edges.",
-    "src/util/ is gravitationally bound to the analysis-engine zone (zero imports from viewer or CLI except one toCanonicalJSON call in analyze.ts)—it is effectively an analyzer-private namespace despite sitting at the same directory level as src/schema/.",
-    "The build produces two distinct artifacts—a Node.js CLI (tsc) and a self-contained browser bundle (esbuild)—that share only the schema type surface, enforcing physical separation beyond what import discipline alone provides.",
-    "schema/index.ts (analysis-engine zone) re-exports from both schema/v1.ts (viewer zone) and schema/validate.ts (test-suite zone), making every analyzer that imports the barrel a transitive consumer of code assigned to two other zones — this is the root cause of all measured bidirectional coupling.",
-    "validate.ts is used at runtime by the viewer's loader.ts, the CLI's validate command, and tests — its assignment to the test-suite zone is incorrect and should be moved to a shared schema zone or the analysis-engine zone.",
-    "The schema directory (v1.ts, validate.ts, data-files.ts, index.ts) functions as a single shared contract layer but is split across all three production zones by 'usage gravity', creating phantom cross-zone imports that inflate coupling metrics.",
-    "Cross-zone schema import path inconsistency: analysis-engine files import types via '../schema/index.js' barrel while interactive-viewer files import directly from '../../schema/v1.js' — two conventions for the same types, neither enforced",
-    "The analysis-engine zone's enrich.ts (925 lines) and interactive-viewer zone's graph.ts (627 lines) are the two highest-risk files across the entire codebase — both combine multiple responsibilities in single modules with deeply nested logic",
-    "Test coverage is structurally asymmetric: analysis-engine has 5 unit test files covering 12 source modules, while interactive-viewer has 5 test files but only for minor components — no tests exist for views, loader, main, or schema-compat",
-    "The duplicated utility pattern (detectCirculars, computeSummary, GENERIC_PREFIXES/SEGMENTS, meterClass, basename, fileToZoneMap, flowDiagram data prep) spans all zones — at least 9 distinct functions or patterns are copy-pasted rather than shared"
+    "Bidirectional coupling: \"cli\" ↔ \"tests\" (8+7 crossings) — consider extracting shared interface",
+    "The analysis engine demonstrates exceptional architectural cohesion while maintaining clean boundaries through schema-mediated communication",
+    "Test infrastructure appropriately spans multiple zones but reveals validate.ts as misclassified due to its production runtime usage",
+    "The dual-build architecture (Node CLI + browser viewer) enforces physical separation that complements the logical zone boundaries",
+    "Cross-zone communication flows exclusively through the schema layer, creating a clean data contract between analysis and visualization concerns",
+    "The schema directory is split across zones by usage gravity rather than forming its own zone, which works for the current scale but may need revisiting as schema complexity grows",
+    "Bidirectional imports between zones flow through shared schema types rather than direct coupling, maintaining architectural integrity",
+    "[call graph] 33 calls: \"tests\" → \"cli\""
   ],
   "findings": [
     {
       "type": "observation",
       "pass": 0,
-      "scope": "analysis-engine",
+      "scope": "global",
+      "text": "Bidirectional coupling: \"cli\" ↔ \"tests\" (8+7 crossings) — consider extracting shared interface",
+      "severity": "warning"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "global",
+      "text": "Bidirectional imports between zones flow through shared schema types rather than direct coupling, maintaining architectural integrity",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "global",
+      "text": "Cross-zone communication flows exclusively through the schema layer, creating a clean data contract between analysis and visualization concerns",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "global",
+      "text": "The schema directory is split across zones by usage gravity rather than forming its own zone, which works for the current scale but may need revisiting as schema complexity grows",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "global",
+      "text": "Fan-in hotspot: src/util/sort.ts receives calls from 9 files — high-impact module, changes may have wide ripple effects",
+      "severity": "info",
+      "related": [
+        "src/util/sort.ts",
+        "src/analyzers/callgraph.ts",
+        "src/analyzers/components.ts",
+        "src/analyzers/imports.ts"
+      ]
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "tests",
+      "text": "Contains 70% of project files (68/97) — subdivided into 3 sub-zones",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "tests",
       "text": "High cohesion (0.94) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
+      "pass": 1,
+      "scope": "analysis-engine",
+      "text": "The 41-file zone efficiently groups all core analysis logic including CLI orchestration, making it the natural entry point for the tool",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "analysis-engine",
+      "text": "Zone cohesion of 0.94 with only 0.06 coupling indicates excellent encapsulation with minimal external dependencies",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "analysis-engine",
+      "text": "enrich.ts at 925 lines combines AI orchestration, prompt construction, and result processing—this god module concentrates complexity and maintenance risk",
+      "severity": "warning"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "test-suite",
+      "text": "Contains validate.ts which is used in production by both CLI and viewer, indicating misclassification due to test-heavy import patterns",
+      "severity": "warning"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "test-suite",
+      "text": "Coupling of 0.54 is the highest in the codebase but structurally appropriate for test code that must import production modules",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "test-suite",
+      "text": "E2E tests use child process spawning rather than direct imports, maintaining loose coupling to implementation details",
+      "severity": "info"
+    },
+    {
+      "type": "anti-pattern",
       "pass": 0,
       "scope": "global",
-      "text": "Bidirectional coupling: \"analysis-engine\" ↔ \"interactive-viewer\" (2+2 crossings) — consider extracting shared interface",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "global",
-      "text": "Bidirectional coupling: \"analysis-engine\" ↔ \"test-suite\" (1+4 crossings) — consider extracting shared interface",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "global",
-      "text": "Bidirectional coupling: \"interactive-viewer\" ↔ \"test-suite\" (1+1 crossings) — consider extracting shared interface",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "global",
-      "text": "Size imbalance: largest zone has 46 files vs smallest with 5 — uneven decomposition",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "interactive-viewer",
-      "text": "Contains 43% of project files (46/107) — may be too broad, consider splitting",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "interactive-viewer",
-      "text": "High cohesion (0.96) — files are tightly interconnected",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "test-fixtures",
-      "text": "High cohesion (1) — files are tightly interconnected",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "test-suite",
-      "text": "High coupling (0.54) — 4 imports target \"analysis-engine\"",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "analysis-engine",
-      "text": "Schema bridge files (data-files.ts) and utilities (sort.ts, merge.ts) are correctly pulled into this zone by import gravity, keeping the analyzer-to-schema dependency unidirectional.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "analysis-engine",
-      "text": "Zone cohesion of 0.94 with only 0.06 coupling indicates a well-encapsulated analysis domain with minimal leakage to other zones.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "analysis-engine",
-      "text": "zones.ts combines pure algorithmic clustering (Louvain), AI enrichment orchestration, and insight derivation in a single module—this concentrates complexity and makes isolated testing harder.",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "global",
-      "text": "Cross-zone dependency graph is acyclic at the implementation level—analyzers and viewer communicate only through schema types and serialized JSON data files, enabling independent development and deployment.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "global",
-      "text": "Schema files are distributed across three zones (v1.ts in viewer, data-files.ts in analyzers, validate.ts in tests) rather than forming their own zone, which is acceptable given the small file count but could cause confusion as schema complexity grows.",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "global",
-      "text": "Test zone coupling of 0.54 is the highest in the project but is structurally appropriate—tests are inherently consumers of production code and this ratio indicates healthy coverage breadth across both analyzer and viewer zones.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "interactive-viewer",
-      "text": "At 46 files this is the largest zone; the graph/ subdirectory (Barnes-Hut physics simulation) and styles/ directory add specialized concerns that could eventually warrant their own sub-modules.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "interactive-viewer",
-      "text": "Complete isolation from analyzers zone—viewer imports only from schema/v1.ts for type definitions and consumes data files at runtime, enabling independent deployment.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "interactive-viewer",
-      "text": "The bidirectional cross-zone imports between viewer and analyzers (2 each direction) likely flow through the shared schema layer rather than direct coupling, but should be verified to prevent accidental tight coupling as the codebase grows.",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "test-fixtures",
-      "text": "Having only one fixture project limits test diversity; adding a second fixture (e.g., a monorepo or a project with circular dependencies) would improve edge-case coverage for community detection.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "test-fixtures",
-      "text": "Perfect isolation metrics (cohesion 1.0, coupling 0.0) confirm this zone is correctly identified as an inert fixture—it should never develop cross-zone dependencies.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "test-fixtures",
-      "text": "The fixture mirrors real-world project patterns (services depending on models, utils shared across layers) which validates that analyzer output reflects actual codebase structures.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "test-suite",
-      "text": "Cohesion of 0.46 is structurally expected for test code—tests import production modules rather than each other, so low internal cohesion is not a defect.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "test-suite",
-      "text": "E2E tests (cli-analyze, cli-serve) spawn child processes rather than importing modules directly, keeping them loosely coupled to implementation details.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "test-suite",
-      "text": "validate.ts being pulled into the test zone rather than the analyzer zone suggests it may be under-utilized in production code paths; wiring it into CLI analyze or serve would improve its zone placement.",
-      "severity": "warning"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "analysis-engine",
-      "text": "next-steps.ts defines its own NextStep interface outside schema/v1.ts—this type is consumed by the MCP server but not validated or serialized alongside other schema artifacts, creating a shadow contract between the CLI and MCP layers.",
-      "severity": "warning"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "global",
-      "text": "Schema files are consumed via two different import paths: analyzers use the barrel (schema/index.js) while the viewer imports v1.ts, validate.ts, and data-files.ts individually—this inconsistency is harmless but may cause confusion during refactoring.",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "global",
-      "text": "The dual-build architecture (tsc for Node CLI, esbuild+Preact for viewer) means schema/validate.ts and its Zod dependency are bundled into the browser artifact—this increases the viewer bundle size for validation logic that could alternatively be stripped in production builds.",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 2,
-      "scope": "interactive-viewer",
-      "text": "Viewer loader.ts validates all five data modules at load time using Zod schemas, providing a runtime schema firewall between analyzer-produced JSON and the rendering layer—this is a strong defensive boundary.",
-      "severity": "info"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "analysis-engine",
-      "text": "MCP server (mcp.ts) imports two analyzer functions (generateContext, deriveNextSteps) at runtime to synthesize responses on-the-fly—this is a live coupling point, not just a type dependency, making the MCP server sensitive to analyzer signature changes.",
-      "severity": "info"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "global",
-      "text": "The NextStep interface in analyzers/next-steps.ts is the only cross-zone type not defined in schema/v1.ts—it escapes the schema contract and flows directly from analyzer to MCP server without validation or serialization.",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "interactive-viewer",
-      "text": "The viewer depends on three schema files (v1.ts for types, validate.ts for Zod schemas, data-files.ts for file constants) but has zero imports from src/analyzers/ or src/util/—the schema layer is the only coupling surface and acts as a clean anti-corruption layer.",
-      "severity": "info"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
-      "scope": "test-suite",
-      "text": "Unit tests import analyzer internals (louvain.ts, enrich.ts, route-detection.ts) that are not re-exported from analyzers/index.ts, creating a coupling to internal module boundaries that will break if analyzer files are reorganized.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "analysis-engine",
-      "text": "enrich.ts buries 4 of its 5 prompt templates inside a 200-line private function (enrichBatch, lines 392-597), interleaved with retry logic and config branching — prompt construction is untestable in isolation.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "analysis-engine",
-      "text": "enrich.ts duplicates the zone-ID deduplication loop verbatim at lines 834-842 and 889-898, and duplicates the validTypes/validSeverities arrays at lines 299-301 and 323-325 — four copy-paste blocks within a single file.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "analysis-engine",
-      "text": "enrich.ts line 741 uses a bare `catch {}` that silently swallows all exceptions from batch execution including potential programming errors, with no logging or error propagation.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "analysis-engine",
-      "text": "enrich.ts matches zones across passes by single-file overlap (`p.files.some(f => zone.files.includes(f))`) — this O(n*m) check can match the wrong zone if any file moves between zones across enrichment passes.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "analysis-engine",
-      "text": "enrich.ts meta-evaluation path (lines 638-705) has zero retry logic, unlike the batched path which retries 3 times — a single transient failure silently drops all severity re-evaluations for the entire pass.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "analysis-engine",
-      "text": "enrich.ts uses a type assertion (`as EnrichResult & { _updatedFindings?: Finding[] }`) at line 703 to smuggle an undeclared property through the return type, and zones.ts uses the same assertion at line 496 to consume it — this is a type-safety escape hatch that hides an interface gap.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "The schema/ barrel (index.ts) assigned to analysis-engine re-exports symbols from both the viewer zone (v1.ts) and the test-suite zone (validate.ts), creating hidden cross-zone dependencies for all 13+ consumer files — the schema layer should be its own zone or uniformly assigned.",
-      "severity": "critical"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "next-steps.ts is a new analyzer with zero test coverage at any level, and schema/data-files.ts is a new untracked schema module also without tests — two new production modules shipped with no verification.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "validate.ts is assigned to the test-suite zone but is imported at runtime by both the viewer (loader.ts) and the CLI (commands/validate.ts) — its zone assignment contradicts its actual usage as production infrastructure.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "interactive-viewer",
-      "text": "The fileToZone map construction (useMemo with ZONE_COLORS[i % length]) is duplicated in views/files.ts, views/graph.ts, and components/detail-panel.ts — three copies of the same derived-data logic that should be a shared hook.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "interactive-viewer",
-      "text": "The flowEdges computation (pairCounts Map aggregation of zone crossings) is duplicated nearly character-for-character between views/zones.ts and views/architecture.ts.",
-      "severity": "info"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "interactive-viewer",
-      "text": "build.js uses exact-match string replacement to inline CSS/JS into HTML (e.g., replacing the literal '<link rel=\"stylesheet\" href=\"./styles.css\">') — any whitespace or attribute change in the HTML template will silently break the inlining.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "interactive-viewer",
-      "text": "graph.ts line 233 uses a hardcoded hex color (#2e3140) for SVG arrow markers that bypasses the CSS custom property system and will not respond to dark/light theme switching.",
-      "severity": "info"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "interactive-viewer",
-      "text": "loader.ts silently swallows all network and JSON parse errors in server mode via Promise.allSettled with no logging, has no retry for mode detection, no circuit breaker for polling failures, and supports only a single onChange listener.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "interactive-viewer",
-      "text": "views/graph.ts renderGraph is a 436-line imperative function that bypasses Preact's rendering to manually create SVG elements, bind event handlers, and manage mutable state via closures — this makes the graph view untestable and incompatible with Preact's lifecycle.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "test-suite",
-      "text": "78% of viewer source files (18 of 23) have zero test coverage: all 8 view files, physics.ts, loader.ts, schema-compat.ts, sidebar.ts, and 6 other components are completely untested.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "test-suite",
-      "text": "CLI subcommands validate, init, and reset have no test coverage at any level (unit, integration, or e2e), and the MCP server (mcp.ts) is also completely untested.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "test-suite",
-      "text": "Neither e2e test validates error scenarios: no tests for analyzing nonexistent directories, running serve on unanalyzed directories, invalid flag combinations, or corrupt JSON output.",
-      "severity": "info"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "test-suite",
-      "text": "louvain.ts core algorithm functions (louvainPhase1, mergeSmallCommunities, capZoneCount) are only tested indirectly through analyzeZones integration calls — no dedicated unit tests exercise edge cases like single-node graphs, self-loops, or large modularity deltas.",
-      "severity": "info"
-    },
-    {
-      "type": "pattern",
-      "pass": 4,
-      "scope": "global",
-      "text": "Schema import paths diverge by zone: analysis-engine uses '../schema/index.js' (barrel), interactive-viewer uses '../../schema/v1.js' (direct). Both reach the same types — the barrel in schema/index.ts re-exports v1.ts. This creates two implicit conventions with no enforcement.",
-      "severity": "info",
+      "text": "God function: analyzeComponents in src/analyzers/components.ts calls 59 unique functions — consider decomposing into smaller, focused functions",
+      "severity": "critical",
       "related": [
-        "src/schema/index.ts",
-        "src/schema/v1.ts"
+        "src/analyzers/components.ts"
       ]
     },
     {
       "type": "anti-pattern",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "SV_DIR constant defined independently in 3 locations (cli/commands/constants.ts:2, analyzers/manifest.ts:10, cli/mcp.ts:22) — same for TOOL_VERSION. No single source of truth; version drift risk on any change.",
-      "severity": "warning",
+      "pass": 0,
+      "scope": "global",
+      "text": "God function: createSourcevisionMcpServer in src/cli/mcp.ts calls 36 unique functions — consider decomposing into smaller, focused functions",
+      "severity": "critical",
       "related": [
-        "src/cli/commands/constants.ts",
-        "src/analyzers/manifest.ts",
         "src/cli/mcp.ts"
       ]
     },
     {
-      "type": "anti-pattern",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "_updatedFindings uses 'as EnrichResult & { _updatedFindings?: Finding[] }' cast in both enrich.ts:703 and zones.ts:496 — private communication channel that circumvents the typed interface. Add the field to EnrichResult directly.",
-      "severity": "info",
-      "related": [
-        "src/analyzers/enrich.ts",
-        "src/analyzers/zones.ts"
-      ]
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "computeSummary (inventory.ts:641) vs computeInventorySummary (merge.ts:36): identical InventorySummary aggregation with different function names. Should be a single shared utility.",
-      "severity": "info",
-      "related": [
-        "src/analyzers/inventory.ts",
-        "src/util/merge.ts"
-      ]
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "detectCirculars duplicated: src/analyzers/imports.ts:232 (private, returns CircularDependency[]) and src/util/merge.ts:129 (exported, returns {cycle:string[]}[]). Comment at imports.ts:230 says 'reuse logic from merge.ts' but re-implements instead.",
-      "severity": "warning",
-      "related": [
-        "src/analyzers/imports.ts",
-        "src/util/merge.ts"
-      ]
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "metaEvaluationCount defined in schema/v1.ts:154 but missing from ZonesSchema in schema/validate.ts — TypeScript type and runtime validation are out of sync. Field is written to zones.json but would fail strict Zod validation.",
-      "severity": "warning",
-      "related": [
-        "src/schema/v1.ts",
-        "src/schema/validate.ts"
-      ]
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 4,
+      "type": "relationship",
+      "pass": 0,
       "scope": "global",
-      "text": "At least 9 distinct utility functions/patterns are duplicated rather than shared across zones: detectCirculars, computeSummary, GENERIC_PREFIXES/SEGMENTS, SV_DIR, meterClass, basename (.split('/').pop()), fileToZoneMap construction, flowDiagram data prep, zone color indexing. This is the dominant codebase-wide anti-pattern.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "FlowDiagram data preparation (pairCounts from zone crossings) is identically copy-pasted in views/zones.ts:59-78 and views/architecture.ts:54-74. Extract to a shared buildFlowDiagramData() function.",
-      "severity": "info",
+      "text": "Tightly coupled modules: src/cli/commands/analyze.ts and src/cli/output.ts — 32 cross-file calls (unidirectional). Consider extracting shared interface or merging",
+      "severity": "critical",
       "related": [
-        "src/viewer/views/zones.ts",
-        "src/viewer/views/architecture.ts"
-      ]
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "ZONE_COLORS[i % ZONE_COLORS.length] zone-to-color mapping duplicated 9 times across graph.ts, zones.ts, files.ts, architecture.ts, and detail-panel.ts. Extract a shared getZoneColor(zones, zoneId) utility to components/constants.ts.",
-      "severity": "warning",
-      "related": [
-        "src/viewer/views/graph.ts",
-        "src/viewer/views/zones.ts",
-        "src/viewer/views/files.ts",
-        "src/viewer/views/architecture.ts",
-        "src/viewer/components/detail-panel.ts"
-      ]
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "fileToZone map built independently in graph.ts:52-60, files.ts:52-63, and detail-panel.ts:79-87. Extract buildFileToZoneMap(zones) to a shared utility.",
-      "severity": "info",
-      "related": [
-        "src/viewer/views/graph.ts",
-        "src/viewer/views/files.ts",
-        "src/viewer/components/detail-panel.ts"
-      ]
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "graph.ts (627 lines) mixes Preact component logic with 435 lines of imperative SVG DOM manipulation via document.createElementNS. LOD logic is duplicated between tickCallbacks.updateDOM (lines 366-390) and the wheel handler (lines 420-441). Extract rendering to graph/renderer.ts.",
-      "severity": "warning",
-      "related": [
-        "src/viewer/views/graph.ts",
-        "src/viewer/graph/physics.ts"
+        "src/cli/commands/analyze.ts",
+        "src/cli/output.ts"
       ]
     },
     {
       "type": "suggestion",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "GENERIC_PREFIXES (inventory.ts:345) and GENERIC_SEGMENTS (zones.ts:29) diverge silently — zones includes 'pkg', inventory does not. Extract to a shared constant to prevent inconsistent path segment handling.",
-      "severity": "warning",
-      "related": [
-        "src/analyzers/inventory.ts",
-        "src/analyzers/zones.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "Sort functions use inconsistent naming: sortInventory/sortImports (plain type name) vs sortZonesData/sortComponentsData ('Data' suffix). Standardize to one convention in src/util/sort.ts.",
-      "severity": "info",
-      "related": [
-        "src/util/sort.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "build.js and dev.js are the only plain JavaScript files in an otherwise all-TypeScript zone. Consider migrating to TypeScript for consistency and type safety of the build configuration.",
-      "severity": "info",
-      "related": [
-        "build.js",
-        "dev.js"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "commands/analyze.ts repeats the same 4-phase pattern (read JSON from disk → parse → call analyzer → write result). Extract a shared runPhase() utility to reduce the 313-line monolithic orchestrator.",
-      "severity": "info",
-      "related": [
-        "src/cli/commands/analyze.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "enrich.ts at 925 lines mixes pass config, prompt building, CLI invocation, JSON parsing, finding extraction, and batch orchestration. Refactor: extract prompts.ts (buildMetaPrompt, pass configs), claude-cli.ts (tryCallClaude, timeout logic), parse-response.ts (tryParseJSON, extractFindings).",
-      "severity": "warning",
-      "related": [
-        "src/analyzers/enrich.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "analysis-engine",
-      "text": "mcp.ts has its own loadData() (line 32) while commands/analyze.ts reads files inline with readFileSync/JSON.parse. Neither shares a data-loading abstraction — changes to file format require updating both independently.",
-      "severity": "info",
-      "related": [
-        "src/cli/mcp.ts",
-        "src/cli/commands/analyze.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
+      "pass": 0,
       "scope": "global",
-      "text": "Create a shared src/viewer/utils/ directory for extracted viewer utilities (getZoneColor, buildFileToZoneMap, buildFlowDiagramData, meterClass, basename) and promote SV_DIR/TOOL_VERSION to a single src/constants.ts — would eliminate ~30 instances of duplicated code across both main zones.",
-      "severity": "info"
+      "text": "Hub function: info in src/cli/output.ts is called from 6 files — changes here have wide impact, consider if responsibilities can be narrowed",
+      "severity": "info",
+      "related": [
+        "src/cli/output.ts",
+        "src/cli/commands/analyze.ts",
+        "src/cli/commands/export-pdf.ts",
+        "src/cli/commands/init.ts"
+      ]
     },
     {
       "type": "suggestion",
-      "pass": 4,
+      "pass": 0,
       "scope": "global",
-      "text": "Test infrastructure lacks shared utilities: temp directory management, fixture factories (makeFileEntry, makeInventory, etc.), and Claude CLI mocking are all defined inline. A shared tests/helpers/ module would reduce duplication and make test patterns consistent.",
+      "text": "Potentially unused export: startMcpServer in src/cli/mcp.ts has no incoming calls — verify if still needed",
       "severity": "info",
       "related": [
-        "tests/unit/analyzers/zones.test.ts",
-        "tests/unit/analyzers/components.test.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "Dead code: setFileDetail function at detail-panel.ts:93-97 is defined but never invoked — its body is a no-op that extracts a filename then does nothing.",
-      "severity": "info",
-      "related": [
-        "src/viewer/components/detail-panel.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "Replace Record<string, unknown> detail panel contract with a discriminated union type (FileDetail | ZoneDetail | GenericDetail). Current duck-typing at detail-panel.ts:27-28 is fragile and silently falls through to generic rendering on misshapen data.",
-      "severity": "warning",
-      "related": [
-        "src/viewer/components/detail-panel.ts",
-        "src/viewer/types.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "Standardize view export naming: Overview (views/overview.ts:24) and Graph (views/graph.ts:38) should be renamed to OverviewView and GraphView to match the convention used by all 6 other views.",
-      "severity": "info",
-      "related": [
-        "src/viewer/views/overview.ts",
-        "src/viewer/views/graph.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "Unused CSS classes should be removed: .zone-insights (cards.css:88-113), .component-tree/.component-node/.component-kind (cards.css:258-287), .route-node (routes.css:10-20), .route-layout (routes.css:52-56).",
-      "severity": "info",
-      "related": [
-        "src/viewer/styles/cards.css",
-        "src/viewer/styles/routes.css"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "graph.ts hardcodes theme-ignoring colors: '#2e3140' arrow fill (line 233), '#555' fallback (line 288). The rest of the viewer uses CSS custom properties from tokens.css for theming.",
-      "severity": "info",
-      "related": [
-        "src/viewer/views/graph.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "main.ts App component manages 7 pieces of state and imports from 14 modules — it is both the data loading orchestrator and the navigation/UI root. Consider extracting data loading and polling into a custom hook or context provider.",
-      "severity": "info",
-      "related": [
-        "src/viewer/main.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "meterClass() function is duplicated identically in views/zones.ts:39-44 and components/detail-panel.ts:191-196 with same thresholds (0.7/0.4). Extract to shared utility.",
-      "severity": "info",
-      "related": [
-        "src/viewer/views/zones.ts",
-        "src/viewer/components/detail-panel.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "interactive-viewer",
-      "text": "onSelect callback optionality is inconsistent: required in files.ts, graph.ts, zones.ts but optional (onSelect?) in architecture.ts — all are called the same way from main.ts. Standardize via a shared ViewProps base interface.",
-      "severity": "info",
-      "related": [
-        "src/viewer/views/architecture.ts",
-        "src/viewer/types.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "test-fixtures",
-      "text": "No shared test factory or fixture builder exists — inline helpers like makeFileEntry/makeInventory/makeEdge/makeImports are duplicated across zones.test.ts:81-124, integration/llms-txt.test.ts:5-63, and integration/context.test.ts:5-56. Extract a shared test/helpers/factories.ts.",
-      "severity": "info",
-      "related": [
-        "tests/unit/analyzers/zones.test.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "test-fixtures",
-      "text": "remix-app fixture only covers file-based routes. Config-based routes (routes.ts), splat routes, optional segments, and error boundaries in src/analyzers/route-detection.ts are untested at the integration level.",
-      "severity": "info",
-      "related": [
-        "tests/fixtures/remix-app",
-        "src/analyzers/route-detection.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "test-fixtures",
-      "text": "small-ts-project fixture has no circular dependencies, binary files, .gitignore, generated files, or deeply nested directories. These are all code patterns the analyzers handle — missing fixture coverage means edge cases are untested at the integration level.",
-      "severity": "info",
-      "related": [
-        "tests/fixtures/small-ts-project"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "test-suite",
-      "text": "Claude CLI mocking in zones.test.ts:34-77 is tightly coupled to internal wire format (stream-json, specific EventEmitter patterns) and asserts exact spawn call counts. Changes to CLI strategy break tests even if analysis results are correct.",
-      "severity": "info",
-      "related": [
-        "tests/unit/analyzers/zones.test.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "test-suite",
-      "text": "Core Louvain algorithm functions have no direct unit tests: louvainPhase1 (louvain.ts:54), mergeBidirectionalCoupling (louvain.ts:260), capZoneCount (louvain.ts:363). These are deterministic graph algorithms ideal for unit testing — bugs silently corrupt zone detection.",
-      "severity": "warning",
-      "related": [
-        "src/analyzers/louvain.ts",
-        "tests/unit/analyzers/zones.test.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "test-suite",
-      "text": "Pure functions tryParseJSON, buildMetaPrompt, getPassConfig (src/analyzers/enrich.ts) are exported, deterministic, and trivially testable — yet have no tests. These handle critical AI response parsing and prompt construction.",
-      "severity": "info",
-      "related": [
-        "src/analyzers/enrich.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "test-suite",
-      "text": "Viewer test file names bar-chart.test.ts and flow-diagram.test.ts do not match their source file mini-charts.ts — test-to-source mapping is non-obvious.",
-      "severity": "info",
-      "related": [
-        "tests/unit/viewer/bar-chart.test.ts",
-        "tests/unit/viewer/flow-diagram.test.ts",
-        "src/viewer/components/mini-charts.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "test-suite",
-      "text": "deriveNextSteps (src/analyzers/next-steps.ts) has zero tests anywhere in the suite — it generates user-facing prioritized recommendations with no verification of correctness.",
-      "severity": "warning",
-      "related": [
-        "src/analyzers/next-steps.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "test-suite",
-      "text": "validateImports and validateZones are imported at validate.test.ts:5-6 but have zero describe blocks or test cases. Malformed imports/zones data could pass runtime validation silently.",
-      "severity": "warning",
-      "related": [
-        "tests/unit/schema/validate.test.ts",
-        "src/schema/validate.ts"
-      ]
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "test-suite",
-      "text": "zones.test.ts (1265 lines) conflates tests for 3 source modules: zones.ts, louvain.ts, enrich.ts. Split into dedicated louvain.test.ts, enrich.test.ts, and zones.test.ts to match source structure and improve test discoverability.",
-      "severity": "warning",
-      "related": [
-        "tests/unit/analyzers/zones.test.ts",
-        "src/analyzers/louvain.ts",
-        "src/analyzers/enrich.ts"
+        "src/cli/mcp.ts"
       ]
     }
   ],
-  "enrichmentPass": 4,
-  "structureHash": "badf2d8984215a53"
+  "enrichmentPass": 1,
+  "structureHash": "9d9a9427bbb6468c",
+  "zoneContentHashes": {
+    "tests": "6261b2e70bf190cc",
+    "cli": "460b40d76c4c1ea7"
+  },
+  "lastReset": {
+    "from": 4,
+    "to": 1
+  }
 }

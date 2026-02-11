@@ -1,7 +1,7 @@
 {
   "id": "hench",
   "name": "Hench",
-  "description": "100 files, primarily TypeScript",
+  "description": "99 files, primarily TypeScript",
   "files": [
     "packages/hench/src/agent/analysis/adaptive.ts",
     "packages/hench/src/agent/analysis/review.ts",
@@ -40,7 +40,6 @@
     "packages/hench/src/schema/templates.ts",
     "packages/hench/src/schema/v1.ts",
     "packages/hench/src/schema/validate.ts",
-    "packages/hench/src/store/adjustments.ts",
     "packages/hench/src/store/config.ts",
     "packages/hench/src/store/index.ts",
     "packages/hench/src/store/json.ts",
@@ -107,6 +106,6 @@
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 100,
-  "lineCount": 19834
+  "fileCount": 99,
+  "lineCount": 19626
 }

@@ -1,7 +1,7 @@
 {
   "id": "orchestration-layer",
   "name": "Orchestration Layer",
-  "description": "Top-level command entry points that coordinate package execution without importing library code.",
+  "description": "Top-level command orchestration that delegates to domain packages without importing their libraries.",
   "files": [
     "ci.js",
     "cli.js",
@@ -12,5 +12,5 @@
   "cohesion": 1,
   "coupling": 0,
   "fileCount": 4,
-  "lineCount": 1696
+  "lineCount": 1711
 }

@@ -5,9 +5,9 @@
 <zone>
 
 Zone: Hench (`hench`)
-Files: 100, Cohesion: 1.00, Coupling: 0.00
-Description: 100 files, primarily TypeScript
-Lines: 19834
+Files: 99, Cohesion: 1.00, Coupling: 0.00
+Description: 99 files, primarily TypeScript
+Lines: 19626
 
 </zone>
 
@@ -50,7 +50,6 @@ packages/hench/src/schema/index.ts (TypeScript, 42 lines, source)
 packages/hench/src/schema/templates.ts (TypeScript, 168 lines, source)
 packages/hench/src/schema/v1.ts (TypeScript, 215 lines, source)
 packages/hench/src/schema/validate.ts (TypeScript, 152 lines, source)
-packages/hench/src/store/adjustments.ts (TypeScript, 208 lines, source)
 packages/hench/src/store/config.ts (TypeScript, 49 lines, source)
 packages/hench/src/store/index.ts (TypeScript, 9 lines, source)
 packages/hench/src/store/json.ts (TypeScript, 2 lines, source)
@@ -257,8 +256,6 @@ Internal:
   packages/hench/src/schema/index.ts → packages/hench/src/schema/validate.ts {HenchConfigSchema, RunRecordSchema, validateConfig, validateRunRecord, formatValidationErrors}
   packages/hench/src/schema/index.ts → packages/hench/src/schema/validate.ts {ValidationResult}
   packages/hench/src/schema/templates.ts → packages/hench/src/schema/v1.ts {HenchConfig}
-  packages/hench/src/store/adjustments.ts → packages/hench/src/agent/analysis/adaptive.ts {DEFAULT_ADAPTIVE_SETTINGS}
-  packages/hench/src/store/adjustments.ts → packages/hench/src/agent/analysis/adaptive.ts {AdaptiveSettings, WorkflowAdjustment, AdjustmentNotification}
   packages/hench/src/store/config.ts → packages/hench/src/schema/index.ts {validateConfig, DEFAULT_HENCH_CONFIG}
   packages/hench/src/store/config.ts → packages/hench/src/schema/index.ts {HenchConfig}
   packages/hench/src/store/config.ts → packages/hench/src/store/json.ts {toCanonicalJSON}
@@ -414,20 +411,13 @@ Internal:
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Largest zone with 100 files handling complex agent lifecycle and task execution
-- Perfect internal cohesion suggests well-organized agent subsystems
-- Zero external coupling maintains clean separation from other domain packages
-- High file count with perfect cohesion indicates sophisticated but well-structured agent architecture
-- Uses gateway pattern (prd/ops.ts) to centralize all runtime imports from rex domain package
-- Maintains strict one-way dependency on rex while keeping sourcevision imports isolated
-- Gateway pattern in packages/hench/src/prd/ops.ts successfully consolidates 8 rex runtime imports into single module
-- Execution layer has 6 distinct sub-zones despite perfect 1.0 cohesion - suggests over-fragmentation of internal structure that complicates understanding
-- Sub-zone coupling varies dramatically (0 to 0.54) within a supposedly cohesive zone - indicates internal architectural inconsistencies
-- Tests are distributed across 4 different test sub-zones instead of being consolidated, fragmenting test discoverability
-- Zone has 6 sub-zones despite perfect cohesion claim - over-fragmentation makes the supposedly unified agent architecture harder to navigate and understand
-- Execution layer shows highest async function density (252 occurrences across 104 files) indicating complex asynchronous orchestration
-- Agent loop files contain minimal .catch() error handling (31 occurrences total) despite high async complexity - risk of unhandled promise rejections
-- [call graph] 1864 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- Comprehensive agent lifecycle management with adaptive analysis, workflow tracking, and completion detection
+- Clean separation between agent logic, PRD integration, and tool execution enables maintainable autonomous workflows
+- Rich run history and transcript management provides debugging and improvement feedback loops
+- Large file count (99 files) with perfect cohesion suggests well-modularized agent architecture without feature coupling
+- Single responsibility gateway: src/prd/ops.ts isolates all rex dependencies to one module — maintains clean domain separation while enabling PRD integration
+- Gateway pattern success: src/prd/ops.ts properly isolates rex imports while enabling seamless PRD integration
+- [call graph] 1839 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>
 
@@ -435,10 +425,11 @@ Internal:
 
 This zone has 6 sub-zone(s):
 
-- **Tests** (`hench/tests`): 43 files, cohesion 0.79, coupling 0.21
+- **Tests** (`hench/tests`): 67 files, cohesion 0.91, coupling 0.09
+  - Has 2 nested sub-zone(s)
 - **Tests 2** (`hench/tests-2`): 13 files, cohesion 0.65, coupling 0.35
 - **Tests 3** (`hench/tests-3`): 11 files, cohesion 0.69, coupling 0.31
-- **Tests 4** (`hench/tests-4`): 28 files, cohesion 0.75, coupling 0.25
+- **Tests 4** (`hench/tests-4`): 3 files, cohesion 0.24, coupling 0.76
 - **Store** (`hench/store`): 2 files, cohesion 1, coupling 0
 - **Tools** (`hench/tools`): 3 files, cohesion 0.5, coupling 0.5
 

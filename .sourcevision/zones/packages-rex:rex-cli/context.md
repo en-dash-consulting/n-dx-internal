@@ -7,7 +7,7 @@
 Zone: Rex PRD Management CLI (`packages-rex:rex-cli`)
 Files: 36, Cohesion: 1.00, Coupling: 0.00
 Description: A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.
-Lines: 9420
+Lines: 9412
 
 </zone>
 
@@ -31,7 +31,7 @@ packages/rex/src/cli/mcp.ts (TypeScript, 199 lines, source)
 packages/rex/src/core/canonical.ts (TypeScript, 22 lines, source)
 packages/rex/src/core/dag.ts (TypeScript, 84 lines, source)
 packages/rex/src/core/next-task.ts (TypeScript, 563 lines, source)
-packages/rex/src/core/tree.ts (TypeScript, 113 lines, source)
+packages/rex/src/core/tree.ts (TypeScript, 105 lines, source)
 packages/rex/src/schema/index.ts (TypeScript, 45 lines, source)
 packages/rex/src/schema/v1.ts (TypeScript, 306 lines, source)
 packages/rex/src/schema/validate.ts (TypeScript, 153 lines, source)
@@ -93,7 +93,6 @@ Internal:
   packages/rex/src/cli/commands/recommend.ts → packages/rex/src/schema/index.ts {PRDItem, ItemLevel}
   packages/rex/src/cli/commands/recommend.ts → packages/rex/src/store/index.ts {resolveStore}
   packages/rex/src/cli/commands/status.ts → packages/rex/src/cli/commands/constants.ts {REX_DIR}
-  packages/rex/src/cli/commands/status.ts → packages/rex/src/core/tree.ts {TreeStats}
   packages/rex/src/cli/commands/status.ts → packages/rex/src/schema/index.ts {PRDItem}
   packages/rex/src/cli/commands/status.ts → packages/rex/src/store/index.ts {resolveStore}
   packages/rex/src/cli/commands/update.ts → packages/rex/src/cli/commands/constants.ts {REX_DIR}
@@ -157,7 +156,7 @@ Internal:
   packages/rex/tests/unit/core/dag.test.ts → packages/rex/src/schema/index.ts {PRDItem}
   packages/rex/tests/unit/core/next-task.test.ts → packages/rex/src/core/next-task.ts {findNextTask, findActionableTasks, collectCompletedIds, explainSelection}
   packages/rex/tests/unit/core/next-task.test.ts → packages/rex/src/schema/index.ts {PRDItem}
-  packages/rex/tests/unit/core/tree.test.ts → packages/rex/src/core/tree.ts {walkTree, findItem, insertChild, updateInTree, removeFromTree, computeStats, getParentChain, collectAllIds}
+  packages/rex/tests/unit/core/tree.test.ts → packages/rex/src/core/tree.ts {walkTree, findItem, insertChild, updateInTree, removeFromTree, getParentChain, collectAllIds}
   packages/rex/tests/unit/core/tree.test.ts → packages/rex/src/schema/index.ts {PRDItem}
   packages/rex/tests/unit/schema/validate.test.ts → packages/rex/src/schema/validate.ts {validateDocument, validateConfig, validateLogEntry, formatValidationErrors}
   packages/rex/tests/unit/store/file-adapter.test.ts → packages/rex/src/core/canonical.ts {toCanonicalJSON}
@@ -194,6 +193,6 @@ Incoming (other zones → this zone):
 - The adapter field in RexConfig is dead configuration — all 8 createStore() call sites hardcode the literal string "file" instead of reading config.adapter, making alternative adapters unreachable
 - Log event names for the same semantic operation differ between CLI and MCP: update.ts:68 emits "item_updated" while mcp.ts:129 emits "status_changed" for status changes, with no shared event-name constants
 - init.ts and validate.ts both bypass the store abstraction layer, using raw fs readFile/writeFile directly, making them incompatible with any non-file adapter
-- [call graph] 698 internal calls, 148 outgoing, 487 incoming (cohesion: 0.83, coupling: 0.17)
+- [call graph] 695 internal calls, 151 outgoing, 477 incoming (cohesion: 0.82, coupling: 0.18)
 
 </insights>
