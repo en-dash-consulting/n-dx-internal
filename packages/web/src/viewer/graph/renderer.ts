@@ -42,6 +42,7 @@ export interface GraphRendererOptions {
   width: number;
   height: number;
   onNodeSelect: (detail: { title: string; path: string; zone: string; incomingImports: number }) => void;
+  onNodeDblClick?: (path: string) => void;
   zones: unknown; // opaque — only needed for future use
 }
 
@@ -69,8 +70,11 @@ export class GraphRenderer {
   private viewH: number;
   private scale = 1;
 
+  // Selection state — persists until explicitly cleared
+  private selectedNodeId: string | null = null;
+
   constructor(opts: GraphRendererOptions) {
-    const { svg, nodes, links, width, height, onNodeSelect } = opts;
+    const { svg, nodes, links, width, height, onNodeSelect, onNodeDblClick } = opts;
 
     this.svg = svg;
     this.nodes = nodes;
@@ -185,8 +189,9 @@ export class GraphRenderer {
 
     // Set up event listeners and start simulation
     this.setupZoom();
-    this.setupPanAndDrag(onNodeSelect);
+    this.setupPanAndDrag(onNodeSelect, onNodeDblClick);
     this.setupHoverHighlighting();
+    this.setupTouchInteraction(onNodeSelect, onNodeDblClick);
     this.startSimulation();
   }
 
@@ -223,8 +228,76 @@ export class GraphRenderer {
     this.updateViewBox();
   }
 
+  /** Select a node and apply persistent highlighting to its connections. */
+  selectNode(id: string | null): void {
+    this.clearSelection();
+    if (!id) return;
+
+    const idx = this.nodes.findIndex((n) => n.id === id);
+    if (idx < 0) return;
+
+    this.selectedNodeId = id;
+    this.applySelectionHighlight(id);
+    this.nodeGroups[idx].classList.add("selected");
+  }
+
+  /** Clear the current persistent selection. */
+  clearSelection(): void {
+    if (!this.selectedNodeId) return;
+
+    // Remove selected class from previously selected node
+    const prevIdx = this.nodes.findIndex((n) => n.id === this.selectedNodeId);
+    if (prevIdx >= 0) {
+      this.nodeGroups[prevIdx].classList.remove("selected");
+    }
+
+    this.selectedNodeId = null;
+
+    // Reset all opacities
+    for (let j = 0; j < this.nodes.length; j++) {
+      this.nodeGroups[j].style.opacity = "";
+    }
+    for (let j = 0; j < this.linkElements.length; j++) {
+      this.linkElements[j].style.strokeOpacity = "";
+      this.linkElements[j].style.stroke = "";
+    }
+  }
+
   destroy(): void {
     this.ac.abort();
+  }
+
+  // ── Private: Selection highlighting ───────────────────────────────────────
+
+  private applySelectionHighlight(nodeId: string): void {
+    const connectedEdges = this.nodeEdgeMap.get(nodeId) ?? new Set();
+    const connectedNodes = new Set<string>([nodeId]);
+
+    for (const ei of connectedEdges) {
+      const l = this.resolvedLinks[ei];
+      connectedNodes.add(l.source.id);
+      connectedNodes.add(l.target.id);
+    }
+
+    // Dim non-connected nodes
+    for (let j = 0; j < this.nodes.length; j++) {
+      const ng = this.nodeGroups[j];
+      if (connectedNodes.has(this.nodes[j].id)) {
+        ng.style.opacity = "1";
+      } else {
+        ng.style.opacity = "0.2";
+      }
+    }
+
+    // Highlight connected edges
+    for (let j = 0; j < this.linkElements.length; j++) {
+      if (connectedEdges.has(j)) {
+        this.linkElements[j].style.strokeOpacity = "0.9";
+        this.linkElements[j].style.stroke = "var(--accent)";
+      } else {
+        this.linkElements[j].style.strokeOpacity = "0.05";
+      }
+    }
   }
 
   // ── Private: ViewBox ───────────────────────────────────────────────────────
@@ -317,15 +390,47 @@ export class GraphRenderer {
 
   // ── Private: Simulation ────────────────────────────────────────────────────
 
-  private startSimulation(): void {
-    const tickCallbacks: TickCallbacks = {
+  private tickCallbacks(): TickCallbacks {
+    return {
       updateDOM: () => this.updateDOM(),
       fitToContent: () => this.fitToContent(),
       scheduleNextTick: (fn: () => void) => requestAnimationFrame(fn),
     };
+  }
 
-    const runTick = () => { tick(this.sim, tickCallbacks); };
+  private startSimulation(): void {
+    const runTick = () => { tick(this.sim, this.tickCallbacks()); };
     requestAnimationFrame(runTick);
+  }
+
+  /** Re-heat the simulation to adapt to moved nodes. */
+  private reheat(): void {
+    if (this.sim.alpha.value < 0.01) {
+      this.sim.alpha.value = 0.3;
+      requestAnimationFrame(() => tick(this.sim, this.tickCallbacks()));
+    } else {
+      this.sim.alpha.value = Math.max(this.sim.alpha.value, 0.3);
+    }
+  }
+
+  // ── Private: Coordinate helpers ──────────────────────────────────────────
+
+  /** Convert client (screen) coordinates to SVG viewBox coordinates. */
+  private clientToViewBox(clientX: number, clientY: number): { x: number; y: number } {
+    const rect = this.svg.getBoundingClientRect();
+    return {
+      x: this.viewX + ((clientX - rect.left) / rect.width) * this.viewW,
+      y: this.viewY + ((clientY - rect.top) / rect.height) * this.viewH,
+    };
+  }
+
+  /** Find the node index under a given SVG element (circle or its parent group). */
+  private findNodeIndex(target: Element): number {
+    if (target.tagName === "circle") {
+      const group = target.parentElement as unknown as SVGGElement;
+      return this.nodeGroups.indexOf(group);
+    }
+    return -1;
   }
 
   // ── Private: Zoom (mouse wheel) ────────────────────────────────────────────
@@ -334,16 +439,14 @@ export class GraphRenderer {
     this.svg.addEventListener("wheel", (e: WheelEvent) => {
       e.preventDefault();
 
-      const rect = this.svg.getBoundingClientRect();
-      const mouseVBX = this.viewX + ((e.clientX - rect.left) / rect.width) * this.viewW;
-      const mouseVBY = this.viewY + ((e.clientY - rect.top) / rect.height) * this.viewH;
+      const mouseVB = this.clientToViewBox(e.clientX, e.clientY);
 
       const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
       const newW = this.viewW * zoomFactor;
       const newH = this.viewH * zoomFactor;
 
-      this.viewX = mouseVBX - (mouseVBX - this.viewX) * (newW / this.viewW);
-      this.viewY = mouseVBY - (mouseVBY - this.viewY) * (newH / this.viewH);
+      this.viewX = mouseVB.x - (mouseVB.x - this.viewX) * (newW / this.viewW);
+      this.viewY = mouseVB.y - (mouseVB.y - this.viewY) * (newH / this.viewH);
       this.viewW = newW;
       this.viewH = newH;
       this.scale = this.viewW / this.width;
@@ -353,10 +456,11 @@ export class GraphRenderer {
     }, { passive: false, signal: this.ac.signal });
   }
 
-  // ── Private: Pan + Node drag ───────────────────────────────────────────────
+  // ── Private: Pan + Node drag (mouse) ───────────────────────────────────────
 
   private setupPanAndDrag(
     onNodeSelect: GraphRendererOptions["onNodeSelect"],
+    onNodeDblClick?: (path: string) => void,
   ): void {
     let isPanning = false;
     let panStartX = 0, panStartY = 0;
@@ -370,19 +474,31 @@ export class GraphRenderer {
 
     const signal = this.ac.signal;
 
+    // Double-click handler
+    this.svg.addEventListener("dblclick", (e: MouseEvent) => {
+      const target = e.target as Element;
+      const idx = this.findNodeIndex(target);
+      if (idx >= 0 && onNodeDblClick) {
+        e.preventDefault();
+        onNodeDblClick(this.nodes[idx].id);
+      }
+    }, { signal });
+
     this.svg.addEventListener("mousedown", (e: MouseEvent) => {
       const target = e.target as Element;
+      const idx = this.findNodeIndex(target);
 
-      if (target.tagName === "circle") {
-        const group = target.parentElement as unknown as SVGGElement;
-        const idx = this.nodeGroups.indexOf(group);
-        if (idx >= 0) {
-          dragNode = this.nodes[idx];
-          dragNodeIdx = idx;
-          mouseDownPos = { x: e.clientX, y: e.clientY };
-          isDragging = false;
-          return;
-        }
+      if (idx >= 0) {
+        dragNode = this.nodes[idx];
+        dragNodeIdx = idx;
+        mouseDownPos = { x: e.clientX, y: e.clientY };
+        isDragging = false;
+        return;
+      }
+
+      // Background click clears selection
+      if (target === this.svg || target === this.g) {
+        this.clearSelection();
       }
 
       // Background pan
@@ -405,21 +521,15 @@ export class GraphRenderer {
             isDragging = true;
             dragNode.fx = dragNode.x;
             dragNode.fy = dragNode.y;
-            this.sim.alpha.value = 0.3;
-            const tickCallbacks: TickCallbacks = {
-              updateDOM: () => this.updateDOM(),
-              fitToContent: () => this.fitToContent(),
-              scheduleNextTick: (fn: () => void) => requestAnimationFrame(fn),
-            };
-            requestAnimationFrame(() => tick(this.sim, tickCallbacks));
+            this.reheat();
           }
           return;
         }
 
         // Convert client coords to viewBox coords
-        const rect = this.svg.getBoundingClientRect();
-        dragNode.fx = this.viewX + ((e.clientX - rect.left) / rect.width) * this.viewW;
-        dragNode.fy = this.viewY + ((e.clientY - rect.top) / rect.height) * this.viewH;
+        const vb = this.clientToViewBox(e.clientX, e.clientY);
+        dragNode.fx = vb.x;
+        dragNode.fy = vb.y;
         return;
       }
 
@@ -437,14 +547,23 @@ export class GraphRenderer {
     this.svg.addEventListener("mouseup", () => {
       if (dragNode) {
         if (!isDragging && dragNodeIdx >= 0) {
+          // Click (no drag) — select node and show details
           const n = this.nodes[dragNodeIdx];
           const fileName = basename(n.id);
+          this.selectNode(n.id);
           onNodeSelect({
             title: fileName,
             path: n.id,
             zone: n.zone || "unzoned",
             incomingImports: n.importCount,
           });
+        } else if (isDragging) {
+          // Drag ended — persist position for the session by updating x/y
+          // and then release the fixed constraint
+          dragNode.x = dragNode.fx!;
+          dragNode.y = dragNode.fy!;
+          dragNode.vx = 0;
+          dragNode.vy = 0;
         }
         dragNode.fx = null;
         dragNode.fy = null;
@@ -461,6 +580,194 @@ export class GraphRenderer {
     }, { signal });
   }
 
+  // ── Private: Touch interaction ─────────────────────────────────────────────
+
+  private setupTouchInteraction(
+    onNodeSelect: GraphRendererOptions["onNodeSelect"],
+    onNodeDblClick?: (path: string) => void,
+  ): void {
+    let touchDragNode: GraphNode | null = null;
+    let touchDragIdx = -1;
+    let touchStartPos: { x: number; y: number } | null = null;
+    let isTouchDragging = false;
+    const DRAG_THRESHOLD = 8; // higher threshold for touch
+
+    // Touch pan state
+    let isTouchPanning = false;
+    let touchPanStartX = 0, touchPanStartY = 0;
+    let touchPanStartVX = 0, touchPanStartVY = 0;
+
+    // Double-tap detection
+    let lastTapTime = 0;
+    let lastTapNodeIdx = -1;
+    const DOUBLE_TAP_DELAY = 300;
+
+    // Pinch-zoom state
+    let pinchStartDist = 0;
+    let pinchStartViewW = 0;
+    let pinchStartViewH = 0;
+    let pinchMidX = 0;
+    let pinchMidY = 0;
+
+    const signal = this.ac.signal;
+
+    this.svg.addEventListener("touchstart", (e: TouchEvent) => {
+      // Pinch-zoom: two-finger gesture
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        isTouchPanning = false;
+        touchDragNode = null;
+        const t0 = e.touches[0];
+        const t1 = e.touches[1];
+        pinchStartDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+        pinchStartViewW = this.viewW;
+        pinchStartViewH = this.viewH;
+        const midX = (t0.clientX + t1.clientX) / 2;
+        const midY = (t0.clientY + t1.clientY) / 2;
+        const vb = this.clientToViewBox(midX, midY);
+        pinchMidX = vb.x;
+        pinchMidY = vb.y;
+        return;
+      }
+
+      if (e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      const target = touch.target as Element;
+      const idx = this.findNodeIndex(target);
+
+      if (idx >= 0) {
+        e.preventDefault();
+        touchDragNode = this.nodes[idx];
+        touchDragIdx = idx;
+        touchStartPos = { x: touch.clientX, y: touch.clientY };
+        isTouchDragging = false;
+        return;
+      }
+
+      // Background touch pan
+      isTouchPanning = true;
+      touchPanStartX = touch.clientX;
+      touchPanStartY = touch.clientY;
+      touchPanStartVX = this.viewX;
+      touchPanStartVY = this.viewY;
+    }, { passive: false, signal });
+
+    this.svg.addEventListener("touchmove", (e: TouchEvent) => {
+      // Pinch-zoom
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const t0 = e.touches[0];
+        const t1 = e.touches[1];
+        const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+        const ratio = pinchStartDist / dist;
+        const newW = pinchStartViewW * ratio;
+        const newH = pinchStartViewH * ratio;
+        this.viewX = pinchMidX - (pinchMidX - this.viewX) * (newW / this.viewW);
+        this.viewY = pinchMidY - (pinchMidY - this.viewY) * (newH / this.viewH);
+        this.viewW = newW;
+        this.viewH = newH;
+        this.scale = this.viewW / this.width;
+        this.updateViewBox();
+        this.updateLOD();
+        return;
+      }
+
+      if (e.touches.length !== 1) return;
+      const touch = e.touches[0];
+
+      // Node drag
+      if (touchDragNode && touchStartPos) {
+        const dx = touch.clientX - touchStartPos.x;
+        const dy = touch.clientY - touchStartPos.y;
+
+        if (!isTouchDragging) {
+          if (Math.hypot(dx, dy) > DRAG_THRESHOLD) {
+            isTouchDragging = true;
+            touchDragNode.fx = touchDragNode.x;
+            touchDragNode.fy = touchDragNode.y;
+            this.reheat();
+          }
+          return;
+        }
+
+        e.preventDefault();
+        const vb = this.clientToViewBox(touch.clientX, touch.clientY);
+        touchDragNode.fx = vb.x;
+        touchDragNode.fy = vb.y;
+        return;
+      }
+
+      // Background pan
+      if (isTouchPanning) {
+        const dx = touch.clientX - touchPanStartX;
+        const dy = touch.clientY - touchPanStartY;
+        const rect = this.svg.getBoundingClientRect();
+        this.viewX = touchPanStartVX - (dx / rect.width) * this.viewW;
+        this.viewY = touchPanStartVY - (dy / rect.height) * this.viewH;
+        this.updateViewBox();
+      }
+    }, { passive: false, signal });
+
+    this.svg.addEventListener("touchend", (e: TouchEvent) => {
+      if (touchDragNode) {
+        if (!isTouchDragging && touchDragIdx >= 0) {
+          const n = this.nodes[touchDragIdx];
+          const now = Date.now();
+
+          // Double-tap detection
+          if (now - lastTapTime < DOUBLE_TAP_DELAY && lastTapNodeIdx === touchDragIdx) {
+            if (onNodeDblClick) onNodeDblClick(n.id);
+            lastTapTime = 0;
+            lastTapNodeIdx = -1;
+          } else {
+            // Single tap — select node
+            lastTapTime = now;
+            lastTapNodeIdx = touchDragIdx;
+            const fileName = basename(n.id);
+            this.selectNode(n.id);
+            onNodeSelect({
+              title: fileName,
+              path: n.id,
+              zone: n.zone || "unzoned",
+              incomingImports: n.importCount,
+            });
+          }
+        } else if (isTouchDragging && touchDragNode) {
+          // Drag ended — persist position
+          touchDragNode.x = touchDragNode.fx!;
+          touchDragNode.y = touchDragNode.fy!;
+          touchDragNode.vx = 0;
+          touchDragNode.vy = 0;
+        }
+        if (touchDragNode) {
+          touchDragNode.fx = null;
+          touchDragNode.fy = null;
+        }
+        touchDragNode = null;
+        touchDragIdx = -1;
+        touchStartPos = null;
+        isTouchDragging = false;
+      }
+
+      // Clear touch pan on last finger lift
+      if (e.touches.length === 0) {
+        isTouchPanning = false;
+      }
+    }, { signal });
+
+    this.svg.addEventListener("touchcancel", () => {
+      if (touchDragNode) {
+        touchDragNode.fx = null;
+        touchDragNode.fy = null;
+        touchDragNode = null;
+      }
+      touchDragIdx = -1;
+      touchStartPos = null;
+      isTouchDragging = false;
+      isTouchPanning = false;
+    }, { signal });
+  }
+
   // ── Private: Hover highlighting ────────────────────────────────────────────
 
   private setupHoverHighlighting(): void {
@@ -471,6 +778,8 @@ export class GraphRenderer {
       const nodeId = this.nodes[i].id;
 
       this.nodeGroups[i].addEventListener("mouseenter", () => {
+        // Don't override persistent selection with hover
+        if (this.selectedNodeId) return;
         if (hoveredNode === nodeId) return;
         hoveredNode = nodeId;
         const connectedEdges = this.nodeEdgeMap.get(nodeId) ?? new Set();
@@ -503,6 +812,8 @@ export class GraphRenderer {
       }, { signal });
 
       this.nodeGroups[i].addEventListener("mouseleave", () => {
+        // Don't clear if a node is persistently selected
+        if (this.selectedNodeId) return;
         if (hoveredNode !== nodeId) return;
         hoveredNode = null;
 

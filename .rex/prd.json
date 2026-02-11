@@ -7338,7 +7338,7 @@
             {
               "id": "39144f79-e12e-46ff-979b-2a95359091bc",
               "title": "Implement interactive node manipulation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Enable users to drag nodes to new positions and click on nodes to show file details and highlight connections",
               "acceptanceCriteria": [
@@ -7356,7 +7356,9 @@
                 "sourcevision",
                 "navigation"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-11T03:24:45.481Z",
+              "completedAt": "2026-02-11T03:34:41.401Z"
             },
             {
               "id": "a50b5e5d-7ef9-4a45-b847-114977184230",

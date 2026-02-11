@@ -258,7 +258,7 @@ function App({ scope }: { scope: string | null }) {
       case "overview":
         return h(Overview, { data });
       case "graph":
-        return h(Graph, { data, onSelect: setDetail, selectedFile, selectedZone });
+        return h(Graph, { data, onSelect: setDetail, selectedFile, selectedZone, navigateTo });
       case "zones":
         return h(ZonesView, { data, onSelect: setDetail, setSelectedZone, navigateTo });
       case "files":

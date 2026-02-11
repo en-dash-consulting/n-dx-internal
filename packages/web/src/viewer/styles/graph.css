@@ -20,6 +20,17 @@
 
 .graph-node circle:hover { stroke: var(--accent); stroke-width: 2px; }
 
+/* Selected node — persistent highlight on click */
+.graph-node.selected circle {
+  stroke: var(--accent);
+  stroke-width: 2.5px;
+  filter: drop-shadow(0 0 4px var(--accent));
+}
+.graph-node.selected .graph-label {
+  fill: var(--text);
+  font-weight: 600;
+}
+
 .graph-link { stroke: var(--border); stroke-opacity: 0.4; }
 .graph-link.cross-zone { stroke: var(--orange); stroke-opacity: 0.6; }
 
@@ -97,4 +108,12 @@
   10% { opacity: 1; transform: translateX(-50%) translateY(0); }
   80% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+/* Touch interaction — prevent default browser behaviours */
+.graph-container svg { touch-action: none; }
+
+/* Larger touch targets on touch-capable devices */
+@media (pointer: coarse) {
+  .graph-node circle { stroke-width: 2px; }
 }

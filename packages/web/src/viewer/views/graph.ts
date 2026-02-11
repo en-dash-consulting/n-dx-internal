@@ -1,6 +1,6 @@
 import { h } from "preact";
-import { useEffect, useRef, useState, useMemo } from "preact/hooks";
-import type { LoadedData, DetailItem } from "../types.js";
+import { useEffect, useRef, useState, useMemo, useCallback } from "preact/hooks";
+import type { LoadedData, DetailItem, NavigateTo } from "../types.js";
 import { buildZoneColorMap, getZoneColorByIndex } from "../utils.js";
 import { GraphRenderer, type GraphNode, type GraphLink } from "../graph/renderer.js";
 import { BrandedHeader } from "../components/logos.js";
@@ -10,15 +10,16 @@ interface GraphProps {
   onSelect: (detail: DetailItem | null) => void;
   selectedFile?: string | null;
   selectedZone?: string | null;
+  navigateTo?: NavigateTo;
 }
 
-export function Graph({ data, onSelect, selectedFile, selectedZone }: GraphProps) {
+export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }: GraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const graphRef = useRef<GraphRenderer | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [graphSearch, setGraphSearch] = useState("");
 
-  const { imports, zones } = data;
+  const { imports, zones, inventory } = data;
 
   // Build zone lookups using shared utilities
   const fileToZoneMap = useMemo(() => {
@@ -43,6 +44,30 @@ export function Graph({ data, onSelect, selectedFile, selectedZone }: GraphProps
     }
     return set;
   }, [zones]);
+
+  // Build inventory lookup for file metadata enrichment
+  const inventoryMap = useMemo(() => {
+    const map = new Map<string, { language: string; size: number; lines: number; role: string; category: string }>();
+    if (inventory) {
+      for (const f of inventory.files) {
+        map.set(f.path, {
+          language: f.language,
+          size: f.size,
+          lines: f.lineCount,
+          role: f.role,
+          category: f.category,
+        });
+      }
+    }
+    return map;
+  }, [inventory]);
+
+  // Double-click navigates to file in Files view
+  const handleNodeDblClick = useCallback((path: string) => {
+    if (navigateTo) {
+      navigateTo("files", { file: path });
+    }
+  }, [navigateTo]);
 
   if (!imports) {
     return h("div", { class: "loading" }, "No import data available.");
@@ -83,7 +108,23 @@ export function Graph({ data, onSelect, selectedFile, selectedZone }: GraphProps
 
     const renderer = new GraphRenderer({
       svg, nodes, links, width, height,
-      onNodeSelect: (detail) => onSelect({ type: "file", ...detail }),
+      onNodeSelect: (detail) => {
+        // Enrich with inventory metadata if available
+        const inv = inventoryMap.get(detail.path);
+        const enriched: DetailItem = {
+          type: "file",
+          ...detail,
+          ...(inv ? {
+            language: inv.language,
+            size: formatSize(inv.size),
+            lines: inv.lines,
+            role: inv.role,
+            category: inv.category,
+          } : {}),
+        };
+        onSelect(enriched);
+      },
+      onNodeDblClick: handleNodeDblClick,
       zones,
     });
     graphRef.current = renderer;
@@ -163,4 +204,11 @@ export function Graph({ data, onSelect, selectedFile, selectedZone }: GraphProps
         : null
     )
   );
+}
+
+/** Format bytes to a human-readable string. */
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
