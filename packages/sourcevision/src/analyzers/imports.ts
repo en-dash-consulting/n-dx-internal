@@ -43,6 +43,46 @@ export function extractImports(sourceText: string, filePath: string): RawImport[
   const imports: RawImport[] = [];
 
   function visit(node: ts.Node) {
+    // const { a, b } = await import("specifier") or const { a, b } = require("specifier")
+    if (
+      ts.isVariableStatement(node)
+    ) {
+      for (const decl of node.declarationList.declarations) {
+        if (decl.initializer && ts.isObjectBindingPattern(decl.name)) {
+          // Unwrap optional AwaitExpression
+          let inner = decl.initializer;
+          if (ts.isAwaitExpression(inner)) {
+            inner = inner.expression;
+          }
+
+          // Check for import() or require()
+          if (ts.isCallExpression(inner)) {
+            const isDynamicImport = inner.expression.kind === ts.SyntaxKind.ImportKeyword;
+            const isRequire = ts.isIdentifier(inner.expression) && inner.expression.text === "require";
+
+            if ((isDynamicImport || isRequire) && inner.arguments.length === 1) {
+              const arg = inner.arguments[0];
+              if (ts.isStringLiteral(arg)) {
+                const symbols = decl.name.elements.map((el) => {
+                  // For renamed bindings like { default: mod }, use the propertyName ("default")
+                  if (el.propertyName && ts.isIdentifier(el.propertyName)) {
+                    return el.propertyName.text;
+                  }
+                  return ts.isIdentifier(el.name) ? el.name.text : "*";
+                });
+                imports.push({
+                  specifier: arg.text,
+                  type: isDynamicImport ? "dynamic" : "require",
+                  symbols,
+                });
+                return; // Skip child traversal to prevent duplicate from CallExpression handler
+              }
+            }
+          }
+        }
+      }
+    }
+
     // import ... from "specifier"
     if (ts.isImportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
       const specifier = node.moduleSpecifier.text;

@@ -751,6 +751,21 @@ describe("buildMetaPrompt", () => {
     expect(prompt).toContain("2x its detection threshold");
   });
 
+  it("includes guardrail: preserve exact numeric values from heuristic findings", () => {
+    const findings: Finding[] = [
+      {
+        type: "observation",
+        pass: 0,
+        scope: "global",
+        text: "Some finding",
+        severity: "info",
+      },
+    ];
+
+    const prompt = buildMetaPrompt(sampleZones, findings, sampleCrossings);
+    expect(prompt).toContain("preserve the exact numeric values as written");
+  });
+
   it("annotates findings for unknown high pass numbers", () => {
     const findings: Finding[] = [
       {

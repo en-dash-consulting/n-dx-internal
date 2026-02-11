@@ -3,7 +3,7 @@
  * Exposes codebase analysis data via MCP protocol (stdio or HTTP).
  */
 
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -79,9 +79,29 @@ function loadData(targetDir: string): SourcevisionData {
  * await server.connect(transport);
  * ```
  */
+/** Return manifest.json mtime (ms), or 0 on error. */
+function manifestMtime(svDir: string): number {
+  try {
+    return statSync(join(svDir, DATA_FILES.manifest)).mtimeMs;
+  } catch {
+    return 0;
+  }
+}
+
 export function createSourcevisionMcpServer(targetDir: string): McpServer {
   const absDir = resolve(targetDir);
-  const data = loadData(absDir);
+  const svDir = join(absDir, SV_DIR);
+  let cachedData = loadData(absDir);
+  let cachedMtime = manifestMtime(svDir);
+
+  function freshData(): SourcevisionData {
+    const mtime = manifestMtime(svDir);
+    if (mtime !== cachedMtime) {
+      cachedData = loadData(absDir);
+      cachedMtime = mtime;
+    }
+    return cachedData;
+  }
 
   const server = new McpServer({
     name: "sourcevision",
@@ -91,6 +111,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
   // ── Tools ──────────────────────────────────────────────────────────────
 
   server.tool("get_overview", "Get project summary statistics", {}, () => {
+    const data = freshData();
     if (!data.manifest || !data.inventory) {
       return { content: [{ type: "text", text: "No analysis data available. Run 'sourcevision analyze' first." }] };
     }
@@ -117,6 +138,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
     "Get details for a specific zone",
     { id: z.string().describe("Zone ID") },
     ({ id }) => {
+      const data = freshData();
       if (!data.zones) {
         return { content: [{ type: "text", text: "No zones data available." }] };
       }
@@ -146,6 +168,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
     "Get inventory entry, zone, and imports for a file",
     { path: z.string().describe("File path (relative to project root)") },
     ({ path }) => {
+      const data = freshData();
       const file = data.inventory?.files.find((f) => f.path === path);
       if (!file) {
         return { content: [{ type: "text", text: `File "${path}" not found in inventory.` }] };
@@ -178,6 +201,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
     "Get import graph edges, optionally filtered to a specific file",
     { file: z.string().optional().describe("Filter to imports from/to this file") },
     ({ file }) => {
+      const data = freshData();
       if (!data.imports) {
         return { content: [{ type: "text", text: "No imports data available." }] };
       }
@@ -201,6 +225,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
   );
 
   server.tool("get_route_tree", "Get the route structure", {}, () => {
+    const data = freshData();
     if (!data.components) {
       return { content: [{ type: "text", text: "No components data available." }] };
     }
@@ -226,6 +251,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
       language: z.string().optional().describe("Filter by language"),
     },
     ({ query, role, language }) => {
+      const data = freshData();
       if (!data.inventory) {
         return { content: [{ type: "text", text: "No inventory data available." }] };
       }
@@ -263,6 +289,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
       severity: z.string().optional().describe("Filter by severity: info, warning, critical"),
     },
     ({ type, severity }) => {
+      const data = freshData();
       let findings = data.zones?.findings ?? [];
 
       if (type) {
@@ -289,6 +316,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
       limit: z.number().optional().describe("Max results (default 10)"),
     },
     ({ priority, limit }) => {
+      const data = freshData();
       if (!data.zones) {
         return { content: [{ type: "text", text: "No zones data available." }] };
       }
@@ -318,6 +346,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
     "sourcevision://summary",
     { description: "Condensed codebase context (CONTEXT.md)" },
     () => {
+      const data = freshData();
       if (!data.manifest || !data.inventory || !data.imports || !data.zones) {
         return {
           contents: [{
@@ -351,6 +380,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
     "sourcevision://zones",
     { description: "Zone analysis data" },
     () => {
+      const data = freshData();
       return {
         contents: [{
           uri: "sourcevision://zones",
@@ -366,6 +396,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
     "sourcevision://routes",
     { description: "Route tree data" },
     () => {
+      const data = freshData();
       return {
         contents: [{
           uri: "sourcevision://routes",

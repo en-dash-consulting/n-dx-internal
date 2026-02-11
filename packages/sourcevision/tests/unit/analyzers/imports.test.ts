@@ -203,6 +203,58 @@ describe("extractImports", () => {
     expect(result.filter((r) => r.type === "require")).toHaveLength(1);
     expect(result.filter((r) => r.type === "reexport")).toHaveLength(1);
   });
+
+  it("extracts destructured symbols from dynamic import()", () => {
+    const result = extractImports(
+      'const { cmdConfig, runCmd } = await import("./config.js");',
+      "test.ts"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("dynamic");
+    expect(result[0].specifier).toBe("./config.js");
+    expect(result[0].symbols).toEqual(["cmdConfig", "runCmd"]);
+  });
+
+  it("extracts destructured symbols from require()", () => {
+    const result = extractImports(
+      'const { foo, bar } = require("./utils");',
+      "test.js"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("require");
+    expect(result[0].specifier).toBe("./utils");
+    expect(result[0].symbols).toEqual(["foo", "bar"]);
+  });
+
+  it("uses propertyName for renamed destructured bindings", () => {
+    const result = extractImports(
+      'const { default: mod } = await import("./module");',
+      "test.ts"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("dynamic");
+    expect(result[0].symbols).toEqual(["default"]);
+  });
+
+  it("keeps symbols ['*'] for non-destructured dynamic import", () => {
+    const result = extractImports(
+      'const m = await import("./module");',
+      "test.ts"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("dynamic");
+    expect(result[0].symbols).toEqual(["*"]);
+  });
+
+  it("extracts destructured symbols from import() without await", () => {
+    const result = extractImports(
+      'const { foo } = import("./x");',
+      "test.ts"
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("dynamic");
+    expect(result[0].symbols).toEqual(["foo"]);
+  });
 });
 
 // ── extractPackageName ────────────────────────────────────────────────────────

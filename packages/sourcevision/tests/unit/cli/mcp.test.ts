@@ -192,6 +192,34 @@ describe("Sourcevision MCP server factory", () => {
     expect(typeof startMcpServer).toBe("function");
   });
 
+  it("returns fresh data after analysis files are updated", async () => {
+    const server = createSourcevisionMcpServer(tmpDir);
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: "test-client", version: "1.0.0" });
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    // Initial call — totalFiles should be 2
+    const result1 = await client.callTool({ name: "get_overview", arguments: {} });
+    const content1 = result1.content as Array<{ type: string; text: string }>;
+    expect(JSON.parse(content1[0].text).files).toBe(2);
+
+    // Update inventory with different totalFiles and touch manifest to bump mtime
+    const updatedInventory = { ...minimalInventory(), summary: { ...minimalInventory().summary, totalFiles: 5 } };
+    await writeFile(join(svDir, DATA_FILES.inventory), JSON.stringify(updatedInventory), "utf-8");
+    // Ensure mtime changes (filesystem granularity)
+    await new Promise((r) => setTimeout(r, 50));
+    await writeFile(join(svDir, DATA_FILES.manifest), JSON.stringify(minimalManifest()), "utf-8");
+
+    // Second call — should pick up updated data
+    const result2 = await client.callTool({ name: "get_overview", arguments: {} });
+    const content2 = result2.content as Array<{ type: string; text: string }>;
+    expect(JSON.parse(content2[0].text).files).toBe(5);
+
+    await client.close();
+    await server.close();
+  });
+
   it("factory is re-exported from public API", async () => {
     const publicApi = await import("../../../src/public.js");
     expect(typeof publicApi.createSourcevisionMcpServer).toBe("function");
