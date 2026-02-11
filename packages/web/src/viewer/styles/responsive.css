@@ -112,16 +112,6 @@
     padding: 4px;
   }
 
-  /* Hide desktop sidebar toggle on mobile */
-  .sidebar-toggle-btn {
-    display: none;
-  }
-
-  .sidebar.sidebar-collapsed .sidebar-toggle-btn {
-    display: none;
-    position: static;
-  }
-
   .sidebar-nav {
     padding: 4px 8px 8px;
   }
@@ -134,18 +124,13 @@
     height: calc(100dvh - 56px);
   }
 
-  .header-controls {
-    padding: 6px 8px;
-  }
-
-  /* Hide sidebar toggle in header on mobile — use hamburger instead */
-  .header-sidebar-toggle {
+  /* Hide sidebar footer on mobile — sidebar is a compact top bar */
+  .sidebar-footer {
     display: none;
   }
 
-  /* Hide branding label on small screens, keep logo only */
-  .header-branding-name {
-    display: none;
+  .page-context-bar {
+    padding: 0 0 6px;
   }
 
   .detail-panel {
@@ -199,8 +184,6 @@
     width: 95vw;
     max-height: 85vh;
   }
-
-  /* Sidebar controls removed — theme toggle and FAQ are now in header control bar */
 
   /* FAQ modal full-width on mobile */
   .faq-modal {

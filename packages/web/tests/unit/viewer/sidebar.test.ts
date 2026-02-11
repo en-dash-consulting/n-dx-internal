@@ -136,10 +136,50 @@ describe("Sidebar", () => {
     });
   });
 
-  describe("sidebar toggle (hide/show)", () => {
-    // Note: The sidebar toggle button has moved to the header control bar (main.ts).
-    // The sidebar itself only has the collapsed-rail expand button.
+  describe("sidebar footer controls", () => {
+    it("renders sidebar footer with theme toggle and collapse button when expanded", () => {
+      renderSidebar({ sidebarCollapsed: false });
+      const footer = root.querySelector(".sidebar-footer");
+      expect(footer).not.toBeNull();
+      const controls = footer?.querySelector(".sidebar-footer-controls");
+      expect(controls).not.toBeNull();
+    });
 
+    it("does not render sidebar footer when collapsed", () => {
+      renderSidebar({ sidebarCollapsed: true });
+      const footer = root.querySelector(".sidebar-footer");
+      expect(footer).toBeNull();
+    });
+
+    it("sidebar footer has theme toggle button", () => {
+      renderSidebar({ sidebarCollapsed: false });
+      const themeBtn = root.querySelector(".sidebar-footer .sidebar-control-btn");
+      expect(themeBtn).not.toBeNull();
+    });
+
+    it("sidebar footer has collapse button", () => {
+      renderSidebar({ sidebarCollapsed: false });
+      const collapseBtn = root.querySelector(".sidebar-collapse-btn");
+      expect(collapseBtn).not.toBeNull();
+      expect(collapseBtn?.getAttribute("aria-label")).toBe("Collapse sidebar");
+    });
+
+    it("collapse button calls onToggleSidebar when clicked", () => {
+      renderSidebar({ sidebarCollapsed: false, onToggleSidebar });
+      const collapseBtn = root.querySelector<HTMLElement>(".sidebar-collapse-btn");
+      collapseBtn?.click();
+      expect(onToggleSidebar).toHaveBeenCalledTimes(1);
+    });
+
+    it("footer has accessible role and label", () => {
+      renderSidebar({ sidebarCollapsed: false });
+      const footer = root.querySelector(".sidebar-footer");
+      expect(footer?.getAttribute("role")).toBe("group");
+      expect(footer?.getAttribute("aria-label")).toBe("Sidebar controls");
+    });
+  });
+
+  describe("sidebar toggle (hide/show)", () => {
     it("collapsed rail has expand button", () => {
       renderSidebar({ sidebarCollapsed: true });
       const expandBtn = root.querySelector(".sidebar-rail-expand");
