@@ -7921,7 +7921,7 @@
         {
           "id": "fa02737e-8d0d-4112-9363-473c74630b95",
           "title": "Decompose zones.test.ts god function",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Split the 2111-line zones.test.ts (flagged for calling 82 unique functions) into focused test files organized by concern.",
           "acceptanceCriteria": [
@@ -7933,7 +7933,7 @@
             {
               "id": "2ec4de61-7d1e-4b89-940e-266ff403c3e4",
               "title": "Split zones.test.ts into focused test files by concern",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "packages/sourcevision/tests/unit/analyzers/zones.test.ts is 2111 lines and calls 82 unique functions. Split into separate test files organized by concern (e.g., zone-detection.test.ts, zone-merging.test.ts, zone-hierarchy.test.ts, zone-edge-cases.test.ts). Each file should test a cohesive subset of zone analysis behavior.",
               "acceptanceCriteria": [
@@ -7942,9 +7942,13 @@
                 "All original test cases are preserved",
                 "pnpm test passes"
               ],
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-02-11T16:49:13.579Z",
+              "completedAt": "2026-02-11T16:59:31.062Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-11T16:59:31.143Z",
+          "completedAt": "2026-02-11T16:59:31.143Z"
         },
         {
           "id": "149e7d72-8c46-4a5a-a290-9e9a9e30870b",
