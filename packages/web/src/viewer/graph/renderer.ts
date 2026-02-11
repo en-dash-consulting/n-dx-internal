@@ -12,7 +12,7 @@ import {
   initZoneClusteredPositions,
   tick,
 } from "./physics.js";
-import { basename } from "../utils.js";
+import { basename, truncateFilename } from "../utils.js";
 
 // ── Public types ─────────────────────────────────────────────────────────────
 
@@ -46,6 +46,16 @@ export interface GraphRendererOptions {
   zones: unknown; // opaque — only needed for future use
 }
 
+// ── Label positioning types ─────────────────────────────────────────────────
+
+/** Bounding box for label overlap detection (in SVG viewBox coordinates). */
+interface LabelRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 // ── GraphRenderer class ──────────────────────────────────────────────────────
 
 export class GraphRenderer {
@@ -72,6 +82,11 @@ export class GraphRenderer {
 
   // Selection state — persists until explicitly cleared
   private selectedNodeId: string | null = null;
+
+  // Label management state
+  private labelsHidden = false;       // user toggle
+  private labelRects: LabelRect[];    // reused per frame to avoid GC
+  private tooltip: SVGGElement;       // shared tooltip element
 
   constructor(opts: GraphRendererOptions) {
     const { svg, nodes, links, width, height, onNodeSelect, onNodeDblClick } = opts;
@@ -162,17 +177,42 @@ export class GraphRenderer {
 
       group.appendChild(circle);
 
-      // Always create labels — LOD controls visibility
+      // Always create labels — LOD + overlap detection controls visibility
+      const fullName = basename(n.id);
       const label = document.createElementNS(ns, "text");
       label.setAttribute("class", "graph-label");
       label.setAttribute("dy", String(-radius - 3));
       label.setAttribute("text-anchor", "middle");
-      label.textContent = basename(n.id);
+      label.setAttribute("data-full", fullName);
+      label.textContent = truncateFilename(fullName);
       group.appendChild(label);
 
       this.g.appendChild(group);
       this.nodeGroups.push(group);
     }
+
+    // Pre-allocate label rects array (reused each frame)
+    this.labelRects = new Array(nodes.length);
+    for (let i = 0; i < nodes.length; i++) {
+      this.labelRects[i] = { x: 0, y: 0, w: 0, h: 0 };
+    }
+
+    // Create shared tooltip (hidden by default)
+    this.tooltip = document.createElementNS(ns, "g");
+    this.tooltip.setAttribute("class", "graph-tooltip");
+    this.tooltip.style.display = "none";
+    this.tooltip.style.pointerEvents = "none";
+    const tooltipBg = document.createElementNS(ns, "rect");
+    tooltipBg.setAttribute("class", "graph-tooltip-bg");
+    tooltipBg.setAttribute("rx", "3");
+    tooltipBg.setAttribute("ry", "3");
+    this.tooltip.appendChild(tooltipBg);
+    const tooltipText = document.createElementNS(ns, "text");
+    tooltipText.setAttribute("class", "graph-tooltip-text");
+    tooltipText.setAttribute("dy", "0.35em");
+    this.tooltip.appendChild(tooltipText);
+    // Tooltip must be added last so it renders on top of all nodes
+    this.g.appendChild(this.tooltip);
 
     // Initialize physics simulation
     this.sim = {
@@ -191,6 +231,7 @@ export class GraphRenderer {
     this.setupZoom();
     this.setupPanAndDrag(onNodeSelect, onNodeDblClick);
     this.setupHoverHighlighting();
+    this.setupLabelTooltips();
     this.setupTouchInteraction(onNodeSelect, onNodeDblClick);
     this.startSimulation();
   }
@@ -261,6 +302,18 @@ export class GraphRenderer {
       this.linkElements[j].style.strokeOpacity = "";
       this.linkElements[j].style.stroke = "";
     }
+  }
+
+  /** Toggle label visibility on/off. Returns the new state. */
+  toggleLabels(): boolean {
+    this.labelsHidden = !this.labelsHidden;
+    this.updateLOD();
+    return !this.labelsHidden; // true = labels visible
+  }
+
+  /** Get current label visibility state. */
+  get labelsVisible(): boolean {
+    return !this.labelsHidden;
   }
 
   destroy(): void {
@@ -342,13 +395,34 @@ export class GraphRenderer {
     this.updateViewBox();
   }
 
-  // ── Private: LOD ───────────────────────────────────────────────────────────
+  // ── Private: LOD + Label overlap detection ─────────────────────────────────
 
+  /**
+   * Update level-of-detail: circle sizing, label visibility, and overlap hiding.
+   *
+   * Strategy:
+   *  1. Zoom-based LOD: hide labels when nodes are too small to read.
+   *  2. Density-aware priority: in crowded areas, only show labels for high-import
+   *     nodes (they are the most useful landmarks).
+   *  3. Greedy overlap removal: iterate nodes by importance (import count desc),
+   *     place labels greedily, hide labels that would overlap already-placed ones.
+   *  4. User toggle: labelsHidden overrides everything.
+   */
   private updateLOD(): void {
-    for (let i = 0; i < this.nodes.length; i++) {
+    const n = this.nodes.length;
+
+    // Phase 1: circle sizing + compute which labels *could* show (zoom-based)
+    const fontSize = Math.max(7, Math.min(11, 9 / Math.sqrt(this.scale)));
+    // Approximate label dimensions in SVG units
+    const charWidth = fontSize * 0.55;
+    const labelHeight = fontSize * 1.3;
+
+    // Track which labels pass zoom test (before overlap)
+    const zoomVisible: boolean[] = new Array(n);
+
+    for (let i = 0; i < n; i++) {
       const visualRadius = this.nodeRadii[i] / this.scale;
       const circle = this.nodeGroups[i].querySelector("circle");
-      const label = this.nodeGroups[i].querySelector("text");
 
       this.nodeGroups[i].style.display = "";
       if (circle && visualRadius < 1) {
@@ -357,16 +431,87 @@ export class GraphRenderer {
         circle.setAttribute("r", String(this.nodeRadii[i]));
       }
 
-      if (label) {
-        if (visualRadius < 3) {
-          (label as SVGTextElement).style.display = "none";
-        } else {
-          (label as SVGTextElement).style.display = "";
-          const fontSize = Math.max(7, Math.min(11, 9 / Math.sqrt(this.scale)));
-          (label as SVGTextElement).style.fontSize = `${fontSize}px`;
+      zoomVisible[i] = !this.labelsHidden && visualRadius >= 3;
+    }
+
+    // Phase 2: sort by importance for greedy placement (descending import count)
+    // Use a lightweight index array to avoid allocations on hot path
+    const order = this.getSortedLabelOrder();
+
+    // Phase 3: greedy overlap removal
+    // We track placed label bounding boxes and skip labels that overlap
+    const placed: LabelRect[] = [];
+    const showLabel: boolean[] = new Array(n).fill(false);
+
+    for (let oi = 0; oi < n; oi++) {
+      const i = order[oi];
+      if (!zoomVisible[i]) continue;
+
+      const node = this.nodes[i];
+      const label = this.nodeGroups[i].querySelector("text") as SVGTextElement | null;
+      if (!label) continue;
+
+      const textLen = (label.textContent || "").length;
+      const lw = textLen * charWidth;
+      const lh = labelHeight;
+      const lx = (node.x ?? 0) - lw / 2;
+      const ly = (node.y ?? 0) - this.nodeRadii[i] - 3 - lh;
+
+      // Check overlap against already-placed labels
+      let overlaps = false;
+      for (let j = 0; j < placed.length; j++) {
+        const p = placed[j];
+        if (lx < p.x + p.w && lx + lw > p.x && ly < p.y + p.h && ly + lh > p.y) {
+          overlaps = true;
+          break;
         }
       }
+
+      if (!overlaps) {
+        showLabel[i] = true;
+        // Reuse pre-allocated rect
+        const rect = this.labelRects[i];
+        rect.x = lx;
+        rect.y = ly;
+        rect.w = lw;
+        rect.h = lh;
+        placed.push(rect);
+      }
     }
+
+    // Phase 4: apply visibility + font size
+    for (let i = 0; i < n; i++) {
+      const label = this.nodeGroups[i].querySelector("text") as SVGTextElement | null;
+      if (!label) continue;
+
+      if (showLabel[i]) {
+        label.style.display = "";
+        label.style.fontSize = `${fontSize}px`;
+        label.classList.remove("graph-label-hidden");
+      } else {
+        label.style.display = "none";
+        label.classList.add("graph-label-hidden");
+      }
+    }
+  }
+
+  /** Cached sort order — recomputed only when node count changes. */
+  private _sortedOrder: number[] | null = null;
+  private _sortedOrderLen = -1;
+
+  /** Get indices sorted by import count (descending). Cached per node-count. */
+  private getSortedLabelOrder(): number[] {
+    const n = this.nodes.length;
+    if (this._sortedOrder && this._sortedOrderLen === n) return this._sortedOrder;
+
+    const order = new Array<number>(n);
+    for (let i = 0; i < n; i++) order[i] = i;
+    const nodes = this.nodes;
+    order.sort((a, b) => nodes[b].importCount - nodes[a].importCount);
+
+    this._sortedOrder = order;
+    this._sortedOrderLen = n;
+    return order;
   }
 
   // ── Private: DOM update (called by physics tick) ───────────────────────────
@@ -766,6 +911,56 @@ export class GraphRenderer {
       isTouchDragging = false;
       isTouchPanning = false;
     }, { signal });
+  }
+
+  // ── Private: Label tooltips ──────────────────────────────────────────────
+
+  /**
+   * Show full filename tooltip on node hover. The tooltip is a single shared
+   * SVG group that follows the hovered node. This avoids per-node <title>
+   * elements (which have inconsistent browser rendering and delays).
+   */
+  private setupLabelTooltips(): void {
+    const signal = this.ac.signal;
+    const tooltipText = this.tooltip.querySelector("text") as SVGTextElement;
+    const tooltipBg = this.tooltip.querySelector("rect") as SVGRectElement;
+
+    for (let i = 0; i < this.nodes.length; i++) {
+      this.nodeGroups[i].addEventListener("mouseenter", () => {
+        const node = this.nodes[i];
+        const fullName = basename(node.id);
+        const displayName = this.nodeGroups[i].querySelector("text")?.textContent || "";
+
+        // Only show tooltip if the label is truncated or hidden
+        const label = this.nodeGroups[i].querySelector("text") as SVGTextElement | null;
+        const labelHidden = label?.style.display === "none";
+        if (fullName === displayName && !labelHidden) {
+          return;
+        }
+
+        tooltipText.textContent = fullName;
+
+        // Position tooltip above node
+        const tx = node.x ?? 0;
+        const ty = (node.y ?? 0) - this.nodeRadii[i] - 18;
+        this.tooltip.setAttribute("transform", `translate(${tx},${ty})`);
+
+        // Size the background rectangle around the text
+        const textLen = fullName.length;
+        const approxWidth = textLen * (9 * 0.55) + 8; // 9px font, 0.55 char width, 4px padding each side
+        tooltipBg.setAttribute("x", String(-approxWidth / 2));
+        tooltipBg.setAttribute("y", "-8");
+        tooltipBg.setAttribute("width", String(approxWidth));
+        tooltipBg.setAttribute("height", "16");
+        tooltipText.setAttribute("text-anchor", "middle");
+
+        this.tooltip.style.display = "";
+      }, { signal });
+
+      this.nodeGroups[i].addEventListener("mouseleave", () => {
+        this.tooltip.style.display = "none";
+      }, { signal });
+    }
   }
 
   // ── Private: Hover highlighting ────────────────────────────────────────────

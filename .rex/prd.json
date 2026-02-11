@@ -7384,7 +7384,7 @@
         {
           "id": "7de8dfa9-5bb7-4a79-a617-91b2bbd71c9c",
           "title": "Label Management and Visual Clarity",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Fix overlapping filename labels and implement smart visibility management to make the graph readable at all scales",
           "source": "smart-add",
@@ -7392,7 +7392,7 @@
             {
               "id": "ca6091ab-d5d8-4f62-93be-0194efff210e",
               "title": "Implement smart label positioning and visibility",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Prevent label overlaps through dynamic positioning and manage label visibility based on zoom level and density\n\n---\n\nTruncate long filenames with ellipsis and show full names on hover to balance readability with information access",
               "acceptanceCriteria": [
@@ -7417,9 +7417,13 @@
                 "usability"
               ],
               "source": "smart-add",
+              "startedAt": "2026-02-11T03:35:40.021Z",
+              "completedAt": "2026-02-11T03:41:43.303Z",
               "children": []
             }
-          ]
+          ],
+          "startedAt": "2026-02-11T03:41:43.375Z",
+          "completedAt": "2026-02-11T03:41:43.375Z"
         },
         {
           "id": "fe904ed1-7e5d-4f9b-b893-72520a24b807",

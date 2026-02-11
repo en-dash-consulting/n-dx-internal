@@ -42,6 +42,39 @@
   pointer-events: none;
 }
 
+/* Tooltip — floating full filename on hover */
+.graph-tooltip { pointer-events: none; }
+.graph-tooltip-bg {
+  fill: var(--bg-surface);
+  stroke: var(--border);
+  stroke-width: 0.5;
+  opacity: 0.95;
+}
+.graph-tooltip-text {
+  fill: var(--text);
+  font-size: 9px;
+}
+
+/* Label toggle button */
+.graph-label-toggle {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.15s, color 0.15s;
+}
+.graph-label-toggle:hover {
+  background: var(--bg-hover, var(--border));
+  color: var(--text);
+}
+
 /* Graph legend */
 .graph-legend {
   position: absolute;

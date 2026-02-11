@@ -18,6 +18,7 @@ export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }
   const graphRef = useRef<GraphRenderer | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [graphSearch, setGraphSearch] = useState("");
+  const [labelsVisible, setLabelsVisible] = useState(true);
 
   const { imports, zones, inventory } = data;
 
@@ -68,6 +69,14 @@ export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }
       navigateTo("files", { file: path });
     }
   }, [navigateTo]);
+
+  // Toggle label visibility
+  const handleToggleLabels = useCallback(() => {
+    if (graphRef.current) {
+      const visible = graphRef.current.toggleLabels();
+      setLabelsVisible(visible);
+    }
+  }, []);
 
   if (!imports) {
     return h("div", { class: "loading" }, "No import data available.");
@@ -191,6 +200,12 @@ export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }
     ),
     h("div", { class: "graph-container", style: "position: relative;" },
       h("svg", { ref: svgRef }),
+      // Label toggle button
+      h("button", {
+        class: "graph-label-toggle",
+        onClick: handleToggleLabels,
+        title: labelsVisible ? "Hide labels" : "Show labels",
+      }, labelsVisible ? "Labels" : "Labels off"),
       // Legend overlay
       legendItems.length > 0
         ? h("div", { class: "graph-legend" },
