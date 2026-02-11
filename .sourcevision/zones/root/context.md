@@ -7,7 +7,7 @@
 Zone: Root (`root`)
 Files: 4, Cohesion: 1.00, Coupling: 0.00
 Description: 4 files, primarily JavaScript
-Lines: 1696
+Lines: 1711
 
 </zone>
 
@@ -16,7 +16,7 @@ Lines: 1696
 ci.js (JavaScript, 269 lines, source)
 cli.js (JavaScript, 320 lines, source)
 config.js (JavaScript, 799 lines, source)
-web.js (JavaScript, 308 lines, source)
+web.js (JavaScript, 323 lines, source)
 
 </files>
 
@@ -38,16 +38,15 @@ Internal:
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Pure coordination layer with zero imports maintains strict architectural boundaries
-- Process-level delegation enables tool independence while providing unified CLI interface
-- Command aliases (sv for sourcevision) implemented but missing from help documentation
-- High cohesion (1.0) and zero coupling demonstrate clean separation between orchestration and implementation
-- Process-only design explicitly avoids library imports — zero runtime coupling with domain packages
-- Sophisticated error handling system with pattern-based hints guides users toward resolution
-- Pure process orchestration pattern — spawns child processes instead of library imports to maintain architectural isolation
-- Comprehensive error handling with pattern-based suggestions (ENOENT, permissions, JSON corruption) provides user guidance
-- Constants hardcoding pattern observed — config.js duplicates config keys rather than importing from package constants files
-- Missing alias documentation pattern — 'sv' shorthand for sourcevision is implemented but not documented in help text or README
-- Config keys are hardcoded in config.js rather than imported from package constants — creates silent drift risk when packages rename config fields
+- Clean separation of orchestration from library dependencies maintains the four-tier architecture
+- Each file serves as a specialized coordinator (CLI, web server, CI pipeline, configuration)
+- Perfect cohesion indicates these files work together as a unified orchestration interface
+- Zero coupling to other zones demonstrates proper architectural isolation at the orchestration tier
+- Contains only top-level entry points that spawn CLIs rather than importing library dependencies
+- Acts as pure coordination layer with no domain knowledge embedded
+- Orchestration layer properly isolates coordination logic from domain implementation through CLI delegation pattern
+- Inconsistent error handling patterns across orchestration files - some use process.exit(1) while others throw errors
+- Mixed error handling strategies: cli.js uses process.exit(1), config.js throws Error objects, and web.js uses .catch() patterns - standardize to consistent error handling approach
+- [call graph] 152 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

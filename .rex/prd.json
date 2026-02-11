@@ -7758,6 +7758,7 @@
       "priority": "high",
       "source": "sourcevision",
       "startedAt": "2026-02-11T14:46:44.663Z",
+      "completedAt": "2026-02-11T14:54:55.413Z",
       "children": [
         {
           "id": "673d1237-b34c-4b3c-b045-725765338c69",
@@ -7804,8 +7805,7 @@
           "startedAt": "2026-02-11T14:54:55.356Z",
           "completedAt": "2026-02-11T14:54:55.356Z"
         }
-      ],
-      "completedAt": "2026-02-11T14:54:55.413Z"
+      ]
     }
   ]
 }

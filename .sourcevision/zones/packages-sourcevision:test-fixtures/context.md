@@ -45,5 +45,6 @@ Internal:
 - small-ts-project fixture (7 files) lacks edge cases: no circular dependencies, no binary files, no deeply nested directories, no non-TypeScript sources
 - remix-app fixture (5 files) only covers file-based routes — no config-based routes, no splat routes, no optional segments, no error boundaries
 - Fixtures are only used by integration/e2e tests; all unit tests create their own inline temp directories and files rather than referencing the fixture directories
+- [call graph] 5 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

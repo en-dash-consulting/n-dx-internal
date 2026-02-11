@@ -8,13 +8,13 @@ Zone: Interactive Viewer (`packages-sourcevision:interactive-viewer`)
 Files: 46, Cohesion: 0.96, Coupling: 0.04
 Description: Preact single-page application that visualizes analysis results through force-directed graphs, zone maps, route trees, and findings panels, consuming only schema types with zero analyzer dependencies.
 Entry points: packages/sourcevision/src/schema/v1.ts
-Lines: 318
+Lines: 381
 
 </zone>
 
 <files>
 
-packages/sourcevision/src/schema/v1.ts (TypeScript, 318 lines, source)
+packages/sourcevision/src/schema/v1.ts (TypeScript, 381 lines, source)
 
 </files>
 

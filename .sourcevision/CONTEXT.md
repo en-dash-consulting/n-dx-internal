@@ -7,27 +7,22 @@
 
 Project: n-dx
 Git: feature/from-recommend @ a67e98f
-Files: 554, Lines: 159466
-Languages: TypeScript(448) CSS(27) JSON(26) Other(20) JavaScript(15)
+Files: 578, Lines: 168299
+Languages: TypeScript(470) CSS(27) JSON(26) Other(20) JavaScript(17)
 Zones: 9, Described: 9
-Import edges: 1332, External packages: 16
+Import edges: 1396, External packages: 16
+Circulars: 2
 
 </architecture>
 
 <zones>
 
-[autonomous-agent-engine] Autonomous Agent Engine (100 files, coh=1.00 coup=0.00)
-  AI-powered agent execution layer that orchestrates task completion through controlled coupling with Rex for legitimate task management operations.
+[claude-client] Claude Client (24 files, coh=1.00 coup=0.00)
+  24 files, primarily TypeScript
+  files: packages/claude-client/src/api-provider.ts, packages/claude-client/src/auth.ts, packages/claude-client/src/cli-provider.ts, packages/claude-client/src/config.ts, packages/claude-client/src/create-client.ts, packages/claude-client/src/exec.ts, packages/claude-client/src/json.ts, packages/claude-client/src/output.ts, packages/claude-client/src/project-config.ts, packages/claude-client/src/project-dirs.ts +14
+[hench] Hench (100 files, coh=1.00 coup=0.00)
+  100 files, primarily TypeScript
   files: packages/hench/src/agent/analysis/adaptive.ts, packages/hench/src/agent/analysis/review.ts, packages/hench/src/agent/analysis/stuck.ts, packages/hench/src/agent/analysis/summary.ts, packages/hench/src/agent/analysis/workflow.ts, packages/hench/src/agent/completion.ts, packages/hench/src/agent/index.ts, packages/hench/src/agent/lifecycle/cli-loop.ts, packages/hench/src/agent/lifecycle/loop.ts, packages/hench/src/agent/lifecycle/task-display.ts +90
-[claude-integration-layer] Claude Integration Layer (18 files, coh=1.00 coup=0.00)
-  Foundation layer providing dependency inversion for Claude API access, authentication abstractions, and shared types that prevent circular dependencies.
-  files: packages/claude-client/src/api-provider.ts, packages/claude-client/src/auth.ts, packages/claude-client/src/cli-provider.ts, packages/claude-client/src/config.ts, packages/claude-client/src/create-client.ts, packages/claude-client/src/exec.ts, packages/claude-client/src/project-dirs.ts, packages/claude-client/src/public.ts, packages/claude-client/src/token-usage.ts, packages/claude-client/src/types.ts +8
-[integrated-web-dashboard] Integrated Web Dashboard (137 files, coh=1.00 coup=0.00)
-  Full-stack web application that integrates all domain packages through filesystem-driven data consumption and provides unified dashboard with MCP server endpoints.
-  files: packages/web/src/cli/index.ts, packages/web/src/public.ts, packages/web/src/schema/data-files.ts, packages/web/src/schema/v1.ts, packages/web/src/schema/validate.ts, packages/web/src/server/index.ts, packages/web/src/server/mcp-deps.ts, packages/web/src/server/routes-adaptive.ts, packages/web/src/server/routes-data.ts, packages/web/src/server/routes-hench.ts +127
-[orchestration-layer] Orchestration Layer (4 files, coh=1.00 coup=0.00)
-  Pure coordination layer that delegates to package CLIs through process spawning while maintaining strict architectural isolation.
-  files: ci.js, cli.js, config.js, web.js
 [packages-rex:rex-cli] Rex PRD Management CLI (36 files, coh=1.00 coup=0.00)
   A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.
   files: packages/rex/src/analyze/index.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/scanners.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/constants.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/next.ts, packages/rex/src/cli/commands/recommend.ts +26
@@ -43,7 +38,13 @@ Import edges: 1332, External packages: 16
 [packages-sourcevision:test-suite] Test Suite (5 files, coh=0.46 coup=0.54)
   Unit, integration, and end-to-end tests covering analyzer logic, schema validation, CLI workflows, and the serve command, with imports reaching into both analyzer and viewer zones.
   files: packages/sourcevision/src/schema/validate.ts, packages/sourcevision/tests/e2e/cli-analyze.test.ts, packages/sourcevision/tests/e2e/cli-serve.test.ts, packages/sourcevision/tests/integration/pipeline.test.ts, packages/sourcevision/tests/unit/schema/validate.test.ts
-[unzoned] 49 files: .claude/settings.local.json, .gitignore, .hench/config.json, .npmrc, .rex/config.json ...
+[root] Root (4 files, coh=1.00 coup=0.00)
+  4 files, primarily JavaScript
+  files: ci.js, cli.js, config.js, web.js
+[web] Web (144 files, coh=1.00 coup=0.00)
+  112 files, primarily TypeScript
+  files: packages/web/src/cli/index.ts, packages/web/src/public.ts, packages/web/src/schema/data-files.ts, packages/web/src/schema/v1.ts, packages/web/src/schema/validate.ts, packages/web/src/server/index.ts, packages/web/src/server/mcp-deps.ts, packages/web/src/server/routes-adaptive.ts, packages/web/src/server/routes-data.ts, packages/web/src/server/routes-hench.ts +134
+[unzoned] 51 files: .claude/settings.local.json, .gitignore, .hench/config.json, .npmrc, .rex/config.json ...
 
 Detailed zone context: .sourcevision/zones/{id}/context.md
 
@@ -54,14 +55,18 @@ Detailed zone context: .sourcevision/zones/{id}/context.md
 Most imported:
   packages/rex/src/core/tree.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/reshape-reason.ts, packages/rex/src/cli/commands/add.ts +31
   packages/rex/src/cli/errors.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/move.ts, packages/rex/src/cli/commands/prune.ts +18
-  packages/rex/src/schema/index.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts +93
+  packages/rex/src/schema/index.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts +95
   packages/rex/src/store/index.ts ← packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/fix.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/move.ts +22
+  packages/rex/src/cli/commands/constants.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/fix.ts, packages/rex/src/cli/commands/init.ts +17
   packages/rex/src/cli/output.ts ← packages/rex/src/analyze/guided.ts, packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/chunked-review.ts +17
-  packages/rex/src/cli/commands/constants.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/fix.ts, packages/rex/src/cli/commands/init.ts +16
-  packages/web/src/viewer/components/logos.ts ← packages/web/src/viewer/components/sidebar.ts, packages/web/src/viewer/main.ts, packages/web/src/viewer/views/analysis.ts, packages/web/src/viewer/views/architecture.ts, packages/web/src/viewer/views/files.ts +14
+  packages/web/src/viewer/components/logos.ts ← packages/web/src/viewer/components/sidebar.ts, packages/web/src/viewer/views/analysis.ts, packages/web/src/viewer/views/architecture.ts, packages/web/src/viewer/views/call-graph.ts, packages/web/src/viewer/views/files.ts +14
   packages/hench/src/store/config.ts ← packages/hench/src/cli/commands/config.ts, packages/hench/src/cli/commands/task-lookup.ts, packages/hench/src/cli/commands/template.ts, packages/hench/src/store/index.ts, packages/hench/tests/integration/store-roundtrip.test.ts +11
   packages/rex/src/core/canonical.ts ← packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/prune.ts, packages/rex/src/cli/commands/reshape.ts, packages/rex/src/store/adapter-registry.ts, packages/rex/src/store/file-adapter.ts +11
   packages/rex/src/analyze/reason.ts ← packages/rex/src/analyze/guided.ts, packages/rex/src/analyze/guided.ts, packages/rex/src/analyze/index.ts, packages/rex/src/analyze/index.ts, packages/rex/src/analyze/reshape-reason.ts +14
+
+Circular chains:
+  packages/rex/src/core/tree.ts → packages/rex/src/core/delete.ts
+  packages/rex/src/core/tree.ts → packages/rex/src/core/stats.ts
 
 </imports>
 
@@ -81,21 +86,51 @@ Conventions: action(2) default(4) loader(2) meta(1)
 
 <findings>
 
-[warning] Multiple viewer sub-zones across the codebase suggest need for UI component lifecycle and consolidation governance
-[warning] Direct child_process imports in routes-rex.ts should be refactored to use foundation layer spawnTool abstraction for architectural consistency [integrated-web-dashboard]
-[warning] Multiple viewer sub-zones suggest need for viewer consolidation strategy to prevent UI component fragmentation and maintenance burden [integrated-web-dashboard]
+[warning] 2 circular dependency chains detected — see imports.json for details
+[warning] Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 31 files — high-impact module, changes may have wide ripple effects
+[warning] Systematic over-engineering at system boundaries: dead code concentrates in adapters (notion-adapter.ts 19 exports), UI components (renderer.ts 39 exports), and validation layers (validate.ts 8 exports) while core domain logic remains clean
+[critical] Hotspot cascade effect: tree.ts fan-in (30 files) + walkTree hub function (20 files) + chunked-review coupling (370 calls) create a critical dependency bottleneck affecting 50+ files across rex and dependent packages
+[critical] God function: <module> in packages/sourcevision/tests/unit/analyzers/zones.test.ts calls 82 unique functions — consider decomposing into smaller, focused functions
+[critical] Implement graduated refactoring strategy: 1) Extract tree.ts operations into focused modules, 2) Break chunked-review test coupling, 3) Decompose analyzeZones god function, 4) Remove dead code from web package adapters
+[warning] Hub function: walkTree in packages/rex/src/core/tree.ts is called from 22 files — changes here have wide impact, consider if responsibilities can be narrowed
+[warning] 39 potentially unused exports in packages/web/src/viewer/graph/renderer.ts have no incoming calls: constructor, highlightNode, centerOnNode, selectNode, clearSelection (+34 more)
+[warning] 19 potentially unused exports in packages/rex/src/store/notion-adapter.ts have no incoming calls: constructor, path, getStatusGroupMap, invalidateCache, loadDocument (+14 more)
+[warning] 9 potentially unused exports in packages/hench/src/store/adjustments.ts have no incoming calls: loadAdaptiveStateAsync, saveAdaptiveStateAsync, recordAdjustment, updateSettings, lockKey (+4 more)
+[warning] 8 potentially unused exports in packages/web/src/schema/validate.ts have no incoming calls: validateManifest, validateInventory, validateImports, validateZones, validateComponents (+3 more)
+[warning] 5 potentially unused exports in packages/rex/src/schema/v1.ts have no incoming calls: isRequirementCategory, isValidationType, isPriority, isItemLevel, isItemStatus
+[critical] Break 370-call coupling between packages/rex/src/cli/commands/chunked-review.ts and its test by extracting shared ChunkedReviewState interface to packages/rex/src/core/review-state.ts [rex]
+[critical] Decompose packages/rex/src/core/tree.ts fan-in hotspot by extracting walkTree function (20 callers) into focused modules: tree-walker.ts for traversal, tree-operations.ts for mutations [rex]
+[warning] Remove unused exports from packages/web/src/viewer/graph/renderer.ts (39 exports), packages/web/src/schema/validate.ts (8 exports), and packages/web/src/viewer/components/logos.ts (7 exports) to reduce maintenance burden [web]
+... +1 more
 
 </findings>
 
 <next-steps>
 
-[medium] Multiple viewer sub-zones across the codebase suggest need for UI component lif…
+[high] Hub function: walkTree in packages/rex/src/core/tree.ts is called from 22 files…
   category: refactor
-[medium] Direct child_process imports in routes-rex.ts should be refactored to use found…
+[high] Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 31 files — hi…
+  category: refactor
+[high] Hotspot cascade effect: tree.ts fan-in (30 files) + walkTre… (+3 related)
+  category: fix
+[high] Break 370-call coupling between packages/rex/src/cli/comman… (+1 related)
+  category: fix
+[medium] 39 potentially unused exports in packages/web/src/viewer/graph/renderer.ts have…
+  category: refactor
+[medium] 19 potentially unused exports in packages/rex/src/store/notion-adapter.ts have …
+  category: refactor
+[medium] 9 potentially unused exports in packages/hench/src/store/adjustments.ts have no…
+  category: refactor
+[medium] 8 potentially unused exports in packages/web/src/schema/validate.ts have no inc…
+  category: refactor
+[medium] 5 potentially unused exports in packages/rex/src/schema/v1.ts have no incoming …
+  category: refactor
+[medium] Systematic over-engineering at system boundaries: dead code concentrates in ada…
+  category: extract
+[medium] Remove unused exports from packages/web/src/viewer/graph/renderer.ts (39 export…
   files: packages/web/src/cli/index.ts, packages/web/src/public.ts, packages/web/src/schema/data-files.ts
   category: refactor
-[medium] Multiple viewer sub-zones suggest need for viewer consolidation strategy to pre…
-  files: packages/web/src/cli/index.ts, packages/web/src/public.ts, packages/web/src/schema/data-files.ts
+[medium] 2 circular dependency chains detected — see imports.json for details
   category: refactor
 
 </next-steps>

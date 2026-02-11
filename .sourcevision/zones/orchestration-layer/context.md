@@ -6,7 +6,7 @@
 
 Zone: Orchestration Layer (`orchestration-layer`)
 Files: 4, Cohesion: 1.00, Coupling: 0.00
-Description: Pure coordination layer that delegates to package CLIs through process spawning while maintaining strict architectural isolation.
+Description: Top-level command entry points that coordinate package execution without importing library code.
 Lines: 1696
 
 </zone>
@@ -32,21 +32,22 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[suggestion] [info] Consider standardizing command delegation pattern - some commands spawn CLIs directly while others may benefit from shared argument parsing/validation
+[suggestion] [info] Mixed error handling strategies: cli.js uses process.exit(1), config.js throws Error objects, and web.js uses .catch() patterns - standardize to consistent error handling approach
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Process-only delegation enables tool independence while providing unified interface
-- Perfect cohesion (1.0) and zero coupling demonstrate clean separation between orchestration and implementation
-- Command aliases (ndx/n-dx, sv) provide user convenience while maintaining architectural isolation
-- Mixed file extension pattern (.js for orchestration vs .ts for domain packages) serves deliberate purpose as runtime-only scripts
-- Acts as pure delegation layer with zero implementation — spawns CLI processes rather than importing libraries
-- Command routing strategy enables tool independence while providing unified user interface
-- Process-only delegation creates clean architectural boundaries but introduces runtime overhead
-- Mixed CLI binary naming strategy: 'ndx'/'n-dx' orchestrator vs 'rex'/'sourcevision'/'hench' direct tools creates deliberate UX hierarchy
-- Consider standardizing command delegation pattern - some commands spawn CLIs directly while others may benefit from shared argument parsing/validation
+- Clean separation of orchestration from library dependencies maintains the four-tier architecture
+- Each file serves as a specialized coordinator (CLI, web server, CI pipeline, configuration)
+- Perfect cohesion indicates these files work together as a unified orchestration interface
+- Zero coupling to other zones demonstrates proper architectural isolation at the orchestration tier
+- Contains only top-level entry points that spawn CLIs rather than importing library dependencies
+- Acts as pure coordination layer with no domain knowledge embedded
+- Orchestration layer properly isolates coordination logic from domain implementation through CLI delegation pattern
+- Inconsistent error handling patterns across orchestration files - some use process.exit(1) while others throw errors
+- Mixed error handling strategies: cli.js uses process.exit(1), config.js throws Error objects, and web.js uses .catch() patterns - standardize to consistent error handling approach
+- [call graph] 137 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

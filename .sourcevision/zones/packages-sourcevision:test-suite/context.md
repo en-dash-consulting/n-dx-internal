@@ -8,13 +8,13 @@ Zone: Test Suite (`packages-sourcevision:test-suite`)
 Files: 5, Cohesion: 0.46, Coupling: 0.54
 Description: Unit, integration, and end-to-end tests covering analyzer logic, schema validation, CLI workflows, and the serve command, with imports reaching into both analyzer and viewer zones.
 Entry points: packages/sourcevision/src/schema/validate.ts
-Lines: 1377
+Lines: 1435
 
 </zone>
 
 <files>
 
-packages/sourcevision/src/schema/validate.ts (TypeScript, 317 lines, source)
+packages/sourcevision/src/schema/validate.ts (TypeScript, 375 lines, source)
 packages/sourcevision/tests/e2e/cli-analyze.test.ts (TypeScript, 154 lines, test)
 packages/sourcevision/tests/e2e/cli-serve.test.ts (TypeScript, 79 lines, test)
 packages/sourcevision/tests/integration/pipeline.test.ts (TypeScript, 93 lines, test)
@@ -54,5 +54,6 @@ Incoming (other zones → this zone):
 - Core graph algorithms louvainPhase1, mergeBidirectionalCoupling, and capZoneCount have zero direct unit tests — only exercised indirectly through integration-level analyzeZones tests
 - Pure functions tryParseJSON, buildMetaPrompt, and getPassConfig in enrich.ts are trivially testable but completely untested
 - validateImports and validateZones are imported in validate.test.ts but have zero test cases — malformed data could silently pass validation
+- [call graph] 72 internal calls, 10 outgoing, 0 incoming (cohesion: 0.88, coupling: 0.12)
 
 </insights>

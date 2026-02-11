@@ -5,29 +5,38 @@
 <zone>
 
 Zone: Claude Client (`claude-client`)
-Files: 15, Cohesion: 1.00, Coupling: 0.00
-Description: 15 files, primarily TypeScript
-Lines: 2371
+Files: 24, Cohesion: 1.00, Coupling: 0.00
+Description: 24 files, primarily TypeScript
+Lines: 3576
 
 </zone>
 
 <files>
 
 packages/claude-client/src/api-provider.ts (TypeScript, 157 lines, source)
-packages/claude-client/src/auth.ts (TypeScript, 238 lines, source)
+packages/claude-client/src/auth.ts (TypeScript, 230 lines, source)
 packages/claude-client/src/cli-provider.ts (TypeScript, 230 lines, source)
 packages/claude-client/src/config.ts (TypeScript, 94 lines, source)
 packages/claude-client/src/create-client.ts (TypeScript, 86 lines, source)
-packages/claude-client/src/index.ts (TypeScript, 119 lines, source)
+packages/claude-client/src/exec.ts (TypeScript, 363 lines, source)
+packages/claude-client/src/json.ts (TypeScript, 18 lines, source)
+packages/claude-client/src/output.ts (TypeScript, 41 lines, source)
+packages/claude-client/src/project-config.ts (TypeScript, 84 lines, source)
+packages/claude-client/src/project-dirs.ts (TypeScript, 36 lines, source)
+packages/claude-client/src/public.ts (TypeScript, 161 lines, source)
 packages/claude-client/src/token-usage.ts (TypeScript, 131 lines, source)
-packages/claude-client/src/types.ts (TypeScript, 117 lines, source)
+packages/claude-client/src/types.ts (TypeScript, 136 lines, source)
 packages/claude-client/tests/unit/api-provider.test.ts (TypeScript, 66 lines, test)
 packages/claude-client/tests/unit/auth.test.ts (TypeScript, 511 lines, test)
 packages/claude-client/tests/unit/cli-provider.test.ts (TypeScript, 68 lines, test)
 packages/claude-client/tests/unit/config.test.ts (TypeScript, 147 lines, test)
 packages/claude-client/tests/unit/create-client.test.ts (TypeScript, 107 lines, test)
+packages/claude-client/tests/unit/exec.test.ts (TypeScript, 399 lines, test)
+packages/claude-client/tests/unit/json.test.ts (TypeScript, 25 lines, test)
+packages/claude-client/tests/unit/output.test.ts (TypeScript, 59 lines, test)
+packages/claude-client/tests/unit/project-config.test.ts (TypeScript, 102 lines, test)
 packages/claude-client/tests/unit/token-usage.test.ts (TypeScript, 264 lines, test)
-packages/claude-client/tests/unit/types.test.ts (TypeScript, 36 lines, test)
+packages/claude-client/tests/unit/types.test.ts (TypeScript, 61 lines, test)
 
 </files>
 
@@ -39,6 +48,7 @@ Internal:
   packages/claude-client/src/api-provider.ts → packages/claude-client/src/types.ts {ClaudeClientError}
   packages/claude-client/src/api-provider.ts → packages/claude-client/src/types.ts {ClaudeClient, ClaudeClientOptions, CompletionRequest, CompletionResult}
   packages/claude-client/src/auth.ts → packages/claude-client/src/config.ts {resolveApiKey, resolveCliPath}
+  packages/claude-client/src/auth.ts → packages/claude-client/src/exec.ts {exec}
   packages/claude-client/src/auth.ts → packages/claude-client/src/types.ts {ClaudeClientError}
   packages/claude-client/src/auth.ts → packages/claude-client/src/types.ts {AuthMode, ClaudeClientOptions}
   packages/claude-client/src/cli-provider.ts → packages/claude-client/src/config.ts {resolveCliPath}
@@ -53,18 +63,25 @@ Internal:
   packages/claude-client/src/create-client.ts → packages/claude-client/src/config.ts {resolveApiKey}
   packages/claude-client/src/create-client.ts → packages/claude-client/src/types.ts {ClaudeClientError}
   packages/claude-client/src/create-client.ts → packages/claude-client/src/types.ts {AuthMode, ClaudeClient, ClaudeClientOptions}
-  packages/claude-client/src/index.ts → packages/claude-client/src/api-provider.ts {createApiClient}
-  packages/claude-client/src/index.ts → packages/claude-client/src/api-provider.ts {ApiProviderOptions}
-  packages/claude-client/src/index.ts → packages/claude-client/src/auth.ts {detectCliAvailability, validateApiKey, detectAvailableAuth, diagnoseAuth}
-  packages/claude-client/src/index.ts → packages/claude-client/src/auth.ts {AuthDetectionResult, AuthDiagnostics}
-  packages/claude-client/src/index.ts → packages/claude-client/src/cli-provider.ts {createCliClient}
-  packages/claude-client/src/index.ts → packages/claude-client/src/cli-provider.ts {CliProviderOptions}
-  packages/claude-client/src/index.ts → packages/claude-client/src/config.ts {loadClaudeConfig, resolveApiKey, resolveCliPath, resolveModel}
-  packages/claude-client/src/index.ts → packages/claude-client/src/create-client.ts {createClient, detectAuthMode}
-  packages/claude-client/src/index.ts → packages/claude-client/src/create-client.ts {CreateClientOptions}
-  packages/claude-client/src/index.ts → packages/claude-client/src/token-usage.ts {parseApiTokenUsage, parseCliTokenUsage, parseStreamTokenUsage}
-  packages/claude-client/src/index.ts → packages/claude-client/src/types.ts {ClaudeClientError}
-  packages/claude-client/src/index.ts → packages/claude-client/src/types.ts {TokenUsage, ClaudeConfig, AuthMode, ClaudeClientOptions, CompletionRequest, CompletionResult, ErrorReason, ClaudeClient}
+  packages/claude-client/src/public.ts → packages/claude-client/src/api-provider.ts {createApiClient}
+  packages/claude-client/src/public.ts → packages/claude-client/src/api-provider.ts {ApiProviderOptions}
+  packages/claude-client/src/public.ts → packages/claude-client/src/auth.ts {detectCliAvailability, validateApiKey, detectAvailableAuth, diagnoseAuth}
+  packages/claude-client/src/public.ts → packages/claude-client/src/auth.ts {AuthDetectionResult, AuthDiagnostics}
+  packages/claude-client/src/public.ts → packages/claude-client/src/cli-provider.ts {createCliClient}
+  packages/claude-client/src/public.ts → packages/claude-client/src/cli-provider.ts {CliProviderOptions}
+  packages/claude-client/src/public.ts → packages/claude-client/src/config.ts {loadClaudeConfig, resolveApiKey, resolveCliPath, resolveModel}
+  packages/claude-client/src/public.ts → packages/claude-client/src/create-client.ts {createClient, detectAuthMode}
+  packages/claude-client/src/public.ts → packages/claude-client/src/create-client.ts {CreateClientOptions}
+  packages/claude-client/src/public.ts → packages/claude-client/src/exec.ts {exec, execStdout, execShellCmd, getCurrentHead, getCurrentBranch, isExecutableOnPath, spawnTool, spawnManaged}
+  packages/claude-client/src/public.ts → packages/claude-client/src/exec.ts {ExecResult, ExecOptions, SpawnToolOptions, SpawnToolResult, ManagedChild}
+  packages/claude-client/src/public.ts → packages/claude-client/src/json.ts {toCanonicalJSON}
+  packages/claude-client/src/public.ts → packages/claude-client/src/output.ts {setQuiet, isQuiet, info, result}
+  packages/claude-client/src/public.ts → packages/claude-client/src/project-config.ts {deepMerge, loadProjectOverrides, mergeWithOverrides}
+  packages/claude-client/src/public.ts → packages/claude-client/src/project-dirs.ts {PROJECT_DIRS}
+  packages/claude-client/src/public.ts → packages/claude-client/src/project-dirs.ts {ProjectDir}
+  packages/claude-client/src/public.ts → packages/claude-client/src/token-usage.ts {parseApiTokenUsage, parseCliTokenUsage, parseStreamTokenUsage}
+  packages/claude-client/src/public.ts → packages/claude-client/src/types.ts {ClaudeClientError, CLIError}
+  packages/claude-client/src/public.ts → packages/claude-client/src/types.ts {TokenUsage, ClaudeConfig, AuthMode, ClaudeClientOptions, CompletionRequest, CompletionResult, ErrorReason, ClaudeClient}
   packages/claude-client/src/token-usage.ts → packages/claude-client/src/types.ts {TokenUsage}
   packages/claude-client/tests/unit/api-provider.test.ts → packages/claude-client/src/api-provider.ts {createApiClient}
   packages/claude-client/tests/unit/api-provider.test.ts → packages/claude-client/src/types.ts {ClaudeClientError}
@@ -76,8 +93,12 @@ Internal:
   packages/claude-client/tests/unit/create-client.test.ts → packages/claude-client/src/create-client.ts {createClient, detectAuthMode}
   packages/claude-client/tests/unit/create-client.test.ts → packages/claude-client/src/types.ts {ClaudeClientError}
   packages/claude-client/tests/unit/create-client.test.ts → packages/claude-client/src/types.ts {ClaudeConfig}
+  packages/claude-client/tests/unit/exec.test.ts → packages/claude-client/src/exec.ts {exec, execStdout, execShellCmd, getCurrentHead, spawnTool, spawnManaged}
+  packages/claude-client/tests/unit/json.test.ts → packages/claude-client/src/json.ts {toCanonicalJSON}
+  packages/claude-client/tests/unit/output.test.ts → packages/claude-client/src/output.ts {setQuiet, isQuiet, info, result}
+  packages/claude-client/tests/unit/project-config.test.ts → packages/claude-client/src/project-config.ts {deepMerge, loadProjectOverrides, mergeWithOverrides}
   packages/claude-client/tests/unit/token-usage.test.ts → packages/claude-client/src/token-usage.ts {parseApiTokenUsage, parseCliTokenUsage, parseStreamTokenUsage}
-  packages/claude-client/tests/unit/types.test.ts → packages/claude-client/src/types.ts {ClaudeClientError}
+  packages/claude-client/tests/unit/types.test.ts → packages/claude-client/src/types.ts {ClaudeClientError, CLIError}
 
 </imports>
 
@@ -90,11 +111,15 @@ Internal:
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Serves as dependency inversion foundation preventing circular dependencies between domain packages
-- Comprehensive authentication abstraction supports both API keys and CLI providers automatically
-- Perfect architectural isolation with zero coupling to domain-specific logic
-- Perfect cohesion (1.0) and zero coupling confirm this acts as a pure foundation layer
-- Model version standardization exists but inconsistently applied — DEFAULT_MODEL constants are duplicated across rex and sourcevision with identical values
-- DEFAULT_MODEL constants duplicated across rex and sourcevision packages with identical values — should be centralized in claude-client foundation
+- Serves as the single dependency source for Claude API operations across all packages
+- Perfect cohesion with zero coupling indicates clean abstraction boundaries
+- Contains critical shared infrastructure for AI model interactions and configuration management
+- Foundation layer properly isolates AI client complexity from domain packages
+- Serves as the only shared dependency across all domain packages through @n-dx/claude-client imports
+- Provides unified Claude API client and project utilities consumed by rex, sourcevision, and hench
+- Foundation layer successfully implements shared infrastructure pattern with consistent @n-dx/claude-client imports across all domain packages
+- Foundation layer exhibits extensive JSDoc coverage (768 occurrences across 230 files) suggesting mature documentation practices
+- High density of JSDoc comments (32+ per file average) indicates over-documentation that may obscure rather than clarify code intent
+- [call graph] 179 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>
