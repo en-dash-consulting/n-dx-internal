@@ -1,6 +1,8 @@
 import type { PRDItem, ItemLevel } from "../schema/index.js";
 import { LEVEL_HIERARCHY } from "../schema/index.js";
 
+// ---- Traversal primitives ---------------------------------------------------
+
 export interface TreeEntry {
   item: PRDItem;
   parents: PRDItem[];
@@ -29,6 +31,21 @@ export function findItem(
   }
   return null;
 }
+
+export function getParentChain(items: PRDItem[], id: string): PRDItem[] {
+  const entry = findItem(items, id);
+  return entry ? entry.parents : [];
+}
+
+export function collectAllIds(items: PRDItem[]): Set<string> {
+  const ids = new Set<string>();
+  for (const { item } of walkTree(items)) {
+    ids.add(item.id);
+  }
+  return ids;
+}
+
+// ---- Tree mutations ---------------------------------------------------------
 
 export function insertChild(
   items: PRDItem[],
@@ -87,112 +104,10 @@ export function removeFromTree(items: PRDItem[], id: string): PRDItem | null {
   return null;
 }
 
-export interface TreeStats {
-  total: number;
-  completed: number;
-  inProgress: number;
-  pending: number;
-  failing: number;
-  deferred: number;
-  blocked: number;
-  deleted: number;
-}
+// ---- Re-exports from extracted modules --------------------------------------
+// Backward compatibility: consumers importing from tree.ts continue to work.
+// New code should import directly from stats.ts or delete.ts.
 
-export function computeStats(items: PRDItem[]): TreeStats {
-  const stats: TreeStats = {
-    total: 0,
-    completed: 0,
-    inProgress: 0,
-    pending: 0,
-    failing: 0,
-    deferred: 0,
-    blocked: 0,
-    deleted: 0,
-  };
-  for (const { item } of walkTree(items)) {
-    // Only count tasks and subtasks (not epics/features) for accurate work metrics
-    if (item.level !== "task" && item.level !== "subtask") continue;
-
-    // Deleted items are tracked separately and excluded from total
-    if (item.status === "deleted") {
-      stats.deleted++;
-      continue;
-    }
-
-    stats.total++;
-    switch (item.status) {
-      case "completed":
-        stats.completed++;
-        break;
-      case "in_progress":
-        stats.inProgress++;
-        break;
-      case "pending":
-        stats.pending++;
-        break;
-      case "failing":
-        stats.failing++;
-        break;
-      case "deferred":
-        stats.deferred++;
-        break;
-      case "blocked":
-        stats.blocked++;
-        break;
-    }
-  }
-  return stats;
-}
-
-/**
- * Delete an item and all its descendants from the tree.
- * Returns the list of all deleted item IDs.
- */
-export function deleteItem(items: PRDItem[], id: string): string[] {
-  const entry = findItem(items, id);
-  if (!entry) return [];
-
-  // Collect all IDs that will be deleted (the item + all descendants)
-  const deletedIds: string[] = [];
-  function collectIds(item: PRDItem): void {
-    deletedIds.push(item.id);
-    if (item.children) {
-      for (const child of item.children) {
-        collectIds(child);
-      }
-    }
-  }
-  collectIds(entry.item);
-
-  // Remove from tree
-  removeFromTree(items, id);
-
-  return deletedIds;
-}
-
-/**
- * Remove deleted IDs from all items' `blockedBy` arrays.
- */
-export function cleanBlockedByRefs(items: PRDItem[], deletedIds: Set<string>): void {
-  for (const { item } of walkTree(items)) {
-    if (item.blockedBy && item.blockedBy.length > 0) {
-      item.blockedBy = item.blockedBy.filter((ref) => !deletedIds.has(ref));
-      if (item.blockedBy.length === 0) {
-        delete item.blockedBy;
-      }
-    }
-  }
-}
-
-export function getParentChain(items: PRDItem[], id: string): PRDItem[] {
-  const entry = findItem(items, id);
-  return entry ? entry.parents : [];
-}
-
-export function collectAllIds(items: PRDItem[]): Set<string> {
-  const ids = new Set<string>();
-  for (const { item } of walkTree(items)) {
-    ids.add(item.id);
-  }
-  return ids;
-}
+export { computeStats } from "./stats.js";
+export type { TreeStats } from "./stats.js";
+export { deleteItem, cleanBlockedByRefs } from "./delete.js";

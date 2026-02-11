@@ -4,12 +4,12 @@ import { SCHEMA_VERSION } from "../../schema/index.js";
 import { validateDocument, validateConfig } from "../../schema/validate.js";
 import { validateDAG } from "../../core/dag.js";
 import { validateStructure } from "../../core/structural.js";
-import { computeStats } from "../../core/tree.js";
 import { walkTree } from "../../core/tree.js";
+import { computeStats } from "../../core/stats.js";
 import { REX_DIR } from "./constants.js";
 import { result } from "../output.js";
 import type { PRDDocument, PRDItem, ItemLevel } from "../../schema/index.js";
-import type { TreeStats } from "../../core/tree.js";
+import type { TreeStats } from "../../core/stats.js";
 
 interface CheckResult {
   name: string;

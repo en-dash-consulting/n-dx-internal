@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { resolveStore } from "../../store/index.js";
-import { computeStats } from "../../core/tree.js";
+import { computeStats } from "../../core/stats.js";
 import { verify } from "../../core/verify.js";
 import {
   aggregateTokenUsage,

@@ -7,7 +7,8 @@ import { validateTransition } from "../../core/transitions.js";
 import { computeTimestampUpdates } from "../../core/timestamps.js";
 import { findAutoCompletions } from "../../core/parent-completion.js";
 import { validateDAG } from "../../core/dag.js";
-import { findItem, deleteItem, cleanBlockedByRefs } from "../../core/tree.js";
+import { findItem } from "../../core/tree.js";
+import { deleteItem, cleanBlockedByRefs } from "../../core/delete.js";
 import { VALID_STATUSES, VALID_PRIORITIES, isItemStatus, isPriority } from "../../schema/index.js";
 import type { PRDItem, ItemStatus, Priority } from "../../schema/index.js";
 

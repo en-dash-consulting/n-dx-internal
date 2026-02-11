@@ -77,10 +77,19 @@ export {
 // ---- Core: tree utilities ---------------------------------------------------
 
 export {
-  findItem, walkTree, computeStats, collectAllIds,
+  findItem, walkTree, collectAllIds,
   insertChild, updateInTree, removeFromTree,
 } from "./core/tree.js";
-export type { TreeEntry, TreeStats } from "./core/tree.js";
+export type { TreeEntry } from "./core/tree.js";
+
+// ---- Core: stats ------------------------------------------------------------
+
+export { computeStats } from "./core/stats.js";
+export type { TreeStats } from "./core/stats.js";
+
+// ---- Core: deletion ---------------------------------------------------------
+
+export { deleteItem, cleanBlockedByRefs } from "./core/delete.js";
 
 // ---- Core: task selection ---------------------------------------------------
 

@@ -8,7 +8,9 @@
 
 import { randomUUID } from "node:crypto";
 import { SCHEMA_VERSION } from "../schema/index.js";
-import { computeStats, findItem, deleteItem, cleanBlockedByRefs } from "../core/tree.js";
+import { findItem } from "../core/tree.js";
+import { computeStats } from "../core/stats.js";
+import { deleteItem, cleanBlockedByRefs } from "../core/delete.js";
 import { findNextTask, collectCompletedIds, explainSelection } from "../core/next-task.js";
 import { validateTransition } from "../core/transitions.js";
 import { computeTimestampUpdates } from "../core/timestamps.js";
