@@ -313,38 +313,38 @@ describe("Sidebar", () => {
       expect(henchSection?.classList.contains("sidebar-rail-section-active")).toBe(true);
     });
 
-    it("active section has an indicator dot", () => {
+    it("active section has an accent indicator", () => {
       renderSidebar({ sidebarCollapsed: true, view: "overview" as const });
       const activeSection = root.querySelector(".sidebar-rail-section-active");
-      const indicator = activeSection?.querySelector(".sidebar-rail-indicator");
-      expect(indicator).not.toBeNull();
+      const accent = activeSection?.querySelector(".sidebar-rail-accent");
+      expect(accent).not.toBeNull();
     });
 
-    it("inactive sections do not have indicator dots", () => {
+    it("inactive sections do not have accent indicators", () => {
       renderSidebar({ sidebarCollapsed: true, view: "overview" as const });
       const inactiveSections = root.querySelectorAll(".sidebar-rail-section:not(.sidebar-rail-section-active)");
       inactiveSections.forEach((section) => {
-        expect(section.querySelector(".sidebar-rail-indicator")).toBeNull();
+        expect(section.querySelector(".sidebar-rail-accent")).toBeNull();
       });
     });
 
-    it("displays the active page label vertically", () => {
+    it("active section title includes the active page label", () => {
       renderSidebar({ sidebarCollapsed: true, view: "overview" as const });
-      const pageLabel = root.querySelector(".sidebar-rail-page-label");
-      expect(pageLabel).not.toBeNull();
-      expect(pageLabel?.textContent).toBe("Overview");
+      const activeSection = root.querySelector(".sidebar-rail-section-active") as HTMLElement;
+      expect(activeSection).not.toBeNull();
+      expect(activeSection.title).toContain("Overview");
     });
 
-    it("page label updates when navigating to different views", () => {
+    it("section title updates when navigating to different views", () => {
       renderSidebar({ sidebarCollapsed: true, view: "prd" as const });
-      const pageLabel = root.querySelector(".sidebar-rail-page-label");
-      expect(pageLabel?.textContent).toBe("Tasks");
+      const activeSection = root.querySelector(".sidebar-rail-section-active") as HTMLElement;
+      expect(activeSection.title).toContain("Tasks");
     });
 
-    it("page label has product-specific color class", () => {
+    it("active section has product-specific class", () => {
       renderSidebar({ sidebarCollapsed: true, view: "prd" as const });
-      const pageLabel = root.querySelector(".sidebar-rail-page-label");
-      expect(pageLabel?.classList.contains("sidebar-rail-page-label-rex")).toBe(true);
+      const activeSection = root.querySelector(".sidebar-rail-section-active");
+      expect(activeSection?.classList.contains("sidebar-rail-section-rex")).toBe(true);
     });
 
     it("clicking a rail section icon navigates to its first view", () => {
@@ -361,10 +361,10 @@ describe("Sidebar", () => {
       expect(onNavigate).toHaveBeenCalledWith("overview");
     });
 
-    it("rail toggle calls onToggleSidebar when clicked", () => {
+    it("rail expand button calls onToggleSidebar when clicked", () => {
       renderSidebar({ sidebarCollapsed: true, onToggleSidebar });
-      const railToggle = root.querySelector<HTMLElement>(".sidebar-rail-toggle");
-      railToggle?.click();
+      const railExpand = root.querySelector<HTMLElement>(".sidebar-rail-expand");
+      railExpand?.click();
       expect(onToggleSidebar).toHaveBeenCalledTimes(1);
     });
 
