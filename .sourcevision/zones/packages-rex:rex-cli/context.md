@@ -7,34 +7,34 @@
 Zone: Rex PRD Management CLI (`packages-rex:rex-cli`)
 Files: 36, Cohesion: 1.00, Coupling: 0.00
 Description: A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.
-Lines: 9817
+Lines: 10056
 
 </zone>
 
 <files>
 
-packages/rex/src/analyze/index.ts (TypeScript, 62 lines, source)
+packages/rex/src/analyze/index.ts (TypeScript, 63 lines, source)
 packages/rex/src/analyze/propose.ts (TypeScript, 307 lines, source)
 packages/rex/src/analyze/reconcile.ts (TypeScript, 124 lines, source)
-packages/rex/src/analyze/scanners.ts (TypeScript, 935 lines, source)
+packages/rex/src/analyze/scanners.ts (TypeScript, 936 lines, source)
 packages/rex/src/cli/commands/add.ts (TypeScript, 150 lines, source)
 packages/rex/src/cli/commands/analyze.ts (TypeScript, 525 lines, source)
-packages/rex/src/cli/commands/constants.ts (TypeScript, 66 lines, source)
+packages/rex/src/cli/commands/constants.ts (TypeScript, 69 lines, source)
 packages/rex/src/cli/commands/init.ts (TypeScript, 71 lines, source)
 packages/rex/src/cli/commands/next.ts (TypeScript, 69 lines, source)
-packages/rex/src/cli/commands/recommend.ts (TypeScript, 145 lines, source)
+packages/rex/src/cli/commands/recommend.ts (TypeScript, 146 lines, source)
 packages/rex/src/cli/commands/status.ts (TypeScript, 315 lines, source)
 packages/rex/src/cli/commands/update.ts (TypeScript, 191 lines, source)
 packages/rex/src/cli/commands/validate.ts (TypeScript, 200 lines, source)
-packages/rex/src/cli/index.ts (TypeScript, 298 lines, source)
-packages/rex/src/cli/mcp.ts (TypeScript, 803 lines, source)
+packages/rex/src/cli/index.ts (TypeScript, 300 lines, source)
+packages/rex/src/cli/mcp.ts (TypeScript, 801 lines, source)
 packages/rex/src/core/canonical.ts (TypeScript, 21 lines, source)
 packages/rex/src/core/dag.ts (TypeScript, 84 lines, source)
-packages/rex/src/core/next-task.ts (TypeScript, 449 lines, source)
+packages/rex/src/core/next-task.ts (TypeScript, 554 lines, source)
 packages/rex/src/core/tree.ts (TypeScript, 193 lines, source)
-packages/rex/src/schema/index.ts (TypeScript, 38 lines, source)
-packages/rex/src/schema/v1.ts (TypeScript, 213 lines, source)
-packages/rex/src/schema/validate.ts (TypeScript, 121 lines, source)
+packages/rex/src/schema/index.ts (TypeScript, 45 lines, source)
+packages/rex/src/schema/v1.ts (TypeScript, 304 lines, source)
+packages/rex/src/schema/validate.ts (TypeScript, 151 lines, source)
 packages/rex/src/store/file-adapter.ts (TypeScript, 152 lines, source)
 packages/rex/src/store/index.ts (TypeScript, 105 lines, source)
 packages/rex/src/store/types.ts (TypeScript, 177 lines, source)
@@ -118,7 +118,7 @@ Internal:
   packages/rex/src/cli/index.ts → packages/rex/src/cli/commands/update.ts {*}
   packages/rex/src/cli/index.ts → packages/rex/src/cli/commands/validate.ts {*}
   packages/rex/src/cli/index.ts → packages/rex/src/cli/mcp.ts {*}
-  packages/rex/src/cli/mcp.ts → packages/rex/src/cli/commands/constants.ts {TOOL_VERSION}
+  packages/rex/src/cli/mcp.ts → packages/rex/src/cli/commands/constants.ts {REX_DIR, TOOL_VERSION}
   packages/rex/src/cli/mcp.ts → packages/rex/src/core/dag.ts {validateDAG}
   packages/rex/src/cli/mcp.ts → packages/rex/src/core/next-task.ts {findNextTask, collectCompletedIds, explainSelection}
   packages/rex/src/cli/mcp.ts → packages/rex/src/core/tree.ts {computeStats, findItem, deleteItem, cleanBlockedByRefs}
@@ -133,11 +133,11 @@ Internal:
   packages/rex/src/core/next-task.ts → packages/rex/src/core/tree.ts {walkTree}
   packages/rex/src/core/next-task.ts → packages/rex/src/core/tree.ts {TreeEntry}
   packages/rex/src/core/next-task.ts → packages/rex/src/schema/index.ts {PRIORITY_ORDER}
-  packages/rex/src/core/next-task.ts → packages/rex/src/schema/index.ts {PRDItem, Priority}
+  packages/rex/src/core/next-task.ts → packages/rex/src/schema/index.ts {PRDItem, Priority, Requirement}
   packages/rex/src/core/tree.ts → packages/rex/src/schema/index.ts {LEVEL_HIERARCHY}
   packages/rex/src/core/tree.ts → packages/rex/src/schema/index.ts {PRDItem, ItemLevel}
-  packages/rex/src/schema/index.ts → packages/rex/src/schema/v1.ts {SCHEMA_VERSION, LEVEL_HIERARCHY, PRIORITY_ORDER, VALID_LEVELS, VALID_STATUSES, VALID_PRIORITIES, CHILD_LEVEL, isPriority, isItemLevel, isItemStatus, DEFAULT_CONFIG}
-  packages/rex/src/schema/index.ts → packages/rex/src/schema/v1.ts {ItemLevel, ItemStatus, Priority, PRDItem, PRDDocument, RexConfig, BudgetThresholds, LogEntry, TokenUsage, AnalyzeTokenUsage}
+  packages/rex/src/schema/index.ts → packages/rex/src/schema/v1.ts {SCHEMA_VERSION, LEVEL_HIERARCHY, PRIORITY_ORDER, VALID_LEVELS, VALID_STATUSES, VALID_PRIORITIES, VALID_REQUIREMENT_CATEGORIES, VALID_VALIDATION_TYPES, CHILD_LEVEL, isPriority, isItemLevel, isItemStatus, isRequirementCategory, isValidationType, DEFAULT_CONFIG}
+  packages/rex/src/schema/index.ts → packages/rex/src/schema/v1.ts {ItemLevel, ItemStatus, Priority, RequirementCategory, RequirementValidationType, Requirement, PRDItem, PRDDocument, RexConfig, BudgetThresholds, LogEntry, TokenUsage, AnalyzeTokenUsage}
   packages/rex/src/store/file-adapter.ts → packages/rex/src/core/canonical.ts {toCanonicalJSON}
   packages/rex/src/store/file-adapter.ts → packages/rex/src/core/tree.ts {findItem, insertChild, updateInTree, removeFromTree}
   packages/rex/src/store/file-adapter.ts → packages/rex/src/schema/index.ts {PRDDocument, PRDItem, RexConfig, LogEntry}
@@ -173,7 +173,7 @@ Internal:
   packages/rex/tests/unit/store/file-adapter.test.ts → packages/rex/src/store/file-adapter.ts {FileStore, ensureRexDir}
 
 Incoming (other zones → this zone):
-  ← web: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
+  ← integrated-web-dashboard: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
 
 </imports>
 

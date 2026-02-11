@@ -5,41 +5,47 @@
 <zone>
 
 Zone: Server (`web/server`)
-Files: 27, Cohesion: 0.98, Coupling: 0.02
-Description: 27 files, primarily TypeScript
+Files: 33, Cohesion: 0.99, Coupling: 0.01
+Description: 33 files, primarily TypeScript
 Entry points: packages/web/src/schema/data-files.ts
-Lines: 6256
+Lines: 12699
 
 </zone>
 
 <files>
 
 packages/web/src/cli/index.ts (TypeScript, 56 lines, source)
-packages/web/src/public.ts (TypeScript, 53 lines, source)
+packages/web/src/public.ts (TypeScript, 51 lines, source)
 packages/web/src/schema/data-files.ts (TypeScript, 11 lines, source)
-packages/web/src/server/index.ts (TypeScript, 40 lines, source)
-packages/web/src/server/mcp-deps.ts (TypeScript, 38 lines, source)
-packages/web/src/server/rex-domain.ts (TypeScript, 87 lines, source)
+packages/web/src/server/index.ts (TypeScript, 38 lines, source)
+packages/web/src/server/mcp-deps.ts (TypeScript, 61 lines, source)
+packages/web/src/server/routes-adaptive.ts (TypeScript, 873 lines, source)
 packages/web/src/server/routes-data.ts (TypeScript, 140 lines, source)
-packages/web/src/server/routes-hench.ts (TypeScript, 141 lines, source)
+packages/web/src/server/routes-hench.ts (TypeScript, 698 lines, source)
 packages/web/src/server/routes-mcp.ts (TypeScript, 177 lines, source)
-packages/web/src/server/routes-rex.ts (TypeScript, 1305 lines, source)
+packages/web/src/server/routes-rex.ts (TypeScript, 3228 lines, source)
 packages/web/src/server/routes-sourcevision.ts (TypeScript, 166 lines, source)
 packages/web/src/server/routes-static.ts (TypeScript, 133 lines, source)
 packages/web/src/server/routes-token-usage.ts (TypeScript, 471 lines, source)
 packages/web/src/server/routes-validation.ts (TypeScript, 539 lines, source)
-packages/web/src/server/start.ts (TypeScript, 217 lines, source)
+packages/web/src/server/routes-workflow.ts (TypeScript, 660 lines, source)
+packages/web/src/server/start.ts (TypeScript, 246 lines, source)
 packages/web/src/server/types.ts (TypeScript, 62 lines, source)
 packages/web/src/server/websocket.ts (TypeScript, 274 lines, source)
 packages/web/tests/unit/server/dev-reload.test.ts (TypeScript, 118 lines, test)
+packages/web/tests/unit/server/routes-adaptive.test.ts (TypeScript, 446 lines, test)
 packages/web/tests/unit/server/routes-data.test.ts (TypeScript, 124 lines, test)
+packages/web/tests/unit/server/routes-hench-config.test.ts (TypeScript, 305 lines, test)
+packages/web/tests/unit/server/routes-hench-templates.test.ts (TypeScript, 332 lines, test)
 packages/web/tests/unit/server/routes-mcp.test.ts (TypeScript, 230 lines, test)
-packages/web/tests/unit/server/routes-rex.test.ts (TypeScript, 353 lines, test)
+packages/web/tests/unit/server/routes-requirements.test.ts (TypeScript, 333 lines, test)
+packages/web/tests/unit/server/routes-rex.test.ts (TypeScript, 969 lines, test)
 packages/web/tests/unit/server/routes-sourcevision.test.ts (TypeScript, 176 lines, test)
 packages/web/tests/unit/server/routes-token-usage.test.ts (TypeScript, 299 lines, test)
 packages/web/tests/unit/server/routes-validation.test.ts (TypeScript, 416 lines, test)
+packages/web/tests/unit/server/routes-workflow.test.ts (TypeScript, 356 lines, test)
 packages/web/tests/unit/server/scope.test.ts (TypeScript, 263 lines, test)
-packages/web/tests/unit/server/type-consistency.test.ts (TypeScript, 155 lines, test)
+packages/web/tests/unit/server/type-consistency.test.ts (TypeScript, 236 lines, test)
 packages/web/tests/unit/server/websocket.test.ts (TypeScript, 212 lines, test)
 
 </files>
@@ -57,15 +63,17 @@ Internal:
   packages/web/src/server/index.ts → packages/web/src/server/start.ts {ServerOptions}
   packages/web/src/server/index.ts → packages/web/src/server/types.ts {ServerContext, RouteHandler}
   packages/web/src/server/index.ts → packages/web/src/server/websocket.ts {WebSocketBroadcaster}
+  packages/web/src/server/routes-adaptive.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
+  packages/web/src/server/routes-adaptive.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-data.ts → packages/web/src/schema/data-files.ts {ALL_DATA_FILES, SUPPLEMENTARY_FILES}
   packages/web/src/server/routes-data.ts → packages/web/src/server/types.ts {jsonResponse}
   packages/web/src/server/routes-data.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/src/server/routes-hench.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse}
+  packages/web/src/server/routes-hench.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
   packages/web/src/server/routes-hench.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-mcp.ts → packages/web/src/server/mcp-deps.ts {createRexMcpServer, createSourcevisionMcpServer}
   packages/web/src/server/routes-mcp.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/src/server/routes-rex.ts → packages/web/src/server/rex-domain.ts {PRIORITY_ORDER, LEVEL_HIERARCHY, VALID_LEVELS, VALID_STATUSES, VALID_PRIORITIES, isPriority, isItemLevel}
-  packages/web/src/server/routes-rex.ts → packages/web/src/server/rex-domain.ts {Priority, ItemLevel}
+  packages/web/src/server/routes-rex.ts → packages/web/src/server/mcp-deps.ts {PRIORITY_ORDER, LEVEL_HIERARCHY, VALID_LEVELS, VALID_STATUSES, VALID_PRIORITIES, VALID_REQUIREMENT_CATEGORIES, VALID_VALIDATION_TYPES, CHILD_LEVEL, isPriority, isItemLevel, isRequirementCategory, isValidationType}
+  packages/web/src/server/routes-rex.ts → packages/web/src/server/mcp-deps.ts {Priority, ItemLevel}
   packages/web/src/server/routes-rex.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
   packages/web/src/server/routes-rex.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-rex.ts → packages/web/src/server/websocket.ts {WebSocketBroadcaster}
@@ -75,11 +83,14 @@ Internal:
   packages/web/src/server/routes-static.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-token-usage.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse}
   packages/web/src/server/routes-token-usage.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/src/server/routes-validation.ts → packages/web/src/server/rex-domain.ts {LEVEL_HIERARCHY, isItemLevel}
-  packages/web/src/server/routes-validation.ts → packages/web/src/server/rex-domain.ts {ItemLevel}
+  packages/web/src/server/routes-validation.ts → packages/web/src/server/mcp-deps.ts {LEVEL_HIERARCHY, isItemLevel}
+  packages/web/src/server/routes-validation.ts → packages/web/src/server/mcp-deps.ts {ItemLevel}
   packages/web/src/server/routes-validation.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse}
   packages/web/src/server/routes-validation.ts → packages/web/src/server/types.ts {ServerContext}
+  packages/web/src/server/routes-workflow.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
+  packages/web/src/server/routes-workflow.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/start.ts → packages/web/src/schema/data-files.ts {ALL_DATA_FILES}
+  packages/web/src/server/start.ts → packages/web/src/server/routes-adaptive.ts {handleAdaptiveRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-data.ts {createDataWatcher, handleDataRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-hench.ts {handleHenchRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-mcp.ts {handleMcpRoute}
@@ -88,14 +99,23 @@ Internal:
   packages/web/src/server/start.ts → packages/web/src/server/routes-static.ts {resolveStaticAssets, handleStaticRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-token-usage.ts {handleTokenUsageRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-validation.ts {handleValidationRoute}
+  packages/web/src/server/start.ts → packages/web/src/server/routes-workflow.ts {handleWorkflowRoute}
   packages/web/src/server/start.ts → packages/web/src/server/types.ts {ServerContext, ViewerScope}
   packages/web/src/server/start.ts → packages/web/src/server/websocket.ts {createWebSocketManager}
   packages/web/tests/unit/server/dev-reload.test.ts → packages/web/src/server/routes-static.ts {resolveStaticAssets, handleStaticRoute}
   packages/web/tests/unit/server/dev-reload.test.ts → packages/web/src/server/types.ts {ServerContext}
+  packages/web/tests/unit/server/routes-adaptive.test.ts → packages/web/src/server/routes-adaptive.ts {handleAdaptiveRoute}
+  packages/web/tests/unit/server/routes-adaptive.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-data.test.ts → packages/web/src/server/routes-data.ts {createDataWatcher, handleDataRoute}
   packages/web/tests/unit/server/routes-data.test.ts → packages/web/src/server/types.ts {ServerContext}
+  packages/web/tests/unit/server/routes-hench-config.test.ts → packages/web/src/server/routes-hench.ts {handleHenchRoute}
+  packages/web/tests/unit/server/routes-hench-config.test.ts → packages/web/src/server/types.ts {ServerContext}
+  packages/web/tests/unit/server/routes-hench-templates.test.ts → packages/web/src/server/routes-hench.ts {handleHenchRoute}
+  packages/web/tests/unit/server/routes-hench-templates.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-mcp.test.ts → packages/web/src/server/routes-mcp.ts {handleMcpRoute, closeAllMcpSessions}
   packages/web/tests/unit/server/routes-mcp.test.ts → packages/web/src/server/types.ts {ServerContext}
+  packages/web/tests/unit/server/routes-requirements.test.ts → packages/web/src/server/routes-rex.ts {handleRexRoute}
+  packages/web/tests/unit/server/routes-requirements.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-rex.test.ts → packages/web/src/server/routes-rex.ts {handleRexRoute}
   packages/web/tests/unit/server/routes-rex.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-sourcevision.test.ts → packages/web/src/server/routes-sourcevision.ts {handleSourcevisionRoute}
@@ -104,12 +124,14 @@ Internal:
   packages/web/tests/unit/server/routes-token-usage.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-validation.test.ts → packages/web/src/server/routes-validation.ts {handleValidationRoute}
   packages/web/tests/unit/server/routes-validation.test.ts → packages/web/src/server/types.ts {ServerContext}
+  packages/web/tests/unit/server/routes-workflow.test.ts → packages/web/src/server/routes-workflow.ts {handleWorkflowRoute}
+  packages/web/tests/unit/server/routes-workflow.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/scope.test.ts → packages/web/src/server/routes-hench.ts {handleHenchRoute}
   packages/web/tests/unit/server/scope.test.ts → packages/web/src/server/routes-rex.ts {handleRexRoute}
   packages/web/tests/unit/server/scope.test.ts → packages/web/src/server/routes-sourcevision.ts {handleSourcevisionRoute}
   packages/web/tests/unit/server/scope.test.ts → packages/web/src/server/types.ts {jsonResponse}
   packages/web/tests/unit/server/scope.test.ts → packages/web/src/server/types.ts {ServerContext, ViewerScope}
-  packages/web/tests/unit/server/type-consistency.test.ts → packages/web/src/server/rex-domain.ts {LOCAL_PRIORITY_ORDER, LOCAL_LEVEL_HIERARCHY, VALID_LEVELS, VALID_STATUSES, VALID_PRIORITIES, isPriority, isItemLevel}
+  packages/web/tests/unit/server/type-consistency.test.ts → packages/web/src/server/mcp-deps.ts {GATEWAY_PRIORITY_ORDER, GATEWAY_LEVEL_HIERARCHY, GATEWAY_VALID_LEVELS, GATEWAY_VALID_STATUSES, GATEWAY_VALID_PRIORITIES, GATEWAY_VALID_REQ_CATEGORIES, GATEWAY_VALID_VALIDATION_TYPES, GATEWAY_CHILD_LEVEL, gatewayIsPriority, gatewayIsItemLevel, gatewayIsReqCategory, gatewayIsValidationType}
   packages/web/tests/unit/server/websocket.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager}
 
 </imports>

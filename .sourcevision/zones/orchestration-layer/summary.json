@@ -1,7 +1,7 @@
 {
   "id": "orchestration-layer",
   "name": "Orchestration Layer",
-  "description": "Top-level command orchestration that delegates to individual package CLIs via process spawning to coordinate multi-tool workflows without import coupling.",
+  "description": "Pure coordination layer that delegates to package CLIs through process spawning while maintaining strict architectural isolation.",
   "files": [
     "ci.js",
     "cli.js",

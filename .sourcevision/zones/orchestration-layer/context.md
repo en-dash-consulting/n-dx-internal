@@ -6,7 +6,7 @@
 
 Zone: Orchestration Layer (`orchestration-layer`)
 Files: 4, Cohesion: 1.00, Coupling: 0.00
-Description: Top-level command orchestration that delegates to individual package CLIs via process spawning to coordinate multi-tool workflows without import coupling.
+Description: Pure coordination layer that delegates to package CLIs through process spawning while maintaining strict architectural isolation.
 Lines: 1696
 
 </zone>
@@ -32,23 +32,21 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[suggestion] [info] Config keys are hardcoded in config.js rather than imported from package constants — creates silent drift risk when packages rename config fields
+[suggestion] [info] Consider standardizing command delegation pattern - some commands spawn CLIs directly while others may benefit from shared argument parsing/validation
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Pure coordination layer with zero imports maintains strict architectural boundaries
-- Process-level delegation enables tool independence while providing unified CLI interface
-- Command aliases (sv for sourcevision) implemented but missing from help documentation
-- High cohesion (1.0) and zero coupling demonstrate clean separation between orchestration and implementation
-- Process-only design explicitly avoids library imports — zero runtime coupling with domain packages
-- Sophisticated error handling system with pattern-based hints guides users toward resolution
-- Pure process orchestration pattern — spawns child processes instead of library imports to maintain architectural isolation
-- Comprehensive error handling with pattern-based suggestions (ENOENT, permissions, JSON corruption) provides user guidance
-- Constants hardcoding pattern observed — config.js duplicates config keys rather than importing from package constants files
-- Missing alias documentation pattern — 'sv' shorthand for sourcevision is implemented but not documented in help text or README
-- Config keys are hardcoded in config.js rather than imported from package constants — creates silent drift risk when packages rename config fields
+- Process-only delegation enables tool independence while providing unified interface
+- Perfect cohesion (1.0) and zero coupling demonstrate clean separation between orchestration and implementation
+- Command aliases (ndx/n-dx, sv) provide user convenience while maintaining architectural isolation
+- Mixed file extension pattern (.js for orchestration vs .ts for domain packages) serves deliberate purpose as runtime-only scripts
+- Acts as pure delegation layer with zero implementation — spawns CLI processes rather than importing libraries
+- Command routing strategy enables tool independence while providing unified user interface
+- Process-only delegation creates clean architectural boundaries but introduces runtime overhead
+- Mixed CLI binary naming strategy: 'ndx'/'n-dx' orchestrator vs 'rex'/'sourcevision'/'hench' direct tools creates deliberate UX hierarchy
+- Consider standardizing command delegation pattern - some commands spawn CLIs directly while others may benefit from shared argument parsing/validation
 
 </insights>

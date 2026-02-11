@@ -5,53 +5,25 @@
 <zone>
 
 Zone: Viewer (`web/viewer`)
-Files: 38, Cohesion: 0.92, Coupling: 0.08
-Description: 38 files, primarily TypeScript
-Entry points: packages/web/src/viewer/components/logos.ts, packages/web/src/viewer/types.ts, packages/web/src/viewer/components/data-display/health-gauge.ts
-Lines: 9194
+Files: 10, Cohesion: 0.47, Coupling: 0.53
+Description: 10 files, primarily TypeScript
+Entry points: packages/web/src/schema/v1.ts, packages/web/src/viewer/loader.ts, packages/web/src/viewer/views/overview.ts, packages/web/src/viewer/views/problems.ts, packages/web/src/viewer/views/suggestions.ts, packages/web/src/viewer/components/data-display/findings-list.ts, packages/web/src/viewer/components/data-display/health-gauge.ts
+Lines: 2127
 
 </zone>
 
 <files>
 
-packages/web/src/schema/v1.ts (TypeScript, 316 lines, source)
-packages/web/src/schema/validate.ts (TypeScript, 316 lines, source)
-packages/web/src/viewer/components/constants.ts (TypeScript, 16 lines, source)
-packages/web/src/viewer/components/data-display/collapsible-section.ts (TypeScript, 70 lines, source)
+packages/web/src/schema/v1.ts (TypeScript, 318 lines, source)
+packages/web/src/schema/validate.ts (TypeScript, 317 lines, source)
 packages/web/src/viewer/components/data-display/findings-list.ts (TypeScript, 197 lines, source)
 packages/web/src/viewer/components/data-display/health-gauge.ts (TypeScript, 132 lines, source)
-packages/web/src/viewer/components/data-display/tree-view.ts (TypeScript, 135 lines, source)
 packages/web/src/viewer/components/data-display/zone-map.ts (TypeScript, 382 lines, source)
-packages/web/src/viewer/components/detail-panel.ts (TypeScript, 309 lines, source)
-packages/web/src/viewer/components/faq.ts (TypeScript, 225 lines, source)
-packages/web/src/viewer/components/favicon.ts (TypeScript, 106 lines, source)
-packages/web/src/viewer/components/logos.ts (TypeScript, 178 lines, source)
-packages/web/src/viewer/components/rex-task-link.ts (TypeScript, 277 lines, source)
-packages/web/src/viewer/components/search-filter.ts (TypeScript, 68 lines, source)
-packages/web/src/viewer/components/sidebar.ts (TypeScript, 395 lines, source)
-packages/web/src/viewer/graph/physics.ts (TypeScript, 325 lines, source)
-packages/web/src/viewer/graph/renderer.ts (TypeScript, 518 lines, source)
 packages/web/src/viewer/loader.ts (TypeScript, 172 lines, source)
-packages/web/src/viewer/main.ts (TypeScript, 308 lines, source)
 packages/web/src/viewer/schema-compat.ts (TypeScript, 68 lines, source)
-packages/web/src/viewer/types.ts (TypeScript, 63 lines, source)
-packages/web/src/viewer/utils.ts (TypeScript, 58 lines, source)
-packages/web/src/viewer/views/architecture.ts (TypeScript, 136 lines, source)
-packages/web/src/viewer/views/files.ts (TypeScript, 261 lines, source)
-packages/web/src/viewer/views/graph.ts (TypeScript, 174 lines, source)
-packages/web/src/viewer/views/hench-runs.ts (TypeScript, 565 lines, source)
-packages/web/src/viewer/views/overview.ts (TypeScript, 351 lines, source)
+packages/web/src/viewer/views/overview.ts (TypeScript, 356 lines, source)
 packages/web/src/viewer/views/problems.ts (TypeScript, 103 lines, source)
-packages/web/src/viewer/views/rex-dashboard.ts (TypeScript, 518 lines, source)
-packages/web/src/viewer/views/routes.ts (TypeScript, 356 lines, source)
 packages/web/src/viewer/views/suggestions.ts (TypeScript, 82 lines, source)
-packages/web/src/viewer/views/validation.ts (TypeScript, 814 lines, source)
-packages/web/src/viewer/views/zones.ts (TypeScript, 238 lines, source)
-packages/web/tests/unit/viewer/collapsible-section.test.ts (TypeScript, 87 lines, test)
-packages/web/tests/unit/viewer/detail-panel.test.ts (TypeScript, 101 lines, test)
-packages/web/tests/unit/viewer/favicon.test.ts (TypeScript, 152 lines, test)
-packages/web/tests/unit/viewer/sidebar.test.ts (TypeScript, 564 lines, test)
-packages/web/tests/unit/viewer/tree-view.test.ts (TypeScript, 58 lines, test)
 
 </files>
 
@@ -60,108 +32,17 @@ packages/web/tests/unit/viewer/tree-view.test.ts (TypeScript, 58 lines, test)
 Internal:
   packages/web/src/schema/validate.ts → packages/web/src/schema/v1.ts {*}
   packages/web/src/viewer/components/data-display/findings-list.ts → packages/web/src/schema/v1.ts {Finding}
-  packages/web/src/viewer/components/data-display/findings-list.ts → packages/web/src/viewer/components/data-display/collapsible-section.ts {CollapsibleSection}
-  packages/web/src/viewer/components/data-display/findings-list.ts → packages/web/src/viewer/components/search-filter.ts {SearchFilter}
   packages/web/src/viewer/components/data-display/zone-map.ts → packages/web/src/schema/v1.ts {Zone, ZoneCrossing}
-  packages/web/src/viewer/components/data-display/zone-map.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
-  packages/web/src/viewer/components/detail-panel.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
-  packages/web/src/viewer/components/detail-panel.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem, FileDetail, ZoneDetail}
-  packages/web/src/viewer/components/detail-panel.ts → packages/web/src/viewer/utils.ts {meterClass}
-  packages/web/src/viewer/components/favicon.ts → packages/web/src/viewer/types.ts {ViewId}
-  packages/web/src/viewer/components/rex-task-link.ts → packages/web/src/viewer/types.ts {ViewId}
-  packages/web/src/viewer/components/sidebar.ts → packages/web/src/schema/v1.ts {Manifest, Zones}
-  packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/constants.ts {ENRICHMENT_THRESHOLDS}
-  packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/faq.ts {FAQ}
-  packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/logos.ts {NdxLogoPng, ProductLogoPng}
-  packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/types.ts {ViewId}
-  packages/web/src/viewer/graph/renderer.ts → packages/web/src/viewer/graph/physics.ts {initZoneClusteredPositions, tick}
-  packages/web/src/viewer/graph/renderer.ts → packages/web/src/viewer/graph/physics.ts {SimState, TickCallbacks}
   packages/web/src/viewer/loader.ts → packages/web/src/schema/v1.ts {Manifest, Inventory, Imports, Zones, Components}
   packages/web/src/viewer/loader.ts → packages/web/src/schema/validate.ts {validateManifest, validateInventory, validateImports, validateZones, validateComponents}
   packages/web/src/viewer/loader.ts → packages/web/src/viewer/schema-compat.ts {migrateData}
-  packages/web/src/viewer/loader.ts → packages/web/src/viewer/types.ts {LoadedData}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/detail-panel.ts {DetailPanel}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/favicon.ts {updateFavicon}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/sidebar.ts {Sidebar}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/loader.ts {loadFromServer, loadFromFiles, detectMode, onDataChange, startPolling, stopPolling}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/types.ts {LoadedData, ViewId, NavigateTo, DetailItem}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/architecture.ts {ArchitectureView}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/files.ts {FilesView}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/graph.ts {Graph}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/hench-runs.ts {HenchRunsView}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/overview.ts {Overview}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/problems.ts {ProblemsView}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/rex-dashboard.ts {RexDashboard}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/routes.ts {RoutesView}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/suggestions.ts {SuggestionsView}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/validation.ts {ValidationView}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/zones.ts {ZonesView}
   packages/web/src/viewer/schema-compat.ts → packages/web/src/schema/v1.ts {SCHEMA_VERSION}
-  packages/web/src/viewer/schema-compat.ts → packages/web/src/viewer/types.ts {LoadedData}
-  packages/web/src/viewer/types.ts → packages/web/src/schema/v1.ts {Manifest, Inventory, Imports, Zones, Components}
-  packages/web/src/viewer/utils.ts → packages/web/src/schema/v1.ts {Zones}
-  packages/web/src/viewer/utils.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
-  packages/web/src/viewer/views/architecture.ts → packages/web/src/schema/v1.ts {Finding}
-  packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/components/constants.ts {ENRICHMENT_THRESHOLDS}
-  packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/components/data-display/findings-list.ts {FindingsList}
-  packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem}
-  packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/utils.ts {buildFlowNodes, buildFlowEdges}
-  packages/web/src/viewer/views/files.ts → packages/web/src/schema/v1.ts {FileEntry}
-  packages/web/src/viewer/views/files.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
-  packages/web/src/viewer/views/files.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/files.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem}
-  packages/web/src/viewer/views/files.ts → packages/web/src/viewer/utils.ts {buildFileToZoneMap}
-  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
-  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/graph/renderer.ts {GraphRenderer}
-  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/graph/renderer.ts {GraphNode, GraphLink}
-  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/types.ts {LoadedData, DetailItem}
-  packages/web/src/viewer/views/hench-runs.ts → packages/web/src/viewer/components/data-display/health-gauge.ts {MetricCard}
-  packages/web/src/viewer/views/hench-runs.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/hench-runs.ts → packages/web/src/viewer/components/rex-task-link.ts {RexTaskLink}
-  packages/web/src/viewer/views/hench-runs.ts → packages/web/src/viewer/types.ts {NavigateTo}
   packages/web/src/viewer/views/overview.ts → packages/web/src/schema/v1.ts {Zone, Finding}
-  packages/web/src/viewer/views/overview.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
-  packages/web/src/viewer/views/overview.ts → packages/web/src/viewer/components/data-display/collapsible-section.ts {CollapsibleSection}
   packages/web/src/viewer/views/overview.ts → packages/web/src/viewer/components/data-display/health-gauge.ts {HealthGauge, PatternBadge, MetricCard}
   packages/web/src/viewer/views/overview.ts → packages/web/src/viewer/components/data-display/zone-map.ts {ZoneMap, ZoneDetail}
-  packages/web/src/viewer/views/overview.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/overview.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem}
   packages/web/src/viewer/views/problems.ts → packages/web/src/schema/v1.ts {Finding}
-  packages/web/src/viewer/views/problems.ts → packages/web/src/viewer/components/constants.ts {ENRICHMENT_THRESHOLDS}
   packages/web/src/viewer/views/problems.ts → packages/web/src/viewer/components/data-display/findings-list.ts {FindingsList}
-  packages/web/src/viewer/views/problems.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/problems.ts → packages/web/src/viewer/types.ts {LoadedData}
-  packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/rex-task-link.ts {RexTaskLink}
-  packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/types.ts {ViewId, NavigateTo}
-  packages/web/src/viewer/views/routes.ts → packages/web/src/schema/v1.ts {RouteTreeNode, RouteExportKind, ComponentUsageEdge}
-  packages/web/src/viewer/views/routes.ts → packages/web/src/viewer/components/data-display/collapsible-section.ts {CollapsibleSection}
-  packages/web/src/viewer/views/routes.ts → packages/web/src/viewer/components/data-display/tree-view.ts {TreeView}
-  packages/web/src/viewer/views/routes.ts → packages/web/src/viewer/components/data-display/tree-view.ts {TreeNode}
-  packages/web/src/viewer/views/routes.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/routes.ts → packages/web/src/viewer/components/search-filter.ts {SearchFilter}
-  packages/web/src/viewer/views/routes.ts → packages/web/src/viewer/types.ts {LoadedData}
   packages/web/src/viewer/views/suggestions.ts → packages/web/src/schema/v1.ts {Finding}
-  packages/web/src/viewer/views/suggestions.ts → packages/web/src/viewer/components/constants.ts {ENRICHMENT_THRESHOLDS}
   packages/web/src/viewer/views/suggestions.ts → packages/web/src/viewer/components/data-display/findings-list.ts {FindingsList}
-  packages/web/src/viewer/views/suggestions.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/suggestions.ts → packages/web/src/viewer/types.ts {LoadedData}
-  packages/web/src/viewer/views/validation.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/zones.ts → packages/web/src/schema/v1.ts {Zone, Finding}
-  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
-  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/components/data-display/collapsible-section.ts {CollapsibleSection}
-  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/components/search-filter.ts {SearchFilter}
-  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem}
-  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/utils.ts {meterClass, buildFlowNodes, buildFlowEdges}
-  packages/web/tests/unit/viewer/collapsible-section.test.ts → packages/web/src/viewer/components/data-display/collapsible-section.ts {CollapsibleSection}
-  packages/web/tests/unit/viewer/detail-panel.test.ts → packages/web/src/viewer/components/detail-panel.ts {DetailPanel}
-  packages/web/tests/unit/viewer/favicon.test.ts → packages/web/src/viewer/components/favicon.ts {updateFavicon, resetFavicon, FAVICON_PNGS, VIEW_TO_PRODUCT}
-  packages/web/tests/unit/viewer/favicon.test.ts → packages/web/src/viewer/types.ts {ViewId}
-  packages/web/tests/unit/viewer/sidebar.test.ts → packages/web/src/viewer/components/sidebar.ts {Sidebar}
-  packages/web/tests/unit/viewer/tree-view.test.ts → packages/web/src/viewer/components/data-display/tree-view.ts {TreeView}
-  packages/web/tests/unit/viewer/tree-view.test.ts → packages/web/src/viewer/components/data-display/tree-view.ts {TreeNode}
 
 </imports>

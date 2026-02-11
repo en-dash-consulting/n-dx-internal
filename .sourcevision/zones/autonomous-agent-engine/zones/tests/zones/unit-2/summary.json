@@ -1,11 +1,12 @@
 {
-  "id": "hench/tests-4",
-  "name": "Tests 4",
-  "description": "28 files, primarily TypeScript",
+  "id": "hench/tests/unit-2",
+  "name": "Unit 2",
+  "description": "30 files, primarily TypeScript",
   "files": [
+    "packages/hench/src/agent/lifecycle/loop.ts",
+    "packages/hench/src/agent/lifecycle/task-display.ts",
     "packages/hench/src/cli/commands/constants.ts",
     "packages/hench/src/cli/commands/init.ts",
-    "packages/hench/src/cli/commands/run.ts",
     "packages/hench/src/cli/commands/show.ts",
     "packages/hench/src/cli/commands/status.ts",
     "packages/hench/src/cli/commands/task-lookup.ts",
@@ -17,14 +18,15 @@
     "packages/hench/src/store/json.ts",
     "packages/hench/src/store/project-config.ts",
     "packages/hench/src/store/runs.ts",
+    "packages/hench/src/types/index.ts",
+    "packages/hench/src/types/output.ts",
     "packages/hench/tests/integration/store-roundtrip.test.ts",
     "packages/hench/tests/unit/agent/api-auth.test.ts",
     "packages/hench/tests/unit/agent/atomic-transition.test.ts",
     "packages/hench/tests/unit/agent/loop.test.ts",
+    "packages/hench/tests/unit/agent/task-display.test.ts",
     "packages/hench/tests/unit/agent/task-failure.test.ts",
     "packages/hench/tests/unit/cli/commands/constants.test.ts",
-    "packages/hench/tests/unit/cli/commands/run-epic-by-epic.test.ts",
-    "packages/hench/tests/unit/cli/commands/run-epic.test.ts",
     "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
     "packages/hench/tests/unit/cli/commands/task-lookup.test.ts",
     "packages/hench/tests/unit/cli/errors.test.ts",
@@ -33,16 +35,18 @@
     "packages/hench/tests/unit/store/project-config.test.ts"
   ],
   "entryPoints": [
+    "packages/hench/src/types/output.ts",
+    "packages/hench/src/agent/lifecycle/loop.ts",
+    "packages/hench/src/agent/lifecycle/task-display.ts",
     "packages/hench/src/store/index.ts",
     "packages/hench/src/store/project-config.ts",
     "packages/hench/src/cli/errors.ts",
     "packages/hench/src/cli/output.ts",
     "packages/hench/src/store/config.ts",
-    "packages/hench/src/store/json.ts",
-    "packages/hench/src/cli/commands/run.ts"
+    "packages/hench/src/store/json.ts"
   ],
-  "cohesion": 0.75,
-  "coupling": 0.25,
-  "fileCount": 28,
-  "lineCount": 4701
+  "cohesion": 0.77,
+  "coupling": 0.23,
+  "fileCount": 30,
+  "lineCount": 3731
 }

@@ -5,82 +5,112 @@
 <zone>
 
 Zone: Viewer 2 (`web/viewer-2`)
-Files: 18, Cohesion: 0.90, Coupling: 0.10
-Description: 18 files, primarily TypeScript
-Entry points: packages/web/src/viewer/components/theme-toggle.ts, packages/web/src/viewer/components/guide.ts, packages/web/src/viewer/views/analysis.ts, packages/web/src/viewer/views/prd.ts
-Lines: 4485
+Files: 29, Cohesion: 0.73, Coupling: 0.27
+Description: 29 files, primarily TypeScript
+Entry points: packages/web/src/viewer/components/constants.ts, packages/web/src/viewer/types.ts, packages/web/src/viewer/components/logos.ts
+Lines: 8720
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/components/guide.ts (TypeScript, 106 lines, source)
-packages/web/src/viewer/components/prd-tree/add-item-form.ts (TypeScript, 296 lines, source)
-packages/web/src/viewer/components/prd-tree/analyze-panel.ts (TypeScript, 354 lines, source)
-packages/web/src/viewer/components/prd-tree/bulk-actions.ts (TypeScript, 136 lines, source)
-packages/web/src/viewer/components/prd-tree/compute.ts (TypeScript, 134 lines, source)
-packages/web/src/viewer/components/prd-tree/index.ts (TypeScript, 30 lines, source)
-packages/web/src/viewer/components/prd-tree/merge-preview.ts (TypeScript, 312 lines, source)
-packages/web/src/viewer/components/prd-tree/prd-tree.ts (TypeScript, 517 lines, source)
-packages/web/src/viewer/components/prd-tree/status-filter.ts (TypeScript, 192 lines, source)
-packages/web/src/viewer/components/prd-tree/task-detail.ts (TypeScript, 445 lines, source)
-packages/web/src/viewer/components/prd-tree/types.ts (TypeScript, 58 lines, source)
+packages/web/src/viewer/components/constants.ts (TypeScript, 16 lines, source)
+packages/web/src/viewer/components/detail-panel.ts (TypeScript, 309 lines, source)
+packages/web/src/viewer/components/faq.ts (TypeScript, 301 lines, source)
+packages/web/src/viewer/components/favicon.ts (TypeScript, 106 lines, source)
+packages/web/src/viewer/components/guide.ts (TypeScript, 145 lines, source)
+packages/web/src/viewer/components/logos.ts (TypeScript, 178 lines, source)
+packages/web/src/viewer/components/rex-task-link.ts (TypeScript, 277 lines, source)
+packages/web/src/viewer/components/sidebar.ts (TypeScript, 379 lines, source)
 packages/web/src/viewer/components/theme-toggle.ts (TypeScript, 47 lines, source)
-packages/web/src/viewer/views/analysis.ts (TypeScript, 126 lines, source)
-packages/web/src/viewer/views/prd.ts (TypeScript, 315 lines, source)
+packages/web/src/viewer/graph/physics.ts (TypeScript, 325 lines, source)
+packages/web/src/viewer/graph/renderer.ts (TypeScript, 518 lines, source)
+packages/web/src/viewer/main.ts (TypeScript, 360 lines, source)
+packages/web/src/viewer/types.ts (TypeScript, 63 lines, source)
+packages/web/src/viewer/utils.ts (TypeScript, 58 lines, source)
+packages/web/src/viewer/views/architecture.ts (TypeScript, 136 lines, source)
+packages/web/src/viewer/views/files.ts (TypeScript, 261 lines, source)
+packages/web/src/viewer/views/graph.ts (TypeScript, 174 lines, source)
+packages/web/src/viewer/views/hench-config.ts (TypeScript, 415 lines, source)
+packages/web/src/viewer/views/hench-runs.ts (TypeScript, 565 lines, source)
+packages/web/src/viewer/views/hench-templates.ts (TypeScript, 422 lines, source)
+packages/web/src/viewer/views/rex-dashboard.ts (TypeScript, 533 lines, source)
+packages/web/src/viewer/views/validation.ts (TypeScript, 814 lines, source)
+packages/web/src/viewer/views/workflow-optimization.ts (TypeScript, 598 lines, source)
+packages/web/src/viewer/views/zones.ts (TypeScript, 238 lines, source)
 packages/web/tests/unit/viewer/accessibility.test.ts (TypeScript, 407 lines, test)
-packages/web/tests/unit/viewer/prd-tree-compute.test.ts (TypeScript, 483 lines, test)
-packages/web/tests/unit/viewer/prd-tree.test.ts (TypeScript, 270 lines, test)
-packages/web/tests/unit/viewer/status-filter.test.ts (TypeScript, 257 lines, test)
+packages/web/tests/unit/viewer/detail-panel.test.ts (TypeScript, 101 lines, test)
+packages/web/tests/unit/viewer/favicon.test.ts (TypeScript, 152 lines, test)
+packages/web/tests/unit/viewer/hench-config.test.ts (TypeScript, 267 lines, test)
+packages/web/tests/unit/viewer/sidebar.test.ts (TypeScript, 555 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/src/viewer/components/prd-tree/add-item-form.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemLevel, Priority}
-  packages/web/src/viewer/components/prd-tree/bulk-actions.ts → packages/web/src/viewer/components/prd-tree/types.ts {ItemStatus}
-  packages/web/src/viewer/components/prd-tree/compute.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, BranchStats, ItemStatus}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/add-item-form.ts {AddItemForm}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/add-item-form.ts {AddItemFormProps, AddItemInput}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/analyze-panel.ts {AnalyzePanel}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/analyze-panel.ts {AnalyzePanelProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/bulk-actions.ts {BulkActions}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/bulk-actions.ts {BulkActionsProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/compute.ts {computeBranchStats, completionRatio, countChildStatuses, formatTimestamp, itemMatchesFilter, filterTree}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/merge-preview.ts {MergePreview}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/merge-preview.ts {MergePreviewProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTree}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTreeProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {StatusFilter, defaultStatusFilter, ALL_STATUSES, FILTER_PRESETS, activePresetKey}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {StatusFilterProps, FilterPreset}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/task-detail.ts {TaskDetail}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/task-detail.ts {TaskDetailProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, PRDDocumentData, ItemLevel, ItemStatus, Priority, BranchStats}
-  packages/web/src/viewer/components/prd-tree/merge-preview.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemLevel}
-  packages/web/src/viewer/components/prd-tree/prd-tree.ts → packages/web/src/viewer/components/prd-tree/compute.ts {computeBranchStats, completionRatio, formatTimestamp, itemMatchesFilter}
-  packages/web/src/viewer/components/prd-tree/prd-tree.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {StatusFilter, defaultStatusFilter}
-  packages/web/src/viewer/components/prd-tree/prd-tree.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority}
-  packages/web/src/viewer/components/prd-tree/status-filter.ts → packages/web/src/viewer/components/prd-tree/types.ts {ItemStatus}
-  packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/compute.ts {formatTimestamp}
-  packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemStatus, Priority}
-  packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/analyze-panel.ts {AnalyzePanel}
-  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/add-item-form.ts {AddItemForm}
-  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/bulk-actions.ts {BulkActions}
-  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/index.ts {PRDTree}
-  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/index.ts {PRDDocumentData, PRDItemData, AddItemInput}
-  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/merge-preview.ts {MergePreview}
-  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/task-detail.ts {TaskDetail}
+  packages/web/src/viewer/components/detail-panel.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
+  packages/web/src/viewer/components/detail-panel.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem, FileDetail, ZoneDetail}
+  packages/web/src/viewer/components/detail-panel.ts → packages/web/src/viewer/utils.ts {meterClass}
+  packages/web/src/viewer/components/favicon.ts → packages/web/src/viewer/types.ts {ViewId}
+  packages/web/src/viewer/components/rex-task-link.ts → packages/web/src/viewer/types.ts {ViewId}
+  packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/constants.ts {ENRICHMENT_THRESHOLDS}
+  packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/logos.ts {NdxLogoPng, ProductLogoPng}
+  packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/types.ts {ViewId}
+  packages/web/src/viewer/graph/renderer.ts → packages/web/src/viewer/graph/physics.ts {initZoneClusteredPositions, tick}
+  packages/web/src/viewer/graph/renderer.ts → packages/web/src/viewer/graph/physics.ts {SimState, TickCallbacks}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/detail-panel.ts {DetailPanel}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/faq.ts {HeaderFAQ}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/favicon.ts {updateFavicon}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/guide.ts {Guide}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/logos.ts {ProductLogoPng}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/sidebar.ts {Sidebar}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/theme-toggle.ts {initTheme, ThemeToggle}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/types.ts {LoadedData, ViewId, NavigateTo, DetailItem}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/architecture.ts {ArchitectureView}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/files.ts {FilesView}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/graph.ts {Graph}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/hench-config.ts {HenchConfigView}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/hench-runs.ts {HenchRunsView}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/hench-templates.ts {HenchTemplatesView}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/rex-dashboard.ts {RexDashboard}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/validation.ts {ValidationView}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/workflow-optimization.ts {WorkflowOptimizationView}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/views/zones.ts {ZonesView}
+  packages/web/src/viewer/utils.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
+  packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/components/constants.ts {ENRICHMENT_THRESHOLDS}
+  packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem}
+  packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/utils.ts {buildFlowNodes, buildFlowEdges}
+  packages/web/src/viewer/views/files.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
+  packages/web/src/viewer/views/files.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/files.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem}
+  packages/web/src/viewer/views/files.ts → packages/web/src/viewer/utils.ts {buildFileToZoneMap}
+  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
+  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/graph/renderer.ts {GraphRenderer}
+  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/graph/renderer.ts {GraphNode, GraphLink}
+  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/types.ts {LoadedData, DetailItem}
+  packages/web/src/viewer/views/hench-config.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/hench-runs.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/hench-runs.ts → packages/web/src/viewer/components/rex-task-link.ts {RexTaskLink}
+  packages/web/src/viewer/views/hench-runs.ts → packages/web/src/viewer/types.ts {NavigateTo}
+  packages/web/src/viewer/views/hench-templates.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/rex-task-link.ts {RexTaskLink}
+  packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/types.ts {ViewId, NavigateTo}
+  packages/web/src/viewer/views/validation.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/workflow-optimization.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/components/constants.ts {ZONE_COLORS}
+  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem}
+  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/utils.ts {meterClass, buildFlowNodes, buildFlowEdges}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/guide.ts {Guide}
-  packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTree}
-  packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {StatusFilter, defaultStatusFilter}
-  packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDDocumentData}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/theme-toggle.ts {ThemeToggle, SidebarThemeToggle}
-  packages/web/tests/unit/viewer/prd-tree-compute.test.ts → packages/web/src/viewer/components/prd-tree/compute.ts {computeBranchStats, completionRatio, countChildStatuses, formatTimestamp, itemMatchesFilter, filterTree}
-  packages/web/tests/unit/viewer/prd-tree-compute.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemStatus}
-  packages/web/tests/unit/viewer/prd-tree.test.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTree}
-  packages/web/tests/unit/viewer/prd-tree.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDDocumentData}
-  packages/web/tests/unit/viewer/status-filter.test.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {StatusFilter, ALL_STATUSES, FILTER_PRESETS, activePresetKey, defaultStatusFilter}
-  packages/web/tests/unit/viewer/status-filter.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {ItemStatus}
+  packages/web/tests/unit/viewer/detail-panel.test.ts → packages/web/src/viewer/components/detail-panel.ts {DetailPanel}
+  packages/web/tests/unit/viewer/favicon.test.ts → packages/web/src/viewer/components/favicon.ts {updateFavicon, resetFavicon, FAVICON_PNGS, VIEW_TO_PRODUCT}
+  packages/web/tests/unit/viewer/favicon.test.ts → packages/web/src/viewer/types.ts {ViewId}
+  packages/web/tests/unit/viewer/hench-config.test.ts → packages/web/src/viewer/views/hench-config.ts {HenchConfigView}
+  packages/web/tests/unit/viewer/sidebar.test.ts → packages/web/src/viewer/components/sidebar.ts {Sidebar}
 
 </imports>

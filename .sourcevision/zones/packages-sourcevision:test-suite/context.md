@@ -8,13 +8,13 @@ Zone: Test Suite (`packages-sourcevision:test-suite`)
 Files: 5, Cohesion: 0.46, Coupling: 0.54
 Description: Unit, integration, and end-to-end tests covering analyzer logic, schema validation, CLI workflows, and the serve command, with imports reaching into both analyzer and viewer zones.
 Entry points: packages/sourcevision/src/schema/validate.ts
-Lines: 1376
+Lines: 1377
 
 </zone>
 
 <files>
 
-packages/sourcevision/src/schema/validate.ts (TypeScript, 316 lines, source)
+packages/sourcevision/src/schema/validate.ts (TypeScript, 317 lines, source)
 packages/sourcevision/tests/e2e/cli-analyze.test.ts (TypeScript, 154 lines, test)
 packages/sourcevision/tests/e2e/cli-serve.test.ts (TypeScript, 79 lines, test)
 packages/sourcevision/tests/integration/pipeline.test.ts (TypeScript, 93 lines, test)
