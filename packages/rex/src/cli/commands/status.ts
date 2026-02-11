@@ -13,7 +13,7 @@ import { CLIError, BudgetExceededError } from "../errors.js";
 import { REX_DIR } from "./constants.js";
 import { info, warn, result, isQuiet } from "../output.js";
 import type { PRDItem } from "../../schema/index.js";
-import type { TreeStats } from "../../core/tree.js";
+import type { TreeStats } from "../../core/stats.js";
 import type { VerifyResult } from "../../core/verify.js";
 import type { TokenUsageFilter } from "../../core/token-usage.js";
 

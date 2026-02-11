@@ -5,10 +5,10 @@ import {
   insertChild,
   updateInTree,
   removeFromTree,
-  computeStats,
   getParentChain,
   collectAllIds,
 } from "../../../src/core/tree.js";
+import { computeStats } from "../../../src/core/stats.js";
 import type { PRDItem } from "../../../src/schema/index.js";
 
 function makeItem(overrides: Partial<PRDItem> & { id: string; title: string }): PRDItem {

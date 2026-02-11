@@ -103,11 +103,3 @@ export function removeFromTree(items: PRDItem[], id: string): PRDItem | null {
   }
   return null;
 }
-
-// ---- Re-exports from extracted modules --------------------------------------
-// Backward compatibility: consumers importing from tree.ts continue to work.
-// New code should import directly from stats.ts or delete.ts.
-
-export { computeStats } from "./stats.js";
-export type { TreeStats } from "./stats.js";
-export { deleteItem, cleanBlockedByRefs } from "./delete.js";
