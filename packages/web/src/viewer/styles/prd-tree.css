@@ -713,6 +713,78 @@
   font-size: 10px;
 }
 
+/* Execute task button */
+.task-execute-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.task-execute-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.task-execute-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: var(--accent);
+}
+
+.task-execute-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.task-execute-btn.disabled,
+.task-execute-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: var(--border);
+  color: var(--text-dim);
+  background: var(--bg-surface);
+}
+
+.task-execute-btn.executing {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: color-mix(in srgb, var(--orange) 10%, transparent);
+  cursor: wait;
+}
+
+.task-execute-icon {
+  font-size: 11px;
+}
+
+.task-execute-label {
+  font-size: 11px;
+}
+
+.task-execute-result {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.task-execute-result.success {
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 10%, transparent);
+}
+
+.task-execute-result.error {
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 10%, transparent);
+}
+
 /* Description */
 .task-description {
   font-size: 13px;

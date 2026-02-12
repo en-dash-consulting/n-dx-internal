@@ -22,6 +22,8 @@ export interface TaskDetailProps {
   onUpdate?: (id: string, updates: Partial<PRDItemData>) => void;
   /** Called to navigate to a different item in the tree. */
   onNavigateToItem?: (id: string) => void;
+  /** Called to trigger Hench execution for this task. */
+  onExecuteTask?: (taskId: string) => Promise<void>;
 }
 
 // ── Constants ────────────────────────────────────────────────────────
@@ -599,9 +601,69 @@ function RequirementsList({
   );
 }
 
+/** Statuses that allow triggering Hench execution. */
+const TRIGGERABLE_STATUSES: Set<ItemStatus> = new Set(["pending", "blocked"]);
+
+/** Execute task button — shown for task/subtask items. */
+function ExecuteTaskButton({
+  item,
+  onExecute,
+}: {
+  item: PRDItemData;
+  onExecute?: (taskId: string) => Promise<void>;
+}) {
+  const [executing, setExecuting] = useState(false);
+  const [resultMessage, setResultMessage] = useState<string | null>(null);
+
+  const isTriggerable = TRIGGERABLE_STATUSES.has(item.status);
+  const isTaskLevel = item.level === "task" || item.level === "subtask";
+
+  if (!onExecute || !isTaskLevel) return null;
+
+  const handleClick = useCallback(async () => {
+    if (executing || !isTriggerable) return;
+    setExecuting(true);
+    setResultMessage(null);
+    try {
+      await onExecute(item.id);
+      setResultMessage("Execution started");
+      setTimeout(() => setResultMessage(null), 3000);
+    } catch (err) {
+      setResultMessage(err instanceof Error ? err.message : "Failed to start");
+      setTimeout(() => setResultMessage(null), 5000);
+    } finally {
+      setExecuting(false);
+    }
+  }, [item.id, executing, isTriggerable, onExecute]);
+
+  return h(
+    "div",
+    { class: "task-execute-section" },
+    h(
+      "button",
+      {
+        class: `task-execute-btn${executing ? " executing" : ""}${!isTriggerable ? " disabled" : ""}`,
+        onClick: handleClick,
+        disabled: !isTriggerable || executing,
+        title: !isTriggerable
+          ? `Cannot execute: task is ${item.status}`
+          : executing
+            ? "Execution in progress…"
+            : "Run Hench agent on this task",
+        "aria-label": "Execute task with Hench",
+      },
+      h("span", { class: "task-execute-icon" }, executing ? "◐" : "▶"),
+      h("span", { class: "task-execute-label" }, executing ? "Starting…" : "Execute"),
+    ),
+    resultMessage
+      ? h("span", { class: `task-execute-result${resultMessage.startsWith("Execution") ? " success" : " error"}` }, resultMessage)
+      : null,
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────
 
-export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem }: TaskDetailProps) {
+export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem, onExecuteTask }: TaskDetailProps) {
   const [saving, setSaving] = useState(false);
   const [pendingFailStatus, setPendingFailStatus] = useState(false);
   const [failureReason, setFailureReason] = useState("");
@@ -686,6 +748,9 @@ export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem }: TaskD
         onChange: handleStatusChange,
         onRequestReason: onUpdate ? handleRequestReason : undefined,
       }),
+
+      // Execute button (only for tasks/subtasks)
+      h(ExecuteTaskButton, { item, onExecute: onExecuteTask }),
 
       // Inline failure reason input form
       (pendingFailStatus || editingFailureReason)

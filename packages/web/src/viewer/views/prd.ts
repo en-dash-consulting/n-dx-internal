@@ -156,6 +156,24 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
     [data, handleSelectItem],
   );
 
+  // Handle task execution trigger
+  const handleExecuteTask = useCallback(
+    async (taskId: string) => {
+      const res = await fetch("/api/hench/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskId }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
+      setToast(`Hench execution started for task`);
+      setTimeout(() => setToast(null), 3000);
+    },
+    [],
+  );
+
   // Update detail content when selection or data changes
   useEffect(() => {
     if (!data || !selectedItemId || !onDetailContent) {
@@ -176,9 +194,10 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
         allItems,
         onUpdate: handleItemUpdate,
         onNavigateToItem: handleNavigateToItem,
+        onExecuteTask: handleExecuteTask,
       }),
     );
-  }, [data, selectedItemId, onDetailContent, handleItemUpdate, handleNavigateToItem]);
+  }, [data, selectedItemId, onDetailContent, handleItemUpdate, handleNavigateToItem, handleExecuteTask]);
 
   // Handle add item submission
   const handleAddItem = useCallback(

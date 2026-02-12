@@ -12,12 +12,14 @@
  * POST   /api/hench/templates             — create/update a user-defined template
  * POST   /api/hench/templates/:id/apply   — apply a template to current config
  * DELETE /api/hench/templates/:id         — delete a user-defined template
+ * POST   /api/hench/execute               — trigger Hench run for a specific task
  */
 
 import { readFileSync, readdirSync, writeFileSync, existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { spawnManaged, type ManagedChild } from "@n-dx/claude-client";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./types.js";
 
@@ -353,6 +355,11 @@ export function handleHenchRoute(
   const templateDeleteMatch = path.match(/^templates\/([a-z][a-z0-9-]+)$/);
   if (templateDeleteMatch && method === "DELETE") {
     return handleTemplateDelete(templateDeleteMatch[1], res, ctx);
+  }
+
+  // POST /api/hench/execute — trigger task execution
+  if (path === "execute" && method === "POST") {
+    return handleExecute(req, res, ctx);
   }
 
   return false;
@@ -694,5 +701,136 @@ async function handleTemplateDelete(
   }
 
   jsonResponse(res, 200, { deleted: id });
+  return true;
+}
+
+// ── Task execution ───────────────────────────────────────────────────
+
+/** Actionable statuses — only tasks in these states can be triggered. */
+const ACTIONABLE_STATUSES = new Set(["pending", "blocked"]);
+
+/** Track active task executions to prevent concurrent runs on the same task. */
+const activeExecutions = new Map<string, { runId: string; handle: ManagedChild }>();
+
+/** Load and parse prd.json from disk. */
+function loadPRDForExecute(ctx: ServerContext): Record<string, unknown> | null {
+  const prdPath = join(ctx.rexDir, "prd.json");
+  if (!existsSync(prdPath)) return null;
+  try {
+    return JSON.parse(readFileSync(prdPath, "utf-8")) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/** Recursively find a PRD item by ID. */
+function findPRDItem(
+  items: Array<Record<string, unknown>>,
+  id: string,
+): Record<string, unknown> | null {
+  for (const item of items) {
+    if (item.id === id) return item;
+    const children = item.children as Array<Record<string, unknown>> | undefined;
+    if (children) {
+      const found = findPRDItem(children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+/** POST /api/hench/execute — trigger Hench run for a specific task. */
+async function handleExecute(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+): Promise<boolean> {
+  // Parse request body
+  let body: Record<string, unknown>;
+  try {
+    const raw = await readBody(req);
+    body = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    errorResponse(res, 400, "Invalid JSON in request body");
+    return true;
+  }
+
+  const taskId = body.taskId as string | undefined;
+  if (!taskId || typeof taskId !== "string") {
+    errorResponse(res, 400, "taskId is required");
+    return true;
+  }
+
+  // Validate task exists in PRD
+  const doc = loadPRDForExecute(ctx);
+  if (!doc) {
+    errorResponse(res, 404, "PRD not found. Run 'rex init' first.");
+    return true;
+  }
+
+  const items = doc.items as Array<Record<string, unknown>> | undefined;
+  if (!items) {
+    errorResponse(res, 404, "PRD has no items");
+    return true;
+  }
+
+  const task = findPRDItem(items, taskId);
+  if (!task) {
+    errorResponse(res, 404, `Task "${taskId}" not found in PRD`);
+    return true;
+  }
+
+  // Validate task is actionable
+  const status = task.status as string;
+  if (!ACTIONABLE_STATUSES.has(status)) {
+    errorResponse(res, 409, `Task is in "${status}" status and cannot be executed. Only pending or blocked tasks can be triggered.`);
+    return true;
+  }
+
+  // Check for concurrent execution
+  if (activeExecutions.has(taskId)) {
+    const active = activeExecutions.get(taskId)!;
+    jsonResponse(res, 409, {
+      error: "Task is already being executed",
+      runId: active.runId,
+      taskId,
+    });
+    return true;
+  }
+
+  // Resolve hench binary
+  const henchBin = join(ctx.projectDir, "node_modules", ".bin", "hench");
+  const henchFallback = join(ctx.projectDir, "packages", "hench", "dist", "cli", "index.js");
+  const args = ["run", `--task=${taskId}`, "--auto", ctx.projectDir];
+
+  const binPath = existsSync(henchBin) ? henchBin : "node";
+  const binArgs = existsSync(henchBin) ? args : [henchFallback, ...args];
+
+  // Generate a run ID for tracking (hench will generate its own, but we
+  // need one to correlate the response before the process starts writing)
+  const runId = `exec-${Date.now().toString(36)}`;
+
+  // Spawn hench process
+  const handle = spawnManaged(binPath, binArgs, {
+    cwd: ctx.projectDir,
+    stdio: "pipe",
+    env: { ...process.env },
+  });
+
+  // Track active execution
+  activeExecutions.set(taskId, { runId, handle });
+
+  // Clean up when process completes
+  handle.done
+    .then(() => activeExecutions.delete(taskId))
+    .catch(() => activeExecutions.delete(taskId));
+
+  // Return immediately with tracking info
+  jsonResponse(res, 202, {
+    runId,
+    taskId,
+    taskTitle: task.title as string,
+    status: "started",
+  });
   return true;
 }
