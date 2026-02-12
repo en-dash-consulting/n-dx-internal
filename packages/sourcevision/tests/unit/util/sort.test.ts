@@ -6,9 +6,11 @@ import {
   sortInventory,
   sortImports,
   sortFindings,
+  sortFileClassifications,
+  sortClassifications,
   toCanonicalJSON,
 } from "../../../src/util/sort.js";
-import type { FileEntry, ImportEdge, ExternalImport, Inventory, Imports, Finding } from "../../../src/schema/index.js";
+import type { FileEntry, ImportEdge, ExternalImport, Inventory, Imports, Finding, FileClassification, Classifications } from "../../../src/schema/index.js";
 
 // ── sortFiles ─────────────────────────────────────────────────────────────────
 
@@ -163,6 +165,61 @@ describe("sortFindings", () => {
     const sorted = sortFindings(findings);
     expect(sorted).not.toBe(findings);
     expect(findings[0].type).toBe("suggestion"); // original unchanged
+  });
+});
+
+// ── sortFileClassifications ───────────────────────────────────────────────
+
+describe("sortFileClassifications", () => {
+  it("sorts by path", () => {
+    const files: FileClassification[] = [
+      { path: "src/z.ts", archetype: "utility", confidence: 0.8, source: "algorithmic" },
+      { path: "src/a.ts", archetype: "entrypoint", confidence: 0.9, source: "algorithmic" },
+      { path: "src/m.ts", archetype: null, confidence: 0, source: "algorithmic" },
+    ];
+    const sorted = sortFileClassifications(files);
+    expect(sorted.map((f) => f.path)).toEqual(["src/a.ts", "src/m.ts", "src/z.ts"]);
+  });
+
+  it("does not mutate original array", () => {
+    const files: FileClassification[] = [
+      { path: "src/b.ts", archetype: null, confidence: 0, source: "algorithmic" },
+      { path: "src/a.ts", archetype: null, confidence: 0, source: "algorithmic" },
+    ];
+    const sorted = sortFileClassifications(files);
+    expect(sorted).not.toBe(files);
+    expect(files[0].path).toBe("src/b.ts");
+  });
+});
+
+// ── sortClassifications ──────────────────────────────────────────────────
+
+describe("sortClassifications", () => {
+  it("sorts archetypes by ID and files by path", () => {
+    const data: Classifications = {
+      archetypes: [
+        { id: "utility", name: "Utility", description: "desc", signals: [] },
+        { id: "config", name: "Config", description: "desc", signals: [] },
+      ],
+      files: [
+        { path: "src/z.ts", archetype: null, confidence: 0, source: "algorithmic" },
+        { path: "src/a.ts", archetype: "config", confidence: 0.7, source: "algorithmic" },
+      ],
+      summary: { totalClassified: 1, totalUnclassified: 1, byArchetype: { config: 1 }, bySource: { algorithmic: 2 } },
+    };
+    const sorted = sortClassifications(data);
+    expect(sorted.archetypes.map((a) => a.id)).toEqual(["config", "utility"]);
+    expect(sorted.files.map((f) => f.path)).toEqual(["src/a.ts", "src/z.ts"]);
+  });
+
+  it("preserves summary unchanged", () => {
+    const data: Classifications = {
+      archetypes: [],
+      files: [],
+      summary: { totalClassified: 5, totalUnclassified: 3, byArchetype: { utility: 5 }, bySource: { algorithmic: 8 } },
+    };
+    const sorted = sortClassifications(data);
+    expect(sorted.summary).toEqual(data.summary);
   });
 });
 

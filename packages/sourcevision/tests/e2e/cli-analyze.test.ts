@@ -4,7 +4,7 @@ import { mkdtemp, cp, rm } from "node:fs/promises";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { validateInventory, validateImports, validateZones, validateComponents } from "../../src/schema/validate.js";
+import { validateInventory, validateImports, validateClassifications, validateZones, validateComponents } from "../../src/schema/validate.js";
 
 const CLI_PATH = join(import.meta.dirname, "../../dist/cli/index.js");
 const FIXTURE_DIR = join(import.meta.dirname, "../fixtures/small-ts-project");
@@ -34,6 +34,7 @@ describe("sourcevision analyze (e2e)", () => {
     expect(existsSync(join(svDir, "imports.json"))).toBe(true);
     expect(existsSync(join(svDir, "zones.json"))).toBe(true);
     expect(existsSync(join(svDir, "components.json"))).toBe(true);
+    expect(existsSync(join(svDir, "classifications.json"))).toBe(true);
     expect(existsSync(join(svDir, "llms.txt"))).toBe(true);
     expect(existsSync(join(svDir, "CONTEXT.md"))).toBe(true);
 
@@ -43,6 +44,10 @@ describe("sourcevision analyze (e2e)", () => {
 
     const imports = JSON.parse(readFileSync(join(svDir, "imports.json"), "utf-8"));
     expect(validateImports(imports).ok).toBe(true);
+
+    const classifications = JSON.parse(readFileSync(join(svDir, "classifications.json"), "utf-8"));
+    expect(validateClassifications(classifications).ok).toBe(true);
+    expect(classifications.files.length).toBeGreaterThan(0);
 
     const zones = JSON.parse(readFileSync(join(svDir, "zones.json"), "utf-8"));
     expect(validateZones(zones).ok).toBe(true);

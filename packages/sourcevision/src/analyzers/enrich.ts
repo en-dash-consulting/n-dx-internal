@@ -55,7 +55,8 @@ export async function enrichZonesWithAI(
   crossings: ZoneCrossing[],
   inventory: Inventory,
   imports: Imports,
-  previousZones?: Zones
+  previousZones?: Zones,
+  fileArchetypes?: Map<string, string | null>,
 ): Promise<EnrichResult> {
   const prevEnrichPass = previousZones?.enrichmentPass ?? 0;
   const passNumber = prevEnrichPass + 1;
@@ -121,7 +122,7 @@ export async function enrichZonesWithAI(
       const result = await enrichBatch(
         batches[bi], zones, sortedCrossingsArr,
         passNumber, passConfig, previousZones, bi, batches.length,
-        enrichedNames,
+        enrichedNames, fileArchetypes,
       );
       if (result && "authError" in result) {
         authFailed = true;

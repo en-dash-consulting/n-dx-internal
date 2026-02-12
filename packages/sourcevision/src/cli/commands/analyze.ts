@@ -7,12 +7,13 @@ import { toCanonicalJSON } from "../../util/sort.js";
 import { analyzeInventory } from "../../analyzers/inventory.js";
 import type { InventoryResult } from "../../analyzers/inventory.js";
 import { analyzeImports } from "../../analyzers/imports.js";
+import { analyzeClassifications } from "../../analyzers/classify.js";
 import { analyzeZones } from "../../analyzers/zones.js";
 import { analyzeComponents } from "../../analyzers/components.js";
 import { analyzeCallGraph, computeZoneCallStats } from "../../analyzers/callgraph.js";
 import { generateCallGraphFindings } from "../../analyzers/callgraph-findings.js";
 import { deduplicateFindings, enforceSeverityRules } from "../../analyzers/enrich-parsing.js";
-import type { CallGraph, ImportEdge, Inventory } from "../../schema/index.js";
+import type { CallGraph, Classifications, ImportEdge, Inventory } from "../../schema/index.js";
 import { readManifest, writeManifest, updateManifestModule, updateManifestError } from "../../analyzers/manifest.js";
 import { generateLlmsTxt } from "../../analyzers/llms-txt.js";
 import { generateContext } from "../../analyzers/context.js";
@@ -22,7 +23,7 @@ import { cmdInit } from "./init.js";
 import { info } from "../output.js";
 import { emptyAnalyzeTokenUsage, accumulateTokenUsage, formatTokenUsage } from "../../analyzers/token-usage.js";
 import type { AnalyzeTokenUsage } from "../../schema/index.js";
-import { loadClaudeConfig } from "@n-dx/claude-client";
+import { loadClaudeConfig, loadProjectOverrides } from "@n-dx/claude-client";
 import { setClaudeConfig, getAuthMode } from "../../analyzers/claude-client.js";
 
 type PhaseFilter =
@@ -168,16 +169,69 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
     }
   }
 
-  // ── Phase 3: Zones (deterministic Louvain) ─────────────────────────────
-  if (shouldRunPhase(filter, 3, "zones")) {
-    // Phase 3 requires inventory + imports
+  // ── Phase 3: Classifications (deterministic) ───────────────────────────
+  if (shouldRunPhase(filter, 3, "classifications")) {
     const inventoryPath = join(svDir, DATA_FILES.inventory);
     const importsPath = join(svDir, DATA_FILES.imports);
     if (!existsSync(inventoryPath) || !existsSync(importsPath)) {
       console.error("  Phase 3 requires inventory.json and imports.json — run phases 1-2 first.");
       if (filter.type === "all") process.exit(1);
     } else {
-      info("[phase 3] Zones...");
+      info("[phase 3] Classifications...");
+      updateManifestModule(absDir, "classifications", "running");
+
+      try {
+        const inventoryRaw = readFileSync(inventoryPath, "utf-8");
+        const importsRaw = readFileSync(importsPath, "utf-8");
+        const inventory = JSON.parse(inventoryRaw);
+        const importsData = JSON.parse(importsRaw);
+
+        // Load previous classifications for incremental analysis
+        let previousClassifications: Classifications | undefined;
+        const prevClassificationsPath = join(svDir, DATA_FILES.classifications);
+        if (existsSync(prevClassificationsPath)) {
+          try {
+            previousClassifications = JSON.parse(readFileSync(prevClassificationsPath, "utf-8"));
+          } catch {
+            // Corrupted — start fresh
+          }
+        }
+
+        // Load archetype overrides from .n-dx.json
+        const svOverrides = await loadProjectOverrides(svDir, "sourcevision");
+        const archetypeConfig = (svOverrides as Record<string, unknown>).archetypes as Record<string, unknown> | undefined;
+        const customArchetypes = (archetypeConfig?.custom ?? []) as import("../../schema/index.js").ArchetypeDefinition[];
+        const fileOverrides = (archetypeConfig?.overrides ?? {}) as Record<string, string>;
+
+        const classifications = analyzeClassifications(inventory, importsData, {
+          previousClassifications: !fullMode ? previousClassifications : undefined,
+          changedFiles: inventoryResult?.changedFiles,
+          customArchetypes: customArchetypes.length > 0 ? customArchetypes : undefined,
+          overrides: Object.keys(fileOverrides).length > 0 ? fileOverrides : undefined,
+        });
+        const outPath = join(svDir, DATA_FILES.classifications);
+        writeFileSync(outPath, toCanonicalJSON(classifications));
+        updateManifestModule(absDir, "classifications", "complete");
+        info(`  ${classifications.summary.totalClassified} classified, ${classifications.summary.totalUnclassified} unclassified → ${outPath}`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        updateManifestError(absDir, "classifications", msg);
+        console.error(`  Phase 3 failed: ${msg}`);
+        if (filter.type === "all") process.exit(1);
+      }
+    }
+  }
+
+  // ── Phase 4: Zones (deterministic Louvain) ─────────────────────────────
+  if (shouldRunPhase(filter, 4, "zones")) {
+    // Phase 4 requires inventory + imports
+    const inventoryPath = join(svDir, DATA_FILES.inventory);
+    const importsPath = join(svDir, DATA_FILES.imports);
+    if (!existsSync(inventoryPath) || !existsSync(importsPath)) {
+      console.error("  Phase 4 requires inventory.json and imports.json — run phases 1-2 first.");
+      if (filter.type === "all") process.exit(1);
+    } else {
+      info("[phase 4] Zones...");
       updateManifestModule(absDir, "zones", "running");
 
       const enrich = !extraArgs.includes("--fast");
@@ -213,11 +267,24 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
           info(`  Found ${subAnalyses.length} sub-analysis: ${subAnalyses.map((s) => s.prefix).join(", ")}`);
         }
 
+        // Load classifications for archetype labels in enrichment prompts
+        const classPath = join(svDir, DATA_FILES.classifications);
+        let fileArchetypes: Map<string, string | null> | undefined;
+        if (existsSync(classPath)) {
+          try {
+            const classData: Classifications = JSON.parse(readFileSync(classPath, "utf-8"));
+            fileArchetypes = new Map(classData.files.map((f) => [f.path, f.archetype]));
+          } catch {
+            // Non-critical
+          }
+        }
+
         let zonesResult = await analyzeZones(inventory, importsData, {
           enrich,
           previousZones,
           perZone,
           subAnalyses,
+          fileArchetypes,
           onReset(fromPass, toPass) {
             info(`  Detected changes, resetting from Pass ${fromPass} to Pass ${toPass}`);
           },
@@ -236,13 +303,14 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
           const passesNeeded = targetPass - currentPass;
 
           for (let p = 0; p < passesNeeded; p++) {
-            info(`\n[phase 3] Enrichment pass ${currentPass + p + 2}...`);
+            info(`\n[phase 4] Enrichment pass ${currentPass + p + 2}...`);
             const prevZones = zones;
             zonesResult = await analyzeZones(inventory, importsData, {
               enrich: true,
               previousZones: prevZones,
               perZone,
               subAnalyses,
+              fileArchetypes,
               onReset(fromPass, toPass) {
                 info(`  Detected changes, resetting from Pass ${fromPass} to Pass ${toPass}`);
               },
@@ -291,22 +359,22 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         updateManifestError(absDir, "zones", msg);
-        console.error(`  Phase 3 failed: ${msg}`);
+        console.error(`  Phase 4 failed: ${msg}`);
         if (filter.type === "all") process.exit(1);
       }
     }
   }
 
-  // ── Phase 4: Components (deterministic) ──────────────────────────────────
-  if (shouldRunPhase(filter, 4, "components")) {
-    // Phase 4 requires inventory + imports
+  // ── Phase 5: Components (deterministic) ──────────────────────────────────
+  if (shouldRunPhase(filter, 5, "components")) {
+    // Phase 5 requires inventory + imports
     const inventoryPath = join(svDir, DATA_FILES.inventory);
     const importsPath = join(svDir, DATA_FILES.imports);
     if (!existsSync(inventoryPath) || !existsSync(importsPath)) {
-      console.error("  Phase 4 requires inventory.json and imports.json — run phases 1-2 first.");
+      console.error("  Phase 5 requires inventory.json and imports.json — run phases 1-2 first.");
       if (filter.type === "all") process.exit(1);
     } else {
-      info("[phase 4] Components...");
+      info("[phase 5] Components...");
       updateManifestModule(absDir, "components", "running");
 
       try {
@@ -341,22 +409,22 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         updateManifestError(absDir, "components", msg);
-        console.error(`  Phase 4 failed: ${msg}`);
+        console.error(`  Phase 5 failed: ${msg}`);
         if (filter.type === "all") process.exit(1);
       }
     }
   }
 
-  // ── Phase 5: Call Graph (deterministic) ──────────────────────────────────
-  if (shouldRunPhase(filter, 5, "callgraph")) {
-    // Phase 5 requires inventory + imports
+  // ── Phase 6: Call Graph (deterministic) ──────────────────────────────────
+  if (shouldRunPhase(filter, 6, "callgraph")) {
+    // Phase 6 requires inventory + imports
     const inventoryPath = join(svDir, DATA_FILES.inventory);
     const importsPath = join(svDir, DATA_FILES.imports);
     if (!existsSync(inventoryPath) || !existsSync(importsPath)) {
-      console.error("  Phase 5 requires inventory.json and imports.json — run phases 1-2 first.");
+      console.error("  Phase 6 requires inventory.json and imports.json — run phases 1-2 first.");
       if (filter.type === "all") process.exit(1);
     } else {
-      info("[phase 5] Call graph...");
+      info("[phase 6] Call graph...");
       updateManifestModule(absDir, "callgraph", "running");
 
       try {
@@ -389,12 +457,23 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
         updateManifestModule(absDir, "callgraph", "complete");
         info(`  ${callGraph.summary.totalFunctions} functions, ${callGraph.summary.totalCalls} calls, ${callGraph.summary.filesWithCalls} files → ${outPath}`);
 
+        // Load classifications if available for archetype-based findings
+        let classificationsData: Classifications | undefined;
+        const classificationsPath = join(svDir, DATA_FILES.classifications);
+        if (existsSync(classificationsPath)) {
+          try {
+            classificationsData = JSON.parse(readFileSync(classificationsPath, "utf-8"));
+          } catch {
+            // Non-critical
+          }
+        }
+
         // Enrich zones.json with call graph cross-zone statistics and findings
-        enrichZonesWithCallGraph(svDir, callGraph, inventory, importsData.edges);
+        enrichZonesWithCallGraph(svDir, callGraph, inventory, importsData.edges, classificationsData);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         updateManifestError(absDir, "callgraph", msg);
-        console.error(`  Phase 5 failed: ${msg}`);
+        console.error(`  Phase 6 failed: ${msg}`);
         // Non-critical — don't exit on failure, just report
         if (filter.type !== "all") {
           // Only exit if user specifically requested this phase
@@ -413,6 +492,8 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
       const zonesPath = join(svDir, DATA_FILES.zones);
       const componentsPath = join(svDir, DATA_FILES.components);
 
+      const classificationsSupPath = join(svDir, DATA_FILES.classifications);
+
       if (existsSync(manifestPath) && existsSync(inventoryPath) && existsSync(importsPath) && existsSync(zonesPath)) {
         const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
         const inventory = JSON.parse(readFileSync(inventoryPath, "utf-8"));
@@ -421,11 +502,14 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
         const componentsData = existsSync(componentsPath)
           ? JSON.parse(readFileSync(componentsPath, "utf-8"))
           : null;
+        const classData = existsSync(classificationsSupPath)
+          ? JSON.parse(readFileSync(classificationsSupPath, "utf-8"))
+          : null;
 
-        const llmsTxt = generateLlmsTxt(manifest, inventory, importsData, zonesData, componentsData);
+        const llmsTxt = generateLlmsTxt(manifest, inventory, importsData, zonesData, componentsData, classData);
         writeFileSync(join(svDir, SUPPLEMENTARY_FILES[0]), llmsTxt);
 
-        const contextMd = generateContext(manifest, inventory, importsData, zonesData, componentsData);
+        const contextMd = generateContext(manifest, inventory, importsData, zonesData, componentsData, classData);
         writeFileSync(join(svDir, SUPPLEMENTARY_FILES[1]), contextMd);
 
         // Emit per-zone output files
@@ -468,7 +552,7 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
  * Enrich zones.json with call graph cross-zone statistics.
  * Adds call graph insights to existing zone insights without overwriting AI-generated content.
  */
-function enrichZonesWithCallGraph(svDir: string, callGraph: CallGraph, inventory?: Inventory, importEdges?: ImportEdge[]): void {
+function enrichZonesWithCallGraph(svDir: string, callGraph: CallGraph, inventory?: Inventory, importEdges?: ImportEdge[], classifications?: Classifications): void {
   const zonesPath = join(svDir, DATA_FILES.zones);
   if (!existsSync(zonesPath)) return;
 
@@ -522,7 +606,7 @@ function enrichZonesWithCallGraph(svDir: string, callGraph: CallGraph, inventory
     }
 
     // Generate architectural findings from call graph patterns
-    const callGraphFindings = generateCallGraphFindings(callGraph, { inventory, importEdges });
+    const callGraphFindings = generateCallGraphFindings(callGraph, { inventory, importEdges, classifications });
     if (callGraphFindings.length > 0) {
       // Remove previous call graph findings (pass 0, identifiable by text patterns)
       const existingFindings = (zonesData.findings ?? []).filter(

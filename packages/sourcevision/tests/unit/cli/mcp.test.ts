@@ -16,6 +16,8 @@ const EXPECTED_TOOLS = [
   "search_files",
   "get_findings",
   "get_next_steps",
+  "get_classifications",
+  "set_file_archetype",
 ];
 
 const EXPECTED_RESOURCES = ["summary", "zones", "routes"];

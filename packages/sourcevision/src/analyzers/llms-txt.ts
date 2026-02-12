@@ -7,9 +7,11 @@ import type {
   Manifest,
   Inventory,
   Imports,
+  Classifications,
   Zones,
   Components,
 } from "../schema/index.js";
+import { buildClassificationMap } from "./classify.js";
 import { deriveNextSteps } from "./next-steps.js";
 
 export function generateLlmsTxt(
@@ -17,7 +19,8 @@ export function generateLlmsTxt(
   inventory: Inventory,
   imports: Imports,
   zones: Zones,
-  components?: Components | null
+  components?: Components | null,
+  classifications?: Classifications | null,
 ): string {
   const lines: string[] = [];
 
@@ -251,11 +254,14 @@ export function generateLlmsTxt(
     }
   }
 
-  lines.push("| Path | Role | Zone |");
-  lines.push("|------|------|------|");
+  const archetypeMap = buildClassificationMap(classifications);
+
+  lines.push("| Path | Role | Archetype | Zone |");
+  lines.push("|------|------|-----------|------|");
   for (const file of inventory.files) {
     const zone = fileToZone.get(file.path) ?? "";
-    lines.push(`| \`${file.path}\` | ${file.role} | ${zone} |`);
+    const archetype = archetypeMap.get(file.path) ?? "";
+    lines.push(`| \`${file.path}\` | ${file.role} | ${archetype} | ${zone} |`);
   }
   lines.push("");
 

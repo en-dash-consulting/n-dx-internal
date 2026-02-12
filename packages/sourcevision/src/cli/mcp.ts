@@ -3,7 +3,7 @@
  * Exposes codebase analysis data via MCP protocol (stdio or HTTP).
  */
 
-import { readFileSync, existsSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -12,6 +12,7 @@ import type {
   Manifest,
   Inventory,
   Imports,
+  Classifications,
   Zones,
   Components,
 } from "../schema/index.js";
@@ -24,6 +25,7 @@ interface SourcevisionData {
   manifest: Manifest | null;
   inventory: Inventory | null;
   imports: Imports | null;
+  classifications: Classifications | null;
   zones: Zones | null;
   components: Components | null;
 }
@@ -34,6 +36,7 @@ function loadData(targetDir: string): SourcevisionData {
     manifest: null,
     inventory: null,
     imports: null,
+    classifications: null,
     zones: null,
     components: null,
   };
@@ -42,6 +45,7 @@ function loadData(targetDir: string): SourcevisionData {
     { key: "manifest", file: DATA_FILES.manifest },
     { key: "inventory", file: DATA_FILES.inventory },
     { key: "imports", file: DATA_FILES.imports },
+    { key: "classifications", file: DATA_FILES.classifications },
     { key: "zones", file: DATA_FILES.zones },
     { key: "components", file: DATA_FILES.components },
   ];
@@ -126,6 +130,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
       externalPackages: data.imports?.summary.totalExternal ?? 0,
       circulars: data.imports?.summary.circularCount ?? 0,
       zones: data.zones?.zones.length ?? 0,
+      classifications: data.classifications ? data.classifications.summary : null,
       components: data.components?.summary.totalComponents ?? 0,
       routeModules: data.components?.summary.totalRouteModules ?? 0,
       serverRoutes: data.components?.summary.totalServerRoutes ?? 0,
@@ -176,6 +181,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
       }
 
       const zone = data.zones?.zones.find((z) => z.files.includes(path));
+      const classification = data.classifications?.files.find((c) => c.path === path);
       const importsFrom = data.imports?.edges.filter((e) => e.from === path) ?? [];
       const importedBy = data.imports?.edges.filter((e) => e.to === path) ?? [];
       const component = data.components?.components.find((c) => c.file === path);
@@ -186,6 +192,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
           type: "text",
           text: JSON.stringify({
             file,
+            archetype: classification?.archetype ?? null,
             zone: zone ? { id: zone.id, name: zone.name } : null,
             importsFrom,
             importedBy,
@@ -311,6 +318,102 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
   );
 
   server.tool(
+    "get_classifications",
+    "Get file archetype classifications",
+    {
+      archetype: z.string().optional().describe("Filter by archetype ID (e.g., utility, entrypoint, route-handler)"),
+      path: z.string().optional().describe("Filter by file path substring"),
+    },
+    ({ archetype, path }) => {
+      const data = freshData();
+      if (!data.classifications) {
+        return { content: [{ type: "text", text: "No classifications data available. Run 'sourcevision analyze' first." }] };
+      }
+
+      let files = data.classifications.files;
+      if (archetype) {
+        files = files.filter((f) => f.archetype === archetype);
+      }
+      if (path) {
+        const q = path.toLowerCase();
+        files = files.filter((f) => f.path.toLowerCase().includes(q));
+      }
+
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            archetypes: data.classifications.archetypes.map((a) => ({ id: a.id, name: a.name })),
+            files: files.slice(0, 50),
+            total: files.length,
+            summary: data.classifications.summary,
+          }, null, 2),
+        }],
+      };
+    }
+  );
+
+  server.tool(
+    "set_file_archetype",
+    "Override the archetype classification for a file (persists to .n-dx.json)",
+    {
+      path: z.string().describe("File path (relative to project root)"),
+      archetype: z.string().describe("Archetype ID to assign (e.g., utility, route-handler, entrypoint)"),
+    },
+    ({ path, archetype }) => {
+      // Validate the file exists in inventory
+      const data = freshData();
+      const file = data.inventory?.files.find((f) => f.path === path);
+      if (!file) {
+        return { content: [{ type: "text", text: `File "${path}" not found in inventory.` }] };
+      }
+
+      // Validate archetype ID
+      const validArchetypes = data.classifications?.archetypes.map((a) => a.id) ?? [];
+      if (validArchetypes.length > 0 && !validArchetypes.includes(archetype)) {
+        return {
+          content: [{
+            type: "text",
+            text: `Unknown archetype "${archetype}". Valid archetypes: ${validArchetypes.join(", ")}`,
+          }],
+        };
+      }
+
+      // Load or create .n-dx.json
+      const configPath = join(absDir, ".n-dx.json");
+      let config: Record<string, unknown> = {};
+      if (existsSync(configPath)) {
+        try {
+          config = JSON.parse(readFileSync(configPath, "utf-8"));
+        } catch {
+          // Start fresh if corrupted
+        }
+      }
+
+      // Set the override
+      if (!config.sourcevision) config.sourcevision = {};
+      const sv = config.sourcevision as Record<string, unknown>;
+      if (!sv.archetypes) sv.archetypes = {};
+      const archetypes = sv.archetypes as Record<string, unknown>;
+      if (!archetypes.overrides) archetypes.overrides = {};
+      const overrides = archetypes.overrides as Record<string, string>;
+      overrides[path] = archetype;
+
+      writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n");
+
+      // Invalidate cache so next read picks up changes
+      cachedMtime = 0;
+
+      return {
+        content: [{
+          type: "text",
+          text: `Set archetype override: "${path}" → "${archetype}". Run 'sourcevision analyze' to apply.`,
+        }],
+      };
+    }
+  );
+
+  server.tool(
     "get_next_steps",
     "Get prioritized list of what to work on next",
     {
@@ -364,7 +467,8 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
         data.inventory,
         data.imports,
         data.zones,
-        data.components
+        data.components,
+        data.classifications,
       );
 
       return {

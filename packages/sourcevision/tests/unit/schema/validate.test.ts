@@ -5,6 +5,7 @@ import {
   validateImports,
   validateZones,
   validateComponents,
+  validateClassifications,
   validateModule,
   formatValidationErrors,
 } from "../../../src/schema/validate.js";
@@ -479,6 +480,141 @@ describe("validateComponents", () => {
   });
 });
 
+describe("validateClassifications", () => {
+  const validClassifications = {
+    archetypes: [{
+      id: "utility",
+      name: "Utility",
+      description: "Shared utility modules",
+      signals: [{ kind: "directory", pattern: "/utils/", weight: 0.8 }],
+    }],
+    files: [{
+      path: "src/utils/format.ts",
+      archetype: "utility",
+      confidence: 0.8,
+      source: "algorithmic",
+    }],
+    summary: {
+      totalClassified: 1,
+      totalUnclassified: 0,
+      byArchetype: { utility: 1 },
+      bySource: { algorithmic: 1 },
+    },
+  };
+
+  it("accepts valid classifications", () => {
+    const result = validateClassifications(validClassifications);
+    expect(result.ok).toBe(true);
+  });
+
+  it("accepts empty classifications", () => {
+    const result = validateClassifications({
+      archetypes: [],
+      files: [],
+      summary: {
+        totalClassified: 0,
+        totalUnclassified: 0,
+        byArchetype: {},
+        bySource: {},
+      },
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("accepts file with null archetype", () => {
+    const result = validateClassifications({
+      ...validClassifications,
+      files: [{
+        path: "src/unknown.ts",
+        archetype: null,
+        confidence: 0,
+        source: "algorithmic",
+      }],
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("accepts file with secondary archetypes and evidence", () => {
+    const result = validateClassifications({
+      ...validClassifications,
+      files: [{
+        path: "src/config/index.ts",
+        archetype: "entrypoint",
+        secondaryArchetypes: ["config"],
+        confidence: 0.8,
+        source: "algorithmic",
+        evidence: [{
+          archetypeId: "entrypoint",
+          signalKind: "filename",
+          detail: "filename matches pattern",
+          weight: 0.8,
+        }],
+      }],
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("accepts all valid source values", () => {
+    const sources = ["algorithmic", "llm", "user-override"];
+    for (const source of sources) {
+      const result = validateClassifications({
+        ...validClassifications,
+        files: [{ ...validClassifications.files[0], source }],
+      });
+      expect(result.ok).toBe(true);
+    }
+  });
+
+  it("rejects invalid source value", () => {
+    const result = validateClassifications({
+      ...validClassifications,
+      files: [{ ...validClassifications.files[0], source: "invalid" }],
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  it("accepts all valid signal kinds", () => {
+    const kinds = ["path", "import", "export", "filename", "directory"];
+    for (const kind of kinds) {
+      const result = validateClassifications({
+        ...validClassifications,
+        archetypes: [{
+          ...validClassifications.archetypes[0],
+          signals: [{ kind, pattern: "test", weight: 0.5 }],
+        }],
+      });
+      expect(result.ok).toBe(true);
+    }
+  });
+
+  it("rejects invalid signal kind", () => {
+    const result = validateClassifications({
+      ...validClassifications,
+      archetypes: [{
+        ...validClassifications.archetypes[0],
+        signals: [{ kind: "invalid", pattern: "test", weight: 0.5 }],
+      }],
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  it("rejects missing required fields", () => {
+    const result = validateClassifications({ archetypes: [] });
+    expect(result.ok).toBe(false);
+  });
+
+  it("accepts archetype with analysisHints", () => {
+    const result = validateClassifications({
+      ...validClassifications,
+      archetypes: [{
+        ...validClassifications.archetypes[0],
+        analysisHints: { deadExports: "skip", description: "test" },
+      }],
+    });
+    expect(result.ok).toBe(true);
+  });
+});
+
 describe("validateModule", () => {
   it("dispatches to correct validator", () => {
     const result = validateModule("manifest", {
@@ -551,6 +687,20 @@ describe("validateModule", () => {
       zones: [],
       crossings: [],
       unzoned: [],
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("dispatches classifications validation", () => {
+    const result = validateModule("classifications", {
+      archetypes: [],
+      files: [],
+      summary: {
+        totalClassified: 0,
+        totalUnclassified: 0,
+        byArchetype: {},
+        bySource: {},
+      },
     });
     expect(result.ok).toBe(true);
   });

@@ -61,6 +61,7 @@ async function enrichSingleZone(
   passNumber: number,
   passConfig: PassConfig,
   previousZone?: Zone,
+  fileArchetypes?: Map<string, string | null>,
 ): Promise<SingleZoneResult> {
   const ATTEMPT_CONFIGS = computePerZoneAttemptConfigs(zone.files.length, passNumber);
   const isFirstPass = passNumber === 1;
@@ -112,7 +113,7 @@ async function enrichSingleZone(
 ${passConfig.focus}
 
 Zone: "${zone.id}" (cohesion: ${zone.cohesion}, coupling: ${zone.coupling}, ${zone.files.length} files)
-Files: ${filesSample.map((f) => `"${f}"`).join(", ")}${entryLine}
+Files: ${filesSample.map((f) => { const a = fileArchetypes?.get(f); return a ? `"${f}" [${a}]` : `"${f}"`; }).join(", ")}${entryLine}
 ${otherContext}
 
 Boundary crossings:
@@ -135,7 +136,7 @@ Use finding types: ${passConfig.expectedTypes.join(", ")}.`;
       prompt = `You previously analyzed this zone. Here is the current state:
 
 Zone: "${zone.id}" (cohesion: ${zone.cohesion}, coupling: ${zone.coupling}, ${zone.files.length} files)
-Files: ${filesSample.map((f) => `"${f}"`).join(", ")}
+Files: ${filesSample.map((f: string) => { const a = fileArchetypes?.get(f); return a ? `"${f}" [${a}]` : `"${f}"`; }).join(", ")}
 Known insights: ${prevInsights.slice(0, maxInsights).length > 0 ? prevInsights.slice(0, maxInsights).map((i) => `"${i}"`).join("; ") : "(none)"}
 ${otherContext}
 
@@ -246,7 +247,8 @@ export async function enrichZonesPerZone(
   crossings: ZoneCrossing[],
   inventory: Inventory,
   imports: Imports,
-  previousZones?: Zones
+  previousZones?: Zones,
+  fileArchetypes?: Map<string, string | null>,
 ): Promise<PerZoneEnrichResult> {
   const prevEnrichPass = previousZones?.enrichmentPass ?? 0;
   const passNumber = prevEnrichPass + 1;
@@ -318,7 +320,7 @@ export async function enrichZonesPerZone(
         const prevZone = previousZones?.zones.find(
           (p) => p.files.length > 0 && p.files.some((f) => zone.files.includes(f))
         );
-        return enrichSingleZone(zone, zones, crossings, inventory, passNumber, passConfig, prevZone);
+        return enrichSingleZone(zone, zones, crossings, inventory, passNumber, passConfig, prevZone, fileArchetypes);
       })
     );
     results.push(...batchResults);

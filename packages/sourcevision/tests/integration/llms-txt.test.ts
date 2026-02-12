@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generateLlmsTxt } from "../../src/analyzers/llms-txt.js";
-import type { Manifest, Inventory, Imports, Zones, Components } from "../../src/schema/index.js";
+import type { Manifest, Inventory, Imports, Zones, Components, Classifications } from "../../src/schema/index.js";
 
 const manifest: Manifest = {
   schemaVersion: "1.0.0",
@@ -134,5 +134,29 @@ describe("generateLlmsTxt", () => {
   it("omits route section when no components", () => {
     const result = generateLlmsTxt(manifest, inventory, imports, zones, null);
     expect(result).not.toContain("## Route Structure");
+  });
+
+  it("works with null classifications", () => {
+    const result = generateLlmsTxt(manifest, inventory, imports, zones, null, null);
+    expect(result).toContain("## File Inventory");
+  });
+
+  it("includes archetype column when classifications provided", () => {
+    const classifications: Classifications = {
+      archetypes: [
+        { id: "entrypoint", name: "Entry Point", description: "Entry points", signals: [] },
+        { id: "utility", name: "Utility", description: "Utilities", signals: [] },
+      ],
+      files: [
+        { path: "src/index.ts", archetype: "entrypoint", confidence: 0.8, source: "algorithmic" },
+        { path: "src/utils.ts", archetype: "utility", confidence: 0.7, source: "algorithmic" },
+      ],
+      summary: { totalClassified: 2, totalUnclassified: 0, byArchetype: { entrypoint: 1, utility: 1 }, bySource: { algorithmic: 2 } },
+    };
+
+    const result = generateLlmsTxt(manifest, inventory, imports, zones, null, classifications);
+    expect(result).toContain("Archetype");
+    expect(result).toContain("entrypoint");
+    expect(result).toContain("utility");
   });
 });

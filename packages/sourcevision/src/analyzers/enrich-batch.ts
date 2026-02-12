@@ -146,6 +146,7 @@ export async function enrichBatch(
   batchIndex: number,
   totalBatches: number,
   enrichedNames?: Map<string, string>,
+  fileArchetypes?: Map<string, string | null>,
 ): Promise<BatchResult | null | { authError: true }> {
   const isFirstPass = passNumber === 1;
   const batchFiles = batchZones.reduce((sum, z) => sum + z.files.length, 0);
@@ -188,8 +189,8 @@ export async function enrichBatch(
       .join("\n");
 
     const prompt = isFirstPass
-      ? buildFirstPassPrompt(batchZones, config, otherContext, priorNames, crossingLines, globalPromptNote, passConfig)
-      : buildLaterPassPrompt(batchZones, config, otherContext, crossingLines, passNumber, passConfig, previousZones, globalPromptNote);
+      ? buildFirstPassPrompt(batchZones, config, otherContext, priorNames, crossingLines, globalPromptNote, passConfig, fileArchetypes)
+      : buildLaterPassPrompt(batchZones, config, otherContext, crossingLines, passNumber, passConfig, previousZones, globalPromptNote, fileArchetypes);
 
     const promptLevel = config.maxFiles >= 8 ? "full" : config.maxFiles > 0 ? "compact" : "minimal";
     console.log(`  [enrich]${batchLabel} Calling Claude (attempt ${attempt + 1}/${ATTEMPT_CONFIGS.length}, ${promptLevel} prompt)...`);
@@ -308,6 +309,12 @@ interface AttemptConfig {
   maxCrossings: number;
 }
 
+function formatFileLabel(f: string, archetypes?: Map<string, string | null>): string {
+  if (!archetypes?.size) return `"${f}"`;
+  const arch = archetypes.get(f);
+  return arch ? `"${f}" [${arch}]` : `"${f}"`;
+}
+
 function buildFirstPassPrompt(
   batchZones: Zone[],
   config: AttemptConfig,
@@ -316,6 +323,7 @@ function buildFirstPassPrompt(
   crossingLines: string,
   globalPromptNote: string,
   passConfig: PassConfig,
+  fileArchetypes?: Map<string, string | null>,
 ): string {
   if (config.maxFiles > 0) {
     const zoneList = batchZones
@@ -327,7 +335,7 @@ function buildFirstPassPrompt(
         const entryLine = config.maxFiles >= 8
           ? `\n  entryPoints: ${z.entryPoints.map((f) => `"${f}"`).join(", ") || "none"}`
           : "";
-        return `- algorithmicId: "${z.id}" (cohesion: ${z.cohesion}, coupling: ${z.coupling}, ${z.files.length} files)\n  files: ${filesSample.map((f) => `"${f}"`).join(", ")}${entryLine}`;
+        return `- algorithmicId: "${z.id}" (cohesion: ${z.cohesion}, coupling: ${z.coupling}, ${z.files.length} files)\n  files: ${filesSample.map((f) => formatFileLabel(f, fileArchetypes)).join(", ")}${entryLine}`;
       })
       .join("\n");
 
@@ -389,6 +397,7 @@ function buildLaterPassPrompt(
   passConfig: PassConfig,
   previousZones: Zones | undefined,
   globalPromptNote: string,
+  fileArchetypes?: Map<string, string | null>,
 ): string {
   const prevZones = previousZones?.zones ?? [];
   const prevGlobal = previousZones?.insights ?? [];
@@ -405,7 +414,7 @@ function buildLaterPassPrompt(
           z.files.length > config.maxFiles + 2
             ? [...z.files.slice(0, config.maxFiles), `... and ${z.files.length - config.maxFiles} more`]
             : z.files;
-        return `- "${prev?.id ?? z.id}" (cohesion: ${z.cohesion}, coupling: ${z.coupling}, ${z.files.length} files)\n  files: ${filesSample.map((f) => `"${f}"`).join(", ")}\n  known insights: ${prevInsights.slice(0, maxInsights).length > 0 ? prevInsights.slice(0, maxInsights).map((i) => `"${i}"`).join("; ") : "(none)"}`;
+        return `- "${prev?.id ?? z.id}" (cohesion: ${z.cohesion}, coupling: ${z.coupling}, ${z.files.length} files)\n  files: ${filesSample.map((f) => formatFileLabel(f, fileArchetypes)).join(", ")}\n  known insights: ${prevInsights.slice(0, maxInsights).length > 0 ? prevInsights.slice(0, maxInsights).map((i) => `"${i}"`).join("; ") : "(none)"}`;
       })
       .join("\n");
 

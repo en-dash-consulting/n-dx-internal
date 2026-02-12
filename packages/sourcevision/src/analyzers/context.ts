@@ -7,9 +7,11 @@ import type {
   Manifest,
   Inventory,
   Imports,
+  Classifications,
   Zones,
   Components,
 } from "../schema/index.js";
+import { buildClassificationMap } from "./classify.js";
 import { deriveNextSteps } from "./next-steps.js";
 
 export function generateContext(
@@ -17,7 +19,8 @@ export function generateContext(
   inventory: Inventory,
   imports: Imports,
   zones: Zones,
-  components?: Components | null
+  components?: Components | null,
+  classifications?: Classifications | null,
 ): string {
   const lines: string[] = [];
   const projectName = manifest.targetPath.split("/").pop() || "project";
@@ -57,6 +60,8 @@ export function generateContext(
 
   // ── Zones ───────────────────────────────────────────────────────────────
 
+  const archetypeMap = buildClassificationMap(classifications);
+
   if (zones.zones.length > 0) {
     lines.push("<zones>");
     lines.push("");
@@ -67,8 +72,11 @@ export function generateContext(
       if (zone.description) {
         lines.push(`  ${zone.description}`);
       }
-      // Condensed file list
-      const fileList = zone.files.slice(0, 10).join(", ");
+      // Condensed file list with archetype labels
+      const fileList = zone.files.slice(0, 10).map((f) => {
+        const arch = archetypeMap.get(f);
+        return arch ? `${f} [${arch}]` : f;
+      }).join(", ");
       const more = zone.files.length > 10 ? ` +${zone.files.length - 10}` : "";
       lines.push(`  files: ${fileList}${more}`);
     }

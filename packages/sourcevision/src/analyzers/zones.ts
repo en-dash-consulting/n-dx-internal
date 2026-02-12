@@ -836,7 +836,8 @@ async function applyEnrichment(
   inventory: Inventory,
   validPrevious: Zones | undefined,
   enrich: boolean,
-  perZone: boolean
+  perZone: boolean,
+  fileArchetypes?: Map<string, string | null>,
 ): Promise<EnrichmentResult> {
   let finalZones = expandedZones;
   let aiZoneInsights = new Map<string, string[]>();
@@ -868,7 +869,7 @@ async function applyEnrichment(
 
     if (perZone) {
       const result = await enrichZonesPerZone(
-        expandedZones, preCrossings, inventory, imports, validPrevious
+        expandedZones, preCrossings, inventory, imports, validPrevious, fileArchetypes,
       );
       finalZones = result.zones;
       aiZoneInsights = result.newZoneInsights;
@@ -878,7 +879,7 @@ async function applyEnrichment(
       enrichTokenUsage = result.tokenUsage;
     } else {
       const result = await enrichZonesWithAI(
-        expandedZones, preCrossings, inventory, imports, validPrevious
+        expandedZones, preCrossings, inventory, imports, validPrevious, fileArchetypes,
       );
       finalZones = result.zones;
       aiZoneInsights = result.newZoneInsights;
@@ -1163,6 +1164,8 @@ export async function analyzeZones(
     subAnalyses?: SubAnalysis[];
     /** Called when structure change is detected, before AI enrichment begins. */
     onReset?: (fromPass: number, toPass: number) => void;
+    /** File archetype classifications for enrichment prompts. */
+    fileArchetypes?: Map<string, string | null>;
   }
 ): Promise<AnalyzeZonesResult> {
   const enrich = options?.enrich ?? true;
@@ -1221,7 +1224,7 @@ export async function analyzeZones(
 
   // ── AI enrichment or preserve previous ──
   const enrichResult = await applyEnrichment(
-    expandedZones, imports, inventory, validPrevious, enrich, perZone
+    expandedZones, imports, inventory, validPrevious, enrich, perZone, options?.fileArchetypes,
   );
   const { finalZones, aiZoneInsights, aiGlobalInsights, aiFindings,
     enrichmentPass, metaUpdatedFindings, enrichTokenUsage } = enrichResult;

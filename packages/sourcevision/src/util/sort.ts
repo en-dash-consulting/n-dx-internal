@@ -11,6 +11,8 @@ import type {
   ZoneCrossing,
   Inventory,
   Imports,
+  Classifications,
+  FileClassification,
   Zones,
   Finding,
   ComponentDefinition,
@@ -123,6 +125,23 @@ export function sortZonesData(zones: Zones): Zones {
     ...(zones.structureHash ? { structureHash: zones.structureHash } : {}),
     ...(zones.zoneContentHashes ? { zoneContentHashes: zones.zoneContentHashes } : {}),
     ...(zones.lastReset ? { lastReset: zones.lastReset } : {}),
+  };
+}
+
+// ── Classifications sorting ──────────────────────────────────────────────────
+
+export function sortFileClassifications(
+  files: FileClassification[]
+): FileClassification[] {
+  return [...files].sort((a, b) => cmp(a.path, b.path));
+}
+
+/** Sort all arrays in a Classifications for canonical output */
+export function sortClassifications(data: Classifications): Classifications {
+  return {
+    archetypes: [...data.archetypes].sort((a, b) => cmp(a.id, b.id)),
+    files: sortFileClassifications(data.files),
+    summary: data.summary,
   };
 }
 

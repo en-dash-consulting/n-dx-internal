@@ -397,12 +397,58 @@ export interface NextStep {
   scope: string;
 }
 
+// ── Classifications ─────────────────────────────────────────────────────────
+
+export interface ArchetypeSignal {
+  kind: "path" | "import" | "export" | "filename" | "directory";
+  pattern: string;
+  weight: number;
+}
+
+export interface ArchetypeDefinition {
+  id: string;
+  name: string;
+  description: string;
+  signals: ArchetypeSignal[];
+  analysisHints?: Record<string, string>;
+}
+
+export interface ClassificationEvidence {
+  archetypeId: string;
+  signalKind: ArchetypeSignal["kind"];
+  detail: string;
+  weight: number;
+}
+
+export interface FileClassification {
+  path: string;
+  archetype: string | null;
+  secondaryArchetypes?: string[];
+  confidence: number;
+  source: "algorithmic" | "llm" | "user-override";
+  evidence?: ClassificationEvidence[];
+}
+
+export interface ClassificationsSummary {
+  totalClassified: number;
+  totalUnclassified: number;
+  byArchetype: Record<string, number>;
+  bySource: Record<string, number>;
+}
+
+export interface Classifications {
+  archetypes: ArchetypeDefinition[];
+  files: FileClassification[];
+  summary: ClassificationsSummary;
+}
+
 // ── Union type for all output modules ───────────────────────────────────────
 
 export interface SourcevisionOutput {
   manifest: Manifest;
   inventory: Inventory;
   imports: Imports;
+  classifications?: Classifications;
   zones: Zones;
   components?: Components;
   callGraph?: CallGraph;

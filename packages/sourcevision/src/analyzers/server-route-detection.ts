@@ -15,7 +15,9 @@ import type {
   ServerRoute,
   ServerRouteGroup,
   Inventory,
+  Classifications,
 } from "../schema/index.js";
+import { buildClassificationMap } from "./classify.js";
 
 const VALID_METHODS = new Set<string>(["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"]);
 const PARSEABLE = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);
@@ -153,8 +155,13 @@ export function detectHandlerName(sourceText: string): string | null {
  * Heuristic: should we scan this file for server routes?
  * Checks filename patterns and file content indicators.
  */
-function isLikelyRouteFile(filePath: string, role: string): boolean {
+function isLikelyRouteFile(filePath: string, role: string, archetypeMap?: Map<string, string | null>): boolean {
   if (role === "test" || role === "config" || role === "docs") return false;
+  // Check archetype classification first
+  if (archetypeMap?.size) {
+    const archetype = archetypeMap.get(filePath);
+    if (archetype === "route-handler") return true;
+  }
   const lower = filePath.toLowerCase();
   // File named routes-*.ts or routes/*.ts or router.ts
   if (/(?:^|\/)routes?[-./]/.test(lower)) return true;
@@ -171,13 +178,15 @@ function isLikelyRouteFile(filePath: string, role: string): boolean {
 export async function detectServerRoutes(
   targetDir: string,
   inventory: Inventory,
+  classifications?: Classifications | null,
 ): Promise<ServerRouteGroup[]> {
   const groups: ServerRouteGroup[] = [];
+  const archetypeMap = buildClassificationMap(classifications);
 
   // Find candidate files
   const candidates = inventory.files.filter((f) => {
     const ext = extname(f.path).toLowerCase();
-    return PARSEABLE.has(ext) && isLikelyRouteFile(f.path, f.role);
+    return PARSEABLE.has(ext) && isLikelyRouteFile(f.path, f.role, archetypeMap);
   });
 
   for (const file of candidates) {

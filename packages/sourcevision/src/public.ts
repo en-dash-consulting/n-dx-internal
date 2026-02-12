@@ -70,6 +70,13 @@ export type {
   ExternalImport,
   CircularDependency,
   ImportsSummary,
+  // classifications.json
+  Classifications,
+  FileClassification,
+  ClassificationEvidence,
+  ClassificationsSummary,
+  ArchetypeDefinition,
+  ArchetypeSignal,
   // zones.json
   Zones,
   Zone,

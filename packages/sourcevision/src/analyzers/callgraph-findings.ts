@@ -10,7 +10,8 @@
  * All findings are deterministic (pass 0) — no AI invocation.
  */
 
-import type { CallGraph, CallEdge, FunctionNode, Finding, Inventory, ImportEdge } from "../schema/index.js";
+import type { CallGraph, CallEdge, FunctionNode, Finding, Inventory, ImportEdge, Classifications } from "../schema/index.js";
+import { buildClassificationMap } from "./classify.js";
 
 // ── Thresholds ──────────────────────────────────────────────────────────────
 
@@ -106,6 +107,9 @@ export interface CallGraphFindingsOptions {
   inventory?: Inventory;
   /** Import edges for re-export detection (skip exports consumed by re-export chains). */
   importEdges?: ImportEdge[];
+  /** Classifications for archetype-based file role detection. When provided, archetype
+   *  lookups replace hard-coded path patterns for utility/entrypoint/types detection. */
+  classifications?: Classifications;
 }
 
 // ── Main entry point ────────────────────────────────────────────────────────
@@ -125,6 +129,9 @@ export function generateCallGraphFindings(
 
   const findings: Finding[] = [];
 
+  // Build archetype lookup map from classifications
+  const archetypeMap = buildClassificationMap(options?.classifications);
+
   // Build set of test files from inventory — test files are excluded from
   // god-function and tight-coupling detection because tests inherently call
   // many functions and are tightly coupled to their subjects by design.
@@ -134,12 +141,12 @@ export function generateCallGraphFindings(
   if (edges.length > 0) {
     findings.push(...detectGodFunctions(edges, testFiles));
     findings.push(...detectTightlyCoupledModules(edges, testFiles));
-    findings.push(...detectHubFunctions(edges));
-    findings.push(...detectHotspotFiles(edges));
+    findings.push(...detectHubFunctions(edges, archetypeMap));
+    findings.push(...detectHotspotFiles(edges, archetypeMap));
   }
 
   // Dead export detection works with or without edges
-  findings.push(...detectDeadExports(functions, edges, options?.inventory, options?.importEdges));
+  findings.push(...detectDeadExports(functions, edges, options?.inventory, options?.importEdges, archetypeMap));
 
   return findings;
 }
@@ -275,6 +282,7 @@ function detectDeadExports(
   edges: CallEdge[],
   inventory?: Inventory,
   importEdges?: ImportEdge[],
+  archetypeMap?: Map<string, string | null>,
 ): Finding[] {
   // Build set of functions that are called
   const calledFunctions = new Set<string>();
@@ -309,7 +317,7 @@ function detectDeadExports(
     if (!fn.isExported) continue;
 
     // Skip entry-point files
-    if (isEntryPointFile(fn.file)) continue;
+    if (isEntryPointFile(fn.file, archetypeMap)) continue;
 
     // Skip test files
     if (testFiles.has(fn.file)) continue;
@@ -451,18 +459,33 @@ function buildTestFileSet(inventory?: Inventory): Set<string> {
   return result;
 }
 
-function isEntryPointFile(filePath: string): boolean {
+function isEntryPointFile(filePath: string, archetypeMap?: Map<string, string | null>): boolean {
+  if (archetypeMap?.size) {
+    const archetype = archetypeMap.get(filePath);
+    if (archetype === "entrypoint") return true;
+    if (archetype) return false; // classified as something else
+  }
   return ENTRY_POINT_PATTERNS.some((p) => p.test(filePath));
 }
 
 /** Check if a file lives in a utility/infrastructure directory or is an infrastructure file. */
-function isUtilityModule(filePath: string): boolean {
+function isUtilityModule(filePath: string, archetypeMap?: Map<string, string | null>): boolean {
+  if (archetypeMap?.size) {
+    const archetype = archetypeMap.get(filePath);
+    if (archetype === "utility") return true;
+    if (archetype) return false; // classified as something else
+  }
   return UTILITY_PATH_SEGMENTS.some((seg) => filePath.includes(seg))
     || INFRASTRUCTURE_BASENAMES.some((p) => p.test(filePath));
 }
 
 /** Check if a file is a types/constants module (companion helper, not logic). */
-function isTypesFile(filePath: string): boolean {
+function isTypesFile(filePath: string, archetypeMap?: Map<string, string | null>): boolean {
+  if (archetypeMap?.size) {
+    const archetype = archetypeMap.get(filePath);
+    if (archetype === "types") return true;
+    if (archetype) return false; // classified as something else
+  }
   return TYPES_FILE_PATTERNS.some((p) => p.test(filePath));
 }
 
@@ -475,7 +498,7 @@ function isTypesFile(filePath: string): boolean {
  * Functions in utility modules (/core/, /utils/, /helpers/, /lib/) get a 2x
  * higher warning threshold — hub status is expected for foundational utilities.
  */
-function detectHubFunctions(edges: CallEdge[]): Finding[] {
+function detectHubFunctions(edges: CallEdge[], archetypeMap?: Map<string, string | null>): Finding[] {
   // Count unique caller files per callee
   const calleeFiles = new Map<string, { name: string; file: string; callerFiles: Set<string> }>();
 
@@ -499,7 +522,7 @@ function detectHubFunctions(edges: CallEdge[]): Finding[] {
     .sort((a, b) => b.callerFiles.size - a.callerFiles.size);
 
   for (const { name, file, callerFiles } of sorted.slice(0, 5)) {
-    const isUtility = isUtilityModule(file);
+    const isUtility = isUtilityModule(file, archetypeMap);
     // Utility/infrastructure modules always get "info" — being a hub is
     // expected for foundational functions like walkTree, info(), resolve, etc.
     // Non-utility modules get "warning" when above 2x threshold.
@@ -530,7 +553,7 @@ function detectHubFunctions(edges: CallEdge[]): Finding[] {
  * Utility modules (files in /core/, /utils/, /helpers/, /lib/) get a 2x higher
  * warning threshold — high fan-in is expected and correct for foundational code.
  */
-function detectHotspotFiles(edges: CallEdge[]): Finding[] {
+function detectHotspotFiles(edges: CallEdge[], archetypeMap?: Map<string, string | null>): Finding[] {
   // Count unique caller files per callee file
   const fileCallers = new Map<string, Set<string>>();
 
@@ -549,7 +572,7 @@ function detectHotspotFiles(edges: CallEdge[]): Finding[] {
     .sort((a, b) => b[1].size - a[1].size);
 
   for (const [file, callers] of sorted.slice(0, 5)) {
-    const isUtility = isUtilityModule(file);
+    const isUtility = isUtilityModule(file, archetypeMap);
     // Utility/infrastructure modules always get "info" — high fan-in is expected
     // for foundational code like tree.ts, output.ts, etc.
     // Non-utility modules get "warning" when above 2x threshold.

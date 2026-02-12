@@ -2,6 +2,7 @@ export const DATA_FILES = {
   manifest: "manifest.json",
   inventory: "inventory.json",
   imports: "imports.json",
+  classifications: "classifications.json",
   zones: "zones.json",
   components: "components.json",
   callGraph: "callgraph.json",

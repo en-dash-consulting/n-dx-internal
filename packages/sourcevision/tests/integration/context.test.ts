@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generateContext } from "../../src/analyzers/context.js";
-import type { Manifest, Inventory, Imports, Zones, Components } from "../../src/schema/index.js";
+import type { Manifest, Inventory, Imports, Zones, Components, Classifications } from "../../src/schema/index.js";
 
 const manifest: Manifest = {
   schemaVersion: "1.0.0",
@@ -176,5 +176,25 @@ describe("generateContext", () => {
     const result = generateContext(manifest, inventory, imports, zones);
     // Rough estimate: ~4 chars per token, 8K token budget = ~32K chars
     expect(result.length).toBeLessThan(32000);
+  });
+
+  it("works with null classifications", () => {
+    const result = generateContext(manifest, inventory, imports, zones, null, null);
+    expect(result).toContain("<zones>");
+  });
+
+  it("includes archetype labels when classifications provided", () => {
+    const classifications: Classifications = {
+      archetypes: [
+        { id: "entrypoint", name: "Entry Point", description: "Entry points", signals: [] },
+      ],
+      files: [
+        { path: "src/index.ts", archetype: "entrypoint", confidence: 0.8, source: "algorithmic" },
+      ],
+      summary: { totalClassified: 1, totalUnclassified: 0, byArchetype: { entrypoint: 1 }, bySource: { algorithmic: 1 } },
+    };
+
+    const result = generateContext(manifest, inventory, imports, zones, null, classifications);
+    expect(result).toContain("entrypoint");
   });
 });
