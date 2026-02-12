@@ -22,7 +22,7 @@
   <!-- Navigation -->
   <nav class="nav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
-      <a href="/landing" class="nav-brand" aria-label="n-dx home">
+      <a href="/" class="nav-brand" aria-label="n-dx home">
         <img src="/n-dx.png" width="28" height="28" alt="" aria-hidden="true" class="nav-logo" />
         <span class="nav-brand-text">n-dx</span>
       </a>
@@ -30,7 +30,7 @@
         <a href="#packages" class="nav-link">Packages</a>
         <a href="#workflow" class="nav-link">Workflow</a>
         <a href="#get-started" class="nav-link">Get Started</a>
-        <a href="/" class="nav-link nav-link-dashboard">Dashboard</a>
+        <a href="/overview" class="nav-link nav-link-dashboard">Dashboard</a>
       </div>
       <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">
         <span class="theme-icon" aria-hidden="true"></span>
@@ -193,18 +193,83 @@
       </div>
     </section>
 
-    <!-- Get Started Section (placeholder anchor for sibling task) -->
+    <!-- Get Started Section -->
     <section class="get-started" id="get-started" aria-labelledby="get-started-heading">
       <div class="section-inner">
         <h2 id="get-started-heading" class="section-heading">Get started in seconds</h2>
-        <div class="install-block">
-          <div class="install-cmd" role="group" aria-label="Installation command">
-            <code id="install-code">npx n-dx init .</code>
-            <button class="copy-btn" id="copy-btn" aria-label="Copy install command">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 10V3.5C3 2.67 3.67 2 4.5 2H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </button>
+        <p class="section-subtitle">Three commands to go from zero to autonomous development.</p>
+
+        <!-- Prerequisites -->
+        <div class="prereqs" role="list" aria-label="Prerequisites">
+          <div class="prereq" role="listitem">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6.5 11.5L2.5 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Node.js 18+</span>
           </div>
-          <p class="install-note">Then run <code>ndx plan .</code> to analyze and <code>ndx work .</code> to start executing.</p>
+          <div class="prereq" role="listitem">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6.5 11.5L2.5 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Claude API key (<code>ANTHROPIC_API_KEY</code>)</span>
+          </div>
+        </div>
+
+        <!-- Step-by-step commands -->
+        <div class="install-steps">
+          <div class="install-step">
+            <div class="install-step-header">
+              <span class="install-step-number" aria-hidden="true">1</span>
+              <span class="install-step-label">Initialize your project</span>
+            </div>
+            <div class="install-cmd" role="group" aria-label="Initialize command">
+              <code class="install-code">npx n-dx init .</code>
+              <button class="copy-btn" aria-label="Copy init command">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 10V3.5C3 2.67 3.67 2 4.5 2H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="install-step">
+            <div class="install-step-header">
+              <span class="install-step-number" aria-hidden="true">2</span>
+              <span class="install-step-label">Analyze &amp; plan</span>
+            </div>
+            <div class="install-cmd" role="group" aria-label="Plan command">
+              <code class="install-code">ndx plan --accept .</code>
+              <button class="copy-btn" aria-label="Copy plan command">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 10V3.5C3 2.67 3.67 2 4.5 2H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="install-step">
+            <div class="install-step-header">
+              <span class="install-step-number" aria-hidden="true">3</span>
+              <span class="install-step-label">Start executing</span>
+            </div>
+            <div class="install-cmd" role="group" aria-label="Work command">
+              <code class="install-code">ndx work .</code>
+              <button class="copy-btn" aria-label="Copy work command">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 10V3.5C3 2.67 3.67 2 4.5 2H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Links -->
+        <div class="get-started-links">
+          <a href="https://github.com/endash/n-dx" class="gs-link" target="_blank" rel="noopener noreferrer">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            <span>GitHub</span>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="gs-link-ext"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="https://github.com/endash/n-dx#readme" class="gs-link" target="_blank" rel="noopener noreferrer">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 3.5C2 2.67 2.67 2 3.5 2H9.38C9.77 2 10.15 2.15 10.43 2.44L13.56 5.57C13.84 5.85 14 6.23 14 6.62V12.5C14 13.33 13.33 14 12.5 14H3.5C2.67 14 2 13.33 2 12.5V3.5Z" stroke="currentColor" stroke-width="1.3"/><path d="M5 8H11M5 10.5H9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span>Documentation</span>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="gs-link-ext"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="https://www.npmjs.com/package/n-dx" class="gs-link" target="_blank" rel="noopener noreferrer">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="4" width="14" height="8" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 4.5V11.5M8 4.5V9.5M11.5 4.5V11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span>npm</span>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="gs-link-ext"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
         </div>
       </div>
     </section>

@@ -609,9 +609,75 @@ code { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; }
   text-align: center;
 }
 
-.install-block {
+.get-started .section-subtitle {
+  margin-bottom: var(--space-8);
+}
+
+/* Prerequisites */
+.prereqs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  margin-bottom: var(--space-12);
+}
+
+.prereq {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-sm);
+  color: var(--text-dim);
+}
+
+.prereq svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.prereq code {
+  font-size: var(--font-xs);
+  padding: 1px 5px;
+  background: var(--code-bg);
+  color: var(--code-text);
+  border-radius: var(--radius-sm);
+}
+
+/* Install steps */
+.install-steps {
   max-width: 480px;
-  margin: 0 auto;
+  margin: 0 auto var(--space-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.install-step-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.install-step-number {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: var(--font-xs);
+  font-weight: var(--weight-bold);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  flex-shrink: 0;
+}
+
+.install-step-label {
+  font-size: var(--font-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-dim);
 }
 
 .install-cmd {
@@ -620,9 +686,8 @@ code { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; }
   background: var(--code-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-3) var(--space-5);
   gap: var(--space-4);
-  margin-bottom: var(--space-4);
 }
 
 .install-cmd code {
@@ -656,17 +721,38 @@ code { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; }
   border-color: var(--accent-dim);
 }
 
-.install-note {
-  font-size: var(--font-base);
-  color: var(--text-dim);
-  line-height: var(--leading-relaxed);
+/* Links row */
+.get-started-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
 }
-.install-note code {
+
+.gs-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   font-size: var(--font-sm);
-  padding: 1px 5px;
-  background: var(--code-bg);
-  color: var(--code-text);
-  border-radius: var(--radius-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: color var(--transition-normal), border-color var(--transition-normal), background var(--transition-normal);
+}
+.gs-link:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--bg-surface-hover);
+}
+.gs-link-ext {
+  opacity: 0.4;
+  transition: opacity var(--transition-normal);
+}
+.gs-link:hover .gs-link-ext {
+  opacity: 0.8;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -791,6 +877,20 @@ code { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; }
 
   .package-card {
     padding: var(--space-6);
+  }
+
+  .prereqs {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .get-started-links {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gs-link {
+    justify-content: center;
   }
 }
 

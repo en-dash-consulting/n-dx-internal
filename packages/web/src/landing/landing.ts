@@ -18,20 +18,17 @@ if (themeBtn) {
   });
 }
 
-// ── Copy install command ──
-const copyBtn = document.getElementById("copy-btn");
-const installCode = document.getElementById("install-code");
-if (copyBtn && installCode) {
-  copyBtn.addEventListener("click", async () => {
-    const text = installCode.textContent || "";
+// ── Copy install commands ──
+// Supports multiple copy buttons — each copies the sibling <code> text.
+document.querySelectorAll<HTMLButtonElement>(".copy-btn").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const codeEl = btn.parentElement?.querySelector("code");
+    if (!codeEl) return;
+    const text = codeEl.textContent || "";
+    const originalLabel = btn.getAttribute("aria-label") || "Copy command";
+
     try {
       await navigator.clipboard.writeText(text);
-      copyBtn.setAttribute("data-copied", "true");
-      copyBtn.setAttribute("aria-label", "Copied!");
-      setTimeout(() => {
-        copyBtn.removeAttribute("data-copied");
-        copyBtn.setAttribute("aria-label", "Copy install command");
-      }, 2000);
     } catch {
       // Fallback for older browsers
       const ta = document.createElement("textarea");
@@ -42,11 +39,16 @@ if (copyBtn && installCode) {
       ta.select();
       document.execCommand("copy");
       ta.remove();
-      copyBtn.setAttribute("data-copied", "true");
-      setTimeout(() => copyBtn.removeAttribute("data-copied"), 2000);
     }
+
+    btn.setAttribute("data-copied", "true");
+    btn.setAttribute("aria-label", "Copied!");
+    setTimeout(() => {
+      btn.removeAttribute("data-copied");
+      btn.setAttribute("aria-label", originalLabel);
+    }, 2000);
   });
-}
+});
 
 // ── Smooth scroll for anchor links (polyfill for Safari) ──
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
