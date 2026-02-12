@@ -360,10 +360,14 @@ export function findRoutesDir(targetDir: string, files: string[]): string | null
   }
 
   // Fallback: look for files that match route patterns
+  // Skip paths under test/fixture directories — those are test fixtures, not app routes
+  const testSegments = new Set(["test", "tests", "fixtures", "__tests__", "__fixtures__"]);
   for (const file of files) {
     const parts = file.split("/");
     const routesIdx = parts.indexOf("routes");
     if (routesIdx >= 0) {
+      const pathBeforeRoutes = parts.slice(0, routesIdx);
+      if (pathBeforeRoutes.some(seg => testSegments.has(seg))) continue;
       return parts.slice(0, routesIdx + 1).join("/");
     }
   }

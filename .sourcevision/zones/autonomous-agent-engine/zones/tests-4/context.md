@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Tests 4 (`hench/tests-4`)
-Files: 28, Cohesion: 0.75, Coupling: 0.25
-Description: 28 files, primarily TypeScript
-Entry points: packages/hench/src/store/index.ts, packages/hench/src/store/project-config.ts, packages/hench/src/cli/errors.ts, packages/hench/src/cli/output.ts, packages/hench/src/store/config.ts, packages/hench/src/store/json.ts, packages/hench/src/cli/commands/run.ts
-Lines: 4701
+Files: 29, Cohesion: 0.76, Coupling: 0.24
+Description: 29 files, primarily TypeScript
+Entry points: packages/hench/src/store/index.ts, packages/hench/src/store/project-config.ts, packages/hench/src/cli/errors.ts, packages/hench/src/cli/output.ts, packages/hench/src/store/config.ts, packages/hench/src/store/json.ts
+Lines: 4868
 
 </zone>
 
@@ -25,8 +25,8 @@ packages/hench/src/cli/index.ts (TypeScript, 134 lines, source)
 packages/hench/src/cli/output.ts (TypeScript, 19 lines, source)
 packages/hench/src/store/config.ts (TypeScript, 49 lines, source)
 packages/hench/src/store/index.ts (TypeScript, 9 lines, source)
-packages/hench/src/store/json.ts (TypeScript, 3 lines, source)
-packages/hench/src/store/project-config.ts (TypeScript, 127 lines, source)
+packages/hench/src/store/json.ts (TypeScript, 2 lines, source)
+packages/hench/src/store/project-config.ts (TypeScript, 64 lines, source)
 packages/hench/src/store/runs.ts (TypeScript, 63 lines, source)
 packages/hench/tests/integration/store-roundtrip.test.ts (TypeScript, 126 lines, test)
 packages/hench/tests/unit/agent/api-auth.test.ts (TypeScript, 391 lines, test)
@@ -36,6 +36,7 @@ packages/hench/tests/unit/agent/task-failure.test.ts (TypeScript, 248 lines, tes
 packages/hench/tests/unit/cli/commands/constants.test.ts (TypeScript, 42 lines, test)
 packages/hench/tests/unit/cli/commands/run-epic-by-epic.test.ts (TypeScript, 248 lines, test)
 packages/hench/tests/unit/cli/commands/run-epic.test.ts (TypeScript, 529 lines, test)
+packages/hench/tests/unit/cli/commands/run-loop.test.ts (TypeScript, 231 lines, test)
 packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts (TypeScript, 157 lines, test)
 packages/hench/tests/unit/cli/commands/task-lookup.test.ts (TypeScript, 24 lines, test)
 packages/hench/tests/unit/cli/errors.test.ts (TypeScript, 234 lines, test)
@@ -66,12 +67,12 @@ Internal:
   packages/hench/src/cli/commands/status.ts → packages/hench/src/cli/output.ts {info, result}
   packages/hench/src/cli/commands/status.ts → packages/hench/src/store/index.ts {listRuns}
   packages/hench/src/cli/commands/task-lookup.ts → packages/hench/src/cli/commands/constants.ts {HENCH_DIR}
-  packages/hench/src/cli/commands/task-lookup.ts → packages/hench/src/store/config.ts {*}
+  packages/hench/src/cli/commands/task-lookup.ts → packages/hench/src/store/config.ts {loadConfig}
   packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/constants.ts {usage}
-  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/init.ts {*}
-  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/run.ts {*}
-  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/show.ts {*}
-  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/status.ts {*}
+  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/init.ts {cmdInit}
+  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/run.ts {cmdRun}
+  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/show.ts {cmdShow}
+  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/status.ts {cmdStatus}
   packages/hench/src/cli/index.ts → packages/hench/src/cli/errors.ts {CLIError, handleCLIError, requireHenchDir}
   packages/hench/src/cli/index.ts → packages/hench/src/cli/output.ts {setQuiet}
   packages/hench/src/store/config.ts → packages/hench/src/store/json.ts {toCanonicalJSON}
@@ -81,14 +82,14 @@ Internal:
   packages/hench/src/store/runs.ts → packages/hench/src/store/json.ts {toCanonicalJSON}
   packages/hench/tests/integration/store-roundtrip.test.ts → packages/hench/src/store/config.ts {ensureHenchDir, loadConfig, saveConfig, configExists, initConfig}
   packages/hench/tests/integration/store-roundtrip.test.ts → packages/hench/src/store/runs.ts {saveRun, loadRun, listRuns}
-  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/store/config.ts {*}
+  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/store/config.ts {loadConfig}
   packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/store/config.ts {initConfig}
-  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/store/project-config.ts {*}
-  packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/store/config.ts {*}
+  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/store/project-config.ts {loadClaudeConfig, resolveApiKey, resolveCliPath}
+  packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/store/config.ts {loadConfig}
   packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/store/config.ts {initConfig}
-  packages/hench/tests/unit/agent/loop.test.ts → packages/hench/src/store/config.ts {*}
+  packages/hench/tests/unit/agent/loop.test.ts → packages/hench/src/store/config.ts {loadConfig}
   packages/hench/tests/unit/agent/loop.test.ts → packages/hench/src/store/config.ts {ensureHenchDir, initConfig}
-  packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/store/config.ts {*}
+  packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/store/config.ts {loadConfig}
   packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/store/config.ts {initConfig}
   packages/hench/tests/unit/cli/commands/constants.test.ts → packages/hench/src/cli/commands/constants.ts {safeParseInt}
   packages/hench/tests/unit/cli/commands/constants.test.ts → packages/hench/src/cli/errors.ts {CLIError}
@@ -97,8 +98,10 @@ Internal:
   packages/hench/tests/unit/cli/commands/run-epic.test.ts → packages/hench/src/cli/commands/run.ts {listEpics, findEpicByIdOrTitle, resolveEpicFlag, collectEpicTaskIds, getEpicScopeInfo}
   packages/hench/tests/unit/cli/commands/run-epic.test.ts → packages/hench/src/cli/commands/run.ts {EpicScopeInfo}
   packages/hench/tests/unit/cli/commands/run-epic.test.ts → packages/hench/src/cli/errors.ts {EpicNotFoundError}
-  packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/cli/commands/show.ts {*}
-  packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/cli/commands/status.ts {*}
+  packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/cli/commands/run.ts {shouldContinueLoop, loopPause}
+  packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/store/config.ts {initConfig}
+  packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/cli/commands/show.ts {cmdShow}
+  packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/cli/commands/status.ts {cmdStatus}
   packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/store/config.ts {initConfig}
   packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/store/runs.ts {saveRun}
   packages/hench/tests/unit/cli/commands/task-lookup.test.ts → packages/hench/src/cli/commands/task-lookup.ts {formatTaskLine}

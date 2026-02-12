@@ -5,9 +5,9 @@
 <zone>
 
 Zone: Autonomous Agent Engine (`autonomous-agent-engine`)
-Files: 100, Cohesion: 1.00, Coupling: 0.00
-Description: AI-powered agent execution layer that orchestrates task completion through controlled coupling with Rex for legitimate task management operations.
-Lines: 19879
+Files: 99, Cohesion: 1.00, Coupling: 0.00
+Description: Task execution engine that autonomously picks PRD tasks, builds execution briefs, and manages Claude API tool-use loops.
+Lines: 19601
 
 </zone>
 
@@ -25,7 +25,7 @@ packages/hench/src/agent/lifecycle/loop.ts (TypeScript, 398 lines, source)
 packages/hench/src/agent/lifecycle/task-display.ts (TypeScript, 27 lines, source)
 packages/hench/src/agent/lifecycle/token-budget.ts (TypeScript, 34 lines, source)
 packages/hench/src/agent/lifecycle/token-usage.ts (TypeScript, 75 lines, source)
-packages/hench/src/agent/planning/brief.ts (TypeScript, 347 lines, source)
+packages/hench/src/agent/planning/brief.ts (TypeScript, 352 lines, source)
 packages/hench/src/agent/planning/prompt.ts (TypeScript, 76 lines, source)
 packages/hench/src/agent/tools.ts (TypeScript, 8 lines, source)
 packages/hench/src/cli/commands/config.ts (TypeScript, 566 lines, source)
@@ -43,31 +43,30 @@ packages/hench/src/guard/commands.ts (TypeScript, 87 lines, source)
 packages/hench/src/guard/index.ts (TypeScript, 76 lines, source)
 packages/hench/src/guard/paths.ts (TypeScript, 127 lines, source)
 packages/hench/src/prd/ops.ts (TypeScript, 55 lines, source)
-packages/hench/src/process/exec.ts (TypeScript, 27 lines, source)
+packages/hench/src/process/exec.ts (TypeScript, 29 lines, source)
 packages/hench/src/process/index.ts (TypeScript, 19 lines, source)
 packages/hench/src/public.ts (TypeScript, 90 lines, source)
 packages/hench/src/schema/index.ts (TypeScript, 42 lines, source)
 packages/hench/src/schema/templates.ts (TypeScript, 168 lines, source)
-packages/hench/src/schema/v1.ts (TypeScript, 214 lines, source)
+packages/hench/src/schema/v1.ts (TypeScript, 215 lines, source)
 packages/hench/src/schema/validate.ts (TypeScript, 152 lines, source)
-packages/hench/src/store/adjustments.ts (TypeScript, 201 lines, source)
 packages/hench/src/store/config.ts (TypeScript, 49 lines, source)
 packages/hench/src/store/index.ts (TypeScript, 9 lines, source)
-packages/hench/src/store/json.ts (TypeScript, 3 lines, source)
-packages/hench/src/store/project-config.ts (TypeScript, 127 lines, source)
+packages/hench/src/store/json.ts (TypeScript, 2 lines, source)
+packages/hench/src/store/project-config.ts (TypeScript, 64 lines, source)
 packages/hench/src/store/runs.ts (TypeScript, 63 lines, source)
-packages/hench/src/store/suggestions.ts (TypeScript, 123 lines, source)
+packages/hench/src/store/suggestions.ts (TypeScript, 98 lines, source)
 packages/hench/src/store/templates.ts (TypeScript, 153 lines, source)
 packages/hench/src/tools/dispatch.ts (TypeScript, 201 lines, source)
 packages/hench/src/tools/exec-shell.ts (TypeScript, 50 lines, source)
 packages/hench/src/tools/files.ts (TypeScript, 133 lines, source)
 packages/hench/src/tools/git.ts (TypeScript, 68 lines, source)
 packages/hench/src/tools/index.ts (TypeScript, 32 lines, source)
-packages/hench/src/tools/rex.ts (TypeScript, 205 lines, source)
+packages/hench/src/tools/rex.ts (TypeScript, 209 lines, source)
 packages/hench/src/tools/shell.ts (TypeScript, 17 lines, source)
 packages/hench/src/tools/test-runner.ts (TypeScript, 318 lines, source)
 packages/hench/src/types/index.ts (TypeScript, 41 lines, source)
-packages/hench/src/types/output.ts (TypeScript, 96 lines, source)
+packages/hench/src/types/output.ts (TypeScript, 77 lines, source)
 packages/hench/src/validation/completion.ts (TypeScript, 113 lines, source)
 packages/hench/src/validation/index.ts (TypeScript, 16 lines, source)
 packages/hench/tests/e2e/cli-init.test.ts (TypeScript, 135 lines, test)
@@ -75,7 +74,7 @@ packages/hench/tests/integration/store-roundtrip.test.ts (TypeScript, 126 lines,
 packages/hench/tests/unit/agent/adaptive.test.ts (TypeScript, 531 lines, test)
 packages/hench/tests/unit/agent/api-auth.test.ts (TypeScript, 391 lines, test)
 packages/hench/tests/unit/agent/atomic-transition.test.ts (TypeScript, 381 lines, test)
-packages/hench/tests/unit/agent/brief.test.ts (TypeScript, 1512 lines, test)
+packages/hench/tests/unit/agent/brief.test.ts (TypeScript, 1531 lines, test)
 packages/hench/tests/unit/agent/cli-retry.test.ts (TypeScript, 229 lines, test)
 packages/hench/tests/unit/agent/completion.test.ts (TypeScript, 474 lines, test)
 packages/hench/tests/unit/agent/loop.test.ts (TypeScript, 109 lines, test)
@@ -202,7 +201,7 @@ Internal:
   packages/hench/src/cli/commands/run.ts → packages/hench/src/cli/commands/constants.ts {HENCH_DIR, safeParseInt, safeParseNonNegInt}
   packages/hench/src/cli/commands/run.ts → packages/hench/src/cli/errors.ts {CLIError, EpicNotFoundError, requireClaudeCLI}
   packages/hench/src/cli/commands/run.ts → packages/hench/src/cli/output.ts {info, output}
-  packages/hench/src/cli/commands/run.ts → packages/hench/src/prd/ops.ts {*}
+  packages/hench/src/cli/commands/run.ts → packages/hench/src/prd/ops.ts {walkTree}
   packages/hench/src/cli/commands/run.ts → packages/hench/src/prd/ops.ts {resolveStore}
   packages/hench/src/cli/commands/run.ts → packages/hench/src/store/index.ts {loadConfig, listRuns}
   packages/hench/src/cli/commands/run.ts → packages/hench/src/store/project-config.ts {loadClaudeConfig, resolveCliPath}
@@ -215,20 +214,20 @@ Internal:
   packages/hench/src/cli/commands/status.ts → packages/hench/src/cli/output.ts {info, result}
   packages/hench/src/cli/commands/status.ts → packages/hench/src/store/index.ts {listRuns}
   packages/hench/src/cli/commands/task-lookup.ts → packages/hench/src/cli/commands/constants.ts {HENCH_DIR}
-  packages/hench/src/cli/commands/task-lookup.ts → packages/hench/src/store/config.ts {*}
+  packages/hench/src/cli/commands/task-lookup.ts → packages/hench/src/store/config.ts {loadConfig}
   packages/hench/src/cli/commands/template.ts → packages/hench/src/cli/errors.ts {CLIError}
   packages/hench/src/cli/commands/template.ts → packages/hench/src/cli/output.ts {info, result}
   packages/hench/src/cli/commands/template.ts → packages/hench/src/schema/index.ts {validateConfig, formatValidationErrors}
   packages/hench/src/cli/commands/template.ts → packages/hench/src/schema/templates.ts {WorkflowTemplate}
   packages/hench/src/cli/commands/template.ts → packages/hench/src/store/config.ts {loadConfig, saveConfig}
   packages/hench/src/cli/commands/template.ts → packages/hench/src/store/templates.ts {listTemplates, getTemplate, saveTemplate, deleteTemplate, applyTemplate, isValidTemplateId}
-  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/config.ts {*}
+  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/config.ts {cmdConfig}
   packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/constants.ts {usage}
-  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/init.ts {*}
-  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/run.ts {*}
-  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/show.ts {*}
-  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/status.ts {*}
-  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/template.ts {*}
+  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/init.ts {cmdInit}
+  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/run.ts {cmdRun}
+  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/show.ts {cmdShow}
+  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/status.ts {cmdStatus}
+  packages/hench/src/cli/index.ts → packages/hench/src/cli/commands/template.ts {cmdTemplate}
   packages/hench/src/cli/index.ts → packages/hench/src/cli/errors.ts {CLIError, handleCLIError, requireHenchDir}
   packages/hench/src/cli/index.ts → packages/hench/src/cli/output.ts {setQuiet}
   packages/hench/src/cli/output.ts → packages/hench/src/types/output.ts {setQuiet, isQuiet, info, result, section, subsection, stream, detail}
@@ -257,8 +256,6 @@ Internal:
   packages/hench/src/schema/index.ts → packages/hench/src/schema/validate.ts {HenchConfigSchema, RunRecordSchema, validateConfig, validateRunRecord, formatValidationErrors}
   packages/hench/src/schema/index.ts → packages/hench/src/schema/validate.ts {ValidationResult}
   packages/hench/src/schema/templates.ts → packages/hench/src/schema/v1.ts {HenchConfig}
-  packages/hench/src/store/adjustments.ts → packages/hench/src/agent/analysis/adaptive.ts {DEFAULT_ADAPTIVE_SETTINGS}
-  packages/hench/src/store/adjustments.ts → packages/hench/src/agent/analysis/adaptive.ts {AdaptiveSettings, WorkflowAdjustment, AdjustmentNotification}
   packages/hench/src/store/config.ts → packages/hench/src/schema/index.ts {validateConfig, DEFAULT_HENCH_CONFIG}
   packages/hench/src/store/config.ts → packages/hench/src/schema/index.ts {HenchConfig}
   packages/hench/src/store/config.ts → packages/hench/src/store/json.ts {toCanonicalJSON}
@@ -310,36 +307,36 @@ Internal:
   packages/hench/tests/unit/agent/adaptive.test.ts → packages/hench/src/agent/analysis/adaptive.ts {analyzeAdaptive, collectMetrics, getAutoApplicable, _resetIdCounter, DEFAULT_ADAPTIVE_SETTINGS}
   packages/hench/tests/unit/agent/adaptive.test.ts → packages/hench/src/agent/analysis/adaptive.ts {AdaptiveSettings}
   packages/hench/tests/unit/agent/adaptive.test.ts → packages/hench/src/schema/v1.ts {RunRecord, HenchConfig}
-  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/agent/lifecycle/cli-loop.ts {*}
-  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/agent/lifecycle/loop.ts {*}
-  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/store/config.ts {*}
+  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/agent/lifecycle/cli-loop.ts {cliLoop}
+  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/agent/lifecycle/loop.ts {agentLoop}
+  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/store/config.ts {loadConfig}
   packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/store/config.ts {initConfig}
-  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/store/project-config.ts {*}
-  packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/agent/lifecycle/cli-loop.ts {*}
-  packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/agent/lifecycle/loop.ts {*}
-  packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/store/config.ts {*}
+  packages/hench/tests/unit/agent/api-auth.test.ts → packages/hench/src/store/project-config.ts {loadClaudeConfig, resolveApiKey, resolveCliPath}
+  packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/agent/lifecycle/cli-loop.ts {cliLoop}
+  packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/agent/lifecycle/loop.ts {agentLoop}
+  packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/store/config.ts {loadConfig}
   packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/store/config.ts {initConfig}
   packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/tools/rex.ts {toolRexUpdateStatus}
   packages/hench/tests/unit/agent/brief.test.ts → packages/hench/src/agent/planning/brief.ts {formatTaskBrief, assembleTaskBrief, getActionableTasks, TaskNotActionableError, collectEpicTaskIds}
   packages/hench/tests/unit/agent/brief.test.ts → packages/hench/src/schema/v1.ts {TaskBrief}
   packages/hench/tests/unit/agent/cli-retry.test.ts → packages/hench/src/agent/lifecycle/cli-loop.ts {isTransientError, computeDelay, buildRetryNotice}
-  packages/hench/tests/unit/agent/completion.test.ts → packages/hench/src/agent/completion.ts {*}
-  packages/hench/tests/unit/agent/loop.test.ts → packages/hench/src/agent/lifecycle/loop.ts {*}
-  packages/hench/tests/unit/agent/loop.test.ts → packages/hench/src/store/config.ts {*}
+  packages/hench/tests/unit/agent/completion.test.ts → packages/hench/src/agent/completion.ts {validateCompletion, formatValidationResult}
+  packages/hench/tests/unit/agent/loop.test.ts → packages/hench/src/agent/lifecycle/loop.ts {agentLoop}
+  packages/hench/tests/unit/agent/loop.test.ts → packages/hench/src/store/config.ts {loadConfig}
   packages/hench/tests/unit/agent/loop.test.ts → packages/hench/src/store/config.ts {ensureHenchDir, initConfig}
   packages/hench/tests/unit/agent/prompt.test.ts → packages/hench/src/agent/planning/prompt.ts {buildSystemPrompt}
   packages/hench/tests/unit/agent/prompt.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
   packages/hench/tests/unit/agent/prompt.test.ts → packages/hench/src/schema/v1.ts {TaskBriefProject}
-  packages/hench/tests/unit/agent/review.test.ts → packages/hench/src/agent/analysis/review.ts {*}
-  packages/hench/tests/unit/agent/stuck.test.ts → packages/hench/src/agent/analysis/stuck.ts {*}
+  packages/hench/tests/unit/agent/review.test.ts → packages/hench/src/agent/analysis/review.ts {collectReviewDiff, promptReview, revertChanges}
+  packages/hench/tests/unit/agent/stuck.test.ts → packages/hench/src/agent/analysis/stuck.ts {countRecentFailures, getStuckTaskIds, isStuckTask}
   packages/hench/tests/unit/agent/stuck.test.ts → packages/hench/src/schema/v1.ts {RunRecord}
   packages/hench/tests/unit/agent/summary.test.ts → packages/hench/src/agent/analysis/summary.ts {buildRunSummary}
   packages/hench/tests/unit/agent/summary.test.ts → packages/hench/src/schema/v1.ts {ToolCallRecord}
   packages/hench/tests/unit/agent/task-display.test.ts → packages/hench/src/agent/lifecycle/task-display.ts {displayTaskInfo}
   packages/hench/tests/unit/agent/task-display.test.ts → packages/hench/src/schema/index.ts {TaskBrief}
-  packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/agent/lifecycle/loop.ts {*}
+  packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/agent/lifecycle/loop.ts {agentLoop}
   packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/agent/tools.ts {*}
-  packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/store/config.ts {*}
+  packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/store/config.ts {loadConfig}
   packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/store/config.ts {initConfig}
   packages/hench/tests/unit/agent/token-budget.test.ts → packages/hench/src/agent/lifecycle/token-budget.ts {checkTokenBudget}
   packages/hench/tests/unit/agent/token-budget.test.ts → packages/hench/src/agent/lifecycle/token-budget.ts {TokenBudgetResult}
@@ -362,12 +359,12 @@ Internal:
   packages/hench/tests/unit/cli/commands/run-epic.test.ts → packages/hench/src/cli/commands/run.ts {listEpics, findEpicByIdOrTitle, resolveEpicFlag, collectEpicTaskIds, getEpicScopeInfo}
   packages/hench/tests/unit/cli/commands/run-epic.test.ts → packages/hench/src/cli/commands/run.ts {EpicScopeInfo}
   packages/hench/tests/unit/cli/commands/run-epic.test.ts → packages/hench/src/cli/errors.ts {EpicNotFoundError}
-  packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/cli/commands/run.ts {*}
-  packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/schema/v1.ts {*}
-  packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/schema/validate.ts {*}
+  packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/cli/commands/run.ts {shouldContinueLoop, loopPause}
+  packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
+  packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/schema/validate.ts {validateConfig}
   packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/store/config.ts {initConfig}
-  packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/cli/commands/show.ts {*}
-  packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/cli/commands/status.ts {*}
+  packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/cli/commands/show.ts {cmdShow}
+  packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/cli/commands/status.ts {cmdStatus}
   packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/schema/index.ts {RunRecord}
   packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/store/config.ts {initConfig}
   packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts → packages/hench/src/store/runs.ts {saveRun}
@@ -408,23 +405,26 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[suggestion] [info] Large test suite structure across unit/integration/e2e could benefit from test utility consolidation to reduce maintenance overhead
+[suggestion] [info] New analytics.ts module in rex/core may indicate evolving analytics responsibilities that should be clearly scoped vs web dashboard analytics
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Comprehensive agent lifecycle management with adaptive analysis and workflow orchestration
-- Gateway pattern in prd/ops.ts properly isolates cross-package imports from rex
-- Extensive test coverage across unit, integration, and e2e levels demonstrates mature engineering practices
-- Perfect cohesion (1.0) indicates well-structured internal dependencies and clear functional boundaries
-- Gateway isolation in prd/ops.ts demonstrates controlled cross-package dependency management
-- Agent lifecycle management creates execution boundary between orchestration and domain logic
-- Single gateway module (prd/ops.ts) successfully concentrates all rex dependencies into auditable surface
-- Process execution abstraction successfully promoted from hench to foundation layer, eliminating code duplication
-- Agent lifecycle complexity (adaptive analysis, workflow orchestration, review cycles) suggests potential for sub-zone decomposition as system scales
-- Large test suite structure across unit/integration/e2e could benefit from test utility consolidation to reduce maintenance overhead
+- Implements sophisticated agent lifecycle management with adaptive workflow adjustments
+- Uses gateway pattern to minimize cross-package coupling while accessing rex functions
+- Comprehensive task validation and completion verification with post-run testing
+- Excellent architectural isolation with perfect cohesion, demonstrating well-structured agent implementation
+- Gateway module pattern (prd/ops.ts) successfully isolates cross-package dependencies
+- Rich analytics and adaptive workflow capabilities indicate mature agent architecture
+- Single-direction cross-domain dependency through explicit gateway module maintains DAG invariant
+- Gateway pattern successfully isolates 8 rex function re-exports from 14+ potential scattered imports
+- Type-only imports excluded from gateway pattern to minimize runtime coupling surface
+- Gateway module (prd/ops.ts) successfully implements controlled cross-package dependency with explicit audit trail
+- New analytics module suggests expanding beyond task execution into PRD analysis and reporting capabilities
+- New analytics.ts module in rex/core may indicate evolving analytics responsibilities that should be clearly scoped vs web dashboard analytics
+- [call graph] 1983 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>
 
@@ -432,10 +432,10 @@ Internal:
 
 This zone has 6 sub-zone(s):
 
-- **Tests** (`hench/tests`): 43 files, cohesion 0.79, coupling 0.21
+- **Tests** (`hench/tests`): 41 files, cohesion 0.78, coupling 0.22
 - **Tests 2** (`hench/tests-2`): 13 files, cohesion 0.65, coupling 0.35
 - **Tests 3** (`hench/tests-3`): 11 files, cohesion 0.69, coupling 0.31
-- **Tests 4** (`hench/tests-4`): 28 files, cohesion 0.75, coupling 0.25
+- **Tests 4** (`hench/tests-4`): 29 files, cohesion 0.76, coupling 0.24
 - **Store** (`hench/store`): 2 files, cohesion 1, coupling 0
 - **Tools** (`hench/tools`): 3 files, cohesion 0.5, coupling 0.5
 

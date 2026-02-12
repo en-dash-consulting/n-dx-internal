@@ -127,9 +127,11 @@ describe("generatePdfReport", () => {
         },
       ],
       routeTree: [],
+      serverRoutes: [],
       summary: {
         totalComponents: 3,
         totalRouteModules: 1,
+        totalServerRoutes: 0,
         totalUsageEdges: 2,
         routeConventions: { default: 1, loader: 1 },
         mostUsedComponents: [
@@ -378,9 +380,11 @@ function makeTestData(): {
       usageEdges: [],
       routeModules: [],
       routeTree: [],
+      serverRoutes: [],
       summary: {
         totalComponents: 0,
         totalRouteModules: 0,
+        totalServerRoutes: 0,
         totalUsageEdges: 0,
         routeConventions: {},
         mostUsedComponents: [],

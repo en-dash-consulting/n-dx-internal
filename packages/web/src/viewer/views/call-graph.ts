@@ -456,65 +456,13 @@ export function CallGraphView({ data, onSelect, selectedFile, selectedZone, navi
     ),
 
     // Controls bar
-    h("div", { class: "graph-search-bar", style: "display: flex; gap: 8px; align-items: center; flex-wrap: wrap;" },
-      // View mode toggle
-      h("div", { class: "call-graph-mode-toggle", style: "display: flex; gap: 2px; background: var(--bg-alt); border-radius: 6px; padding: 2px;" },
-        h("button", {
-          class: `call-graph-mode-btn${viewMode === "file" ? " active" : ""}`,
-          onClick: () => { setViewMode("file"); setFilterFile(null); setFilterZone(null); },
-          style: `padding: 4px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; background: ${viewMode === "file" ? "var(--accent)" : "transparent"}; color: ${viewMode === "file" ? "white" : "var(--text)"}`,
-        }, "Files"),
-        h("button", {
-          class: `call-graph-mode-btn${viewMode === "function" ? " active" : ""}`,
-          onClick: () => setViewMode("function"),
-          style: `padding: 4px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; background: ${viewMode === "function" ? "var(--accent)" : "transparent"}; color: ${viewMode === "function" ? "white" : "var(--text)"}`,
-        }, "Functions"),
-      ),
-
-      // Filter controls (function mode)
-      viewMode === "function" ? h("select", {
-        class: "filter-input",
-        style: "max-width: 250px; font-size: 12px;",
-        value: filterFile || filterZone || "",
-        onChange: (e: Event) => {
-          const val = (e.target as HTMLSelectElement).value;
-          if (val.startsWith("zone:")) {
-            setFilterZone(val.slice(5));
-            setFilterFile(null);
-          } else if (val) {
-            setFilterFile(val);
-            setFilterZone(null);
-          } else {
-            setFilterFile(null);
-            setFilterZone(null);
-          }
-        },
-      },
-        h("option", { value: "" }, "All functions"),
-        filterableZones.length > 0
-          ? h("optgroup", { label: "By zone" },
-              filterableZones.map((z) =>
-                h("option", { key: `zone:${z.id}`, value: `zone:${z.id}` }, z.name),
-              ),
-            )
-          : null,
-        h("optgroup", { label: "By file" },
-          filterableFiles.map((f) =>
-            h("option", { key: f, value: f }, f.split("/").pop()),
-          ),
-        ),
-      ) : null,
-
-      // Search
-      h("input", {
-        type: "text",
-        class: "filter-input",
-        placeholder: viewMode === "function" ? "Search functions..." : "Search files...",
-        value: graphSearch,
-        onInput: (e: Event) => setGraphSearch((e.target as HTMLInputElement).value),
-        style: "flex: 1; min-width: 150px;",
-      }),
-    ),
+    h(CallGraphControlsBar, {
+      viewMode, setViewMode,
+      filterFile, setFilterFile,
+      filterZone, setFilterZone,
+      filterableZones, filterableFiles,
+      graphSearch, setGraphSearch,
+    }),
 
     // Summary stats cards
     h("div", { style: "display: flex; gap: 16px; margin: 12px 0; flex-wrap: wrap;" },
@@ -604,57 +552,146 @@ export function CallGraphView({ data, onSelect, selectedFile, selectedZone, navi
         ),
 
     // Most called / most calling tables
-    h("div", { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;" },
-      // Most called
-      summary.mostCalled.length > 0
-        ? h("div", null,
-            h("h3", { style: "font-size: 14px; margin-bottom: 8px; color: var(--text);" }, "Most Called Functions"),
-            h("table", { class: "data-table", style: "width: 100%; font-size: 12px;" },
-              h("thead", null,
-                h("tr", null,
-                  h("th", { style: "text-align: left; padding: 4px 8px;" }, "Function"),
-                  h("th", { style: "text-align: left; padding: 4px 8px;" }, "File"),
-                  h("th", { style: "text-align: right; padding: 4px 8px;" }, "Callers"),
-                ),
-              ),
-              h("tbody", null,
-                summary.mostCalled.slice(0, 10).map((item, i) =>
-                  h("tr", { key: i, style: "border-top: 1px solid var(--border);" },
-                    h("td", { style: "padding: 4px 8px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, item.qualifiedName),
-                    h("td", { style: "padding: 4px 8px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, item.file.split("/").pop()),
-                    h("td", { style: "padding: 4px 8px; text-align: right; font-weight: 600;" }, String(item.callerCount)),
-                  ),
-                ),
-              ),
-            ),
-          )
-        : null,
+    h(CallGraphSummaryTables, { summary }),
+  );
+}
 
-      // Most calling
-      summary.mostCalling.length > 0
-        ? h("div", null,
-            h("h3", { style: "font-size: 14px; margin-bottom: 8px; color: var(--text);" }, "Most Complex Functions"),
-            h("table", { class: "data-table", style: "width: 100%; font-size: 12px;" },
-              h("thead", null,
-                h("tr", null,
-                  h("th", { style: "text-align: left; padding: 4px 8px;" }, "Function"),
-                  h("th", { style: "text-align: left; padding: 4px 8px;" }, "File"),
-                  h("th", { style: "text-align: right; padding: 4px 8px;" }, "Callees"),
-                ),
+// ── Extracted sub-components ──────────────────────────────────────────
+
+interface SummaryTablesProps {
+  summary: CallGraph["summary"];
+}
+
+/** Render the "Most Called" and "Most Complex" function tables. */
+function CallGraphSummaryTables({ summary }: SummaryTablesProps) {
+  return h("div", { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;" },
+    summary.mostCalled.length > 0
+      ? h("div", null,
+          h("h3", { style: "font-size: 14px; margin-bottom: 8px; color: var(--text);" }, "Most Called Functions"),
+          h("table", { class: "data-table", style: "width: 100%; font-size: 12px;" },
+            h("thead", null,
+              h("tr", null,
+                h("th", { style: "text-align: left; padding: 4px 8px;" }, "Function"),
+                h("th", { style: "text-align: left; padding: 4px 8px;" }, "File"),
+                h("th", { style: "text-align: right; padding: 4px 8px;" }, "Callers"),
               ),
-              h("tbody", null,
-                summary.mostCalling.slice(0, 10).map((item, i) =>
-                  h("tr", { key: i, style: "border-top: 1px solid var(--border);" },
-                    h("td", { style: "padding: 4px 8px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, item.qualifiedName),
-                    h("td", { style: "padding: 4px 8px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, item.file.split("/").pop()),
-                    h("td", { style: "padding: 4px 8px; text-align: right; font-weight: 600;" }, String(item.calleeCount)),
-                  ),
+            ),
+            h("tbody", null,
+              summary.mostCalled.slice(0, 10).map((item, i) =>
+                h("tr", { key: i, style: "border-top: 1px solid var(--border);" },
+                  h("td", { style: "padding: 4px 8px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, item.qualifiedName),
+                  h("td", { style: "padding: 4px 8px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, item.file.split("/").pop()),
+                  h("td", { style: "padding: 4px 8px; text-align: right; font-weight: 600;" }, String(item.callerCount)),
                 ),
               ),
             ),
+          ),
+        )
+      : null,
+
+    summary.mostCalling.length > 0
+      ? h("div", null,
+          h("h3", { style: "font-size: 14px; margin-bottom: 8px; color: var(--text);" }, "Most Complex Functions"),
+          h("table", { class: "data-table", style: "width: 100%; font-size: 12px;" },
+            h("thead", null,
+              h("tr", null,
+                h("th", { style: "text-align: left; padding: 4px 8px;" }, "Function"),
+                h("th", { style: "text-align: left; padding: 4px 8px;" }, "File"),
+                h("th", { style: "text-align: right; padding: 4px 8px;" }, "Callees"),
+              ),
+            ),
+            h("tbody", null,
+              summary.mostCalling.slice(0, 10).map((item, i) =>
+                h("tr", { key: i, style: "border-top: 1px solid var(--border);" },
+                  h("td", { style: "padding: 4px 8px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, item.qualifiedName),
+                  h("td", { style: "padding: 4px 8px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, item.file.split("/").pop()),
+                  h("td", { style: "padding: 4px 8px; text-align: right; font-weight: 600;" }, String(item.calleeCount)),
+                ),
+              ),
+            ),
+          ),
+        )
+      : null,
+  );
+}
+
+interface ControlsBarProps {
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
+  filterFile: string | null;
+  setFilterFile: (file: string | null) => void;
+  filterZone: string | null;
+  setFilterZone: (zone: string | null) => void;
+  filterableZones: Array<{ id: string; name: string }>;
+  filterableFiles: string[];
+  graphSearch: string;
+  setGraphSearch: (search: string) => void;
+}
+
+/** Render the mode toggle, filter dropdown, and search input. */
+function CallGraphControlsBar({
+  viewMode, setViewMode, filterFile, setFilterFile,
+  filterZone, setFilterZone, filterableZones, filterableFiles,
+  graphSearch, setGraphSearch,
+}: ControlsBarProps) {
+  return h("div", { class: "graph-search-bar", style: "display: flex; gap: 8px; align-items: center; flex-wrap: wrap;" },
+    // View mode toggle
+    h("div", { class: "call-graph-mode-toggle", style: "display: flex; gap: 2px; background: var(--bg-alt); border-radius: 6px; padding: 2px;" },
+      h("button", {
+        class: `call-graph-mode-btn${viewMode === "file" ? " active" : ""}`,
+        onClick: () => { setViewMode("file"); setFilterFile(null); setFilterZone(null); },
+        style: `padding: 4px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; background: ${viewMode === "file" ? "var(--accent)" : "transparent"}; color: ${viewMode === "file" ? "white" : "var(--text)"}`,
+      }, "Files"),
+      h("button", {
+        class: `call-graph-mode-btn${viewMode === "function" ? " active" : ""}`,
+        onClick: () => setViewMode("function"),
+        style: `padding: 4px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; background: ${viewMode === "function" ? "var(--accent)" : "transparent"}; color: ${viewMode === "function" ? "white" : "var(--text)"}`,
+      }, "Functions"),
+    ),
+
+    // Filter controls (function mode)
+    viewMode === "function" ? h("select", {
+      class: "filter-input",
+      style: "max-width: 250px; font-size: 12px;",
+      value: filterFile || filterZone || "",
+      onChange: (e: Event) => {
+        const val = (e.target as HTMLSelectElement).value;
+        if (val.startsWith("zone:")) {
+          setFilterZone(val.slice(5));
+          setFilterFile(null);
+        } else if (val) {
+          setFilterFile(val);
+          setFilterZone(null);
+        } else {
+          setFilterFile(null);
+          setFilterZone(null);
+        }
+      },
+    },
+      h("option", { value: "" }, "All functions"),
+      filterableZones.length > 0
+        ? h("optgroup", { label: "By zone" },
+            filterableZones.map((z) =>
+              h("option", { key: `zone:${z.id}`, value: `zone:${z.id}` }, z.name),
+            ),
           )
         : null,
-    ),
+      h("optgroup", { label: "By file" },
+        filterableFiles.map((f) =>
+          h("option", { key: f, value: f }, f.split("/").pop()),
+        ),
+      ),
+    ) : null,
+
+    // Search
+    h("input", {
+      type: "text",
+      class: "filter-input",
+      placeholder: viewMode === "function" ? "Search functions..." : "Search files...",
+      value: graphSearch,
+      onInput: (e: Event) => setGraphSearch((e.target as HTMLInputElement).value),
+      style: "flex: 1; min-width: 150px;",
+    }),
   );
 }
 

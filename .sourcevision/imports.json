@@ -1293,7 +1293,7 @@
       "to": "packages/hench/src/prd/ops.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "walkTree"
       ]
     },
     {
@@ -1404,7 +1404,7 @@
       "to": "packages/hench/src/store/config.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "loadConfig"
       ]
     },
     {
@@ -1468,7 +1468,7 @@
       "to": "packages/hench/src/cli/commands/config.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdConfig"
       ]
     },
     {
@@ -1484,7 +1484,7 @@
       "to": "packages/hench/src/cli/commands/init.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdInit"
       ]
     },
     {
@@ -1492,7 +1492,7 @@
       "to": "packages/hench/src/cli/commands/run.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdRun"
       ]
     },
     {
@@ -1500,7 +1500,7 @@
       "to": "packages/hench/src/cli/commands/show.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdShow"
       ]
     },
     {
@@ -1508,7 +1508,7 @@
       "to": "packages/hench/src/cli/commands/status.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdStatus"
       ]
     },
     {
@@ -1516,7 +1516,7 @@
       "to": "packages/hench/src/cli/commands/template.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdTemplate"
       ]
     },
     {
@@ -2283,7 +2283,7 @@
       "to": "packages/hench/src/agent/lifecycle/cli-loop.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cliLoop"
       ]
     },
     {
@@ -2291,7 +2291,7 @@
       "to": "packages/hench/src/agent/lifecycle/loop.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "agentLoop"
       ]
     },
     {
@@ -2299,7 +2299,7 @@
       "to": "packages/hench/src/store/config.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "loadConfig"
       ]
     },
     {
@@ -2315,7 +2315,9 @@
       "to": "packages/hench/src/store/project-config.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "loadClaudeConfig",
+        "resolveApiKey",
+        "resolveCliPath"
       ]
     },
     {
@@ -2323,7 +2325,7 @@
       "to": "packages/hench/src/agent/lifecycle/cli-loop.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cliLoop"
       ]
     },
     {
@@ -2331,7 +2333,7 @@
       "to": "packages/hench/src/agent/lifecycle/loop.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "agentLoop"
       ]
     },
     {
@@ -2339,7 +2341,7 @@
       "to": "packages/hench/src/store/config.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "loadConfig"
       ]
     },
     {
@@ -2393,7 +2395,8 @@
       "to": "packages/hench/src/agent/completion.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "validateCompletion",
+        "formatValidationResult"
       ]
     },
     {
@@ -2401,7 +2404,7 @@
       "to": "packages/hench/src/agent/lifecycle/loop.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "agentLoop"
       ]
     },
     {
@@ -2409,7 +2412,7 @@
       "to": "packages/hench/src/store/config.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "loadConfig"
       ]
     },
     {
@@ -2450,7 +2453,9 @@
       "to": "packages/hench/src/agent/analysis/review.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "collectReviewDiff",
+        "promptReview",
+        "revertChanges"
       ]
     },
     {
@@ -2458,7 +2463,9 @@
       "to": "packages/hench/src/agent/analysis/stuck.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "countRecentFailures",
+        "getStuckTaskIds",
+        "isStuckTask"
       ]
     },
     {
@@ -2506,7 +2513,7 @@
       "to": "packages/hench/src/agent/lifecycle/loop.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "agentLoop"
       ]
     },
     {
@@ -2522,7 +2529,7 @@
       "to": "packages/hench/src/store/config.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "loadConfig"
       ]
     },
     {
@@ -2724,7 +2731,8 @@
       "to": "packages/hench/src/cli/commands/run.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "shouldContinueLoop",
+        "loopPause"
       ]
     },
     {
@@ -2732,7 +2740,7 @@
       "to": "packages/hench/src/schema/v1.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "DEFAULT_HENCH_CONFIG"
       ]
     },
     {
@@ -2740,7 +2748,7 @@
       "to": "packages/hench/src/schema/validate.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "validateConfig"
       ]
     },
     {
@@ -2756,7 +2764,7 @@
       "to": "packages/hench/src/cli/commands/show.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdShow"
       ]
     },
     {
@@ -2764,7 +2772,7 @@
       "to": "packages/hench/src/cli/commands/status.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdStatus"
       ]
     },
     {
@@ -3612,7 +3620,7 @@
       "to": "packages/rex/src/analyze/guided.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "runGuidedSpec"
       ]
     },
     {
@@ -3620,7 +3628,9 @@
       "to": "packages/rex/src/analyze/index.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "adjustGranularity",
+        "assessGranularity",
+        "formatAssessment"
       ]
     },
     {
@@ -3658,7 +3668,10 @@
       "to": "packages/rex/src/cli/commands/chunked-review.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "formatBatchSummary",
+        "createReviewState",
+        "buildBatchRecord",
+        "runChunkedReview"
       ]
     },
     {
@@ -4002,7 +4015,7 @@
       "to": "packages/rex/src/analyze/reason.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "setClaudeConfig"
       ]
     },
     {
@@ -4010,7 +4023,8 @@
       "to": "packages/rex/src/analyze/reshape-reason.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "reasonForReshape",
+        "formatReshapeProposal"
       ]
     },
     {
@@ -4101,7 +4115,7 @@
       "to": "packages/rex/src/store/project-config.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "loadClaudeConfig"
       ]
     },
     {
@@ -4324,7 +4338,7 @@
       "to": "packages/rex/src/analyze/index.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "adjustGranularity"
       ]
     },
     {
@@ -4826,7 +4840,7 @@
       "to": "packages/rex/src/core/tree.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "findItem"
       ]
     },
     {
@@ -4858,7 +4872,7 @@
       "to": "packages/rex/src/cli/commands/adapter.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdAdapter"
       ]
     },
     {
@@ -4866,7 +4880,7 @@
       "to": "packages/rex/src/cli/commands/add.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdAdd"
       ]
     },
     {
@@ -4874,7 +4888,7 @@
       "to": "packages/rex/src/cli/commands/analyze.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdAnalyze"
       ]
     },
     {
@@ -4890,7 +4904,7 @@
       "to": "packages/rex/src/cli/commands/fix.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdFix"
       ]
     },
     {
@@ -4898,7 +4912,7 @@
       "to": "packages/rex/src/cli/commands/init.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdInit"
       ]
     },
     {
@@ -4906,7 +4920,7 @@
       "to": "packages/rex/src/cli/commands/move.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdMove"
       ]
     },
     {
@@ -4914,7 +4928,7 @@
       "to": "packages/rex/src/cli/commands/next.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdNext"
       ]
     },
     {
@@ -4922,7 +4936,7 @@
       "to": "packages/rex/src/cli/commands/prune.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdPrune"
       ]
     },
     {
@@ -4930,7 +4944,7 @@
       "to": "packages/rex/src/cli/commands/recommend.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdRecommend"
       ]
     },
     {
@@ -4938,7 +4952,7 @@
       "to": "packages/rex/src/cli/commands/report.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdReport"
       ]
     },
     {
@@ -4946,7 +4960,7 @@
       "to": "packages/rex/src/cli/commands/reshape.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdReshape"
       ]
     },
     {
@@ -4954,7 +4968,7 @@
       "to": "packages/rex/src/cli/commands/smart-add.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdSmartAdd"
       ]
     },
     {
@@ -4962,7 +4976,7 @@
       "to": "packages/rex/src/cli/commands/status.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdStatus"
       ]
     },
     {
@@ -4970,7 +4984,7 @@
       "to": "packages/rex/src/cli/commands/sync.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdSync"
       ]
     },
     {
@@ -4978,7 +4992,7 @@
       "to": "packages/rex/src/cli/commands/update.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdUpdate"
       ]
     },
     {
@@ -4986,7 +5000,7 @@
       "to": "packages/rex/src/cli/commands/usage.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdUsage"
       ]
     },
     {
@@ -4994,7 +5008,7 @@
       "to": "packages/rex/src/cli/commands/validate.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdValidate"
       ]
     },
     {
@@ -5002,7 +5016,7 @@
       "to": "packages/rex/src/cli/commands/verify.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "cmdVerify"
       ]
     },
     {
@@ -5020,7 +5034,7 @@
       "to": "packages/rex/src/cli/mcp.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "startMcpServer"
       ]
     },
     {
@@ -5230,6 +5244,33 @@
       "type": "type",
       "symbols": [
         "ItemLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/analytics.ts",
+      "to": "packages/rex/src/core/stats.ts",
+      "type": "static",
+      "symbols": [
+        "computeStats"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/analytics.ts",
+      "to": "packages/rex/src/core/stats.ts",
+      "type": "type",
+      "symbols": [
+        "TreeStats"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/analytics.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemStatus",
+        "Priority",
+        "Requirement"
       ]
     },
     {
@@ -5683,7 +5724,7 @@
       "to": "packages/rex/src/store/index.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "resolveStore"
       ]
     },
     {
@@ -5743,6 +5784,26 @@
       "type": "reexport",
       "symbols": [
         "createRexMcpServer"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/analytics.ts",
+      "type": "reexport",
+      "symbols": [
+        "computeEpicStats",
+        "computePriorityDistribution",
+        "computeRequirementsSummary"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/analytics.ts",
+      "type": "type",
+      "symbols": [
+        "EpicStats",
+        "PriorityDistribution",
+        "RequirementsSummary"
       ]
     },
     {
@@ -5829,6 +5890,25 @@
       "type": "reexport",
       "symbols": [
         "findParentResets"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/prune.ts",
+      "type": "reexport",
+      "symbols": [
+        "countSubtree",
+        "isFullyCompleted",
+        "findPrunableItems",
+        "pruneItems"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/prune.ts",
+      "type": "type",
+      "symbols": [
+        "PruneResult"
       ]
     },
     {
@@ -7992,6 +8072,14 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/components.ts",
+      "to": "packages/sourcevision/src/analyzers/server-route-detection.ts",
+      "type": "static",
+      "symbols": [
+        "detectServerRoutes"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/components.ts",
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -8001,6 +8089,7 @@
         "RouteExportKind",
         "RouteModule",
         "RouteTreeNode",
+        "ServerRouteGroup",
         "Components",
         "ComponentsSummary",
         "Inventory",
@@ -8560,6 +8649,17 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/analyzers/server-route-detection.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "HttpMethod",
+        "ServerRoute",
+        "ServerRouteGroup",
+        "Inventory"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/analyzers/token-usage.ts",
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
@@ -8624,7 +8724,8 @@
       "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
       "type": "static",
       "symbols": [
-        "deduplicateFindings"
+        "deduplicateFindings",
+        "enforceSeverityRules"
       ]
     },
     {
@@ -8746,7 +8847,8 @@
       "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
       "type": "static",
       "symbols": [
-        "deduplicateFindings"
+        "deduplicateFindings",
+        "enforceSeverityRules"
       ]
     },
     {
@@ -9097,7 +9199,7 @@
       "to": "packages/sourcevision/src/cli/mcp.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "startMcpServer"
       ]
     },
     {
@@ -9113,7 +9215,7 @@
       "to": "packages/sourcevision/src/cli/serve.ts",
       "type": "dynamic",
       "symbols": [
-        "*"
+        "startServe"
       ]
     },
     {
@@ -9825,12 +9927,21 @@
     },
     {
       "from": "packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "enforceSeverityRules"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts",
       "to": "packages/sourcevision/src/analyzers/enrich.ts",
       "type": "static",
       "symbols": [
         "enrichZonesWithAI",
         "computeAttemptConfigs",
-        "extractFindings"
+        "extractFindings",
+        "buildMetaPrompt"
       ]
     },
     {
@@ -9839,7 +9950,8 @@
       "type": "type",
       "symbols": [
         "Zone",
-        "ZoneCrossing"
+        "ZoneCrossing",
+        "Finding"
       ]
     },
     {
@@ -10310,7 +10422,17 @@
         "computeStats",
         "rexFindNextTask",
         "collectCompletedIds",
-        "computeTimestampUpdates"
+        "computeTimestampUpdates",
+        "validateMerge",
+        "previewMerge",
+        "mergeItems",
+        "countSubtree",
+        "isFullyCompleted",
+        "findPrunableItems",
+        "pruneItems",
+        "computeEpicStats",
+        "computePriorityDistribution",
+        "computeRequirementsSummary"
       ]
     },
     {
@@ -10324,7 +10446,11 @@
         "PRDItem",
         "PRDDocument",
         "TreeEntry",
-        "TreeStats"
+        "TreeStats",
+        "MergeValidation",
+        "EpicStats",
+        "PriorityDistribution",
+        "RequirementsSummary"
       ]
     },
     {
@@ -13067,7 +13193,6 @@
         "packages/web/tests/unit/viewer/tree-view.test.ts"
       ],
       "symbols": [
-        "*",
         "ComponentChildren",
         "Fragment",
         "VNode",
@@ -13102,20 +13227,25 @@
         "packages/web/src/server/mcp-deps.ts"
       ],
       "symbols": [
-        "*",
         "CHILD_LEVEL",
         "CommandExecutor",
+        "EpicStats",
         "ItemLevel",
         "ItemStatus",
         "LEVEL_HIERARCHY",
+        "MergePreview",
+        "MergeResult",
+        "MergeValidation",
         "PRDDocument",
         "PRDItem",
         "PRDStore",
         "PRIORITY_ORDER",
         "Priority",
+        "PriorityDistribution",
         "Requirement",
         "RequirementCategory",
         "RequirementValidationType",
+        "RequirementsSummary",
         "TreeEntry",
         "TreeStats",
         "VALID_LEVELS",
@@ -13126,23 +13256,34 @@
         "collectAllIds",
         "collectCompletedIds",
         "collectRequirements",
+        "computeEpicStats",
+        "computePriorityDistribution",
+        "computeRequirementsSummary",
         "computeStats",
         "computeTimestampUpdates",
+        "countSubtree",
         "createRexMcpServer",
+        "createStore",
         "findActionableTasks",
         "findAutoCompletions",
         "findItem",
         "findNextTask",
+        "findPrunableItems",
         "formatRequirementsValidation",
         "insertChild",
+        "isFullyCompleted",
         "isItemLevel",
         "isPriority",
         "isRequirementCategory",
         "isValidationType",
+        "mergeItems",
+        "previewMerge",
+        "pruneItems",
         "removeFromTree",
         "resolveStore",
         "updateInTree",
         "validateAutomatedRequirements",
+        "validateMerge",
         "walkTree"
       ]
     },
@@ -13161,7 +13302,8 @@
         "packages/sourcevision/src/analyzers/callgraph.ts",
         "packages/sourcevision/src/analyzers/components.ts",
         "packages/sourcevision/src/analyzers/imports.ts",
-        "packages/sourcevision/src/analyzers/route-detection.ts"
+        "packages/sourcevision/src/analyzers/route-detection.ts",
+        "packages/sourcevision/src/analyzers/server-route-detection.ts"
       ],
       "symbols": [
         "default"
@@ -13422,7 +13564,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 1403,
+    "totalEdges": 1413,
     "totalExternal": 16,
     "circularCount": 0,
     "circulars": [],
@@ -13504,10 +13646,10 @@
         "count": 8
       },
       {
-        "path": "packages/sourcevision/src/schema/data-files.ts",
+        "path": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
         "count": 8
       }
     ],
-    "avgImportsPerFile": 3.49
+    "avgImportsPerFile": 3.5
   }
 }

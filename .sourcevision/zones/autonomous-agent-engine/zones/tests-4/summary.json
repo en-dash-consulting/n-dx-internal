@@ -1,7 +1,7 @@
 {
   "id": "hench/tests-4",
   "name": "Tests 4",
-  "description": "28 files, primarily TypeScript",
+  "description": "29 files, primarily TypeScript",
   "files": [
     "packages/hench/src/cli/commands/constants.ts",
     "packages/hench/src/cli/commands/init.ts",
@@ -25,6 +25,7 @@
     "packages/hench/tests/unit/cli/commands/constants.test.ts",
     "packages/hench/tests/unit/cli/commands/run-epic-by-epic.test.ts",
     "packages/hench/tests/unit/cli/commands/run-epic.test.ts",
+    "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
     "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
     "packages/hench/tests/unit/cli/commands/task-lookup.test.ts",
     "packages/hench/tests/unit/cli/errors.test.ts",
@@ -38,11 +39,10 @@
     "packages/hench/src/cli/errors.ts",
     "packages/hench/src/cli/output.ts",
     "packages/hench/src/store/config.ts",
-    "packages/hench/src/store/json.ts",
-    "packages/hench/src/cli/commands/run.ts"
+    "packages/hench/src/store/json.ts"
   ],
-  "cohesion": 0.75,
-  "coupling": 0.25,
-  "fileCount": 28,
-  "lineCount": 4701
+  "cohesion": 0.76,
+  "coupling": 0.24,
+  "fileCount": 29,
+  "lineCount": 4868
 }

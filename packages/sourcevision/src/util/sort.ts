@@ -156,6 +156,7 @@ export function sortComponents(data: Components): Components {
     usageEdges: sortUsageEdges(data.usageEdges),
     routeModules: sortRouteModules(data.routeModules),
     routeTree: data.routeTree,
+    serverRoutes: data.serverRoutes,
     summary: data.summary,
   };
 }

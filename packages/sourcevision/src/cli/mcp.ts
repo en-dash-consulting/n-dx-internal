@@ -128,6 +128,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
       zones: data.zones?.zones.length ?? 0,
       components: data.components?.summary.totalComponents ?? 0,
       routeModules: data.components?.summary.totalRouteModules ?? 0,
+      serverRoutes: data.components?.summary.totalServerRoutes ?? 0,
     };
 
     return { content: [{ type: "text", text: JSON.stringify(summary, null, 2) }] };
@@ -236,6 +237,7 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
         text: JSON.stringify({
           routeTree: data.components.routeTree,
           routeModules: data.components.routeModules,
+          serverRoutes: data.components.serverRoutes,
           conventions: data.components.summary.routeConventions,
         }, null, 2),
       }],
@@ -403,8 +405,8 @@ export function createSourcevisionMcpServer(targetDir: string): McpServer {
           mimeType: "application/json",
           text: JSON.stringify(
             data.components
-              ? { routeTree: data.components.routeTree, routeModules: data.components.routeModules }
-              : { routeTree: [], routeModules: [] },
+              ? { routeTree: data.components.routeTree, routeModules: data.components.routeModules, serverRoutes: data.components.serverRoutes }
+              : { routeTree: [], routeModules: [], serverRoutes: [] },
             null,
             2
           ),

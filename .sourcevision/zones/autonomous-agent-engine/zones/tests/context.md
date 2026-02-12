@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Tests (`hench/tests`)
-Files: 43, Cohesion: 0.79, Coupling: 0.21
-Description: 43 files, primarily TypeScript
-Entry points: packages/hench/src/types/index.ts, packages/hench/src/agent/analysis/stuck.ts, packages/hench/src/agent/lifecycle/cli-loop.ts, packages/hench/src/agent/lifecycle/loop.ts, packages/hench/src/agent/planning/brief.ts, packages/hench/src/prd/ops.ts, packages/hench/src/cli/commands/config.ts, packages/hench/src/cli/commands/template.ts, packages/hench/src/types/output.ts, packages/hench/src/schema/index.ts, packages/hench/src/schema/v1.ts
-Lines: 10864
+Files: 41, Cohesion: 0.78, Coupling: 0.22
+Description: 41 files, primarily TypeScript
+Entry points: packages/hench/src/types/index.ts, packages/hench/src/agent/analysis/stuck.ts, packages/hench/src/agent/lifecycle/cli-loop.ts, packages/hench/src/agent/lifecycle/loop.ts, packages/hench/src/agent/planning/brief.ts, packages/hench/src/prd/ops.ts, packages/hench/src/cli/commands/config.ts, packages/hench/src/cli/commands/template.ts, packages/hench/src/types/output.ts, packages/hench/src/schema/index.ts, packages/hench/src/schema/v1.ts, packages/hench/src/schema/validate.ts
+Lines: 10438
 
 </zone>
 
@@ -25,7 +25,7 @@ packages/hench/src/agent/lifecycle/loop.ts (TypeScript, 398 lines, source)
 packages/hench/src/agent/lifecycle/task-display.ts (TypeScript, 27 lines, source)
 packages/hench/src/agent/lifecycle/token-budget.ts (TypeScript, 34 lines, source)
 packages/hench/src/agent/lifecycle/token-usage.ts (TypeScript, 75 lines, source)
-packages/hench/src/agent/planning/brief.ts (TypeScript, 347 lines, source)
+packages/hench/src/agent/planning/brief.ts (TypeScript, 352 lines, source)
 packages/hench/src/agent/planning/prompt.ts (TypeScript, 76 lines, source)
 packages/hench/src/cli/commands/config.ts (TypeScript, 566 lines, source)
 packages/hench/src/cli/commands/template.ts (TypeScript, 310 lines, source)
@@ -33,15 +33,14 @@ packages/hench/src/prd/ops.ts (TypeScript, 55 lines, source)
 packages/hench/src/public.ts (TypeScript, 90 lines, source)
 packages/hench/src/schema/index.ts (TypeScript, 42 lines, source)
 packages/hench/src/schema/templates.ts (TypeScript, 168 lines, source)
-packages/hench/src/schema/v1.ts (TypeScript, 214 lines, source)
+packages/hench/src/schema/v1.ts (TypeScript, 215 lines, source)
 packages/hench/src/schema/validate.ts (TypeScript, 152 lines, source)
-packages/hench/src/store/adjustments.ts (TypeScript, 201 lines, source)
 packages/hench/src/store/templates.ts (TypeScript, 153 lines, source)
 packages/hench/src/types/index.ts (TypeScript, 41 lines, source)
-packages/hench/src/types/output.ts (TypeScript, 96 lines, source)
+packages/hench/src/types/output.ts (TypeScript, 77 lines, source)
 packages/hench/tests/e2e/cli-init.test.ts (TypeScript, 135 lines, test)
 packages/hench/tests/unit/agent/adaptive.test.ts (TypeScript, 531 lines, test)
-packages/hench/tests/unit/agent/brief.test.ts (TypeScript, 1512 lines, test)
+packages/hench/tests/unit/agent/brief.test.ts (TypeScript, 1531 lines, test)
 packages/hench/tests/unit/agent/cli-retry.test.ts (TypeScript, 229 lines, test)
 packages/hench/tests/unit/agent/prompt.test.ts (TypeScript, 100 lines, test)
 packages/hench/tests/unit/agent/review.test.ts (TypeScript, 372 lines, test)
@@ -53,7 +52,6 @@ packages/hench/tests/unit/agent/token-tracking.test.ts (TypeScript, 279 lines, t
 packages/hench/tests/unit/agent/token-usage.test.ts (TypeScript, 382 lines, test)
 packages/hench/tests/unit/agent/workflow.test.ts (TypeScript, 388 lines, test)
 packages/hench/tests/unit/cli/commands/config.test.ts (TypeScript, 211 lines, test)
-packages/hench/tests/unit/cli/commands/run-loop.test.ts (TypeScript, 231 lines, test)
 packages/hench/tests/unit/schema/templates.test.ts (TypeScript, 64 lines, test)
 packages/hench/tests/unit/schema/validate.test.ts (TypeScript, 436 lines, test)
 packages/hench/tests/unit/store/templates.test.ts (TypeScript, 356 lines, test)
@@ -131,8 +129,6 @@ Internal:
   packages/hench/src/schema/index.ts → packages/hench/src/schema/validate.ts {HenchConfigSchema, RunRecordSchema, validateConfig, validateRunRecord, formatValidationErrors}
   packages/hench/src/schema/index.ts → packages/hench/src/schema/validate.ts {ValidationResult}
   packages/hench/src/schema/templates.ts → packages/hench/src/schema/v1.ts {HenchConfig}
-  packages/hench/src/store/adjustments.ts → packages/hench/src/agent/analysis/adaptive.ts {DEFAULT_ADAPTIVE_SETTINGS}
-  packages/hench/src/store/adjustments.ts → packages/hench/src/agent/analysis/adaptive.ts {AdaptiveSettings, WorkflowAdjustment, AdjustmentNotification}
   packages/hench/src/store/templates.ts → packages/hench/src/schema/templates.ts {BUILT_IN_TEMPLATES}
   packages/hench/src/store/templates.ts → packages/hench/src/schema/templates.ts {WorkflowTemplate, TemplateConfigOverlay}
   packages/hench/src/store/templates.ts → packages/hench/src/schema/v1.ts {HenchConfig}
@@ -148,8 +144,8 @@ Internal:
   packages/hench/tests/unit/agent/prompt.test.ts → packages/hench/src/agent/planning/prompt.ts {buildSystemPrompt}
   packages/hench/tests/unit/agent/prompt.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
   packages/hench/tests/unit/agent/prompt.test.ts → packages/hench/src/schema/v1.ts {TaskBriefProject}
-  packages/hench/tests/unit/agent/review.test.ts → packages/hench/src/agent/analysis/review.ts {*}
-  packages/hench/tests/unit/agent/stuck.test.ts → packages/hench/src/agent/analysis/stuck.ts {*}
+  packages/hench/tests/unit/agent/review.test.ts → packages/hench/src/agent/analysis/review.ts {collectReviewDiff, promptReview, revertChanges}
+  packages/hench/tests/unit/agent/stuck.test.ts → packages/hench/src/agent/analysis/stuck.ts {countRecentFailures, getStuckTaskIds, isStuckTask}
   packages/hench/tests/unit/agent/stuck.test.ts → packages/hench/src/schema/v1.ts {RunRecord}
   packages/hench/tests/unit/agent/summary.test.ts → packages/hench/src/agent/analysis/summary.ts {buildRunSummary}
   packages/hench/tests/unit/agent/summary.test.ts → packages/hench/src/schema/v1.ts {ToolCallRecord}
@@ -169,8 +165,6 @@ Internal:
   packages/hench/tests/unit/cli/commands/config.test.ts → packages/hench/src/cli/commands/config.ts {getConfigValue, setConfigValue, coerceValue, previewChange, formatConfigDisplay, CONFIG_FIELDS}
   packages/hench/tests/unit/cli/commands/config.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
   packages/hench/tests/unit/cli/commands/config.test.ts → packages/hench/src/schema/v1.ts {HenchConfig}
-  packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/schema/v1.ts {*}
-  packages/hench/tests/unit/cli/commands/run-loop.test.ts → packages/hench/src/schema/validate.ts {*}
   packages/hench/tests/unit/schema/templates.test.ts → packages/hench/src/schema/templates.ts {BUILT_IN_TEMPLATES, findBuiltInTemplate}
   packages/hench/tests/unit/schema/validate.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
   packages/hench/tests/unit/schema/validate.test.ts → packages/hench/src/schema/validate.ts {validateConfig, validateRunRecord, formatValidationErrors, HenchConfigSchema, RunRecordSchema}

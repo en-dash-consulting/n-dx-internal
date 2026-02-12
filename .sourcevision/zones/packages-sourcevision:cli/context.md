@@ -50,7 +50,7 @@ Internal:
   packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/commands/validate.ts {cmdValidate}
   packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/errors.ts {CLIError, handleCLIError, requireSvDir}
   packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/output.ts {setQuiet}
-  packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/serve.ts {*}
+  packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/serve.ts {startServe}
   packages/sourcevision/tests/unit/cli/errors.test.ts → packages/sourcevision/src/cli/errors.ts {CLIError, formatCLIError, handleCLIError, requireSvDir}
   packages/sourcevision/tests/unit/cli/export-pdf.test.ts → packages/sourcevision/src/cli/commands/export-pdf.ts {cmdExportPdf}
   packages/sourcevision/tests/unit/cli/export-pdf.test.ts → packages/sourcevision/src/cli/errors.ts {CLIError}
@@ -66,6 +66,6 @@ Incoming (other zones → this zone):
 
 <insights>
 
-- [call graph] 71 internal calls, 1 outgoing, 33 incoming (cohesion: 0.99, coupling: 0.01)
+- [call graph] 72 internal calls, 2 outgoing, 33 incoming (cohesion: 0.97, coupling: 0.03)
 
 </insights>

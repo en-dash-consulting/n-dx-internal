@@ -113,9 +113,11 @@ describe("generateLlmsTxt", () => {
       routeTree: [
         { file: "app/routes/_index.tsx", routePattern: "/", children: [] },
       ],
+      serverRoutes: [],
       summary: {
         totalComponents: 1,
         totalRouteModules: 1,
+        totalServerRoutes: 0,
         totalUsageEdges: 0,
         routeConventions: { loader: 1, default: 1 },
         mostUsedComponents: [],

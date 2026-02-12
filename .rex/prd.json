@@ -8199,6 +8199,39 @@
           ]
         }
       ]
+    },
+    {
+      "id": "babaf602-679b-4a79-8aaa-a0e91abd40eb",
+      "title": "Address observation issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 32 files (utility module — high fan-in expected) — high-impact module, changes may have wide ripple effects",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T23:24:42.323Z",
+      "completedAt": "2026-02-11T23:24:42.323Z"
+    },
+    {
+      "id": "484d9e56-851e-45d9-9fd0-ca2c0b5119bf",
+      "title": "Address anti-pattern issues (3 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Domain logic leakage across package boundaries - complex rex business logic (epic stats, merge operations, tree utilities) is duplicated/embedded in web package route handlers instead of being properly abstracted in rex domain layer\n- God function: CallGraphView in packages/web/src/viewer/views/call-graph.ts calls 63 unique functions — consider decomposing into smaller, focused functions\n- God function: cmdAnalyze in packages/rex/src/cli/commands/analyze.ts calls 52 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T23:24:43.694Z",
+      "completedAt": "2026-02-11T23:24:43.694Z"
+    },
+    {
+      "id": "b5ef5e82-24b4-47ff-a0f0-19c63824adfc",
+      "title": "Address suggestion issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Hub function: info in packages/rex/src/cli/output.ts is called from 20 files — changes here have wide impact, consider if responsibilities can be narrowed",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-11T23:24:45.119Z",
+      "completedAt": "2026-02-11T23:24:45.119Z"
     }
   ]
 }

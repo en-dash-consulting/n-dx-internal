@@ -14,6 +14,7 @@ import type {
   RouteExportKind,
   RouteModule,
   RouteTreeNode,
+  ServerRouteGroup,
   Components,
   ComponentsSummary,
   Inventory,
@@ -28,6 +29,7 @@ import {
   parseRoutesConfig,
   findRoutesDir,
 } from "./route-detection.js";
+import { detectServerRoutes } from "./server-route-detection.js";
 
 const JSX_EXTENSIONS = new Set([".tsx", ".jsx"]);
 const ALL_PARSEABLE = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);
@@ -607,7 +609,7 @@ export async function analyzeComponents(
     if (routesDir) {
       // Find files in the routes directory
       const routeFiles = inventory.files.filter((f) =>
-        f.path.startsWith(routesDir + "/")
+        f.path.startsWith(routesDir + "/") && f.role !== "test"
       );
 
       for (const file of routeFiles) {
@@ -698,6 +700,10 @@ export async function analyzeComponents(
   // Build route tree
   const routeTree = buildRouteTree(routeModules);
 
+  // ── Server-side API route detection ────────────────────────────────────────
+
+  const serverRoutes: ServerRouteGroup[] = await detectServerRoutes(targetDir, inventory);
+
   // ── Compute summary ───────────────────────────────────────────────────────
 
   // Usage counts per component
@@ -736,10 +742,13 @@ export async function analyzeComponents(
   }
   const layoutDepth = measureDepth(routeTree);
 
+  const totalServerRoutes = serverRoutes.reduce((sum, g) => sum + g.routes.length, 0);
+
   const summary: ComponentsSummary = {
     totalComponents: allComponents.length,
     totalRouteModules: routeModules.length,
     totalUsageEdges: usageEdges.length,
+    totalServerRoutes,
     routeConventions,
     mostUsedComponents,
     layoutDepth,
@@ -750,6 +759,7 @@ export async function analyzeComponents(
     usageEdges,
     routeModules,
     routeTree,
+    serverRoutes,
     summary,
   });
 }

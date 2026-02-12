@@ -1,7 +1,7 @@
 {
   "id": "autonomous-agent-engine",
   "name": "Autonomous Agent Engine",
-  "description": "AI-powered agent execution layer that orchestrates task completion through controlled coupling with Rex for legitimate task management operations.",
+  "description": "Task execution engine that autonomously picks PRD tasks, builds execution briefs, and manages Claude API tool-use loops.",
   "files": [
     "packages/hench/src/agent/analysis/adaptive.ts",
     "packages/hench/src/agent/analysis/review.ts",
@@ -40,7 +40,6 @@
     "packages/hench/src/schema/templates.ts",
     "packages/hench/src/schema/v1.ts",
     "packages/hench/src/schema/validate.ts",
-    "packages/hench/src/store/adjustments.ts",
     "packages/hench/src/store/config.ts",
     "packages/hench/src/store/index.ts",
     "packages/hench/src/store/json.ts",
@@ -107,6 +106,6 @@
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 100,
-  "lineCount": 19879
+  "fileCount": 99,
+  "lineCount": 19601
 }

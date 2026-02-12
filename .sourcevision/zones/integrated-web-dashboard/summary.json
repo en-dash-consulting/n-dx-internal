@@ -1,7 +1,7 @@
 {
   "id": "integrated-web-dashboard",
   "name": "Integrated Web Dashboard",
-  "description": "Full-stack web application that integrates all domain packages through filesystem-driven data consumption and provides unified dashboard with MCP server endpoints.",
+  "description": "Unified coordination facade that hosts dashboard UI, MCP HTTP endpoints, and provides filesystem-first access to all domain package data.",
   "files": [
     "packages/web/src/cli/index.ts",
     "packages/web/src/public.ts",
@@ -50,6 +50,7 @@
     "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
     "packages/web/src/viewer/components/prd-tree/status-filter.ts",
     "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+    "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
     "packages/web/src/viewer/components/prd-tree/types.ts",
     "packages/web/src/viewer/components/rex-task-link.ts",
     "packages/web/src/viewer/components/search-filter.ts",
@@ -94,6 +95,7 @@
     "packages/web/src/viewer/utils.ts",
     "packages/web/src/viewer/views/analysis.ts",
     "packages/web/src/viewer/views/architecture.ts",
+    "packages/web/src/viewer/views/call-graph.ts",
     "packages/web/src/viewer/views/files.ts",
     "packages/web/src/viewer/views/graph.ts",
     "packages/web/src/viewer/views/hench-config.ts",
@@ -131,19 +133,24 @@
     "packages/web/tests/unit/viewer/detail-panel.test.ts",
     "packages/web/tests/unit/viewer/favicon.test.ts",
     "packages/web/tests/unit/viewer/flow-diagram.test.ts",
+    "packages/web/tests/unit/viewer/graph-interaction.test.ts",
+    "packages/web/tests/unit/viewer/graph-layout.test.ts",
+    "packages/web/tests/unit/viewer/graph-zoom.test.ts",
     "packages/web/tests/unit/viewer/hench-config.test.ts",
+    "packages/web/tests/unit/viewer/label-utils.test.ts",
     "packages/web/tests/unit/viewer/prd-tree-compute.test.ts",
     "packages/web/tests/unit/viewer/prd-tree.test.ts",
     "packages/web/tests/unit/viewer/prune-diff-tree.test.ts",
     "packages/web/tests/unit/viewer/sidebar.test.ts",
     "packages/web/tests/unit/viewer/smart-add-input.test.ts",
     "packages/web/tests/unit/viewer/status-filter.test.ts",
+    "packages/web/tests/unit/viewer/task-detail-failure.test.ts",
     "packages/web/tests/unit/viewer/task-detail-requirements.test.ts",
     "packages/web/tests/unit/viewer/tree-view.test.ts"
   ],
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 137,
-  "lineCount": 44704
+  "fileCount": 144,
+  "lineCount": 48971
 }

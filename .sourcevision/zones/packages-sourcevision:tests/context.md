@@ -8,44 +8,44 @@ Zone: Tests (`packages-sourcevision:tests`)
 Files: 68, Cohesion: 0.94, Coupling: 0.06
 Description: 66 files, primarily TypeScript
 Entry points: packages/sourcevision/src/cli/commands/analyze.ts, packages/sourcevision/src/cli/mcp.ts, packages/sourcevision/src/export/pdf-report.ts, packages/sourcevision/src/schema/data-files.ts, packages/sourcevision/src/schema/index.ts, packages/sourcevision/src/schema/v1.ts
-Lines: 21637
+Lines: 23055
 
 </zone>
 
 <files>
 
-packages/sourcevision/src/analyzers/callgraph-findings.ts (TypeScript, 418 lines, source)
+packages/sourcevision/src/analyzers/callgraph-findings.ts (TypeScript, 572 lines, source)
 packages/sourcevision/src/analyzers/callgraph.ts (TypeScript, 808 lines, source)
 packages/sourcevision/src/analyzers/claude-client.ts (TypeScript, 83 lines, source)
-packages/sourcevision/src/analyzers/components.ts (TypeScript, 755 lines, source)
-packages/sourcevision/src/analyzers/context.ts (TypeScript, 207 lines, source)
+packages/sourcevision/src/analyzers/components.ts (TypeScript, 765 lines, source)
+packages/sourcevision/src/analyzers/context.ts (TypeScript, 225 lines, source)
 packages/sourcevision/src/analyzers/enrich-batch.ts (TypeScript, 455 lines, source)
-packages/sourcevision/src/analyzers/enrich-config.ts (TypeScript, 192 lines, source)
-packages/sourcevision/src/analyzers/enrich-parsing.ts (TypeScript, 382 lines, source)
+packages/sourcevision/src/analyzers/enrich-config.ts (TypeScript, 240 lines, source)
+packages/sourcevision/src/analyzers/enrich-parsing.ts (TypeScript, 456 lines, source)
 packages/sourcevision/src/analyzers/enrich-per-zone.ts (TypeScript, 368 lines, source)
 packages/sourcevision/src/analyzers/enrich.ts (TypeScript, 257 lines, source)
-packages/sourcevision/src/analyzers/imports.ts (TypeScript, 478 lines, source)
+packages/sourcevision/src/analyzers/imports.ts (TypeScript, 518 lines, source)
 packages/sourcevision/src/analyzers/index.ts (TypeScript, 28 lines, source)
 packages/sourcevision/src/analyzers/inventory.ts (TypeScript, 677 lines, source)
-packages/sourcevision/src/analyzers/llms-txt.ts (TypeScript, 250 lines, source)
+packages/sourcevision/src/analyzers/llms-txt.ts (TypeScript, 271 lines, source)
 packages/sourcevision/src/analyzers/louvain.ts (TypeScript, 470 lines, source)
 packages/sourcevision/src/analyzers/manifest.ts (TypeScript, 94 lines, source)
 packages/sourcevision/src/analyzers/next-steps.ts (TypeScript, 246 lines, source)
-packages/sourcevision/src/analyzers/route-detection.ts (TypeScript, 372 lines, source)
+packages/sourcevision/src/analyzers/route-detection.ts (TypeScript, 376 lines, source)
 packages/sourcevision/src/analyzers/token-usage.ts (TypeScript, 50 lines, source)
 packages/sourcevision/src/analyzers/workspace.ts (TypeScript, 282 lines, source)
 packages/sourcevision/src/analyzers/zone-output.ts (TypeScript, 266 lines, source)
 packages/sourcevision/src/analyzers/zones.ts (TypeScript, 1291 lines, source)
-packages/sourcevision/src/cli/commands/analyze.ts (TypeScript, 562 lines, source)
-packages/sourcevision/src/cli/mcp.ts (TypeScript, 407 lines, source)
+packages/sourcevision/src/cli/commands/analyze.ts (TypeScript, 564 lines, source)
+packages/sourcevision/src/cli/mcp.ts (TypeScript, 440 lines, source)
 packages/sourcevision/src/export/pdf-report.ts (TypeScript, 598 lines, source)
 packages/sourcevision/src/public.ts (TypeScript, 100 lines, source)
 packages/sourcevision/src/schema/data-files.ts (TypeScript, 12 lines, source)
 packages/sourcevision/src/schema/index.ts (TypeScript, 19 lines, source)
-packages/sourcevision/src/schema/v1.ts (TypeScript, 381 lines, source)
-packages/sourcevision/src/schema/validate.ts (TypeScript, 375 lines, source)
+packages/sourcevision/src/schema/v1.ts (TypeScript, 409 lines, source)
+packages/sourcevision/src/schema/validate.ts (TypeScript, 393 lines, source)
 packages/sourcevision/src/util/merge.ts (TypeScript, 186 lines, source)
-packages/sourcevision/src/util/sort.ts (TypeScript, 202 lines, source)
+packages/sourcevision/src/util/sort.ts (TypeScript, 203 lines, source)
 packages/sourcevision/tests/e2e/cli-analyze.test.ts (TypeScript, 154 lines, test)
 packages/sourcevision/tests/e2e/cli-serve.test.ts (TypeScript, 79 lines, test)
 packages/sourcevision/tests/fixtures/small-ts-project/src/config.ts (TypeScript, 4 lines, test)
@@ -56,30 +56,30 @@ packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.
 packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts (TypeScript, 7 lines, test)
 packages/sourcevision/tests/fixtures/small-ts-project/src/utils/validate.ts (TypeScript, 5 lines, test)
 packages/sourcevision/tests/integration/claude-config.test.ts (TypeScript, 229 lines, test)
-packages/sourcevision/tests/integration/context.test.ts (TypeScript, 178 lines, test)
-packages/sourcevision/tests/integration/llms-txt.test.ts (TypeScript, 136 lines, test)
+packages/sourcevision/tests/integration/context.test.ts (TypeScript, 180 lines, test)
+packages/sourcevision/tests/integration/llms-txt.test.ts (TypeScript, 138 lines, test)
 packages/sourcevision/tests/integration/pipeline.test.ts (TypeScript, 93 lines, test)
-packages/sourcevision/tests/unit/analyzers/callgraph-findings.test.ts (TypeScript, 744 lines, test)
+packages/sourcevision/tests/unit/analyzers/callgraph-findings.test.ts (TypeScript, 1305 lines, test)
 packages/sourcevision/tests/unit/analyzers/callgraph.test.ts (TypeScript, 509 lines, test)
 packages/sourcevision/tests/unit/analyzers/components.test.ts (TypeScript, 887 lines, test)
-packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts (TypeScript, 167 lines, test)
+packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts (TypeScript, 194 lines, test)
 packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts (TypeScript, 400 lines, test)
-packages/sourcevision/tests/unit/analyzers/imports.test.ts (TypeScript, 574 lines, test)
+packages/sourcevision/tests/unit/analyzers/imports.test.ts (TypeScript, 626 lines, test)
 packages/sourcevision/tests/unit/analyzers/inventory.test.ts (TypeScript, 612 lines, test)
 packages/sourcevision/tests/unit/analyzers/manifest.test.ts (TypeScript, 81 lines, test)
 packages/sourcevision/tests/unit/analyzers/next-steps.test.ts (TypeScript, 650 lines, test)
 packages/sourcevision/tests/unit/analyzers/token-usage.test.ts (TypeScript, 142 lines, test)
 packages/sourcevision/tests/unit/analyzers/workspace.test.ts (TypeScript, 419 lines, test)
 packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts (TypeScript, 486 lines, test)
-packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts (TypeScript, 582 lines, test)
+packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts (TypeScript, 862 lines, test)
 packages/sourcevision/tests/unit/analyzers/zone-insights.test.ts (TypeScript, 578 lines, test)
 packages/sourcevision/tests/unit/analyzers/zone-output.test.ts (TypeScript, 378 lines, test)
 packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts (TypeScript, 445 lines, test)
 packages/sourcevision/tests/unit/analyzers/zones-helpers.ts (TypeScript, 67 lines, test)
-packages/sourcevision/tests/unit/cli/mcp.test.ts (TypeScript, 199 lines, test)
-packages/sourcevision/tests/unit/export/pdf-report.test.ts (TypeScript, 423 lines, test)
+packages/sourcevision/tests/unit/cli/mcp.test.ts (TypeScript, 228 lines, test)
+packages/sourcevision/tests/unit/export/pdf-report.test.ts (TypeScript, 427 lines, test)
 packages/sourcevision/tests/unit/schema/data-files.test.ts (TypeScript, 42 lines, test)
-packages/sourcevision/tests/unit/schema/validate.test.ts (TypeScript, 734 lines, test)
+packages/sourcevision/tests/unit/schema/validate.test.ts (TypeScript, 744 lines, test)
 packages/sourcevision/tests/unit/util/merge.test.ts (TypeScript, 146 lines, test)
 packages/sourcevision/tests/unit/util/sort.test.ts (TypeScript, 176 lines, test)
 
@@ -93,7 +93,7 @@ Internal:
   packages/sourcevision/src/analyzers/callgraph.ts → packages/sourcevision/src/util/sort.ts {sortCallGraph}
   packages/sourcevision/src/analyzers/claude-client.ts → packages/sourcevision/src/schema/index.ts {TokenUsage}
   packages/sourcevision/src/analyzers/components.ts → packages/sourcevision/src/analyzers/route-detection.ts {ROUTE_EXPORT_NAMES, parseFileRoutePattern, buildRouteTree, findRoutesConfig, parseRoutesConfig, findRoutesDir}
-  packages/sourcevision/src/analyzers/components.ts → packages/sourcevision/src/schema/index.ts {ComponentKind, ComponentDefinition, ComponentUsageEdge, RouteExportKind, RouteModule, RouteTreeNode, Components, ComponentsSummary, Inventory, Imports}
+  packages/sourcevision/src/analyzers/components.ts → packages/sourcevision/src/schema/index.ts {ComponentKind, ComponentDefinition, ComponentUsageEdge, RouteExportKind, RouteModule, RouteTreeNode, ServerRouteGroup, Components, ComponentsSummary, Inventory, Imports}
   packages/sourcevision/src/analyzers/components.ts → packages/sourcevision/src/util/sort.ts {sortComponents}
   packages/sourcevision/src/analyzers/context.ts → packages/sourcevision/src/analyzers/next-steps.ts {deriveNextSteps}
   packages/sourcevision/src/analyzers/context.ts → packages/sourcevision/src/schema/index.ts {Manifest, Inventory, Imports, Zones, Components}
@@ -154,7 +154,7 @@ Internal:
   packages/sourcevision/src/analyzers/workspace.ts → packages/sourcevision/src/schema/index.ts {Manifest, Inventory, Zones, Zone, ZoneCrossing, SubAnalysisRef}
   packages/sourcevision/src/analyzers/zone-output.ts → packages/sourcevision/src/schema/index.ts {Inventory, Imports, Zones, Zone, ZoneCrossing, Finding, ZoneSummary}
   packages/sourcevision/src/analyzers/zone-output.ts → packages/sourcevision/src/util/sort.ts {toCanonicalJSON}
-  packages/sourcevision/src/analyzers/zones.ts → packages/sourcevision/src/analyzers/enrich-parsing.ts {deduplicateFindings}
+  packages/sourcevision/src/analyzers/zones.ts → packages/sourcevision/src/analyzers/enrich-parsing.ts {deduplicateFindings, enforceSeverityRules}
   packages/sourcevision/src/analyzers/zones.ts → packages/sourcevision/src/analyzers/enrich.ts {enrichZonesWithAI, enrichZonesPerZone}
   packages/sourcevision/src/analyzers/zones.ts → packages/sourcevision/src/analyzers/enrich.ts {EnrichResult, PerZoneEnrichResult}
   packages/sourcevision/src/analyzers/zones.ts → packages/sourcevision/src/analyzers/louvain.ts {buildUndirectedGraph, louvainPhase1, mergeBidirectionalCoupling, mergeSmallCommunities, capZoneCount}
@@ -167,7 +167,7 @@ Internal:
   packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/claude-client.ts {setClaudeConfig, getAuthMode}
   packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/components.ts {analyzeComponents}
   packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/context.ts {generateContext}
-  packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/enrich-parsing.ts {deduplicateFindings}
+  packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/enrich-parsing.ts {deduplicateFindings, enforceSeverityRules}
   packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/imports.ts {analyzeImports}
   packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/inventory.ts {analyzeInventory}
   packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/inventory.ts {InventoryResult}
@@ -248,8 +248,9 @@ Internal:
   packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts → packages/sourcevision/src/schema/index.ts {Zone}
   packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts → packages/sourcevision/tests/unit/analyzers/zones-helpers.ts {makeFileEntry, makeInventory, makeEdge, makeImports}
   packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts → packages/sourcevision/src/analyzers/claude-client.ts {callClaude}
-  packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts → packages/sourcevision/src/analyzers/enrich.ts {enrichZonesWithAI, computeAttemptConfigs, extractFindings}
-  packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts → packages/sourcevision/src/schema/index.ts {Zone, ZoneCrossing}
+  packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts → packages/sourcevision/src/analyzers/enrich-parsing.ts {enforceSeverityRules}
+  packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts → packages/sourcevision/src/analyzers/enrich.ts {enrichZonesWithAI, computeAttemptConfigs, extractFindings, buildMetaPrompt}
+  packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts → packages/sourcevision/src/schema/index.ts {Zone, ZoneCrossing, Finding}
   packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts → packages/sourcevision/tests/unit/analyzers/zones-helpers.ts {makeFileEntry, makeInventory, makeEdge, makeImports}
   packages/sourcevision/tests/unit/analyzers/zone-insights.test.ts → packages/sourcevision/src/analyzers/zones.ts {analyzeZones, generateStructuralInsights}
   packages/sourcevision/tests/unit/analyzers/zone-insights.test.ts → packages/sourcevision/src/schema/index.ts {Zone, Zones, ZoneCrossing, Finding, FindingType, ImportEdge}
@@ -284,7 +285,7 @@ Incoming (other zones → this zone):
 
 - High cohesion (0.94) — files are tightly interconnected
 - Contains 70% of project files (68/97) — subdivided into 3 sub-zones
-- [call graph] 1990 internal calls, 33 outgoing, 1 incoming (cohesion: 0.98, coupling: 0.02)
+- [call graph] 2145 internal calls, 34 outgoing, 2 incoming (cohesion: 0.98, coupling: 0.02)
 
 </insights>
 

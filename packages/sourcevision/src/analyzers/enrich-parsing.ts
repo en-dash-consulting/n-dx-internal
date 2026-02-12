@@ -222,6 +222,17 @@ const TEST_COUPLING_INDICATORS = [
 ];
 
 /**
+ * LLM findings about "missing" zones are false positives when the packages are
+ * analyzed as sub-projects (they have their own `.sourcevision/` directories).
+ * The LLM doesn't receive sub-analysis context, so it incorrectly interprets
+ * partial zone coverage as missing packages.
+ */
+const ZONE_DETECTION_ARTIFACT_INDICATORS = [
+  "missing from zone detection",
+  "not.*(?:appear|present|detected).*(?:zone|cluster)",
+];
+
+/**
  * Enforce deterministic severity rules that the LLM can't override.
  * Runs after findings are parsed to correct misclassified severities:
  *
@@ -243,6 +254,14 @@ export function enforceSeverityRules(findings: Finding[]): Finding[] {
     if (f.pass >= 1 && f.type === "anti-pattern") {
       const lower = f.text.toLowerCase();
       if (TEST_COUPLING_INDICATORS.some(p => new RegExp(p, "i").test(lower))) {
+        return { ...f, severity: "info" };
+      }
+    }
+
+    // Rule 3: Zone detection artifacts (sub-analyzed packages appear "missing") → info
+    if (f.pass >= 1 && f.severity !== "info") {
+      const lower = f.text.toLowerCase();
+      if (ZONE_DETECTION_ARTIFACT_INDICATORS.some(p => new RegExp(p, "i").test(lower))) {
         return { ...f, severity: "info" };
       }
     }

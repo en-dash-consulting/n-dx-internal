@@ -70,6 +70,14 @@ const BUILTIN_METHOD_NAMES = new Set([
 /** Path segments that identify utility/infrastructure modules where high fan-in is expected. */
 const UTILITY_PATH_SEGMENTS = ["/core/", "/utils/", "/helpers/", "/lib/"];
 
+/** Basename patterns identifying CLI/infrastructure output modules where high fan-in is expected. */
+const INFRASTRUCTURE_BASENAMES = [
+  /(?:^|\/)output\.[tj]sx?$/,
+  /(?:^|\/)logger\.[tj]sx?$/,
+  /(?:^|\/)logging\.[tj]sx?$/,
+  /(?:^|\/)errors\.[tj]sx?$/,
+];
+
 /** Basename patterns that identify types/constants files where unidirectional coupling is expected. */
 const TYPES_FILE_PATTERNS = [
   /(?:^|\/)types\.[tj]sx?$/,
@@ -447,9 +455,10 @@ function isEntryPointFile(filePath: string): boolean {
   return ENTRY_POINT_PATTERNS.some((p) => p.test(filePath));
 }
 
-/** Check if a file lives in a utility/infrastructure directory. */
+/** Check if a file lives in a utility/infrastructure directory or is an infrastructure file. */
 function isUtilityModule(filePath: string): boolean {
-  return UTILITY_PATH_SEGMENTS.some((seg) => filePath.includes(seg));
+  return UTILITY_PATH_SEGMENTS.some((seg) => filePath.includes(seg))
+    || INFRASTRUCTURE_BASENAMES.some((p) => p.test(filePath));
 }
 
 /** Check if a file is a types/constants module (companion helper, not logic). */
@@ -491,13 +500,12 @@ function detectHubFunctions(edges: CallEdge[]): Finding[] {
 
   for (const { name, file, callerFiles } of sorted.slice(0, 5)) {
     const isUtility = isUtilityModule(file);
-    // Utility modules get a 2x higher warning threshold since being a hub
-    // is expected for foundational functions like walkTree, resolve, etc.
-    const warningThreshold = isUtility
-      ? HUB_FUNCTION_FILE_THRESHOLD * 4
-      : HUB_FUNCTION_FILE_THRESHOLD * 2;
-
-    const severity: Finding["severity"] = callerFiles.size >= warningThreshold ? "warning" : "info";
+    // Utility/infrastructure modules always get "info" — being a hub is
+    // expected for foundational functions like walkTree, info(), resolve, etc.
+    // Non-utility modules get "warning" when above 2x threshold.
+    const severity: Finding["severity"] = isUtility
+      ? "info"
+      : callerFiles.size >= HUB_FUNCTION_FILE_THRESHOLD * 2 ? "warning" : "info";
     const utilityNote = isUtility ? " (utility module — high fan-in expected)" : "";
 
     findings.push({
@@ -542,13 +550,12 @@ function detectHotspotFiles(edges: CallEdge[]): Finding[] {
 
   for (const [file, callers] of sorted.slice(0, 5)) {
     const isUtility = isUtilityModule(file);
-    // Utility modules get a 2x higher warning threshold since high fan-in
-    // is expected for foundational code like tree.ts, walkTree, etc.
-    const warningThreshold = isUtility
-      ? HOTSPOT_FILE_THRESHOLD * 4
-      : HOTSPOT_FILE_THRESHOLD * 2;
-
-    const severity: Finding["severity"] = callers.size >= warningThreshold ? "warning" : "info";
+    // Utility/infrastructure modules always get "info" — high fan-in is expected
+    // for foundational code like tree.ts, output.ts, etc.
+    // Non-utility modules get "warning" when above 2x threshold.
+    const severity: Finding["severity"] = isUtility
+      ? "info"
+      : callers.size >= HOTSPOT_FILE_THRESHOLD * 2 ? "warning" : "info";
     const utilityNote = isUtility ? " (utility module — high fan-in expected)" : "";
 
     findings.push({

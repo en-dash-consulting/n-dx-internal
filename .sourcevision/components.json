@@ -14,9 +14,7 @@
       "kind": "function",
       "line": 5,
       "isDefaultExport": true,
-      "conventionExports": [
-        "action"
-      ]
+      "conventionExports": []
     },
     {
       "file": "packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.tsx",
@@ -32,10 +30,7 @@
       "kind": "function",
       "line": 9,
       "isDefaultExport": true,
-      "conventionExports": [
-        "loader",
-        "meta"
-      ]
+      "conventionExports": []
     },
     {
       "file": "packages/sourcevision/tests/fixtures/remix-app/app/routes/users.$id.tsx",
@@ -43,88 +38,425 @@
       "kind": "function",
       "line": 9,
       "isDefaultExport": true,
-      "conventionExports": [
-        "loader",
-        "action"
-      ]
+      "conventionExports": []
     }
   ],
   "usageEdges": [],
-  "routeModules": [
+  "routeModules": [],
+  "routeTree": [],
+  "serverRoutes": [
     {
-      "file": "packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.login.tsx",
-      "routePattern": "/login",
-      "exports": [
-        "action",
-        "default"
-      ],
-      "parentLayout": "packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.tsx",
-      "isLayout": false,
-      "isIndex": false
+      "file": "packages/web/src/server/routes-adaptive.ts",
+      "prefix": "/api/hench/adaptive/",
+      "handler": "handleAdaptiveRoute",
+      "routes": [
+        {
+          "file": "packages/web/src/server/routes-adaptive.ts",
+          "method": "DELETE",
+          "path": "/api/hench/adaptive/override/:key"
+        },
+        {
+          "file": "packages/web/src/server/routes-adaptive.ts",
+          "method": "GET",
+          "path": "/api/hench/adaptive/analysis"
+        },
+        {
+          "file": "packages/web/src/server/routes-adaptive.ts",
+          "method": "GET",
+          "path": "/api/hench/adaptive/history"
+        },
+        {
+          "file": "packages/web/src/server/routes-adaptive.ts",
+          "method": "GET",
+          "path": "/api/hench/adaptive/settings"
+        },
+        {
+          "file": "packages/web/src/server/routes-adaptive.ts",
+          "method": "POST",
+          "path": "/api/hench/adaptive/apply"
+        },
+        {
+          "file": "packages/web/src/server/routes-adaptive.ts",
+          "method": "POST",
+          "path": "/api/hench/adaptive/dismiss/:id"
+        },
+        {
+          "file": "packages/web/src/server/routes-adaptive.ts",
+          "method": "POST",
+          "path": "/api/hench/adaptive/lock/:key"
+        },
+        {
+          "file": "packages/web/src/server/routes-adaptive.ts",
+          "method": "POST",
+          "path": "/api/hench/adaptive/override"
+        },
+        {
+          "file": "packages/web/src/server/routes-adaptive.ts",
+          "method": "POST",
+          "path": "/api/hench/adaptive/settings"
+        },
+        {
+          "file": "packages/web/src/server/routes-adaptive.ts",
+          "method": "POST",
+          "path": "/api/hench/adaptive/unlock/:key"
+        }
+      ]
     },
     {
-      "file": "packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.tsx",
-      "routePattern": null,
-      "exports": [
-        "default"
-      ],
-      "parentLayout": null,
-      "isLayout": true,
-      "isIndex": false
+      "file": "packages/web/src/server/routes-hench.ts",
+      "prefix": "/api/hench/",
+      "handler": "handleHenchRoute",
+      "routes": [
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "DELETE",
+          "path": "/api/hench/templates/:id"
+        },
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "GET",
+          "path": "/api/hench/config"
+        },
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "GET",
+          "path": "/api/hench/runs"
+        },
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "GET",
+          "path": "/api/hench/runs/:id"
+        },
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "GET",
+          "path": "/api/hench/templates"
+        },
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "GET",
+          "path": "/api/hench/templates/:id"
+        },
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "GET",
+          "path": "/limit"
+        },
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "POST",
+          "path": "/api/hench/templates"
+        },
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "POST",
+          "path": "/api/hench/templates/:id/apply"
+        },
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "PUT",
+          "path": "/api/hench/config"
+        }
+      ]
     },
     {
-      "file": "packages/sourcevision/tests/fixtures/remix-app/app/routes/_index.tsx",
-      "routePattern": "/",
-      "exports": [
-        "loader",
-        "meta",
-        "default"
-      ],
-      "parentLayout": null,
-      "isLayout": true,
-      "isIndex": true
+      "file": "packages/web/src/server/routes-rex.ts",
+      "prefix": "/api/rex/",
+      "handler": "handleRexRoute",
+      "routes": [
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "DELETE",
+          "path": "/api/rex/items/:id/requirements/:rid"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/dashboard"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/execute/status"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/items/:id"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/items/:id/requirements"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/log"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/next"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/prd"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/proposals"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/prune/preview"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/requirements/coverage"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/requirements/traceability"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/api/rex/stats"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/limit"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/minAge"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "GET",
+          "path": "/statuses"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "PATCH",
+          "path": "/api/rex/items/:id"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "PATCH",
+          "path": "/api/rex/items/:id/requirements/:rid"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "PATCH",
+          "path": "/api/rex/items/bulk"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/analyze"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/batch"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/execute/epic"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/execute/pause"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/execute/resume"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/items"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/items/:id/requirements"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/items/merge"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/proposals/accept"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/prune"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "POST",
+          "path": "/api/rex/smart"
+        }
+      ]
     },
     {
-      "file": "packages/sourcevision/tests/fixtures/remix-app/app/routes/users.$id.tsx",
-      "routePattern": "/users/:id",
-      "exports": [
-        "loader",
-        "action",
-        "default"
-      ],
-      "parentLayout": null,
-      "isLayout": false,
-      "isIndex": false
-    }
-  ],
-  "routeTree": [
-    {
-      "file": "packages/sourcevision/tests/fixtures/remix-app/app/routes/_index.tsx",
-      "routePattern": "/",
-      "children": []
+      "file": "packages/web/src/server/routes-sourcevision.ts",
+      "prefix": "/api/sv/",
+      "handler": "handleSourcevisionRoute",
+      "routes": [
+        {
+          "file": "packages/web/src/server/routes-sourcevision.ts",
+          "method": "GET",
+          "path": "/api/sv/components"
+        },
+        {
+          "file": "packages/web/src/server/routes-sourcevision.ts",
+          "method": "GET",
+          "path": "/api/sv/context"
+        },
+        {
+          "file": "packages/web/src/server/routes-sourcevision.ts",
+          "method": "GET",
+          "path": "/api/sv/imports"
+        },
+        {
+          "file": "packages/web/src/server/routes-sourcevision.ts",
+          "method": "GET",
+          "path": "/api/sv/inventory"
+        },
+        {
+          "file": "packages/web/src/server/routes-sourcevision.ts",
+          "method": "GET",
+          "path": "/api/sv/manifest"
+        },
+        {
+          "file": "packages/web/src/server/routes-sourcevision.ts",
+          "method": "GET",
+          "path": "/api/sv/summary"
+        },
+        {
+          "file": "packages/web/src/server/routes-sourcevision.ts",
+          "method": "GET",
+          "path": "/api/sv/zones"
+        }
+      ]
     },
     {
-      "file": "packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.login.tsx",
-      "routePattern": "/login",
-      "children": []
+      "file": "packages/web/src/server/routes-token-usage.ts",
+      "prefix": "/api/token/",
+      "handler": "handleTokenUsageRoute",
+      "routes": [
+        {
+          "file": "packages/web/src/server/routes-token-usage.ts",
+          "method": "GET",
+          "path": "/api/token/budget"
+        },
+        {
+          "file": "packages/web/src/server/routes-token-usage.ts",
+          "method": "GET",
+          "path": "/api/token/by"
+        },
+        {
+          "file": "packages/web/src/server/routes-token-usage.ts",
+          "method": "GET",
+          "path": "/api/token/events"
+        },
+        {
+          "file": "packages/web/src/server/routes-token-usage.ts",
+          "method": "GET",
+          "path": "/api/token/summary"
+        },
+        {
+          "file": "packages/web/src/server/routes-token-usage.ts",
+          "method": "GET",
+          "path": "/package"
+        },
+        {
+          "file": "packages/web/src/server/routes-token-usage.ts",
+          "method": "GET",
+          "path": "/period"
+        },
+        {
+          "file": "packages/web/src/server/routes-token-usage.ts",
+          "method": "GET",
+          "path": "/since"
+        },
+        {
+          "file": "packages/web/src/server/routes-token-usage.ts",
+          "method": "GET",
+          "path": "/until"
+        }
+      ]
     },
     {
-      "file": "packages/sourcevision/tests/fixtures/remix-app/app/routes/users.$id.tsx",
-      "routePattern": "/users/:id",
-      "children": []
+      "file": "packages/web/src/server/routes-validation.ts",
+      "prefix": "/api/rex/validate",
+      "handler": "handleValidationRoute",
+      "routes": [
+        {
+          "file": "packages/web/src/server/routes-validation.ts",
+          "method": "GET",
+          "path": "/api/rex/dependency"
+        },
+        {
+          "file": "packages/web/src/server/routes-validation.ts",
+          "method": "GET",
+          "path": "/api/rex/validate"
+        }
+      ]
+    },
+    {
+      "file": "packages/web/src/server/routes-workflow.ts",
+      "prefix": "/api/hench/workflow/",
+      "handler": "handleWorkflowRoute",
+      "routes": [
+        {
+          "file": "packages/web/src/server/routes-workflow.ts",
+          "method": "GET",
+          "path": "/api/hench/workflow/analysis"
+        },
+        {
+          "file": "packages/web/src/server/routes-workflow.ts",
+          "method": "GET",
+          "path": "/api/hench/workflow/history"
+        },
+        {
+          "file": "packages/web/src/server/routes-workflow.ts",
+          "method": "POST",
+          "path": "/api/hench/workflow/apply"
+        },
+        {
+          "file": "packages/web/src/server/routes-workflow.ts",
+          "method": "POST",
+          "path": "/api/hench/workflow/suggestions/:id"
+        }
+      ]
     }
   ],
   "summary": {
     "totalComponents": 5,
-    "totalRouteModules": 4,
+    "totalRouteModules": 0,
     "totalUsageEdges": 0,
-    "routeConventions": {
-      "action": 2,
-      "default": 4,
-      "loader": 2,
-      "meta": 1
-    },
+    "totalServerRoutes": 71,
+    "routeConventions": {},
     "mostUsedComponents": [],
-    "layoutDepth": 1
+    "layoutDepth": 0
   }
 }

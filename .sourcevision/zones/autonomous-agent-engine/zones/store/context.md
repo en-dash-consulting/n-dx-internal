@@ -7,13 +7,13 @@
 Zone: Store (`hench/store`)
 Files: 2, Cohesion: 1.00, Coupling: 0.00
 Description: 2 files, primarily TypeScript
-Lines: 242
+Lines: 217
 
 </zone>
 
 <files>
 
-packages/hench/src/store/suggestions.ts (TypeScript, 123 lines, source)
+packages/hench/src/store/suggestions.ts (TypeScript, 98 lines, source)
 packages/hench/tests/unit/store/suggestions.test.ts (TypeScript, 119 lines, test)
 
 </files>

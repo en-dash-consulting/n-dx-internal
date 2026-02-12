@@ -279,10 +279,37 @@ export interface RouteTreeNode {
   children: RouteTreeNode[];
 }
 
+// ── Server-side API routes ──────────────────────────────────────────────────
+
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD";
+
+export interface ServerRoute {
+  /** File that defines this route handler */
+  file: string;
+  /** HTTP method */
+  method: HttpMethod;
+  /** Full route path (e.g., "/api/rex/prd") */
+  path: string;
+  /** Handler function name, if identifiable */
+  handler?: string;
+}
+
+export interface ServerRouteGroup {
+  /** File that defines these routes */
+  file: string;
+  /** Common path prefix (e.g., "/api/rex/") */
+  prefix: string;
+  /** Handler function name */
+  handler?: string;
+  /** Individual routes in this group */
+  routes: ServerRoute[];
+}
+
 export interface ComponentsSummary {
   totalComponents: number;
   totalRouteModules: number;
   totalUsageEdges: number;
+  totalServerRoutes: number;
   routeConventions: Partial<Record<RouteExportKind, number>>;
   mostUsedComponents: Array<{ name: string; file: string; usageCount: number }>;
   layoutDepth: number;
@@ -293,6 +320,7 @@ export interface Components {
   usageEdges: ComponentUsageEdge[];
   routeModules: RouteModule[];
   routeTree: RouteTreeNode[];
+  serverRoutes: ServerRouteGroup[];
   summary: ComponentsSummary;
 }
 

@@ -1,7 +1,7 @@
 {
   "id": "orchestration-layer",
   "name": "Orchestration Layer",
-  "description": "Top-level command orchestration that delegates to domain packages without importing their libraries.",
+  "description": "Command delegation and multi-package coordination scripts that spawn CLIs without direct library imports.",
   "files": [
     "ci.js",
     "cli.js",

@@ -121,25 +121,46 @@ export function generateLlmsTxt(
 
   // ── Route Structure ───────────────────────────────────────────────────
 
-  if (components && components.routeModules.length > 0) {
+  const hasClientRoutes = components && components.routeModules.length > 0;
+  const hasServerRoutes = components && components.serverRoutes.length > 0;
+
+  if (hasClientRoutes || hasServerRoutes) {
     lines.push("## Route Structure");
     lines.push("");
 
-    if (components.routeTree.length > 0) {
-      lines.push("### Route Tree");
+    if (hasClientRoutes) {
+      if (components.routeTree.length > 0) {
+        lines.push("### Route Tree");
+        lines.push("");
+        lines.push("```");
+        printRouteTree(components.routeTree, lines, 0);
+        lines.push("```");
+        lines.push("");
+      }
+
+      lines.push("### Convention Exports");
       lines.push("");
-      lines.push("```");
-      printRouteTree(components.routeTree, lines, 0);
-      lines.push("```");
+      for (const [kind, count] of Object.entries(components.summary.routeConventions)) {
+        lines.push(`- ${kind}: ${count} modules`);
+      }
       lines.push("");
     }
 
-    lines.push("### Convention Exports");
-    lines.push("");
-    for (const [kind, count] of Object.entries(components.summary.routeConventions)) {
-      lines.push(`- ${kind}: ${count} modules`);
+    if (hasServerRoutes) {
+      lines.push("### Server API Routes");
+      lines.push("");
+      for (const group of components.serverRoutes) {
+        const handler = group.handler ? ` (${group.handler})` : "";
+        lines.push(`**${group.prefix}**${handler} — \`${group.file}\``);
+        lines.push("");
+        lines.push("```");
+        for (const r of group.routes) {
+          lines.push(`${r.method.padEnd(7)} ${r.path}`);
+        }
+        lines.push("```");
+        lines.push("");
+      }
     }
-    lines.push("");
 
     if (components.summary.totalComponents > 0) {
       lines.push(`### Components: ${components.summary.totalComponents} total, ${components.summary.totalUsageEdges} usage edges`);

@@ -316,99 +316,11 @@ export async function cmdAnalyze(
     const fileLabel = resolved.length === 1 ? "file" : `${resolved.length} files`;
     info(`Extracted ${proposals.length} epics from ${fileLabel}.`);
   } else {
-    // Scanner mode: run all three scanners
-    const opts = { lite };
-    const [testResults, docResults, svResults, pkgResults] = await Promise.all([
-      scanTests(dir, opts),
-      scanDocs(dir, opts),
-      scanSourceVision(dir),
-      scanPackageJson(dir, opts),
-    ]);
-
-    const rawResults: ScanResult[] = [...testResults, ...docResults, ...svResults, ...pkgResults];
-
-    // Merge near-duplicate scan results before reconciliation
-    const allResults = deduplicateScanResults(rawResults);
-
-    const testFiles = new Set(testResults.map((r) => r.sourceFile)).size;
-    const docFiles = new Set(docResults.map((r) => r.sourceFile)).size;
-    const svZones = svResults.filter((r) => r.kind === "feature" && r.source === "sourcevision").length;
-    const pkgFiles = new Set(pkgResults.map((r) => r.sourceFile)).size;
-
-    const { results: newResults, stats, updateCandidates = [] } = reconcile(
-      allResults,
-      existing,
-      { detectUpdates: existing.length > 0 },
-    );
-
-    if (!noLlm) {
-      try {
-        const reasonResult = await reasonFromScanResults(newResults, existing, { dir, model });
-        proposals = reasonResult.proposals;
-        tokenUsage = reasonResult.tokenUsage;
-        if (flags.format !== "json") {
-          info("Proposals refined by LLM.");
-        }
-      } catch {
-        proposals = buildProposals(newResults);
-      }
-    } else {
-      proposals = buildProposals(newResults);
-    }
-
-    if (flags.format === "json") {
-      result(
-        JSON.stringify(
-          { scanned: { testFiles, docFiles, svZones, pkgFiles }, stats, proposals, updateCandidates, tokenUsage },
-          null,
-          2,
-        ),
-      );
-      return;
-    }
-
-    info(
-      `Scanned: ${testFiles} test files, ${docFiles} docs, ${svZones} sourcevision zones, ${pkgFiles} package.json files`,
-    );
-    info(
-      `Found: ${stats.total} proposals (${stats.newCount} new, ${stats.alreadyTracked} already tracked)`,
-    );
-
-    // Show update candidates for existing items with richer info
-    if (updateCandidates.length > 0) {
-      info(`\n${updateCandidates.length} existing item${updateCandidates.length === 1 ? "" : "s"} could be updated:`);
-      for (const uc of updateCandidates) {
-        info(`  ${uc.itemTitle} (${uc.itemId.slice(0, 8)})`);
-        info(`    ${uc.field}: ${uc.current.slice(0, 60)} → ${uc.proposed.slice(0, 60)}`);
-      }
-
-      // Apply update candidates if --accept and we have a store
-      if (accept && await hasRexDir(dir)) {
-        const rexDir = join(dir, REX_DIR);
-        const store = await resolveStore(rexDir);
-        let updatedCount = 0;
-        for (const uc of updateCandidates) {
-          const updates: Partial<PRDItem> = {};
-          if (uc.field === "description") {
-            updates.description = uc.proposed;
-          } else if (uc.field === "acceptanceCriteria") {
-            updates.acceptanceCriteria = uc.proposed.split("; ");
-          }
-          await store.updateItem(uc.itemId, updates);
-          updatedCount++;
-        }
-        if (updatedCount > 0) {
-          info(`Updated ${updatedCount} existing item${updatedCount === 1 ? "" : "s"} with richer info.`);
-          await store.appendLog({
-            timestamp: new Date().toISOString(),
-            event: "analyze_update",
-            detail: `Updated ${updatedCount} items: ${updateCandidates.map((uc) => uc.itemTitle).join(", ")}`,
-          });
-        }
-      }
-    }
-
-    info("");
+    // Scanner mode: run all scanners, reconcile, and optionally refine with LLM
+    const scanResult = await runScannerMode(dir, existing, { lite, noLlm, model, accept, formatJson: flags.format === "json" });
+    proposals = scanResult.proposals;
+    tokenUsage = scanResult.tokenUsage;
+    if (scanResult.earlyReturn) return;
   }
 
   if (proposals.length === 0) {
@@ -467,6 +379,128 @@ export async function cmdAnalyze(
     await savePending(dir, proposals);
   }
 
+  await handleAcceptance(dir, proposals, { accept, chunkSize, model });
+}
+
+// ── Extracted phases ──────────────────────────────────────────────────
+
+interface ScannerResult {
+  proposals: Proposal[];
+  tokenUsage: AnalyzeTokenUsage;
+  earlyReturn: boolean;
+}
+
+/** Run all scanners, reconcile results, optionally refine with LLM. */
+async function runScannerMode(
+  dir: string,
+  existing: PRDItem[],
+  opts: { lite: boolean; noLlm: boolean; model?: string; accept: boolean; formatJson: boolean },
+): Promise<ScannerResult> {
+  const { lite, noLlm, model, accept, formatJson } = opts;
+  const scanOpts = { lite };
+  const [testResults, docResults, svResults, pkgResults] = await Promise.all([
+    scanTests(dir, scanOpts),
+    scanDocs(dir, scanOpts),
+    scanSourceVision(dir),
+    scanPackageJson(dir, scanOpts),
+  ]);
+
+  const rawResults: ScanResult[] = [...testResults, ...docResults, ...svResults, ...pkgResults];
+  const allResults = deduplicateScanResults(rawResults);
+
+  const testFiles = new Set(testResults.map((r) => r.sourceFile)).size;
+  const docFiles = new Set(docResults.map((r) => r.sourceFile)).size;
+  const svZones = svResults.filter((r) => r.kind === "feature" && r.source === "sourcevision").length;
+  const pkgFiles = new Set(pkgResults.map((r) => r.sourceFile)).size;
+
+  const { results: newResults, stats, updateCandidates = [] } = reconcile(
+    allResults,
+    existing,
+    { detectUpdates: existing.length > 0 },
+  );
+
+  let proposals: Proposal[];
+  let tokenUsage = emptyAnalyzeTokenUsage();
+
+  if (!noLlm) {
+    try {
+      const reasonResult = await reasonFromScanResults(newResults, existing, { dir, model });
+      proposals = reasonResult.proposals;
+      tokenUsage = reasonResult.tokenUsage;
+      if (!formatJson) {
+        info("Proposals refined by LLM.");
+      }
+    } catch {
+      proposals = buildProposals(newResults);
+    }
+  } else {
+    proposals = buildProposals(newResults);
+  }
+
+  if (formatJson) {
+    result(
+      JSON.stringify(
+        { scanned: { testFiles, docFiles, svZones, pkgFiles }, stats, proposals, updateCandidates, tokenUsage },
+        null,
+        2,
+      ),
+    );
+    return { proposals, tokenUsage, earlyReturn: true };
+  }
+
+  info(
+    `Scanned: ${testFiles} test files, ${docFiles} docs, ${svZones} sourcevision zones, ${pkgFiles} package.json files`,
+  );
+  info(
+    `Found: ${stats.total} proposals (${stats.newCount} new, ${stats.alreadyTracked} already tracked)`,
+  );
+
+  // Show update candidates for existing items with richer info
+  if (updateCandidates.length > 0) {
+    info(`\n${updateCandidates.length} existing item${updateCandidates.length === 1 ? "" : "s"} could be updated:`);
+    for (const uc of updateCandidates) {
+      info(`  ${uc.itemTitle} (${uc.itemId.slice(0, 8)})`);
+      info(`    ${uc.field}: ${uc.current.slice(0, 60)} → ${uc.proposed.slice(0, 60)}`);
+    }
+
+    // Apply update candidates if --accept and we have a store
+    if (accept && await hasRexDir(dir)) {
+      const rexDir = join(dir, REX_DIR);
+      const store = await resolveStore(rexDir);
+      let updatedCount = 0;
+      for (const uc of updateCandidates) {
+        const updates: Partial<PRDItem> = {};
+        if (uc.field === "description") {
+          updates.description = uc.proposed;
+        } else if (uc.field === "acceptanceCriteria") {
+          updates.acceptanceCriteria = uc.proposed.split("; ");
+        }
+        await store.updateItem(uc.itemId, updates);
+        updatedCount++;
+      }
+      if (updatedCount > 0) {
+        info(`Updated ${updatedCount} existing item${updatedCount === 1 ? "" : "s"} with richer info.`);
+        await store.appendLog({
+          timestamp: new Date().toISOString(),
+          event: "analyze_update",
+          detail: `Updated ${updatedCount} items: ${updateCandidates.map((uc) => uc.itemTitle).join(", ")}`,
+        });
+      }
+    }
+  }
+
+  info("");
+  return { proposals, tokenUsage, earlyReturn: false };
+}
+
+/** Handle proposal acceptance: auto, interactive, or deferred. */
+async function handleAcceptance(
+  dir: string,
+  proposals: Proposal[],
+  opts: { accept: boolean; chunkSize?: number; model?: string },
+): Promise<void> {
+  const { accept, chunkSize, model } = opts;
+
   if (accept) {
     // Non-interactive: accept immediately with auto-accept batch record
     const { createReviewState, buildBatchRecord } = await import("./chunked-review.js");
@@ -475,23 +509,23 @@ export async function cmdAnalyze(
     const batchRecord = buildBatchRecord(state, "auto");
     await acceptProposals(dir, proposals, batchRecord);
   } else if (process.stdin.isTTY) {
-    // Interactive: chunked review for multiple proposals, simple y/n for single
+    // Interactive: chunked review for multiple proposals
     const { runChunkedReview } = await import("./chunked-review.js");
     const { adjustGranularity, assessGranularity, formatAssessment } = await import("../../analyze/index.js");
     const granularityHandler = async (
       targetProposals: Proposal[],
       direction: "break_down" | "consolidate",
     ): Promise<Proposal[]> => {
-      const result = await adjustGranularity(targetProposals, direction, model);
-      return result.proposals;
+      const r = await adjustGranularity(targetProposals, direction, model);
+      return r.proposals;
     };
     const assessmentHandler = async (
       targetProposals: Proposal[],
     ): Promise<{ assessments: import("./chunked-review.js").ProposalAssessment[]; formatted: string }> => {
-      const result = await assessGranularity(targetProposals, model);
+      const r = await assessGranularity(targetProposals, model);
       return {
-        assessments: result.assessments,
-        formatted: formatAssessment(result.assessments),
+        assessments: r.assessments,
+        formatted: formatAssessment(r.assessments),
       };
     };
     const { accepted, remaining, batchRecord } = await runChunkedReview(proposals, chunkSize, granularityHandler, assessmentHandler);

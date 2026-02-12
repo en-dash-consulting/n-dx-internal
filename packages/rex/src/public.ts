@@ -143,6 +143,24 @@ export type {
 export { validateMerge, previewMerge, mergeItems } from "./core/merge.js";
 export type { MergeOptions, MergeValidation, MergePreview, MergeResult } from "./core/merge.js";
 
+// ---- Core: prune ------------------------------------------------------------
+
+export {
+  countSubtree, isFullyCompleted,
+  findPrunableItems, pruneItems,
+} from "./core/prune.js";
+export type { PruneResult } from "./core/prune.js";
+
+// ---- Core: analytics --------------------------------------------------------
+
+export {
+  computeEpicStats, computePriorityDistribution,
+  computeRequirementsSummary,
+} from "./core/analytics.js";
+export type {
+  EpicStats, PriorityDistribution, RequirementsSummary,
+} from "./core/analytics.js";
+
 // ---- MCP server factory -----------------------------------------------------
 
 export { createRexMcpServer } from "./cli/mcp.js";

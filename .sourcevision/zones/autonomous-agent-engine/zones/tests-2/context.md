@@ -8,17 +8,17 @@ Zone: Tests 2 (`hench/tests-2`)
 Files: 13, Cohesion: 0.65, Coupling: 0.35
 Description: 13 files, primarily TypeScript
 Entry points: packages/hench/src/process/index.ts, packages/hench/src/validation/completion.ts, packages/hench/src/tools/index.ts, packages/hench/src/tools/rex.ts
-Lines: 2328
+Lines: 2334
 
 </zone>
 
 <files>
 
 packages/hench/src/agent/completion.ts (TypeScript, 15 lines, source)
-packages/hench/src/process/exec.ts (TypeScript, 27 lines, source)
+packages/hench/src/process/exec.ts (TypeScript, 29 lines, source)
 packages/hench/src/process/index.ts (TypeScript, 19 lines, source)
 packages/hench/src/tools/index.ts (TypeScript, 32 lines, source)
-packages/hench/src/tools/rex.ts (TypeScript, 205 lines, source)
+packages/hench/src/tools/rex.ts (TypeScript, 209 lines, source)
 packages/hench/src/tools/test-runner.ts (TypeScript, 318 lines, source)
 packages/hench/src/validation/completion.ts (TypeScript, 113 lines, source)
 packages/hench/src/validation/index.ts (TypeScript, 16 lines, source)
@@ -47,7 +47,7 @@ Internal:
   packages/hench/src/validation/completion.ts → packages/hench/src/process/index.ts {exec, execShellCmd}
   packages/hench/src/validation/index.ts → packages/hench/src/validation/completion.ts {validateCompletion, formatValidationResult}
   packages/hench/src/validation/index.ts → packages/hench/src/validation/completion.ts {CompletionValidationResult, CompletionValidationOptions}
-  packages/hench/tests/unit/agent/completion.test.ts → packages/hench/src/agent/completion.ts {*}
+  packages/hench/tests/unit/agent/completion.test.ts → packages/hench/src/agent/completion.ts {validateCompletion, formatValidationResult}
   packages/hench/tests/unit/process/exec.test.ts → packages/hench/src/process/exec.ts {exec, execStdout, execShellCmd, getCurrentHead}
   packages/hench/tests/unit/tools/completion-validation.test.ts → packages/hench/src/tools/rex.ts {toolRexUpdateStatus}
   packages/hench/tests/unit/tools/completion-validation.test.ts → packages/hench/src/validation/completion.ts {validateCompletion, formatValidationResult}

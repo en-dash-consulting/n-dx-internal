@@ -51,6 +51,10 @@ import {
   type PRDDocument,
   type TreeEntry,
   type TreeStats,
+  type MergeValidation,
+  type EpicStats,
+  type PriorityDistribution,
+  type RequirementsSummary,
   PRIORITY_ORDER,
   LEVEL_HIERARCHY,
   VALID_LEVELS,
@@ -72,6 +76,16 @@ import {
   findNextTask as rexFindNextTask,
   collectCompletedIds,
   computeTimestampUpdates,
+  validateMerge,
+  previewMerge,
+  mergeItems,
+  countSubtree,
+  isFullyCompleted,
+  findPrunableItems,
+  pruneItems,
+  computeEpicStats,
+  computePriorityDistribution,
+  computeRequirementsSummary,
 } from "./mcp-deps.js";
 
 const REX_PREFIX = "/api/rex/";
@@ -152,104 +166,8 @@ function savePRD(ctx: ServerContext, doc: PRDDocument): void {
   writeFileSync(prdPath, JSON.stringify(doc, null, 2) + "\n");
 }
 
-interface EpicStats {
-  id: string;
-  title: string;
-  status: ItemStatus;
-  priority?: Priority;
-  stats: TreeStats;
-  percentComplete: number;
-}
-
-/** Compute per-epic stats. Each epic's descendants (tasks/subtasks) are counted. */
-function computeEpicStats(items: PRDItem[]): EpicStats[] {
-  return items
-    .filter((item) => item.level === "epic")
-    .map((epic) => {
-      const stats = computeStats(epic.children ?? []);
-      return {
-        id: epic.id,
-        title: epic.title,
-        status: epic.status,
-        priority: epic.priority,
-        stats,
-        percentComplete: stats.total > 0
-          ? Math.round((stats.completed / stats.total) * 100)
-          : 0,
-      };
-    });
-}
-
-interface PriorityDistribution {
-  critical: number;
-  high: number;
-  medium: number;
-  low: number;
-  unset: number;
-}
-
-interface RequirementsSummary {
-  totalRequirements: number;
-  itemsWithRequirements: number;
-  byCategory: Record<string, number>;
-  byValidationType: Record<string, number>;
-}
-
-/** Quick requirements overview for dashboard. */
-function computeRequirementsSummary(items: PRDItem[]): RequirementsSummary {
-  const summary: RequirementsSummary = {
-    totalRequirements: 0,
-    itemsWithRequirements: 0,
-    byCategory: {},
-    byValidationType: {},
-  };
-
-  const seenIds = new Set<string>();
-
-  function walk(list: PRDItem[]): void {
-    for (const item of list) {
-      if (item.status === "deleted") continue;
-      const reqs = (item.requirements ?? []) as RequirementRecord[];
-      if (reqs.length > 0) {
-        summary.itemsWithRequirements++;
-        for (const req of reqs) {
-          if (!seenIds.has(req.id)) {
-            seenIds.add(req.id);
-            summary.totalRequirements++;
-            summary.byCategory[req.category] = (summary.byCategory[req.category] ?? 0) + 1;
-            summary.byValidationType[req.validationType] = (summary.byValidationType[req.validationType] ?? 0) + 1;
-          }
-        }
-      }
-      if (Array.isArray(item.children)) walk(item.children);
-    }
-  }
-
-  walk(items);
-  return summary;
-}
-
-/** Count tasks/subtasks by priority. */
-function computePriorityDistribution(items: PRDItem[]): PriorityDistribution {
-  const dist: PriorityDistribution = { critical: 0, high: 0, medium: 0, low: 0, unset: 0 };
-
-  function walk(list: PRDItem[]): void {
-    for (const item of list) {
-      if (item.level === "task" || item.level === "subtask") {
-        const p = item.priority ?? "";
-        if (p === "critical") dist.critical++;
-        else if (p === "high") dist.high++;
-        else if (p === "medium") dist.medium++;
-        else if (p === "low") dist.low++;
-        else dist.unset++;
-      }
-      if (Array.isArray(item.children)) walk(item.children);
-    }
-  }
-
-  walk(items);
-  return dist;
-}
+// EpicStats, PriorityDistribution, RequirementsSummary types and functions
+// are imported from rex via the gateway (mcp-deps.ts).
 
 /** Handle Rex API requests. Returns true if the request was handled. */
 export function handleRexRoute(
@@ -749,249 +667,12 @@ async function handleBulkUpdate(
   return true;
 }
 
-// --------------------------------------------------------------------------
-// Merge helpers — duplicated from packages/rex/src/core/merge.ts to keep
-// the web package independent of Rex at compile time.
-// @see packages/rex/src/core/merge.ts — canonical source
-// --------------------------------------------------------------------------
-
-interface MergeValidationResult {
-  valid: boolean;
-  error?: string;
-}
+// Merge functions (validateMerge, previewMerge, mergeItems) are imported
+// from rex via the gateway (mcp-deps.ts).
 
 /** Extract the parent ID from a TreeEntry's parent chain. */
 function parentIdOf(entry: TreeEntry): string | null {
   return entry.parents.length > 0 ? entry.parents[entry.parents.length - 1].id : null;
-}
-
-/** Find an item by ID, returning it with its parent ID. */
-function findWithParent(items: PRDItem[], id: string): { item: PRDItem; parentId: string | null } | null {
-  const entry = findItem(items, id);
-  if (!entry) return null;
-  return { item: entry.item, parentId: parentIdOf(entry) };
-}
-
-/** Remove an item from the tree by ID. Delegates to rex's removeFromTree. */
-function removeItem(items: PRDItem[], id: string): PRDItem | null {
-  return removeFromTree(items, id);
-}
-
-/** Validate a merge is structurally valid. */
-function validateMergeLocal(
-  items: PRDItem[],
-  sourceIds: string[],
-  targetId: string,
-): MergeValidationResult {
-  if (sourceIds.length < 2) {
-    return { valid: false, error: "At least 2 items are required for a merge." };
-  }
-  if (!sourceIds.includes(targetId)) {
-    return { valid: false, error: "Target must be one of the source items." };
-  }
-
-  const parentIds: Array<string | null> = [];
-  const levels: string[] = [];
-
-  for (const id of sourceIds) {
-    const entry = findWithParent(items, id);
-    if (!entry) return { valid: false, error: `Item "${id}" not found.` };
-    parentIds.push(entry.parentId);
-    levels.push(entry.item.level);
-  }
-
-  if (!levels.every((l) => l === levels[0])) {
-    return { valid: false, error: "All items must be at the same level to merge." };
-  }
-  if (!parentIds.every((p) => p === parentIds[0])) {
-    return { valid: false, error: "All items must be siblings (same parent) to merge." };
-  }
-
-  return { valid: true };
-}
-
-/** Build a merge preview (non-destructive). */
-function buildMergePreview(
-  items: PRDItem[],
-  sourceIds: string[],
-  targetId: string,
-  options?: { title?: string; description?: string },
-) {
-  const target = findItemById(items, targetId)!;
-  const absorbedIds = sourceIds.filter((id) => id !== targetId);
-
-  // Combine acceptance criteria
-  const seenCriteria = new Set<string>();
-  const allCriteria: string[] = [];
-  for (const id of [targetId, ...absorbedIds]) {
-    const item = findItemById(items, id)!;
-    for (const ac of (item.acceptanceCriteria as string[] | undefined) ?? []) {
-      if (!seenCriteria.has(ac)) { seenCriteria.add(ac); allCriteria.push(ac); }
-    }
-  }
-
-  // Combine tags
-  const allTags = new Set<string>();
-  for (const id of sourceIds) {
-    const item = findItemById(items, id)!;
-    for (const tag of (item.tags as string[] | undefined) ?? []) allTags.add(tag);
-  }
-
-  // Combine blockedBy (exclude source IDs)
-  const allBlockedBy = new Set<string>();
-  for (const id of sourceIds) {
-    const item = findItemById(items, id)!;
-    for (const dep of item.blockedBy ?? []) {
-      if (!sourceIds.includes(dep)) allBlockedBy.add(dep);
-    }
-  }
-
-  // Count children to reparent
-  let reparentedChildCount = 0;
-  for (const id of absorbedIds) {
-    const item = findItemById(items, id)!;
-    reparentedChildCount += (item.children ?? []).length;
-  }
-
-  // Count blockedBy references to absorbed items across the tree
-  const absorbedSet = new Set(absorbedIds);
-  let rewrittenDependencyCount = 0;
-  for (const { item } of walkTree(items)) {
-    if (sourceIds.includes(item.id)) continue;
-    if (Array.isArray(item.blockedBy)) {
-      for (const dep of item.blockedBy) {
-        if (absorbedSet.has(dep)) rewrittenDependencyCount++;
-      }
-    }
-  }
-
-  // Combine descriptions
-  let combinedDescription = options?.description;
-  if (combinedDescription === undefined) {
-    const descriptions: string[] = [];
-    for (const id of [targetId, ...absorbedIds]) {
-      const item = findItemById(items, id)!;
-      if (item.description) descriptions.push(item.description);
-    }
-    combinedDescription = descriptions.length > 0
-      ? descriptions.join("\n\n---\n\n")
-      : undefined;
-  }
-
-  return {
-    target: {
-      id: target.id,
-      title: options?.title ?? target.title,
-      description: combinedDescription,
-      acceptanceCriteria: allCriteria,
-      tags: [...allTags].sort(),
-      blockedBy: [...allBlockedBy],
-      childCount: (target.children ?? []).length + reparentedChildCount,
-    },
-    absorbed: absorbedIds.map((id) => {
-      const item = findItemById(items, id)!;
-      return {
-        id: item.id,
-        title: item.title,
-        level: item.level,
-        status: item.status,
-        childCount: (item.children ?? []).length,
-      };
-    }),
-    rewrittenDependencyCount,
-  };
-}
-
-/** Execute a merge in place. */
-function executeMerge(
-  items: PRDItem[],
-  sourceIds: string[],
-  targetId: string,
-  options?: { title?: string; description?: string },
-) {
-  const absorbedIds = sourceIds.filter((id) => id !== targetId);
-  const absorbedSet = new Set(absorbedIds);
-  const target = findItemById(items, targetId)!;
-
-  // Title
-  if (options?.title) target.title = options.title;
-
-  // Description
-  if (options?.description !== undefined) {
-    target.description = options.description;
-  } else {
-    const descriptions: string[] = [];
-    for (const id of [targetId, ...absorbedIds]) {
-      const item = findItemById(items, id)!;
-      if (item.description) descriptions.push(item.description);
-    }
-    if (descriptions.length > 0) target.description = descriptions.join("\n\n---\n\n");
-  }
-
-  // Acceptance criteria (deduplicated)
-  const seenCriteria = new Set<string>();
-  const allCriteria: string[] = [];
-  for (const id of [targetId, ...absorbedIds]) {
-    const item = findItemById(items, id)!;
-    for (const ac of (item.acceptanceCriteria as string[] | undefined) ?? []) {
-      if (!seenCriteria.has(ac)) { seenCriteria.add(ac); allCriteria.push(ac); }
-    }
-  }
-  if (allCriteria.length > 0) target.acceptanceCriteria = allCriteria;
-
-  // Tags (deduplicated)
-  const allTags = new Set<string>();
-  for (const id of sourceIds) {
-    const item = findItemById(items, id)!;
-    for (const tag of (item.tags as string[] | undefined) ?? []) allTags.add(tag);
-  }
-  if (allTags.size > 0) target.tags = [...allTags].sort();
-
-  // BlockedBy (union, excluding source IDs)
-  const allBlockedBy = new Set<string>();
-  for (const id of sourceIds) {
-    const item = findItemById(items, id)!;
-    for (const dep of item.blockedBy ?? []) {
-      if (!sourceIds.includes(dep)) allBlockedBy.add(dep);
-    }
-  }
-  if (allBlockedBy.size > 0) {
-    target.blockedBy = [...allBlockedBy];
-  } else {
-    delete target.blockedBy;
-  }
-
-  // Reparent children
-  const reparentedChildIds: string[] = [];
-  if (!target.children) target.children = [];
-  for (const id of absorbedIds) {
-    const item = findItemById(items, id)!;
-    const children = item.children ?? [];
-    for (const child of children) reparentedChildIds.push(child.id);
-    target.children.push(...children);
-    item.children = [];
-  }
-
-  // Rewrite blockedBy references
-  let rewrittenDependencyCount = 0;
-  for (const { item } of walkTree(items)) {
-    if (Array.isArray(item.blockedBy) && (item.blockedBy).length > 0) {
-      let changed = false;
-      const newBlockedBy: string[] = [];
-      const seen = new Set<string>();
-      for (const dep of item.blockedBy) {
-        const resolved = absorbedSet.has(dep) ? targetId : dep;
-        if (dep !== resolved) { changed = true; rewrittenDependencyCount++; }
-        if (!seen.has(resolved)) { seen.add(resolved); newBlockedBy.push(resolved); }
-      }
-      if (changed) item.blockedBy = newBlockedBy;
-    }
-  }
-
-  // Remove absorbed items
-  for (const id of absorbedIds) removeItem(items, id);
-
-  return { targetId, absorbedIds, reparentedChildIds, rewrittenDependencyCount };
 }
 
 /** Handle POST /api/rex/items/merge — consolidate/merge sibling items */
@@ -1026,7 +707,7 @@ async function handleItemMerge(
       return true;
     }
 
-    const validation = validateMergeLocal(doc.items, input.sourceIds, input.targetId);
+    const validation = validateMerge(doc.items, input.sourceIds, input.targetId);
     if (!validation.valid) {
       errorResponse(res, 400, validation.error!);
       return true;
@@ -1039,13 +720,13 @@ async function handleItemMerge(
 
     // Preview mode
     if (input.preview) {
-      const preview = buildMergePreview(doc.items, input.sourceIds, input.targetId, options);
+      const preview = previewMerge(doc.items, input.sourceIds, input.targetId, options);
       jsonResponse(res, 200, { ok: true, preview });
       return true;
     }
 
     // Execute merge
-    const result = executeMerge(doc.items, input.sourceIds, input.targetId, options);
+    const result = mergeItems(doc.items, input.sourceIds, input.targetId, options);
     savePRD(ctx, doc);
 
     // Log the merge
@@ -1070,70 +751,12 @@ async function handleItemMerge(
   return true;
 }
 
-// --------------------------------------------------------------------------
-// Prune helpers — duplicated from packages/rex/src/core/prune.ts to keep
-// the web package independent of Rex at compile time.
-// @see packages/rex/src/core/prune.ts — canonical source
-// --------------------------------------------------------------------------
-
-/** Check whether an item and all its descendants are completed. */
-function isFullyCompletedLocal(item: PRDItem): boolean {
-  if (item.status !== "completed") return false;
-  if (Array.isArray(item.children) && item.children.length > 0) {
-    return item.children.every(isFullyCompletedLocal);
-  }
-  return true;
-}
-
-/** Count items in a subtree (item + all descendants). */
-function countSubtreeLocal(item: PRDItem): number {
-  let count = 1;
-  if (Array.isArray(item.children)) {
-    for (const child of item.children) {
-      count += countSubtreeLocal(child);
-    }
-  }
-  return count;
-}
-
-/** Identify top-level fully-completed subtrees eligible for pruning (read-only). */
-function findPrunableItemsLocal(items: PRDItem[]): PRDItem[] {
-  const prunable: PRDItem[] = [];
-  for (const entry of walkTree(items)) {
-    if (!isFullyCompletedLocal(entry.item)) continue;
-    // Skip items whose parent is also fully completed (they'd be pruned as part of parent)
-    const pid = parentIdOf(entry);
-    const parent = pid ? findItemById(items, pid) : null;
-    if (parent && isFullyCompletedLocal(parent)) continue;
-    prunable.push(entry.item);
-  }
-  return prunable;
-}
-
-/** Remove all fully-completed subtrees from the item tree. Returns pruned items. */
-function pruneItemsLocal(items: PRDItem[]): { pruned: PRDItem[]; prunedCount: number } {
-  const pruned: PRDItem[] = [];
-  let prunedCount = 0;
-
-  for (let i = items.length - 1; i >= 0; i--) {
-    const item = items[i];
-    if (isFullyCompletedLocal(item)) {
-      pruned.unshift(item);
-      prunedCount += countSubtreeLocal(item);
-      items.splice(i, 1);
-    } else if (Array.isArray(item.children) && item.children.length > 0) {
-      const childResult = pruneItemsLocal(item.children);
-      pruned.push(...childResult.pruned);
-      prunedCount += childResult.prunedCount;
-    }
-  }
-
-  return { pruned, prunedCount };
-}
+// Prune functions (isFullyCompleted, countSubtree, findPrunableItems, pruneItems)
+// are imported from rex via the gateway (mcp-deps.ts).
 
 /**
  * Remove specific subtrees by ID from the item tree.
- * Used by criteria-based pruning where we've pre-identified which items to remove.
+ * Web-specific variant for criteria-based pruning where items are pre-identified.
  */
 function pruneItemsByIds(
   items: PRDItem[],
@@ -1146,7 +769,7 @@ function pruneItemsByIds(
     const item = items[i];
     if (ids.has(item.id)) {
       pruned.unshift(item);
-      prunedCount += countSubtreeLocal(item);
+      prunedCount += countSubtree(item);
       items.splice(i, 1);
     } else if (Array.isArray(item.children) && item.children.length > 0) {
       const childResult = pruneItemsByIds(item.children, ids);
@@ -1174,7 +797,7 @@ function summarizeItem(item: PRDItem): {
     level: item.level,
     status: item.status,
     childCount: Array.isArray(item.children) ? item.children.length : 0,
-    totalCount: countSubtreeLocal(item),
+    totalCount: countSubtree(item),
     ...(item.completedAt ? { completedAt: item.completedAt as string } : {}),
   };
 }
@@ -1222,7 +845,7 @@ function matchesPruneCriteria(item: PRDItem, criteria: PruneCriteria, now: Date)
 
 /**
  * Find top-level prunable subtrees applying criteria.
- * Like findPrunableItemsLocal but uses criteria matching instead of isFullyCompleted.
+ * Like findPrunableItems but uses criteria matching instead of isFullyCompleted.
  */
 function findPrunableWithCriteria(
   items: PRDItem[],
@@ -1432,7 +1055,7 @@ function handlePrunePreview(
 
   const now = new Date();
   const prunable = findPrunableWithCriteria(doc.items, criteria, now);
-  const totalCount = prunable.reduce((sum, item) => sum + countSubtreeLocal(item), 0);
+  const totalCount = prunable.reduce((sum, item) => sum + countSubtree(item), 0);
 
   // Estimate storage savings
   const estimatedBytes = prunable.reduce((sum, item) => sum + estimateSubtreeBytes(item), 0);
@@ -1509,7 +1132,7 @@ async function handlePruneExecute(
       return true;
     }
 
-    const expectedCount = prunable.reduce((sum, item) => sum + countSubtreeLocal(item), 0);
+    const expectedCount = prunable.reduce((sum, item) => sum + countSubtree(item), 0);
 
     // Confirm count must match to prevent operating on stale data
     if (input.confirmCount !== undefined && input.confirmCount !== expectedCount) {

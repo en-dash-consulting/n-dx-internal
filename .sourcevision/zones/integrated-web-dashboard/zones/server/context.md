@@ -8,7 +8,7 @@ Zone: Server (`web/server`)
 Files: 33, Cohesion: 0.99, Coupling: 0.01
 Description: 33 files, primarily TypeScript
 Entry points: packages/web/src/schema/data-files.ts
-Lines: 12699
+Lines: 12200
 
 </zone>
 
@@ -16,18 +16,18 @@ Lines: 12699
 
 packages/web/src/cli/index.ts (TypeScript, 56 lines, source)
 packages/web/src/public.ts (TypeScript, 51 lines, source)
-packages/web/src/schema/data-files.ts (TypeScript, 11 lines, source)
+packages/web/src/schema/data-files.ts (TypeScript, 12 lines, source)
 packages/web/src/server/index.ts (TypeScript, 38 lines, source)
-packages/web/src/server/mcp-deps.ts (TypeScript, 61 lines, source)
+packages/web/src/server/mcp-deps.ts (TypeScript, 110 lines, source)
 packages/web/src/server/routes-adaptive.ts (TypeScript, 873 lines, source)
 packages/web/src/server/routes-data.ts (TypeScript, 140 lines, source)
 packages/web/src/server/routes-hench.ts (TypeScript, 698 lines, source)
 packages/web/src/server/routes-mcp.ts (TypeScript, 177 lines, source)
-packages/web/src/server/routes-rex.ts (TypeScript, 3228 lines, source)
-packages/web/src/server/routes-sourcevision.ts (TypeScript, 166 lines, source)
+packages/web/src/server/routes-rex.ts (TypeScript, 2692 lines, source)
+packages/web/src/server/routes-sourcevision.ts (TypeScript, 184 lines, source)
 packages/web/src/server/routes-static.ts (TypeScript, 133 lines, source)
 packages/web/src/server/routes-token-usage.ts (TypeScript, 471 lines, source)
-packages/web/src/server/routes-validation.ts (TypeScript, 539 lines, source)
+packages/web/src/server/routes-validation.ts (TypeScript, 508 lines, source)
 packages/web/src/server/routes-workflow.ts (TypeScript, 660 lines, source)
 packages/web/src/server/start.ts (TypeScript, 246 lines, source)
 packages/web/src/server/types.ts (TypeScript, 62 lines, source)
@@ -72,8 +72,8 @@ Internal:
   packages/web/src/server/routes-hench.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-mcp.ts → packages/web/src/server/mcp-deps.ts {createRexMcpServer, createSourcevisionMcpServer}
   packages/web/src/server/routes-mcp.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/src/server/routes-rex.ts → packages/web/src/server/mcp-deps.ts {PRIORITY_ORDER, LEVEL_HIERARCHY, VALID_LEVELS, VALID_STATUSES, VALID_PRIORITIES, VALID_REQUIREMENT_CATEGORIES, VALID_VALIDATION_TYPES, CHILD_LEVEL, isPriority, isItemLevel, isRequirementCategory, isValidationType}
-  packages/web/src/server/routes-rex.ts → packages/web/src/server/mcp-deps.ts {Priority, ItemLevel}
+  packages/web/src/server/routes-rex.ts → packages/web/src/server/mcp-deps.ts {PRIORITY_ORDER, LEVEL_HIERARCHY, VALID_LEVELS, VALID_STATUSES, VALID_PRIORITIES, VALID_REQUIREMENT_CATEGORIES, VALID_VALIDATION_TYPES, CHILD_LEVEL, isPriority, isItemLevel, isRequirementCategory, isValidationType, findItem, walkTree, rexInsertChild, rexUpdateInTree, removeFromTree, computeStats, rexFindNextTask, collectCompletedIds, computeTimestampUpdates, validateMerge, previewMerge, mergeItems, countSubtree, isFullyCompleted, findPrunableItems, pruneItems, computeEpicStats, computePriorityDistribution, computeRequirementsSummary}
+  packages/web/src/server/routes-rex.ts → packages/web/src/server/mcp-deps.ts {Priority, ItemLevel, ItemStatus, PRDItem, PRDDocument, TreeEntry, TreeStats, MergeValidation, EpicStats, PriorityDistribution, RequirementsSummary}
   packages/web/src/server/routes-rex.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
   packages/web/src/server/routes-rex.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-rex.ts → packages/web/src/server/websocket.ts {WebSocketBroadcaster}
@@ -83,8 +83,8 @@ Internal:
   packages/web/src/server/routes-static.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-token-usage.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse}
   packages/web/src/server/routes-token-usage.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/src/server/routes-validation.ts → packages/web/src/server/mcp-deps.ts {LEVEL_HIERARCHY, isItemLevel}
-  packages/web/src/server/routes-validation.ts → packages/web/src/server/mcp-deps.ts {ItemLevel}
+  packages/web/src/server/routes-validation.ts → packages/web/src/server/mcp-deps.ts {LEVEL_HIERARCHY, isItemLevel, walkTree, findItem, collectAllIds}
+  packages/web/src/server/routes-validation.ts → packages/web/src/server/mcp-deps.ts {ItemLevel, PRDItem, PRDDocument}
   packages/web/src/server/routes-validation.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse}
   packages/web/src/server/routes-validation.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-workflow.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}

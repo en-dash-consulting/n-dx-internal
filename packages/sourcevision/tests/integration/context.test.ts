@@ -124,9 +124,11 @@ describe("generateContext", () => {
       routeTree: [
         { file: "routes/_index.tsx", routePattern: "/", children: [] },
       ],
+      serverRoutes: [],
       summary: {
         totalComponents: 0,
         totalRouteModules: 1,
+        totalServerRoutes: 0,
         totalUsageEdges: 0,
         routeConventions: { default: 1 },
         mostUsedComponents: [],

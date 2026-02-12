@@ -18,6 +18,9 @@
  * | Runtime imports (this file)| 2     | MCP server factories              |
  * | Rex domain re-exports      | 13    | Types, constants, type guards     |
  * | Rex tree re-exports        | 9     | Tree utilities + timestamp helper |
+ * | Rex merge re-exports       | 3     | validateMerge, previewMerge, mergeItems |
+ * | Rex prune re-exports       | 4     | countSubtree, isFullyCompleted, findPrunableItems, pruneItems |
+ * | Rex analytics re-exports   | 3     | computeEpicStats, computePriorityDistribution, computeRequirementsSummary |
  * | Filesystem reads           | many  | routes-rex, routes-sv, routes-hench |
  * | Subprocess calls           | 1     | rex CLI for `analyze`             |
  *
@@ -85,3 +88,23 @@ export { findNextTask, collectCompletedIds } from "rex";
 // ---- Rex timestamps ---------------------------------------------------------
 
 export { computeTimestampUpdates } from "rex";
+
+// ---- Rex merge/consolidation ------------------------------------------------
+
+export { validateMerge, previewMerge, mergeItems } from "rex";
+export type { MergeValidation, MergePreview, MergeResult } from "rex";
+
+// ---- Rex prune --------------------------------------------------------------
+
+export {
+  countSubtree, isFullyCompleted,
+  findPrunableItems, pruneItems,
+} from "rex";
+
+// ---- Rex analytics ----------------------------------------------------------
+
+export {
+  computeEpicStats, computePriorityDistribution,
+  computeRequirementsSummary,
+} from "rex";
+export type { EpicStats, PriorityDistribution, RequirementsSummary } from "rex";

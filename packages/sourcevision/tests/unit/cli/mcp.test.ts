@@ -78,10 +78,11 @@ describe("Sourcevision MCP server factory", () => {
     }), "utf-8");
     await writeFile(join(svDir, DATA_FILES.components), JSON.stringify({
       version: "0.1.0",
-      summary: { totalComponents: 0, totalRouteModules: 0, routeConventions: [] },
+      summary: { totalComponents: 0, totalRouteModules: 0, totalServerRoutes: 0, routeConventions: [] },
       components: [],
       routeModules: [],
       routeTree: [],
+      serverRoutes: [],
     }), "utf-8");
   });
 

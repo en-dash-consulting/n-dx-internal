@@ -1,7 +1,7 @@
 {
   "id": "hench/tests",
   "name": "Tests",
-  "description": "43 files, primarily TypeScript",
+  "description": "41 files, primarily TypeScript",
   "files": [
     "packages/hench/src/agent/analysis/adaptive.ts",
     "packages/hench/src/agent/analysis/review.ts",
@@ -24,7 +24,6 @@
     "packages/hench/src/schema/templates.ts",
     "packages/hench/src/schema/v1.ts",
     "packages/hench/src/schema/validate.ts",
-    "packages/hench/src/store/adjustments.ts",
     "packages/hench/src/store/templates.ts",
     "packages/hench/src/types/index.ts",
     "packages/hench/src/types/output.ts",
@@ -42,7 +41,6 @@
     "packages/hench/tests/unit/agent/token-usage.test.ts",
     "packages/hench/tests/unit/agent/workflow.test.ts",
     "packages/hench/tests/unit/cli/commands/config.test.ts",
-    "packages/hench/tests/unit/cli/commands/run-loop.test.ts",
     "packages/hench/tests/unit/schema/templates.test.ts",
     "packages/hench/tests/unit/schema/validate.test.ts",
     "packages/hench/tests/unit/store/templates.test.ts"
@@ -58,10 +56,11 @@
     "packages/hench/src/cli/commands/template.ts",
     "packages/hench/src/types/output.ts",
     "packages/hench/src/schema/index.ts",
-    "packages/hench/src/schema/v1.ts"
+    "packages/hench/src/schema/v1.ts",
+    "packages/hench/src/schema/validate.ts"
   ],
-  "cohesion": 0.79,
-  "coupling": 0.21,
-  "fileCount": 43,
-  "lineCount": 10864
+  "cohesion": 0.78,
+  "coupling": 0.22,
+  "fileCount": 41,
+  "lineCount": 10438
 }

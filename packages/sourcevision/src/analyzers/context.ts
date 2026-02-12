@@ -119,23 +119,41 @@ export function generateContext(
 
   // ── Routes ──────────────────────────────────────────────────────────────
 
-  if (components && components.routeModules.length > 0) {
+  const hasClientRoutes = components && components.routeModules.length > 0;
+  const hasServerRoutes = components && components.serverRoutes.length > 0;
+
+  if (hasClientRoutes || hasServerRoutes) {
     lines.push("<routes>");
     lines.push("");
 
-    lines.push(`Route modules: ${components.summary.totalRouteModules}`);
-    lines.push(`Components: ${components.summary.totalComponents}`);
-    lines.push(`Usage edges: ${components.summary.totalUsageEdges}`);
+    if (hasClientRoutes) {
+      lines.push(`Route modules: ${components.summary.totalRouteModules}`);
+      lines.push(`Components: ${components.summary.totalComponents}`);
+      lines.push(`Usage edges: ${components.summary.totalUsageEdges}`);
 
-    if (components.routeTree.length > 0) {
-      lines.push("");
-      printTree(components.routeTree, lines, 0);
+      if (components.routeTree.length > 0) {
+        lines.push("");
+        printTree(components.routeTree, lines, 0);
+      }
+
+      const conventions = Object.entries(components.summary.routeConventions);
+      if (conventions.length > 0) {
+        lines.push("");
+        lines.push(`Conventions: ${conventions.map(([k, v]) => `${k}(${v})`).join(" ")}`);
+      }
     }
 
-    const conventions = Object.entries(components.summary.routeConventions);
-    if (conventions.length > 0) {
+    if (hasServerRoutes) {
+      if (hasClientRoutes) lines.push("");
+      lines.push(`Server routes: ${components.summary.totalServerRoutes} endpoints in ${components.serverRoutes.length} handler(s)`);
       lines.push("");
-      lines.push(`Conventions: ${conventions.map(([k, v]) => `${k}(${v})`).join(" ")}`);
+      for (const group of components.serverRoutes) {
+        const handler = group.handler ? ` (${group.handler})` : "";
+        lines.push(`${group.prefix}${handler} — ${group.file}`);
+        for (const r of group.routes) {
+          lines.push(`  ${r.method.padEnd(7)} ${r.path}`);
+        }
+      }
     }
 
     lines.push("");
