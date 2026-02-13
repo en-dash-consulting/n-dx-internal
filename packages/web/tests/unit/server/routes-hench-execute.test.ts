@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtemp, writeFile, mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -16,11 +16,14 @@ function makePRD(items: Array<Record<string, unknown>> = []): Record<string, unk
 }
 
 /** Start a test server that routes through handleHenchRoute. */
-function startTestServer(ctx: ServerContext): Promise<{ server: Server; port: number }> {
+function startTestServer(
+  ctx: ServerContext,
+  broadcast?: (data: unknown) => void,
+): Promise<{ server: Server; port: number }> {
   return new Promise((resolve) => {
     const server = createServer(async (req, res) => {
       res.setHeader("Access-Control-Allow-Origin", "*");
-      const result = handleHenchRoute(req, res, ctx);
+      const result = handleHenchRoute(req, res, ctx, broadcast);
       if (result instanceof Promise) {
         if (await result) return;
       } else if (result) {
@@ -259,5 +262,137 @@ describe("POST /api/hench/execute", () => {
     const body = await res.json();
     expect(body.taskId).toBe("task-blocked");
     expect(body.status).toBe("started");
+  });
+});
+
+describe("GET /api/hench/execute/status", () => {
+  let tmpDir: string;
+  let rexDir: string;
+  let henchDir: string;
+  let ctx: ServerContext;
+  let server: Server;
+  let port: number;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "hench-exec-status-"));
+    rexDir = join(tmpDir, ".rex");
+    henchDir = join(tmpDir, ".hench");
+    await mkdir(rexDir, { recursive: true });
+    await mkdir(henchDir, { recursive: true });
+    await mkdir(join(henchDir, "runs"), { recursive: true });
+
+    ctx = {
+      projectDir: tmpDir,
+      svDir: join(tmpDir, ".sourcevision"),
+      rexDir,
+      dev: false,
+    };
+
+    const result = await startTestServer(ctx);
+    server = result.server;
+    port = result.port;
+  });
+
+  afterEach(async () => {
+    server.close();
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("returns null execution for unknown task", async () => {
+    const res = await fetch(`http://localhost:${port}/api/hench/execute/status/unknown-task`);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.execution).toBeNull();
+  });
+
+  it("returns 200 for status list endpoint", async () => {
+    const res = await fetch(`http://localhost:${port}/api/hench/execute/status`);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(Array.isArray(body.executions)).toBe(true);
+  });
+});
+
+describe("broadcast on execute", () => {
+  let tmpDir: string;
+  let rexDir: string;
+  let henchDir: string;
+  let ctx: ServerContext;
+  let server: Server;
+  let port: number;
+  let broadcastMessages: unknown[];
+  let broadcastFn: (data: unknown) => void;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "hench-exec-broadcast-"));
+    rexDir = join(tmpDir, ".rex");
+    henchDir = join(tmpDir, ".hench");
+    await mkdir(rexDir, { recursive: true });
+    await mkdir(henchDir, { recursive: true });
+    await mkdir(join(henchDir, "runs"), { recursive: true });
+
+    ctx = {
+      projectDir: tmpDir,
+      svDir: join(tmpDir, ".sourcevision"),
+      rexDir,
+      dev: false,
+    };
+
+    broadcastMessages = [];
+    broadcastFn = vi.fn((data: unknown) => {
+      broadcastMessages.push(data);
+    });
+
+    const result = await startTestServer(ctx, broadcastFn);
+    server = result.server;
+    port = result.port;
+  });
+
+  afterEach(async () => {
+    server.close();
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("broadcasts execution progress events when task is triggered", async () => {
+    await writeFile(
+      join(rexDir, "prd.json"),
+      JSON.stringify(makePRD([
+        { id: "task-bc", title: "Broadcast Task", status: "pending", level: "task" },
+      ]), null, 2),
+    );
+
+    const res = await fetch(`http://localhost:${port}/api/hench/execute`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskId: "task-bc" }),
+    });
+    expect(res.status).toBe(202);
+
+    // Wait for process to spawn and complete/fail (no real hench binary in test env)
+    await new Promise((r) => setTimeout(r, 200));
+
+    expect(broadcastFn).toHaveBeenCalled();
+
+    // All broadcasts should be of type hench:task-execution-progress
+    for (const msg of broadcastMessages) {
+      const m = msg as Record<string, unknown>;
+      expect(m.type).toBe("hench:task-execution-progress");
+      expect(m.timestamp).toBeDefined();
+      const state = m.state as Record<string, unknown>;
+      expect(state.taskId).toBe("task-bc");
+      expect(state.taskTitle).toBe("Broadcast Task");
+      expect(state.runId).toBeDefined();
+      expect(state.startedAt).toBeDefined();
+    }
+
+    // First broadcast should be "starting", last should be terminal
+    const firstState = (broadcastMessages[0] as Record<string, unknown>).state as Record<string, unknown>;
+    expect(firstState.status).toBe("starting");
+
+    const lastState = (broadcastMessages[broadcastMessages.length - 1] as Record<string, unknown>).state as Record<string, unknown>;
+    expect(["completed", "failed"]).toContain(lastState.status);
+    expect(lastState.finishedAt).toBeDefined();
   });
 });

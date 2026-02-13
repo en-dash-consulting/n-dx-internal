@@ -195,9 +195,10 @@ export function PRDView({ prdData, onSelectItem, onDetailContent }: PRDViewProps
         onUpdate: handleItemUpdate,
         onNavigateToItem: handleNavigateToItem,
         onExecuteTask: handleExecuteTask,
+        onPrdChanged: fetchPRDData,
       }),
     );
-  }, [data, selectedItemId, onDetailContent, handleItemUpdate, handleNavigateToItem, handleExecuteTask]);
+  }, [data, selectedItemId, onDetailContent, handleItemUpdate, handleNavigateToItem, handleExecuteTask, fetchPRDData]);
 
   // Handle add item submission
   const handleAddItem = useCallback(

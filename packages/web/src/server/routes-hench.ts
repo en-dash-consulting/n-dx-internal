@@ -22,6 +22,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { spawnManaged, type ManagedChild } from "@n-dx/claude-client";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./types.js";
+import type { WebSocketBroadcaster } from "./websocket.js";
 
 const HENCH_PREFIX = "/api/hench/";
 
@@ -236,6 +237,7 @@ export function handleHenchRoute(
   req: IncomingMessage,
   res: ServerResponse,
   ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
 ): boolean | Promise<boolean> {
   const url = req.url || "/";
   const method = req.method || "GET";
@@ -359,7 +361,18 @@ export function handleHenchRoute(
 
   // POST /api/hench/execute — trigger task execution
   if (path === "execute" && method === "POST") {
-    return handleExecute(req, res, ctx);
+    return handleExecute(req, res, ctx, broadcast);
+  }
+
+  // GET /api/hench/execute/status — get all active execution statuses
+  if (path === "execute/status" && method === "GET") {
+    return handleExecuteStatus(res);
+  }
+
+  // GET /api/hench/execute/status/:taskId — get specific task execution status
+  const execStatusMatch = path.match(/^execute\/status\/([^/?]+)$/);
+  if (execStatusMatch && method === "GET") {
+    return handleExecuteStatusForTask(execStatusMatch[1], res);
   }
 
   return false;
@@ -709,8 +722,25 @@ async function handleTemplateDelete(
 /** Actionable statuses — only tasks in these states can be triggered. */
 const ACTIONABLE_STATUSES = new Set(["pending", "blocked"]);
 
+/** Execution status for a single task run. */
+export interface TaskExecutionStatus {
+  taskId: string;
+  taskTitle: string;
+  runId: string;
+  status: "starting" | "running" | "completed" | "failed";
+  startedAt: string;
+  finishedAt?: string;
+  lastOutput?: string;
+  error?: string;
+  exitCode?: number | null;
+}
+
 /** Track active task executions to prevent concurrent runs on the same task. */
-const activeExecutions = new Map<string, { runId: string; handle: ManagedChild }>();
+const activeExecutions = new Map<string, {
+  runId: string;
+  handle: ManagedChild;
+  state: TaskExecutionStatus;
+}>();
 
 /** Load and parse prd.json from disk. */
 function loadPRDForExecute(ctx: ServerContext): Record<string, unknown> | null {
@@ -739,11 +769,25 @@ function findPRDItem(
   return null;
 }
 
+/** Broadcast an execution state update. */
+function broadcastExecState(
+  broadcast: WebSocketBroadcaster | undefined,
+  state: TaskExecutionStatus,
+): void {
+  if (!broadcast) return;
+  broadcast({
+    type: "hench:task-execution-progress",
+    state: { ...state },
+    timestamp: new Date().toISOString(),
+  });
+}
+
 /** POST /api/hench/execute — trigger Hench run for a specific task. */
 async function handleExecute(
   req: IncomingMessage,
   res: ServerResponse,
   ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
 ): Promise<boolean> {
   // Parse request body
   let body: Record<string, unknown>;
@@ -809,6 +853,16 @@ async function handleExecute(
   // Generate a run ID for tracking (hench will generate its own, but we
   // need one to correlate the response before the process starts writing)
   const runId = `exec-${Date.now().toString(36)}`;
+  const taskTitle = task.title as string;
+
+  // Build initial execution state
+  const execState: TaskExecutionStatus = {
+    taskId,
+    taskTitle,
+    runId,
+    status: "starting",
+    startedAt: new Date().toISOString(),
+  };
 
   // Spawn hench process
   const handle = spawnManaged(binPath, binArgs, {
@@ -818,19 +872,77 @@ async function handleExecute(
   });
 
   // Track active execution
-  activeExecutions.set(taskId, { runId, handle });
+  activeExecutions.set(taskId, { runId, handle, state: execState });
 
-  // Clean up when process completes
+  // Broadcast initial state
+  broadcastExecState(broadcast, execState);
+
+  // Transition to "running" after a short delay (hench takes a moment to initialize)
+  setTimeout(() => {
+    const entry = activeExecutions.get(taskId);
+    if (entry && entry.state.status === "starting") {
+      entry.state.status = "running";
+      broadcastExecState(broadcast, { ...entry.state });
+    }
+  }, 2000);
+
+  // Handle process completion
   handle.done
-    .then(() => activeExecutions.delete(taskId))
-    .catch(() => activeExecutions.delete(taskId));
+    .then((result) => {
+      const entry = activeExecutions.get(taskId);
+      if (entry) {
+        const isSuccess = result.exitCode === 0;
+        entry.state.status = isSuccess ? "completed" : "failed";
+        entry.state.finishedAt = new Date().toISOString();
+        entry.state.exitCode = result.exitCode;
+        if (!isSuccess && result.stderr) {
+          entry.state.error = result.stderr.slice(-200);
+        }
+        if (result.stdout) {
+          entry.state.lastOutput = result.stdout.slice(-200);
+        }
+        broadcastExecState(broadcast, { ...entry.state });
+      }
+      activeExecutions.delete(taskId);
+    })
+    .catch((err) => {
+      const entry = activeExecutions.get(taskId);
+      if (entry) {
+        entry.state.status = "failed";
+        entry.state.finishedAt = new Date().toISOString();
+        entry.state.error = err instanceof Error ? err.message : String(err);
+        broadcastExecState(broadcast, { ...entry.state });
+      }
+      activeExecutions.delete(taskId);
+    });
 
   // Return immediately with tracking info
   jsonResponse(res, 202, {
     runId,
     taskId,
-    taskTitle: task.title as string,
+    taskTitle,
     status: "started",
   });
+  return true;
+}
+
+/** GET /api/hench/execute/status — return status of all active executions. */
+function handleExecuteStatus(res: ServerResponse): boolean {
+  const executions: TaskExecutionStatus[] = [];
+  for (const entry of activeExecutions.values()) {
+    executions.push({ ...entry.state });
+  }
+  jsonResponse(res, 200, { executions });
+  return true;
+}
+
+/** GET /api/hench/execute/status/:taskId — return status of a specific task execution. */
+function handleExecuteStatusForTask(taskId: string, res: ServerResponse): boolean {
+  const entry = activeExecutions.get(taskId);
+  if (!entry) {
+    jsonResponse(res, 200, { execution: null });
+    return true;
+  }
+  jsonResponse(res, 200, { execution: { ...entry.state } });
   return true;
 }

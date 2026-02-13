@@ -173,7 +173,7 @@ export function startServer(
 
     // 3. Hench API
     if (inScope("hench")) {
-      const henchResult = handleHenchRoute(req, res, ctx);
+      const henchResult = handleHenchRoute(req, res, ctx, ws.broadcast);
       if (henchResult instanceof Promise) {
         if (await henchResult) return;
       } else if (henchResult) {
