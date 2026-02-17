@@ -5,6 +5,12 @@ import type { ViewId } from "../types.js";
 import { ENRICHMENT_THRESHOLDS } from "./constants.js";
 import { NdxLogoPng, ProductLogoPng } from "./logos.js";
 import { SidebarThemeToggle } from "./theme-toggle.js";
+import {
+  useProjectStatus,
+  SvFreshnessIndicator,
+  RexCompletionIndicator,
+  HenchActivityIndicator,
+} from "./status-indicators.js";
 
 const STORAGE_KEY = "sidebar-expanded-section";
 
@@ -101,6 +107,7 @@ for (const section of SECTIONS) {
 
 export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, onToggleSidebar, scope }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const projectStatus = useProjectStatus();
 
   /** Sections filtered by scope — when scoped, show only the matching section. */
   const visibleSections = useMemo(() => {
@@ -362,6 +369,30 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
                     })
                   ),
                 )
+              : null,
+            // SourceVision freshness status indicator
+            section.product === "sourcevision" && projectStatus?.sv
+              ? h(SvFreshnessIndicator, {
+                  status: projectStatus.sv,
+                  onNavigate: handleNav,
+                  tabIndex: isExpanded ? 0 : -1,
+                })
+              : null,
+            // Rex PRD completion indicator
+            section.product === "rex" && projectStatus?.rex
+              ? h(RexCompletionIndicator, {
+                  status: projectStatus.rex,
+                  onNavigate: handleNav,
+                  tabIndex: isExpanded ? 0 : -1,
+                })
+              : null,
+            // Hench activity indicator
+            section.product === "hench" && projectStatus?.hench
+              ? h(HenchActivityIndicator, {
+                  status: projectStatus.hench,
+                  onNavigate: handleNav,
+                  tabIndex: isExpanded ? 0 : -1,
+                })
               : null,
           )
         );

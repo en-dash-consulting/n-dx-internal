@@ -17,6 +17,7 @@ import { handleWorkflowRoute } from "./routes-workflow.js";
 import { handleAdaptiveRoute } from "./routes-adaptive.js";
 import { handleMcpRoute } from "./routes-mcp.js";
 import { handleProjectRoute } from "./routes-project.js";
+import { handleStatusRoute } from "./routes-status.js";
 import { createWebSocketManager } from "./websocket.js";
 import { ALL_DATA_FILES } from "../schema/data-files.js";
 
@@ -161,6 +162,9 @@ export function startServer(
 
     // 0b. Project metadata (cross-cutting, not scope-gated)
     if (await handleProjectRoute(req, res, ctx)) return;
+
+    // 0c. Project status indicators (cross-cutting, not scope-gated)
+    if (handleStatusRoute(req, res, ctx)) return;
 
     // 1. Sourcevision API
     if (inScope("sourcevision") && handleSourcevisionRoute(req, res, ctx)) return;
