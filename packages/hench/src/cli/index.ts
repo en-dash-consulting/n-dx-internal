@@ -24,6 +24,7 @@ import { usage } from "./commands/constants.js";
 import { showCommandHelp } from "./help.js";
 import { CLIError, handleCLIError, requireHenchDir } from "./errors.js";
 import { setQuiet } from "./output.js";
+import { formatTypoSuggestion } from "@n-dx/claude-client";
 
 function parseArgs(argv: string[]): {
   command: string | undefined;
@@ -128,11 +129,14 @@ async function main(): Promise<void> {
         await cmdTemplate(resolveDir(), positional, flags);
         break;
       }
-      default:
+      default: {
+        const HENCH_COMMANDS = ["init", "run", "status", "show", "config", "template"];
+        const typoHint = formatTypoSuggestion(command, HENCH_COMMANDS, "hench ");
         throw new CLIError(
           `Unknown command: ${command}`,
-          "Run 'hench --help' to see available commands.",
+          typoHint ?? "Run 'hench --help' to see available commands.",
         );
+      }
     }
   } catch (err) {
     handleCLIError(err);

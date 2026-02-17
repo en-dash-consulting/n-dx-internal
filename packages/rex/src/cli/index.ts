@@ -6,6 +6,7 @@ import { usage } from "./commands/constants.js";
 import { showCommandHelp } from "./help.js";
 import { CLIError, handleCLIError, requireRexDir } from "./errors.js";
 import { setQuiet } from "./output.js";
+import { formatTypoSuggestion } from "@n-dx/claude-client";
 
 /**
  * Read all data from stdin when input is piped (not a TTY).
@@ -291,11 +292,18 @@ async function main(): Promise<void> {
         await startMcpServer(resolveDir());
         break;
       }
-      default:
+      default: {
+        const REX_COMMANDS = [
+          "init", "status", "next", "add", "update", "move", "reshape",
+          "prune", "validate", "fix", "sync", "usage", "report", "verify",
+          "recommend", "analyze", "import", "adapter", "mcp",
+        ];
+        const typoHint = formatTypoSuggestion(command, REX_COMMANDS, "rex ");
         throw new CLIError(
           `Unknown command: ${command}`,
-          "Run 'rex --help' to see available commands.",
+          typoHint ?? "Run 'rex --help' to see available commands.",
         );
+      }
     }
   } catch (err) {
     handleCLIError(err);

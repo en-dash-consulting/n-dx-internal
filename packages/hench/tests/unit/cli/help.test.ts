@@ -53,6 +53,16 @@ describe("hench CLI help", () => {
     }
   });
 
+  describe("related commands", () => {
+    it("includes 'See also' for commands with related commands", () => {
+      logSpy.mockClear();
+      showCommandHelp("run");
+      const output = logSpy.mock.calls[0][0] as string;
+      expect(output).toContain("See also:");
+      expect(output).toContain("hench status");
+    });
+  });
+
   describe("command-specific options", () => {
     it("run help includes --task, --epic, and --dry-run flags", () => {
       showCommandHelp("run");

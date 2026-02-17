@@ -34,14 +34,63 @@ const COMMAND_HELP: Record<string, () => void> = {
   mcp: helpMcp,
 };
 
+/** Related commands for each rex command (shown as "See also"). */
+const RELATED_COMMANDS: Record<string, string[]> = {
+  init: ["status", "analyze"],
+  status: ["next", "usage"],
+  next: ["status", "update"],
+  add: ["analyze", "update"],
+  update: ["add", "next"],
+  move: ["reshape"],
+  reshape: ["prune", "move"],
+  prune: ["reshape", "status"],
+  validate: ["fix", "report"],
+  fix: ["validate"],
+  sync: ["adapter"],
+  usage: ["status"],
+  report: ["validate"],
+  verify: ["status"],
+  recommend: ["analyze"],
+  analyze: ["add", "recommend"],
+  import: ["add", "recommend"],
+  adapter: ["sync"],
+  mcp: [],
+};
+
+/**
+ * Get the help text for a command without printing it.
+ * Returns null if the command has no dedicated help.
+ */
+export function getCommandHelp(command: string): string | null {
+  const fn = COMMAND_HELP[command];
+  if (!fn) return null;
+
+  // Capture console.log output from the help function
+  const lines: string[] = [];
+  const origLog = console.log;
+  console.log = (...args: unknown[]) => lines.push(args.join(" "));
+  try {
+    fn();
+  } finally {
+    console.log = origLog;
+  }
+
+  let text = lines.join("\n");
+  const related = RELATED_COMMANDS[command];
+  if (related && related.length > 0) {
+    text += `\nSee also: ${related.map((r) => `rex ${r}`).join(", ")}`;
+  }
+  return text;
+}
+
 /**
  * Show command-specific help. Returns true if help was shown, false if
  * the command has no dedicated help (caller should fall back to general usage).
  */
 export function showCommandHelp(command: string): boolean {
-  const fn = COMMAND_HELP[command];
-  if (!fn) return false;
-  fn();
+  const text = getCommandHelp(command);
+  if (!text) return false;
+  console.log(text);
   return true;
 }
 

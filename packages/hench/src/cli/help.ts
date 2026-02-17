@@ -19,14 +19,49 @@ const COMMAND_HELP: Record<string, () => void> = {
   template: helpTemplate,
 };
 
+/** Related commands for each hench command (shown as "See also"). */
+const RELATED_COMMANDS: Record<string, string[]> = {
+  init: ["run", "config"],
+  run: ["status", "show"],
+  status: ["show", "run"],
+  show: ["status"],
+  config: ["template"],
+  template: ["config"],
+};
+
+/**
+ * Get the help text for a command without printing it.
+ * Returns null if the command has no dedicated help.
+ */
+export function getCommandHelp(command: string): string | null {
+  const fn = COMMAND_HELP[command];
+  if (!fn) return null;
+
+  const lines: string[] = [];
+  const origLog = console.log;
+  console.log = (...args: unknown[]) => lines.push(args.join(" "));
+  try {
+    fn();
+  } finally {
+    console.log = origLog;
+  }
+
+  let text = lines.join("\n");
+  const related = RELATED_COMMANDS[command];
+  if (related && related.length > 0) {
+    text += `\nSee also: ${related.map((r) => `hench ${r}`).join(", ")}`;
+  }
+  return text;
+}
+
 /**
  * Show command-specific help. Returns true if help was shown, false if
  * the command has no dedicated help.
  */
 export function showCommandHelp(command: string): boolean {
-  const fn = COMMAND_HELP[command];
-  if (!fn) return false;
-  fn();
+  const text = getCommandHelp(command);
+  if (!text) return false;
+  console.log(text);
   return true;
 }
 

@@ -22,6 +22,7 @@ import { cmdValidate } from "./commands/validate.js";
 import { cmdExportPdf } from "./commands/export-pdf.js";
 import { CLIError, handleCLIError, requireSvDir } from "./errors.js";
 import { setQuiet } from "./output.js";
+import { formatTypoSuggestion } from "@n-dx/claude-client";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -109,11 +110,14 @@ try {
     case undefined:
       usage();
       break;
-    default:
+    default: {
+      const SV_COMMANDS = ["init", "analyze", "serve", "validate", "reset", "export-pdf", "mcp"];
+      const typoHint = formatTypoSuggestion(command, SV_COMMANDS, "sourcevision ");
       throw new CLIError(
         `Unknown command: ${command}`,
-        "Run 'sourcevision --help' to see available commands.",
+        typoHint ?? "Run 'sourcevision --help' to see available commands.",
       );
+    }
   }
 } catch (err) {
   handleCLIError(err);

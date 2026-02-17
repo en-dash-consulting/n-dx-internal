@@ -66,6 +66,23 @@ describe("rex CLI help", () => {
     }
   });
 
+  describe("related commands", () => {
+    it("includes 'See also' for commands with related commands", () => {
+      logSpy.mockClear();
+      showCommandHelp("status");
+      const output = logSpy.mock.calls[0][0] as string;
+      expect(output).toContain("See also:");
+      expect(output).toContain("rex next");
+    });
+
+    it("does not include 'See also' for mcp (no related commands)", () => {
+      logSpy.mockClear();
+      showCommandHelp("mcp");
+      const output = logSpy.mock.calls[0][0] as string;
+      expect(output).not.toContain("See also:");
+    });
+  });
+
   describe("command-specific options", () => {
     it("status help includes --all and --format flags", () => {
       showCommandHelp("status");

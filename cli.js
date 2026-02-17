@@ -41,6 +41,13 @@ import { fileURLToPath } from "url";
 import { runConfig } from "./config.js";
 import { runCI } from "./ci.js";
 import { runWeb } from "./web.js";
+import {
+  formatTypoSuggestion,
+  getOrchestratorCommands,
+  searchHelp,
+  formatSearchResults,
+  formatToolHelp,
+} from "./help.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 
@@ -170,7 +177,9 @@ Options:
 Examples:
   ndx init                         Initialize in current directory
   ndx init ./my-project            Initialize in a specific directory
-  ndx init --analyze .             Initialize and analyze codebase`,
+  ndx init --analyze .             Initialize and analyze codebase
+
+See also: ndx plan, ndx status`,
 
   plan: `ndx plan — analyze codebase and generate PRD proposals
 
@@ -194,7 +203,9 @@ Examples:
   ndx plan                         Analyze and review proposals interactively
   ndx plan --accept .              Auto-accept all proposals
   ndx plan --file=spec.md .        Generate PRD from a spec document
-  ndx plan --guided .              Guided setup for a new project`,
+  ndx plan --guided .              Guided setup for a new project
+
+See also: ndx init, ndx work, ndx status`,
 
   work: `ndx work — execute the next task autonomously
 
@@ -220,7 +231,9 @@ Examples:
   ndx work                         Run next task interactively
   ndx work --task=abc123 .         Run a specific task
   ndx work --auto --loop .         Continuously auto-run tasks
-  ndx work --dry-run .             Preview the brief without execution`,
+  ndx work --dry-run .             Preview the brief without execution
+
+See also: ndx plan, ndx status`,
 
   status: `ndx status — show PRD status tree
 
@@ -240,7 +253,9 @@ Options:
 Examples:
   ndx status                       Show PRD tree
   ndx status --all                 Include completed items
-  ndx status --format=json .       JSON output for scripting`,
+  ndx status --format=json .       JSON output for scripting
+
+See also: ndx plan, ndx usage, ndx work`,
 
   usage: `ndx usage — token usage analytics
 
@@ -258,7 +273,9 @@ Options:
 Examples:
   ndx usage                        Show total token usage
   ndx usage --group=week           Usage grouped by week
-  ndx usage --format=json .        Machine-readable output`,
+  ndx usage --format=json .        Machine-readable output
+
+See also: ndx status`,
 
   sync: `ndx sync — sync local PRD with remote adapter
 
@@ -276,7 +293,9 @@ Options:
 Examples:
   ndx sync                         Full bidirectional sync
   ndx sync --push .                Push local changes to Notion
-  ndx sync --pull .                Pull remote changes down`,
+  ndx sync --pull .                Pull remote changes down
+
+See also: ndx status`,
 
   start: `ndx start — start the dashboard and MCP server
 
@@ -298,7 +317,9 @@ Examples:
   ndx start .                      Start server in foreground
   ndx start --background .         Start as background daemon
   ndx start status .               Check if server is running
-  ndx start stop .                 Stop background server`,
+  ndx start stop .                 Stop background server
+
+See also: ndx web, ndx dev`,
 
   web: `ndx web — alias for 'ndx start'
 
@@ -308,7 +329,9 @@ Legacy alias for 'ndx start'. See 'ndx start --help' for full details.
 
 Examples:
   ndx web .                        Start server
-  ndx web --background .           Start as background daemon`,
+  ndx web --background .           Start as background daemon
+
+See also: ndx start`,
 
   ci: `ndx ci — run analysis pipeline and validate PRD health
 
@@ -322,7 +345,9 @@ Options:
 
 Examples:
   ndx ci                           Run CI pipeline
-  ndx ci --format=json .           JSON output for CI integration`,
+  ndx ci --format=json .           JSON output for CI integration
+
+See also: ndx plan, ndx status`,
 
   dev: `ndx dev — start dev server with live reload
 
@@ -337,7 +362,9 @@ Options:
 
 Examples:
   ndx dev .                        Start dev server
-  ndx dev --port=8080 .            Custom port`,
+  ndx dev --port=8080 .            Custom port
+
+See also: ndx start`,
 
   // config is excluded: config.js has its own comprehensive --help handler
   // that documents all per-package keys, types, and examples.
@@ -360,6 +387,31 @@ const [command, ...rest] = process.argv.slice(2);
 
 const hasHelp = rest.some((a) => a === "--help" || a === "-h");
 if (hasHelp && command && showCommandHelp(command)) {
+  process.exit(0);
+}
+
+// ── ndx help [keyword|tool] — search and navigation ────────────────────────
+
+if (command === "help") {
+  const query = rest.filter((a) => !a.startsWith("-")).join(" ");
+  if (!query) {
+    // No keyword — show main help
+    showMainHelp();
+    process.exit(0);
+  }
+  // If query is a tool name, show its subcommand summary with navigation hints
+  const toolHelp = formatToolHelp(query);
+  if (toolHelp) {
+    console.log(toolHelp);
+    process.exit(0);
+  }
+  // If query matches an orchestration command, show its help
+  if (showCommandHelp(query)) {
+    process.exit(0);
+  }
+  // Otherwise search across all help content
+  const results = searchHelp(query);
+  console.log(formatSearchResults(results, query));
   process.exit(0);
 }
 
@@ -488,9 +540,26 @@ if (tools[command]) {
   process.exit(code);
 }
 
-// --- Help ---
+// --- Help or unknown command ---
 
-console.log(`n-dx — AI-powered development toolkit
+if (command) {
+  // Unknown command — suggest similar commands
+  const allCommands = [...getOrchestratorCommands(), "help"];
+  const typoHint = formatTypoSuggestion(command, allCommands, "ndx ");
+  console.error(`Error: Unknown command: ${command}`);
+  if (typoHint) {
+    console.error(`Hint: ${typoHint}`);
+  } else {
+    console.error("Hint: Run 'ndx --help' to see available commands, or 'ndx help <keyword>' to search.");
+  }
+  process.exit(1);
+}
+
+showMainHelp();
+process.exit(0);
+
+function showMainHelp() {
+  console.log(`n-dx — AI-powered development toolkit
 
 Orchestration:
   init [dir]            Initialize all tools (sourcevision + rex + hench)
@@ -518,9 +587,7 @@ Global Options:
 Usage: ndx <command> [args...]
        n-dx <command> [args...]
 
+Run 'ndx <command> --help' for detailed help on any command.
+Run 'ndx help <keyword>' to search all commands by keyword.
 Standalone binaries (rex, hench, sourcevision, sv) are also available after install.`);
-if (command) {
-  console.error(`\nError: Unknown command: ${command}`);
-  console.error("Hint: Run 'ndx --help' to see available commands.");
 }
-process.exit(command ? 1 : 0);

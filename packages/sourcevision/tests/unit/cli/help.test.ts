@@ -54,6 +54,23 @@ describe("sourcevision CLI help", () => {
     }
   });
 
+  describe("related commands", () => {
+    it("includes 'See also' for commands with related commands", () => {
+      logSpy.mockClear();
+      showCommandHelp("analyze");
+      const output = logSpy.mock.calls[0][0] as string;
+      expect(output).toContain("See also:");
+      expect(output).toContain("sourcevision validate");
+    });
+
+    it("does not include 'See also' for mcp (no related commands)", () => {
+      logSpy.mockClear();
+      showCommandHelp("mcp");
+      const output = logSpy.mock.calls[0][0] as string;
+      expect(output).not.toContain("See also:");
+    });
+  });
+
   describe("command-specific options", () => {
     it("analyze help includes --phase and --fast flags", () => {
       showCommandHelp("analyze");

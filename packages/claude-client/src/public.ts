@@ -159,3 +159,10 @@ export {
   info,
   result,
 } from "./output.js";
+
+// CLI typo correction
+export {
+  editDistance,
+  suggestCommands,
+  formatTypoSuggestion,
+} from "./suggest.js";

@@ -20,14 +20,50 @@ const COMMAND_HELP: Record<string, () => void> = {
   mcp: helpMcp,
 };
 
+/** Related commands for each sourcevision command (shown as "See also"). */
+const RELATED_COMMANDS: Record<string, string[]> = {
+  init: ["analyze"],
+  analyze: ["validate", "serve"],
+  serve: ["analyze"],
+  validate: ["analyze"],
+  reset: ["init"],
+  "export-pdf": ["analyze"],
+  mcp: [],
+};
+
+/**
+ * Get the help text for a command without printing it.
+ * Returns null if the command has no dedicated help.
+ */
+export function getCommandHelp(command: string): string | null {
+  const fn = COMMAND_HELP[command];
+  if (!fn) return null;
+
+  const lines: string[] = [];
+  const origLog = console.log;
+  console.log = (...args: unknown[]) => lines.push(args.join(" "));
+  try {
+    fn();
+  } finally {
+    console.log = origLog;
+  }
+
+  let text = lines.join("\n");
+  const related = RELATED_COMMANDS[command];
+  if (related && related.length > 0) {
+    text += `\nSee also: ${related.map((r) => `sourcevision ${r}`).join(", ")}`;
+  }
+  return text;
+}
+
 /**
  * Show command-specific help. Returns true if help was shown, false if
  * the command has no dedicated help.
  */
 export function showCommandHelp(command: string): boolean {
-  const fn = COMMAND_HELP[command];
-  if (!fn) return false;
-  fn();
+  const text = getCommandHelp(command);
+  if (!text) return false;
+  console.log(text);
   return true;
 }
 
