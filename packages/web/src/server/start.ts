@@ -16,6 +16,7 @@ import { handleHenchRoute } from "./routes-hench.js";
 import { handleWorkflowRoute } from "./routes-workflow.js";
 import { handleAdaptiveRoute } from "./routes-adaptive.js";
 import { handleMcpRoute } from "./routes-mcp.js";
+import { handleProjectRoute } from "./routes-project.js";
 import { createWebSocketManager } from "./websocket.js";
 import { ALL_DATA_FILES } from "../schema/data-files.js";
 
@@ -157,6 +158,9 @@ export function startServer(
     // Try each route handler in order
     // 0. MCP endpoints (/mcp/rex, /mcp/sourcevision)
     if (await handleMcpRoute(req, res, ctx)) return;
+
+    // 0b. Project metadata (cross-cutting, not scope-gated)
+    if (await handleProjectRoute(req, res, ctx)) return;
 
     // 1. Sourcevision API
     if (inScope("sourcevision") && handleSourcevisionRoute(req, res, ctx)) return;
