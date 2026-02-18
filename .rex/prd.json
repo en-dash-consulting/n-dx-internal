@@ -8318,20 +8318,24 @@
     {
       "id": "55951f82-e673-4fdf-b891-1cd2558bc4bd",
       "title": "Address observation issues (2 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Bidirectional coupling: \"autonomous-agent\" ↔ \"execution-gateway\" (14+1 crossings) — consider extracting shared interface\n- Bidirectional coupling: \"dashboard-components\" ↔ \"prd-management-ui\" (4+6 crossings) — consider extracting shared interface",
       "priority": "high",
-      "source": "sourcevision"
+      "source": "sourcevision",
+      "startedAt": "2026-02-18T06:59:13.384Z",
+      "completedAt": "2026-02-18T07:09:02.395Z"
     },
     {
       "id": "70d9bc2e-a736-4170-a3cc-2039da7f53fb",
       "title": "Address anti-pattern issues (2 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Inconsistent gateway naming pattern: autonomous-agent uses 'prd/ops.ts' while presentation-gateway uses 'mcp-deps.ts', reducing architectural clarity\n- God function: handleRexRoute in packages/web/src/server/routes-rex.ts calls 48 unique functions — consider decomposing into smaller, focused functions",
       "priority": "high",
-      "source": "sourcevision"
+      "source": "sourcevision",
+      "startedAt": "2026-02-18T06:47:38.069Z",
+      "completedAt": "2026-02-18T06:58:33.614Z"
     },
     {
       "id": "fc2ee90a-c6ac-4267-bcab-00e2778e7066",
@@ -8403,6 +8407,8 @@
           "level": "feature",
           "description": "Create a prominent display for currently running tasks in the Hench UI",
           "source": "smart-add",
+          "startedAt": "2026-02-18T06:47:01.266Z",
+          "completedAt": "2026-02-18T06:47:01.266Z",
           "children": [
             {
               "id": "e5fecbf6-877c-42a6-9060-29691b495b38",
@@ -8448,9 +8454,7 @@
               "startedAt": "2026-02-18T06:27:06.027Z",
               "completedAt": "2026-02-18T06:42:16.080Z"
             }
-          ],
-          "startedAt": "2026-02-18T06:47:01.266Z",
-          "completedAt": "2026-02-18T06:47:01.266Z"
+          ]
         },
         {
           "id": "b265212f-991c-46c5-aa83-9bb70fa1c5a8",

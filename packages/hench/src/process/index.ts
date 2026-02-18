@@ -17,3 +17,6 @@ export type {
   ExecResult,
   ExecOptions,
 } from "./exec.js";
+
+export { execShell } from "./exec-shell.js";
+export type { ExecShellOptions } from "./exec-shell.js";

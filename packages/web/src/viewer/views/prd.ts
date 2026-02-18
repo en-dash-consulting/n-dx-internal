@@ -15,10 +15,10 @@ import { AddItemForm } from "../components/prd-tree/add-item-form.js";
 import { BulkActions } from "../components/prd-tree/bulk-actions.js";
 import { MergePreview } from "../components/prd-tree/merge-preview.js";
 import { PruneConfirmation } from "../components/prd-tree/prune-confirmation.js";
-import { BrandedHeader } from "../components/logos.js";
+import { BrandedHeader } from "../components/prd-tree/shared-imports.js";
 import type { PRDDocumentData, PRDItemData, AddItemInput } from "../components/prd-tree/index.js";
 import { findItemById } from "../components/prd-tree/tree-utils.js";
-import type { DetailItem } from "../types.js";
+import type { DetailItem } from "../components/prd-tree/shared-imports.js";
 
 export interface PRDViewProps {
   /** Pre-loaded PRD data. If not provided, fetches from /data/prd.json. */

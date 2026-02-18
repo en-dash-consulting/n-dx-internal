@@ -20,7 +20,12 @@ import { useState, useCallback } from "preact/hooks";
 import type { ItemLevel } from "./types.js";
 import { PruneDiffTree } from "./prune-diff-tree.js";
 import type { EpicImpact } from "./prune-diff-tree.js";
-import { basename } from "../../utils.js";
+// ── Helpers (inlined to avoid cross-zone import from ../../utils) ────
+
+/** Extract the filename from a path (last segment after '/'). */
+function basename(path: string): string {
+  return path.split("/").pop() || path;
+}
 
 // ── Types ────────────────────────────────────────────────────────────
 

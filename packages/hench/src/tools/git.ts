@@ -1,4 +1,4 @@
-import { execShell } from "./exec-shell.js";
+import { execShell } from "../process/exec-shell.js";
 
 const ALLOWED_SUBCOMMANDS = [
   "status",

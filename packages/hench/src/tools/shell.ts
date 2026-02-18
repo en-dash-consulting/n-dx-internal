@@ -1,5 +1,5 @@
 import type { GuardRails } from "../guard/index.js";
-import { execShell } from "./exec-shell.js";
+import { execShell } from "../process/exec-shell.js";
 
 export async function toolRunCommand(
   guard: GuardRails,
