@@ -2052,3 +2052,118 @@ describe("batch granularity workflow", () => {
     expect(message).toContain("apply");
   });
 });
+
+// ─── Natural language modification detection ──────────────────────────
+
+describe("parseChunkInput natural language modification", () => {
+  const state = createReviewState(makeProposals(5), 3);
+
+  it("detects 'add a caching feature' as modify", () => {
+    const action = parseChunkInput("add a caching feature", state);
+    expect(action.kind).toBe("modify");
+    if (action.kind === "modify") {
+      expect(action.request).toBe("add a caching feature");
+    }
+  });
+
+  it("detects 'remove the login task' as modify", () => {
+    const action = parseChunkInput("remove the login task", state);
+    expect(action.kind).toBe("modify");
+    if (action.kind === "modify") {
+      expect(action.request).toBe("remove the login task");
+    }
+  });
+
+  it("detects 'change priority of auth tasks to high' as modify", () => {
+    const action = parseChunkInput("change priority of auth tasks to high", state);
+    expect(action.kind).toBe("modify");
+    if (action.kind === "modify") {
+      expect(action.request).toBe("change priority of auth tasks to high");
+    }
+  });
+
+  it("detects 'split the auth epic into separate login and signup epics' as modify", () => {
+    const action = parseChunkInput("split the auth epic into separate login and signup epics", state);
+    expect(action.kind).toBe("modify");
+    if (action.kind === "modify") {
+      expect(action.request).toBe("split the auth epic into separate login and signup epics");
+    }
+  });
+
+  it("detects 'merge the first two proposals together' as modify", () => {
+    const action = parseChunkInput("merge the first two proposals together", state);
+    expect(action.kind).toBe("modify");
+    if (action.kind === "modify") {
+      expect(action.request).toBe("merge the first two proposals together");
+    }
+  });
+
+  it("preserves exact user input in the request field", () => {
+    const input = "  Add a new feature for error handling  ";
+    const action = parseChunkInput(input, state);
+    expect(action.kind).toBe("modify");
+    if (action.kind === "modify") {
+      // Input is trimmed
+      expect(action.request).toBe("Add a new feature for error handling");
+    }
+  });
+
+  it("does not treat standard commands as modify", () => {
+    // These should retain their original behavior, not be treated as NL
+    expect(parseChunkInput("a", state).kind).toBe("accept");
+    expect(parseChunkInput("n", state).kind).toBe("next");
+    expect(parseChunkInput("p", state).kind).toBe("prev");
+    expect(parseChunkInput("d", state).kind).toBe("done");
+    expect(parseChunkInput("A", state).kind).toBe("accept_all");
+    expect(parseChunkInput("R", state).kind).toBe("reject_all");
+    expect(parseChunkInput("b1", state).kind).toBe("break_down");
+    expect(parseChunkInput("c1,2", state).kind).toBe("consolidate");
+    expect(parseChunkInput("1,3", state).kind).toBe("select");
+    expect(parseChunkInput("g", state).kind).toBe("assess");
+    expect(parseChunkInput("ba", state).kind).toBe("break_down_chunk");
+    expect(parseChunkInput("ca", state).kind).toBe("consolidate_chunk");
+    expect(parseChunkInput("apply", state).kind).toBe("apply");
+  });
+
+  it("returns unknown for very short unrecognized input", () => {
+    // Single word without NL verb should still be unknown
+    expect(parseChunkInput("xyz", state).kind).toBe("unknown");
+    expect(parseChunkInput("", state).kind).toBe("unknown");
+    expect(parseChunkInput("  ", state).kind).toBe("unknown");
+    expect(parseChunkInput("hi", state).kind).toBe("unknown");
+  });
+});
+
+// ─── applyAction modify ──────────────────────────────────────────────
+
+describe("applyAction modify", () => {
+  it("returns modificationRequest with the user's text", () => {
+    const state = createReviewState(makeProposals(5), 5);
+    const { state: next, done, message, modificationRequest } = applyAction(
+      state,
+      { kind: "modify", request: "add a caching feature" },
+    );
+
+    expect(done).toBe(false);
+    expect(message).toContain("Modifying proposals");
+    expect(modificationRequest).toBe("add a caching feature");
+    // State is unchanged — caller handles the LLM call
+    expect(next).toBe(state);
+  });
+
+  it("other actions do not return modificationRequest", () => {
+    const state = createReviewState(makeProposals(5), 5);
+    const { modificationRequest } = applyAction(state, { kind: "accept" });
+    expect(modificationRequest).toBeUndefined();
+  });
+});
+
+// ─── formatActionMenu includes modify hint ───────────────────────────
+
+describe("formatActionMenu modify hint", () => {
+  it("includes natural language hint in action menu", () => {
+    const state = createReviewState(makeProposals(5), 3);
+    const menu = formatActionMenu(state);
+    expect(menu).toContain("or type a change");
+  });
+});

@@ -1,4 +1,5 @@
 import type { Proposal } from "../../analyze/index.js";
+import { classifyModificationRequest } from "../../analyze/validate-modification.js";
 
 const DEFAULT_CHUNK_SIZE = 5;
 
@@ -67,6 +68,7 @@ export type ChunkAction =
   | { kind: "apply" }        // apply cached assessment recommendations
   | { kind: "break_down_chunk" }   // break down all proposals in current chunk
   | { kind: "consolidate_chunk" }  // consolidate all proposals in current chunk
+  | { kind: "modify"; request: string }  // natural language modification request
   | { kind: "unknown" };
 
 /**
@@ -122,6 +124,16 @@ export type GranularityHandler = (
 export type AssessmentHandler = (
   proposals: Proposal[],
 ) => Promise<{ assessments: ProposalAssessment[]; formatted: string }>;
+
+/**
+ * Handler for natural language proposal modification.
+ * Receives the current proposals and the user's modification request,
+ * returns revised proposals incorporating the requested changes.
+ */
+export type ModificationHandler = (
+  proposals: Proposal[],
+  request: string,
+) => Promise<Proposal[]>;
 
 // ─── Pure logic (no I/O, fully testable) ─────────────────────────────
 
@@ -237,6 +249,7 @@ export function formatActionMenu(state: ChunkReviewState): string {
   }
   options.push("d=done");
   options.push("#,#=select");
+  options.push("or type a change");
 
   return `[${options.join(" | ")}]`;
 }
@@ -356,6 +369,16 @@ export function parseChunkInput(
     }
   }
 
+  // Natural language modification detection:
+  // If the input contains a recognized action verb (add, remove, change, split, etc.)
+  // treat it as a modification request rather than unknown.
+  if (raw.trim()) {
+    const classification = classifyModificationRequest(raw.trim());
+    if (classification.intent !== "unknown") {
+      return { kind: "modify", request: raw.trim() };
+    }
+  }
+
   return { kind: "unknown" };
 }
 
@@ -370,7 +393,7 @@ export function parseChunkInput(
 export function applyAction(
   state: ChunkReviewState,
   action: ChunkAction,
-): { state: ChunkReviewState; done: boolean; message?: string; granularityRequest?: GranularityRequest; assessRequested?: boolean } {
+): { state: ChunkReviewState; done: boolean; message?: string; granularityRequest?: GranularityRequest; assessRequested?: boolean; modificationRequest?: string } {
   const total = state.proposals.length;
 
   switch (action.kind) {
@@ -585,6 +608,15 @@ export function applyAction(
         done: false,
         message: `Consolidating all proposals in current chunk (${indices.map((i) => i + 1).join(", ")})...`,
         granularityRequest: { kind: "consolidate", indices },
+      };
+    }
+
+    case "modify": {
+      return {
+        state,
+        done: false,
+        message: "Modifying proposals...",
+        modificationRequest: action.request,
       };
     }
 

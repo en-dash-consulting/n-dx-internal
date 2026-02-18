@@ -14,6 +14,7 @@ export {
   type BatchAcceptanceRecord,
   type GranularityHandler,
   type AssessmentHandler,
+  type ModificationHandler,
   type ProposalAssessment,
   // Pure functions
   createReviewState,
@@ -48,6 +49,7 @@ import {
 import type {
   GranularityHandler,
   AssessmentHandler,
+  ModificationHandler,
   BatchAcceptanceRecord,
 } from "./chunked-review-state.js";
 
@@ -72,12 +74,16 @@ function promptLine(question: string): Promise<string> {
  *
  * When `onAssess` is provided, the review loop supports `g` (assess) command
  * that invokes the LLM to evaluate proposal granularity and display recommendations.
+ *
+ * When `onModify` is provided, the review loop supports natural language modification
+ * requests that invoke the LLM to revise proposals based on the user's free-form input.
  */
 export async function runChunkedReview(
   proposals: Proposal[],
   chunkSize: number = 5,
   onGranularityAdjust?: GranularityHandler,
   onAssess?: AssessmentHandler,
+  onModify?: ModificationHandler,
 ): Promise<{ accepted: Proposal[]; remaining: Proposal[]; batchRecord: BatchAcceptanceRecord }> {
   // For single proposal or small batches, use simple y/n
   if (proposals.length <= 1) {
@@ -107,7 +113,7 @@ export async function runChunkedReview(
 
     const input = await promptLine(buildPrompt(state));
     const action = parseChunkInput(input, state);
-    const { state: newState, done, message, granularityRequest, assessRequested } = applyAction(state, action);
+    const { state: newState, done, message, granularityRequest, assessRequested, modificationRequest } = applyAction(state, action);
 
     if (message) {
       info(message);
@@ -163,6 +169,27 @@ export async function runChunkedReview(
           }
         } catch (err) {
           info(`Granularity assessment failed: ${(err as Error).message}`);
+        }
+      }
+    }
+
+    // Handle natural language modification
+    if (modificationRequest) {
+      if (!onModify) {
+        info("Natural language modification is not available in this context.");
+      } else {
+        try {
+          const modified = await onModify(state.proposals, modificationRequest);
+          if (modified.length > 0) {
+            // Replace all proposals with the modified set
+            state = createReviewState(modified, state.chunkSize);
+            info(`Proposals updated (${modified.length} proposal${modified.length === 1 ? "" : "s"}).`);
+          } else {
+            info("Modification returned no proposals. Original proposals unchanged.");
+          }
+        } catch (err) {
+          info(`Modification failed: ${(err as Error).message}`);
+          info("Original proposals unchanged.");
         }
       }
     }
