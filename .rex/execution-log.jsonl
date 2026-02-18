@@ -2392,3 +2392,10 @@
 {"timestamp":"2026-02-18T09:44:06.416Z","event":"status_updated","itemId":"1c43033c-2957-408c-b5b8-ed1ba6281a6d","detail":"Status changed to in_progress by hench agent"}
 {"timestamp":"2026-02-18T09:44:11.167Z","event":"status_changed","itemId":"1c43033c-2957-408c-b5b8-ed1ba6281a6d","detail":"in_progress → in_progress"}
 {"timestamp":"2026-02-18T09:48:40.887Z","event":"status_changed","itemId":"1c43033c-2957-408c-b5b8-ed1ba6281a6d","detail":"in_progress → completed"}
+{"timestamp":"2026-02-18T09:49:45.617Z","event":"status_updated","itemId":"1c43033c-2957-408c-b5b8-ed1ba6281a6d","detail":"Status changed to completed by hench agent"}
+{"timestamp":"2026-02-18T09:49:45.630Z","event":"task_completed","itemId":"1c43033c-2957-408c-b5b8-ed1ba6281a6d","detail":"Task complete. Here's a summary of what was done:\n\n## Summary\n\n**Task:** Update page title to prioritize project name over n-dx  \n**Commits:** `72a0ed4` (feature), `ada9c4f` (rex state)  \n**Status:** ✅ Complete\n\n### Changes\n\n**2 files modified:**\n\n1. **`packages/web/src/viewer/components/breadcrumb.ts`** — Added a `useEffect` hook that dynamically sets `document.title` based on the current view and project metadata. The title format is:\n   - With project: `Overview — SourceVision | my-app | n-dx"}
+{"timestamp":"2026-02-18T09:49:45.855Z","event":"status_updated","itemId":"482da2f8-01ed-4e67-9ddd-d0a3d60f6600","detail":"Status changed to in_progress by hench agent"}
+{"timestamp":"2026-02-18T09:49:50.590Z","event":"status_changed","itemId":"482da2f8-01ed-4e67-9ddd-d0a3d60f6600","detail":"in_progress → in_progress"}
+{"timestamp":"2026-02-18T10:48:07.210Z","event":"status_changed","itemId":"482da2f8-01ed-4e67-9ddd-d0a3d60f6600","detail":"in_progress → completed"}
+{"timestamp":"2026-02-18T10:48:07.281Z","event":"auto_completed","itemId":"dee97c9f-f407-4ade-a57a-d02ff11fe5cf","detail":"Auto-completed feature: Project-centric Page Title and Branding (all children done)"}
+{"timestamp":"2026-02-18T10:48:07.339Z","event":"auto_completed","itemId":"f25b0fca-7a12-484f-b802-95d404c04dd7","detail":"Auto-completed epic: Project Branding and Navigation Refinement (all children done)"}

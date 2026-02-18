@@ -8815,17 +8815,19 @@
     {
       "id": "f25b0fca-7a12-484f-b802-95d404c04dd7",
       "title": "Project Branding and Navigation Refinement",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "dee97c9f-f407-4ade-a57a-d02ff11fe5cf",
           "title": "Project-centric Page Title and Branding",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Emphasize current project name in page titles and sidebar headers rather than generic n-dx branding",
           "source": "smart-add",
+          "startedAt": "2026-02-18T10:48:07.257Z",
+          "completedAt": "2026-02-18T10:48:07.257Z",
           "children": [
             {
               "id": "1c43033c-2957-408c-b5b8-ed1ba6281a6d",
@@ -8851,7 +8853,7 @@
             {
               "id": "482da2f8-01ed-4e67-9ddd-d0a3d60f6600",
               "title": "Update sidebar header to emphasize current project",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Modify sidebar header layout to make the current project name more prominent than the n-dx logo or branding",
               "acceptanceCriteria": [
@@ -8865,7 +8867,9 @@
                 "sidebar",
                 "branding"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-18T09:49:45.832Z",
+              "completedAt": "2026-02-18T10:48:07.176Z"
             }
           ]
         },
@@ -8902,7 +8906,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-18T10:48:07.315Z",
+      "completedAt": "2026-02-18T10:48:07.315Z"
     },
     {
       "id": "2171d478-2d5b-4926-8e85-837f52c99abd",
