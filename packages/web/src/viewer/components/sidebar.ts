@@ -12,6 +12,7 @@ import {
   HenchActivityIndicator,
 } from "./status-indicators.js";
 import { ConfigFooter } from "./config-footer.js";
+import { useProjectMetadata } from "../hooks/use-project-metadata.js";
 
 const STORAGE_KEY = "sidebar-expanded-section";
 
@@ -112,6 +113,7 @@ for (const section of SECTIONS) {
 export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, onToggleSidebar, scope }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const projectStatus = useProjectStatus();
+  const projectMeta = useProjectMetadata();
 
   /** Sections filtered by scope — when scoped, show only the matching section. */
   const visibleSections = useMemo(() => {
@@ -261,12 +263,17 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
       h("div", { class: "sidebar-brand" },
         scope
           ? h(ProductLogoPng, { product: scope as "sourcevision" | "rex" | "hench", size: 36, class: "sidebar-logo" })
-          : h(NdxLogoPng, { size: 36, class: "sidebar-logo" }),
+          : h(NdxLogoPng, { size: 20, class: "sidebar-logo-sm" }),
         h("div", { class: "sidebar-brand-text" },
-          h("h1", null, scope ?? "n-dx"),
+          // Project name is primary — large and prominent
+          h("h1", {
+            class: "sidebar-project-name",
+            title: projectMeta?.name ?? undefined,
+          }, projectMeta?.name ?? (scope ?? "n-dx")),
+          // n-dx or product branding is secondary — small muted label
           scope
             ? h("div", { class: "sidebar-subtitle" }, "standalone viewer")
-            : h("div", { class: "sidebar-subtitle" }, "Developer Experience,", h("br", null), "by En Dash"),
+            : h("div", { class: "sidebar-subtitle" }, "n-dx"),
         ),
       ),
       h("button", {
