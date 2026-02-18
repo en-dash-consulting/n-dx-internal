@@ -8830,7 +8830,7 @@
             {
               "id": "1c43033c-2957-408c-b5b8-ed1ba6281a6d",
               "title": "Update page title to prioritize project name over n-dx",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Modify the page title structure to show project name first, with n-dx as secondary context (e.g., 'MyProject | n-dx' instead of 'n-dx | MyProject')",
               "acceptanceCriteria": [
@@ -8844,7 +8844,9 @@
                 "branding",
                 "navigation"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-18T09:44:06.394Z",
+              "completedAt": "2026-02-18T09:48:40.851Z"
             },
             {
               "id": "482da2f8-01ed-4e67-9ddd-d0a3d60f6600",
@@ -8908,6 +8910,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-18T09:43:24.958Z",
+      "completedAt": "2026-02-18T09:43:24.958Z",
       "children": [
         {
           "id": "c20018db-c827-4db5-9111-5f191f2d73a1",
@@ -9023,9 +9027,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-18T09:43:24.958Z",
-      "completedAt": "2026-02-18T09:43:24.958Z"
+      ]
     },
     {
       "id": "b39d3ad8-6c3c-4e9b-9788-d18168348f90",
