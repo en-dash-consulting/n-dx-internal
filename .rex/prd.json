@@ -8905,7 +8905,7 @@
     {
       "id": "2171d478-2d5b-4926-8e85-837f52c99abd",
       "title": "Rex UI Task Management Enhancement",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
@@ -8952,15 +8952,17 @@
         {
           "id": "5b719370-1b6a-4cce-99bb-97ef79d064f1",
           "title": "Detail Panel Task Creation",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Enable task creation within the selected task detail panel for contextual item addition",
           "source": "smart-add",
+          "startedAt": "2026-02-18T09:43:24.899Z",
+          "completedAt": "2026-02-18T09:43:24.899Z",
           "children": [
             {
               "id": "8686d282-8ad0-4b0d-a6ac-e8ea7e23e658",
               "title": "Integrate task creation interface into detail panel",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add task creation functionality directly within the detail panel when a parent item is selected for contextual item addition",
               "acceptanceCriteria": [
@@ -8975,7 +8977,9 @@
                 "detail-panel",
                 "contextual"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-18T09:36:34.077Z",
+              "completedAt": "2026-02-18T09:43:24.821Z"
             }
           ]
         },
@@ -9019,7 +9023,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-18T09:43:24.958Z",
+      "completedAt": "2026-02-18T09:43:24.958Z"
     },
     {
       "id": "b39d3ad8-6c3c-4e9b-9788-d18168348f90",
@@ -9036,6 +9042,7 @@
           "description": "Allow users to toggle the import graph visualization on/off due to current usability limitations",
           "source": "smart-add",
           "startedAt": "2026-02-18T09:32:29.895Z",
+          "completedAt": "2026-02-18T09:36:07.104Z",
           "children": [
             {
               "id": "75d504cd-d043-43c6-81bf-5290a0254921",
@@ -9060,8 +9067,7 @@
               "startedAt": "2026-02-18T09:32:47.228Z",
               "completedAt": "2026-02-18T09:36:07.024Z"
             }
-          ],
-          "completedAt": "2026-02-18T09:36:07.104Z"
+          ]
         },
         {
           "id": "88d0c551-0e1e-4204-a351-fd4331eccbcc",

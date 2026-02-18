@@ -210,6 +210,32 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     [data, handleSelectItem],
   );
 
+  // Handle adding a child item from the detail panel
+  const handleAddChild = useCallback(
+    async (input: { title: string; parentId: string; level: string; description?: string; priority?: string }) => {
+      const res = await fetch("/api/rex/items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ error: "Failed to add item" }));
+        throw new Error(errBody.error || `HTTP ${res.status}`);
+      }
+
+      const result = await res.json();
+
+      // Show toast
+      setToast(`Created ${result.level}: ${result.title}`);
+      setTimeout(() => setToast(null), 3000);
+
+      // Refresh tree data
+      await fetchPRDData();
+    },
+    [fetchPRDData],
+  );
+
   // Handle task execution trigger
   const handleExecuteTask = useCallback(
     async (taskId: string) => {
@@ -250,9 +276,10 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
         onNavigateToItem: handleNavigateToItem,
         onExecuteTask: handleExecuteTask,
         onPrdChanged: fetchPRDData,
+        onAddChild: handleAddChild,
       }),
     );
-  }, [data, selectedItemId, onDetailContent, handleItemUpdate, handleNavigateToItem, handleExecuteTask, fetchPRDData]);
+  }, [data, selectedItemId, onDetailContent, handleItemUpdate, handleNavigateToItem, handleExecuteTask, fetchPRDData, handleAddChild]);
 
   // Handle add item submission
   const handleAddItem = useCallback(

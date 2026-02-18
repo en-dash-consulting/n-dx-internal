@@ -1178,6 +1178,178 @@
   white-space: nowrap;
 }
 
+/* Add child button (in detail panel) */
+.task-add-child-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  margin-top: 8px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.task-add-child-btn:hover {
+  border-color: var(--accent);
+  border-style: solid;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+/* Add child form (in detail panel) */
+.task-add-child-form {
+  margin-top: 8px;
+  padding: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.task-add-child-error {
+  color: var(--red, #e74c3c);
+  font-size: 11px;
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  background: color-mix(in srgb, var(--red, #e74c3c) 10%, transparent);
+  border-radius: 4px;
+}
+
+.task-add-child-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-add-child-title {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  background: var(--bg-main, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.task-add-child-title:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.task-add-child-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.task-add-child-more {
+  padding: 4px 8px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.task-add-child-more:hover,
+.task-add-child-more.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.task-add-child-submit {
+  padding: 4px 12px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.task-add-child-submit:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.task-add-child-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.task-add-child-cancel {
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.task-add-child-cancel:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+/* Extra fields */
+.task-add-child-extra {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.task-add-child-description {
+  padding: 6px 8px;
+  background: var(--bg-main, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.task-add-child-description:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.task-add-child-priority-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-add-child-priority-label {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.task-add-child-priority {
+  padding: 4px 8px;
+  background: var(--bg-main, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 12px;
+}
+
 /* Timestamps */
 .task-timestamps .detail-row {
   font-size: 12px;

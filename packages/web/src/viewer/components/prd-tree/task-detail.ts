@@ -8,7 +8,7 @@
 
 import { h, Fragment } from "preact";
 import { useState, useCallback, useEffect, useRef } from "preact/hooks";
-import type { PRDItemData, ItemStatus, Priority, RequirementData, RequirementCategory, RequirementValidationType } from "./types.js";
+import type { PRDItemData, ItemStatus, Priority, ItemLevel, RequirementData, RequirementCategory, RequirementValidationType } from "./types.js";
 import { formatTimestamp } from "./compute.js";
 import { findItemById } from "./tree-utils.js";
 import { CopyLinkButton } from "../copy-link-button.js";
@@ -27,6 +27,8 @@ export interface TaskDetailProps {
   onExecuteTask?: (taskId: string) => Promise<void>;
   /** Called when PRD data may have changed (e.g. after execution completes). */
   onPrdChanged?: () => void;
+  /** Called to add a child item under the current item. */
+  onAddChild?: (data: { title: string; parentId: string; level: ItemLevel; description?: string; priority?: string }) => Promise<void>;
 }
 
 // ── Constants ────────────────────────────────────────────────────────
@@ -308,6 +310,173 @@ function ChildrenSummary({
         ),
       ),
     ),
+  );
+}
+
+// ── Add Child Form ────────────────────────────────────────────────────
+
+/** Infer child level from parent level. */
+const CHILD_LEVEL: Record<string, ItemLevel | null> = {
+  epic: "feature",
+  feature: "task",
+  task: "subtask",
+  subtask: null,
+};
+
+/** Inline form for adding a child item within the detail panel. */
+function AddChildForm({
+  parentId,
+  parentLevel,
+  onSubmit,
+  onCancel,
+}: {
+  parentId: string;
+  parentLevel: ItemLevel;
+  onSubmit: (data: { title: string; parentId: string; level: ItemLevel; description?: string; priority?: string }) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showExtra, setShowExtra] = useState(false);
+
+  const childLevel = CHILD_LEVEL[parentLevel];
+  if (!childLevel) return null;
+
+  const childLabel = LEVEL_LABELS[childLevel] || childLevel;
+
+  const handleSubmit = useCallback(async () => {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setError("Title is required");
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      await onSubmit({
+        title: trimmedTitle,
+        parentId,
+        level: childLevel,
+        description: description.trim() || undefined,
+        priority: priority || undefined,
+      });
+    } catch (err) {
+      setError(String(err));
+      setSubmitting(false);
+    }
+  }, [title, description, priority, parentId, childLevel, onSubmit]);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCancel();
+      }
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        handleSubmit();
+      }
+    },
+    [onCancel, handleSubmit],
+  );
+
+  const handleTitleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey && !showExtra) {
+        e.preventDefault();
+        handleSubmit();
+      }
+      handleKeyDown(e);
+    },
+    [handleSubmit, handleKeyDown, showExtra],
+  );
+
+  return h(
+    "div",
+    { class: "task-add-child-form", onKeyDown: handleKeyDown },
+
+    // Error display
+    error
+      ? h("div", { class: "task-add-child-error", role: "alert" }, error)
+      : null,
+
+    // Main input row
+    h("div", { class: "task-add-child-row" },
+      h("span", { class: `prd-level-badge prd-level-${childLevel}` }, childLabel),
+      h("input", {
+        class: "task-add-child-title",
+        type: "text",
+        value: title,
+        placeholder: `New ${childLabel.toLowerCase()} title...`,
+        onInput: (e: Event) => {
+          setTitle((e.target as HTMLInputElement).value);
+          if (error) setError(null);
+        },
+        onKeyDown: handleTitleKeyDown,
+        disabled: submitting,
+        "aria-label": `New ${childLabel.toLowerCase()} title`,
+        ref: (el: HTMLInputElement | null) => el?.focus(),
+      }),
+    ),
+
+    // Extra fields toggle + actions row
+    h("div", { class: "task-add-child-actions" },
+      h("button", {
+        type: "button",
+        class: `task-add-child-more${showExtra ? " active" : ""}`,
+        onClick: () => setShowExtra(!showExtra),
+        title: showExtra ? "Hide extra fields" : "Show description & priority",
+        disabled: submitting,
+      }, "\u22ef"),
+      h("button", {
+        type: "button",
+        class: "task-add-child-submit",
+        onClick: handleSubmit,
+        disabled: submitting || !title.trim(),
+        title: `Add ${childLabel.toLowerCase()}`,
+      }, submitting ? "\u2026" : `Add ${childLabel}`),
+      h("button", {
+        type: "button",
+        class: "task-add-child-cancel",
+        onClick: onCancel,
+        disabled: submitting,
+        title: "Cancel (Esc)",
+      }, "Cancel"),
+    ),
+
+    // Extra fields
+    showExtra
+      ? h("div", { class: "task-add-child-extra" },
+          h("textarea", {
+            class: "task-add-child-description",
+            value: description,
+            placeholder: "Description (optional)",
+            onInput: (e: Event) => setDescription((e.target as HTMLTextAreaElement).value),
+            onKeyDown: handleKeyDown,
+            rows: 2,
+            disabled: submitting,
+          }),
+          h("div", { class: "task-add-child-priority-row" },
+            h("span", { class: "task-add-child-priority-label" }, "Priority:"),
+            h("select", {
+              class: "task-add-child-priority",
+              value: priority,
+              onChange: (e: Event) => setPriority((e.target as HTMLSelectElement).value),
+              disabled: submitting,
+            },
+              h("option", { value: "" }, "None"),
+              PRIORITY_OPTIONS.map((opt) =>
+                h("option", { key: opt.value, value: opt.value }, opt.label),
+              ),
+            ),
+          ),
+        )
+      : null,
   );
 }
 
@@ -865,11 +1034,20 @@ function ExecuteTaskButton({
 
 // ── Main component ───────────────────────────────────────────────────
 
-export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem, onExecuteTask, onPrdChanged }: TaskDetailProps) {
+export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem, onExecuteTask, onPrdChanged, onAddChild }: TaskDetailProps) {
   const [saving, setSaving] = useState(false);
   const [pendingFailStatus, setPendingFailStatus] = useState(false);
   const [failureReason, setFailureReason] = useState("");
   const [editingFailureReason, setEditingFailureReason] = useState(false);
+  const [showAddChild, setShowAddChild] = useState(false);
+
+  // Determine if this item can have children added
+  const canAddChild = onAddChild != null && CHILD_LEVEL[item.level] != null;
+
+  // Reset add-child form when item changes
+  useEffect(() => {
+    setShowAddChild(false);
+  }, [item.id]);
 
   const handleStatusChange = useCallback(
     (status: ItemStatus) => {
@@ -1085,15 +1263,40 @@ export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem, onExecu
         )
       : null,
 
-    // Children
-    item.children && item.children.length > 0
+    // Children + Add child
+    canAddChild || (item.children && item.children.length > 0)
       ? h(
           "div",
           { class: "task-section" },
-          h(ChildrenSummary, {
-            children: item.children,
-            onNavigate: onNavigateToItem,
-          }),
+          item.children && item.children.length > 0
+            ? h(ChildrenSummary, {
+                children: item.children,
+                onNavigate: onNavigateToItem,
+              })
+            : null,
+
+          // Add child button or form
+          canAddChild
+            ? showAddChild
+              ? h(AddChildForm, {
+                  parentId: item.id,
+                  parentLevel: item.level,
+                  onSubmit: async (data) => {
+                    await onAddChild!(data);
+                    setShowAddChild(false);
+                  },
+                  onCancel: () => setShowAddChild(false),
+                })
+              : h(
+                  "button",
+                  {
+                    class: "task-add-child-btn",
+                    onClick: () => setShowAddChild(true),
+                    title: `Add ${LEVEL_LABELS[CHILD_LEVEL[item.level] as ItemLevel] || "child"} to this ${LEVEL_LABELS[item.level] || item.level}`,
+                  },
+                  `+ Add ${LEVEL_LABELS[CHILD_LEVEL[item.level] as ItemLevel] || "Child"}`,
+                )
+            : null,
         )
       : null,
 
