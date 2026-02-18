@@ -8399,7 +8399,7 @@
         {
           "id": "0017b9f6-0247-4b31-9eb6-7bc38fbc5183",
           "title": "Active Task Display",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Create a prominent display for currently running tasks in the Hench UI",
           "source": "smart-add",
@@ -8407,7 +8407,7 @@
             {
               "id": "e5fecbf6-877c-42a6-9060-29691b495b38",
               "title": "Implement active task status panel in Hench UI",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add a dedicated panel to the Hench dashboard that shows all currently executing tasks with their status, progress, and execution time",
               "acceptanceCriteria": [
@@ -8422,12 +8422,14 @@
                 "monitoring",
                 "real-time"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-18T06:42:47.176Z",
+              "completedAt": "2026-02-18T06:47:01.183Z"
             },
             {
               "id": "b6baaa8a-26a0-4050-9b54-2f25fd4cc066",
               "title": "Add task execution health monitoring",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement system to verify that running tasks are actually still executing and not stuck or crashed",
               "acceptanceCriteria": [
@@ -8442,9 +8444,13 @@
                 "health-check",
                 "reliability"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-18T06:27:06.027Z",
+              "completedAt": "2026-02-18T06:42:16.080Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-18T06:47:01.266Z",
+          "completedAt": "2026-02-18T06:47:01.266Z"
         },
         {
           "id": "b265212f-991c-46c5-aa83-9bb70fa1c5a8",
@@ -8616,15 +8622,17 @@
         {
           "id": "d7e6c7a6-81c9-4a8f-bd8d-43cdcc7625b0",
           "title": "Notion Integration Configuration Interface",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Provide a comprehensive user interface for configuring and managing Notion integration settings with secure credential handling and connection validation",
           "source": "smart-add",
+          "startedAt": "2026-02-18T06:26:27.001Z",
+          "completedAt": "2026-02-18T06:26:27.001Z",
           "children": [
             {
               "id": "6c8414dd-7004-4ea4-87ce-458d019f590c",
               "title": "Build Notion configuration dashboard with secure credential management",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Create a complete configuration interface that handles Notion API credentials securely while providing real-time connection testing and status monitoring",
               "acceptanceCriteria": [
@@ -8645,12 +8653,13 @@
                 "security"
               ],
               "source": "smart-add",
-              "startedAt": "2026-02-18T05:58:11.043Z"
+              "startedAt": "2026-02-18T05:58:11.043Z",
+              "completedAt": "2026-02-18T06:05:24.960Z"
             },
             {
               "id": "c698534a-7b57-4db9-bcff-b0943ff4597a",
               "title": "Implement Notion database schema validation wizard",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create an interactive setup wizard that validates the target Notion database schema and guides users through proper database configuration with automated property creation",
               "acceptanceCriteria": [
@@ -8667,7 +8676,9 @@
                 "validation",
                 "notion"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-18T06:14:15.632Z",
+              "completedAt": "2026-02-18T06:26:26.916Z"
             }
           ]
         },
@@ -8871,15 +8882,17 @@
         {
           "id": "2cbf5a18-31e9-431a-b8e2-fffc83aaef38",
           "title": "Task Creation Form Improvements",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Fix existing form UI bugs and enhance visual design for better user experience",
           "source": "smart-add",
+          "startedAt": "2026-02-18T06:13:49.038Z",
+          "completedAt": "2026-02-18T06:13:49.038Z",
           "children": [
             {
               "id": "d88b00e1-89b5-45b0-877a-7dc688ae12bb",
               "title": "Redesign and fix task creation form experience",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Resolve focus management issues and update form styling to be more visually appealing and consistent with the overall Rex UI design system",
               "acceptanceCriteria": [
@@ -8900,7 +8913,9 @@
                 "ui",
                 "design-system"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-18T06:06:06.597Z",
+              "completedAt": "2026-02-18T06:13:48.954Z"
             }
           ]
         }

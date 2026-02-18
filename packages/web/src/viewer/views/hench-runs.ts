@@ -14,6 +14,8 @@ import { useState, useEffect, useCallback, useMemo } from "preact/hooks";
 import { MetricCard } from "../components/data-display/health-gauge.js";
 import { BrandedHeader } from "../components/logos.js";
 import { RexTaskLink } from "../components/rex-task-link.js";
+import { ActiveTasksPanel } from "../components/active-tasks-panel.js";
+import type { ActiveRun } from "../components/active-tasks-panel.js";
 import type { NavigateTo } from "../types.js";
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -521,6 +523,23 @@ export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
     return counts;
   }, [runs]);
 
+  // Extract running runs for the active tasks panel
+  const activeRuns: ActiveRun[] = useMemo(() => {
+    return runs
+      .filter((r) => r.status === "running" || r.status === "in_progress")
+      .map((r) => ({
+        id: r.id,
+        taskId: r.taskId,
+        taskTitle: r.taskTitle,
+        taskStatus: r.taskStatus,
+        startedAt: r.startedAt,
+        lastActivityAt: r.lastActivityAt,
+        status: r.status,
+        turns: r.turns,
+        model: r.model,
+      }));
+  }, [runs]);
+
   // ── Loading state ──
   if (loading) {
     return h("div", { class: "loading" }, "Loading execution history...");
@@ -571,6 +590,9 @@ export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
         h("div", { class: "hench-runs-count" }, `${runs.length} run${runs.length === 1 ? "" : "s"}`),
       ),
     ),
+
+    // Active tasks panel — shown at top when there are running tasks
+    h(ActiveTasksPanel, { runs: activeRuns, navigateTo }),
 
     // Aggregate metrics
     h(RunMetrics, { runs }),
