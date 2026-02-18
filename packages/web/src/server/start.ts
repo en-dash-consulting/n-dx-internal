@@ -18,7 +18,7 @@ import { handleWorkflowRoute } from "./routes-workflow.js";
 import { handleAdaptiveRoute } from "./routes-adaptive.js";
 import { handleMcpRoute } from "./routes-mcp.js";
 import { handleProjectRoute } from "./routes-project.js";
-import { handleStatusRoute } from "./routes-status.js";
+import { handleStatusRoute, clearStatusCache } from "./routes-status.js";
 import { handleConfigRoute } from "./routes-config.js";
 import { handleNotionRoute } from "./routes-notion.js";
 import { createWebSocketManager } from "./websocket.js";
@@ -135,6 +135,8 @@ export async function startServer(
     try {
       watch(henchRunsDir, (_eventType, filename) => {
         if (filename && filename.endsWith(".json")) {
+          // Invalidate status cache so the next /api/status request gets fresh counts
+          clearStatusCache();
           ws.broadcast({
             type: "hench:run-changed",
             file: filename,

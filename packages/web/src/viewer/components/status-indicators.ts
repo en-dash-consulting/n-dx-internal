@@ -85,7 +85,9 @@ async function fetchStatus(): Promise<ProjectStatus | null> {
   return fetchPromise;
 }
 
-/** Hook that returns project status, polling at a regular interval. */
+/** Hook that returns project status, polling at a regular interval.
+ *  Also listens for WebSocket events (hench:run-changed, rex:prd-changed)
+ *  to refresh immediately when runs or PRD data change on disk. */
 function useProjectStatus(): ProjectStatus | null {
   const [status, setStatus] = useState<ProjectStatus | null>(cachedStatus);
   const mountedRef = useRef(true);
@@ -101,9 +103,36 @@ function useProjectStatus(): ProjectStatus | null {
     refresh();
     const timer = setInterval(refresh, POLL_INTERVAL_MS);
 
+    // Connect to WebSocket for instant status updates when runs/PRD change
+    let ws: WebSocket | null = null;
+    try {
+      const proto = location.protocol === "https:" ? "wss:" : "ws:";
+      ws = new WebSocket(`${proto}//${location.host}`);
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          // Refresh status on any event that could affect counts
+          if (
+            msg.type === "hench:run-changed" ||
+            msg.type === "hench:task-execution-progress" ||
+            msg.type === "rex:prd-changed"
+          ) {
+            refresh();
+          }
+        } catch {
+          // ignore malformed messages
+        }
+      };
+    } catch {
+      // WebSocket not available — polling still works as fallback
+    }
+
     return () => {
       mountedRef.current = false;
       clearInterval(timer);
+      if (ws) {
+        try { ws.close(); } catch { /* ignore */ }
+      }
     };
   }, []);
 

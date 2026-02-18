@@ -248,6 +248,42 @@ describe("Status API routes", () => {
       expect(data.hench.totalRuns).toBe(2);
     });
 
+    it("excludes malformed and incomplete run files from totalRuns count", async () => {
+      const runsDir = join(tmpDir, ".hench", "runs");
+      await mkdir(runsDir, { recursive: true });
+      await writeFile(join(join(tmpDir, ".hench"), "config.json"), "{}");
+
+      // Valid run
+      const validRun = {
+        id: "valid-1", taskId: "t1", taskTitle: "Valid Task",
+        startedAt: new Date().toISOString(), status: "completed",
+        turns: 3, tokenUsage: { input: 100, output: 50 }, model: "sonnet",
+      };
+      await writeFile(join(runsDir, "valid-1.json"), JSON.stringify(validRun));
+
+      // Malformed JSON (not parseable)
+      await writeFile(join(runsDir, "corrupt.json"), "{ invalid json }");
+
+      // Missing id field
+      await writeFile(join(runsDir, "no-id.json"), JSON.stringify({
+        startedAt: new Date().toISOString(), status: "completed",
+      }));
+
+      // Missing startedAt field
+      await writeFile(join(runsDir, "no-started.json"), JSON.stringify({
+        id: "no-started", status: "completed",
+      }));
+
+      // Empty object
+      await writeFile(join(runsDir, "empty.json"), "{}");
+
+      clearStatusCache();
+      const res = await fetch(`http://localhost:${port}/api/status`);
+      const data = await res.json();
+      // Only the valid run should be counted — matches GET /api/hench/runs behavior
+      expect(data.hench.totalRuns).toBe(1);
+    });
+
     it("detects stale running runs", async () => {
       const henchDir = join(tmpDir, ".hench");
       const runsDir = join(henchDir, "runs");

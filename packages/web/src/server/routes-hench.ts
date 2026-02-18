@@ -23,6 +23,7 @@ import { spawnManaged, type ManagedChild } from "@n-dx/claude-client";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./types.js";
 import type { WebSocketBroadcaster } from "./websocket.js";
+import { clearStatusCache } from "./routes-status.js";
 
 const HENCH_PREFIX = "/api/hench/";
 
@@ -1046,6 +1047,9 @@ function handleMarkStuck(
     errorResponse(res, 500, `Failed to update run: ${err instanceof Error ? err.message : String(err)}`);
     return true;
   }
+
+  // Invalidate status cache so sidebar shows updated active/stale counts
+  clearStatusCache();
 
   jsonResponse(res, 200, { id: runId, status: "failed", markedStuckAt: run.finishedAt });
   return true;

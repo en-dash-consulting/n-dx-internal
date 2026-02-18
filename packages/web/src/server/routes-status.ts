@@ -203,13 +203,16 @@ function extractHenchStatus(ctx: ServerContext): HenchStatus {
     try {
       const entries = readdirSync(runsDir);
       const jsonFiles = entries.filter((f) => typeof f === "string" ? f.endsWith(".json") : false);
-      totalRuns = jsonFiles.length;
 
       const now = Date.now();
       for (const file of jsonFiles) {
         try {
           const raw = readFileSync(join(runsDir, file as string), "utf-8");
           const run = JSON.parse(raw);
+          // Only count valid runs (must have id and startedAt) — matches
+          // the validation in GET /api/hench/runs to keep counts consistent.
+          if (!run.id || !run.startedAt) continue;
+          totalRuns++;
           if (run.status === "running") {
             activeRuns++;
             const lastActivity = run.lastActivityAt as string | undefined;
@@ -223,7 +226,7 @@ function extractHenchStatus(ctx: ServerContext): HenchStatus {
             }
           }
         } catch {
-          // Skip unreadable files
+          // Skip unreadable/unparseable files — not counted toward totalRuns
         }
       }
     } catch {
