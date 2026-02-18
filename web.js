@@ -278,12 +278,9 @@ export async function runWeb(dir, rest, { run, tools, __dir, commandName = "web"
     await removePidFile(absDir);
   }
 
-  // --- Check port availability ---
-  if (await isPortInUse(port)) {
-    console.error(`Port ${port} is already in use.`);
-    console.error("Use --port=<N> to specify a different port.");
-    return 1;
-  }
+  // Note: Port availability is checked inside the server process itself,
+  // which will automatically fall back to the next available port in the
+  // range 3117–3200 if the configured port is already in use.
 
   // --- Build serve args ---
   const serveArgs = ["serve", `--port=${port}`, absDir];

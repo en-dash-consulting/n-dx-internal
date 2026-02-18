@@ -37,7 +37,7 @@ const targetArg = args.slice(1).find((a) => !a.startsWith("-"));
 if (command === "serve") {
   const dir = resolve(targetArg || ".");
   const dev = args.includes("--dev");
-  startServer(dir, port, { dev, scope });
+  await startServer(dir, port, { dev, scope });
 } else {
   console.log(`n-dx web dashboard
 

@@ -46,6 +46,8 @@
  */
 
 export { startServer } from "./server/start.js";
-export type { ServerOptions } from "./server/start.js";
+export type { ServerOptions, StartResult } from "./server/start.js";
 export type { ServerContext, RouteHandler, ViewerScope } from "./server/types.js";
 export type { WebSocketBroadcaster } from "./server/websocket.js";
+export { checkPort, findAvailablePort } from "./server/port.js";
+export type { PortCheckResult, PortAllocationResult } from "./server/port.js";

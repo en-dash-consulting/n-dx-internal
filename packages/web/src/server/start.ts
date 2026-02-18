@@ -21,6 +21,15 @@ import { handleStatusRoute } from "./routes-status.js";
 import { handleConfigRoute } from "./routes-config.js";
 import { createWebSocketManager } from "./websocket.js";
 import { ALL_DATA_FILES } from "../schema/data-files.js";
+import { findAvailablePort } from "./port.js";
+
+/** Result returned by startServer with the actual port used. */
+export interface StartResult {
+  /** The actual port the server is listening on. */
+  port: number;
+  /** Whether a fallback port was used (requested port was unavailable). */
+  isFallback: boolean;
+}
 
 export interface ServerOptions {
   dev?: boolean;
@@ -28,16 +37,28 @@ export interface ServerOptions {
   scope?: ViewerScope;
 }
 
-export function startServer(
+export async function startServer(
   targetDir: string,
   port: number = 3117,
   opts: ServerOptions = {},
-): void {
+): Promise<StartResult> {
   const absDir = resolve(targetDir);
   const svDir = join(absDir, ".sourcevision");
   const rexDir = join(absDir, ".rex");
   const dev = opts.dev ?? false;
   const scope = opts.scope;
+
+  // ── Dynamic port allocation ───────────────────────────────────────────────
+  // Try the requested port first; fall back to the next available port in
+  // range 3117–3200 if it's already in use.
+  const allocation = await findAvailablePort(port);
+  const actualPort = allocation.port;
+
+  if (!allocation.isOriginal) {
+    console.log(
+      `Port ${allocation.requestedPort} is in use — using port ${actualPort} instead.`,
+    );
+  }
 
   // Helper: is this package in scope?
   const inScope = (pkg: ViewerScope): boolean => !scope || scope === pkg;
@@ -235,23 +256,47 @@ export function startServer(
     ws.handleUpgrade(req, socket, head);
   });
 
-  server.listen(port, () => {
-    const label = scope ? `${scope} viewer` : "n-dx dashboard";
-    console.log(`${label} running at http://localhost:${port}`);
-    if (inScope("sourcevision")) {
-      console.log(`Serving data from: ${svDir}`);
-    }
-    if (inScope("rex") && existsSync(rexDir)) {
-      console.log(`Rex PRD data from: ${rexDir}`);
-    }
-    if (inScope("hench") && existsSync(henchRunsDir)) {
-      console.log(`Hench runs from: ${henchRunsDir}`);
-    }
-    console.log(`MCP (rex):          http://localhost:${port}/mcp/rex`);
-    console.log(`MCP (sourcevision): http://localhost:${port}/mcp/sourcevision`);
-    console.log(`WebSocket available at ws://localhost:${port}`);
-    if (scope) console.log(`Scope: ${scope} (standalone mode)`);
-    if (dev) console.log("Dev mode: live reload enabled");
-    console.log("Press Ctrl+C to stop.");
+  return new Promise<StartResult>((resolvePromise, rejectPromise) => {
+    server.once("error", (err: NodeJS.ErrnoException) => {
+      if (err.code === "EADDRINUSE") {
+        rejectPromise(
+          new Error(`Port ${actualPort} became unavailable during startup. Please try again.`),
+        );
+      } else if (err.code === "EACCES") {
+        rejectPromise(
+          new Error(
+            `Permission denied for port ${actualPort}. ` +
+            `Try a port above 1024 or run with elevated privileges.`,
+          ),
+        );
+      } else {
+        rejectPromise(err);
+      }
+    });
+
+    server.listen(actualPort, () => {
+      const label = scope ? `${scope} viewer` : "n-dx dashboard";
+      console.log(`${label} running at http://localhost:${actualPort}`);
+      if (inScope("sourcevision")) {
+        console.log(`Serving data from: ${svDir}`);
+      }
+      if (inScope("rex") && existsSync(rexDir)) {
+        console.log(`Rex PRD data from: ${rexDir}`);
+      }
+      if (inScope("hench") && existsSync(henchRunsDir)) {
+        console.log(`Hench runs from: ${henchRunsDir}`);
+      }
+      console.log(`MCP (rex):          http://localhost:${actualPort}/mcp/rex`);
+      console.log(`MCP (sourcevision): http://localhost:${actualPort}/mcp/sourcevision`);
+      console.log(`WebSocket available at ws://localhost:${actualPort}`);
+      if (scope) console.log(`Scope: ${scope} (standalone mode)`);
+      if (dev) console.log("Dev mode: live reload enabled");
+      console.log("Press Ctrl+C to stop.");
+
+      resolvePromise({
+        port: actualPort,
+        isFallback: !allocation.isOriginal,
+      });
+    });
   });
 }

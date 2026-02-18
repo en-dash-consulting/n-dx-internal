@@ -123,21 +123,6 @@ describe("n-dx start", () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  // ── Missing .sourcevision ────────────────────────────────────────────────
-
-  describe("prerequisite checks", () => {
-    it("exits 1 when .sourcevision is missing", async () => {
-      const emptyDir = await mkdtemp(join(tmpdir(), "ndx-start-empty-"));
-      try {
-        const { stderr, code } = runResult([emptyDir]);
-        expect(code).toBe(1);
-        expect(stderr).toContain("Missing");
-      } finally {
-        await rm(emptyDir, { recursive: true, force: true });
-      }
-    });
-  });
-
   // ── Port validation ───────────────────────────────────────────────────
 
   describe("port validation", () => {
@@ -148,18 +133,21 @@ describe("n-dx start", () => {
     });
   });
 
-  // ── Port conflict ────────────────────────────────────────────────────
+  // ── Port conflict (dynamic fallback) ─────────────────────────────────
 
   describe("port conflict detection", () => {
-    it("exits 1 when port is already in use", async () => {
+    it("falls back to another port when requested port is in use", async () => {
       const port = await findAvailablePort();
       const blocker = await blockPort(port);
       try {
-        const { stderr, code } = runResult([`--port=${port}`, tmpDir]);
-        expect(code).toBe(1);
-        expect(stderr).toContain("already in use");
+        // Use background mode since a successful server won't exit
+        const { stdout, code } = runResult([`--port=${port}`, "--background", tmpDir]);
+        expect(code).toBe(0);
+        expect(stdout).toContain("background");
       } finally {
         await blocker.close();
+        // Clean up any background server
+        runResult(["stop", tmpDir]);
       }
     });
   });

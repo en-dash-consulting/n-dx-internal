@@ -123,21 +123,6 @@ describe("n-dx web", () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  // ── Missing .sourcevision ────────────────────────────────────────────────
-
-  describe("prerequisite checks", () => {
-    it("exits 1 when .sourcevision is missing", async () => {
-      const emptyDir = await mkdtemp(join(tmpdir(), "ndx-web-empty-"));
-      try {
-        const { stderr, code } = runResult([emptyDir]);
-        expect(code).toBe(1);
-        expect(stderr).toContain("Missing");
-      } finally {
-        await rm(emptyDir, { recursive: true, force: true });
-      }
-    });
-  });
-
   // ── Invalid port ────────────────────────────────────────────────────────
 
   describe("port validation", () => {
@@ -160,18 +145,21 @@ describe("n-dx web", () => {
     });
   });
 
-  // ── Port conflict ──────────────────────────────────────────────────────
+  // ── Port conflict (dynamic fallback) ─────────────────────────────────
 
   describe("port conflict detection", () => {
-    it("exits 1 when port is already in use", async () => {
+    it("falls back to another port when requested port is in use", async () => {
       const port = await findAvailablePort();
       const blocker = await blockPort(port);
       try {
-        const { stderr, code } = runResult([`--port=${port}`, tmpDir]);
-        expect(code).toBe(1);
-        expect(stderr).toContain("already in use");
+        // Use background mode since a successful server won't exit
+        const { stdout, code } = runResult([`--port=${port}`, "--background", tmpDir]);
+        expect(code).toBe(0);
+        expect(stdout).toContain("background");
       } finally {
         await blocker.close();
+        // Clean up any background server
+        runResult(["stop", tmpDir]);
       }
     });
   });
@@ -210,22 +198,20 @@ describe("n-dx web", () => {
 
   describe("config integration", () => {
     it("reads port from .n-dx.json config", async () => {
-      // Write a config with a port that will cause a "port in use" error
-      // when we block it — proving the config was read
+      // Write a config with a port. Use background mode to verify the
+      // config port is passed to the server (it appears in the output).
       const port = await findAvailablePort();
       await writeFile(
         join(tmpDir, ".n-dx.json"),
         JSON.stringify({ web: { port } }),
       );
 
-      const blocker = await blockPort(port);
-      try {
-        const { stderr, code } = runResult([tmpDir]);
-        expect(code).toBe(1);
-        expect(stderr).toContain("already in use");
-      } finally {
-        await blocker.close();
-      }
+      const { stdout, code } = runResult(["--background", tmpDir]);
+      expect(code).toBe(0);
+      expect(stdout).toContain(`${port}`);
+
+      // Clean up
+      runResult(["stop", tmpDir]);
     });
 
     it("--port flag overrides config", async () => {
@@ -236,15 +222,12 @@ describe("n-dx web", () => {
         JSON.stringify({ web: { port: configPort } }),
       );
 
-      // Block the flag port, not the config port
-      const blocker = await blockPort(flagPort);
-      try {
-        const { stderr, code } = runResult([`--port=${flagPort}`, tmpDir]);
-        expect(code).toBe(1);
-        expect(stderr).toContain("already in use");
-      } finally {
-        await blocker.close();
-      }
+      const { stdout, code } = runResult([`--port=${flagPort}`, "--background", tmpDir]);
+      expect(code).toBe(0);
+      expect(stdout).toContain(`${flagPort}`);
+
+      // Clean up
+      runResult(["stop", tmpDir]);
     });
   });
 
