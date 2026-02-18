@@ -86,7 +86,7 @@ import {
   computeEpicStats,
   computePriorityDistribution,
   computeRequirementsSummary,
-} from "./mcp-deps.js";
+} from "./domain-gateway.js";
 
 const REX_PREFIX = "/api/rex/";
 
@@ -167,24 +167,18 @@ function savePRD(ctx: ServerContext, doc: PRDDocument): void {
 }
 
 // EpicStats, PriorityDistribution, RequirementsSummary types and functions
-// are imported from rex via the gateway (mcp-deps.ts).
+// are imported from rex via the gateway (domain-gateway.ts).
 
-/** Handle Rex API requests. Returns true if the request was handled. */
-export function handleRexRoute(
-  req: IncomingMessage,
-  res: ServerResponse,
-  ctx: ServerContext,
-  broadcast?: WebSocketBroadcaster,
-): boolean | Promise<boolean> {
-  const url = req.url || "/";
-  const method = req.method || "GET";
+// ---------------------------------------------------------------------------
+// Sub-routers — each handles a focused domain area within the Rex API.
+// The main handleRexRoute dispatcher tries each in turn.
+// ---------------------------------------------------------------------------
 
-  if (!url.startsWith(REX_PREFIX)) return false;
-
-  const fullPath = url.slice(REX_PREFIX.length);
-  const qIdx = fullPath.indexOf("?");
-  const path = qIdx === -1 ? fullPath : fullPath.slice(0, qIdx);
-
+/** PRD read routes: prd, stats, dashboard, next, log. */
+function routePrdReads(
+  url: string, path: string, method: string,
+  res: ServerResponse, ctx: ServerContext,
+): boolean {
   // GET /api/rex/prd — full PRD document
   if (path === "prd" && method === "GET") {
     const doc = loadPRD(ctx);
@@ -290,6 +284,15 @@ export function handleRexRoute(
     return true;
   }
 
+  return false;
+}
+
+/** Item CRUD routes: add, get, patch, bulk update, merge. */
+function routeItems(
+  path: string, method: string,
+  req: IncomingMessage, res: ServerResponse, ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): boolean | Promise<boolean> {
   // POST /api/rex/items — add a new item
   if (path === "items" && method === "POST") {
     return handleItemAdd(req, res, ctx, broadcast);
@@ -311,30 +314,10 @@ export function handleRexRoute(
     const itemId = itemsMatch[1];
 
     // Requirements sub-routes: /api/rex/items/:id/requirements[/:reqId]
-    const reqSubMatch = path.match(/^items\/[^/?]+\/requirements(?:\/([^/?]+))?$/);
-    if (reqSubMatch) {
-      const reqId = reqSubMatch[1]; // undefined for collection routes
-
-      // GET /api/rex/items/:id/requirements — list requirements (own + inherited)
-      if (method === "GET" && !reqId) {
-        return handleGetRequirements(res, ctx, itemId);
-      }
-
-      // POST /api/rex/items/:id/requirements — add a requirement
-      if (method === "POST" && !reqId) {
-        return handleAddRequirement(req, res, ctx, itemId, broadcast);
-      }
-
-      // PATCH /api/rex/items/:id/requirements/:reqId — update a requirement
-      if (method === "PATCH" && reqId) {
-        return handleUpdateRequirement(req, res, ctx, itemId, reqId, broadcast);
-      }
-
-      // DELETE /api/rex/items/:id/requirements/:reqId — delete a requirement
-      if (method === "DELETE" && reqId) {
-        return handleDeleteRequirement(res, ctx, itemId, reqId, broadcast);
-      }
-    }
+    const reqResult = routeItemRequirements(
+      path, method, req, res, ctx, itemId, broadcast,
+    );
+    if (reqResult !== false) return reqResult;
 
     // GET /api/rex/items/:id — single item
     if (method === "GET") {
@@ -358,7 +341,48 @@ export function handleRexRoute(
     }
   }
 
-  // Requirements coverage & traceability
+  return false;
+}
+
+/** Item requirements sub-routes: CRUD on /api/rex/items/:id/requirements. */
+function routeItemRequirements(
+  path: string, method: string,
+  req: IncomingMessage, res: ServerResponse, ctx: ServerContext,
+  itemId: string, broadcast?: WebSocketBroadcaster,
+): boolean | Promise<boolean> {
+  const reqSubMatch = path.match(/^items\/[^/?]+\/requirements(?:\/([^/?]+))?$/);
+  if (!reqSubMatch) return false;
+
+  const reqId = reqSubMatch[1]; // undefined for collection routes
+
+  // GET /api/rex/items/:id/requirements — list requirements (own + inherited)
+  if (method === "GET" && !reqId) {
+    return handleGetRequirements(res, ctx, itemId);
+  }
+
+  // POST /api/rex/items/:id/requirements — add a requirement
+  if (method === "POST" && !reqId) {
+    return handleAddRequirement(req, res, ctx, itemId, broadcast);
+  }
+
+  // PATCH /api/rex/items/:id/requirements/:reqId — update a requirement
+  if (method === "PATCH" && reqId) {
+    return handleUpdateRequirement(req, res, ctx, itemId, reqId, broadcast);
+  }
+
+  // DELETE /api/rex/items/:id/requirements/:reqId — delete a requirement
+  if (method === "DELETE" && reqId) {
+    return handleDeleteRequirement(res, ctx, itemId, reqId, broadcast);
+  }
+
+  return false;
+}
+
+/** Requirements coverage & traceability top-level routes. */
+function routeRequirementsAnalytics(
+  path: string, method: string,
+  res: ServerResponse, ctx: ServerContext,
+): boolean {
   if (path === "requirements/coverage" && method === "GET") {
     return handleRequirementsCoverage(res, ctx);
   }
@@ -367,6 +391,15 @@ export function handleRexRoute(
     return handleRequirementsTraceability(res, ctx);
   }
 
+  return false;
+}
+
+/** Prune routes: preview and execute. */
+function routePrune(
+  path: string, method: string,
+  req: IncomingMessage, res: ServerResponse, ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): boolean | Promise<boolean> {
   // GET /api/rex/prune/preview — preview prunable items (supports criteria params)
   if (path === "prune/preview" && method === "GET") {
     return handlePrunePreview(req, res, ctx);
@@ -377,6 +410,15 @@ export function handleRexRoute(
     return handlePruneExecute(req, res, ctx, broadcast);
   }
 
+  return false;
+}
+
+/** Analysis and proposal routes: analyze, proposals, smart-add, batch-import. */
+function routeProposals(
+  path: string, method: string,
+  req: IncomingMessage, res: ServerResponse, ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): boolean | Promise<boolean> {
   // POST /api/rex/analyze — trigger analysis
   if (path === "analyze" && method === "POST") {
     return handleAnalyze(req, res, ctx, broadcast);
@@ -407,6 +449,15 @@ export function handleRexRoute(
     return handleBatchImport(req, res, ctx, broadcast);
   }
 
+  return false;
+}
+
+/** Execution routes: epic-by-epic, status, pause, resume. */
+function routeExecution(
+  path: string, method: string,
+  req: IncomingMessage, res: ServerResponse, ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): boolean | Promise<boolean> {
   // POST /api/rex/execute/epic-by-epic — start epic-by-epic execution
   if (path === "execute/epic-by-epic" && method === "POST") {
     return handleStartEpicByEpic(req, res, ctx, broadcast);
@@ -426,6 +477,54 @@ export function handleRexRoute(
   if (path === "execute/resume" && method === "POST") {
     return handleExecutionResume(res, ctx, broadcast);
   }
+
+  return false;
+}
+
+/**
+ * Handle Rex API requests. Returns true if the request was handled.
+ *
+ * Delegates to focused sub-routers for each domain area:
+ * - PRD reads (prd, stats, dashboard, next, log)
+ * - Item CRUD (add, get, patch, bulk, merge)
+ * - Requirements (item requirements CRUD, coverage, traceability)
+ * - Prune (preview, execute)
+ * - Proposals (analyze, proposals, smart-add, batch-import)
+ * - Execution (epic-by-epic, status, pause, resume)
+ */
+export function handleRexRoute(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): boolean | Promise<boolean> {
+  const url = req.url || "/";
+  const method = req.method || "GET";
+
+  if (!url.startsWith(REX_PREFIX)) return false;
+
+  const fullPath = url.slice(REX_PREFIX.length);
+  const qIdx = fullPath.indexOf("?");
+  const path = qIdx === -1 ? fullPath : fullPath.slice(0, qIdx);
+
+  // Try each sub-router in turn. The first to return non-false wins.
+  const prdResult = routePrdReads(url, path, method, res, ctx);
+  if (prdResult !== false) return prdResult;
+
+  const itemsResult = routeItems(path, method, req, res, ctx, broadcast);
+  if (itemsResult !== false) return itemsResult;
+
+  const reqAnalyticsResult = routeRequirementsAnalytics(path, method, res, ctx);
+  if (reqAnalyticsResult !== false) return reqAnalyticsResult;
+
+  const pruneResult = routePrune(path, method, req, res, ctx, broadcast);
+  if (pruneResult !== false) return pruneResult;
+
+  const proposalResult = routeProposals(path, method, req, res, ctx, broadcast);
+  if (proposalResult !== false) return proposalResult;
+
+  const execResult = routeExecution(path, method, req, res, ctx, broadcast);
+  if (execResult !== false) return execResult;
 
   return false;
 }
@@ -668,7 +767,7 @@ async function handleBulkUpdate(
 }
 
 // Merge functions (validateMerge, previewMerge, mergeItems) are imported
-// from rex via the gateway (mcp-deps.ts).
+// from rex via the gateway (domain-gateway.ts).
 
 /** Extract the parent ID from a TreeEntry's parent chain. */
 function parentIdOf(entry: TreeEntry): string | null {
@@ -752,7 +851,7 @@ async function handleItemMerge(
 }
 
 // Prune functions (isFullyCompleted, countSubtree, findPrunableItems, pruneItems)
-// are imported from rex via the gateway (mcp-deps.ts).
+// are imported from rex via the gateway (domain-gateway.ts).
 
 /**
  * Remove specific subtrees by ID from the item tree.
@@ -2188,8 +2287,8 @@ function handleExecutionResume(
 // ---------------------------------------------------------------------------
 
 // RequirementRecord is now the canonical Requirement type from rex,
-// imported via the gateway (mcp-deps.ts).
-type RequirementRecord = import("./mcp-deps.js").Requirement;
+// imported via the gateway (domain-gateway.ts).
+type RequirementRecord = import("./domain-gateway.js").Requirement;
 
 /** Walk the item tree collecting requirements with inheritance. */
 function collectInheritedRequirements(

@@ -5,7 +5,7 @@ import {
   findItem,
   walkTree,
   collectRequirements,
-} from "../../prd/ops.js";
+} from "../../prd/rex-gateway.js";
 import type { PRDStore, PRDItem, TreeEntry } from "rex";
 import type {
   TaskBrief,

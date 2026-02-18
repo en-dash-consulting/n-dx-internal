@@ -58,8 +58,8 @@ When a package imports from another package at runtime, those imports are concen
 
 | Package | Gateway | Source packages | Purpose |
 |---|---|---|---|
-| hench | `src/prd/ops.ts` | rex | Store access, tree traversal, task selection |
-| web | `src/server/mcp-deps.ts` | rex, sourcevision | MCP server factories, rex domain types & constants |
+| hench | `src/prd/rex-gateway.ts` | rex | Store access, tree traversal, task selection |
+| web | `src/server/domain-gateway.ts` | rex, sourcevision | MCP server factories, rex domain types & constants |
 
 ### Gateway rules
 
@@ -99,7 +99,7 @@ Sometimes a package needs types from another package but importing them would cr
 | web viewer (`views/analysis.ts`) | rex | `LogEntry` (local interface) | — |
 
 Server-side rex types were previously duplicated in `rex-domain.ts` but are now
-imported from rex through the gateway (`mcp-deps.ts`). Only viewer types remain
+imported from rex through the gateway (`domain-gateway.ts`). Only viewer types remain
 as intentional duplicates because browser-bundled code cannot import Node.js packages.
 
 ### When to duplicate vs. import

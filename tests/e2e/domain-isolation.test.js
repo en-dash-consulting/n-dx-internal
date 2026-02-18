@@ -167,21 +167,23 @@ describe("architecture policy: domain layer isolation", () => {
 
 describe("architecture policy: gateway enforcement", () => {
   /**
-   * Hench gateway: packages/hench/src/prd/ops.ts
+   * Hench gateway: packages/hench/src/prd/rex-gateway.ts
    *
    * All runtime imports from "rex" in hench source files must go through
    * this single gateway. `import type` is allowed anywhere (zero runtime coupling).
+   * The legacy re-export at prd/ops.ts is also allowed (backward compatibility).
    */
-  it("hench runtime imports from rex must go through the gateway (prd/ops.ts)", () => {
-    const GATEWAY = "packages/hench/src/prd/ops.ts";
+  it("hench runtime imports from rex must go through the gateway (prd/rex-gateway.ts)", () => {
+    const GATEWAY = "packages/hench/src/prd/rex-gateway.ts";
+    const LEGACY_GATEWAY = "packages/hench/src/prd/ops.ts";
     const henchSrc = walk(join(ROOT, "packages/hench/src"));
     const violations = [];
 
     for (const file of henchSrc) {
       const rel = relative(ROOT, file);
 
-      // The gateway itself is the one allowed file
-      if (rel === GATEWAY) continue;
+      // The gateway itself and its legacy re-export are allowed
+      if (rel === GATEWAY || rel === LEGACY_GATEWAY) continue;
 
       const content = readFileSync(file, "utf-8");
       if (hasRuntimeImportFrom(content, "rex")) {
@@ -199,7 +201,7 @@ describe("architecture policy: gateway enforcement", () => {
           "Violations:",
           ...violations.map((v) => `  - ${v}`),
           "",
-          "To fix: import from '../prd/ops.js' (the gateway) instead of 'rex' directly.",
+          "To fix: import from '../prd/rex-gateway.js' (the gateway) instead of 'rex' directly.",
           `If a new rex export is needed, add it to ${GATEWAY} first.`,
         ].join("\n"),
       );
@@ -207,13 +209,15 @@ describe("architecture policy: gateway enforcement", () => {
   });
 
   /**
-   * Web gateway: packages/web/src/server/mcp-deps.ts
+   * Web gateway: packages/web/src/server/domain-gateway.ts
    *
    * All runtime imports from "rex" and "sourcevision" in web source files
    * must go through this single gateway. `import type` is allowed anywhere.
+   * The legacy re-export at mcp-deps.ts is also allowed (backward compatibility).
    */
-  it("web runtime imports from domain packages must go through the gateway (server/mcp-deps.ts)", () => {
-    const GATEWAY = "packages/web/src/server/mcp-deps.ts";
+  it("web runtime imports from domain packages must go through the gateway (server/domain-gateway.ts)", () => {
+    const GATEWAY = "packages/web/src/server/domain-gateway.ts";
+    const LEGACY_GATEWAY = "packages/web/src/server/mcp-deps.ts";
     const domainPkgs = ["rex", "sourcevision"];
     const webSrc = walk(join(ROOT, "packages/web/src"));
     const violations = [];
@@ -221,8 +225,8 @@ describe("architecture policy: gateway enforcement", () => {
     for (const file of webSrc) {
       const rel = relative(ROOT, file);
 
-      // The gateway itself is the one allowed file
-      if (rel === GATEWAY) continue;
+      // The gateway itself and its legacy re-export are allowed
+      if (rel === GATEWAY || rel === LEGACY_GATEWAY) continue;
 
       const content = readFileSync(file, "utf-8");
       for (const pkg of domainPkgs) {
@@ -242,7 +246,7 @@ describe("architecture policy: gateway enforcement", () => {
           "Violations:",
           ...violations.map((v) => `  - ${v}`),
           "",
-          "To fix: import from './mcp-deps.js' (the gateway) instead of the domain package directly.",
+          "To fix: import from './domain-gateway.js' (the gateway) instead of the domain package directly.",
           `If a new export is needed, add it to ${GATEWAY} first.`,
         ].join("\n"),
       );

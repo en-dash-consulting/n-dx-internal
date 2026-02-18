@@ -19,7 +19,7 @@ import {
   walkTree,
   findItem,
   collectAllIds,
-} from "./mcp-deps.js";
+} from "./domain-gateway.js";
 
 const VALIDATION_PREFIX = "/api/rex/validate";
 const DEPGRAPH_PREFIX = "/api/rex/dependency-graph";

@@ -22,14 +22,14 @@
  *
  * REST/API routes access domain data through **filesystem reads** and
  * **subprocess calls**.  Rex domain types and constants are imported from
- * the canonical source through the gateway (`mcp-deps.ts`), eliminating
+ * the canonical source through the gateway (`domain-gateway.ts`), eliminating
  * the previous duplication in `rex-domain.ts`.
  *
  * MCP server factories and rex domain constants are funnelled through
- * `mcp-deps.ts` — a single gateway module that mirrors the pattern
- * in `packages/hench/src/prd/ops.ts`.
+ * `domain-gateway.ts` — a single gateway module that mirrors the pattern
+ * in `packages/hench/src/prd/rex-gateway.ts`.
  *
- * @see ./mcp-deps.ts — runtime import gateway (all cross-package imports)
+ * @see ./domain-gateway.ts — runtime import gateway (all cross-package imports)
  */
 
 export { startServer, PORT_FILE } from "./start.js";

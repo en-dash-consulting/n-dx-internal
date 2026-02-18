@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { createInterface } from "node:readline";
-import { resolveStore } from "../../prd/ops.js";
+import { resolveStore } from "../../prd/rex-gateway.js";
 import type { PRDItem, PRDStore } from "rex";
 import { loadConfig, listRuns } from "../../store/index.js";
 import { agentLoop } from "../../agent/lifecycle/loop.js";
@@ -107,7 +107,7 @@ export async function getEpicScopeInfo(
   }
 
   // Walk the tree and count tasks belonging to this epic
-  const { walkTree } = await import("../../prd/ops.js");
+  const { walkTree } = await import("../../prd/rex-gateway.js");
 
   let totalTasks = 0;
   let completedTasks = 0;

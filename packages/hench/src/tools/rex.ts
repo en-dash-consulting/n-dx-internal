@@ -4,7 +4,7 @@ import type { PRDStore, PRDItem, ItemStatus } from "rex";
 import type { CommandExecutor } from "rex";
 import { PROJECT_DIRS } from "@n-dx/claude-client";
 import { execShellCmd } from "../process/index.js";
-import { computeTimestampUpdates, findAutoCompletions, validateAutomatedRequirements, formatRequirementsValidation, loadAcknowledged, saveAcknowledged, acknowledgeFinding } from "../prd/ops.js";
+import { computeTimestampUpdates, findAutoCompletions, validateAutomatedRequirements, formatRequirementsValidation, loadAcknowledged, saveAcknowledged, acknowledgeFinding } from "../prd/rex-gateway.js";
 import { validateCompletion, formatValidationResult } from "../validation/completion.js";
 
 export interface UpdateStatusOptions {

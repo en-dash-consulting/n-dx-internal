@@ -512,7 +512,7 @@ async function testNotionConnection(
  * Dynamically load the adapter registry from the rex package.
  *
  * This avoids a hard compile-time dependency on rex from the web package.
- * The web package's gateway (mcp-deps.ts) handles MCP server factories;
+ * The web package's gateway (domain-gateway.ts) handles MCP server factories;
  * for adapter config we use a lightweight dynamic import.
  */
 async function loadRegistry(): Promise<{
