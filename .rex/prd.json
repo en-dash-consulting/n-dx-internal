@@ -8403,22 +8403,26 @@
     {
       "id": "573c20ed-3795-4801-af87-4d036116d3e1",
       "title": "Hench Run Count Display Accuracy",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-18T07:58:39.176Z",
+      "completedAt": "2026-02-18T07:58:39.176Z",
       "children": [
         {
           "id": "351e9c1a-b1af-4d3e-98a6-e559afa1153f",
           "title": "Fix Run Count in Sidebar",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Correct the run count display in the Hench sidebar area to show accurate execution statistics",
           "source": "smart-add",
+          "startedAt": "2026-02-18T07:58:39.114Z",
+          "completedAt": "2026-02-18T07:58:39.114Z",
           "children": [
             {
               "id": "3100ff2b-f769-4a9b-9e80-34f82c6f8b0e",
               "title": "Fix run count calculation and display system",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Audit, correct, and update the complete run count system including data fetching, aggregation logic, and UI display to ensure accurate real-time run counts in the Hench sidebar",
               "acceptanceCriteria": [
@@ -8441,7 +8445,9 @@
                 "data",
                 "real-time"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-18T07:52:41.361Z",
+              "completedAt": "2026-02-18T07:58:39.033Z"
             }
           ]
         }
@@ -8606,7 +8612,7 @@
         {
           "id": "a62d284c-e430-4c74-aadf-1972f2d913c0",
           "title": "Hench Run Deep-linking",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Enable direct navigation to specific hench execution runs with automatic page routing, run selection, and transcript visibility",
           "source": "smart-add",
@@ -8614,7 +8620,7 @@
             {
               "id": "bafb2115-1e54-4462-bd8b-3ec8458c288a",
               "title": "Implement complete Hench run deep-linking",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add URL-based routing to navigate directly to specific hench runs with automatic selection, transcript opening, and visibility management",
               "acceptanceCriteria": [
@@ -8633,9 +8639,13 @@
                 "ui",
                 "selection"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-18T07:58:59.334Z",
+              "completedAt": "2026-02-18T08:05:25.051Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-18T08:05:25.131Z",
+          "completedAt": "2026-02-18T08:05:25.131Z"
         },
         {
           "id": "e03dbe28-2101-4e1c-8c54-0815f652b384",
@@ -8878,6 +8888,8 @@
           "level": "feature",
           "description": "Allow users to create new tasks directly within the PRD tree structure without navigating to a separate form",
           "source": "smart-add",
+          "startedAt": "2026-02-18T07:51:47.240Z",
+          "completedAt": "2026-02-18T07:51:47.240Z",
           "children": [
             {
               "id": "667df0df-8909-46d6-b71c-9e29ba06e4d1",
@@ -8907,9 +8919,7 @@
               "startedAt": "2026-02-18T07:43:36.786Z",
               "completedAt": "2026-02-18T07:51:47.158Z"
             }
-          ],
-          "startedAt": "2026-02-18T07:51:47.240Z",
-          "completedAt": "2026-02-18T07:51:47.240Z"
+          ]
         },
         {
           "id": "5b719370-1b6a-4cce-99bb-97ef79d064f1",

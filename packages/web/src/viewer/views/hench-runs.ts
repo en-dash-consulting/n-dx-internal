@@ -10,7 +10,7 @@
  */
 
 import { h } from "preact";
-import { useState, useEffect, useCallback, useMemo } from "preact/hooks";
+import { useState, useEffect, useCallback, useMemo, useRef } from "preact/hooks";
 import { MetricCard } from "../components/data-display/health-gauge.js";
 import { BrandedHeader } from "../components/logos.js";
 import { RexTaskLink } from "../components/rex-task-link.js";
@@ -168,11 +168,13 @@ function RunMetrics({ runs }: { runs: RunSummary[] }) {
 }
 
 /** Individual run card in the list. */
-function RunCard({ run, isSelected, onClick, navigateTo }: {
+function RunCard({ run, isSelected, isHighlighted, onClick, navigateTo, cardRef }: {
   run: RunSummary;
   isSelected: boolean;
+  isHighlighted?: boolean;
   onClick: () => void;
   navigateTo?: NavigateTo;
+  cardRef?: (el: HTMLDivElement | null) => void;
 }) {
   const status = getStatusConfig(run.status);
   const stale = isStaleRun(run);
@@ -184,7 +186,8 @@ function RunCard({ run, isSelected, onClick, navigateTo }: {
   const counts = run.structuredSummary?.counts;
 
   return h("div", {
-    class: `hench-run-card${isSelected ? " selected" : ""}${run.status === "failed" || run.status === "error" ? " failed" : ""}${stale ? " stale" : ""}`,
+    ref: cardRef,
+    class: `hench-run-card${isSelected ? " selected" : ""}${run.status === "failed" || run.status === "error" ? " failed" : ""}${stale ? " stale" : ""}${isHighlighted ? " hench-run-highlighted" : ""}`,
     onClick,
     role: "button",
     tabIndex: 0,
@@ -436,9 +439,11 @@ function RunDetailView({ run, onBack, navigateTo }: { run: RunDetail; onBack: ()
 
 export interface HenchRunsViewProps {
   navigateTo?: NavigateTo;
+  /** When set, auto-select this run on mount (from deep-link URL). */
+  initialRunId?: string | null;
 }
 
-export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
+export function HenchRunsView({ navigateTo, initialRunId }: HenchRunsViewProps = {}) {
   const [runs, setRuns] = useState<RunSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -446,6 +451,11 @@ export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
   const [runDetail, setRunDetail] = useState<RunDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [deepLinkError, setDeepLinkError] = useState<string | null>(null);
+  /** Tracks the run ID that was deep-linked to, for highlight animation. */
+  const [highlightedRunId, setHighlightedRunId] = useState<string | null>(null);
+  /** Whether the initial deep-link has been consumed. */
+  const deepLinkConsumedRef = useRef(false);
 
   // Fetch the runs list
   const fetchRuns = useCallback(async () => {
@@ -469,6 +479,33 @@ export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
     return () => clearInterval(interval);
   }, [fetchRuns]);
 
+  // Deep-link: auto-select the target run once runs are loaded
+  useEffect(() => {
+    if (deepLinkConsumedRef.current || !initialRunId || loading || runs.length === 0) return;
+    deepLinkConsumedRef.current = true;
+
+    const targetExists = runs.some((r) => r.id === initialRunId);
+    if (!targetExists) {
+      setDeepLinkError(`Run "${initialRunId}" not found`);
+      // Clean URL back to /hench-runs
+      history.replaceState(
+        { view: "hench-runs", file: null, zone: null, runId: null },
+        "",
+        "/hench-runs",
+      );
+      return;
+    }
+
+    // Auto-select and fetch detail
+    setSelectedRunId(initialRunId);
+    setHighlightedRunId(initialRunId);
+    fetchDetail(initialRunId);
+
+    // Clear highlight after animation completes
+    const timer = setTimeout(() => setHighlightedRunId(null), 3000);
+    return () => clearTimeout(timer);
+  }, [initialRunId, loading, runs]);
+
   // Fetch detail for a specific run
   const fetchDetail = useCallback(async (id: string) => {
     setDetailLoading(true);
@@ -476,6 +513,9 @@ export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
       const res = await fetch(`/api/hench/runs/${id}`);
       if (!res.ok) {
         setRunDetail(null);
+        if (id === initialRunId) {
+          setDeepLinkError(`Failed to load run details (${res.status})`);
+        }
         return;
       }
       const json = await res.json();
@@ -485,22 +525,41 @@ export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
     } finally {
       setDetailLoading(false);
     }
-  }, []);
+  }, [initialRunId]);
 
   const handleSelectRun = useCallback((id: string) => {
+    setDeepLinkError(null);
     if (selectedRunId === id) {
-      // Toggle off
+      // Toggle off — update URL to remove run ID
       setSelectedRunId(null);
       setRunDetail(null);
+      history.replaceState(
+        { view: "hench-runs", file: null, zone: null, runId: null },
+        "",
+        "/hench-runs",
+      );
     } else {
       setSelectedRunId(id);
       fetchDetail(id);
+      // Update URL to include run ID for shareability
+      history.replaceState(
+        { view: "hench-runs", file: null, zone: null, runId: id },
+        "",
+        `/hench-runs/${id}`,
+      );
     }
   }, [selectedRunId, fetchDetail]);
 
   const handleBack = useCallback(() => {
     setSelectedRunId(null);
     setRunDetail(null);
+    setDeepLinkError(null);
+    // Clean URL back to /hench-runs
+    history.replaceState(
+      { view: "hench-runs", file: null, zone: null, runId: null },
+      "",
+      "/hench-runs",
+    );
   }, []);
 
   // Filter runs by status
@@ -522,6 +581,18 @@ export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
     }
     return counts;
   }, [runs]);
+
+  // Scroll the deep-linked run card into view when it renders
+  const scrolledRef = useRef(false);
+  const deepLinkCardRef = useCallback((el: HTMLDivElement | null) => {
+    if (el && !scrolledRef.current) {
+      scrolledRef.current = true;
+      // Defer so the DOM has settled
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
+  }, []);
 
   // Extract running runs for the active tasks panel
   const activeRuns: ActiveRun[] = useMemo(() => {
@@ -560,6 +631,16 @@ export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
         h(BrandedHeader, { product: "hench", title: "Hench", class: "branded-header-hench" }),
         h("h2", null, "Execution History"),
       ),
+      deepLinkError
+        ? h("div", { class: "hench-deep-link-error", role: "alert" },
+            h("span", null, deepLinkError),
+            h("button", {
+              class: "hench-deep-link-error-dismiss",
+              onClick: () => setDeepLinkError(null),
+              "aria-label": "Dismiss",
+            }, "×"),
+          )
+        : null,
       h("div", { class: "hench-empty" },
         h("div", { class: "hench-empty-icon" }, "▶"),
         h("p", null, "No runs yet."),
@@ -591,6 +672,18 @@ export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
       ),
     ),
 
+    // Deep-link error banner
+    deepLinkError
+      ? h("div", { class: "hench-deep-link-error", role: "alert" },
+          h("span", null, deepLinkError),
+          h("button", {
+            class: "hench-deep-link-error-dismiss",
+            onClick: () => setDeepLinkError(null),
+            "aria-label": "Dismiss",
+          }, "×"),
+        )
+      : null,
+
     // Active tasks panel — shown at top when there are running tasks
     h(ActiveTasksPanel, { runs: activeRuns, navigateTo }),
 
@@ -615,15 +708,18 @@ export function HenchRunsView({ navigateTo }: HenchRunsViewProps = {}) {
 
     // Runs list
     h("div", { class: "hench-runs-list" },
-      filteredRuns.map((run) =>
-        h(RunCard, {
+      filteredRuns.map((run) => {
+        const isHL = highlightedRunId === run.id;
+        return h(RunCard, {
           key: run.id,
           run,
           isSelected: selectedRunId === run.id,
+          isHighlighted: isHL,
           onClick: () => handleSelectRun(run.id),
           navigateTo,
-        }),
-      ),
+          cardRef: isHL ? deepLinkCardRef : undefined,
+        });
+      }),
       filteredRuns.length === 0
         ? h("div", { class: "hench-no-results" }, "No runs match the selected filter.")
         : null,

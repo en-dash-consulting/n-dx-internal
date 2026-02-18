@@ -59,9 +59,29 @@ async function fetchScope(): Promise<string | null> {
   }
 }
 
+/** Parse pathname into { view, subId } — handles deep-link paths like /hench-runs/RUNID */
+function parsePathname(pathname: string, validViews: Set<ViewId>): { view: ViewId | null; subId: string | null } {
+  const raw = pathname.slice(1); // strip leading "/"
+  // Exact match first
+  if (validViews.has(raw as ViewId)) return { view: raw as ViewId, subId: null };
+  // Try base/subId pattern (e.g. "hench-runs/abc-123")
+  const slashIdx = raw.indexOf("/");
+  if (slashIdx > 0) {
+    const base = raw.slice(0, slashIdx) as ViewId;
+    const sub = raw.slice(slashIdx + 1);
+    if (validViews.has(base) && sub) return { view: base, subId: sub };
+  }
+  return { view: null, subId: null };
+}
+
 function getInitialView(validViews: Set<ViewId>): ViewId {
-  const path = location.pathname.slice(1) as ViewId;
-  return validViews.has(path) ? path : validViews.values().next().value as ViewId;
+  const { view } = parsePathname(location.pathname, validViews);
+  return view ?? validViews.values().next().value as ViewId;
+}
+
+function getInitialRunId(validViews: Set<ViewId>): string | null {
+  const { view, subId } = parsePathname(location.pathname, validViews);
+  return view === "hench-runs" ? subId : null;
 }
 
 const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
@@ -77,6 +97,7 @@ function getInitialSidebarCollapsed(): boolean {
 function App({ scope }: { scope: string | null }) {
   const validViews = useMemo(() => buildValidViews(scope), [scope]);
   const [view, setView] = useState<ViewId>(() => getInitialView(validViews));
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(() => getInitialRunId(validViews));
   const [data, setData] = useState<LoadedData>({
     manifest: null,
     inventory: null,
@@ -107,17 +128,21 @@ function App({ scope }: { scope: string | null }) {
   const navigateTo: NavigateTo = useCallback((targetView, opts) => {
     const file = opts?.file ?? null;
     const zone = opts?.zone ?? null;
+    const runId = opts?.runId ?? null;
     setSelectedFile(file);
     setSelectedZone(zone);
+    setSelectedRunId(runId);
     setView(targetView);
-    history.pushState({ view: targetView, file, zone }, "", `/${targetView}`);
+    const urlPath = runId ? `/${targetView}/${runId}` : `/${targetView}`;
+    history.pushState({ view: targetView, file, zone, runId }, "", urlPath);
   }, []);
 
   const handleSidebarNav = useCallback((id: ViewId) => {
     setSelectedFile(null);
     setSelectedZone(null);
+    setSelectedRunId(null);
     setView(id);
-    history.pushState({ view: id, file: null, zone: null }, "", `/${id}`);
+    history.pushState({ view: id, file: null, zone: null, runId: null }, "", `/${id}`);
   }, []);
 
   // Scroll to top on view change
@@ -136,29 +161,33 @@ function App({ scope }: { scope: string | null }) {
       const hashView = location.hash.replace("#", "") as ViewId;
       if (validViews.has(hashView)) {
         setView(hashView);
-        history.replaceState({ view: hashView, file: null, zone: null }, "", `/${hashView}`);
+        history.replaceState({ view: hashView, file: null, zone: null, runId: null }, "", `/${hashView}`);
       }
     } else {
-      // Seed the initial history entry
-      history.replaceState({ view, file: selectedFile, zone: selectedZone }, "", `/${view}`);
+      // Seed the initial history entry — preserve deep-link path if present
+      const initialUrl = selectedRunId ? `/${view}/${selectedRunId}` : `/${view}`;
+      history.replaceState({ view, file: selectedFile, zone: selectedZone, runId: selectedRunId }, "", initialUrl);
     }
 
     const handlePopState = (e: PopStateEvent) => {
       if (e.state) {
-        const s = e.state as { view?: string; file?: string | null; zone?: string | null };
+        const s = e.state as { view?: string; file?: string | null; zone?: string | null; runId?: string | null };
         if (s.view && validViews.has(s.view as ViewId)) {
           setView(s.view as ViewId);
           setSelectedFile(s.file ?? null);
           setSelectedZone(s.zone ?? null);
+          setSelectedRunId(s.runId ?? null);
         }
       } else {
         // Fallback: parse from pathname
-        const path = location.pathname.slice(1) as ViewId;
-        if (validViews.has(path)) {
-          setView(path);
+        const parsed = parsePathname(location.pathname, validViews);
+        if (parsed.view) {
+          setView(parsed.view);
           setSelectedFile(null);
           setSelectedZone(null);
-          history.replaceState({ view: path, file: null, zone: null }, "", `/${path}`);
+          setSelectedRunId(parsed.subId);
+          const fallbackUrl = parsed.subId ? `/${parsed.view}/${parsed.subId}` : `/${parsed.view}`;
+          history.replaceState({ view: parsed.view, file: null, zone: null, runId: parsed.subId }, "", fallbackUrl);
         }
       }
     };
@@ -263,7 +292,7 @@ function App({ scope }: { scope: string | null }) {
       case "notion-config":
         return h(NotionConfigView, null);
       case "hench-runs":
-        return h(HenchRunsView, { navigateTo });
+        return h(HenchRunsView, { navigateTo, initialRunId: selectedRunId });
       case "hench-config":
         return h(HenchConfigView, null);
       case "hench-templates":

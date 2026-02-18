@@ -190,8 +190,10 @@ export function handleStaticRoute(
   }
 
   // SPA catch-all: known view paths serve the viewer HTML
+  // Also match deep-link paths like "hench-runs/RUNID"
   const segment = url.slice(1).split("?")[0];
-  if (SPA_VIEWS.has(segment)) {
+  const baseSegment = segment.split("/")[0];
+  if (SPA_VIEWS.has(segment) || SPA_VIEWS.has(baseSegment)) {
     res.writeHead(200, { "Content-Type": "text/html", "Cache-Control": "no-cache" });
     res.end(assets.getViewerHtml());
     return true;
