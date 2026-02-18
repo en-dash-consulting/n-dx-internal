@@ -4,6 +4,9 @@
  * Displays a "project > tool > view" hierarchy in the page header area.
  * Fetches project metadata from the `/api/project` endpoint and combines
  * it with the current view to build a contextual breadcrumb trail.
+ *
+ * Also manages `document.title` to reflect the current project and view,
+ * formatted as "ProjectName | n-dx" (or "ViewLabel — ProductLabel | ProjectName | n-dx").
  */
 
 import { h } from "preact";
@@ -134,6 +137,16 @@ export function Breadcrumb({ view, navigateTo, scope }: BreadcrumbProps) {
       if (m) setProject(m);
     });
   }, []);
+
+  // Keep document.title in sync with project + current view
+  useEffect(() => {
+    const meta = VIEW_META[view];
+    const parts: string[] = [];
+    if (meta) parts.push(`${meta.label} — ${meta.productLabel}`);
+    if (project) parts.push(project.name);
+    parts.push("n-dx");
+    document.title = parts.join(" | ");
+  }, [project, view]);
 
   const meta = VIEW_META[view];
 
