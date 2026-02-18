@@ -123,6 +123,51 @@
   flex-shrink: 0;
 }
 
+/* Graph visibility toggle bar */
+.graph-visibility-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.graph-visibility-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Hidden graph placeholder */
+.graph-hidden-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 60px 20px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  min-height: 200px;
+}
+
+.graph-hidden-icon {
+  font-size: 40px;
+  opacity: 0.25;
+}
+
+.graph-hidden-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.graph-hidden-stats .stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 20px;
+}
+
 /* Graph search bar */
 .graph-search-bar {
   margin-bottom: 8px;

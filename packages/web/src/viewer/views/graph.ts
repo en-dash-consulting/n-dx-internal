@@ -13,6 +13,17 @@ interface GraphProps {
   navigateTo?: NavigateTo;
 }
 
+const GRAPH_VISIBLE_KEY = "import-graph-visible";
+
+/** Read persisted graph visibility preference (hidden by default). */
+function getInitialGraphVisible(): boolean {
+  try {
+    return localStorage.getItem(GRAPH_VISIBLE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }: GraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const graphRef = useRef<GraphRenderer | null>(null);
@@ -21,6 +32,7 @@ export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }
   const [labelsVisible, setLabelsVisible] = useState(true);
   const [zonesVisible, setZonesVisible] = useState(true);
   const [collapsedZones, setCollapsedZones] = useState<Set<string>>(new Set());
+  const [graphVisible, setGraphVisible] = useState(getInitialGraphVisible);
 
   const { imports, zones, inventory } = data;
 
@@ -116,6 +128,21 @@ export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }
     });
   }, []);
 
+  // Toggle graph visibility (persisted to localStorage)
+  const handleToggleGraph = useCallback(() => {
+    setGraphVisible((prev) => {
+      const next = !prev;
+      try { localStorage.setItem(GRAPH_VISIBLE_KEY, String(next)); } catch { /* noop */ }
+      if (!next) {
+        // Destroy renderer when hiding to free resources
+        graphRef.current?.destroy();
+        graphRef.current = null;
+        setInitialized(false);
+      }
+      return next;
+    });
+  }, []);
+
   // Zone select callback (click on hull)
   const handleZoneSelect = useCallback((zoneId: string) => {
     if (!zones) return;
@@ -201,7 +228,7 @@ export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }
       graphRef.current?.destroy();
       graphRef.current = null;
     };
-  }, [imports, initialized]);
+  }, [imports, initialized, graphVisible]);
 
   // Handle selectedFile highlight
   useEffect(() => {
@@ -236,80 +263,120 @@ export function Graph({ data, onSelect, selectedFile, selectedZone, navigateTo }
     }));
   }, [zones]);
 
+  const nodeCount = new Set([...imports.edges.map(e => e.from), ...imports.edges.map(e => e.to)]).size;
+
   return h("div", null,
     h("div", { class: "view-header" },
       h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
       h("h2", { class: "section-header" }, "Import Graph"),
     ),
     h("p", { class: "section-sub" },
-      `${imports.edges.length} edges between ${new Set([...imports.edges.map(e => e.from), ...imports.edges.map(e => e.to)]).size} files`,
+      `${imports.edges.length} edges between ${nodeCount} files`,
       zones ? ` across ${zones.zones.length} zones` : ""
     ),
-    // Search bar
-    h("div", { class: "graph-search-bar" },
-      h("input", {
-        type: "text",
-        class: "filter-input",
-        placeholder: "Search nodes...",
-        value: graphSearch,
-        onInput: (e: Event) => setGraphSearch((e.target as HTMLInputElement).value),
-      })
-    ),
-    h("div", { class: "graph-container", style: "position: relative;" },
-      h("svg", { ref: svgRef }),
-      // Label toggle button
+    // Graph visibility toggle
+    h("div", { class: "graph-visibility-bar" },
       h("button", {
-        class: "graph-label-toggle",
-        onClick: handleToggleLabels,
-        title: labelsVisible ? "Hide labels" : "Show labels",
-      }, labelsVisible ? "Labels" : "Labels off"),
-      // Zone toggle button
-      h("button", {
-        class: "graph-zone-toggle",
-        onClick: handleToggleZones,
-        title: zonesVisible ? "Hide zone groups" : "Show zone groups",
-      }, zonesVisible ? "Zones" : "Zones off"),
-      // Zoom controls
-      h("div", { class: "graph-zoom-controls" },
-        h("button", {
-          class: "graph-zoom-btn",
-          onClick: handleZoomIn,
-          title: "Zoom in",
-          "aria-label": "Zoom in",
-        }, "+"),
-        h("button", {
-          class: "graph-zoom-btn",
-          onClick: handleZoomOut,
-          title: "Zoom out",
-          "aria-label": "Zoom out",
-        }, "\u2212"),
-        h("button", {
-          class: "graph-zoom-btn graph-zoom-fit",
-          onClick: handleResetView,
-          title: "Fit to content",
-          "aria-label": "Fit to content",
-        }, "\u2922"),
-      ),
-      // Legend overlay — click items to collapse/expand zones
-      legendItems.length > 0
-        ? h("div", { class: "graph-legend" },
-            h("div", { class: "graph-legend-title", style: "font-size: 10px; color: var(--text-dim); margin-bottom: 4px; opacity: 0.7;" }, "Click to toggle zone"),
-            legendItems.map((item) =>
-              h("div", {
-                key: item.name,
-                class: `graph-legend-item${collapsedZones.has(zones?.zones.find(z => z.name === item.name)?.id ?? "") ? " collapsed" : ""}`,
-                onClick: () => {
-                  const zone = zones?.zones.find(z => z.name === item.name);
-                  if (zone) handleZoneLegendClick(zone.id);
-                },
-              },
-                h("span", { class: "graph-legend-dot", style: `background: ${item.color};` }),
-                item.name
-              )
-            )
+        class: `filter-toggle-btn${graphVisible ? " active" : ""}`,
+        onClick: handleToggleGraph,
+        "aria-pressed": String(graphVisible),
+        title: graphVisible ? "Hide graph visualization" : "Show graph visualization",
+      }, graphVisible ? "\u2713 Graph Visible" : "Show Graph"),
+      !graphVisible
+        ? h("span", { class: "graph-visibility-hint" },
+            "The force-directed graph is hidden to improve performance. Click to enable."
           )
-        : null
-    )
+        : null,
+    ),
+    // Graph content: shown only when toggle is on
+    graphVisible
+      ? h("div", null,
+          // Search bar
+          h("div", { class: "graph-search-bar" },
+            h("input", {
+              type: "text",
+              class: "filter-input",
+              placeholder: "Search nodes...",
+              value: graphSearch,
+              onInput: (e: Event) => setGraphSearch((e.target as HTMLInputElement).value),
+            })
+          ),
+          h("div", { class: "graph-container", style: "position: relative;" },
+            h("svg", { ref: svgRef }),
+            // Label toggle button
+            h("button", {
+              class: "graph-label-toggle",
+              onClick: handleToggleLabels,
+              title: labelsVisible ? "Hide labels" : "Show labels",
+            }, labelsVisible ? "Labels" : "Labels off"),
+            // Zone toggle button
+            h("button", {
+              class: "graph-zone-toggle",
+              onClick: handleToggleZones,
+              title: zonesVisible ? "Hide zone groups" : "Show zone groups",
+            }, zonesVisible ? "Zones" : "Zones off"),
+            // Zoom controls
+            h("div", { class: "graph-zoom-controls" },
+              h("button", {
+                class: "graph-zoom-btn",
+                onClick: handleZoomIn,
+                title: "Zoom in",
+                "aria-label": "Zoom in",
+              }, "+"),
+              h("button", {
+                class: "graph-zoom-btn",
+                onClick: handleZoomOut,
+                title: "Zoom out",
+                "aria-label": "Zoom out",
+              }, "\u2212"),
+              h("button", {
+                class: "graph-zoom-btn graph-zoom-fit",
+                onClick: handleResetView,
+                title: "Fit to content",
+                "aria-label": "Fit to content",
+              }, "\u2922"),
+            ),
+            // Legend overlay — click items to collapse/expand zones
+            legendItems.length > 0
+              ? h("div", { class: "graph-legend" },
+                  h("div", { class: "graph-legend-title", style: "font-size: 10px; color: var(--text-dim); margin-bottom: 4px; opacity: 0.7;" }, "Click to toggle zone"),
+                  legendItems.map((item) =>
+                    h("div", {
+                      key: item.name,
+                      class: `graph-legend-item${collapsedZones.has(zones?.zones.find(z => z.name === item.name)?.id ?? "") ? " collapsed" : ""}`,
+                      onClick: () => {
+                        const zone = zones?.zones.find(z => z.name === item.name);
+                        if (zone) handleZoneLegendClick(zone.id);
+                      },
+                    },
+                      h("span", { class: "graph-legend-dot", style: `background: ${item.color};` }),
+                      item.name
+                    )
+                  )
+                )
+              : null
+          ),
+        )
+      : // Collapsed placeholder with summary stats
+        h("div", { class: "graph-hidden-placeholder" },
+          h("div", { class: "graph-hidden-icon" }, "\u2B95"),
+          h("div", { class: "graph-hidden-stats" },
+            h("span", { class: "stat-card" },
+              h("span", { class: "value" }, String(nodeCount)),
+              h("span", { class: "label" }, "Files"),
+            ),
+            h("span", { class: "stat-card" },
+              h("span", { class: "value" }, String(imports.edges.length)),
+              h("span", { class: "label" }, "Edges"),
+            ),
+            zones
+              ? h("span", { class: "stat-card" },
+                  h("span", { class: "value" }, String(zones.zones.length)),
+                  h("span", { class: "label" }, "Zones"),
+                )
+              : null,
+          ),
+        ),
   );
 }
 
