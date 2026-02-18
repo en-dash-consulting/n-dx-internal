@@ -17,6 +17,9 @@ interface FilesViewProps {
 type SortKey = "path" | "size" | "language" | "lineCount" | "role" | "category";
 type SortDir = "asc" | "desc";
 
+/** Internal tool directories hidden from the file list by default */
+const INTERNAL_DIR_PREFIXES = [".hench/", ".rex/", ".sourcevision/"];
+
 const ROLE_TAG_CLASS: Record<string, string> = {
   source: "tag-source",
   test: "tag-test",
@@ -37,6 +40,7 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
   const [sortKey, setSortKey] = useState<SortKey>("path");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [showCount, setShowCount] = useState(100);
+  const [showAllFiles, setShowAllFiles] = useState(false);
 
   // Auto-set zone filter when selectedZone prop is provided
   useEffect(() => {
@@ -74,6 +78,13 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
   const filtered = useMemo(() => {
     let files = inventory.files;
 
+    // Hide internal tool directories by default
+    if (!showAllFiles) {
+      files = files.filter(
+        (f) => !INTERNAL_DIR_PREFIXES.some((prefix) => f.path.startsWith(prefix))
+      );
+    }
+
     if (search) {
       const q = search.toLowerCase();
       files = files.filter(
@@ -110,10 +121,10 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
     });
 
     return files;
-  }, [inventory, search, roleFilter, langFilter, zoneFilter, sortKey, sortDir, fileToZone]);
+  }, [inventory, search, roleFilter, langFilter, zoneFilter, sortKey, sortDir, fileToZone, showAllFiles]);
 
   // Reset show count when filters change
-  useMemo(() => setShowCount(100), [search, roleFilter, langFilter, zoneFilter]);
+  useMemo(() => setShowCount(100), [search, roleFilter, langFilter, zoneFilter, showAllFiles]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -193,6 +204,12 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
             h("option", { value: "__unzoned__" }, "Unzoned")
           )
         : null,
+      h("button", {
+        class: `filter-toggle-btn${showAllFiles ? " active" : ""}`,
+        onClick: () => setShowAllFiles(!showAllFiles),
+        title: showAllFiles ? "Hide internal tool directories" : "Show all files including internal directories",
+        "aria-pressed": String(showAllFiles),
+      }, showAllFiles ? "\u2713 All Files" : "Show All Files"),
       h("span", { class: "filter-result-count" },
         `Showing ${Math.min(showCount, filtered.length)} of ${filtered.length} files`
       ),

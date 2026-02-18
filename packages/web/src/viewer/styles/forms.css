@@ -45,6 +45,31 @@
   white-space: nowrap;
 }
 
+/* Toggle button inside filter bar */
+.filter-toggle-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-dim);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.filter-toggle-btn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.filter-toggle-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
 /* Drag-and-drop overlay */
 .drop-overlay {
   position: fixed;
