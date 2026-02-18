@@ -128,6 +128,8 @@ export {
   isExecutableOnPath,
   spawnTool,
   spawnManaged,
+  ProcessPool,
+  ProcessLimitError,
 } from "./exec.js";
 
 export type {

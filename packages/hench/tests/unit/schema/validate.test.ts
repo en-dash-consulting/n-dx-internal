@@ -151,6 +151,81 @@ describe("validateConfig", () => {
     });
   });
 
+  describe("guard.spawnTimeout defaults and validation", () => {
+    it("is optional in schema and defaults to 300000", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      const { spawnTimeout, ...guardWithout } = config.guard;
+      const result = validateConfig({ ...config, guard: guardWithout });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.guard.spawnTimeout).toBe(300000);
+      }
+    });
+
+    it("can be set to a positive value", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      config.guard.spawnTimeout = 600000;
+      const result = validateConfig(config);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.guard.spawnTimeout).toBe(600000);
+      }
+    });
+
+    it("accepts 0 (no timeout)", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      config.guard.spawnTimeout = 0;
+      const result = validateConfig(config);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.guard.spawnTimeout).toBe(0);
+      }
+    });
+
+    it("rejects negative spawnTimeout", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      config.guard.spawnTimeout = -1;
+      const result = validateConfig(config);
+      expect(result.ok).toBe(false);
+    });
+  });
+
+  describe("guard.maxConcurrentProcesses defaults and validation", () => {
+    it("is optional in schema and defaults to 4", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      const { maxConcurrentProcesses, ...guardWithout } = config.guard;
+      const result = validateConfig({ ...config, guard: guardWithout });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.guard.maxConcurrentProcesses).toBe(4);
+      }
+    });
+
+    it("can be customised", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      config.guard.maxConcurrentProcesses = 8;
+      const result = validateConfig(config);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.guard.maxConcurrentProcesses).toBe(8);
+      }
+    });
+
+    it("rejects 0", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      config.guard.maxConcurrentProcesses = 0;
+      const result = validateConfig(config);
+      expect(result.ok).toBe(false);
+    });
+
+    it("rejects negative value", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      config.guard.maxConcurrentProcesses = -1;
+      const result = validateConfig(config);
+      expect(result.ok).toBe(false);
+    });
+  });
+
   describe("loopPauseMs defaults and validation", () => {
     it("is optional in schema and defaults to 2000", () => {
       const { loopPauseMs, ...configWithout } = DEFAULT_HENCH_CONFIG();

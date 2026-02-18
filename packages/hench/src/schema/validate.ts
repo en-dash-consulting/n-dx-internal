@@ -9,6 +9,8 @@ const GuardConfigSchema = z.object({
   allowedCommands: z.array(z.string()),
   commandTimeout: z.number().positive(),
   maxFileSize: z.number().positive(),
+  spawnTimeout: z.number().nonnegative().optional().default(300000),
+  maxConcurrentProcesses: z.number().int().positive().optional().default(4),
 });
 
 const RetryConfigSchema = z.object({

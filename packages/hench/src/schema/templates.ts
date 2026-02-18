@@ -134,6 +134,8 @@ export const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         allowedCommands: ["npm", "npx", "node", "git", "tsc", "vitest"],
         commandTimeout: 15000,
         maxFileSize: 524288,
+        spawnTimeout: 120000,          // 2 minutes — stricter than default
+        maxConcurrentProcesses: 2,     // tighter limit for sensitive work
       },
     },
     builtIn: true,

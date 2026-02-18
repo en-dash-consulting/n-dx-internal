@@ -181,6 +181,9 @@ export function isExecutableOnPath(name: string): boolean {
 // Spawn-and-delegate
 // ---------------------------------------------------------------------------
 
+/** Grace period before escalating SIGTERM → SIGKILL on timeout. */
+const KILL_ESCALATION_MS = 5_000;
+
 /** Options for {@link spawnTool}. */
 export interface SpawnToolOptions {
   /** Working directory for the child process. */
@@ -200,6 +203,13 @@ export interface SpawnToolOptions {
    * the `stdio` option). Returns immediately with `exitCode: 0`.
    */
   detached?: boolean;
+  /**
+   * Timeout in milliseconds. When elapsed, the child is killed (SIGTERM,
+   * then SIGKILL after 5 s) and the result resolves with `exitCode: null`.
+   *
+   * 0 or undefined = no timeout (wait indefinitely).
+   */
+  timeout?: number;
 }
 
 /** Result from {@link spawnTool}. */
@@ -247,7 +257,7 @@ export function spawnTool(
   args: string[],
   opts: SpawnToolOptions = {},
 ): Promise<SpawnToolResult> {
-  const { cwd, env, detached = false } = opts;
+  const { cwd, env, detached = false, timeout } = opts;
 
   // Detached mode: fire and forget
   if (detached) {
@@ -276,6 +286,31 @@ export function spawnTool(
 
     let stdout = "";
     let stderr = "";
+    let resolved = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let killTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const finish = (exitCode: number | null) => {
+      if (resolved) return;
+      resolved = true;
+      if (timer) clearTimeout(timer);
+      if (killTimer) clearTimeout(killTimer);
+      resolve({ exitCode, stdout, stderr });
+    };
+
+    if (timeout && timeout > 0) {
+      timer = setTimeout(() => {
+        timer = undefined;
+        child.kill("SIGTERM");
+        // Escalate to SIGKILL after grace period if still alive
+        killTimer = setTimeout(() => child.kill("SIGKILL"), KILL_ESCALATION_MS);
+        // Resolve immediately — caller sees timeout (exitCode: null).
+        // killTimer stays active as a cleanup safety net until the child
+        // actually exits (handled by the "close" listener clearing it).
+        resolved = true;
+        resolve({ exitCode: null, stdout, stderr });
+      }, timeout);
+    }
 
     if (stdio === "pipe") {
       child.stdout!.on("data", (chunk: Buffer) => {
@@ -287,11 +322,11 @@ export function spawnTool(
     }
 
     child.on("error", () => {
-      resolve({ exitCode: 1, stdout, stderr });
+      finish(1);
     });
 
     child.on("close", (code) => {
-      resolve({ exitCode: code ?? 1, stdout, stderr });
+      finish(code ?? 1);
     });
   });
 }
@@ -316,7 +351,7 @@ export function spawnManaged(
   args: string[],
   opts: SpawnToolOptions = {},
 ): ManagedChild {
-  const { cwd, env } = opts;
+  const { cwd, env, timeout } = opts;
   const stdio = opts.stdio ?? "inherit";
 
   const child = spawn(cmd, args, {
@@ -328,6 +363,31 @@ export function spawnManaged(
   const done = new Promise<SpawnToolResult>((resolve) => {
     let stdout = "";
     let stderr = "";
+    let resolved = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let killTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const finish = (exitCode: number | null) => {
+      if (resolved) return;
+      resolved = true;
+      if (timer) clearTimeout(timer);
+      if (killTimer) clearTimeout(killTimer);
+      resolve({ exitCode, stdout, stderr });
+    };
+
+    if (timeout && timeout > 0) {
+      timer = setTimeout(() => {
+        timer = undefined;
+        child.kill("SIGTERM");
+        // Escalate to SIGKILL after grace period if still alive
+        killTimer = setTimeout(() => child.kill("SIGKILL"), KILL_ESCALATION_MS);
+        // Resolve immediately — caller sees timeout (exitCode: null).
+        // killTimer stays active as a cleanup safety net until the child
+        // actually exits (handled by the "close" listener clearing it).
+        resolved = true;
+        resolve({ exitCode: null, stdout, stderr });
+      }, timeout);
+    }
 
     if (stdio === "pipe") {
       child.stdout!.on("data", (chunk: Buffer) => {
@@ -339,11 +399,11 @@ export function spawnManaged(
     }
 
     child.on("error", () => {
-      resolve({ exitCode: 1, stdout, stderr });
+      finish(1);
     });
 
-    child.on("close", (code, signal) => {
-      resolve({ exitCode: code, stdout, stderr });
+    child.on("close", (code) => {
+      finish(code);
     });
   });
 
@@ -360,4 +420,106 @@ export function spawnManaged(
       return child.pid;
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Concurrent process limiting
+// ---------------------------------------------------------------------------
+
+/**
+ * Error thrown when a {@link ProcessPool} rejects a spawn because the
+ * concurrency limit has been reached.
+ */
+export class ProcessLimitError extends Error {
+  constructor(limit: number) {
+    super(`Concurrent process limit reached (max ${limit})`);
+    this.name = "ProcessLimitError";
+  }
+}
+
+/**
+ * Bounded pool that limits how many child processes can run concurrently.
+ *
+ * Wraps {@link spawnTool} and {@link spawnManaged} so callers keep their
+ * familiar API while the pool enforces a ceiling on parallel processes.
+ * When the limit is reached, new spawns are rejected immediately with a
+ * {@link ProcessLimitError} (fail-fast, no queuing — an autonomous agent
+ * should not silently block).
+ *
+ * @example
+ * ```ts
+ * const pool = new ProcessPool(4);
+ *
+ * // Each spawn counts against the limit and auto-releases on exit.
+ * const result = await pool.spawn("node", ["script.js"], { cwd: "/tmp" });
+ *
+ * // For managed processes, the handle still exposes kill/pid/done.
+ * const handle = pool.spawnManaged("node", ["server.js"], { stdio: "pipe" });
+ * // ... handle.kill("SIGTERM") when done
+ * ```
+ */
+export class ProcessPool {
+  private readonly _limit: number;
+  private _active = 0;
+
+  constructor(limit: number) {
+    if (limit < 1) throw new RangeError("ProcessPool limit must be ≥ 1");
+    this._limit = limit;
+  }
+
+  /** Maximum concurrent processes allowed. */
+  get limit(): number {
+    return this._limit;
+  }
+
+  /** Number of processes currently tracked by the pool. */
+  get active(): number {
+    return this._active;
+  }
+
+  /**
+   * Spawn a child process through the pool.
+   *
+   * Same signature as {@link spawnTool}. Throws {@link ProcessLimitError}
+   * if the pool is full.
+   */
+  spawn(
+    cmd: string,
+    args: string[],
+    opts: SpawnToolOptions = {},
+  ): Promise<SpawnToolResult> {
+    if (this._active >= this._limit) {
+      throw new ProcessLimitError(this._limit);
+    }
+    this._active++;
+    return spawnTool(cmd, args, opts).finally(() => {
+      this._active--;
+    });
+  }
+
+  /**
+   * Spawn a managed child process through the pool.
+   *
+   * Same signature as {@link spawnManaged}. Throws {@link ProcessLimitError}
+   * if the pool is full. The slot is released when the child exits.
+   */
+  spawnManaged(
+    cmd: string,
+    args: string[],
+    opts: SpawnToolOptions = {},
+  ): ManagedChild {
+    if (this._active >= this._limit) {
+      throw new ProcessLimitError(this._limit);
+    }
+    this._active++;
+    const handle = spawnManaged(cmd, args, opts);
+
+    // Release slot on completion (regardless of outcome)
+    handle.done.then(
+      () => { this._active--; },
+      () => { this._active--; },
+    );
+
+    return handle;
+  }
 }

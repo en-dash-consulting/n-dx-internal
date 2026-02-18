@@ -73,4 +73,12 @@ export class GuardRails {
   get maxFileSize(): number {
     return this.config.maxFileSize;
   }
+
+  get spawnTimeout(): number {
+    return this.config.spawnTimeout;
+  }
+
+  get maxConcurrentProcesses(): number {
+    return this.config.maxConcurrentProcesses;
+  }
 }

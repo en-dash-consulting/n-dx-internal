@@ -7,6 +7,10 @@ export interface GuardConfig {
   allowedCommands: string[];
   commandTimeout: number;
   maxFileSize: number;
+  /** Timeout in ms for spawn-based execution (spawnTool/spawnManaged). 0 = no timeout. */
+  spawnTimeout: number;
+  /** Maximum concurrent child processes allowed. */
+  maxConcurrentProcesses: number;
 }
 
 export interface RetryConfig {
@@ -48,6 +52,8 @@ export function DEFAULT_HENCH_CONFIG(): HenchConfig {
       allowedCommands: ["npm", "npx", "node", "git", "tsc", "vitest"],
       commandTimeout: 30000,
       maxFileSize: 1048576,
+      spawnTimeout: 300000,          // 5 minutes
+      maxConcurrentProcesses: 4,
     },
     retry: {
       maxRetries: 3,

@@ -18,6 +18,8 @@ export {
   isExecutableOnPath,
   spawnTool,
   spawnManaged,
+  ProcessPool,
+  ProcessLimitError,
 } from "@n-dx/claude-client";
 
 export type {

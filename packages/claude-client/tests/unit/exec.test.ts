@@ -11,7 +11,7 @@ vi.mock("node:child_process", () => ({
 }));
 
 import { execFile, execFileSync, spawn } from "node:child_process";
-import { exec, execStdout, execShellCmd, getCurrentHead, spawnTool, spawnManaged } from "../../src/exec.js";
+import { exec, execStdout, execShellCmd, getCurrentHead, spawnTool, spawnManaged, ProcessPool, ProcessLimitError } from "../../src/exec.js";
 
 const mockExecFile = vi.mocked(execFile);
 const mockExecFileSync = vi.mocked(execFileSync);
@@ -395,5 +395,220 @@ describe("spawnManaged", () => {
 
     const result = await handle.done;
     expect(result.exitCode).toBe(1);
+  });
+
+  it("kills child and resolves with null exitCode on timeout", async () => {
+    vi.useFakeTimers();
+    const child = createMockChild() as ReturnType<typeof createMockChild> & {
+      kill: ReturnType<typeof vi.fn>;
+    };
+    child.kill = vi.fn().mockReturnValue(true);
+    mockSpawn.mockReturnValue(child as never);
+
+    const handle = spawnManaged("node", ["slow.js"], { timeout: 5000 });
+
+    // Advance past the timeout
+    vi.advanceTimersByTime(5000);
+
+    const result = await handle.done;
+    expect(result.exitCode).toBeNull();
+    expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+
+    vi.useRealTimers();
+  });
+
+  it("clears timeout when child exits before deadline", async () => {
+    vi.useFakeTimers();
+    const child = createMockChild() as ReturnType<typeof createMockChild> & {
+      kill: ReturnType<typeof vi.fn>;
+    };
+    child.kill = vi.fn();
+    mockSpawn.mockReturnValue(child as never);
+
+    const handle = spawnManaged("node", ["fast.js"], { timeout: 10000 });
+
+    // Child exits normally before the timeout
+    child.emit("close", 0);
+
+    const result = await handle.done;
+    expect(result.exitCode).toBe(0);
+    expect(child.kill).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+});
+
+describe("spawnTool timeout", () => {
+  it("kills child and resolves with null exitCode on timeout", async () => {
+    vi.useFakeTimers();
+    const child = createMockChild() as ReturnType<typeof createMockChild> & {
+      kill: ReturnType<typeof vi.fn>;
+    };
+    child.kill = vi.fn().mockReturnValue(true);
+    mockSpawn.mockReturnValue(child as never);
+
+    const promise = spawnTool("node", ["slow.js"], { timeout: 3000 });
+
+    vi.advanceTimersByTime(3000);
+
+    const result = await promise;
+    expect(result.exitCode).toBeNull();
+    expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+
+    vi.useRealTimers();
+  });
+
+  it("escalates to SIGKILL after grace period", async () => {
+    vi.useFakeTimers();
+    const child = createMockChild() as ReturnType<typeof createMockChild> & {
+      kill: ReturnType<typeof vi.fn>;
+    };
+    child.kill = vi.fn().mockReturnValue(true);
+    mockSpawn.mockReturnValue(child as never);
+
+    spawnTool("node", ["stuck.js"], { timeout: 1000 });
+
+    // Trigger initial timeout
+    vi.advanceTimersByTime(1000);
+    expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+
+    // Advance to SIGKILL escalation (5 seconds)
+    vi.advanceTimersByTime(5000);
+    expect(child.kill).toHaveBeenCalledWith("SIGKILL");
+
+    vi.useRealTimers();
+  });
+
+  it("clears timeout when child exits before deadline", async () => {
+    vi.useFakeTimers();
+    const child = createMockChild() as ReturnType<typeof createMockChild> & {
+      kill: ReturnType<typeof vi.fn>;
+    };
+    child.kill = vi.fn();
+    mockSpawn.mockReturnValue(child as never);
+
+    const promise = spawnTool("node", ["fast.js"], { timeout: 10000 });
+
+    child.emit("close", 0);
+
+    const result = await promise;
+    expect(result.exitCode).toBe(0);
+    expect(child.kill).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it("does not apply timeout when timeout is 0", async () => {
+    vi.useFakeTimers();
+    const child = createMockChild() as ReturnType<typeof createMockChild> & {
+      kill: ReturnType<typeof vi.fn>;
+    };
+    child.kill = vi.fn();
+    mockSpawn.mockReturnValue(child as never);
+
+    const promise = spawnTool("node", ["script.js"], { timeout: 0 });
+
+    // Advance well past what would be a timeout
+    vi.advanceTimersByTime(60000);
+    expect(child.kill).not.toHaveBeenCalled();
+
+    child.emit("close", 0);
+    const result = await promise;
+    expect(result.exitCode).toBe(0);
+
+    vi.useRealTimers();
+  });
+});
+
+describe("ProcessPool", () => {
+  it("rejects limit < 1", () => {
+    expect(() => new ProcessPool(0)).toThrow(RangeError);
+    expect(() => new ProcessPool(-1)).toThrow(RangeError);
+  });
+
+  it("exposes limit and active count", () => {
+    const pool = new ProcessPool(3);
+    expect(pool.limit).toBe(3);
+    expect(pool.active).toBe(0);
+  });
+
+  it("tracks active count for spawn()", async () => {
+    const child = createMockChild();
+    mockSpawn.mockReturnValue(child as never);
+
+    const pool = new ProcessPool(2);
+    const promise = pool.spawn("node", ["a.js"]);
+    expect(pool.active).toBe(1);
+
+    child.emit("close", 0);
+    await promise;
+    expect(pool.active).toBe(0);
+  });
+
+  it("tracks active count for spawnManaged()", async () => {
+    const child = createMockChild();
+    mockSpawn.mockReturnValue(child as never);
+
+    const pool = new ProcessPool(2);
+    const handle = pool.spawnManaged("node", ["a.js"]);
+    expect(pool.active).toBe(1);
+
+    child.emit("close", 0);
+    await handle.done;
+
+    // Allow the .then cleanup to run
+    await new Promise((r) => setTimeout(r, 0));
+    expect(pool.active).toBe(0);
+  });
+
+  it("throws ProcessLimitError when pool is full (spawn)", () => {
+    const children = [createMockChild(), createMockChild()];
+    let idx = 0;
+    mockSpawn.mockImplementation(() => children[idx++] as never);
+
+    const pool = new ProcessPool(2);
+    pool.spawn("node", ["a.js"]);
+    pool.spawn("node", ["b.js"]);
+
+    expect(() => pool.spawn("node", ["c.js"])).toThrow(ProcessLimitError);
+    expect(() => pool.spawn("node", ["c.js"])).toThrow("Concurrent process limit reached (max 2)");
+  });
+
+  it("throws ProcessLimitError when pool is full (spawnManaged)", () => {
+    const children = [createMockChild(), createMockChild()];
+    let idx = 0;
+    mockSpawn.mockImplementation(() => children[idx++] as never);
+
+    const pool = new ProcessPool(2);
+    pool.spawnManaged("node", ["a.js"]);
+    pool.spawnManaged("node", ["b.js"]);
+
+    expect(() => pool.spawnManaged("node", ["c.js"])).toThrow(ProcessLimitError);
+  });
+
+  it("releases slot after process completes, allowing new spawns", async () => {
+    const child1 = createMockChild();
+    const child2 = createMockChild();
+    let idx = 0;
+    const children = [child1, child2];
+    mockSpawn.mockImplementation(() => children[idx++] as never);
+
+    const pool = new ProcessPool(1);
+    const p1 = pool.spawn("node", ["a.js"]);
+    expect(pool.active).toBe(1);
+
+    // Can't spawn more
+    expect(() => pool.spawn("node", ["b.js"])).toThrow(ProcessLimitError);
+
+    // Complete first process
+    child1.emit("close", 0);
+    await p1;
+    expect(pool.active).toBe(0);
+
+    // Now we can spawn again
+    const p2 = pool.spawn("node", ["b.js"]);
+    expect(pool.active).toBe(1);
+    child2.emit("close", 0);
+    await p2;
   });
 });
