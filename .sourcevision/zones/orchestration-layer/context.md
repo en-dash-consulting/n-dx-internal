@@ -5,18 +5,20 @@
 <zone>
 
 Zone: Orchestration Layer (`orchestration-layer`)
-Files: 4, Cohesion: 1.00, Coupling: 0.00
-Description: Top-level entry points that coordinate between packages without containing domain logic themselves.
-Lines: 1711
+Files: 6, Cohesion: 1.00, Coupling: 0.00
+Description: Command-line entry points and configuration management that coordinate package execution without direct library dependencies.
+Lines: 2958
 
 </zone>
 
 <files>
 
 ci.js (JavaScript, 269 lines, source)
-cli.js (JavaScript, 320 lines, source)
+cli.js (JavaScript, 359 lines, source)
 config.js (JavaScript, 799 lines, source)
-web.js (JavaScript, 323 lines, source)
+help.js (JavaScript, 870 lines, source)
+tests/unit/help.test.js (JavaScript, 252 lines, test)
+web.js (JavaScript, 409 lines, source)
 
 </files>
 
@@ -25,28 +27,33 @@ web.js (JavaScript, 323 lines, source)
 Internal:
   cli.js → ci.js {runCI}
   cli.js → config.js {runConfig}
+  cli.js → help.js {formatTypoSuggestion, getOrchestratorCommands, searchHelp, formatSearchResults, formatToolHelp, formatMainHelp, formatOrchestratorCommandHelp}
   cli.js → web.js {runWeb}
+  tests/unit/help.test.js → help.js {editDistance, suggestCommands, formatTypoSuggestion, searchHelp, formatSearchResults, getOrchestratorCommands, getToolSubcommands, formatToolHelp, getRelatedCommands, formatRelatedCommands}
 
 </imports>
 
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[suggestion] [info] Extension inconsistency: orchestration files use .js while all packages use .ts — consider .mjs or build step for consistency
+[suggestion] [info] Standardize error handling across entry points - currently each handles subprocess failures differently
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Clean separation of orchestration concerns with each file having a distinct role
-- Minimal file count indicates good architectural discipline
-- Perfect cohesion suggests well-bounded orchestration responsibilities
-- Excellent architectural separation with zero coupling to other zones, maintaining clean orchestration boundaries
-- Command delegation pattern centralizes all tool dispatch through cli.js hub
-- Hub-and-spoke orchestration pattern with cli.js as central dispatcher to ci.js, config.js, and web.js
-- All four orchestration files (cli.js, ci.js, config.js, web.js) use .js extension despite TypeScript codebase — intentional Node.js compatibility choice for direct execution
-- Extension inconsistency: orchestration files use .js while all packages use .ts — consider .mjs or build step for consistency
-- [call graph] 152 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- Clean separation of concerns with entry points handling orchestration while avoiding direct package imports
+- Configuration centralization through config.js provides unified settings management
+- All files serve as pure orchestrators, delegating to CLI tools rather than importing libraries
+- Perfect cohesion (1.0) and zero coupling demonstrates excellent architectural discipline in the orchestration layer
+- Entry points follow the spawn-CLI pattern rather than library imports, maintaining loose coupling
+- Help utility and test coverage indicate good developer experience support
+- Acts as pure dispatcher layer with no direct domain logic, maintaining strict separation from implementation details
+- Implements clean orchestration pattern where entry points delegate to CLI tools rather than importing domain packages directly
+- Entry point files (cli.js, web.js, ci.js) lack consistent error handling patterns for subprocess failures
+- Configuration management through config.js creates single point of failure for all orchestration commands
+- Standardize error handling across entry points - currently each handles subprocess failures differently
+- [call graph] 281 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

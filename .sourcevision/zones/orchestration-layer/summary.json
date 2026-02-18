@@ -1,16 +1,18 @@
 {
   "id": "orchestration-layer",
   "name": "Orchestration Layer",
-  "description": "Top-level entry points that coordinate between packages without containing domain logic themselves.",
+  "description": "Command-line entry points and configuration management that coordinate package execution without direct library dependencies.",
   "files": [
     "ci.js",
     "cli.js",
     "config.js",
+    "help.js",
+    "tests/unit/help.test.js",
     "web.js"
   ],
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 4,
-  "lineCount": 1711
+  "fileCount": 6,
+  "lineCount": 2958
 }

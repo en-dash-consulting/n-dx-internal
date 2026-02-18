@@ -7,6 +7,7 @@
       "title": "Natural language PRD authoring",
       "status": "completed",
       "level": "epic",
+      "description": "Enable natural language input for PRD creation, allowing users to describe features in plain English and have them automatically structured into proper epic/feature/task hierarchies with AI assistance",
       "source": "llm",
       "startedAt": "2026-02-09T12:56:47.925Z",
       "completedAt": "2026-02-09T12:56:47.925Z",
@@ -164,6 +165,7 @@
       "title": "Reliable work loop",
       "status": "completed",
       "level": "epic",
+      "description": "Ensure robust and reliable autonomous execution with proper task state management, error handling, quality validation, and continuous operation capabilities",
       "source": "llm",
       "startedAt": "2026-02-04T18:33:18.839Z",
       "completedAt": "2026-02-04T18:33:18.839Z",
@@ -634,96 +636,6 @@
           ]
         },
         {
-          "id": "d23b926d-00b5-4b9e-b99c-6adb30fd69c1",
-          "title": "LLM refinement",
-          "status": "completed",
-          "level": "feature",
-          "description": "Improve the LLM reasoning layer for better analysis quality",
-          "source": "llm",
-          "children": [
-            {
-              "id": "ce0f3736-1f0a-43dc-a0a0-34fee6fb407e",
-              "title": "Include project context in LLM prompt",
-              "status": "completed",
-              "level": "task",
-              "description": "Add CLAUDE.md or README content to reasonFromScanResults prompt",
-              "acceptanceCriteria": [
-                "Reads project documentation",
-                "Includes context in LLM prompt",
-                "More relevant task generation"
-              ],
-              "priority": "medium",
-              "source": "llm"
-            },
-            {
-              "id": "0d818bc8-36f7-4c4f-a94f-a8572d3a429d",
-              "title": "Implement duplicate merging",
-              "status": "completed",
-              "level": "task",
-              "description": "LLM should merge near-duplicate scan results",
-              "acceptanceCriteria": [
-                "Identifies similar results",
-                "Merges duplicates intelligently",
-                "Reduces noise in final output"
-              ],
-              "priority": "medium",
-              "source": "llm"
-            },
-            {
-              "id": "53558943-22ff-4e1a-b1e8-787b51bb7639",
-              "title": "Add model selection for analyze",
-              "status": "completed",
-              "level": "task",
-              "description": "Support --model flag to override default model",
-              "acceptanceCriteria": [
-                "Accepts --model parameter",
-                "Uses specified model for LLM reasoning",
-                "Falls back to default if model unavailable"
-              ],
-              "priority": "low",
-              "source": "llm"
-            },
-            {
-              "id": "46f6c6a0-f5c0-4e3c-bfe2-74b25ce959ec",
-              "title": "Handle large result sets with chunking",
-              "status": "completed",
-              "level": "task",
-              "description": "Batch large scan results into multiple LLM calls",
-              "acceptanceCriteria": [
-                "Detects when results exceed threshold",
-                "Splits into manageable chunks",
-                "Combines results coherently"
-              ],
-              "priority": "low",
-              "source": "llm"
-            },
-            {
-              "id": "337fd5f7-c548-4ab7-ada2-01450a79706d",
-              "title": "Robust LLM response parsing with retry and recovery",
-              "status": "completed",
-              "level": "task"
-            },
-            {
-              "id": "8bb3e9b8-9c93-41bc-b60f-1c7ad7014d6d",
-              "title": "Add few-shot examples to LLM prompts",
-              "status": "completed",
-              "level": "task"
-            },
-            {
-              "id": "bc3747a6-1c71-4aae-bbfa-5edb8c9d2a83",
-              "title": "Add semantic quality validation for LLM output",
-              "status": "completed",
-              "level": "task"
-            },
-            {
-              "id": "9ef3a745-ed2b-41f0-ae12-4604b07c7658",
-              "title": "Improve multi-chunk context carryover",
-              "status": "completed",
-              "level": "task"
-            }
-          ]
-        },
-        {
           "id": "dc8fd7bb-c902-4a61-931b-0a91a1d7fe0a",
           "title": "File import enhancements",
           "status": "completed",
@@ -775,6 +687,56 @@
               "source": "llm"
             }
           ]
+        },
+        {
+          "id": "e6615ff0-9b2f-4e35-bd69-51e0b06e68db",
+          "title": "Enhance scanSourceVision output",
+          "status": "completed",
+          "level": "task",
+          "description": "Produce more actionable tasks from zone findings with file paths and suggested fixes",
+          "acceptanceCriteria": [
+            "Includes specific file paths in findings",
+            "Provides concrete fix suggestions",
+            "Links architectural issues to code locations"
+          ],
+          "priority": "high",
+          "tags": [
+            "analysis",
+            "sourcevision"
+          ],
+          "source": "llm",
+          "startedAt": "2026-02-05T13:24:32.287Z",
+          "completedAt": "2026-02-05T13:29:18.183Z"
+        },
+        {
+          "id": "8c6b13f8-3fa8-48b8-9a32-458e880d87bd",
+          "title": "Filter low-signal items from scanner output",
+          "status": "completed",
+          "level": "task",
+          "description": "Add filtering to reduce noise in scanner outputs: exclude type-only imports from mostImported rankings, filter info-severity findings from CONTEXT.md next-steps, and skip test files from zone cohesion/coupling calculations",
+          "priority": "high",
+          "startedAt": "2026-02-09T15:17:16.955Z",
+          "completedAt": "2026-02-09T15:23:12.990Z"
+        },
+        {
+          "id": "e4345e18-1bd5-4028-9c38-69092afacdb6",
+          "title": "Deduplicate near-identical findings across enrichment passes",
+          "status": "completed",
+          "level": "task",
+          "description": "Add finding deduplication to zones scanner: detect and merge findings with similar text across different passes, keeping the highest-severity version",
+          "priority": "medium",
+          "startedAt": "2026-02-09T18:39:30.216Z",
+          "completedAt": "2026-02-09T18:45:26.263Z"
+        },
+        {
+          "id": "ed9582a2-6b8a-437d-826b-f7636488dc3d",
+          "title": "Enhance next-steps impact scoring with zone metrics",
+          "status": "completed",
+          "level": "task",
+          "description": "Improve deriveNextSteps priority scoring by incorporating zone cohesion and coupling metrics alongside the existing related-count threshold",
+          "priority": "medium",
+          "startedAt": "2026-02-09T18:59:04.383Z",
+          "completedAt": "2026-02-09T19:05:28.783Z"
         }
       ]
     },
@@ -909,7 +871,7 @@
     },
     {
       "id": "4ca9aac4-cd85-4af3-96d9-c4274e2d9f83",
-      "title": "CLI and developer experience",
+      "title": "CLI User Experience and Developer Tools",
       "status": "completed",
       "level": "epic",
       "source": "llm",
@@ -1083,6 +1045,183 @@
               "source": "llm"
             }
           ]
+        },
+        {
+          "id": "0f9babc3-25a5-47ef-be61-8326f3b5a44d",
+          "title": "Comprehensive command documentation system",
+          "status": "completed",
+          "level": "feature",
+          "description": "Create a complete help system with command-specific content, examples, and contextual guidance for all n-dx commands and subcommands",
+          "source": "smart-add",
+          "startedAt": "2026-02-17T20:56:22.290Z",
+          "completedAt": "2026-02-17T20:56:22.290Z",
+          "children": [
+            {
+              "id": "402ce915-dc9d-458a-9e58-107e1f334f8e",
+              "title": "Build dynamic help content generation with comprehensive coverage",
+              "status": "completed",
+              "level": "task",
+              "description": "Implement a system that generates contextual help content for all commands across rex, sourcevision, and hench packages with practical usage examples",
+              "acceptanceCriteria": [
+                "Each command shows relevant options and flags only",
+                "Help content includes command-specific examples",
+                "All rex, sourcevision, and hench subcommands have detailed help text",
+                "Help includes parameter descriptions and examples",
+                "Each command shows 2-3 practical usage examples",
+                "Examples demonstrate common parameter combinations"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "documentation",
+                "ux",
+                "completeness"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-17T20:46:41.636Z",
+              "completedAt": "2026-02-17T20:56:22.209Z"
+            }
+          ]
+        },
+        {
+          "id": "4ade01ce-d446-444b-8130-9bcca7e39ded",
+          "title": "Interactive help navigation and discovery",
+          "status": "completed",
+          "level": "feature",
+          "description": "Implement enhanced navigation, search, and suggestion capabilities to help users discover and understand available commands",
+          "source": "smart-add",
+          "startedAt": "2026-02-17T23:24:13.741Z",
+          "completedAt": "2026-02-17T23:24:13.741Z",
+          "children": [
+            {
+              "id": "1e0b3886-6d80-4987-8f81-b6c8e6b5ad08",
+              "title": "Create hierarchical navigation with intelligent suggestions",
+              "status": "completed",
+              "level": "task",
+              "description": "Build a help system that supports drill-down navigation, command suggestions for typos, and searchable help content across all commands",
+              "acceptanceCriteria": [
+                "Main help shows command categories and navigation hints",
+                "Users can access subcommand help from parent command help",
+                "Related commands are suggested in help output",
+                "Suggests similar commands for typos with edit distance matching",
+                "Users can search help content with keywords",
+                "Search results show matching commands with relevance scoring"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "navigation",
+                "discovery",
+                "search"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-17T21:55:01.655Z",
+              "completedAt": "2026-02-17T23:24:13.706Z",
+              "children": [
+                {
+                  "id": "5df1865c-e076-475b-9c4c-b37000615d06",
+                  "title": "Add navigation hints and related commands to help output",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Enhance the main help in cli.js to include navigation hints (e.g., 'Run ndx <cmd> --help for details'). Add 'See also' related command suggestions to per-command help output in all three package help.ts files. Add subcommand help accessibility from parent command help (e.g., ndx rex --help shows rex commands with hint to drill down).",
+                  "acceptanceCriteria": [
+                    "Main help shows navigation hints like 'Run ndx <command> --help for details'",
+                    "Per-command help includes 'See also:' section with related commands",
+                    "Users can access subcommand help from parent command help (ndx rex --help → rex subcommands)"
+                  ],
+                  "priority": "medium",
+                  "tags": [
+                    "cli",
+                    "help",
+                    "navigation"
+                  ],
+                  "startedAt": "2026-02-17T23:24:10.895Z",
+                  "completedAt": "2026-02-17T23:24:10.895Z"
+                },
+                {
+                  "id": "ccff7d53-6a94-4821-b718-0446e4974293",
+                  "title": "Implement typo correction with edit distance matching",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add Levenshtein edit distance matching to suggest similar commands when the user types an unrecognized command. Applies to both the orchestrator (cli.js) and per-package CLIs (rex, hench, sourcevision). Suggest commands within distance ≤ 2.",
+                  "acceptanceCriteria": [
+                    "Typing 'ndx statis' suggests 'ndx status'",
+                    "Typing 'rex valdate' suggests 'rex validate'",
+                    "Suggestions only shown when edit distance ≤ 2",
+                    "Works for all three package CLIs and orchestrator"
+                  ],
+                  "priority": "medium",
+                  "tags": [
+                    "cli",
+                    "typo-correction",
+                    "discovery"
+                  ],
+                  "startedAt": "2026-02-17T23:24:12.208Z",
+                  "completedAt": "2026-02-17T23:24:12.208Z"
+                },
+                {
+                  "id": "5717ebd1-09f2-4f8e-a8af-38d39fb484e6",
+                  "title": "Implement keyword search across all help content",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add 'ndx help <keyword>' command to search across all help content (orchestrator + packages). Score results by relevance (title match > description match > option match). Display matched commands with context snippets showing why they matched.",
+                  "acceptanceCriteria": [
+                    "ndx help PRD returns commands related to PRD management",
+                    "ndx help sync returns the sync command with relevant context",
+                    "Results are scored and sorted by relevance",
+                    "Search covers orchestrator commands and all package commands"
+                  ],
+                  "priority": "medium",
+                  "tags": [
+                    "cli",
+                    "search",
+                    "discovery"
+                  ],
+                  "startedAt": "2026-02-17T23:24:13.649Z",
+                  "completedAt": "2026-02-17T23:24:13.649Z"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2bd470a3-9d62-4fbb-ab04-cd5e1f004763",
+          "title": "Enhanced help presentation and formatting",
+          "status": "completed",
+          "level": "feature",
+          "description": "Improve the visual presentation, formatting, and consistency of help content across all commands using standardized templates",
+          "source": "smart-add",
+          "startedAt": "2026-02-17T23:44:30.897Z",
+          "completedAt": "2026-02-17T23:44:30.897Z",
+          "children": [
+            {
+              "id": "d2433beb-9d4b-4eff-b188-6a6e314bc05f",
+              "title": "Implement consistent formatting with visual enhancements",
+              "status": "completed",
+              "level": "task",
+              "description": "Create standardized help templates with improved formatting, semantic color coding, and consistent presentation across all packages",
+              "acceptanceCriteria": [
+                "Help output uses consistent section headers and spacing",
+                "Command names and flags are visually highlighted",
+                "All commands follow consistent help format template",
+                "Templates include sections for description, usage, options, examples",
+                "Commands are highlighted in one color consistently",
+                "Required vs optional parameters are visually distinct",
+                "Colors respect terminal theme and accessibility"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "formatting",
+                "templates",
+                "consistency",
+                "accessibility"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-17T23:25:02.730Z",
+              "completedAt": "2026-02-17T23:44:30.815Z"
+            }
+          ]
         }
       ]
     },
@@ -1244,6 +1383,39 @@
               "completedAt": "2026-02-04T23:32:45.678Z"
             }
           ]
+        },
+        {
+          "id": "1ae1ab98-c9b0-47a6-ba63-dded0edb0d51",
+          "title": "Implement token usage tracking, reporting, and budget checking",
+          "status": "completed",
+          "level": "task",
+          "description": "End-to-end token analytics: extract and aggregate usage across packages, format reports with budget warnings, and check token/cost budgets with custom pricing.",
+          "acceptanceCriteria": [
+            "Extracts token events from rex, hench, and sourcevision with proper filtering and error handling",
+            "Skips invalid/malformed entries and non-JSON files",
+            "Aggregates across multiple run files and all packages",
+            "Filters by --since and --until using appropriate timestamps",
+            "Maps event types to commands (e.g., smart_add_token_usage → smart-add)",
+            "Groups events by package:command sorted by total tokens descending",
+            "Groups events by time period (day/week/month) with correct boundary handling",
+            "Formats zero usage appropriately",
+            "Omits packages with zero usage from breakdown",
+            "Formats warning and exceeded severity with appropriate headers",
+            "Accepts custom pricing and handles fractional token counts",
+            "Checks both token and cost budgets simultaneously",
+            "Exceeded takes precedence over warning",
+            "Treats zero and negative budgets as unlimited"
+          ],
+          "priority": "medium",
+          "tags": [
+            "token-usage",
+            "aggregation",
+            "filtering",
+            "grouping"
+          ],
+          "source": "llm",
+          "startedAt": "2026-02-09T13:51:31.571Z",
+          "completedAt": "2026-02-09T13:55:42.418Z"
         }
       ]
     },
@@ -2943,68 +3115,6 @@
           ]
         },
         {
-          "id": "8ddf135c-6f39-4a94-bba1-83c0a2674cc7",
-          "title": "Scanner Enhancements",
-          "status": "completed",
-          "level": "feature",
-          "description": "Improve individual scanner output quality and filtering",
-          "source": "llm",
-          "startedAt": "2026-02-09T18:57:55.421Z",
-          "completedAt": "2026-02-09T19:05:28.823Z",
-          "children": [
-            {
-              "id": "e6615ff0-9b2f-4e35-bd69-51e0b06e68db",
-              "title": "Enhance scanSourceVision output",
-              "status": "completed",
-              "level": "task",
-              "description": "Produce more actionable tasks from zone findings with file paths and suggested fixes",
-              "acceptanceCriteria": [
-                "Includes specific file paths in findings",
-                "Provides concrete fix suggestions",
-                "Links architectural issues to code locations"
-              ],
-              "priority": "high",
-              "tags": [
-                "analysis",
-                "sourcevision"
-              ],
-              "source": "llm",
-              "startedAt": "2026-02-05T13:24:32.287Z",
-              "completedAt": "2026-02-05T13:29:18.183Z"
-            },
-            {
-              "id": "8c6b13f8-3fa8-48b8-9a32-458e880d87bd",
-              "title": "Filter low-signal items from scanner output",
-              "status": "completed",
-              "level": "task",
-              "description": "Add filtering to reduce noise in scanner outputs: exclude type-only imports from mostImported rankings, filter info-severity findings from CONTEXT.md next-steps, and skip test files from zone cohesion/coupling calculations",
-              "priority": "high",
-              "startedAt": "2026-02-09T15:17:16.955Z",
-              "completedAt": "2026-02-09T15:23:12.990Z"
-            },
-            {
-              "id": "e4345e18-1bd5-4028-9c38-69092afacdb6",
-              "title": "Deduplicate near-identical findings across enrichment passes",
-              "status": "completed",
-              "level": "task",
-              "description": "Add finding deduplication to zones scanner: detect and merge findings with similar text across different passes, keeping the highest-severity version",
-              "priority": "medium",
-              "startedAt": "2026-02-09T18:39:30.216Z",
-              "completedAt": "2026-02-09T18:45:26.263Z"
-            },
-            {
-              "id": "ed9582a2-6b8a-437d-826b-f7636488dc3d",
-              "title": "Enhance next-steps impact scoring with zone metrics",
-              "status": "completed",
-              "level": "task",
-              "description": "Improve deriveNextSteps priority scoring by incorporating zone cohesion and coupling metrics alongside the existing related-count threshold",
-              "priority": "medium",
-              "startedAt": "2026-02-09T18:59:04.383Z",
-              "completedAt": "2026-02-09T19:05:28.783Z"
-            }
-          ]
-        },
-        {
           "id": "3e493079-5986-4fa7-875f-9dc6879183af",
           "title": "Zone Architecture Enhancement",
           "status": "completed",
@@ -3113,6 +3223,235 @@
               "source": "llm",
               "startedAt": "2026-02-08T16:20:01.973Z",
               "completedAt": "2026-02-08T16:22:03.685Z"
+            }
+          ]
+        },
+        {
+          "id": "ce0f3736-1f0a-43dc-a0a0-34fee6fb407e",
+          "title": "Include project context in LLM prompt",
+          "status": "completed",
+          "level": "task",
+          "description": "Add CLAUDE.md or README content to reasonFromScanResults prompt",
+          "acceptanceCriteria": [
+            "Reads project documentation",
+            "Includes context in LLM prompt",
+            "More relevant task generation"
+          ],
+          "priority": "medium",
+          "source": "llm"
+        },
+        {
+          "id": "0d818bc8-36f7-4c4f-a94f-a8572d3a429d",
+          "title": "Implement duplicate merging",
+          "status": "completed",
+          "level": "task",
+          "description": "LLM should merge near-duplicate scan results",
+          "acceptanceCriteria": [
+            "Identifies similar results",
+            "Merges duplicates intelligently",
+            "Reduces noise in final output"
+          ],
+          "priority": "medium",
+          "source": "llm"
+        },
+        {
+          "id": "53558943-22ff-4e1a-b1e8-787b51bb7639",
+          "title": "Add model selection for analyze",
+          "status": "completed",
+          "level": "task",
+          "description": "Support --model flag to override default model",
+          "acceptanceCriteria": [
+            "Accepts --model parameter",
+            "Uses specified model for LLM reasoning",
+            "Falls back to default if model unavailable"
+          ],
+          "priority": "low",
+          "source": "llm"
+        },
+        {
+          "id": "46f6c6a0-f5c0-4e3c-bfe2-74b25ce959ec",
+          "title": "Handle large result sets with chunking",
+          "status": "completed",
+          "level": "task",
+          "description": "Batch large scan results into multiple LLM calls",
+          "acceptanceCriteria": [
+            "Detects when results exceed threshold",
+            "Splits into manageable chunks",
+            "Combines results coherently"
+          ],
+          "priority": "low",
+          "source": "llm"
+        },
+        {
+          "id": "337fd5f7-c548-4ab7-ada2-01450a79706d",
+          "title": "Robust LLM response parsing with retry and recovery",
+          "status": "completed",
+          "level": "task"
+        },
+        {
+          "id": "8bb3e9b8-9c93-41bc-b60f-1c7ad7014d6d",
+          "title": "Add few-shot examples to LLM prompts",
+          "status": "completed",
+          "level": "task"
+        },
+        {
+          "id": "bc3747a6-1c71-4aae-bbfa-5edb8c9d2a83",
+          "title": "Add semantic quality validation for LLM output",
+          "status": "completed",
+          "level": "task"
+        },
+        {
+          "id": "9ef3a745-ed2b-41f0-ae12-4604b07c7658",
+          "title": "Improve multi-chunk context carryover",
+          "status": "completed",
+          "level": "task"
+        },
+        {
+          "id": "64ecb019-ca2b-4ff8-b6b7-559d4c8fdb55",
+          "title": "Fix dead export detection false positives",
+          "status": "completed",
+          "level": "feature",
+          "description": "The detectDeadExports() function in callgraph-findings.ts only checks the call graph for usage. Exports consumed via dynamic imports (await import()) or used only through import edges (not direct calls) are incorrectly flagged as dead. This produces false positives for CLI command registrations (cmdConfig) and validators used through import chains.",
+          "acceptanceCriteria": [
+            "cmdConfig in hench/cli/commands/config.ts is not flagged as unused",
+            "Validators in web/schema/validate.ts are not flagged as unused",
+            "Components in health-gauge.ts and logos.ts are not flagged as unused",
+            "No regression in detecting genuinely dead exports"
+          ],
+          "priority": "high",
+          "startedAt": "2026-02-11T18:11:07.597Z",
+          "completedAt": "2026-02-11T18:11:07.597Z",
+          "children": [
+            {
+              "id": "e372d0df-e3c6-4cb6-bfe7-4e69251ea7a4",
+              "title": "Fix dead export detection to cross-reference import graph",
+              "status": "completed",
+              "level": "task",
+              "description": "In callgraph-findings.ts:199-300, detectDeadExports() only checks the call graph for usage, missing exports consumed via dynamic imports, static imports without call edges (JSX components, validators), and import chains. Fix: after building the calledFunctions set from call edges, also mark an export as used if its name appears in any import edge's symbols array (static, dynamic, or require types). This covers dynamic imports (await import()), JSX element usage, and inline calls that don't produce CallExpression nodes. Add unit tests covering: dynamic-import-only usage, static-import-only usage (no call edge), genuinely dead exports, re-exported symbols, and class instance methods.\n\n---\n\npackages/hench/src/store/suggestions.ts exports loadSuggestionHistoryAsync and saveSuggestionHistoryAsync which have no callers. The synchronous versions (loadSuggestionHistory, saveSuggestionHistory) are used. Remove the async exports, or if they exist for a planned feature, document that intent.",
+              "acceptanceCriteria": [
+                "detectDeadExports consults import graph edges with type 'dynamic' and 'require' in addition to call graph edges",
+                "cmdConfig (imported via dynamic import in hench CLI router) is no longer flagged as unused",
+                "pnpm test passes for sourcevision package",
+                "Exports that appear in import edge symbols (static, dynamic, or require) are not flagged as dead",
+                "validate.ts validators, health-gauge.ts components, and logos.ts exports are no longer flagged",
+                "Genuinely dead exports (not imported anywhere) are still detected",
+                "Test file exists covering all 5 edge cases",
+                "All tests pass",
+                "loadSuggestionHistoryAsync and saveSuggestionHistoryAsync are either removed or documented with a tracking reference",
+                "pnpm typecheck and pnpm test pass"
+              ],
+              "priority": "high",
+              "startedAt": "2026-02-11T18:04:45.128Z",
+              "completedAt": "2026-02-11T18:11:07.513Z",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "8c77e354-5210-461d-b84e-d2212f927e8d",
+          "title": "Fix god function detection metric inflation",
+          "status": "completed",
+          "level": "feature",
+          "description": "detectGodFunctions() in callgraph-findings.ts:95-130 counts all unique callees including built-in/standard-library method calls (.map, .filter, .has, .split, .join, .toFixed, etc.). A Preact component calling 15 real functions + 52 built-in methods gets flagged as \"67 unique function calls\" which is misleading. The call graph extractor in callgraph.ts:374-399 records method calls without distinguishing built-in from user-defined.",
+          "acceptanceCriteria": [
+            "CallGraphView (67 raw calls) is either not flagged or reported with a filtered count that reflects actual user-defined function calls",
+            "Built-in method calls (.map, .filter, .has, .split, .join, .forEach, .reduce, .find, .includes, .toString, .toFixed, etc.) are excluded from god function counts",
+            "Existing god function detection still catches genuinely complex functions"
+          ],
+          "priority": "high",
+          "startedAt": "2026-02-11T18:04:28.014Z",
+          "completedAt": "2026-02-11T18:04:28.014Z",
+          "children": [
+            {
+              "id": "0f34b24b-6b4a-46dc-9b6e-982c06859e35",
+              "title": "Filter built-in method calls from god function detection",
+              "status": "completed",
+              "level": "task",
+              "description": "In callgraph-findings.ts:95-130, detectGodFunctions() counts all unique callees including built-in/standard-library methods (.map, .filter, .has, .split, .join, .forEach, .reduce, .find, .includes, .toString, .toFixed, etc.), inflating counts (e.g., CallGraphView reported as 67 calls when ~15 are user-defined). Add a built-in method filter set and exclude callees whose name matches AND whose call type is \"method\" (not direct calls, to avoid filtering user-defined functions named \"filter\"). Add unit tests covering: function with 35 user-defined calls IS flagged, function with 15 user-defined + 50 built-in methods is NOT flagged, direct call to a function named \"filter\" IS counted, threshold boundary behavior.",
+              "acceptanceCriteria": [
+                "God function detection excludes built-in method calls from unique callee count",
+                "CallGraphView drops from 67 to a more accurate count reflecting user-defined calls only",
+                "The filter only applies to method-type calls, not direct calls (a user-defined function named 'filter' called directly is still counted)",
+                "pnpm test passes for sourcevision package",
+                "Test file exists covering all 4 cases",
+                "All tests pass"
+              ],
+              "priority": "high",
+              "startedAt": "2026-02-11T18:01:49.571Z",
+              "completedAt": "2026-02-11T18:04:27.930Z",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "513af02e-79a8-4e40-9699-615a86dbec8b",
+          "title": "Refine coupling and fan-in metrics",
+          "status": "completed",
+          "level": "feature",
+          "description": "Two related issues: (1) detectTightlyCoupledModules() flags routes-rex.ts ↔ types.ts at 129 calls, but this is a large route file (3069 lines) using its companion types module — unidirectional coupling to a helper is different from bidirectional tight coupling. (2) Fan-in detection flags tree.ts (31 callers) and walkTree (22 files) which are fundamental utilities where high fan-in is expected and correct.",
+          "acceptanceCriteria": [
+            "Unidirectional coupling to a types/helpers module is reported at lower severity than bidirectional coupling",
+            "Utility modules with high fan-in but clean interfaces are classified differently from problematic hotspots",
+            "tree.ts and walkTree are either not flagged or flagged as info-level observations rather than warnings"
+          ],
+          "priority": "medium",
+          "startedAt": "2026-02-11T18:15:03.043Z",
+          "completedAt": "2026-02-11T18:15:03.043Z",
+          "children": [
+            {
+              "id": "5dde9f98-83c9-4db7-a25a-cf998792ed71",
+              "title": "Refine tight coupling and fan-in detection heuristics",
+              "status": "completed",
+              "level": "task",
+              "description": "Two related improvements in callgraph-findings.ts: (1) Tight coupling (lines 141-191): A 3000-line route file making 129 unidirectional calls to its companion types module is expected, not problematic. Downgrade severity for unidirectional coupling (p.ba near zero) to info, especially when the target is a types/constants file. (2) Fan-in (lines 345-418): tree.ts (31 callers) and walkTree (22 files) are fundamental utilities where high fan-in is correct. Add a utility module heuristic: files in /core/, /utils/, /helpers/, or /lib/ directories get a higher warning threshold (e.g., 2x normal). Both changes should include tests.",
+              "acceptanceCriteria": [
+                "routes-rex.ts → types.ts coupling is either not flagged or flagged at info severity",
+                "Bidirectional tight coupling between two large implementation files is still flagged at warning/critical",
+                "pnpm test passes",
+                "tree.ts fan-in is either not reported as a warning or is reported as an info-level observation noting it as a utility module",
+                "walkTree hub finding is similarly downgraded",
+                "A non-utility file with the same fan-in count is still flagged at warning"
+              ],
+              "priority": "medium",
+              "startedAt": "2026-02-11T18:11:24.734Z",
+              "completedAt": "2026-02-11T18:15:02.967Z",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "4f10789f-de33-4a39-a47f-6ce3496ed64c",
+          "title": "Improve LLM meta-evaluation signal quality",
+          "status": "completed",
+          "level": "feature",
+          "description": "The pass 5+ meta-evaluation in enrich-batch.ts:52-130 sends all findings to Claude for severity reassessment and meta-pattern detection. When it receives false-positive findings (inflated god function counts, phantom unused exports), it amplifies them into critical-severity recommendations like \"decompose CallGraphView\" and \"systematic dead export accumulation.\" The LLM output is only as good as its input.",
+          "acceptanceCriteria": [
+            "Meta-evaluation does not generate critical-severity refactoring suggestions based on false-positive upstream findings",
+            "Findings corrected in features 1-3 no longer produce amplified LLM recommendations"
+          ],
+          "priority": "medium",
+          "startedAt": "2026-02-11T18:19:32.175Z",
+          "completedAt": "2026-02-11T18:19:32.175Z",
+          "children": [
+            {
+              "id": "9937726f-a53d-47e8-aee1-6321f8e18827",
+              "title": "Filter false-positive findings before LLM meta-evaluation",
+              "status": "completed",
+              "level": "task",
+              "description": "In enrich-batch.ts:52-130, runMetaEvaluation() sends all findings to Claude for severity reassessment. Once features 1-3 fix the upstream false positives, the LLM input will improve automatically. However, as a defense-in-depth measure, add a confidence/reliability annotation to findings so the meta-evaluator can weight them appropriately. Specifically: (1) in buildMetaPrompt() (enrich-config.ts:109-161), annotate each finding with its source pass and detection method, (2) instruct the LLM to not escalate severity of findings from automated heuristics (pass 0) without corroborating evidence, (3) instruct the LLM to not generate specific file decomposition suggestions unless the underlying metric exceeds 2x the threshold.",
+              "acceptanceCriteria": [
+                "Meta-evaluation prompt includes source pass and detection method for each finding",
+                "LLM is instructed to not escalate heuristic findings without corroboration",
+                "After fixing features 1-3, re-running analysis produces no false critical-severity LLM recommendations"
+              ],
+              "priority": "medium",
+              "blockedBy": [
+                "64ecb019-ca2b-4ff8-b6b7-559d4c8fdb55",
+                "8c77e354-5210-461d-b84e-d2212f927e8d",
+                "513af02e-79a8-4e40-9699-615a86dbec8b"
+              ],
+              "startedAt": "2026-02-11T18:15:38.009Z",
+              "completedAt": "2026-02-11T18:19:32.092Z"
             }
           ]
         }
@@ -3309,51 +3648,6 @@
               ],
               "source": "llm",
               "startedAt": "2026-02-07T22:03:22.142Z"
-            }
-          ]
-        },
-        {
-          "id": "f7e6483d-d731-4923-b934-bba8d70151f2",
-          "title": "Token Usage Analytics",
-          "status": "completed",
-          "level": "feature",
-          "description": "Comprehensive token usage tracking and analytics across all packages",
-          "source": "llm",
-          "startedAt": "2026-02-09T13:55:42.467Z",
-          "completedAt": "2026-02-09T13:55:42.467Z",
-          "children": [
-            {
-              "id": "1ae1ab98-c9b0-47a6-ba63-dded0edb0d51",
-              "title": "Implement token usage tracking, reporting, and budget checking",
-              "status": "completed",
-              "level": "task",
-              "description": "End-to-end token analytics: extract and aggregate usage across packages, format reports with budget warnings, and check token/cost budgets with custom pricing.",
-              "acceptanceCriteria": [
-                "Extracts token events from rex, hench, and sourcevision with proper filtering and error handling",
-                "Skips invalid/malformed entries and non-JSON files",
-                "Aggregates across multiple run files and all packages",
-                "Filters by --since and --until using appropriate timestamps",
-                "Maps event types to commands (e.g., smart_add_token_usage → smart-add)",
-                "Groups events by package:command sorted by total tokens descending",
-                "Groups events by time period (day/week/month) with correct boundary handling",
-                "Formats zero usage appropriately",
-                "Omits packages with zero usage from breakdown",
-                "Formats warning and exceeded severity with appropriate headers",
-                "Accepts custom pricing and handles fractional token counts",
-                "Checks both token and cost budgets simultaneously",
-                "Exceeded takes precedence over warning",
-                "Treats zero and negative budgets as unlimited"
-              ],
-              "priority": "medium",
-              "tags": [
-                "token-usage",
-                "aggregation",
-                "filtering",
-                "grouping"
-              ],
-              "source": "llm",
-              "startedAt": "2026-02-09T13:51:31.571Z",
-              "completedAt": "2026-02-09T13:55:42.418Z"
             }
           ]
         },
@@ -4511,201 +4805,6 @@
       ]
     },
     {
-      "id": "a162e544-564b-4174-a096-1e774c05f95e",
-      "title": "Web-based Dashboard",
-      "status": "completed",
-      "level": "epic",
-      "source": "smart-add",
-      "startedAt": "2026-02-06T06:06:12.733Z",
-      "completedAt": "2026-02-06T06:06:12.733Z",
-      "children": [
-        {
-          "id": "29a51b12-7b95-4b13-817b-18d1d7c27e31",
-          "title": "Unified web viewer architecture",
-          "status": "completed",
-          "level": "feature",
-          "description": "Create a consolidated web interface that integrates sourcevision's existing viewer capabilities with Rex PRD management functionality",
-          "source": "smart-add",
-          "startedAt": "2026-02-06T05:44:41.814Z",
-          "completedAt": "2026-02-06T05:44:41.814Z",
-          "children": [
-            {
-              "id": "7f9313f6-432a-4ed4-a67c-2605da0357ed",
-              "title": "Design unified web viewer architecture",
-              "status": "completed",
-              "level": "task",
-              "description": "Plan the integration of sourcevision's existing viewer with Rex UI components, determining shared components and navigation structure",
-              "acceptanceCriteria": [
-                "Architecture supports both sourcevision analysis views and Rex PRD management",
-                "Shared component library defined for consistent UI",
-                "Navigation structure allows seamless switching between analysis and PRD views"
-              ],
-              "priority": "high",
-              "tags": [
-                "architecture",
-                "frontend"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-06T05:27:48.480Z",
-              "completedAt": "2026-02-06T05:35:40.265Z"
-            },
-            {
-              "id": "f8458852-4b09-43e3-93a2-45d0b4e49f28",
-              "title": "Migrate sourcevision viewer components",
-              "status": "completed",
-              "level": "task",
-              "description": "Extract and adapt existing sourcevision viewer components into the new unified web interface",
-              "acceptanceCriteria": [
-                "All sourcevision viewer functionality preserved",
-                "Components properly integrated into new architecture",
-                "Original sourcevision serve command still works or gracefully redirects"
-              ],
-              "priority": "high",
-              "tags": [
-                "migration",
-                "sourcevision",
-                "frontend"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-06T05:36:25.446Z",
-              "completedAt": "2026-02-06T05:44:41.783Z"
-            }
-          ]
-        },
-        {
-          "id": "bb97c680-3f17-4afa-b291-fac6f9797db5",
-          "title": "Rex PRD management UI",
-          "status": "completed",
-          "level": "feature",
-          "description": "Build comprehensive web interface for viewing and managing Rex PRD hierarchy, tasks, and workflow",
-          "source": "smart-add",
-          "startedAt": "2026-02-06T06:06:12.706Z",
-          "completedAt": "2026-02-06T06:06:12.706Z",
-          "children": [
-            {
-              "id": "33c3b7ae-1072-4064-9ab7-37431ffeb554",
-              "title": "Implement PRD hierarchy visualization",
-              "status": "completed",
-              "level": "task",
-              "description": "Create interactive tree view for displaying epics, features, tasks, and subtasks with completion status and progress indicators",
-              "acceptanceCriteria": [
-                "Tree view shows full PRD hierarchy with proper nesting",
-                "Status indicators clearly show pending/in_progress/completed/blocked states",
-                "Progress bars display completion percentages at each level",
-                "Collapsible/expandable nodes for navigation"
-              ],
-              "priority": "critical",
-              "tags": [
-                "prd",
-                "visualization",
-                "frontend"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-06T04:52:35.753Z",
-              "completedAt": "2026-02-06T05:01:06.662Z"
-            },
-            {
-              "id": "264f26ce-e433-4c4b-91c9-3981680ec771",
-              "title": "Add task management interface",
-              "status": "completed",
-              "level": "task",
-              "description": "Build UI for viewing task details, updating status, and managing task properties through web interface",
-              "acceptanceCriteria": [
-                "Task detail view shows description, acceptance criteria, and metadata",
-                "Status can be updated through dropdown or button interface",
-                "Priority and tags can be edited inline",
-                "Dependency relationships are clearly displayed"
-              ],
-              "priority": "high",
-              "tags": [
-                "task-management",
-                "frontend"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-06T05:01:44.862Z",
-              "completedAt": "2026-02-06T05:12:59.710Z"
-            },
-            {
-              "id": "6a1a02c8-18c9-4967-9182-26cc98cc1850",
-              "title": "Implement Rex command integration",
-              "status": "completed",
-              "level": "task",
-              "description": "Add web interface for executing Rex commands like add, update, and analyze through the browser",
-              "acceptanceCriteria": [
-                "Add new items form with type selection and parent constraint",
-                "Analyze command can be triggered with results displayed",
-                "Status updates can be applied to multiple items",
-                "Command execution provides real-time feedback"
-              ],
-              "priority": "medium",
-              "tags": [
-                "commands",
-                "integration",
-                "frontend"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-06T05:52:53.993Z",
-              "completedAt": "2026-02-06T06:06:12.676Z"
-            }
-          ]
-        },
-        {
-          "id": "8a65d7cd-40ea-4f87-bf10-23396c378a35",
-          "title": "Web server and API integration",
-          "status": "completed",
-          "level": "feature",
-          "description": "Implement backend server to serve the web interface and provide API endpoints for Rex and sourcevision data",
-          "source": "smart-add",
-          "startedAt": "2026-02-06T05:52:08.769Z",
-          "completedAt": "2026-02-06T05:52:08.769Z",
-          "children": [
-            {
-              "id": "7bce80df-5df2-4dc9-88d3-947c72b4dbd0",
-              "title": "Create web server with API endpoints",
-              "status": "completed",
-              "level": "task",
-              "description": "Build Express/Fastify server that exposes Rex and sourcevision data through REST API and serves the web interface",
-              "acceptanceCriteria": [
-                "Server serves static web assets",
-                "API endpoints provide Rex PRD data",
-                "API endpoints provide sourcevision analysis data",
-                "WebSocket support for real-time updates"
-              ],
-              "priority": "high",
-              "tags": [
-                "backend",
-                "api"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-06T05:13:59.888Z",
-              "completedAt": "2026-02-06T05:26:44.504Z"
-            },
-            {
-              "id": "e68c5d72-833d-4766-908d-da8ab8517622",
-              "title": "Add web command to n-dx CLI",
-              "status": "completed",
-              "level": "task",
-              "description": "Extend n-dx orchestration with web server command that starts the unified viewer",
-              "acceptanceCriteria": [
-                "ndx web command starts server on configurable port",
-                "Command supports background/daemon mode",
-                "Proper shutdown handling and port management",
-                "Integration with existing n-dx config system"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cli",
-                "orchestration"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-06T05:45:02.646Z",
-              "completedAt": "2026-02-06T05:52:08.738Z"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "e8da8d04-1016-42ae-96f4-5d94e2eb0391",
       "title": "Report Generation and Export",
       "status": "completed",
@@ -5366,6 +5465,110 @@
               "completedAt": "2026-02-09T20:12:59.685Z"
             }
           ]
+        },
+        {
+          "id": "9cf29710-2ab4-4a76-981b-c7dc729c6202",
+          "title": "Redesign header layout with integrated controls and repositioned branding",
+          "status": "completed",
+          "level": "feature",
+          "description": "Consolidate all header controls into a unified navigation experience and reposition branding elements for improved visual hierarchy",
+          "source": "smart-add",
+          "startedAt": "2026-02-10T20:40:13.472Z",
+          "completedAt": "2026-02-10T20:40:13.472Z",
+          "children": [
+            {
+              "id": "8e0b1f26-b8f1-40fc-808c-b06b2fe5aa39",
+              "title": "Integrate header controls and reposition branding elements",
+              "status": "completed",
+              "level": "task",
+              "description": "Create a unified header control bar with sidebar toggle, theme toggle, and FAQ button, while moving package logo and name to right-aligned position next to page-specific FAQ button for better visual hierarchy",
+              "acceptanceCriteria": [
+                "Sidebar toggle, light mode toggle, and FAQ are grouped together in header",
+                "Controls maintain consistent visual styling and spacing",
+                "All controls remain functional after integration",
+                "Package logo and name appear right-aligned in content area header",
+                "Branding is positioned adjacent to page-specific FAQ button",
+                "Header control bar works across all viewport sizes",
+                "Layout remains responsive across different screen sizes",
+                "Visual hierarchy clearly separates global controls from page-specific elements"
+              ],
+              "priority": "medium",
+              "tags": [
+                "ui",
+                "header",
+                "navigation",
+                "branding",
+                "layout"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-10T20:34:45.791Z",
+              "completedAt": "2026-02-11T06:28:30.598Z",
+              "failureReason": "there's still a product title in the top-left and the global control elements overlap with the page content and there's still a sidebar toggle at the bottom. move the sidebar and themetoggle controls to the bottom of the sidebar and make it cohesive with the rest"
+            },
+            {
+              "id": "a6dd7b7c-9e74-4626-8e27-e4aa11e771ea",
+              "title": "Implement floating FAQ button for page-specific help",
+              "status": "completed",
+              "level": "task",
+              "description": "Create a floating FAQ button that appears in the content area header, providing contextual help for the current page/section",
+              "acceptanceCriteria": [
+                "FAQ button floats in content area header next to repositioned branding",
+                "Button provides page-specific help content based on current view",
+                "FAQ content is contextually relevant to SourceVision, Rex, or Hench sections",
+                "Button maintains consistent styling with other UI controls"
+              ],
+              "priority": "medium",
+              "tags": [
+                "ui",
+                "help",
+                "floating-button"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-10T20:11:55.019Z",
+              "completedAt": "2026-02-10T20:34:13.649Z"
+            }
+          ]
+        },
+        {
+          "id": "10fc1872-82b5-4a09-9006-73e84636d06a",
+          "title": "Favicon Standardization",
+          "status": "completed",
+          "level": "feature",
+          "description": "Update all favicon implementations across the entire n-dx toolkit to use the product-F.png branding for consistency",
+          "source": "smart-add",
+          "startedAt": "2026-02-10T14:51:10.867Z",
+          "completedAt": "2026-02-10T14:51:10.867Z",
+          "children": [
+            {
+              "id": "96a88223-7a7c-46ce-8f56-e83d4c4256c5",
+              "title": "Standardize favicon implementation across all packages",
+              "status": "completed",
+              "level": "task",
+              "description": "Replace all SVG favicon references with product-F.png across web package, sourcevision standalone viewer, and all other HTML templates in the n-dx toolkit",
+              "acceptanceCriteria": [
+                "Web dashboard displays product-F.png as favicon",
+                "Sourcevision standalone viewer displays product-F.png favicon",
+                "All HTML templates use product-F.png favicon",
+                "No SVG favicon references remain in any package",
+                "Favicon loads correctly in all major browsers",
+                "Dynamic favicon switching still works with PNG format",
+                "No inconsistent favicon implementations exist",
+                "Documentation reflects the standardized favicon approach"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "sourcevision",
+                "branding",
+                "ui",
+                "audit",
+                "consistency"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-10T14:45:05.141Z",
+              "completedAt": "2026-02-10T14:51:10.827Z"
+            }
+          ]
         }
       ]
     },
@@ -5577,66 +5780,8 @@
       ]
     },
     {
-      "id": "c1f9c590-0dda-4919-adda-6446d4a6121f",
-      "title": "Address observation issues (4 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Security guard system provides multi-layered protection with configurable policies for safe autonomous operation\n- Dual provider architecture (CLI + API) ensures fallback options and different execution contexts\n- Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns\n- All zones achieve perfect cohesion metrics, suggesting the community detection algorithm successfully identified natural architectural boundaries",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T01:50:17.451Z",
-      "completedAt": "2026-02-10T01:55:00.556Z",
-      "children": [
-        {
-          "id": "c0d068a4-e2fb-4ee0-ab6d-ad672ad512aa",
-          "title": "Document security guard multi-layered protection architecture",
-          "status": "completed",
-          "level": "task",
-          "description": "Add module-level documentation to the guard system (index.ts, paths.ts, commands.ts) explaining the multi-layered security approach: command allowlisting, shell operator blocking, dangerous pattern detection, null-byte defense, directory escape prevention, and glob-based path blocking. Document how GuardConfig makes policies configurable.",
-          "acceptanceCriteria": [
-            "Guard module files have module-level JSDoc explaining the security architecture",
-            "Each security layer is documented with its purpose",
-            "Configuration surface (GuardConfig) is documented"
-          ],
-          "priority": "high",
-          "startedAt": "2026-02-10T01:52:28.847Z",
-          "completedAt": "2026-02-10T01:53:17.998Z"
-        },
-        {
-          "id": "ca390e8e-309e-46fd-a2b4-4cf636b6ade7",
-          "title": "Document dual provider architecture with fallback strategy",
-          "status": "completed",
-          "level": "task",
-          "description": "Add architectural documentation to claude-client explaining the dual provider pattern: CLI provider for local development with Claude Code, API provider for direct Anthropic API calls. Document the automatic detection and fallback strategy in createClient.",
-          "acceptanceCriteria": [
-            "Provider files document their execution contexts and use cases",
-            "create-client.ts documents the provider selection and fallback strategy",
-            "Package index.ts module comment explains the dual provider architecture"
-          ],
-          "priority": "high",
-          "startedAt": "2026-02-10T01:53:19.439Z",
-          "completedAt": "2026-02-10T01:54:10.743Z"
-        },
-        {
-          "id": "078e13cc-f5e3-4c29-9dcd-9e189e1081d6",
-          "title": "Document zone cohesion design and architectural boundaries",
-          "status": "completed",
-          "level": "task",
-          "description": "Document in the Louvain zone detection code how perfect cohesion (1.0) and zero coupling (0.0) are achieved. Add inline docs explaining the community detection approach and why the architecture naturally forms clean boundaries. Add a note to the cohesion/coupling calculation explaining the metric semantics.",
-          "acceptanceCriteria": [
-            "Zone analyzer has doc comments explaining cohesion/coupling metric semantics",
-            "Louvain algorithm usage is documented with architectural rationale",
-            "Comment on generateStructuralInsights explains what the metrics mean for architecture"
-          ],
-          "priority": "high",
-          "startedAt": "2026-02-10T01:54:12.348Z",
-          "completedAt": "2026-02-10T01:55:00.521Z"
-        }
-      ]
-    },
-    {
       "id": "bed84e5c-7906-4788-86bc-4d7a9955c4c2",
-      "title": "Address anti-pattern issues (10 findings)",
+      "title": "Address SourceVision anti-pattern findings",
       "status": "completed",
       "level": "feature",
       "description": "- Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided\n- Cross-zone type imports create compile-time coupling that defeats runtime decoupling strategies - zones appear independent at runtime but are tightly coupled during TypeScript compilation\n- PRIORITY_ORDER constants duplicated across multiple zones with inconsistent typing - shared constants should be extracted to a common location to prevent type drift and maintenance burden\n- PRIORITY_ORDER constant duplicated with different type signatures (Record<Priority,number> vs Record<string,number>) across core/canonical.ts, core/next-task.ts, and analyze/propose.ts creating type safety gaps and maintenance burden\n- Schema index.ts barrel export creates hidden bidirectional coupling by re-exporting from both viewer zone (v1.ts) and test-suite zone (validate.ts) - every analyzer importing schema creates transitive dependencies across three zones\n- Direct import of schema/validate.ts from test-suite zone violates zone boundaries and forces Zod bundling into browser code where validation could be optional\n- schema/validate.ts is misplaced in test-suite zone despite being imported by production CLI and viewer code - this file should be in analysis-engine zone based on its actual usage patterns\n- Architecture forces choice between runtime coupling and maintenance burden - current solution chooses duplication over dependency, creating divergence risk that outweighs benefits of runtime independence for core domain types\n- Systematic duplication of business logic constants (PRIORITY_ORDER) across 4 locations with inconsistent typing creates multiple sources of truth that risk diverging during maintenance - refactor to single shared constant in packages/rex/src/schema/v1.ts and import consistently\n- Type system fragmentation where identical Priority union is defined in both packages/rex/src/schema/v1.ts:7 and packages/sourcevision/src/viewer/components/prd-tree/types.ts:17 - consolidate to single exported type to prevent drift and ensure consistency",
@@ -5693,24 +5838,164 @@
           "priority": "medium",
           "startedAt": "2026-02-10T01:46:16.430Z",
           "completedAt": "2026-02-10T01:47:29.478Z"
+        },
+        {
+          "id": "302aabf9-0383-407d-86c7-ca5e0d6a664e",
+          "title": "Decompose analyzeZones god function into focused helpers",
+          "status": "completed",
+          "level": "task",
+          "description": "Extract logical sub-sections of analyzeZones() (553 lines) into focused helper functions: Louvain setup, zone creation with metrics, enrichment/preservation, insight merging, and findings assembly.",
+          "acceptanceCriteria": [
+            "analyzeZones() is under 200 lines and delegates to well-named helpers",
+            "Each extracted helper has a clear single responsibility",
+            "All existing tests pass without modification",
+            "No functional behavior changes"
+          ],
+          "priority": "critical",
+          "startedAt": "2026-02-11T14:07:37.608Z",
+          "completedAt": "2026-02-11T14:10:54.327Z"
+        },
+        {
+          "id": "7eba2695-065c-4057-8b51-f58661f738a3",
+          "title": "Split Rex MCP server into tool modules",
+          "status": "completed",
+          "level": "task",
+          "description": "Split rex MCP server (806 lines) by extracting tool handler functions into separate modules (status tools, item operations, sync/log tools, resources).",
+          "acceptanceCriteria": [
+            "mcp.ts is under 200 lines and imports tool handlers from dedicated modules",
+            "Tool behavior is identical (no functional changes)",
+            "All existing tests pass"
+          ],
+          "priority": "high",
+          "startedAt": "2026-02-11T14:11:01.427Z",
+          "completedAt": "2026-02-11T14:14:14.364Z"
+        },
+        {
+          "id": "98693d1e-6550-40f9-9af3-8d74f9acc731",
+          "title": "Split enrich.ts orchestration functions into focused modules",
+          "status": "completed",
+          "level": "task",
+          "description": "Split enrich.ts (624 lines) by extracting enrichBatch() and enrichZonesWithAI() sub-sections into focused modules: prompt construction, meta-evaluation, result merging.",
+          "acceptanceCriteria": [
+            "enrich.ts is under 200 lines",
+            "Each extracted module has a single responsibility",
+            "All existing tests pass"
+          ],
+          "priority": "high",
+          "startedAt": "2026-02-11T14:14:20.145Z",
+          "completedAt": "2026-02-11T14:17:15.350Z"
+        },
+        {
+          "id": "8c23ba99-ab41-469f-b22b-cd6833ef4360",
+          "title": "Remove verified dead exports from integration layers",
+          "status": "completed",
+          "level": "task",
+          "description": "Audit the 91 reported unused exports in adapter, validation, and UI component modules. Remove genuinely unused exports after verifying with grep. Leave exports that are part of public API contracts.",
+          "acceptanceCriteria": [
+            "Dead exports verified by grep are removed",
+            "Public API exports are preserved",
+            "Build and tests pass"
+          ],
+          "priority": "medium",
+          "startedAt": "2026-02-11T14:17:23.158Z",
+          "completedAt": "2026-02-11T14:24:15.025Z"
+        },
+        {
+          "id": "673d1237-b34c-4b3c-b045-725765338c69",
+          "title": "Replace console.log with structured output in orchestration files",
+          "status": "completed",
+          "level": "task",
+          "description": "Migrate orchestration files (cli.js, web.js, ci.js, config.js) from raw console.log/console.error to the structured output utilities from @n-dx/claude-client (info, result from output.ts). This ensures --quiet mode works consistently and provides a single logging abstraction. Note: many console.log calls are legitimate user-facing output, so the migration should use info() for status messages and result() for data output.",
+          "acceptanceCriteria": [
+            "Orchestration files use info() and result() from @n-dx/claude-client output.ts instead of raw console.log",
+            "console.error calls for user-facing errors are preserved (error output should always show)",
+            "--quiet flag suppresses info() messages in orchestration files",
+            "All existing tests continue to pass"
+          ],
+          "priority": "medium",
+          "startedAt": "2026-02-11T14:49:06.326Z",
+          "completedAt": "2026-02-11T14:54:52.839Z"
+        },
+        {
+          "id": "8328aa27-dd94-4380-8294-cbf96b44ec2d",
+          "title": "Remove unused exports from hench adjustments.ts",
+          "status": "completed",
+          "level": "task",
+          "description": "The adaptive workflow infrastructure in packages/hench/src/store/adjustments.ts has 9 exported functions/types with no incoming calls (loadAdaptiveStateAsync, saveAdaptiveStateAsync, recordAdjustment, updateSettings, lockKey, etc.). Remove exports or mark as internal for functions that are not part of the public API and have no callers.",
+          "acceptanceCriteria": [
+            "Unused exports in adjustments.ts are either removed or marked as internal",
+            "No breaking changes to public API",
+            "All tests pass"
+          ],
+          "priority": "medium",
+          "startedAt": "2026-02-11T14:54:54.013Z",
+          "completedAt": "2026-02-11T14:54:54.013Z"
+        },
+        {
+          "id": "670d5834-6f6c-4de8-b020-adc49cbf6be0",
+          "title": "Document false-positive unused export findings and close remaining suggestions",
+          "status": "completed",
+          "level": "task",
+          "description": "Several findings are false positives or already addressed: (1) renderer.ts, logos.ts, validate.ts - browser components/class methods not detected by static import analysis, (2) notion-adapter.ts - class methods are part of AdapterRegistry interface contract, (3) v1.ts type guards - used via public.ts re-exports, (4) walkTree hub function - already decomposed in prior task, (5) shared utility extraction - already consolidated in claude-client, (6) tree traversal consolidation - gateway pattern is architecturally correct per CLAUDE.md. Add @internal JSDoc tags where appropriate to indicate intended audience.",
+          "acceptanceCriteria": [
+            "@internal JSDoc tags added to exports that are implementation details but must remain exported for structural reasons",
+            "No behavioral changes"
+          ],
+          "priority": "low",
+          "startedAt": "2026-02-11T14:54:55.356Z",
+          "completedAt": "2026-02-11T14:54:55.356Z"
+        },
+        {
+          "id": "c0d068a4-e2fb-4ee0-ab6d-ad672ad512aa",
+          "title": "Document security guard multi-layered protection architecture",
+          "status": "completed",
+          "level": "task",
+          "description": "Add module-level documentation to the guard system (index.ts, paths.ts, commands.ts) explaining the multi-layered security approach: command allowlisting, shell operator blocking, dangerous pattern detection, null-byte defense, directory escape prevention, and glob-based path blocking. Document how GuardConfig makes policies configurable.",
+          "acceptanceCriteria": [
+            "Guard module files have module-level JSDoc explaining the security architecture",
+            "Each security layer is documented with its purpose",
+            "Configuration surface (GuardConfig) is documented"
+          ],
+          "priority": "high",
+          "startedAt": "2026-02-10T01:52:28.847Z",
+          "completedAt": "2026-02-10T01:53:17.998Z"
+        },
+        {
+          "id": "ca390e8e-309e-46fd-a2b4-4cf636b6ade7",
+          "title": "Document dual provider architecture with fallback strategy",
+          "status": "completed",
+          "level": "task",
+          "description": "Add architectural documentation to claude-client explaining the dual provider pattern: CLI provider for local development with Claude Code, API provider for direct Anthropic API calls. Document the automatic detection and fallback strategy in createClient.",
+          "acceptanceCriteria": [
+            "Provider files document their execution contexts and use cases",
+            "create-client.ts documents the provider selection and fallback strategy",
+            "Package index.ts module comment explains the dual provider architecture"
+          ],
+          "priority": "high",
+          "startedAt": "2026-02-10T01:53:19.439Z",
+          "completedAt": "2026-02-10T01:54:10.743Z"
+        },
+        {
+          "id": "078e13cc-f5e3-4c29-9dcd-9e189e1081d6",
+          "title": "Document zone cohesion design and architectural boundaries",
+          "status": "completed",
+          "level": "task",
+          "description": "Document in the Louvain zone detection code how perfect cohesion (1.0) and zero coupling (0.0) are achieved. Add inline docs explaining the community detection approach and why the architecture naturally forms clean boundaries. Add a note to the cohesion/coupling calculation explaining the metric semantics.",
+          "acceptanceCriteria": [
+            "Zone analyzer has doc comments explaining cohesion/coupling metric semantics",
+            "Louvain algorithm usage is documented with architectural rationale",
+            "Comment on generateStructuralInsights explains what the metrics mean for architecture"
+          ],
+          "priority": "high",
+          "startedAt": "2026-02-10T01:54:12.348Z",
+          "completedAt": "2026-02-10T01:55:00.521Z"
         }
       ]
     },
     {
-      "id": "52f27390-9318-451e-b6c4-4e74896875e2",
-      "title": "Address suggestion issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Extract PRIORITY_ORDER constant to shared location with consistent typing - currently duplicated in 4 locations with inconsistent types (typed Priority vs untyped string Record)\n- Create shared foundation package at packages/shared/src/types.ts containing Priority union and PRIORITY_ORDER constant, then refactor packages/rex/src/schema/v1.ts:7, packages/sourcevision/src/viewer/components/prd-tree/types.ts:17, packages/sourcevision/src/analyzers/prd-integration.ts, and packages/hench/src/core/types.ts to import from single source\n- Consider decomposing hench zone into functional subzones: CLI interface (packages/hench/src/cli/), core agent logic (packages/hench/src/core/), and tool integrations (packages/hench/src/tools/) to improve maintainability of the 80-file zone",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T01:59:07.884Z",
-      "completedAt": "2026-02-10T02:05:42.365Z"
-    },
-    {
       "id": "cbc09cb4-d975-4c17-8254-0c97f11c8da2",
-      "title": "Address pattern issues (2 findings)",
-      "status": "completed",
+      "title": "Address SourceVision pattern findings",
+      "status": "deferred",
       "level": "feature",
       "description": "- Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic\n- Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated",
       "priority": "high",
@@ -5720,7 +6005,7 @@
     },
     {
       "id": "e96db771-5ed0-4ba8-a70b-74a30f462f65",
-      "title": "Unified server: MCP over HTTP and `ndx start`",
+      "title": "Unified Server Architecture: HTTP MCP and ndx start",
       "status": "completed",
       "level": "epic",
       "description": "Replace the current stdio-only MCP setup with HTTP-served MCP endpoints, and introduce a single `ndx start` command that spins up both the web dashboard and MCP servers. Currently MCP requires manual `claude mcp add` per-server (stdio transport), and the web dashboard runs independently via `ndx web`. Goal: one command, one port, everything running — browser dashboard + MCP endpoints for any MCP client.",
@@ -5840,12 +6125,196 @@
               "completedAt": "2026-02-10T05:31:42.501Z"
             }
           ]
+        },
+        {
+          "id": "29a51b12-7b95-4b13-817b-18d1d7c27e31",
+          "title": "Unified web viewer architecture",
+          "status": "completed",
+          "level": "feature",
+          "description": "Create a consolidated web interface that integrates sourcevision's existing viewer capabilities with Rex PRD management functionality",
+          "source": "smart-add",
+          "startedAt": "2026-02-06T05:44:41.814Z",
+          "completedAt": "2026-02-06T05:44:41.814Z",
+          "children": [
+            {
+              "id": "7f9313f6-432a-4ed4-a67c-2605da0357ed",
+              "title": "Design unified web viewer architecture",
+              "status": "completed",
+              "level": "task",
+              "description": "Plan the integration of sourcevision's existing viewer with Rex UI components, determining shared components and navigation structure",
+              "acceptanceCriteria": [
+                "Architecture supports both sourcevision analysis views and Rex PRD management",
+                "Shared component library defined for consistent UI",
+                "Navigation structure allows seamless switching between analysis and PRD views"
+              ],
+              "priority": "high",
+              "tags": [
+                "architecture",
+                "frontend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-06T05:27:48.480Z",
+              "completedAt": "2026-02-06T05:35:40.265Z"
+            },
+            {
+              "id": "f8458852-4b09-43e3-93a2-45d0b4e49f28",
+              "title": "Migrate sourcevision viewer components",
+              "status": "completed",
+              "level": "task",
+              "description": "Extract and adapt existing sourcevision viewer components into the new unified web interface",
+              "acceptanceCriteria": [
+                "All sourcevision viewer functionality preserved",
+                "Components properly integrated into new architecture",
+                "Original sourcevision serve command still works or gracefully redirects"
+              ],
+              "priority": "high",
+              "tags": [
+                "migration",
+                "sourcevision",
+                "frontend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-06T05:36:25.446Z",
+              "completedAt": "2026-02-06T05:44:41.783Z"
+            }
+          ]
+        },
+        {
+          "id": "bb97c680-3f17-4afa-b291-fac6f9797db5",
+          "title": "Rex PRD management UI",
+          "status": "completed",
+          "level": "feature",
+          "description": "Build comprehensive web interface for viewing and managing Rex PRD hierarchy, tasks, and workflow",
+          "source": "smart-add",
+          "startedAt": "2026-02-06T06:06:12.706Z",
+          "completedAt": "2026-02-06T06:06:12.706Z",
+          "children": [
+            {
+              "id": "33c3b7ae-1072-4064-9ab7-37431ffeb554",
+              "title": "Implement PRD hierarchy visualization",
+              "status": "completed",
+              "level": "task",
+              "description": "Create interactive tree view for displaying epics, features, tasks, and subtasks with completion status and progress indicators",
+              "acceptanceCriteria": [
+                "Tree view shows full PRD hierarchy with proper nesting",
+                "Status indicators clearly show pending/in_progress/completed/blocked states",
+                "Progress bars display completion percentages at each level",
+                "Collapsible/expandable nodes for navigation"
+              ],
+              "priority": "critical",
+              "tags": [
+                "prd",
+                "visualization",
+                "frontend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-06T04:52:35.753Z",
+              "completedAt": "2026-02-06T05:01:06.662Z"
+            },
+            {
+              "id": "264f26ce-e433-4c4b-91c9-3981680ec771",
+              "title": "Add task management interface",
+              "status": "completed",
+              "level": "task",
+              "description": "Build UI for viewing task details, updating status, and managing task properties through web interface",
+              "acceptanceCriteria": [
+                "Task detail view shows description, acceptance criteria, and metadata",
+                "Status can be updated through dropdown or button interface",
+                "Priority and tags can be edited inline",
+                "Dependency relationships are clearly displayed"
+              ],
+              "priority": "high",
+              "tags": [
+                "task-management",
+                "frontend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-06T05:01:44.862Z",
+              "completedAt": "2026-02-06T05:12:59.710Z"
+            },
+            {
+              "id": "6a1a02c8-18c9-4967-9182-26cc98cc1850",
+              "title": "Implement Rex command integration",
+              "status": "completed",
+              "level": "task",
+              "description": "Add web interface for executing Rex commands like add, update, and analyze through the browser",
+              "acceptanceCriteria": [
+                "Add new items form with type selection and parent constraint",
+                "Analyze command can be triggered with results displayed",
+                "Status updates can be applied to multiple items",
+                "Command execution provides real-time feedback"
+              ],
+              "priority": "medium",
+              "tags": [
+                "commands",
+                "integration",
+                "frontend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-06T05:52:53.993Z",
+              "completedAt": "2026-02-06T06:06:12.676Z"
+            }
+          ]
+        },
+        {
+          "id": "8a65d7cd-40ea-4f87-bf10-23396c378a35",
+          "title": "Web server and API integration",
+          "status": "completed",
+          "level": "feature",
+          "description": "Implement backend server to serve the web interface and provide API endpoints for Rex and sourcevision data",
+          "source": "smart-add",
+          "startedAt": "2026-02-06T05:52:08.769Z",
+          "completedAt": "2026-02-06T05:52:08.769Z",
+          "children": [
+            {
+              "id": "7bce80df-5df2-4dc9-88d3-947c72b4dbd0",
+              "title": "Create web server with API endpoints",
+              "status": "completed",
+              "level": "task",
+              "description": "Build Express/Fastify server that exposes Rex and sourcevision data through REST API and serves the web interface",
+              "acceptanceCriteria": [
+                "Server serves static web assets",
+                "API endpoints provide Rex PRD data",
+                "API endpoints provide sourcevision analysis data",
+                "WebSocket support for real-time updates"
+              ],
+              "priority": "high",
+              "tags": [
+                "backend",
+                "api"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-06T05:13:59.888Z",
+              "completedAt": "2026-02-06T05:26:44.504Z"
+            },
+            {
+              "id": "e68c5d72-833d-4766-908d-da8ab8517622",
+              "title": "Add web command to n-dx CLI",
+              "status": "completed",
+              "level": "task",
+              "description": "Extend n-dx orchestration with web server command that starts the unified viewer",
+              "acceptanceCriteria": [
+                "ndx web command starts server on configurable port",
+                "Command supports background/daemon mode",
+                "Proper shutdown handling and port management",
+                "Integration with existing n-dx config system"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "orchestration"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-06T05:45:02.646Z",
+              "completedAt": "2026-02-06T05:52:08.738Z"
+            }
+          ]
         }
       ]
     },
     {
       "id": "ed4461f5-7667-4c72-bbee-f39457b951fe",
-      "title": "Web viewer architecture: extract from sourcevision, support independent package viewers",
+      "title": "Web Viewer Architecture: Package Extraction and Independent Viewers",
       "status": "completed",
       "level": "epic",
       "description": "The web viewer currently lives entirely in `packages/sourcevision/` but serves rex, hench, and sourcevision data — it's an n-dx dashboard, not a sourcevision viewer. This epic addresses: (1) where the viewer code should live (new `packages/web` or monorepo root), (2) whether each package (sourcevision, rex, hench) should have its own lightweight standalone viewer for independent installs, (3) how the unified n-dx dashboard composes those views, (4) proper dev server setup (HMR, build pipeline, static asset handling). Goal: clean package boundaries where the viewer code lives at the right level, packages remain independently installable and viewable, and there's a proper dev workflow.",
@@ -6027,53 +6496,9 @@
       ]
     },
     {
-      "id": "42236330-dbea-4f88-ab7a-4544cda68cc6",
-      "title": "Address observation issues (8 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Contains 61% of project files (80/131) — may be too broad, consider splitting\n- Perfect zone cohesion (1.0) with zero coupling indicates excellent internal architecture and external interface design\n- Security guard system provides multi-layered protection with configurable policies for safe autonomous operation\n- Dual provider architecture (CLI + API) ensures fallback options and different execution contexts\n- Perfect zone cohesion (1.0) with zero coupling demonstrates excellent encapsulation of Claude API concerns\n- Token usage tracking includes comprehensive cost estimation and budget enforcement mechanisms\n- All zones achieve perfect cohesion metrics, suggesting the community detection algorithm successfully identified natural architectural boundaries\n- No cross-zone imports found, indicating excellent architectural discipline and proper abstraction boundaries",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T02:24:42.890Z",
-      "completedAt": "2026-02-10T02:29:15.302Z"
-    },
-    {
-      "id": "aa0e4e31-1cd6-406a-b61b-60c443669e8c",
-      "title": "Address anti-pattern issues (12 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Type imports from Rex (PRDStore, PRDItem, ItemStatus) create compile-time coupling despite dynamic runtime imports - the zone boundary is violated at the type level even though runtime coupling is avoided\n- Cross-zone type imports create compile-time coupling that defeats runtime decoupling strategies - zones appear independent at runtime but are tightly coupled during TypeScript compilation\n- PRIORITY_ORDER constants duplicated across multiple zones with inconsistent typing - shared constants should be extracted to a common location to prevent type drift and maintenance burden\n- PRIORITY_ORDER constant duplicated with different type signatures (Record<Priority,number> vs Record<string,number>) across core/canonical.ts, core/next-task.ts, and analyze/propose.ts creating type safety gaps and maintenance burden\n- Schema index.ts barrel export creates hidden bidirectional coupling by re-exporting from both viewer zone (v1.ts) and test-suite zone (validate.ts) - every analyzer importing schema creates transitive dependencies across three zones\n- Direct import of schema/validate.ts from test-suite zone violates zone boundaries and forces Zod bundling into browser code where validation could be optional\n- schema/validate.ts is misplaced in test-suite zone despite being imported by production CLI and viewer code - this file should be in analysis-engine zone based on its actual usage patterns\n- Architecture creates false dichotomy between coupling and duplication - core domain types like Priority could be shared without compromising zone independence by treating them as stable contracts rather than implementation details\n- Architecture forces choice between runtime coupling and maintenance burden - current solution chooses duplication over dependency, creating divergence risk that outweighs benefits of runtime independence for core domain types\n- Architecture prioritizes runtime independence over type safety and maintainability - the systematic duplication of Priority and PRIORITY_ORDER across 5 locations creates a maintenance nightmare that outweighs any benefits of zero dependencies\n- Systematic duplication of business logic constants (PRIORITY_ORDER) across 4 locations with inconsistent typing creates multiple sources of truth that risk diverging during maintenance - refactor to single shared constant in packages/rex/src/schema/v1.ts and import consistently\n- Type system fragmentation where identical Priority union is defined in both packages/rex/src/schema/v1.ts:7 and packages/sourcevision/src/viewer/components/prd-tree/types.ts:17 - consolidate to single exported type to prevent drift and ensure consistency",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T02:16:22.016Z",
-      "completedAt": "2026-02-10T02:24:13.740Z"
-    },
-    {
-      "id": "ebb3bcca-a71c-4f6e-bbde-c89c9a3f786d",
-      "title": "Address suggestion issues (5 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Extract PRIORITY_ORDER constant to shared location with consistent typing - currently duplicated in 4 locations with inconsistent types (typed Priority vs untyped string Record)\n- Create shared foundation package at packages/shared/src/types.ts containing Priority union and PRIORITY_ORDER constant, then refactor packages/rex/src/schema/v1.ts:7, packages/sourcevision/src/viewer/components/prd-tree/types.ts:17, packages/sourcevision/src/analyzers/prd-integration.ts, and packages/hench/src/core/types.ts to import from single source\n- Consider decomposing hench zone into functional subzones: CLI interface (packages/hench/src/cli/), core agent logic (packages/hench/src/core/), and tool integrations (packages/hench/src/tools/) to improve maintainability of the 80-file zone\n- Implement Priority type import in packages/hench/src/core/types.ts:1 by adding 'import { Priority } from \"../../../rex/src/schema/v1.js\"' and removing the duplicate union definition on line 3\n- Refactor packages/hench/src/core/types.ts to import Priority from packages/rex/src/schema/v1.ts instead of duplicating the union type definition",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T02:29:38.279Z",
-      "completedAt": "2026-02-10T02:35:30.462Z"
-    },
-    {
-      "id": "069f13e7-c85e-40a7-8ab8-b517f41d1f9d",
-      "title": "Address pattern issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Perfect architectural metrics (cohesion=1, coupling=0) mask underlying design debt - zones achieve statistical perfection while creating practical maintenance burdens through forced duplication of shared business concepts\n- Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic\n- Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T05:16:19.005Z",
-      "completedAt": "2026-02-10T05:26:13.801Z"
-    },
-    {
       "id": "7d194bf1-472f-4680-81e2-6ee15f1c2033",
       "title": "Address observation issues (1 findings)",
-      "status": "completed",
+      "status": "deferred",
       "level": "feature",
       "description": "- Hardcoded tool paths in cli.js create brittle coupling to dist/ structure - consider using package.json bin field resolution",
       "priority": "high",
@@ -6205,58 +6630,6 @@
       ]
     },
     {
-      "id": "f297d88f-d236-4fe6-b844-1093c014eba4",
-      "title": "Web UI Branding Consistency",
-      "status": "completed",
-      "level": "epic",
-      "source": "smart-add",
-      "startedAt": "2026-02-10T14:51:10.922Z",
-      "completedAt": "2026-02-10T14:51:10.922Z",
-      "children": [
-        {
-          "id": "10fc1872-82b5-4a09-9006-73e84636d06a",
-          "title": "Favicon Standardization",
-          "status": "completed",
-          "level": "feature",
-          "description": "Update all favicon implementations across the entire n-dx toolkit to use the product-F.png branding for consistency",
-          "source": "smart-add",
-          "startedAt": "2026-02-10T14:51:10.867Z",
-          "completedAt": "2026-02-10T14:51:10.867Z",
-          "children": [
-            {
-              "id": "96a88223-7a7c-46ce-8f56-e83d4c4256c5",
-              "title": "Standardize favicon implementation across all packages",
-              "status": "completed",
-              "level": "task",
-              "description": "Replace all SVG favicon references with product-F.png across web package, sourcevision standalone viewer, and all other HTML templates in the n-dx toolkit",
-              "acceptanceCriteria": [
-                "Web dashboard displays product-F.png as favicon",
-                "Sourcevision standalone viewer displays product-F.png favicon",
-                "All HTML templates use product-F.png favicon",
-                "No SVG favicon references remain in any package",
-                "Favicon loads correctly in all major browsers",
-                "Dynamic favicon switching still works with PNG format",
-                "No inconsistent favicon implementations exist",
-                "Documentation reflects the standardized favicon approach"
-              ],
-              "priority": "medium",
-              "tags": [
-                "web",
-                "sourcevision",
-                "branding",
-                "ui",
-                "audit",
-                "consistency"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-10T14:45:05.141Z",
-              "completedAt": "2026-02-10T14:51:10.827Z"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "3e648b61-d923-450a-b6db-2e419ed7e296",
       "title": "Rex UI Calculation and Display Improvements",
       "status": "completed",
@@ -6352,59 +6725,15 @@
       ]
     },
     {
-      "id": "b9caa923-3977-43e3-b86b-07bc069bf148",
-      "title": "Address observation issues (2 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Clean dependency inversion through claude-client shared foundation prevents circular dependencies between domain packages\n- Perfect architectural isolation with no circular dependencies enables independent development and testing of each subsystem",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T16:29:40.795Z",
-      "completedAt": "2026-02-10T16:35:39.108Z"
-    },
-    {
-      "id": "afabc78a-d5c9-498b-a536-2510c9d8e6fc",
-      "title": "Address pattern issues (2 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Architecture follows clean dependency rules: orchestration→execution→domain→foundation with minimal controlled cross-coupling\n- Standardization debt cluster: 5 related findings around package exports, naming conventions, and test structure indicate coordinated refactoring opportunity rather than independent fixes",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T16:35:55.786Z",
-      "completedAt": "2026-02-10T16:43:40.885Z"
-    },
-    {
       "id": "afe6598d-b9d8-464f-9247-0837bce17e42",
-      "title": "Address relationship issues (1 findings)",
-      "status": "completed",
+      "title": "Address SourceVision relationship findings",
+      "status": "deferred",
       "level": "feature",
       "description": "- Two controlled coupling points: hench imports rex for task management, web imports all packages for unified interface",
       "priority": "high",
       "source": "sourcevision",
       "startedAt": "2026-02-10T16:44:02.991Z",
       "completedAt": "2026-02-10T16:49:25.109Z"
-    },
-    {
-      "id": "d6342c76-d17b-49c7-b5e9-4e43a0dc64c5",
-      "title": "Address anti-pattern issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Hench maintains 14 direct imports from rex package across 9 files, creating controlled but extensive runtime dependency on PRD operations beyond just type contracts",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T16:22:32.832Z",
-      "completedAt": "2026-02-10T16:29:11.518Z"
-    },
-    {
-      "id": "73089778-e778-4c7d-acb8-01ceadc24e3e",
-      "title": "Address suggestion issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Execute standardization in dependency order: first complete hench public.ts exports (packages/hench/src/public.ts), then migrate test directories (packages/hench/__tests__ → packages/hench/tests/, packages/web/src/__tests__ → packages/web/tests/), finally establish monorepo naming convention\n- Create packages/hench/src/public.ts exporting AgentConfig, RunConfig, RunResult, ExecutionEngine and update packages/hench/package.json exports field to include './public': './dist/public.js'\n- Move packages/web/src/__tests__ to packages/web/tests/ with domain subdirectories (dashboard/, mcp/, server/) to align with rex and sourcevision patterns",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T16:50:03.717Z",
-      "completedAt": "2026-02-10T16:52:27.663Z"
     },
     {
       "id": "e3aa5235-b63b-4298-bbcf-b78c72638387",
@@ -6466,124 +6795,6 @@
               "source": "smart-add",
               "startedAt": "2026-02-10T19:48:05.281Z",
               "completedAt": "2026-02-10T20:11:33.245Z"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "de38ce2a-58b9-456b-95ac-1b73a8433528",
-      "title": "Address observation issues (2 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Size distribution reflects natural complexity: foundation (15 files), domain (~65 files each), orchestration (114 files)\n- Standardization debt exists across package exports, naming conventions, and test directory structures",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T18:06:56.883Z",
-      "completedAt": "2026-02-10T18:11:55.397Z"
-    },
-    {
-      "id": "163cb3aa-a35c-4987-ae70-1af57c393a4a",
-      "title": "Address pattern issues (2 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Gateway pattern standardization — hench (ops.ts) and web (mcp-deps.ts) implement identical controlled coupling architecture\n- Systematic standardization gaps across public APIs create integration friction despite sound architectural isolation - suggests need for package development guidelines",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T18:12:16.250Z",
-      "completedAt": "2026-02-10T18:18:29.102Z"
-    },
-    {
-      "id": "1327aba8-a350-469a-bd16-23fbebbbf845",
-      "title": "Address anti-pattern issues (2 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Inconsistent public API standardization — hench exports only schema types while rex and sourcevision provide comprehensive runtime function exports\n- Configuration export inconsistency breaks consumer expectations - hench exports DEFAULT_CONFIG while rex/sourcevision hide defaults internally, forcing consumers to use different integration patterns per package",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T17:58:52.381Z",
-      "completedAt": "2026-02-10T18:06:33.870Z"
-    },
-    {
-      "id": "b9b5f52c-51c5-44b4-b2a1-6b6df5444969",
-      "title": "Address suggestion issues (4 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Directory constants (REX_DIR, HENCH_DIR, SV_DIR) hardcoded with string literals instead of shared constants — creates silent drift risk when CLI and MCP implementations diverge\n- Standardize hench public API exports to match rex/sourcevision pattern by exporting runtime functions alongside schema types in src/public.ts\n- Extract hardcoded directory constants (REX_DIR, HENCH_DIR, SV_DIR) into claude-client foundation package as shared PROJECT_CONSTANTS export\n- Standardize DEFAULT_CONFIG export pattern by adding to rex and sourcevision public APIs to match hench implementation",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-10T18:19:12.896Z",
-      "completedAt": "2026-02-10T18:29:38.183Z"
-    },
-    {
-      "id": "2c763628-bbea-40a1-91e4-65f66e5ddaf4",
-      "title": "Web UI Navigation and Branding Integration",
-      "status": "completed",
-      "level": "epic",
-      "source": "smart-add",
-      "startedAt": "2026-02-10T20:40:13.499Z",
-      "completedAt": "2026-02-10T20:40:13.499Z",
-      "children": [
-        {
-          "id": "9cf29710-2ab4-4a76-981b-c7dc729c6202",
-          "title": "Redesign header layout with integrated controls and repositioned branding",
-          "status": "completed",
-          "level": "feature",
-          "description": "Consolidate all header controls into a unified navigation experience and reposition branding elements for improved visual hierarchy",
-          "source": "smart-add",
-          "startedAt": "2026-02-10T20:40:13.472Z",
-          "completedAt": "2026-02-10T20:40:13.472Z",
-          "children": [
-            {
-              "id": "8e0b1f26-b8f1-40fc-808c-b06b2fe5aa39",
-              "title": "Integrate header controls and reposition branding elements",
-              "status": "completed",
-              "level": "task",
-              "description": "Create a unified header control bar with sidebar toggle, theme toggle, and FAQ button, while moving package logo and name to right-aligned position next to page-specific FAQ button for better visual hierarchy",
-              "acceptanceCriteria": [
-                "Sidebar toggle, light mode toggle, and FAQ are grouped together in header",
-                "Controls maintain consistent visual styling and spacing",
-                "All controls remain functional after integration",
-                "Package logo and name appear right-aligned in content area header",
-                "Branding is positioned adjacent to page-specific FAQ button",
-                "Header control bar works across all viewport sizes",
-                "Layout remains responsive across different screen sizes",
-                "Visual hierarchy clearly separates global controls from page-specific elements"
-              ],
-              "priority": "medium",
-              "tags": [
-                "ui",
-                "header",
-                "navigation",
-                "branding",
-                "layout"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-10T20:34:45.791Z",
-              "completedAt": "2026-02-11T06:28:30.598Z",
-              "failureReason": "there's still a product title in the top-left and the global control elements overlap with the page content and there's still a sidebar toggle at the bottom. move the sidebar and themetoggle controls to the bottom of the sidebar and make it cohesive with the rest"
-            },
-            {
-              "id": "a6dd7b7c-9e74-4626-8e27-e4aa11e771ea",
-              "title": "Implement floating FAQ button for page-specific help",
-              "status": "completed",
-              "level": "task",
-              "description": "Create a floating FAQ button that appears in the content area header, providing contextual help for the current page/section",
-              "acceptanceCriteria": [
-                "FAQ button floats in content area header next to repositioned branding",
-                "Button provides page-specific help content based on current view",
-                "FAQ content is contextually relevant to SourceVision, Rex, or Hench sections",
-                "Button maintains consistent styling with other UI controls"
-              ],
-              "priority": "medium",
-              "tags": [
-                "ui",
-                "help",
-                "floating-button"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-10T20:11:55.019Z",
-              "completedAt": "2026-02-10T20:34:13.649Z"
             }
           ]
         }
@@ -7239,94 +7450,6 @@
       ]
     },
     {
-      "id": "8c9bcad7-2447-4ca9-af30-1309c4724b75",
-      "title": "Address observation issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Standardization debt exists across package exports, naming conventions, and test directory structures",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T00:09:37.004Z",
-      "completedAt": "2026-02-11T00:16:31.082Z"
-    },
-    {
-      "id": "b7bd67c3-10c7-46e2-93f7-8e25c024c16c",
-      "title": "Address anti-pattern issues (2 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Test architecture inconsistency: packages implement different test directory structures (unit|integration|e2e vs unit-only) despite documented standardization requirements\n- Type duplication anti-pattern: web package manually duplicates rex types instead of shared interface abstraction, violating DRY and creating maintenance burden",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T00:00:36.676Z",
-      "completedAt": "2026-02-11T00:09:11.719Z"
-    },
-    {
-      "id": "bd59ccbd-d85b-4b5f-8cdc-02d44b6249c6",
-      "title": "Address suggestion issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Process execution anti-pattern: scattered execFile imports across multiple modules instead of centralized process abstraction\n- Error hierarchy should be standardized: domain CLIError classes should extend foundation ClaudeClientError for consistent error handling patterns\n- Process execution abstraction missing: scattered execFile imports across multiple zones should use centralized process management layer",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T00:16:52.495Z",
-      "completedAt": "2026-02-11T00:26:25.251Z"
-    },
-    {
-      "id": "01f4fa8a-cc11-4543-80d8-11a5e12b3d01",
-      "title": "Address observation issues (2 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Error hierarchy should be standardized: domain CLIError classes should extend foundation ClaudeClientError for consistent error handling patterns\n- Process execution abstraction missing: scattered execFile imports across multiple zones should use centralized process management layer",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T02:29:58.537Z",
-      "completedAt": "2026-02-11T02:43:37.070Z"
-    },
-    {
-      "id": "ded6c910-4c30-4936-9154-0189c390afb7",
-      "title": "Address pattern issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Process execution scattered across 40+ files indicates missing centralized process management abstraction",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T02:44:13.586Z",
-      "completedAt": "2026-02-11T02:52:12.099Z"
-    },
-    {
-      "id": "03b44f3b-01af-41a0-bc72-2ec5897cdf1f",
-      "title": "Address anti-pattern issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Process execution scattered across 40+ files despite centralized abstraction existing in hench zone — exec.ts should be promoted to foundation layer",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T02:13:22.937Z",
-      "completedAt": "2026-02-11T02:19:46.200Z"
-    },
-    {
-      "id": "ca370309-a69e-412b-8c12-4125364025c0",
-      "title": "Address suggestion issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Promote process/exec.ts abstraction to claude-client foundation layer to eliminate process execution duplication across zones\n- Process execution should be promoted from hench zone to foundation layer — exec patterns scattered across 40+ files indicate this belongs in claude-client for system-wide standardization\n- Standardize process execution by promoting hench/src/process/exec.ts to claude-client foundation layer — currently scattered across 40+ files",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T03:05:21.527Z",
-      "completedAt": "2026-02-11T03:16:08.981Z"
-    },
-    {
-      "id": "93ff80c9-6e29-471e-a38b-8596d1033e8b",
-      "title": "Address suggestion issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Multiple viewer sub-zones across the codebase suggest need for UI component lifecycle and consolidation governance\n- Direct child_process imports in routes-rex.ts should be refactored to use foundation layer spawnTool abstraction for architectural consistency\n- Multiple viewer sub-zones suggest need for viewer consolidation strategy to prevent UI component fragmentation and maintenance burden",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T03:16:49.180Z",
-      "completedAt": "2026-02-11T03:23:59.292Z"
-    },
-    {
       "id": "f5284d6e-06f9-4011-926f-9dd62de38194",
       "title": "SourceVision Import Graph Visualization Enhancement",
       "status": "completed",
@@ -7502,39 +7625,6 @@
       ]
     },
     {
-      "id": "14930586-b113-451c-8879-1af1da9b42b2",
-      "title": "Address anti-pattern issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Architectural tension between zero-coupling goals and practical implementation needs forces systematic code duplication in interface layer",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T12:12:32.384Z",
-      "completedAt": "2026-02-11T12:22:59.715Z"
-    },
-    {
-      "id": "45798975-fd8c-4af2-89bf-de7bb2a5d172",
-      "title": "Address pattern issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Systematic duplication pattern: zero-coupling architecture forces reimplementation of utilities across zones, violating DRY principle at system level",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T12:24:42.883Z",
-      "completedAt": "2026-02-11T12:39:44.421Z"
-    },
-    {
-      "id": "28faa1e4-6a02-4616-aa11-e4a9f1a27dd6",
-      "title": "Address suggestion issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Consolidate duplicate tree utilities in web package by creating a shared internal module that both server/mcp-deps.ts and components can import from",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T12:40:14.449Z",
-      "completedAt": "2026-02-11T12:45:02.811Z"
-    },
-    {
       "id": "35103035-97a1-45c4-a891-d40fbae6d8ce",
       "title": "SourceVision Call Graph Analysis",
       "status": "completed",
@@ -7643,176 +7733,11 @@
       ]
     },
     {
-      "id": "fe440559-d45f-476c-ad98-13dc19616bc8",
-      "title": "Address observation issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 30 files — high-impact module, changes may have wide ripple effects",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T14:40:24.799Z",
-      "completedAt": "2026-02-11T14:46:22.838Z"
-    },
-    {
-      "id": "679ff52d-fddf-43ac-bfd7-17bbfdc52ca3",
-      "title": "Address pattern issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Domain layer isolation pattern allows rex and sourcevision to evolve independently while sharing foundation infrastructure",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T14:25:09.487Z",
-      "completedAt": "2026-02-11T14:32:15.555Z"
-    },
-    {
-      "id": "f587dda4-9619-4d8d-8f1e-a01b072f1761",
-      "title": "Address relationship issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Tightly coupled modules: packages/rex/src/cli/commands/chunked-review.ts and packages/rex/tests/unit/cli/commands/chunked-review.test.ts — 370 cross-file calls (unidirectional). Consider extracting shared interface or merging",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T14:32:33.935Z",
-      "completedAt": "2026-02-11T14:39:45.271Z"
-    },
-    {
-      "id": "4a95dd1c-a5a9-47b5-a10d-6a5bba23dd91",
-      "title": "Address anti-pattern issues (4 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- God modules at architectural boundaries (enrich.ts 925 lines, MCP server 400 lines) create maintenance bottlenecks and violate single responsibility principle\n- Multiple packages duplicate utility functions (basename extraction, tree traversal, data preparation) instead of using shared abstractions or gateway pattern consistently\n- Dead code accumulation in integration layers: 39+19+9+8+7+5+4=91 unused exports concentrated in adapter, validation, and UI component modules indicates systematic over-engineering at system boundaries\n- God function: analyzeZones in packages/sourcevision/src/analyzers/zones.ts calls 88 unique functions — consider decomposing into smaller, focused functions",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T14:05:49.651Z",
-      "completedAt": "2026-02-11T14:24:15.101Z",
-      "children": [
-        {
-          "id": "302aabf9-0383-407d-86c7-ca5e0d6a664e",
-          "title": "Decompose analyzeZones god function into focused helpers",
-          "status": "completed",
-          "level": "task",
-          "description": "Extract logical sub-sections of analyzeZones() (553 lines) into focused helper functions: Louvain setup, zone creation with metrics, enrichment/preservation, insight merging, and findings assembly.",
-          "acceptanceCriteria": [
-            "analyzeZones() is under 200 lines and delegates to well-named helpers",
-            "Each extracted helper has a clear single responsibility",
-            "All existing tests pass without modification",
-            "No functional behavior changes"
-          ],
-          "priority": "critical",
-          "startedAt": "2026-02-11T14:07:37.608Z",
-          "completedAt": "2026-02-11T14:10:54.327Z"
-        },
-        {
-          "id": "7eba2695-065c-4057-8b51-f58661f738a3",
-          "title": "Split Rex MCP server into tool modules",
-          "status": "completed",
-          "level": "task",
-          "description": "Split rex MCP server (806 lines) by extracting tool handler functions into separate modules (status tools, item operations, sync/log tools, resources).",
-          "acceptanceCriteria": [
-            "mcp.ts is under 200 lines and imports tool handlers from dedicated modules",
-            "Tool behavior is identical (no functional changes)",
-            "All existing tests pass"
-          ],
-          "priority": "high",
-          "startedAt": "2026-02-11T14:11:01.427Z",
-          "completedAt": "2026-02-11T14:14:14.364Z"
-        },
-        {
-          "id": "98693d1e-6550-40f9-9af3-8d74f9acc731",
-          "title": "Split enrich.ts orchestration functions into focused modules",
-          "status": "completed",
-          "level": "task",
-          "description": "Split enrich.ts (624 lines) by extracting enrichBatch() and enrichZonesWithAI() sub-sections into focused modules: prompt construction, meta-evaluation, result merging.",
-          "acceptanceCriteria": [
-            "enrich.ts is under 200 lines",
-            "Each extracted module has a single responsibility",
-            "All existing tests pass"
-          ],
-          "priority": "high",
-          "startedAt": "2026-02-11T14:14:20.145Z",
-          "completedAt": "2026-02-11T14:17:15.350Z"
-        },
-        {
-          "id": "8c23ba99-ab41-469f-b22b-cd6833ef4360",
-          "title": "Remove verified dead exports from integration layers",
-          "status": "completed",
-          "level": "task",
-          "description": "Audit the 91 reported unused exports in adapter, validation, and UI component modules. Remove genuinely unused exports after verifying with grep. Leave exports that are part of public API contracts.",
-          "acceptanceCriteria": [
-            "Dead exports verified by grep are removed",
-            "Public API exports are preserved",
-            "Build and tests pass"
-          ],
-          "priority": "medium",
-          "startedAt": "2026-02-11T14:17:23.158Z",
-          "completedAt": "2026-02-11T14:24:15.025Z"
-        }
-      ]
-    },
-    {
-      "id": "3df811cc-a1e2-440c-85a5-1c8fe1ac06d6",
-      "title": "Address suggestion issues (11 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Console.log statements concentrated in orchestration files (86 occurrences) suggest debugging artifacts that should be replaced with structured logging\n- Implement shared utility extraction: move basename extraction, tree traversal, and data preparation functions from packages/web, packages/rex, and packages/sourcevision into @n-dx/claude-client foundation to eliminate triplication\n- Hub function: walkTree in packages/rex/src/core/tree.ts is called from 20 files — changes here have wide impact, consider if responsibilities can be narrowed\n- 39 potentially unused exports in packages/web/src/viewer/graph/renderer.ts have no incoming calls: constructor, highlightNode, centerOnNode, selectNode, clearSelection (+34 more)\n- 19 potentially unused exports in packages/rex/src/store/notion-adapter.ts have no incoming calls: constructor, path, getStatusGroupMap, invalidateCache, loadDocument (+14 more)\n- 9 potentially unused exports in packages/hench/src/store/adjustments.ts have no incoming calls: loadAdaptiveStateAsync, saveAdaptiveStateAsync, recordAdjustment, updateSettings, lockKey (+4 more)\n- 8 potentially unused exports in packages/web/src/schema/validate.ts have no incoming calls: validateManifest, validateInventory, validateImports, validateZones, validateComponents (+3 more)\n- 7 potentially unused exports in packages/web/src/viewer/components/logos.ts have no incoming calls: NdxLogo, SourceVisionLogo, RexLogo, HenchLogo, NdxLogoPng (+2 more)\n- 5 potentially unused exports in packages/rex/src/schema/v1.ts have no incoming calls: isRequirementCategory, isValidationType, isPriority, isItemLevel, isItemStatus\n- Extract shared tree traversal interface from core/tree.ts to reduce the 20-file dependency fan-out and improve testability\n- Consolidate duplicate tree utilities into @n-dx/claude-client foundation package to eliminate redundancy across web, rex, and sourcevision packages",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T14:46:44.663Z",
-      "completedAt": "2026-02-11T14:54:55.413Z",
-      "children": [
-        {
-          "id": "673d1237-b34c-4b3c-b045-725765338c69",
-          "title": "Replace console.log with structured output in orchestration files",
-          "status": "completed",
-          "level": "task",
-          "description": "Migrate orchestration files (cli.js, web.js, ci.js, config.js) from raw console.log/console.error to the structured output utilities from @n-dx/claude-client (info, result from output.ts). This ensures --quiet mode works consistently and provides a single logging abstraction. Note: many console.log calls are legitimate user-facing output, so the migration should use info() for status messages and result() for data output.",
-          "acceptanceCriteria": [
-            "Orchestration files use info() and result() from @n-dx/claude-client output.ts instead of raw console.log",
-            "console.error calls for user-facing errors are preserved (error output should always show)",
-            "--quiet flag suppresses info() messages in orchestration files",
-            "All existing tests continue to pass"
-          ],
-          "priority": "medium",
-          "startedAt": "2026-02-11T14:49:06.326Z",
-          "completedAt": "2026-02-11T14:54:52.839Z"
-        },
-        {
-          "id": "8328aa27-dd94-4380-8294-cbf96b44ec2d",
-          "title": "Remove unused exports from hench adjustments.ts",
-          "status": "completed",
-          "level": "task",
-          "description": "The adaptive workflow infrastructure in packages/hench/src/store/adjustments.ts has 9 exported functions/types with no incoming calls (loadAdaptiveStateAsync, saveAdaptiveStateAsync, recordAdjustment, updateSettings, lockKey, etc.). Remove exports or mark as internal for functions that are not part of the public API and have no callers.",
-          "acceptanceCriteria": [
-            "Unused exports in adjustments.ts are either removed or marked as internal",
-            "No breaking changes to public API",
-            "All tests pass"
-          ],
-          "priority": "medium",
-          "startedAt": "2026-02-11T14:54:54.013Z",
-          "completedAt": "2026-02-11T14:54:54.013Z"
-        },
-        {
-          "id": "670d5834-6f6c-4de8-b020-adc49cbf6be0",
-          "title": "Document false-positive unused export findings and close remaining suggestions",
-          "status": "completed",
-          "level": "task",
-          "description": "Several findings are false positives or already addressed: (1) renderer.ts, logos.ts, validate.ts - browser components/class methods not detected by static import analysis, (2) notion-adapter.ts - class methods are part of AdapterRegistry interface contract, (3) v1.ts type guards - used via public.ts re-exports, (4) walkTree hub function - already decomposed in prior task, (5) shared utility extraction - already consolidated in claude-client, (6) tree traversal consolidation - gateway pattern is architecturally correct per CLAUDE.md. Add @internal JSDoc tags where appropriate to indicate intended audience.",
-          "acceptanceCriteria": [
-            "@internal JSDoc tags added to exports that are implementation details but must remain exported for structural reasons",
-            "No behavioral changes"
-          ],
-          "priority": "low",
-          "startedAt": "2026-02-11T14:54:55.356Z",
-          "completedAt": "2026-02-11T14:54:55.356Z"
-        }
-      ]
-    },
-    {
       "id": "ecbbbb0f-87cf-4437-a2e7-8ee508714e32",
-      "title": "Resolve SourceVision architectural findings (Feb 2026)",
+      "title": "Resolve critical SourceVision architectural findings",
       "status": "completed",
       "level": "epic",
-      "description": "Systematically address all actionable SourceVision findings from the latest analysis pass. Organized by theme rather than finding type, with verifiable acceptance criteria tied to re-analysis outcomes.",
+      "description": "Systematically address high-priority SourceVision findings including circular dependencies, dead code removal, and god function decomposition. Focus on actionable improvements that enhance code quality and maintainability.",
       "priority": "high",
       "tags": [
         "tech-debt",
@@ -8035,205 +7960,6 @@
       ]
     },
     {
-      "id": "7bafb5f7-988d-4270-99ef-1edf6df449f9",
-      "title": "Improve SourceVision analysis accuracy (reduce false positives)",
-      "status": "completed",
-      "level": "epic",
-      "description": "SourceVision's analysis passes are generating high false-positive rates across unused-export detection, god-function detection, coupling metrics, and fan-in classification. This epic addresses each analyzer to improve signal-to-noise ratio so findings are trustworthy enough to drive automated task creation via rex recommend.",
-      "priority": "high",
-      "tags": [
-        "sourcevision",
-        "analysis-quality",
-        "false-positives"
-      ],
-      "startedAt": "2026-02-11T18:19:32.211Z",
-      "completedAt": "2026-02-11T18:19:32.211Z",
-      "children": [
-        {
-          "id": "64ecb019-ca2b-4ff8-b6b7-559d4c8fdb55",
-          "title": "Fix dead export detection false positives",
-          "status": "completed",
-          "level": "feature",
-          "description": "The detectDeadExports() function in callgraph-findings.ts only checks the call graph for usage. Exports consumed via dynamic imports (await import()) or used only through import edges (not direct calls) are incorrectly flagged as dead. This produces false positives for CLI command registrations (cmdConfig) and validators used through import chains.",
-          "acceptanceCriteria": [
-            "cmdConfig in hench/cli/commands/config.ts is not flagged as unused",
-            "Validators in web/schema/validate.ts are not flagged as unused",
-            "Components in health-gauge.ts and logos.ts are not flagged as unused",
-            "No regression in detecting genuinely dead exports"
-          ],
-          "priority": "high",
-          "startedAt": "2026-02-11T18:11:07.597Z",
-          "completedAt": "2026-02-11T18:11:07.597Z",
-          "children": [
-            {
-              "id": "e372d0df-e3c6-4cb6-bfe7-4e69251ea7a4",
-              "title": "Fix dead export detection to cross-reference import graph",
-              "status": "completed",
-              "level": "task",
-              "description": "In callgraph-findings.ts:199-300, detectDeadExports() only checks the call graph for usage, missing exports consumed via dynamic imports, static imports without call edges (JSX components, validators), and import chains. Fix: after building the calledFunctions set from call edges, also mark an export as used if its name appears in any import edge's symbols array (static, dynamic, or require types). This covers dynamic imports (await import()), JSX element usage, and inline calls that don't produce CallExpression nodes. Add unit tests covering: dynamic-import-only usage, static-import-only usage (no call edge), genuinely dead exports, re-exported symbols, and class instance methods.\n\n---\n\npackages/hench/src/store/suggestions.ts exports loadSuggestionHistoryAsync and saveSuggestionHistoryAsync which have no callers. The synchronous versions (loadSuggestionHistory, saveSuggestionHistory) are used. Remove the async exports, or if they exist for a planned feature, document that intent.",
-              "acceptanceCriteria": [
-                "detectDeadExports consults import graph edges with type 'dynamic' and 'require' in addition to call graph edges",
-                "cmdConfig (imported via dynamic import in hench CLI router) is no longer flagged as unused",
-                "pnpm test passes for sourcevision package",
-                "Exports that appear in import edge symbols (static, dynamic, or require) are not flagged as dead",
-                "validate.ts validators, health-gauge.ts components, and logos.ts exports are no longer flagged",
-                "Genuinely dead exports (not imported anywhere) are still detected",
-                "Test file exists covering all 5 edge cases",
-                "All tests pass",
-                "loadSuggestionHistoryAsync and saveSuggestionHistoryAsync are either removed or documented with a tracking reference",
-                "pnpm typecheck and pnpm test pass"
-              ],
-              "priority": "high",
-              "startedAt": "2026-02-11T18:04:45.128Z",
-              "completedAt": "2026-02-11T18:11:07.513Z",
-              "children": []
-            }
-          ]
-        },
-        {
-          "id": "8c77e354-5210-461d-b84e-d2212f927e8d",
-          "title": "Fix god function detection metric inflation",
-          "status": "completed",
-          "level": "feature",
-          "description": "detectGodFunctions() in callgraph-findings.ts:95-130 counts all unique callees including built-in/standard-library method calls (.map, .filter, .has, .split, .join, .toFixed, etc.). A Preact component calling 15 real functions + 52 built-in methods gets flagged as \"67 unique function calls\" which is misleading. The call graph extractor in callgraph.ts:374-399 records method calls without distinguishing built-in from user-defined.",
-          "acceptanceCriteria": [
-            "CallGraphView (67 raw calls) is either not flagged or reported with a filtered count that reflects actual user-defined function calls",
-            "Built-in method calls (.map, .filter, .has, .split, .join, .forEach, .reduce, .find, .includes, .toString, .toFixed, etc.) are excluded from god function counts",
-            "Existing god function detection still catches genuinely complex functions"
-          ],
-          "priority": "high",
-          "startedAt": "2026-02-11T18:04:28.014Z",
-          "completedAt": "2026-02-11T18:04:28.014Z",
-          "children": [
-            {
-              "id": "0f34b24b-6b4a-46dc-9b6e-982c06859e35",
-              "title": "Filter built-in method calls from god function detection",
-              "status": "completed",
-              "level": "task",
-              "description": "In callgraph-findings.ts:95-130, detectGodFunctions() counts all unique callees including built-in/standard-library methods (.map, .filter, .has, .split, .join, .forEach, .reduce, .find, .includes, .toString, .toFixed, etc.), inflating counts (e.g., CallGraphView reported as 67 calls when ~15 are user-defined). Add a built-in method filter set and exclude callees whose name matches AND whose call type is \"method\" (not direct calls, to avoid filtering user-defined functions named \"filter\"). Add unit tests covering: function with 35 user-defined calls IS flagged, function with 15 user-defined + 50 built-in methods is NOT flagged, direct call to a function named \"filter\" IS counted, threshold boundary behavior.",
-              "acceptanceCriteria": [
-                "God function detection excludes built-in method calls from unique callee count",
-                "CallGraphView drops from 67 to a more accurate count reflecting user-defined calls only",
-                "The filter only applies to method-type calls, not direct calls (a user-defined function named 'filter' called directly is still counted)",
-                "pnpm test passes for sourcevision package",
-                "Test file exists covering all 4 cases",
-                "All tests pass"
-              ],
-              "priority": "high",
-              "startedAt": "2026-02-11T18:01:49.571Z",
-              "completedAt": "2026-02-11T18:04:27.930Z",
-              "children": []
-            }
-          ]
-        },
-        {
-          "id": "513af02e-79a8-4e40-9699-615a86dbec8b",
-          "title": "Refine coupling and fan-in metrics",
-          "status": "completed",
-          "level": "feature",
-          "description": "Two related issues: (1) detectTightlyCoupledModules() flags routes-rex.ts ↔ types.ts at 129 calls, but this is a large route file (3069 lines) using its companion types module — unidirectional coupling to a helper is different from bidirectional tight coupling. (2) Fan-in detection flags tree.ts (31 callers) and walkTree (22 files) which are fundamental utilities where high fan-in is expected and correct.",
-          "acceptanceCriteria": [
-            "Unidirectional coupling to a types/helpers module is reported at lower severity than bidirectional coupling",
-            "Utility modules with high fan-in but clean interfaces are classified differently from problematic hotspots",
-            "tree.ts and walkTree are either not flagged or flagged as info-level observations rather than warnings"
-          ],
-          "priority": "medium",
-          "startedAt": "2026-02-11T18:15:03.043Z",
-          "completedAt": "2026-02-11T18:15:03.043Z",
-          "children": [
-            {
-              "id": "5dde9f98-83c9-4db7-a25a-cf998792ed71",
-              "title": "Refine tight coupling and fan-in detection heuristics",
-              "status": "completed",
-              "level": "task",
-              "description": "Two related improvements in callgraph-findings.ts: (1) Tight coupling (lines 141-191): A 3000-line route file making 129 unidirectional calls to its companion types module is expected, not problematic. Downgrade severity for unidirectional coupling (p.ba near zero) to info, especially when the target is a types/constants file. (2) Fan-in (lines 345-418): tree.ts (31 callers) and walkTree (22 files) are fundamental utilities where high fan-in is correct. Add a utility module heuristic: files in /core/, /utils/, /helpers/, or /lib/ directories get a higher warning threshold (e.g., 2x normal). Both changes should include tests.",
-              "acceptanceCriteria": [
-                "routes-rex.ts → types.ts coupling is either not flagged or flagged at info severity",
-                "Bidirectional tight coupling between two large implementation files is still flagged at warning/critical",
-                "pnpm test passes",
-                "tree.ts fan-in is either not reported as a warning or is reported as an info-level observation noting it as a utility module",
-                "walkTree hub finding is similarly downgraded",
-                "A non-utility file with the same fan-in count is still flagged at warning"
-              ],
-              "priority": "medium",
-              "startedAt": "2026-02-11T18:11:24.734Z",
-              "completedAt": "2026-02-11T18:15:02.967Z",
-              "children": []
-            }
-          ]
-        },
-        {
-          "id": "4f10789f-de33-4a39-a47f-6ce3496ed64c",
-          "title": "Improve LLM meta-evaluation signal quality",
-          "status": "completed",
-          "level": "feature",
-          "description": "The pass 5+ meta-evaluation in enrich-batch.ts:52-130 sends all findings to Claude for severity reassessment and meta-pattern detection. When it receives false-positive findings (inflated god function counts, phantom unused exports), it amplifies them into critical-severity recommendations like \"decompose CallGraphView\" and \"systematic dead export accumulation.\" The LLM output is only as good as its input.",
-          "acceptanceCriteria": [
-            "Meta-evaluation does not generate critical-severity refactoring suggestions based on false-positive upstream findings",
-            "Findings corrected in features 1-3 no longer produce amplified LLM recommendations"
-          ],
-          "priority": "medium",
-          "startedAt": "2026-02-11T18:19:32.175Z",
-          "completedAt": "2026-02-11T18:19:32.175Z",
-          "children": [
-            {
-              "id": "9937726f-a53d-47e8-aee1-6321f8e18827",
-              "title": "Filter false-positive findings before LLM meta-evaluation",
-              "status": "completed",
-              "level": "task",
-              "description": "In enrich-batch.ts:52-130, runMetaEvaluation() sends all findings to Claude for severity reassessment. Once features 1-3 fix the upstream false positives, the LLM input will improve automatically. However, as a defense-in-depth measure, add a confidence/reliability annotation to findings so the meta-evaluator can weight them appropriately. Specifically: (1) in buildMetaPrompt() (enrich-config.ts:109-161), annotate each finding with its source pass and detection method, (2) instruct the LLM to not escalate severity of findings from automated heuristics (pass 0) without corroborating evidence, (3) instruct the LLM to not generate specific file decomposition suggestions unless the underlying metric exceeds 2x the threshold.",
-              "acceptanceCriteria": [
-                "Meta-evaluation prompt includes source pass and detection method for each finding",
-                "LLM is instructed to not escalate heuristic findings without corroboration",
-                "After fixing features 1-3, re-running analysis produces no false critical-severity LLM recommendations"
-              ],
-              "priority": "medium",
-              "blockedBy": [
-                "64ecb019-ca2b-4ff8-b6b7-559d4c8fdb55",
-                "8c77e354-5210-461d-b84e-d2212f927e8d",
-                "513af02e-79a8-4e40-9699-615a86dbec8b"
-              ],
-              "startedAt": "2026-02-11T18:15:38.009Z",
-              "completedAt": "2026-02-11T18:19:32.092Z"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "babaf602-679b-4a79-8aaa-a0e91abd40eb",
-      "title": "Address observation issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Fan-in hotspot: packages/rex/src/core/tree.ts receives calls from 32 files (utility module — high fan-in expected) — high-impact module, changes may have wide ripple effects",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T23:24:42.323Z",
-      "completedAt": "2026-02-11T23:24:42.323Z"
-    },
-    {
-      "id": "484d9e56-851e-45d9-9fd0-ca2c0b5119bf",
-      "title": "Address anti-pattern issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Domain logic leakage across package boundaries - complex rex business logic (epic stats, merge operations, tree utilities) is duplicated/embedded in web package route handlers instead of being properly abstracted in rex domain layer\n- God function: CallGraphView in packages/web/src/viewer/views/call-graph.ts calls 63 unique functions — consider decomposing into smaller, focused functions\n- God function: cmdAnalyze in packages/rex/src/cli/commands/analyze.ts calls 52 unique functions — consider decomposing into smaller, focused functions",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T23:24:43.694Z",
-      "completedAt": "2026-02-11T23:24:43.694Z"
-    },
-    {
-      "id": "b5ef5e82-24b4-47ff-a0f0-19c63824adfc",
-      "title": "Address suggestion issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Hub function: info in packages/rex/src/cli/output.ts is called from 20 files — changes here have wide impact, consider if responsibilities can be narrowed",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-02-11T23:24:45.119Z",
-      "completedAt": "2026-02-11T23:24:45.119Z"
-    },
-    {
       "id": "4aa53ba2-b2da-4f6d-9f4a-6b2814f05362",
       "title": "Landing page for n-dx",
       "status": "completed",
@@ -8359,184 +8085,13 @@
       ]
     },
     {
-      "id": "b0f5ab57-2837-4c94-aa00-772a6573e4bf",
-      "title": "Enhanced CLI Help System",
-      "status": "pending",
-      "level": "epic",
-      "source": "smart-add",
-      "children": [
-        {
-          "id": "0f9babc3-25a5-47ef-be61-8326f3b5a44d",
-          "title": "Comprehensive command documentation system",
-          "status": "completed",
-          "level": "feature",
-          "description": "Create a complete help system with command-specific content, examples, and contextual guidance for all n-dx commands and subcommands",
-          "source": "smart-add",
-          "startedAt": "2026-02-17T20:56:22.290Z",
-          "completedAt": "2026-02-17T20:56:22.290Z",
-          "children": [
-            {
-              "id": "402ce915-dc9d-458a-9e58-107e1f334f8e",
-              "title": "Build dynamic help content generation with comprehensive coverage",
-              "status": "completed",
-              "level": "task",
-              "description": "Implement a system that generates contextual help content for all commands across rex, sourcevision, and hench packages with practical usage examples",
-              "acceptanceCriteria": [
-                "Each command shows relevant options and flags only",
-                "Help content includes command-specific examples",
-                "All rex, sourcevision, and hench subcommands have detailed help text",
-                "Help includes parameter descriptions and examples",
-                "Each command shows 2-3 practical usage examples",
-                "Examples demonstrate common parameter combinations"
-              ],
-              "priority": "high",
-              "tags": [
-                "cli",
-                "documentation",
-                "ux",
-                "completeness"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-17T20:46:41.636Z",
-              "completedAt": "2026-02-17T20:56:22.209Z"
-            }
-          ]
-        },
-        {
-          "id": "4ade01ce-d446-444b-8130-9bcca7e39ded",
-          "title": "Interactive help navigation and discovery",
-          "status": "pending",
-          "level": "feature",
-          "description": "Implement enhanced navigation, search, and suggestion capabilities to help users discover and understand available commands",
-          "source": "smart-add",
-          "children": [
-            {
-              "id": "1e0b3886-6d80-4987-8f81-b6c8e6b5ad08",
-              "title": "Create hierarchical navigation with intelligent suggestions",
-              "status": "in_progress",
-              "level": "task",
-              "description": "Build a help system that supports drill-down navigation, command suggestions for typos, and searchable help content across all commands",
-              "acceptanceCriteria": [
-                "Main help shows command categories and navigation hints",
-                "Users can access subcommand help from parent command help",
-                "Related commands are suggested in help output",
-                "Suggests similar commands for typos with edit distance matching",
-                "Users can search help content with keywords",
-                "Search results show matching commands with relevance scoring"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cli",
-                "navigation",
-                "discovery",
-                "search"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-17T21:55:01.655Z",
-              "children": [
-                {
-                  "id": "5df1865c-e076-475b-9c4c-b37000615d06",
-                  "title": "Add navigation hints and related commands to help output",
-                  "status": "pending",
-                  "level": "subtask",
-                  "description": "Enhance the main help in cli.js to include navigation hints (e.g., 'Run ndx <cmd> --help for details'). Add 'See also' related command suggestions to per-command help output in all three package help.ts files. Add subcommand help accessibility from parent command help (e.g., ndx rex --help shows rex commands with hint to drill down).",
-                  "acceptanceCriteria": [
-                    "Main help shows navigation hints like 'Run ndx <command> --help for details'",
-                    "Per-command help includes 'See also:' section with related commands",
-                    "Users can access subcommand help from parent command help (ndx rex --help → rex subcommands)"
-                  ],
-                  "priority": "medium",
-                  "tags": [
-                    "cli",
-                    "help",
-                    "navigation"
-                  ]
-                },
-                {
-                  "id": "ccff7d53-6a94-4821-b718-0446e4974293",
-                  "title": "Implement typo correction with edit distance matching",
-                  "status": "pending",
-                  "level": "subtask",
-                  "description": "Add Levenshtein edit distance matching to suggest similar commands when the user types an unrecognized command. Applies to both the orchestrator (cli.js) and per-package CLIs (rex, hench, sourcevision). Suggest commands within distance ≤ 2.",
-                  "acceptanceCriteria": [
-                    "Typing 'ndx statis' suggests 'ndx status'",
-                    "Typing 'rex valdate' suggests 'rex validate'",
-                    "Suggestions only shown when edit distance ≤ 2",
-                    "Works for all three package CLIs and orchestrator"
-                  ],
-                  "priority": "medium",
-                  "tags": [
-                    "cli",
-                    "typo-correction",
-                    "discovery"
-                  ]
-                },
-                {
-                  "id": "5717ebd1-09f2-4f8e-a8af-38d39fb484e6",
-                  "title": "Implement keyword search across all help content",
-                  "level": "subtask",
-                  "status": "pending",
-                  "description": "Add 'ndx help <keyword>' command to search across all help content (orchestrator + packages). Score results by relevance (title match > description match > option match). Display matched commands with context snippets showing why they matched.",
-                  "priority": "medium",
-                  "acceptanceCriteria": [
-                    "ndx help PRD returns commands related to PRD management",
-                    "ndx help sync returns the sync command with relevant context",
-                    "Results are scored and sorted by relevance",
-                    "Search covers orchestrator commands and all package commands"
-                  ],
-                  "tags": [
-                    "cli",
-                    "search",
-                    "discovery"
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "2bd470a3-9d62-4fbb-ab04-cd5e1f004763",
-          "title": "Enhanced help presentation and formatting",
-          "status": "pending",
-          "level": "feature",
-          "description": "Improve the visual presentation, formatting, and consistency of help content across all commands using standardized templates",
-          "source": "smart-add",
-          "children": [
-            {
-              "id": "d2433beb-9d4b-4eff-b188-6a6e314bc05f",
-              "title": "Implement consistent formatting with visual enhancements",
-              "status": "pending",
-              "level": "task",
-              "description": "Create standardized help templates with improved formatting, semantic color coding, and consistent presentation across all packages",
-              "acceptanceCriteria": [
-                "Help output uses consistent section headers and spacing",
-                "Command names and flags are visually highlighted",
-                "All commands follow consistent help format template",
-                "Templates include sections for description, usage, options, examples",
-                "Commands are highlighted in one color consistently",
-                "Required vs optional parameters are visually distinct",
-                "Colors respect terminal theme and accessibility"
-              ],
-              "priority": "medium",
-              "tags": [
-                "cli",
-                "formatting",
-                "templates",
-                "consistency",
-                "accessibility"
-              ],
-              "source": "smart-add"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "22ba5028-7c95-4ecb-b74b-b5d4816bc0ae",
       "title": "Project-aware Navigation and Context",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-17T23:53:56.209Z",
+      "completedAt": "2026-02-17T23:53:56.209Z",
       "children": [
         {
           "id": "2d6563f9-35c1-4839-807f-c853e66e29f4",
@@ -8643,15 +8198,17 @@
         {
           "id": "986cc829-245a-4756-a64b-84bb9cf11961",
           "title": "Project Configuration and Switching",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Display project-specific configuration and provide interface for switching between projects",
           "source": "smart-add",
+          "startedAt": "2026-02-17T23:53:56.173Z",
+          "completedAt": "2026-02-17T23:53:56.173Z",
           "children": [
             {
               "id": "350090b9-2b13-478a-a9ad-e96dc03d07c0",
               "title": "Implement configuration display and project switching interface",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Show active n-dx configuration in navigation footer and provide UI for switching between different project directories",
               "acceptanceCriteria": [
@@ -8672,6 +8229,889 @@
                 "navigation",
                 "projects",
                 "switching"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-17T23:45:32.937Z",
+              "completedAt": "2026-02-17T23:53:56.094Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "8ea82222-995e-4a6e-9efe-128437570bc3",
+      "title": "Web Server Port Management",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-18T02:16:16.823Z",
+      "completedAt": "2026-02-18T02:16:16.823Z",
+      "children": [
+        {
+          "id": "775f745b-ea30-4160-bbc4-82a660664cae",
+          "title": "Dynamic port allocation",
+          "status": "completed",
+          "level": "feature",
+          "description": "Automatically find and use an available port when the default port 3117 is already in use",
+          "source": "smart-add",
+          "startedAt": "2026-02-18T02:16:16.768Z",
+          "completedAt": "2026-02-18T02:16:16.768Z",
+          "children": [
+            {
+              "id": "70ba2552-c667-4ae9-9656-f16bfe2b8935",
+              "title": "Implement dynamic port allocation with fallback logic",
+              "status": "completed",
+              "level": "task",
+              "description": "Add port availability detection and modify web server initialization to use fallback ports when the configured port is unavailable",
+              "acceptanceCriteria": [
+                "Detects when port 3117 is already in use",
+                "Finds the next available port in range 3117-3200",
+                "Returns port availability status and suggested port",
+                "Handles network permission errors gracefully",
+                "Tries configured port first (3117 by default)",
+                "Falls back to next available port if configured port is taken",
+                "Logs clear message about port change to user",
+                "Updates internal server state with actual port used",
+                "Continues startup without failing"
+              ],
+              "priority": "high",
+              "tags": [
+                "web",
+                "networking",
+                "server"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-18T01:59:00.077Z",
+              "completedAt": "2026-02-18T02:09:23.015Z"
+            },
+            {
+              "id": "bc25f789-9435-4263-a9a1-3269c324c444",
+              "title": "Update MCP endpoints and orchestration with dynamic port support",
+              "status": "completed",
+              "level": "task",
+              "description": "Ensure MCP HTTP endpoints and ndx start command reflect the actual port used by the server and handle port conflicts gracefully",
+              "acceptanceCriteria": [
+                "MCP endpoints use actual server port in URLs",
+                "Documentation commands show correct port in output",
+                "Claude Code configuration instructions reflect actual port",
+                "Port changes are communicated clearly to user",
+                "ndx start command doesn't fail when port 3117 is taken",
+                "Displays clear message showing actual port used",
+                "Updates any generated configuration with correct port",
+                "Provides updated Claude Code MCP setup instructions"
+              ],
+              "priority": "high",
+              "tags": [
+                "web",
+                "mcp",
+                "cli",
+                "orchestration"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-18T02:10:06.117Z",
+              "completedAt": "2026-02-18T02:16:16.691Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "55951f82-e673-4fdf-b891-1cd2558bc4bd",
+      "title": "Address observation issues (2 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Bidirectional coupling: \"autonomous-agent\" ↔ \"execution-gateway\" (14+1 crossings) — consider extracting shared interface\n- Bidirectional coupling: \"dashboard-components\" ↔ \"prd-management-ui\" (4+6 crossings) — consider extracting shared interface",
+      "priority": "high",
+      "source": "sourcevision"
+    },
+    {
+      "id": "70d9bc2e-a736-4170-a3cc-2039da7f53fb",
+      "title": "Address anti-pattern issues (2 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Inconsistent gateway naming pattern: autonomous-agent uses 'prd/ops.ts' while presentation-gateway uses 'mcp-deps.ts', reducing architectural clarity\n- God function: handleRexRoute in packages/web/src/server/routes-rex.ts calls 48 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "high",
+      "source": "sourcevision"
+    },
+    {
+      "id": "fc2ee90a-c6ac-4267-bcab-00e2778e7066",
+      "title": "Address suggestion issues (4 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Lifecycle entry points (cli-loop.ts vs loop.ts) should share common validation logic to prevent behavior divergence between CLI and programmatic execution\n- Process execution in exec.ts lacks timeout and resource controls, creating risk for runaway autonomous operations\n- Autonomous operation safety controls are fragmented across zones - consider unified resource limits and safety policy enforcement across orchestration process spawning, execution-gateway process execution, and tool-infrastructure command dispatch\n- Guard system lacks runtime policy enforcement - commands.ts and paths.ts define boundaries but don't actively monitor violations",
+      "priority": "high",
+      "source": "sourcevision"
+    },
+    {
+      "id": "573c20ed-3795-4801-af87-4d036116d3e1",
+      "title": "Hench Run Count Display Accuracy",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "351e9c1a-b1af-4d3e-98a6-e559afa1153f",
+          "title": "Fix Run Count in Sidebar",
+          "status": "pending",
+          "level": "feature",
+          "description": "Correct the run count display in the Hench sidebar area to show accurate execution statistics",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "3100ff2b-f769-4a9b-9e80-34f82c6f8b0e",
+              "title": "Fix run count calculation and display system",
+              "status": "pending",
+              "level": "task",
+              "description": "Audit, correct, and update the complete run count system including data fetching, aggregation logic, and UI display to ensure accurate real-time run counts in the Hench sidebar",
+              "acceptanceCriteria": [
+                "All run count calculation points are identified and documented",
+                "Discrepancies between actual runs and displayed count are catalogued",
+                "Root cause of incorrect count is determined",
+                "Run count matches actual number of runs in .hench/runs/ directory",
+                "API endpoints return correct run count data",
+                "Count updates properly when new runs are executed",
+                "Sidebar shows accurate run count on page load",
+                "Count updates in real-time when new runs are executed",
+                "Count decreases properly if runs are deleted or archived"
+              ],
+              "priority": "high",
+              "tags": [
+                "ui",
+                "hench",
+                "debugging",
+                "api",
+                "data",
+                "real-time"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "79851c84-e061-42b7-866a-c4d3697c686e",
+      "title": "Hench UI Real-time Task Monitoring",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "0017b9f6-0247-4b31-9eb6-7bc38fbc5183",
+          "title": "Active Task Display",
+          "status": "pending",
+          "level": "feature",
+          "description": "Create a prominent display for currently running tasks in the Hench UI",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "e5fecbf6-877c-42a6-9060-29691b495b38",
+              "title": "Implement active task status panel in Hench UI",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a dedicated panel to the Hench dashboard that shows all currently executing tasks with their status, progress, and execution time",
+              "acceptanceCriteria": [
+                "Panel displays all in_progress tasks prominently at the top of the Hench UI",
+                "Shows task title, start time, and current execution duration",
+                "Updates in real-time as task status changes",
+                "Visually distinct from completed/pending tasks"
+              ],
+              "priority": "high",
+              "tags": [
+                "ui",
+                "monitoring",
+                "real-time"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "b6baaa8a-26a0-4050-9b54-2f25fd4cc066",
+              "title": "Add task execution health monitoring",
+              "status": "pending",
+              "level": "task",
+              "description": "Implement system to verify that running tasks are actually still executing and not stuck or crashed",
+              "acceptanceCriteria": [
+                "Detects when a task marked as in_progress has stopped executing",
+                "Shows warning indicators for potentially stuck tasks",
+                "Provides last-activity timestamp for running tasks",
+                "Allows manual intervention to mark stuck tasks as failing"
+              ],
+              "priority": "high",
+              "tags": [
+                "monitoring",
+                "health-check",
+                "reliability"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "b265212f-991c-46c5-aa83-9bb70fa1c5a8",
+          "title": "Task Audit and Control Interface",
+          "status": "pending",
+          "level": "feature",
+          "description": "Provide tools to audit and control running task execution",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "15d6d8ff-0356-4d6d-8720-fcfad953186e",
+              "title": "Add task execution audit interface",
+              "status": "pending",
+              "level": "task",
+              "description": "Create an audit view that shows detailed execution information and allows verification that tasks are actually running",
+              "acceptanceCriteria": [
+                "Shows process IDs or execution identifiers for running tasks",
+                "Displays system resource usage for active tasks",
+                "Provides execution logs and output streaming",
+                "Includes task termination controls for administrative use"
+              ],
+              "priority": "medium",
+              "tags": [
+                "audit",
+                "control",
+                "debugging"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "20bdeb0a-32fa-47db-8ea5-cd3bdb747a99",
+              "title": "Implement task heartbeat monitoring system",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a heartbeat mechanism to ensure running tasks are actively progressing and not silently failed",
+              "acceptanceCriteria": [
+                "Tasks send periodic heartbeat signals during execution",
+                "UI shows last heartbeat timestamp for each running task",
+                "Automatically flags tasks that miss heartbeat intervals",
+                "Provides alerts when tasks become unresponsive"
+              ],
+              "priority": "medium",
+              "tags": [
+                "heartbeat",
+                "monitoring",
+                "reliability"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "52349534-7b69-4802-8627-c6fb00cc3f00",
+      "title": "Deep-linking Navigation System",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "e52db876-a088-4c5b-ba98-5725da79f0dc",
+          "title": "Rex Task Deep-linking",
+          "status": "pending",
+          "level": "feature",
+          "description": "Enable direct navigation to specific PRD items with automatic page routing, item selection, and visibility",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "735ab51a-d31a-4256-b9b7-054e44068a22",
+              "title": "Implement complete Rex task deep-linking",
+              "status": "pending",
+              "level": "task",
+              "description": "Add URL-based routing to navigate directly to specific rex tasks with automatic selection, highlighting, and scroll-to-view functionality",
+              "acceptanceCriteria": [
+                "URLs with task IDs automatically navigate to the correct Rex page",
+                "Task hierarchy is expanded to show the target item",
+                "Target task is visually highlighted when page loads via deep-link",
+                "Page scrolls to make the target item visible",
+                "Selection state persists during page interactions",
+                "Invalid task IDs show appropriate error handling"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "navigation",
+                "web-ui",
+                "ui",
+                "selection"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "a62d284c-e430-4c74-aadf-1972f2d913c0",
+          "title": "Hench Run Deep-linking",
+          "status": "pending",
+          "level": "feature",
+          "description": "Enable direct navigation to specific hench execution runs with automatic page routing, run selection, and transcript visibility",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "bafb2115-1e54-4462-bd8b-3ec8458c288a",
+              "title": "Implement complete Hench run deep-linking",
+              "status": "pending",
+              "level": "task",
+              "description": "Add URL-based routing to navigate directly to specific hench runs with automatic selection, transcript opening, and visibility management",
+              "acceptanceCriteria": [
+                "URLs with run IDs automatically navigate to the Hench runs page",
+                "Target run is expanded and visible when page loads",
+                "Target run is visually highlighted and selected when page loads",
+                "Run details or transcript panel opens automatically",
+                "Page scrolls to make the target run visible in the list",
+                "Invalid run IDs show appropriate error handling"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "navigation",
+                "web-ui",
+                "ui",
+                "selection"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "e03dbe28-2101-4e1c-8c54-0815f652b384",
+          "title": "Universal Deep-link URL Generation",
+          "status": "pending",
+          "level": "feature",
+          "description": "Provide consistent URL generation for shareable deep-links across all Rex and Hench items",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "3b3c805f-ad42-4f4d-bb25-5b59518db180",
+              "title": "Add shareable link generation across all items",
+              "status": "pending",
+              "level": "task",
+              "description": "Add UI controls to generate and copy shareable deep-links for any rex task, feature, epic, or hench run from the web interface",
+              "acceptanceCriteria": [
+                "Copy link button available on all rex items",
+                "Copy link button available on all hench runs",
+                "Generated URLs include proper base path and item/run ID",
+                "Links work when shared across different browser sessions"
+              ],
+              "priority": "medium",
+              "tags": [
+                "rex",
+                "hench",
+                "sharing",
+                "ui"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5fd0de0b-02c3-4895-88be-a0b13f404b8e",
+      "title": "External Integration Configuration UI",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "d7e6c7a6-81c9-4a8f-bd8d-43cdcc7625b0",
+          "title": "Notion Integration Configuration Interface",
+          "status": "pending",
+          "level": "feature",
+          "description": "Provide a comprehensive user interface for configuring and managing Notion integration settings with secure credential handling and connection validation",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "6c8414dd-7004-4ea4-87ce-458d019f590c",
+              "title": "Build Notion configuration dashboard with secure credential management",
+              "status": "in_progress",
+              "level": "task",
+              "description": "Create a complete configuration interface that handles Notion API credentials securely while providing real-time connection testing and status monitoring",
+              "acceptanceCriteria": [
+                "Form includes input fields for Notion API key and database ID",
+                "Form validates API key format and database ID structure",
+                "API keys are encrypted when stored locally",
+                "Credentials are excluded from git commits via .gitignore",
+                "API keys are masked in UI display after initial entry",
+                "Test connection button validates API key and database access",
+                "Status indicator shows green/yellow/red connection health",
+                "Configuration is saved to project-level config file"
+              ],
+              "priority": "critical",
+              "tags": [
+                "ui",
+                "config",
+                "notion",
+                "security"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-18T05:58:11.043Z"
+            },
+            {
+              "id": "c698534a-7b57-4db9-bcff-b0943ff4597a",
+              "title": "Implement Notion database schema validation wizard",
+              "status": "pending",
+              "level": "task",
+              "description": "Create an interactive setup wizard that validates the target Notion database schema and guides users through proper database configuration with automated property creation",
+              "acceptanceCriteria": [
+                "Wizard tests connection to specified Notion database",
+                "Validates that database has required properties for PRD mapping",
+                "Provides clear error messages for schema mismatches",
+                "Offers to create missing properties automatically where possible",
+                "Error messages provide specific guidance for connection failures",
+                "Connection status persists across page refreshes"
+              ],
+              "priority": "high",
+              "tags": [
+                "ui",
+                "validation",
+                "notion"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "d564a902-d543-4908-9923-91a4c6bb48d9",
+          "title": "Generic External Integration Framework",
+          "status": "pending",
+          "level": "feature",
+          "description": "Create a flexible configuration framework that can support multiple external integrations beyond just Notion with dynamic UI generation",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "de6efc49-5319-47a7-ac6a-2b90ec508f14",
+              "title": "Build extensible integration framework with dynamic configuration UI",
+              "status": "pending",
+              "level": "task",
+              "description": "Design and implement a flexible schema-based system that supports multiple integration types with automatically generated configuration interfaces",
+              "acceptanceCriteria": [
+                "Schema supports multiple integration types (Notion, Jira, etc.)",
+                "Allows for service-specific configuration fields",
+                "Maintains backward compatibility with existing Notion config",
+                "Supports validation rules per integration type",
+                "Generates form fields based on integration schema definitions",
+                "Supports various input types (text, password, select, checkbox)",
+                "Applies validation rules defined in schemas",
+                "Renders help text and documentation links per field"
+              ],
+              "priority": "medium",
+              "tags": [
+                "architecture",
+                "config",
+                "extensibility",
+                "ui",
+                "dynamic"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "f25b0fca-7a12-484f-b802-95d404c04dd7",
+      "title": "Project Branding and Navigation Refinement",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "dee97c9f-f407-4ade-a57a-d02ff11fe5cf",
+          "title": "Project-centric Page Title and Branding",
+          "status": "pending",
+          "level": "feature",
+          "description": "Emphasize current project name in page titles and sidebar headers rather than generic n-dx branding",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "1c43033c-2957-408c-b5b8-ed1ba6281a6d",
+              "title": "Update page title to prioritize project name over n-dx",
+              "status": "pending",
+              "level": "task",
+              "description": "Modify the page title structure to show project name first, with n-dx as secondary context (e.g., 'MyProject | n-dx' instead of 'n-dx | MyProject')",
+              "acceptanceCriteria": [
+                "Page title shows project name as primary identifier",
+                "n-dx branding appears as secondary context",
+                "Title updates dynamically when switching projects"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "branding",
+                "navigation"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "482da2f8-01ed-4e67-9ddd-d0a3d60f6600",
+              "title": "Update sidebar header to emphasize current project",
+              "status": "pending",
+              "level": "task",
+              "description": "Modify sidebar header layout to make the current project name more prominent than the n-dx logo or branding",
+              "acceptanceCriteria": [
+                "Project name is visually emphasized in sidebar header",
+                "n-dx branding is de-emphasized or repositioned",
+                "Current project context is immediately clear to users"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "sidebar",
+                "branding"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "8b0c77b5-7bbc-41ef-9706-15149547f5b3",
+          "title": "Workspace Switcher Removal",
+          "status": "pending",
+          "level": "feature",
+          "description": "Remove the non-functional workspace switcher from the sidebar footer",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "8e918f40-c715-476b-b4b4-c515441f2baf",
+              "title": "Remove workspace switcher from sidebar footer",
+              "status": "pending",
+              "level": "task",
+              "description": "Disable or remove the workspace switcher component at the bottom of the sidebar since it's not functional and premature for current needs",
+              "acceptanceCriteria": [
+                "Workspace switcher component is no longer visible in sidebar",
+                "Sidebar footer layout adjusts appropriately without the switcher",
+                "No broken functionality or UI artifacts remain"
+              ],
+              "priority": "high",
+              "tags": [
+                "web",
+                "sidebar",
+                "cleanup"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2171d478-2d5b-4926-8e85-837f52c99abd",
+      "title": "Rex UI Task Management Enhancement",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "c20018db-c827-4db5-9111-5f191f2d73a1",
+          "title": "Inline Task Creation Interface",
+          "status": "pending",
+          "level": "feature",
+          "description": "Allow users to create new tasks directly within the PRD tree structure without navigating to a separate form",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "667df0df-8909-46d6-b71c-9e29ba06e4d1",
+              "title": "Build comprehensive inline task creation system",
+              "status": "pending",
+              "level": "task",
+              "description": "Implement inline add buttons and lightweight creation forms that can be embedded within tree nodes for quick task creation at the appropriate hierarchy level",
+              "acceptanceCriteria": [
+                "Add buttons appear on hover or selection of tree nodes",
+                "Clicking add button opens inline form at correct hierarchy level",
+                "Form appears directly below the selected parent node in the tree",
+                "Form includes title, description, and basic metadata fields",
+                "Form validates input before submission",
+                "Form submits create action to Rex API",
+                "Successfully created tasks appear immediately in tree without page refresh",
+                "Form cancellation properly removes the inline form element"
+              ],
+              "priority": "high",
+              "tags": [
+                "ui",
+                "tree",
+                "inline-editing",
+                "forms",
+                "components"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "5b719370-1b6a-4cce-99bb-97ef79d064f1",
+          "title": "Detail Panel Task Creation",
+          "status": "pending",
+          "level": "feature",
+          "description": "Enable task creation within the selected task detail panel for contextual item addition",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "8686d282-8ad0-4b0d-a6ac-e8ea7e23e658",
+              "title": "Integrate task creation interface into detail panel",
+              "status": "pending",
+              "level": "task",
+              "description": "Add task creation functionality directly within the detail panel when a parent item is selected for contextual item addition",
+              "acceptanceCriteria": [
+                "Detail panel shows add child task button when applicable",
+                "Add button opens creation form within the detail panel",
+                "Form respects the selected item as parent context",
+                "Created tasks update both tree and detail panel views"
+              ],
+              "priority": "medium",
+              "tags": [
+                "ui",
+                "detail-panel",
+                "contextual"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "2cbf5a18-31e9-431a-b8e2-fffc83aaef38",
+          "title": "Task Creation Form Improvements",
+          "status": "pending",
+          "level": "feature",
+          "description": "Fix existing form UI bugs and enhance visual design for better user experience",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "d88b00e1-89b5-45b0-877a-7dc688ae12bb",
+              "title": "Redesign and fix task creation form experience",
+              "status": "pending",
+              "level": "task",
+              "description": "Resolve focus management issues and update form styling to be more visually appealing and consistent with the overall Rex UI design system",
+              "acceptanceCriteria": [
+                "Typing in description field maintains focus on description input",
+                "Tab navigation moves through form fields in logical order",
+                "Form submission does not cause unexpected focus changes",
+                "Field validation errors display without disrupting focus",
+                "Form uses consistent spacing and typography with rest of application",
+                "Field labels are clearly associated with their inputs",
+                "Form provides clear visual feedback for validation states",
+                "Submit and cancel actions are prominently displayed and accessible"
+              ],
+              "priority": "critical",
+              "tags": [
+                "bugfix",
+                "forms",
+                "focus-management",
+                "ui",
+                "design-system"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b39d3ad8-6c3c-4e9b-9788-d18168348f90",
+      "title": "SourceVision UI Import Graph Enhancement",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "61e1e1c2-e741-4719-a887-5b390ac8af36",
+          "title": "Import graph visibility controls",
+          "status": "pending",
+          "level": "feature",
+          "description": "Allow users to toggle the import graph visualization on/off due to current usability limitations",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "75d504cd-d043-43c6-81bf-5290a0254921",
+              "title": "Add import graph toggle to SourceVision UI",
+              "status": "deferred",
+              "level": "task",
+              "description": "Implement a toggle control that allows users to hide/show the import graph visualization when it becomes overwhelming or unusable for large projects",
+              "acceptanceCriteria": [
+                "Toggle control is visible in SourceVision section of web UI",
+                "Import graph is hidden by default when toggle is off",
+                "Toggle state persists across browser sessions",
+                "Toggle affects only import graph, not other SourceVision features"
+              ],
+              "priority": "low",
+              "tags": [
+                "ui",
+                "sourcevision",
+                "import-graph"
+              ],
+              "source": "smart-add",
+              "requirements": []
+            }
+          ]
+        },
+        {
+          "id": "88d0c551-0e1e-4204-a351-fd4331eccbcc",
+          "title": "Global feature toggle configuration system",
+          "status": "pending",
+          "level": "feature",
+          "description": "Create a centralized configuration panel for managing experimental or problematic features across the n-dx toolkit",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "b3a50216-5a96-47ff-99b1-b6b5bb60a56e",
+              "title": "Create feature toggle configuration section in n-dx config",
+              "status": "pending",
+              "level": "task",
+              "description": "Build a dedicated configuration area within the unified config system that allows users to enable/disable experimental or problematic features across all n-dx packages\n\n---\n\nCreate a user-friendly web interface for managing feature toggles, providing easy access to experimental or problematic feature controls",
+              "acceptanceCriteria": [
+                "Feature toggle section exists in unified config interface",
+                "Toggles are organized by package (sourcevision, rex, hench)",
+                "Configuration changes apply immediately without restart",
+                "Feature flags are documented with descriptions and impact warnings",
+                "Control panel is accessible from main navigation or settings",
+                "Each toggle has clear description and current status",
+                "Changes are saved automatically and reflected immediately",
+                "Panel shows which features are experimental vs stable"
+              ],
+              "priority": "low",
+              "tags": [
+                "config",
+                "feature-flags",
+                "ui",
+                "web"
+              ],
+              "source": "smart-add",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "0bff2aa4-4aa3-4eb0-bee3-d3a5c1daf5bd",
+      "title": "SourceVision Files UI Enhancement",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "90be331b-39aa-4b13-8a38-23e72242e221",
+          "title": "Selective file filtering",
+          "status": "pending",
+          "level": "feature",
+          "description": "Filter out internal tool directories from the default Files page view while providing an option to show all files",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "95cb4832-189c-4d06-8023-80964879c6f4",
+              "title": "Implement file filtering logic for internal directories",
+              "status": "pending",
+              "level": "task",
+              "description": "Add filtering logic to hide .hench, .rex, and .sourcevision directories from the Files page by default, while preserving the full file inventory data",
+              "acceptanceCriteria": [
+                "Files page hides .hench, .rex, and .sourcevision directories by default",
+                "Filtered directories are completely excluded from the file list display",
+                "File count reflects only visible files when filtering is active",
+                "Filter state persists within the user session"
+              ],
+              "priority": "medium",
+              "tags": [
+                "ui",
+                "sourcevision",
+                "files"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "92ebb1f8-7cce-459b-a010-ecb2a211e4f1",
+              "title": "Add toggle control for showing all files",
+              "status": "pending",
+              "level": "task",
+              "description": "Implement a toggle button or checkbox that allows users to show all files including internal tool directories when needed",
+              "acceptanceCriteria": [
+                "Toggle control is clearly labeled (e.g., 'Show All Files')",
+                "Toggle immediately updates the file list without page refresh",
+                "Toggle state is visually indicated (checked/unchecked or active/inactive)",
+                "Toggle is positioned prominently but not intrusively in the Files page header"
+              ],
+              "priority": "medium",
+              "tags": [
+                "ui",
+                "sourcevision",
+                "controls"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "979ba1e0-1546-491f-832a-fa65dc5416bf",
+      "title": "Rex CLI Natural Language Interaction Enhancement",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "a5b424c6-5598-45cc-aa64-1bf986d041ed",
+          "title": "Natural language proposal modification",
+          "status": "pending",
+          "level": "feature",
+          "description": "Allow users to provide natural language feedback to modify LLM-generated proposals instead of only accepting/rejecting them",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "70704abd-fe18-4123-ba17-0c1eeacf4c11",
+              "title": "Extend rex add command to accept natural language modification requests",
+              "status": "pending",
+              "level": "task",
+              "description": "Modify the rex add command's interactive proposal review flow to detect and handle natural language input that requests changes to the generated proposal, rather than just accepting standard control commands (y/n/b1/c1/etc.)",
+              "acceptanceCriteria": [
+                "Command recognizes natural language input during proposal review",
+                "Distinguishes between modification requests and standard control commands",
+                "Maintains backward compatibility with existing y/n/b1/c1 commands"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "ux",
+                "natural-language"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "6379a1ad-f280-41ea-af86-e0fcb2a9332d",
+              "title": "Implement proposal modification pipeline with LLM integration",
+              "status": "pending",
+              "level": "task",
+              "description": "Build the backend pipeline that takes user's natural language modification request, combines it with the original proposal context, and generates a revised proposal using the LLM",
+              "acceptanceCriteria": [
+                "Sends user modification request and original proposal to LLM",
+                "Receives and validates revised proposal structure",
+                "Preserves proposal metadata and hierarchy during modification",
+                "Handles LLM errors gracefully with fallback options"
+              ],
+              "priority": "high",
+              "tags": [
+                "backend",
+                "llm",
+                "proposal-generation"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "4e7e3ba2-0a50-4988-b6b4-8979370dae07",
+              "title": "Add modification request validation and feedback loop",
+              "status": "pending",
+              "level": "task",
+              "description": "Implement validation logic to ensure modification requests are actionable and provide user feedback when requests are ambiguous or cannot be processed",
+              "acceptanceCriteria": [
+                "Validates that modification requests are specific enough to act upon",
+                "Provides helpful error messages for ambiguous requests",
+                "Allows users to refine their modification requests",
+                "Supports iterative refinement until user is satisfied"
+              ],
+              "priority": "medium",
+              "tags": [
+                "validation",
+                "ux",
+                "error-handling"
               ],
               "source": "smart-add"
             }

@@ -103,6 +103,28 @@
       ]
     },
     {
+      "file": "packages/web/src/server/routes-config.ts",
+      "prefix": "/api/ndx-config",
+      "handler": "handleConfigRoute",
+      "routes": [
+        {
+          "file": "packages/web/src/server/routes-config.ts",
+          "method": "GET",
+          "path": "/api/ndx-config"
+        },
+        {
+          "file": "packages/web/src/server/routes-config.ts",
+          "method": "GET",
+          "path": "/api/projects"
+        },
+        {
+          "file": "packages/web/src/server/routes-config.ts",
+          "method": "POST",
+          "path": "/api/projects/switch"
+        }
+      ]
+    },
+    {
       "file": "packages/web/src/server/routes-hench.ts",
       "prefix": "/api/hench/",
       "handler": "handleHenchRoute",
@@ -140,6 +162,11 @@
         {
           "file": "packages/web/src/server/routes-hench.ts",
           "method": "POST",
+          "path": "/api/hench/execute"
+        },
+        {
+          "file": "packages/web/src/server/routes-hench.ts",
+          "method": "POST",
           "path": "/api/hench/templates"
         },
         {
@@ -151,6 +178,18 @@
           "file": "packages/web/src/server/routes-hench.ts",
           "method": "PUT",
           "path": "/api/hench/config"
+        }
+      ]
+    },
+    {
+      "file": "packages/web/src/server/routes-project.ts",
+      "prefix": "/api/project",
+      "handler": "handleProjectRoute",
+      "routes": [
+        {
+          "file": "packages/web/src/server/routes-project.ts",
+          "method": "GET",
+          "path": "/api/project"
         }
       ]
     },
@@ -344,6 +383,18 @@
       ]
     },
     {
+      "file": "packages/web/src/server/routes-status.ts",
+      "prefix": "/api/status",
+      "handler": "handleStatusRoute",
+      "routes": [
+        {
+          "file": "packages/web/src/server/routes-status.ts",
+          "method": "GET",
+          "path": "/api/status"
+        }
+      ]
+    },
+    {
       "file": "packages/web/src/server/routes-token-usage.ts",
       "prefix": "/api/token/",
       "handler": "handleTokenUsageRoute",
@@ -424,7 +475,7 @@
     "totalComponents": 5,
     "totalRouteModules": 0,
     "totalUsageEdges": 0,
-    "totalServerRoutes": 65,
+    "totalServerRoutes": 71,
     "routeConventions": {},
     "mostUsedComponents": [],
     "layoutDepth": 0

@@ -18,6 +18,20 @@
     },
     {
       "from": "cli.js",
+      "to": "help.js",
+      "type": "static",
+      "symbols": [
+        "formatTypoSuggestion",
+        "getOrchestratorCommands",
+        "searchHelp",
+        "formatSearchResults",
+        "formatToolHelp",
+        "formatMainHelp",
+        "formatOrchestratorCommandHelp"
+      ]
+    },
+    {
+      "from": "cli.js",
       "to": "web.js",
       "type": "static",
       "symbols": [
@@ -306,6 +320,38 @@
     },
     {
       "from": "packages/claude-client/src/public.ts",
+      "to": "packages/claude-client/src/help-format.ts",
+      "type": "reexport",
+      "symbols": [
+        "isColorEnabled",
+        "resetColorCache",
+        "bold",
+        "dim",
+        "cyan",
+        "yellow",
+        "cmd",
+        "flag",
+        "sectionHeader",
+        "requiredParam",
+        "optionalParam",
+        "formatHelp",
+        "formatUsage"
+      ]
+    },
+    {
+      "from": "packages/claude-client/src/public.ts",
+      "to": "packages/claude-client/src/help-format.ts",
+      "type": "type",
+      "symbols": [
+        "HelpOption",
+        "HelpExample",
+        "HelpDefinition",
+        "UsageSection",
+        "UsageDefinition"
+      ]
+    },
+    {
+      "from": "packages/claude-client/src/public.ts",
       "to": "packages/claude-client/src/json.ts",
       "type": "reexport",
       "symbols": [
@@ -347,6 +393,16 @@
       "type": "type",
       "symbols": [
         "ProjectDir"
+      ]
+    },
+    {
+      "from": "packages/claude-client/src/public.ts",
+      "to": "packages/claude-client/src/suggest.ts",
+      "type": "reexport",
+      "symbols": [
+        "editDistance",
+        "suggestCommands",
+        "formatTypoSuggestion"
       ]
     },
     {
@@ -491,6 +547,35 @@
       ]
     },
     {
+      "from": "packages/claude-client/tests/unit/help-format.test.ts",
+      "to": "packages/claude-client/src/help-format.ts",
+      "type": "static",
+      "symbols": [
+        "isColorEnabled",
+        "resetColorCache",
+        "bold",
+        "dim",
+        "cyan",
+        "yellow",
+        "cmd",
+        "flag",
+        "sectionHeader",
+        "requiredParam",
+        "optionalParam",
+        "formatHelp",
+        "formatUsage"
+      ]
+    },
+    {
+      "from": "packages/claude-client/tests/unit/help-format.test.ts",
+      "to": "packages/claude-client/src/help-format.ts",
+      "type": "type",
+      "symbols": [
+        "HelpDefinition",
+        "UsageDefinition"
+      ]
+    },
+    {
       "from": "packages/claude-client/tests/unit/json.test.ts",
       "to": "packages/claude-client/src/json.ts",
       "type": "static",
@@ -517,6 +602,16 @@
         "deepMerge",
         "loadProjectOverrides",
         "mergeWithOverrides"
+      ]
+    },
+    {
+      "from": "packages/claude-client/tests/unit/suggest.test.ts",
+      "to": "packages/claude-client/src/suggest.ts",
+      "type": "static",
+      "symbols": [
+        "editDistance",
+        "suggestCommands",
+        "formatTypoSuggestion"
       ]
     },
     {
@@ -1531,6 +1626,14 @@
     },
     {
       "from": "packages/hench/src/cli/index.ts",
+      "to": "packages/hench/src/cli/help.ts",
+      "type": "static",
+      "symbols": [
+        "showCommandHelp"
+      ]
+    },
+    {
+      "from": "packages/hench/src/cli/index.ts",
       "to": "packages/hench/src/cli/output.ts",
       "type": "static",
       "symbols": [
@@ -2100,7 +2203,10 @@
         "computeTimestampUpdates",
         "findAutoCompletions",
         "validateAutomatedRequirements",
-        "formatRequirementsValidation"
+        "formatRequirementsValidation",
+        "loadAcknowledged",
+        "saveAcknowledged",
+        "acknowledgeFinding"
       ]
     },
     {
@@ -2828,6 +2934,14 @@
       ]
     },
     {
+      "from": "packages/hench/tests/unit/cli/help.test.ts",
+      "to": "packages/hench/src/cli/help.ts",
+      "type": "static",
+      "symbols": [
+        "showCommandHelp"
+      ]
+    },
+    {
       "from": "packages/hench/tests/unit/cli/output.test.ts",
       "to": "packages/hench/src/cli/output.ts",
       "type": "static",
@@ -3489,6 +3603,24 @@
     },
     {
       "from": "packages/rex/src/analyze/scanners.ts",
+      "to": "packages/rex/src/analyze/acknowledge.ts",
+      "type": "static",
+      "symbols": [
+        "computeFindingHash",
+        "loadAcknowledged",
+        "isAcknowledged"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/scanners.ts",
+      "to": "packages/rex/src/analyze/acknowledge.ts",
+      "type": "type",
+      "symbols": [
+        "AcknowledgedStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/scanners.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -4116,6 +4248,18 @@
       "type": "dynamic",
       "symbols": [
         "loadClaudeConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/recommend.ts",
+      "to": "packages/rex/src/analyze/acknowledge.ts",
+      "type": "static",
+      "symbols": [
+        "computeFindingHash",
+        "loadAcknowledged",
+        "saveAcknowledged",
+        "acknowledgeFinding",
+        "isAcknowledged"
       ]
     },
     {
@@ -5031,6 +5175,14 @@
     },
     {
       "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/help.ts",
+      "type": "static",
+      "symbols": [
+        "showCommandHelp"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
       "to": "packages/rex/src/cli/mcp.ts",
       "type": "dynamic",
       "symbols": [
@@ -5780,6 +5932,27 @@
     },
     {
       "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/acknowledge.ts",
+      "type": "reexport",
+      "symbols": [
+        "computeFindingHash",
+        "loadAcknowledged",
+        "saveAcknowledged",
+        "acknowledgeFinding",
+        "isAcknowledged"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/acknowledge.ts",
+      "type": "type",
+      "symbols": [
+        "AcknowledgedFinding",
+        "AcknowledgedStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
       "to": "packages/rex/src/cli/mcp.ts",
       "type": "reexport",
       "symbols": [
@@ -6523,6 +6696,18 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/analyze/acknowledge.test.ts",
+      "to": "packages/rex/src/analyze/acknowledge.ts",
+      "type": "static",
+      "symbols": [
+        "computeFindingHash",
+        "loadAcknowledged",
+        "saveAcknowledged",
+        "acknowledgeFinding",
+        "isAcknowledged"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/analyze/dedupe.test.ts",
       "to": "packages/rex/src/analyze/dedupe.ts",
       "type": "static",
@@ -6746,6 +6931,24 @@
       "type": "type",
       "symbols": [
         "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/scanners-acknowledge.test.ts",
+      "to": "packages/rex/src/analyze/acknowledge.ts",
+      "type": "static",
+      "symbols": [
+        "computeFindingHash",
+        "acknowledgeFinding",
+        "saveAcknowledged"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/scanners-acknowledge.test.ts",
+      "to": "packages/rex/src/analyze/scanners.ts",
+      "type": "static",
+      "symbols": [
+        "scanSourceVision"
       ]
     },
     {
@@ -7120,6 +7323,14 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/cli/help.test.ts",
+      "to": "packages/rex/src/cli/help.ts",
+      "type": "static",
+      "symbols": [
+        "showCommandHelp"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/cli/mcp.test.ts",
       "to": "packages/rex/src/cli/mcp.ts",
       "type": "static",
@@ -7228,6 +7439,23 @@
     },
     {
       "from": "packages/rex/tests/unit/core/dag.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/feature-filtered-task.test.ts",
+      "to": "packages/rex/src/core/next-task.ts",
+      "type": "static",
+      "symbols": [
+        "findNextTask",
+        "findActionableTasks"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/feature-filtered-task.test.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -8858,7 +9086,8 @@
         "louvainPhase1",
         "mergeBidirectionalCoupling",
         "mergeSmallCommunities",
-        "capZoneCount"
+        "capZoneCount",
+        "splitLargeCommunities"
       ]
     },
     {
@@ -8904,7 +9133,7 @@
       ]
     },
     {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
       "to": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
       "type": "static",
       "symbols": [
@@ -8912,7 +9141,7 @@
       ]
     },
     {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
       "to": "packages/sourcevision/src/analyzers/callgraph.ts",
       "type": "static",
       "symbols": [
@@ -8921,13 +9150,118 @@
       ]
     },
     {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
       "to": "packages/sourcevision/src/analyzers/classify.ts",
       "type": "static",
       "symbols": [
         "analyzeClassifications",
         "enrichClassificationsWithLLM",
         "mergeClassificationResults"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/components.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeComponents"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "type": "static",
+      "symbols": [
+        "deduplicateFindings",
+        "enforceSeverityRules"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/imports.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeImports"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeInventory"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/inventory.ts",
+      "type": "type",
+      "symbols": [
+        "InventoryResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/manifest.ts",
+      "type": "static",
+      "symbols": [
+        "readManifest",
+        "writeManifest",
+        "updateManifestModule",
+        "updateManifestError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "detectSubAnalyses",
+        "buildSubAnalysisRefs"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeZones"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "CallGraph",
+        "Classifications",
+        "ImportEdge",
+        "Inventory",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
       ]
     },
     {
@@ -8941,51 +9275,10 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "to": "packages/sourcevision/src/analyzers/components.ts",
-      "type": "static",
-      "symbols": [
-        "analyzeComponents"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
       "to": "packages/sourcevision/src/analyzers/context.ts",
       "type": "static",
       "symbols": [
         "generateContext"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
-      "type": "static",
-      "symbols": [
-        "deduplicateFindings",
-        "enforceSeverityRules"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "to": "packages/sourcevision/src/analyzers/imports.ts",
-      "type": "static",
-      "symbols": [
-        "analyzeImports"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "to": "packages/sourcevision/src/analyzers/inventory.ts",
-      "type": "static",
-      "symbols": [
-        "analyzeInventory"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "to": "packages/sourcevision/src/analyzers/inventory.ts",
-      "type": "type",
-      "symbols": [
-        "InventoryResult"
       ]
     },
     {
@@ -9002,9 +9295,7 @@
       "type": "static",
       "symbols": [
         "readManifest",
-        "writeManifest",
-        "updateManifestModule",
-        "updateManifestError"
+        "writeManifest"
       ]
     },
     {
@@ -9013,17 +9304,7 @@
       "type": "static",
       "symbols": [
         "emptyAnalyzeTokenUsage",
-        "accumulateTokenUsage",
         "formatTokenUsage"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "to": "packages/sourcevision/src/analyzers/workspace.ts",
-      "type": "static",
-      "symbols": [
-        "detectSubAnalyses",
-        "buildSubAnalysisRefs"
       ]
     },
     {
@@ -9036,10 +9317,25 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
       "type": "static",
       "symbols": [
-        "analyzeZones"
+        "runInventoryPhase",
+        "runImportsPhase",
+        "runClassificationsPhase",
+        "runZonesPhase",
+        "runComponentsPhase",
+        "runCallGraphPhase",
+        "PhasePrerequsiteError",
+        "PhaseError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "type": "type",
+      "symbols": [
+        "AnalyzeContext"
       ]
     },
     {
@@ -9081,26 +9377,6 @@
       "symbols": [
         "DATA_FILES",
         "SUPPLEMENTARY_FILES"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "to": "packages/sourcevision/src/schema/index.ts",
-      "type": "type",
-      "symbols": [
-        "CallGraph",
-        "Classifications",
-        "ImportEdge",
-        "Inventory",
-        "AnalyzeTokenUsage"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "to": "packages/sourcevision/src/util/sort.ts",
-      "type": "static",
-      "symbols": [
-        "toCanonicalJSON"
       ]
     },
     {
@@ -9306,6 +9582,14 @@
         "CLIError",
         "handleCLIError",
         "requireSvDir"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/help.ts",
+      "type": "static",
+      "symbols": [
+        "showCommandHelp"
       ]
     },
     {
@@ -10200,6 +10484,37 @@
       ]
     },
     {
+      "from": "packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts",
+      "to": "packages/sourcevision/src/analyzers/louvain.ts",
+      "type": "static",
+      "symbols": [
+        "buildUndirectedGraph",
+        "splitLargeCommunities",
+        "louvainPhase1",
+        "mergeSmallCommunities",
+        "capZoneCount"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts",
+      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeZones"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts",
+      "to": "packages/sourcevision/tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeFileEntry",
+        "makeInventory",
+        "makeEdge",
+        "makeImports"
+      ]
+    },
+    {
       "from": "packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts",
       "to": "packages/sourcevision/src/analyzers/zones.ts",
       "type": "static",
@@ -10272,6 +10587,14 @@
       "type": "static",
       "symbols": [
         "CLIError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/cli/help.test.ts",
+      "to": "packages/sourcevision/src/cli/help.ts",
+      "type": "static",
+      "symbols": [
+        "showCommandHelp"
       ]
     },
     {
@@ -10426,10 +10749,29 @@
     },
     {
       "from": "packages/web/src/public.ts",
+      "to": "packages/web/src/server/port.ts",
+      "type": "reexport",
+      "symbols": [
+        "checkPort",
+        "findAvailablePort"
+      ]
+    },
+    {
+      "from": "packages/web/src/public.ts",
+      "to": "packages/web/src/server/port.ts",
+      "type": "type",
+      "symbols": [
+        "PortCheckResult",
+        "PortAllocationResult"
+      ]
+    },
+    {
+      "from": "packages/web/src/public.ts",
       "to": "packages/web/src/server/start.ts",
       "type": "reexport",
       "symbols": [
-        "startServer"
+        "startServer",
+        "PORT_FILE"
       ]
     },
     {
@@ -10437,7 +10779,8 @@
       "to": "packages/web/src/server/start.ts",
       "type": "type",
       "symbols": [
-        "ServerOptions"
+        "ServerOptions",
+        "StartResult"
       ]
     },
     {
@@ -10468,10 +10811,29 @@
     },
     {
       "from": "packages/web/src/server/index.ts",
+      "to": "packages/web/src/server/port.ts",
+      "type": "reexport",
+      "symbols": [
+        "checkPort",
+        "findAvailablePort"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/index.ts",
+      "to": "packages/web/src/server/port.ts",
+      "type": "type",
+      "symbols": [
+        "PortCheckResult",
+        "PortAllocationResult"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/index.ts",
       "to": "packages/web/src/server/start.ts",
       "type": "reexport",
       "symbols": [
-        "startServer"
+        "startServer",
+        "PORT_FILE"
       ]
     },
     {
@@ -10479,7 +10841,8 @@
       "to": "packages/web/src/server/start.ts",
       "type": "type",
       "symbols": [
-        "ServerOptions"
+        "ServerOptions",
+        "StartResult"
       ]
     },
     {
@@ -10511,6 +10874,24 @@
     },
     {
       "from": "packages/web/src/server/routes-adaptive.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-config.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "static",
+      "symbols": [
+        "jsonResponse",
+        "errorResponse",
+        "readBody"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-config.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "type",
       "symbols": [
@@ -10561,6 +10942,14 @@
       ]
     },
     {
+      "from": "packages/web/src/server/routes-hench.ts",
+      "to": "packages/web/src/server/websocket.ts",
+      "type": "type",
+      "symbols": [
+        "WebSocketBroadcaster"
+      ]
+    },
+    {
       "from": "packages/web/src/server/routes-mcp.ts",
       "to": "packages/web/src/server/mcp-deps.ts",
       "type": "static",
@@ -10571,6 +10960,22 @@
     },
     {
       "from": "packages/web/src/server/routes-mcp.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-project.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "static",
+      "symbols": [
+        "jsonResponse"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-project.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "type",
       "symbols": [
@@ -10693,6 +11098,49 @@
       ]
     },
     {
+      "from": "packages/web/src/server/routes-status.ts",
+      "to": "packages/web/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-status.ts",
+      "to": "packages/web/src/server/mcp-deps.ts",
+      "type": "static",
+      "symbols": [
+        "computeStats",
+        "collectCompletedIds",
+        "findNextTask"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-status.ts",
+      "to": "packages/web/src/server/mcp-deps.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "TreeStats"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-status.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "static",
+      "symbols": [
+        "jsonResponse"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-status.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
       "from": "packages/web/src/server/routes-token-usage.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "static",
@@ -10776,10 +11224,26 @@
     },
     {
       "from": "packages/web/src/server/start.ts",
+      "to": "packages/web/src/server/port.ts",
+      "type": "static",
+      "symbols": [
+        "findAvailablePort"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/start.ts",
       "to": "packages/web/src/server/routes-adaptive.ts",
       "type": "static",
       "symbols": [
         "handleAdaptiveRoute"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/start.ts",
+      "to": "packages/web/src/server/routes-config.ts",
+      "type": "static",
+      "symbols": [
+        "handleConfigRoute"
       ]
     },
     {
@@ -10809,6 +11273,14 @@
     },
     {
       "from": "packages/web/src/server/start.ts",
+      "to": "packages/web/src/server/routes-project.ts",
+      "type": "static",
+      "symbols": [
+        "handleProjectRoute"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/start.ts",
       "to": "packages/web/src/server/routes-rex.ts",
       "type": "static",
       "symbols": [
@@ -10829,7 +11301,16 @@
       "type": "static",
       "symbols": [
         "resolveStaticAssets",
-        "handleStaticRoute"
+        "handleStaticRoute",
+        "isProjectInitialized"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/start.ts",
+      "to": "packages/web/src/server/routes-status.ts",
+      "type": "static",
+      "symbols": [
+        "handleStatusRoute"
       ]
     },
     {
@@ -10871,6 +11352,15 @@
       "type": "static",
       "symbols": [
         "createWebSocketManager"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/breadcrumb.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId",
+        "NavigateTo"
       ]
     },
     {
@@ -11425,6 +11915,14 @@
     },
     {
       "from": "packages/web/src/viewer/components/sidebar.ts",
+      "to": "packages/web/src/viewer/components/config-footer.ts",
+      "type": "static",
+      "symbols": [
+        "ConfigFooter"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/sidebar.ts",
       "to": "packages/web/src/viewer/components/constants.ts",
       "type": "static",
       "symbols": [
@@ -11442,6 +11940,17 @@
     },
     {
       "from": "packages/web/src/viewer/components/sidebar.ts",
+      "to": "packages/web/src/viewer/components/status-indicators.ts",
+      "type": "static",
+      "symbols": [
+        "useProjectStatus",
+        "SvFreshnessIndicator",
+        "RexCompletionIndicator",
+        "HenchActivityIndicator"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/sidebar.ts",
       "to": "packages/web/src/viewer/components/theme-toggle.ts",
       "type": "static",
       "symbols": [
@@ -11450,6 +11959,14 @@
     },
     {
       "from": "packages/web/src/viewer/components/sidebar.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/status-indicators.ts",
       "to": "packages/web/src/viewer/types.ts",
       "type": "type",
       "symbols": [
@@ -11481,6 +11998,26 @@
       "symbols": [
         "basename",
         "truncateFilename"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-file-edges.ts",
+      "to": "packages/web/src/viewer/views/zone-types.ts",
+      "type": "type",
+      "symbols": [
+        "FileConnectionMap",
+        "FileToFileMap",
+        "ZoneData",
+        "FlowEdge",
+        "BoxRect"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-zone-drag.ts",
+      "to": "packages/web/src/viewer/hooks/use-pan-zoom.ts",
+      "type": "type",
+      "symbols": [
+        "ViewBox"
       ]
     },
     {
@@ -11539,6 +12076,14 @@
       "type": "static",
       "symbols": [
         "ALL_DATA_FILES"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/components/breadcrumb.ts",
+      "type": "static",
+      "symbols": [
+        "Breadcrumb"
       ]
     },
     {
@@ -11627,14 +12172,6 @@
       "type": "static",
       "symbols": [
         "ArchitectureView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/main.ts",
-      "to": "packages/web/src/viewer/views/call-graph.ts",
-      "type": "static",
-      "symbols": [
-        "CallGraphView"
       ]
     },
     {
@@ -11791,7 +12328,9 @@
       "to": "packages/web/src/schema/v1.ts",
       "type": "type",
       "symbols": [
-        "Zones"
+        "Zones",
+        "CallEdge",
+        "ExternalImport"
       ]
     },
     {
@@ -11863,8 +12402,7 @@
       "to": "packages/web/src/viewer/components/data-display/mini-charts.ts",
       "type": "static",
       "symbols": [
-        "BarChart",
-        "FlowDiagram"
+        "BarChart"
       ]
     },
     {
@@ -11883,69 +12421,6 @@
         "LoadedData",
         "NavigateTo",
         "DetailItem"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/architecture.ts",
-      "to": "packages/web/src/viewer/utils.ts",
-      "type": "static",
-      "symbols": [
-        "buildFlowNodes",
-        "buildFlowEdges"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/call-graph.ts",
-      "to": "packages/web/src/schema/v1.ts",
-      "type": "type",
-      "symbols": [
-        "CallGraph",
-        "CallEdge"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/call-graph.ts",
-      "to": "packages/web/src/viewer/components/logos.ts",
-      "type": "static",
-      "symbols": [
-        "BrandedHeader"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/call-graph.ts",
-      "to": "packages/web/src/viewer/graph/renderer.ts",
-      "type": "static",
-      "symbols": [
-        "GraphRenderer"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/call-graph.ts",
-      "to": "packages/web/src/viewer/graph/renderer.ts",
-      "type": "type",
-      "symbols": [
-        "GraphNode",
-        "GraphLink",
-        "ZoneInfo"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/call-graph.ts",
-      "to": "packages/web/src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "LoadedData",
-        "DetailItem",
-        "NavigateTo"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/call-graph.ts",
-      "to": "packages/web/src/viewer/utils.ts",
-      "type": "static",
-      "symbols": [
-        "buildZoneColorMap",
-        "getZoneColorByIndex"
       ]
     },
     {
@@ -12458,6 +12933,14 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/views/validation.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "NavigateTo"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/views/workflow-optimization.ts",
       "to": "packages/web/src/viewer/components/logos.ts",
       "type": "static",
@@ -12470,6 +12953,7 @@
       "to": "packages/web/src/schema/v1.ts",
       "type": "type",
       "symbols": [
+        "CallGraph",
         "Zone",
         "Finding"
       ]
@@ -12480,14 +12964,6 @@
       "type": "static",
       "symbols": [
         "CollapsibleSection"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/zones.ts",
-      "to": "packages/web/src/viewer/components/data-display/mini-charts.ts",
-      "type": "static",
-      "symbols": [
-        "FlowDiagram"
       ]
     },
     {
@@ -12508,12 +12984,36 @@
     },
     {
       "from": "packages/web/src/viewer/views/zones.ts",
+      "to": "packages/web/src/viewer/hooks/use-file-edges.ts",
+      "type": "static",
+      "symbols": [
+        "useFileEdges"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/zones.ts",
+      "to": "packages/web/src/viewer/hooks/use-pan-zoom.ts",
+      "type": "static",
+      "symbols": [
+        "usePanZoom"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/zones.ts",
+      "to": "packages/web/src/viewer/hooks/use-zone-drag.ts",
+      "type": "static",
+      "symbols": [
+        "useZoneDrag"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/zones.ts",
       "to": "packages/web/src/viewer/types.ts",
       "type": "type",
       "symbols": [
         "LoadedData",
-        "NavigateTo",
-        "DetailItem"
+        "DetailItem",
+        "NavigateTo"
       ]
     },
     {
@@ -12521,10 +13021,25 @@
       "to": "packages/web/src/viewer/utils.ts",
       "type": "static",
       "symbols": [
-        "meterClass",
-        "buildFlowNodes",
-        "buildFlowEdges",
-        "getZoneColorByIndex"
+        "buildFileToZoneMap",
+        "buildCallFlowEdges",
+        "buildExternalImportEdges",
+        "getZoneColorByIndex",
+        "basename",
+        "meterClass"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/zones.ts",
+      "to": "packages/web/src/viewer/views/zone-types.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneData",
+        "BoxRect",
+        "FlowEdge",
+        "FileConnectionMap",
+        "FileToFileMap",
+        "FileInfo"
       ]
     },
     {
@@ -12545,6 +13060,26 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/server/port.test.ts",
+      "to": "packages/web/src/server/port.ts",
+      "type": "static",
+      "symbols": [
+        "checkPort",
+        "findAvailablePort",
+        "DEFAULT_PORT",
+        "PORT_RANGE_START",
+        "PORT_RANGE_END"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/port.test.ts",
+      "to": "packages/web/src/server/start.ts",
+      "type": "static",
+      "symbols": [
+        "PORT_FILE"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/server/routes-adaptive.test.ts",
       "to": "packages/web/src/server/routes-adaptive.ts",
       "type": "static",
@@ -12554,6 +13089,23 @@
     },
     {
       "from": "packages/web/tests/unit/server/routes-adaptive.test.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-config.test.ts",
+      "to": "packages/web/src/server/routes-config.ts",
+      "type": "static",
+      "symbols": [
+        "handleConfigRoute",
+        "clearConfigCaches"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-config.test.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "type",
       "symbols": [
@@ -12594,6 +13146,22 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/server/routes-hench-execute.test.ts",
+      "to": "packages/web/src/server/routes-hench.ts",
+      "type": "static",
+      "symbols": [
+        "handleHenchRoute"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-hench-execute.test.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/server/routes-hench-templates.test.ts",
       "to": "packages/web/src/server/routes-hench.ts",
       "type": "static",
@@ -12620,6 +13188,25 @@
     },
     {
       "from": "packages/web/tests/unit/server/routes-mcp.test.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-project.test.ts",
+      "to": "packages/web/src/server/routes-project.ts",
+      "type": "static",
+      "symbols": [
+        "handleProjectRoute",
+        "extractProjectMetadata",
+        "extractRepoName",
+        "clearProjectMetadataCache"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-project.test.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "type",
       "symbols": [
@@ -12668,6 +13255,23 @@
     },
     {
       "from": "packages/web/tests/unit/server/routes-sourcevision.test.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-status.test.ts",
+      "to": "packages/web/src/server/routes-status.ts",
+      "type": "static",
+      "symbols": [
+        "handleStatusRoute",
+        "clearStatusCache"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-status.test.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "type",
       "symbols": [
@@ -13074,6 +13678,16 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/status-indicators.test.ts",
+      "to": "packages/web/src/viewer/components/status-indicators.ts",
+      "type": "static",
+      "symbols": [
+        "SvFreshnessIndicator",
+        "RexCompletionIndicator",
+        "HenchActivityIndicator"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/task-detail-failure.test.ts",
       "to": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
       "type": "static",
@@ -13120,6 +13734,23 @@
       "symbols": [
         "TreeNode"
       ]
+    },
+    {
+      "from": "tests/unit/help.test.js",
+      "to": "help.js",
+      "type": "static",
+      "symbols": [
+        "editDistance",
+        "suggestCommands",
+        "formatTypoSuggestion",
+        "searchHelp",
+        "formatSearchResults",
+        "getOrchestratorCommands",
+        "getToolSubcommands",
+        "formatToolHelp",
+        "getRelatedCommands",
+        "formatRelatedCommands"
+      ]
     }
   ],
   "external": [
@@ -13165,17 +13796,22 @@
         "packages/hench/src/agent/planning/brief.ts",
         "packages/hench/src/cli/commands/constants.ts",
         "packages/hench/src/cli/errors.ts",
+        "packages/hench/src/cli/help.ts",
+        "packages/hench/src/cli/index.ts",
         "packages/hench/src/guard/paths.ts",
         "packages/hench/src/process/exec.ts",
         "packages/hench/src/schema/v1.ts",
         "packages/hench/src/store/json.ts",
         "packages/hench/src/store/project-config.ts",
+        "packages/hench/src/tools/rex.ts",
         "packages/hench/src/types/output.ts",
         "packages/rex/src/analyze/reason.ts",
         "packages/rex/src/analyze/scanners.ts",
         "packages/rex/src/cli/commands/constants.ts",
         "packages/rex/src/cli/commands/recommend.ts",
         "packages/rex/src/cli/errors.ts",
+        "packages/rex/src/cli/help.ts",
+        "packages/rex/src/cli/index.ts",
         "packages/rex/src/cli/output.ts",
         "packages/rex/src/core/canonical.ts",
         "packages/rex/src/core/token-usage.ts",
@@ -13184,10 +13820,13 @@
         "packages/sourcevision/src/analyzers/claude-client.ts",
         "packages/sourcevision/src/analyzers/inventory.ts",
         "packages/sourcevision/src/analyzers/manifest.ts",
+        "packages/sourcevision/src/cli/commands/analyze-phases.ts",
         "packages/sourcevision/src/cli/commands/analyze.ts",
         "packages/sourcevision/src/cli/commands/constants.ts",
         "packages/sourcevision/src/cli/commands/init.ts",
         "packages/sourcevision/src/cli/errors.ts",
+        "packages/sourcevision/src/cli/help.ts",
+        "packages/sourcevision/src/cli/index.ts",
         "packages/sourcevision/src/cli/output.ts",
         "packages/sourcevision/src/cli/serve.ts",
         "packages/sourcevision/src/util/sort.ts",
@@ -13195,6 +13834,8 @@
         "packages/sourcevision/tests/unit/analyzers/classify.test.ts",
         "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts",
+        "packages/web/src/server/routes-hench.ts",
+        "packages/web/src/server/routes-project.ts",
         "packages/web/src/server/routes-rex.ts"
       ],
       "symbols": [
@@ -13208,6 +13849,7 @@
         "CompletionResult",
         "ExecOptions",
         "ExecResult",
+        "HelpDefinition",
         "ManagedChild",
         "PROJECT_DIRS",
         "SpawnToolOptions",
@@ -13217,6 +13859,9 @@
         "exec",
         "execShellCmd",
         "execStdout",
+        "formatHelp",
+        "formatTypoSuggestion",
+        "formatUsage",
         "foundationExec",
         "getCurrentBranch",
         "getCurrentHead",
@@ -13311,6 +13956,8 @@
     {
       "package": "preact",
       "importedBy": [
+        "packages/web/src/viewer/components/breadcrumb.ts",
+        "packages/web/src/viewer/components/config-footer.ts",
         "packages/web/src/viewer/components/data-display/collapsible-section.ts",
         "packages/web/src/viewer/components/data-display/findings-list.ts",
         "packages/web/src/viewer/components/data-display/health-gauge.ts",
@@ -13337,11 +13984,14 @@
         "packages/web/src/viewer/components/rex-task-link.ts",
         "packages/web/src/viewer/components/search-filter.ts",
         "packages/web/src/viewer/components/sidebar.ts",
+        "packages/web/src/viewer/components/status-indicators.ts",
         "packages/web/src/viewer/components/theme-toggle.ts",
+        "packages/web/src/viewer/hooks/use-file-edges.ts",
+        "packages/web/src/viewer/hooks/use-pan-zoom.ts",
+        "packages/web/src/viewer/hooks/use-zone-drag.ts",
         "packages/web/src/viewer/main.ts",
         "packages/web/src/viewer/views/analysis.ts",
         "packages/web/src/viewer/views/architecture.ts",
-        "packages/web/src/viewer/views/call-graph.ts",
         "packages/web/src/viewer/views/files.ts",
         "packages/web/src/viewer/views/graph.ts",
         "packages/web/src/viewer/views/hench-config.ts",
@@ -13369,6 +14019,7 @@
         "packages/web/tests/unit/viewer/sidebar.test.ts",
         "packages/web/tests/unit/viewer/smart-add-input.test.ts",
         "packages/web/tests/unit/viewer/status-filter.test.ts",
+        "packages/web/tests/unit/viewer/status-indicators.test.ts",
         "packages/web/tests/unit/viewer/task-detail-failure.test.ts",
         "packages/web/tests/unit/viewer/task-detail-requirements.test.ts",
         "packages/web/tests/unit/viewer/tree-view.test.ts"
@@ -13376,6 +14027,7 @@
       "symbols": [
         "ComponentChildren",
         "Fragment",
+        "RefObject",
         "VNode",
         "act",
         "h",
@@ -13434,6 +14086,7 @@
         "VALID_REQUIREMENT_CATEGORIES",
         "VALID_STATUSES",
         "VALID_VALIDATION_TYPES",
+        "acknowledgeFinding",
         "collectAllIds",
         "collectCompletedIds",
         "collectRequirements",
@@ -13457,11 +14110,13 @@
         "isPriority",
         "isRequirementCategory",
         "isValidationType",
+        "loadAcknowledged",
         "mergeItems",
         "previewMerge",
         "pruneItems",
         "removeFromTree",
         "resolveStore",
+        "saveAcknowledged",
         "updateInTree",
         "validateAutomatedRequirements",
         "validateMerge",
@@ -13509,9 +14164,11 @@
         "packages/claude-client/tests/unit/config.test.ts",
         "packages/claude-client/tests/unit/create-client.test.ts",
         "packages/claude-client/tests/unit/exec.test.ts",
+        "packages/claude-client/tests/unit/help-format.test.ts",
         "packages/claude-client/tests/unit/json.test.ts",
         "packages/claude-client/tests/unit/output.test.ts",
         "packages/claude-client/tests/unit/project-config.test.ts",
+        "packages/claude-client/tests/unit/suggest.test.ts",
         "packages/claude-client/tests/unit/token-usage.test.ts",
         "packages/claude-client/tests/unit/types.test.ts",
         "packages/claude-client/vitest.config.ts",
@@ -13542,6 +14199,7 @@
         "packages/hench/tests/unit/cli/commands/show-deleted-task.test.ts",
         "packages/hench/tests/unit/cli/commands/task-lookup.test.ts",
         "packages/hench/tests/unit/cli/errors.test.ts",
+        "packages/hench/tests/unit/cli/help.test.ts",
         "packages/hench/tests/unit/cli/output.test.ts",
         "packages/hench/tests/unit/guard/commands.test.ts",
         "packages/hench/tests/unit/guard/paths.test.ts",
@@ -13571,6 +14229,7 @@
         "packages/rex/tests/integration/claude-config.test.ts",
         "packages/rex/tests/integration/project-config.test.ts",
         "packages/rex/tests/integration/store-roundtrip.test.ts",
+        "packages/rex/tests/unit/analyze/acknowledge.test.ts",
         "packages/rex/tests/unit/analyze/dedupe.test.ts",
         "packages/rex/tests/unit/analyze/diff.test.ts",
         "packages/rex/tests/unit/analyze/guided.test.ts",
@@ -13583,6 +14242,7 @@
         "packages/rex/tests/unit/analyze/reason-multi-description.test.ts",
         "packages/rex/tests/unit/analyze/reason.test.ts",
         "packages/rex/tests/unit/analyze/reconcile.test.ts",
+        "packages/rex/tests/unit/analyze/scanners-acknowledge.test.ts",
         "packages/rex/tests/unit/analyze/scanners.test.ts",
         "packages/rex/tests/unit/analyze/token-tracking.test.ts",
         "packages/rex/tests/unit/cli/commands/add.test.ts",
@@ -13599,11 +14259,13 @@
         "packages/rex/tests/unit/cli/commands/validate.test.ts",
         "packages/rex/tests/unit/cli/commands/verify.test.ts",
         "packages/rex/tests/unit/cli/errors.test.ts",
+        "packages/rex/tests/unit/cli/help.test.ts",
         "packages/rex/tests/unit/cli/mcp.test.ts",
         "packages/rex/tests/unit/cli/output.test.ts",
         "packages/rex/tests/unit/cli/validate-input.test.ts",
         "packages/rex/tests/unit/core/canonical.test.ts",
         "packages/rex/tests/unit/core/dag.test.ts",
+        "packages/rex/tests/unit/core/feature-filtered-task.test.ts",
         "packages/rex/tests/unit/core/fix.test.ts",
         "packages/rex/tests/unit/core/keywords.test.ts",
         "packages/rex/tests/unit/core/merge.test.ts",
@@ -13657,9 +14319,11 @@
         "packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zone-insights.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zone-output.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts",
         "packages/sourcevision/tests/unit/cli/errors.test.ts",
         "packages/sourcevision/tests/unit/cli/export-pdf.test.ts",
+        "packages/sourcevision/tests/unit/cli/help.test.ts",
         "packages/sourcevision/tests/unit/cli/mcp.test.ts",
         "packages/sourcevision/tests/unit/cli/output.test.ts",
         "packages/sourcevision/tests/unit/export/pdf-report.test.ts",
@@ -13669,14 +14333,19 @@
         "packages/sourcevision/tests/unit/util/sort.test.ts",
         "packages/sourcevision/vitest.config.ts",
         "packages/web/tests/unit/server/dev-reload.test.ts",
+        "packages/web/tests/unit/server/port.test.ts",
         "packages/web/tests/unit/server/routes-adaptive.test.ts",
+        "packages/web/tests/unit/server/routes-config.test.ts",
         "packages/web/tests/unit/server/routes-data.test.ts",
         "packages/web/tests/unit/server/routes-hench-config.test.ts",
+        "packages/web/tests/unit/server/routes-hench-execute.test.ts",
         "packages/web/tests/unit/server/routes-hench-templates.test.ts",
         "packages/web/tests/unit/server/routes-mcp.test.ts",
+        "packages/web/tests/unit/server/routes-project.test.ts",
         "packages/web/tests/unit/server/routes-requirements.test.ts",
         "packages/web/tests/unit/server/routes-rex.test.ts",
         "packages/web/tests/unit/server/routes-sourcevision.test.ts",
+        "packages/web/tests/unit/server/routes-status.test.ts",
         "packages/web/tests/unit/server/routes-token-usage.test.ts",
         "packages/web/tests/unit/server/routes-validation.test.ts",
         "packages/web/tests/unit/server/routes-workflow.test.ts",
@@ -13701,6 +14370,7 @@
         "packages/web/tests/unit/viewer/sidebar.test.ts",
         "packages/web/tests/unit/viewer/smart-add-input.test.ts",
         "packages/web/tests/unit/viewer/status-filter.test.ts",
+        "packages/web/tests/unit/viewer/status-indicators.test.ts",
         "packages/web/tests/unit/viewer/task-detail-failure.test.ts",
         "packages/web/tests/unit/viewer/task-detail-requirements.test.ts",
         "packages/web/tests/unit/viewer/tree-view.test.ts",
@@ -13715,6 +14385,7 @@
         "tests/e2e/cli-tool-resolution.test.js",
         "tests/e2e/cli-web.test.js",
         "tests/e2e/domain-isolation.test.js",
+        "tests/unit/help.test.js",
         "vitest.config.js"
       ],
       "symbols": [
@@ -13747,7 +14418,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 1430,
+    "totalEdges": 1494,
     "totalExternal": 16,
     "circularCount": 0,
     "circulars": [],
@@ -13778,7 +14449,7 @@
       },
       {
         "path": "packages/web/src/viewer/components/logos.ts",
-        "count": 19
+        "count": 18
       },
       {
         "path": "packages/hench/src/store/config.ts",
@@ -13797,8 +14468,8 @@
         "count": 12
       },
       {
-        "path": "packages/web/src/viewer/utils.ts",
-        "count": 11
+        "path": "packages/web/src/server/types.ts",
+        "count": 12
       },
       {
         "path": "packages/claude-client/src/types.ts",
@@ -13817,7 +14488,11 @@
         "count": 9
       },
       {
-        "path": "packages/web/src/server/types.ts",
+        "path": "packages/sourcevision/src/schema/data-files.ts",
+        "count": 9
+      },
+      {
+        "path": "packages/web/src/viewer/utils.ts",
         "count": 9
       },
       {
@@ -13827,12 +14502,8 @@
       {
         "path": "packages/hench/src/cli/output.ts",
         "count": 8
-      },
-      {
-        "path": "packages/rex/src/store/file-adapter.ts",
-        "count": 8
       }
     ],
-    "avgImportsPerFile": 3.5
+    "avgImportsPerFile": 3.47
   }
 }

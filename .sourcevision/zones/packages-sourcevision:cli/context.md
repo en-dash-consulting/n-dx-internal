@@ -8,19 +8,19 @@ Zone: Cli (`packages-sourcevision:cli`)
 Files: 12, Cohesion: 0.74, Coupling: 0.26
 Description: 12 files, primarily TypeScript
 Entry points: packages/sourcevision/src/cli/commands/constants.ts, packages/sourcevision/src/cli/commands/init.ts, packages/sourcevision/src/cli/errors.ts, packages/sourcevision/src/cli/output.ts
-Lines: 889
+Lines: 911
 
 </zone>
 
 <files>
 
-packages/sourcevision/src/cli/commands/constants.ts (TypeScript, 28 lines, source)
+packages/sourcevision/src/cli/commands/constants.ts (TypeScript, 33 lines, source)
 packages/sourcevision/src/cli/commands/export-pdf.ts (TypeScript, 128 lines, source)
 packages/sourcevision/src/cli/commands/init.ts (TypeScript, 46 lines, source)
 packages/sourcevision/src/cli/commands/reset.ts (TypeScript, 43 lines, source)
 packages/sourcevision/src/cli/commands/validate.ts (TypeScript, 70 lines, source)
 packages/sourcevision/src/cli/errors.ts (TypeScript, 111 lines, source)
-packages/sourcevision/src/cli/index.ts (TypeScript, 107 lines, source)
+packages/sourcevision/src/cli/index.ts (TypeScript, 124 lines, source)
 packages/sourcevision/src/cli/output.ts (TypeScript, 9 lines, source)
 packages/sourcevision/src/cli/serve.ts (TypeScript, 21 lines, source)
 packages/sourcevision/tests/unit/cli/errors.test.ts (TypeScript, 116 lines, test)
@@ -66,6 +66,6 @@ Incoming (other zones → this zone):
 
 <insights>
 
-- [call graph] 72 internal calls, 2 outgoing, 37 incoming (cohesion: 0.97, coupling: 0.03)
+- [call graph] 73 internal calls, 3 outgoing, 36 incoming (cohesion: 0.96, coupling: 0.04)
 
 </insights>

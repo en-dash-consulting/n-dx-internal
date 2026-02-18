@@ -7,7 +7,7 @@
 Zone: Rex PRD Management CLI (`packages-rex:rex-cli`)
 Files: 36, Cohesion: 1.00, Coupling: 0.00
 Description: A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.
-Lines: 9446
+Lines: 9530
 
 </zone>
 
@@ -16,17 +16,17 @@ Lines: 9446
 packages/rex/src/analyze/index.ts (TypeScript, 63 lines, source)
 packages/rex/src/analyze/propose.ts (TypeScript, 307 lines, source)
 packages/rex/src/analyze/reconcile.ts (TypeScript, 124 lines, source)
-packages/rex/src/analyze/scanners.ts (TypeScript, 936 lines, source)
+packages/rex/src/analyze/scanners.ts (TypeScript, 958 lines, source)
 packages/rex/src/cli/commands/add.ts (TypeScript, 150 lines, source)
 packages/rex/src/cli/commands/analyze.ts (TypeScript, 559 lines, source)
-packages/rex/src/cli/commands/constants.ts (TypeScript, 69 lines, source)
+packages/rex/src/cli/commands/constants.ts (TypeScript, 48 lines, source)
 packages/rex/src/cli/commands/init.ts (TypeScript, 71 lines, source)
 packages/rex/src/cli/commands/next.ts (TypeScript, 69 lines, source)
-packages/rex/src/cli/commands/recommend.ts (TypeScript, 146 lines, source)
+packages/rex/src/cli/commands/recommend.ts (TypeScript, 216 lines, source)
 packages/rex/src/cli/commands/status.ts (TypeScript, 320 lines, source)
 packages/rex/src/cli/commands/update.ts (TypeScript, 197 lines, source)
 packages/rex/src/cli/commands/validate.ts (TypeScript, 200 lines, source)
-packages/rex/src/cli/index.ts (TypeScript, 300 lines, source)
+packages/rex/src/cli/index.ts (TypeScript, 313 lines, source)
 packages/rex/src/cli/mcp.ts (TypeScript, 199 lines, source)
 packages/rex/src/core/canonical.ts (TypeScript, 22 lines, source)
 packages/rex/src/core/dag.ts (TypeScript, 84 lines, source)
@@ -165,7 +165,7 @@ Internal:
   packages/rex/tests/unit/store/file-adapter.test.ts → packages/rex/src/store/file-adapter.ts {FileStore, ensureRexDir}
 
 Incoming (other zones → this zone):
-  ← web: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
+  ← presentation-gateway: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
 
 </imports>
 
@@ -193,6 +193,6 @@ Incoming (other zones → this zone):
 - The adapter field in RexConfig is dead configuration — all 8 createStore() call sites hardcode the literal string "file" instead of reading config.adapter, making alternative adapters unreachable
 - Log event names for the same semantic operation differ between CLI and MCP: update.ts:68 emits "item_updated" while mcp.ts:129 emits "status_changed" for status changes, with no shared event-name constants
 - init.ts and validate.ts both bypass the store abstraction layer, using raw fs readFile/writeFile directly, making them incompatible with any non-file adapter
-- [call graph] 710 internal calls, 168 outgoing, 480 incoming (cohesion: 0.81, coupling: 0.19)
+- [call graph] 711 internal calls, 187 outgoing, 498 incoming (cohesion: 0.79, coupling: 0.21)
 
 </insights>
