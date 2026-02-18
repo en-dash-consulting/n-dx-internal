@@ -1190,90 +1190,113 @@
 .rex-add-form {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
 .rex-add-form-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
 }
 
 .rex-add-form-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-md);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
 }
 
 .rex-add-form-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   background: none;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
   font-size: 18px;
   cursor: pointer;
-  padding: 0 4px;
+  transition: all var(--transition-normal);
   line-height: 1;
 }
 
 .rex-add-form-close:hover {
+  background: var(--bg-hover);
+  border-color: var(--border);
   color: var(--text);
 }
 
 .rex-add-form-error {
-  background: color-mix(in srgb, var(--red) 15%, transparent);
-  border: 1px solid var(--red);
-  border-radius: 4px;
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--red) 40%, transparent);
+  border-radius: var(--radius-md);
   color: var(--red);
-  padding: 8px 12px;
-  font-size: 12px;
-  margin-bottom: 12px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-sm);
+  font-weight: var(--weight-medium);
+  margin-bottom: var(--space-4);
 }
 
 .rex-add-form-field {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-4);
+}
+
+.rex-add-form-field:last-of-type {
+  margin-bottom: 0;
 }
 
 .rex-add-form-label {
   display: block;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-sm);
+  font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--tracking-wider);
   color: var(--text-dim);
-  margin-bottom: 5px;
+  margin-bottom: var(--space-2);
 }
 
 .rex-add-form-optional {
-  font-weight: 400;
+  font-weight: var(--weight-normal);
   text-transform: none;
-  letter-spacing: 0;
+  letter-spacing: var(--tracking-normal);
+  color: var(--text-muted);
 }
 
 .rex-add-form-level-group {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .rex-add-form-level-btn {
   flex: 1;
-  padding: 6px 8px;
+  padding: var(--space-2) var(--space-2);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   background: var(--bg-surface);
   color: var(--text-dim);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-sm);
+  font-weight: var(--weight-semibold);
   cursor: pointer;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.15s;
+  letter-spacing: var(--tracking-wider);
+  transition: all var(--transition-normal);
 }
 
 .rex-add-form-level-btn:hover {
-  border-color: var(--text-dim);
+  border-color: var(--text-muted);
   color: var(--text);
+  background: var(--bg-hover);
+}
+
+.rex-add-form-level-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
 }
 
 .rex-add-form-level-btn.active.prd-level-epic {
@@ -1299,45 +1322,75 @@
 .rex-add-form-textarea,
 .rex-add-form-select {
   width: 100%;
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   background: var(--bg-hover);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--font-base);
   font-family: inherit;
+  line-height: var(--leading-normal);
   outline: none;
   box-sizing: border-box;
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.rex-add-form-input::placeholder,
+.rex-add-form-textarea::placeholder {
+  color: var(--text-muted);
 }
 
 .rex-add-form-input:focus-visible,
 .rex-add-form-textarea:focus-visible,
 .rex-add-form-select:focus-visible {
   border-color: var(--accent);
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* Validation error state for inputs */
+.rex-add-form-input-error {
+  border-color: var(--red);
+}
+
+.rex-add-form-input-error:focus-visible {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--red) 25%, transparent);
+}
+
+/* Field-level hint/error messages */
+.rex-add-form-field-hint {
+  font-size: var(--font-xs);
+  margin-top: var(--space-1);
+  line-height: var(--leading-normal);
+}
+
+.rex-add-form-field-hint-error {
+  color: var(--red);
+  font-weight: var(--weight-medium);
 }
 
 .rex-add-form-textarea {
   resize: vertical;
-  min-height: 60px;
+  min-height: 72px;
 }
 
 .rex-add-form-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
 }
 
 .rex-add-form-btn {
-  padding: 7px 16px;
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  border-radius: var(--radius-md);
+  font-size: var(--font-sm);
+  font-weight: var(--weight-medium);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--transition-normal);
 }
 
 .rex-add-form-btn-cancel {
@@ -1346,22 +1399,24 @@
 }
 
 .rex-add-form-btn-cancel:hover {
-  border-color: var(--text-dim);
+  border-color: var(--text-muted);
   color: var(--text);
+  background: var(--bg-hover);
 }
 
 .rex-add-form-btn-submit {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
+  font-weight: var(--weight-semibold);
 }
 
-.rex-add-form-btn-submit:hover {
+.rex-add-form-btn-submit:hover:not(:disabled) {
   opacity: 0.9;
 }
 
 .rex-add-form-btn-submit:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 

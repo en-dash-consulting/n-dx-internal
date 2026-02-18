@@ -7,7 +7,7 @@
  */
 
 import { h } from "preact";
-import { useState, useCallback, useMemo } from "preact/hooks";
+import { useState, useCallback, useMemo, useRef, useEffect } from "preact/hooks";
 import type { PRDItemData, ItemLevel, Priority } from "./types.js";
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -96,6 +96,13 @@ export function AddItemForm({ allItems, onSubmit, onCancel, defaultParentId }: A
   const [priority, setPriority] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [titleTouched, setTitleTouched] = useState(false);
+
+  // Ref for initial autofocus — only fires once on mount
+  const titleRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, []);
 
   // Flatten items for parent selector
   const flatItems = useMemo(() => flattenItems(allItems), [allItems]);
@@ -121,11 +128,17 @@ export function AddItemForm({ allItems, onSubmit, onCancel, defaultParentId }: A
   // Determine if the selected level can be a root item
   const canBeRoot = effectiveLevel ? LEVEL_HIERARCHY[effectiveLevel].includes(null) : true;
 
+  // Title validation state
+  const titleError = titleTouched && !title.trim() ? "Title is required" : null;
+
   const handleSubmit = useCallback(
     async (e: Event) => {
       e.preventDefault();
+      setTitleTouched(true);
+
       if (!title.trim()) {
         setError("Title is required");
+        titleRef.current?.focus();
         return;
       }
 
@@ -146,6 +159,7 @@ export function AddItemForm({ allItems, onSubmit, onCancel, defaultParentId }: A
         setLevel("");
         setParentId("");
         setPriority("");
+        setTitleTouched(false);
       } catch (err) {
         setError(String(err));
       } finally {
@@ -181,13 +195,14 @@ export function AddItemForm({ allItems, onSubmit, onCancel, defaultParentId }: A
 
     // Level selector
     h("div", { class: "rex-add-form-field" },
-      h("label", { class: "rex-add-form-label" }, "Type"),
-      h("div", { class: "rex-add-form-level-group" },
+      h("label", { class: "rex-add-form-label", id: "add-form-type-label" }, "Type"),
+      h("div", { class: "rex-add-form-level-group", role: "group", "aria-labelledby": "add-form-type-label" },
         LEVEL_OPTIONS.map((opt) =>
           h("button", {
             key: opt.value,
             type: "button",
             class: `rex-add-form-level-btn prd-level-${opt.value}${effectiveLevel === opt.value ? " active" : ""}`,
+            "aria-pressed": effectiveLevel === opt.value ? "true" : "false",
             onClick: () => {
               setLevel(opt.value);
               // Clear parent if it's incompatible
@@ -210,8 +225,9 @@ export function AddItemForm({ allItems, onSubmit, onCancel, defaultParentId }: A
     // Parent selector (hidden for epic)
     effectiveLevel !== "epic"
       ? h("div", { class: "rex-add-form-field" },
-          h("label", { class: "rex-add-form-label" }, "Parent"),
+          h("label", { class: "rex-add-form-label", for: "add-form-parent" }, "Parent"),
           h("select", {
+            id: "add-form-parent",
             class: "rex-add-form-select",
             value: parentId,
             onChange: (e: Event) => {
@@ -240,23 +256,35 @@ export function AddItemForm({ allItems, onSubmit, onCancel, defaultParentId }: A
       : null,
 
     // Title
-    h("div", { class: "rex-add-form-field" },
-      h("label", { class: "rex-add-form-label" }, "Title"),
+    h("div", { class: `rex-add-form-field${titleError ? " rex-add-form-field-error" : ""}` },
+      h("label", { class: "rex-add-form-label", for: "add-form-title" }, "Title"),
       h("input", {
-        class: "rex-add-form-input",
+        id: "add-form-title",
+        class: `rex-add-form-input${titleError ? " rex-add-form-input-error" : ""}`,
         type: "text",
         value: title,
         placeholder: `Enter ${levelLabel} title...`,
         onInput: (e: Event) => setTitle((e.target as HTMLInputElement).value),
+        onBlur: () => setTitleTouched(true),
         required: true,
-        ref: (el: HTMLInputElement | null) => el?.focus(),
+        "aria-required": "true",
+        "aria-invalid": titleError ? "true" : undefined,
+        "aria-describedby": titleError ? "add-form-title-error" : undefined,
+        ref: titleRef,
       }),
+      titleError
+        ? h("div", { class: "rex-add-form-field-hint rex-add-form-field-hint-error", id: "add-form-title-error", role: "alert" }, titleError)
+        : null,
     ),
 
     // Description
     h("div", { class: "rex-add-form-field" },
-      h("label", { class: "rex-add-form-label" }, "Description ", h("span", { class: "rex-add-form-optional" }, "(optional)")),
+      h("label", { class: "rex-add-form-label", for: "add-form-description" },
+        "Description ",
+        h("span", { class: "rex-add-form-optional" }, "(optional)"),
+      ),
       h("textarea", {
+        id: "add-form-description",
         class: "rex-add-form-textarea",
         value: description,
         placeholder: "Describe the item...",
@@ -267,8 +295,9 @@ export function AddItemForm({ allItems, onSubmit, onCancel, defaultParentId }: A
 
     // Priority
     h("div", { class: "rex-add-form-field" },
-      h("label", { class: "rex-add-form-label" }, "Priority"),
+      h("label", { class: "rex-add-form-label", for: "add-form-priority" }, "Priority"),
       h("select", {
+        id: "add-form-priority",
         class: "rex-add-form-select",
         value: priority,
         onChange: (e: Event) => setPriority((e.target as HTMLSelectElement).value),
