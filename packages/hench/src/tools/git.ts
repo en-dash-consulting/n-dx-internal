@@ -1,29 +1,14 @@
+import type { GuardRails } from "../guard/index.js";
 import { execShell } from "../process/exec-shell.js";
-
-const ALLOWED_SUBCOMMANDS = [
-  "status",
-  "add",
-  "commit",
-  "diff",
-  "log",
-  "branch",
-  "checkout",
-  "stash",
-  "show",
-  "rev-parse",
-];
 
 const GIT_TIMEOUT = 15000;
 
 export async function toolGit(
+  guard: GuardRails,
   projectDir: string,
   params: { subcommand: string; args?: string },
 ): Promise<string> {
-  if (!ALLOWED_SUBCOMMANDS.includes(params.subcommand)) {
-    throw new Error(
-      `Git subcommand "${params.subcommand}" not allowed. Allowed: ${ALLOWED_SUBCOMMANDS.join(", ")}`,
-    );
-  }
+  guard.checkGitSubcommand(params.subcommand);
 
   const args = ["git", params.subcommand];
   if (params.args) {

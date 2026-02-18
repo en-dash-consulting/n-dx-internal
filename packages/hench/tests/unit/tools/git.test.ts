@@ -4,12 +4,16 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execSync } from "node:child_process";
 import { toolGit } from "../../../src/tools/git.js";
+import { GuardRails } from "../../../src/guard/index.js";
+import { DEFAULT_HENCH_CONFIG } from "../../../src/schema/v1.js";
 
 describe("toolGit", () => {
   let projectDir: string;
+  let guard: GuardRails;
 
   beforeEach(async () => {
     projectDir = await mkdtemp(join(tmpdir(), "hench-test-git-"));
+    guard = new GuardRails(projectDir, DEFAULT_HENCH_CONFIG().guard);
     execSync("git init", { cwd: projectDir });
     execSync("git config user.email 'test@test.com'", { cwd: projectDir });
     execSync("git config user.name 'Test'", { cwd: projectDir });
@@ -21,12 +25,12 @@ describe("toolGit", () => {
 
   describe("allowed subcommands", () => {
     it("runs git status", async () => {
-      const result = await toolGit(projectDir, { subcommand: "status" });
+      const result = await toolGit(guard, projectDir, { subcommand: "status" });
       expect(result).toContain("branch");
     });
 
     it("runs git rev-parse", async () => {
-      const result = await toolGit(projectDir, {
+      const result = await toolGit(guard, projectDir, {
         subcommand: "rev-parse",
         args: "--git-dir",
       });
@@ -34,7 +38,7 @@ describe("toolGit", () => {
     });
 
     it("runs git branch", async () => {
-      const result = await toolGit(projectDir, { subcommand: "branch" });
+      const result = await toolGit(guard, projectDir, { subcommand: "branch" });
       // Either shows branches or nothing if no commits yet
       expect(typeof result).toBe("string");
     });
@@ -44,7 +48,7 @@ describe("toolGit", () => {
       execSync("git add test.txt", { cwd: projectDir });
       execSync("git commit -m 'test commit'", { cwd: projectDir });
 
-      const result = await toolGit(projectDir, { subcommand: "log" });
+      const result = await toolGit(guard, projectDir, { subcommand: "log" });
       expect(result).toContain("test commit");
     });
 
@@ -54,7 +58,7 @@ describe("toolGit", () => {
       execSync("git commit -m 'initial'", { cwd: projectDir });
       await writeFile(join(projectDir, "test.txt"), "hello world");
 
-      const result = await toolGit(projectDir, { subcommand: "diff" });
+      const result = await toolGit(guard, projectDir, { subcommand: "diff" });
       expect(result).toContain("hello world");
     });
   });
@@ -62,49 +66,49 @@ describe("toolGit", () => {
   describe("disallowed subcommands", () => {
     it("rejects push", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "push" }),
+        toolGit(guard, projectDir, { subcommand: "push" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("rejects reset", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "reset" }),
+        toolGit(guard, projectDir, { subcommand: "reset" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("rejects pull", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "pull" }),
+        toolGit(guard, projectDir, { subcommand: "pull" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("rejects fetch", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "fetch" }),
+        toolGit(guard, projectDir, { subcommand: "fetch" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("rejects clone", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "clone" }),
+        toolGit(guard, projectDir, { subcommand: "clone" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("rejects clean", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "clean" }),
+        toolGit(guard, projectDir, { subcommand: "clean" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("rejects rebase", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "rebase" }),
+        toolGit(guard, projectDir, { subcommand: "rebase" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("rejects merge", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "merge" }),
+        toolGit(guard, projectDir, { subcommand: "merge" }),
       ).rejects.toThrow("not allowed");
     });
   });
@@ -113,30 +117,30 @@ describe("toolGit", () => {
     it("rejects subcommand with shell injection via semicolon", async () => {
       // Attempt to inject a command via subcommand field
       await expect(
-        toolGit(projectDir, { subcommand: "status; rm -rf /" }),
+        toolGit(guard, projectDir, { subcommand: "status; rm -rf /" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("rejects subcommand with shell injection via &&", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "status && rm -rf /" }),
+        toolGit(guard, projectDir, { subcommand: "status && rm -rf /" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("rejects subcommand with backtick injection", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "status`whoami`" }),
+        toolGit(guard, projectDir, { subcommand: "status`whoami`" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("rejects subcommand with $() injection", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "status$(whoami)" }),
+        toolGit(guard, projectDir, { subcommand: "status$(whoami)" }),
       ).rejects.toThrow("not allowed");
     });
 
     it("properly handles quoted args without injection", async () => {
-      const result = await toolGit(projectDir, {
+      const result = await toolGit(guard, projectDir, {
         subcommand: "log",
         args: '--oneline -n 1 --format="%H"',
       });
@@ -150,7 +154,7 @@ describe("toolGit", () => {
       execSync("git commit -m 'test commit'", { cwd: projectDir });
 
       // Args with special chars should be handled safely
-      const result = await toolGit(projectDir, {
+      const result = await toolGit(guard, projectDir, {
         subcommand: "log",
         args: "-1 --pretty=format:'%s'",
       });
@@ -158,16 +162,44 @@ describe("toolGit", () => {
     });
   });
 
+  describe("guard integration", () => {
+    it("uses guard allowlist instead of hardcoded list", async () => {
+      // Create a guard with custom git subcommand allowlist
+      const customGuard = new GuardRails(projectDir, {
+        ...DEFAULT_HENCH_CONFIG().guard,
+        allowedGitSubcommands: ["status", "log"],
+      });
+
+      // status should work
+      const result = await toolGit(customGuard, projectDir, { subcommand: "status" });
+      expect(result).toContain("branch");
+
+      // checkout should be blocked (not in custom list)
+      await expect(
+        toolGit(customGuard, projectDir, { subcommand: "checkout" }),
+      ).rejects.toThrow("not allowed");
+    });
+
+    it("records git operations in policy audit log", async () => {
+      await toolGit(guard, projectDir, { subcommand: "status" });
+      expect(guard.policy.counters.commandsRun).toBe(1);
+
+      const entries = guard.policy.auditLog;
+      expect(entries.length).toBeGreaterThanOrEqual(1);
+      expect(entries.some(e => e.operation === "git")).toBe(true);
+    });
+  });
+
   describe("error message clarity", () => {
     it("includes allowed subcommands in error message", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "forbidden" }),
+        toolGit(guard, projectDir, { subcommand: "forbidden" }),
       ).rejects.toThrow(/Allowed:/);
     });
 
     it("includes the attempted subcommand in error message", async () => {
       await expect(
-        toolGit(projectDir, { subcommand: "forbidden" }),
+        toolGit(guard, projectDir, { subcommand: "forbidden" }),
       ).rejects.toThrow(/forbidden/);
     });
   });
@@ -175,13 +207,13 @@ describe("toolGit", () => {
   describe("output handling", () => {
     it("returns (no output) for commands with empty output", async () => {
       // A diff with no changes returns empty output
-      const result = await toolGit(projectDir, { subcommand: "diff" });
+      const result = await toolGit(guard, projectDir, { subcommand: "diff" });
       expect(result).toBe("(no output)");
     });
 
     it("captures stderr output", async () => {
       // Asking for a non-existent branch should produce stderr
-      const result = await toolGit(projectDir, {
+      const result = await toolGit(guard, projectDir, {
         subcommand: "branch",
         args: "-d nonexistent",
       });

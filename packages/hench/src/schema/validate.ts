@@ -4,6 +4,13 @@ export type ValidationResult<T> =
   | { ok: true; data: T }
   | { ok: false; errors: ZodError };
 
+const PolicyLimitsConfigSchema = z.object({
+  maxCommandsPerMinute: z.number().int().nonnegative().optional(),
+  maxWritesPerMinute: z.number().int().nonnegative().optional(),
+  maxTotalBytesWritten: z.number().int().nonnegative().optional(),
+  maxTotalCommands: z.number().int().nonnegative().optional(),
+}).optional();
+
 const GuardConfigSchema = z.object({
   blockedPaths: z.array(z.string()),
   allowedCommands: z.array(z.string()),
@@ -11,6 +18,11 @@ const GuardConfigSchema = z.object({
   maxFileSize: z.number().positive(),
   spawnTimeout: z.number().nonnegative().optional().default(300000),
   maxConcurrentProcesses: z.number().int().positive().optional().default(4),
+  allowedGitSubcommands: z.array(z.string()).optional().default([
+    "status", "add", "commit", "diff", "log",
+    "branch", "checkout", "stash", "show", "rev-parse",
+  ]),
+  policy: PolicyLimitsConfigSchema,
 });
 
 const RetryConfigSchema = z.object({

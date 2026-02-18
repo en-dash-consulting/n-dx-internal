@@ -14,6 +14,7 @@ export async function toolReadFile(
       `File exceeds max size (${s.size} > ${guard.maxFileSize}): ${params.path}`,
     );
   }
+  guard.recordFileRead(params.path);
   return await readFile(resolved, "utf-8");
 }
 
@@ -28,6 +29,7 @@ export async function toolWriteFile(
       `Content exceeds max size (${contentSize} > ${guard.maxFileSize})`,
     );
   }
+  guard.recordFileWrite(params.path, contentSize);
   await mkdir(dirname(resolved), { recursive: true });
   await writeFile(resolved, params.content, "utf-8");
   return `Wrote ${contentSize} bytes to ${params.path}`;

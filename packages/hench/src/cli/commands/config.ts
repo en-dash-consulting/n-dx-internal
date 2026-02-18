@@ -172,6 +172,15 @@ export const CONFIG_FIELDS: ConfigFieldMeta[] = [
     impact: (v) =>
       `Agent limited to writing files under ${(Number(v) / 1024 / 1024).toFixed(1)}MB`,
   },
+  {
+    path: "guard.allowedGitSubcommands",
+    label: "Git Subcommands",
+    description: "Git subcommands the agent is permitted to execute",
+    type: "array",
+    category: "guard",
+    impact: (v) =>
+      `Agent can run git: ${(v as string[]).join(", ")}`,
+  },
 
   // ── General ──
   {

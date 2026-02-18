@@ -5,6 +5,7 @@ export {
 
 export type {
   GuardConfig,
+  PolicyLimitsConfig,
   RetryConfig,
   HenchConfig,
   Provider,

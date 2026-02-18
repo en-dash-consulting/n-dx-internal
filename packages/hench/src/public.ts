@@ -34,6 +34,7 @@ export { HENCH_SCHEMA_VERSION, DEFAULT_HENCH_CONFIG } from "./schema/v1.js";
 export type {
   HenchConfig,
   GuardConfig,
+  PolicyLimitsConfig,
   RetryConfig,
   Provider,
   RunRecord,

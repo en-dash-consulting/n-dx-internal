@@ -136,6 +136,14 @@ export const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         maxFileSize: 524288,
         spawnTimeout: 120000,          // 2 minutes — stricter than default
         maxConcurrentProcesses: 2,     // tighter limit for sensitive work
+        allowedGitSubcommands: [
+          "status", "add", "commit", "diff", "log",
+          "branch", "show", "rev-parse",
+        ],                             // no checkout/stash in strict mode
+        policy: {
+          maxCommandsPerMinute: 30,    // half of default
+          maxWritesPerMinute: 15,      // half of default
+        },
       },
     },
     builtIn: true,

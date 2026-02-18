@@ -163,6 +163,7 @@ export async function dispatchTool(
 
       case "git":
         return await toolGit(
+          ctx.guard,
           ctx.projectDir,
           input as { subcommand: string; args?: string },
         );

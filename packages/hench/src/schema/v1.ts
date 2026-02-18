@@ -2,6 +2,18 @@ import { PROJECT_DIRS } from "@n-dx/claude-client";
 
 export const HENCH_SCHEMA_VERSION = "hench/v1";
 
+/** Configurable subset of policy limits (all optional, defaults applied at runtime). */
+export interface PolicyLimitsConfig {
+  /** Maximum commands per minute (0 = unlimited). */
+  maxCommandsPerMinute?: number;
+  /** Maximum file writes per minute (0 = unlimited). */
+  maxWritesPerMinute?: number;
+  /** Maximum total bytes written in the session (0 = unlimited). */
+  maxTotalBytesWritten?: number;
+  /** Maximum total commands in the session (0 = unlimited). */
+  maxTotalCommands?: number;
+}
+
 export interface GuardConfig {
   blockedPaths: string[];
   allowedCommands: string[];
@@ -11,6 +23,10 @@ export interface GuardConfig {
   spawnTimeout: number;
   /** Maximum concurrent child processes allowed. */
   maxConcurrentProcesses: number;
+  /** Allowed git subcommands. Centralizes the git safety allowlist in guard config. */
+  allowedGitSubcommands: string[];
+  /** Policy limits for session-aware rate limiting and resource tracking. */
+  policy?: PolicyLimitsConfig;
 }
 
 export interface RetryConfig {
@@ -54,6 +70,10 @@ export function DEFAULT_HENCH_CONFIG(): HenchConfig {
       maxFileSize: 1048576,
       spawnTimeout: 300000,          // 5 minutes
       maxConcurrentProcesses: 4,
+      allowedGitSubcommands: [
+        "status", "add", "commit", "diff", "log",
+        "branch", "checkout", "stash", "show", "rev-parse",
+      ],
     },
     retry: {
       maxRetries: 3,
