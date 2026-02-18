@@ -20,6 +20,7 @@ import { handleMcpRoute } from "./routes-mcp.js";
 import { handleProjectRoute } from "./routes-project.js";
 import { handleStatusRoute } from "./routes-status.js";
 import { handleConfigRoute } from "./routes-config.js";
+import { handleNotionRoute } from "./routes-notion.js";
 import { createWebSocketManager } from "./websocket.js";
 import { ALL_DATA_FILES } from "../schema/data-files.js";
 import { findAvailablePort } from "./port.js";
@@ -198,6 +199,9 @@ export async function startServer(
 
     // 0d. Configuration display and project detection (cross-cutting)
     if (await handleConfigRoute(req, res, ctx)) return;
+
+    // 0e. Notion integration config (rex-related)
+    if (inScope("rex") && await handleNotionRoute(req, res, ctx)) return;
 
     // 1. Sourcevision API
     if (inScope("sourcevision") && handleSourcevisionRoute(req, res, ctx)) return;
