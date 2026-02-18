@@ -294,6 +294,38 @@ describe("analyzeZones", () => {
     expect(result.zones[0].files).toHaveLength(6);
   });
 
+  it("merges communities from the same package directory even with different derived IDs", async () => {
+    // CLI files and test files within a package may derive different zone IDs
+    // (e.g., "cli" vs "core") but should be merged because they share the
+    // same packages/<name> root directory.
+    const inventory = makeInventory([
+      makeFileEntry("packages/rex/src/core/store.ts"),
+      makeFileEntry("packages/rex/src/core/tree.ts"),
+      makeFileEntry("packages/rex/src/core/validate.ts"),
+      makeFileEntry("packages/rex/src/cli/index.ts"),
+      makeFileEntry("packages/rex/src/cli/commands.ts"),
+      makeFileEntry("packages/rex/src/cli/output.ts"),
+    ]);
+    const imports = makeImports([
+      // Core cluster: tightly connected
+      makeEdge("packages/rex/src/core/store.ts", "packages/rex/src/core/tree.ts"),
+      makeEdge("packages/rex/src/core/tree.ts", "packages/rex/src/core/validate.ts"),
+      makeEdge("packages/rex/src/core/store.ts", "packages/rex/src/core/validate.ts"),
+      // CLI cluster: tightly connected
+      makeEdge("packages/rex/src/cli/index.ts", "packages/rex/src/cli/commands.ts"),
+      makeEdge("packages/rex/src/cli/commands.ts", "packages/rex/src/cli/output.ts"),
+      makeEdge("packages/rex/src/cli/index.ts", "packages/rex/src/cli/output.ts"),
+      // Weak cross-cluster link (CLI uses core)
+      makeEdge("packages/rex/src/cli/commands.ts", "packages/rex/src/core/store.ts"),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // Should be merged into a single zone since both live under packages/rex
+    expect(result.zones).toHaveLength(1);
+    expect(result.zones[0].files).toHaveLength(6);
+  });
+
   it("merges small communities into neighbors", async () => {
     const inventory = makeInventory([
       // Big cluster

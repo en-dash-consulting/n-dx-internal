@@ -1,0 +1,62 @@
+/**
+ * Shared types for the zone diagram view and its extracted hooks.
+ */
+
+export interface CallRef {
+  funcName: string;
+  file: string;
+  crossZone: boolean;
+}
+
+export interface FuncInfo {
+  fn: import("../../schema/v1.js").FunctionNode;
+  outgoing: CallRef[];
+  incoming: CallRef[];
+}
+
+export interface FileInfo {
+  path: string;
+  functions: FuncInfo[];
+  internalCalls: number;
+  crossZoneCalls: number;
+}
+
+export interface ZoneData {
+  id: string;
+  name: string;
+  color: string;
+  description: string;
+  cohesion: number;
+  coupling: number;
+  files: FileInfo[];
+  totalFunctions: number;
+  internalCalls: number;
+  crossZoneCalls: number;
+}
+
+export interface BoxRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  gridCol: number;
+  gridRow: number;
+}
+
+export interface FlowEdge {
+  from: string;
+  to: string;
+  weight: number;
+}
+
+/** Per-file cross-zone connection: which other zones a file connects to. */
+export interface FileZoneLink {
+  targetZoneId: string;
+  weight: number;
+}
+
+/** Maps file path → list of cross-zone connections. */
+export type FileConnectionMap = Map<string, FileZoneLink[]>;
+
+/** Maps (sourceFile → targetFile → weight) for file-to-file edges. */
+export type FileToFileMap = Map<string, Map<string, number>>;

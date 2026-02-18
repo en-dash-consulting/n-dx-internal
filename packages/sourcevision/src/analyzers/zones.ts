@@ -640,10 +640,11 @@ export function generateStructuralInsights(
 // ── Helper: merge same-ID communities ────────────────────────────────────────
 
 /**
- * Merge Louvain communities that derive the same zone ID.
- * Prevents a single package from fragmenting into multiple root-level zones
- * (e.g., "hench", "hench-2", "hench-3"). After merging, the combined zone
- * may be subdivided into properly named sub-zones.
+ * Merge Louvain communities that derive the same zone ID or share the same
+ * dominant package root. Prevents a single package from fragmenting into
+ * multiple root-level zones (e.g., "rex" + "rex-cli" or "sourcevision" +
+ * "sourcevision-tests"). After merging, the combined zone may be subdivided
+ * into properly named sub-zones.
  */
 function mergeSameIdCommunities(
   community: Map<string, string>
@@ -655,15 +656,42 @@ function mergeSameIdCommunities(
     list.push(node);
   }
 
-  const idToCommunities = new Map<string, string[]>();
+  // Pass 1: merge communities with the same derived zone ID
+  mergeByKey(community, tempMembers, (members) => deriveZoneId(members));
+
+  // Rebuild member map after pass 1 (community assignments may have changed)
+  tempMembers.clear();
+  for (const [node, comm] of community) {
+    let list = tempMembers.get(comm);
+    if (!list) { list = []; tempMembers.set(comm, list); }
+    list.push(node);
+  }
+
+  // Pass 2: merge communities whose files predominantly share the same
+  // package root (e.g., packages/rex/src/* and packages/rex/tests/*)
+  mergeByKey(community, tempMembers, (members) => dominantPackageRoot(members));
+}
+
+/**
+ * Generic community merger: group communities by a key derived from their
+ * members, then merge all communities that share the same non-null key into
+ * the largest one.
+ */
+function mergeByKey(
+  community: Map<string, string>,
+  tempMembers: Map<string, string[]>,
+  keyFn: (members: string[]) => string | null,
+): void {
+  const keyToCommunities = new Map<string, string[]>();
   for (const [comm, members] of tempMembers) {
-    const id = deriveZoneId(members);
-    let list = idToCommunities.get(id);
-    if (!list) { list = []; idToCommunities.set(id, list); }
+    const key = keyFn(members);
+    if (!key) continue;
+    let list = keyToCommunities.get(key);
+    if (!list) { list = []; keyToCommunities.set(key, list); }
     list.push(comm);
   }
 
-  for (const [, comms] of idToCommunities) {
+  for (const [, comms] of keyToCommunities) {
     if (comms.length <= 1) continue;
     comms.sort((a, b) => {
       const sizeA = tempMembers.get(a)?.length ?? 0;
@@ -677,6 +705,40 @@ function mergeSameIdCommunities(
       }
     }
   }
+}
+
+/**
+ * Determine the dominant package root for a set of files.
+ * Returns the `packages/<name>` prefix if ≥70% of files share it, else null.
+ * This prevents artificial splits within a single domain package.
+ */
+function dominantPackageRoot(files: string[]): string | null {
+  if (files.length === 0) return null;
+
+  const rootCounts = new Map<string, number>();
+  for (const file of files) {
+    const parts = file.split("/");
+    if (parts.length >= 2 && parts[0] === "packages") {
+      const root = `packages/${parts[1]}`;
+      rootCounts.set(root, (rootCounts.get(root) ?? 0) + 1);
+    }
+  }
+
+  if (rootCounts.size === 0) return null;
+
+  // Find the most common package root
+  let bestRoot = "";
+  let bestCount = 0;
+  for (const [root, count] of rootCounts) {
+    if (count > bestCount || (count === bestCount && root < bestRoot)) {
+      bestRoot = root;
+      bestCount = count;
+    }
+  }
+
+  // Only merge if the dominant root covers ≥70% of the community's files
+  const ratio = bestCount / files.length;
+  return ratio >= 0.7 ? bestRoot : null;
 }
 
 // ── Helper: build zones from communities ─────────────────────────────────────

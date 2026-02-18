@@ -9,9 +9,9 @@
  */
 
 import { h } from "preact";
-import { useState, useMemo, useCallback, useRef, useEffect } from "preact/hooks";
+import { useState, useMemo, useCallback, useEffect } from "preact/hooks";
 import type { LoadedData, DetailItem, NavigateTo } from "../types.js";
-import type { CallGraph, FunctionNode, ExternalImport, Zone, Finding } from "../../schema/v1.js";
+import type { CallGraph, Zone, Finding } from "../../schema/v1.js";
 import { CollapsibleSection } from "../components/data-display/collapsible-section.js";
 import { SearchFilter } from "../components/search-filter.js";
 import { BrandedHeader } from "../components/logos.js";
@@ -23,6 +23,20 @@ import {
   basename,
   meterClass,
 } from "../utils.js";
+import type {
+  ZoneData,
+  BoxRect,
+  FlowEdge,
+  FileConnectionMap,
+  FileToFileMap,
+  FileInfo,
+} from "./zone-types.js";
+import { usePanZoom } from "../hooks/use-pan-zoom.js";
+import { useZoneDrag } from "../hooks/use-zone-drag.js";
+import { useFileEdges } from "../hooks/use-file-edges.js";
+
+// ── Re-export types for downstream consumers ─────────────────────────
+export type { ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap } from "./zone-types.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -31,72 +45,6 @@ interface ZonesViewProps {
   onSelect: (detail: DetailItem | null) => void;
   navigateTo?: NavigateTo;
 }
-
-interface CallRef {
-  funcName: string;
-  file: string;
-  crossZone: boolean;
-}
-
-interface FuncInfo {
-  fn: FunctionNode;
-  outgoing: CallRef[];
-  incoming: CallRef[];
-}
-
-interface FileInfo {
-  path: string;
-  functions: FuncInfo[];
-  internalCalls: number;
-  crossZoneCalls: number;
-}
-
-interface ZoneData {
-  id: string;
-  name: string;
-  color: string;
-  description: string;
-  cohesion: number;
-  coupling: number;
-  files: FileInfo[];
-  totalFunctions: number;
-  internalCalls: number;
-  crossZoneCalls: number;
-}
-
-interface BoxRect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  gridCol: number;
-  gridRow: number;
-}
-
-interface ViewBox {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-interface FlowEdge {
-  from: string;
-  to: string;
-  weight: number;
-}
-
-/** Per-file cross-zone connection: which other zones a file connects to. */
-interface FileZoneLink {
-  targetZoneId: string;
-  weight: number;
-}
-
-/** Maps file path → list of cross-zone connections. */
-type FileConnectionMap = Map<string, FileZoneLink[]>;
-
-/** Maps (sourceFile → targetFile → weight) for file-to-file edges. */
-type FileToFileMap = Map<string, Map<string, number>>;
 
 // ── Constants ────────────────────────────────────────────────────────
 
@@ -115,14 +63,14 @@ function buildExplorerData(
   fileToZoneMap: Map<string, { id: string; name: string; color: string }>,
   zones: LoadedData["zones"],
 ): { zoneDataList: ZoneData[]; unzonedFiles: FileInfo[] } {
-  const funcsByFile = new Map<string, FunctionNode[]>();
+  const funcsByFile = new Map<string, import("../../schema/v1.js").FunctionNode[]>();
   for (const fn of callGraph.functions) {
     let list = funcsByFile.get(fn.file);
     if (!list) { list = []; funcsByFile.set(fn.file, list); }
     list.push(fn);
   }
 
-  const funcInfoMap = new Map<string, FuncInfo>();
+  const funcInfoMap = new Map<string, import("./zone-types.js").FuncInfo>();
   for (const fn of callGraph.functions) {
     funcInfoMap.set(`${fn.file}:${fn.qualifiedName}`, {
       fn,
@@ -219,7 +167,7 @@ function buildExplorerData(
  */
 function buildFileConnectionMap(
   callGraph: CallGraph,
-  externalImports: ExternalImport[],
+  externalImports: import("../../schema/v1.js").ExternalImport[],
   fileToZoneMap: Map<string, { id: string; name: string; color: string }>,
   zones: LoadedData["zones"],
 ): FileConnectionMap {
@@ -328,9 +276,22 @@ function boxHeight(zone: ZoneData, expanded: boolean): number {
   return BOX_H_COLLAPSED + rows * FILE_ROW_H + 16 + (zone.files.length > FILE_ROWS_MAX ? 20 : 0);
 }
 
-/** Get the Y center of a file row within an expanded zone box. */
-function fileRowY(box: BoxRect, fileIndex: number): number {
-  return box.y + BOX_H_COLLAPSED - 4 + fileIndex * FILE_ROW_H + FILE_ROW_H / 2;
+function boxEdgeAnchor(box: BoxRect, tx: number, ty: number): { x: number; y: number } {
+  const cx = box.x + box.w / 2;
+  const cy = box.y + box.h / 2;
+  const dx = tx - cx;
+  const dy = ty - cy;
+
+  if (dx === 0 && dy === 0) return { x: cx, y: cy };
+
+  const hw = box.w / 2;
+  const hh = box.h / 2;
+
+  const sx = dx !== 0 ? hw / Math.abs(dx) : Infinity;
+  const sy = dy !== 0 ? hh / Math.abs(dy) : Infinity;
+  const s = Math.min(sx, sy);
+
+  return { x: cx + dx * s, y: cy + dy * s };
 }
 
 function computeZoneLayout(
@@ -479,24 +440,6 @@ function computeZoneLayout(
   return { boxes, totalW, totalH };
 }
 
-function boxEdgeAnchor(box: BoxRect, tx: number, ty: number): { x: number; y: number } {
-  const cx = box.x + box.w / 2;
-  const cy = box.y + box.h / 2;
-  const dx = tx - cx;
-  const dy = ty - cy;
-
-  if (dx === 0 && dy === 0) return { x: cx, y: cy };
-
-  const hw = box.w / 2;
-  const hh = box.h / 2;
-
-  const sx = dx !== 0 ? hw / Math.abs(dx) : Infinity;
-  const sy = dy !== 0 ? hh / Math.abs(dy) : Infinity;
-  const s = Math.min(sx, sy);
-
-  return { x: cx + dx * s, y: cy + dy * s };
-}
-
 function computeEdgePath(
   fromBox: BoxRect,
   toBox: BoxRect,
@@ -528,50 +471,6 @@ function computeEdgePath(
   const cpy = my + py * offset;
 
   return `M ${from.x} ${from.y} Q ${cpx} ${cpy} ${to.x} ${to.y}`;
-}
-
-/** Compute a cubic Bézier from a file row position to a target zone box. */
-function computeFileEdgePath(
-  fileBox: BoxRect,
-  fileCenterY: number,
-  targetBox: BoxRect,
-): string {
-  const targetCx = targetBox.x + targetBox.w / 2;
-  const exitRight = targetCx > fileBox.x + fileBox.w / 2;
-  const fromX = exitRight ? fileBox.x + fileBox.w : fileBox.x;
-  const fromY = Math.max(fileBox.y + 4, Math.min(fileCenterY, fileBox.y + fileBox.h - 4));
-
-  const to = boxEdgeAnchor(targetBox, fromX, fromY);
-
-  const dx = to.x - fromX;
-  const cp1x = fromX + dx * 0.4;
-  const cp1y = fromY;
-  const cp2x = fromX + dx * 0.6;
-  const cp2y = to.y;
-
-  return `M ${fromX} ${fromY} C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${to.x} ${to.y}`;
-}
-
-/** Compute a cubic Bézier between two file rows in different expanded zone boxes. */
-function computeFileToFileEdgePath(
-  fromBox: BoxRect,
-  fromFileY: number,
-  toBox: BoxRect,
-  toFileY: number,
-): string {
-  const goRight = toBox.x > fromBox.x;
-  const fromX = goRight ? fromBox.x + fromBox.w : fromBox.x;
-  const toX = goRight ? toBox.x : toBox.x + toBox.w;
-  const fromY = Math.max(fromBox.y + 4, Math.min(fromFileY, fromBox.y + fromBox.h - 4));
-  const toY = Math.max(toBox.y + 4, Math.min(toFileY, toBox.y + toBox.h - 4));
-
-  const dx = toX - fromX;
-  const cp1x = fromX + dx * 0.4;
-  const cp1y = fromY;
-  const cp2x = fromX + dx * 0.6;
-  const cp2y = toY;
-
-  return `M ${fromX} ${fromY} C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${toX} ${toY}`;
 }
 
 // ── Sub-components ───────────────────────────────────────────────────
@@ -888,6 +787,8 @@ function ZoomControls({
   );
 }
 
+// ── ZoneDiagram (decomposed) ─────────────────────────────────────────
+
 function ZoneDiagram({
   zones,
   edges,
@@ -911,31 +812,33 @@ function ZoneDiagram({
   onSelectFile: (path: string) => void;
   onDblClickFile: (path: string) => void;
 }) {
-  const svgRef = useRef<SVGSVGElement>(null);
   const [hoveredEdge, setHoveredEdge] = useState<string | null>(null);
-  const [panning, setPanning] = useState(false);
-  const panStart = useRef<{ x: number; y: number; vbx: number; vby: number } | null>(null);
-
-  // Zone dragging state
-  const [dragOffsets, setDragOffsets] = useState<Map<string, { dx: number; dy: number }>>(new Map());
-  const zoneDrag = useRef<{
-    zoneId: string; startX: number; startY: number;
-    origDx: number; origDy: number; moved: boolean;
-  } | null>(null);
 
   const zoneById = useMemo(() => new Map(zones.map((z) => [z.id, z])), [zones]);
 
+  // Layout computation
   const { boxes: baseBoxes, totalW, totalH } = useMemo(
     () => computeZoneLayout(zones, edges, expandedZones),
     [zones, edges, expandedZones],
   );
 
+  const fitVB = useMemo(() => ({
+    x: 0,
+    y: 0,
+    w: Math.max(totalW, 400),
+    h: Math.max(totalH, 300),
+  }), [totalW, totalH]);
+
+  // Extracted hooks for interaction
+  const panZoom = usePanZoom(fitVB);
+  const zoneDrag = useZoneDrag(panZoom.svgRef, panZoom.viewBox);
+
   // Apply drag offsets to computed boxes
   const boxes = useMemo(() => {
-    if (dragOffsets.size === 0) return baseBoxes;
+    if (zoneDrag.dragOffsets.size === 0) return baseBoxes;
     const result = new Map<string, BoxRect>();
     for (const [id, box] of baseBoxes) {
-      const off = dragOffsets.get(id);
+      const off = zoneDrag.dragOffsets.get(id);
       if (off) {
         result.set(id, { ...box, x: box.x + off.dx, y: box.y + off.dy });
       } else {
@@ -943,21 +846,14 @@ function ZoneDiagram({
       }
     }
     return result;
-  }, [baseBoxes, dragOffsets]);
+  }, [baseBoxes, zoneDrag.dragOffsets]);
 
-  const fitVB = useMemo((): ViewBox => ({
-    x: 0,
-    y: 0,
-    w: Math.max(totalW, 400),
-    h: Math.max(totalH, 300),
-  }), [totalW, totalH]);
+  // Edge computations (extracted hook)
+  const { fileEdgeElements, hiddenZoneEdges } = useFileEdges(
+    edges, boxes, expandedZones, zoneById, fileConnections, fileToFileMap,
+  );
 
-  const [viewBox, setViewBox] = useState<ViewBox>(fitVB);
-
-  useEffect(() => {
-    setViewBox(fitVB);
-  }, [fitVB]);
-
+  // Edge weight stats
   const maxWeight = useMemo(() => {
     let max = 1;
     for (const e of edges) if (e.weight > max) max = e.weight;
@@ -985,6 +881,7 @@ function ZoneDiagram({
     return indices;
   }, [edges]);
 
+  // Search/filter state
   const { dimmedZones, matchingFilesByZone } = useMemo(() => {
     if (!searchQ) return { dimmedZones: new Set<string>(), matchingFilesByZone: new Map<string, Set<string>>() };
 
@@ -1010,341 +907,60 @@ function ZoneDiagram({
     return { dimmedZones: dimmed, matchingFilesByZone: matching };
   }, [zones, searchQ]);
 
-  // Build file-level edges for expanded zones
-  const fileEdgeElements = useMemo(() => {
-    const elements: Array<{ key: string; d: string; color: string; weight: number }> = [];
-
-    for (const edge of edges) {
-      const fromBox = boxes.get(edge.from);
-      const toBox = boxes.get(edge.to);
-      if (!fromBox || !toBox) continue;
-
-      const fromExpanded = expandedZones.has(edge.from);
-      const toExpanded = expandedZones.has(edge.to);
-      if (!fromExpanded && !toExpanded) continue;
-
-      const fromZone = zoneById.get(edge.from);
-      const toZone = zoneById.get(edge.to);
-
-      // Both zones expanded: try file-to-file edges, fall back to file-to-zone
-      if (fromExpanded && toExpanded) {
-        if (!fromZone || !toZone) continue;
-        const fromFiles = fromZone.files.slice(0, FILE_ROWS_MAX);
-        const toFiles = toZone.files.slice(0, FILE_ROWS_MAX);
-        const toFileIndex = new Map(toFiles.map((f, i) => [f.path, i]));
-
-        let hasF2F = false;
-
-        // Try file-to-file edges (from call graph data)
-        for (let fi = 0; fi < fromFiles.length; fi++) {
-          const srcFile = fromFiles[fi];
-          const targets = fileToFileMap.get(srcFile.path);
-          if (!targets) continue;
-
-          for (const [tgtPath, weight] of targets) {
-            const ti = toFileIndex.get(tgtPath);
-            if (ti === undefined) continue;
-            hasF2F = true;
-
-            const fromY = fileRowY(fromBox, fi);
-            const toY = fileRowY(toBox, ti);
-            elements.push({
-              key: `ff-${srcFile.path}-${tgtPath}`,
-              d: computeFileToFileEdgePath(fromBox, fromY, toBox, toY),
-              color: toZone.color,
-              weight,
-            });
-          }
-        }
-
-        // Also check reverse direction for file-to-file
-        for (let ti = 0; ti < toFiles.length; ti++) {
-          const srcFile = toFiles[ti];
-          const targets = fileToFileMap.get(srcFile.path);
-          if (!targets) continue;
-          const fromFileIndex = new Map(fromFiles.map((f, i) => [f.path, i]));
-
-          for (const [tgtPath, weight] of targets) {
-            const fi = fromFileIndex.get(tgtPath);
-            if (fi === undefined) continue;
-            // Avoid duplicating the same pair
-            const dupeKey = `ff-${tgtPath}-${srcFile.path}`;
-            if (elements.some((el) => el.key === dupeKey)) continue;
-            hasF2F = true;
-
-            const fromY = fileRowY(toBox, ti);
-            const toY = fileRowY(fromBox, fi);
-            elements.push({
-              key: `ff-${srcFile.path}-${tgtPath}`,
-              d: computeFileToFileEdgePath(toBox, fromY, fromBox, toY),
-              color: fromZone.color,
-              weight,
-            });
-          }
-        }
-
-        // Fallback: no file-to-file data → draw file-to-zone from both sides
-        if (!hasF2F) {
-          // Source files → target zone box
-          for (let i = 0; i < fromFiles.length; i++) {
-            const file = fromFiles[i];
-            const conns = fileConnections.get(file.path);
-            if (!conns) continue;
-            const link = conns.find((c) => c.targetZoneId === edge.to);
-            if (!link) continue;
-            elements.push({
-              key: `fe-${file.path}-${edge.to}`,
-              d: computeFileEdgePath(fromBox, fileRowY(fromBox, i), toBox),
-              color: toZone.color,
-              weight: link.weight,
-            });
-          }
-          // Target files → source zone box
-          for (let i = 0; i < toFiles.length; i++) {
-            const file = toFiles[i];
-            const conns = fileConnections.get(file.path);
-            if (!conns) continue;
-            const link = conns.find((c) => c.targetZoneId === edge.from);
-            if (!link) continue;
-            elements.push({
-              key: `fe-${edge.from}-${file.path}`,
-              d: computeFileEdgePath(toBox, fileRowY(toBox, i), fromBox),
-              color: fromZone.color,
-              weight: link.weight,
-            });
-          }
-        }
-        continue;
-      }
-
-      // Only source zone expanded: draw from files to target zone box
-      if (fromExpanded) {
-        if (!fromZone) continue;
-        const visibleFiles = fromZone.files.slice(0, FILE_ROWS_MAX);
-        for (let i = 0; i < visibleFiles.length; i++) {
-          const file = visibleFiles[i];
-          const conns = fileConnections.get(file.path);
-          if (!conns) continue;
-          const link = conns.find((c) => c.targetZoneId === edge.to);
-          if (!link) continue;
-
-          const fy = fileRowY(fromBox, i);
-          elements.push({
-            key: `fe-${file.path}-${edge.to}`,
-            d: computeFileEdgePath(fromBox, fy, toBox),
-            color: toZone?.color ?? "var(--border-strong)",
-            weight: link.weight,
-          });
-        }
-        continue;
-      }
-
-      // Only target zone expanded: draw from source zone box to files
-      if (!toZone) continue;
-      const visibleFiles = toZone.files.slice(0, FILE_ROWS_MAX);
-      for (let i = 0; i < visibleFiles.length; i++) {
-        const file = visibleFiles[i];
-        const conns = fileConnections.get(file.path);
-        if (!conns) continue;
-        const link = conns.find((c) => c.targetZoneId === edge.from);
-        if (!link) continue;
-
-        const fy = fileRowY(toBox, i);
-        elements.push({
-          key: `fe-${edge.from}-${file.path}`,
-          d: computeFileEdgePath(toBox, fy, fromBox),
-          color: fromZone?.color ?? "var(--border-strong)",
-          weight: link.weight,
-        });
-      }
-    }
-
-    return elements;
-  }, [edges, boxes, expandedZones, zoneById, fileConnections, fileToFileMap]);
-
-  // Determine which zone-level edges should be hidden (replaced by file edges)
-  const hiddenZoneEdges = useMemo(() => {
-    const hidden = new Set<string>();
-    for (const edge of edges) {
-      const fromExpanded = expandedZones.has(edge.from);
-      const toExpanded = expandedZones.has(edge.to);
-      if (fromExpanded || toExpanded) {
-        // Check if any file edges exist for this zone pair
-        const hasFileEdges = fileEdgeElements.some((fe) =>
-          fe.key.includes(edge.from) || fe.key.includes(edge.to),
-        );
-        if (hasFileEdges) hidden.add(`${edge.from}->${edge.to}`);
-      }
-    }
-    return hidden;
-  }, [edges, expandedZones, fileEdgeElements]);
-
-  // Pan/zoom handlers
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    const svg = svgRef.current;
-    if (!svg) return;
-
-    const rect = svg.getBoundingClientRect();
-
-    // ctrlKey = pinch-zoom on trackpad (or ctrl+scroll on mouse) → zoom
-    if (e.ctrlKey) {
-      const fx = (e.clientX - rect.left) / rect.width;
-      const fy = (e.clientY - rect.top) / rect.height;
-      // Clamp deltaY to reduce sensitivity: ±2px max effect per event
-      const clamped = Math.max(-2, Math.min(2, e.deltaY));
-      const zoomFactor = 1 + clamped * 0.02;
-
-      setViewBox((vb) => {
-        const newW = vb.w * zoomFactor;
-        const newH = vb.h * zoomFactor;
-        const newX = vb.x + (vb.w - newW) * fx;
-        const newY = vb.y + (vb.h - newH) * fy;
-        return { x: newX, y: newY, w: newW, h: newH };
-      });
-      return;
-    }
-
-    // Regular scroll / two-finger drag on trackpad → pan
-    setViewBox((vb) => {
-      const scaleX = vb.w / rect.width;
-      const scaleY = vb.h / rect.height;
-      return {
-        ...vb,
-        x: vb.x + e.deltaX * scaleX,
-        y: vb.y + e.deltaY * scaleY,
-      };
-    });
-  }, []);
-
+  // Combined mouse handlers that delegate to zone drag or pan/zoom
   const handleMouseDown = useCallback((e: MouseEvent) => {
     const zoneEl = (e.target as Element)?.closest(".cg-zone-box");
     if (zoneEl) {
-      // Start zone drag
       const zoneId = zoneEl.getAttribute("data-zone-id");
-      if (!zoneId) return;
-      const off = dragOffsets.get(zoneId) ?? { dx: 0, dy: 0 };
-      zoneDrag.current = {
-        zoneId,
-        startX: e.clientX,
-        startY: e.clientY,
-        origDx: off.dx,
-        origDy: off.dy,
-        moved: false,
-      };
-      return;
+      if (zoneId) {
+        zoneDrag.startDrag(zoneId, e);
+        return;
+      }
     }
-
-    // Background pan
-    setPanning(true);
-    panStart.current = { x: e.clientX, y: e.clientY, vbx: viewBox.x, vby: viewBox.y };
-  }, [viewBox, dragOffsets]);
+    panZoom.startPan(e);
+  }, [zoneDrag, panZoom]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    // Zone dragging
-    if (zoneDrag.current && svgRef.current) {
-      const rect = svgRef.current.getBoundingClientRect();
-      const scaleX = viewBox.w / rect.width;
-      const scaleY = viewBox.h / rect.height;
-      const dx = (e.clientX - zoneDrag.current.startX) * scaleX;
-      const dy = (e.clientY - zoneDrag.current.startY) * scaleY;
-
-      if (!zoneDrag.current.moved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
-        zoneDrag.current.moved = true;
-      }
-
-      if (zoneDrag.current.moved) {
-        const zid = zoneDrag.current.zoneId;
-        const newDx = zoneDrag.current.origDx + dx;
-        const newDy = zoneDrag.current.origDy + dy;
-        setDragOffsets((prev) => {
-          const next = new Map(prev);
-          next.set(zid, { dx: newDx, dy: newDy });
-          return next;
-        });
-      }
+    if (zoneDrag.isDragging()) {
+      zoneDrag.moveDrag(e);
       return;
     }
+    panZoom.movePan(e);
+  }, [zoneDrag, panZoom]);
 
-    // Background panning
-    if (!panning || !panStart.current || !svgRef.current) return;
-
-    const rect = svgRef.current.getBoundingClientRect();
-    const scaleX = viewBox.w / rect.width;
-    const scaleY = viewBox.h / rect.height;
-
-    const dx = (e.clientX - panStart.current.x) * scaleX;
-    const dy = (e.clientY - panStart.current.y) * scaleY;
-
-    setViewBox((vb) => ({
-      ...vb,
-      x: panStart.current!.vbx - dx,
-      y: panStart.current!.vby - dy,
-    }));
-  }, [panning, viewBox.w, viewBox.h]);
-
-  const handleMouseUp = useCallback((e: MouseEvent) => {
-    // End zone drag — if not moved, treat as click (toggle)
-    if (zoneDrag.current) {
-      if (!zoneDrag.current.moved) {
-        onToggleZone(zoneDrag.current.zoneId);
-      }
-      zoneDrag.current = null;
+  const handleMouseUp = useCallback((_e: MouseEvent) => {
+    const clickedZoneId = zoneDrag.endDrag();
+    if (clickedZoneId) {
+      onToggleZone(clickedZoneId);
       return;
     }
+    panZoom.endPan();
+  }, [zoneDrag, panZoom, onToggleZone]);
 
-    setPanning(false);
-    panStart.current = null;
-  }, [onToggleZone]);
-
+  // Global mouseup listener for edge cases (mouse released outside SVG)
   useEffect(() => {
     const onUp = () => {
-      if (zoneDrag.current) {
-        if (!zoneDrag.current.moved) {
-          onToggleZone(zoneDrag.current.zoneId);
-        }
-        zoneDrag.current = null;
+      const clickedZoneId = zoneDrag.endDrag();
+      if (clickedZoneId) {
+        onToggleZone(clickedZoneId);
       }
-      setPanning(false);
-      panStart.current = null;
+      panZoom.endPan();
     };
     window.addEventListener("mouseup", onUp);
     return () => window.removeEventListener("mouseup", onUp);
-  }, [onToggleZone]);
-
-  const handleZoomIn = useCallback(() => {
-    setViewBox((vb) => ({
-      x: vb.x + vb.w * 0.1,
-      y: vb.y + vb.h * 0.1,
-      w: vb.w * 0.8,
-      h: vb.h * 0.8,
-    }));
-  }, []);
-
-  const handleZoomOut = useCallback(() => {
-    setViewBox((vb) => ({
-      x: vb.x - vb.w * 0.125,
-      y: vb.y - vb.h * 0.125,
-      w: vb.w * 1.25,
-      h: vb.h * 1.25,
-    }));
-  }, []);
-
-  const handleFit = useCallback(() => {
-    setViewBox(fitVB);
-  }, [fitVB]);
+  }, [zoneDrag, panZoom, onToggleZone]);
 
   if (zones.length === 0) return null;
 
-  const vbStr = `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`;
+  const vbStr = `${panZoom.viewBox.x} ${panZoom.viewBox.y} ${panZoom.viewBox.w} ${panZoom.viewBox.h}`;
 
   return h("div", { class: "cg-diagram-container" },
     h("svg", {
-      ref: svgRef,
-      class: `cg-diagram${panning ? " dragging" : ""}`,
+      ref: panZoom.svgRef,
+      class: `cg-diagram${panZoom.panning ? " dragging" : ""}`,
       viewBox: vbStr,
       preserveAspectRatio: "xMidYMid meet",
-      onWheel: handleWheel,
+      onWheel: panZoom.handleWheel,
       onMouseDown: handleMouseDown,
       onMouseMove: handleMouseMove,
       onMouseUp: handleMouseUp,
@@ -1454,9 +1070,9 @@ function ZoneDiagram({
     ),
 
     h(ZoomControls, {
-      onZoomIn: handleZoomIn,
-      onZoomOut: handleZoomOut,
-      onFit: handleFit,
+      onZoomIn: panZoom.handleZoomIn,
+      onZoomOut: panZoom.handleZoomOut,
+      onFit: panZoom.handleFit,
     }),
   );
 }
