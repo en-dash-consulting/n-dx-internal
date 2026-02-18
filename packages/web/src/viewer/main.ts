@@ -30,13 +30,14 @@ import { HenchTemplatesView } from "./views/hench-templates.js";
 import { WorkflowOptimizationView } from "./views/workflow-optimization.js";
 import { TaskAuditView } from "./views/task-audit.js";
 import { NotionConfigView } from "./views/notion-config.js";
+import { IntegrationConfigView } from "./views/integration-config.js";
 
 initTheme();
 
 /** All known views grouped by product scope. */
 const VIEWS_BY_SCOPE: Record<string, ViewId[]> = {
   sourcevision: ["overview", "graph", "zones", "files", "routes", "architecture", "problems", "suggestions"],
-  rex: ["rex-dashboard", "prd", "rex-analysis", "token-usage", "validation", "notion-config"],
+  rex: ["rex-dashboard", "prd", "rex-analysis", "token-usage", "validation", "notion-config", "integrations"],
   hench: ["hench-runs", "hench-audit", "hench-config", "hench-templates", "hench-optimization"],
 };
 
@@ -307,6 +308,8 @@ function App({ scope }: { scope: string | null }) {
         return h(ValidationView, { navigateTo });
       case "notion-config":
         return h(NotionConfigView, null);
+      case "integrations":
+        return h(IntegrationConfigView, null);
       case "hench-runs":
         return h(HenchRunsView, { navigateTo, initialRunId: selectedRunId });
       case "hench-audit":

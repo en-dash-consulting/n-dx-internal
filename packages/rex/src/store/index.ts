@@ -19,6 +19,32 @@ export type {
   AdapterInfo,
 } from "./adapter-registry.js";
 
+// ---- Integration schema system -----------------------------------------------
+export {
+  validateField,
+  validateConfig,
+  registerIntegrationSchema,
+  getIntegrationSchema,
+  listIntegrationSchemas,
+  resetIntegrationSchemas,
+  toAdapterConfigSchema,
+} from "./integration-schema.js";
+export type {
+  FieldInputType,
+  FieldValidationRule,
+  FieldSelectOption,
+  IntegrationFieldSchema,
+  IntegrationSchema,
+  IntegrationFieldGroup,
+  FieldValidationResult,
+} from "./integration-schema.js";
+export {
+  registerBuiltInSchemas,
+  ensureSchemas,
+} from "./integration-schemas/index.js";
+export { notionIntegrationSchema } from "./integration-schemas/notion.js";
+export { jiraIntegrationSchema } from "./integration-schemas/jira.js";
+
 import { FileStore } from "./file-adapter.js";
 import { NotionStore } from "./notion-adapter.js";
 import { LiveNotionClient } from "./notion-client.js";

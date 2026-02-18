@@ -51,6 +51,32 @@
 export { resolveStore } from "./store/index.js";
 export type { PRDStore } from "./store/types.js";
 
+// ---- Integration schema system ----------------------------------------------
+
+export {
+  validateField,
+  validateConfig,
+  registerIntegrationSchema,
+  getIntegrationSchema,
+  listIntegrationSchemas,
+  toAdapterConfigSchema,
+} from "./store/integration-schema.js";
+export type {
+  FieldInputType,
+  FieldValidationRule,
+  FieldSelectOption,
+  IntegrationFieldSchema,
+  IntegrationSchema,
+  IntegrationFieldGroup,
+  FieldValidationResult,
+} from "./store/integration-schema.js";
+export {
+  registerBuiltInSchemas,
+  ensureSchemas,
+} from "./store/integration-schemas/index.js";
+export { notionIntegrationSchema } from "./store/integration-schemas/notion.js";
+export { jiraIntegrationSchema } from "./store/integration-schemas/jira.js";
+
 // ---- Schema types & constants -----------------------------------------------
 
 export type {

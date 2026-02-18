@@ -21,6 +21,7 @@ import { handleProjectRoute } from "./routes-project.js";
 import { handleStatusRoute, clearStatusCache } from "./routes-status.js";
 import { handleConfigRoute } from "./routes-config.js";
 import { handleNotionRoute } from "./routes-notion.js";
+import { handleIntegrationRoute } from "./routes-integrations.js";
 import { createWebSocketManager } from "./websocket.js";
 import { ALL_DATA_FILES } from "../schema/data-files.js";
 import { findAvailablePort } from "./port.js";
@@ -210,6 +211,9 @@ export async function startServer(
 
     // 0e. Notion integration config (rex-related)
     if (inScope("rex") && await handleNotionRoute(req, res, ctx)) return;
+
+    // 0f. Generic integration config (rex-related)
+    if (inScope("rex") && await handleIntegrationRoute(req, res, ctx)) return;
 
     // 1. Sourcevision API
     if (inScope("sourcevision") && handleSourcevisionRoute(req, res, ctx)) return;

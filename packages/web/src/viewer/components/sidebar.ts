@@ -53,6 +53,7 @@ const NAV_ENTRIES: NavEntry[] = [
   { type: "item", id: "validation", icon: "\u2714", label: "Validation", minPass: 0 },
   { type: "item", id: "token-usage", icon: "\u229A", label: "Token Usage", minPass: 0 },
   { type: "item", id: "notion-config", icon: "\u{1F50C}", label: "Notion", minPass: 0 },
+  { type: "item", id: "integrations", icon: "\u{1F517}", label: "Integrations", minPass: 0 },
   { type: "section", label: "HENCH", product: "hench" },
   { type: "item", id: "hench-runs", icon: "\u25B6", label: "Runs", minPass: 0 },
   { type: "item", id: "hench-audit", icon: "\u2638", label: "Audit", minPass: 0 },

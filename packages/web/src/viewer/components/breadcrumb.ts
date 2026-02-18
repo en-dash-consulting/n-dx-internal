@@ -69,6 +69,7 @@ const VIEW_META: Record<ViewId, ViewMeta> = {
   "token-usage":         { product: "rex",          label: "Token Usage",     productLabel: "Rex" },
   validation:            { product: "rex",          label: "Validation",      productLabel: "Rex" },
   "notion-config":       { product: "rex",          label: "Notion",          productLabel: "Rex" },
+  integrations:          { product: "rex",          label: "Integrations",    productLabel: "Rex" },
   "hench-runs":          { product: "hench",        label: "Runs",            productLabel: "Hench" },
   "hench-audit":         { product: "hench",        label: "Audit",           productLabel: "Hench" },
   "hench-config":        { product: "hench",        label: "Config",          productLabel: "Hench" },
