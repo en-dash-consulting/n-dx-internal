@@ -61,3 +61,6 @@ export { runGuidedSpec, clarify, generateSpecFromContext } from "./guided.js";
 
 export type { ReshapeReasonOptions, ReshapeReasonResult } from "./reshape-reason.js";
 export { reasonForReshape, parseReshapeResponse, formatReshapeProposal } from "./reshape-reason.js";
+
+export type { ModifyProposalOptions, ModifyProposalResult } from "./modify-reason.js";
+export { buildModifyPrompt, modifyProposals } from "./modify-reason.js";

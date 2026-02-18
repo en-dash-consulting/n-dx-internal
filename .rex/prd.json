@@ -8582,6 +8582,8 @@
           "level": "feature",
           "description": "Enable direct navigation to specific PRD items with automatic page routing, item selection, and visibility",
           "source": "smart-add",
+          "startedAt": "2026-02-18T08:16:28.741Z",
+          "completedAt": "2026-02-18T08:16:28.741Z",
           "children": [
             {
               "id": "735ab51a-d31a-4256-b9b7-054e44068a22",
@@ -8609,9 +8611,7 @@
               "startedAt": "2026-02-18T08:06:19.076Z",
               "completedAt": "2026-02-18T08:16:28.652Z"
             }
-          ],
-          "startedAt": "2026-02-18T08:16:28.741Z",
-          "completedAt": "2026-02-18T08:16:28.741Z"
+          ]
         },
         {
           "id": "a62d284c-e430-4c74-aadf-1972f2d913c0",
@@ -9169,7 +9169,7 @@
             {
               "id": "6379a1ad-f280-41ea-af86-e0fcb2a9332d",
               "title": "Implement proposal modification pipeline with LLM integration",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Build the backend pipeline that takes user's natural language modification request, combines it with the original proposal context, and generates a revised proposal using the LLM",
               "acceptanceCriteria": [
@@ -9184,7 +9184,8 @@
                 "llm",
                 "proposal-generation"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-18T08:17:26.985Z"
             },
             {
               "id": "4e7e3ba2-0a50-4988-b6b4-8979370dae07",
