@@ -48,6 +48,229 @@ export interface ServerOptions {
   scope?: ViewerScope;
 }
 
+type RouteResult = boolean | Promise<boolean>;
+
+function isInScope(scope: ViewerScope | undefined, pkg: ViewerScope): boolean {
+  return !scope || scope === pkg;
+}
+
+function resolveRouteResult(result: RouteResult): Promise<boolean> | boolean {
+  return result instanceof Promise ? result : result;
+}
+
+function registerSourcevisionWatcher(
+  scope: ViewerScope | undefined,
+  svDir: string,
+  watcher: ReturnType<typeof createDataWatcher>,
+  ws: ReturnType<typeof createWebSocketManager>,
+): void {
+  if (!isInScope(scope, "sourcevision") || !existsSync(svDir)) return;
+  try {
+    watch(svDir, (_eventType, filename) => {
+      if (filename && (ALL_DATA_FILES as readonly string[]).includes(String(filename))) {
+        watcher.refresh();
+        ws.broadcast({
+          type: "sv:data-changed",
+          file: String(filename),
+          timestamp: new Date().toISOString(),
+        });
+      }
+    });
+  } catch {
+    // fs.watch may not be supported everywhere
+  }
+}
+
+function registerRexWatcher(
+  scope: ViewerScope | undefined,
+  rexDir: string,
+  watcher: ReturnType<typeof createDataWatcher>,
+  ws: ReturnType<typeof createWebSocketManager>,
+): void {
+  if (!isInScope(scope, "rex") || !existsSync(rexDir)) return;
+  try {
+    watch(rexDir, (_eventType, filename) => {
+      if (filename === "prd.json") {
+        watcher.refresh();
+        ws.broadcast({
+          type: "rex:prd-changed",
+          timestamp: new Date().toISOString(),
+        });
+      }
+    });
+  } catch {
+    // ignore
+  }
+}
+
+function registerHenchWatcher(
+  scope: ViewerScope | undefined,
+  henchRunsDir: string,
+  ws: ReturnType<typeof createWebSocketManager>,
+): void {
+  if (!isInScope(scope, "hench") || !existsSync(henchRunsDir)) return;
+  try {
+    watch(henchRunsDir, (_eventType, filename) => {
+      if (filename && String(filename).endsWith(".json")) {
+        clearStatusCache();
+        ws.broadcast({
+          type: "hench:run-changed",
+          file: String(filename),
+          timestamp: new Date().toISOString(),
+        });
+      }
+    });
+  } catch {
+    // ignore
+  }
+}
+
+function registerDevViewerWatcher(
+  dev: boolean,
+  viewerPath: string,
+  watcher: ReturnType<typeof createDataWatcher>,
+  ws: ReturnType<typeof createWebSocketManager>,
+): void {
+  if (!dev || !viewerPath) return;
+  try {
+    watch(dirname(viewerPath), (_eventType, filename) => {
+      if (filename === "index.html") {
+        watcher.refresh();
+        ws.broadcast({
+          type: "viewer:reload",
+          timestamp: new Date().toISOString(),
+        });
+      }
+    });
+  } catch {
+    // ignore
+  }
+}
+
+function registerWatchers(
+  ctx: ServerContext,
+  watcher: ReturnType<typeof createDataWatcher>,
+  ws: ReturnType<typeof createWebSocketManager>,
+  viewerPath: string,
+): string {
+  const henchRunsDir = join(ctx.projectDir, ".hench", "runs");
+  registerSourcevisionWatcher(ctx.scope, ctx.svDir, watcher, ws);
+  registerRexWatcher(ctx.scope, ctx.rexDir, watcher, ws);
+  registerHenchWatcher(ctx.scope, henchRunsDir, ws);
+  registerDevViewerWatcher(ctx.dev, viewerPath, watcher, ws);
+  return henchRunsDir;
+}
+
+function setCorsHeaders(res: ServerResponse): void {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Mcp-Session-Id");
+  res.setHeader("Access-Control-Expose-Headers", "Mcp-Session-Id");
+}
+
+function handlePreflight(req: IncomingMessage, res: ServerResponse): boolean {
+  if ((req.method || "GET") !== "OPTIONS") return false;
+  res.writeHead(204);
+  res.end();
+  return true;
+}
+
+function handleConfigEndpoint(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+): boolean {
+  if ((req.url !== "/api/config") || (req.method || "GET") !== "GET") return false;
+  res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-cache" });
+  res.end(JSON.stringify({ scope: ctx.scope ?? null, initialized: isProjectInitialized(ctx) }));
+  return true;
+}
+
+async function handleScopedRoute(
+  enabled: boolean,
+  result: RouteResult,
+): Promise<boolean> {
+  if (!enabled) return false;
+  return await resolveRouteResult(result);
+}
+
+async function handleApiRoutes(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+  watcher: ReturnType<typeof createDataWatcher>,
+  ws: ReturnType<typeof createWebSocketManager>,
+  assets: ReturnType<typeof resolveStaticAssets>,
+): Promise<boolean> {
+  if (await handleMcpRoute(req, res, ctx)) return true;
+  if (await handleProjectRoute(req, res, ctx)) return true;
+  if (handleStatusRoute(req, res, ctx)) return true;
+  if (await handleConfigRoute(req, res, ctx)) return true;
+  if (await handleScopedRoute(isInScope(ctx.scope, "rex"), handleNotionRoute(req, res, ctx))) return true;
+  if (await handleScopedRoute(isInScope(ctx.scope, "rex"), handleIntegrationRoute(req, res, ctx))) return true;
+  if (await handleFeaturesRoute(req, res, ctx)) return true;
+  if (isInScope(ctx.scope, "sourcevision") && handleSourcevisionRoute(req, res, ctx)) return true;
+  if (await handleScopedRoute(isInScope(ctx.scope, "rex"), handleRexRoute(req, res, ctx, ws.broadcast))) return true;
+  if (await handleScopedRoute(isInScope(ctx.scope, "hench"), handleHenchRoute(req, res, ctx, ws.broadcast))) return true;
+  if (await handleScopedRoute(isInScope(ctx.scope, "hench"), handleWorkflowRoute(req, res, ctx))) return true;
+  if (await handleScopedRoute(isInScope(ctx.scope, "hench"), handleAdaptiveRoute(req, res, ctx))) return true;
+  if (isInScope(ctx.scope, "rex") && handleValidationRoute(req, res, ctx)) return true;
+  if (isInScope(ctx.scope, "rex") && handleTokenUsageRoute(req, res, ctx)) return true;
+  if (handleDataRoute(req, res, ctx, watcher)) return true;
+  if (assets && handleStaticRoute(req, res, ctx, assets)) return true;
+  return false;
+}
+
+function createHttpServer(
+  ctx: ServerContext,
+  watcher: ReturnType<typeof createDataWatcher>,
+  ws: ReturnType<typeof createWebSocketManager>,
+  assets: ReturnType<typeof resolveStaticAssets>,
+) {
+  const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    setCorsHeaders(res);
+    if (handlePreflight(req, res)) return;
+    if (handleConfigEndpoint(req, res, ctx)) return;
+    if (await handleApiRoutes(req, res, ctx, watcher, ws, assets)) return;
+    res.writeHead(404);
+    res.end("Not found");
+  });
+
+  server.on("upgrade", (req, socket, head) => {
+    ws.handleUpgrade(req, socket, head);
+  });
+  return server;
+}
+
+function logStartup(
+  actualPort: number,
+  ctx: ServerContext,
+  henchRunsDir: string,
+): void {
+  const label = ctx.scope ? `${ctx.scope} viewer` : "n-dx dashboard";
+  console.log(`${label} running at http://localhost:${actualPort}`);
+  if (isInScope(ctx.scope, "sourcevision")) {
+    console.log(`Serving data from: ${ctx.svDir}`);
+  }
+  if (isInScope(ctx.scope, "rex") && existsSync(ctx.rexDir)) {
+    console.log(`Rex PRD data from: ${ctx.rexDir}`);
+  }
+  if (isInScope(ctx.scope, "hench") && existsSync(henchRunsDir)) {
+    console.log(`Hench runs from: ${henchRunsDir}`);
+  }
+  console.log(`MCP (rex):          http://localhost:${actualPort}/mcp/rex`);
+  console.log(`MCP (sourcevision): http://localhost:${actualPort}/mcp/sourcevision`);
+  console.log(`WebSocket available at ws://localhost:${actualPort}`);
+  if (ctx.scope) console.log(`Scope: ${ctx.scope} (standalone mode)`);
+  if (ctx.dev) console.log("Dev mode: live reload enabled");
+  console.log("");
+  console.log("Claude Code MCP setup:");
+  console.log(`  claude mcp add --transport http rex http://localhost:${actualPort}/mcp/rex`);
+  console.log(`  claude mcp add --transport http sourcevision http://localhost:${actualPort}/mcp/sourcevision`);
+  console.log("");
+  console.log("Press Ctrl+C to stop.");
+}
+
 export async function startServer(
   targetDir: string,
   port: number = 3117,
@@ -71,10 +294,7 @@ export async function startServer(
     );
   }
 
-  // Helper: is this package in scope?
-  const inScope = (pkg: ViewerScope): boolean => !scope || scope === pkg;
-
-  if (inScope("sourcevision") && !existsSync(svDir)) {
+  if (isInScope(scope, "sourcevision") && !existsSync(svDir)) {
     console.log("No .sourcevision/ directory found — landing page will be shown at /");
     console.log("Run 'ndx init .' to initialize, then 'ndx plan .' to analyze.");
   }
@@ -89,200 +309,17 @@ export async function startServer(
   // Create server context
   const ctx: ServerContext = { projectDir: absDir, svDir, rexDir, dev, scope };
 
-  // Set up data watcher for live-reload
   const watcher = createDataWatcher(ctx, assets.viewerPath);
-
-  // Set up WebSocket manager
   const ws = createWebSocketManager();
-
-  // Watch .sourcevision/ for changes
-  if (inScope("sourcevision") && existsSync(svDir)) {
-    try {
-      watch(svDir, (_eventType, filename) => {
-        if (filename && (ALL_DATA_FILES as readonly string[]).includes(filename)) {
-          watcher.refresh();
-          // Broadcast file-change event over WebSocket
-          ws.broadcast({
-            type: "sv:data-changed",
-            file: filename,
-            timestamp: new Date().toISOString(),
-          });
-        }
-      });
-    } catch {
-      // fs.watch may not be supported everywhere
-    }
-  }
-
-  // Watch .rex/ for prd.json changes
-  if (inScope("rex") && existsSync(rexDir)) {
-    try {
-      watch(rexDir, (_eventType, filename) => {
-        if (filename === "prd.json") {
-          watcher.refresh();
-          ws.broadcast({
-            type: "rex:prd-changed",
-            timestamp: new Date().toISOString(),
-          });
-        }
-      });
-    } catch {
-      // ignore
-    }
-  }
-
-  // Watch .hench/runs/ for run file changes
-  const henchRunsDir = join(absDir, ".hench", "runs");
-  if (inScope("hench") && existsSync(henchRunsDir)) {
-    try {
-      watch(henchRunsDir, (_eventType, filename) => {
-        if (filename && filename.endsWith(".json")) {
-          // Invalidate status cache so the next /api/status request gets fresh counts
-          clearStatusCache();
-          ws.broadcast({
-            type: "hench:run-changed",
-            file: filename,
-            timestamp: new Date().toISOString(),
-          });
-        }
-      });
-    } catch {
-      // ignore
-    }
-  }
-
-  // In dev mode, also watch the viewer HTML for rebuilds
-  if (dev && assets.viewerPath) {
-    try {
-      watch(dirname(assets.viewerPath), (_eventType, filename) => {
-        if (filename === "index.html") {
-          watcher.refresh();
-          // Notify connected browsers to reload via WebSocket
-          ws.broadcast({
-            type: "viewer:reload",
-            timestamp: new Date().toISOString(),
-          });
-        }
-      });
-    } catch {
-      // ignore
-    }
-  }
+  const henchRunsDir = registerWatchers(ctx, watcher, ws, assets.viewerPath);
 
   // Start heartbeat monitor — periodically checks for unresponsive tasks and
   // broadcasts alerts via WebSocket.
-  if (inScope("hench")) {
+  if (isInScope(scope, "hench")) {
     startHeartbeatMonitor(henchRunsDir, ws.broadcast);
   }
 
-  // Create HTTP server
-  const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    // CORS headers for local dev (also required for cross-origin MCP clients)
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Mcp-Session-Id");
-    res.setHeader("Access-Control-Expose-Headers", "Mcp-Session-Id");
-
-    // Handle CORS preflight
-    if ((req.method || "GET") === "OPTIONS") {
-      res.writeHead(204);
-      res.end();
-      return;
-    }
-
-    // Viewer config endpoint — exposes scope and init status to the client
-    if ((req.url === "/api/config") && (req.method || "GET") === "GET") {
-      res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-cache" });
-      res.end(JSON.stringify({ scope: scope ?? null, initialized: isProjectInitialized(ctx) }));
-      return;
-    }
-
-    // Try each route handler in order
-    // 0. MCP endpoints (/mcp/rex, /mcp/sourcevision)
-    if (await handleMcpRoute(req, res, ctx)) return;
-
-    // 0b. Project metadata (cross-cutting, not scope-gated)
-    if (await handleProjectRoute(req, res, ctx)) return;
-
-    // 0c. Project status indicators (cross-cutting, not scope-gated)
-    if (handleStatusRoute(req, res, ctx)) return;
-
-    // 0d. Configuration display and project detection (cross-cutting)
-    if (await handleConfigRoute(req, res, ctx)) return;
-
-    // 0e. Notion integration config (rex-related)
-    if (inScope("rex") && await handleNotionRoute(req, res, ctx)) return;
-
-    // 0f. Generic integration config (rex-related)
-    if (inScope("rex") && await handleIntegrationRoute(req, res, ctx)) return;
-
-    // 0g. Feature toggles (cross-cutting, not scope-gated)
-    if (await handleFeaturesRoute(req, res, ctx)) return;
-
-    // 1. Sourcevision API
-    if (inScope("sourcevision") && handleSourcevisionRoute(req, res, ctx)) return;
-
-    // 2. Rex API
-    if (inScope("rex")) {
-      const rexResult = handleRexRoute(req, res, ctx, ws.broadcast);
-      if (rexResult instanceof Promise) {
-        if (await rexResult) return;
-      } else if (rexResult) {
-        return;
-      }
-    }
-
-    // 3. Hench API
-    if (inScope("hench")) {
-      const henchResult = handleHenchRoute(req, res, ctx, ws.broadcast);
-      if (henchResult instanceof Promise) {
-        if (await henchResult) return;
-      } else if (henchResult) {
-        return;
-      }
-    }
-
-    // 3b. Hench Workflow Optimization API
-    if (inScope("hench")) {
-      const workflowResult = handleWorkflowRoute(req, res, ctx);
-      if (workflowResult instanceof Promise) {
-        if (await workflowResult) return;
-      } else if (workflowResult) {
-        return;
-      }
-    }
-
-    // 3c. Hench Adaptive Workflow Adjustment API
-    if (inScope("hench")) {
-      const adaptiveResult = handleAdaptiveRoute(req, res, ctx);
-      if (adaptiveResult instanceof Promise) {
-        if (await adaptiveResult) return;
-      } else if (adaptiveResult) {
-        return;
-      }
-    }
-
-    // 4. Validation & dependency graph API (rex-related)
-    if (inScope("rex") && handleValidationRoute(req, res, ctx)) return;
-
-    // 5. Token usage API (cross-cutting, but lives in rex section)
-    if (inScope("rex") && handleTokenUsageRoute(req, res, ctx)) return;
-
-    // 6. Data files (existing /data/* routes for backward compatibility)
-    if (handleDataRoute(req, res, ctx, watcher)) return;
-
-    // 7. Static assets
-    if (handleStaticRoute(req, res, ctx, assets)) return;
-
-    // 404
-    res.writeHead(404);
-    res.end("Not found");
-  });
-
-  // Handle WebSocket upgrades
-  server.on("upgrade", (req, socket, head) => {
-    ws.handleUpgrade(req, socket, head);
-  });
+  const server = createHttpServer(ctx, watcher, ws, assets);
 
   return new Promise<StartResult>((resolvePromise, rejectPromise) => {
     server.once("error", (err: NodeJS.ErrnoException) => {
@@ -312,28 +349,7 @@ export async function startServer(
         // Non-fatal: port file is a convenience, not a requirement
       }
 
-      const label = scope ? `${scope} viewer` : "n-dx dashboard";
-      console.log(`${label} running at http://localhost:${actualPort}`);
-      if (inScope("sourcevision")) {
-        console.log(`Serving data from: ${svDir}`);
-      }
-      if (inScope("rex") && existsSync(rexDir)) {
-        console.log(`Rex PRD data from: ${rexDir}`);
-      }
-      if (inScope("hench") && existsSync(henchRunsDir)) {
-        console.log(`Hench runs from: ${henchRunsDir}`);
-      }
-      console.log(`MCP (rex):          http://localhost:${actualPort}/mcp/rex`);
-      console.log(`MCP (sourcevision): http://localhost:${actualPort}/mcp/sourcevision`);
-      console.log(`WebSocket available at ws://localhost:${actualPort}`);
-      if (scope) console.log(`Scope: ${scope} (standalone mode)`);
-      if (dev) console.log("Dev mode: live reload enabled");
-      console.log("");
-      console.log("Claude Code MCP setup:");
-      console.log(`  claude mcp add --transport http rex http://localhost:${actualPort}/mcp/rex`);
-      console.log(`  claude mcp add --transport http sourcevision http://localhost:${actualPort}/mcp/sourcevision`);
-      console.log("");
-      console.log("Press Ctrl+C to stop.");
+      logStartup(actualPort, ctx, henchRunsDir);
 
       // Clean up port file on process exit
       const removePortFile = () => {

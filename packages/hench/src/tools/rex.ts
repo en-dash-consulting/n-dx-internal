@@ -6,6 +6,13 @@ import { PROJECT_DIRS } from "@n-dx/claude-client";
 import { execShellCmd } from "../process/index.js";
 import { computeTimestampUpdates, findAutoCompletions, validateAutomatedRequirements, formatRequirementsValidation, loadAcknowledged, saveAcknowledged, acknowledgeFinding } from "../prd/rex-gateway.js";
 import { validateCompletion, formatValidationResult } from "../validation/completion.js";
+import type {
+  RexToolHandlers,
+  ToolContext,
+  RexUpdateStatusParams,
+  RexAppendLogParams,
+  RexAddSubtaskParams,
+} from "./contracts.js";
 
 export interface UpdateStatusOptions {
   /** Project directory for git-based completion validation. */
@@ -205,6 +212,24 @@ export async function toolRexAddSubtask(
 
   return `Created subtask ${id}: ${params.title}`;
 }
+
+export const rexToolHandlers: RexToolHandlers = {
+  updateStatus: (ctx: ToolContext, params: RexUpdateStatusParams) =>
+    toolRexUpdateStatus(
+      ctx.store,
+      ctx.taskId,
+      params,
+      {
+        projectDir: ctx.projectDir,
+        testCommand: ctx.testCommand,
+        startingHead: ctx.startingHead,
+      },
+    ),
+  appendLog: (ctx: ToolContext, params: RexAppendLogParams) =>
+    toolRexAppendLog(ctx.store, ctx.taskId, params),
+  addSubtask: (ctx: ToolContext, params: RexAddSubtaskParams) =>
+    toolRexAddSubtask(ctx.store, ctx.taskId, params),
+};
 
 // ── Requirements command executor ─────────────────────────────────
 

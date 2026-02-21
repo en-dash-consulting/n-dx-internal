@@ -7,18 +7,18 @@
 Zone: Rex PRD Management CLI (`packages-rex:rex-cli`)
 Files: 36, Cohesion: 1.00, Coupling: 0.00
 Description: A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.
-Lines: 9562
+Lines: 9603
 
 </zone>
 
 <files>
 
-packages/rex/src/analyze/index.ts (TypeScript, 69 lines, source)
+packages/rex/src/analyze/index.ts (TypeScript, 72 lines, source)
 packages/rex/src/analyze/propose.ts (TypeScript, 307 lines, source)
 packages/rex/src/analyze/reconcile.ts (TypeScript, 124 lines, source)
 packages/rex/src/analyze/scanners.ts (TypeScript, 958 lines, source)
 packages/rex/src/cli/commands/add.ts (TypeScript, 150 lines, source)
-packages/rex/src/cli/commands/analyze.ts (TypeScript, 559 lines, source)
+packages/rex/src/cli/commands/analyze.ts (TypeScript, 566 lines, source)
 packages/rex/src/cli/commands/constants.ts (TypeScript, 48 lines, source)
 packages/rex/src/cli/commands/init.ts (TypeScript, 71 lines, source)
 packages/rex/src/cli/commands/next.ts (TypeScript, 69 lines, source)
@@ -26,7 +26,7 @@ packages/rex/src/cli/commands/recommend.ts (TypeScript, 216 lines, source)
 packages/rex/src/cli/commands/status.ts (TypeScript, 320 lines, source)
 packages/rex/src/cli/commands/update.ts (TypeScript, 197 lines, source)
 packages/rex/src/cli/commands/validate.ts (TypeScript, 200 lines, source)
-packages/rex/src/cli/index.ts (TypeScript, 313 lines, source)
+packages/rex/src/cli/index.ts (TypeScript, 344 lines, source)
 packages/rex/src/cli/mcp.ts (TypeScript, 199 lines, source)
 packages/rex/src/core/canonical.ts (TypeScript, 22 lines, source)
 packages/rex/src/core/dag.ts (TypeScript, 84 lines, source)
@@ -75,7 +75,7 @@ Internal:
   packages/rex/src/cli/commands/add.ts → packages/rex/src/schema/index.ts {PRDItem, ItemLevel, ItemStatus, Priority}
   packages/rex/src/cli/commands/add.ts → packages/rex/src/store/index.ts {resolveStore}
   packages/rex/src/cli/commands/analyze.ts → packages/rex/src/analyze/index.ts {adjustGranularity, assessGranularity, formatAssessment}
-  packages/rex/src/cli/commands/analyze.ts → packages/rex/src/analyze/index.ts {scanTests, scanDocs, scanSourceVision, scanPackageJson, reconcile, buildProposals, deduplicateScanResults, reasonFromFiles, reasonFromScanResults, emptyAnalyzeTokenUsage, formatDiff, DEFAULT_MODEL, setClaudeConfig, getAuthMode}
+  packages/rex/src/cli/commands/analyze.ts → packages/rex/src/analyze/index.ts {scanTests, scanDocs, scanSourceVision, scanPackageJson, reconcile, buildProposals, deduplicateScanResults, reasonFromFiles, reasonFromScanResults, emptyAnalyzeTokenUsage, formatDiff, DEFAULT_MODEL, setLLMConfig, setClaudeConfig, getAuthMode, getLLMVendor}
   packages/rex/src/cli/commands/analyze.ts → packages/rex/src/analyze/index.ts {ScanResult, Proposal}
   packages/rex/src/cli/commands/analyze.ts → packages/rex/src/cli/commands/constants.ts {REX_DIR}
   packages/rex/src/cli/commands/analyze.ts → packages/rex/src/schema/index.ts {PRDItem, PRDDocument, AnalyzeTokenUsage}
@@ -165,7 +165,7 @@ Internal:
   packages/rex/tests/unit/store/file-adapter.test.ts → packages/rex/src/store/file-adapter.ts {FileStore, ensureRexDir}
 
 Incoming (other zones → this zone):
-  ← adaptive-web-services-shell: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
+  ← adaptive-web-gateway: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
 
 </imports>
 
@@ -193,6 +193,6 @@ Incoming (other zones → this zone):
 - The adapter field in RexConfig is dead configuration — all 8 createStore() call sites hardcode the literal string "file" instead of reading config.adapter, making alternative adapters unreachable
 - Log event names for the same semantic operation differ between CLI and MCP: update.ts:68 emits "item_updated" while mcp.ts:129 emits "status_changed" for status changes, with no shared event-name constants
 - init.ts and validate.ts both bypass the store abstraction layer, using raw fs readFile/writeFile directly, making them incompatible with any non-file adapter
-- [call graph] 711 internal calls, 187 outgoing, 498 incoming (cohesion: 0.79, coupling: 0.21)
+- [call graph] 713 internal calls, 189 outgoing, 502 incoming (cohesion: 0.79, coupling: 0.21)
 
 </insights>

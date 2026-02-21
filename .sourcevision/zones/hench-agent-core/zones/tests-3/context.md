@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Tests 3 (`hench/tests-3`)
-Files: 24, Cohesion: 0.70, Coupling: 0.30
-Description: 24 files, primarily TypeScript
+Files: 25, Cohesion: 0.70, Coupling: 0.30
+Description: 25 files, primarily TypeScript
 Entry points: packages/hench/src/store/index.ts, packages/hench/src/cli/errors.ts, packages/hench/src/cli/output.ts, packages/hench/src/store/config.ts, packages/hench/src/cli/commands/constants.ts, packages/hench/src/store/json.ts
-Lines: 2656
+Lines: 2855
 
 </zone>
 
@@ -19,7 +19,7 @@ packages/hench/src/cli/commands/init.ts (TypeScript, 28 lines, source)
 packages/hench/src/cli/commands/show.ts (TypeScript, 114 lines, source)
 packages/hench/src/cli/commands/status.ts (TypeScript, 76 lines, source)
 packages/hench/src/cli/commands/task-lookup.ts (TypeScript, 83 lines, source)
-packages/hench/src/cli/errors.ts (TypeScript, 186 lines, source)
+packages/hench/src/cli/errors.ts (TypeScript, 206 lines, source)
 packages/hench/src/cli/help.ts (TypeScript, 198 lines, source)
 packages/hench/src/cli/index.ts (TypeScript, 146 lines, source)
 packages/hench/src/cli/output.ts (TypeScript, 19 lines, source)
@@ -27,6 +27,7 @@ packages/hench/src/store/config.ts (TypeScript, 49 lines, source)
 packages/hench/src/store/index.ts (TypeScript, 9 lines, source)
 packages/hench/src/store/json.ts (TypeScript, 2 lines, source)
 packages/hench/src/store/runs.ts (TypeScript, 63 lines, source)
+packages/hench/tests/integration/codex-token-accounting.test.ts (TypeScript, 179 lines, test)
 packages/hench/tests/integration/store-roundtrip.test.ts (TypeScript, 126 lines, test)
 packages/hench/tests/unit/agent/atomic-transition.test.ts (TypeScript, 381 lines, test)
 packages/hench/tests/unit/agent/loop.test.ts (TypeScript, 109 lines, test)
@@ -69,6 +70,9 @@ Internal:
   packages/hench/src/store/index.ts → packages/hench/src/store/config.ts {ensureHenchDir, loadConfig, saveConfig, configExists, initConfig}
   packages/hench/src/store/index.ts → packages/hench/src/store/runs.ts {saveRun, loadRun, listRuns}
   packages/hench/src/store/runs.ts → packages/hench/src/store/json.ts {toCanonicalJSON}
+  packages/hench/tests/integration/codex-token-accounting.test.ts → packages/hench/src/store/config.ts {loadConfig}
+  packages/hench/tests/integration/codex-token-accounting.test.ts → packages/hench/src/store/config.ts {initConfig}
+  packages/hench/tests/integration/codex-token-accounting.test.ts → packages/hench/src/store/runs.ts {saveRun, listRuns}
   packages/hench/tests/integration/store-roundtrip.test.ts → packages/hench/src/store/config.ts {ensureHenchDir, loadConfig, saveConfig, configExists, initConfig}
   packages/hench/tests/integration/store-roundtrip.test.ts → packages/hench/src/store/runs.ts {saveRun, loadRun, listRuns}
   packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/store/config.ts {loadConfig}

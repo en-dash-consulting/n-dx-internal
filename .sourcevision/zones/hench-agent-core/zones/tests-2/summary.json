@@ -18,8 +18,8 @@
     "packages/hench/src/prd/rex-gateway.ts",
     "packages/hench/src/tools/rex.ts"
   ],
-  "cohesion": 0.67,
-  "coupling": 0.33,
+  "cohesion": 0.75,
+  "coupling": 0.25,
   "fileCount": 9,
   "lineCount": 1463
 }

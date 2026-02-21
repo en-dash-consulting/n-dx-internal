@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Tests (`hench/tests`)
-Files: 47, Cohesion: 0.83, Coupling: 0.17
-Description: 47 files, primarily TypeScript
+Files: 57, Cohesion: 0.85, Coupling: 0.15
+Description: 57 files, primarily TypeScript
 Entry points: packages/hench/src/agent/analysis/stuck.ts, packages/hench/src/agent/lifecycle/cli-loop.ts, packages/hench/src/agent/lifecycle/loop.ts, packages/hench/src/agent/planning/brief.ts, packages/hench/src/store/project-config.ts, packages/hench/src/cli/commands/config.ts, packages/hench/src/cli/commands/template.ts, packages/hench/src/types/output.ts, packages/hench/src/schema/index.ts, packages/hench/src/schema/v1.ts, packages/hench/src/schema/validate.ts
-Lines: 11910
+Lines: 14327
 
 </zone>
 
@@ -20,31 +20,36 @@ packages/hench/src/agent/analysis/stuck.ts (TypeScript, 70 lines, source)
 packages/hench/src/agent/analysis/summary.ts (TypeScript, 120 lines, source)
 packages/hench/src/agent/analysis/workflow.ts (TypeScript, 485 lines, source)
 packages/hench/src/agent/index.ts (TypeScript, 75 lines, source)
-packages/hench/src/agent/lifecycle/cli-loop.ts (TypeScript, 520 lines, source)
+packages/hench/src/agent/lifecycle/cli-loop.ts (TypeScript, 924 lines, source)
 packages/hench/src/agent/lifecycle/heartbeat.ts (TypeScript, 71 lines, source)
-packages/hench/src/agent/lifecycle/loop.ts (TypeScript, 309 lines, source)
+packages/hench/src/agent/lifecycle/loop.ts (TypeScript, 323 lines, source)
 packages/hench/src/agent/lifecycle/shared.ts (TypeScript, 339 lines, source)
 packages/hench/src/agent/lifecycle/task-display.ts (TypeScript, 27 lines, source)
 packages/hench/src/agent/lifecycle/token-budget.ts (TypeScript, 34 lines, source)
-packages/hench/src/agent/lifecycle/token-usage.ts (TypeScript, 75 lines, source)
+packages/hench/src/agent/lifecycle/token-usage.ts (TypeScript, 141 lines, source)
 packages/hench/src/agent/planning/brief.ts (TypeScript, 352 lines, source)
 packages/hench/src/agent/planning/prompt.ts (TypeScript, 76 lines, source)
 packages/hench/src/cli/commands/config.ts (TypeScript, 575 lines, source)
 packages/hench/src/cli/commands/template.ts (TypeScript, 310 lines, source)
+packages/hench/src/guard/commands.ts (TypeScript, 87 lines, source)
+packages/hench/src/guard/index.ts (TypeScript, 165 lines, source)
+packages/hench/src/guard/paths.ts (TypeScript, 75 lines, source)
+packages/hench/src/guard/policy.ts (TypeScript, 252 lines, source)
 packages/hench/src/public.ts (TypeScript, 91 lines, source)
 packages/hench/src/schema/index.ts (TypeScript, 43 lines, source)
 packages/hench/src/schema/templates.ts (TypeScript, 178 lines, source)
 packages/hench/src/schema/v1.ts (TypeScript, 243 lines, source)
 packages/hench/src/schema/validate.ts (TypeScript, 167 lines, source)
-packages/hench/src/store/project-config.ts (TypeScript, 64 lines, source)
+packages/hench/src/store/project-config.ts (TypeScript, 94 lines, source)
 packages/hench/src/store/templates.ts (TypeScript, 153 lines, source)
-packages/hench/src/types/index.ts (TypeScript, 41 lines, source)
+packages/hench/src/types/index.ts (TypeScript, 15 lines, source)
 packages/hench/src/types/output.ts (TypeScript, 77 lines, source)
 packages/hench/tests/e2e/cli-init.test.ts (TypeScript, 135 lines, test)
 packages/hench/tests/unit/agent/adaptive.test.ts (TypeScript, 531 lines, test)
 packages/hench/tests/unit/agent/api-auth.test.ts (TypeScript, 391 lines, test)
 packages/hench/tests/unit/agent/brief.test.ts (TypeScript, 1531 lines, test)
 packages/hench/tests/unit/agent/cli-retry.test.ts (TypeScript, 229 lines, test)
+packages/hench/tests/unit/agent/codex-normalization.test.ts (TypeScript, 144 lines, test)
 packages/hench/tests/unit/agent/heartbeat.test.ts (TypeScript, 129 lines, test)
 packages/hench/tests/unit/agent/prompt.test.ts (TypeScript, 100 lines, test)
 packages/hench/tests/unit/agent/review.test.ts (TypeScript, 372 lines, test)
@@ -54,13 +59,18 @@ packages/hench/tests/unit/agent/summary.test.ts (TypeScript, 241 lines, test)
 packages/hench/tests/unit/agent/task-display.test.ts (TypeScript, 107 lines, test)
 packages/hench/tests/unit/agent/token-budget.test.ts (TypeScript, 67 lines, test)
 packages/hench/tests/unit/agent/token-tracking.test.ts (TypeScript, 279 lines, test)
-packages/hench/tests/unit/agent/token-usage.test.ts (TypeScript, 382 lines, test)
+packages/hench/tests/unit/agent/token-usage.test.ts (TypeScript, 451 lines, test)
 packages/hench/tests/unit/agent/workflow.test.ts (TypeScript, 388 lines, test)
 packages/hench/tests/unit/cli/commands/config.test.ts (TypeScript, 211 lines, test)
+packages/hench/tests/unit/guard/commands.test.ts (TypeScript, 191 lines, test)
+packages/hench/tests/unit/guard/guard-integration.test.ts (TypeScript, 194 lines, test)
+packages/hench/tests/unit/guard/paths.test.ts (TypeScript, 166 lines, test)
+packages/hench/tests/unit/guard/policy.test.ts (TypeScript, 269 lines, test)
 packages/hench/tests/unit/schema/templates.test.ts (TypeScript, 64 lines, test)
 packages/hench/tests/unit/schema/validate.test.ts (TypeScript, 528 lines, test)
 packages/hench/tests/unit/store/claude-config.test.ts (TypeScript, 184 lines, test)
 packages/hench/tests/unit/store/templates.test.ts (TypeScript, 356 lines, test)
+packages/hench/tests/unit/tools/shell.test.ts (TypeScript, 317 lines, test)
 
 </files>
 
@@ -91,10 +101,9 @@ Internal:
   packages/hench/src/agent/lifecycle/cli-loop.ts → packages/hench/src/agent/lifecycle/shared.ts {prepareBrief, executeDryRun, transitionToInProgress, initRunRecord, captureStartingHead, runReviewGate, finalizeRun, handleRunFailure}
   packages/hench/src/agent/lifecycle/cli-loop.ts → packages/hench/src/agent/lifecycle/shared.ts {SharedLoopOptions}
   packages/hench/src/agent/lifecycle/cli-loop.ts → packages/hench/src/agent/lifecycle/token-budget.ts {checkTokenBudget}
-  packages/hench/src/agent/lifecycle/cli-loop.ts → packages/hench/src/agent/lifecycle/token-usage.ts {parseTokenUsage, parseStreamTokenUsage}
+  packages/hench/src/agent/lifecycle/cli-loop.ts → packages/hench/src/agent/lifecycle/token-usage.ts {mapCodexUsageToTokenUsage, parseTokenUsage, parseStreamTokenUsage}
   packages/hench/src/agent/lifecycle/cli-loop.ts → packages/hench/src/schema/index.ts {HenchConfig, RetryConfig, RunRecord, ToolCallRecord, TurnTokenUsage}
-  packages/hench/src/agent/lifecycle/cli-loop.ts → packages/hench/src/store/project-config.ts {loadClaudeConfig, resolveCliPath}
-  packages/hench/src/agent/lifecycle/cli-loop.ts → packages/hench/src/store/project-config.ts {ClaudeConfig}
+  packages/hench/src/agent/lifecycle/cli-loop.ts → packages/hench/src/store/project-config.ts {loadLLMConfig, resolveLLMVendor, resolveVendorCliPath}
   packages/hench/src/agent/lifecycle/cli-loop.ts → packages/hench/src/types/output.ts {section, stream, info}
   packages/hench/src/agent/lifecycle/heartbeat.ts → packages/hench/src/schema/index.ts {RunRecord}
   packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/agent/lifecycle/heartbeat.ts {startHeartbeat}
@@ -102,9 +111,9 @@ Internal:
   packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/agent/lifecycle/shared.ts {SharedLoopOptions}
   packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/agent/lifecycle/token-budget.ts {checkTokenBudget}
   packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/agent/lifecycle/token-usage.ts {parseTokenUsage}
+  packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/guard/index.ts {GuardRails}
   packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/schema/index.ts {HenchConfig, RunRecord, TurnTokenUsage}
-  packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/store/project-config.ts {loadClaudeConfig, resolveApiKey}
-  packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/types/index.ts {ToolContext}
+  packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/store/project-config.ts {loadClaudeConfig, loadLLMConfig, resolveApiKey, resolveLLMVendor}
   packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/types/output.ts {section, subsection, stream, detail}
   packages/hench/src/agent/lifecycle/shared.ts → packages/hench/src/agent/analysis/review.ts {collectReviewDiff, promptReview, revertChanges}
   packages/hench/src/agent/lifecycle/shared.ts → packages/hench/src/agent/analysis/summary.ts {buildRunSummary}
@@ -126,6 +135,16 @@ Internal:
   packages/hench/src/cli/commands/template.ts → packages/hench/src/schema/index.ts {validateConfig, formatValidationErrors}
   packages/hench/src/cli/commands/template.ts → packages/hench/src/schema/templates.ts {WorkflowTemplate}
   packages/hench/src/cli/commands/template.ts → packages/hench/src/store/templates.ts {listTemplates, getTemplate, saveTemplate, deleteTemplate, applyTemplate, isValidTemplateId}
+  packages/hench/src/guard/commands.ts → packages/hench/src/guard/paths.ts {GuardError}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/commands.ts {validateCommand}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/commands.ts {validateCommand}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/paths.ts {GuardError, validatePath, simpleGlobMatch}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/paths.ts {validatePath, simpleGlobMatch, GuardError}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/policy.ts {PolicyEngine}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/policy.ts {PolicyEngine}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/policy.ts {AuditEntry, SessionCounters, PolicyLimits, OperationType, AuditVerdict}
+  packages/hench/src/guard/index.ts → packages/hench/src/schema/index.ts {GuardConfig}
+  packages/hench/src/guard/policy.ts → packages/hench/src/guard/paths.ts {GuardError}
   packages/hench/src/public.ts → packages/hench/src/agent/analysis/adaptive.ts {DEFAULT_ADAPTIVE_SETTINGS}
   packages/hench/src/public.ts → packages/hench/src/agent/analysis/adaptive.ts {AdaptiveSettings, AdjustmentCategory, AdjustmentPriority, ProjectMetrics, WorkflowAdjustment, AdjustmentNotification, AdaptiveAnalysis}
   packages/hench/src/public.ts → packages/hench/src/agent/lifecycle/cli-loop.ts {CliLoopOptions, CliLoopResult}
@@ -157,6 +176,7 @@ Internal:
   packages/hench/tests/unit/agent/brief.test.ts → packages/hench/src/agent/planning/brief.ts {formatTaskBrief, assembleTaskBrief, getActionableTasks, TaskNotActionableError, collectEpicTaskIds}
   packages/hench/tests/unit/agent/brief.test.ts → packages/hench/src/schema/v1.ts {TaskBrief}
   packages/hench/tests/unit/agent/cli-retry.test.ts → packages/hench/src/agent/lifecycle/cli-loop.ts {isTransientError, computeDelay, buildRetryNotice}
+  packages/hench/tests/unit/agent/codex-normalization.test.ts → packages/hench/src/agent/lifecycle/cli-loop.ts {normalizeCodexResponse}
   packages/hench/tests/unit/agent/heartbeat.test.ts → packages/hench/src/agent/lifecycle/heartbeat.ts {startHeartbeat, HEARTBEAT_INTERVAL_MS}
   packages/hench/tests/unit/agent/heartbeat.test.ts → packages/hench/src/schema/v1.ts {RunRecord}
   packages/hench/tests/unit/agent/prompt.test.ts → packages/hench/src/agent/planning/prompt.ts {buildSystemPrompt}
@@ -178,7 +198,7 @@ Internal:
   packages/hench/tests/unit/agent/token-tracking.test.ts → packages/hench/src/agent/lifecycle/cli-loop.ts {processStreamLine}
   packages/hench/tests/unit/agent/token-tracking.test.ts → packages/hench/src/agent/lifecycle/cli-loop.ts {CliRunResult}
   packages/hench/tests/unit/agent/token-tracking.test.ts → packages/hench/src/schema/v1.ts {TurnTokenUsage}
-  packages/hench/tests/unit/agent/token-usage.test.ts → packages/hench/src/agent/lifecycle/token-usage.ts {parseTokenUsage, parseStreamTokenUsage, emptyAggregateTokenUsage, accumulateTokenUsage, formatTokenUsage}
+  packages/hench/tests/unit/agent/token-usage.test.ts → packages/hench/src/agent/lifecycle/token-usage.ts {parseTokenUsage, parseStreamTokenUsage, mapCodexUsageToTokenUsage, emptyAggregateTokenUsage, accumulateTokenUsage, formatTokenUsage}
   packages/hench/tests/unit/agent/token-usage.test.ts → packages/hench/src/agent/lifecycle/token-usage.ts {AggregateTokenUsage}
   packages/hench/tests/unit/agent/workflow.test.ts → packages/hench/src/agent/analysis/workflow.ts {analyzeWorkflow, computeStats, _resetIdCounter}
   packages/hench/tests/unit/agent/workflow.test.ts → packages/hench/src/agent/analysis/workflow.ts {WorkflowSuggestion}
@@ -186,6 +206,13 @@ Internal:
   packages/hench/tests/unit/cli/commands/config.test.ts → packages/hench/src/cli/commands/config.ts {getConfigValue, setConfigValue, coerceValue, previewChange, formatConfigDisplay, CONFIG_FIELDS}
   packages/hench/tests/unit/cli/commands/config.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
   packages/hench/tests/unit/cli/commands/config.test.ts → packages/hench/src/schema/v1.ts {HenchConfig}
+  packages/hench/tests/unit/guard/commands.test.ts → packages/hench/src/guard/commands.ts {validateCommand}
+  packages/hench/tests/unit/guard/commands.test.ts → packages/hench/src/guard/paths.ts {GuardError}
+  packages/hench/tests/unit/guard/guard-integration.test.ts → packages/hench/src/guard/index.ts {GuardRails, GuardError}
+  packages/hench/tests/unit/guard/guard-integration.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
+  packages/hench/tests/unit/guard/paths.test.ts → packages/hench/src/guard/paths.ts {validatePath, simpleGlobMatch, GuardError}
+  packages/hench/tests/unit/guard/policy.test.ts → packages/hench/src/guard/paths.ts {GuardError}
+  packages/hench/tests/unit/guard/policy.test.ts → packages/hench/src/guard/policy.ts {PolicyEngine, DEFAULT_POLICY_LIMITS}
   packages/hench/tests/unit/schema/templates.test.ts → packages/hench/src/schema/templates.ts {BUILT_IN_TEMPLATES, findBuiltInTemplate}
   packages/hench/tests/unit/schema/validate.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
   packages/hench/tests/unit/schema/validate.test.ts → packages/hench/src/schema/validate.ts {validateConfig, validateRunRecord, formatValidationErrors, HenchConfigSchema, RunRecordSchema}
@@ -195,5 +222,18 @@ Internal:
   packages/hench/tests/unit/store/templates.test.ts → packages/hench/src/schema/templates.ts {WorkflowTemplate}
   packages/hench/tests/unit/store/templates.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
   packages/hench/tests/unit/store/templates.test.ts → packages/hench/src/store/templates.ts {listTemplates, getTemplate, saveTemplate, deleteTemplate, applyTemplate, isValidTemplateId}
+  packages/hench/tests/unit/tools/shell.test.ts → packages/hench/src/guard/index.ts {GuardRails}
+  packages/hench/tests/unit/tools/shell.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
 
 </imports>
+
+<sub-zones>
+
+This zone has 2 sub-zone(s):
+
+- **Unit** (`hench/tests/unit`): 48 files, cohesion 0.98, coupling 0.02
+- **Unit 2** (`hench/tests/unit-2`): 9 files, cohesion 0.86, coupling 0.14
+
+Detailed sub-zone context available in `zones/{sub-zone-id}/context.md`
+
+</sub-zones>

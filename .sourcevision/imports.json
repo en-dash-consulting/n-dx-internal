@@ -679,6 +679,7 @@
       "to": "packages/hench/src/agent/lifecycle/token-usage.ts",
       "type": "static",
       "symbols": [
+        "mapCodexUsageToTokenUsage",
         "parseTokenUsage",
         "parseStreamTokenUsage"
       ]
@@ -708,21 +709,14 @@
       "to": "packages/hench/src/store/project-config.ts",
       "type": "static",
       "symbols": [
-        "loadClaudeConfig",
-        "resolveCliPath"
+        "loadLLMConfig",
+        "resolveLLMVendor",
+        "resolveVendorCliPath"
       ]
     },
     {
       "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "to": "packages/hench/src/store/project-config.ts",
-      "type": "type",
-      "symbols": [
-        "ClaudeConfig"
-      ]
-    },
-    {
-      "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
-      "to": "packages/hench/src/tools/index.ts",
+      "to": "packages/hench/src/tools/rex.ts",
       "type": "static",
       "symbols": [
         "toolRexUpdateStatus",
@@ -844,7 +838,17 @@
       "type": "static",
       "symbols": [
         "loadClaudeConfig",
-        "resolveApiKey"
+        "loadLLMConfig",
+        "resolveApiKey",
+        "resolveLLMVendor"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/lifecycle/loop.ts",
+      "to": "packages/hench/src/tools/contracts.ts",
+      "type": "type",
+      "symbols": [
+        "ToolContext"
       ]
     },
     {
@@ -858,10 +862,10 @@
     },
     {
       "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/types/index.ts",
-      "type": "type",
+      "to": "packages/hench/src/tools/rex.ts",
+      "type": "static",
       "symbols": [
-        "ToolContext"
+        "rexToolHandlers"
       ]
     },
     {
@@ -957,9 +961,16 @@
       "to": "packages/hench/src/tools/index.ts",
       "type": "static",
       "symbols": [
-        "toolRexUpdateStatus",
-        "toolRexAppendLog",
         "runPostTaskTests"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/lifecycle/shared.ts",
+      "to": "packages/hench/src/tools/rex.ts",
+      "type": "static",
+      "symbols": [
+        "toolRexUpdateStatus",
+        "toolRexAppendLog"
       ]
     },
     {
@@ -1046,19 +1057,19 @@
     },
     {
       "from": "packages/hench/src/agent/tools.ts",
+      "to": "packages/hench/src/tools/contracts.ts",
+      "type": "type",
+      "symbols": [
+        "ToolContext"
+      ]
+    },
+    {
+      "from": "packages/hench/src/agent/tools.ts",
       "to": "packages/hench/src/tools/dispatch.ts",
       "type": "reexport",
       "symbols": [
         "TOOL_DEFINITIONS",
         "dispatchTool"
-      ]
-    },
-    {
-      "from": "packages/hench/src/agent/tools.ts",
-      "to": "packages/hench/src/types/index.ts",
-      "type": "type",
-      "symbols": [
-        "ToolContext"
       ]
     },
     {
@@ -1207,7 +1218,7 @@
       "symbols": [
         "CLIError",
         "EpicNotFoundError",
-        "requireClaudeCLI"
+        "requireLLMCLI"
       ]
     },
     {
@@ -1249,8 +1260,9 @@
       "to": "packages/hench/src/store/project-config.ts",
       "type": "static",
       "symbols": [
-        "loadClaudeConfig",
-        "resolveCliPath"
+        "loadLLMConfig",
+        "resolveLLMVendor",
+        "resolveVendorCliPath"
       ]
     },
     {
@@ -1517,6 +1529,15 @@
     },
     {
       "from": "packages/hench/src/guard/index.ts",
+      "to": "packages/hench/src/guard/contracts.ts",
+      "type": "type",
+      "symbols": [
+        "GuardConfig",
+        "PolicyLimitsConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/src/guard/index.ts",
       "to": "packages/hench/src/guard/paths.ts",
       "type": "reexport",
       "symbols": [
@@ -1564,14 +1585,6 @@
       ]
     },
     {
-      "from": "packages/hench/src/guard/index.ts",
-      "to": "packages/hench/src/schema/index.ts",
-      "type": "type",
-      "symbols": [
-        "GuardConfig"
-      ]
-    },
-    {
       "from": "packages/hench/src/guard/policy.ts",
       "to": "packages/hench/src/guard/paths.ts",
       "type": "static",
@@ -1589,10 +1602,18 @@
     },
     {
       "from": "packages/hench/src/process/exec-shell.ts",
-      "to": "packages/hench/src/process/exec.ts",
-      "type": "static",
+      "to": "packages/hench/src/tools/exec-shell.ts",
+      "type": "reexport",
       "symbols": [
-        "exec"
+        "execShell"
+      ]
+    },
+    {
+      "from": "packages/hench/src/process/exec-shell.ts",
+      "to": "packages/hench/src/tools/exec-shell.ts",
+      "type": "type",
+      "symbols": [
+        "ExecShellOptions"
       ]
     },
     {
@@ -1829,6 +1850,15 @@
       ]
     },
     {
+      "from": "packages/hench/src/schema/v1.ts",
+      "to": "packages/hench/src/guard/contracts.ts",
+      "type": "type",
+      "symbols": [
+        "GuardConfig",
+        "PolicyLimitsConfig"
+      ]
+    },
+    {
       "from": "packages/hench/src/store/config.ts",
       "to": "packages/hench/src/schema/index.ts",
       "type": "static",
@@ -1943,10 +1973,14 @@
     },
     {
       "from": "packages/hench/src/tools/dispatch.ts",
-      "to": "packages/hench/src/guard/index.ts",
-      "type": "static",
+      "to": "packages/hench/src/tools/contracts.ts",
+      "type": "type",
       "symbols": [
-        "GuardError"
+        "ToolContext",
+        "RexToolHandlers",
+        "RexUpdateStatusParams",
+        "RexAppendLogParams",
+        "RexAddSubtaskParams"
       ]
     },
     {
@@ -1970,16 +2004,6 @@
     },
     {
       "from": "packages/hench/src/tools/dispatch.ts",
-      "to": "packages/hench/src/tools/rex.ts",
-      "type": "static",
-      "symbols": [
-        "toolRexUpdateStatus",
-        "toolRexAppendLog",
-        "toolRexAddSubtask"
-      ]
-    },
-    {
-      "from": "packages/hench/src/tools/dispatch.ts",
       "to": "packages/hench/src/tools/shell.ts",
       "type": "static",
       "symbols": [
@@ -1987,35 +2011,11 @@
       ]
     },
     {
-      "from": "packages/hench/src/tools/dispatch.ts",
-      "to": "packages/hench/src/types/index.ts",
-      "type": "type",
-      "symbols": [
-        "ToolContext"
-      ]
-    },
-    {
       "from": "packages/hench/src/tools/exec-shell.ts",
-      "to": "packages/hench/src/process/exec-shell.ts",
-      "type": "reexport",
+      "to": "packages/hench/src/process/exec.ts",
+      "type": "static",
       "symbols": [
-        "execShell"
-      ]
-    },
-    {
-      "from": "packages/hench/src/tools/exec-shell.ts",
-      "to": "packages/hench/src/process/exec-shell.ts",
-      "type": "type",
-      "symbols": [
-        "ExecShellOptions"
-      ]
-    },
-    {
-      "from": "packages/hench/src/tools/files.ts",
-      "to": "packages/hench/src/guard/index.ts",
-      "type": "type",
-      "symbols": [
-        "GuardRails"
+        "exec"
       ]
     },
     {
@@ -2027,16 +2027,24 @@
       ]
     },
     {
-      "from": "packages/hench/src/tools/git.ts",
-      "to": "packages/hench/src/guard/index.ts",
+      "from": "packages/hench/src/tools/files.ts",
+      "to": "packages/hench/src/tools/contracts.ts",
       "type": "type",
       "symbols": [
-        "GuardRails"
+        "ToolGuard"
       ]
     },
     {
       "from": "packages/hench/src/tools/git.ts",
-      "to": "packages/hench/src/process/exec-shell.ts",
+      "to": "packages/hench/src/tools/contracts.ts",
+      "type": "type",
+      "symbols": [
+        "ToolGuard"
+      ]
+    },
+    {
+      "from": "packages/hench/src/tools/git.ts",
+      "to": "packages/hench/src/tools/exec-shell.ts",
       "type": "static",
       "symbols": [
         "execShell"
@@ -2068,24 +2076,6 @@
       "type": "reexport",
       "symbols": [
         "toolGit"
-      ]
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/rex.ts",
-      "type": "reexport",
-      "symbols": [
-        "toolRexUpdateStatus",
-        "toolRexAppendLog",
-        "toolRexAddSubtask"
-      ]
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/rex.ts",
-      "type": "type",
-      "symbols": [
-        "UpdateStatusOptions"
       ]
     },
     {
@@ -2142,6 +2132,18 @@
     },
     {
       "from": "packages/hench/src/tools/rex.ts",
+      "to": "packages/hench/src/tools/contracts.ts",
+      "type": "type",
+      "symbols": [
+        "RexToolHandlers",
+        "ToolContext",
+        "RexUpdateStatusParams",
+        "RexAppendLogParams",
+        "RexAddSubtaskParams"
+      ]
+    },
+    {
+      "from": "packages/hench/src/tools/rex.ts",
       "to": "packages/hench/src/validation/completion.ts",
       "type": "static",
       "symbols": [
@@ -2151,15 +2153,15 @@
     },
     {
       "from": "packages/hench/src/tools/shell.ts",
-      "to": "packages/hench/src/guard/index.ts",
+      "to": "packages/hench/src/tools/contracts.ts",
       "type": "type",
       "symbols": [
-        "GuardRails"
+        "ToolGuard"
       ]
     },
     {
       "from": "packages/hench/src/tools/shell.ts",
-      "to": "packages/hench/src/process/exec-shell.ts",
+      "to": "packages/hench/src/tools/exec-shell.ts",
       "type": "static",
       "symbols": [
         "execShell"
@@ -2171,14 +2173,6 @@
       "type": "static",
       "symbols": [
         "execShellCmd"
-      ]
-    },
-    {
-      "from": "packages/hench/src/types/index.ts",
-      "to": "packages/hench/src/guard/index.ts",
-      "type": "type",
-      "symbols": [
-        "GuardRails"
       ]
     },
     {
@@ -2238,6 +2232,47 @@
       "type": "static",
       "symbols": [
         "HenchConfigSchema"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/integration/codex-token-accounting.test.ts",
+      "to": "packages/hench/src/agent/lifecycle/cli-loop.ts",
+      "type": "dynamic",
+      "symbols": [
+        "cliLoop"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/integration/codex-token-accounting.test.ts",
+      "to": "packages/hench/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "RunRecord"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/integration/codex-token-accounting.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "dynamic",
+      "symbols": [
+        "loadConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/integration/codex-token-accounting.test.ts",
+      "to": "packages/hench/src/store/config.ts",
+      "type": "static",
+      "symbols": [
+        "initConfig"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/integration/codex-token-accounting.test.ts",
+      "to": "packages/hench/src/store/runs.ts",
+      "type": "static",
+      "symbols": [
+        "saveRun",
+        "listRuns"
       ]
     },
     {
@@ -2417,6 +2452,14 @@
         "isTransientError",
         "computeDelay",
         "buildRetryNotice"
+      ]
+    },
+    {
+      "from": "packages/hench/tests/unit/agent/codex-normalization.test.ts",
+      "to": "packages/hench/src/agent/lifecycle/cli-loop.ts",
+      "type": "static",
+      "symbols": [
+        "normalizeCodexResponse"
       ]
     },
     {
@@ -2694,6 +2737,7 @@
       "symbols": [
         "parseTokenUsage",
         "parseStreamTokenUsage",
+        "mapCodexUsageToTokenUsage",
         "emptyAggregateTokenUsage",
         "accumulateTokenUsage",
         "formatTokenUsage"
@@ -4165,10 +4209,13 @@
       "type": "reexport",
       "symbols": [
         "DEFAULT_MODEL",
+        "DEFAULT_CODEX_MODEL",
         "MAX_RETRIES",
+        "setLLMConfig",
         "setClaudeConfig",
         "setClaudeClient",
         "getAuthMode",
+        "getLLMVendor",
         "CHUNK_CHAR_LIMIT",
         "CHUNK_ITEM_LIMIT",
         "FEW_SHOT_EXAMPLE",
@@ -4679,8 +4726,10 @@
         "emptyAnalyzeTokenUsage",
         "formatDiff",
         "DEFAULT_MODEL",
+        "setLLMConfig",
         "setClaudeConfig",
-        "getAuthMode"
+        "getAuthMode",
+        "getLLMVendor"
       ]
     },
     {
@@ -4778,7 +4827,8 @@
       "to": "packages/rex/src/store/project-config.ts",
       "type": "static",
       "symbols": [
-        "loadClaudeConfig"
+        "loadClaudeConfig",
+        "loadLLMConfig"
       ]
     },
     {
@@ -5054,6 +5104,7 @@
       "to": "packages/rex/src/analyze/reason.ts",
       "type": "dynamic",
       "symbols": [
+        "setLLMConfig",
         "setClaudeConfig"
       ]
     },
@@ -5154,6 +5205,7 @@
       "to": "packages/rex/src/store/project-config.ts",
       "type": "dynamic",
       "symbols": [
+        "loadLLMConfig",
         "loadClaudeConfig"
       ]
     },
@@ -5291,6 +5343,7 @@
       "to": "packages/rex/src/analyze/reason.ts",
       "type": "static",
       "symbols": [
+        "setLLMConfig",
         "setClaudeConfig"
       ]
     },
@@ -5381,6 +5434,7 @@
       "to": "packages/rex/src/store/project-config.ts",
       "type": "static",
       "symbols": [
+        "loadLLMConfig",
         "loadClaudeConfig"
       ]
     },
@@ -5401,8 +5455,10 @@
         "reasonFromIdeasFile",
         "validateProposalQuality",
         "DEFAULT_MODEL",
+        "setLLMConfig",
         "setClaudeConfig",
-        "getAuthMode"
+        "getAuthMode",
+        "getLLMVendor"
       ]
     },
     {
@@ -5487,7 +5543,8 @@
       "to": "packages/rex/src/store/project-config.ts",
       "type": "static",
       "symbols": [
-        "loadClaudeConfig"
+        "loadClaudeConfig",
+        "loadLLMConfig"
       ]
     },
     {
@@ -15390,6 +15447,7 @@
         "packages/rex/src/analyze/scanners.ts",
         "packages/rex/src/cli/commands/constants.ts",
         "packages/rex/src/cli/commands/recommend.ts",
+        "packages/rex/src/cli/commands/smart-add.ts",
         "packages/rex/src/cli/errors.ts",
         "packages/rex/src/cli/help.ts",
         "packages/rex/src/cli/index.ts",
@@ -15412,14 +15470,16 @@
         "ExecOptions",
         "ExecResult",
         "HelpDefinition",
+        "LLMConfig",
+        "LLMVendor",
         "ManagedChild",
         "PROJECT_DIRS",
         "ProcessLimitError",
         "ProcessPool",
         "SpawnToolOptions",
         "SpawnToolResult",
-        "createClient",
-        "detectAuthMode",
+        "createLLMClient",
+        "detectLLMAuthMode",
         "exec",
         "execShellCmd",
         "execStdout",
@@ -15433,6 +15493,7 @@
         "isExecutableOnPath",
         "isQuiet",
         "loadClaudeConfigFromDir",
+        "loadLLMConfigFromDir",
         "loadProjectOverrides",
         "mergeWithOverrides",
         "parseStreamTokenUsage",
@@ -15675,8 +15736,9 @@
         "packages/hench/src/cli/commands/run.ts",
         "packages/hench/src/cli/commands/task-lookup.ts",
         "packages/hench/src/prd/rex-gateway.ts",
+        "packages/hench/src/tools/contracts.ts",
         "packages/hench/src/tools/rex.ts",
-        "packages/hench/src/types/index.ts",
+        "packages/hench/tests/integration/codex-token-accounting.test.ts",
         "packages/hench/tests/unit/agent/api-auth.test.ts",
         "packages/hench/tests/unit/agent/atomic-transition.test.ts",
         "packages/hench/tests/unit/agent/brief.test.ts",
@@ -15804,12 +15866,14 @@
         "packages/claude-client/tests/unit/types.test.ts",
         "packages/claude-client/vitest.config.ts",
         "packages/hench/tests/e2e/cli-init.test.ts",
+        "packages/hench/tests/integration/codex-token-accounting.test.ts",
         "packages/hench/tests/integration/store-roundtrip.test.ts",
         "packages/hench/tests/unit/agent/adaptive.test.ts",
         "packages/hench/tests/unit/agent/api-auth.test.ts",
         "packages/hench/tests/unit/agent/atomic-transition.test.ts",
         "packages/hench/tests/unit/agent/brief.test.ts",
         "packages/hench/tests/unit/agent/cli-retry.test.ts",
+        "packages/hench/tests/unit/agent/codex-normalization.test.ts",
         "packages/hench/tests/unit/agent/completion.test.ts",
         "packages/hench/tests/unit/agent/heartbeat.test.ts",
         "packages/hench/tests/unit/agent/loop.test.ts",
@@ -16078,7 +16142,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 1670,
+    "totalEdges": 1674,
     "totalExternal": 17,
     "circularCount": 0,
     "circulars": [],
@@ -16113,7 +16177,7 @@
       },
       {
         "path": "packages/hench/src/store/config.ts",
-        "count": 18
+        "count": 20
       },
       {
         "path": "packages/rex/src/analyze/reason.ts",
@@ -16148,6 +16212,10 @@
         "count": 9
       },
       {
+        "path": "packages/hench/src/agent/lifecycle/cli-loop.ts",
+        "count": 9
+      },
+      {
         "path": "packages/hench/src/store/index.ts",
         "count": 9
       },
@@ -16158,12 +16226,8 @@
       {
         "path": "packages/sourcevision/src/schema/data-files.ts",
         "count": 9
-      },
-      {
-        "path": "packages/hench/src/cli/errors.ts",
-        "count": 8
       }
     ],
-    "avgImportsPerFile": 3.4
+    "avgImportsPerFile": 3.39
   }
 }

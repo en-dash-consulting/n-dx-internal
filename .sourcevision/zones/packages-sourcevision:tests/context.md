@@ -8,7 +8,7 @@ Zone: Tests (`packages-sourcevision:tests`)
 Files: 68, Cohesion: 0.94, Coupling: 0.06
 Description: 66 files, primarily TypeScript
 Entry points: packages/sourcevision/src/cli/commands/analyze.ts, packages/sourcevision/src/cli/mcp.ts, packages/sourcevision/src/export/pdf-report.ts, packages/sourcevision/src/schema/data-files.ts, packages/sourcevision/src/schema/index.ts, packages/sourcevision/src/schema/v1.ts
-Lines: 23586
+Lines: 23597
 
 </zone>
 
@@ -37,7 +37,7 @@ packages/sourcevision/src/analyzers/workspace.ts (TypeScript, 282 lines, source)
 packages/sourcevision/src/analyzers/zone-output.ts (TypeScript, 266 lines, source)
 packages/sourcevision/src/analyzers/zones.ts (TypeScript, 1389 lines, source)
 packages/sourcevision/src/cli/commands/analyze.ts (TypeScript, 185 lines, source)
-packages/sourcevision/src/cli/mcp.ts (TypeScript, 544 lines, source)
+packages/sourcevision/src/cli/mcp.ts (TypeScript, 555 lines, source)
 packages/sourcevision/src/export/pdf-report.ts (TypeScript, 598 lines, source)
 packages/sourcevision/src/public.ts (TypeScript, 107 lines, source)
 packages/sourcevision/src/schema/data-files.ts (TypeScript, 13 lines, source)
@@ -274,7 +274,7 @@ Incoming (other zones → this zone):
 
 - High cohesion (0.94) — files are tightly interconnected
 - Contains 70% of project files (68/97) — subdivided into 3 sub-zones
-- [call graph] 2168 internal calls, 24 outgoing, 138 incoming (cohesion: 0.99, coupling: 0.01)
+- [call graph] 2159 internal calls, 24 outgoing, 138 incoming (cohesion: 0.99, coupling: 0.01)
 
 </insights>
 

@@ -6,7 +6,7 @@ import type { PRDStore } from "rex";
 import type { HenchConfig, RetryConfig, RunRecord, ToolCallRecord, TurnTokenUsage } from "../../schema/index.js";
 import { saveRun } from "../../store/index.js";
 import { validateCompletion, formatValidationResult } from "../../validation/completion.js";
-import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/index.js";
+import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/rex.js";
 import { checkTokenBudget } from "./token-budget.js";
 import { mapCodexUsageToTokenUsage, parseTokenUsage, parseStreamTokenUsage } from "./token-usage.js";
 import { startHeartbeat } from "./heartbeat.js";

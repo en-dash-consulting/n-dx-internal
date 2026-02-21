@@ -1,7 +1,7 @@
 {
   "id": "hench/tests-3",
   "name": "Tests 3",
-  "description": "24 files, primarily TypeScript",
+  "description": "25 files, primarily TypeScript",
   "files": [
     "packages/hench/src/cli/commands/constants.ts",
     "packages/hench/src/cli/commands/init.ts",
@@ -16,6 +16,7 @@
     "packages/hench/src/store/index.ts",
     "packages/hench/src/store/json.ts",
     "packages/hench/src/store/runs.ts",
+    "packages/hench/tests/integration/codex-token-accounting.test.ts",
     "packages/hench/tests/integration/store-roundtrip.test.ts",
     "packages/hench/tests/unit/agent/atomic-transition.test.ts",
     "packages/hench/tests/unit/agent/loop.test.ts",
@@ -38,6 +39,6 @@
   ],
   "cohesion": 0.7,
   "coupling": 0.3,
-  "fileCount": 24,
-  "lineCount": 2656
+  "fileCount": 25,
+  "lineCount": 2855
 }

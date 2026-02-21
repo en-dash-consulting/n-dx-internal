@@ -1,9 +1,9 @@
 {
   "zones": [
     {
-      "id": "adaptive-web-services-shell",
-      "name": "Adaptive Web Services Shell",
-      "description": "Hosts the adaptive HTTP server, CLI surface, and domain gateways that expose backend capabilities to other packages.",
+      "id": "adaptive-web-gateway",
+      "name": "Adaptive Web Gateway",
+      "description": "Runs the HTTP server, adaptive routing, and MCP-facing gateways that serve schema-backed data to clients.",
       "files": [
         "packages/web/src/cli/index.ts",
         "packages/web/src/landing/index.html",
@@ -66,19 +66,18 @@
       "coupling": 0.01,
       "insights": [
         "High cohesion (0.99) — files are tightly interconnected",
-        "Stabilize `packages/web/src/server/domain-gateway.ts` as the single ingress/egress point so future transports do not bypass shared policies.",
-        "Trim `packages/web/src/public.ts` exports to the contract actually used by dependents to keep the public surface disciplined.",
-        "Add integration tests around `packages/web/src/server/routes-adaptive.ts` to guard adaptive routing logic as new features land.",
-        "Extremely high cohesion (0.99) indicates the CLI, HTTP server, and domain gateways belong together—keep new backend utilities inside this shell to preserve that property.",
-        "Gateway files (`domain-gateway.ts`, `mcp-deps.ts`) already abstract external connectors; adding contract tests before onboarding integrations will keep coupling at its current 0.01 level.",
-        "`routes-adaptive.ts` centralizes adaptive route wiring; pair it with smoke tests whenever new adaptive surfaces are introduced to avoid regressions.",
-        "[call graph] 972 internal calls, 21 outgoing, 1 incoming (cohesion: 0.98, coupling: 0.02)"
+        "Routes, gateways, and MCP adapters converge here.",
+        "Near-perfect cohesion suggests a clean layering opportunity for contracts.",
+        "Keep exporting shared dataset metadata through `schema/data-files.ts` so both the CLI and server stay in lockstep on file contracts.",
+        "Factor the logic in `server/domain-gateway.ts` into explicit integration boundaries to make external service mocks simpler for tests.",
+        "Add runtime health checks in `server/index.ts` or `routes-adaptive.ts` to surface MCP dependency failures before they cascade to clients.",
+        "[call graph] 990 internal calls, 21 outgoing, 1 incoming (cohesion: 0.98, coupling: 0.02)"
       ]
     },
     {
-      "id": "claude-foundation-client",
-      "name": "Claude Foundation Client",
-      "description": "Shared client SDK that abstracts Anthropic CLI/API usage, retries, and telemetry for the rest of the stack.",
+      "id": "claude-api-client-core",
+      "name": "Claude API Client Core",
+      "description": "Typed client, CLI provider, and auth/config helpers that encapsulate how Claude is called from local tools.",
       "files": [
         "packages/claude-client/src/api-provider.ts",
         "packages/claude-client/src/auth.ts",
@@ -114,50 +113,24 @@
       "coupling": 0,
       "insights": [
         "High cohesion (1) — files are tightly interconnected",
-        "Implements dual providers (API + CLI) so any caller gets transparent failover.",
-        "Centralizes token-usage parsing and project-config access for downstream analytics.",
-        "Provider selection logic in `packages/claude-client/src/create-client.ts:1` already encapsulates auto-detect/fallback, so standardize new consumers on this factory rather than instantiating providers directly to preserve consistent behavior.",
-        "Anthropic SDK integration in `packages/claude-client/src/api-provider.ts:21` exposes retry/backoff knobs; plumb those options through repo-level config before running heavier CI workloads so operators can tune quotas safely.",
-        "Token-usage normalization in `packages/claude-client/src/token-usage.ts:1` is the single source for billing data, so extend it whenever the SDK ships new usage fields (e.g., cache hits) to keep downstream cost analytics accurate.",
+        "Harden config/auth validation so create-client.ts cannot be instantiated without explicit key scope and rate-limits.",
+        "Add integration smoke tests for cli-provider.ts and exec.ts to ensure streaming/error surfaces stay compatible with anthropic updates.",
+        "Centralize JSON/help-format utilities around a single serialization contract to keep CLI and API providers consistent.",
+        "Add integration smoke tests for cli-provider.ts and exec.ts to detect incompatible streaming or error shapes early.",
+        "Centralize JSON/help-format helpers around one serialization contract to prevent CLI/API drift.",
         "[call graph] 317 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
       ]
     },
     {
-      "id": "cli-orchestration-surface",
-      "name": "CLI Orchestration Surface",
-      "description": "Top-level scripts that broker every n-dx workflow by spawning package CLIs and presenting a cohesive developer UX.",
-      "files": [
-        "ci.js",
-        "cli.js",
-        "config.js",
-        "help.js",
-        "tests/unit/help.test.js",
-        "web.js"
-      ],
-      "entryPoints": [],
-      "cohesion": 1,
-      "coupling": 0,
-      "insights": [
-        "High cohesion (1) — files are tightly interconnected",
-        "Holds the entrypoints (CLI, CI, web) that enforce the repo's four-tier dependency layering.",
-        "Shares config/help/test helpers so onboarding and diagnostics feel the same across commands.",
-        "Documented four-tier dependency rules in `cli.js:3` keep orchestration decoupled from execution; add an automated import-lint or test so future entrypoints cannot bypass the spawn-only contract.",
-        "Secret-aware config writing in `config.js:49` already chmods `.n-dx.json` when API keys exist, so route any new sensitive settings through this helper instead of ad-hoc package config writers to keep credentials locked down.",
-        "The command registry/search UX in `help.js:83` and its regression coverage in `tests/unit/help.test.js:4` should be treated as required touchpoints whenever commands are added or renamed to keep typo suggestions and docs accurate.",
-        "[call graph] 284 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
-      ]
-    },
-    {
-      "id": "hench-agent-core",
-      "name": "Hench Agent Core",
-      "description": "Execution engine that assembles briefs, runs the agent loop, validates output, and summarizes autonomous work.",
+      "id": "hench-agent-engine",
+      "name": "Hench Agent Engine",
+      "description": "Primary agent lifecycle, analysis pipelines, and tool integrations driving the automation runtime.",
       "files": [
         "packages/hench/src/agent/analysis/adaptive.ts",
         "packages/hench/src/agent/analysis/review.ts",
         "packages/hench/src/agent/analysis/stuck.ts",
         "packages/hench/src/agent/analysis/summary.ts",
         "packages/hench/src/agent/analysis/workflow.ts",
-        "packages/hench/src/agent/completion.ts",
         "packages/hench/src/agent/index.ts",
         "packages/hench/src/agent/lifecycle/cli-loop.ts",
         "packages/hench/src/agent/lifecycle/heartbeat.ts",
@@ -168,6 +141,7 @@
         "packages/hench/src/agent/lifecycle/token-usage.ts",
         "packages/hench/src/agent/planning/brief.ts",
         "packages/hench/src/agent/planning/prompt.ts",
+        "packages/hench/src/agent/tools.ts",
         "packages/hench/src/cli/commands/config.ts",
         "packages/hench/src/cli/commands/constants.ts",
         "packages/hench/src/cli/commands/init.ts",
@@ -190,6 +164,7 @@
         "packages/hench/src/schema/templates.ts",
         "packages/hench/src/schema/v1.ts",
         "packages/hench/src/schema/validate.ts",
+        "packages/hench/src/shared/glob.ts",
         "packages/hench/src/store/config.ts",
         "packages/hench/src/store/index.ts",
         "packages/hench/src/store/json.ts",
@@ -197,22 +172,26 @@
         "packages/hench/src/store/runs.ts",
         "packages/hench/src/store/suggestions.ts",
         "packages/hench/src/store/templates.ts",
+        "packages/hench/src/tools/contracts.ts",
+        "packages/hench/src/tools/dispatch.ts",
         "packages/hench/src/tools/exec-shell.ts",
+        "packages/hench/src/tools/files.ts",
+        "packages/hench/src/tools/git.ts",
         "packages/hench/src/tools/index.ts",
         "packages/hench/src/tools/rex.ts",
+        "packages/hench/src/tools/shell.ts",
         "packages/hench/src/tools/test-runner.ts",
         "packages/hench/src/types/index.ts",
         "packages/hench/src/types/output.ts",
-        "packages/hench/src/validation/completion.ts",
-        "packages/hench/src/validation/index.ts",
         "packages/hench/tests/e2e/cli-init.test.ts",
+        "packages/hench/tests/integration/codex-token-accounting.test.ts",
         "packages/hench/tests/integration/store-roundtrip.test.ts",
         "packages/hench/tests/unit/agent/adaptive.test.ts",
         "packages/hench/tests/unit/agent/api-auth.test.ts",
         "packages/hench/tests/unit/agent/atomic-transition.test.ts",
         "packages/hench/tests/unit/agent/brief.test.ts",
         "packages/hench/tests/unit/agent/cli-retry.test.ts",
-        "packages/hench/tests/unit/agent/completion.test.ts",
+        "packages/hench/tests/unit/agent/codex-normalization.test.ts",
         "packages/hench/tests/unit/agent/heartbeat.test.ts",
         "packages/hench/tests/unit/agent/loop.test.ts",
         "packages/hench/tests/unit/agent/prompt.test.ts",
@@ -243,24 +222,24 @@
         "packages/hench/tests/unit/store/project-config.test.ts",
         "packages/hench/tests/unit/store/suggestions.test.ts",
         "packages/hench/tests/unit/store/templates.test.ts",
-        "packages/hench/tests/unit/tools/completion-validation.test.ts",
+        "packages/hench/tests/unit/tools/files.test.ts",
+        "packages/hench/tests/unit/tools/git.test.ts",
         "packages/hench/tests/unit/tools/rex.test.ts",
         "packages/hench/tests/unit/tools/test-runner.test.ts"
       ],
       "entryPoints": [
-        "packages/hench/src/process/exec-shell.ts",
-        "packages/hench/src/schema/index.ts",
+        "packages/hench/src/process/index.ts",
         "packages/hench/src/schema/v1.ts",
         "packages/hench/src/tools/rex.ts",
-        "packages/hench/src/types/index.ts"
+        "packages/hench/src/tools/shell.ts"
       ],
-      "cohesion": 0.95,
-      "coupling": 0.05,
+      "cohesion": 0.97,
+      "coupling": 0.03,
       "subZones": [
         {
           "id": "hench/tests",
           "name": "Tests",
-          "description": "47 files, primarily TypeScript",
+          "description": "48 files, primarily TypeScript",
           "files": [
             "packages/hench/src/agent/analysis/adaptive.ts",
             "packages/hench/src/agent/analysis/review.ts",
@@ -293,6 +272,7 @@
             "packages/hench/tests/unit/agent/api-auth.test.ts",
             "packages/hench/tests/unit/agent/brief.test.ts",
             "packages/hench/tests/unit/agent/cli-retry.test.ts",
+            "packages/hench/tests/unit/agent/codex-normalization.test.ts",
             "packages/hench/tests/unit/agent/heartbeat.test.ts",
             "packages/hench/tests/unit/agent/prompt.test.ts",
             "packages/hench/tests/unit/agent/review.test.ts",
@@ -323,38 +303,41 @@
             "packages/hench/src/schema/v1.ts",
             "packages/hench/src/schema/validate.ts"
           ],
-          "cohesion": 0.83,
-          "coupling": 0.17,
+          "cohesion": 0.81,
+          "coupling": 0.19,
+          "depth": 1
+        },
+        {
+          "id": "hench/tools",
+          "name": "Tools",
+          "description": "11 files, primarily TypeScript",
+          "files": [
+            "packages/hench/src/agent/tools.ts",
+            "packages/hench/src/tools/contracts.ts",
+            "packages/hench/src/tools/dispatch.ts",
+            "packages/hench/src/tools/files.ts",
+            "packages/hench/src/tools/git.ts",
+            "packages/hench/src/tools/index.ts",
+            "packages/hench/src/tools/shell.ts",
+            "packages/hench/src/tools/test-runner.ts",
+            "packages/hench/tests/unit/tools/files.test.ts",
+            "packages/hench/tests/unit/tools/git.test.ts",
+            "packages/hench/tests/unit/tools/test-runner.test.ts"
+          ],
+          "entryPoints": [
+            "packages/hench/src/tools/contracts.ts",
+            "packages/hench/src/tools/dispatch.ts",
+            "packages/hench/src/tools/index.ts",
+            "packages/hench/src/agent/tools.ts"
+          ],
+          "cohesion": 0.77,
+          "coupling": 0.23,
           "depth": 1
         },
         {
           "id": "hench/tests-2",
           "name": "Tests 2",
-          "description": "9 files, primarily TypeScript",
-          "files": [
-            "packages/hench/src/agent/completion.ts",
-            "packages/hench/src/prd/ops.ts",
-            "packages/hench/src/prd/rex-gateway.ts",
-            "packages/hench/src/tools/rex.ts",
-            "packages/hench/src/validation/completion.ts",
-            "packages/hench/src/validation/index.ts",
-            "packages/hench/tests/unit/agent/completion.test.ts",
-            "packages/hench/tests/unit/tools/completion-validation.test.ts",
-            "packages/hench/tests/unit/tools/rex.test.ts"
-          ],
-          "entryPoints": [
-            "packages/hench/src/validation/completion.ts",
-            "packages/hench/src/prd/rex-gateway.ts",
-            "packages/hench/src/tools/rex.ts"
-          ],
-          "cohesion": 0.67,
-          "coupling": 0.33,
-          "depth": 1
-        },
-        {
-          "id": "hench/tests-3",
-          "name": "Tests 3",
-          "description": "24 files, primarily TypeScript",
+          "description": "25 files, primarily TypeScript",
           "files": [
             "packages/hench/src/cli/commands/constants.ts",
             "packages/hench/src/cli/commands/init.ts",
@@ -369,6 +352,7 @@
             "packages/hench/src/store/index.ts",
             "packages/hench/src/store/json.ts",
             "packages/hench/src/store/runs.ts",
+            "packages/hench/tests/integration/codex-token-accounting.test.ts",
             "packages/hench/tests/integration/store-roundtrip.test.ts",
             "packages/hench/tests/unit/agent/atomic-transition.test.ts",
             "packages/hench/tests/unit/agent/loop.test.ts",
@@ -389,13 +373,13 @@
             "packages/hench/src/cli/commands/constants.ts",
             "packages/hench/src/store/json.ts"
           ],
-          "cohesion": 0.7,
-          "coupling": 0.3,
+          "cohesion": 0.69,
+          "coupling": 0.31,
           "depth": 1
         },
         {
-          "id": "hench/tests-4",
-          "name": "Tests 4",
+          "id": "hench/tests-3",
+          "name": "Tests 3",
           "description": "4 files, primarily TypeScript",
           "files": [
             "packages/hench/src/cli/commands/run.ts",
@@ -413,23 +397,26 @@
         {
           "id": "hench/process",
           "name": "Process",
-          "description": "8 files, primarily TypeScript",
+          "description": "9 files, primarily TypeScript",
           "files": [
+            "packages/hench/src/prd/ops.ts",
+            "packages/hench/src/prd/rex-gateway.ts",
             "packages/hench/src/process/exec-shell.ts",
             "packages/hench/src/process/exec.ts",
             "packages/hench/src/process/index.ts",
             "packages/hench/src/tools/exec-shell.ts",
-            "packages/hench/src/tools/index.ts",
-            "packages/hench/src/tools/test-runner.ts",
+            "packages/hench/src/tools/rex.ts",
             "packages/hench/tests/unit/process/exec.test.ts",
-            "packages/hench/tests/unit/tools/test-runner.test.ts"
+            "packages/hench/tests/unit/tools/rex.test.ts"
           ],
           "entryPoints": [
             "packages/hench/src/process/index.ts",
-            "packages/hench/src/tools/index.ts"
+            "packages/hench/src/tools/rex.ts",
+            "packages/hench/src/prd/rex-gateway.ts",
+            "packages/hench/src/tools/exec-shell.ts"
           ],
-          "cohesion": 0.7,
-          "coupling": 0.3,
+          "cohesion": 0.6,
+          "coupling": 0.4,
           "depth": 1
         },
         {
@@ -447,54 +434,126 @@
         }
       ],
       "insights": [
-        "High cohesion (0.95) — files are tightly interconnected",
-        "Re-exports lifecycle/planning/analysis APIs so upstream callers have a single surface.",
-        "Owns human-in-the-loop checkpoints like review gates and stuck-task detection.",
-        "Use `packages/hench/src/agent/index.ts:1` as the lone import surface for lifecycle, planning, and analysis primitives so CLI layers don’t deep-import internals and accidentally create cycles.",
-        "The review gate in `packages/hench/src/agent/analysis/review.ts:1` hardcodes a 30s prompt timeout; expose that through config or CLI flags before enabling unattended review flows, otherwise approvals can block runs.",
-        "Stuck-task heuristics in `packages/hench/src/agent/analysis/stuck.ts:1` depend on callers to pass a threshold, so document or set a default in the run orchestration to keep failure detection consistent across commands.",
-        "[call graph] 1824 internal calls, 2 outgoing, 27 incoming (cohesion: 1, coupling: 0)"
+        "High cohesion (0.97) — files are tightly interconnected",
+        "Keep the analysis and lifecycle services modular so cross-zone imports (5 into hench-2 and 5 into hench-3) remain through stable interfaces.",
+        "Add contract tests for the exposed entrypoints (process/index.ts, schema/v1.ts, tools) to ensure downstream consumers see stable schemas.",
+        "Use the high cohesion (0.97) to your advantage by formalizing internal subpackages (analysis, lifecycle, tools) as published facets for clarity.",
+        "Maintain stable interfaces on the 5 imports into hench-2 and 5 into hench-3 so validation and guard layers remain decoupled.",
+        "Add contract tests for process/index.ts, schema/v1.ts, and tool entrypoints to guarantee backwards compatibility for consumers.",
+        "Formalize analysis/lifecycle/tool subpackages to capitalize on the 0.97 cohesion and clarify extension points.",
+        "[call graph] 1877 internal calls, 6 outgoing, 66 incoming (cohesion: 1, coupling: 0)"
       ]
     },
     {
-      "id": "hench-guard-and-tools",
-      "name": "Hench Guard & Tools",
-      "description": "Security guardrails plus the tool-dispatch layer that mediates every filesystem, shell, git, and Rex action the agent performs.",
+      "id": "hench-completion-validation",
+      "name": "Completion Validation Bridge",
+      "description": "Bridges agent completion logic with validation utilities and tests to enforce output correctness.",
       "files": [
-        "packages/hench/src/agent/tools.ts",
+        "packages/hench/src/agent/completion.ts",
+        "packages/hench/src/validation/completion.ts",
+        "packages/hench/src/validation/index.ts",
+        "packages/hench/tests/unit/agent/completion.test.ts",
+        "packages/hench/tests/unit/tools/completion-validation.test.ts"
+      ],
+      "entryPoints": [
+        "packages/hench/src/validation/completion.ts"
+      ],
+      "cohesion": 0.55,
+      "coupling": 0.45,
+      "insights": [
+        "Increase cohesion (currently 0.55) by co-locating completion.ts services with validation consumers or extracting shared primitives.",
+        "Define explicit contracts for the two imports back into hench to stop the bidirectional dependency from creeping further.",
+        "Expand test coverage to include failure-path scenarios in packages/hench/tests/unit/tools/completion-validation.test.ts to harden guardrails.",
+        "Raise cohesion (0.55) by co-locating completion services with their validation consumers or extracting shared primitives.",
+        "Define explicit contracts for the two imports into hench to keep the bidirectional dependency contained.",
+        "Extend unit tests to cover failure paths in completion validation so malformed outputs are consistently rejected.",
+        "[call graph] 51 internal calls, 13 outgoing, 5 incoming (cohesion: 0.8, coupling: 0.2)"
+      ]
+    },
+    {
+      "id": "hench-guardrails-layer",
+      "name": "Guardrail Enforcement Layer",
+      "description": "Command/policy/contract utilities plus tests that protect shell and process tools through guard definitions.",
+      "files": [
         "packages/hench/src/guard/commands.ts",
+        "packages/hench/src/guard/contracts.ts",
         "packages/hench/src/guard/index.ts",
         "packages/hench/src/guard/paths.ts",
         "packages/hench/src/guard/policy.ts",
-        "packages/hench/src/tools/dispatch.ts",
-        "packages/hench/src/tools/files.ts",
-        "packages/hench/src/tools/git.ts",
-        "packages/hench/src/tools/shell.ts",
         "packages/hench/tests/unit/guard/commands.test.ts",
         "packages/hench/tests/unit/guard/guard-integration.test.ts",
         "packages/hench/tests/unit/guard/paths.test.ts",
         "packages/hench/tests/unit/guard/policy.test.ts",
-        "packages/hench/tests/unit/tools/files.test.ts",
-        "packages/hench/tests/unit/tools/git.test.ts",
         "packages/hench/tests/unit/tools/shell.test.ts"
       ],
       "entryPoints": [
-        "packages/hench/src/agent/tools.ts",
+        "packages/hench/src/guard/contracts.ts",
         "packages/hench/src/guard/index.ts",
-        "packages/hench/src/tools/dispatch.ts",
-        "packages/hench/src/tools/files.ts",
-        "packages/hench/src/tools/git.ts",
-        "packages/hench/src/tools/shell.ts"
+        "packages/hench/src/guard/paths.ts"
       ],
-      "cohesion": 0.74,
-      "coupling": 0.26,
+      "cohesion": 0.79,
+      "coupling": 0.21,
       "insights": [
-        "GuardRails centralizes command/path/git validation along with audit logging.",
-        "Tool dispatcher is the single interface Anthropics tool-calls can reach, keeping GuardError handling uniform.",
-        "GuardRails in `packages/hench/src/guard/index.ts:1` already enforces path, command, and git allowlists, so thread any new tool operations through this facade to keep policy enforcement and auditing centralized.",
-        "Session-aware limits in `packages/hench/src/guard/policy.ts:1` log every allow/deny decision; review or persist that audit log before raising rate/byte caps so you don’t lose visibility into abusive sequences.",
-        "Anthropic tool definitions live exclusively in `packages/hench/src/tools/dispatch.ts:1`, so register any new automation there to inherit GuardError handling instead of bypassing the dispatcher.",
-        "[call graph] 198 internal calls, 27 outgoing, 2 incoming (cohesion: 0.88, coupling: 0.12)"
+        "Clarify the API surface for guard/commands.ts so the three imports back into hench remain thin adapters rather than full dependencies.",
+        "Keep policy.ts aligned with contracts.ts and document how guard/index.ts is exposed so teams can safely extend guard behaviors.",
+        "Leverage the strong test presence to add scenario-based guard integration tests reflecting real shell/tool misuse cases.",
+        "Clarify guard/commands.ts API so the three imports into hench stay thin adapters instead of deep dependencies.",
+        "Document how guard/index.ts exposes policies/contracts so contributors extend guard logic without breaking invariants.",
+        "Add scenario-style integration tests mirroring real shell misuse to validate guard enforcement end-to-end.",
+        "[call graph] 114 internal calls, 53 outgoing, 1 incoming (cohesion: 0.68, coupling: 0.32)"
+      ]
+    },
+    {
+      "id": "hosted-model-access",
+      "name": "Hosted Model Access Toolkit",
+      "description": "Provides the shared configuration, authentication, and invocation helpers that every Codex-facing LLM adapter consumes.",
+      "files": [
+        "packages/llm-client/src/api-provider.ts",
+        "packages/llm-client/src/auth.ts",
+        "packages/llm-client/src/cli-provider.ts",
+        "packages/llm-client/src/codex-cli-provider.ts",
+        "packages/llm-client/src/config.ts",
+        "packages/llm-client/src/create-client.ts",
+        "packages/llm-client/src/exec.ts",
+        "packages/llm-client/src/help-format.ts",
+        "packages/llm-client/src/json.ts",
+        "packages/llm-client/src/llm-client.ts",
+        "packages/llm-client/src/llm-config.ts",
+        "packages/llm-client/src/llm-types.ts",
+        "packages/llm-client/src/output.ts",
+        "packages/llm-client/src/project-config.ts",
+        "packages/llm-client/src/project-dirs.ts",
+        "packages/llm-client/src/public.ts",
+        "packages/llm-client/src/suggest.ts",
+        "packages/llm-client/src/token-usage.ts",
+        "packages/llm-client/src/types.ts",
+        "packages/llm-client/tests/unit/api-provider.test.ts",
+        "packages/llm-client/tests/unit/auth.test.ts",
+        "packages/llm-client/tests/unit/cli-provider.test.ts",
+        "packages/llm-client/tests/unit/config.test.ts",
+        "packages/llm-client/tests/unit/create-client.test.ts",
+        "packages/llm-client/tests/unit/exec.test.ts",
+        "packages/llm-client/tests/unit/help-format.test.ts",
+        "packages/llm-client/tests/unit/json.test.ts",
+        "packages/llm-client/tests/unit/llm-client.test.ts",
+        "packages/llm-client/tests/unit/llm-config.test.ts",
+        "packages/llm-client/tests/unit/output.test.ts",
+        "packages/llm-client/tests/unit/project-config.test.ts",
+        "packages/llm-client/tests/unit/suggest.test.ts",
+        "packages/llm-client/tests/unit/token-usage.test.ts",
+        "packages/llm-client/tests/unit/types.test.ts"
+      ],
+      "entryPoints": [],
+      "cohesion": 1,
+      "coupling": 0,
+      "insights": [
+        "High cohesion (1) — files are tightly interconnected",
+        "Centralizes auth/config layers for all LLM providers.",
+        "Isolation from other zones keeps provider swapping low-risk.",
+        "Keep `config.ts` the single source for provider credentials and continue routing new adapters through `create-client.ts` so downstream CLIs stay decoupled from auth details.",
+        "Add lightweight smoke tests around `exec.ts` and the provider wrappers to detect CLI regression before publishing this package.",
+        "Expose a canonical package entrypoint (e.g., `src/index.ts`) to discourage deep path imports and make consumption consistent across packages.",
+        "[call graph] 360 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
       ]
     },
     {
@@ -565,7 +624,7 @@
         "The adapter field in RexConfig is dead configuration — all 8 createStore() call sites hardcode the literal string \"file\" instead of reading config.adapter, making alternative adapters unreachable",
         "Log event names for the same semantic operation differ between CLI and MCP: update.ts:68 emits \"item_updated\" while mcp.ts:129 emits \"status_changed\" for status changes, with no shared event-name constants",
         "init.ts and validate.ts both bypass the store abstraction layer, using raw fs readFile/writeFile directly, making them incompatible with any non-file adapter",
-        "[call graph] 711 internal calls, 187 outgoing, 498 incoming (cohesion: 0.79, coupling: 0.21)"
+        "[call graph] 713 internal calls, 189 outgoing, 502 incoming (cohesion: 0.79, coupling: 0.21)"
       ],
       "childId": "packages-rex",
       "depth": 1
@@ -798,15 +857,39 @@
       "insights": [
         "High cohesion (0.94) — files are tightly interconnected",
         "Contains 70% of project files (68/97) — subdivided into 3 sub-zones",
-        "[call graph] 2168 internal calls, 24 outgoing, 138 incoming (cohesion: 0.99, coupling: 0.01)"
+        "[call graph] 2159 internal calls, 24 outgoing, 138 incoming (cohesion: 0.99, coupling: 0.01)"
       ],
       "childId": "packages-sourcevision",
       "depth": 1
     },
     {
-      "id": "schema-driven-viewer-surface",
-      "name": "Schema-Driven Viewer Surface",
-      "description": "Combines runtime schemas and viewer components to render and validate task data for the web UI.",
+      "id": "root-cli-surface",
+      "name": "Unified CLI Surface",
+      "description": "Small entrypoint cluster that wires ci/cli/web frontends through shared config and helpers.",
+      "files": [
+        "ci.js",
+        "cli.js",
+        "config.js",
+        "help.js",
+        "tests/unit/help.test.js",
+        "web.js"
+      ],
+      "entryPoints": [],
+      "cohesion": 1,
+      "coupling": 0,
+      "insights": [
+        "High cohesion (1) — files are tightly interconnected",
+        "Document shared config.js defaults so ci.js, cli.js, and web.js stay behaviorally aligned.",
+        "Expand unit coverage beyond help.js to cover end-to-end CLI argument handling and regression-proof ci.js.",
+        "Extract any duplicated startup logic from the three entrypoints into a formal bootstrap module for easier maintenance.",
+        "Extract duplicated startup logic from the entry scripts into a bootstrap module to reduce drift.",
+        "[call graph] 284 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
+      ]
+    },
+    {
+      "id": "viewer-schema-surface",
+      "name": "Viewer & Schema Experience",
+      "description": "Owns the v1 schema definitions, validation utilities, and the full viewer component library that renders those datasets in the UI.",
       "files": [
         "packages/web/src/schema/v1.ts",
         "packages/web/src/schema/validate.ts",
@@ -1207,66 +1290,12 @@
       ],
       "insights": [
         "High cohesion (1) — files are tightly interconnected",
-        "Keep schema edits centralized in `packages/web/src/schema/v1.ts` and `validate.ts` so every viewer component consumes identical data contracts.",
-        "Apply shared component utilities (constants, copy-link button, collapsible sections) to enforce consistent UX patterns and reduce ad-hoc styles.",
-        "Introduce automated visual or interaction tests for panels like `active-tasks-panel.ts` and `breadcrumb.ts` to maintain trust in the high-cohesion UI layer.",
-        "Perfect cohesion and zero measured coupling show the schema + viewer stack is self-contained—treat it as the canonical place for UI-facing data contracts.",
-        "Schemas (`v1.ts`, `validate.ts`) already live with the components; documenting how components consume these helpers will keep future imports from leaking to backend internals.",
-        "Viewer panel components are numerous and critical; adopting visual regression checks will preserve quality as the component catalog grows.",
+        "Bridges schema contracts and the UI that consumes them.",
+        "Depends lightly on the server zone for data loading hooks.",
+        "Enforce stricter type exports from `schema/v1.ts` and `schema/validate.ts` so the 137-file component tree stays aligned with data contracts.",
+        "Keep cross-component primitives under `viewer/components/**` to avoid duplicated styling and UX logic across panels like `active-tasks-panel.ts` and `breadcrumb.ts`.",
+        "Since two imports point into `web`, define a minimal interface module for those needs to keep the viewer’s dependency on the server zone narrow.",
         "[call graph] 1134 internal calls, 1 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
-      ]
-    },
-    {
-      "id": "vendor-agnostic-llm-adapter",
-      "name": "Vendor-Agnostic LLM Adapter",
-      "description": "A higher-level client that selects Claude or Codex providers and loads unified LLM config for consumers such as hench.",
-      "files": [
-        "packages/llm-client/src/api-provider.ts",
-        "packages/llm-client/src/auth.ts",
-        "packages/llm-client/src/cli-provider.ts",
-        "packages/llm-client/src/codex-cli-provider.ts",
-        "packages/llm-client/src/config.ts",
-        "packages/llm-client/src/create-client.ts",
-        "packages/llm-client/src/exec.ts",
-        "packages/llm-client/src/help-format.ts",
-        "packages/llm-client/src/json.ts",
-        "packages/llm-client/src/llm-client.ts",
-        "packages/llm-client/src/llm-config.ts",
-        "packages/llm-client/src/llm-types.ts",
-        "packages/llm-client/src/output.ts",
-        "packages/llm-client/src/project-config.ts",
-        "packages/llm-client/src/project-dirs.ts",
-        "packages/llm-client/src/public.ts",
-        "packages/llm-client/src/suggest.ts",
-        "packages/llm-client/src/token-usage.ts",
-        "packages/llm-client/src/types.ts",
-        "packages/llm-client/tests/unit/api-provider.test.ts",
-        "packages/llm-client/tests/unit/auth.test.ts",
-        "packages/llm-client/tests/unit/cli-provider.test.ts",
-        "packages/llm-client/tests/unit/config.test.ts",
-        "packages/llm-client/tests/unit/create-client.test.ts",
-        "packages/llm-client/tests/unit/exec.test.ts",
-        "packages/llm-client/tests/unit/help-format.test.ts",
-        "packages/llm-client/tests/unit/json.test.ts",
-        "packages/llm-client/tests/unit/llm-client.test.ts",
-        "packages/llm-client/tests/unit/llm-config.test.ts",
-        "packages/llm-client/tests/unit/output.test.ts",
-        "packages/llm-client/tests/unit/project-config.test.ts",
-        "packages/llm-client/tests/unit/suggest.test.ts",
-        "packages/llm-client/tests/unit/token-usage.test.ts",
-        "packages/llm-client/tests/unit/types.test.ts"
-      ],
-      "entryPoints": [],
-      "cohesion": 1,
-      "coupling": 0,
-      "insights": [
-        "High cohesion (1) — files are tightly interconnected",
-        "Abstracts vendor choice so orchestration layers call one interface regardless of backend.",
-        "Provides Codex parity by adapting its CLI into the shared ClaudeClient contract.",
-        "Vendor-neutral parsing in `packages/llm-client/src/llm-config.ts:1` already merges legacy `claude` settings into the new `llm.*` schema, so route upcoming config migrations through this loader to avoid duplicating parsing logic elsewhere.",
-        "`packages/llm-client/src/llm-client.ts:1` routes requests by vendor and reuses Claude auth detection, which means any future vendor should be plugged in here so upstream callers stay ignorant of per-vendor quirks.",
-        "The Codex CLI provider in `packages/llm-client/src/codex-cli-provider.ts:1` shells out with temp files and retry/backoff; capture telemetry or expose config before tightening timeouts so agents can distinguish Codex issues from guard denials.",
-        "[call graph] 344 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
       ]
     }
   ],
@@ -1274,122 +1303,104 @@
     {
       "from": "packages/web/tests/unit/server/type-consistency.test.ts",
       "to": "packages/rex/src/schema/v1.ts",
-      "fromZone": "adaptive-web-services-shell",
+      "fromZone": "adaptive-web-gateway",
       "toZone": "packages-rex:rex-cli"
     },
     {
       "from": "packages/web/tests/unit/server/type-consistency.test.ts",
       "to": "packages/rex/src/schema/v1.ts",
-      "fromZone": "adaptive-web-services-shell",
+      "fromZone": "adaptive-web-gateway",
       "toZone": "packages-rex:rex-cli"
     },
     {
-      "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/guard/index.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-guard-and-tools"
+      "from": "packages/hench/src/agent/index.ts",
+      "to": "packages/hench/src/validation/completion.ts",
+      "fromZone": "hench-agent-engine",
+      "toZone": "hench-completion-validation"
+    },
+    {
+      "from": "packages/hench/src/agent/index.ts",
+      "to": "packages/hench/src/validation/completion.ts",
+      "fromZone": "hench-agent-engine",
+      "toZone": "hench-completion-validation"
+    },
+    {
+      "from": "packages/hench/src/agent/lifecycle/cli-loop.ts",
+      "to": "packages/hench/src/validation/completion.ts",
+      "fromZone": "hench-agent-engine",
+      "toZone": "hench-completion-validation"
+    },
+    {
+      "from": "packages/hench/src/public.ts",
+      "to": "packages/hench/src/validation/completion.ts",
+      "fromZone": "hench-agent-engine",
+      "toZone": "hench-completion-validation"
+    },
+    {
+      "from": "packages/hench/src/tools/rex.ts",
+      "to": "packages/hench/src/validation/completion.ts",
+      "fromZone": "hench-agent-engine",
+      "toZone": "hench-completion-validation"
     },
     {
       "from": "packages/hench/src/agent/lifecycle/loop.ts",
-      "to": "packages/hench/src/tools/dispatch.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-guard-and-tools"
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/dispatch.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-guard-and-tools"
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/files.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-guard-and-tools"
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/git.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-guard-and-tools"
-    },
-    {
-      "from": "packages/hench/src/tools/index.ts",
-      "to": "packages/hench/src/tools/shell.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-guard-and-tools"
-    },
-    {
-      "from": "packages/hench/src/types/index.ts",
       "to": "packages/hench/src/guard/index.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-guard-and-tools"
+      "fromZone": "hench-agent-engine",
+      "toZone": "hench-guardrails-layer"
     },
     {
-      "from": "packages/hench/tests/unit/agent/task-failure.test.ts",
-      "to": "packages/hench/src/agent/tools.ts",
-      "fromZone": "hench-agent-core",
-      "toZone": "hench-guard-and-tools"
+      "from": "packages/hench/src/schema/v1.ts",
+      "to": "packages/hench/src/guard/contracts.ts",
+      "fromZone": "hench-agent-engine",
+      "toZone": "hench-guardrails-layer"
     },
     {
-      "from": "packages/hench/src/agent/tools.ts",
-      "to": "packages/hench/src/types/index.ts",
-      "fromZone": "hench-guard-and-tools",
-      "toZone": "hench-agent-core"
+      "from": "packages/hench/src/tools/files.ts",
+      "to": "packages/hench/src/guard/paths.ts",
+      "fromZone": "hench-agent-engine",
+      "toZone": "hench-guardrails-layer"
     },
     {
-      "from": "packages/hench/src/guard/index.ts",
-      "to": "packages/hench/src/schema/index.ts",
-      "fromZone": "hench-guard-and-tools",
-      "toZone": "hench-agent-core"
+      "from": "packages/hench/tests/unit/tools/files.test.ts",
+      "to": "packages/hench/src/guard/index.ts",
+      "fromZone": "hench-agent-engine",
+      "toZone": "hench-guardrails-layer"
     },
     {
-      "from": "packages/hench/src/tools/dispatch.ts",
+      "from": "packages/hench/tests/unit/tools/git.test.ts",
+      "to": "packages/hench/src/guard/index.ts",
+      "fromZone": "hench-agent-engine",
+      "toZone": "hench-guardrails-layer"
+    },
+    {
+      "from": "packages/hench/src/validation/completion.ts",
+      "to": "packages/hench/src/process/index.ts",
+      "fromZone": "hench-completion-validation",
+      "toZone": "hench-agent-engine"
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/completion-validation.test.ts",
       "to": "packages/hench/src/tools/rex.ts",
-      "fromZone": "hench-guard-and-tools",
-      "toZone": "hench-agent-core"
-    },
-    {
-      "from": "packages/hench/src/tools/dispatch.ts",
-      "to": "packages/hench/src/types/index.ts",
-      "fromZone": "hench-guard-and-tools",
-      "toZone": "hench-agent-core"
-    },
-    {
-      "from": "packages/hench/src/tools/git.ts",
-      "to": "packages/hench/src/process/exec-shell.ts",
-      "fromZone": "hench-guard-and-tools",
-      "toZone": "hench-agent-core"
-    },
-    {
-      "from": "packages/hench/src/tools/shell.ts",
-      "to": "packages/hench/src/process/exec-shell.ts",
-      "fromZone": "hench-guard-and-tools",
-      "toZone": "hench-agent-core"
+      "fromZone": "hench-completion-validation",
+      "toZone": "hench-agent-engine"
     },
     {
       "from": "packages/hench/tests/unit/guard/guard-integration.test.ts",
       "to": "packages/hench/src/schema/v1.ts",
-      "fromZone": "hench-guard-and-tools",
-      "toZone": "hench-agent-core"
-    },
-    {
-      "from": "packages/hench/tests/unit/tools/files.test.ts",
-      "to": "packages/hench/src/schema/v1.ts",
-      "fromZone": "hench-guard-and-tools",
-      "toZone": "hench-agent-core"
-    },
-    {
-      "from": "packages/hench/tests/unit/tools/git.test.ts",
-      "to": "packages/hench/src/schema/v1.ts",
-      "fromZone": "hench-guard-and-tools",
-      "toZone": "hench-agent-core"
+      "fromZone": "hench-guardrails-layer",
+      "toZone": "hench-agent-engine"
     },
     {
       "from": "packages/hench/tests/unit/tools/shell.test.ts",
       "to": "packages/hench/src/schema/v1.ts",
-      "fromZone": "hench-guard-and-tools",
-      "toZone": "hench-agent-core"
+      "fromZone": "hench-guardrails-layer",
+      "toZone": "hench-agent-engine"
+    },
+    {
+      "from": "packages/hench/tests/unit/tools/shell.test.ts",
+      "to": "packages/hench/src/tools/shell.ts",
+      "fromZone": "hench-guardrails-layer",
+      "toZone": "hench-agent-engine"
     },
     {
       "from": "packages/sourcevision/src/cli/commands/export-pdf.ts",
@@ -1574,14 +1585,14 @@
     {
       "from": "packages/web/src/viewer/loader.ts",
       "to": "packages/web/src/schema/data-files.ts",
-      "fromZone": "schema-driven-viewer-surface",
-      "toZone": "adaptive-web-services-shell"
+      "fromZone": "viewer-schema-surface",
+      "toZone": "adaptive-web-gateway"
     },
     {
       "from": "packages/web/src/viewer/main.ts",
       "to": "packages/web/src/schema/data-files.ts",
-      "fromZone": "schema-driven-viewer-surface",
-      "toZone": "adaptive-web-services-shell"
+      "fromZone": "viewer-schema-surface",
+      "toZone": "adaptive-web-gateway"
     }
   ],
   "unzoned": [
@@ -1644,136 +1655,102 @@
     "vitest.config.js"
   ],
   "insights": [
-    "Bidirectional coupling: \"hench-agent-core\" ↔ \"hench-guard-and-tools\" (8+10 crossings) — consider extracting shared interface",
-    "Size imbalance: largest zone has 137 files vs smallest with 6 — uneven decomposition",
-    "Layering from orchestration → execution → domain → foundation keeps the import graph acyclic and makes it easy to audit boundaries.",
-    "Guard/tool modules form the choke point for hench’s side effects, so safety improvements can focus on that seam to protect the rest of the system.",
-    "Viewer components in `schema-driven-viewer-surface` only touch the backend shell twice, so doubling down on schema-based DTOs can keep that boundary slim even as UI features expand.",
-    "Cross-zone imports show hench-2 → hench (10) and hench → hench-2 (8), so consider introducing thinner interfaces if you ever want the guard/tool layer to be deployable independently of the agent core.",
-    "Web zones only depend on each other twice (web-2 → web), keeping the UI stack modular; maintain that low coupling when adding dashboards so orchestration code stays back-end focused.",
-    "Current cross-zone imports (`schema-driven-viewer-surface` → `adaptive-web-services-shell`) are minimal; enforce that all future UI/server touchpoints flow through the published schema entrypoints to avoid creeping coupling.",
-    "[call graph] 27 calls: \"hench-guard-and-tools\" → \"hench-agent-core\"",
-    "[call graph] 21 calls: \"adaptive-web-services-shell\" → \"packages-rex:rex-cli\"",
-    "[call graph] 12 calls: \"packages-sourcevision:tests\" → \"packages-sourcevision:cli\""
+    "Bidirectional coupling: \"hench-agent-engine\" ↔ \"hench-guardrails-layer\" (5+3 crossings) — consider extracting shared interface",
+    "Bidirectional coupling: \"hench-agent-engine\" ↔ \"hench-completion-validation\" (5+2 crossings) — consider extracting shared interface",
+    "Size imbalance: largest zone has 137 files vs smallest with 5 — uneven decomposition",
+    "Coordinate hench ↔ hench-2/hench-3 dependencies by publishing lightweight interfaces, reducing the 10 combined edge crossings.",
+    "Viewer & Schema Experience currently depends on Adaptive Web Gateway via two imports; tightening that contract will prevent accidental expansion of server-facing surface area.",
+    "Publish lightweight interfaces between hench and its validation/guard zones so the current 10 cross-imports do not grow into tight coupling.",
+    "Document the boundary between the viewer/schema zone and the server gateway so future cross-zone imports remain intentional and reviewable.",
+    "[call graph] 53 calls: \"hench-guardrails-layer\" → \"hench-agent-engine\"",
+    "[call graph] 21 calls: \"adaptive-web-gateway\" → \"packages-rex:rex-cli\"",
+    "[call graph] 13 calls: \"hench-completion-validation\" → \"hench-agent-engine\"",
+    "[call graph] 12 calls: \"packages-sourcevision:tests\" → \"packages-sourcevision:cli\"",
+    "[call graph] 5 calls: \"hench-agent-engine\" → \"hench-completion-validation\""
   ],
   "findings": [
     {
       "type": "observation",
       "pass": 0,
-      "scope": "adaptive-web-services-shell",
+      "scope": "adaptive-web-gateway",
       "text": "High cohesion (0.99) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "adaptive-web-services-shell",
-      "text": "Extremely high cohesion (0.99) indicates the CLI, HTTP server, and domain gateways belong together—keep new backend utilities inside this shell to preserve that property.",
+      "scope": "adaptive-web-gateway",
+      "text": "Add runtime health checks in `server/index.ts` or `routes-adaptive.ts` to surface MCP dependency failures before they cascade to clients.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "adaptive-web-services-shell",
-      "text": "Gateway files (`domain-gateway.ts`, `mcp-deps.ts`) already abstract external connectors; adding contract tests before onboarding integrations will keep coupling at its current 0.01 level.",
+      "scope": "adaptive-web-gateway",
+      "text": "Factor the logic in `server/domain-gateway.ts` into explicit integration boundaries to make external service mocks simpler for tests.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "adaptive-web-services-shell",
-      "text": "`routes-adaptive.ts` centralizes adaptive route wiring; pair it with smoke tests whenever new adaptive surfaces are introduced to avoid regressions.",
+      "scope": "adaptive-web-gateway",
+      "text": "Keep exporting shared dataset metadata through `schema/data-files.ts` so both the CLI and server stay in lockstep on file contracts.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 0,
-      "scope": "claude-foundation-client",
+      "scope": "claude-api-client-core",
       "text": "High cohesion (1) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "claude-foundation-client",
-      "text": "Anthropic SDK integration in `packages/claude-client/src/api-provider.ts:21` exposes retry/backoff knobs; plumb those options through repo-level config before running heavier CI workloads so operators can tune quotas safely.",
+      "scope": "claude-api-client-core",
+      "text": "Add integration smoke tests for cli-provider.ts and exec.ts to detect incompatible streaming or error shapes early.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "claude-foundation-client",
-      "text": "Provider selection logic in `packages/claude-client/src/create-client.ts:1` already encapsulates auto-detect/fallback, so standardize new consumers on this factory rather than instantiating providers directly to preserve consistent behavior.",
+      "scope": "claude-api-client-core",
+      "text": "Centralize JSON/help-format helpers around one serialization contract to prevent CLI/API drift.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "claude-foundation-client",
-      "text": "Token-usage normalization in `packages/claude-client/src/token-usage.ts:1` is the single source for billing data, so extend it whenever the SDK ships new usage fields (e.g., cache hits) to keep downstream cost analytics accurate.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "cli-orchestration-surface",
-      "text": "High cohesion (1) — files are tightly interconnected",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "cli-orchestration-surface",
-      "text": "Documented four-tier dependency rules in `cli.js:3` keep orchestration decoupled from execution; add an automated import-lint or test so future entrypoints cannot bypass the spawn-only contract.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "cli-orchestration-surface",
-      "text": "Secret-aware config writing in `config.js:49` already chmods `.n-dx.json` when API keys exist, so route any new sensitive settings through this helper instead of ad-hoc package config writers to keep credentials locked down.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "cli-orchestration-surface",
-      "text": "The command registry/search UX in `help.js:83` and its regression coverage in `tests/unit/help.test.js:4` should be treated as required touchpoints whenever commands are added or renamed to keep typo suggestions and docs accurate.",
+      "scope": "claude-api-client-core",
+      "text": "Harden config/auth validation so create-client.ts cannot be instantiated without explicit key scope and rate-limits.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 0,
       "scope": "global",
-      "text": "Bidirectional coupling: \"hench-agent-core\" ↔ \"hench-guard-and-tools\" (8+10 crossings) — consider extracting shared interface",
+      "text": "Bidirectional coupling: \"hench-agent-engine\" ↔ \"hench-guardrails-layer\" (5+3 crossings) — consider extracting shared interface",
       "severity": "warning"
     },
     {
       "type": "observation",
       "pass": 0,
       "scope": "global",
-      "text": "Size imbalance: largest zone has 137 files vs smallest with 6 — uneven decomposition",
+      "text": "Size imbalance: largest zone has 137 files vs smallest with 5 — uneven decomposition",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
       "scope": "global",
-      "text": "Cross-zone imports show hench-2 → hench (10) and hench → hench-2 (8), so consider introducing thinner interfaces if you ever want the guard/tool layer to be deployable independently of the agent core.",
+      "text": "Document the boundary between the viewer/schema zone and the server gateway so future cross-zone imports remain intentional and reviewable.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
       "scope": "global",
-      "text": "Current cross-zone imports (`schema-driven-viewer-surface` → `adaptive-web-services-shell`) are minimal; enforce that all future UI/server touchpoints flow through the published schema entrypoints to avoid creeping coupling.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "global",
-      "text": "Web zones only depend on each other twice (web-2 → web), keeping the UI stack modular; maintain that low coupling when adding dashboards so orchestration code stays back-end focused.",
+      "text": "Publish lightweight interfaces between hench and its validation/guard zones so the current 10 cross-imports do not grow into tight coupling.",
       "severity": "info"
     },
     {
@@ -1792,116 +1769,175 @@
     {
       "type": "observation",
       "pass": 0,
-      "scope": "hench-agent-core",
-      "text": "High cohesion (0.95) — files are tightly interconnected",
+      "scope": "hench-agent-engine",
+      "text": "High cohesion (0.97) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "hench-agent-core",
-      "text": "Stuck-task heuristics in `packages/hench/src/agent/analysis/stuck.ts:1` depend on callers to pass a threshold, so document or set a default in the run orchestration to keep failure detection consistent across commands.",
+      "scope": "hench-agent-engine",
+      "text": "Add contract tests for process/index.ts, schema/v1.ts, and tool entrypoints to guarantee backwards compatibility for consumers.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "hench-agent-core",
-      "text": "The review gate in `packages/hench/src/agent/analysis/review.ts:1` hardcodes a 30s prompt timeout; expose that through config or CLI flags before enabling unattended review flows, otherwise approvals can block runs.",
+      "scope": "hench-agent-engine",
+      "text": "Formalize analysis/lifecycle/tool subpackages to capitalize on the 0.97 cohesion and clarify extension points.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "hench-agent-core",
-      "text": "Use `packages/hench/src/agent/index.ts:1` as the lone import surface for lifecycle, planning, and analysis primitives so CLI layers don’t deep-import internals and accidentally create cycles.",
+      "scope": "hench-agent-engine",
+      "text": "Maintain stable interfaces on the 5 imports into hench-2 and 5 into hench-3 so validation and guard layers remain decoupled.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 0,
-      "scope": "schema-driven-viewer-surface",
+      "scope": "hosted-model-access",
       "text": "High cohesion (1) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "schema-driven-viewer-surface",
-      "text": "Perfect cohesion and zero measured coupling show the schema + viewer stack is self-contained—treat it as the canonical place for UI-facing data contracts.",
+      "scope": "hosted-model-access",
+      "text": "Add lightweight smoke tests around `exec.ts` and the provider wrappers to detect CLI regression before publishing this package.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "schema-driven-viewer-surface",
-      "text": "Schemas (`v1.ts`, `validate.ts`) already live with the components; documenting how components consume these helpers will keep future imports from leaking to backend internals.",
+      "scope": "hosted-model-access",
+      "text": "Expose a canonical package entrypoint (e.g., `src/index.ts`) to discourage deep path imports and make consumption consistent across packages.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "schema-driven-viewer-surface",
-      "text": "Viewer panel components are numerous and critical; adopting visual regression checks will preserve quality as the component catalog grows.",
+      "scope": "hosted-model-access",
+      "text": "Keep `config.ts` the single source for provider credentials and continue routing new adapters through `create-client.ts` so downstream CLIs stay decoupled from auth details.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 0,
-      "scope": "vendor-agnostic-llm-adapter",
+      "scope": "root-cli-surface",
       "text": "High cohesion (1) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "vendor-agnostic-llm-adapter",
-      "text": "The Codex CLI provider in `packages/llm-client/src/codex-cli-provider.ts:1` shells out with temp files and retry/backoff; capture telemetry or expose config before tightening timeouts so agents can distinguish Codex issues from guard denials.",
+      "scope": "root-cli-surface",
+      "text": "Document shared config.js defaults so ci.js, cli.js, and web.js stay behaviorally aligned.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "vendor-agnostic-llm-adapter",
-      "text": "Vendor-neutral parsing in `packages/llm-client/src/llm-config.ts:1` already merges legacy `claude` settings into the new `llm.*` schema, so route upcoming config migrations through this loader to avoid duplicating parsing logic elsewhere.",
+      "scope": "root-cli-surface",
+      "text": "Expand unit coverage beyond help.js to cover end-to-end CLI argument handling and regression-proof ci.js.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "vendor-agnostic-llm-adapter",
-      "text": "`packages/llm-client/src/llm-client.ts:1` routes requests by vendor and reuses Claude auth detection, which means any future vendor should be plugged in here so upstream callers stay ignorant of per-vendor quirks.",
+      "scope": "root-cli-surface",
+      "text": "Extract duplicated startup logic from the entry scripts into a bootstrap module to reduce drift.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "viewer-schema-surface",
+      "text": "High cohesion (1) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "hench-guard-and-tools",
-      "text": "Anthropic tool definitions live exclusively in `packages/hench/src/tools/dispatch.ts:1`, so register any new automation there to inherit GuardError handling instead of bypassing the dispatcher.",
+      "scope": "viewer-schema-surface",
+      "text": "Enforce stricter type exports from `schema/v1.ts` and `schema/validate.ts` so the 137-file component tree stays aligned with data contracts.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "hench-guard-and-tools",
-      "text": "GuardRails in `packages/hench/src/guard/index.ts:1` already enforces path, command, and git allowlists, so thread any new tool operations through this facade to keep policy enforcement and auditing centralized.",
+      "scope": "viewer-schema-surface",
+      "text": "Keep cross-component primitives under `viewer/components/**` to avoid duplicated styling and UX logic across panels like `active-tasks-panel.ts` and `breadcrumb.ts`.",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 1,
-      "scope": "hench-guard-and-tools",
-      "text": "Session-aware limits in `packages/hench/src/guard/policy.ts:1` log every allow/deny decision; review or persist that audit log before raising rate/byte caps so you don’t lose visibility into abusive sequences.",
+      "scope": "viewer-schema-surface",
+      "text": "Since two imports point into `web`, define a minimal interface module for those needs to keep the viewer’s dependency on the server zone narrow.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "hench-completion-validation",
+      "text": "Define explicit contracts for the two imports into hench to keep the bidirectional dependency contained.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "hench-completion-validation",
+      "text": "Extend unit tests to cover failure paths in completion validation so malformed outputs are consistently rejected.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "hench-completion-validation",
+      "text": "Raise cohesion (0.55) by co-locating completion services with their validation consumers or extracting shared primitives.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "hench-guardrails-layer",
+      "text": "Add scenario-style integration tests mirroring real shell misuse to validate guard enforcement end-to-end.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "hench-guardrails-layer",
+      "text": "Clarify guard/commands.ts API so the three imports into hench stay thin adapters instead of deep dependencies.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 1,
+      "scope": "hench-guardrails-layer",
+      "text": "Document how guard/index.ts exposes policies/contracts so contributors extend guard logic without breaking invariants.",
       "severity": "info"
     },
     {
       "type": "anti-pattern",
       "pass": 0,
       "scope": "global",
-      "text": "God function: startServer in packages/web/src/server/start.ts calls 50 unique functions — consider decomposing into smaller, focused functions",
+      "text": "God function: App in packages/web/src/viewer/main.ts calls 43 unique functions — consider decomposing into smaller, focused functions",
       "severity": "warning",
       "related": [
-        "packages/web/src/server/start.ts"
+        "packages/web/src/viewer/main.ts"
+      ]
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 0,
+      "scope": "global",
+      "text": "God function: generatePdfReport in packages/sourcevision/src/export/pdf-report.ts calls 38 unique functions — consider decomposing into smaller, focused functions",
+      "severity": "warning",
+      "related": [
+        "packages/sourcevision/src/export/pdf-report.ts"
       ]
     },
     {
@@ -1952,27 +1988,28 @@
       "type": "suggestion",
       "pass": 0,
       "scope": "global",
-      "text": "Potentially unused export: getCachedProjectMetadata in packages/web/src/viewer/hooks/use-project-metadata.ts has no incoming calls — verify if still needed",
+      "text": "Potentially unused export: simpleGlobMatch in packages/hench/src/shared/glob.ts has no incoming calls — verify if still needed",
       "severity": "info",
       "related": [
-        "packages/web/src/viewer/hooks/use-project-metadata.ts"
+        "packages/hench/src/shared/glob.ts"
       ]
     }
   ],
   "enrichmentPass": 1,
   "metaEvaluationCount": 3,
-  "structureHash": "7ff2f3d43ac7c52c",
+  "structureHash": "5a4eb79c6af10b74",
   "zoneContentHashes": {
-    "root": "710c1c0e37d6b777",
+    "root": "49901aa94bd5823a",
     "claude-client": "b7658da9d9682239",
-    "hench": "b731e29521c2d9a9",
-    "hench-2": "c0a9ab63ffaf0ae1",
-    "llm-client": "9d79d633bc8548d1",
-    "web": "5f2f3278408380c4",
+    "hench": "2357dd1c36ccb910",
+    "hench-2": "bd11abe6a9a20536",
+    "hench-3": "57e67e5eb467443d",
+    "llm-client": "4e5d9d53e8cd01fb",
+    "web": "f333ff63c8a792ed",
     "web-2": "8954c5c9ec382ec5"
   },
   "lastReset": {
-    "from": 4,
+    "from": 2,
     "to": 1
   }
 }

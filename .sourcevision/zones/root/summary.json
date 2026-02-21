@@ -1,16 +1,18 @@
 {
   "id": "root",
-  "name": "Root",
-  "description": "4 files, primarily JavaScript",
+  "name": "Multi-Surface CLI Host",
+  "description": "Coordinates the shared configuration, entrypoint scripts, and lightweight tests that launch the CLI, CI, and web surfaces.",
   "files": [
     "ci.js",
     "cli.js",
     "config.js",
+    "help.js",
+    "tests/unit/help.test.js",
     "web.js"
   ],
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 4,
-  "lineCount": 1711
+  "fileCount": 6,
+  "lineCount": 3098
 }

@@ -882,7 +882,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Implements CLI-driven agent execution loop with retries, budgeting, and orchestration.",
+          "detail": "Orchestrates the CLI agent lifecycle with retries, token accounting, and guard/toll coordination—pure orchestration logic.",
           "weight": 0.7
         }
       ]
@@ -910,7 +910,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Primary agent run loop coordinating Anthropic calls, tools, and run records.",
+          "detail": "Implements the Anthropic agent run loop, handling messages, retries, and tool dispatch.",
           "weight": 0.7
         }
       ]
@@ -924,7 +924,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Shared orchestration logic (brief prep, status transitions, review gates) for agent loops.",
+          "detail": "Shared lifecycle orchestration helpers for brief prep, run initialization, review gating, etc.",
           "weight": 0.7
         }
       ]
@@ -966,7 +966,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Token usage tracking utility",
+          "detail": "Defines token usage helpers, aggregators, and re-exports—shared stateless helper logic.",
           "weight": 0.7
         }
       ]
@@ -1001,14 +1001,14 @@
     },
     {
       "path": "packages/hench/src/agent/tools.ts",
-      "archetype": "utility",
+      "archetype": "gateway",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Agent tool definitions and utilities",
+          "detail": "Pure re-export shim forwarding tool definitions/contexts from the tools module.",
           "weight": 0.7
         }
       ]
@@ -1214,6 +1214,20 @@
       ]
     },
     {
+      "path": "packages/hench/src/guard/contracts.ts",
+      "archetype": "types",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "types",
+          "signalKind": "path",
+          "detail": "Exports guard configuration interfaces with no behavior.",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
       "path": "packages/hench/src/guard/index.ts",
       "archetype": "entrypoint",
       "confidence": 0.8,
@@ -1236,7 +1250,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Path validation and safety utility",
+          "detail": "Pure helper functions for path validation and glob matching reused throughout the guard.",
           "weight": 0.7
         }
       ]
@@ -1285,14 +1299,14 @@
     },
     {
       "path": "packages/hench/src/process/exec-shell.ts",
-      "archetype": "utility",
+      "archetype": "gateway",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Helper wrapping shell execution and formatting results for reuse.",
+          "detail": "Re-exports execShell/types from tools to preserve old import paths—acts as a forwarding module.",
           "weight": 0.7
         }
       ]
@@ -1406,6 +1420,20 @@
           "archetypeId": "schema",
           "signalKind": "filename",
           "detail": "filename \"validate.ts\" matches ^validate\\.[tj]sx?$",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/hench/src/shared/glob.ts",
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Shared glob-matching helper with no domain logic, used across modules.",
           "weight": 0.7
         }
       ]
@@ -1527,6 +1555,20 @@
       ]
     },
     {
+      "path": "packages/hench/src/tools/contracts.ts",
+      "archetype": "types",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "types",
+          "signalKind": "path",
+          "detail": "Defines ToolContext, ToolGuard, and Rex handler interfaces without implementation logic.",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
       "path": "packages/hench/src/tools/dispatch.ts",
       "archetype": "service",
       "confidence": 0.7,
@@ -1535,21 +1577,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Dispatch layer mapping Anthropic tool calls to concrete tool implementations.",
+          "detail": "Central tool dispatcher wiring tool definitions to implementations and Rex handlers.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/hench/src/tools/exec-shell.ts",
-      "archetype": "gateway",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "gateway",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Backward-compatibility module that re-exports execShell from process layer.",
+          "detail": "Small helper wrapping the shared exec abstraction and formatting command output.",
           "weight": 0.7
         }
       ]
@@ -1563,7 +1605,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Implements file system tool behaviors (read/write/list/search) with guard checks.",
+          "detail": "Implements file tool behavior (read/write/list/search) enforcing guard limits—business logic layer.",
           "weight": 0.7
         }
       ]
@@ -1577,7 +1619,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Executes guarded git commands for the agent tool surface.",
+          "detail": "Implements the git tool command handling and argument parsing over guard/exec.",
           "weight": 0.7
         }
       ]
@@ -1605,7 +1647,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Implements Rex-related tool operations like status updates and requirements checks.",
+          "detail": "Contains Rex status/log/subtask tool logic integrating with PRD store and validations.",
           "weight": 0.7
         }
       ]
@@ -1619,7 +1661,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Runs guarded shell commands for the run_command tool.",
+          "detail": "Implements the run_command tool, checking guard policies and invoking execShell.",
           "weight": 0.7
         }
       ]
@@ -1745,7 +1787,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Codex CLI provider executing codex commands with retry handling.",
+          "detail": "Provides an LLM client implementation that wraps the Codex CLI, handling retries and error classification—API client/service logic.",
           "weight": 0.7
         }
       ]
@@ -2060,14 +2102,14 @@
     },
     {
       "path": "packages/rex/src/analyze/reason.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Reasoning utility for analysis decisions",
+          "detail": "Manages LLM configuration, client creation, and reasoning utilities for analysis workflows—business logic orchestrating external services.",
           "weight": 0.7
         }
       ]
@@ -3671,7 +3713,7 @@
         {
           "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "MCP server CLI command implementation",
+          "detail": "Defines the Sourcevision MCP CLI server setup, registering CLI-facing tools and transports.",
           "weight": 0.7
         }
       ]
@@ -4238,7 +4280,7 @@
         {
           "archetypeId": "entrypoint",
           "signalKind": "path",
-          "detail": "Creates the HTTP server, wires routes, watches files, and boots the app.",
+          "detail": "Bootstraps the HTTP server, registers routes/watchers, and is the main server entry file.",
           "weight": 0.7
         }
       ]
@@ -5368,16 +5410,16 @@
     }
   ],
   "summary": {
-    "totalClassified": 333,
+    "totalClassified": 336,
     "totalUnclassified": 0,
     "byArchetype": {
       "entrypoint": 31,
       "config": 9,
-      "utility": 80,
-      "service": 49,
-      "types": 12,
+      "utility": 79,
+      "service": 50,
+      "types": 14,
+      "gateway": 7,
       "cli-command": 38,
-      "gateway": 6,
       "schema": 12,
       "store": 14,
       "route-handler": 18,
@@ -5386,7 +5428,7 @@
       "hook": 4
     },
     "bySource": {
-      "llm": 119,
+      "llm": 122,
       "algorithmic": 214
     }
   }

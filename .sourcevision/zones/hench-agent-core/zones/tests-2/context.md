@@ -5,7 +5,7 @@
 <zone>
 
 Zone: Tests 2 (`hench/tests-2`)
-Files: 9, Cohesion: 0.67, Coupling: 0.33
+Files: 9, Cohesion: 0.75, Coupling: 0.25
 Description: 9 files, primarily TypeScript
 Entry points: packages/hench/src/validation/completion.ts, packages/hench/src/prd/rex-gateway.ts, packages/hench/src/tools/rex.ts
 Lines: 1463

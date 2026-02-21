@@ -9279,9 +9279,11 @@
     {
       "id": "b3cbf38e-4757-4c5b-9a49-663cc8536533",
       "title": "Codex Vendor Reliability and Documentation",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-20T23:12:36.086Z",
+      "completedAt": "2026-02-20T23:12:36.086Z",
       "children": [
         {
           "id": "373c6363-4810-416d-9ce8-c38dfd850c96",
@@ -9344,6 +9346,8 @@
           "level": "feature",
           "description": "Ensure Hench records token usage correctly in Codex mode so usage reporting and budget enforcement remain trustworthy.",
           "source": "smart-add",
+          "startedAt": "2026-02-20T22:35:55.356Z",
+          "completedAt": "2026-02-20T22:35:55.356Z",
           "children": [
             {
               "id": "43efef27-b698-491c-87ee-d933b3526d20",
@@ -9387,22 +9391,22 @@
               "startedAt": "2026-02-20T22:31:32.263Z",
               "completedAt": "2026-02-20T22:35:55.298Z"
             }
-          ],
-          "startedAt": "2026-02-20T22:35:55.356Z",
-          "completedAt": "2026-02-20T22:35:55.356Z"
+          ]
         },
         {
           "id": "26c7a348-54a8-42e4-b06f-1de63b93764c",
           "title": "Rex and Hench Vendor Behavior Documentation",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Clarify how Rex and Hench behave across vendors, with explicit notes for Codex mode, to reduce operator confusion and support issues.",
           "source": "smart-add",
+          "startedAt": "2026-02-20T23:12:36.052Z",
+          "completedAt": "2026-02-20T23:12:36.052Z",
           "children": [
             {
               "id": "4d1d39f0-c539-4ecd-a153-d488c0873667",
               "title": "Update README vendor matrix for Rex and Hench behavior differences",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Document per-vendor expectations for parsing, token accounting, and fallback behavior so users can choose providers with clear tradeoffs.",
               "acceptanceCriteria": [
@@ -9417,12 +9421,14 @@
                 "rex",
                 "hench"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-20T23:10:16.000Z",
+              "completedAt": "2026-02-20T23:12:35.975Z"
             },
             {
               "id": "a16f4e6d-e29d-46a6-b406-2336679a7ce3",
               "title": "Revise CODEX guidance with troubleshooting for parsing and usage discrepancies",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add operational guidance for diagnosing Codex-mode output parsing failures and token mismatches, including expected logs and remediation steps.",
               "acceptanceCriteria": [
@@ -9435,6 +9441,205 @@
                 "docs",
                 "codex",
                 "troubleshooting"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-20T23:08:14.058Z",
+              "completedAt": "2026-02-20T23:10:15.911Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "221d849c-3b43-469c-9713-eb097228fff8",
+      "title": "Address observation issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Bidirectional coupling: \"hench\" ↔ \"hench-2\" (8+10 crossings) — consider extracting shared interface",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-20T23:04:46.050Z",
+      "completedAt": "2026-02-20T23:08:13.965Z"
+    },
+    {
+      "id": "bd579e03-b217-4303-80eb-8fd67d15bce5",
+      "title": "Address anti-pattern issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- God function: startServer in packages/web/src/server/start.ts calls 50 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-20T22:59:40.358Z",
+      "completedAt": "2026-02-20T23:04:45.936Z"
+    },
+    {
+      "id": "b8aabffe-6d2f-48f8-88ce-f3ed7cca0856",
+      "title": "Address observation issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Bidirectional coupling: \"hench-agent-core\" ↔ \"hench-tooling-process\" (11+7 crossings) — consider extracting shared interface",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-21T01:50:20.483Z",
+      "completedAt": "2026-02-21T01:54:26.048Z"
+    },
+    {
+      "id": "9034e8a0-95aa-4f31-9c8b-54a1898d60a4",
+      "title": "Address anti-pattern issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- God function: cmdSmartAdd in packages/rex/src/cli/commands/smart-add.ts calls 46 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-20T23:47:23.552Z",
+      "completedAt": "2026-02-20T23:52:02.400Z"
+    },
+    {
+      "id": "9bc0bc34-b5a6-4dd0-bd30-5e3e0285f527",
+      "title": "Address observation issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Bidirectional coupling: \"hench-agent-core\" ↔ \"hench-tooling-process\" (11+7 crossings) — consider extracting shared interface",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-21T01:54:26.164Z",
+      "completedAt": "2026-02-21T01:56:57.210Z"
+    },
+    {
+      "id": "ceacf683-5a61-4218-80cf-bc01a56e1d7a",
+      "title": "Address pattern issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- hench-2 behaves like a partial utility zone but its seven back-imports into hench reveal leaky abstractions that stop it from acting as a clean shared library.",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-21T01:56:57.300Z",
+      "completedAt": "2026-02-21T02:02:01.023Z"
+    },
+    {
+      "id": "d1833695-01d2-4847-bba1-a2f78655c4c2",
+      "title": "Address relationship issues (5 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Layered-but-leaky relationship with hench-tooling-process: heavy downstream invocation combined with reverse callbacks keeps the dependency cycle alive.\n- Service-provider boundary with hench-agent-core still leaks upward responsibilities via the remaining callbacks, preventing a clean tools-only layer.\n- Residual reverse hooks (6 calls) from hench-tooling-process back into hench-agent-core keep the ostensibly layered relationship from becoming separable.\n- 12 calls from Sourcevision tests into the CLI zone mean the suites bypass public boundaries and depend on CLI internals, raising refactor cost.\n- web-runtime-gateway currently hosts the rex CLI integration (21 outgoing calls) without a boundary, exposing the runtime zone to rex implementation changes.",
+      "priority": "high",
+      "source": "sourcevision"
+    },
+    {
+      "id": "b4b7a141-fa6e-4030-ad3b-866762a973ba",
+      "title": "Address anti-pattern issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- God function: createSourcevisionMcpServer in packages/sourcevision/src/cli/mcp.ts calls 44 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-21T01:46:59.878Z",
+      "completedAt": "2026-02-21T01:50:20.366Z"
+    },
+    {
+      "id": "421a6860-70c1-4f5c-879b-da51dc45599a",
+      "title": "Selective Recommendation Acceptance Syntax",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "4a068181-10e1-45d7-978f-69dc97e77b17",
+          "title": "Indexed opt-in parsing for `recommend --accept`",
+          "status": "completed",
+          "level": "feature",
+          "description": "Allow users to accept only specific recommended items by providing an equals-prefixed index list (for example `=1,4,5`) instead of accepting all recommendations.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "5842771b-a09a-4c03-969b-87d4d8be4ad0",
+              "title": "Implement equals-prefixed index selector parsing for `recommend --accept`",
+              "status": "completed",
+              "level": "task",
+              "description": "Add command parsing support for values like `=1,4,5` so users can target specific recommendation indices without changing existing all-accept behavior.",
+              "acceptanceCriteria": [
+                "Running `recommend --accept =1,4,5` parses indices as [1,4,5] when at least 5 recommendations exist",
+                "Parsing ignores surrounding whitespace in inputs like `=1, 4, 5`",
+                "Existing `recommend --accept` behavior without an equals selector remains unchanged"
+              ],
+              "priority": "critical",
+              "tags": [
+                "cli",
+                "parser",
+                "recommendations"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-21T02:55:01.505Z",
+              "completedAt": "2026-02-21T02:57:21.301Z"
+            },
+            {
+              "id": "8475a81e-79d1-49ba-8d04-39e1928fa6fe",
+              "title": "Apply indexed selection to recommendation acceptance workflow",
+              "status": "completed",
+              "level": "task",
+              "description": "Wire parsed indices into the acceptance pipeline so only selected recommended items are accepted and persisted, preserving original recommendation ordering.",
+              "acceptanceCriteria": [
+                "Only specified indices are accepted and written to PRD state",
+                "Unselected recommendations remain pending and are not mutated",
+                "Accepted items preserve the same relative order they had in the recommendation list"
+              ],
+              "priority": "critical",
+              "tags": [
+                "rex",
+                "workflow",
+                "state-management"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-21T02:49:40.584Z",
+              "completedAt": "2026-02-21T02:55:01.408Z"
+            }
+          ],
+          "startedAt": "2026-02-21T02:57:21.360Z",
+          "completedAt": "2026-02-21T02:57:21.360Z"
+        },
+        {
+          "id": "f275e6fc-ca91-493f-98a5-96ebbf6f585e",
+          "title": "Validation and UX messaging for selector input",
+          "status": "pending",
+          "level": "feature",
+          "description": "Provide clear guardrails and user feedback for malformed or out-of-range index selectors so partial acceptance is safe and predictable.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "db6187b7-06d8-4080-b60d-77be0a2d4019",
+              "title": "Validate selector format and index bounds before applying acceptance",
+              "status": "pending",
+              "level": "task",
+              "description": "Reject invalid selectors early to prevent unintended acceptance and ensure users receive deterministic errors for malformed syntax or unavailable indices.",
+              "acceptanceCriteria": [
+                "Inputs without `=` when selector mode is expected return a format error with an example",
+                "Out-of-range indices (for example selecting 9 when only 8 exist) return a clear validation error",
+                "Duplicate indices are de-duplicated before execution or explicitly rejected with a consistent rule"
+              ],
+              "priority": "high",
+              "tags": [
+                "validation",
+                "cli",
+                "safety"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "6ab546a1-20ea-4cde-8e29-0726c50448ae",
+              "title": "Add tests and help text for `=index` acceptance syntax",
+              "status": "pending",
+              "level": "task",
+              "description": "Document the new selector option and cover it with automated tests so behavior remains stable across future CLI and workflow changes.",
+              "acceptanceCriteria": [
+                "CLI help for `recommend --accept` includes an example using `=1,4,5`",
+                "Unit tests cover valid parsing, invalid syntax, out-of-range values, and mixed whitespace",
+                "Integration test verifies that selecting specific indices accepts only those recommendation items"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "documentation",
+                "cli"
               ],
               "source": "smart-add"
             }

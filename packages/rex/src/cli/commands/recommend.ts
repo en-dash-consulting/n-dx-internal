@@ -30,6 +30,18 @@ interface Recommendation {
   source: string;
 }
 
+function parseSelectionIndices(input: string, total: number): number[] {
+  const normalized = input.trim().replace(/^=/, "");
+  if (!normalized) return [];
+  return [...new Set(
+    normalized
+      .split(/[\s,]+/)
+      .map((s) => parseInt(s.trim(), 10))
+      .filter((n) => Number.isInteger(n) && n >= 1 && n <= total)
+      .map((n) => n - 1),
+  )].sort((a, b) => a - b);
+}
+
 async function detectSourceVision(dir: string): Promise<boolean> {
   try {
     await access(join(dir, PROJECT_DIRS.SOURCEVISION));
@@ -195,8 +207,20 @@ export async function cmdRecommend(
 
   if (flags.accept) {
     const store = await resolveStore(rexDir);
+    const acceptFlag = flags.accept.trim();
+    const selectedIndices = acceptFlag.startsWith("=")
+      ? parseSelectionIndices(acceptFlag, recommendations.length)
+      : null;
+    const acceptedRecommendations = selectedIndices === null
+      ? recommendations
+      : selectedIndices.map((i) => recommendations[i]).filter(Boolean);
 
-    for (const rec of recommendations) {
+    if (acceptedRecommendations.length === 0) {
+      info("No recommendations matched the selected indices.");
+      return;
+    }
+
+    for (const rec of acceptedRecommendations) {
       const item: PRDItem = {
         id: randomUUID(),
         title: rec.title,

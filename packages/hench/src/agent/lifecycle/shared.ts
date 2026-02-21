@@ -24,7 +24,8 @@ import { buildSystemPrompt } from "../planning/prompt.js";
 import { saveRun } from "../../store/index.js";
 import { buildRunSummary } from "../analysis/summary.js";
 import { collectReviewDiff, promptReview, revertChanges } from "../analysis/review.js";
-import { toolRexUpdateStatus, toolRexAppendLog, runPostTaskTests } from "../../tools/index.js";
+import { runPostTaskTests } from "../../tools/index.js";
+import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/rex.js";
 import { section, subsection, stream, detail, info } from "../../types/output.js";
 import { displayTaskInfo } from "./task-display.js";
 

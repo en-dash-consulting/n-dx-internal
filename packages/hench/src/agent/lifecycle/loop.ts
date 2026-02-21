@@ -3,9 +3,10 @@ import type { PRDStore } from "rex";
 import type { HenchConfig, RunRecord, TurnTokenUsage } from "../../schema/index.js";
 import { GuardRails } from "../../guard/index.js";
 import { TOOL_DEFINITIONS, dispatchTool } from "../../tools/dispatch.js";
+import type { ToolContext } from "../../tools/contracts.js";
+import { rexToolHandlers } from "../../tools/rex.js";
 import { saveRun } from "../../store/index.js";
 import { section, subsection, stream, detail } from "../../types/output.js";
-import type { ToolContext } from "../../types/index.js";
 import {
   loadClaudeConfig,
   loadLLMConfig,
@@ -265,6 +266,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
           toolCtx,
           block.name,
           block.input as Record<string, unknown>,
+          rexToolHandlers,
         );
 
         const durationMs = Date.now() - startMs;

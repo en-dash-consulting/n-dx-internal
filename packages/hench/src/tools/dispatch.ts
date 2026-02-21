@@ -1,10 +1,14 @@
 import type Anthropic from "@anthropic-ai/sdk";
-import { GuardError } from "../guard/index.js";
 import { toolReadFile, toolWriteFile, toolListDirectory, toolSearchFiles } from "./files.js";
 import { toolRunCommand } from "./shell.js";
 import { toolGit } from "./git.js";
-import { toolRexUpdateStatus, toolRexAppendLog, toolRexAddSubtask } from "./rex.js";
-import type { ToolContext } from "../types/index.js";
+import type {
+  ToolContext,
+  RexToolHandlers,
+  RexUpdateStatusParams,
+  RexAppendLogParams,
+  RexAddSubtaskParams,
+} from "./contracts.js";
 
 export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   {
@@ -130,6 +134,7 @@ export async function dispatchTool(
   ctx: ToolContext,
   name: string,
   input: Record<string, unknown>,
+  rexHandlers?: RexToolHandlers,
 ): Promise<string> {
   try {
     switch (name) {
@@ -169,32 +174,37 @@ export async function dispatchTool(
         );
 
       case "rex_update_status":
-        return await toolRexUpdateStatus(
-          ctx.store,
-          ctx.taskId,
-          input as { status: string },
-          { projectDir: ctx.projectDir, testCommand: ctx.testCommand, startingHead: ctx.startingHead },
+        if (!rexHandlers) {
+          return "[ERROR] rex_update_status unavailable: no Rex handlers configured";
+        }
+        return await rexHandlers.updateStatus(
+          ctx,
+          input as unknown as RexUpdateStatusParams,
         );
 
       case "rex_append_log":
-        return await toolRexAppendLog(
-          ctx.store,
-          ctx.taskId,
-          input as { event: string; detail?: string },
+        if (!rexHandlers) {
+          return "[ERROR] rex_append_log unavailable: no Rex handlers configured";
+        }
+        return await rexHandlers.appendLog(
+          ctx,
+          input as unknown as RexAppendLogParams,
         );
 
       case "rex_add_subtask":
-        return await toolRexAddSubtask(
-          ctx.store,
-          ctx.taskId,
-          input as { title: string; description?: string; priority?: string },
+        if (!rexHandlers) {
+          return "[ERROR] rex_add_subtask unavailable: no Rex handlers configured";
+        }
+        return await rexHandlers.addSubtask(
+          ctx,
+          input as unknown as RexAddSubtaskParams,
         );
 
       default:
         return `Unknown tool: ${name}`;
     }
   } catch (err) {
-    if (err instanceof GuardError) {
+    if (err instanceof Error && err.name === "GuardError") {
       return `[GUARD] ${err.message}`;
     }
     return `[ERROR] ${(err as Error).message}`;
