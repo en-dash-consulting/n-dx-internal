@@ -82,6 +82,40 @@ interface ConfiguredModel {
   model: string;
 }
 
+type WeeklyBudgetSource = "vendor_model" | "vendor_default" | "global_default" | "missing_budget";
+type WeeklyBudgetReasonCode =
+  | "fallback_model_budget_missing_or_invalid"
+  | "fallback_vendor_budget_missing_or_invalid"
+  | "missing_budget_config_not_set"
+  | "missing_budget_no_valid_match"
+  | "missing_budget_invalid_config";
+
+interface WeeklyBudgetValidationError {
+  code: "invalid_budget_value";
+  path: string;
+  message: string;
+  received: unknown;
+}
+
+interface WeeklyBudgetResolution {
+  /** Resolved weekly token budget; null means no configured budget applies. */
+  budget: number | null;
+  /** Which lookup tier produced the result. */
+  source: WeeklyBudgetSource;
+  /** Stable reason emitted when fallback/missing budget behavior is used. */
+  reasonCode?: WeeklyBudgetReasonCode;
+}
+
+interface VendorWeeklyBudgetScope {
+  default?: number;
+  models?: Record<string, number>;
+}
+
+interface WeeklyBudgetConfig {
+  globalDefault?: number;
+  vendors?: Record<string, VendorWeeklyBudgetScope>;
+}
+
 interface CostEstimate {
   total: string;
   totalRaw: number;
@@ -127,6 +161,103 @@ function normalizeEventMetadata(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function normalizeBudgetKey(value: unknown): string | undefined {
+  const normalized = normalizeEventMetadata(value);
+  return normalized?.toLowerCase();
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isValidBudget(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+function readBudgetValue(
+  value: unknown,
+  path: string,
+  errors: WeeklyBudgetValidationError[],
+): number | undefined {
+  if (value === undefined) return undefined;
+  if (isValidBudget(value)) return value;
+  errors.push({
+    code: "invalid_budget_value",
+    path,
+    received: value,
+    message: `Expected a positive, finite number at "${path}". Update this value to a numeric weekly token budget.`,
+  });
+  return undefined;
+}
+
+function normalizeWeeklyBudgetConfig(
+  raw: unknown,
+): { config?: WeeklyBudgetConfig; validationErrors: WeeklyBudgetValidationError[] } {
+  const validationErrors: WeeklyBudgetValidationError[] = [];
+  if (!isRecord(raw)) {
+    return { config: undefined, validationErrors };
+  }
+
+  const config: WeeklyBudgetConfig = {};
+  const globalDefault = readBudgetValue(raw.globalDefault, "tokenUsage.weeklyBudget.globalDefault", validationErrors);
+  if (globalDefault !== undefined) {
+    config.globalDefault = globalDefault;
+  }
+
+  if (isRecord(raw.vendors)) {
+    const normalizedVendors: Record<string, VendorWeeklyBudgetScope> = {};
+    for (const [rawVendorKey, rawVendorValue] of Object.entries(raw.vendors)) {
+      const vendorKey = normalizeBudgetKey(rawVendorKey);
+      if (!vendorKey || !isRecord(rawVendorValue)) continue;
+
+      const existingScope = normalizedVendors[vendorKey] ?? {};
+      const vendorDefault = readBudgetValue(
+        rawVendorValue.default,
+        `tokenUsage.weeklyBudget.vendors.${rawVendorKey}.default`,
+        validationErrors,
+      );
+      if (vendorDefault !== undefined) {
+        existingScope.default = vendorDefault;
+      }
+
+      if (isRecord(rawVendorValue.models)) {
+        const existingModels = existingScope.models ?? {};
+        for (const [rawModelKey, rawModelValue] of Object.entries(rawVendorValue.models)) {
+          const modelKey = normalizeBudgetKey(rawModelKey);
+          if (!modelKey) continue;
+          const modelBudget = readBudgetValue(
+            rawModelValue,
+            `tokenUsage.weeklyBudget.vendors.${rawVendorKey}.models.${rawModelKey}`,
+            validationErrors,
+          );
+          if (modelBudget !== undefined) {
+            existingModels[modelKey] = modelBudget;
+          }
+        }
+        if (Object.keys(existingModels).length > 0) {
+          existingScope.models = existingModels;
+        }
+      }
+
+      if (existingScope.default !== undefined || existingScope.models) {
+        normalizedVendors[vendorKey] = existingScope;
+      }
+    }
+    if (Object.keys(normalizedVendors).length > 0) {
+      config.vendors = normalizedVendors;
+    }
+  }
+
+  if (
+    config.globalDefault === undefined
+    && (!config.vendors || Object.keys(config.vendors).length === 0)
+  ) {
+    return { config: undefined, validationErrors };
+  }
+
+  return { config, validationErrors };
 }
 
 /** Default Sonnet pricing. */
@@ -584,6 +715,99 @@ function loadConfiguredModel(projectDir: string): ConfiguredModel {
   }
 }
 
+function loadWeeklyBudgetConfig(
+  projectDir: string,
+): {
+  config?: WeeklyBudgetConfig;
+  hasConfiguredBudget: boolean;
+  validationErrors: WeeklyBudgetValidationError[];
+} {
+  const path = join(projectDir, ".n-dx.json");
+  if (!existsSync(path)) {
+    return { config: undefined, hasConfiguredBudget: false, validationErrors: [] };
+  }
+  try {
+    const raw = readFileSync(path, "utf-8");
+    const root = JSON.parse(raw) as Record<string, unknown>;
+    const tokenUsage = isRecord(root.tokenUsage) ? root.tokenUsage : undefined;
+    const hasConfiguredBudget = tokenUsage ? Object.hasOwn(tokenUsage, "weeklyBudget") : false;
+    const normalized = normalizeWeeklyBudgetConfig(tokenUsage?.weeklyBudget);
+    return {
+      config: normalized.config,
+      hasConfiguredBudget,
+      validationErrors: normalized.validationErrors,
+    };
+  } catch {
+    return { config: undefined, hasConfiguredBudget: false, validationErrors: [] };
+  }
+}
+
+/**
+ * Resolve weekly budget using deterministic fallback order:
+ * 1) vendor + model
+ * 2) vendor default
+ * 3) global default
+ * 4) explicit missing budget sentinel
+ */
+export function resolveWeeklyBudget(
+  configured: ConfiguredModel,
+  budgetConfig?: WeeklyBudgetConfig,
+  options?: {
+    hasConfiguredBudget?: boolean;
+    validationErrors?: WeeklyBudgetValidationError[];
+  },
+): WeeklyBudgetResolution {
+  const vendor = normalizeBudgetKey(configured.vendor);
+  const model = normalizeBudgetKey(configured.model);
+  const normalizedConfig = normalizeWeeklyBudgetConfig(budgetConfig).config;
+  const hasConfiguredBudget = options?.hasConfiguredBudget ?? !!budgetConfig;
+  const hasValidationErrors = (options?.validationErrors?.length ?? 0) > 0;
+
+  if (normalizedConfig && vendor && model) {
+    const vendorScope = normalizedConfig.vendors?.[vendor];
+    const modelBudget = vendorScope?.models?.[model];
+    if (isValidBudget(modelBudget)) {
+      return { budget: modelBudget, source: "vendor_model" };
+    }
+
+    if (isValidBudget(vendorScope?.default)) {
+      return {
+        budget: vendorScope.default,
+        source: "vendor_default",
+        reasonCode: "fallback_model_budget_missing_or_invalid",
+      };
+    }
+
+    if (isValidBudget(normalizedConfig.globalDefault)) {
+      return {
+        budget: normalizedConfig.globalDefault,
+        source: "global_default",
+        reasonCode: "fallback_vendor_budget_missing_or_invalid",
+      };
+    }
+  }
+
+  if (!hasConfiguredBudget) {
+    return {
+      budget: null,
+      source: "missing_budget",
+      reasonCode: "missing_budget_config_not_set",
+    };
+  }
+  if (hasValidationErrors) {
+    return {
+      budget: null,
+      source: "missing_budget",
+      reasonCode: "missing_budget_invalid_config",
+    };
+  }
+  return {
+    budget: null,
+    source: "missing_budget",
+    reasonCode: "missing_budget_no_valid_match",
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Route handler
 // ---------------------------------------------------------------------------
@@ -671,11 +895,22 @@ export function handleTokenUsageRoute(
     const trend = groupUtilizationTrend(events, period);
     const commands = groupByCommand(events);
     const budget = checkBudget(usage, loadRexConfig(ctx.rexDir)?.budget);
+    const weeklyBudgetConfig = loadWeeklyBudgetConfig(ctx.projectDir);
+    const weeklyBudget = resolveWeeklyBudget(
+      configured,
+      weeklyBudgetConfig.config,
+      {
+        hasConfiguredBudget: weeklyBudgetConfig.hasConfiguredBudget,
+        validationErrors: weeklyBudgetConfig.validationErrors,
+      },
+    );
     const source = resolveSourceMeta(ctx);
 
     jsonResponse(res, 200, {
       configured,
       source,
+      weeklyBudget,
+      weeklyBudgetValidationErrors: weeklyBudgetConfig.validationErrors,
       period,
       window: {
         since: since ?? null,

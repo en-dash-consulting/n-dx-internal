@@ -45,7 +45,6 @@ const NAV_ENTRIES: NavEntry[] = [
   { type: "item", id: "prd", icon: "\u2611", label: "Tasks", minPass: 0 },
   { type: "item", id: "rex-analysis", icon: "\u2699", label: "Analysis", minPass: 0 },
   { type: "item", id: "validation", icon: "\u2714", label: "Validation", minPass: 0 },
-  { type: "item", id: "token-usage", icon: "\u229A", label: "Token Usage", minPass: 0 },
   { type: "item", id: "notion-config", icon: "\u{1F50C}", label: "Notion", minPass: 0 },
   { type: "item", id: "integrations", icon: "\u{1F517}", label: "Integrations", minPass: 0 },
   { type: "section", label: "HENCH", product: "hench" },
@@ -54,6 +53,8 @@ const NAV_ENTRIES: NavEntry[] = [
   { type: "item", id: "hench-config", icon: "\u2699", label: "Config", minPass: 0 },
   { type: "item", id: "hench-templates", icon: "\u25A6", label: "Templates", minPass: 0 },
   { type: "item", id: "hench-optimization", icon: "\u26A1", label: "Optimization", minPass: 0 },
+  { type: "section", label: "TOKEN USAGE" },
+  { type: "item", id: "token-usage", icon: "\u229A", label: "Token Usage", minPass: 0 },
   { type: "section", label: "SETTINGS" },
   { type: "item", id: "feature-toggles", icon: "\u2699", label: "Feature Flags", minPass: 0 },
 ];
@@ -87,6 +88,9 @@ function sectionForView(view: ViewId): string {
 
 /** Read persisted expanded section, falling back to the section owning the active view */
 function getInitialExpanded(view: ViewId): string {
+  // Token Usage now lives at top-level, so initial render must always surface
+  // its own section even when a different section was previously persisted.
+  if (view === "token-usage") return sectionForView(view);
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored && SECTIONS.some((s) => s.label === stored)) return stored;

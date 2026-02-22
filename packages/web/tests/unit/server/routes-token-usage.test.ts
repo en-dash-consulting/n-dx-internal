@@ -382,6 +382,88 @@ describe("Token Usage API routes", () => {
     )).toBe(false);
   });
 
+  it("GET /api/token/utilization includes fallback reason code when weekly budget uses vendor default", async () => {
+    await writeFile(
+      join(tmpDir, ".n-dx.json"),
+      JSON.stringify({
+        llm: {
+          vendor: "codex",
+          codex: { model: "gpt-5-codex" },
+        },
+        tokenUsage: {
+          weeklyBudget: {
+            globalDefault: 90_000,
+            vendors: {
+              codex: {
+                default: 80_000,
+                models: {},
+              },
+            },
+          },
+        },
+      }),
+    );
+
+    const res = await fetch(`http://localhost:${port}/api/token/utilization`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+
+    expect(data.weeklyBudget).toEqual({
+      budget: 80_000,
+      source: "vendor_default",
+      reasonCode: "fallback_model_budget_missing_or_invalid",
+    });
+    expect(data.weeklyBudgetValidationErrors).toEqual([]);
+  });
+
+  it("GET /api/token/utilization rejects invalid weekly budget entries with validation diagnostics", async () => {
+    await writeFile(
+      join(tmpDir, ".n-dx.json"),
+      JSON.stringify({
+        llm: {
+          vendor: "codex",
+          codex: { model: "gpt-5-codex" },
+        },
+        tokenUsage: {
+          weeklyBudget: {
+            globalDefault: "100000",
+            vendors: {
+              codex: {
+                default: -1,
+                models: {
+                  "gpt-5-codex": Number.NaN,
+                },
+              },
+            },
+          },
+        },
+      }),
+    );
+
+    const res = await fetch(`http://localhost:${port}/api/token/utilization`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+
+    expect(data.weeklyBudget).toEqual({
+      budget: null,
+      source: "missing_budget",
+      reasonCode: "missing_budget_invalid_config",
+    });
+    expect(data.weeklyBudgetValidationErrors).toHaveLength(3);
+    expect(data.weeklyBudgetValidationErrors[0]).toMatchObject({
+      code: "invalid_budget_value",
+      path: "tokenUsage.weeklyBudget.globalDefault",
+    });
+    expect(data.weeklyBudgetValidationErrors[1]).toMatchObject({
+      code: "invalid_budget_value",
+      path: "tokenUsage.weeklyBudget.vendors.codex.default",
+    });
+    expect(data.weeklyBudgetValidationErrors[2]).toMatchObject({
+      code: "invalid_budget_value",
+      path: "tokenUsage.weeklyBudget.vendors.codex.models.gpt-5-codex",
+    });
+  });
+
   it("GET /api/token/utilization aggregates missing metadata into unknown bucket across packages", async () => {
     await writeFile(
       join(henchRunsDir, "run-1.json"),

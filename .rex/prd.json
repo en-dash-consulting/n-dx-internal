@@ -11126,22 +11126,26 @@
     {
       "id": "7fefed1c-bdb4-47af-b35f-36985135ac1f",
       "title": "Deterministic Task Utilization Budget Fallback",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-22T19:41:05.319Z",
+      "completedAt": "2026-02-22T19:41:05.319Z",
       "children": [
         {
           "id": "998b6797-852b-4ddd-8397-2994655037d1",
           "title": "Vendor/Model Budget Resolution Rules",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Define a deterministic resolution path for weekly token budgets so task-level utilization always computes from a known source or a consistent fallback state.",
           "source": "smart-add",
+          "startedAt": "2026-02-22T19:41:05.267Z",
+          "completedAt": "2026-02-22T19:41:05.267Z",
           "children": [
             {
               "id": "bcd84e21-a87c-4b2f-9ffa-7a7c27eee436",
               "title": "Implement deterministic weekly budget resolver for vendor/model scopes",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Create a single resolver that selects the weekly budget in a fixed order to eliminate ambiguous behavior when model-specific configuration is missing.",
               "acceptanceCriteria": [
@@ -11157,12 +11161,13 @@
                 "config"
               ],
               "source": "smart-add",
-              "startedAt": "2026-02-22T19:03:51.093Z"
+              "startedAt": "2026-02-22T19:03:51.093Z",
+              "completedAt": "2026-02-22T19:16:28.225Z"
             },
             {
               "id": "b3c66cf5-1e2e-4c9c-b8aa-ef5e7fce9459",
               "title": "Validate weekly budget configuration and emit stable fallback diagnostics",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Harden config loading so invalid or partial budget data cannot produce inconsistent utilization calculations across runs.",
               "acceptanceCriteria": [
@@ -11177,22 +11182,26 @@
                 "validation",
                 "token-usage"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-22T19:27:43.033Z",
+              "completedAt": "2026-02-22T19:41:05.196Z"
             }
           ]
         },
         {
           "id": "2e6e214b-3110-4619-9b9c-c73b76e7f10a",
           "title": "Task-Level Utilization Chips and Details Fallback UX",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Ensure task-level utilization displays remain deterministic and understandable when weekly budgets are missing or only partially configured.",
           "source": "smart-add",
+          "startedAt": "2026-02-22T19:27:42.952Z",
+          "completedAt": "2026-02-22T19:27:42.952Z",
           "children": [
             {
               "id": "ffe01541-f5d0-45f9-ad04-61cd9d225c0c",
               "title": "Wire deterministic budget resolver into task chip and detail utilization calculations",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Route all task-level utilization percentage computation through the shared resolver so chips and detail panels cannot diverge.",
               "acceptanceCriteria": [
@@ -11208,12 +11217,14 @@
                 "ui",
                 "token-usage"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-22T19:16:28.341Z",
+              "completedAt": "2026-02-22T19:27:20.893Z"
             },
             {
               "id": "6e2ab2d5-c7b3-4cf1-819d-29022b8b5f96",
               "title": "Add integration tests for missing-budget and partial-budget task utilization states",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Prevent regressions by verifying deterministic behavior for configured, partially configured, and unconfigured budget scenarios at task level.",
               "acceptanceCriteria": [
@@ -11229,7 +11240,9 @@
                 "rex",
                 "token-usage"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-22T19:27:21.028Z",
+              "completedAt": "2026-02-22T19:27:42.858Z"
             }
           ]
         }
@@ -11238,22 +11251,24 @@
     {
       "id": "73710df7-0467-4dca-8fd6-e457b29c9b35",
       "title": "Dashboard Navigation Information Architecture",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "3178b0f6-1253-4593-a666-f086262c5395",
           "title": "Top-level Token Usage Navigation",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Expose Token Usage as a first-class dashboard destination at the same hierarchy level as Settings without breaking existing navigation contracts.",
           "source": "smart-add",
+          "startedAt": "2026-02-22T19:54:30.379Z",
+          "completedAt": "2026-02-22T19:54:30.379Z",
           "children": [
             {
               "id": "1a210c52-c5a6-4c25-9f62-6cc0baa4dda5",
               "title": "Add Token Usage as a peer top-level nav item to Settings",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Users need direct access to utilization analytics from primary navigation rather than discovering it inside Rex-specific views; this change improves findability and reinforces Token Usage as a cross-tool concern.",
               "acceptanceCriteria": [
@@ -11267,12 +11282,14 @@
                 "navigation",
                 "ia"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-22T19:43:27.081Z",
+              "completedAt": "2026-02-22T19:49:13.053Z"
             },
             {
               "id": "94bfe253-17d5-475a-bb3a-c30b96401de1",
               "title": "Preserve legacy deep links by routing old Token Usage URLs to the new top-level destination",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Existing bookmarks and shared links must continue working so teams do not lose access patterns after the navigation restructure.",
               "acceptanceCriteria": [
@@ -11286,12 +11303,14 @@
                 "routing",
                 "backward-compatibility"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-22T19:43:13.337Z",
+              "completedAt": "2026-02-22T19:43:26.957Z"
             },
             {
               "id": "60cb5125-0023-4f3f-a508-2c10ced263ad",
               "title": "Align active-state highlighting with normalized Token Usage routes",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Active-state logic must remain trustworthy after route remapping so users always see accurate location context in navigation.",
               "acceptanceCriteria": [
@@ -11305,11 +11324,15 @@
                 "navigation",
                 "tests"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-22T19:49:13.186Z",
+              "completedAt": "2026-02-22T19:54:30.313Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-22T19:54:30.452Z",
+      "completedAt": "2026-02-22T19:54:30.452Z"
     }
   ]
 }

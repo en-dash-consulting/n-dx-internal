@@ -17,9 +17,10 @@ import { MergePreview } from "../components/prd-tree/merge-preview.js";
 import { PruneConfirmation } from "../components/prd-tree/prune-confirmation.js";
 import { BrandedHeader } from "../components/prd-tree/shared-imports.js";
 import type { PRDDocumentData, PRDItemData, AddItemInput } from "../components/prd-tree/index.js";
-import type { TaskUsageSummary } from "../components/prd-tree/types.js";
+import type { TaskUsageSummary, WeeklyBudgetResolution, WeeklyBudgetSource } from "../components/prd-tree/types.js";
 import type { InlineAddInput } from "../components/prd-tree/inline-add-form.js";
 import { findItemById, getAncestorIds } from "../components/prd-tree/tree-utils.js";
+import { resolveTaskUtilization } from "../components/prd-tree/task-utilization.js";
 import type { DetailItem } from "../components/prd-tree/shared-imports.js";
 import type { NavigateTo } from "../types.js";
 
@@ -50,7 +51,19 @@ interface HenchRunSummary {
   };
 }
 
-function aggregateTaskUsage(runs: HenchRunSummary[]): Record<string, TaskUsageSummary> {
+function normalizeWeeklyBudgetResolution(value: unknown): WeeklyBudgetResolution {
+  const source = (value as { source?: WeeklyBudgetSource } | null | undefined)?.source;
+  const budget = (value as { budget?: number | null } | null | undefined)?.budget;
+  return {
+    budget: typeof budget === "number" && Number.isFinite(budget) ? budget : null,
+    source: source ?? "missing_budget",
+  };
+}
+
+function aggregateTaskUsage(
+  runs: HenchRunSummary[],
+  weeklyBudget: WeeklyBudgetResolution | null,
+): Record<string, TaskUsageSummary> {
   const byTask: Record<string, TaskUsageSummary> = {};
   for (const run of runs) {
     if (!run.taskId) continue;
@@ -58,13 +71,33 @@ function aggregateTaskUsage(runs: HenchRunSummary[]): Record<string, TaskUsageSu
       + (run.tokenUsage?.output ?? 0)
       + (run.tokenUsage?.cacheCreationInput ?? 0)
       + (run.tokenUsage?.cacheReadInput ?? 0);
-    const current = byTask[run.taskId] ?? { totalTokens: 0, runCount: 0 };
+    const current = byTask[run.taskId] ?? {
+      totalTokens: 0,
+      runCount: 0,
+      utilization: resolveTaskUtilization(0, weeklyBudget),
+    };
+    const totalTokens = current.totalTokens + total;
     byTask[run.taskId] = {
-      totalTokens: current.totalTokens + total,
+      totalTokens,
       runCount: current.runCount + 1,
+      utilization: resolveTaskUtilization(totalTokens, weeklyBudget),
     };
   }
   return byTask;
+}
+
+function applyWeeklyBudget(
+  taskUsageById: Record<string, TaskUsageSummary>,
+  weeklyBudget: WeeklyBudgetResolution | null,
+): Record<string, TaskUsageSummary> {
+  const next: Record<string, TaskUsageSummary> = {};
+  for (const [taskId, summary] of Object.entries(taskUsageById)) {
+    next[taskId] = {
+      ...summary,
+      utilization: resolveTaskUtilization(summary.totalTokens, weeklyBudget),
+    };
+  }
+  return next;
 }
 
 export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId, navigateTo }: PRDViewProps) {
@@ -80,6 +113,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
   // Deep-link state
   const [deepLinkError, setDeepLinkError] = useState<string | null>(null);
   const [taskUsageById, setTaskUsageById] = useState<Record<string, TaskUsageSummary>>({});
+  const [weeklyBudget, setWeeklyBudget] = useState<WeeklyBudgetResolution | null>(null);
   /** Task ID currently highlighted by the deep-link animation. */
   const [highlightedTaskId, setHighlightedTaskId] = useState<string | null>(null);
   /** IDs to force-expand in the tree (ancestors of the deep-linked task). */
@@ -119,15 +153,32 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
   }, []);
 
   const fetchTaskUsage = useCallback(async () => {
-    try {
-      const res = await fetch("/api/hench/runs");
-      if (!res.ok) return;
-      const json = await res.json() as { runs?: HenchRunSummary[] };
-      setTaskUsageById(aggregateTaskUsage(json.runs ?? []));
-    } catch {
-      // Keep existing values on transient fetch errors.
+    const [runsResult, utilizationResult] = await Promise.allSettled([
+      fetch("/api/hench/runs"),
+      fetch("/api/token/utilization"),
+    ]);
+
+    let resolvedWeeklyBudget = weeklyBudget;
+    if (utilizationResult.status === "fulfilled" && utilizationResult.value.ok) {
+      try {
+        const json = await utilizationResult.value.json() as { weeklyBudget?: WeeklyBudgetResolution };
+        resolvedWeeklyBudget = normalizeWeeklyBudgetResolution(json.weeklyBudget);
+        setWeeklyBudget(resolvedWeeklyBudget);
+        setTaskUsageById((prev) => applyWeeklyBudget(prev, resolvedWeeklyBudget));
+      } catch {
+        // Keep prior budget state on parse errors.
+      }
     }
-  }, []);
+
+    if (runsResult.status === "fulfilled" && runsResult.value.ok) {
+      try {
+        const json = await runsResult.value.json() as { runs?: HenchRunSummary[] };
+        setTaskUsageById(aggregateTaskUsage(json.runs ?? [], resolvedWeeklyBudget));
+      } catch {
+        // Keep existing values on parse errors.
+      }
+    }
+  }, [weeklyBudget]);
 
   useEffect(() => {
     if (prdData) {
@@ -321,6 +372,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
       h(TaskDetail, {
         item,
         taskUsage: taskUsageById[item.id],
+        weeklyBudget,
         allItems,
         onUpdate: handleItemUpdate,
         onNavigateToItem: handleNavigateToItem,
@@ -502,6 +554,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     h(PRDTree, {
       document: data,
       taskUsageById,
+      weeklyBudget,
       defaultExpandDepth: 2,
       onSelectItem: handleSelectItem,
       selectedItemId,

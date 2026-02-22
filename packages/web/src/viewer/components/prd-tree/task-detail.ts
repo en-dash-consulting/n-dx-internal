@@ -8,10 +8,11 @@
 
 import { h, Fragment } from "preact";
 import { useState, useCallback, useEffect, useRef } from "preact/hooks";
-import type { PRDItemData, ItemStatus, Priority, ItemLevel, RequirementData, RequirementCategory, RequirementValidationType, TaskUsageSummary } from "./types.js";
+import type { PRDItemData, ItemStatus, Priority, ItemLevel, RequirementData, RequirementCategory, RequirementValidationType, TaskUsageSummary, WeeklyBudgetResolution } from "./types.js";
 import { formatTimestamp } from "./compute.js";
 import { findItemById } from "./tree-utils.js";
 import { CopyLinkButton } from "../copy-link-button.js";
+import { resolveTaskUtilization } from "./task-utilization.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -19,6 +20,8 @@ export interface TaskDetailProps {
   item: PRDItemData;
   /** Aggregated token usage for this task across associated runs. */
   taskUsage?: TaskUsageSummary;
+  /** Shared resolved weekly budget used for deterministic utilization display. */
+  weeklyBudget?: WeeklyBudgetResolution | null;
   /** All items in the document, for resolving dependency references. */
   allItems: PRDItemData[];
   /** Called when an item is updated via the API. */
@@ -1042,12 +1045,18 @@ function ExecuteTaskButton({
 
 // ── Main component ───────────────────────────────────────────────────
 
-export function TaskDetail({ item, taskUsage, allItems, onUpdate, onNavigateToItem, onExecuteTask, onPrdChanged, onAddChild }: TaskDetailProps) {
+export function TaskDetail({ item, taskUsage, weeklyBudget, allItems, onUpdate, onNavigateToItem, onExecuteTask, onPrdChanged, onAddChild }: TaskDetailProps) {
   const [saving, setSaving] = useState(false);
   const [pendingFailStatus, setPendingFailStatus] = useState(false);
   const [failureReason, setFailureReason] = useState("");
   const [editingFailureReason, setEditingFailureReason] = useState(false);
   const [showAddChild, setShowAddChild] = useState(false);
+  const usageSummary = taskUsage ?? {
+    totalTokens: 0,
+    runCount: 0,
+    utilization: resolveTaskUtilization(0, weeklyBudget),
+  };
+  const utilization = usageSummary.utilization ?? resolveTaskUtilization(usageSummary.totalTokens, weeklyBudget);
 
   // Determine if this item can have children added
   const canAddChild = onAddChild != null && CHILD_LEVEL[item.level] != null;
@@ -1202,10 +1211,18 @@ export function TaskDetail({ item, taskUsage, allItems, onUpdate, onNavigateToIt
           h("div", { class: "task-section-label" }, "Usage"),
           h("div", { class: "task-usage-row" },
             h("span", { class: "label" }, "Total Tokens"),
-            h("span", { class: "task-usage-value" }, `${formatTokenCount(taskUsage?.totalTokens ?? 0)} tokens`),
+            h("span", { class: "task-usage-value" }, `${formatTokenCount(usageSummary.totalTokens)} tokens`),
           ),
-          h("div", { class: "task-usage-hint" },
-            `${taskUsage?.runCount ?? 0} associated run${(taskUsage?.runCount ?? 0) === 1 ? "" : "s"}`,
+          h("div", { class: "task-usage-row" },
+            h("span", { class: "label" }, "Weekly Utilization"),
+            h(
+              "span",
+              { class: "task-usage-value", "data-utilization-reason": utilization.reason },
+              utilization.label,
+            ),
+          ),
+          h("div", { class: "task-usage-hint", "data-utilization-reason": utilization.reason },
+            `${usageSummary.runCount} associated run${usageSummary.runCount === 1 ? "" : "s"} | reason: ${utilization.reason}`,
           ),
         )
       : null,
