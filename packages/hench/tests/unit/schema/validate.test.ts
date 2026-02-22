@@ -406,6 +406,21 @@ describe("validateRunRecord", () => {
     }
   });
 
+  it("accepts turnTokenUsage entries with vendor/model metadata", () => {
+    const run = {
+      ...validRun,
+      turnTokenUsage: [
+        { turn: 1, input: 500, output: 200, vendor: "claude", model: "claude-sonnet-4-20250514" },
+      ],
+    };
+    const result = validateRunRecord(run);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.turnTokenUsage![0].vendor).toBe("claude");
+      expect(result.data.turnTokenUsage![0].model).toBe("claude-sonnet-4-20250514");
+    }
+  });
+
   it("accepts run without turnTokenUsage (backward compat)", () => {
     const result = validateRunRecord(validRun);
     expect(result.ok).toBe(true);

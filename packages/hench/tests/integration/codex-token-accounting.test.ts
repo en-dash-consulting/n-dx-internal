@@ -115,9 +115,13 @@ describe("codex token accounting integration", () => {
     const beforeTotal = totalTokens(await listRuns(henchDir));
 
     const mockSpawn = vi.fn();
-    vi.doMock("node:child_process", () => ({
-      spawn: mockSpawn,
-    }));
+    vi.doMock("node:child_process", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("node:child_process")>();
+      return {
+        ...actual,
+        spawn: mockSpawn,
+      };
+    });
 
     mockSpawn
       .mockImplementationOnce(() =>
@@ -160,8 +164,8 @@ describe("codex token accounting integration", () => {
     expect(result.run.status).toBe("budget_exceeded");
     expect(result.run.tokenUsage).toEqual({ input: 110, output: 40 });
     expect(result.run.turnTokenUsage).toEqual([
-      { turn: 1, input: 40, output: 10 },
-      { turn: 1, input: 70, output: 30 },
+      { turn: 1, input: 40, output: 10, vendor: "codex", model: "gpt-5-codex" },
+      { turn: 1, input: 70, output: 30, vendor: "codex", model: "gpt-5-codex" },
     ]);
     expect(result.run.error).toContain("150 used of 130 budget");
 

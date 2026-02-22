@@ -8,7 +8,7 @@
 
 import { h, Fragment } from "preact";
 import { useState, useCallback, useEffect, useRef } from "preact/hooks";
-import type { PRDItemData, ItemStatus, Priority, ItemLevel, RequirementData, RequirementCategory, RequirementValidationType } from "./types.js";
+import type { PRDItemData, ItemStatus, Priority, ItemLevel, RequirementData, RequirementCategory, RequirementValidationType, TaskUsageSummary } from "./types.js";
 import { formatTimestamp } from "./compute.js";
 import { findItemById } from "./tree-utils.js";
 import { CopyLinkButton } from "../copy-link-button.js";
@@ -17,6 +17,8 @@ import { CopyLinkButton } from "../copy-link-button.js";
 
 export interface TaskDetailProps {
   item: PRDItemData;
+  /** Aggregated token usage for this task across associated runs. */
+  taskUsage?: TaskUsageSummary;
   /** All items in the document, for resolving dependency references. */
   allItems: PRDItemData[];
   /** Called when an item is updated via the API. */
@@ -56,6 +58,12 @@ const LEVEL_LABELS: Record<string, string> = {
   task: "Task",
   subtask: "Subtask",
 };
+
+function formatTokenCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
 
 // ── Sub-components ───────────────────────────────────────────────────
 
@@ -1034,7 +1042,7 @@ function ExecuteTaskButton({
 
 // ── Main component ───────────────────────────────────────────────────
 
-export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem, onExecuteTask, onPrdChanged, onAddChild }: TaskDetailProps) {
+export function TaskDetail({ item, taskUsage, allItems, onUpdate, onNavigateToItem, onExecuteTask, onPrdChanged, onAddChild }: TaskDetailProps) {
   const [saving, setSaving] = useState(false);
   const [pendingFailStatus, setPendingFailStatus] = useState(false);
   const [failureReason, setFailureReason] = useState("");
@@ -1183,6 +1191,22 @@ export function TaskDetail({ item, allItems, onUpdate, onNavigateToItem, onExecu
           "div",
           { class: "task-section" },
           h(AcceptanceCriteria, { criteria: item.acceptanceCriteria }),
+        )
+      : null,
+
+    // Aggregated token usage across runs
+    item.level === "task" || item.level === "subtask"
+      ? h(
+          "div",
+          { class: "task-section task-usage-section" },
+          h("div", { class: "task-section-label" }, "Usage"),
+          h("div", { class: "task-usage-row" },
+            h("span", { class: "label" }, "Total Tokens"),
+            h("span", { class: "task-usage-value" }, `${formatTokenCount(taskUsage?.totalTokens ?? 0)} tokens`),
+          ),
+          h("div", { class: "task-usage-hint" },
+            `${taskUsage?.runCount ?? 0} associated run${(taskUsage?.runCount ?? 0) === 1 ? "" : "s"}`,
+          ),
         )
       : null,
 

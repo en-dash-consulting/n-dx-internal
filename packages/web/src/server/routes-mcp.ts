@@ -10,16 +10,18 @@
  * Unlike the REST API routes (which read JSON files from disk and shell
  * out to CLIs), MCP routes require the actual MCP server factory
  * functions at runtime.  These are the **only** cross-package runtime
- * imports in the web package, isolated in `domain-gateway.ts`.
+ * imports in the web package, isolated in gateway modules.
  *
- * @see ./domain-gateway.ts — gateway that centralises the two runtime imports
+ * @see ./rex-gateway.ts — Rex runtime gateway
+ * @see ./domain-gateway.ts — Sourcevision runtime gateway
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { createRexMcpServer, createSourcevisionMcpServer } from "./domain-gateway.js";
+import { createRexMcpServer } from "./rex-gateway.js";
+import { createSourcevisionMcpServer } from "./domain-gateway.js";
 import type { ServerContext } from "./types.js";
 
 const MCP_REX_PATH = "/mcp/rex";

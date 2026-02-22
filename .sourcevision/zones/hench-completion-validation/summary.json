@@ -1,7 +1,7 @@
 {
   "id": "hench-completion-validation",
-  "name": "Completion Validation Bridge",
-  "description": "Bridges agent completion logic with validation utilities and tests to enforce output correctness.",
+  "name": "Completion Quality Gate",
+  "description": "Validates and tests agent completions, linking service logic with validation utilities and targeted unit suites.",
   "files": [
     "packages/hench/src/agent/completion.ts",
     "packages/hench/src/validation/completion.ts",

@@ -32,6 +32,23 @@
     },
     {
       "from": "cli.js",
+      "to": "refresh-artifacts.js",
+      "type": "static",
+      "symbols": [
+        "refreshSourcevisionDashboardArtifacts"
+      ]
+    },
+    {
+      "from": "cli.js",
+      "to": "refresh-plan.js",
+      "type": "static",
+      "symbols": [
+        "buildRefreshPlan",
+        "RefreshPlanError"
+      ]
+    },
+    {
+      "from": "cli.js",
       "to": "web.js",
       "type": "static",
       "symbols": [
@@ -2731,6 +2748,16 @@
       ]
     },
     {
+      "from": "packages/hench/tests/unit/agent/token-usage-regression.test.ts",
+      "to": "packages/hench/src/agent/lifecycle/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "parseTokenUsage",
+        "parseStreamTokenUsage",
+        "mapCodexUsageToTokenUsage"
+      ]
+    },
+    {
       "from": "packages/hench/tests/unit/agent/token-usage.test.ts",
       "to": "packages/hench/src/agent/lifecycle/token-usage.ts",
       "type": "static",
@@ -3197,18 +3224,10 @@
     },
     {
       "from": "packages/hench/tests/unit/tools/files.test.ts",
-      "to": "packages/hench/src/guard/index.ts",
-      "type": "static",
+      "to": "packages/hench/src/tools/contracts.ts",
+      "type": "type",
       "symbols": [
-        "GuardRails"
-      ]
-    },
-    {
-      "from": "packages/hench/tests/unit/tools/files.test.ts",
-      "to": "packages/hench/src/schema/v1.ts",
-      "type": "static",
-      "symbols": [
-        "DEFAULT_HENCH_CONFIG"
+        "ToolGuard"
       ]
     },
     {
@@ -3224,18 +3243,10 @@
     },
     {
       "from": "packages/hench/tests/unit/tools/git.test.ts",
-      "to": "packages/hench/src/guard/index.ts",
-      "type": "static",
+      "to": "packages/hench/src/tools/contracts.ts",
+      "type": "type",
       "symbols": [
-        "GuardRails"
-      ]
-    },
-    {
-      "from": "packages/hench/tests/unit/tools/git.test.ts",
-      "to": "packages/hench/src/schema/v1.ts",
-      "type": "static",
-      "symbols": [
-        "DEFAULT_HENCH_CONFIG"
+        "ToolGuard"
       ]
     },
     {
@@ -8270,6 +8281,22 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/cli/commands/recommend.test.ts",
+      "to": "packages/rex/src/cli/commands/recommend.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/recommend.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/cli/commands/report.test.ts",
       "to": "packages/rex/src/cli/commands/report.ts",
       "type": "static",
@@ -9002,6 +9029,33 @@
       "type": "static",
       "symbols": [
         "computeTimestampUpdates"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/token-usage-regression.test.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "aggregateTokenUsage",
+        "collectTokenEvents",
+        "groupByCommand",
+        "checkBudget"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/token-usage-regression.test.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "type",
+      "symbols": [
+        "AggregateTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/token-usage-regression.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "LogEntry"
       ]
     },
     {
@@ -10154,7 +10208,7 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/manifest.ts",
-      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "to": "packages/sourcevision/src/constants.ts",
       "type": "static",
       "symbols": [
         "SV_DIR",
@@ -10222,7 +10276,7 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/workspace.ts",
-      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "to": "packages/sourcevision/src/constants.ts",
       "type": "static",
       "symbols": [
         "SV_DIR"
@@ -10562,14 +10616,6 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "to": "packages/sourcevision/src/cli/commands/constants.ts",
-      "type": "static",
-      "symbols": [
-        "SV_DIR"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
       "to": "packages/sourcevision/src/cli/commands/init.ts",
       "type": "static",
       "symbols": [
@@ -10594,11 +10640,28 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
       "to": "packages/sourcevision/src/schema/data-files.ts",
       "type": "static",
       "symbols": [
         "DATA_FILES",
         "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/constants.ts",
+      "to": "packages/sourcevision/src/constants.ts",
+      "type": "reexport",
+      "symbols": [
+        "TOOL_VERSION",
+        "SV_DIR"
       ]
     },
     {
@@ -10677,6 +10740,31 @@
       "type": "static",
       "symbols": [
         "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "to": "packages/sourcevision/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "requireSvDir"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
       ]
     },
     {
@@ -10782,6 +10870,14 @@
     },
     {
       "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "type": "static",
+      "symbols": [
+        "cmdPrMarkdown"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
       "to": "packages/sourcevision/src/cli/commands/reset.ts",
       "type": "static",
       "symbols": [
@@ -10856,7 +10952,7 @@
     },
     {
       "from": "packages/sourcevision/src/cli/mcp.ts",
-      "to": "packages/sourcevision/src/cli/commands/constants.ts",
+      "to": "packages/sourcevision/src/constants.ts",
       "type": "static",
       "symbols": [
         "SV_DIR",
@@ -11856,6 +11952,22 @@
       ]
     },
     {
+      "from": "packages/sourcevision/tests/unit/cli/pr-markdown.test.ts",
+      "to": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "type": "static",
+      "symbols": [
+        "cmdPrMarkdown"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/cli/pr-markdown.test.ts",
+      "to": "packages/sourcevision/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
       "from": "packages/sourcevision/tests/unit/export/pdf-report.test.ts",
       "to": "packages/sourcevision/src/export/pdf-report.ts",
       "type": "static",
@@ -12093,6 +12205,14 @@
       ]
     },
     {
+      "from": "packages/web/src/server/mcp-deps.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
+      "type": "reexport",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
       "from": "packages/web/src/server/routes-adaptive.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "static",
@@ -12228,8 +12348,15 @@
       "to": "packages/web/src/server/domain-gateway.ts",
       "type": "static",
       "symbols": [
-        "createRexMcpServer",
         "createSourcevisionMcpServer"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-mcp.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
+      "type": "static",
+      "symbols": [
+        "createRexMcpServer"
       ]
     },
     {
@@ -12276,7 +12403,7 @@
     },
     {
       "from": "packages/web/src/server/routes-rex.ts",
-      "to": "packages/web/src/server/domain-gateway.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
       "type": "static",
       "symbols": [
         "PRIORITY_ORDER",
@@ -12314,7 +12441,7 @@
     },
     {
       "from": "packages/web/src/server/routes-rex.ts",
-      "to": "packages/web/src/server/domain-gateway.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
       "type": "type",
       "symbols": [
         "Priority",
@@ -12399,7 +12526,7 @@
     },
     {
       "from": "packages/web/src/server/routes-status.ts",
-      "to": "packages/web/src/server/domain-gateway.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
       "type": "static",
       "symbols": [
         "computeStats",
@@ -12409,7 +12536,7 @@
     },
     {
       "from": "packages/web/src/server/routes-status.ts",
-      "to": "packages/web/src/server/domain-gateway.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
       "type": "type",
       "symbols": [
         "PRDDocument",
@@ -12451,7 +12578,7 @@
     },
     {
       "from": "packages/web/src/server/routes-validation.ts",
-      "to": "packages/web/src/server/domain-gateway.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
       "type": "static",
       "symbols": [
         "LEVEL_HIERARCHY",
@@ -12463,7 +12590,7 @@
     },
     {
       "from": "packages/web/src/server/routes-validation.ts",
-      "to": "packages/web/src/server/domain-gateway.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
       "type": "type",
       "symbols": [
         "ItemLevel",
@@ -13164,7 +13291,8 @@
         "PRDDocumentData",
         "ItemStatus",
         "ItemLevel",
-        "Priority"
+        "Priority",
+        "TaskUsageSummary"
       ]
     },
     {
@@ -13286,7 +13414,8 @@
         "ItemLevel",
         "RequirementData",
         "RequirementCategory",
-        "RequirementValidationType"
+        "RequirementValidationType",
+        "TaskUsageSummary"
       ]
     },
     {
@@ -13332,14 +13461,6 @@
     },
     {
       "from": "packages/web/src/viewer/components/sidebar.ts",
-      "to": "packages/web/src/viewer/components/constants.ts",
-      "type": "static",
-      "symbols": [
-        "ENRICHMENT_THRESHOLDS"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/components/sidebar.ts",
       "to": "packages/web/src/viewer/components/logos.ts",
       "type": "static",
       "symbols": [
@@ -13372,6 +13493,14 @@
       "type": "static",
       "symbols": [
         "useProjectMetadata"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/sidebar.ts",
+      "to": "packages/web/src/viewer/sourcevision-tabs.ts",
+      "type": "static",
+      "symbols": [
+        "SOURCEVISION_TABS"
       ]
     },
     {
@@ -13566,6 +13695,23 @@
     },
     {
       "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/route-state.ts",
+      "type": "static",
+      "symbols": [
+        "parseLegacyHashRoute",
+        "resolveLocationRoute"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/sourcevision-tabs.ts",
+      "type": "static",
+      "symbols": [
+        "SOURCEVISION_TAB_IDS"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
       "to": "packages/web/src/viewer/types.ts",
       "type": "type",
       "symbols": [
@@ -13665,6 +13811,14 @@
     },
     {
       "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/views/pr-markdown.ts",
+      "type": "static",
+      "symbols": [
+        "PRMarkdownView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
       "to": "packages/web/src/viewer/views/prd.ts",
       "type": "static",
       "symbols": [
@@ -13744,6 +13898,14 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/route-state.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/schema-compat.ts",
       "to": "packages/web/src/schema/v1.ts",
       "type": "static",
@@ -13757,6 +13919,22 @@
       "type": "type",
       "symbols": [
         "LoadedData"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/sourcevision-tabs.ts",
+      "to": "packages/web/src/viewer/components/constants.ts",
+      "type": "static",
+      "symbols": [
+        "ENRICHMENT_THRESHOLDS"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/sourcevision-tabs.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId"
       ]
     },
     {
@@ -14129,6 +14307,14 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/views/pr-markdown.ts",
+      "to": "packages/web/src/viewer/components/logos.ts",
+      "type": "static",
+      "symbols": [
+        "BrandedHeader"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/views/prd.ts",
       "to": "packages/web/src/viewer/components/prd-tree/add-item-form.ts",
       "type": "static",
@@ -14217,6 +14403,14 @@
       "symbols": [
         "findItemById",
         "getAncestorIds"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/prd.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "TaskUsageSummary"
       ]
     },
     {
@@ -14586,6 +14780,38 @@
         "FileConnectionMap",
         "FileToFileMap",
         "FileInfo"
+      ]
+    },
+    {
+      "from": "packages/web/tests/integration/pr-markdown-refresh.test.ts",
+      "to": "packages/web/src/server/routes-sourcevision.ts",
+      "type": "static",
+      "symbols": [
+        "handleSourcevisionRoute"
+      ]
+    },
+    {
+      "from": "packages/web/tests/integration/pr-markdown-refresh.test.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
+      "from": "packages/web/tests/integration/pr-markdown-refresh.test.ts",
+      "to": "packages/web/src/viewer/views/pr-markdown.ts",
+      "type": "static",
+      "symbols": [
+        "PRMarkdownView"
+      ]
+    },
+    {
+      "from": "packages/web/tests/integration/pr-markdown-tab-parity.test.ts",
+      "to": "packages/web/src/viewer/main.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
       ]
     },
     {
@@ -15011,7 +15237,7 @@
     },
     {
       "from": "packages/web/tests/unit/server/type-consistency.test.ts",
-      "to": "packages/web/src/server/domain-gateway.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
       "type": "static",
       "symbols": [
         "GATEWAY_PRIORITY_ORDER",
@@ -15215,6 +15441,14 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/pr-markdown.test.ts",
+      "to": "packages/web/src/viewer/views/pr-markdown.ts",
+      "type": "static",
+      "symbols": [
+        "PRMarkdownView"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/prd-tree-compute.test.ts",
       "to": "packages/web/src/viewer/components/prd-tree/compute.ts",
       "type": "static",
@@ -15274,6 +15508,24 @@
       "type": "type",
       "symbols": [
         "PRDDocumentData"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/route-state.test.ts",
+      "to": "packages/web/src/viewer/route-state.ts",
+      "type": "static",
+      "symbols": [
+        "parseLegacyHashRoute",
+        "parsePathnameRoute",
+        "resolveLocationRoute"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/route-state.test.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId"
       ]
     },
     {
@@ -15355,6 +15607,30 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/task-detail-usage.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+      "type": "static",
+      "symbols": [
+        "TaskDetail"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/task-detail-usage.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItemData"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/token-usage-nav.test.ts",
+      "to": "packages/web/src/viewer/components/sidebar.ts",
+      "type": "static",
+      "symbols": [
+        "Sidebar"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/tree-view.test.ts",
       "to": "packages/web/src/viewer/components/data-display/tree-view.ts",
       "type": "static",
@@ -15385,6 +15661,23 @@
         "formatToolHelp",
         "getRelatedCommands",
         "formatRelatedCommands"
+      ]
+    },
+    {
+      "from": "tests/unit/refresh-artifacts.test.js",
+      "to": "refresh-artifacts.js",
+      "type": "static",
+      "symbols": [
+        "refreshSourcevisionDashboardArtifacts"
+      ]
+    },
+    {
+      "from": "tests/unit/refresh-plan.test.js",
+      "to": "refresh-plan.js",
+      "type": "static",
+      "symbols": [
+        "buildRefreshPlan",
+        "RefreshPlanError"
       ]
     }
   ],
@@ -15524,6 +15817,7 @@
         "packages/sourcevision/src/cli/index.ts",
         "packages/sourcevision/src/cli/output.ts",
         "packages/sourcevision/src/cli/serve.ts",
+        "packages/sourcevision/src/constants.ts",
         "packages/sourcevision/src/util/sort.ts",
         "packages/sourcevision/tests/integration/claude-config.test.ts",
         "packages/sourcevision/tests/unit/analyzers/classify.test.ts",
@@ -15587,15 +15881,19 @@
       "importedBy": [
         "ci.js",
         "cli.js",
+        "refresh-artifacts.js",
         "web.js"
       ],
       "symbols": [
         "access",
         "existsSync",
+        "mkdirSync",
         "readFile",
         "readFileSync",
+        "statSync",
         "unlink",
-        "writeFile"
+        "writeFile",
+        "writeFileSync"
       ]
     },
     {
@@ -15612,6 +15910,7 @@
       "importedBy": [
         "ci.js",
         "cli.js",
+        "refresh-artifacts.js",
         "web.js"
       ],
       "symbols": [
@@ -15682,6 +15981,7 @@
         "packages/web/src/viewer/views/integration-config.ts",
         "packages/web/src/viewer/views/notion-config.ts",
         "packages/web/src/viewer/views/overview.ts",
+        "packages/web/src/viewer/views/pr-markdown.ts",
         "packages/web/src/viewer/views/prd.ts",
         "packages/web/src/viewer/views/problems.ts",
         "packages/web/src/viewer/views/rex-dashboard.ts",
@@ -15692,6 +15992,7 @@
         "packages/web/src/viewer/views/validation.ts",
         "packages/web/src/viewer/views/workflow-optimization.ts",
         "packages/web/src/viewer/views/zones.ts",
+        "packages/web/tests/integration/pr-markdown-refresh.test.ts",
         "packages/web/tests/unit/viewer/accessibility.test.ts",
         "packages/web/tests/unit/viewer/add-item-form.test.ts",
         "packages/web/tests/unit/viewer/bar-chart.test.ts",
@@ -15701,6 +16002,7 @@
         "packages/web/tests/unit/viewer/detail-panel.test.ts",
         "packages/web/tests/unit/viewer/flow-diagram.test.ts",
         "packages/web/tests/unit/viewer/hench-config.test.ts",
+        "packages/web/tests/unit/viewer/pr-markdown.test.ts",
         "packages/web/tests/unit/viewer/prd-tree.test.ts",
         "packages/web/tests/unit/viewer/prune-diff-tree.test.ts",
         "packages/web/tests/unit/viewer/sidebar.test.ts",
@@ -15709,6 +16011,8 @@
         "packages/web/tests/unit/viewer/status-indicators.test.ts",
         "packages/web/tests/unit/viewer/task-detail-failure.test.ts",
         "packages/web/tests/unit/viewer/task-detail-requirements.test.ts",
+        "packages/web/tests/unit/viewer/task-detail-usage.test.ts",
+        "packages/web/tests/unit/viewer/token-usage-nav.test.ts",
         "packages/web/tests/unit/viewer/tree-view.test.ts"
       ],
       "symbols": [
@@ -15724,6 +16028,15 @@
         "useMemo",
         "useRef",
         "useState"
+      ]
+    },
+    {
+      "package": "readline",
+      "importedBy": [
+        "cli.js"
+      ],
+      "symbols": [
+        "createInterface"
       ]
     },
     {
@@ -15747,7 +16060,7 @@
         "packages/hench/tests/unit/agent/task-failure.test.ts",
         "packages/hench/tests/unit/cli/commands/run-epic-by-epic.test.ts",
         "packages/hench/tests/unit/cli/commands/run-epic.test.ts",
-        "packages/web/src/server/domain-gateway.ts",
+        "packages/web/src/server/rex-gateway.ts",
         "packages/web/src/server/routes-integrations.ts",
         "packages/web/src/server/routes-notion.ts"
       ],
@@ -15886,6 +16199,7 @@
         "packages/hench/tests/unit/agent/task-failure.test.ts",
         "packages/hench/tests/unit/agent/token-budget.test.ts",
         "packages/hench/tests/unit/agent/token-tracking.test.ts",
+        "packages/hench/tests/unit/agent/token-usage-regression.test.ts",
         "packages/hench/tests/unit/agent/token-usage.test.ts",
         "packages/hench/tests/unit/agent/workflow.test.ts",
         "packages/hench/tests/unit/cli/commands/config.test.ts",
@@ -15938,6 +16252,7 @@
         "packages/rex/tests/e2e/cli-init.test.ts",
         "packages/rex/tests/e2e/cli-prune.test.ts",
         "packages/rex/tests/e2e/cli-quiet.test.ts",
+        "packages/rex/tests/e2e/cli-recommend.test.ts",
         "packages/rex/tests/e2e/cli-smart-add.test.ts",
         "packages/rex/tests/e2e/cli-sync.test.ts",
         "packages/rex/tests/e2e/cli-workflow.test.ts",
@@ -15967,6 +16282,7 @@
         "packages/rex/tests/unit/cli/commands/chunked-review.test.ts",
         "packages/rex/tests/unit/cli/commands/fix.test.ts",
         "packages/rex/tests/unit/cli/commands/move.test.ts",
+        "packages/rex/tests/unit/cli/commands/recommend.test.ts",
         "packages/rex/tests/unit/cli/commands/report.test.ts",
         "packages/rex/tests/unit/cli/commands/smart-add.test.ts",
         "packages/rex/tests/unit/cli/commands/status.test.ts",
@@ -16000,6 +16316,7 @@
         "packages/rex/tests/unit/core/sync-engine.test.ts",
         "packages/rex/tests/unit/core/sync.test.ts",
         "packages/rex/tests/unit/core/timestamps.test.ts",
+        "packages/rex/tests/unit/core/token-usage-regression.test.ts",
         "packages/rex/tests/unit/core/token-usage.test.ts",
         "packages/rex/tests/unit/core/transitions.test.ts",
         "packages/rex/tests/unit/core/tree-hardened.test.ts",
@@ -16044,12 +16361,15 @@
         "packages/sourcevision/tests/unit/cli/help.test.ts",
         "packages/sourcevision/tests/unit/cli/mcp.test.ts",
         "packages/sourcevision/tests/unit/cli/output.test.ts",
+        "packages/sourcevision/tests/unit/cli/pr-markdown.test.ts",
         "packages/sourcevision/tests/unit/export/pdf-report.test.ts",
         "packages/sourcevision/tests/unit/schema/data-files.test.ts",
         "packages/sourcevision/tests/unit/schema/validate.test.ts",
         "packages/sourcevision/tests/unit/util/merge.test.ts",
         "packages/sourcevision/tests/unit/util/sort.test.ts",
         "packages/sourcevision/vitest.config.ts",
+        "packages/web/tests/integration/pr-markdown-refresh.test.ts",
+        "packages/web/tests/integration/pr-markdown-tab-parity.test.ts",
         "packages/web/tests/unit/server/dev-reload.test.ts",
         "packages/web/tests/unit/server/port.test.ts",
         "packages/web/tests/unit/server/routes-adaptive.test.ts",
@@ -16088,15 +16408,19 @@
         "packages/web/tests/unit/viewer/graph-zoom.test.ts",
         "packages/web/tests/unit/viewer/hench-config.test.ts",
         "packages/web/tests/unit/viewer/label-utils.test.ts",
+        "packages/web/tests/unit/viewer/pr-markdown.test.ts",
         "packages/web/tests/unit/viewer/prd-tree-compute.test.ts",
         "packages/web/tests/unit/viewer/prd-tree.test.ts",
         "packages/web/tests/unit/viewer/prune-diff-tree.test.ts",
+        "packages/web/tests/unit/viewer/route-state.test.ts",
         "packages/web/tests/unit/viewer/sidebar.test.ts",
         "packages/web/tests/unit/viewer/smart-add-input.test.ts",
         "packages/web/tests/unit/viewer/status-filter.test.ts",
         "packages/web/tests/unit/viewer/status-indicators.test.ts",
         "packages/web/tests/unit/viewer/task-detail-failure.test.ts",
         "packages/web/tests/unit/viewer/task-detail-requirements.test.ts",
+        "packages/web/tests/unit/viewer/task-detail-usage.test.ts",
+        "packages/web/tests/unit/viewer/token-usage-nav.test.ts",
         "packages/web/tests/unit/viewer/tree-view.test.ts",
         "packages/web/vitest.config.ts",
         "tests/e2e/architecture-policy.test.js",
@@ -16105,11 +16429,15 @@
         "tests/e2e/cli-delegation.test.js",
         "tests/e2e/cli-dev.test.js",
         "tests/e2e/cli-errors.test.js",
+        "tests/e2e/cli-init.test.js",
+        "tests/e2e/cli-refresh.test.js",
         "tests/e2e/cli-start.test.js",
         "tests/e2e/cli-tool-resolution.test.js",
         "tests/e2e/cli-web.test.js",
         "tests/e2e/domain-isolation.test.js",
         "tests/unit/help.test.js",
+        "tests/unit/refresh-artifacts.test.js",
+        "tests/unit/refresh-plan.test.js",
         "vitest.config.js"
       ],
       "symbols": [
@@ -16142,8 +16470,8 @@
     }
   ],
   "summary": {
-    "totalEdges": 1674,
-    "totalExternal": 17,
+    "totalEdges": 1709,
+    "totalExternal": 18,
     "circularCount": 0,
     "circulars": [],
     "mostImported": [
@@ -16173,7 +16501,7 @@
       },
       {
         "path": "packages/web/src/viewer/components/logos.ts",
-        "count": 21
+        "count": 22
       },
       {
         "path": "packages/hench/src/store/config.ts",
@@ -16193,15 +16521,11 @@
       },
       {
         "path": "packages/hench/src/schema/v1.ts",
-        "count": 14
+        "count": 12
       },
       {
         "path": "packages/llm-client/src/types.ts",
         "count": 11
-      },
-      {
-        "path": "packages/sourcevision/src/cli/commands/constants.ts",
-        "count": 10
       },
       {
         "path": "packages/sourcevision/src/util/sort.ts",
@@ -16224,10 +16548,14 @@
         "count": 9
       },
       {
+        "path": "packages/sourcevision/src/cli/output.ts",
+        "count": 9
+      },
+      {
         "path": "packages/sourcevision/src/schema/data-files.ts",
         "count": 9
       }
     ],
-    "avgImportsPerFile": 3.39
+    "avgImportsPerFile": 3.34
   }
 }

@@ -47,6 +47,39 @@ interface TokenEvent {
   inputTokens: number;
   outputTokens: number;
   calls: number;
+  vendor?: string;
+  model?: string;
+}
+
+interface ToolBreakdown {
+  rex: PackageTokenUsage;
+  hench: PackageTokenUsage;
+  sv: PackageTokenUsage;
+}
+
+interface VendorModelUsage extends PackageTokenUsage {
+  vendor: string;
+  model: string;
+  toolBreakdown: ToolBreakdown;
+}
+
+interface UtilizationTrendBucket {
+  period: string;
+  totalTokens: number;
+  byVendorModel: VendorModelUsage[];
+  toolBreakdown: ToolBreakdown;
+  estimatedCost: CostEstimate;
+}
+
+interface UtilizationSourceMeta {
+  rex: string;
+  hench: string;
+  sourcevision: string;
+}
+
+interface ConfiguredModel {
+  vendor: string;
+  model: string;
 }
 
 interface CostEstimate {
@@ -76,10 +109,24 @@ function emptyPackageUsage(): PackageTokenUsage {
   return { inputTokens: 0, outputTokens: 0, calls: 0 };
 }
 
+function emptyToolBreakdown(): ToolBreakdown {
+  return {
+    rex: emptyPackageUsage(),
+    hench: emptyPackageUsage(),
+    sv: emptyPackageUsage(),
+  };
+}
+
 function isInRange(timestamp: string, since?: string, until?: string): boolean {
   if (since && timestamp < since) return false;
   if (until && timestamp > until) return false;
   return true;
+}
+
+function normalizeEventMetadata(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
 }
 
 /** Default Sonnet pricing. */
@@ -139,6 +186,8 @@ function extractRexEvents(logEntries: LogEntry[], since?: string, until?: string
         calls?: number;
         inputTokens?: number;
         outputTokens?: number;
+        vendor?: string;
+        model?: string;
       };
       events.push({
         timestamp: entry.timestamp,
@@ -147,6 +196,8 @@ function extractRexEvents(logEntries: LogEntry[], since?: string, until?: string
         inputTokens: data.inputTokens ?? 0,
         outputTokens: data.outputTokens ?? 0,
         calls: data.calls ?? 0,
+        vendor: normalizeEventMetadata(data.vendor),
+        model: normalizeEventMetadata(data.model),
       });
     } catch { /* skip */ }
   }
@@ -155,7 +206,14 @@ function extractRexEvents(logEntries: LogEntry[], since?: string, until?: string
 
 interface HenchRunSummary {
   startedAt: string;
+  model?: string;
   tokenUsage: { input: number; output: number };
+  turnTokenUsage?: Array<{
+    input: number;
+    output: number;
+    vendor?: string;
+    model?: string;
+  }>;
 }
 
 function extractHenchEvents(projectDir: string, since?: string, until?: string): TokenEvent[] {
@@ -173,6 +231,23 @@ function extractHenchEvents(projectDir: string, since?: string, until?: string):
       const run = JSON.parse(raw) as HenchRunSummary;
       if (!run.startedAt || !run.tokenUsage) continue;
       if (!isInRange(run.startedAt, since, until)) continue;
+
+      if (Array.isArray(run.turnTokenUsage) && run.turnTokenUsage.length > 0) {
+        for (const turn of run.turnTokenUsage) {
+          events.push({
+            timestamp: run.startedAt,
+            command: "run",
+            package: "hench",
+            inputTokens: turn.input ?? 0,
+            outputTokens: turn.output ?? 0,
+            calls: 1,
+            vendor: normalizeEventMetadata(turn.vendor),
+            model: normalizeEventMetadata(turn.model) ?? normalizeEventMetadata(run.model),
+          });
+        }
+        continue;
+      }
+
       events.push({
         timestamp: run.startedAt,
         command: "run",
@@ -180,6 +255,7 @@ function extractHenchEvents(projectDir: string, since?: string, until?: string):
         inputTokens: run.tokenUsage.input ?? 0,
         outputTokens: run.tokenUsage.output ?? 0,
         calls: 1,
+        model: normalizeEventMetadata(run.model),
       });
     } catch { /* skip */ }
   }
@@ -188,7 +264,13 @@ function extractHenchEvents(projectDir: string, since?: string, until?: string):
 
 interface SvManifest {
   analyzedAt?: string;
-  tokenUsage?: { calls?: number; inputTokens?: number; outputTokens?: number };
+  tokenUsage?: {
+    calls?: number;
+    inputTokens?: number;
+    outputTokens?: number;
+    vendor?: string;
+    model?: string;
+  };
 }
 
 function extractSvEvents(projectDir: string, since?: string, until?: string): TokenEvent[] {
@@ -206,6 +288,8 @@ function extractSvEvents(projectDir: string, since?: string, until?: string): To
       inputTokens: manifest.tokenUsage.inputTokens ?? 0,
       outputTokens: manifest.tokenUsage.outputTokens ?? 0,
       calls: manifest.tokenUsage.calls ?? 0,
+      vendor: normalizeEventMetadata(manifest.tokenUsage.vendor) ?? "unknown",
+      model: normalizeEventMetadata(manifest.tokenUsage.model) ?? "unknown",
     });
   } catch { /* skip */ }
   return events;
@@ -219,6 +303,17 @@ function collectAllEvents(ctx: ServerContext, since?: string, until?: string): T
   return [...rexEvents, ...henchEvents, ...svEvents].sort(
     (a, b) => a.timestamp.localeCompare(b.timestamp),
   );
+}
+
+function resolveSourceMeta(ctx: ServerContext): UtilizationSourceMeta {
+  const rexPath = join(ctx.rexDir, "execution-log.jsonl");
+  const henchPath = join(ctx.projectDir, ".hench", "runs");
+  const svPath = join(ctx.projectDir, ".sourcevision", "manifest.json");
+  return {
+    rex: existsSync(rexPath) ? ".rex/execution-log.jsonl" : "missing (.rex/execution-log.jsonl)",
+    hench: existsSync(henchPath) ? ".hench/runs/*.json" : "missing (.hench/runs/*.json)",
+    sourcevision: existsSync(svPath) ? ".sourcevision/manifest.json" : "missing (.sourcevision/manifest.json)",
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -268,6 +363,45 @@ function groupByCommand(events: TokenEvent[]): CommandTokenUsage[] {
   );
 }
 
+function aggregateByVendorModel(events: TokenEvent[]): VendorModelUsage[] {
+  const map = new Map<string, VendorModelUsage>();
+
+  for (const ev of events) {
+    const vendor = normalizeEventMetadata(ev.vendor) ?? "unknown";
+    const model = normalizeEventMetadata(ev.model) ?? "unknown";
+    const key = `${vendor}:${model}`;
+
+    let entry = map.get(key);
+    if (!entry) {
+      entry = {
+        vendor,
+        model,
+        inputTokens: 0,
+        outputTokens: 0,
+        calls: 0,
+        toolBreakdown: emptyToolBreakdown(),
+      };
+      map.set(key, entry);
+    }
+
+    const tool = ev.package === "rex" ? entry.toolBreakdown.rex : ev.package === "hench" ? entry.toolBreakdown.hench : entry.toolBreakdown.sv;
+    tool.inputTokens += ev.inputTokens;
+    tool.outputTokens += ev.outputTokens;
+    tool.calls += ev.calls;
+    entry.inputTokens += ev.inputTokens;
+    entry.outputTokens += ev.outputTokens;
+    entry.calls += ev.calls;
+  }
+
+  return Array.from(map.values()).sort((a, b) => {
+    const tokenDiff = (b.inputTokens + b.outputTokens) - (a.inputTokens + a.outputTokens);
+    if (tokenDiff !== 0) return tokenDiff;
+    const vendorDiff = a.vendor.localeCompare(b.vendor);
+    if (vendorDiff !== 0) return vendorDiff;
+    return a.model.localeCompare(b.model);
+  });
+}
+
 function periodKey(timestamp: string, period: TimePeriod): string {
   const date = new Date(timestamp);
   const year = date.getUTCFullYear();
@@ -311,6 +445,37 @@ function groupByTimePeriod(events: TokenEvent[], period: TimePeriod): PeriodBuck
   for (const [key, evts] of buckets) {
     const usage = eventsToAggregate(evts);
     result.push({ period: key, usage, estimatedCost: estimateCost(usage) });
+  }
+  result.sort((a, b) => a.period.localeCompare(b.period));
+  return result;
+}
+
+function groupUtilizationTrend(
+  events: TokenEvent[],
+  period: TimePeriod,
+): UtilizationTrendBucket[] {
+  const buckets = new Map<string, TokenEvent[]>();
+  for (const ev of events) {
+    const key = periodKey(ev.timestamp, period);
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = [];
+      buckets.set(key, bucket);
+    }
+    bucket.push(ev);
+  }
+
+  const result: UtilizationTrendBucket[] = [];
+  for (const [key, evts] of buckets) {
+    const usage = eventsToAggregate(evts);
+    const byVendorModel = aggregateByVendorModel(evts);
+    result.push({
+      period: key,
+      totalTokens: usage.totalInputTokens + usage.totalOutputTokens,
+      byVendorModel,
+      toolBreakdown: usage.packages,
+      estimatedCost: estimateCost(usage),
+    });
   }
   result.sort((a, b) => a.period.localeCompare(b.period));
   return result;
@@ -395,6 +560,30 @@ function parseQuery(url: string): URLSearchParams {
   return idx === -1 ? new URLSearchParams() : new URLSearchParams(url.slice(idx));
 }
 
+function loadConfiguredModel(projectDir: string): ConfiguredModel {
+  const path = join(projectDir, ".n-dx.json");
+  if (!existsSync(path)) return { vendor: "claude", model: "default" };
+  try {
+    const raw = readFileSync(path, "utf-8");
+    const root = JSON.parse(raw) as Record<string, unknown>;
+    const llm = root.llm as Record<string, unknown> | undefined;
+    const llmVendor = llm?.vendor;
+    const vendor = llmVendor === "codex" ? "codex" : "claude";
+    const llmVendorCfg = llm?.[vendor] as Record<string, unknown> | undefined;
+    const llmVendorModel = llmVendorCfg?.model;
+    if (typeof llmVendorModel === "string" && llmVendorModel) {
+      return { vendor, model: llmVendorModel };
+    }
+    const legacyClaude = root.claude as Record<string, unknown> | undefined;
+    if (vendor === "claude" && typeof legacyClaude?.model === "string" && legacyClaude.model) {
+      return { vendor, model: legacyClaude.model };
+    }
+    return { vendor, model: "default" };
+  } catch {
+    return { vendor: "claude", model: "default" };
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Route handler
 // ---------------------------------------------------------------------------
@@ -464,6 +653,42 @@ export function handleTokenUsageRoute(
     const result = checkBudget(usage, config?.budget);
     const cost = estimateCost(usage);
     jsonResponse(res, 200, { budget: result, usage, cost });
+    return true;
+  }
+
+  // GET /api/token/utilization — config + usage grouped by vendor/model
+  if (path === "utilization") {
+    const period = (params.get("period") || "day") as TimePeriod;
+    if (!["day", "week", "month"].includes(period)) {
+      errorResponse(res, 400, `Invalid period: ${period}. Use "day", "week", or "month".`);
+      return true;
+    }
+
+    const configured = loadConfiguredModel(ctx.projectDir);
+    const events = collectAllEvents(ctx, since, until);
+    const usage = eventsToAggregate(events);
+    const byVendorModel = aggregateByVendorModel(events);
+    const trend = groupUtilizationTrend(events, period);
+    const commands = groupByCommand(events);
+    const budget = checkBudget(usage, loadRexConfig(ctx.rexDir)?.budget);
+    const source = resolveSourceMeta(ctx);
+
+    jsonResponse(res, 200, {
+      configured,
+      source,
+      period,
+      window: {
+        since: since ?? null,
+        until: until ?? null,
+      },
+      usage,
+      cost: estimateCost(usage),
+      byVendorModel,
+      trend,
+      commands,
+      budget,
+      eventCount: events.length,
+    });
     return true;
   }
 

@@ -30,16 +30,48 @@ interface Recommendation {
   source: string;
 }
 
-function parseSelectionIndices(input: string, total: number): number[] {
-  const normalized = input.trim().replace(/^=/, "");
-  if (!normalized) return [];
-  return [...new Set(
-    normalized
-      .split(/[\s,]+/)
-      .map((s) => parseInt(s.trim(), 10))
-      .filter((n) => Number.isInteger(n) && n >= 1 && n <= total)
-      .map((n) => n - 1),
-  )].sort((a, b) => a - b);
+function selectorFormatError(detail: string): Error {
+  return new Error(`${detail}\nExample: rex recommend --accept='=1,4,5' .`);
+}
+
+export function parseSelectionIndices(input: string, total: number): number[] {
+  const raw = input.trim();
+  if (!raw.startsWith("=")) {
+    throw selectorFormatError("Invalid --accept selector format. Expected '=N[,M,...]'.");
+  }
+
+  const normalized = raw.slice(1).trim();
+  if (!normalized) {
+    throw selectorFormatError("Invalid --accept selector format. Expected one or more indices after '='.");
+  }
+  if (normalized === "all") return [];
+
+  const values = normalized
+    .split(/[\s,]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  if (values.length === 0) {
+    throw selectorFormatError("Invalid --accept selector format. Expected one or more indices after '='.");
+  }
+
+  const selected = new Set<number>();
+  for (const value of values) {
+    if (!/^\d+$/.test(value)) {
+      throw selectorFormatError(
+        `Invalid --accept selector token '${value}'. Expected numeric indices like '=1,4,5'.`,
+      );
+    }
+    const parsed = Number.parseInt(value, 10);
+    if (parsed < 1 || parsed > total) {
+      throw new Error(
+        `Invalid --accept selector index ${parsed}. Index must be between 1 and ${total}.`,
+      );
+    }
+    selected.add(parsed - 1);
+  }
+
+  return [...selected].sort((a, b) => a - b);
 }
 
 async function detectSourceVision(dir: string): Promise<boolean> {
@@ -208,8 +240,15 @@ export async function cmdRecommend(
   if (flags.accept) {
     const store = await resolveStore(rexDir);
     const acceptFlag = flags.accept.trim();
-    const selectedIndices = acceptFlag.startsWith("=")
-      ? parseSelectionIndices(acceptFlag, recommendations.length)
+    const usesSelectorMode = acceptFlag !== "true";
+    if (usesSelectorMode && !acceptFlag.startsWith("=")) {
+      throw selectorFormatError(
+        "Invalid --accept selector format. Expected '=N[,M,...]' when passing a selector.",
+      );
+    }
+
+    const selectedIndices = usesSelectorMode
+      ? (acceptFlag === "=all" ? null : parseSelectionIndices(acceptFlag, recommendations.length))
       : null;
     const acceptedRecommendations = selectedIndices === null
       ? recommendations

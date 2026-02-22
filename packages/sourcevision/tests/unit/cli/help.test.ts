@@ -19,6 +19,7 @@ describe("sourcevision CLI help", () => {
     "validate",
     "reset",
     "export-pdf",
+    "pr-markdown",
     "mcp",
   ];
 
@@ -90,6 +91,12 @@ describe("sourcevision CLI help", () => {
       showCommandHelp("export-pdf");
       const output = logSpy.mock.calls[0][0] as string;
       expect(output).toContain("--output");
+    });
+
+    it("pr-markdown help includes output location", () => {
+      showCommandHelp("pr-markdown");
+      const output = logSpy.mock.calls[0][0] as string;
+      expect(output).toContain(".sourcevision/pr-markdown.md");
     });
   });
 });

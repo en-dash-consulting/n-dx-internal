@@ -261,6 +261,7 @@ describe("Sidebar", () => {
       // HENCH section (index 2) should be expanded
       expect(headers[2].getAttribute("aria-expanded")).toBe("true");
     });
+
   });
 
   describe("section header accessibility", () => {
@@ -562,8 +563,8 @@ describe("Sidebar", () => {
     it("shows sourcevision nav items + settings items when scope=sourcevision", () => {
       renderSidebar({ scope: "sourcevision", view: "overview" as const });
       const navItems = root.querySelectorAll(".nav-item");
-      // 8 sourcevision items + 1 settings item (Feature Flags)
-      expect(navItems.length).toBe(9);
+      // 9 sourcevision items + 1 settings item (Feature Flags)
+      expect(navItems.length).toBe(10);
     });
 
     it("does not show rex or hench nav items when scope=sourcevision", () => {

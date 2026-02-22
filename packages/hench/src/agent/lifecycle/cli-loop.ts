@@ -13,6 +13,7 @@ import { startHeartbeat } from "./heartbeat.js";
 import { section, stream, info } from "../../types/output.js";
 import {
   loadLLMConfig,
+  type LLMVendor,
   resolveLLMVendor,
   resolveVendorCliPath,
 } from "../../store/project-config.js";
@@ -35,6 +36,7 @@ export interface CliLoopResult {
 }
 
 const MAX_SUMMARY_LENGTH = 500;
+const DEFAULT_CODEX_MODEL = "gpt-5-codex";
 
 const TRANSIENT_PATTERNS = [
   /\b500\b/,
@@ -109,6 +111,22 @@ export interface CliRunResult {
   summary?: string;
   error?: string;
   costUsd?: number;
+}
+
+interface TokenEventMetadata {
+  vendor: LLMVendor;
+  model: string;
+}
+
+function resolveCliEventModel(
+  vendor: LLMVendor,
+  llmConfig: Awaited<ReturnType<typeof loadLLMConfig>>,
+  configuredModel: string,
+  modelOverride?: string,
+): string {
+  if (modelOverride) return modelOverride;
+  if (vendor === "codex") return llmConfig.codex?.model ?? DEFAULT_CODEX_MODEL;
+  return llmConfig.claude?.model ?? configuredModel;
 }
 
 function addTokenUsage(
@@ -358,6 +376,7 @@ export function processStreamLine(
   line: string,
   result: CliRunResult,
   turnCounter: { value: number },
+  tokenMetadata?: TokenEventMetadata,
 ): void {
   if (!line.trim()) return;
 
@@ -404,6 +423,7 @@ export function processStreamLine(
             turn: turnCounter.value,
             input: parsed.input,
             output: parsed.output,
+            ...(tokenMetadata ? { vendor: tokenMetadata.vendor, model: tokenMetadata.model } : {}),
           };
 
           if (parsed.cacheCreationInput) {
@@ -489,6 +509,7 @@ export function processStreamLine(
 function spawnClaude(
   args: string[],
   cwd: string,
+  tokenMetadata: TokenEventMetadata,
   cliBinary = "claude",
 ): Promise<CliRunResult> {
   return new Promise((resolve, reject) => {
@@ -514,7 +535,7 @@ function spawnClaude(
       lineBuffer = lines.pop()!; // Keep incomplete last line in buffer
 
       for (const line of lines) {
-        processStreamLine(line, result, turnCounter);
+        processStreamLine(line, result, turnCounter, tokenMetadata);
       }
     });
 
@@ -536,7 +557,7 @@ function spawnClaude(
     proc.on("close", (code) => {
       // Process any remaining buffered output
       if (lineBuffer.trim()) {
-        processStreamLine(lineBuffer, result, turnCounter);
+        processStreamLine(lineBuffer, result, turnCounter, tokenMetadata);
       }
 
       if (result.turns === 0) {
@@ -556,6 +577,7 @@ async function spawnCodex(
   prompt: string,
   cwd: string,
   model: string | undefined,
+  tokenMetadata: TokenEventMetadata,
   cliBinary = "codex",
 ): Promise<CliRunResult> {
   const tmpDir = await mkdtemp(join(tmpdir(), "hench-codex-"));
@@ -645,6 +667,8 @@ async function spawnCodex(
           turn: 1,
           input: codexTokenMapping.usage.input,
           output: codexTokenMapping.usage.output,
+          vendor: tokenMetadata.vendor,
+          model: tokenMetadata.model,
         });
 
         for (const warning of normalized.warnings) {
@@ -705,6 +729,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   const model = opts.model ?? config.model;
   const llmConfig = await loadLLMConfig(henchDir);
   const vendor = resolveLLMVendor(llmConfig);
+  const eventModel = resolveCliEventModel(vendor, llmConfig, model, opts.model);
 
   // Shared: assemble brief, format, build system prompt, display task info
   const { brief, taskId, briefText, systemPrompt } = await prepareBrief(
@@ -776,6 +801,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
           `SYSTEM:\n${systemPrompt}\n\nTASK:\n${prompt}`,
           projectDir,
           opts.model,
+          { vendor, model: eventModel },
           cliBinary,
         )
         : await spawnClaude(
@@ -788,6 +814,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
             ...(opts.model ? ["--model", opts.model] : []),
           ],
           projectDir,
+          { vendor, model: eventModel },
           cliBinary,
         );
 

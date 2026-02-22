@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve, join } from "node:path";
-import { SV_DIR } from "./constants.js";
+import { SV_DIR } from "../../constants.js";
 import { CLIError } from "../errors.js";
 import { DATA_FILES, SUPPLEMENTARY_FILES } from "../../schema/data-files.js";
 import { readManifest, writeManifest } from "../../analyzers/manifest.js";
@@ -11,7 +11,13 @@ import { cmdInit } from "./init.js";
 import { info } from "../output.js";
 import { emptyAnalyzeTokenUsage, formatTokenUsage } from "../../analyzers/token-usage.js";
 import { loadLLMConfig } from "@n-dx/llm-client";
-import { setLLMConfig, getAuthMode, getLLMVendor } from "../../analyzers/claude-client.js";
+import {
+  setLLMConfig,
+  getAuthMode,
+  getLLMVendor,
+  DEFAULT_MODEL,
+  DEFAULT_CODEX_MODEL,
+} from "../../analyzers/claude-client.js";
 import {
   runInventoryPhase,
   runImportsPhase,
@@ -28,6 +34,37 @@ type PhaseFilter =
   | { type: "all" }
   | { type: "phase"; phase: number }
   | { type: "only"; module: string };
+
+const UNKNOWN_PROVIDER_METADATA = "unknown";
+
+function normalizeProviderMetadata(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+export function resolveAnalyzeTokenEventMetadata(
+  llmConfig: Awaited<ReturnType<typeof loadLLMConfig>>,
+): { vendor: string; model: string } {
+  const vendor = normalizeProviderMetadata(getLLMVendor()) ?? UNKNOWN_PROVIDER_METADATA;
+
+  if (vendor === "codex") {
+    return {
+      vendor,
+      model: normalizeProviderMetadata(llmConfig.codex?.model) ?? DEFAULT_CODEX_MODEL,
+    };
+  }
+  if (vendor === "claude") {
+    return {
+      vendor,
+      model: normalizeProviderMetadata(llmConfig.claude?.model) ?? DEFAULT_MODEL,
+    };
+  }
+
+  return {
+    vendor,
+    model: UNKNOWN_PROVIDER_METADATA,
+  };
+}
 
 function parsePhaseFilter(extraArgs: string[]): PhaseFilter {
   for (const a of extraArgs) {
@@ -129,8 +166,13 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
 
   // Persist token usage to manifest for cross-package aggregation
   if (ctx.tokenUsage.calls > 0) {
+    const metadata = resolveAnalyzeTokenEventMetadata(llmConfig);
     const manifest = readManifest(absDir);
-    manifest.tokenUsage = ctx.tokenUsage;
+    manifest.tokenUsage = {
+      ...ctx.tokenUsage,
+      vendor: metadata.vendor,
+      model: metadata.model,
+    };
     writeManifest(absDir, manifest);
   }
 

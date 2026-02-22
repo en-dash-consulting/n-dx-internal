@@ -560,7 +560,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Standalone CLI help/search helper functions and formatting utilities.",
+          "detail": "Provides reusable CLI help/search utilities and formatting helpers rather than a single command entry.",
           "weight": 0.7
         }
       ]
@@ -2505,7 +2505,7 @@
         {
           "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "CLI help command implementation",
+          "detail": "Defines per-command help specs for the rex CLI, backing command-line UX.",
           "weight": 0.7
         }
       ]
@@ -3443,7 +3443,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Manages manifest read/write/update operations for analysis runs.",
+          "detail": "Implements manifest read/update logic and persistence for Sourcevision analysis runs.",
           "weight": 0.7
         }
       ]
@@ -3513,7 +3513,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Workspace analysis and setup service",
+          "detail": "Provides workspace analysis routines that discover and promote sub-analyses.",
           "weight": 0.7
         }
       ]
@@ -3626,6 +3626,20 @@
       ]
     },
     {
+      "path": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "archetype": "cli-command",
+      "confidence": 0.8,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "cli-command",
+          "signalKind": "directory",
+          "detail": "path contains \"/commands/\"",
+          "weight": 0.8
+        }
+      ]
+    },
+    {
       "path": "packages/sourcevision/src/cli/commands/reset.ts",
       "archetype": "cli-command",
       "confidence": 0.8,
@@ -3713,7 +3727,7 @@
         {
           "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "Defines the Sourcevision MCP CLI server setup, registering CLI-facing tools and transports.",
+          "detail": "Sets up and registers the Sourcevision MCP server exposed via CLI transport.",
           "weight": 0.7
         }
       ]
@@ -3743,6 +3757,20 @@
           "signalKind": "path",
           "detail": "Implements the `sourcevision serve` subcommand by delegating to the web CLI.",
           "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/sourcevision/src/constants.ts",
+      "archetype": "types",
+      "confidence": 0.9,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "types",
+          "signalKind": "filename",
+          "detail": "filename \"constants.ts\" matches ^constants\\.[tj]sx?$",
+          "weight": 0.9
         }
       ]
     },
@@ -4000,7 +4028,7 @@
         {
           "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Centralized re-export hub for runtime domain imports and MCP factories.",
+          "detail": "Re-exports Sourcevision MCP factory to centralize imports for server routes.",
           "weight": 0.7
         }
       ]
@@ -4028,7 +4056,7 @@
         {
           "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Deprecated barrel that re-exports everything from domain-gateway.",
+          "detail": "Deprecated module that re-exports both Rex and Sourcevision gateway exports.",
           "weight": 0.7
         }
       ]
@@ -4043,6 +4071,20 @@
           "archetypeId": "utility",
           "signalKind": "path",
           "detail": "Port management utility for server configuration",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/server/rex-gateway.ts",
+      "archetype": "gateway",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "gateway",
+          "signalKind": "path",
+          "detail": "Aggregates and re-exports Rex MCP server factories, types, and utilities for server use.",
           "weight": 0.7
         }
       ]
@@ -4280,7 +4322,7 @@
         {
           "archetypeId": "entrypoint",
           "signalKind": "path",
-          "detail": "Bootstraps the HTTP server, registers routes/watchers, and is the main server entry file.",
+          "detail": "Bootstraps the HTTP server, wires routes, and exports the start routine for the web app.",
           "weight": 0.7
         }
       ]
@@ -5027,6 +5069,20 @@
       ]
     },
     {
+      "path": "packages/web/src/viewer/route-state.ts",
+      "archetype": "route-handler",
+      "confidence": 0.8,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "route-handler",
+          "signalKind": "filename",
+          "detail": "filename \"route-state.ts\" matches ^routes?[-.]",
+          "weight": 0.8
+        }
+      ]
+    },
+    {
       "path": "packages/web/src/viewer/schema-compat.ts",
       "archetype": "utility",
       "confidence": 0.7,
@@ -5036,6 +5092,20 @@
           "archetypeId": "utility",
           "signalKind": "path",
           "detail": "Schema migration utilities for data format compatibility - shared helper functions",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/viewer/sourcevision-tabs.ts",
+      "archetype": "types",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "types",
+          "signalKind": "path",
+          "detail": "Defines tab IDs, interfaces, and constant lists consumed by UI components without rendering logic.",
           "weight": 0.7
         }
       ]
@@ -5223,6 +5293,20 @@
       ]
     },
     {
+      "path": "packages/web/src/viewer/views/pr-markdown.ts",
+      "archetype": "page",
+      "confidence": 0.7,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "page",
+          "signalKind": "directory",
+          "detail": "path contains \"/views/\"",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
       "path": "packages/web/src/viewer/views/prd.ts",
       "archetype": "page",
       "confidence": 0.7,
@@ -5395,6 +5479,34 @@
       ]
     },
     {
+      "path": "refresh-artifacts.js",
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "Implements business logic to build SourceVision artifact metadata by inspecting files and writing outputs.",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "refresh-plan.js",
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "Encapsulates the decision logic that turns CLI flags into an execution plan with steps and notes.",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
       "path": "web.js",
       "archetype": "entrypoint",
       "confidence": 0.7,
@@ -5410,26 +5522,26 @@
     }
   ],
   "summary": {
-    "totalClassified": 336,
+    "totalClassified": 344,
     "totalUnclassified": 0,
     "byArchetype": {
       "entrypoint": 31,
       "config": 9,
       "utility": 79,
-      "service": 50,
-      "types": 14,
-      "gateway": 7,
-      "cli-command": 38,
+      "service": 52,
+      "types": 16,
+      "gateway": 8,
+      "cli-command": 39,
       "schema": 12,
       "store": 14,
-      "route-handler": 18,
-      "page": 21,
+      "route-handler": 19,
+      "page": 22,
       "component": 39,
       "hook": 4
     },
     "bySource": {
-      "llm": 122,
-      "algorithmic": 214
+      "llm": 126,
+      "algorithmic": 218
     }
   }
 }

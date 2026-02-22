@@ -2,7 +2,6 @@ import { h } from "preact";
 import { useState, useEffect, useCallback, useRef, useMemo } from "preact/hooks";
 import type { Manifest, Zones } from "../../schema/v1.js";
 import type { ViewId } from "../types.js";
-import { ENRICHMENT_THRESHOLDS } from "./constants.js";
 import { NdxLogoPng, ProductLogoPng } from "./logos.js";
 import { SidebarThemeToggle } from "./theme-toggle.js";
 import {
@@ -13,6 +12,7 @@ import {
 } from "./status-indicators.js";
 import { ConfigFooter } from "./config-footer.js";
 import { useProjectMetadata } from "../hooks/use-project-metadata.js";
+import { SOURCEVISION_TABS } from "../sourcevision-tabs.js";
 
 const STORAGE_KEY = "sidebar-expanded-section";
 
@@ -39,14 +39,7 @@ interface SectionGroup {
 
 const NAV_ENTRIES: NavEntry[] = [
   { type: "section", label: "SOURCEVISION", product: "sourcevision" },
-  { type: "item", id: "overview", icon: "\u25A3", label: "Overview", minPass: 0 },
-  { type: "item", id: "graph", icon: "\u2B95", label: "Import Graph", minPass: 0 },
-  { type: "item", id: "zones", icon: "\u2B22", label: "Zones", minPass: 0 },
-  { type: "item", id: "files", icon: "\u2630", label: "Files", minPass: 0 },
-  { type: "item", id: "routes", icon: "\u25C7", label: "Routes", minPass: 0 },
-  { type: "item", id: "architecture", icon: "\u25E8", label: "Architecture", minPass: ENRICHMENT_THRESHOLDS.architecture },
-  { type: "item", id: "problems", icon: "\u26A0", label: "Problems", minPass: ENRICHMENT_THRESHOLDS.problems },
-  { type: "item", id: "suggestions", icon: "\u2728", label: "Suggestions", minPass: ENRICHMENT_THRESHOLDS.suggestions },
+  ...SOURCEVISION_TABS.map((tab) => ({ type: "item" as const, ...tab })),
   { type: "section", label: "REX", product: "rex" },
   { type: "item", id: "rex-dashboard", icon: "\u25A8", label: "Dashboard", minPass: 0 },
   { type: "item", id: "prd", icon: "\u2611", label: "Tasks", minPass: 0 },

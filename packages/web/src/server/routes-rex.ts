@@ -86,7 +86,7 @@ import {
   computeEpicStats,
   computePriorityDistribution,
   computeRequirementsSummary,
-} from "./domain-gateway.js";
+} from "./rex-gateway.js";
 
 const REX_PREFIX = "/api/rex/";
 
@@ -2288,7 +2288,7 @@ function handleExecutionResume(
 
 // RequirementRecord is now the canonical Requirement type from rex,
 // imported via the gateway (domain-gateway.ts).
-type RequirementRecord = import("./domain-gateway.js").Requirement;
+type RequirementRecord = import("./rex-gateway.js").Requirement;
 
 /** Walk the item tree collecting requirements with inheritance. */
 function collectInheritedRequirements(

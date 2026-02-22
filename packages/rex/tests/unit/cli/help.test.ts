@@ -107,6 +107,13 @@ describe("rex CLI help", () => {
       expect(output).toContain("--guided");
     });
 
+    it("recommend help includes indexed --accept example", () => {
+      showCommandHelp("recommend");
+      const output = logSpy.mock.calls[0][0] as string;
+      expect(output).toContain("--accept");
+      expect(output).toContain("=1,4,5");
+    });
+
     it("sync help includes --push and --pull", () => {
       showCommandHelp("sync");
       const output = logSpy.mock.calls[0][0] as string;

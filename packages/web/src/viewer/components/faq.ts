@@ -136,6 +136,7 @@ const VIEW_TO_FAQ_SECTION: Record<string, string> = {
   architecture: "SourceVision",
   problems: "SourceVision",
   suggestions: "SourceVision",
+  "pr-markdown": "SourceVision",
   // Rex views
   "rex-dashboard": "Rex (PRD Management)",
   prd: "Rex (PRD Management)",

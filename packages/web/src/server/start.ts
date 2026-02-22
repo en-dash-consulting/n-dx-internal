@@ -186,6 +186,45 @@ function handleConfigEndpoint(
   return true;
 }
 
+function handleReloadSignalEndpoint(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ws: ReturnType<typeof createWebSocketManager>,
+): boolean {
+  if (req.url !== "/api/reload") return false;
+
+  if ((req.method || "GET") !== "POST") {
+    res.writeHead(405, { "Content-Type": "application/json", "Cache-Control": "no-cache" });
+    res.end(JSON.stringify({ error: "Method not allowed" }));
+    return true;
+  }
+
+  const timestamp = new Date().toISOString();
+  ws.broadcast({
+    type: "viewer:reload",
+    source: "ndx-refresh",
+    timestamp,
+  });
+  ws.broadcast({
+    type: "sv:data-changed",
+    source: "ndx-refresh",
+    timestamp,
+  });
+  ws.broadcast({
+    type: "rex:prd-changed",
+    source: "ndx-refresh",
+    timestamp,
+  });
+
+  res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-cache" });
+  res.end(JSON.stringify({
+    ok: true,
+    websocketClients: ws.clientCount(),
+    timestamp,
+  }));
+  return true;
+}
+
 async function handleScopedRoute(
   enabled: boolean,
   result: RouteResult,
@@ -231,6 +270,7 @@ function createHttpServer(
     setCorsHeaders(res);
     if (handlePreflight(req, res)) return;
     if (handleConfigEndpoint(req, res, ctx)) return;
+    if (handleReloadSignalEndpoint(req, res, ws)) return;
     if (await handleApiRoutes(req, res, ctx, watcher, ws, assets)) return;
     res.writeHead(404);
     res.end("Not found");

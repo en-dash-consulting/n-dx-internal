@@ -85,6 +85,10 @@ export interface TurnTokenUsage {
   output: number;
   cacheCreationInput?: number;
   cacheReadInput?: number;
+  /** LLM vendor used for this token event (e.g. "claude", "codex"). */
+  vendor?: string;
+  /** Model used for this token event. */
+  model?: string;
 }
 
 export interface CommandRecord {

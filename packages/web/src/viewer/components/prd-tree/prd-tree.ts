@@ -8,7 +8,7 @@
 
 import { h, Fragment, VNode } from "preact";
 import { useState, useMemo, useCallback, useEffect, useRef } from "preact/hooks";
-import type { PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority } from "./types.js";
+import type { PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority, TaskUsageSummary } from "./types.js";
 import { computeBranchStats, completionRatio, formatTimestamp, itemMatchesFilter } from "./compute.js";
 import { StatusFilter, defaultStatusFilter } from "./status-filter.js";
 import { InlineAddForm } from "./inline-add-form.js";
@@ -126,6 +126,12 @@ function TagList({ tags }: { tags: string[] }) {
   );
 }
 
+function formatTokenCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
+
 function TimestampSuffix({ item }: { item: PRDItemData }) {
   if (item.status === "completed" && item.completedAt) {
     const ts = formatTimestamp(item.completedAt);
@@ -145,6 +151,7 @@ function TimestampSuffix({ item }: { item: PRDItemData }) {
 
 interface NodeRowProps {
   item: PRDItemData;
+  taskUsage?: TaskUsageSummary;
   depth: number;
   isExpanded: boolean;
   hasChildren: boolean;
@@ -165,7 +172,7 @@ interface NodeRowProps {
   nodeRef?: (el: HTMLDivElement | null) => void;
 }
 
-function NodeRow({ item, depth, isExpanded, hasChildren, isSelected, onToggle, onSelect, isBulkSelected, onToggleBulkSelect, onInlineAdd, isInlineAddActive, isHighlighted, nodeRef }: NodeRowProps) {
+function NodeRow({ item, taskUsage, depth, isExpanded, hasChildren, isSelected, onToggle, onSelect, isBulkSelected, onToggleBulkSelect, onInlineAdd, isInlineAddActive, isHighlighted, nodeRef }: NodeRowProps) {
   const children = item.children ?? [];
   const stats = hasChildren ? computeBranchStats(children) : null;
   const ratio = stats ? completionRatio(stats) : 0;
@@ -297,6 +304,17 @@ function NodeRow({ item, depth, isExpanded, hasChildren, isSelected, onToggle, o
     item.tags && item.tags.length > 0
       ? h(TagList, { tags: item.tags })
       : null,
+    // Aggregated task token usage
+    item.level === "task" || item.level === "subtask"
+      ? h(
+          "span",
+          {
+            class: "prd-usage-chip",
+            title: `${taskUsage?.runCount ?? 0} associated run${(taskUsage?.runCount ?? 0) === 1 ? "" : "s"}`,
+          },
+          `${formatTokenCount(taskUsage?.totalTokens ?? 0)} tokens`,
+        )
+      : null,
     // Timestamp
     h(TimestampSuffix, { item }),
     // Inline add child button (appears on hover, only for addable levels)
@@ -318,6 +336,7 @@ function NodeRow({ item, depth, isExpanded, hasChildren, isSelected, onToggle, o
 
 interface TreeNodesProps {
   items: PRDItemData[];
+  taskUsageById?: Record<string, TaskUsageSummary>;
   depth: number;
   expanded: Set<string>;
   selectedItemId?: string | null;
@@ -340,7 +359,7 @@ interface TreeNodesProps {
   highlightedNodeRef?: (el: HTMLDivElement | null) => void;
 }
 
-function TreeNodes({ items, depth, expanded, selectedItemId, activeStatuses, onToggle, onSelectItem, bulkSelectedIds, onToggleBulkSelect, inlineAddParentId, onInlineAdd, onInlineAddSubmit, onInlineAddCancel, highlightedItemId, highlightedNodeRef }: TreeNodesProps) {
+function TreeNodes({ items, taskUsageById, depth, expanded, selectedItemId, activeStatuses, onToggle, onSelectItem, bulkSelectedIds, onToggleBulkSelect, inlineAddParentId, onInlineAdd, onInlineAddSubmit, onInlineAddCancel, highlightedItemId, highlightedNodeRef }: TreeNodesProps) {
   return h(
     Fragment,
     null,
@@ -358,6 +377,7 @@ function TreeNodes({ items, depth, expanded, selectedItemId, activeStatuses, onT
           { key: item.id, class: "prd-node" },
           h(NodeRow, {
             item,
+            taskUsage: taskUsageById?.[item.id],
             depth,
             isExpanded: isOpen,
             hasChildren,
@@ -387,6 +407,7 @@ function TreeNodes({ items, depth, expanded, selectedItemId, activeStatuses, onT
                 { class: "prd-children", role: "group" },
                 h(TreeNodes, {
                   items: children,
+                  taskUsageById,
                   depth: depth + 1,
                   expanded,
                   selectedItemId,
@@ -495,6 +516,8 @@ function Toolbar({ onExpandAll, onCollapseAll }: ToolbarProps) {
 export interface PRDTreeProps {
   /** PRD document data (items array + title). */
   document: PRDDocumentData;
+  /** Aggregated task token usage keyed by task ID. */
+  taskUsageById?: Record<string, TaskUsageSummary>;
   /** How many levels to expand by default (0 = all collapsed). */
   defaultExpandDepth?: number;
   /** Called when an item is clicked for detail view. */
@@ -513,7 +536,7 @@ export interface PRDTreeProps {
   deepLinkExpandIds?: Set<string> | null;
 }
 
-export function PRDTree({ document: doc, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onToggleBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds }: PRDTreeProps) {
+export function PRDTree({ document: doc, taskUsageById, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onToggleBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds }: PRDTreeProps) {
   // Collect all IDs for expand-all
   const allIds = useMemo(() => {
     const ids = new Set<string>();
@@ -633,6 +656,7 @@ export function PRDTree({ document: doc, defaultExpandDepth = 2, onSelectItem, s
       { class: "prd-tree", role: "tree", "aria-label": "PRD hierarchy" },
       h(TreeNodes, {
         items: doc.items,
+        taskUsageById,
         depth: 0,
         expanded,
         selectedItemId,

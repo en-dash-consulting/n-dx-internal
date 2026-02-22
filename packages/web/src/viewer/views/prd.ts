@@ -17,6 +17,7 @@ import { MergePreview } from "../components/prd-tree/merge-preview.js";
 import { PruneConfirmation } from "../components/prd-tree/prune-confirmation.js";
 import { BrandedHeader } from "../components/prd-tree/shared-imports.js";
 import type { PRDDocumentData, PRDItemData, AddItemInput } from "../components/prd-tree/index.js";
+import type { TaskUsageSummary } from "../components/prd-tree/types.js";
 import type { InlineAddInput } from "../components/prd-tree/inline-add-form.js";
 import { findItemById, getAncestorIds } from "../components/prd-tree/tree-utils.js";
 import type { DetailItem } from "../components/prd-tree/shared-imports.js";
@@ -39,6 +40,33 @@ export interface PRDViewProps {
 /** Active tab in the command bar. */
 type CommandTab = null | "add" | "merge" | "prune";
 
+interface HenchRunSummary {
+  taskId: string;
+  tokenUsage?: {
+    input?: number;
+    output?: number;
+    cacheCreationInput?: number;
+    cacheReadInput?: number;
+  };
+}
+
+function aggregateTaskUsage(runs: HenchRunSummary[]): Record<string, TaskUsageSummary> {
+  const byTask: Record<string, TaskUsageSummary> = {};
+  for (const run of runs) {
+    if (!run.taskId) continue;
+    const total = (run.tokenUsage?.input ?? 0)
+      + (run.tokenUsage?.output ?? 0)
+      + (run.tokenUsage?.cacheCreationInput ?? 0)
+      + (run.tokenUsage?.cacheReadInput ?? 0);
+    const current = byTask[run.taskId] ?? { totalTokens: 0, runCount: 0 };
+    byTask[run.taskId] = {
+      totalTokens: current.totalTokens + total,
+      runCount: current.runCount + 1,
+    };
+  }
+  return byTask;
+}
+
 export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId, navigateTo }: PRDViewProps) {
   const [data, setData] = useState<PRDDocumentData | null>(prdData ?? null);
   const [loading, setLoading] = useState(!prdData);
@@ -51,6 +79,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
 
   // Deep-link state
   const [deepLinkError, setDeepLinkError] = useState<string | null>(null);
+  const [taskUsageById, setTaskUsageById] = useState<Record<string, TaskUsageSummary>>({});
   /** Task ID currently highlighted by the deep-link animation. */
   const [highlightedTaskId, setHighlightedTaskId] = useState<string | null>(null);
   /** IDs to force-expand in the tree (ancestors of the deep-linked task). */
@@ -89,15 +118,33 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     }
   }, []);
 
+  const fetchTaskUsage = useCallback(async () => {
+    try {
+      const res = await fetch("/api/hench/runs");
+      if (!res.ok) return;
+      const json = await res.json() as { runs?: HenchRunSummary[] };
+      setTaskUsageById(aggregateTaskUsage(json.runs ?? []));
+    } catch {
+      // Keep existing values on transient fetch errors.
+    }
+  }, []);
+
   useEffect(() => {
     if (prdData) {
       setData(prdData);
       setLoading(false);
+      fetchTaskUsage();
       return;
     }
 
     fetchPRDData().then(() => setLoading(false));
-  }, [prdData, fetchPRDData]);
+    fetchTaskUsage();
+  }, [prdData, fetchPRDData, fetchTaskUsage]);
+
+  useEffect(() => {
+    const interval = setInterval(fetchTaskUsage, 10_000);
+    return () => clearInterval(interval);
+  }, [fetchTaskUsage]);
 
   // Handle item update via API
   const handleItemUpdate = useCallback(
@@ -114,11 +161,12 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
         }
         // Refresh PRD data
         await fetchPRDData();
+        await fetchTaskUsage();
       } catch (err) {
         console.error("Failed to update item:", err);
       }
     },
-    [fetchPRDData],
+    [fetchPRDData, fetchTaskUsage],
   );
 
   // Handle item selection — opens detail panel (single click)
@@ -232,8 +280,9 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
 
       // Refresh tree data
       await fetchPRDData();
+      await fetchTaskUsage();
     },
-    [fetchPRDData],
+    [fetchPRDData, fetchTaskUsage],
   );
 
   // Handle task execution trigger
@@ -271,15 +320,19 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     onDetailContent(
       h(TaskDetail, {
         item,
+        taskUsage: taskUsageById[item.id],
         allItems,
         onUpdate: handleItemUpdate,
         onNavigateToItem: handleNavigateToItem,
         onExecuteTask: handleExecuteTask,
-        onPrdChanged: fetchPRDData,
+        onPrdChanged: () => {
+          fetchPRDData();
+          fetchTaskUsage();
+        },
         onAddChild: handleAddChild,
       }),
     );
-  }, [data, selectedItemId, onDetailContent, handleItemUpdate, handleNavigateToItem, handleExecuteTask, fetchPRDData, handleAddChild]);
+  }, [data, selectedItemId, taskUsageById, onDetailContent, handleItemUpdate, handleNavigateToItem, handleExecuteTask, fetchPRDData, fetchTaskUsage, handleAddChild]);
 
   // Handle add item submission
   const handleAddItem = useCallback(
@@ -305,8 +358,9 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
       setActiveTab(null);
       setAddParentId(null);
       await fetchPRDData();
+      await fetchTaskUsage();
     },
-    [fetchPRDData],
+    [fetchPRDData, fetchTaskUsage],
   );
 
   // Handle inline add item submission (from tree node inline form)
@@ -331,8 +385,9 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
 
       // Refresh tree data
       await fetchPRDData();
+      await fetchTaskUsage();
     },
-    [fetchPRDData],
+    [fetchPRDData, fetchTaskUsage],
   );
 
   // Handle merge completion
@@ -342,7 +397,8 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     setToast("Items merged successfully");
     setTimeout(() => setToast(null), 3000);
     fetchPRDData();
-  }, [fetchPRDData]);
+    fetchTaskUsage();
+  }, [fetchPRDData, fetchTaskUsage]);
 
   // Handle prune completion
   const handlePruneComplete = useCallback(() => {
@@ -350,7 +406,8 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     setToast("Completed items pruned and archived");
     setTimeout(() => setToast(null), 3000);
     fetchPRDData();
-  }, [fetchPRDData]);
+    fetchTaskUsage();
+  }, [fetchPRDData, fetchTaskUsage]);
 
   // Open merge preview
   const handleOpenMerge = useCallback(() => {
@@ -444,6 +501,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     // PRD tree
     h(PRDTree, {
       document: data,
+      taskUsageById,
       defaultExpandDepth: 2,
       onSelectItem: handleSelectItem,
       selectedItemId,

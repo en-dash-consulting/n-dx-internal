@@ -9,6 +9,7 @@
  *   serve [dir]        - Start local viewer server
  *   validate [dir]     - Validate .sourcevision/ output files
  *   export-pdf [dir]   - Export analysis as a PDF report
+ *   pr-markdown [dir]  - Regenerate PR markdown in .sourcevision/
  *   mcp [dir]          - Start MCP server for AI tool integration
  */
 
@@ -20,6 +21,7 @@ import { cmdReset } from "./commands/reset.js";
 import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdValidate } from "./commands/validate.js";
 import { cmdExportPdf } from "./commands/export-pdf.js";
+import { cmdPrMarkdown } from "./commands/pr-markdown.js";
 import { CLIError, handleCLIError, requireSvDir } from "./errors.js";
 import { setQuiet } from "./output.js";
 import { formatTypoSuggestion } from "@n-dx/llm-client";
@@ -67,7 +69,7 @@ async function cmdMcp(dir: string): Promise<void> {
 }
 
 // Commands that require .sourcevision/ to exist
-const NEEDS_SV_DIR = new Set(["serve", "validate", "reset", "mcp"]);
+const NEEDS_SV_DIR = new Set(["serve", "validate", "reset", "pr-markdown", "mcp"]);
 
 try {
   // Show help: per-command help when --help/-h is given with a command,
@@ -102,6 +104,9 @@ try {
     case "export-pdf":
       await cmdExportPdf(targetArg || ".", { output: outputPath });
       break;
+    case "pr-markdown":
+      cmdPrMarkdown(targetArg || ".");
+      break;
     case "mcp":
       await cmdMcp(targetArg || ".");
       break;
@@ -111,7 +116,7 @@ try {
       usage();
       break;
     default: {
-      const SV_COMMANDS = ["init", "analyze", "serve", "validate", "reset", "export-pdf", "mcp"];
+      const SV_COMMANDS = ["init", "analyze", "serve", "validate", "reset", "export-pdf", "pr-markdown", "mcp"];
       const typoHint = formatTypoSuggestion(command, SV_COMMANDS, "sourcevision ");
       throw new CLIError(
         `Unknown command: ${command}`,

@@ -81,6 +81,12 @@ export interface PRDDocumentData {
   items: PRDItemData[];
 }
 
+/** Aggregated token usage for a single task across associated runs. */
+export interface TaskUsageSummary {
+  totalTokens: number;
+  runCount: number;
+}
+
 /** Computed stats for a branch of the tree. */
 export interface BranchStats {
   total: number;

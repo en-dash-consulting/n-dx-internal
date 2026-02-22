@@ -489,6 +489,11 @@
         {
           "file": "packages/web/src/server/routes-sourcevision.ts",
           "method": "GET",
+          "path": "/api/sv/pr-markdown"
+        },
+        {
+          "file": "packages/web/src/server/routes-sourcevision.ts",
+          "method": "GET",
           "path": "/api/sv/summary"
         },
         {
@@ -591,7 +596,7 @@
     "totalComponents": 5,
     "totalRouteModules": 0,
     "totalUsageEdges": 0,
-    "totalServerRoutes": 90,
+    "totalServerRoutes": 91,
     "routeConventions": {},
     "mostUsedComponents": [],
     "layoutDepth": 0

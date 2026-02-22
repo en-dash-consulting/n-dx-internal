@@ -23,6 +23,7 @@ import {
   emptyAnalyzeTokenUsage,
   formatDiff,
   DEFAULT_MODEL,
+  DEFAULT_CODEX_MODEL,
   setLLMConfig,
   setClaudeConfig,
   getAuthMode,
@@ -34,6 +35,41 @@ import type { BatchAcceptanceRecord } from "./chunked-review.js";
 import { loadClaudeConfig, loadLLMConfig } from "../../store/project-config.js";
 
 const PENDING_FILE = "pending-proposals.json";
+const UNKNOWN_PROVIDER_METADATA = "unknown";
+
+function normalizeProviderMetadata(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function resolveAnalyzeTokenEventMetadata(
+  llmConfig: Awaited<ReturnType<typeof loadLLMConfig>>,
+  requestedModel?: string,
+): { vendor: string; model: string } {
+  const vendor = normalizeProviderMetadata(getLLMVendor()) ?? UNKNOWN_PROVIDER_METADATA;
+  const explicitModel = normalizeProviderMetadata(requestedModel);
+  if (explicitModel) {
+    return { vendor, model: explicitModel };
+  }
+
+  if (vendor === "codex") {
+    return {
+      vendor,
+      model: normalizeProviderMetadata(llmConfig.codex?.model) ?? DEFAULT_CODEX_MODEL,
+    };
+  }
+  if (vendor === "claude") {
+    return {
+      vendor,
+      model: normalizeProviderMetadata(llmConfig.claude?.model) ?? DEFAULT_MODEL,
+    };
+  }
+
+  return {
+    vendor,
+    model: UNKNOWN_PROVIDER_METADATA,
+  };
+}
 
 /** Format token usage for display. Returns empty string when no tokens were used. */
 export function formatTokenUsage(usage: AnalyzeTokenUsage): string {
@@ -375,10 +411,15 @@ export async function cmdAnalyze(
     const store = await resolveStore(rexDir);
 
     if (tokenUsage.calls > 0) {
+      const metadata = resolveAnalyzeTokenEventMetadata(llmConfig, model);
       await store.appendLog({
         timestamp: new Date().toISOString(),
         event: "analyze_token_usage",
-        detail: JSON.stringify(tokenUsage),
+        detail: JSON.stringify({
+          ...tokenUsage,
+          vendor: metadata.vendor,
+          model: metadata.model,
+        }),
       });
     }
 

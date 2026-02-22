@@ -134,6 +134,27 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
     ],
     related: ["analyze"],
   },
+  "pr-markdown": {
+    tool: "sourcevision",
+    command: "pr-markdown",
+    summary: "regenerate pull-request markdown on demand",
+    usage: "sourcevision pr-markdown [dir]",
+    description:
+      "Generates PR-ready markdown from git diff metadata and writes it to\n" +
+      ".sourcevision/pr-markdown.md in the target directory.",
+    sections: [
+      {
+        title: "Output",
+        content: ".sourcevision/pr-markdown.md",
+      },
+    ],
+    examples: [
+      { command: "sourcevision pr-markdown", description: "Regenerate markdown in current directory" },
+      { command: "sourcevision pr-markdown ./project", description: "Regenerate markdown for a specific project" },
+      { command: "sv pr-markdown .", description: "Using the 'sv' alias" },
+    ],
+    related: ["serve"],
+  },
   mcp: {
     tool: "sourcevision",
     command: "mcp",
@@ -160,6 +181,7 @@ const RELATED_COMMANDS: Record<string, string[]> = {
   validate: ["analyze"],
   reset: ["init"],
   "export-pdf": ["analyze"],
+  "pr-markdown": ["serve"],
   mcp: [],
 };
 

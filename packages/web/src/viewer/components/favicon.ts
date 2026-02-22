@@ -43,6 +43,7 @@ const VIEW_TO_PRODUCT: Partial<Record<ViewId, Product>> = {
   architecture: "sourcevision",
   problems: "sourcevision",
   suggestions: "sourcevision",
+  "pr-markdown": "sourcevision",
   "rex-dashboard": "rex",
   prd: "rex",
   "rex-analysis": "rex",

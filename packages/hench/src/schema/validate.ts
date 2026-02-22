@@ -73,6 +73,8 @@ const TurnTokenUsageSchema = z.object({
   output: z.number(),
   cacheCreationInput: z.number().optional(),
   cacheReadInput: z.number().optional(),
+  vendor: z.string().optional(),
+  model: z.string().optional(),
 });
 
 const CommandRecordSchema = z.object({

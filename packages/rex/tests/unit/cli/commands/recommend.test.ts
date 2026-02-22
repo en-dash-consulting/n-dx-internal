@@ -62,6 +62,7 @@ async function writeFindings(
 describe("cmdRecommend --accept indexed selection", () => {
   let tmpDir: string;
   let cmdRecommend: typeof import("../../../../src/cli/commands/recommend.js")["cmdRecommend"];
+  let parseSelectionIndices: typeof import("../../../../src/cli/commands/recommend.js")["parseSelectionIndices"];
 
   beforeEach(async () => {
     vi.resetModules();
@@ -77,7 +78,7 @@ describe("cmdRecommend --accept indexed selection", () => {
       setQuiet: () => {},
       isQuiet: () => false,
     }));
-    ({ cmdRecommend } = await import("../../../../src/cli/commands/recommend.js"));
+    ({ cmdRecommend, parseSelectionIndices } = await import("../../../../src/cli/commands/recommend.js"));
 
     tmpDir = await mkdtemp(join(tmpdir(), "rex-recommend-test-"));
     await writeFixtureProject(tmpDir);
@@ -85,7 +86,9 @@ describe("cmdRecommend --accept indexed selection", () => {
 
   afterEach(async () => {
     vi.doUnmock("@n-dx/claude-client");
-    await rm(tmpDir, { recursive: true, force: true });
+    if (tmpDir) {
+      await rm(tmpDir, { recursive: true, force: true });
+    }
   });
 
   it("accepts only specified recommendation indices", async () => {
@@ -125,9 +128,58 @@ describe("cmdRecommend --accept indexed selection", () => {
   });
 
   it("keeps all-accept behavior when no equals selector is provided", async () => {
-    await cmdRecommend(tmpDir, { accept: "1,3" });
+    await cmdRecommend(tmpDir, { accept: "true" });
 
     const items = await readPrdItems(tmpDir);
     expect(items).toHaveLength(3);
+  });
+
+  it("rejects selector values without '=' prefix", async () => {
+    await expect(cmdRecommend(tmpDir, { accept: "1,3" })).rejects.toThrowError(
+      /Invalid --accept selector format/i,
+    );
+  });
+
+  it("rejects out-of-range selector values", async () => {
+    await expect(cmdRecommend(tmpDir, { accept: "=9" })).rejects.toThrowError(
+      /between 1 and 3/i,
+    );
+  });
+
+  it("de-duplicates repeated selector indices before applying", async () => {
+    await cmdRecommend(tmpDir, { accept: "=2,2,2" });
+
+    const items = await readPrdItems(tmpDir);
+    expect(items).toHaveLength(1);
+    expect(items[0].title).toContain("Address perf issues");
+  });
+
+  describe("parseSelectionIndices", () => {
+    it("parses valid equals-prefixed selectors", () => {
+      expect(parseSelectionIndices("=1,4,5", 5)).toEqual([0, 3, 4]);
+      expect(parseSelectionIndices("=5,1,5", 5)).toEqual([0, 4]);
+    });
+
+    it("throws for invalid syntax", () => {
+      expect(() => parseSelectionIndices("=one,two", 5)).toThrowError(
+        /Invalid --accept selector token/i,
+      );
+      expect(() => parseSelectionIndices("=1,,x", 5)).toThrowError(
+        /Invalid --accept selector token/i,
+      );
+    });
+
+    it("throws for out-of-range values", () => {
+      expect(() => parseSelectionIndices("=0,1,6", 5)).toThrowError(
+        /between 1 and 5/i,
+      );
+      expect(() => parseSelectionIndices("=99", 5)).toThrowError(
+        /between 1 and 5/i,
+      );
+    });
+
+    it("handles mixed whitespace", () => {
+      expect(parseSelectionIndices("= 1,\t2  3,\n4 ", 5)).toEqual([0, 1, 2, 3]);
+    });
   });
 });

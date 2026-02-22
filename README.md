@@ -166,6 +166,28 @@ ndx work --iterations=N    run N tasks sequentially (stops on failure)
 ndx status [dir]           rex status (pass --format=json)
 ```
 
+## `ndx refresh`
+
+Use `ndx refresh` to update dashboard data and UI artifacts with explicit per-step status output.
+
+```sh
+# Full refresh (SourceVision analyze + dashboard artifact metadata + web build)
+ndx refresh .
+
+# Scope controls
+ndx refresh --data-only .      # Skip UI build
+ndx refresh --ui-only .        # Skip SourceVision data refresh
+ndx refresh --pr-markdown .    # Regenerate PR markdown only
+ndx refresh --no-build .       # Skip web build step
+```
+
+Behavior notes:
+- Each planned step prints transitions with the step name: `started`, `succeeded`, `failed`, or `skipped`.
+- A final refresh step summary is always printed.
+- If a running `ndx start` server supports reload signaling, refreshed assets are applied via live reload.
+- If live reload signaling is unavailable for a running server (unsupported endpoint or request failure), refresh prints:
+  - `Restart required: ndx start stop "<dir>" && ndx start "<dir>"`
+
 ## Rex/Hench Vendor Behavior
 
 Use this matrix when choosing `llm.vendor` for `rex analyze` and `hench run`.

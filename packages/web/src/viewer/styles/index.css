@@ -30,4 +30,5 @@
 @import "./notion-config.css";
 @import "./integration-config.css";
 @import "./feature-toggles.css";
+@import "./pr-markdown.css";
 @import "./responsive.css";

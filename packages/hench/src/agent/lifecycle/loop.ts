@@ -204,6 +204,8 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
         turn: turn + 1,
         input: parsed.input,
         output: parsed.output,
+        vendor,
+        model,
       };
       if (parsed.cacheCreationInput) turnUsage.cacheCreationInput = parsed.cacheCreationInput;
       if (parsed.cacheReadInput) turnUsage.cacheReadInput = parsed.cacheReadInput;

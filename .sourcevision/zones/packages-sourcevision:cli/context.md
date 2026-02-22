@@ -8,19 +8,19 @@ Zone: Cli (`packages-sourcevision:cli`)
 Files: 12, Cohesion: 0.74, Coupling: 0.26
 Description: 12 files, primarily TypeScript
 Entry points: packages/sourcevision/src/cli/commands/constants.ts, packages/sourcevision/src/cli/commands/init.ts, packages/sourcevision/src/cli/errors.ts, packages/sourcevision/src/cli/output.ts
-Lines: 911
+Lines: 915
 
 </zone>
 
 <files>
 
-packages/sourcevision/src/cli/commands/constants.ts (TypeScript, 33 lines, source)
+packages/sourcevision/src/cli/commands/constants.ts (TypeScript, 32 lines, source)
 packages/sourcevision/src/cli/commands/export-pdf.ts (TypeScript, 128 lines, source)
 packages/sourcevision/src/cli/commands/init.ts (TypeScript, 46 lines, source)
 packages/sourcevision/src/cli/commands/reset.ts (TypeScript, 43 lines, source)
 packages/sourcevision/src/cli/commands/validate.ts (TypeScript, 70 lines, source)
 packages/sourcevision/src/cli/errors.ts (TypeScript, 111 lines, source)
-packages/sourcevision/src/cli/index.ts (TypeScript, 124 lines, source)
+packages/sourcevision/src/cli/index.ts (TypeScript, 129 lines, source)
 packages/sourcevision/src/cli/output.ts (TypeScript, 9 lines, source)
 packages/sourcevision/src/cli/serve.ts (TypeScript, 21 lines, source)
 packages/sourcevision/tests/unit/cli/errors.test.ts (TypeScript, 116 lines, test)
@@ -60,12 +60,12 @@ Outgoing (this zone → other zones):
   → packages-sourcevision:tests: packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/export/pdf-report.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/export/pdf-report.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/schema/index.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/schema/index.ts; packages/sourcevision/src/cli/commands/init.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/cli/commands/init.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/cli/commands/validate.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/validate.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/validate.ts → packages/sourcevision/src/schema/index.ts; packages/sourcevision/src/cli/commands/validate.ts → packages/sourcevision/src/schema/index.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/commands/analyze.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/commands/analyze.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/mcp.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/mcp.ts
 
 Incoming (other zones → this zone):
-  ← packages-sourcevision:tests: packages/sourcevision/src/analyzers/manifest.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/analyzers/manifest.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/analyzers/workspace.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/analyzers/workspace.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/init.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/init.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/errors.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/errors.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/output.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/output.ts; packages/sourcevision/src/cli/mcp.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/cli/mcp.ts → packages/sourcevision/src/cli/commands/constants.ts
+  ← packages-sourcevision:tests: packages/sourcevision/src/analyzers/manifest.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/analyzers/workspace.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/init.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/init.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/errors.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/errors.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/output.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/output.ts; packages/sourcevision/src/cli/mcp.ts → packages/sourcevision/src/cli/commands/constants.ts
 
 </imports>
 
 <insights>
 
-- [call graph] 73 internal calls, 3 outgoing, 37 incoming (cohesion: 0.96, coupling: 0.04)
+- [call graph] 73 internal calls, 4 outgoing, 39 incoming (cohesion: 0.95, coupling: 0.05)
 
 </insights>

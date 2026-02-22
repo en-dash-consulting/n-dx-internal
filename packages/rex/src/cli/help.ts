@@ -323,10 +323,15 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
       "code quality issues, architectural anti-patterns, and missing tests.\n" +
       "Requires .sourcevision/ to exist (run 'sourcevision analyze' first).",
     options: [
+      { flag: "--accept[=all|=1,4,5]", description: "Accept all or selected recommendation indices into PRD" },
+      { flag: "--show-all", description: "Include acknowledged findings in recommendation output" },
+      { flag: "--acknowledge=<all|1,2>", description: "Acknowledge all or selected findings by index" },
       { flag: "--format=json", description: "Machine-readable output" },
     ],
     examples: [
       { command: "rex recommend", description: "Show recommendations interactively" },
+      { command: "rex recommend --accept='=1,4,5' .", description: "Accept only recommendation items 1, 4, and 5" },
+      { command: "rex recommend --accept .", description: "Accept all recommendations into PRD" },
       { command: "rex recommend --format=json .", description: "JSON output for automation" },
     ],
     related: ["analyze"],

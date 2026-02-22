@@ -52,6 +52,7 @@ const VIEW_META: Record<ViewId, ViewMeta> = {
   architecture:          { product: "sourcevision", label: "Architecture",    productLabel: "SourceVision" },
   problems:              { product: "sourcevision", label: "Problems",        productLabel: "SourceVision" },
   suggestions:           { product: "sourcevision", label: "Suggestions",     productLabel: "SourceVision" },
+  "pr-markdown":         { product: "sourcevision", label: "PR Markdown",     productLabel: "SourceVision" },
   "rex-dashboard":       { product: "rex",          label: "Dashboard",       productLabel: "Rex" },
   prd:                   { product: "rex",          label: "Tasks",           productLabel: "Rex" },
   "rex-analysis":        { product: "rex",          label: "Analysis",        productLabel: "Rex" },

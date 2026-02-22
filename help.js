@@ -98,6 +98,13 @@ const COMMAND_REGISTRY = [
     related: ["init", "work", "status"],
   },
   {
+    name: "refresh",
+    category: "Orchestration",
+    summary: "Refresh SourceVision data and dashboard UI artifacts",
+    keywords: ["refresh", "dashboard", "sourcevision", "analyze", "build", "pr-markdown"],
+    related: ["plan", "start", "web"],
+  },
+  {
     name: "work",
     category: "Orchestration",
     summary: "Execute the next task autonomously with hench agent",
@@ -581,6 +588,25 @@ const ORCHESTRATOR_HELP_DEFS = {
     ],
     related: ["init", "work", "status"],
   },
+  refresh: {
+    summary: "refresh dashboard data and UI artifacts",
+    description: "Runs SourceVision analysis and rebuilds dashboard UI artifacts.\nOptionally regenerates PR markdown.",
+    usage: "ndx refresh [options] [dir]",
+    options: [
+      { flag: "--ui-only", description: "Rebuild UI artifacts only (skip data analysis)" },
+      { flag: "--data-only", description: "Refresh SourceVision data only (skip UI build)" },
+      { flag: "--pr-markdown", description: "Regenerate .sourcevision/pr-markdown.md only (skip analyze/build)" },
+      { flag: "--no-build", description: "Skip UI build step after data refresh" },
+      { flag: "--quiet, -q", description: "Suppress informational output from delegated tools" },
+    ],
+    examples: [
+      { command: "ndx refresh", description: "Run full refresh (data + UI build)" },
+      { command: "ndx refresh --data-only .", description: "Refresh SourceVision data only" },
+      { command: "ndx refresh --ui-only .", description: "Rebuild UI only" },
+      { command: "ndx refresh --pr-markdown .", description: "Run only PR markdown regeneration path" },
+    ],
+    related: ["plan", "start", "web"],
+  },
   work: {
     summary: "execute the next task autonomously",
     description: "Picks the next actionable task from the PRD and runs an autonomous\nagent (hench) to implement it. Delegates to 'hench run'.\nRequires explicit vendor config: 'n-dx config llm.vendor claude'.",
@@ -818,6 +844,7 @@ export function formatMainHelp() {
     ["init [dir]", "Initialize all tools (sourcevision + rex + hench)"],
     ["plan [dir]", "Analyze codebase and show PRD proposals (--guided for new projects)"],
     ["plan --accept [dir]", "Analyze and accept proposals into PRD"],
+    ["refresh [dir]", "Refresh dashboard artifacts (--ui-only, --data-only, --pr-markdown, --no-build)"],
     ["work [dir]", "Run next task (--task=ID, --epic=ID, --epic-by-epic, --auto)"],
     ["status [dir]", "Show PRD status (--format=json, --since, --until)"],
     ["usage [dir]", "Token usage analytics (--format=json, --group=day|week|month)"],

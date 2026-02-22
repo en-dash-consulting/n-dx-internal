@@ -619,6 +619,16 @@
   border-radius: 2px;
 }
 
+.prd-usage-chip {
+  font-size: 10px;
+  color: var(--brand-teal);
+  background: color-mix(in srgb, var(--brand-teal) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-teal) 35%, transparent);
+  border-radius: 999px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
 /* Timestamp */
 .prd-timestamp {
   font-size: 11px;
@@ -685,6 +695,25 @@
   letter-spacing: 0.5px;
   color: var(--text-dim);
   margin-bottom: 6px;
+}
+
+.task-usage-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-usage-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-teal);
+}
+
+.task-usage-hint {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-dim);
 }
 
 /* Status selector buttons */

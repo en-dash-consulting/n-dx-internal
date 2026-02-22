@@ -383,6 +383,68 @@ const LLM_VALIDATORS = {
   "codex.model": validateModel,
 };
 
+/**
+ * Build provider-specific auth preflight command.
+ * Returns binary + args for the selected vendor.
+ */
+function getVendorAuthPreflightCommand(vendor, llmConfig, legacyClaudeConfig) {
+  if (vendor === "codex") {
+    const binary = llmConfig?.codex?.cli_path || "codex";
+    return {
+      binary,
+      args: [
+        "exec",
+        "--skip-git-repo-check",
+        "Reply with exactly: ok",
+      ],
+    };
+  }
+
+  const binary = llmConfig?.claude?.cli_path || legacyClaudeConfig?.cli_path || "claude";
+  return {
+    binary,
+    args: [
+      "-p",
+      "Reply with exactly: ok",
+      "--output-format",
+      "json",
+    ],
+  };
+}
+
+/**
+ * Run provider auth preflight for the selected vendor.
+ * Returns an object instead of throwing so callers can branch deterministically.
+ */
+function runVendorAuthPreflight(vendor, llmConfig, legacyClaudeConfig) {
+  const { binary, args } = getVendorAuthPreflightCommand(vendor, llmConfig, legacyClaudeConfig);
+  try {
+    execFileSync(binary, args, {
+      encoding: "utf-8",
+      timeout: 15000,
+      stdio: "pipe",
+    });
+    return { ok: true, binary, args };
+  } catch (err) {
+    const stderr = typeof err?.stderr === "string"
+      ? err.stderr
+      : Buffer.isBuffer(err?.stderr) ? err.stderr.toString("utf-8") : "";
+    const stdout = typeof err?.stdout === "string"
+      ? err.stdout
+      : Buffer.isBuffer(err?.stdout) ? err.stdout.toString("utf-8") : "";
+    const detail = (stderr || stdout || err?.message || "unknown error").trim();
+    return { ok: false, binary, args, detail };
+  }
+}
+
+/**
+ * Return the exact login command for the selected provider.
+ */
+function getVendorLoginCommand(vendor, llmConfig, legacyClaudeConfig) {
+  const { binary } = getVendorAuthPreflightCommand(vendor, llmConfig, legacyClaudeConfig);
+  return `${binary} login`;
+}
+
 // ── Display ──────────────────────────────────────────────────────────────────
 
 function formatValue(value) {
@@ -753,6 +815,37 @@ Examples:
         } catch (err) {
           console.error(`Invalid value for "${keyArg}": ${err.message}`);
           console.error("  Use --force to set this value anyway.");
+          process.exit(1);
+        }
+      }
+
+      // Provider auth preflight: when selecting llm.vendor, run the matching
+      // vendor CLI auth check and branch deterministically on pass/fail.
+      if (pkg === "llm" && settingPath === "vendor") {
+        const currentLLM = configs.llm && typeof configs.llm === "object" ? configs.llm : {};
+        const llmForPreflight = {
+          ...currentLLM,
+          vendor: coerced,
+        };
+        const preflight = runVendorAuthPreflight(
+          coerced,
+          llmForPreflight,
+          configs.claude && typeof configs.claude === "object" ? configs.claude : undefined,
+        );
+
+        if (!preflight.ok) {
+          const loginCommand = getVendorLoginCommand(
+            coerced,
+            llmForPreflight,
+            configs.claude && typeof configs.claude === "object" ? configs.claude : undefined,
+          );
+          console.error(
+            `Provider auth preflight failed for "${coerced}" via: ${preflight.binary} ${preflight.args.join(" ")}`,
+          );
+          if (preflight.detail) {
+            console.error(`Details: ${preflight.detail}`);
+          }
+          console.error(`Next step: run '${loginCommand}', then retry 'n-dx config llm.vendor ${coerced}'.`);
           process.exit(1);
         }
       }

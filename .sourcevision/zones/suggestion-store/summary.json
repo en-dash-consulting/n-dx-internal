@@ -1,0 +1,14 @@
+{
+  "id": "suggestion-store",
+  "name": "Suggestion Store Slice",
+  "description": "Small, isolated state store that manages user or agent suggestions with matching tests.",
+  "files": [
+    "packages/hench/src/store/suggestions.ts",
+    "packages/hench/tests/unit/store/suggestions.test.ts"
+  ],
+  "entryPoints": [],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 2,
+  "lineCount": 217
+}
