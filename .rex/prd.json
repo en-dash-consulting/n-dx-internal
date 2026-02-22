@@ -11254,6 +11254,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-22T19:54:30.452Z",
+      "completedAt": "2026-02-22T19:54:30.452Z",
       "children": [
         {
           "id": "3178b0f6-1253-4593-a666-f086262c5395",
@@ -11330,9 +11332,382 @@
             }
           ]
         }
+      ]
+    },
+    {
+      "id": "23753b79-7ad7-4508-8dfe-9649766842df",
+      "title": "Remove the nested token usage tab from rex and elevate it to the root of the ui dashboard on the same level as the 'settings'",
+      "status": "deleted",
+      "level": "epic"
+    },
+    {
+      "id": "15572c21-1d8f-4aa1-b105-82b516e71ad0",
+      "title": "Duplicate-aware Proposal Override for rex add",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-22T21:18:12.472Z",
+      "completedAt": "2026-02-22T21:18:12.472Z",
+      "children": [
+        {
+          "id": "3fdee105-64b4-4241-b842-67471a34fcc5",
+          "title": "Duplicate Detection and Reason Classification",
+          "status": "completed",
+          "level": "feature",
+          "description": "Identify when generated add proposals overlap with existing or completed PRD items and produce clear, user-facing duplicate reasons before any write occurs.",
+          "source": "smart-add",
+          "startedAt": "2026-02-22T20:56:35.331Z",
+          "completedAt": "2026-02-22T20:56:35.331Z",
+          "children": [
+            {
+              "id": "6f446893-08d2-4123-85d4-521c41f8f58e",
+              "title": "Implement proposal-to-PRD duplicate matching across open and completed items",
+              "status": "completed",
+              "level": "task",
+              "description": "Prevent accidental duplicate creation by comparing generated proposal nodes against current PRD hierarchy, including completed epics/features/tasks that should still be considered duplicates.",
+              "acceptanceCriteria": [
+                "Given a proposal with title/content matching an existing open item, the matcher returns a duplicate result with referenced item id",
+                "Given a proposal matching a completed item, the matcher still returns a duplicate result with completed status context",
+                "Given a proposal with no meaningful overlap, the matcher returns a non-duplicate result and does not block normal flow"
+              ],
+              "priority": "critical",
+              "tags": [
+                "rex",
+                "add",
+                "deduplication"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T20:25:51.410Z",
+              "completedAt": "2026-02-22T20:30:43.861Z"
+            },
+            {
+              "id": "df56bcff-a415-4d1d-b533-2ce682e8da29",
+              "title": "Attach structured duplicate reasons to generated proposals",
+              "status": "completed",
+              "level": "task",
+              "description": "Make override decisions understandable by attaching machine-readable and human-readable reason metadata that explains what matched and why the item is considered duplicate.",
+              "acceptanceCriteria": [
+                "Each duplicate proposal includes reason type, matched item reference, and concise explanation text",
+                "Reason payload distinguishes match context such as exact title match, semantic match, or completed-item match",
+                "Non-duplicate proposals do not include duplicate reason metadata"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "proposal-engine",
+                "ux"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T20:52:51.555Z",
+              "completedAt": "2026-02-22T20:56:35.238Z"
+            }
+          ]
+        },
+        {
+          "id": "e28b4532-a04a-4a0f-bbdc-2636edf9fb1e",
+          "title": "Interactive Duplicate Override Decision Flow",
+          "status": "completed",
+          "level": "feature",
+          "description": "Require explicit user confirmation when duplicates are detected, with clear choices to cancel, merge with existing work, or force-create anyway.",
+          "source": "smart-add",
+          "startedAt": "2026-02-22T21:11:08.060Z",
+          "completedAt": "2026-02-22T21:11:08.060Z",
+          "children": [
+            {
+              "id": "3c1dcb21-2b66-4c02-b126-e38be939175b",
+              "title": "Render duplicate confirmation prompt with Cancel, Merge, and Proceed anyway options",
+              "status": "deferred",
+              "level": "task",
+              "description": "Ensure users make an intentional choice whenever duplicates are found by presenting an interactive prompt that includes duplicate reason context before writing changes.",
+              "acceptanceCriteria": [
+                "When duplicates are detected during rex add, CLI displays an interactive prompt before any mutation",
+                "Prompt shows duplicate reason and matched item reference for each flagged proposal",
+                "Prompt offers exactly three actions: Cancel, Merge with existing, Proceed anyway (force-create)"
+              ],
+              "priority": "critical",
+              "tags": [
+                "rex",
+                "cli",
+                "interaction"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T20:36:48.280Z"
+            },
+            {
+              "id": "26f6e5a1-a73c-4f6f-8444-0803d4bb3ea5",
+              "title": "Implement merge-path application for user-selected duplicate proposals",
+              "status": "completed",
+              "level": "task",
+              "description": "Allow users to keep PRD quality high by merging duplicate proposals into existing nodes instead of creating parallel items.",
+              "acceptanceCriteria": [
+                "Selecting Merge updates the matched existing node rather than creating a new duplicate node",
+                "Merged result preserves existing node identity and records which proposal was merged",
+                "Cancelled proposals are not written when user chooses Merge for only a subset"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "merge",
+                "prd"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T21:04:05.086Z",
+              "completedAt": "2026-02-22T21:11:07.973Z"
+            },
+            {
+              "id": "42ceb6c6-a3c5-44a7-b2c2-a0489dd14b60",
+              "title": "Implement force-create path that bypasses duplicate block after explicit confirmation",
+              "status": "completed",
+              "level": "task",
+              "description": "Support intentional duplication for edge cases by allowing users to proceed anyway, while making the action explicit and auditable.",
+              "acceptanceCriteria": [
+                "Selecting Proceed anyway creates new items even when duplicate reasons are present",
+                "Force-create requires explicit selection from the duplicate prompt and is never the default path",
+                "Choosing Cancel exits without writing any new or merged items"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "override",
+                "cli"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T20:59:56.699Z",
+              "completedAt": "2026-02-22T21:04:04.952Z"
+            }
+          ]
+        },
+        {
+          "id": "0926d1fd-8215-4a09-abca-6b5e619df0a5",
+          "title": "Force-create Auditability and Visibility",
+          "status": "completed",
+          "level": "feature",
+          "description": "Persist and expose override markers so intentionally duplicated items can be traced later in CLI output and downstream tools.",
+          "source": "smart-add",
+          "startedAt": "2026-02-22T20:59:56.613Z",
+          "completedAt": "2026-02-22T20:59:56.613Z",
+          "children": [
+            {
+              "id": "c84f5f7a-2604-4056-b11c-efbea5e09bf3",
+              "title": "Persist override marker metadata on force-created PRD items",
+              "status": "completed",
+              "level": "task",
+              "description": "Create an auditable record that a duplicate guard was overridden, including enough metadata to trace when and why the override happened.",
+              "acceptanceCriteria": [
+                "Force-created items store an override marker field in persisted PRD data",
+                "Override marker captures duplicate reason reference and creation timestamp",
+                "Items created through normal or merge paths do not receive override markers"
+              ],
+              "priority": "critical",
+              "tags": [
+                "rex",
+                "schema",
+                "audit"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T20:30:44.000Z",
+              "completedAt": "2026-02-22T20:36:48.165Z"
+            },
+            {
+              "id": "aeff67a5-6a85-4827-ae5d-199cc3fbca5b",
+              "title": "Expose override markers in CLI/status and machine-readable outputs",
+              "status": "completed",
+              "level": "task",
+              "description": "Ensure override decisions are visible to operators and automation so duplicate exceptions can be reviewed and governed.",
+              "acceptanceCriteria": [
+                "Rex status/output surfaces an indicator for items created via force-create override",
+                "JSON outputs include override marker fields without breaking existing schema consumers",
+                "Output clearly differentiates override-created items from merged or normal additions"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "status",
+                "reporting"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T20:56:35.421Z",
+              "completedAt": "2026-02-22T20:59:56.525Z"
+            }
+          ]
+        },
+        {
+          "id": "4355a9e7-45a4-497e-b269-b1515349c25e",
+          "title": "Documentation and Test Coverage for Duplicate Overrides",
+          "status": "completed",
+          "level": "feature",
+          "description": "Document the new behavior and lock it in with regression tests across detection, prompt decisions, and persistence.",
+          "source": "smart-add",
+          "startedAt": "2026-02-22T21:18:12.426Z",
+          "completedAt": "2026-02-22T21:18:12.426Z",
+          "children": [
+            {
+              "id": "a9e0174e-4487-41df-83e1-0166b21f6fe9",
+              "title": "Update CLI help and docs for duplicate detection and override choices",
+              "status": "completed",
+              "level": "task",
+              "description": "Reduce operator confusion by documenting when duplicate prompts appear, what each option does, and how audit markers are represented.",
+              "acceptanceCriteria": [
+                "CLI help for rex add documents duplicate-aware prompt behavior and all three actions",
+                "User-facing docs include examples for Cancel, Merge, and Proceed anyway flows",
+                "Docs describe persisted override marker semantics and where they appear"
+              ],
+              "priority": "medium",
+              "tags": [
+                "docs",
+                "cli",
+                "rex"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T21:15:07.951Z",
+              "completedAt": "2026-02-22T21:18:12.356Z"
+            },
+            {
+              "id": "34c16f83-382d-4f5d-8aeb-046f2d127919",
+              "title": "Add unit and integration tests for duplicate detection, prompt outcomes, and override persistence",
+              "status": "completed",
+              "level": "task",
+              "description": "Protect against regressions by testing detection accuracy and each user decision path end-to-end through persisted PRD state.",
+              "acceptanceCriteria": [
+                "Unit tests cover duplicate matcher behavior for existing and completed-item matches",
+                "Integration tests verify Cancel writes nothing, Merge updates existing, and Proceed anyway creates marked items",
+                "Tests assert override marker presence only on force-created items and absence on merged/normal items"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "rex",
+                "regression"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T21:11:08.148Z",
+              "completedAt": "2026-02-22T21:15:07.822Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "f89b6b48-a2dd-447f-b623-be662112779d",
+      "title": "Dashboard Route Ownership Decoupling",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "49975940-0615-48e5-9538-0f3cda2407d3",
+          "title": "Globalize Token Usage Route Ownership",
+          "status": "completed",
+          "level": "feature",
+          "description": "Make Token Usage a first-class global dashboard destination instead of a Rex-scoped view so routing and UI metadata remain consistent across sections.",
+          "source": "smart-add",
+          "startedAt": "2026-02-22T21:40:06.085Z",
+          "completedAt": "2026-02-22T21:40:06.085Z",
+          "children": [
+            {
+              "id": "39c0d90c-8a76-4a7a-96e8-ab7b7469433f",
+              "title": "Remove token-usage from Rex view scope registry",
+              "status": "completed",
+              "level": "task",
+              "description": "Prevent Rex-scoped route resolution from claiming Token Usage by deleting the token-usage entry from `VIEWS_BY_SCOPE.rex`. This eliminates conflicting ownership and ensures the route is resolved by global navigation config only.",
+              "acceptanceCriteria": [
+                "`VIEWS_BY_SCOPE.rex` no longer contains a `token-usage` entry",
+                "Route resolution for `token-usage` does not depend on Rex scope helpers",
+                "Existing Rex-only views still resolve without regression after the removal"
+              ],
+              "priority": "critical",
+              "tags": [
+                "web",
+                "routing",
+                "rex",
+                "navigation"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T21:29:08.410Z",
+              "completedAt": "2026-02-22T21:29:44.696Z"
+            },
+            {
+              "id": "904f9499-4d53-4480-aab7-f91159d14c54",
+              "title": "Re-map token-usage in route state and UI metadata as global",
+              "status": "completed",
+              "level": "task",
+              "description": "Update route-state, breadcrumb, and product-label mapping tables so Token Usage is classified as global/cross-cutting rather than Rex-owned, preventing incorrect section highlights and labels.",
+              "acceptanceCriteria": [
+                "Route-state mapping classifies `token-usage` under global scope",
+                "Breadcrumbs for `token-usage` render without Rex section ancestry",
+                "Product/section labels for `token-usage` show global ownership consistently in header and nav"
+              ],
+              "priority": "high",
+              "tags": [
+                "web",
+                "routing",
+                "breadcrumbs",
+                "ux"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T21:30:18.500Z",
+              "completedAt": "2026-02-22T21:40:05.998Z"
+            }
+          ]
+        },
+        {
+          "id": "4b2c1673-3a09-49b1-93c4-c31f51c9c938",
+          "title": "Legacy URL Compatibility and Routing Regression Coverage",
+          "status": "completed",
+          "level": "feature",
+          "description": "Keep old Rex Token Usage links functional while enforcing the new global canonical route through deterministic redirects and tests.",
+          "source": "smart-add",
+          "startedAt": "2026-02-22T21:30:18.392Z",
+          "completedAt": "2026-02-22T21:30:18.392Z",
+          "children": [
+            {
+              "id": "15ac84f7-cd8c-4ef7-aa03-1389ddd7e672",
+              "title": "Implement canonical redirect rules from legacy Rex token URLs",
+              "status": "completed",
+              "level": "task",
+              "description": "Add or refine redirect normalization so old Rex-prefixed token usage URLs resolve to the global token usage route, preserving user bookmarks and shared links during the ownership migration.",
+              "acceptanceCriteria": [
+                "Legacy Rex token usage URL variants redirect to the canonical global token usage URL",
+                "Redirect logic avoids loops and always terminates at a single canonical destination",
+                "Direct navigation to the canonical token usage URL renders without intermediate error states"
+              ],
+              "priority": "high",
+              "tags": [
+                "web",
+                "routing",
+                "backward-compatibility"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T21:29:44.818Z",
+              "completedAt": "2026-02-22T21:30:18.309Z"
+            },
+            {
+              "id": "e37196bb-0561-49f2-bf5f-4217316c8ccd",
+              "title": "Add regression tests for direct global reachability and legacy redirects",
+              "status": "completed",
+              "level": "task",
+              "description": "Create automated routing tests to prove Token Usage is directly reachable as a global destination and that legacy Rex links remain compatible through redirects.",
+              "acceptanceCriteria": [
+                "Test covers direct navigation to canonical `token-usage` route and validates successful render",
+                "Test covers at least one legacy Rex token URL and asserts redirect target equals canonical global route",
+                "Test suite fails if token-usage is reintroduced under Rex scope mappings"
+              ],
+              "priority": "critical",
+              "tags": [
+                "tests",
+                "web",
+                "routing",
+                "regression"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T21:21:32.771Z",
+              "completedAt": "2026-02-22T21:29:08.274Z"
+            }
+          ]
+        }
       ],
-      "startedAt": "2026-02-22T19:54:30.452Z",
-      "completedAt": "2026-02-22T19:54:30.452Z"
+      "startedAt": "2026-02-22T21:40:06.131Z",
+      "completedAt": "2026-02-22T21:40:06.131Z"
     }
   ]
 }

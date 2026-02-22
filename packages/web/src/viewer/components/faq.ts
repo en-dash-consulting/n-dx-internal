@@ -141,7 +141,7 @@ const VIEW_TO_FAQ_SECTION: Record<string, string> = {
   "rex-dashboard": "Rex (PRD Management)",
   prd: "Rex (PRD Management)",
   "rex-analysis": "Rex (PRD Management)",
-  "token-usage": "Rex (PRD Management)",
+  "token-usage": "Dashboard",
   validation: "Rex (PRD Management)",
   // Hench views
   "hench-runs": "Hench (Autonomous Agent)",

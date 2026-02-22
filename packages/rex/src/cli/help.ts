@@ -90,9 +90,20 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
     description:
       "Manual mode creates a single item at the specified level. Smart mode\n" +
       "uses an LLM to analyze your description(s) and generate a structured\n" +
-      "PRD proposal with epics, features, tasks, and subtasks.",
+      "PRD proposal with epics, features, tasks, and subtasks.\n" +
+      "In interactive smart mode, rex prompts for duplicate handling only when\n" +
+      "selected proposal nodes match existing PRD items.",
     sections: [
       { title: "Levels", content: "epic, feature, task, subtask" },
+      {
+        title: "Duplicate handling (smart mode)",
+        content:
+          "Prompt: Duplicate action (c/m/p)\n" +
+          "c=cancel: abort write, create nothing\n" +
+          "m=merge: update matched existing items and add only non-duplicates\n" +
+          "p=proceed anyway: create duplicates and persist override markers\n" +
+          "Empty/invalid input defaults to cancel.",
+      },
     ],
     options: [
       { flag: "--title=\"...\"", description: "Item title (required for manual mode)", required: true },

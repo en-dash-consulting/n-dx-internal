@@ -96,6 +96,10 @@ describe("rex CLI help", () => {
       const output = logSpy.mock.calls[0][0] as string;
       expect(output).toContain("Manual mode");
       expect(output).toContain("Smart mode");
+      expect(output).toContain("Duplicate action (c/m/p)");
+      expect(output).toContain("c=cancel");
+      expect(output).toContain("m=merge");
+      expect(output).toContain("p=proceed anyway");
       expect(output).toContain("--title");
       expect(output).toContain("--file");
     });

@@ -109,6 +109,20 @@ ndx rex add --file=ideas.txt .
 ndx rex add "Add retries to this flow" --parent=<item-id> .
 ```
 
+If smart add detects duplicates against existing PRD items in your accepted proposals, you’ll get:
+
+```text
+Choose action: c=cancel / m=merge with existing / p=proceed anyway
+```
+
+- `c` (Cancel): write nothing.
+- `m` (Merge): update matched existing items and add only non-duplicate nodes.
+- `p` (Proceed anyway): create duplicates and stamp `overrideMarker` on those new duplicate-created items.
+
+Audit visibility:
+- `ndx rex status` shows `[override: <reason>]` next to items with override markers.
+- `ndx rex status --format=json` includes per-item `overrideMarker` plus a top-level `overrideMarkers` summary.
+
 ### D. Execute PRD tasks autonomously (Hench via ndx work)
 
 ```sh

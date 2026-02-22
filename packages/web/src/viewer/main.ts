@@ -41,12 +41,12 @@ initTheme();
 /** All known views grouped by product scope. */
 const VIEWS_BY_SCOPE: Record<string, ViewId[]> = {
   sourcevision: SOURCEVISION_TAB_IDS,
-  rex: ["rex-dashboard", "prd", "rex-analysis", "token-usage", "validation", "notion-config", "integrations"],
+  rex: ["rex-dashboard", "prd", "rex-analysis", "validation", "notion-config", "integrations"],
   hench: ["hench-runs", "hench-audit", "hench-config", "hench-templates", "hench-optimization"],
 };
 
 /** Cross-cutting views available in all scopes. */
-const CROSS_CUTTING_VIEWS: ViewId[] = ["feature-toggles"];
+const CROSS_CUTTING_VIEWS: ViewId[] = ["token-usage", "feature-toggles"];
 
 const ALL_VIEWS = new Set<ViewId>([...Object.values(VIEWS_BY_SCOPE).flat(), ...CROSS_CUTTING_VIEWS] as ViewId[]);
 

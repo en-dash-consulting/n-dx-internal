@@ -4,7 +4,15 @@ export { scanTests, scanDocs, scanSourceVision, scanPackageJson } from "./scanne
 export type { ReconcileStats, UpdateCandidate, ReconcileOptions } from "./reconcile.js";
 export { reconcile } from "./reconcile.js";
 
-export type { Proposal, ProposalFeature, ProposalTask } from "./propose.js";
+export type {
+  Proposal,
+  ProposalEpic,
+  ProposalFeature,
+  ProposalTask,
+  DuplicateReasonType,
+  DuplicateReasonReference,
+  DuplicateReasonMetadata,
+} from "./propose.js";
 export { buildProposals } from "./propose.js";
 
 export { similarity, deduplicateScanResults } from "./dedupe.js";

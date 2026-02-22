@@ -19,9 +19,15 @@ import {
   getLLMVendor,
 } from "../../analyze/index.js";
 import type { Proposal, QualityIssue } from "../../analyze/index.js";
-import { CHILD_LEVEL } from "../../schema/index.js";
-import type { PRDItem, ItemLevel } from "../../schema/index.js";
+import { CHILD_LEVEL, PRIORITY_ORDER } from "../../schema/index.js";
+import type { PRDItem, ItemLevel, DuplicateOverrideMarker } from "../../schema/index.js";
 import { loadClaudeConfig, loadLLMConfig } from "../../store/project-config.js";
+import {
+  matchProposalNodesToPRD,
+  attachDuplicateReasonsToProposals,
+  buildDuplicateOverrideMarkerIndex,
+} from "./smart-add-duplicates.js";
+import type { ProposalDuplicateMatch } from "./smart-add-duplicates.js";
 import type { LLMVendor } from "@n-dx/claude-client";
 
 const PENDING_FILE = "pending-smart-proposals.json";
@@ -261,6 +267,255 @@ export function parseApprovalInput(
   return { approved: unique };
 }
 
+export type DuplicatePromptDecision = "cancel" | "merge" | "proceed";
+
+/**
+ * Parse duplicate confirmation input from the explicit override prompt.
+ * Empty/invalid input defaults to "cancel" for safety.
+ */
+export function parseDuplicatePromptInput(input: string): DuplicatePromptDecision {
+  const trimmed = input.trim().toLowerCase();
+  if (["p", "proceed", "proceed anyway", "force", "force-create", "force create"].includes(trimmed)) {
+    return "proceed";
+  }
+  if (["m", "merge"].includes(trimmed)) return "merge";
+  return "cancel";
+}
+
+function hasDuplicateMatches(matches: ProposalDuplicateMatch[]): boolean {
+  return matches.some((match) => match.duplicate);
+}
+
+function parseNodeKey(key: string): { proposalIndex: number; suffix: string } | null {
+  const m = /^p(\d+):(.*)$/.exec(key);
+  if (!m) return null;
+  const proposalIndex = Number.parseInt(m[1] ?? "", 10);
+  const suffix = m[2] ?? "";
+  if (!Number.isInteger(proposalIndex) || suffix.length === 0) return null;
+  return { proposalIndex, suffix };
+}
+
+type MergeableProposalNode =
+  | {
+      key: string;
+      kind: "epic" | "feature";
+      title: string;
+      description?: string;
+    }
+  | {
+      key: string;
+      kind: "task";
+      title: string;
+      description?: string;
+      acceptanceCriteria?: string[];
+      priority?: PRDItem["priority"];
+      tags?: string[];
+    };
+
+interface MergedProposalRecord {
+  proposalNodeKey: string;
+  proposalTitle: string;
+  proposalKind: "epic" | "feature" | "task";
+  reason: string;
+  score: number;
+  mergedAt: string;
+  source: "smart-add";
+}
+
+type ItemWithMergedProposals = PRDItem & { mergedProposals?: MergedProposalRecord[] };
+
+function normalizeMergeText(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function mergeDescription(
+  existingDescription: string | undefined,
+  proposedDescription: string | undefined,
+): string | undefined {
+  if (!proposedDescription || proposedDescription.trim().length === 0) {
+    return existingDescription;
+  }
+  if (!existingDescription || existingDescription.trim().length === 0) {
+    return proposedDescription;
+  }
+  if (normalizeMergeText(existingDescription) === normalizeMergeText(proposedDescription)) {
+    return existingDescription;
+  }
+  return proposedDescription.length > existingDescription.length
+    ? proposedDescription
+    : existingDescription;
+}
+
+function mergeStringArray(
+  existingValues: string[] | undefined,
+  proposedValues: string[] | undefined,
+): string[] | undefined {
+  if ((!existingValues || existingValues.length === 0) && (!proposedValues || proposedValues.length === 0)) {
+    return existingValues;
+  }
+  return [...new Set([...(existingValues ?? []), ...(proposedValues ?? [])])];
+}
+
+function mergePriority(
+  existingPriority: PRDItem["priority"] | undefined,
+  proposedPriority: PRDItem["priority"] | undefined,
+): PRDItem["priority"] | undefined {
+  if (!proposedPriority) return existingPriority;
+  if (!existingPriority) return proposedPriority;
+  const existingRank = PRIORITY_ORDER[existingPriority];
+  const proposedRank = PRIORITY_ORDER[proposedPriority];
+  return proposedRank < existingRank ? proposedPriority : existingPriority;
+}
+
+function buildMergeableProposalNodeIndex(
+  proposals: Proposal[],
+): Record<string, MergeableProposalNode> {
+  const index: Record<string, MergeableProposalNode> = {};
+
+  for (let pIdx = 0; pIdx < proposals.length; pIdx++) {
+    const proposal = proposals[pIdx];
+    index[`p${pIdx}:epic`] = {
+      key: `p${pIdx}:epic`,
+      kind: "epic",
+      title: proposal.epic.title,
+      description: proposal.epic.description,
+    };
+
+    for (let fIdx = 0; fIdx < proposal.features.length; fIdx++) {
+      const feature = proposal.features[fIdx];
+      index[`p${pIdx}:feature:${fIdx}`] = {
+        key: `p${pIdx}:feature:${fIdx}`,
+        kind: "feature",
+        title: feature.title,
+        description: feature.description,
+      };
+
+      for (let tIdx = 0; tIdx < feature.tasks.length; tIdx++) {
+        const task = feature.tasks[tIdx];
+        index[`p${pIdx}:task:${fIdx}:${tIdx}`] = {
+          key: `p${pIdx}:task:${fIdx}:${tIdx}`,
+          kind: "task",
+          title: task.title,
+          description: task.description,
+          acceptanceCriteria: task.acceptanceCriteria,
+          priority: task.priority as PRDItem["priority"],
+          tags: task.tags,
+        };
+      }
+    }
+  }
+
+  return index;
+}
+
+export async function applyDuplicateProposalMerges(
+  dir: string,
+  proposals: Proposal[],
+  duplicateMatches: ProposalDuplicateMatch[],
+): Promise<{
+  mergedCount: number;
+  mergeTargetsByNodeKey: Record<string, string>;
+}> {
+  const rexDir = join(dir, REX_DIR);
+  const store = await resolveStore(rexDir);
+  const proposalNodeIndex = buildMergeableProposalNodeIndex(proposals);
+  const mergeTargetsByNodeKey: Record<string, string> = {};
+  const mergedAt = new Date().toISOString();
+  let mergedCount = 0;
+
+  for (const match of duplicateMatches) {
+    if (!match.duplicate || !match.matchedItem) continue;
+    if (match.reason === "none") continue;
+
+    const proposalNode = proposalNodeIndex[match.node.key];
+    if (!proposalNode) continue;
+
+    const existing = await store.getItem(match.matchedItem.id);
+    if (!existing) continue;
+
+    const updates: Partial<ItemWithMergedProposals> = {};
+    const nextDescription = mergeDescription(existing.description, proposalNode.description);
+    if (nextDescription !== existing.description) {
+      updates.description = nextDescription;
+    }
+
+    if (proposalNode.kind === "task") {
+      const nextCriteria = mergeStringArray(
+        existing.acceptanceCriteria,
+        proposalNode.acceptanceCriteria,
+      );
+      const sameCriteria =
+        JSON.stringify(nextCriteria ?? []) === JSON.stringify(existing.acceptanceCriteria ?? []);
+      if (!sameCriteria) {
+        updates.acceptanceCriteria = nextCriteria;
+      }
+
+      const nextPriority = mergePriority(existing.priority, proposalNode.priority);
+      if (nextPriority !== existing.priority) {
+        updates.priority = nextPriority;
+      }
+
+      const nextTags = mergeStringArray(existing.tags, proposalNode.tags);
+      const sameTags = JSON.stringify(nextTags ?? []) === JSON.stringify(existing.tags ?? []);
+      if (!sameTags) {
+        updates.tags = nextTags;
+      }
+    }
+
+    const mergedRecord: MergedProposalRecord = {
+      proposalNodeKey: match.node.key,
+      proposalTitle: proposalNode.title,
+      proposalKind: proposalNode.kind,
+      reason: match.reason,
+      score: match.score,
+      mergedAt,
+      source: "smart-add",
+    };
+    const existingRecords = ((existing as ItemWithMergedProposals).mergedProposals ?? [])
+      .filter((record) => record.proposalNodeKey !== mergedRecord.proposalNodeKey);
+    updates.mergedProposals = [...existingRecords, mergedRecord];
+
+    if (Object.keys(updates).length > 0) {
+      await store.updateItem(existing.id, updates as Partial<PRDItem>);
+      mergedCount++;
+      mergeTargetsByNodeKey[match.node.key] = existing.id;
+    }
+  }
+
+  return { mergedCount, mergeTargetsByNodeKey };
+}
+
+/**
+ * Keep only matches for selected proposal indices and remap node keys so the
+ * selected subset can be accepted with 0-based contiguous proposal indices.
+ */
+export function remapDuplicateMatchesForSelectedProposals(
+  matches: ProposalDuplicateMatch[],
+  selectedProposalIndices: number[],
+): ProposalDuplicateMatch[] {
+  const remap = new Map<number, number>();
+  for (let i = 0; i < selectedProposalIndices.length; i++) {
+    remap.set(selectedProposalIndices[i]!, i);
+  }
+
+  const remapped: ProposalDuplicateMatch[] = [];
+  for (const match of matches) {
+    const parsed = parseNodeKey(match.node.key);
+    if (!parsed) continue;
+    const nextIndex = remap.get(parsed.proposalIndex);
+    if (nextIndex === undefined) continue;
+
+    remapped.push({
+      ...match,
+      node: {
+        ...match.node,
+        key: `p${nextIndex}:${parsed.suffix}`,
+      },
+    });
+  }
+  return remapped;
+}
+
 /**
  * Parse granularity adjustment input from the approval prompt.
  * Accepts:
@@ -463,43 +718,71 @@ export function formatQualityWarnings(issues: QualityIssue[]): string {
 async function acceptProposals(
   dir: string,
   proposals: Proposal[],
-  parentId?: string,
+  options: {
+    parentId?: string;
+    overrideMarkersByNodeKey?: Record<string, DuplicateOverrideMarker>;
+    mergeTargetsByNodeKey?: Record<string, string>;
+    mergedCount?: number;
+  } = {},
 ): Promise<number> {
+  const {
+    parentId,
+    overrideMarkersByNodeKey,
+    mergeTargetsByNodeKey,
+    mergedCount = 0,
+  } = options;
   const rexDir = join(dir, REX_DIR);
   const store = await resolveStore(rexDir);
   const parentLevel = await resolveParentLevel(dir, parentId);
 
   let addedCount = 0;
 
-  for (const p of proposals) {
+  for (let pIdx = 0; pIdx < proposals.length; pIdx++) {
+    const p = proposals[pIdx];
     if (!parentId) {
       // No parent — create a new top-level epic with features and tasks beneath
-      const epicId = randomUUID();
-      await store.addItem({
-        id: epicId,
-        title: p.epic.title,
-        level: "epic",
-        status: "pending",
-        source: "smart-add",
-      });
-      addedCount++;
-
-      for (const f of p.features) {
-        const featureId = randomUUID();
-        await store.addItem(
-          {
-            id: featureId,
-            title: f.title,
-            level: "feature",
-            status: "pending",
-            source: "smart-add",
-            description: f.description,
-          },
-          epicId,
-        );
+      const epicMergeTarget = mergeTargetsByNodeKey?.[`p${pIdx}:epic`];
+      const epicId = epicMergeTarget ?? randomUUID();
+      const epicMarker = overrideMarkersByNodeKey?.[`p${pIdx}:epic`];
+      if (!epicMergeTarget) {
+        await store.addItem({
+          id: epicId,
+          title: p.epic.title,
+          level: "epic",
+          status: "pending",
+          source: "smart-add",
+          ...(epicMarker ? { overrideMarker: epicMarker } : {}),
+        });
         addedCount++;
+      }
 
-        for (const t of f.tasks) {
+      for (let fIdx = 0; fIdx < p.features.length; fIdx++) {
+        const f = p.features[fIdx];
+        const featureKey = `p${pIdx}:feature:${fIdx}`;
+        const featureMergeTarget = mergeTargetsByNodeKey?.[featureKey];
+        const featureId = featureMergeTarget ?? randomUUID();
+        const featureMarker = overrideMarkersByNodeKey?.[`p${pIdx}:feature:${fIdx}`];
+        if (!featureMergeTarget) {
+          await store.addItem(
+            {
+              id: featureId,
+              title: f.title,
+              level: "feature",
+              status: "pending",
+              source: "smart-add",
+              description: f.description,
+              ...(featureMarker ? { overrideMarker: featureMarker } : {}),
+            },
+            epicId,
+          );
+          addedCount++;
+        }
+
+        for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
+          const t = f.tasks[tIdx];
+          const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
+          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
               id: randomUUID(),
@@ -511,6 +794,7 @@ async function acceptProposals(
               acceptanceCriteria: t.acceptanceCriteria,
               priority: t.priority as PRDItem["priority"],
               tags: t.tags,
+              ...(taskMarker ? { overrideMarker: taskMarker } : {}),
             },
             featureId,
           );
@@ -519,22 +803,33 @@ async function acceptProposals(
       }
     } else if (parentLevel === "epic") {
       // Parent is an epic — attach features (and their tasks) directly
-      for (const f of p.features) {
-        const featureId = randomUUID();
-        await store.addItem(
-          {
-            id: featureId,
-            title: f.title,
-            level: "feature",
-            status: "pending",
-            source: "smart-add",
-            description: f.description,
-          },
-          parentId,
-        );
-        addedCount++;
+      for (let fIdx = 0; fIdx < p.features.length; fIdx++) {
+        const f = p.features[fIdx];
+        const featureKey = `p${pIdx}:feature:${fIdx}`;
+        const featureMergeTarget = mergeTargetsByNodeKey?.[featureKey];
+        const featureId = featureMergeTarget ?? randomUUID();
+        const featureMarker = overrideMarkersByNodeKey?.[`p${pIdx}:feature:${fIdx}`];
+        if (!featureMergeTarget) {
+          await store.addItem(
+            {
+              id: featureId,
+              title: f.title,
+              level: "feature",
+              status: "pending",
+              source: "smart-add",
+              description: f.description,
+              ...(featureMarker ? { overrideMarker: featureMarker } : {}),
+            },
+            parentId,
+          );
+          addedCount++;
+        }
 
-        for (const t of f.tasks) {
+        for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
+          const t = f.tasks[tIdx];
+          const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
+          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
               id: randomUUID(),
@@ -546,6 +841,7 @@ async function acceptProposals(
               acceptanceCriteria: t.acceptanceCriteria,
               priority: t.priority as PRDItem["priority"],
               tags: t.tags,
+              ...(taskMarker ? { overrideMarker: taskMarker } : {}),
             },
             featureId,
           );
@@ -555,8 +851,13 @@ async function acceptProposals(
     } else if (parentLevel === "feature") {
       // Parent is a feature — flatten proposal features' tasks as direct
       // children of the feature (level: task)
-      for (const f of p.features) {
-        for (const t of f.tasks) {
+      for (let fIdx = 0; fIdx < p.features.length; fIdx++) {
+        const f = p.features[fIdx];
+        for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
+          const t = f.tasks[tIdx];
+          const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
+          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
               id: randomUUID(),
@@ -568,6 +869,7 @@ async function acceptProposals(
               acceptanceCriteria: t.acceptanceCriteria,
               priority: t.priority as PRDItem["priority"],
               tags: t.tags,
+              ...(taskMarker ? { overrideMarker: taskMarker } : {}),
             },
             parentId,
           );
@@ -576,8 +878,13 @@ async function acceptProposals(
       }
     } else if (parentLevel === "task") {
       // Parent is a task — flatten everything as subtasks
-      for (const f of p.features) {
-        for (const t of f.tasks) {
+      for (let fIdx = 0; fIdx < p.features.length; fIdx++) {
+        const f = p.features[fIdx];
+        for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
+          const t = f.tasks[tIdx];
+          const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
+          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
               id: randomUUID(),
@@ -589,6 +896,7 @@ async function acceptProposals(
               acceptanceCriteria: t.acceptanceCriteria,
               priority: t.priority as PRDItem["priority"],
               tags: t.tags,
+              ...(taskMarker ? { overrideMarker: taskMarker } : {}),
             },
             parentId,
           );
@@ -601,10 +909,13 @@ async function acceptProposals(
   // Reset completed ancestors when adding under a completed parent
   await cascadeParentReset(store, parentId);
 
+  const overrideCount = overrideMarkersByNodeKey
+    ? Object.keys(overrideMarkersByNodeKey).length
+    : 0;
   await store.appendLog({
     timestamp: new Date().toISOString(),
     event: "smart_add_accept",
-    detail: `Added ${addedCount} items from smart add${parentId ? ` under parent ${parentId}` : ""}`,
+    detail: `Added ${addedCount} items from smart add${parentId ? ` under parent ${parentId}` : ""}${mergedCount > 0 ? ` (${mergedCount} duplicate merge(s))` : ""}${overrideCount > 0 ? ` (${overrideCount} duplicate override marker(s))` : ""}`,
   });
 
   await clearPending(dir);
@@ -669,7 +980,7 @@ async function replayCachedIfRequested(
   const cached = await loadPending(dir);
   if (!cached || cached.proposals.length === 0) return false;
   info(`Accepting ${cached.proposals.length} cached proposal(s)...`);
-  const added = await acceptProposals(dir, cached.proposals, cached.parentId);
+  const added = await acceptProposals(dir, cached.proposals, { parentId: cached.parentId });
   result(`Added ${added} items to PRD.`);
   return true;
 }
@@ -832,15 +1143,18 @@ async function maybeCacheSmartAddProposals(
 
 async function runInteractiveSmartAddApproval(params: {
   dir: string;
+  existing: PRDItem[];
   proposals: Proposal[];
+  duplicateMatches: ProposalDuplicateMatch[];
   parentId?: string;
   parentLevel?: ItemLevel;
   model?: string;
 }): Promise<void> {
-  const { dir, parentId, parentLevel, model } = params;
+  const { dir, existing, parentId, parentLevel, model } = params;
   const { adjustGranularity } = await import("../../analyze/index.js");
   const resolvedModel = model ?? DEFAULT_MODEL;
   let currentProposals = params.proposals;
+  let currentDuplicateMatches = params.duplicateMatches;
   let done = false;
 
   while (!done) {
@@ -888,6 +1202,7 @@ async function runInteractiveSmartAddApproval(params: {
           info(formatProposalTree(currentProposals, parentLevel));
           info("");
 
+          currentDuplicateMatches = matchProposalNodesToPRD(currentProposals, existing);
           await maybeCacheSmartAddProposals(dir, currentProposals, parentId);
         } else {
           adjSpinner.stop("LLM returned no proposals. Original proposals unchanged.");
@@ -903,8 +1218,47 @@ async function runInteractiveSmartAddApproval(params: {
 
     const decision = parseApprovalInput(answer, currentProposals.length);
     if (decision === "all") {
-      const added = await acceptProposals(dir, currentProposals, parentId);
-      result(`Added ${added} items to PRD.`);
+      let overrideMarkersByNodeKey: Record<string, DuplicateOverrideMarker> | undefined;
+      let mergeTargetsByNodeKey: Record<string, string> | undefined;
+      let mergedCount = 0;
+      if (hasDuplicateMatches(currentDuplicateMatches)) {
+        info("Duplicate matches were detected in the selected proposals.");
+        info("Choose action: c=cancel / m=merge with existing / p=proceed anyway");
+        const duplicateAnswer = await promptUser("Duplicate action (c/m/p): ");
+        const duplicateDecision = parseDuplicatePromptInput(duplicateAnswer);
+        if (duplicateDecision === "merge") {
+          const mergeResult = await applyDuplicateProposalMerges(
+            dir,
+            currentProposals,
+            currentDuplicateMatches,
+          );
+          mergeTargetsByNodeKey = mergeResult.mergeTargetsByNodeKey;
+          mergedCount = mergeResult.mergedCount;
+        }
+        if (duplicateDecision === "cancel") {
+          info("Cancelled. No items were created.");
+          done = true;
+          continue;
+        }
+        if (duplicateDecision === "proceed") {
+          overrideMarkersByNodeKey = buildDuplicateOverrideMarkerIndex(
+            currentDuplicateMatches,
+            new Date().toISOString(),
+          );
+        }
+      }
+
+      const added = await acceptProposals(dir, currentProposals, {
+        parentId,
+        overrideMarkersByNodeKey,
+        mergeTargetsByNodeKey,
+        mergedCount,
+      });
+      if (mergedCount > 0) {
+        result(`Merged ${mergedCount} duplicate node(s) and added ${added} new item(s) to PRD.`);
+      } else {
+        result(`Added ${added} items to PRD.`);
+      }
       done = true;
       continue;
     }
@@ -918,13 +1272,61 @@ async function runInteractiveSmartAddApproval(params: {
     const selected = filterProposalsByIndex(currentProposals, decision.approved);
     const names = selected.map((p) => p.epic.title).join(", ");
     info(`Accepting: ${names}`);
-    const added = await acceptProposals(dir, selected, parentId);
-    result(`Added ${added} items to PRD.`);
+    const selectedMatches = remapDuplicateMatchesForSelectedProposals(
+      currentDuplicateMatches,
+      decision.approved,
+    );
+
+    let overrideMarkersByNodeKey: Record<string, DuplicateOverrideMarker> | undefined;
+    let mergeTargetsByNodeKey: Record<string, string> | undefined;
+    let mergedCount = 0;
+    let usedMergeDecision = false;
+    if (hasDuplicateMatches(selectedMatches)) {
+      info("Duplicate matches were detected in the selected proposals.");
+      info("Choose action: c=cancel / m=merge with existing / p=proceed anyway");
+      const duplicateAnswer = await promptUser("Duplicate action (c/m/p): ");
+      const duplicateDecision = parseDuplicatePromptInput(duplicateAnswer);
+      if (duplicateDecision === "merge") {
+        const mergeResult = await applyDuplicateProposalMerges(
+          dir,
+          selected,
+          selectedMatches,
+        );
+        mergeTargetsByNodeKey = mergeResult.mergeTargetsByNodeKey;
+        mergedCount = mergeResult.mergedCount;
+        usedMergeDecision = true;
+      }
+      if (duplicateDecision === "cancel") {
+        info("Cancelled. No items were created.");
+        done = true;
+        continue;
+      }
+      if (duplicateDecision === "proceed") {
+        overrideMarkersByNodeKey = buildDuplicateOverrideMarkerIndex(
+          selectedMatches,
+          new Date().toISOString(),
+        );
+      }
+    }
+
+    const added = await acceptProposals(dir, selected, {
+      parentId,
+      overrideMarkersByNodeKey,
+      mergeTargetsByNodeKey,
+      mergedCount,
+    });
+    if (mergedCount > 0) {
+      result(`Merged ${mergedCount} duplicate node(s) and added ${added} new item(s) to PRD.`);
+    } else {
+      result(`Added ${added} items to PRD.`);
+    }
 
     const rejected = currentProposals.filter((_, i) => !decision.approved.includes(i));
-    if (rejected.length > 0) {
+    if (rejected.length > 0 && !usedMergeDecision) {
       await savePending(dir, rejected, parentId);
       info(`${rejected.length} proposal(s) saved. Run \`rex add --accept\` to accept later.`);
+    } else if (rejected.length > 0 && usedMergeDecision) {
+      info(`${rejected.length} unselected proposal(s) were cancelled and not written.`);
     }
     done = true;
   }
@@ -932,7 +1334,9 @@ async function runInteractiveSmartAddApproval(params: {
 
 async function finalizeSmartAdd(params: {
   dir: string;
+  existing: PRDItem[];
   proposals: Proposal[];
+  duplicateMatches: ProposalDuplicateMatch[];
   qualityIssues: QualityIssue[];
   accept: boolean;
   parentId?: string;
@@ -942,7 +1346,9 @@ async function finalizeSmartAdd(params: {
 }): Promise<void> {
   const {
     dir,
+    existing,
     proposals,
+    duplicateMatches,
     qualityIssues,
     accept,
     parentId,
@@ -954,7 +1360,22 @@ async function finalizeSmartAdd(params: {
   await maybeCacheSmartAddProposals(dir, proposals, parentId);
 
   if (accept) {
-    const added = await acceptProposals(dir, proposals, parentId);
+    if (hasDuplicateMatches(duplicateMatches)) {
+      if (isJson) {
+        result(JSON.stringify({
+          proposals,
+          added: 0,
+          qualityIssues,
+          duplicateGuard: "blocked_requires_interactive_confirmation",
+        }, null, 2));
+        return;
+      }
+      warn("Duplicate matches detected. Explicit confirmation is required.");
+      info("No items were created. Re-run without --accept to choose Cancel, Merge, or Proceed anyway.");
+      return;
+    }
+
+    const added = await acceptProposals(dir, proposals, { parentId });
     if (isJson) {
       result(JSON.stringify({ proposals, added, qualityIssues }, null, 2));
       return;
@@ -970,7 +1391,9 @@ async function finalizeSmartAdd(params: {
   if (process.stdin.isTTY) {
     await runInteractiveSmartAddApproval({
       dir,
+      existing,
       proposals,
+      duplicateMatches,
       parentId,
       parentLevel,
       model,
@@ -1018,14 +1441,16 @@ export async function cmdSmartAdd(
     return;
   }
 
-  const qualityIssues = validateProposalQuality(proposals);
+  const duplicateMatches = matchProposalNodesToPRD(proposals, existing);
+  const proposalsWithReasons = attachDuplicateReasonsToProposals(proposals, duplicateMatches);
+  const qualityIssues = validateProposalQuality(proposalsWithReasons);
   if (input.isJson && !input.accept) {
-    result(JSON.stringify({ proposals, qualityIssues }, null, 2));
+    result(JSON.stringify({ proposals: proposalsWithReasons, qualityIssues }, null, 2));
     return;
   }
 
   renderSmartAddProposals({
-    proposals,
+    proposals: proposalsWithReasons,
     parentId: input.parentId,
     parentLevel,
     qualityIssues,
@@ -1034,7 +1459,9 @@ export async function cmdSmartAdd(
 
   await finalizeSmartAdd({
     dir,
-    proposals,
+    existing,
+    proposals: proposalsWithReasons,
+    duplicateMatches,
     qualityIssues,
     accept: input.accept,
     parentId: input.parentId,
