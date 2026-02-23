@@ -9,6 +9,9 @@ interface PRMarkdownResponse {
   message?: string | null;
   warning?: string | null;
   baseRange?: string | null;
+  mode?: "normal" | "fallback";
+  confidence?: number;
+  coverage?: number;
 }
 
 interface PRMarkdownStateResponse {
@@ -20,16 +23,117 @@ interface PRMarkdownStateResponse {
   cacheStatus?: "missing" | "fresh" | "stale";
   generatedAt?: string | null;
   staleAfterMs?: number;
+  mode?: "normal" | "fallback";
+  confidence?: number;
+  coverage?: number;
 }
 
 interface PRMarkdownRefreshResponse extends PRMarkdownStateResponse {
   ok?: boolean;
+  status?: "ok" | "degraded";
   markdown?: string | null;
+  failure?: {
+    type?: "pr_markdown_refresh_failure";
+    code?: string;
+    stage?: "preflight" | "fetch" | "rev-parse" | "diff" | "semantic-diff" | "mixed";
+    stageStatuses?: {
+      nameStatusDiff?: "succeeded" | "failed" | "not_run";
+      semanticDiff?: "succeeded" | "failed" | "not_run";
+    };
+    summary?: string;
+    remediationCommands?: string[];
+    guidanceCategory?: "environment_fix" | "fetch_retry" | "local_history_remediation";
+    commandSuggestions?: string[];
+    command?: {
+      gitSubcommand?: "version" | "rev-parse" | "fetch" | "diff";
+      subcommand?: string;
+      stageId?: "preflight" | "fetch" | "rev_parse" | "name_status_diff" | "semantic_diff_numstat";
+      stderr?: string;
+      exitCode?: number | null;
+      stderrExcerpt?: string;
+      reproduce?: string[];
+    };
+  };
+  diagnostics?: Array<{
+    code?: string;
+    summary?: string;
+    remediationCommands?: string[];
+    message?: string;
+    hints?: string[];
+    guidance?: {
+      category?: "environment_fix" | "fetch_retry" | "local_history_remediation";
+      summary?: string;
+      commands?: string[];
+    };
+  }>;
 }
 
 const COPY_FEEDBACK_MS = 2000;
 
 type CopyState = "idle" | "success" | "error";
+
+function parseMarkdownPayload(markdown: string | null | undefined): string | null {
+  if (typeof markdown !== "string") return null;
+  return markdown.trim().length > 0 ? markdown : null;
+}
+
+function formatDiagnosticCode(code: string | undefined): string {
+  if (!code) return "Unknown refresh issue";
+  switch (code) {
+    case "NOT_A_REPO":
+      return "Repository not detected";
+    case "MISSING_BASE_REF":
+      return "Base branch could not be resolved";
+    case "FETCH_DENIED":
+      return "Remote authentication failed";
+    case "NETWORK_DNS_ERROR":
+      return "Remote host is unreachable";
+    case "DETACHED_HEAD":
+      return "Detached HEAD detected";
+    case "SHALLOW_CLONE":
+      return "Shallow clone detected";
+    case "missing_git":
+      return "Git is unavailable";
+    case "not_repo":
+      return "Repository not detected";
+    case "unresolved_main_or_origin_main":
+      return "Base branch could not be resolved";
+    case "auth_fetch_denied":
+      return "Remote authentication failed";
+    case "network_dns_error":
+      return "Remote host is unreachable";
+    case "fetch_failed":
+      return "Fetching base branch failed";
+    case "rev_parse_failed":
+      return "Failed to resolve base revision";
+    case "diff_failed":
+      return "Diff computation failed";
+    default:
+      return code.replaceAll("_", " ");
+  }
+}
+
+function formatGuidanceCategory(category: "environment_fix" | "fetch_retry" | "local_history_remediation" | undefined): string {
+  switch (category) {
+    case "fetch_retry":
+      return "Retry guidance: remote fetch";
+    case "local_history_remediation":
+      return "Remediation guidance: local history";
+    case "environment_fix":
+      return "Remediation guidance: environment";
+    default:
+      return "Remediation guidance";
+  }
+}
+
+function isClassifiedPreflightCode(code: string | undefined): boolean {
+  return code === "NOT_A_REPO"
+    || code === "MISSING_BASE_REF"
+    || code === "FETCH_DENIED"
+    || code === "NETWORK_DNS_ERROR"
+    || code === "DETACHED_HEAD"
+    || code === "SHALLOW_CLONE";
+}
 
 function formatLastRefresh(ts: string | null): string {
   return `Last refreshed: ${formatCachedTimestamp(ts) ?? "Not refreshed yet"}`;
@@ -179,6 +283,19 @@ export function PRMarkdownView() {
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
   const [copyState, setCopyState] = useState<CopyState>("idle");
   const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [refreshDiagnostics, setRefreshDiagnostics] = useState<Array<{
+    code?: string;
+    summary?: string;
+    remediationCommands?: string[];
+    message?: string;
+    hints?: string[];
+    guidance?: {
+      category?: "environment_fix" | "fetch_retry" | "local_history_remediation";
+      summary?: string;
+      commands?: string[];
+    };
+  }> | null>(null);
+  const [refreshFailure, setRefreshFailure] = useState<PRMarkdownRefreshResponse["failure"] | null>(null);
   const inFlightRef = useRef(false);
   const hasLoadedRef = useRef(false);
   const loadedMarkdownSignatureRef = useRef<string | null>(null);
@@ -189,8 +306,7 @@ export function PRMarkdownView() {
     const res = await fetch("/api/sv/pr-markdown");
     if (!res.ok) throw new Error(`Failed to load PR markdown (${res.status})`);
     const json = await res.json() as PRMarkdownResponse;
-    const text = typeof json.markdown === "string" ? json.markdown.trim() : "";
-    return text.length > 0 ? text : null;
+    return parseMarkdownPayload(json.markdown);
   }, []);
 
   const applyStatePayload = useCallback((json: PRMarkdownStateResponse) => {
@@ -226,6 +342,8 @@ export function PRMarkdownView() {
     if (!hasLoadedRef.current) setLoading(true);
     setError(null);
     setRefreshError(null);
+    setRefreshDiagnostics(null);
+    setRefreshFailure(null);
     try {
       const res = await fetch("/api/sv/pr-markdown/state");
       if (!res.ok) throw new Error(`Failed to load PR markdown state (${res.status})`);
@@ -266,11 +384,29 @@ export function PRMarkdownView() {
     setIsRefreshing(true);
     setError(null);
     setRefreshError(null);
+    setRefreshDiagnostics(null);
+    setRefreshFailure(null);
     try {
       const res = await fetch("/api/sv/pr-markdown/refresh", { method: "POST" });
       if (!res.ok) throw new Error(`Failed to refresh PR markdown (${res.status})`);
       const json = await res.json() as PRMarkdownRefreshResponse;
       const nextState = applyStatePayload(json);
+      const nextDiagnostics = Array.isArray(json.diagnostics)
+        ? json.diagnostics.filter((entry) => {
+            if (!entry) return false;
+            if (typeof entry.message === "string" && entry.message.length > 0) return true;
+            if (typeof entry.summary === "string" && entry.summary.length > 0) return true;
+            if (typeof entry.code === "string" && entry.code.length > 0) return true;
+            if (typeof entry.guidance?.summary === "string" && entry.guidance.summary.length > 0) return true;
+            if (Array.isArray(entry.guidance?.commands) && entry.guidance.commands.length > 0) return true;
+            return Array.isArray(entry.hints) && entry.hints.length > 0;
+          })
+        : [];
+      setRefreshDiagnostics(nextDiagnostics.length > 0 ? nextDiagnostics : null);
+      const nextFailure = json.failure && json.failure.type === "pr_markdown_refresh_failure"
+        ? json.failure
+        : null;
+      setRefreshFailure(nextFailure);
 
       if (nextState.availability !== "ready") {
         loadedMarkdownSignatureRef.current = null;
@@ -280,9 +416,8 @@ export function PRMarkdownView() {
         return;
       }
 
-      const nextMarkdown = typeof json.markdown === "string" && json.markdown.trim().length > 0
-        ? json.markdown.trim()
-        : await loadMarkdown();
+      const refreshMarkdown = parseMarkdownPayload(json.markdown);
+      const nextMarkdown = refreshMarkdown ?? await loadMarkdown();
       setMarkdown(nextMarkdown);
       hasSuccessfulMarkdownRef.current = nextMarkdown !== null;
       loadedMarkdownSignatureRef.current = nextState.signature;
@@ -350,6 +485,19 @@ export function PRMarkdownView() {
       : availability === "error"
         ? "Unable to inspect git state"
         : "";
+  const hasRefreshDiagnostics = !loading && !error && availability === "ready" && Array.isArray(refreshDiagnostics) && refreshDiagnostics.length > 0;
+  const hasSemanticDiffFailure = hasRefreshDiagnostics
+    && (refreshFailure?.stage === "semantic-diff"
+      || refreshFailure?.stage === "mixed"
+      || refreshFailure?.stageStatuses?.semanticDiff === "failed");
+  const hasPreflightRefreshDiagnostics = hasRefreshDiagnostics && refreshDiagnostics.some((entry) => isClassifiedPreflightCode(entry.code));
+  const showFailureDetails = !!refreshFailure && !hasPreflightRefreshDiagnostics;
+  const failureSubcommand = refreshFailure?.command?.subcommand
+    ?? (refreshFailure?.command?.gitSubcommand ? `git ${refreshFailure.command.gitSubcommand}` : null);
+  const failureStderrExcerpt = typeof refreshFailure?.command?.stderrExcerpt === "string"
+    && refreshFailure.command.stderrExcerpt.length > 0
+    ? refreshFailure.command.stderrExcerpt
+    : null;
 
   return h("div", { class: "pr-markdown-container" },
     h("div", { class: "view-header" },
@@ -399,7 +547,78 @@ export function PRMarkdownView() {
         )
       : null,
 
-    !loading && !error && warning
+    hasSemanticDiffFailure
+      ? h("div", { class: "card pr-markdown-warning pr-markdown-degraded-banner", role: "status", "aria-live": "polite" },
+          h("h3", { class: "section-header-sm" }, "Semantic diff refresh failed"),
+          h("p", null, "Cached PR markdown is shown below so you can continue reviewing and copying content."),
+          h("p", { class: "section-sub pr-markdown-warning-meta" },
+            `Stage: ${refreshFailure?.stage ?? "unknown"} | Base range: ${baseRange ?? "unresolved"}`,
+          ),
+        )
+      : null,
+
+    hasRefreshDiagnostics
+      ? h("div", { class: "card pr-markdown-warning", role: "status", "aria-live": "polite" },
+          h("h3", { class: "section-header-sm" }, "Refresh diagnostics"),
+          h("p", null, "Manual refresh completed with limitations. Cached PR markdown is still shown below."),
+          warning
+            ? h("p", null, warning)
+            : null,
+          message
+            ? h("p", null, message)
+            : null,
+          showFailureDetails
+            ? h("div", { class: "pr-markdown-failure-details" },
+                h("p", { class: "pr-markdown-failure-details-heading" }, "Failure details"),
+                failureSubcommand
+                  ? h("p", { class: "pr-markdown-failure-command" }, `Failing git subcommand: ${failureSubcommand}`)
+                  : null,
+                failureStderrExcerpt
+                  ? h("pre", { class: "pr-markdown-failure-stderr" }, failureStderrExcerpt)
+                  : null,
+              )
+            : null,
+          h("div", { class: "pr-markdown-diagnostics" },
+            refreshDiagnostics.map((entry, index) => h("div", { class: "pr-markdown-diagnostic-item", key: `${entry.code ?? "unknown"}-${index}` },
+              h("p", { class: "pr-markdown-diagnostic-code" }, formatDiagnosticCode(entry.code)),
+              typeof entry.message === "string" && entry.message.length > 0 && !isClassifiedPreflightCode(entry.code)
+                ? h("p", { class: "pr-markdown-diagnostic-message" }, entry.message)
+                : null,
+              typeof entry.summary === "string" && entry.summary.length > 0
+                ? h("p", { class: "pr-markdown-diagnostic-guidance-summary" }, entry.summary)
+                : null,
+              entry.guidance
+                ? h("div", { class: "pr-markdown-diagnostic-guidance" },
+                    h("p", { class: "pr-markdown-diagnostic-guidance-category" }, formatGuidanceCategory(entry.guidance.category)),
+                    typeof entry.guidance.summary === "string" && entry.guidance.summary.length > 0
+                      ? h("p", { class: "pr-markdown-diagnostic-guidance-summary" }, entry.guidance.summary)
+                      : null,
+                    Array.isArray(entry.guidance.commands) && entry.guidance.commands.length > 0
+                      ? h("ul", { class: "pr-markdown-diagnostic-guidance-commands" },
+                          entry.guidance.commands.map((command, commandIndex) => h("li", { key: `${commandIndex}` }, command)),
+                        )
+                      : null,
+                  )
+                : null,
+              Array.isArray(entry.hints) && entry.hints.length > 0
+                ? h("ul", { class: "pr-markdown-diagnostic-hints" },
+                    entry.hints.map((hint, hintIndex) => h("li", { key: `${hintIndex}` }, hint)),
+                  )
+                : null,
+              Array.isArray(entry.remediationCommands) && entry.remediationCommands.length > 0
+                ? h("ul", { class: "pr-markdown-diagnostic-guidance-commands" },
+                    entry.remediationCommands.map((command, commandIndex) => h("li", { key: `rem-${commandIndex}` }, command)),
+                  )
+                : null,
+            )),
+          ),
+          h("p", { class: "section-sub pr-markdown-warning-meta" },
+            `Base range: ${baseRange ?? "unresolved"} | Signature: ${latestSignature ? latestSignature.slice(0, 12) : "unknown"}`,
+          ),
+        )
+      : null,
+
+    !hasRefreshDiagnostics && !loading && !error && warning
       ? h("div", { class: "card pr-markdown-warning", role: "status", "aria-live": "polite" },
           h("h3", { class: "section-header-sm" }, "Partial git metadata only"),
           h("p", null, warning),

@@ -10,6 +10,7 @@
  *   validate [dir]     - Validate .sourcevision/ output files
  *   export-pdf [dir]   - Export analysis as a PDF report
  *   pr-markdown [dir]  - Regenerate PR markdown in .sourcevision/
+ *   git-credential-helper - Interactive GitHub credential setup helper
  *   mcp [dir]          - Start MCP server for AI tool integration
  */
 
@@ -21,6 +22,7 @@ import { cmdReset } from "./commands/reset.js";
 import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdValidate } from "./commands/validate.js";
 import { cmdExportPdf } from "./commands/export-pdf.js";
+import { cmdGitCredentialHelper } from "./commands/git-credential-helper.js";
 import { cmdPrMarkdown } from "./commands/pr-markdown.js";
 import { CLIError, handleCLIError, requireSvDir } from "./errors.js";
 import { setQuiet } from "./output.js";
@@ -107,6 +109,9 @@ try {
     case "pr-markdown":
       cmdPrMarkdown(targetArg || ".");
       break;
+    case "git-credential-helper":
+      cmdGitCredentialHelper();
+      break;
     case "mcp":
       await cmdMcp(targetArg || ".");
       break;
@@ -116,7 +121,7 @@ try {
       usage();
       break;
     default: {
-      const SV_COMMANDS = ["init", "analyze", "serve", "validate", "reset", "export-pdf", "pr-markdown", "mcp"];
+      const SV_COMMANDS = ["init", "analyze", "serve", "validate", "reset", "export-pdf", "pr-markdown", "git-credential-helper", "mcp"];
       const typoHint = formatTypoSuggestion(command, SV_COMMANDS, "sourcevision ");
       throw new CLIError(
         `Unknown command: ${command}`,

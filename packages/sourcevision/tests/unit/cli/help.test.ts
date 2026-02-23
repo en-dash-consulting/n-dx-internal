@@ -20,6 +20,7 @@ describe("sourcevision CLI help", () => {
     "reset",
     "export-pdf",
     "pr-markdown",
+    "git-credential-helper",
     "mcp",
   ];
 

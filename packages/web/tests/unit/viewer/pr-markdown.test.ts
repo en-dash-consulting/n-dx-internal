@@ -227,6 +227,173 @@ describe("PRMarkdownView", () => {
     expect(root.textContent).toContain("Working snapshot");
   });
 
+  it("shows degraded diagnostics without generic refresh failure copy", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+      if (url === "/api/sv/pr-markdown/state") {
+        return {
+          ok: true,
+          json: async () => ({ signature: "sig-ready", availability: "ready", cacheStatus: "fresh" }),
+        };
+      }
+      if (url === "/api/sv/pr-markdown") {
+        return {
+          ok: true,
+          json: async () => ({ markdown: "## Cached summary\n\n- Keep this" }),
+        };
+      }
+      if (url === "/api/sv/pr-markdown/refresh" && method === "POST") {
+        return {
+          ok: true,
+          json: async () => ({
+            ok: false,
+            status: "degraded",
+            signature: "sig-degraded",
+            availability: "ready",
+            cacheStatus: "fresh",
+            markdown: "## Cached summary\n\n- Keep this",
+            diagnostics: [{
+              code: "fetch_failed",
+              message: "Failure for fetch_failed",
+              hints: ["Run `git fetch origin main` manually and verify remote connectivity."],
+              guidance: {
+                category: "fetch_retry",
+                summary: "Remote fetch failed. Resolve connectivity/credentials, then retry refresh.",
+                commands: ["git fetch origin main", "sourcevision pr-markdown <project-dir>"],
+              },
+            }],
+          }),
+        };
+      }
+      return {
+        ok: false,
+        status: 404,
+        json: async () => ({}),
+      };
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    await renderAndWait(root);
+    expect(root.textContent).toContain("Cached summary");
+
+    await act(async () => {
+      (root.querySelector(".pr-markdown-refresh-btn") as HTMLButtonElement).click();
+    });
+    await flushUi();
+
+    expect(root.textContent).toContain("Refresh diagnostics");
+    expect(root.textContent).toContain("Fetching base branch failed");
+    expect(root.textContent).toContain("Failure for fetch_failed");
+    expect(root.textContent).toContain("Retry guidance: remote fetch");
+    expect(root.textContent).toContain("git fetch origin main");
+    expect(root.textContent).not.toContain("Refresh failed");
+    expect(root.textContent).toContain("Cached summary");
+  });
+
+  it("renders remediation hints in server order when diagnostics are hint-only", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+      if (url === "/api/sv/pr-markdown/state") {
+        return {
+          ok: true,
+          json: async () => ({ signature: "sig-ready", availability: "ready", cacheStatus: "fresh" }),
+        };
+      }
+      if (url === "/api/sv/pr-markdown") {
+        return {
+          ok: true,
+          json: async () => ({ markdown: "## Cached summary\n\n- Keep this" }),
+        };
+      }
+      if (url === "/api/sv/pr-markdown/refresh" && method === "POST") {
+        return {
+          ok: true,
+          json: async () => ({
+            ok: false,
+            status: "degraded",
+            signature: "sig-degraded",
+            availability: "ready",
+            cacheStatus: "fresh",
+            markdown: "## Cached summary\n\n- Keep this",
+            diagnostics: [{
+              hints: ["First remediation step", "Second remediation step", "Third remediation step"],
+            }],
+          }),
+        };
+      }
+      return {
+        ok: false,
+        status: 404,
+        json: async () => ({}),
+      };
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    await renderAndWait(root);
+
+    await act(async () => {
+      (root.querySelector(".pr-markdown-refresh-btn") as HTMLButtonElement).click();
+    });
+    await flushUi();
+
+    const hintItems = Array.from(root.querySelectorAll(".pr-markdown-diagnostic-hints li"))
+      .map((node) => node.textContent);
+    expect(hintItems).toEqual(["First remediation step", "Second remediation step", "Third remediation step"]);
+  });
+
+  it("hides remediation hints list when degraded diagnostics include no hints", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+      if (url === "/api/sv/pr-markdown/state") {
+        return {
+          ok: true,
+          json: async () => ({ signature: "sig-ready", availability: "ready", cacheStatus: "fresh" }),
+        };
+      }
+      if (url === "/api/sv/pr-markdown") {
+        return {
+          ok: true,
+          json: async () => ({ markdown: "## Cached summary\n\n- Keep this" }),
+        };
+      }
+      if (url === "/api/sv/pr-markdown/refresh" && method === "POST") {
+        return {
+          ok: true,
+          json: async () => ({
+            ok: false,
+            status: "degraded",
+            signature: "sig-degraded",
+            availability: "ready",
+            cacheStatus: "fresh",
+            markdown: "## Cached summary\n\n- Keep this",
+            diagnostics: [{
+              code: "fetch_failed",
+              message: "Failure for fetch_failed",
+            }],
+          }),
+        };
+      }
+      return {
+        ok: false,
+        status: 404,
+        json: async () => ({}),
+      };
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    await renderAndWait(root);
+
+    await act(async () => {
+      (root.querySelector(".pr-markdown-refresh-btn") as HTMLButtonElement).click();
+    });
+    await flushUi();
+
+    expect(root.querySelector(".pr-markdown-diagnostic-hints")).toBeNull();
+  });
+
   it("refreshes markdown only when refresh action is invoked", async () => {
     let stateSignature = "sig-1";
     let markdown = "## First";
@@ -405,8 +572,9 @@ describe("PRMarkdownView", () => {
     expect(root.textContent).toContain("Git is unavailable");
   });
 
-  it("copies full raw markdown and renders feedback region", async () => {
+  it("copies full raw markdown payload exactly and renders feedback region", async () => {
     const markdown = [
+      "",
       "## Overview",
       "",
       "1. Step one",
@@ -415,6 +583,7 @@ describe("PRMarkdownView", () => {
       "```ts",
       "const value = 42;",
       "```",
+      "",
     ].join("\n");
     const fetchMock = createFetchMock({ signature: "sig-copy", availability: "ready" }, markdown);
     globalThis.fetch = fetchMock as unknown as typeof fetch;
@@ -425,6 +594,7 @@ describe("PRMarkdownView", () => {
     });
     await flushUi();
 
+    expect(root.querySelector(".pr-markdown-raw")?.textContent).toBe(markdown);
     expect(clipboardWriteText).toHaveBeenCalledWith(markdown);
     expect(root.querySelector(".pr-markdown-copy-feedback")).toBeTruthy();
   });

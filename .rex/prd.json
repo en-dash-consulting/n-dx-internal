@@ -11593,6 +11593,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-22T21:40:06.131Z",
+      "completedAt": "2026-02-22T21:40:06.131Z",
       "children": [
         {
           "id": "49975940-0615-48e5-9538-0f3cda2407d3",
@@ -11705,9 +11707,1305 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-22T21:40:06.131Z",
-      "completedAt": "2026-02-22T21:40:06.131Z"
+      ]
+    },
+    {
+      "id": "1d7ebe23-5858-42f9-85f0-8173fd686532",
+      "title": "PR Markdown Reviewer Context Enrichment",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-22T22:20:05.396Z",
+      "completedAt": "2026-02-22T22:20:05.396Z",
+      "children": [
+        {
+          "id": "b9e2ba3a-809b-4796-994b-42a4e0757a18",
+          "title": "PRD Epic Attribution in PR Summaries",
+          "status": "completed",
+          "level": "feature",
+          "description": "Connect branch work to PRD context so reviewers can quickly understand which planned initiatives the changes implement.",
+          "source": "smart-add",
+          "startedAt": "2026-02-22T22:20:05.323Z",
+          "completedAt": "2026-02-22T22:20:05.323Z",
+          "children": [
+            {
+              "id": "fb4d883e-12aa-4d65-8eed-a7dd9b5514d3",
+              "title": "Implement branch-to-PRD work item resolver",
+              "status": "completed",
+              "level": "task",
+              "description": "Create a resolver that maps branch changes to completed or in-progress PRD tasks and derives their parent epic titles, so PR summaries can show intent-level context instead of only code-level changes.",
+              "acceptanceCriteria": [
+                "Given a branch with linked PRD task activity, resolver returns unique parent epic titles",
+                "Resolver excludes deleted PRD items and items not touched by branch work",
+                "Resolver output is deterministic across repeated runs on the same git/PRD state"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "rex",
+                "prd",
+                "git"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T22:02:29.647Z",
+              "completedAt": "2026-02-22T22:06:30.772Z"
+            },
+            {
+              "id": "1680e5cb-b116-481f-93e6-e414b7e82651",
+              "title": "Render worked-on epic titles in PR markdown overview",
+              "status": "completed",
+              "level": "task",
+              "description": "Add a dedicated section near the top of generated PR markdown that lists PRD epic titles worked on by the branch, so reviewers immediately see strategic scope.",
+              "acceptanceCriteria": [
+                "Generated markdown includes a 'Worked PRD Epics' section when at least one epic is resolved",
+                "Epic titles are de-duplicated and presented in stable order",
+                "When no epic mapping exists, markdown shows a concise fallback message rather than an empty section"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision-ui",
+                "markdown",
+                "ux"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T22:17:26.100Z",
+              "completedAt": "2026-02-22T22:20:05.179Z"
+            }
+          ]
+        },
+        {
+          "id": "b5fb8f1e-e10b-4583-bf65-57127223b477",
+          "title": "Significant Change Narrative",
+          "status": "completed",
+          "level": "feature",
+          "description": "Shift PR markdown toward human-readable explanation of important functional and feature-level changes, minimizing noisy implementation detail.",
+          "source": "smart-add",
+          "startedAt": "2026-02-22T22:15:55.948Z",
+          "completedAt": "2026-02-22T22:15:55.948Z",
+          "children": [
+            {
+              "id": "31df5054-0a49-4456-a6b4-d11db72235ea",
+              "title": "Implement significant-function and feature highlight extraction",
+              "status": "completed",
+              "level": "task",
+              "description": "Add logic to identify newly added or materially changed high-impact functions and user-visible features, enabling summaries that focus on reviewer-relevant changes.",
+              "acceptanceCriteria": [
+                "Extractor identifies added/modified exported functions and routes/components touched in the branch",
+                "Output includes concise rationale for why each highlight is significant",
+                "Low-signal refactors (e.g., rename-only or formatting-only diffs) are excluded from highlights"
+              ],
+              "priority": "critical",
+              "tags": [
+                "analysis",
+                "diff",
+                "summarization"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T22:06:30.933Z",
+              "completedAt": "2026-02-22T22:12:58.603Z"
+            },
+            {
+              "id": "bd23cd77-1f6e-45cf-988e-8bbd4e2556dd",
+              "title": "Generate reviewer-first overview section without file/line enumerations",
+              "status": "completed",
+              "level": "task",
+              "description": "Update markdown generation to present a compact narrative of important changes and explicitly avoid long file-by-file or line-by-line lists that reduce review clarity.",
+              "acceptanceCriteria": [
+                "Default PR markdown contains an 'Important Changes' narrative section with feature/function summaries",
+                "Default output does not include exhaustive per-file change listings or line-count tables",
+                "Integration tests fail if generator reintroduces long file/line enumeration patterns in default mode"
+              ],
+              "priority": "high",
+              "tags": [
+                "markdown",
+                "reviewer-experience",
+                "testing"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T22:12:58.770Z",
+              "completedAt": "2026-02-22T22:15:55.866Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ce562321-1e7c-4671-95e5-bcfaad6ce36d",
+      "title": "SourceVision PR Markdown Refresh Degraded-Mode Hardening",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-22T23:34:13.201Z",
+      "completedAt": "2026-02-22T23:34:13.201Z",
+      "children": [
+        {
+          "id": "e228c8a1-994a-48ae-8f5c-931e7d029c09",
+          "title": "Refresh endpoint degraded response parity",
+          "status": "completed",
+          "level": "feature",
+          "description": "Make `/api/sv/pr-markdown/refresh` behave consistently with read/state endpoints by returning structured degraded responses when refresh prerequisites fail but cached markdown is available.",
+          "source": "smart-add",
+          "startedAt": "2026-02-22T23:14:32.541Z",
+          "completedAt": "2026-02-22T23:14:32.541Z",
+          "children": [
+            {
+              "id": "dc66a2b8-1528-4729-84af-9015bf6db2fc",
+              "title": "Implement degraded refresh response contract with cache retention",
+              "status": "completed",
+              "level": "task",
+              "description": "Ensure refresh returns a non-500 structured payload when generation fails for known git/base-branch conditions and cached markdown exists, so users keep usable output instead of losing access.",
+              "acceptanceCriteria": [
+                "When cached markdown exists and refresh encounters a classified git/base-branch failure, the endpoint responds with HTTP 200 and a `degraded` status instead of HTTP 500",
+                "Response includes cached markdown content and last-refreshed metadata without mutation",
+                "Unhandled/unknown errors still return HTTP 500 with existing error envelope"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "api",
+                "pr-markdown",
+                "error-handling"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T22:48:37.855Z",
+              "completedAt": "2026-02-22T23:03:08.239Z",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "content_overlap",
+                "reasonRef": "content_overlap:6f6112ac-1db6-4a44-a856-c2b616e9409d",
+                "matchedItemId": "6f6112ac-1db6-4a44-a856-c2b616e9409d",
+                "matchedItemTitle": "Implement normalized Codex response extraction in Hench run parser",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-22T22:31:38.494Z"
+              }
+            },
+            {
+              "id": "0c396566-05c8-46af-86a8-a8b4eedd0995",
+              "title": "Add refresh failure classifier for git and base-branch resolution errors",
+              "status": "completed",
+              "level": "task",
+              "description": "Classify refresh failures into explicit diagnostic codes so clients can provide precise remediation guidance and avoid generic server-error messaging.",
+              "acceptanceCriteria": [
+                "Classifier emits distinct codes for `missing_git`, `not_repo`, `unresolved_main_or_origin_main`, `fetch_failed`, `rev_parse_failed`, and `diff_failed`",
+                "Each classified code is propagated in refresh response diagnostics when triggered",
+                "Classifier is reused by refresh flow logic rather than duplicating ad-hoc string checks"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "api",
+                "diagnostics",
+                "git"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T22:35:41.376Z",
+              "completedAt": "2026-02-22T22:48:37.682Z"
+            },
+            {
+              "id": "8d9092cb-70b8-4dd9-8dc2-5bdf10c16807",
+              "title": "Attach actionable remediation hints to degraded diagnostics",
+              "status": "completed",
+              "level": "task",
+              "description": "Provide operator-ready next steps in refresh responses so users can recover from degraded mode without reading logs or source code.",
+              "acceptanceCriteria": [
+                "Each diagnostic code includes at least one remediation hint tailored to that failure mode",
+                "Hints are present in degraded refresh responses and omitted from successful refresh responses",
+                "Hints for unresolved base branch explicitly reference checking `main` and `origin/main` availability"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "api",
+                "ux",
+                "diagnostics"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T23:03:08.444Z",
+              "completedAt": "2026-02-22T23:14:32.431Z"
+            }
+          ]
+        },
+        {
+          "id": "39cfec87-52fc-4c7b-bc2c-c6a6581f5138",
+          "title": "PR Markdown UI messaging and regression coverage",
+          "status": "completed",
+          "level": "feature",
+          "description": "Align UI behavior and tests with degraded refresh responses so users see clear, cause-specific messaging while cached markdown remains available.",
+          "source": "smart-add",
+          "startedAt": "2026-02-22T23:34:13.134Z",
+          "completedAt": "2026-02-22T23:34:13.134Z",
+          "children": [
+            {
+              "id": "6364d2f6-3c9d-42bf-b9c7-d2396b568aaa",
+              "title": "Render degraded refresh banners with diagnostic-specific messaging",
+              "status": "completed",
+              "level": "task",
+              "description": "Update PR Markdown tab messaging to display targeted degraded-state notices based on diagnostic codes while preserving cached markdown visibility.",
+              "acceptanceCriteria": [
+                "UI shows cached markdown content when refresh response status is degraded",
+                "UI displays diagnostic-specific message variants for all supported codes",
+                "UI does not show generic refresh failure copy for classified degraded responses"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-ui",
+                "sourcevision",
+                "pr-markdown",
+                "messaging"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T23:23:02.952Z",
+              "completedAt": "2026-02-22T23:29:27.047Z"
+            },
+            {
+              "id": "d63a5c9b-0819-46be-a233-4ab5450a2430",
+              "title": "Surface remediation hints in PR Markdown refresh error panel",
+              "status": "completed",
+              "level": "task",
+              "description": "Expose server-provided remediation hints directly in the PR Markdown tab so users can take immediate recovery actions.",
+              "acceptanceCriteria": [
+                "When degraded response includes remediation hints, UI renders them as a visible actionable list",
+                "Hints are hidden when refresh succeeds or no hints are provided",
+                "Hint rendering is deterministic and preserves server-provided order"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-ui",
+                "sourcevision",
+                "error-handling"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T23:29:27.215Z",
+              "completedAt": "2026-02-22T23:34:13.006Z"
+            },
+            {
+              "id": "943a20b0-cea4-4177-809e-943fb6f24470",
+              "title": "Add integration tests for degraded refresh API and UI parity",
+              "status": "completed",
+              "level": "task",
+              "description": "Prevent regressions by validating refresh behavior, diagnostics, cache retention, and UI messaging across all targeted failure classes.",
+              "acceptanceCriteria": [
+                "API integration tests cover each classified failure code with cached markdown present and assert non-500 degraded responses",
+                "API tests assert cached markdown payload retention for degraded responses",
+                "UI integration tests assert diagnostic-specific messaging and remediation hint rendering for degraded responses"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "integration",
+                "sourcevision",
+                "web-ui"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T23:14:32.656Z",
+              "completedAt": "2026-02-22T23:23:02.793Z",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "content_overlap",
+                "reasonRef": "content_overlap:00abc668-92cb-46fc-a6b7-a48733e8d3c9",
+                "matchedItemId": "00abc668-92cb-46fc-a6b7-a48733e8d3c9",
+                "matchedItemTitle": "Add integration tests for refresh behavior and fallback scenarios",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-22T22:31:38.494Z"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "f5e0f107-d475-44f7-8c20-7e01dec68557",
+      "title": "SourceVision PR Markdown Git Preflight and Credential Diagnostics",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-23T02:33:50.175Z",
+      "completedAt": "2026-02-23T02:33:50.175Z",
+      "children": [
+        {
+          "id": "1ad2cc0d-78ce-499d-afa5-ecb786523a3e",
+          "title": "Pre-refresh Git Environment Validation",
+          "status": "completed",
+          "level": "feature",
+          "description": "Validate git prerequisites before PR markdown generation so refresh failures are detected early and reported with precise root causes.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T00:51:29.431Z",
+          "completedAt": "2026-02-23T00:51:29.431Z",
+          "children": [
+            {
+              "id": "6304783a-0e48-4bee-b9f4-82c5f4407ac3",
+              "title": "Implement repository state preflight before PR markdown refresh",
+              "status": "completed",
+              "level": "task",
+              "description": "Add a preflight step that verifies the working directory is a git repository and the current HEAD is attached to a branch before any diff or fetch operation runs.",
+              "acceptanceCriteria": [
+                "Refresh flow runs repository-state preflight before invoking diff generation",
+                "When executed outside a git repository, response returns error code `NOT_A_REPO` and does not attempt diff/fetch",
+                "When HEAD is detached, response returns error code `DETACHED_HEAD` and includes current commit SHA in diagnostics",
+                "Unit tests cover success and both failure paths"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "pr-markdown",
+                "git",
+                "backend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T23:56:34.379Z",
+              "completedAt": "2026-02-23T00:00:38.458Z"
+            },
+            {
+              "id": "a4c20a31-3d46-4026-8032-92082153cede",
+              "title": "Validate base reference existence and shallow-clone readiness",
+              "status": "completed",
+              "level": "task",
+              "description": "Ensure the configured base reference can be resolved locally and handle shallow history limitations before attempting branch comparison.",
+              "acceptanceCriteria": [
+                "Preflight checks whether configured base ref resolves to a valid commit",
+                "If base ref is missing, response returns `MISSING_BASE_REF` with the unresolved ref name",
+                "If repository is shallow and lacks required history, response returns `SHALLOW_CLONE`",
+                "Integration tests simulate missing base ref and shallow clone scenarios with deterministic outcomes"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "pr-markdown",
+                "git",
+                "diagnostics"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T00:51:18.343Z",
+              "completedAt": "2026-02-23T00:51:29.323Z"
+            },
+            {
+              "id": "f28aa3d3-61ba-4f72-a180-0ce5d2778756",
+              "title": "Add remote reachability and credential preflight checks",
+              "status": "completed",
+              "level": "task",
+              "description": "Proactively test remote connectivity and authentication so fetch-related issues are classified before refresh attempts fail with generic git errors.",
+              "acceptanceCriteria": [
+                "Preflight performs a lightweight remote check against the configured base remote",
+                "Credential failures are classified as `FETCH_DENIED` when remote reports authorization/authentication rejection",
+                "Connectivity failures are classified as `NETWORK_DNS_ERROR` when DNS or transport connection fails",
+                "Refresh aborts before diff generation when remote or credential preflight fails",
+                "Tests cover auth-denied and network/DNS failure classification"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "pr-markdown",
+                "auth",
+                "network"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-22T23:46:33.704Z",
+              "completedAt": "2026-02-22T23:56:34.216Z"
+            }
+          ]
+        },
+        {
+          "id": "acefbd28-96c3-40fe-a8fe-0539b9eee1bb",
+          "title": "Targeted Remediation Contract for Preflight Failures",
+          "status": "completed",
+          "level": "feature",
+          "description": "Return actionable, error-specific remediation guidance so operators can recover quickly without inspecting raw git errors.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T02:33:50.106Z",
+          "completedAt": "2026-02-23T02:33:50.106Z",
+          "children": [
+            {
+              "id": "148e5fc6-b111-491f-b285-d9abd7b67329",
+              "title": "Define structured preflight error schema with remediation commands",
+              "status": "completed",
+              "level": "task",
+              "description": "Extend refresh diagnostics contract to include stable failure codes, human-readable cause summaries, and command-ready remediation steps for each classified preflight error.",
+              "acceptanceCriteria": [
+                "API response includes fields for `code`, `summary`, and `remediationCommands` on preflight failure",
+                "Each failure code in scope (`NOT_A_REPO`, `MISSING_BASE_REF`, `FETCH_DENIED`, `NETWORK_DNS_ERROR`, `DETACHED_HEAD`, `SHALLOW_CLONE`) maps to at least one remediation command",
+                "Schema validation fails when a preflight error is returned without remediation commands",
+                "Contract tests verify response shape for all scoped failure codes"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "api",
+                "diagnostics",
+                "contract"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T02:07:20.339Z",
+              "completedAt": "2026-02-23T02:22:20.642Z"
+            },
+            {
+              "id": "959b5160-522d-4e65-be1a-858d938a3c33",
+              "title": "Replace generic PR markdown refresh git errors with classified preflight output",
+              "status": "completed",
+              "level": "task",
+              "description": "Update refresh endpoint and PR Markdown UI messaging to prefer classified preflight diagnostics and hide low-signal raw git diff failure text.",
+              "acceptanceCriteria": [
+                "When preflight fails, endpoint returns classified diagnostics and skips generic diff error wrapping",
+                "UI renders failure-specific remediation commands and does not display raw git stderr by default",
+                "Existing degraded-mode refresh behavior remains unchanged for non-preflight failures",
+                "Integration tests confirm targeted messaging appears for auth, network, and detached-head cases"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "web-ui",
+                "pr-markdown",
+                "ux"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T02:22:20.800Z",
+              "completedAt": "2026-02-23T02:33:50.015Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b52062bc-db8a-424a-b470-78c735f83174",
+      "title": "SourceVision Semantic Diff Failure UX Hardening",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-23T01:39:38.148Z",
+      "completedAt": "2026-02-23T01:39:38.148Z",
+      "children": [
+        {
+          "id": "8fd7d8cf-391f-4caf-a205-928c9d788a34",
+          "title": "Diff-stage cache safety and API diagnostics",
+          "status": "completed",
+          "level": "feature",
+          "description": "Harden refresh behavior when semantic diff inspection fails so users keep prior output and receive machine-readable failure details.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T00:56:26.981Z",
+          "completedAt": "2026-02-23T00:56:26.981Z",
+          "children": [
+            {
+              "id": "12b94a64-3fa2-4777-a4f7-67895699eb48",
+              "title": "Guard cached PR markdown from semantic diff-stage invalidation",
+              "status": "completed",
+              "level": "task",
+              "description": "Prevent refresh from overwriting or clearing the last successful PR markdown artifact when failure occurs specifically during semantic diff inspection, preserving reviewer continuity.",
+              "acceptanceCriteria": [
+                "When semantic diff inspection throws, cached PR markdown content remains unchanged on disk",
+                "Refresh response indicates degraded status and references the preserved cache timestamp",
+                "No empty or partial markdown artifact is written for failed diff-stage refresh attempts"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "refresh",
+                "cache",
+                "api"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T00:35:58.768Z",
+              "completedAt": "2026-02-23T00:45:07.155Z"
+            },
+            {
+              "id": "1d644e01-bbaa-481a-95ef-bea016092865",
+              "title": "Return structured semantic-diff failure payload in refresh API",
+              "status": "completed",
+              "level": "task",
+              "description": "Expose a stable API contract for diff failures so UI and automation can reliably parse error type, failing stage, command context, and remediation metadata.",
+              "acceptanceCriteria": [
+                "Refresh API returns a typed error object with stage set to semantic-diff when diff inspection fails",
+                "Payload includes fields for failing git subcommand, stderr excerpt, and reproducible command list",
+                "Contract is covered by integration tests that validate field presence and schema for semantic-diff failures"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "api",
+                "diagnostics",
+                "schema"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T00:51:43.796Z",
+              "completedAt": "2026-02-23T00:56:26.856Z"
+            }
+          ]
+        },
+        {
+          "id": "20bbdb7b-1643-4e14-86de-babe1d145f5e",
+          "title": "Actionable UI diagnostics and retry guidance",
+          "status": "completed",
+          "level": "feature",
+          "description": "Improve operator recovery by surfacing exact failure context and tailored next actions based on failure category.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T01:39:38.087Z",
+          "completedAt": "2026-02-23T01:39:38.087Z",
+          "children": [
+            {
+              "id": "39a4e702-15cd-4a03-8e5f-650736e941b1",
+              "title": "Render semantic-diff failure diagnostics in PR Markdown UI banner and details panel",
+              "status": "completed",
+              "level": "task",
+              "description": "Show structured failure data in the PR Markdown tab while continuing to display stale cached output, so users can diagnose issues without losing context.",
+              "acceptanceCriteria": [
+                "UI displays a degraded-state banner when API reports semantic-diff failure",
+                "Details panel shows failing git subcommand and stderr excerpt from API response",
+                "Cached markdown remains visible and copyable while diagnostics are displayed",
+                "UI displays semantic-stage-specific remediation guidance distinct from name-status failures.",
+                "UI shows fallback state that explicitly indicates cached PR markdown was preserved.",
+                "End-to-end test validates API diagnostics are rendered with failing subcommand details and stage-appropriate remediation text."
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "web",
+                "ux",
+                "diagnostics",
+                "ui",
+                "pr-markdown",
+                "fallback"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T01:33:04.446Z",
+              "completedAt": "2026-02-23T01:39:37.998Z",
+              "mergedProposals": [
+                {
+                  "proposalNodeKey": "p0:task:1:1",
+                  "proposalTitle": "Render stage-specific remediation guidance for semantic diff tooling-drift failures in PR Markdown UI",
+                  "proposalKind": "task",
+                  "reason": "content_overlap",
+                  "score": 0.6638040322250849,
+                  "mergedAt": "2026-02-23T03:15:32.252Z",
+                  "source": "smart-add"
+                }
+              ]
+            },
+            {
+              "id": "52d8d372-1a64-4119-b590-9b4472e3016a",
+              "title": "Classify retry guidance for fetch failures versus local history failures",
+              "status": "completed",
+              "level": "task",
+              "description": "Differentiate remediation paths so users receive relevant retry instructions depending on whether failure stems from remote fetch/credentials or local branch/history state.",
+              "acceptanceCriteria": [
+                "Failure classifier maps known fetch-related stderr patterns to fetch retry guidance",
+                "Failure classifier maps local-history stderr patterns to local remediation guidance",
+                "UI and API both expose the resolved guidance category and command suggestions for each classification path"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "retry",
+                "git",
+                "ux"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T01:20:36.919Z",
+              "completedAt": "2026-02-23T01:33:04.287Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5e38623f-cb68-4916-afd9-31623ab4286b",
+      "title": "SourceVision PR Markdown Artifact-Based Fallback Mode",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-23T02:07:03.716Z",
+      "completedAt": "2026-02-23T02:07:03.716Z",
+      "children": [
+        {
+          "id": "39d1c66e-759d-4d23-a74d-1245a9187919",
+          "title": "Fallback Triggering and Orchestration",
+          "status": "completed",
+          "level": "feature",
+          "description": "Ensure PR markdown generation still succeeds when git-based fetch or diff operations fail by switching to a deterministic artifact-based fallback path.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T01:11:08.148Z",
+          "completedAt": "2026-02-23T01:11:08.148Z",
+          "children": [
+            {
+              "id": "96e3887b-b737-44c7-89a7-3b6f09c16826",
+              "title": "Implement git-failure fallback routing in PR markdown refresh pipeline",
+              "status": "completed",
+              "level": "task",
+              "description": "Route refresh execution to a fallback generator whenever preflight, fetch, or diff stages fail so the endpoint returns usable PR content instead of only an error state.",
+              "acceptanceCriteria": [
+                "Given a simulated fetch failure, refresh returns HTTP success with fallback payload instead of aborting generation",
+                "Given a simulated diff-stage failure, refresh returns fallback payload and does not clear previously cached successful markdown",
+                "Fallback routing is only activated for classified git/preflight/diff failures and not for unrelated internal exceptions"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "pr-markdown",
+                "fallback",
+                "backend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T00:45:07.299Z",
+              "completedAt": "2026-02-23T00:51:18.178Z"
+            },
+            {
+              "id": "a4f1f935-78d3-439b-aee8-ef138c590088",
+              "title": "Extract branch-relevant completed Rex work items for fallback summaries",
+              "status": "completed",
+              "level": "task",
+              "description": "Build a resolver that gathers completed epics/tasks associated with the active branch context so fallback output reflects actual delivered work.",
+              "acceptanceCriteria": [
+                "Resolver returns completed Rex items scoped to the current branch context when mappings exist",
+                "Resolver excludes non-completed items from fallback summary inputs",
+                "When no branch-scoped Rex items are found, resolver returns an explicit empty-result signal consumed by fallback metadata"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "pr-markdown",
+                "branch-context",
+                "backend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T00:56:27.109Z",
+              "completedAt": "2026-02-23T01:02:20.645Z"
+            },
+            {
+              "id": "c1f3cf08-1918-41e8-80b8-ca4571facb0b",
+              "title": "Ingest Hench run artifacts into fallback summary input model",
+              "status": "completed",
+              "level": "task",
+              "description": "Incorporate recent run artifacts as secondary evidence so fallback summaries include execution context when git diff evidence is unavailable.",
+              "acceptanceCriteria": [
+                "Fallback input model includes Hench run identifiers and task associations when artifacts are present",
+                "Artifact parser tolerates missing or partial run fields without throwing",
+                "Fallback generator omits Hench section cleanly when no valid artifacts are available"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "pr-markdown",
+                "artifacts",
+                "backend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T01:02:20.814Z",
+              "completedAt": "2026-02-23T01:11:08.040Z"
+            }
+          ]
+        },
+        {
+          "id": "238c6bbe-efc7-478f-8dfd-e3a1414de563",
+          "title": "Fallback Output Semantics and Metadata",
+          "status": "completed",
+          "level": "feature",
+          "description": "Make fallback output explicit, reviewable, and trustworthy by labeling mode and attaching measurable coverage and confidence signals.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T02:07:03.655Z",
+          "completedAt": "2026-02-23T02:07:03.655Z",
+          "children": [
+            {
+              "id": "cf3dad3f-3dec-4023-9d8e-a59a691bfc68",
+              "title": "Render explicit fallback-mode labeling in generated PR markdown",
+              "status": "completed",
+              "level": "task",
+              "description": "Prevent reviewer confusion by clearly marking markdown generated without git diff data and documenting the substitute evidence sources used.",
+              "acceptanceCriteria": [
+                "Generated markdown includes a visible fallback mode label in the overview section",
+                "Markdown lists the evidence sources used (Rex, Hench) when present",
+                "Primary non-fallback markdown template remains unchanged when git diff succeeds"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "pr-markdown",
+                "ux-copy",
+                "template"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T02:01:22.580Z",
+              "completedAt": "2026-02-23T02:07:03.567Z"
+            },
+            {
+              "id": "c8dbfc26-bf45-491d-8672-ccaf886f7d9d",
+              "title": "Compute fallback confidence and coverage metrics from available evidence",
+              "status": "completed",
+              "level": "task",
+              "description": "Quantify how complete and reliable the fallback summary is so reviewers can judge risk when git data is unavailable.",
+              "acceptanceCriteria": [
+                "Coverage metric reports percentage of expected evidence sources found among configured fallback inputs",
+                "Confidence score decreases when required inputs are missing and increases when both Rex and Hench evidence are present",
+                "Metric outputs are deterministic for identical input artifacts"
+              ],
+              "priority": "high",
+              "tags": [
+                "metrics",
+                "pr-markdown",
+                "fallback",
+                "backend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T01:40:29.797Z",
+              "completedAt": "2026-02-23T01:49:05.932Z"
+            },
+            {
+              "id": "84d796df-b8f1-46cc-988e-c77c86412bf7",
+              "title": "Expose fallback metadata in refresh API and cached artifact payload",
+              "status": "completed",
+              "level": "task",
+              "description": "Persist and return mode, confidence, and coverage fields so UI and downstream automation can distinguish fallback outputs programmatically.",
+              "acceptanceCriteria": [
+                "Refresh API response includes mode, confidence, and coverage fields when fallback is used",
+                "Cached PR markdown artifact stores the same fallback metadata fields alongside content",
+                "Non-fallback responses explicitly report normal mode and do not include stale fallback metadata"
+              ],
+              "priority": "high",
+              "tags": [
+                "api",
+                "cache",
+                "pr-markdown",
+                "metadata"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T01:49:06.091Z",
+              "completedAt": "2026-02-23T02:01:22.422Z"
+            }
+          ]
+        },
+        {
+          "id": "3c667571-af87-44b2-86c5-7752d0b58d57",
+          "title": "Fallback Trigger and Quality Regression Coverage",
+          "status": "completed",
+          "level": "feature",
+          "description": "Add automated tests validating fallback activation, output structure, and metadata correctness across key failure modes.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T00:51:43.680Z",
+          "completedAt": "2026-02-23T00:51:43.680Z",
+          "children": [
+            {
+              "id": "76f82338-2974-4384-a6ed-d4b944cce129",
+              "title": "Add unit tests for fallback trigger classification across git failure modes",
+              "status": "completed",
+              "level": "task",
+              "description": "Protect routing logic by verifying that only intended preflight/fetch/diff failures activate fallback generation.",
+              "acceptanceCriteria": [
+                "Tests cover at least preflight failure, fetch failure, and diff failure trigger paths",
+                "Tests assert non-git internal errors do not silently switch to fallback",
+                "All trigger classification tests pass in CI without network dependencies"
+              ],
+              "priority": "critical",
+              "tags": [
+                "tests",
+                "unit",
+                "fallback",
+                "sourcevision"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T00:00:38.632Z",
+              "completedAt": "2026-02-23T00:13:33.029Z"
+            },
+            {
+              "id": "f94472c7-65db-4909-aac0-c2cb2677b3d5",
+              "title": "Add integration tests for fallback markdown labeling and metadata fields",
+              "status": "completed",
+              "level": "task",
+              "description": "Validate end-to-end behavior so generated fallback markdown and API payloads remain reviewer-safe and machine-consumable.",
+              "acceptanceCriteria": [
+                "Integration test asserts fallback markdown includes explicit mode label when diff generation is forced to fail",
+                "Integration test asserts API payload includes confidence and coverage metadata with valid numeric ranges",
+                "Integration test asserts successful git-diff path does not show fallback label"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "integration",
+                "pr-markdown",
+                "metadata"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T00:51:29.541Z",
+              "completedAt": "2026-02-23T00:51:43.561Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a04a7979-057e-4cdf-a849-63ff9e966063",
+      "title": "Git Credential Helper Opt-In Recovery",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-23T01:20:36.805Z",
+      "completedAt": "2026-02-23T01:20:36.805Z",
+      "children": [
+        {
+          "id": "4d3d81ee-2ec5-486c-a768-d0b0a333b90d",
+          "title": "Credential Helper Command Surface",
+          "status": "completed",
+          "level": "feature",
+          "description": "Provide an explicit, user-invoked path to set up git credentials after authentication-related refresh failures without introducing interactive prompts into default flows.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T01:20:36.708Z",
+          "completedAt": "2026-02-23T01:20:36.708Z",
+          "children": [
+            {
+              "id": "d4dce138-cf33-4c06-a6c3-a8e01b54ce2c",
+              "title": "Add opt-in git credential helper command to CLI",
+              "status": "completed",
+              "level": "task",
+              "description": "Create a dedicated command users can run on demand to diagnose and set up git credentials, so remediation is explicit and repeatable instead of embedded in normal refresh execution.",
+              "acceptanceCriteria": [
+                "Running the command starts a credential setup workflow only when explicitly invoked",
+                "The command is discoverable in CLI help output with usage and examples",
+                "Command exits with code 0 on successful setup checks and non-zero on unrecoverable setup errors"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "sourcevision",
+                "git-auth"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T01:11:08.262Z",
+              "completedAt": "2026-02-23T01:13:17.427Z"
+            },
+            {
+              "id": "9f5d63a7-cac0-40bd-9c37-752c58824e86",
+              "title": "Implement provider-aware auth checks and login handoff",
+              "status": "completed",
+              "level": "task",
+              "description": "Support practical setup paths by checking `gh auth status` when GitHub CLI is available and providing platform credential-manager guidance when it is not, reducing manual troubleshooting.",
+              "acceptanceCriteria": [
+                "If `gh` is installed, workflow runs `gh auth status` and offers `gh auth login` handoff when unauthenticated",
+                "If `gh` is not installed, workflow returns OS-specific credential setup guidance text",
+                "Workflow output distinguishes between authenticated, unauthenticated, and tool-unavailable states"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "github-cli",
+                "credentials"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T01:13:17.593Z",
+              "completedAt": "2026-02-23T01:20:36.616Z"
+            }
+          ]
+        },
+        {
+          "id": "aafa20ab-a99a-439f-b86d-84d1504b711a",
+          "title": "Non-Interactive Refresh Compatibility",
+          "status": "completed",
+          "level": "feature",
+          "description": "Integrate credential helper guidance into failure handling while preserving default non-interactive behavior for automated and scripted refresh runs.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T00:35:58.630Z",
+          "completedAt": "2026-02-23T00:35:58.630Z",
+          "children": [
+            {
+              "id": "49d8b51b-bba4-4c86-879d-ef4214a29094",
+              "title": "Classify git auth failures and attach opt-in remediation hints",
+              "status": "completed",
+              "level": "task",
+              "description": "When refresh fails due to credential or auth issues, return a specific failure classification with a clear suggestion to run the new helper command instead of generic git errors.",
+              "acceptanceCriteria": [
+                "Auth-related fetch failures map to a dedicated error classification distinct from network/history failures",
+                "Failure payload includes the exact opt-in helper command users should run next",
+                "Non-auth git failures do not include credential-helper remediation hints"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "refresh",
+                "error-handling"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T00:13:33.251Z",
+              "completedAt": "2026-02-23T00:23:46.208Z"
+            },
+            {
+              "id": "0030ced7-ebfd-4231-b482-9b9f593ac578",
+              "title": "Enforce non-interactive default behavior in refresh path",
+              "status": "completed",
+              "level": "task",
+              "description": "Ensure refresh never opens interactive credential flows unless explicitly requested, preventing hangs in CI and preserving existing automation behavior.",
+              "acceptanceCriteria": [
+                "Default refresh execution does not invoke `gh auth login` or any interactive credential prompt",
+                "Interactive helper flow runs only through explicit user opt-in command or explicit opt-in flag",
+                "Integration tests verify CI-like non-TTY refresh continues to fail fast with actionable guidance"
+              ],
+              "priority": "critical",
+              "tags": [
+                "ci",
+                "non-interactive",
+                "regression"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T00:23:46.371Z",
+              "completedAt": "2026-02-23T00:35:58.528Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fd1c1b78-e018-46a5-b996-cd7d2ef753d4",
+      "title": "SourceVision Semantic Diff Determinism and Tooling-Drift Hardening",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-23T03:47:30.574Z",
+      "completedAt": "2026-02-23T03:47:30.574Z",
+      "children": [
+        {
+          "id": "71e5ae15-08f4-4c57-ba63-b9df2edbe868",
+          "title": "Deterministic Semantic Diff Command Execution",
+          "status": "completed",
+          "level": "feature",
+          "description": "Make semantic diff extraction resilient to local Git config/tooling differences by forcing a stable, non-interactive command path.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T03:33:09.436Z",
+          "completedAt": "2026-02-23T03:33:09.436Z",
+          "children": [
+            {
+              "id": "32ad60e5-8dc1-4f72-a0d4-c3adc80c630d",
+              "title": "Enforce deterministic non-interactive flags for semantic diff git invocations",
+              "status": "completed",
+              "level": "task",
+              "description": "Prevent local external diff drivers, textconv filters, or interactive paging from changing semantic diff behavior so refresh results stay consistent across environments.",
+              "acceptanceCriteria": [
+                "Semantic diff extraction runs with `--no-ext-diff` and `--no-textconv` on every refresh path.",
+                "Semantic diff command execution is non-interactive and does not invoke a pager or prompt for input.",
+                "Integration test verifies identical semantic diff extraction behavior when local git config enables external diff/textconv."
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "git",
+                "pr-markdown",
+                "reliability"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T03:16:28.797Z",
+              "completedAt": "2026-02-23T03:21:56.401Z"
+            },
+            {
+              "id": "440381e9-8d67-40c7-8d89-07a18185e56c",
+              "title": "Split semantic diff and name-status diff execution into independently classified stages",
+              "status": "completed",
+              "level": "task",
+              "description": "Ensure a semantic diff failure does not get conflated with name-status collection so diagnostics and fallback decisions are accurate.",
+              "acceptanceCriteria": [
+                "Semantic diff and name-status diff run as separate stage executions with distinct status fields.",
+                "A semantic diff failure with successful name-status diff returns a mixed-stage result instead of a single generic failure.",
+                "Regression test covers semantic-stage failure while name-status stage succeeds and validates separate classification output."
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "diagnostics",
+                "api"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T03:21:56.568Z",
+              "completedAt": "2026-02-23T03:33:09.323Z"
+            }
+          ]
+        },
+        {
+          "id": "d01661ee-e9ac-46e0-a472-f5025c378fea",
+          "title": "Subcommand-Level Diagnostics and Remediation Surfacing",
+          "status": "completed",
+          "level": "feature",
+          "description": "Expose actionable failure details for semantic diff drift scenarios in both API and UI without losing usable cached output.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T03:47:30.514Z",
+          "completedAt": "2026-02-23T03:47:30.514Z",
+          "children": [
+            {
+              "id": "43601fbb-db84-4506-b81f-5489d422bd56",
+              "title": "Include exact failing semantic diff subcommand metadata in refresh diagnostics",
+              "status": "completed",
+              "level": "task",
+              "description": "Give operators precise visibility into which git subcommand failed so they can quickly reproduce and fix local tooling drift issues.",
+              "acceptanceCriteria": [
+                "Refresh API error payload includes the failing semantic diff subcommand string and stage identifier.",
+                "Payload preserves stderr/exit-code context in structured fields suitable for UI rendering.",
+                "Sensitive values are redacted according to existing logging/error policies."
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "api",
+                "observability"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T03:33:09.553Z",
+              "completedAt": "2026-02-23T03:47:30.401Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d8b6399f-f670-4018-a9c9-366534f485ae",
+      "title": "Git-Independent PR Markdown Generation",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "29180c95-a958-4aac-b903-7af82fdb16e2",
+          "title": "Branch-Scoped Work Evidence Pipeline",
+          "status": "completed",
+          "level": "feature",
+          "description": "Make PR markdown generation rely on Rex and Hench artifacts from the active branch instead of repository diff connectivity.",
+          "source": "smart-add",
+          "startedAt": "2026-02-23T04:27:36.131Z",
+          "completedAt": "2026-02-23T04:27:36.131Z",
+          "children": [
+            {
+              "id": "32f4490a-631a-408e-8996-40c25a8843b9",
+              "title": "Implement branch-scoped Rex work item collector",
+              "status": "completed",
+              "level": "task",
+              "description": "Build a collector that selects epics, features, and tasks relevant to the current branch from Rex state so PR summaries are grounded in planned and completed work, not git remote reachability.",
+              "acceptanceCriteria": [
+                "Collector returns only Rex items associated with the active branch context",
+                "Collector excludes deleted items and includes status and completion timestamps when present",
+                "Unit tests cover mixed-branch datasets and verify no cross-branch leakage"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "rex",
+                "pr-markdown"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T04:05:34.022Z",
+              "completedAt": "2026-02-23T04:17:50.183Z",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "content_overlap",
+                "reasonRef": "content_overlap:fb4d883e-12aa-4d65-8eed-a7dd9b5514d3",
+                "matchedItemId": "fb4d883e-12aa-4d65-8eed-a7dd9b5514d3",
+                "matchedItemTitle": "Implement branch-to-PRD work item resolver",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-23T03:54:38.854Z"
+              }
+            },
+            {
+              "id": "96fd82eb-e8c8-462f-9199-bd71bbcc6b6e",
+              "title": "Implement branch-scoped Hench run evidence collector",
+              "status": "completed",
+              "level": "task",
+              "description": "Add a run evidence layer that gathers executed-task context from Hench runs tied to the active branch so generated PR markdown reflects actual execution history.",
+              "acceptanceCriteria": [
+                "Collector returns Hench runs linked to the active branch and related Rex task IDs",
+                "Collector surfaces run outcomes and timestamps for summary generation",
+                "Integration tests validate correct filtering when runs exist for multiple branches"
+              ],
+              "priority": "critical",
+              "tags": [
+                "hench",
+                "sourcevision",
+                "pr-markdown"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T03:54:49.347Z",
+              "completedAt": "2026-02-23T04:05:33.851Z"
+            },
+            {
+              "id": "4686bf57-efac-43ee-8bda-49a03644473d",
+              "title": "Replace git-remote dependency in PR markdown refresh flow",
+              "status": "completed",
+              "level": "task",
+              "description": "Refactor the refresh pipeline to use the Rex/Hench branch evidence collectors as the primary and required data source, eliminating dependency on external git repository connectivity.",
+              "acceptanceCriteria": [
+                "PR markdown refresh completes successfully when remote git fetch is unavailable",
+                "Refresh path does not invoke remote connectivity checks in normal generation mode",
+                "Regression tests confirm markdown generation is deterministic from Rex/Hench evidence only"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "refresh",
+                "architecture"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T04:17:50.344Z",
+              "completedAt": "2026-02-23T04:27:36.013Z"
+            }
+          ]
+        },
+        {
+          "id": "1311822b-671e-4fc4-93a0-816540324e25",
+          "title": "Work-History Narrative Synthesis",
+          "status": "pending",
+          "level": "feature",
+          "description": "Generate reviewer-ready PR markdown from completed Rex tasks and corresponding Hench execution history in a consistent structure.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "ffc5324f-2a02-4ea0-be64-ec22d5441e04",
+              "title": "Generate PR sections from executed Rex tasks grouped by epic",
+              "status": "pending",
+              "level": "task",
+              "description": "Create structured markdown sections that group completed branch work by epic and feature so reviewers can quickly understand scope and intent.",
+              "acceptanceCriteria": [
+                "Generated markdown includes epic headings and task-level bullet summaries",
+                "Only completed or explicitly executed tasks are included in the default narrative",
+                "Snapshot tests verify stable section ordering across repeated runs"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "markdown",
+                "rex"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "1a2b9518-e532-4cf1-a69e-d258c7482519",
+              "title": "Attach execution evidence badges to summarized tasks",
+              "status": "in_progress",
+              "level": "task",
+              "description": "Annotate summarized tasks with lightweight execution evidence from Hench (for example run status and timestamp) to improve trust in branch-history-based summaries.",
+              "acceptanceCriteria": [
+                "Each summarized task shows execution evidence when matching Hench data exists",
+                "Tasks without execution evidence are clearly labeled as no run evidence",
+                "Tests validate badge rendering for success, failure, and missing-evidence cases"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "markdown",
+                "ui-data"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T04:33:52.017Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b59bc8e6-e00d-48cf-a932-2516d126ca4e",
+      "title": "PR Markdown View Toggle and Copy UX",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "3d5d8464-5a5d-4b6a-a062-f39146a3191a",
+          "title": "Single-Pane Preview/Raw Toggle",
+          "status": "pending",
+          "level": "feature",
+          "description": "Replace side-by-side rendering with a single-pane mode switch between rendered preview and raw markdown.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "d8f517bf-f868-45c8-aef8-d304a9c157e9",
+              "title": "Refactor PR markdown panel to single-pane mode",
+              "status": "pending",
+              "level": "task",
+              "description": "Update the PR markdown tab layout so only one representation is shown at a time, reducing visual clutter and improving focus.",
+              "acceptanceCriteria": [
+                "UI renders either Preview or Raw mode, never both simultaneously",
+                "Default mode is Preview after opening or refreshing the tab",
+                "Responsive tests confirm correct layout on mobile and desktop widths"
+              ],
+              "priority": "high",
+              "tags": [
+                "web",
+                "sourcevision",
+                "ux"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "cc099982-724b-4155-89d3-9cfa224a58e1",
+              "title": "Implement explicit Preview/Raw toggle control with persisted state",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a clear toggle control so users can switch modes quickly, and persist their last-used mode during the session for convenience.",
+              "acceptanceCriteria": [
+                "Toggle control switches mode without page reload",
+                "Selected mode persists across tab re-renders within the same session",
+                "Accessibility checks confirm keyboard navigation and ARIA state updates"
+              ],
+              "priority": "high",
+              "tags": [
+                "web",
+                "ui-state",
+                "accessibility"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "b0835e33-c7d9-427e-9d8b-813838d6ee48",
+          "title": "Copy-to-Clipboard Workflow",
+          "status": "pending",
+          "level": "feature",
+          "description": "Provide a reliable one-click copy action for raw PR markdown with clear success and failure feedback.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "b1adb5cc-eada-42e2-a43b-8d131cd59d3a",
+              "title": "Add one-click copy action for raw markdown content",
+              "status": "completed",
+              "level": "task",
+              "description": "Implement a dedicated copy button that copies the full generated markdown to clipboard so users can paste directly into PR comments.",
+              "acceptanceCriteria": [
+                "Clicking copy places the complete raw markdown text on the clipboard",
+                "Copy action is available in Raw mode without selecting text manually",
+                "Automated UI test verifies clipboard write call with exact markdown payload"
+              ],
+              "priority": "high",
+              "tags": [
+                "web",
+                "clipboard",
+                "pr-markdown"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-23T04:27:36.249Z",
+              "completedAt": "2026-02-23T04:33:51.834Z"
+            },
+            {
+              "id": "10842c9c-4c80-4976-b784-9c9acfdcce47",
+              "title": "Render copy status and fallback guidance",
+              "status": "pending",
+              "level": "task",
+              "description": "Show immediate success/error feedback for clipboard operations and provide fallback instructions when browser permissions block clipboard access.",
+              "acceptanceCriteria": [
+                "Successful copy displays a visible confirmation message",
+                "Clipboard failures display an error message with manual copy guidance",
+                "Tests cover success and permission-denied clipboard scenarios"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "ux",
+                "error-handling"
+              ],
+              "source": "smart-add",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "semantic_title",
+                "reasonRef": "semantic_title:c529260e-8337-47fc-a512-b1af304b8f78",
+                "matchedItemId": "c529260e-8337-47fc-a512-b1af304b8f78",
+                "matchedItemTitle": "Add stepwise status reporting and restart fallback guidance",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-23T03:54:38.854Z"
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

@@ -15,6 +15,7 @@ export function usage(): void {
           { name: "sourcevision validate [dir]", description: "Validate .sourcevision/ output files" },
           { name: "sourcevision export-pdf [dir]", description: "Export analysis as a PDF report" },
           { name: "sourcevision pr-markdown [dir]", description: "Regenerate PR markdown at .sourcevision/pr-markdown.md" },
+          { name: "sourcevision git-credential-helper", description: "Run interactive GitHub credential setup helper" },
           { name: "sourcevision reset [dir]", description: "Remove .sourcevision/ and start fresh" },
           { name: "sourcevision mcp [dir]", description: "Start MCP server for AI tool integration" },
         ],

@@ -153,7 +153,21 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
       { command: "sourcevision pr-markdown ./project", description: "Regenerate markdown for a specific project" },
       { command: "sv pr-markdown .", description: "Using the 'sv' alias" },
     ],
-    related: ["serve"],
+    related: ["serve", "git-credential-helper"],
+  },
+  "git-credential-helper": {
+    tool: "sourcevision",
+    command: "git-credential-helper",
+    summary: "run interactive GitHub credential setup",
+    usage: "sourcevision git-credential-helper",
+    description:
+      "Checks GitHub CLI auth state (`gh auth status`). If unauthenticated,\n" +
+      "hands off to `gh auth login`. If `gh` is unavailable, shows platform\n" +
+      "credential-manager guidance for git remote operations.",
+    examples: [
+      { command: "sourcevision git-credential-helper", description: "Start interactive GitHub auth setup" },
+    ],
+    related: ["pr-markdown"],
   },
   mcp: {
     tool: "sourcevision",
@@ -181,7 +195,8 @@ const RELATED_COMMANDS: Record<string, string[]> = {
   validate: ["analyze"],
   reset: ["init"],
   "export-pdf": ["analyze"],
-  "pr-markdown": ["serve"],
+  "pr-markdown": ["serve", "git-credential-helper"],
+  "git-credential-helper": ["pr-markdown"],
   mcp: [],
 };
 
