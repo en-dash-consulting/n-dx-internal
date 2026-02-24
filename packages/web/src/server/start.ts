@@ -34,6 +34,115 @@ import { findAvailablePort } from "./port.js";
  */
 export const PORT_FILE = ".n-dx-web.port";
 
+// ── Shutdown handler ──────────────────────────────────────────────────────
+
+/** Maximum time in milliseconds for the full graceful-shutdown sequence. */
+export const DEFAULT_SHUTDOWN_TIMEOUT_MS = 30_000;
+
+/** @internal Injection points used in tests instead of global process calls. */
+export interface ShutdownDeps {
+  /** Replaces `process.exit()` so tests can verify exit codes without dying. */
+  exit?(code: number): void;
+}
+
+/**
+ * Registers SIGINT / SIGTERM signal handlers that co-ordinate a graceful
+ * shutdown of all dashboard components in dependency order:
+ *
+ *   1. Hench child processes  (highest priority: avoids orphaned agents)
+ *   2. WebSocket connections  (clients receive a clean close frame)
+ *   3. HTTP server            (stops accepting; drains in-flight requests)
+ *   4. Port file              (orchestrator sees the port as free)
+ *
+ * **Double-signal handling** — a second SIGINT/SIGTERM received while the
+ * graceful sequence is still running triggers an immediate `exit(1)`, so an
+ * operator can always escape a stuck shutdown with a second Ctrl-C.
+ *
+ * **Timeout** — if the full sequence exceeds `timeoutMs` the process is
+ * force-killed via `exit(1)` to prevent indefinite hangs.
+ *
+ * @param server       The HTTP server to drain and close.
+ * @param ws           WebSocket manager whose connections should be torn down.
+ * @param portFilePath Port file path to remove so the orchestrator sees the port as free.
+ * @param actualPort   Bound port number (for log messages only).
+ * @param timeoutMs    Max ms to wait before forcing exit (default 30 s, override
+ *                     via `N_DX_SHUTDOWN_TIMEOUT_MS` env var).
+ * @param deps         Injection points for unit testing (do not use in production).
+ */
+export function registerShutdownHandlers(
+  server: { close(cb: (err?: Error) => void): void },
+  ws: { shutdown(): void },
+  portFilePath: string,
+  actualPort: number,
+  timeoutMs: number = Number(process.env["N_DX_SHUTDOWN_TIMEOUT_MS"] ?? DEFAULT_SHUTDOWN_TIMEOUT_MS),
+  deps: ShutdownDeps = {},
+): void {
+  const doExit = deps.exit ?? ((code: number) => process.exit(code));
+
+  const forceExit = (signal: string): void => {
+    console.log(`[shutdown] ${signal} received during shutdown — forcing immediate exit`);
+    doExit(1);
+  };
+
+  const gracefulShutdown = async (signal: string): Promise<void> => {
+    // Re-register for a second signal → immediate force exit.
+    // This lets an operator escape a stuck shutdown by pressing Ctrl-C again.
+    process.once("SIGINT", () => forceExit("SIGINT"));
+    process.once("SIGTERM", () => forceExit("SIGTERM"));
+
+    console.log(`[shutdown] graceful shutdown initiated (${signal})`);
+
+    // Arm an overall deadline so a hung cleanup step cannot block exit forever.
+    const timer = setTimeout(() => {
+      console.error(`[shutdown] timed out after ${timeoutMs}ms — forcing exit`);
+      doExit(1);
+    }, timeoutMs);
+    // Does not prevent the event loop from exiting if cleanup completes first.
+    timer.unref();
+
+    // Step 1 — terminate hench child processes (highest priority: avoids orphaned agents)
+    await shutdownActiveExecutions();
+
+    // Step 2 — close WebSocket connections (sends close frames, frees sockets)
+    ws.shutdown();
+    console.log("[shutdown] WebSocket connections closed");
+
+    // Step 3 — close HTTP server (stop accepting new connections; wait for
+    //           in-flight requests to drain so the port is fully released)
+    await new Promise<void>((resolve) => {
+      server.close((err) => {
+        if (err) {
+          console.error(`[shutdown] server close error: ${err.message}`);
+        } else {
+          console.log(`[shutdown] HTTP server closed — port ${actualPort} released`);
+        }
+        resolve();
+      });
+    });
+
+    // Step 4 — remove port file (orchestrator sees port as free)
+    try {
+      await unlink(portFilePath);
+      console.log("[shutdown] port file removed");
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code !== "ENOENT") {
+        console.error(`[shutdown] failed to remove port file: ${(err as Error).message}`);
+      }
+    }
+
+    clearTimeout(timer);
+    console.log("[shutdown] complete");
+    doExit(0);
+  };
+
+  process.once("SIGINT", () => gracefulShutdown("SIGINT"));
+  process.once("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  // Last-resort safety net: remove the port file even if the graceful path
+  // never runs (e.g. an uncaught exception that bypasses gracefulShutdown).
+  process.once("exit", () => { unlink(portFilePath).catch(() => {}); });
+}
+
 /** Result returned by startServer with the actual port used. */
 export interface StartResult {
   /** The actual port the server is listening on. */
@@ -392,53 +501,13 @@ export async function startServer(
       logStartup(actualPort, ctx, henchRunsDir);
 
       // ── Graceful shutdown ───────────────────────────────────────────────
-      // On SIGINT/SIGTERM:
-      //   1. Terminate all active hench child processes (SIGTERM → SIGKILL).
-      //   2. Close all WebSocket connections.
-      //   3. Stop accepting new HTTP connections; wait for in-flight requests.
-      //   4. Remove the port file so the orchestrator sees the port as free.
-      // The `exit` handler is a last-resort safety net that removes the port
-      // file even if the graceful path never runs (e.g. an uncaught exception).
-      const gracefulShutdown = async () => {
-        console.log("[shutdown] graceful shutdown initiated");
-
-        // Step 1 — terminate hench child processes
-        await shutdownActiveExecutions();
-
-        // Step 2 — close WebSocket connections (sends close frames, frees sockets)
-        ws.shutdown();
-        console.log("[shutdown] WebSocket connections closed");
-
-        // Step 3 — close HTTP server (stop accepting new connections; wait for
-        //           in-flight requests to drain so the port is fully released)
-        await new Promise<void>((resolve) => {
-          server.close((err) => {
-            if (err) {
-              console.error(`[shutdown] server close error: ${err.message}`);
-            } else {
-              console.log(`[shutdown] HTTP server closed — port ${actualPort} released`);
-            }
-            resolve();
-          });
-        });
-
-        // Step 4 — remove port file
-        try {
-          await unlink(portFilePath);
-          console.log("[shutdown] port file removed");
-        } catch (err) {
-          const code = (err as NodeJS.ErrnoException).code;
-          if (code !== "ENOENT") {
-            console.error(`[shutdown] failed to remove port file: ${(err as Error).message}`);
-          }
-        }
-
-        console.log("[shutdown] complete");
-        process.exit(0);
-      };
-      process.once("SIGINT", gracefulShutdown);
-      process.once("SIGTERM", gracefulShutdown);
-      process.once("exit", () => { unlink(portFilePath).catch(() => {}); });
+      // Single handler coordinates cleanup in dependency order:
+      //   1. Hench child processes  (avoid orphaned agents)
+      //   2. WebSocket connections  (clean close frames)
+      //   3. HTTP server            (drain in-flight requests)
+      //   4. Port file              (orchestrator discovery)
+      // A second signal forces immediate exit; overall timeout prevents hangs.
+      registerShutdownHandlers(server, ws, portFilePath, actualPort);
 
       resolvePromise({
         port: actualPort,
