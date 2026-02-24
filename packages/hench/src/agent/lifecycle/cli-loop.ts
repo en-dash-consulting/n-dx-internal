@@ -822,6 +822,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
         // On Windows: join as a single comma-separated arg wrapped in cmd.exe quotes.
         // Bash(cmd:*) patterns contain ( ) which are special to cmd.exe without quoting.
         ...(isWindows ? [`"${allowedTools.join(",")}"`] : allowedTools),
+        ...(opts.model ? ["--model", opts.model] : []),
       ];
 
       section(`Agent Run${opts.model ? ` (${opts.model})` : ""}${attempt > 0 ? ` (retry ${attempt}/${retryConfig.maxRetries})` : ""}`);
@@ -829,21 +830,15 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
 
       const result = vendor === "codex"
         ? await spawnCodex(
-          `SYSTEM:\n${systemPrompt}\n\nTASK:\n${prompt}`,
+          `SYSTEM:\n${systemPrompt}\n\nTASK:\n${promptText}`,
           projectDir,
           opts.model,
           { vendor, model: eventModel },
           cliBinary,
         )
         : await spawnClaude(
-          [
-            "-p", prompt,
-            "--output-format", "stream-json",
-            "--verbose",
-            "--system-prompt", systemPrompt,
-            "--allowed-tools", ...allowedTools,
-            ...(opts.model ? ["--model", opts.model] : []),
-          ],
+          args,
+          stdinContent,
           projectDir,
           { vendor, model: eventModel },
           cliBinary,
