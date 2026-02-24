@@ -14,7 +14,7 @@
  *        ↓
  *   Domain         rex (PRD management) · sourcevision (static analysis)
  *        ↓
- *   Foundation     @n-dx/claude-client (shared types, API abstraction)
+ *   Foundation     @n-dx/llm-client (shared types, API abstraction)
  * ```
  *
  * Each layer only imports from the layer directly below it:
@@ -25,7 +25,7 @@
  * - **Domain** packages (rex, sourcevision) are fully independent —
  *   they never import each other and share data only through the
  *   orchestration or web layer.
- * - **Foundation** (`@n-dx/claude-client`) provides the shared type
+ * - **Foundation** (`@n-dx/llm-client`) provides the shared type
  *   contracts and API client that prevent circular dependencies.
  *
  * This layering ensures the import graph remains a DAG with zero

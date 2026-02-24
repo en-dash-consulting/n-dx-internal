@@ -12,7 +12,7 @@
  *
  * Respects NO_COLOR (https://no-color.org/) and FORCE_COLOR environment
  * variables for accessible terminal output. Color semantics match the
- * shared formatter in @n-dx/claude-client/help-format.
+ * shared formatter in @n-dx/llm-client/help-format.
  *
  * @module n-dx/help
  */
@@ -21,7 +21,7 @@
 
 /**
  * Detect whether the terminal supports color output.
- * Mirrors the logic in @n-dx/claude-client/help-format.
+ * Mirrors the logic in @n-dx/llm-client/help-format.
  */
 function supportsColor() {
   if (process.env.FORCE_COLOR !== undefined && process.env.FORCE_COLOR !== "0") {
