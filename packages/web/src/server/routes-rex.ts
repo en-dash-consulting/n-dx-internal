@@ -10,6 +10,7 @@
  * GET   /api/rex/items/:id        — single item by ID
  * POST  /api/rex/items            — add a new item
  * PATCH /api/rex/items/:id        — update item fields
+ * DELETE /api/rex/items/:id       — remove item and all descendants
  * PATCH /api/rex/items/bulk       — bulk update multiple items
  * POST  /api/rex/items/merge     — consolidate/merge sibling items
  * GET   /api/rex/prune/preview    — preview items that would be pruned
@@ -339,6 +340,11 @@ function routeItems(
     if (method === "PATCH") {
       return handleItemPatch(req, res, ctx, itemId, broadcast);
     }
+
+    // DELETE /api/rex/items/:id — remove item and all descendants
+    if (method === "DELETE") {
+      return handleItemDelete(res, ctx, itemId, broadcast);
+    }
   }
 
   return false;
@@ -568,6 +574,64 @@ async function handleItemPatch(
   } catch (err) {
     errorResponse(res, 400, String(err));
   }
+  return true;
+}
+
+/** Handle DELETE /api/rex/items/:id — remove item and all descendants */
+function handleItemDelete(
+  res: ServerResponse,
+  ctx: ServerContext,
+  itemId: string,
+  broadcast?: WebSocketBroadcaster,
+): boolean {
+  const doc = loadPRD(ctx);
+  if (!doc) {
+    errorResponse(res, 404, "No PRD data found");
+    return true;
+  }
+
+  const item = findItemById(doc.items, itemId);
+  if (!item) {
+    errorResponse(res, 404, `Item "${itemId}" not found`);
+    return true;
+  }
+
+  const title = item.title;
+  const level = item.level;
+  const removed = removeFromTree(doc.items, itemId);
+  if (!removed) {
+    errorResponse(res, 404, `Item "${itemId}" could not be removed`);
+    return true;
+  }
+
+  savePRD(ctx, doc);
+
+  // Append log entry
+  const logPath = join(ctx.rexDir, "execution-log.jsonl");
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    event: "item_deleted",
+    itemId,
+    detail: `Deleted ${level} "${title}" and its descendants (via web)`,
+  };
+  try {
+    appendFileSync(logPath, JSON.stringify(logEntry) + "\n");
+  } catch {
+    // Non-fatal — log file may not exist yet
+  }
+
+  // Broadcast change to connected WebSocket clients
+  if (broadcast) {
+    broadcast({
+      type: "rex:item-deleted",
+      itemId,
+      level,
+      title,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  jsonResponse(res, 200, { ok: true, id: itemId, level, title });
   return true;
 }
 

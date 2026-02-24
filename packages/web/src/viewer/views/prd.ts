@@ -353,6 +353,56 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     [],
   );
 
+  // Handle item removal/deletion
+  const handleRemoveItem = useCallback(
+    async (id: string) => {
+      const res = await fetch(`/api/rex/items/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ error: "Delete failed" }));
+        throw new Error(errBody.error || `HTTP ${res.status}`);
+      }
+      const result = await res.json();
+      setToast(`Deleted ${result.level}: ${result.title}`);
+      setTimeout(() => setToast(null), 3000);
+
+      // Deselect if we just deleted the selected item
+      if (selectedItemId === id) {
+        setSelectedItemId(null);
+        if (onDetailContent) onDetailContent(null);
+        // Clean URL back to /prd
+        history.replaceState(
+          { view: "prd", file: null, zone: null, runId: null, taskId: null },
+          "",
+          "/prd",
+        );
+      }
+
+      // Refresh tree data
+      await fetchPRDData();
+      await fetchTaskUsage();
+    },
+    [selectedItemId, onDetailContent, fetchPRDData, fetchTaskUsage],
+  );
+
+  // Handle item removal from tree node (triggered by inline button or context menu)
+  const handleRemoveItemFromTree = useCallback(
+    (item: PRDItemData) => {
+      // Direct call with confirmation handled via a confirm dialog
+      const childCount = item.children?.length ?? 0;
+      const descriptor = childCount > 0
+        ? `"${item.title}" and all its ${childCount} descendant${childCount !== 1 ? "s" : ""}`
+        : `"${item.title}"`;
+      if (!window.confirm(`Delete ${item.level} ${descriptor}?`)) return;
+      handleRemoveItem(item.id).catch(() => {
+        setToast("Failed to delete item");
+        setTimeout(() => setToast(null), 3000);
+      });
+    },
+    [handleRemoveItem],
+  );
+
   // Update detail content when selection or data changes
   useEffect(() => {
     if (!data || !selectedItemId || !onDetailContent) {
@@ -381,9 +431,10 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
           fetchTaskUsage();
         },
         onAddChild: handleAddChild,
+        onRemove: handleRemoveItem,
       }),
     );
-  }, [data, selectedItemId, taskUsageById, onDetailContent, handleItemUpdate, handleNavigateToItem, handleExecuteTask, fetchPRDData, fetchTaskUsage, handleAddChild]);
+  }, [data, selectedItemId, taskUsageById, onDetailContent, handleItemUpdate, handleNavigateToItem, handleExecuteTask, fetchPRDData, fetchTaskUsage, handleAddChild, handleRemoveItem]);
 
   // Handle add item submission
   const handleAddItem = useCallback(
@@ -562,6 +613,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
       onInlineAddSubmit: handleInlineAddItem,
       highlightedItemId: highlightedTaskId,
       deepLinkExpandIds,
+      onRemoveItem: handleRemoveItemFromTree,
     }),
 
     // Bulk actions bar (floating at bottom)

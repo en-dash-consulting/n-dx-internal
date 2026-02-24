@@ -148,6 +148,68 @@ function TimestampSuffix({ item }: { item: PRDItemData }) {
   return null;
 }
 
+// ── Node context menu ───────────────────────────────────────────────
+
+interface NodeContextMenuProps {
+  item: PRDItemData;
+  x: number;
+  y: number;
+  onClose: () => void;
+  onRemove?: (item: PRDItemData) => void;
+}
+
+function NodeContextMenu({ item, x, y, onClose, onRemove }: NodeContextMenuProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [onClose]);
+
+  // Clamp position so menu doesn't overflow viewport
+  const style: Record<string, string> = {
+    position: "fixed",
+    left: `${Math.min(x, window.innerWidth - 180)}px`,
+    top: `${Math.min(y, window.innerHeight - 120)}px`,
+    zIndex: "9999",
+  };
+
+  return h("div", { ref, class: "prd-context-menu", style, role: "menu" },
+    // Header
+    h("div", { class: "prd-context-menu-header" },
+      h("span", { class: `prd-level-badge prd-level-${item.level}` }, LEVEL_LABELS[item.level]),
+      h("span", { class: "prd-context-menu-title" }, item.title),
+    ),
+    h("div", { class: "prd-context-menu-divider" }),
+    // Delete action
+    onRemove
+      ? h("button", {
+          class: "prd-context-menu-item prd-context-menu-danger",
+          role: "menuitem",
+          onClick: () => {
+            onRemove(item);
+            onClose();
+          },
+        },
+          h("span", { class: "prd-context-menu-item-icon" }, "\u2717"),
+          `Delete ${LEVEL_LABELS[item.level]}`,
+        )
+      : null,
+  );
+}
+
 // ── Single tree node ────────────────────────────────────────────────
 
 interface NodeRowProps {
@@ -172,9 +234,11 @@ interface NodeRowProps {
   isHighlighted?: boolean;
   /** Ref callback for scroll-into-view on deep-link highlight. */
   nodeRef?: (el: HTMLDivElement | null) => void;
+  /** Called to remove/delete this item. */
+  onRemove?: (item: PRDItemData) => void;
 }
 
-function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren, isSelected, onToggle, onSelect, isBulkSelected, onToggleBulkSelect, onInlineAdd, isInlineAddActive, isHighlighted, nodeRef }: NodeRowProps) {
+function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren, isSelected, onToggle, onSelect, isBulkSelected, onToggleBulkSelect, onInlineAdd, isInlineAddActive, isHighlighted, nodeRef, onRemove }: NodeRowProps) {
   const children = item.children ?? [];
   const stats = hasChildren ? computeBranchStats(children) : null;
   const ratio = stats ? completionRatio(stats) : 0;
@@ -187,6 +251,7 @@ function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren
   const utilization = usage.utilization ?? resolveTaskUtilization(usage.totalTokens, weeklyBudget);
 
   const indent = depth * 24;
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const handleClick = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -194,8 +259,8 @@ function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren
     if (target.classList.contains("prd-bulk-checkbox") || target.closest(".prd-bulk-checkbox-wrapper")) {
       return;
     }
-    // If clicking the inline add button, don't process as row click
-    if (target.closest(".prd-inline-add-btn")) {
+    // If clicking the inline add button or delete button, don't process as row click
+    if (target.closest(".prd-inline-add-btn") || target.closest(".prd-inline-delete-btn")) {
       return;
     }
     // If clicking the chevron area, toggle expand
@@ -252,12 +317,21 @@ function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren
     }
   };
 
+  const handleContextMenu = (e: MouseEvent) => {
+    // Only show context menu when there are actions available (delete)
+    if (!onRemove) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
   return h(
     "div",
     {
       class: `prd-node-row${hasChildren ? " prd-node-expandable" : ""}${isSelected ? " prd-node-selected" : ""}${isBulkSelected ? " prd-node-bulk-selected" : ""}${isHighlighted ? " prd-node-highlighted" : ""} prd-level-${item.level}`,
       style: `padding-left: ${indent + 8}px`,
       onClick: handleClick,
+      onContextMenu: handleContextMenu,
       role: "treeitem",
       "aria-expanded": hasChildren ? String(isExpanded) : undefined,
       "aria-selected": String(isSelected),
@@ -338,6 +412,28 @@ function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren
           "aria-label": `Add child item to ${item.title}`,
         }, "+")
       : null,
+    // Inline delete button (appears on hover)
+    onRemove
+      ? h("button", {
+          class: "prd-inline-delete-btn",
+          onClick: (e: MouseEvent) => {
+            e.stopPropagation();
+            onRemove(item);
+          },
+          title: `Delete ${LEVEL_LABELS[item.level]} "${item.title}"`,
+          "aria-label": `Delete ${item.title}`,
+        }, "\u2717")
+      : null,
+    // Context menu (right-click)
+    contextMenu
+      ? h(NodeContextMenu, {
+          item,
+          x: contextMenu.x,
+          y: contextMenu.y,
+          onClose: () => setContextMenu(null),
+          onRemove,
+        })
+      : null,
   );
 }
 
@@ -367,9 +463,11 @@ interface TreeNodesProps {
   highlightedItemId?: string | null;
   /** Ref callback for the highlighted node (scroll-into-view). */
   highlightedNodeRef?: (el: HTMLDivElement | null) => void;
+  /** Called to remove/delete an item. */
+  onRemoveItem?: (item: PRDItemData) => void;
 }
 
-function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, selectedItemId, activeStatuses, onToggle, onSelectItem, bulkSelectedIds, onToggleBulkSelect, inlineAddParentId, onInlineAdd, onInlineAddSubmit, onInlineAddCancel, highlightedItemId, highlightedNodeRef }: TreeNodesProps) {
+function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, selectedItemId, activeStatuses, onToggle, onSelectItem, bulkSelectedIds, onToggleBulkSelect, inlineAddParentId, onInlineAdd, onInlineAddSubmit, onInlineAddCancel, highlightedItemId, highlightedNodeRef, onRemoveItem }: TreeNodesProps) {
   return h(
     Fragment,
     null,
@@ -401,6 +499,7 @@ function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, select
             isInlineAddActive,
             isHighlighted: isHL,
             nodeRef: isHL ? highlightedNodeRef : undefined,
+            onRemove: onRemoveItem,
           }),
           // Inline add form — rendered below the parent node, above its children
           isInlineAddActive && onInlineAddSubmit && onInlineAddCancel
@@ -434,6 +533,7 @@ function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, select
                   onInlineAddCancel,
                   highlightedItemId,
                   highlightedNodeRef,
+                  onRemoveItem,
                 }),
               )
             : null,
@@ -548,9 +648,11 @@ export interface PRDTreeProps {
   highlightedItemId?: string | null;
   /** IDs of ancestor nodes to force-expand for deep-link visibility. */
   deepLinkExpandIds?: Set<string> | null;
+  /** Called to remove/delete an item from the tree. */
+  onRemoveItem?: (item: PRDItemData) => void;
 }
 
-export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onToggleBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds }: PRDTreeProps) {
+export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onToggleBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds, onRemoveItem }: PRDTreeProps) {
   // Collect all IDs for expand-all
   const allIds = useMemo(() => {
     const ids = new Set<string>();
@@ -686,6 +788,7 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExp
         onInlineAddCancel: onInlineAddSubmit ? handleInlineAddCancel : undefined,
         highlightedItemId,
         highlightedNodeRef: deepLinkNodeRef,
+        onRemoveItem,
       }),
     ),
   );
