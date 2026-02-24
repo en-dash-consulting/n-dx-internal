@@ -1395,6 +1395,19 @@ function handleTerminate(
 // ── Graceful shutdown ─────────────────────────────────────────────────────
 
 /**
+ * Result returned by {@link shutdownActiveExecutions}.
+ *
+ * Callers (e.g. `gracefulShutdown` in start.ts) use these counts to
+ * build a final verification summary and to decide whether to exit clean.
+ */
+export interface ShutdownExecutionsResult {
+  /** Number of executions that were cleanly terminated. */
+  terminated: number;
+  /** Number of executions that failed to terminate (kill errored or timed out). */
+  failed: number;
+}
+
+/**
  * Gracefully terminate all active hench executions on server shutdown.
  *
  * Iterates over all entries in `activeExecutions`, sends SIGTERM to each
@@ -1409,22 +1422,31 @@ function handleTerminate(
  *                       before force-killing it.  Defaults to 5 000 ms.
  *                       Can be overridden via the `HENCH_SHUTDOWN_TIMEOUT_MS`
  *                       environment variable.
+ * @returns Counts of terminated and failed executions for verification.
  */
 export async function shutdownActiveExecutions(
   gracePeriodMs: number = Number(process.env["HENCH_SHUTDOWN_TIMEOUT_MS"] ?? 5_000),
-): Promise<void> {
-  if (activeExecutions.size === 0) return;
+): Promise<ShutdownExecutionsResult> {
+  if (activeExecutions.size === 0) return { terminated: 0, failed: 0 };
 
   const count = activeExecutions.size;
   console.log(`[shutdown] terminating ${count} active execution(s)`);
 
+  let terminated = 0;
+  let failed = 0;
+
   const terminations = Array.from(activeExecutions.entries()).map(
     async ([taskId, entry]) => {
+      const pid = entry.handle.pid;
+      const pidInfo = pid != null ? ` (pid ${pid})` : "";
       try {
         await killWithFallback(entry.handle, gracePeriodMs);
-        console.log(`[shutdown] execution ${taskId} terminated`);
+        console.log(`[shutdown] execution ${taskId}${pidInfo} terminated`);
+        terminated++;
       } catch (err) {
-        console.error(`[shutdown] execution ${taskId} failed to terminate: ${(err as Error).message}`);
+        const error = err as Error;
+        console.error(`[shutdown] execution ${taskId}${pidInfo} failed to terminate: ${error.message}`);
+        failed++;
       } finally {
         activeExecutions.delete(taskId);
       }
@@ -1432,5 +1454,12 @@ export async function shutdownActiveExecutions(
   );
 
   await Promise.all(terminations);
-  console.log(`[shutdown] all ${count} execution(s) terminated`);
+
+  if (failed === 0) {
+    console.log(`[shutdown] all ${count} execution(s) terminated`);
+  } else {
+    console.error(`[shutdown] ${terminated}/${count} execution(s) terminated — ${failed} failed to exit`);
+  }
+
+  return { terminated, failed };
 }

@@ -90,7 +90,12 @@ function makePRD(items: Array<Record<string, unknown>> = []): Record<string, unk
 
 describe("shutdownActiveExecutions — empty", () => {
   it("resolves immediately when there are no active executions", async () => {
-    await expect(shutdownActiveExecutions(500)).resolves.toBeUndefined();
+    await expect(shutdownActiveExecutions(500)).resolves.toBeDefined();
+  });
+
+  it("returns { terminated: 0, failed: 0 } when there are no active executions", async () => {
+    const result = await shutdownActiveExecutions(500);
+    expect(result).toEqual({ terminated: 0, failed: 0 });
   });
 
   it("does not log when there are no active executions", async () => {
@@ -168,6 +173,19 @@ describe("shutdownActiveExecutions — with active executions", () => {
     // First signal should be SIGTERM (graceful)
     const firstSignal = handle.kill.mock.calls[0][0];
     expect(firstSignal).toBe("SIGTERM");
+  });
+
+  it("returns { terminated: 1, failed: 0 } after cleanly terminating one execution", async () => {
+    const res = await fetch(`http://localhost:${port}/api/hench/execute`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskId: "task-1" }),
+    });
+    expect(res.status).toBe(202);
+    expect(_latestHandle).not.toBeNull();
+
+    const result = await shutdownActiveExecutions(2_000);
+    expect(result).toEqual({ terminated: 1, failed: 0 });
   });
 
   it("executions map is empty after shutdown", async () => {
@@ -298,8 +316,8 @@ describe("shutdownActiveExecutions — logging", () => {
 
       // Should log that it started terminating
       expect(logs.some((l) => l.includes("[shutdown] terminating") && l.includes("1 active execution"))).toBe(true);
-      // Should log individual task completion
-      expect(logs.some((l) => l.includes("[shutdown] execution task-log-1 terminated"))).toBe(true);
+      // Should log individual task completion (may include pid info)
+      expect(logs.some((l) => l.includes("[shutdown] execution task-log-1") && l.includes("terminated"))).toBe(true);
       // Should log aggregate completion
       expect(logs.some((l) => l.includes("[shutdown] all") && l.includes("terminated"))).toBe(true);
     } finally {
@@ -346,13 +364,62 @@ describe("shutdownActiveExecutions — logging", () => {
 
       await shutdownActiveExecutions(2_000);
 
-      // Should log 2 terminating + per-task + aggregate
+      // Should log 2 terminating + per-task (may include pid) + aggregate
       expect(logs.some((l) => l.includes("[shutdown] terminating") && l.includes("2 active execution"))).toBe(true);
-      expect(logs.some((l) => l.includes("[shutdown] execution task-log-a terminated"))).toBe(true);
-      expect(logs.some((l) => l.includes("[shutdown] execution task-log-b terminated"))).toBe(true);
+      expect(logs.some((l) => l.includes("[shutdown] execution task-log-a") && l.includes("terminated"))).toBe(true);
+      expect(logs.some((l) => l.includes("[shutdown] execution task-log-b") && l.includes("terminated"))).toBe(true);
       expect(logs.some((l) => l.includes("[shutdown] all 2 execution(s) terminated"))).toBe(true);
     } finally {
       logSpy.mockRestore();
     }
+  });
+
+  it("includes the pid in the per-execution termination log", async () => {
+    const handles: MockHandle[] = [];
+    const { spawnManaged: mockSpawn } = await import("@n-dx/llm-client");
+    vi.mocked(mockSpawn).mockImplementation(() => {
+      const h = createMockHandle(12345);
+      handles.push(h);
+      return h;
+    });
+
+    const logs: string[] = [];
+    const logSpy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      logs.push(args.join(" "));
+    });
+
+    try {
+      const res = await fetch(`http://localhost:${port}/api/hench/execute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskId: "task-log-1" }),
+      });
+      expect(res.status).toBe(202);
+
+      await shutdownActiveExecutions(2_000);
+
+      // The per-execution log should include the pid for diagnostics
+      expect(logs.some((l) => l.includes("pid 12345"))).toBe(true);
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
+  it("returns { terminated, failed } counts for verification", async () => {
+    const res = await fetch(`http://localhost:${port}/api/hench/execute`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskId: "task-log-1" }),
+    });
+    expect(res.status).toBe(202);
+
+    // shutdownActiveExecutions should return termination counts
+    const result = await shutdownActiveExecutions(2_000);
+
+    expect(result).toHaveProperty("terminated");
+    expect(result).toHaveProperty("failed");
+    expect(result.terminated).toBeGreaterThanOrEqual(0);
+    expect(result.failed).toBeGreaterThanOrEqual(0);
+    expect(result.terminated + result.failed).toBe(1);
   });
 });

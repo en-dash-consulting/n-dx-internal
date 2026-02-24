@@ -4,10 +4,13 @@
  *
  * Key properties under test:
  *   - Cleanup executes in dependency order (hench → ws → http → port file)
+ *   - Step progress is logged for each component (step N/4 messages)
  *   - Signal name is included in the startup log
  *   - A second signal while shutdown is running forces immediate exit(1)
  *   - An overall timeout forces exit(1) to prevent indefinite hangs
  *   - Port file is removed on a clean exit
+ *   - A verification summary is logged after all steps complete
+ *   - Failed components are identified by name in the verification log
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
@@ -21,11 +24,22 @@ vi.mock("../../../src/server/routes-hench.js", async (importOriginal) => {
   const original = await importOriginal<typeof import("../../../src/server/routes-hench.js")>();
   return {
     ...original,
-    // Default: resolves immediately (fast, non-blocking)
-    shutdownActiveExecutions: vi.fn(async () => {}),
+    // Default: resolves immediately with no failures
+    shutdownActiveExecutions: vi.fn(async () => ({ terminated: 0, failed: 0 })),
     // These are also imported by start.ts; keep as stubs so the import works
     startHeartbeatMonitor: vi.fn(),
     handleHenchRoute: vi.fn(async () => false),
+  };
+});
+
+// ── Mock routes-rex so shutdownRexExecution is controllable ──────────────
+vi.mock("../../../src/server/routes-rex.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../../../src/server/routes-rex.js")>();
+  return {
+    ...original,
+    // Default: no active process
+    shutdownRexExecution: vi.fn(async () => ({ hadActiveProcess: false, terminated: false })),
+    handleRexRoute: vi.fn(async () => false),
   };
 });
 
@@ -36,6 +50,7 @@ import {
   DEFAULT_SHUTDOWN_TIMEOUT_MS,
 } from "../../../src/server/start.js";
 import { shutdownActiveExecutions } from "../../../src/server/routes-hench.js";
+import { shutdownRexExecution } from "../../../src/server/routes-rex.js";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -61,9 +76,14 @@ describe("registerShutdownHandlers", () => {
 
   beforeEach(async () => {
     mockExit = vi.fn();
+
     vi.mocked(shutdownActiveExecutions).mockReset();
-    // Default: completes quickly
-    vi.mocked(shutdownActiveExecutions).mockResolvedValue(undefined);
+    // Default: completes quickly with no failures
+    vi.mocked(shutdownActiveExecutions).mockResolvedValue({ terminated: 0, failed: 0 });
+
+    vi.mocked(shutdownRexExecution).mockReset();
+    // Default: no active rex process
+    vi.mocked(shutdownRexExecution).mockResolvedValue({ hadActiveProcess: false, terminated: false });
 
     tmpDir = await mkdtemp(join(tmpdir(), "shutdown-handler-test-"));
     portFilePath = join(tmpDir, ".n-dx-web.port");
@@ -99,6 +119,7 @@ describe("registerShutdownHandlers", () => {
 
     vi.mocked(shutdownActiveExecutions).mockImplementation(async () => {
       callOrder.push("shutdownActiveExecutions");
+      return { terminated: 0, failed: 0 };
     });
 
     const server = {
@@ -332,5 +353,154 @@ describe("registerShutdownHandlers", () => {
 
   it("exports DEFAULT_SHUTDOWN_TIMEOUT_MS as 30 seconds", () => {
     expect(DEFAULT_SHUTDOWN_TIMEOUT_MS).toBe(30_000);
+  });
+
+  // ── Step progress logging ─────────────────────────────────────────────────
+
+  it("logs step 1/4 progress before terminating child processes", async () => {
+    const logs: string[] = [];
+    const logSpy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      logs.push(args.join(" "));
+    });
+
+    const server = createMockServer();
+    const ws = createMockWs();
+    registerShutdownHandlers(server, ws, portFilePath, 3117, 30_000, { exit: mockExit });
+
+    process.emit("SIGINT");
+
+    await vi.waitFor(() => expect(mockExit).toHaveBeenCalledWith(0), { timeout: 5_000 });
+    logSpy.mockRestore();
+
+    expect(logs.some((l) => l.includes("[shutdown] step 1/4"))).toBe(true);
+  });
+
+  it("logs step 2/4 progress before closing WebSocket connections", async () => {
+    const logs: string[] = [];
+    const logSpy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      logs.push(args.join(" "));
+    });
+
+    const server = createMockServer();
+    const ws = createMockWs();
+    registerShutdownHandlers(server, ws, portFilePath, 3117, 30_000, { exit: mockExit });
+
+    process.emit("SIGINT");
+
+    await vi.waitFor(() => expect(mockExit).toHaveBeenCalledWith(0), { timeout: 5_000 });
+    logSpy.mockRestore();
+
+    expect(logs.some((l) => l.includes("[shutdown] step 2/4"))).toBe(true);
+  });
+
+  it("logs step 3/4 progress before closing HTTP server", async () => {
+    const logs: string[] = [];
+    const logSpy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      logs.push(args.join(" "));
+    });
+
+    const server = createMockServer();
+    const ws = createMockWs();
+    registerShutdownHandlers(server, ws, portFilePath, 3117, 30_000, { exit: mockExit });
+
+    process.emit("SIGINT");
+
+    await vi.waitFor(() => expect(mockExit).toHaveBeenCalledWith(0), { timeout: 5_000 });
+    logSpy.mockRestore();
+
+    expect(logs.some((l) => l.includes("[shutdown] step 3/4"))).toBe(true);
+  });
+
+  it("logs step 4/4 progress before removing port file", async () => {
+    const logs: string[] = [];
+    const logSpy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      logs.push(args.join(" "));
+    });
+
+    const server = createMockServer();
+    const ws = createMockWs();
+    registerShutdownHandlers(server, ws, portFilePath, 3117, 30_000, { exit: mockExit });
+
+    process.emit("SIGINT");
+
+    await vi.waitFor(() => expect(mockExit).toHaveBeenCalledWith(0), { timeout: 5_000 });
+    logSpy.mockRestore();
+
+    expect(logs.some((l) => l.includes("[shutdown] step 4/4"))).toBe(true);
+  });
+
+  // ── Cleanup verification summary ──────────────────────────────────────────
+
+  it("logs a verification summary after all components shut down cleanly", async () => {
+    const logs: string[] = [];
+    const logSpy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      logs.push(args.join(" "));
+    });
+
+    const server = createMockServer();
+    const ws = createMockWs();
+    registerShutdownHandlers(server, ws, portFilePath, 3117, 30_000, { exit: mockExit });
+
+    process.emit("SIGINT");
+
+    await vi.waitFor(() => expect(mockExit).toHaveBeenCalledWith(0), { timeout: 5_000 });
+    logSpy.mockRestore();
+
+    expect(
+      logs.some((l) => l.includes("[shutdown] verified:") && l.includes("shut down cleanly")),
+    ).toBe(true);
+  });
+
+  it("logs an error when a component fails during shutdown", async () => {
+    // Simulate hench executions failing to terminate
+    vi.mocked(shutdownActiveExecutions).mockResolvedValue({ terminated: 0, failed: 1 });
+
+    const errors: string[] = [];
+    const errorSpy = vi.spyOn(console, "error").mockImplementation((...args) => {
+      errors.push(args.join(" "));
+    });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const server = createMockServer();
+    const ws = createMockWs();
+    registerShutdownHandlers(server, ws, portFilePath, 3117, 30_000, { exit: mockExit });
+
+    process.emit("SIGINT");
+
+    await vi.waitFor(() => expect(mockExit).toHaveBeenCalledWith(0), { timeout: 5_000 });
+    errorSpy.mockRestore();
+    logSpy.mockRestore();
+
+    expect(
+      errors.some((e) => e.includes("[shutdown] verification failed:") && e.includes("hench-executions")),
+    ).toBe(true);
+  });
+
+  it("includes the component name in the verification failure log", async () => {
+    // Simulate the HTTP server failing to close
+    const server = {
+      close: vi.fn((cb: (err?: Error) => void) => {
+        setImmediate(() => cb(new Error("ENOTCONN")));
+      }),
+    };
+
+    const errors: string[] = [];
+    const errorSpy = vi.spyOn(console, "error").mockImplementation((...args) => {
+      errors.push(args.join(" "));
+    });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const ws = createMockWs();
+    registerShutdownHandlers(server, ws, portFilePath, 3117, 30_000, { exit: mockExit });
+
+    process.emit("SIGINT");
+
+    await vi.waitFor(() => expect(mockExit).toHaveBeenCalledWith(0), { timeout: 5_000 });
+    errorSpy.mockRestore();
+    logSpy.mockRestore();
+
+    expect(
+      errors.some((e) => e.includes("[shutdown] verification failed:") && e.includes("http-server")),
+    ).toBe(true);
   });
 });

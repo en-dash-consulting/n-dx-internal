@@ -100,36 +100,69 @@ export function registerShutdownHandlers(
     // Does not prevent the event loop from exiting if cleanup completes first.
     timer.unref();
 
+    // Track per-component status for the final verification summary.
+    const componentStatus: { component: string; ok: boolean }[] = [];
+
     // Step 1 — terminate hench child processes (highest priority: avoids orphaned agents)
     // Covers both hench-route executions and the rex epic-by-epic execution engine.
-    await Promise.all([shutdownActiveExecutions(), shutdownRexExecution()]);
+    console.log("[shutdown] step 1/4 — child processes");
+    const [henchResult, rexResult] = await Promise.all([
+      shutdownActiveExecutions(),
+      shutdownRexExecution(),
+    ]);
+    componentStatus.push({ component: "hench-executions", ok: henchResult.failed === 0 });
+    componentStatus.push({
+      component: "rex-execution",
+      ok: !rexResult.hadActiveProcess || rexResult.terminated,
+    });
 
     // Step 2 — close WebSocket connections (sends close frames, frees sockets)
+    console.log("[shutdown] step 2/4 — WebSocket connections");
     ws.shutdown();
     console.log("[shutdown] WebSocket connections closed");
+    componentStatus.push({ component: "websockets", ok: true });
 
     // Step 3 — close HTTP server (stop accepting new connections; wait for
     //           in-flight requests to drain so the port is fully released)
+    console.log("[shutdown] step 3/4 — HTTP server");
+    let httpOk = false;
     await new Promise<void>((resolve) => {
       server.close((err) => {
         if (err) {
           console.error(`[shutdown] server close error: ${err.message}`);
         } else {
           console.log(`[shutdown] HTTP server closed — port ${actualPort} released`);
+          httpOk = true;
         }
         resolve();
       });
     });
+    componentStatus.push({ component: "http-server", ok: httpOk });
 
     // Step 4 — remove port file (orchestrator sees port as free)
+    console.log("[shutdown] step 4/4 — port file");
+    let portFileOk = false;
     try {
       await unlink(portFilePath);
       console.log("[shutdown] port file removed");
+      portFileOk = true;
     } catch (err) {
       const code = (err as NodeJS.ErrnoException).code;
-      if (code !== "ENOENT") {
+      if (code === "ENOENT") {
+        // Already gone — that is fine.
+        portFileOk = true;
+      } else {
         console.error(`[shutdown] failed to remove port file: ${(err as Error).message}`);
       }
+    }
+    componentStatus.push({ component: "port-file", ok: portFileOk });
+
+    // Verification summary — confirm all components shut down cleanly.
+    const failedComponents = componentStatus.filter((c) => !c.ok).map((c) => c.component);
+    if (failedComponents.length === 0) {
+      console.log(`[shutdown] verified: all ${componentStatus.length} components shut down cleanly`);
+    } else {
+      console.error(`[shutdown] verification failed: ${failedComponents.join(", ")} did not shut down cleanly`);
     }
 
     clearTimeout(timer);
