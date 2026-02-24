@@ -427,20 +427,37 @@ if (command === "init") {
   const dir = resolveDir(initArgs);
   const flags = extractFlags(initArgs);
 
+  // If no explicit --provider flag was given, check whether a vendor is already
+  // configured in .n-dx.json. When it is, skip the interactive prompt and the
+  // auth preflight — the user is already set up.
+  const existingVendor = providerFromFlag === undefined ? readLLMVendor(dir) : undefined;
+
   if (shouldShowInitBanner(providerFromFlag)) {
     showInitBanner();
   }
 
-  const selectedProvider = providerFromFlag ?? await promptInitProvider();
-  if (!selectedProvider) {
-    console.error("Init cancelled: no provider selected. Re-run 'ndx init' and choose 'codex' or 'claude'.");
-    process.exit(1);
+  let selectedProvider;
+  if (existingVendor) {
+    selectedProvider = existingVendor;
+  } else {
+    selectedProvider = providerFromFlag ?? await promptInitProvider();
+    if (!selectedProvider) {
+      console.error("Init cancelled: no provider selected. Re-run 'ndx init' and choose 'codex' or 'claude'.");
+      process.exit(1);
+    }
   }
 
   await runOrDie(tools.sourcevision, ["init", ...flags, dir]);
   await runOrDie(tools.rex, ["init", ...flags, dir]);
   await runOrDie(tools.hench, ["init", ...flags, dir]);
-  await runConfig(["llm.vendor", selectedProvider, dir]);
+
+  if (existingVendor) {
+    // Provider already configured and authenticated — skip re-auth.
+    console.log(`LLM provider "${existingVendor}" already configured.`);
+  } else {
+    await runConfig(["llm.vendor", selectedProvider, dir]);
+  }
+
   process.exit(0);
 }
 

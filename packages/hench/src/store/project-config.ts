@@ -69,6 +69,32 @@ export function resolveVendorCliPath(llmConfig: LLMConfig): string {
 }
 
 /**
+ * Build the environment object to pass to the vendor CLI subprocess.
+ *
+ * Injects the vendor-specific API key from project config so that binaries
+ * receive it even when it is not set in the system environment:
+ * - codex: llm.codex.api_key → OPENAI_API_KEY
+ * - claude: llm.claude.api_key → ANTHROPIC_API_KEY
+ *
+ * Falls back to process.env unchanged when no config-supplied key is present.
+ */
+export function resolveVendorCliEnv(llmConfig: LLMConfig): NodeJS.ProcessEnv {
+  const vendor = resolveLLMVendor(llmConfig);
+  if (vendor === "codex") {
+    const apiKey = llmConfig.codex?.api_key;
+    if (apiKey) {
+      return { ...process.env, OPENAI_API_KEY: apiKey };
+    }
+  } else {
+    const apiKey = llmConfig.claude?.api_key;
+    if (apiKey) {
+      return { ...process.env, ANTHROPIC_API_KEY: apiKey };
+    }
+  }
+  return process.env;
+}
+
+/**
  * Resolve the API key with the following priority:
  * 1. claude.api_key from unified config (.n-dx.json)
  * 2. Environment variable specified by config.apiKeyEnv (default: ANTHROPIC_API_KEY)
