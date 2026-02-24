@@ -123,6 +123,15 @@ export async function cmdValidate(
       ),
     });
 
+    checks.push({
+      name: "empty containers",
+      pass: structural.emptyContainers.length === 0,
+      severity: "warn",
+      errors: structural.emptyContainers.map(
+        (e) => `"${e.itemId}" (${e.level}): ${e.reason}`,
+      ),
+    });
+
     // Categorise warnings by type for clearer reporting
     const blockedWarnings = structural.warnings.filter((w) => w.startsWith("Blocked without"));
     const timestampWarnings = structural.warnings.filter((w) => w.startsWith("Timestamp inconsistency"));
