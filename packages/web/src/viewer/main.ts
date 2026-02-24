@@ -41,6 +41,8 @@ import { useGracefulDegradation } from "./hooks/use-graceful-degradation.js";
 import { MemoryWarningBanner } from "./components/memory-warning.js";
 import { CrashRecoveryBanner } from "./components/crash-recovery-banner.js";
 import { DegradationBanner } from "./components/degradation-banner.js";
+import { RefreshQueueStatus } from "./components/refresh-queue-status.js";
+import { useRefreshThrottle } from "./hooks/use-refresh-throttle.js";
 import type { DegradableFeature } from "./graceful-degradation.js";
 
 initTheme();
@@ -184,6 +186,7 @@ function App({ scope }: { scope: string | null }) {
     disabledFeatures,
     isDisabled: isFeatureDisabled,
   } = useGracefulDegradation();
+  const { state: refreshQueueState } = useRefreshThrottle();
   const { data, loading, refreshToast, showDrop } = useAppData({ pausePolling: isFeatureDisabled("autoRefresh") });
   const {
     showRecovery,
@@ -279,6 +282,7 @@ function App({ scope }: { scope: string | null }) {
     (refreshToast && !isFeatureDisabled("autoRefresh"))
       ? h("div", { class: "refresh-toast", role: "status", "aria-live": "polite" }, "Data updated")
       : null,
+    h(RefreshQueueStatus, { state: refreshQueueState, visible: !isFeatureDisabled("autoRefresh") }),
     (showDrop && !hasData)
       ? h("div", { class: "drop-overlay", role: "dialog", "aria-label": "File drop zone" },
           h("div", { class: "drop-box" },
