@@ -37,8 +37,11 @@ import { useRouteState } from "./hooks/use-route-state.js";
 import { useAppData } from "./hooks/use-app-data.js";
 import { useMemoryMonitor } from "./hooks/use-memory-monitor.js";
 import { useCrashRecovery } from "./hooks/use-crash-recovery.js";
+import { useGracefulDegradation } from "./hooks/use-graceful-degradation.js";
 import { MemoryWarningBanner } from "./components/memory-warning.js";
 import { CrashRecoveryBanner } from "./components/crash-recovery-banner.js";
+import { DegradationBanner } from "./components/degradation-banner.js";
+import type { DegradableFeature } from "./graceful-degradation.js";
 
 initTheme();
 
@@ -95,8 +98,9 @@ function renderActiveView(opts: {
   selectedRunId: string | null;
   selectedTaskId: string | null;
   navigateTo: NavigateTo;
+  isFeatureDisabled: (feature: DegradableFeature) => boolean;
 }): ComponentChild {
-  const { view, loading, data, setDetail, setPrdDetailContent, selectedFile, setSelectedFile, selectedZone, selectedRunId, selectedTaskId, navigateTo } = opts;
+  const { view, loading, data, setDetail, setPrdDetailContent, selectedFile, setSelectedFile, selectedZone, selectedRunId, selectedTaskId, navigateTo, isFeatureDisabled } = opts;
 
   if (loading) {
     return h("div", { class: "loading", role: "status", "aria-live": "polite" }, "Loading...");
@@ -106,6 +110,12 @@ function renderActiveView(opts: {
     case "overview":
       return h(Overview, { data });
     case "graph":
+      if (isFeatureDisabled("graphRendering")) {
+        return h("div", { class: "degraded-view-placeholder", role: "status" },
+          h("h2", null, "Graph view unavailable"),
+          h("p", null, "The graph view has been temporarily disabled to conserve memory. It will be re-enabled automatically when memory usage decreases, or you can refresh the page."),
+        );
+      }
       return h(Graph, { data, onSelect: setDetail, selectedFile, selectedZone, navigateTo });
     case "zones":
       return h(ZonesView, { data, onSelect: setDetail, navigateTo });
@@ -166,8 +176,15 @@ function App({ scope }: { scope: string | null }) {
     handleSidebarNav,
   } = useRouteState(validViews);
 
-  const { data, loading, refreshToast, showDrop } = useAppData();
   const { snapshot: memorySnapshot, level: memoryLevel, showWarning: showMemoryWarning, dismiss: dismissMemoryWarning } = useMemoryMonitor();
+  const {
+    tier: degradationTier,
+    isDegraded,
+    summary: degradationSummary,
+    disabledFeatures,
+    isDisabled: isFeatureDisabled,
+  } = useGracefulDegradation();
+  const { data, loading, refreshToast, showDrop } = useAppData({ pausePolling: isFeatureDisabled("autoRefresh") });
   const {
     showRecovery,
     crashLoop,
@@ -178,6 +195,7 @@ function App({ scope }: { scope: string | null }) {
   } = useCrashRecovery({ view, selectedFile, selectedZone, selectedRunId, selectedTaskId });
 
   const [detail, setDetail] = useState<DetailItem | null>(null);
+  const [degradationDismissed, setDegradationDismissed] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getInitialSidebarCollapsed);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [prdDetailContent, setPrdDetailContent] = useState<VNode<any> | null>(null);
@@ -202,6 +220,22 @@ function App({ scope }: { scope: string | null }) {
     });
   };
 
+  // Re-show degradation banner when tier escalates
+  useEffect(() => {
+    if (isDegraded) setDegradationDismissed(false);
+  }, [degradationTier]);
+
+  // Toggle CSS animation suppression class when animations are degraded
+  useEffect(() => {
+    const el = document.documentElement;
+    if (isFeatureDisabled("animations")) {
+      el.classList.add("degradation-no-animations");
+    } else {
+      el.classList.remove("degradation-no-animations");
+    }
+    return () => { el.classList.remove("degradation-no-animations"); };
+  }, [isFeatureDisabled]);
+
   // Scroll to top on view change
   useEffect(() => {
     document.getElementById("main-content")?.scrollTo(0, 0);
@@ -214,9 +248,13 @@ function App({ scope }: { scope: string | null }) {
 
   const hasData = data.manifest || data.inventory || data.imports || data.zones;
 
+  // Show degradation banner when degraded and not already showing the memory warning (avoid stacking)
+  const showDegradationBanner = isDegraded && !degradationDismissed && !showMemoryWarning;
+
   return h(Fragment, null,
     h(CrashRecoveryBanner, { visible: showRecovery, crashLoop, recentCrashCount, recoveredState, onDismiss: dismissRecovery, onRestore: handleRestore }),
     h(MemoryWarningBanner, { snapshot: memorySnapshot, level: memoryLevel, visible: showMemoryWarning, onDismiss: dismissMemoryWarning }),
+    h(DegradationBanner, { tier: degradationTier, isDegraded, summary: degradationSummary, disabledFeatures, visible: showDegradationBanner, onDismiss: () => setDegradationDismissed(true) }),
     h("a", { href: "#main-content", class: "skip-link" }, "Skip to main content"),
     h(Sidebar, { view, onNavigate: handleSidebarNav, manifest: data.manifest, zones: data.zones, sidebarCollapsed, onToggleSidebar: handleToggleSidebar, scope }),
     h("main", {
@@ -233,10 +271,12 @@ function App({ scope }: { scope: string | null }) {
           h(Guide, { view }),
         ),
       ),
-      renderActiveView({ view, loading, data, setDetail, setPrdDetailContent, selectedFile, setSelectedFile, selectedZone, selectedRunId, selectedTaskId, navigateTo }),
+      renderActiveView({ view, loading, data, setDetail, setPrdDetailContent, selectedFile, setSelectedFile, selectedZone, selectedRunId, selectedTaskId, navigateTo, isFeatureDisabled }),
     ),
-    h(DetailPanel, { detail, data, navigateTo, onClose: () => { setDetail(null); setPrdDetailContent(null); }, prdDetailContent }),
-    refreshToast
+    !isFeatureDisabled("detailPanel")
+      ? h(DetailPanel, { detail, data, navigateTo, onClose: () => { setDetail(null); setPrdDetailContent(null); }, prdDetailContent })
+      : null,
+    (refreshToast && !isFeatureDisabled("autoRefresh"))
       ? h("div", { class: "refresh-toast", role: "status", "aria-live": "polite" }, "Data updated")
       : null,
     (showDrop && !hasData)

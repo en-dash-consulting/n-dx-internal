@@ -48,7 +48,13 @@ const DEFERRED_MODULES: Array<keyof LoadedData> = [
   "inventory", "imports", "components", "callGraph",
 ];
 
-export function useAppData(): AppDataState {
+export interface UseAppDataOptions {
+  /** When true, data polling is paused to conserve memory (graceful degradation). */
+  pausePolling?: boolean;
+}
+
+export function useAppData(options: UseAppDataOptions = {}): AppDataState {
+  const { pausePolling = false } = options;
   const [data, setData] = useState<LoadedData>(EMPTY_DATA);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"server" | "static">("static");
@@ -106,6 +112,17 @@ export function useAppData(): AppDataState {
       }
     };
   }, []);
+
+  // Pause or resume polling in response to degradation signals.
+  useEffect(() => {
+    if (mode !== "server") return;
+    if (pausePolling) {
+      stopPolling();
+    } else if (!initialLoad.current) {
+      // Only resume if we've already completed the initial load.
+      startPolling(5000);
+    }
+  }, [pausePolling, mode]);
 
   // Drag-and-drop (only active in static mode)
   useEffect(() => {
