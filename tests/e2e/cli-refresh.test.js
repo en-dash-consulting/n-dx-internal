@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -161,5 +162,65 @@ describe("n-dx refresh", () => {
     const { stdout, code } = runRefreshResult(["--ui-only", "--no-build", tmpDir]);
     expect(code).toBe(0);
     expect(stdout).toContain("Live reload: skipped (no running dashboard server detected).");
+  });
+
+  // ── Pre-refresh conflict detection ────────────────────────────────────────
+
+  it("silently cleans up a stale PID file before refresh when the process is not running", async () => {
+    const nonExistentPid = 99999999; // highly unlikely to be a real PID
+    await writeFile(
+      join(tmpDir, ".n-dx-web.pid"),
+      JSON.stringify({ pid: nonExistentPid, port: 3117, startedAt: new Date().toISOString() }),
+      "utf-8",
+    );
+
+    const { stdout, code } = runRefreshResult(["--ui-only", "--no-build", tmpDir]);
+
+    expect(code).toBe(0);
+    // Stale PID clean-up is silent — no "Conflict:" message for already-dead processes.
+    expect(stdout).not.toContain("Conflict:");
+    // Stale PID file must be removed after the refresh.
+    expect(existsSync(join(tmpDir, ".n-dx-web.pid"))).toBe(false);
+  });
+
+  it("detects and terminates a live dashboard process before proceeding with refresh", async () => {
+    // Spawn a long-running child process to simulate a running dashboard.
+    const child = spawn(process.execPath, ["-e", "setInterval(()=>{},1000)"], {
+      detached: true,
+      stdio: "ignore",
+    });
+    child.unref();
+    const pid = child.pid;
+
+    await writeFile(
+      join(tmpDir, ".n-dx-web.pid"),
+      JSON.stringify({ pid, port: 3117, startedAt: new Date().toISOString() }),
+      "utf-8",
+    );
+
+    // Use a short grace period so the test does not wait the full 2 s default.
+    // The SIGTERM→SIGKILL path takes gracePeriodMs + 100 ms settle; 100+100 = ~200 ms.
+    const { stdout, code } = runRefreshResult(["--ui-only", "--no-build", tmpDir], {
+      env: { ...process.env, N_DX_STOP_GRACE_MS: "100" },
+    });
+
+    expect(code).toBe(0);
+    expect(stdout).toContain(`Pre-refresh: detected running dashboard (PID ${pid}, port 3117); stopped.`);
+
+    // Allow the test-runner event loop a moment to reap the zombie so that
+    // kill(pid, 0) reflects the final process state.
+    await new Promise((r) => setTimeout(r, 200));
+
+    // Verify the process was actually terminated (not merely a zombie).
+    let stillRunning = true;
+    try {
+      process.kill(pid, 0);
+    } catch {
+      stillRunning = false;
+    }
+    expect(stillRunning).toBe(false);
+
+    // PID file must be cleaned up after stopping.
+    expect(existsSync(join(tmpDir, ".n-dx-web.pid"))).toBe(false);
   });
 });

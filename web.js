@@ -100,7 +100,7 @@ async function readPortFile(dir) {
 /**
  * Remove the port file.
  */
-async function removePortFile(dir) {
+export async function removePortFile(dir) {
   const portPath = join(dir, PORT_FILE);
   try {
     await unlink(portPath);
@@ -127,7 +127,7 @@ async function waitForPortFile(dir, timeoutMs = 5000, intervalMs = 100) {
  * Read the PID file for a given project directory.
  * Returns { pid, port } or null.
  */
-async function readPidFile(dir) {
+export async function readPidFile(dir) {
   const pidPath = join(dir, PID_FILE);
   if (!(await fileExists(pidPath))) return null;
   try {
@@ -154,7 +154,7 @@ async function writePidFile(dir, pid, port) {
 /**
  * Remove PID file.
  */
-async function removePidFile(dir) {
+export async function removePidFile(dir) {
   const pidPath = join(dir, PID_FILE);
   try {
     await unlink(pidPath);
@@ -166,7 +166,7 @@ async function removePidFile(dir) {
 /**
  * Check if a process is still running.
  */
-function isProcessRunning(pid) {
+export function isProcessRunning(pid) {
   try {
     process.kill(pid, 0);
     return true;
@@ -185,7 +185,7 @@ function isProcessRunning(pid) {
  * @param {number} [intervalMs] Polling interval. Defaults to 100 ms.
  * @returns {Promise<boolean>}  `true` if the process exited, `false` if timeout.
  */
-async function waitForProcessExit(pid, timeoutMs, intervalMs = 100) {
+export async function waitForProcessExit(pid, timeoutMs, intervalMs = 100) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (!isProcessRunning(pid)) return true;
