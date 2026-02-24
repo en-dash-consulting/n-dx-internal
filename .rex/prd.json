@@ -13329,9 +13329,11 @@
     {
       "id": "f95ede7e-3b79-4370-9c8b-0174c83ead4c",
       "title": "Process Lifecycle Management and Graceful Shutdown",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-24T07:53:24.088Z",
+      "completedAt": "2026-02-24T07:53:24.088Z",
       "children": [
         {
           "id": "d60d8d39-5e77-42c5-a4ea-b027e266befd",
@@ -13424,6 +13426,8 @@
           "level": "feature",
           "description": "Implement comprehensive graceful shutdown procedures that properly clean up all processes, ports, and resources when dashboard is terminated",
           "source": "smart-add",
+          "startedAt": "2026-02-24T07:43:12.260Z",
+          "completedAt": "2026-02-24T07:43:12.260Z",
           "children": [
             {
               "id": "6b7341f2-8fe5-419e-b6c1-949f7e3e9a66",
@@ -13509,17 +13513,17 @@
               "startedAt": "2026-02-24T07:31:01.125Z",
               "completedAt": "2026-02-24T07:43:12.167Z"
             }
-          ],
-          "startedAt": "2026-02-24T07:43:12.260Z",
-          "completedAt": "2026-02-24T07:43:12.260Z"
+          ]
         },
         {
           "id": "9ac4a684-2100-4520-868a-b7d33d4818dd",
           "title": "Refresh Command Process Management",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Enhance the ndx refresh command to properly detect and clean up existing dashboard processes before starting refresh operations",
           "source": "smart-add",
+          "startedAt": "2026-02-24T07:53:24.020Z",
+          "completedAt": "2026-02-24T07:53:24.020Z",
           "children": [
             {
               "id": "979b4a53-459b-43e7-98fc-94723f88698f",
@@ -13576,7 +13580,7 @@
             {
               "id": "64720ae2-dae3-4a2c-b4b8-34d743d7f720",
               "title": "Add refresh operation cleanup validation and rollback",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement validation procedures that verify successful refresh completion and provide rollback mechanisms for failed refresh attempts",
               "acceptanceCriteria": [
@@ -13590,7 +13594,9 @@
                 "rollback",
                 "refresh"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-24T07:44:03.043Z",
+              "completedAt": "2026-02-24T07:53:23.927Z"
             }
           ]
         }
