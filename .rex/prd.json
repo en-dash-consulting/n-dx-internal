@@ -13964,7 +13964,7 @@
         {
           "id": "0cf188b5-61e7-4aab-8ba5-d101a5e0a582",
           "title": "OOM Crash Investigation and Root Cause Analysis",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Investigate and diagnose the recurring out-of-memory crashes that cause 'aw snap error code 5' in the web UI",
           "source": "smart-add",
@@ -14013,7 +14013,7 @@
             {
               "id": "0b87a119-c6a2-498a-ad5f-050e70f3b664",
               "title": "Investigate browser error code 5 triggers and recovery scenarios",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Research Chrome/browser error code 5 specifics and analyze crash dump data to understand the exact failure conditions and memory thresholds",
               "acceptanceCriteria": [
@@ -14027,7 +14027,9 @@
                 "browser",
                 "debugging"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-24T19:23:45.126Z",
+              "completedAt": "2026-02-24T19:29:13.012Z"
             }
           ],
           "overrideMarker": {
@@ -14039,7 +14041,9 @@
             "matchedItemLevel": "feature",
             "matchedItemStatus": "completed",
             "createdAt": "2026-02-24T18:39:02.997Z"
-          }
+          },
+          "startedAt": "2026-02-24T19:29:13.108Z",
+          "completedAt": "2026-02-24T19:29:13.108Z"
         },
         {
           "id": "3eda1cdc-8a1f-4d09-984b-570c1e3edf2a",
@@ -14071,7 +14075,7 @@
             {
               "id": "adb4c3db-9fd8-44c1-b6d6-b0595ba8c734",
               "title": "Fix memory leaks in refresh orchestration and component lifecycle",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Identify and resolve memory leaks in React components, event listeners, timers, and refresh orchestration that prevent proper garbage collection",
               "acceptanceCriteria": [
@@ -14086,7 +14090,9 @@
                 "memory",
                 "react"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-24T19:07:38.856Z",
+              "completedAt": "2026-02-24T19:23:44.926Z"
             },
             {
               "id": "d5a5f03a-bd51-4484-aa4f-509fc8b5dbdb",
