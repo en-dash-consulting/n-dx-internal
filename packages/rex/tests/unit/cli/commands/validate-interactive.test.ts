@@ -544,6 +544,130 @@ describe("resolveEpiclessFeatures", () => {
     expect(output).toContain("% match");
   });
 
+  // ── Integrity-protected deletion ──────────────────────────────────────────
+
+  it("deletes safe feature without extra confirmation", async () => {
+    // Feature f1 has no sync metadata and no external blockedBy refs
+    const doc = makeDoc();
+    const prompt = mockPrompt(["2"]);
+
+    const resolutions = await resolveEpiclessFeatures(
+      doc,
+      SINGLE_EPICLESS,
+      { prompt },
+    );
+
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].action).toBe("delete");
+
+    // Should NOT show integrity warnings for safe deletion
+    const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+    expect(output).not.toContain("Integrity warnings");
+    expect(output).toContain("no external dependencies");
+  });
+
+  it("shows warnings and requires confirmation for feature with external dependents", async () => {
+    const doc = makeDoc({
+      items: [
+        { id: "e1", title: "Epic One", level: "epic", status: "pending", children: [] },
+        {
+          id: "f1",
+          title: "Feature with deps",
+          level: "feature",
+          status: "pending",
+          children: [
+            { id: "t1", title: "Task One", level: "task", status: "pending" },
+          ],
+        },
+        {
+          id: "t-other",
+          title: "Dependent Task",
+          level: "task",
+          status: "blocked",
+          blockedBy: ["t1"],
+        },
+      ],
+    });
+    const features: EpiclessFeature[] = [
+      { itemId: "f1", title: "Feature with deps", status: "pending", childCount: 1 },
+    ];
+
+    // "2" = delete, "y" = confirm
+    const prompt = mockPrompt(["2", "y"]);
+
+    const resolutions = await resolveEpiclessFeatures(doc, features, { prompt });
+
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].action).toBe("delete");
+
+    const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+    const errOutput = errSpy.mock.calls.map((c) => c[0]).join("\n");
+    const combined = output + "\n" + errOutput;
+    expect(combined).toContain("Integrity warnings");
+    expect(combined).toContain("external");
+  });
+
+  it("cancels deletion when user declines confirmation for unsafe feature", async () => {
+    const doc = makeDoc({
+      items: [
+        { id: "e1", title: "Epic One", level: "epic", status: "pending", children: [] },
+        {
+          id: "f1",
+          title: "Synced Feature",
+          level: "feature",
+          status: "pending",
+          remoteId: "notion-page-123",
+        },
+      ],
+    });
+    const features: EpiclessFeature[] = [
+      { itemId: "f1", title: "Synced Feature", status: "pending", childCount: 0 },
+    ];
+
+    // "2" = delete, "n" = cancel
+    const prompt = mockPrompt(["2", "n"]);
+
+    const resolutions = await resolveEpiclessFeatures(doc, features, { prompt });
+
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].action).toBe("skip");
+
+    const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+    expect(output).toContain("cancelled");
+  });
+
+  it("shows sync warnings for feature with remote sync metadata", async () => {
+    const doc = makeDoc({
+      items: [
+        { id: "e1", title: "Epic One", level: "epic", status: "pending", children: [] },
+        {
+          id: "f1",
+          title: "Synced Feature",
+          level: "feature",
+          status: "pending",
+          remoteId: "notion-page-123",
+          lastSyncedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    const features: EpiclessFeature[] = [
+      { itemId: "f1", title: "Synced Feature", status: "pending", childCount: 0 },
+    ];
+
+    // "2" = delete, "y" = confirm
+    const prompt = mockPrompt(["2", "y"]);
+
+    const resolutions = await resolveEpiclessFeatures(doc, features, { prompt });
+
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].action).toBe("delete");
+
+    const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+    const errOutput = errSpy.mock.calls.map((c) => c[0]).join("\n");
+    const combined = output + "\n" + errOutput;
+    expect(combined).toContain("synced");
+  });
+
   it("shows star marker for high confidence top suggestion", async () => {
     const doc = makeDoc({
       items: [
@@ -690,5 +814,43 @@ describe("applyEpiclessResolutions", () => {
 
     const mutated = applyEpiclessResolutions(doc, resolutions);
     expect(mutated).toBe(0);
+  });
+
+  it("cleans up blockedBy references when deleting feature", () => {
+    const doc: PRDDocument = {
+      schema: "rex/v1",
+      title: "Test",
+      items: [
+        {
+          id: "f1",
+          title: "Feature to Delete",
+          level: "feature",
+          status: "pending",
+          children: [
+            { id: "t1", title: "Task One", level: "task", status: "pending" },
+          ],
+        },
+        {
+          id: "t-other",
+          title: "Dependent Task",
+          level: "task",
+          status: "blocked",
+          blockedBy: ["t1", "some-other-ref"],
+        },
+      ],
+    };
+
+    const resolutions: EpiclessResolution[] = [
+      { featureId: "f1", action: "delete" },
+    ];
+
+    const mutated = applyEpiclessResolutions(doc, resolutions);
+
+    expect(mutated).toBe(1);
+    expect(doc.items.find((i) => i.id === "f1")).toBeUndefined();
+
+    // blockedBy should have t1 removed but keep some-other-ref
+    const other = doc.items.find((i) => i.id === "t-other");
+    expect(other?.blockedBy).toEqual(["some-other-ref"]);
   });
 });

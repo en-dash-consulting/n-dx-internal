@@ -120,6 +120,11 @@ export { removeEpic } from "./core/remove-epic.js";
 export type { RemoveEpicResult } from "./core/remove-epic.js";
 export { removeTask } from "./core/remove-task.js";
 export type { RemoveTaskResult, ParentAutoCompletion } from "./core/remove-task.js";
+export { preCheckFeatureDeletion, removeFeature } from "./core/remove-feature.js";
+export type {
+  DeletionPreCheck, RemoveFeatureResult,
+  ExternalDependent, SyncedItem,
+} from "./core/remove-feature.js";
 
 // ---- Core: task selection ---------------------------------------------------
 

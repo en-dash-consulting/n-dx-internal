@@ -6,6 +6,10 @@ import {
 } from "../../core/epic-correlation.js";
 import type { CorrelationResult } from "../../core/epic-correlation.js";
 import { insertChild, removeFromTree } from "../../core/tree.js";
+import {
+  preCheckFeatureDeletion,
+  removeFeature,
+} from "../../core/remove-feature.js";
 import { info, warn } from "../output.js";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -182,10 +186,37 @@ export async function resolveEpiclessFeatures(
         break;
       }
 
-      case "2":
+      case "2": {
+        // Run integrity pre-checks before confirming deletion
+        const preCheck = preCheckFeatureDeletion(doc.items, feature.itemId);
+
+        if (!preCheck.safe) {
+          info("");
+          warn("  ⚠ Integrity warnings:");
+          for (const w of preCheck.warnings) {
+            warn(`    • ${w}`);
+          }
+          info("");
+          info(`    This will permanently delete ${preCheck.subtreeCount} item${preCheck.subtreeCount === 1 ? "" : "s"}.`);
+          info("    [y] Confirm deletion");
+          info("    [n] Cancel (skip instead)");
+
+          const confirm = await prompt("  Proceed? (y/n): ");
+          if (confirm.trim().toLowerCase() !== "y") {
+            resolutions.push({ featureId: feature.itemId, action: "skip" });
+            info("  → Deletion cancelled, skipping");
+            break;
+          }
+        } else {
+          info(
+            `    Deleting ${preCheck.subtreeCount} item${preCheck.subtreeCount === 1 ? "" : "s"} (no external dependencies or sync references).`,
+          );
+        }
+
         resolutions.push({ featureId: feature.itemId, action: "delete" });
         info("  ✓ Marked for deletion");
         break;
+      }
 
       case "3":
         resolutions.push({ featureId: feature.itemId, action: "skip" });
@@ -285,8 +316,8 @@ export function applyEpiclessResolutions(
     }
 
     if (resolution.action === "delete") {
-      const removed = removeFromTree(doc.items, resolution.featureId);
-      if (removed) {
+      const result = removeFeature(doc.items, resolution.featureId);
+      if (result.ok) {
         mutated++;
       }
     }
