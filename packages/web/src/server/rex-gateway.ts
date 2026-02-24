@@ -1,8 +1,19 @@
 /**
- * Centralized gateway for Rex runtime imports.
+ * Centralized gateway for rex runtime imports.
  *
- * Web routes consume Rex through this boundary rather than importing directly
- * from "rex". This keeps Rex coupling auditable and localized.
+ * Web route handlers and the rex MCP server need access to rex domain types,
+ * constants, tree utilities, and the MCP server factory. Rather than scattering
+ * `import … from "rex"` across route files, all web→rex runtime imports pass
+ * through this single module.
+ *
+ * By concentrating all web→rex runtime imports here, we ensure:
+ * - The cross-package surface is **explicit** (re-exports in one file, not scattered).
+ * - The DAG stays **acyclic** — rex never imports from web.
+ * - Future changes to rex's public API need only be updated in this single file.
+ *
+ * @module web/server/rex-gateway
+ * @see packages/web/src/server/domain-gateway.ts — web's gateway for sourcevision imports
+ * @see packages/hench/src/prd/rex-gateway.ts — hench's equivalent gateway for rex
  */
 
 // ---- Rex MCP server factory -------------------------------------------------

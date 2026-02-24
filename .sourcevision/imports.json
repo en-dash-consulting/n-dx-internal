@@ -3563,11 +3563,19 @@
     },
     {
       "from": "packages/llm-client/src/llm-client.ts",
+      "to": "packages/llm-client/src/create-client.ts",
+      "type": "type",
+      "symbols": [
+        "CreateClientOptions"
+      ]
+    },
+    {
+      "from": "packages/llm-client/src/llm-client.ts",
       "to": "packages/llm-client/src/llm-types.ts",
       "type": "type",
       "symbols": [
-        "CreateLLMClientOptions",
-        "LLMVendor"
+        "LLMVendor",
+        "LLMConfig"
       ]
     },
     {
@@ -3576,7 +3584,8 @@
       "type": "type",
       "symbols": [
         "AuthMode",
-        "ClaudeClient"
+        "ClaudeClient",
+        "ClaudeConfig"
       ]
     },
     {
@@ -3599,10 +3608,10 @@
     },
     {
       "from": "packages/llm-client/src/llm-types.ts",
-      "to": "packages/llm-client/src/create-client.ts",
+      "to": "packages/llm-client/src/provider-interface.ts",
       "type": "type",
       "symbols": [
-        "CreateClientOptions"
+        "LLMVendor"
       ]
     },
     {
@@ -3612,14 +3621,6 @@
       "symbols": [
         "ClaudeClient",
         "ClaudeConfig"
-      ]
-    },
-    {
-      "from": "packages/llm-client/src/provider-interface.ts",
-      "to": "packages/llm-client/src/llm-types.ts",
-      "type": "type",
-      "symbols": [
-        "LLMVendor"
       ]
     },
     {
@@ -3867,6 +3868,14 @@
     },
     {
       "from": "packages/llm-client/src/public.ts",
+      "to": "packages/llm-client/src/llm-client.ts",
+      "type": "type",
+      "symbols": [
+        "CreateLLMClientOptions"
+      ]
+    },
+    {
+      "from": "packages/llm-client/src/public.ts",
       "to": "packages/llm-client/src/llm-config.ts",
       "type": "reexport",
       "symbols": [
@@ -3881,7 +3890,6 @@
         "LLMVendor",
         "CodexConfig",
         "LLMConfig",
-        "CreateLLMClientOptions",
         "LLMClient"
       ]
     },
@@ -4318,6 +4326,117 @@
       "symbols": [
         "CompletionRequest",
         "CompletionResult"
+      ]
+    },
+    {
+      "from": "packages/llm-client/tests/unit/public-api.test.ts",
+      "to": "packages/llm-client/src/public.ts",
+      "type": "static",
+      "symbols": [
+        "ClaudeClientError",
+        "CLIError",
+        "ProviderRegistry",
+        "createDefaultRegistry",
+        "defaultRegistry",
+        "ProviderSession",
+        "createProviderSession",
+        "loadLLMConfig",
+        "createLLMClient",
+        "detectLLMAuthMode",
+        "loadClaudeConfig",
+        "resolveApiKey",
+        "resolveCliPath",
+        "resolveModel",
+        "parseApiTokenUsage",
+        "parseCliTokenUsage",
+        "parseStreamTokenUsage",
+        "createApiClient",
+        "createCliClient",
+        "createCodexCliClient",
+        "createClient",
+        "detectAuthMode",
+        "detectCliAvailability",
+        "validateApiKey",
+        "detectAvailableAuth",
+        "diagnoseAuth",
+        "exec",
+        "execStdout",
+        "execShellCmd",
+        "getCurrentHead",
+        "getCurrentBranch",
+        "isExecutableOnPath",
+        "spawnTool",
+        "spawnManaged",
+        "ProcessPool",
+        "ProcessLimitError",
+        "PROJECT_DIRS",
+        "toCanonicalJSON",
+        "deepMerge",
+        "loadProjectOverrides",
+        "mergeWithOverrides",
+        "setQuiet",
+        "isQuiet",
+        "info",
+        "result",
+        "editDistance",
+        "suggestCommands",
+        "formatTypoSuggestion",
+        "isColorEnabled",
+        "resetColorCache",
+        "bold",
+        "dim",
+        "cyan",
+        "yellow",
+        "cmd",
+        "flag",
+        "sectionHeader",
+        "requiredParam",
+        "optionalParam",
+        "formatHelp",
+        "formatUsage"
+      ]
+    },
+    {
+      "from": "packages/llm-client/tests/unit/public-api.test.ts",
+      "to": "packages/llm-client/src/public.ts",
+      "type": "type",
+      "symbols": [
+        "ProviderAuthMode",
+        "ProviderCapability",
+        "ProviderInfo",
+        "StreamChunk",
+        "LLMProvider",
+        "LLMVendor",
+        "CodexConfig",
+        "LLMConfig",
+        "LLMClient",
+        "TokenUsage",
+        "ClaudeConfig",
+        "AuthMode",
+        "ClaudeClientOptions",
+        "CompletionRequest",
+        "CompletionResult",
+        "ErrorReason",
+        "ClaudeClient",
+        "CreateLLMClientOptions",
+        "ApiProviderOptions",
+        "CliProviderOptions",
+        "CodexCliProviderOptions",
+        "CreateClientOptions",
+        "AuthDetectionResult",
+        "AuthDiagnostics",
+        "ExecResult",
+        "ExecOptions",
+        "SpawnToolOptions",
+        "SpawnToolResult",
+        "ManagedChild",
+        "ProjectDir",
+        "HelpOption",
+        "HelpExample",
+        "HelpDefinition",
+        "UsageSection",
+        "UsageDefinition",
+        "ProviderFactory"
       ]
     },
     {
@@ -10097,6 +10216,14 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/classify.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "startSpinner"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/classify.ts",
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -10258,6 +10385,14 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/enrich-batch.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "startSpinner"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-batch.ts",
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -10336,6 +10471,14 @@
       "symbols": [
         "emptyAnalyzeTokenUsage",
         "accumulateTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-per-zone.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "startSpinner"
       ]
     },
     {
@@ -16706,6 +16849,16 @@
       ]
     },
     {
+      "package": "ora",
+      "importedBy": [
+        "packages/rex/src/cli/output.ts",
+        "packages/sourcevision/src/cli/output.ts"
+      ],
+      "symbols": [
+        "default"
+      ]
+    },
+    {
       "package": "path",
       "importedBy": [
         "ci.js",
@@ -17050,6 +17203,7 @@
         "packages/llm-client/tests/unit/provider-interface.test.ts",
         "packages/llm-client/tests/unit/provider-registry.test.ts",
         "packages/llm-client/tests/unit/provider-session.test.ts",
+        "packages/llm-client/tests/unit/public-api.test.ts",
         "packages/llm-client/tests/unit/suggest.test.ts",
         "packages/llm-client/tests/unit/token-usage.test.ts",
         "packages/llm-client/tests/unit/types.test.ts",
@@ -17291,6 +17445,7 @@
     }
   ],
   "summary": {
+<<<<<<< HEAD
     "totalEdges": 1800,
     "totalExternal": 17,
     "circularCount": 4,
@@ -17327,6 +17482,12 @@
         ]
       }
     ],
+=======
+    "totalEdges": 1799,
+    "totalExternal": 18,
+    "circularCount": 0,
+    "circulars": [],
+>>>>>>> feature/integrate-codex
     "mostImported": [
       {
         "path": "packages/rex/src/core/tree.ts",
@@ -17373,6 +17534,10 @@
         "count": 15
       },
       {
+        "path": "packages/sourcevision/src/cli/output.ts",
+        "count": 13
+      },
+      {
         "path": "packages/hench/src/schema/v1.ts",
         "count": 12
       },
@@ -17386,10 +17551,6 @@
       },
       {
         "path": "packages/sourcevision/src/cli/errors.ts",
-        "count": 10
-      },
-      {
-        "path": "packages/sourcevision/src/cli/output.ts",
         "count": 10
       },
       {

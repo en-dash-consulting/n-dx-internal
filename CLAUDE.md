@@ -42,15 +42,16 @@ Zero circular dependencies. The web package sits alongside orchestration — it 
 
 ### Gateway modules
 
-Packages that import from other packages at runtime concentrate **all** cross-package imports into a single gateway module. This makes the dependency surface explicit, auditable, and easy to update when upstream APIs change.
+Packages that import from other packages at runtime concentrate **all** cross-package imports into a single gateway module per upstream package. This makes the dependency surface explicit, auditable, and easy to update when upstream APIs change.
 
 | Package | Gateway file | Imports from | Re-exports |
 |---------|-------------|--------------|------------|
 | hench | `src/prd/rex-gateway.ts` | rex | 8 functions (store, tree, task selection) |
-| web | `src/server/domain-gateway.ts` | rex, sourcevision | 2 MCP server factories + rex domain types/constants |
+| web | `src/server/rex-gateway.ts` | rex | Rex MCP server factory, domain types & constants, tree utilities |
+| web | `src/server/domain-gateway.ts` | sourcevision | Sourcevision MCP server factory |
 
 Rules:
-- **One gateway per package** — all runtime cross-package imports pass through it.
+- **One gateway per source package** — all runtime imports from a given upstream package pass through a single gateway. A consumer may have multiple gateways (e.g. web has separate gateways for rex and sourcevision).
 - **Re-export only** — gateways re-export; they contain no logic.
 - **Type imports excluded** — `import type` is erased at compile time and stays at the call-site.
 - **New cross-package imports** require a deliberate edit to the gateway, not a casual import in a leaf file.

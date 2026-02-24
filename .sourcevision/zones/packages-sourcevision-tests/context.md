@@ -8,7 +8,11 @@ Zone: Tests (`packages-sourcevision:tests`)
 Files: 68, Cohesion: 0.94, Coupling: 0.06
 Description: 66 files, primarily TypeScript
 Entry points: packages/sourcevision/src/cli/commands/analyze.ts, packages/sourcevision/src/cli/mcp.ts, packages/sourcevision/src/export/pdf-report.ts, packages/sourcevision/src/schema/data-files.ts, packages/sourcevision/src/schema/index.ts, packages/sourcevision/src/schema/v1.ts
+<<<<<<< HEAD
 Lines: 23628
+=======
+Lines: 23649
+>>>>>>> feature/integrate-codex
 
 </zone>
 
@@ -19,10 +23,10 @@ packages/sourcevision/src/analyzers/callgraph.ts (TypeScript, 809 lines, source)
 packages/sourcevision/src/analyzers/claude-client.ts (TypeScript, 142 lines, source)
 packages/sourcevision/src/analyzers/components.ts (TypeScript, 788 lines, source)
 packages/sourcevision/src/analyzers/context.ts (TypeScript, 233 lines, source)
-packages/sourcevision/src/analyzers/enrich-batch.ts (TypeScript, 464 lines, source)
+packages/sourcevision/src/analyzers/enrich-batch.ts (TypeScript, 473 lines, source)
 packages/sourcevision/src/analyzers/enrich-config.ts (TypeScript, 240 lines, source)
 packages/sourcevision/src/analyzers/enrich-parsing.ts (TypeScript, 456 lines, source)
-packages/sourcevision/src/analyzers/enrich-per-zone.ts (TypeScript, 370 lines, source)
+packages/sourcevision/src/analyzers/enrich-per-zone.ts (TypeScript, 382 lines, source)
 packages/sourcevision/src/analyzers/enrich.ts (TypeScript, 270 lines, source)
 packages/sourcevision/src/analyzers/imports.ts (TypeScript, 519 lines, source)
 packages/sourcevision/src/analyzers/index.ts (TypeScript, 28 lines, source)
@@ -263,7 +267,7 @@ Internal:
   packages/sourcevision/tests/unit/util/sort.test.ts → packages/sourcevision/src/util/sort.ts {sortFiles, sortEdges, sortExternals, sortInventory, sortImports, sortFindings, sortFileClassifications, sortClassifications, toCanonicalJSON}
 
 Outgoing (this zone → other zones):
-  → packages-sourcevision:cli: packages/sourcevision/src/analyzers/manifest.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/analyzers/workspace.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/init.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/init.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/errors.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/errors.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/output.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/output.ts; packages/sourcevision/src/cli/mcp.ts → packages/sourcevision/src/cli/commands/constants.ts
+  → packages-sourcevision:cli: packages/sourcevision/src/analyzers/enrich-batch.ts → packages/sourcevision/src/cli/output.ts; packages/sourcevision/src/analyzers/enrich-per-zone.ts → packages/sourcevision/src/cli/output.ts; packages/sourcevision/src/analyzers/manifest.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/analyzers/workspace.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/constants.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/init.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/commands/init.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/errors.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/errors.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/output.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/cli/output.ts; packages/sourcevision/src/cli/mcp.ts → packages/sourcevision/src/cli/commands/constants.ts
 
 Incoming (other zones → this zone):
   ← packages-sourcevision:cli: packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/export/pdf-report.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/export/pdf-report.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/schema/index.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/schema/index.ts; packages/sourcevision/src/cli/commands/init.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/cli/commands/init.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/cli/commands/validate.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/validate.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/validate.ts → packages/sourcevision/src/schema/index.ts; packages/sourcevision/src/cli/commands/validate.ts → packages/sourcevision/src/schema/index.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/commands/analyze.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/commands/analyze.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/mcp.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/mcp.ts
@@ -274,7 +278,11 @@ Incoming (other zones → this zone):
 
 - High cohesion (0.94) — files are tightly interconnected
 - Contains 70% of project files (68/97) — subdivided into 3 sub-zones
+<<<<<<< HEAD
 - [call graph] 2183 internal calls, 39 outgoing, 145 incoming (cohesion: 0.98, coupling: 0.02)
+=======
+- [call graph] 2183 internal calls, 42 outgoing, 145 incoming (cohesion: 0.98, coupling: 0.02)
+>>>>>>> feature/integrate-codex
 
 </insights>
 

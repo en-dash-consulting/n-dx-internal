@@ -4,13 +4,23 @@
  * These types define the forward-looking contract for multi-vendor support
  * while keeping the existing Claude-specific contract available for
  * backward compatibility during migration.
+ *
+ * ## Dependency note
+ *
+ * This module imports only from foundational leaf modules (`types.ts`,
+ * `provider-interface.ts`). Factory-level types such as
+ * `CreateLLMClientOptions` live in `llm-client.ts` alongside the factory
+ * function they parameterise, keeping this file free of implementation
+ * dependencies.
  */
 
-import type { CreateClientOptions } from "./create-client.js";
 import type { ClaudeClient, ClaudeConfig } from "./types.js";
 
-/** Supported LLM vendors. */
-export type LLMVendor = "claude" | "codex";
+// LLMVendor is defined in provider-interface.ts (its natural home as part of
+// the provider contract). Re-exported here so consumers can import it from
+// the vendor-neutral types module without knowing its origin.
+import type { LLMVendor } from "./provider-interface.js";
+export type { LLMVendor };
 
 /** Optional Codex-specific config section in `.n-dx.json`. */
 export interface CodexConfig {
@@ -32,19 +42,6 @@ export interface LLMConfig {
   claude?: ClaudeConfig;
   /** Codex-specific config (reserved for adapter integration). */
   codex?: CodexConfig;
-}
-
-/** Vendor-neutral client creation options. */
-export interface CreateLLMClientOptions extends Omit<CreateClientOptions, "claudeConfig"> {
-  /** Explicit vendor override. Defaults to `llmConfig.vendor` or `claude`. */
-  vendor?: LLMVendor;
-  /** Unified vendor config loaded from project config. */
-  llmConfig?: LLMConfig;
-  /**
-   * Legacy Claude config override.
-   * If provided, takes precedence over `llmConfig.claude`.
-   */
-  claudeConfig?: ClaudeConfig;
 }
 
 /** Alias that preserves migration ergonomics for downstream packages. */

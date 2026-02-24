@@ -13601,6 +13601,239 @@
           ]
         }
       ]
+    },
+    {
+      "id": "9dc20526-2080-456f-a3f4-163a748cb89b",
+      "title": "LLM Client Circular Dependency Resolution",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-02-24T07:27:47.293Z",
+      "completedAt": "2026-02-24T07:27:47.293Z",
+      "children": [
+        {
+          "id": "dd84153c-7c4d-488a-8ca6-81eab6623c2c",
+          "title": "Circular Dependency Analysis and Planning",
+          "status": "completed",
+          "level": "feature",
+          "description": "Analyze sourcevision findings to understand circular dependency structure and plan resolution approach",
+          "source": "smart-add",
+          "startedAt": "2026-02-24T07:02:22.107Z",
+          "completedAt": "2026-02-24T07:02:22.107Z",
+          "children": [
+            {
+              "id": "275d6bf0-c250-4a56-8e43-7106eb6bd258",
+              "title": "Review sourcevision circular dependency findings for llm-client package",
+              "status": "completed",
+              "level": "task",
+              "description": "## Findings\n\nSourcevision analysis (2026-02-24T05:11:49, git sha 536ec50) detected **4 circular dependency chains** in `packages/llm-client/src/`.\n\n### Root Cycle\n\nAll 4 chains are sub-paths of a single root cycle:\n\n```\nprovider-interface.ts → llm-types.ts → create-client.ts → api-provider.ts → provider-interface.ts\nprovider-interface.ts → llm-types.ts → create-client.ts → cli-provider.ts → provider-interface.ts\n```\n\n### Dependency Graph (pre-fix)\n\n```\nprovider-interface.ts ──imports LLMVendor──→ llm-types.ts\n       ↑                                          │\n       │                              imports CreateClientOptions\n       │                                          ↓\n api/cli-provider.ts ←──provides factory── create-client.ts\n       │\n       └──imports LLMProvider──→ provider-interface.ts\n```\n\n### The 4 Chains Reported\n\n1. `api-provider.ts → provider-interface.ts → llm-types.ts → create-client.ts`\n2. `api-provider.ts → provider-interface.ts → llm-types.ts → create-client.ts` (type import duplicate)\n3. `provider-interface.ts → llm-types.ts → create-client.ts`\n4. `cli-provider.ts → provider-interface.ts → llm-types.ts → create-client.ts`\n\n### Affected Modules\n\n- `provider-interface.ts` — LLMProvider interface + (was) LLMVendor consumer\n- `llm-types.ts` — vendor-neutral types + (was) LLMVendor definition\n- `create-client.ts` — Claude dual-provider factory\n- `api-provider.ts` — Anthropic SDK provider\n- `cli-provider.ts` — Claude CLI provider\n\n### Root Cause\n\n`provider-interface.ts` imported `LLMVendor` from `llm-types.ts`. `llm-types.ts` imported `CreateClientOptions` from `create-client.ts`. Both providers imported `LLMProvider` from `provider-interface.ts` to implement it. This formed a structural cycle even though all cross-layer imports were `import type`.\n\n### Resolution (already applied in prior session)\n\n`LLMVendor` was moved from `llm-types.ts` to `provider-interface.ts` as a self-contained definition. `llm-types.ts` re-exports it for backward compatibility. The `provider-interface.ts → llm-types.ts` import edge was eliminated, breaking all 4 chains. Zero circular dependencies remain.",
+              "acceptanceCriteria": [
+                "All circular dependency cycles in llm-client are documented with affected modules",
+                "Dependency graph visualization shows current circular relationships",
+                "Root causes of each circular dependency are identified"
+              ],
+              "priority": "high",
+              "tags": [
+                "analysis",
+                "dependencies"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T06:57:38.553Z",
+              "completedAt": "2026-02-24T07:05:00.000Z"
+            },
+            {
+              "id": "e39dac48-52eb-40eb-84d8-18606f441137",
+              "title": "Design dependency refactoring strategy for llm-client",
+              "status": "completed",
+              "level": "task",
+              "description": "## Dependency Refactoring Strategy: llm-client Circular Dependency Resolution\n\n### Problem Statement\nSourcevision identified 4 circular dependency chains in packages/llm-client, all rooted in one cycle:\n  provider-interface.ts → llm-types.ts → create-client.ts → (api|cli)-provider.ts → provider-interface.ts\n\n### Root Cause Analysis\nThe cycle formed through these steps:\n1. provider-interface.ts imported LLMVendor from llm-types.ts\n2. llm-types.ts imported CreateClientOptions (type) from create-client.ts\n3. create-client.ts imported createApiClient/createCliClient from provider modules\n4. Provider modules imported LLMProvider/ProviderInfo from provider-interface.ts\n\n### Dependency Layer Hierarchy\nThe llm-client module has 7 distinct layers:\n- Layer 0 (foundation): types.ts, exec.ts, output.ts, json.ts, help-format.ts, suggest.ts\n- Layer 1 (interfaces): provider-interface.ts — generic LLMProvider contract\n- Layer 2 (config): config.ts, llm-config.ts\n- Layer 3 (providers): api-provider.ts, cli-provider.ts, codex-cli-provider.ts\n- Layer 4 (factories): create-client.ts, llm-client.ts\n- Layer 5 (management): provider-registry.ts, provider-session.ts\n- Layer 6 (aggregation): llm-types.ts, public.ts\n\n### Strategy: Type Relocation via Dependency Inversion\n**Chosen approach**: Move LLMVendor from Layer 6 (llm-types.ts) to Layer 1 (provider-interface.ts), then re-export from llm-types.ts for backward compatibility.\n\n**Rationale**:\n- LLMVendor identifies which vendor a provider implements — it belongs with the provider interface contract\n- provider-interface.ts is the lowest layer that uses the type (ProviderInfo.vendor: LLMVendor)\n- Re-exporting from llm-types.ts ensures zero breaking changes for existing consumers\n\n**Alternatives considered and rejected**:\n1. Extract to vendors.ts (new file): Adds a new file for a two-value type union; hard to discover\n2. Move CreateClientOptions to llm-types.ts: Makes llm-types.ts import from factories (wrong direction)\n3. Use import type everywhere: Already applied but does not break structural/tool-detected cycles\n4. Split provider-interface.ts: Over-engineering; the file is small and cohesive\n\n### Modules Changed\n- provider-interface.ts: +8 lines — define and export LLMVendor with explanatory comment\n- llm-types.ts: +2 lines — import LLMVendor from provider-interface.ts and re-export it\n\n### Backward Compatibility\n- All consumers of LLMVendor from @n-dx/llm-client continue to work unchanged\n- public.ts exports unchanged\n- No changes required in dependent packages (hench, rex, sourcevision, web, claude-client)\n\n### Verification\n- 323/323 tests pass in @n-dx/llm-client after the fix\n- Runtime import graph: no circular dependencies remain\n- Type-only imports (import type) form no runtime cycles and are safe\n- Sourcevision circular dependency chain count: 4 → 0",
+              "acceptanceCriteria": [
+                "Refactoring plan specifies which modules to split or merge",
+                "Strategy identifies shared abstractions to extract",
+                "Plan maintains backward compatibility for public API",
+                "Approach minimizes impact on dependent packages"
+              ],
+              "priority": "high",
+              "tags": [
+                "design",
+                "architecture"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T06:50:20.104Z",
+              "completedAt": "2026-02-24T06:57:13.411Z"
+            }
+          ]
+        },
+        {
+          "id": "8ab355d9-4c30-4cc0-a668-8251c1bf993c",
+          "title": "Dependency Refactoring Implementation",
+          "status": "completed",
+          "level": "feature",
+          "description": "Execute the planned refactoring to eliminate circular dependencies through code restructuring",
+          "source": "smart-add",
+          "startedAt": "2026-02-24T07:21:44.440Z",
+          "completedAt": "2026-02-24T07:21:50.724Z",
+          "children": [
+            {
+              "id": "ad9bf9fd-735f-4f29-997c-90b1ce754c6d",
+              "title": "Extract shared types and interfaces to break circular dependencies",
+              "status": "completed",
+              "level": "task",
+              "description": "Circular dependencies fully resolved. LLMVendor moved to provider-interface.ts (commit 0862f2d). All 4 cycles broken. TypeScript passes (0 errors). 323 tests pass. Public API unchanged via re-export.",
+              "acceptanceCriteria": [
+                "All shared types are moved to non-circular locations",
+                "Type imports no longer create circular references",
+                "Public API surface remains unchanged",
+                "All existing type references are updated"
+              ],
+              "priority": "high",
+              "tags": [
+                "refactoring",
+                "types"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T07:02:22.235Z",
+              "completedAt": "2026-02-24T07:06:38.708Z",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "semantic_title",
+                "reasonRef": "semantic_title:bc578874-916e-4148-b3de-84ddba2fbd54",
+                "matchedItemId": "bc578874-916e-4148-b3de-84ddba2fbd54",
+                "matchedItemTitle": "Extract shared types to break circular dependencies",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-24T06:22:41.276Z"
+              }
+            },
+            {
+              "id": "ee5ebb42-02b4-45c7-8a65-1651189ae0c0",
+              "title": "Reorganize module imports to follow dependency hierarchy",
+              "status": "completed",
+              "level": "task",
+              "description": "Restructure imports within llm-client to ensure unidirectional dependency flow, potentially splitting large modules or creating new abstraction layers",
+              "acceptanceCriteria": [
+                "All modules follow clear dependency hierarchy",
+                "No circular imports remain in the package",
+                "Module responsibilities are clearly separated",
+                "Import structure supports maintainability"
+              ],
+              "priority": "high",
+              "tags": [
+                "refactoring",
+                "imports"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T07:07:15.342Z",
+              "completedAt": "2026-02-24T07:15:44.671Z"
+            },
+            {
+              "id": "4263f7b5-bda4-42f9-b300-f8e02a678040",
+              "title": "Update package exports to maintain public API compatibility",
+              "status": "completed",
+              "level": "task",
+              "description": "Ensure that public API exports remain consistent after internal restructuring, updating index files and package.json exports as needed",
+              "acceptanceCriteria": [
+                "All public exports remain available at same paths",
+                "Package.json exports configuration is updated correctly",
+                "No breaking changes to external consumers",
+                "Internal reorganization is transparent to users"
+              ],
+              "priority": "medium",
+              "tags": [
+                "api",
+                "exports"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T07:16:13.665Z",
+              "completedAt": "2026-02-24T07:21:50.653Z",
+              "children": [
+                {
+                  "id": "6d3d8a74-c84d-4615-a418-11ac553c4f8c",
+                  "title": "Log",
+                  "status": "completed",
+                  "level": "subtask",
+                  "startedAt": "2026-02-24T07:21:50.555Z",
+                  "completedAt": "2026-02-24T07:21:50.555Z"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "b2d95ab6-7bfc-4351-87aa-4f308dfca8d6",
+          "title": "Validation and Testing",
+          "status": "completed",
+          "level": "feature",
+          "description": "Verify that circular dependencies are resolved and functionality is preserved through comprehensive testing",
+          "source": "smart-add",
+          "startedAt": "2026-02-24T07:27:47.225Z",
+          "completedAt": "2026-02-24T07:27:47.225Z",
+          "children": [
+            {
+              "id": "d555b6b1-0deb-4147-8cf9-1ad8aa68f6bc",
+              "title": "Validate circular dependency resolution with sourcevision re-analysis",
+              "status": "completed",
+              "level": "task",
+              "description": "Run sourcevision analysis again on the refactored llm-client package to confirm all circular dependencies have been eliminated and no new issues were introduced",
+              "acceptanceCriteria": [
+                "Sourcevision analysis shows zero circular dependencies in llm-client",
+                "No new architectural issues are introduced",
+                "Dependency graph shows clean unidirectional flow",
+                "Analysis report confirms resolution of all identified cycles"
+              ],
+              "priority": "critical",
+              "tags": [
+                "validation",
+                "analysis"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T06:43:29.886Z",
+              "completedAt": "2026-02-24T06:49:46.957Z"
+            },
+            {
+              "id": "46b81b50-01b1-4edb-a738-c4492003c30a",
+              "title": "Execute comprehensive test suite to ensure functionality preservation",
+              "status": "completed",
+              "level": "task",
+              "description": "Test results: llm-client 323/323 tests pass. claude-client 211/211 tests pass. hench 912/912 tests pass (after fixing stale help text assertion). rex 2291/2300 tests pass (after fixing modify-reason.test.ts mock to use createLLMClient/detectLLMAuthMode). Pre-existing failures noted: feature-filtered-task.test.ts (9 failures for unimplemented featureId filter, commit 90442f0 Feb 13 2026) and sourcevision cli-serve.test.ts (1 e2e timeout, environment limitation). Commit: 3a5556b",
+              "acceptanceCriteria": [
+                "All llm-client unit tests pass without modification",
+                "All dependent package tests continue to pass",
+                "Integration tests verify cross-package functionality",
+                "No runtime errors are introduced by refactoring"
+              ],
+              "priority": "critical",
+              "tags": [
+                "testing",
+                "validation"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T06:23:16.052Z",
+              "completedAt": "2026-02-24T06:42:25.656Z"
+            },
+            {
+              "id": "cbece95f-421f-4c13-aa68-df8f18132e5c",
+              "title": "Update package documentation to reflect new internal structure",
+              "status": "completed",
+              "level": "task",
+              "description": "Revise internal documentation and code comments to reflect the new module organization and dependency structure while keeping public API documentation unchanged",
+              "acceptanceCriteria": [
+                "Internal architecture documentation is updated",
+                "Code comments reflect new module responsibilities",
+                "Public API documentation remains accurate",
+                "Developer onboarding docs reflect new structure"
+              ],
+              "priority": "low",
+              "tags": [
+                "documentation"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T07:22:10.190Z",
+              "completedAt": "2026-02-24T07:27:47.131Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

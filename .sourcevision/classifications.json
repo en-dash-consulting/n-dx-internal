@@ -1292,7 +1292,7 @@
         {
           "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Centralizes and re-exports runtime rex APIs for hench consumers.",
+          "detail": "Gateway module that concentrates cross-package imports from rex",
           "weight": 0.7
         }
       ]
@@ -1570,14 +1570,18 @@
     },
     {
       "path": "packages/hench/src/tools/dispatch.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
+<<<<<<< HEAD
           "detail": "Tool dispatch orchestration and routing logic for the autonomous agent",
+=======
+          "detail": "Tool dispatch mechanism, likely shared utility for routing tool calls",
+>>>>>>> feature/integrate-codex
           "weight": 0.7
         }
       ]
@@ -1871,7 +1875,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Vendor-neutral LLM client factory delegating to Claude or Codex providers.",
+          "detail": "Main LLM client service implementation for API interactions",
           "weight": 0.7
         }
       ]
@@ -1899,7 +1903,7 @@
         {
           "archetypeId": "types",
           "signalKind": "path",
-          "detail": "Defines shared TypeScript types for LLM vendors and configs.",
+          "detail": "Type definitions and constants for LLM functionality",
           "weight": 0.7
         }
       ]
@@ -1955,7 +1959,7 @@
         {
           "archetypeId": "types",
           "signalKind": "path",
-          "detail": "Provider interface type definitions",
+          "detail": "Interface definitions for LLM providers",
           "weight": 0.7
         }
       ]
@@ -3303,7 +3307,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Core classification engine orchestrating archetype scoring and outputs.",
+          "detail": "Analyzer service for classifying source files",
           "weight": 0.7
         }
       ]
@@ -3359,7 +3363,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Batch enrichment workflow coordinating prompts, retries, and parsing.",
+          "detail": "Analyzer service for batch data enrichment",
           "weight": 0.7
         }
       ]
@@ -3401,7 +3405,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Per-zone enrichment logic with hashing, prompts, and result handling.",
+          "detail": "Analyzer service for per-zone data enrichment",
           "weight": 0.7
         }
       ]
@@ -3867,7 +3871,11 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
+<<<<<<< HEAD
           "detail": "PDF report generation utility for static analysis output",
+=======
+          "detail": "Service for PDF report generation and export",
+>>>>>>> feature/integrate-codex
           "weight": 0.7
         }
       ]
@@ -4126,7 +4134,7 @@
         {
           "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Re-exports Sourcevision MCP factory to centralize imports for server routes.",
+          "detail": "Gateway module that concentrates imports from sourcevision",
           "weight": 0.7
         }
       ]
@@ -4196,7 +4204,7 @@
         {
           "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Aggregates and re-exports Rex MCP server factories, types, and utilities for server use.",
+          "detail": "Gateway module that concentrates imports from rex",
           "weight": 0.7
         }
       ]
@@ -5690,13 +5698,21 @@
     }
   ],
   "summary": {
+<<<<<<< HEAD
     "totalClassified": 356,
+=======
+    "totalClassified": 355,
+>>>>>>> feature/integrate-codex
     "totalUnclassified": 0,
     "byArchetype": {
       "entrypoint": 30,
       "config": 9,
       "cli-command": 44,
+<<<<<<< HEAD
       "service": 61,
+=======
+      "service": 59,
+>>>>>>> feature/integrate-codex
       "utility": 75,
       "types": 17,
       "gateway": 7,
@@ -5708,7 +5724,11 @@
       "hook": 6
     },
     "bySource": {
+<<<<<<< HEAD
       "llm": 132,
+=======
+      "llm": 131,
+>>>>>>> feature/integrate-codex
       "algorithmic": 224
     }
   }

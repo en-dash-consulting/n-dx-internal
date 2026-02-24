@@ -59,11 +59,12 @@ When a package imports from another package at runtime, those imports are concen
 | Package | Gateway | Source packages | Purpose |
 |---|---|---|---|
 | hench | `src/prd/rex-gateway.ts` | rex | Store access, tree traversal, task selection |
-| web | `src/server/domain-gateway.ts` | rex, sourcevision | MCP server factories, rex domain types & constants |
+| web | `src/server/rex-gateway.ts` | rex | Rex MCP server factory, domain types & constants, tree utilities |
+| web | `src/server/domain-gateway.ts` | sourcevision | Sourcevision MCP server factory |
 
 ### Gateway rules
 
-1. **One gateway per package** — all runtime cross-package imports pass through it.
+1. **One gateway per source package** — all runtime imports from a given upstream package pass through a single gateway. A consumer may have multiple gateways when it imports from multiple upstream packages (e.g. web has separate gateways for rex and sourcevision).
 2. **Re-export only** — gateways re-export symbols; they contain no business logic.
 3. **Type imports excluded** — `import type` is erased at compile time and creates zero runtime coupling. Type imports stay at the call-site.
 4. **Deliberate friction** — adding a new cross-package import requires editing the gateway, not sprinkling `import … from "rex"` in a leaf file.
