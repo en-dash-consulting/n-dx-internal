@@ -1876,15 +1876,6 @@
       ]
     },
     {
-      "from": "packages/hench/src/schema/v1.ts",
-      "to": "packages/hench/src/guard/contracts.ts",
-      "type": "type",
-      "symbols": [
-        "GuardConfig",
-        "PolicyLimitsConfig"
-      ]
-    },
-    {
       "from": "packages/hench/src/store/config.ts",
       "to": "packages/hench/src/schema/index.ts",
       "type": "static",
@@ -3557,11 +3548,19 @@
     },
     {
       "from": "packages/llm-client/src/llm-client.ts",
+      "to": "packages/llm-client/src/create-client.ts",
+      "type": "type",
+      "symbols": [
+        "CreateClientOptions"
+      ]
+    },
+    {
+      "from": "packages/llm-client/src/llm-client.ts",
       "to": "packages/llm-client/src/llm-types.ts",
       "type": "type",
       "symbols": [
-        "CreateLLMClientOptions",
-        "LLMVendor"
+        "LLMVendor",
+        "LLMConfig"
       ]
     },
     {
@@ -3570,7 +3569,8 @@
       "type": "type",
       "symbols": [
         "AuthMode",
-        "ClaudeClient"
+        "ClaudeClient",
+        "ClaudeConfig"
       ]
     },
     {
@@ -3593,10 +3593,10 @@
     },
     {
       "from": "packages/llm-client/src/llm-types.ts",
-      "to": "packages/llm-client/src/create-client.ts",
+      "to": "packages/llm-client/src/provider-interface.ts",
       "type": "type",
       "symbols": [
-        "CreateClientOptions"
+        "LLMVendor"
       ]
     },
     {
@@ -3606,14 +3606,6 @@
       "symbols": [
         "ClaudeClient",
         "ClaudeConfig"
-      ]
-    },
-    {
-      "from": "packages/llm-client/src/provider-interface.ts",
-      "to": "packages/llm-client/src/llm-types.ts",
-      "type": "type",
-      "symbols": [
-        "LLMVendor"
       ]
     },
     {
@@ -3860,6 +3852,14 @@
     },
     {
       "from": "packages/llm-client/src/public.ts",
+      "to": "packages/llm-client/src/llm-client.ts",
+      "type": "type",
+      "symbols": [
+        "CreateLLMClientOptions"
+      ]
+    },
+    {
+      "from": "packages/llm-client/src/public.ts",
       "to": "packages/llm-client/src/llm-config.ts",
       "type": "reexport",
       "symbols": [
@@ -3874,7 +3874,6 @@
         "LLMVendor",
         "CodexConfig",
         "LLMConfig",
-        "CreateLLMClientOptions",
         "LLMClient"
       ]
     },
@@ -4310,6 +4309,117 @@
       "symbols": [
         "CompletionRequest",
         "CompletionResult"
+      ]
+    },
+    {
+      "from": "packages/llm-client/tests/unit/public-api.test.ts",
+      "to": "packages/llm-client/src/public.ts",
+      "type": "static",
+      "symbols": [
+        "ClaudeClientError",
+        "CLIError",
+        "ProviderRegistry",
+        "createDefaultRegistry",
+        "defaultRegistry",
+        "ProviderSession",
+        "createProviderSession",
+        "loadLLMConfig",
+        "createLLMClient",
+        "detectLLMAuthMode",
+        "loadClaudeConfig",
+        "resolveApiKey",
+        "resolveCliPath",
+        "resolveModel",
+        "parseApiTokenUsage",
+        "parseCliTokenUsage",
+        "parseStreamTokenUsage",
+        "createApiClient",
+        "createCliClient",
+        "createCodexCliClient",
+        "createClient",
+        "detectAuthMode",
+        "detectCliAvailability",
+        "validateApiKey",
+        "detectAvailableAuth",
+        "diagnoseAuth",
+        "exec",
+        "execStdout",
+        "execShellCmd",
+        "getCurrentHead",
+        "getCurrentBranch",
+        "isExecutableOnPath",
+        "spawnTool",
+        "spawnManaged",
+        "ProcessPool",
+        "ProcessLimitError",
+        "PROJECT_DIRS",
+        "toCanonicalJSON",
+        "deepMerge",
+        "loadProjectOverrides",
+        "mergeWithOverrides",
+        "setQuiet",
+        "isQuiet",
+        "info",
+        "result",
+        "editDistance",
+        "suggestCommands",
+        "formatTypoSuggestion",
+        "isColorEnabled",
+        "resetColorCache",
+        "bold",
+        "dim",
+        "cyan",
+        "yellow",
+        "cmd",
+        "flag",
+        "sectionHeader",
+        "requiredParam",
+        "optionalParam",
+        "formatHelp",
+        "formatUsage"
+      ]
+    },
+    {
+      "from": "packages/llm-client/tests/unit/public-api.test.ts",
+      "to": "packages/llm-client/src/public.ts",
+      "type": "type",
+      "symbols": [
+        "ProviderAuthMode",
+        "ProviderCapability",
+        "ProviderInfo",
+        "StreamChunk",
+        "LLMProvider",
+        "LLMVendor",
+        "CodexConfig",
+        "LLMConfig",
+        "LLMClient",
+        "TokenUsage",
+        "ClaudeConfig",
+        "AuthMode",
+        "ClaudeClientOptions",
+        "CompletionRequest",
+        "CompletionResult",
+        "ErrorReason",
+        "ClaudeClient",
+        "CreateLLMClientOptions",
+        "ApiProviderOptions",
+        "CliProviderOptions",
+        "CodexCliProviderOptions",
+        "CreateClientOptions",
+        "AuthDetectionResult",
+        "AuthDiagnostics",
+        "ExecResult",
+        "ExecOptions",
+        "SpawnToolOptions",
+        "SpawnToolResult",
+        "ManagedChild",
+        "ProjectDir",
+        "HelpOption",
+        "HelpExample",
+        "HelpDefinition",
+        "UsageSection",
+        "UsageDefinition",
+        "ProviderFactory"
       ]
     },
     {
@@ -10089,6 +10199,14 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/classify.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "startSpinner"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/classify.ts",
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -10250,6 +10368,14 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/enrich-batch.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "startSpinner"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-batch.ts",
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -10328,6 +10454,14 @@
       "symbols": [
         "emptyAnalyzeTokenUsage",
         "accumulateTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich-per-zone.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "startSpinner"
       ]
     },
     {
@@ -11561,6 +11695,7 @@
         "Imports",
         "Zones",
         "Zone",
+        "Finding",
         "Components",
         "ImportType"
       ]
@@ -13986,6 +14121,15 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/shared-imports.ts",
+      "to": "packages/web/src/viewer/components/copy-link-button.ts",
+      "type": "reexport",
+      "symbols": [
+        "CopyLinkButton",
+        "buildShareableUrl"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/shared-imports.ts",
       "to": "packages/web/src/viewer/components/logos.ts",
       "type": "reexport",
       "symbols": [
@@ -13997,7 +14141,8 @@
       "to": "packages/web/src/viewer/types.ts",
       "type": "type",
       "symbols": [
-        "DetailItem"
+        "DetailItem",
+        "NavigateTo"
       ]
     },
     {
@@ -14026,18 +14171,18 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
-      "to": "packages/web/src/viewer/components/copy-link-button.ts",
-      "type": "static",
-      "symbols": [
-        "CopyLinkButton"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
       "to": "packages/web/src/viewer/components/prd-tree/compute.ts",
       "type": "static",
       "symbols": [
         "formatTimestamp"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/shared-imports.ts",
+      "type": "static",
+      "symbols": [
+        "CopyLinkButton"
       ]
     },
     {
@@ -14211,6 +14356,27 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/hooks/use-app-data.ts",
+      "to": "packages/web/src/viewer/loader.ts",
+      "type": "static",
+      "symbols": [
+        "loadFromServer",
+        "loadFromFiles",
+        "detectMode",
+        "onDataChange",
+        "startPolling",
+        "stopPolling"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-app-data.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/hooks/use-file-edges.ts",
       "to": "packages/web/src/viewer/views/zone-types.ts",
       "type": "type",
@@ -14220,6 +14386,24 @@
         "ZoneData",
         "FlowEdge",
         "BoxRect"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-route-state.ts",
+      "to": "packages/web/src/viewer/route-state.ts",
+      "type": "static",
+      "symbols": [
+        "parseLegacyHashRoute",
+        "resolveLocationRoute"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-route-state.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId",
+        "NavigateTo"
       ]
     },
     {
@@ -14346,24 +14530,18 @@
     },
     {
       "from": "packages/web/src/viewer/main.ts",
-      "to": "packages/web/src/viewer/loader.ts",
+      "to": "packages/web/src/viewer/hooks/use-app-data.ts",
       "type": "static",
       "symbols": [
-        "loadFromServer",
-        "loadFromFiles",
-        "detectMode",
-        "onDataChange",
-        "startPolling",
-        "stopPolling"
+        "useAppData"
       ]
     },
     {
       "from": "packages/web/src/viewer/main.ts",
-      "to": "packages/web/src/viewer/route-state.ts",
+      "to": "packages/web/src/viewer/hooks/use-route-state.ts",
       "type": "static",
       "symbols": [
-        "parseLegacyHashRoute",
-        "resolveLocationRoute"
+        "useRouteState"
       ]
     },
     {
@@ -14379,7 +14557,6 @@
       "to": "packages/web/src/viewer/types.ts",
       "type": "type",
       "symbols": [
-        "LoadedData",
         "ViewId",
         "NavigateTo",
         "DetailItem"
@@ -15049,7 +15226,8 @@
       "to": "packages/web/src/viewer/components/prd-tree/shared-imports.ts",
       "type": "type",
       "symbols": [
-        "DetailItem"
+        "DetailItem",
+        "NavigateTo"
       ]
     },
     {
@@ -15085,14 +15263,6 @@
         "TaskUsageSummary",
         "WeeklyBudgetResolution",
         "WeeklyBudgetSource"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/prd.ts",
-      "to": "packages/web/src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "NavigateTo"
       ]
     },
     {
@@ -16599,6 +16769,16 @@
       ]
     },
     {
+      "package": "ora",
+      "importedBy": [
+        "packages/rex/src/cli/output.ts",
+        "packages/sourcevision/src/cli/output.ts"
+      ],
+      "symbols": [
+        "default"
+      ]
+    },
+    {
       "package": "path",
       "importedBy": [
         "ci.js",
@@ -16658,9 +16838,11 @@
         "packages/web/src/viewer/components/sidebar.ts",
         "packages/web/src/viewer/components/status-indicators.ts",
         "packages/web/src/viewer/components/theme-toggle.ts",
+        "packages/web/src/viewer/hooks/use-app-data.ts",
         "packages/web/src/viewer/hooks/use-file-edges.ts",
         "packages/web/src/viewer/hooks/use-pan-zoom.ts",
         "packages/web/src/viewer/hooks/use-project-metadata.ts",
+        "packages/web/src/viewer/hooks/use-route-state.ts",
         "packages/web/src/viewer/hooks/use-zone-drag.ts",
         "packages/web/src/viewer/main.ts",
         "packages/web/src/viewer/views/analysis.ts",
@@ -16709,6 +16891,7 @@
         "packages/web/tests/unit/viewer/tree-view.test.ts"
       ],
       "symbols": [
+        "ComponentChild",
         "ComponentChildren",
         "Fragment",
         "RefObject",
@@ -16939,6 +17122,7 @@
         "packages/llm-client/tests/unit/provider-interface.test.ts",
         "packages/llm-client/tests/unit/provider-registry.test.ts",
         "packages/llm-client/tests/unit/provider-session.test.ts",
+        "packages/llm-client/tests/unit/public-api.test.ts",
         "packages/llm-client/tests/unit/suggest.test.ts",
         "packages/llm-client/tests/unit/token-usage.test.ts",
         "packages/llm-client/tests/unit/types.test.ts",
@@ -17177,42 +17361,10 @@
     }
   ],
   "summary": {
-    "totalEdges": 1790,
-    "totalExternal": 17,
-    "circularCount": 4,
-    "circulars": [
-      {
-        "cycle": [
-          "packages/llm-client/src/api-provider.ts",
-          "packages/llm-client/src/provider-interface.ts",
-          "packages/llm-client/src/llm-types.ts",
-          "packages/llm-client/src/create-client.ts"
-        ]
-      },
-      {
-        "cycle": [
-          "packages/llm-client/src/api-provider.ts",
-          "packages/llm-client/src/provider-interface.ts",
-          "packages/llm-client/src/llm-types.ts",
-          "packages/llm-client/src/create-client.ts"
-        ]
-      },
-      {
-        "cycle": [
-          "packages/llm-client/src/provider-interface.ts",
-          "packages/llm-client/src/llm-types.ts",
-          "packages/llm-client/src/create-client.ts"
-        ]
-      },
-      {
-        "cycle": [
-          "packages/llm-client/src/provider-interface.ts",
-          "packages/llm-client/src/llm-types.ts",
-          "packages/llm-client/src/create-client.ts",
-          "packages/llm-client/src/cli-provider.ts"
-        ]
-      }
-    ],
+    "totalEdges": 1799,
+    "totalExternal": 18,
+    "circularCount": 0,
+    "circulars": [],
     "mostImported": [
       {
         "path": "packages/rex/src/core/tree.ts",
@@ -17259,6 +17411,10 @@
         "count": 15
       },
       {
+        "path": "packages/sourcevision/src/cli/output.ts",
+        "count": 13
+      },
+      {
         "path": "packages/hench/src/schema/v1.ts",
         "count": 12
       },
@@ -17272,10 +17428,6 @@
       },
       {
         "path": "packages/sourcevision/src/cli/errors.ts",
-        "count": 10
-      },
-      {
-        "path": "packages/sourcevision/src/cli/output.ts",
         "count": 10
       },
       {
