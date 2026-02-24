@@ -41,16 +41,34 @@
  *
  * ## Package structure
  *
- * - `llm-client.ts` — vendor-neutral factory (`createLLMClient`)
- * - `llm-config.ts` — vendor-neutral project config loader
+ * **Vendor-neutral core**
+ * - `provider-interface.ts` — generic `LLMProvider` interface (vendor-agnostic contract)
+ * - `provider-registry.ts` — provider registration, selection, and `defaultRegistry`
+ * - `provider-session.ts` — active provider management and vendor switching
+ * - `llm-types.ts` — vendor-neutral types (`LLMVendor`, `LLMConfig`, `CodexConfig`)
+ * - `llm-client.ts` — vendor-neutral factory (`createLLMClient`, `detectLLMAuthMode`)
+ * - `llm-config.ts` — vendor-neutral project config loader (`loadLLMConfig`)
+ *
+ * **Claude providers**
  * - `create-client.ts` — Claude factory with auto-detection logic
  * - `api-provider.ts` — Anthropic SDK provider
  * - `cli-provider.ts` — Claude Code CLI provider
- * - `codex-cli-provider.ts` — Codex CLI provider
+ *
+ * **Codex provider**
+ * - `codex-cli-provider.ts` — Codex CLI provider (`codex exec`)
+ *
+ * **Shared utilities**
+ * - `types.ts` — Claude-specific shared interfaces and error classes
  * - `config.ts` — credential resolution and model mapping
- * - `token-usage.ts` — usage parsing for both provider formats
+ * - `token-usage.ts` — usage parsing for API, CLI, and stream formats
  * - `auth.ts` — auth detection and diagnostics
- * - `types.ts` — shared interfaces
+ * - `exec.ts` — process execution utilities (`exec`, `spawnTool`, `ProcessPool`)
+ * - `project-dirs.ts` — project directory constants (`PROJECT_DIRS`)
+ * - `project-config.ts` — `.n-dx.json` override loading and merging
+ * - `json.ts` — canonical JSON serialization
+ * - `output.ts` — CLI output control (quiet mode)
+ * - `suggest.ts` — CLI typo correction
+ * - `help-format.ts` — CLI help formatting and color output
  *
  * @example
  * ```ts

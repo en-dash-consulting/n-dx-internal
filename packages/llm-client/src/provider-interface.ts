@@ -27,7 +27,7 @@
  * 3. Implement `complete()` — all providers must support this.
  * 4. Implement `stream()` and declare `"streaming"` in capabilities if supported.
  * 5. Implement `validateAuth()` if the provider's credentials can be probed.
- * 6. Register the factory in `llm-client.ts`.
+ * 6. Register the factory with `defaultRegistry` in `provider-registry.ts`.
  *
  * @example
  * ```ts
