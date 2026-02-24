@@ -14052,6 +14052,8 @@
           "level": "feature",
           "description": "Implement fixes to prevent memory leaks and reduce memory usage in web UI operations",
           "source": "smart-add",
+          "startedAt": "2026-02-24T19:54:20.528Z",
+          "completedAt": "2026-02-24T19:54:20.528Z",
           "children": [
             {
               "id": "eff2a091-30bc-4434-8d2c-13e25e60b2c0",
@@ -14128,9 +14130,7 @@
                 "createdAt": "2026-02-24T18:39:02.997Z"
               }
             }
-          ],
-          "startedAt": "2026-02-24T19:54:20.528Z",
-          "completedAt": "2026-02-24T19:54:20.528Z"
+          ]
         },
         {
           "id": "8786c4b2-2eaf-4cfb-af07-8d4e60509916",
@@ -14163,7 +14163,7 @@
             {
               "id": "80cd6462-2460-4757-aad3-fb6b67e5323d",
               "title": "Add crash detection and automatic recovery workflow",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement client-side crash detection and automatic page recovery with state preservation to improve user experience during memory-related crashes",
               "acceptanceCriteria": [
@@ -14179,6 +14179,7 @@
                 "recovery"
               ],
               "source": "smart-add",
+              "startedAt": "2026-02-24T19:55:28.230Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "semantic_title",
@@ -14188,7 +14189,8 @@
                 "matchedItemLevel": "task",
                 "matchedItemStatus": "completed",
                 "createdAt": "2026-02-24T18:39:02.997Z"
-              }
+              },
+              "completedAt": "2026-02-24T20:03:01.568Z"
             },
             {
               "id": "9b6da46d-6f39-4c8b-b59d-f978a2c3aeed",
