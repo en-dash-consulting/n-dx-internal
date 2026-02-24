@@ -41,9 +41,21 @@ import { fileURLToPath } from "url";
 import { createInterface } from "readline/promises";
 import { runConfig } from "./config.js";
 import { runCI } from "./ci.js";
-import { runWeb } from "./web.js";
+import {
+  runWeb,
+  isProcessRunning,
+  readPidFile,
+  removePidFile,
+  removePortFile,
+  waitForProcessExit,
+} from "./web.js";
 import { buildRefreshPlan, RefreshPlanError } from "./refresh-plan.js";
 import { refreshSourcevisionDashboardArtifacts } from "./refresh-artifacts.js";
+import {
+  snapshotRefreshState,
+  validateRefreshCompletion,
+  rollbackRefreshState,
+} from "./refresh-validate.js";
 import {
   formatTypoSuggestion,
   getOrchestratorCommands,
@@ -234,6 +246,65 @@ function showCommandHelp(command) {
   if (!text) return false;
   console.log(text);
   return true;
+}
+
+/**
+ * Detect and cleanly terminate any running dashboard process before refresh.
+ *
+ * Reads the `.n-dx-web.pid` file, checks if the recorded process is alive, and
+ * terminates it gracefully (SIGTERM → SIGKILL fallback) so the refresh does not
+ * race against a live server that is serving the files being rebuilt.
+ *
+ * @param {string} absDir  Absolute project directory (contains `.n-dx-web.pid`)
+ * @returns {Promise<{status:"none"|"stale"|"stopped"|"stop-failed", pid?: number, port?: number}>}
+ */
+async function detectAndCleanConflictingDashboard(absDir) {
+  const info = await readPidFile(absDir);
+  if (!info) {
+    return { status: "none" };
+  }
+
+  if (!isProcessRunning(info.pid)) {
+    // Stale PID file from a previously crashed/killed server — clean up silently.
+    await removePidFile(absDir);
+    await removePortFile(absDir);
+    return { status: "stale", pid: info.pid, port: info.port };
+  }
+
+  // Live process — terminate gracefully.
+  const gracePeriodMs = Number(process.env.N_DX_STOP_GRACE_MS ?? 2_000);
+
+  try {
+    process.kill(info.pid, "SIGTERM");
+  } catch (err) {
+    if (err?.code === "EPERM") {
+      // No permission to signal the process.
+      return { status: "stop-failed", pid: info.pid, port: info.port };
+    }
+    // ESRCH: process exited between the running-check and the kill — treat as stopped.
+    await removePidFile(absDir);
+    await removePortFile(absDir);
+    return { status: "stopped", pid: info.pid, port: info.port };
+  }
+
+  // Wait for graceful exit up to the grace period.
+  await waitForProcessExit(info.pid, gracePeriodMs);
+
+  // Escalate to SIGKILL regardless of whether waitForProcessExit timed out.
+  // kill(pid, 0) returns success for zombie processes (exited but not yet reaped
+  // by their parent), so waitForProcessExit may report a timeout even when the
+  // process has effectively exited.  After SIGKILL, a short settle is sufficient —
+  // we do not poll again because SIGKILL is unblockable and zombies are already done.
+  try {
+    process.kill(info.pid, "SIGKILL");
+  } catch {
+    // Ignore: process is already gone or is a zombie — both are effectively stopped.
+  }
+  await new Promise((r) => setTimeout(r, 100));
+
+  await removePidFile(absDir);
+  await removePortFile(absDir);
+  return { status: "stopped", pid: info.pid, port: info.port };
 }
 
 const REFRESH_STEP_ORDER = {
@@ -449,7 +520,24 @@ async function runRefreshStep(step, plan, dir, stepStatuses) {
 
 async function handleRefresh(rest) {
   const dir = resolveDir(rest);
+  const absDir = resolve(dir);
   const flags = extractFlags(rest);
+
+  // Pre-refresh: detect and stop any conflicting dashboard process so the
+  // refresh does not race against a running server rebuilding its own assets.
+  const conflict = await detectAndCleanConflictingDashboard(absDir);
+  if (conflict.status === "stopped") {
+    console.log(
+      `Pre-refresh: detected running dashboard (PID ${conflict.pid}, port ${conflict.port}); stopped.`,
+    );
+  } else if (conflict.status === "stop-failed") {
+    console.error(
+      `Error: Dashboard server (PID ${conflict.pid}) is running and could not be stopped automatically.`,
+    );
+    console.error(`Stop it manually: ndx start stop "${absDir}"`);
+    process.exit(1);
+  }
+
   let plan;
   try {
     plan = buildRefreshPlan(flags);
@@ -465,6 +553,40 @@ async function handleRefresh(rest) {
   if (plan.needsSourcevisionDir) {
     requireInit(dir, [".sourcevision"]);
   }
+
+  const stepCount = plan.steps.length;
+  console.log(`[refresh] starting — ${stepCount} step${stepCount === 1 ? "" : "s"} planned`);
+
+  // Snapshot current sourcevision state for potential rollback on failure.
+  const snapshot = await snapshotRefreshState(dir, plan);
+  if (snapshot.fileCount > 0) {
+    console.log(
+      `[refresh] state snapshot captured (${snapshot.fileCount} file${snapshot.fileCount === 1 ? "" : "s"})`,
+    );
+  }
+
+  /** Restore snapshotted files and report the outcome to stdout/stderr. */
+  async function performRollback() {
+    if (snapshot.fileCount === 0) return;
+    console.log(
+      `[refresh] rollback — restoring pre-refresh state (${snapshot.fileCount} file${snapshot.fileCount === 1 ? "" : "s"})`,
+    );
+    const result = await rollbackRefreshState(snapshot);
+    if (result.restored > 0) {
+      console.log(
+        `[refresh] rollback complete — ${result.restored} file${result.restored === 1 ? "" : "s"} restored`,
+      );
+    }
+    if (result.failed > 0) {
+      console.error(
+        `[refresh] rollback partial — ${result.failed} file${result.failed === 1 ? "" : "s"} could not be restored`,
+      );
+      for (const err of result.errors) {
+        console.error(`  ${err}`);
+      }
+    }
+  }
+
   const stepStatuses = [];
   for (const note of plan.notes) {
     console.log(note);
@@ -479,6 +601,7 @@ async function handleRefresh(rest) {
     try {
       const succeeded = await runRefreshStep(step, plan, dir, stepStatuses);
       if (!succeeded) {
+        await performRollback();
         printRefreshStepSummary(stepStatuses);
         process.exit(1);
       }
@@ -486,11 +609,27 @@ async function handleRefresh(rest) {
       const detail = err instanceof Error ? err.message : String(err);
       printRefreshStepTransition(step.kind, "failed", detail);
       stepStatuses.push({ kind: step.kind, status: "failed", detail });
+      await performRollback();
       printRefreshStepSummary(stepStatuses);
       process.exit(1);
     }
   }
+
+  // Validate all step outputs before marking the operation complete.
+  console.log(`[refresh] validating — confirming all outputs are present`);
+  const validation = validateRefreshCompletion(dir, plan);
+  if (!validation.valid) {
+    console.error(`[refresh] validation failed — outputs incomplete or invalid:`);
+    for (const issue of validation.issues) {
+      console.error(`  ${issue}`);
+    }
+    await performRollback();
+    printRefreshStepSummary(stepStatuses);
+    process.exit(1);
+  }
+
   printRefreshStepSummary(stepStatuses);
+  console.log(`[refresh] completed — all outputs validated`);
   const reload = await signalLiveReload(dir);
   console.log(reload.message);
   process.exit(0);

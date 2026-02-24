@@ -49,10 +49,25 @@
     },
     {
       "from": "cli.js",
+      "to": "refresh-validate.js",
+      "type": "static",
+      "symbols": [
+        "snapshotRefreshState",
+        "validateRefreshCompletion",
+        "rollbackRefreshState"
+      ]
+    },
+    {
+      "from": "cli.js",
       "to": "web.js",
       "type": "static",
       "symbols": [
-        "runWeb"
+        "runWeb",
+        "isProcessRunning",
+        "readPidFile",
+        "removePidFile",
+        "removePortFile",
+        "waitForProcessExit"
       ]
     },
     {
@@ -3785,6 +3800,7 @@
         "isExecutableOnPath",
         "spawnTool",
         "spawnManaged",
+        "killWithFallback",
         "ProcessPool",
         "ProcessLimitError"
       ]
@@ -4118,6 +4134,7 @@
         "getCurrentHead",
         "spawnTool",
         "spawnManaged",
+        "killWithFallback",
         "ProcessPool",
         "ProcessLimitError"
       ]
@@ -12844,6 +12861,7 @@
       "type": "reexport",
       "symbols": [
         "checkPort",
+        "checkPortWithRetry",
         "findAvailablePort"
       ]
     },
@@ -12853,7 +12871,8 @@
       "type": "type",
       "symbols": [
         "PortCheckResult",
-        "PortAllocationResult"
+        "PortAllocationResult",
+        "PortRetryOptions"
       ]
     },
     {
@@ -12906,6 +12925,7 @@
       "type": "reexport",
       "symbols": [
         "checkPort",
+        "checkPortWithRetry",
         "findAvailablePort"
       ]
     },
@@ -12915,7 +12935,8 @@
       "type": "type",
       "symbols": [
         "PortCheckResult",
-        "PortAllocationResult"
+        "PortAllocationResult",
+        "PortRetryOptions"
       ]
     },
     {
@@ -13459,7 +13480,8 @@
       "type": "static",
       "symbols": [
         "handleHenchRoute",
-        "startHeartbeatMonitor"
+        "startHeartbeatMonitor",
+        "shutdownActiveExecutions"
       ]
     },
     {
@@ -13499,7 +13521,8 @@
       "to": "packages/web/src/server/routes-rex.ts",
       "type": "static",
       "symbols": [
-        "handleRexRoute"
+        "handleRexRoute",
+        "shutdownRexExecution"
       ]
     },
     {
@@ -15689,6 +15712,7 @@
       "type": "static",
       "symbols": [
         "checkPort",
+        "checkPortWithRetry",
         "findAvailablePort",
         "DEFAULT_PORT",
         "PORT_RANGE_START",
@@ -15844,6 +15868,23 @@
     },
     {
       "from": "packages/web/tests/unit/server/routes-hench-heartbeat.test.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-hench-shutdown.test.ts",
+      "to": "packages/web/src/server/routes-hench.ts",
+      "type": "static",
+      "symbols": [
+        "shutdownActiveExecutions",
+        "handleHenchRoute"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-hench-shutdown.test.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "type",
       "symbols": [
@@ -16078,6 +16119,31 @@
       "symbols": [
         "ServerContext",
         "ViewerScope"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/shutdown-handler.test.ts",
+      "to": "packages/web/src/server/routes-hench.ts",
+      "type": "static",
+      "symbols": [
+        "shutdownActiveExecutions"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/shutdown-handler.test.ts",
+      "to": "packages/web/src/server/routes-rex.ts",
+      "type": "static",
+      "symbols": [
+        "shutdownRexExecution"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/shutdown-handler.test.ts",
+      "to": "packages/web/src/server/start.ts",
+      "type": "static",
+      "symbols": [
+        "registerShutdownHandlers",
+        "DEFAULT_SHUTDOWN_TIMEOUT_MS"
       ]
     },
     {
@@ -16572,6 +16638,17 @@
         "buildRefreshPlan",
         "RefreshPlanError"
       ]
+    },
+    {
+      "from": "tests/unit/refresh-validate.test.js",
+      "to": "refresh-validate.js",
+      "type": "static",
+      "symbols": [
+        "snapshotRefreshState",
+        "validateRefreshStep",
+        "validateRefreshCompletion",
+        "rollbackRefreshState"
+      ]
     }
   ],
   "external": [
@@ -16663,7 +16740,8 @@
         "packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts",
         "packages/web/src/server/routes-hench.ts",
         "packages/web/src/server/routes-project.ts",
-        "packages/web/src/server/routes-rex.ts"
+        "packages/web/src/server/routes-rex.ts",
+        "packages/web/tests/unit/server/routes-hench-shutdown.test.ts"
       ],
       "symbols": [
         "*",
@@ -16699,6 +16777,7 @@
         "info",
         "isExecutableOnPath",
         "isQuiet",
+        "killWithFallback",
         "loadClaudeConfig",
         "loadClaudeConfigFromDir",
         "loadLLMConfig",
@@ -16745,6 +16824,7 @@
         "ci.js",
         "cli.js",
         "refresh-artifacts.js",
+        "refresh-validate.js",
         "web.js"
       ],
       "symbols": [
@@ -16784,6 +16864,7 @@
         "ci.js",
         "cli.js",
         "refresh-artifacts.js",
+        "refresh-validate.js",
         "web.js"
       ],
       "symbols": [
@@ -17270,6 +17351,7 @@
         "packages/web/tests/unit/server/routes-hench-execute.test.ts",
         "packages/web/tests/unit/server/routes-hench-health.test.ts",
         "packages/web/tests/unit/server/routes-hench-heartbeat.test.ts",
+        "packages/web/tests/unit/server/routes-hench-shutdown.test.ts",
         "packages/web/tests/unit/server/routes-hench-templates.test.ts",
         "packages/web/tests/unit/server/routes-mcp.test.ts",
         "packages/web/tests/unit/server/routes-notion.test.ts",
@@ -17283,6 +17365,7 @@
         "packages/web/tests/unit/server/routes-validation.test.ts",
         "packages/web/tests/unit/server/routes-workflow.test.ts",
         "packages/web/tests/unit/server/scope.test.ts",
+        "packages/web/tests/unit/server/shutdown-handler.test.ts",
         "packages/web/tests/unit/server/type-consistency.test.ts",
         "packages/web/tests/unit/server/websocket.test.ts",
         "packages/web/tests/unit/viewer/accessibility.test.ts",
@@ -17329,6 +17412,7 @@
         "tests/unit/help.test.js",
         "tests/unit/refresh-artifacts.test.js",
         "tests/unit/refresh-plan.test.js",
+        "tests/unit/refresh-validate.test.js",
         "vitest.config.js"
       ],
       "symbols": [
@@ -17361,10 +17445,49 @@
     }
   ],
   "summary": {
+<<<<<<< HEAD
+    "totalEdges": 1800,
+    "totalExternal": 17,
+    "circularCount": 4,
+    "circulars": [
+      {
+        "cycle": [
+          "packages/llm-client/src/api-provider.ts",
+          "packages/llm-client/src/provider-interface.ts",
+          "packages/llm-client/src/llm-types.ts",
+          "packages/llm-client/src/create-client.ts"
+        ]
+      },
+      {
+        "cycle": [
+          "packages/llm-client/src/api-provider.ts",
+          "packages/llm-client/src/provider-interface.ts",
+          "packages/llm-client/src/llm-types.ts",
+          "packages/llm-client/src/create-client.ts"
+        ]
+      },
+      {
+        "cycle": [
+          "packages/llm-client/src/provider-interface.ts",
+          "packages/llm-client/src/llm-types.ts",
+          "packages/llm-client/src/create-client.ts"
+        ]
+      },
+      {
+        "cycle": [
+          "packages/llm-client/src/provider-interface.ts",
+          "packages/llm-client/src/llm-types.ts",
+          "packages/llm-client/src/create-client.ts",
+          "packages/llm-client/src/cli-provider.ts"
+        ]
+      }
+    ],
+=======
     "totalEdges": 1799,
     "totalExternal": 18,
     "circularCount": 0,
     "circulars": [],
+>>>>>>> feature/integrate-codex
     "mostImported": [
       {
         "path": "packages/rex/src/core/tree.ts",
@@ -17435,18 +17558,18 @@
         "count": 10
       },
       {
+        "path": "packages/web/src/server/routes-hench.ts",
+        "count": 10
+      },
+      {
         "path": "packages/claude-client/src/types.ts",
         "count": 9
       },
       {
         "path": "packages/hench/src/agent/lifecycle/cli-loop.ts",
         "count": 9
-      },
-      {
-        "path": "packages/hench/src/store/index.ts",
-        "count": 9
       }
     ],
-    "avgImportsPerFile": 3.38
+    "avgImportsPerFile": 3.37
   }
 }

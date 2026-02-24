@@ -1577,7 +1577,11 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
+<<<<<<< HEAD
+          "detail": "Tool dispatch orchestration and routing logic for the autonomous agent",
+=======
           "detail": "Tool dispatch mechanism, likely shared utility for routing tool calls",
+>>>>>>> feature/integrate-codex
           "weight": 0.7
         }
       ]
@@ -1822,14 +1826,14 @@
     },
     {
       "path": "packages/llm-client/src/exec.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Shared child-process execution helpers for the llm-client package.",
+          "detail": "LLM execution service in the vendor-neutral foundation layer",
           "weight": 0.7
         }
       ]
@@ -3860,14 +3864,18 @@
     },
     {
       "path": "packages/sourcevision/src/export/pdf-report.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
+<<<<<<< HEAD
+          "detail": "PDF report generation utility for static analysis output",
+=======
           "detail": "Service for PDF report generation and export",
+>>>>>>> feature/integrate-codex
           "weight": 0.7
         }
       ]
@@ -4168,7 +4176,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Port management utility for server configuration",
+          "detail": "Server port management and configuration utilities",
           "weight": 0.7
         }
       ]
@@ -4427,14 +4435,14 @@
     },
     {
       "path": "packages/web/src/server/start.ts",
-      "archetype": "entrypoint",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "entrypoint",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Bootstraps the HTTP server, wires routes, and exports the start routine for the web app.",
+          "detail": "Server startup orchestration and initialization logic",
           "weight": 0.7
         }
       ]
@@ -5661,6 +5669,20 @@
       ]
     },
     {
+      "path": "refresh-validate.js",
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Root-level refresh and validation operations utility",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
       "path": "web.js",
       "archetype": "entrypoint",
       "confidence": 0.7,
@@ -5669,20 +5691,28 @@
         {
           "archetypeId": "entrypoint",
           "signalKind": "path",
-          "detail": "Root-level orchestration entry point for web server and MCP functionality",
+          "detail": "Server orchestration entry point for dashboard and MCP services",
           "weight": 0.7
         }
       ]
     }
   ],
   "summary": {
+<<<<<<< HEAD
+    "totalClassified": 356,
+=======
     "totalClassified": 355,
+>>>>>>> feature/integrate-codex
     "totalUnclassified": 0,
     "byArchetype": {
-      "entrypoint": 31,
+      "entrypoint": 30,
       "config": 9,
       "cli-command": 44,
+<<<<<<< HEAD
+      "service": 61,
+=======
       "service": 59,
+>>>>>>> feature/integrate-codex
       "utility": 75,
       "types": 17,
       "gateway": 7,
@@ -5694,7 +5724,11 @@
       "hook": 6
     },
     "bySource": {
+<<<<<<< HEAD
+      "llm": 132,
+=======
       "llm": 131,
+>>>>>>> feature/integrate-codex
       "algorithmic": 224
     }
   }

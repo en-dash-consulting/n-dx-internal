@@ -1,7 +1,7 @@
 {
   "id": "claude-integration",
-  "name": "Claude Client Integration",
-  "description": "Implements the Anthropic Claude client stack, from config/auth to CLI wiring and API helpers.",
+  "name": "Claude Integration",
+  "description": "Claude API client abstraction layer providing authentication, request handling, and CLI/API provider implementations.",
   "files": [
     "packages/claude-client/src/api-provider.ts",
     "packages/claude-client/src/auth.ts",
@@ -36,5 +36,5 @@
   "cohesion": 1,
   "coupling": 0,
   "fileCount": 28,
-  "lineCount": 4832
+  "lineCount": 4854
 }

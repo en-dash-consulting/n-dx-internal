@@ -9,11 +9,11 @@ import { resolve, join, dirname } from "node:path";
 import type { ServerContext, ViewerScope } from "./types.js";
 import { resolveStaticAssets, handleStaticRoute, isProjectInitialized } from "./routes-static.js";
 import { createDataWatcher, handleDataRoute } from "./routes-data.js";
-import { handleRexRoute } from "./routes-rex.js";
+import { handleRexRoute, shutdownRexExecution } from "./routes-rex.js";
 import { handleSourcevisionRoute } from "./routes-sourcevision.js";
 import { handleTokenUsageRoute } from "./routes-token-usage.js";
 import { handleValidationRoute } from "./routes-validation.js";
-import { handleHenchRoute, startHeartbeatMonitor } from "./routes-hench.js";
+import { handleHenchRoute, startHeartbeatMonitor, shutdownActiveExecutions } from "./routes-hench.js";
 import { handleWorkflowRoute } from "./routes-workflow.js";
 import { handleAdaptiveRoute } from "./routes-adaptive.js";
 import { handleMcpRoute } from "./routes-mcp.js";
@@ -33,6 +33,149 @@ import { findAvailablePort } from "./port.js";
  * where the server's stdout is not available.
  */
 export const PORT_FILE = ".n-dx-web.port";
+
+// ── Shutdown handler ──────────────────────────────────────────────────────
+
+/** Maximum time in milliseconds for the full graceful-shutdown sequence. */
+export const DEFAULT_SHUTDOWN_TIMEOUT_MS = 30_000;
+
+/** @internal Injection points used in tests instead of global process calls. */
+export interface ShutdownDeps {
+  /** Replaces `process.exit()` so tests can verify exit codes without dying. */
+  exit?(code: number): void;
+}
+
+/**
+ * Registers SIGINT / SIGTERM signal handlers that co-ordinate a graceful
+ * shutdown of all dashboard components in dependency order:
+ *
+ *   1. Hench child processes  (highest priority: avoids orphaned agents)
+ *   2. WebSocket connections  (clients receive a clean close frame)
+ *   3. HTTP server            (stops accepting; drains in-flight requests)
+ *   4. Port file              (orchestrator sees the port as free)
+ *
+ * **Double-signal handling** — a second SIGINT/SIGTERM received while the
+ * graceful sequence is still running triggers an immediate `exit(1)`, so an
+ * operator can always escape a stuck shutdown with a second Ctrl-C.
+ *
+ * **Timeout** — if the full sequence exceeds `timeoutMs` the process is
+ * force-killed via `exit(1)` to prevent indefinite hangs.
+ *
+ * @param server       The HTTP server to drain and close.
+ * @param ws           WebSocket manager whose connections should be torn down.
+ * @param portFilePath Port file path to remove so the orchestrator sees the port as free.
+ * @param actualPort   Bound port number (for log messages only).
+ * @param timeoutMs    Max ms to wait before forcing exit (default 30 s, override
+ *                     via `N_DX_SHUTDOWN_TIMEOUT_MS` env var).
+ * @param deps         Injection points for unit testing (do not use in production).
+ */
+export function registerShutdownHandlers(
+  server: { close(cb: (err?: Error) => void): void },
+  ws: { shutdown(): void },
+  portFilePath: string,
+  actualPort: number,
+  timeoutMs: number = Number(process.env["N_DX_SHUTDOWN_TIMEOUT_MS"] ?? DEFAULT_SHUTDOWN_TIMEOUT_MS),
+  deps: ShutdownDeps = {},
+): void {
+  const doExit = deps.exit ?? ((code: number) => process.exit(code));
+
+  const forceExit = (signal: string): void => {
+    console.log(`[shutdown] ${signal} received during shutdown — forcing immediate exit`);
+    doExit(1);
+  };
+
+  const gracefulShutdown = async (signal: string): Promise<void> => {
+    // Re-register for a second signal → immediate force exit.
+    // This lets an operator escape a stuck shutdown by pressing Ctrl-C again.
+    process.once("SIGINT", () => forceExit("SIGINT"));
+    process.once("SIGTERM", () => forceExit("SIGTERM"));
+
+    console.log(`[shutdown] graceful shutdown initiated (${signal})`);
+
+    // Arm an overall deadline so a hung cleanup step cannot block exit forever.
+    const timer = setTimeout(() => {
+      console.error(`[shutdown] timed out after ${timeoutMs}ms — forcing exit`);
+      doExit(1);
+    }, timeoutMs);
+    // Does not prevent the event loop from exiting if cleanup completes first.
+    timer.unref();
+
+    // Track per-component status for the final verification summary.
+    const componentStatus: { component: string; ok: boolean }[] = [];
+
+    // Step 1 — terminate hench child processes (highest priority: avoids orphaned agents)
+    // Covers both hench-route executions and the rex epic-by-epic execution engine.
+    console.log("[shutdown] step 1/4 — child processes");
+    const [henchResult, rexResult] = await Promise.all([
+      shutdownActiveExecutions(),
+      shutdownRexExecution(),
+    ]);
+    componentStatus.push({ component: "hench-executions", ok: henchResult.failed === 0 });
+    componentStatus.push({
+      component: "rex-execution",
+      ok: !rexResult.hadActiveProcess || rexResult.terminated,
+    });
+
+    // Step 2 — close WebSocket connections (sends close frames, frees sockets)
+    console.log("[shutdown] step 2/4 — WebSocket connections");
+    ws.shutdown();
+    console.log("[shutdown] WebSocket connections closed");
+    componentStatus.push({ component: "websockets", ok: true });
+
+    // Step 3 — close HTTP server (stop accepting new connections; wait for
+    //           in-flight requests to drain so the port is fully released)
+    console.log("[shutdown] step 3/4 — HTTP server");
+    let httpOk = false;
+    await new Promise<void>((resolve) => {
+      server.close((err) => {
+        if (err) {
+          console.error(`[shutdown] server close error: ${err.message}`);
+        } else {
+          console.log(`[shutdown] HTTP server closed — port ${actualPort} released`);
+          httpOk = true;
+        }
+        resolve();
+      });
+    });
+    componentStatus.push({ component: "http-server", ok: httpOk });
+
+    // Step 4 — remove port file (orchestrator sees port as free)
+    console.log("[shutdown] step 4/4 — port file");
+    let portFileOk = false;
+    try {
+      await unlink(portFilePath);
+      console.log("[shutdown] port file removed");
+      portFileOk = true;
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === "ENOENT") {
+        // Already gone — that is fine.
+        portFileOk = true;
+      } else {
+        console.error(`[shutdown] failed to remove port file: ${(err as Error).message}`);
+      }
+    }
+    componentStatus.push({ component: "port-file", ok: portFileOk });
+
+    // Verification summary — confirm all components shut down cleanly.
+    const failedComponents = componentStatus.filter((c) => !c.ok).map((c) => c.component);
+    if (failedComponents.length === 0) {
+      console.log(`[shutdown] verified: all ${componentStatus.length} components shut down cleanly`);
+    } else {
+      console.error(`[shutdown] verification failed: ${failedComponents.join(", ")} did not shut down cleanly`);
+    }
+
+    clearTimeout(timer);
+    console.log("[shutdown] complete");
+    doExit(0);
+  };
+
+  process.once("SIGINT", () => gracefulShutdown("SIGINT"));
+  process.once("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  // Last-resort safety net: remove the port file even if the graceful path
+  // never runs (e.g. an uncaught exception that bypasses gracefulShutdown).
+  process.once("exit", () => { unlink(portFilePath).catch(() => {}); });
+}
 
 /** Result returned by startServer with the actual port used. */
 export interface StartResult {
@@ -323,9 +466,14 @@ export async function startServer(
   const scope = opts.scope;
 
   // ── Dynamic port allocation ───────────────────────────────────────────────
-  // Try the requested port first; fall back to the next available port in
-  // range 3117–3200 if it's already in use.
-  const allocation = await findAvailablePort(port);
+  // Try the requested port first (with retries to handle the TIME_WAIT window
+  // that follows a recent server shutdown), then fall back to the next
+  // available port in range 3117–3200 if the preferred port remains occupied.
+  const allocation = await findAvailablePort(port, undefined, undefined, {
+    maxRetries: 5,
+    retryDelayMs: 100,
+    backoffFactor: 2,
+  });
   const actualPort = allocation.port;
 
   if (!allocation.isOriginal) {
@@ -391,13 +539,14 @@ export async function startServer(
 
       logStartup(actualPort, ctx, henchRunsDir);
 
-      // Clean up port file on process exit
-      const removePortFile = () => {
-        unlink(portFilePath).catch(() => {});
-      };
-      process.once("SIGINT", removePortFile);
-      process.once("SIGTERM", removePortFile);
-      process.once("exit", removePortFile);
+      // ── Graceful shutdown ───────────────────────────────────────────────
+      // Single handler coordinates cleanup in dependency order:
+      //   1. Hench child processes  (avoid orphaned agents)
+      //   2. WebSocket connections  (clean close frames)
+      //   3. HTTP server            (drain in-flight requests)
+      //   4. Port file              (orchestrator discovery)
+      // A second signal forces immediate exit; overall timeout prevents hangs.
+      registerShutdownHandlers(server, ws, portFilePath, actualPort);
 
       resolvePromise({
         port: actualPort,

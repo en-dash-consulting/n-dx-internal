@@ -25,7 +25,7 @@ import { readFileSync, readdirSync, writeFileSync, existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { spawnManaged, type ManagedChild } from "@n-dx/llm-client";
+import { spawnManaged, killWithFallback, type ManagedChild } from "@n-dx/llm-client";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./types.js";
 import type { WebSocketBroadcaster } from "./websocket.js";
@@ -1390,4 +1390,76 @@ function handleTerminate(
     message: "Process terminated",
   });
   return true;
+}
+
+// ── Graceful shutdown ─────────────────────────────────────────────────────
+
+/**
+ * Result returned by {@link shutdownActiveExecutions}.
+ *
+ * Callers (e.g. `gracefulShutdown` in start.ts) use these counts to
+ * build a final verification summary and to decide whether to exit clean.
+ */
+export interface ShutdownExecutionsResult {
+  /** Number of executions that were cleanly terminated. */
+  terminated: number;
+  /** Number of executions that failed to terminate (kill errored or timed out). */
+  failed: number;
+}
+
+/**
+ * Gracefully terminate all active hench executions on server shutdown.
+ *
+ * Iterates over all entries in `activeExecutions`, sends SIGTERM to each
+ * managed child, and waits up to `gracePeriodMs` for them to exit.  Any
+ * process that does not exit within the grace period receives SIGKILL.
+ *
+ * This must be called before the HTTP server closes so that child processes
+ * are not orphaned.  The function resolves only after all processes have
+ * been signalled and (best-effort) waited for.
+ *
+ * @param gracePeriodMs  How long to wait for each process to exit gracefully
+ *                       before force-killing it.  Defaults to 5 000 ms.
+ *                       Can be overridden via the `HENCH_SHUTDOWN_TIMEOUT_MS`
+ *                       environment variable.
+ * @returns Counts of terminated and failed executions for verification.
+ */
+export async function shutdownActiveExecutions(
+  gracePeriodMs: number = Number(process.env["HENCH_SHUTDOWN_TIMEOUT_MS"] ?? 5_000),
+): Promise<ShutdownExecutionsResult> {
+  if (activeExecutions.size === 0) return { terminated: 0, failed: 0 };
+
+  const count = activeExecutions.size;
+  console.log(`[shutdown] terminating ${count} active execution(s)`);
+
+  let terminated = 0;
+  let failed = 0;
+
+  const terminations = Array.from(activeExecutions.entries()).map(
+    async ([taskId, entry]) => {
+      const pid = entry.handle.pid;
+      const pidInfo = pid != null ? ` (pid ${pid})` : "";
+      try {
+        await killWithFallback(entry.handle, gracePeriodMs);
+        console.log(`[shutdown] execution ${taskId}${pidInfo} terminated`);
+        terminated++;
+      } catch (err) {
+        const error = err as Error;
+        console.error(`[shutdown] execution ${taskId}${pidInfo} failed to terminate: ${error.message}`);
+        failed++;
+      } finally {
+        activeExecutions.delete(taskId);
+      }
+    },
+  );
+
+  await Promise.all(terminations);
+
+  if (failed === 0) {
+    console.log(`[shutdown] all ${count} execution(s) terminated`);
+  } else {
+    console.error(`[shutdown] ${terminated}/${count} execution(s) terminated — ${failed} failed to exit`);
+  }
+
+  return { terminated, failed };
 }
