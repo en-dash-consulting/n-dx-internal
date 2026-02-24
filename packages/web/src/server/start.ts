@@ -392,14 +392,48 @@ export async function startServer(
       logStartup(actualPort, ctx, henchRunsDir);
 
       // ── Graceful shutdown ───────────────────────────────────────────────
-      // On SIGINT/SIGTERM: terminate all active hench child processes (with
-      // force-kill fallback), close the HTTP server, then remove the port
-      // file and exit.  The `exit` handler is a last-resort safety net that
-      // removes the port file even if we crash before the graceful path runs.
+      // On SIGINT/SIGTERM:
+      //   1. Terminate all active hench child processes (SIGTERM → SIGKILL).
+      //   2. Close all WebSocket connections.
+      //   3. Stop accepting new HTTP connections; wait for in-flight requests.
+      //   4. Remove the port file so the orchestrator sees the port as free.
+      // The `exit` handler is a last-resort safety net that removes the port
+      // file even if the graceful path never runs (e.g. an uncaught exception).
       const gracefulShutdown = async () => {
+        console.log("[shutdown] graceful shutdown initiated");
+
+        // Step 1 — terminate hench child processes
         await shutdownActiveExecutions();
-        server.close();
-        unlink(portFilePath).catch(() => {});
+
+        // Step 2 — close WebSocket connections (sends close frames, frees sockets)
+        ws.shutdown();
+        console.log("[shutdown] WebSocket connections closed");
+
+        // Step 3 — close HTTP server (stop accepting new connections; wait for
+        //           in-flight requests to drain so the port is fully released)
+        await new Promise<void>((resolve) => {
+          server.close((err) => {
+            if (err) {
+              console.error(`[shutdown] server close error: ${err.message}`);
+            } else {
+              console.log(`[shutdown] HTTP server closed — port ${actualPort} released`);
+            }
+            resolve();
+          });
+        });
+
+        // Step 4 — remove port file
+        try {
+          await unlink(portFilePath);
+          console.log("[shutdown] port file removed");
+        } catch (err) {
+          const code = (err as NodeJS.ErrnoException).code;
+          if (code !== "ENOENT") {
+            console.error(`[shutdown] failed to remove port file: ${(err as Error).message}`);
+          }
+        }
+
+        console.log("[shutdown] complete");
         process.exit(0);
       };
       process.once("SIGINT", gracefulShutdown);

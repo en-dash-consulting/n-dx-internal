@@ -1415,10 +1415,16 @@ export async function shutdownActiveExecutions(
 ): Promise<void> {
   if (activeExecutions.size === 0) return;
 
+  const count = activeExecutions.size;
+  console.log(`[shutdown] terminating ${count} active execution(s)`);
+
   const terminations = Array.from(activeExecutions.entries()).map(
     async ([taskId, entry]) => {
       try {
         await killWithFallback(entry.handle, gracePeriodMs);
+        console.log(`[shutdown] execution ${taskId} terminated`);
+      } catch (err) {
+        console.error(`[shutdown] execution ${taskId} failed to terminate: ${(err as Error).message}`);
       } finally {
         activeExecutions.delete(taskId);
       }
@@ -1426,4 +1432,5 @@ export async function shutdownActiveExecutions(
   );
 
   await Promise.all(terminations);
+  console.log(`[shutdown] all ${count} execution(s) terminated`);
 }

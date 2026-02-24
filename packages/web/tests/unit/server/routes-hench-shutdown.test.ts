@@ -92,6 +92,16 @@ describe("shutdownActiveExecutions — empty", () => {
   it("resolves immediately when there are no active executions", async () => {
     await expect(shutdownActiveExecutions(500)).resolves.toBeUndefined();
   });
+
+  it("does not log when there are no active executions", async () => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    try {
+      await shutdownActiveExecutions(500);
+      expect(logSpy).not.toHaveBeenCalled();
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
 });
 
 // ── Tests: with active process ────────────────────────────────────────────
@@ -224,5 +234,125 @@ describe("shutdownActiveExecutions — with active executions", () => {
     const statusRes = await fetch(`http://localhost:${port}/api/hench/execute/status`);
     const body = await statusRes.json() as { executions: unknown[] };
     expect(body.executions).toHaveLength(0);
+  });
+});
+
+// ── Tests: shutdown logging ───────────────────────────────────────────────
+
+describe("shutdownActiveExecutions — logging", () => {
+  let tmpDir: string;
+  let ctx: ServerContext;
+  let server: Server;
+  let port: number;
+
+  beforeEach(async () => {
+    _latestHandle = null;
+    vi.clearAllMocks();
+
+    tmpDir = await mkdtemp(join(tmpdir(), "hench-shutdown-log-"));
+    const rexDir = join(tmpDir, ".rex");
+    await mkdir(rexDir, { recursive: true });
+    await mkdir(join(tmpDir, ".hench", "runs"), { recursive: true });
+
+    ctx = {
+      projectDir: tmpDir,
+      svDir: join(tmpDir, ".sourcevision"),
+      rexDir,
+      dev: false,
+    };
+
+    const result = await startTestServer(ctx);
+    server = result.server;
+    port = result.port;
+
+    await writeFile(
+      join(rexDir, "prd.json"),
+      JSON.stringify(makePRD([
+        { id: "task-log-1", title: "Log Task One", status: "pending", level: "task" },
+      ]), null, 2),
+    );
+  });
+
+  afterEach(async () => {
+    server.close();
+    await shutdownActiveExecutions(200).catch(() => {});
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("logs start and completion messages when executions are present", async () => {
+    const logs: string[] = [];
+    const logSpy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      logs.push(args.join(" "));
+    });
+
+    try {
+      // Start an execution
+      const res = await fetch(`http://localhost:${port}/api/hench/execute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskId: "task-log-1" }),
+      });
+      expect(res.status).toBe(202);
+
+      await shutdownActiveExecutions(2_000);
+
+      // Should log that it started terminating
+      expect(logs.some((l) => l.includes("[shutdown] terminating") && l.includes("1 active execution"))).toBe(true);
+      // Should log individual task completion
+      expect(logs.some((l) => l.includes("[shutdown] execution task-log-1 terminated"))).toBe(true);
+      // Should log aggregate completion
+      expect(logs.some((l) => l.includes("[shutdown] all") && l.includes("terminated"))).toBe(true);
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
+  it("logs per-execution termination message for each task", async () => {
+    const rexDir = join(tmpDir, ".rex");
+    await writeFile(
+      join(rexDir, "prd.json"),
+      JSON.stringify(makePRD([
+        { id: "task-log-a", title: "Log Task A", status: "pending", level: "task" },
+        { id: "task-log-b", title: "Log Task B", status: "pending", level: "task" },
+      ]), null, 2),
+    );
+
+    const handles: MockHandle[] = [];
+    const { spawnManaged: mockSpawn } = await import("@n-dx/llm-client");
+    vi.mocked(mockSpawn).mockImplementation(() => {
+      const h = createMockHandle(99980 + handles.length);
+      handles.push(h);
+      return h;
+    });
+
+    const logs: string[] = [];
+    const logSpy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      logs.push(args.join(" "));
+    });
+
+    try {
+      await fetch(`http://localhost:${port}/api/hench/execute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskId: "task-log-a" }),
+      });
+      await fetch(`http://localhost:${port}/api/hench/execute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskId: "task-log-b" }),
+      });
+
+      expect(handles.length).toBe(2);
+
+      await shutdownActiveExecutions(2_000);
+
+      // Should log 2 terminating + per-task + aggregate
+      expect(logs.some((l) => l.includes("[shutdown] terminating") && l.includes("2 active execution"))).toBe(true);
+      expect(logs.some((l) => l.includes("[shutdown] execution task-log-a terminated"))).toBe(true);
+      expect(logs.some((l) => l.includes("[shutdown] execution task-log-b terminated"))).toBe(true);
+      expect(logs.some((l) => l.includes("[shutdown] all 2 execution(s) terminated"))).toBe(true);
+    } finally {
+      logSpy.mockRestore();
+    }
   });
 });
