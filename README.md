@@ -199,6 +199,10 @@ Repeat the loop:
 
 **[hench](packages/hench)** — Autonomous agent: picks next rex task, builds a brief, calls Claude API or CLI in a tool-use loop with security guardrails, records runs in `.hench/runs/`.
 
+**[@n-dx/llm-client](packages/llm-client)** — Vendor-neutral LLM foundation: shared provider interfaces, Claude and Codex adapters, provider registry, and token usage tracking. Used by rex and hench for all LLM calls.
+
+**[@n-dx/web](packages/web)** — Dashboard and unified MCP HTTP server: browser-based project dashboard with sourcevision zone maps and PRD status, plus a single HTTP endpoint serving both rex and sourcevision MCP tools.
+
 ## Command Aliases
 
 Both `n-dx` and `ndx` work identically. Examples in this doc use `ndx` for brevity.
