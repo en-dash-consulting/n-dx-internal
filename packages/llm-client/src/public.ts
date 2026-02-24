@@ -69,6 +69,15 @@
  * ```
  */
 
+// Generic provider interface (vendor-agnostic)
+export type {
+  ProviderAuthMode,
+  ProviderCapability,
+  ProviderInfo,
+  StreamChunk,
+  LLMProvider,
+} from "./provider-interface.js";
+
 // Vendor-neutral types
 export type {
   LLMVendor,
