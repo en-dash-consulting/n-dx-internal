@@ -13834,6 +13834,254 @@
           ]
         }
       ]
+    },
+    {
+      "id": "2ad53ca7-841a-4c3e-861a-d7f0eb6301d5",
+      "title": "Rex Task and Epic Deletion Functionality",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "d5f21901-e34c-4ba2-a265-7a477f013fa5",
+          "title": "Backend Deletion API Implementation",
+          "status": "completed",
+          "level": "feature",
+          "description": "Implement backend functions and CLI commands to support deletion of epics and tasks from the PRD structure",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "b16f5baa-e899-4933-9b57-edaf57e82cf6",
+              "title": "Audit existing remove functionality in rex codebase",
+              "status": "completed",
+              "level": "task",
+              "description": "Search through rex package source code and CLI commands to identify any existing remove/delete functions for epics and tasks",
+              "acceptanceCriteria": [
+                "Complete scan of rex package reveals all existing deletion functions",
+                "Documentation of current deletion capabilities or confirmation none exist",
+                "Clear assessment of what deletion functionality needs to be implemented"
+              ],
+              "priority": "high",
+              "tags": [
+                "audit",
+                "backend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T15:53:17.763Z",
+              "completedAt": "2026-02-24T15:54:29.481Z"
+            },
+            {
+              "id": "07b70975-a3f3-4863-bd7e-b641052870c8",
+              "title": "Implement remove epic function in rex core",
+              "status": "completed",
+              "level": "task",
+              "description": "Create core function to safely remove an epic from the PRD structure, handling child tasks and maintaining data integrity",
+              "acceptanceCriteria": [
+                "Function removes epic and all child features/tasks from PRD tree",
+                "Maintains referential integrity of remaining PRD items",
+                "Returns success/failure status with descriptive error messages",
+                "Validates epic exists before attempting removal"
+              ],
+              "priority": "critical",
+              "tags": [
+                "backend",
+                "core"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T15:20:28.988Z",
+              "completedAt": "2026-02-24T15:26:43.059Z"
+            },
+            {
+              "id": "9ebe67e0-256a-45f8-97da-a9623ca9e949",
+              "title": "Implement remove task function in rex core",
+              "status": "completed",
+              "level": "task",
+              "description": "Create core function to safely remove individual tasks from the PRD structure while preserving parent-child relationships",
+              "acceptanceCriteria": [
+                "Function removes task from parent feature/epic",
+                "Updates parent completion status if needed",
+                "Handles task dependencies and blocked relationships",
+                "Validates task exists before attempting removal"
+              ],
+              "priority": "critical",
+              "tags": [
+                "backend",
+                "core"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T15:27:01.810Z",
+              "completedAt": "2026-02-24T15:38:11.150Z"
+            },
+            {
+              "id": "7d6fad57-9071-436e-bd37-319a48189b01",
+              "title": "Add deletion commands to rex CLI",
+              "status": "completed",
+              "level": "task",
+              "description": "Expose remove functionality through rex CLI commands with proper validation and confirmation prompts",
+              "acceptanceCriteria": [
+                "rex remove epic <id> command removes specified epic",
+                "rex remove task <id> command removes specified task",
+                "Commands include confirmation prompts for safety",
+                "Commands provide clear success/failure feedback"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "backend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T15:38:11.324Z",
+              "completedAt": "2026-02-24T15:53:17.574Z",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "semantic_title",
+                "reasonRef": "semantic_title:6a1a02c8-18c9-4967-9182-26cc98cc1850",
+                "matchedItemId": "6a1a02c8-18c9-4967-9182-26cc98cc1850",
+                "matchedItemTitle": "Implement Rex command integration",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-24T15:20:05.533Z"
+              }
+            }
+          ],
+          "startedAt": "2026-02-24T15:54:29.578Z",
+          "completedAt": "2026-02-24T15:54:29.578Z"
+        },
+        {
+          "id": "e7080a46-fedc-400c-86db-120e2d8ae2f2",
+          "title": "Rex UI Deletion Interface",
+          "status": "pending",
+          "level": "feature",
+          "description": "Add interactive deletion capabilities to the Rex web UI task tab with proper user confirmation flows",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "d4e21c43-f12d-4c58-8582-af733a94f4fd",
+              "title": "Add delete buttons to Rex UI task and epic items",
+              "status": "pending",
+              "level": "task",
+              "description": "Integrate delete buttons or context menu options into the Rex UI for both epics and tasks in the task tab view",
+              "acceptanceCriteria": [
+                "Delete buttons visible on epic items in Rex task tab",
+                "Delete buttons visible on task items in Rex task tab",
+                "Buttons are clearly labeled and styled appropriately",
+                "Delete options accessible via right-click context menu"
+              ],
+              "priority": "high",
+              "tags": [
+                "frontend",
+                "ui"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "317ee3e3-a436-45f8-a93c-63f1c41072b1",
+              "title": "Implement deletion confirmation dialog",
+              "status": "pending",
+              "level": "task",
+              "description": "Create modal confirmation dialog that warns users about deletion consequences and requires explicit confirmation",
+              "acceptanceCriteria": [
+                "Modal shows item title and type being deleted",
+                "Dialog warns about child items that will also be deleted",
+                "Requires explicit confirmation before proceeding",
+                "Provides cancel option to abort deletion"
+              ],
+              "priority": "high",
+              "tags": [
+                "frontend",
+                "ui"
+              ],
+              "source": "smart-add",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "semantic_title",
+                "reasonRef": "semantic_title:6d3d8a74-c84d-4615-a418-11ac553c4f8c",
+                "matchedItemId": "6d3d8a74-c84d-4615-a418-11ac553c4f8c",
+                "matchedItemTitle": "Log",
+                "matchedItemLevel": "subtask",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-24T15:20:05.533Z"
+              }
+            },
+            {
+              "id": "04854c70-f1ee-4cda-9ddf-92ffc8446e9f",
+              "title": "Update UI state after successful deletions",
+              "status": "pending",
+              "level": "task",
+              "description": "Ensure Rex UI refreshes and updates the task tree view in real-time after items are successfully deleted",
+              "acceptanceCriteria": [
+                "Deleted items immediately disappear from UI tree",
+                "Parent completion percentages update if children deleted",
+                "Loading states shown during deletion API calls",
+                "Error messages displayed if deletion fails"
+              ],
+              "priority": "high",
+              "tags": [
+                "frontend",
+                "ui"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "c2b3377b-5830-4bd3-99f5-992d50e50fcc",
+          "title": "Documentation and Help Updates",
+          "status": "pending",
+          "level": "feature",
+          "description": "Update project documentation to reflect the new deletion capabilities in both CLI and UI",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "cf16901b-f482-423d-8228-c85f7e55096b",
+              "title": "Update README with deletion command documentation",
+              "status": "pending",
+              "level": "task",
+              "description": "Add comprehensive documentation for new deletion commands to the project README, including usage examples and safety warnings",
+              "acceptanceCriteria": [
+                "README includes rex remove epic command usage",
+                "README includes rex remove task command usage",
+                "Documentation includes safety warnings about irreversible deletions",
+                "Examples show proper command syntax and confirmation flows"
+              ],
+              "priority": "medium",
+              "tags": [
+                "documentation"
+              ],
+              "source": "smart-add",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "semantic_title",
+                "reasonRef": "semantic_title:e1464393-196b-4c34-ac03-114fca5bee4d",
+                "matchedItemId": "e1464393-196b-4c34-ac03-114fca5bee4d",
+                "matchedItemTitle": "Update CLI documentation",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-24T15:20:05.533Z"
+              }
+            },
+            {
+              "id": "7c7a5fbb-1c98-493b-a03a-21790673dcfc",
+              "title": "Update CLI help text for deletion commands",
+              "status": "pending",
+              "level": "task",
+              "description": "Ensure rex CLI help system includes comprehensive help text for the new remove commands",
+              "acceptanceCriteria": [
+                "rex help shows remove commands in command list",
+                "rex help remove provides detailed usage instructions",
+                "Help text explains difference between removing epics vs tasks",
+                "Help includes warnings about data loss and confirmation requirements"
+              ],
+              "priority": "medium",
+              "tags": [
+                "documentation",
+                "cli"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
