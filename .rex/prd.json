@@ -14143,7 +14143,7 @@
             {
               "id": "9e7f4093-d2f7-4591-bfb3-6f4c00468255",
               "title": "Implement graceful degradation when approaching memory limits",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add mechanisms to reduce functionality or disable resource-intensive features when memory usage approaches critical thresholds",
               "acceptanceCriteria": [
@@ -14158,7 +14158,9 @@
                 "ux",
                 "performance"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-24T20:04:12.510Z",
+              "completedAt": "2026-02-24T20:15:37.620Z"
             },
             {
               "id": "80cd6462-2460-4757-aad3-fb6b67e5323d",
@@ -14180,6 +14182,7 @@
               ],
               "source": "smart-add",
               "startedAt": "2026-02-24T19:55:28.230Z",
+              "completedAt": "2026-02-24T20:03:01.568Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "semantic_title",
@@ -14189,8 +14192,7 @@
                 "matchedItemLevel": "task",
                 "matchedItemStatus": "completed",
                 "createdAt": "2026-02-24T18:39:02.997Z"
-              },
-              "completedAt": "2026-02-24T20:03:01.568Z"
+              }
             },
             {
               "id": "9b6da46d-6f39-4c8b-b59d-f978a2c3aeed",
