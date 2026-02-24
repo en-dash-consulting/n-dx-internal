@@ -52,6 +52,11 @@ import {
 import { buildRefreshPlan, RefreshPlanError } from "./refresh-plan.js";
 import { refreshSourcevisionDashboardArtifacts } from "./refresh-artifacts.js";
 import {
+  snapshotRefreshState,
+  validateRefreshCompletion,
+  rollbackRefreshState,
+} from "./refresh-validate.js";
+import {
   formatTypoSuggestion,
   getOrchestratorCommands,
   searchHelp,
@@ -548,6 +553,40 @@ async function handleRefresh(rest) {
   if (plan.needsSourcevisionDir) {
     requireInit(dir, [".sourcevision"]);
   }
+
+  const stepCount = plan.steps.length;
+  console.log(`[refresh] starting — ${stepCount} step${stepCount === 1 ? "" : "s"} planned`);
+
+  // Snapshot current sourcevision state for potential rollback on failure.
+  const snapshot = await snapshotRefreshState(dir, plan);
+  if (snapshot.fileCount > 0) {
+    console.log(
+      `[refresh] state snapshot captured (${snapshot.fileCount} file${snapshot.fileCount === 1 ? "" : "s"})`,
+    );
+  }
+
+  /** Restore snapshotted files and report the outcome to stdout/stderr. */
+  async function performRollback() {
+    if (snapshot.fileCount === 0) return;
+    console.log(
+      `[refresh] rollback — restoring pre-refresh state (${snapshot.fileCount} file${snapshot.fileCount === 1 ? "" : "s"})`,
+    );
+    const result = await rollbackRefreshState(snapshot);
+    if (result.restored > 0) {
+      console.log(
+        `[refresh] rollback complete — ${result.restored} file${result.restored === 1 ? "" : "s"} restored`,
+      );
+    }
+    if (result.failed > 0) {
+      console.error(
+        `[refresh] rollback partial — ${result.failed} file${result.failed === 1 ? "" : "s"} could not be restored`,
+      );
+      for (const err of result.errors) {
+        console.error(`  ${err}`);
+      }
+    }
+  }
+
   const stepStatuses = [];
   for (const note of plan.notes) {
     console.log(note);
@@ -562,6 +601,7 @@ async function handleRefresh(rest) {
     try {
       const succeeded = await runRefreshStep(step, plan, dir, stepStatuses);
       if (!succeeded) {
+        await performRollback();
         printRefreshStepSummary(stepStatuses);
         process.exit(1);
       }
@@ -569,11 +609,27 @@ async function handleRefresh(rest) {
       const detail = err instanceof Error ? err.message : String(err);
       printRefreshStepTransition(step.kind, "failed", detail);
       stepStatuses.push({ kind: step.kind, status: "failed", detail });
+      await performRollback();
       printRefreshStepSummary(stepStatuses);
       process.exit(1);
     }
   }
+
+  // Validate all step outputs before marking the operation complete.
+  console.log(`[refresh] validating — confirming all outputs are present`);
+  const validation = validateRefreshCompletion(dir, plan);
+  if (!validation.valid) {
+    console.error(`[refresh] validation failed — outputs incomplete or invalid:`);
+    for (const issue of validation.issues) {
+      console.error(`  ${issue}`);
+    }
+    await performRollback();
+    printRefreshStepSummary(stepStatuses);
+    process.exit(1);
+  }
+
   printRefreshStepSummary(stepStatuses);
+  console.log(`[refresh] completed — all outputs validated`);
   const reload = await signalLiveReload(dir);
   console.log(reload.message);
   process.exit(0);
