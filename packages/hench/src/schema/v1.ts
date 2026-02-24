@@ -1,9 +1,50 @@
-import { PROJECT_DIRS } from "@n-dx/claude-client";
-import type { GuardConfig, PolicyLimitsConfig } from "../guard/contracts.js";
+import { PROJECT_DIRS } from "@n-dx/llm-client";
 
 export const HENCH_SCHEMA_VERSION = "hench/v1";
 
-export type { GuardConfig, PolicyLimitsConfig } from "../guard/contracts.js";
+/**
+ * Configurable subset of policy limits (all optional, defaults applied at runtime).
+ *
+ * Defined here (schema) rather than in guard/contracts so that schema/v1
+ * stays self-contained and guard stays free of schema imports.  The two
+ * definitions are structurally identical; TypeScript's structural typing
+ * ensures they remain compatible wherever HenchConfig.guard is passed to
+ * GuardRails (which accepts the guard-owned GuardConfig interface).
+ */
+export interface PolicyLimitsConfig {
+  /** Maximum commands per minute (0 = unlimited). */
+  maxCommandsPerMinute?: number;
+  /** Maximum file writes per minute (0 = unlimited). */
+  maxWritesPerMinute?: number;
+  /** Maximum total bytes written in the session (0 = unlimited). */
+  maxTotalBytesWritten?: number;
+  /** Maximum total commands in the session (0 = unlimited). */
+  maxTotalCommands?: number;
+}
+
+/**
+ * Security guard configuration embedded in {@link HenchConfig}.
+ *
+ * Defined here (schema) rather than in guard/contracts so that schema/v1
+ * stays self-contained and guard stays free of schema imports.  The two
+ * definitions are structurally identical; TypeScript's structural typing
+ * ensures they remain compatible wherever HenchConfig.guard is passed to
+ * GuardRails (which accepts the guard-owned GuardConfig interface).
+ */
+export interface GuardConfig {
+  blockedPaths: string[];
+  allowedCommands: string[];
+  commandTimeout: number;
+  maxFileSize: number;
+  /** Timeout in ms for spawn-based execution (spawnTool/spawnManaged). 0 = no timeout. */
+  spawnTimeout: number;
+  /** Maximum concurrent child processes allowed. */
+  maxConcurrentProcesses: number;
+  /** Allowed git subcommands. Centralizes the git safety allowlist in guard config. */
+  allowedGitSubcommands: string[];
+  /** Policy limits for session-aware rate limiting and resource tracking. */
+  policy?: PolicyLimitsConfig;
+}
 
 export interface RetryConfig {
   maxRetries: number;

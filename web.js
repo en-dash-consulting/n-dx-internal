@@ -28,7 +28,7 @@ const PORT_FILE = ".n-dx-web.port";
 
 // ── Output helpers ───────────────────────────────────────────────────────────
 // Orchestration files avoid importing from packages (they spawn CLIs instead).
-// These local helpers mirror @n-dx/claude-client's output.ts for consistency.
+// These local helpers mirror @n-dx/llm-client's output.ts for consistency.
 
 /** Print informational output. Suppressed in quiet mode. */
 function log(...args) {

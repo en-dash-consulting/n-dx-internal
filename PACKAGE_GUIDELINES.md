@@ -142,7 +142,7 @@ All packages must include the subpath export for advanced consumers:
 | Pattern | When | Examples |
 |---|---|---|
 | Unscoped short name | CLI tools (for `npx`/`pnpm exec`) | `rex`, `sourcevision`, `hench` |
-| `@n-dx/` scoped | Internal-only packages | `@n-dx/web`, `@n-dx/claude-client` |
+| `@n-dx/` scoped | Internal-only packages | `@n-dx/web`, `@n-dx/llm-client` |
 
 ## Test Structure
 
@@ -166,7 +166,7 @@ All test files use `*.test.ts` suffix. Tests are co-located with the code they t
        ↓
   Domain          rex · sourcevision           (independent, never import each other)
        ↓
-  Foundation      @n-dx/claude-client          (shared types, API client)
+  Foundation      @n-dx/llm-client             (shared types, API client)
 ```
 
 **Rules:**

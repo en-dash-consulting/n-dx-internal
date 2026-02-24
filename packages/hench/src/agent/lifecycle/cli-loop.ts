@@ -16,6 +16,7 @@ import {
   type LLMVendor,
   resolveLLMVendor,
   resolveVendorCliPath,
+  resolveVendorCliEnv,
 } from "../../store/project-config.js";
 import {
   prepareBrief,
@@ -512,12 +513,14 @@ function spawnClaude(
   cwd: string,
   tokenMetadata: TokenEventMetadata,
   cliBinary = "claude",
+  env?: NodeJS.ProcessEnv,
 ): Promise<CliRunResult> {
   return new Promise((resolve, reject) => {
     const proc = spawn(cliBinary, args, {
       cwd,
       stdio: ["pipe", "pipe", "pipe"],
       shell: process.platform === "win32",
+      env: env ?? process.env,
     });
 
     // Write prompt (and optionally system prompt) to stdin and close.
@@ -587,6 +590,7 @@ async function spawnCodex(
   model: string | undefined,
   tokenMetadata: TokenEventMetadata,
   cliBinary = "codex",
+  env?: NodeJS.ProcessEnv,
 ): Promise<CliRunResult> {
   const tmpDir = await mkdtemp(join(tmpdir(), "hench-codex-"));
   const outputPath = join(tmpDir, "last-message.txt");
@@ -608,6 +612,7 @@ async function spawnCodex(
       const proc = spawn(cliBinary, args, {
         cwd,
         stdio: ["ignore", "pipe", "pipe"],
+        env: env ?? process.env,
       });
 
       let stderr = "";
@@ -770,8 +775,9 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
     henchDir,
   });
 
-  // CLI-specific: load config for CLI path resolution
+  // CLI-specific: load config for CLI path and env resolution
   const cliBinary = resolveVendorCliPath(llmConfig);
+  const cliEnv = resolveVendorCliEnv(llmConfig);
 
   // Shared: capture HEAD before agent runs
   const startingHead = captureStartingHead(projectDir);
@@ -835,6 +841,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
           opts.model,
           { vendor, model: eventModel },
           cliBinary,
+          cliEnv,
         )
         : await spawnClaude(
           args,
@@ -842,6 +849,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
           projectDir,
           { vendor, model: eventModel },
           cliBinary,
+          cliEnv,
         );
 
       accumulatedTurns += result.turns;

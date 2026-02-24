@@ -21,8 +21,7 @@ import type { TaskUsageSummary, WeeklyBudgetResolution, WeeklyBudgetSource } fro
 import type { InlineAddInput } from "../components/prd-tree/inline-add-form.js";
 import { findItemById, getAncestorIds } from "../components/prd-tree/tree-utils.js";
 import { resolveTaskUtilization } from "../components/prd-tree/task-utilization.js";
-import type { DetailItem } from "../components/prd-tree/shared-imports.js";
-import type { NavigateTo } from "../types.js";
+import type { DetailItem, NavigateTo } from "../components/prd-tree/shared-imports.js";
 
 export interface PRDViewProps {
   /** Pre-loaded PRD data. If not provided, fetches from /data/prd.json. */

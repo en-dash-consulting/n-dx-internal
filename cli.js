@@ -14,7 +14,7 @@
  *        ↓
  *   Domain         rex (PRD management) · sourcevision (static analysis)
  *        ↓
- *   Foundation     @n-dx/claude-client (shared types, API abstraction)
+ *   Foundation     @n-dx/llm-client (shared types, API abstraction)
  * ```
  *
  * Each layer only imports from the layer directly below it:
@@ -25,7 +25,7 @@
  * - **Domain** packages (rex, sourcevision) are fully independent —
  *   they never import each other and share data only through the
  *   orchestration or web layer.
- * - **Foundation** (`@n-dx/claude-client`) provides the shared type
+ * - **Foundation** (`@n-dx/llm-client`) provides the shared type
  *   contracts and API client that prevent circular dependencies.
  *
  * This layering ensures the import graph remains a DAG with zero
@@ -108,31 +108,6 @@ function formatError(err) {
   }
   return `Error: ${message}`;
 }
-
-// Catch unhandled errors at the top level — never show stack traces
-process.on("uncaughtException", (err) => {
-  console.error(formatError(err));
-  process.exit(1);
-});
-process.on("unhandledRejection", (err) => {
-  console.error(formatError(err));
-  process.exit(1);
-});
-
-const tools = {
-  rex: resolveToolPath("packages/rex"),
-  hench: resolveToolPath("packages/hench"),
-  sourcevision: resolveToolPath("packages/sourcevision"),
-  sv: resolveToolPath("packages/sourcevision"),
-  web: resolveToolPath("packages/web"),
-};
-const SUPPORTED_PROVIDERS = ["codex", "claude"];
-const INIT_BANNER_LINES = [
-  "┌──────────────────────────────────────────────┐",
-  "│                   n-dx init                  │",
-  "│        Guided project setup is starting      │",
-  "└──────────────────────────────────────────────┘",
-];
 
 function run(script, args) {
   return new Promise((res) => {
@@ -380,43 +355,9 @@ async function signalLiveReload(dir) {
   }
 }
 
-const [command, ...rest] = process.argv.slice(2);
+// ── Command handlers ─────────────────────────────────────────────────────────
 
-// ── Per-command --help ──────────────────────────────────────────────────────
-
-const hasHelp = rest.some((a) => a === "--help" || a === "-h");
-if (hasHelp && command && showCommandHelp(command)) {
-  process.exit(0);
-}
-
-// ── ndx help [keyword|tool] — search and navigation ────────────────────────
-
-if (command === "help") {
-  const query = rest.filter((a) => !a.startsWith("-")).join(" ");
-  if (!query) {
-    // No keyword — show main help
-    showMainHelp();
-    process.exit(0);
-  }
-  // If query is a tool name, show its subcommand summary with navigation hints
-  const toolHelp = formatToolHelp(query);
-  if (toolHelp) {
-    console.log(toolHelp);
-    process.exit(0);
-  }
-  // If query matches an orchestration command, show its help
-  if (showCommandHelp(query)) {
-    process.exit(0);
-  }
-  // Otherwise search across all help content
-  const results = searchHelp(query);
-  console.log(formatSearchResults(results, query));
-  process.exit(0);
-}
-
-// --- Orchestration commands ---
-
-if (command === "init") {
+async function handleInit(rest) {
   const providerFromFlag = extractInitProvider(rest);
   if (providerFromFlag !== undefined && !SUPPORTED_PROVIDERS.includes(providerFromFlag)) {
     console.error(`Error: Invalid provider "${providerFromFlag}". Expected one of: codex, claude.`);
@@ -444,7 +385,7 @@ if (command === "init") {
   process.exit(0);
 }
 
-if (command === "plan") {
+async function handlePlan(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex"]);
   const flags = extractFlags(rest);
@@ -459,7 +400,54 @@ if (command === "plan") {
   process.exit(0);
 }
 
-if (command === "refresh") {
+/** Execute one refresh pipeline step; returns true on success, false on failure. */
+async function runRefreshStep(step, plan, dir, stepStatuses) {
+  if (step.kind === "sourcevision-analyze") {
+    const code = await run(tools.sourcevision, ["analyze", ...plan.quietFlags, dir]);
+    if (code !== 0) {
+      const detail = `exit code ${code}`;
+      printRefreshStepTransition(step.kind, "failed", detail);
+      stepStatuses.push({ kind: step.kind, status: "failed", detail });
+      return false;
+    }
+    printRefreshStepTransition(step.kind, "succeeded");
+    stepStatuses.push({ kind: step.kind, status: "succeeded" });
+    return true;
+  }
+  if (step.kind === "sourcevision-pr-markdown") {
+    const code = await run(tools.sourcevision, ["pr-markdown", ...plan.quietFlags, dir]);
+    if (code !== 0) {
+      const detail = `exit code ${code}`;
+      printRefreshStepTransition(step.kind, "failed", detail);
+      stepStatuses.push({ kind: step.kind, status: "failed", detail });
+      return false;
+    }
+    printRefreshStepTransition(step.kind, "succeeded");
+    stepStatuses.push({ kind: step.kind, status: "succeeded" });
+    return true;
+  }
+  if (step.kind === "sourcevision-dashboard-artifacts") {
+    refreshSourcevisionDashboardArtifacts(dir);
+    printRefreshStepTransition(step.kind, "succeeded");
+    stepStatuses.push({ kind: step.kind, status: "succeeded" });
+    return true;
+  }
+  if (step.kind === "web-build") {
+    const code = await run("packages/web/build.js", []);
+    if (code !== 0) {
+      const detail = `exit code ${code}`;
+      printRefreshStepTransition(step.kind, "failed", detail);
+      stepStatuses.push({ kind: step.kind, status: "failed", detail });
+      return false;
+    }
+    printRefreshStepTransition(step.kind, "succeeded");
+    stepStatuses.push({ kind: step.kind, status: "succeeded" });
+    return true;
+  }
+  return true;
+}
+
+async function handleRefresh(rest) {
   const dir = resolveDir(rest);
   const flags = extractFlags(rest);
   let plan;
@@ -489,49 +477,10 @@ if (command === "refresh") {
   for (const step of plan.steps) {
     printRefreshStepTransition(step.kind, "started");
     try {
-      if (step.kind === "sourcevision-analyze") {
-        const code = await run(tools.sourcevision, ["analyze", ...plan.quietFlags, dir]);
-        if (code !== 0) {
-          const detail = `exit code ${code}`;
-          printRefreshStepTransition(step.kind, "failed", detail);
-          stepStatuses.push({ kind: step.kind, status: "failed", detail });
-          printRefreshStepSummary(stepStatuses);
-          process.exit(code);
-        }
-        printRefreshStepTransition(step.kind, "succeeded");
-        stepStatuses.push({ kind: step.kind, status: "succeeded" });
-        continue;
-      }
-      if (step.kind === "sourcevision-pr-markdown") {
-        const code = await run(tools.sourcevision, ["pr-markdown", ...plan.quietFlags, dir]);
-        if (code !== 0) {
-          const detail = `exit code ${code}`;
-          printRefreshStepTransition(step.kind, "failed", detail);
-          stepStatuses.push({ kind: step.kind, status: "failed", detail });
-          printRefreshStepSummary(stepStatuses);
-          process.exit(code);
-        }
-        printRefreshStepTransition(step.kind, "succeeded");
-        stepStatuses.push({ kind: step.kind, status: "succeeded" });
-        continue;
-      }
-      if (step.kind === "sourcevision-dashboard-artifacts") {
-        refreshSourcevisionDashboardArtifacts(dir);
-        printRefreshStepTransition(step.kind, "succeeded");
-        stepStatuses.push({ kind: step.kind, status: "succeeded" });
-        continue;
-      }
-      if (step.kind === "web-build") {
-        const code = await run("packages/web/build.js", []);
-        if (code !== 0) {
-          const detail = `exit code ${code}`;
-          printRefreshStepTransition(step.kind, "failed", detail);
-          stepStatuses.push({ kind: step.kind, status: "failed", detail });
-          printRefreshStepSummary(stepStatuses);
-          process.exit(code);
-        }
-        printRefreshStepTransition(step.kind, "succeeded");
-        stepStatuses.push({ kind: step.kind, status: "succeeded" });
+      const succeeded = await runRefreshStep(step, plan, dir, stepStatuses);
+      if (!succeeded) {
+        printRefreshStepSummary(stepStatuses);
+        process.exit(1);
       }
     } catch (err) {
       const detail = err instanceof Error ? err.message : String(err);
@@ -544,11 +493,10 @@ if (command === "refresh") {
   printRefreshStepSummary(stepStatuses);
   const reload = await signalLiveReload(dir);
   console.log(reload.message);
-
   process.exit(0);
 }
 
-if (command === "work") {
+async function handleWork(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex", ".hench"]);
   const flags = extractFlags(rest);
@@ -560,7 +508,7 @@ if (command === "work") {
     const vendor = readLLMVendor(dir);
     if (!vendor) {
       console.error("Error: No LLM vendor configured for this project.");
-      console.error("Hint: Run 'n-dx config llm.vendor claude' (or codex when supported).");
+      console.error("Hint: Run 'ndx config llm.vendor claude' or 'ndx config llm.vendor codex' to configure a vendor.");
       process.exit(1);
     }
   }
@@ -569,7 +517,7 @@ if (command === "work") {
   process.exit(0);
 }
 
-if (command === "status") {
+async function handleStatus(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex"]);
   const flags = extractFlags(rest);
@@ -577,7 +525,7 @@ if (command === "status") {
   process.exit(0);
 }
 
-if (command === "usage") {
+async function handleUsage(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex"]);
   const flags = extractFlags(rest);
@@ -585,7 +533,7 @@ if (command === "usage") {
   process.exit(0);
 }
 
-if (command === "sync") {
+async function handleSync(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex"]);
   const flags = extractFlags(rest);
@@ -593,7 +541,7 @@ if (command === "sync") {
   process.exit(0);
 }
 
-if (command === "ci") {
+async function handleCI(rest) {
   const dir = resolveDir(rest);
   const flags = extractFlags(rest);
   const isJSON = flags.some((f) => f === "--format=json");
@@ -613,7 +561,7 @@ if (command === "ci") {
   }
 }
 
-if (command === "dev") {
+async function handleDev(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".sourcevision"]);
   const flags = extractFlags(rest);
@@ -621,10 +569,10 @@ if (command === "dev") {
   process.exit(code);
 }
 
-if (command === "start") {
+async function handleStart(rest, commandName = "start") {
   const dir = resolveDir(rest);
   try {
-    const code = await runWeb(dir, rest, { run, tools, __dir, commandName: "start" });
+    const code = await runWeb(dir, rest, { run, tools, __dir, commandName });
     process.exit(code);
   } catch (err) {
     console.error(formatError(err));
@@ -632,18 +580,7 @@ if (command === "start") {
   }
 }
 
-if (command === "web") {
-  const dir = resolveDir(rest);
-  try {
-    const code = await runWeb(dir, rest, { run, tools, __dir });
-    process.exit(code);
-  } catch (err) {
-    console.error(formatError(err));
-    process.exit(1);
-  }
-}
-
-if (command === "config") {
+async function handleConfig(rest) {
   try {
     await runConfig(rest);
   } catch (err) {
@@ -653,17 +590,29 @@ if (command === "config") {
   process.exit(0);
 }
 
-// --- Delegation commands ---
-
-if (tools[command]) {
-  const code = await run(tools[command], rest);
-  process.exit(code);
+function handleHelp(rest) {
+  const query = rest.filter((a) => !a.startsWith("-")).join(" ");
+  if (!query) {
+    showMainHelp();
+    process.exit(0);
+  }
+  // If query is a tool name, show its subcommand summary with navigation hints
+  const toolHelp = formatToolHelp(query);
+  if (toolHelp) {
+    console.log(toolHelp);
+    process.exit(0);
+  }
+  // If query matches an orchestration command, show its help
+  if (showCommandHelp(query)) {
+    process.exit(0);
+  }
+  // Otherwise search across all help content
+  const results = searchHelp(query);
+  console.log(formatSearchResults(results, query));
+  process.exit(0);
 }
 
-// --- Help or unknown command ---
-
-if (command) {
-  // Unknown command — suggest similar commands
+function handleUnknownCommand(command) {
   const allCommands = [...getOrchestratorCommands(), "help"];
   const typoHint = formatTypoSuggestion(command, allCommands, "ndx ");
   console.error(`Error: Unknown command: ${command}`);
@@ -675,9 +624,78 @@ if (command) {
   process.exit(1);
 }
 
-showMainHelp();
-process.exit(0);
-
 function showMainHelp() {
   console.log(formatMainHelp());
+}
+
+// ── Module-level setup ───────────────────────────────────────────────────────
+
+const tools = {
+  rex: resolveToolPath("packages/rex"),
+  hench: resolveToolPath("packages/hench"),
+  sourcevision: resolveToolPath("packages/sourcevision"),
+  sv: resolveToolPath("packages/sourcevision"),
+  web: resolveToolPath("packages/web"),
+};
+const SUPPORTED_PROVIDERS = ["codex", "claude"];
+const INIT_BANNER_LINES = [
+  "┌──────────────────────────────────────────────┐",
+  "│                   n-dx init                  │",
+  "│        Guided project setup is starting      │",
+  "└──────────────────────────────────────────────┘",
+];
+
+// Catch unhandled errors at the top level — never show stack traces
+process.on("uncaughtException", (err) => {
+  console.error(formatError(err));
+  process.exit(1);
+});
+process.on("unhandledRejection", (err) => {
+  console.error(formatError(err));
+  process.exit(1);
+});
+
+// ── Main dispatch ────────────────────────────────────────────────────────────
+
+await main();
+
+async function main() {
+  const [command, ...rest] = process.argv.slice(2);
+
+  // ── Per-command --help ──────────────────────────────────────────────────
+  const hasHelp = rest.some((a) => a === "--help" || a === "-h");
+  if (hasHelp && command && showCommandHelp(command)) {
+    process.exit(0);
+  }
+
+  // ── Dispatch to command handler ─────────────────────────────────────────
+  switch (command) {
+    case "help":    return handleHelp(rest);
+    case "init":    return handleInit(rest);
+    case "plan":    return handlePlan(rest);
+    case "refresh": return handleRefresh(rest);
+    case "work":    return handleWork(rest);
+    case "status":  return handleStatus(rest);
+    case "usage":   return handleUsage(rest);
+    case "sync":    return handleSync(rest);
+    case "ci":      return handleCI(rest);
+    case "dev":     return handleDev(rest);
+    case "start":   return handleStart(rest, "start");
+    case "web":     return handleStart(rest, "web");
+    case "config":  return handleConfig(rest);
+  }
+
+  // ── Tool delegation ───────────────────────────────────────────────────────
+  if (tools[command]) {
+    const code = await run(tools[command], rest);
+    process.exit(code);
+  }
+
+  // ── Unknown command or no command ─────────────────────────────────────────
+  if (command) {
+    return handleUnknownCommand(command);
+  }
+
+  showMainHelp();
+  process.exit(0);
 }

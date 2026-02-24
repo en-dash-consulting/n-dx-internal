@@ -1,3 +1,29 @@
+/**
+ * Tool dispatch — boundary between the agent core and the guard/tools layer.
+ *
+ * This module sits at the interface of two architectural zones within the hench
+ * package:
+ *
+ *   **agent-core (hench zone)** — agent lifecycle, schema, process execution
+ *   **guard+tools (hench-2 zone)** — GuardRails, filesystem/shell/git tool impls
+ *
+ * The coupling between these zones is intentional and managed:
+ *
+ * - **Agent core → guard+tools**: `loop.ts` instantiates GuardRails from the
+ *   guard module and creates a `ToolContext`; `tools/index.ts` re-exports the
+ *   concrete tool functions for use outside this directory.
+ * - **Guard+tools → agent core**: `tools/contracts.ts` exports `ToolGuard` (a
+ *   minimal interface satisfied by GuardRails) and `ToolContext`, so tool
+ *   implementations never import from agent-core directly.  `tools/git.ts` and
+ *   `tools/shell.ts` call `process/exec-shell.ts` for subprocess execution.
+ *
+ * The `ToolGuard` interface in `./contracts.ts` is the explicit shared boundary
+ * that decouples tool implementations from concrete GuardRails internals,
+ * following the same gateway pattern used elsewhere in the monorepo.
+ *
+ * @module
+ */
+
 import type Anthropic from "@anthropic-ai/sdk";
 import { toolReadFile, toolWriteFile, toolListDirectory, toolSearchFiles } from "./files.js";
 import { toolRunCommand } from "./shell.js";

@@ -69,6 +69,29 @@
  * ```
  */
 
+// Generic provider interface (vendor-agnostic)
+export type {
+  ProviderAuthMode,
+  ProviderCapability,
+  ProviderInfo,
+  StreamChunk,
+  LLMProvider,
+} from "./provider-interface.js";
+
+// Provider registry and selection
+export type { ProviderFactory } from "./provider-registry.js";
+export {
+  ProviderRegistry,
+  createDefaultRegistry,
+  defaultRegistry,
+} from "./provider-registry.js";
+
+// Provider session (active provider management + vendor switching)
+export {
+  ProviderSession,
+  createProviderSession,
+} from "./provider-session.js";
+
 // Vendor-neutral types
 export type {
   LLMVendor,

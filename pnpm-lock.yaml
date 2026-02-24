@@ -36,9 +36,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.39.0
         version: 0.39.0
-      '@n-dx/claude-client':
+      '@n-dx/llm-client':
         specifier: workspace:*
-        version: link:../claude-client
+        version: link:../llm-client
       rex:
         specifier: '*'
         version: link:../rex
@@ -77,9 +77,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.25.3
         version: 1.25.3(hono@4.11.7)(zod@3.25.76)
-      '@n-dx/claude-client':
+      '@n-dx/llm-client':
         specifier: workspace:*
-        version: link:../claude-client
+        version: link:../llm-client
       ora:
         specifier: ^8.0.1
         version: 8.2.0
@@ -133,9 +133,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.25.3
         version: 1.25.3(hono@4.11.7)(zod@3.25.76)
-      '@n-dx/claude-client':
+      '@n-dx/llm-client':
         specifier: workspace:*
-        version: link:../claude-client
+        version: link:../llm-client
       d3-force:
         specifier: ^3.0.0
         version: 3.0.0

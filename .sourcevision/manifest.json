@@ -1,40 +1,40 @@
 {
   "schemaVersion": "1.0.0",
   "toolVersion": "0.1.0",
-  "analyzedAt": "2026-02-21T20:20:48.066Z",
+  "analyzedAt": "2026-02-24T05:11:49.948Z",
   "gitSha": "536ec50ff193a0dc0578a424bb0af0803716d28b",
   "gitBranch": "feature/from-recommend",
   "targetPath": "/Users/nick/development/endash/n-dx",
   "modules": {
     "inventory": {
       "status": "complete",
-      "startedAt": "2026-02-21T20:19:42.859Z",
-      "completedAt": "2026-02-21T20:19:42.902Z"
+      "startedAt": "2026-02-24T05:07:50.143Z",
+      "completedAt": "2026-02-24T05:07:50.225Z"
     },
     "imports": {
       "status": "complete",
-      "startedAt": "2026-02-21T20:19:42.902Z",
-      "completedAt": "2026-02-21T20:19:43.402Z"
+      "startedAt": "2026-02-24T05:07:50.225Z",
+      "completedAt": "2026-02-24T05:07:50.714Z"
     },
     "classifications": {
       "status": "complete",
-      "startedAt": "2026-02-21T20:19:43.402Z",
-      "completedAt": "2026-02-21T20:20:20.418Z"
+      "startedAt": "2026-02-24T05:07:50.714Z",
+      "completedAt": "2026-02-24T05:08:30.183Z"
     },
     "zones": {
       "status": "complete",
-      "startedAt": "2026-02-21T20:20:20.419Z",
-      "completedAt": "2026-02-21T20:20:46.179Z"
+      "startedAt": "2026-02-24T05:08:30.184Z",
+      "completedAt": "2026-02-24T05:11:48.044Z"
     },
     "components": {
       "status": "complete",
-      "startedAt": "2026-02-21T20:20:46.180Z",
-      "completedAt": "2026-02-21T20:20:46.323Z"
+      "startedAt": "2026-02-24T05:11:48.045Z",
+      "completedAt": "2026-02-24T05:11:48.182Z"
     },
     "callgraph": {
       "status": "complete",
-      "startedAt": "2026-02-21T20:20:46.323Z",
-      "completedAt": "2026-02-21T20:20:48.066Z"
+      "startedAt": "2026-02-24T05:11:48.182Z",
+      "completedAt": "2026-02-24T05:11:49.948Z"
     }
   },
   "children": [
@@ -51,8 +51,10 @@
   ],
   "zoneOutputs": true,
   "tokenUsage": {
-    "calls": 3,
+    "calls": 7,
     "inputTokens": 0,
-    "outputTokens": 0
+    "outputTokens": 0,
+    "vendor": "claude",
+    "model": "claude-sonnet-4-20250514"
   }
 }
