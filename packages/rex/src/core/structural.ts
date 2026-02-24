@@ -2,6 +2,13 @@ import type { PRDItem, ItemLevel } from "../schema/index.js";
 import { LEVEL_HIERARCHY } from "../schema/index.js";
 import { walkTree, collectAllIds } from "./tree.js";
 
+export interface EpiclessFeature {
+  itemId: string;
+  title: string;
+  status: string;
+  childCount: number;
+}
+
 export interface OrphanedItem {
   itemId: string;
   title: string;
@@ -308,6 +315,24 @@ function findParentChildInconsistencies(items: PRDItem[]): string[] {
   }
 
   return warnings;
+}
+
+/**
+ * Find features positioned at root level without a parent epic.
+ *
+ * These violate the hierarchy rule that features must be under an epic.
+ * Returns structured data for each epicless feature, including status
+ * and non-deleted child count, suitable for interactive resolution prompts.
+ */
+export function findEpiclessFeatures(items: PRDItem[]): EpiclessFeature[] {
+  return items
+    .filter((item) => item.level === "feature" && item.status !== "deleted")
+    .map((item) => ({
+      itemId: item.id,
+      title: item.title,
+      status: item.status,
+      childCount: (item.children ?? []).filter((c) => c.status !== "deleted").length,
+    }));
 }
 
 /**
