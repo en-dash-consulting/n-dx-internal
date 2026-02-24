@@ -6,10 +6,30 @@
  * - Codex: CLI provider (`codex exec`)
  */
 
-import { createClient, detectAuthMode } from "./create-client.js";
-import type { AuthMode, ClaudeClient } from "./types.js";
-import type { CreateLLMClientOptions, LLMVendor } from "./llm-types.js";
+import { createClient, detectAuthMode, type CreateClientOptions } from "./create-client.js";
+import type { AuthMode, ClaudeClient, ClaudeConfig } from "./types.js";
+import type { LLMVendor, LLMConfig } from "./llm-types.js";
 import { createCodexCliClient } from "./codex-cli-provider.js";
+
+/**
+ * Vendor-neutral client creation options.
+ *
+ * Extends {@link CreateClientOptions} (minus the required `claudeConfig`) with
+ * vendor selection and a unified LLM config bag. Lives here — alongside the
+ * factory it parameterises — rather than in `llm-types.ts`, keeping that
+ * module free of implementation-layer dependencies.
+ */
+export interface CreateLLMClientOptions extends Omit<CreateClientOptions, "claudeConfig"> {
+  /** Explicit vendor override. Defaults to `llmConfig.vendor` or `claude`. */
+  vendor?: LLMVendor;
+  /** Unified vendor config loaded from project config. */
+  llmConfig?: LLMConfig;
+  /**
+   * Legacy Claude config override.
+   * If provided, takes precedence over `llmConfig.claude`.
+   */
+  claudeConfig?: ClaudeConfig;
+}
 
 function resolveVendor(options: CreateLLMClientOptions): LLMVendor {
   return options.vendor ?? options.llmConfig?.vendor ?? "claude";

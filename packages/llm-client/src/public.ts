@@ -97,7 +97,6 @@ export type {
   LLMVendor,
   CodexConfig,
   LLMConfig,
-  CreateLLMClientOptions,
   LLMClient,
 } from "./llm-types.js";
 
@@ -121,6 +120,7 @@ export {
   createLLMClient,
   detectLLMAuthMode,
 } from "./llm-client.js";
+export type { CreateLLMClientOptions } from "./llm-client.js";
 
 // Config
 export {
