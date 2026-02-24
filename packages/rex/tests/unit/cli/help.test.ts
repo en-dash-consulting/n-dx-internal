@@ -18,6 +18,7 @@ describe("rex CLI help", () => {
     "next",
     "add",
     "update",
+    "remove",
     "move",
     "reshape",
     "prune",
@@ -123,6 +124,28 @@ describe("rex CLI help", () => {
       const output = logSpy.mock.calls[0][0] as string;
       expect(output).toContain("--push");
       expect(output).toContain("--pull");
+    });
+
+    it("remove help explains epic vs task differences and data loss warning", () => {
+      showCommandHelp("remove");
+      const output = logSpy.mock.calls[0][0] as string;
+      // Usage patterns
+      expect(output).toContain("rex remove epic");
+      expect(output).toContain("rex remove task");
+      // Options
+      expect(output).toContain("--yes");
+      expect(output).toContain("--format");
+      // Epic vs task section (formatHelp uppercases section titles)
+      expect(output).toContain("EPIC VS TASK REMOVAL");
+      expect(output).toContain("Deletes the epic and its entire subtree");
+      expect(output).toContain("Deletes the task and its subtasks only");
+      expect(output).toContain("auto-completed");
+      // Data loss warning
+      expect(output).toContain("WARNING");
+      expect(output).toContain("irreversible");
+      // Related commands
+      expect(output).toContain("See also:");
+      expect(output).toContain("rex prune");
     });
   });
 });

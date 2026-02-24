@@ -156,19 +156,39 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
       "rex remove <id> [dir]",
     ],
     description:
-      "Removes an epic or task and all its descendants from the PRD tree.\n" +
+      "Permanently removes an epic or task and all its descendants from the PRD tree.\n" +
       "When the level (epic/task) is omitted, it is auto-detected from the item.\n" +
-      "Shows a confirmation prompt before deletion unless --yes is passed.\n" +
-      "Cleans up blockedBy references and detects parent auto-completions.",
+      "An interactive confirmation prompt is shown before deletion (unless --yes\n" +
+      "is passed or output is piped). Cleans up blockedBy references on remaining\n" +
+      "items and detects parent auto-completions.\n" +
+      "\n" +
+      "WARNING: Removal is irreversible. Deleted items and all their descendants\n" +
+      "are permanently erased from prd.json. Use 'rex status' to verify IDs and\n" +
+      "review the subtree before removing.",
+    sections: [
+      {
+        title: "Epic vs task removal",
+        content:
+          "epic    Deletes the epic and its entire subtree (features, tasks,\n" +
+          "        and subtasks). Use when an initiative is cancelled or obsolete.\n" +
+          "task    Deletes the task and its subtasks only. The parent feature\n" +
+          "        and epic remain intact. If removing the task causes all\n" +
+          "        siblings to be completed, the parent is auto-completed.\n" +
+          "\n" +
+          "Features and subtasks cannot be removed directly. Remove the\n" +
+          "parent epic or task instead, or use 'rex prune' for completed\n" +
+          "subtrees.",
+      },
+    ],
     options: [
-      { flag: "--yes, -y", description: "Skip confirmation prompt" },
+      { flag: "--yes, -y", description: "Skip confirmation prompt (use in scripts)" },
       { flag: "--format=json", description: "Machine-readable output" },
     ],
     examples: [
       { command: "rex remove epic abc123", description: "Remove an epic and all descendants" },
       { command: "rex remove task def456", description: "Remove a task and its subtasks" },
       { command: "rex remove abc123", description: "Auto-detect level and remove" },
-      { command: "rex remove task def456 --yes", description: "Remove without confirmation" },
+      { command: "rex remove task def456 --yes", description: "Remove without confirmation (scripting)" },
     ],
     related: ["update", "prune"],
   },
