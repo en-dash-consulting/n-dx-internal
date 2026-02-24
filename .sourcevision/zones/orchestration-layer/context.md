@@ -5,19 +5,23 @@
 <zone>
 
 Zone: Orchestration Layer (`orchestration-layer`)
-Files: 6, Cohesion: 1.00, Coupling: 0.00
-Description: Command-line entry points and configuration management that coordinate package execution without direct library dependencies.
-Lines: 2958
+Files: 10, Cohesion: 1.00, Coupling: 0.00
+Description: Project-level command routing and configuration management that coordinates all domain packages without importing their internals.
+Lines: 3761
 
 </zone>
 
 <files>
 
 ci.js (JavaScript, 269 lines, source)
-cli.js (JavaScript, 359 lines, source)
-config.js (JavaScript, 799 lines, source)
-help.js (JavaScript, 870 lines, source)
-tests/unit/help.test.js (JavaScript, 252 lines, test)
+cli.js (JavaScript, 684 lines, source)
+config.js (JavaScript, 1013 lines, source)
+help.js (JavaScript, 899 lines, source)
+refresh-artifacts.js (JavaScript, 54 lines, source)
+refresh-plan.js (JavaScript, 79 lines, source)
+tests/unit/help.test.js (JavaScript, 253 lines, test)
+tests/unit/refresh-artifacts.test.js (JavaScript, 32 lines, test)
+tests/unit/refresh-plan.test.js (JavaScript, 69 lines, test)
 web.js (JavaScript, 409 lines, source)
 
 </files>
@@ -28,32 +32,33 @@ Internal:
   cli.js → ci.js {runCI}
   cli.js → config.js {runConfig}
   cli.js → help.js {formatTypoSuggestion, getOrchestratorCommands, searchHelp, formatSearchResults, formatToolHelp, formatMainHelp, formatOrchestratorCommandHelp}
+  cli.js → refresh-artifacts.js {refreshSourcevisionDashboardArtifacts}
+  cli.js → refresh-plan.js {buildRefreshPlan, RefreshPlanError}
   cli.js → web.js {runWeb}
   tests/unit/help.test.js → help.js {editDistance, suggestCommands, formatTypoSuggestion, searchHelp, formatSearchResults, getOrchestratorCommands, getToolSubcommands, formatToolHelp, getRelatedCommands, formatRelatedCommands}
+  tests/unit/refresh-artifacts.test.js → refresh-artifacts.js {refreshSourcevisionDashboardArtifacts}
+  tests/unit/refresh-plan.test.js → refresh-plan.js {buildRefreshPlan, RefreshPlanError}
 
 </imports>
 
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[suggestion] [info] Standardize error handling across entry points - currently each handles subprocess failures differently
+[observation] [info] Configuration centralization through config.js enables unified project settings management
+[observation] [info] Entry point files (ci.js, cli.js) properly delegate to package CLIs rather than importing libraries
+[observation] [info] Perfect cohesion (1.0) and zero coupling (0.0) exemplifies the intended orchestration pattern
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Clean separation of concerns with entry points handling orchestration while avoiding direct package imports
-- Configuration centralization through config.js provides unified settings management
-- All files serve as pure orchestrators, delegating to CLI tools rather than importing libraries
-- Perfect cohesion (1.0) and zero coupling demonstrates excellent architectural discipline in the orchestration layer
-- Entry points follow the spawn-CLI pattern rather than library imports, maintaining loose coupling
-- Help utility and test coverage indicate good developer experience support
-- Acts as pure dispatcher layer with no direct domain logic, maintaining strict separation from implementation details
-- Implements clean orchestration pattern where entry points delegate to CLI tools rather than importing domain packages directly
-- Entry point files (cli.js, web.js, ci.js) lack consistent error handling patterns for subprocess failures
-- Configuration management through config.js creates single point of failure for all orchestration commands
-- Standardize error handling across entry points - currently each handles subprocess failures differently
-- [call graph] 281 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- Perfect architectural isolation with zero coupling demonstrates clean orchestration design
+- Entry point consolidation (cli.js, ci.js, config.js) provides unified interface
+- Small file count (10) suggests focused responsibility scope
+- Perfect cohesion (1.0) and zero coupling (0.0) exemplifies the intended orchestration pattern
+- Entry point files (ci.js, cli.js) properly delegate to package CLIs rather than importing libraries
+- Configuration centralization through config.js enables unified project settings management
+- [call graph] 327 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

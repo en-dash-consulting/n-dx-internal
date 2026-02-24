@@ -13303,6 +13303,28 @@
           ]
         }
       ]
+    },
+    {
+      "id": "2876cc14-e422-465d-88bd-2c78511d5160",
+      "title": "Address observation issues (5 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Coupling of 0.14 with bidirectional imports to agent core suggests necessary but potentially improvable integration\n- 4 circular dependency chains detected — see imports.json for details\n- Bidirectional coupling: \"agent-security-layer\" ↔ \"autonomous-agent-core\" (3+3 crossings) — consider extracting shared interface\n- Bidirectional coupling: \"web-mcp-server\" ↔ \"web-shared-utilities\" (5+5 crossings) — consider extracting shared interface\n- Bidirectional imports between hench and hench-2 zones indicate tight coupling that might benefit from consolidation",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-24T05:28:39.133Z",
+      "completedAt": "2026-02-24T05:44:07.765Z"
+    },
+    {
+      "id": "530c8d1d-6e05-4b3f-945c-50914dd8b513",
+      "title": "Address anti-pattern issues (3 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- God function: <module> in cli.js calls 45 unique functions — consider decomposing into smaller, focused functions\n- God function: App in packages/web/src/viewer/main.ts calls 42 unique functions — consider decomposing into smaller, focused functions\n- God function: generatePdfReport in packages/sourcevision/src/export/pdf-report.ts calls 38 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-02-24T05:13:10.253Z",
+      "completedAt": "2026-02-24T05:28:13.108Z"
     }
   ]
 }

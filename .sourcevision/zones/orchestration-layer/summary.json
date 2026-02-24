@@ -1,18 +1,22 @@
 {
   "id": "orchestration-layer",
   "name": "Orchestration Layer",
-  "description": "Command-line entry points and configuration management that coordinate package execution without direct library dependencies.",
+  "description": "Project-level command routing and configuration management that coordinates all domain packages without importing their internals.",
   "files": [
     "ci.js",
     "cli.js",
     "config.js",
     "help.js",
+    "refresh-artifacts.js",
+    "refresh-plan.js",
     "tests/unit/help.test.js",
+    "tests/unit/refresh-artifacts.test.js",
+    "tests/unit/refresh-plan.test.js",
     "web.js"
   ],
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 6,
-  "lineCount": 2958
+  "fileCount": 10,
+  "lineCount": 3761
 }
