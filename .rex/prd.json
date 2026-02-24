@@ -13968,6 +13968,8 @@
           "level": "feature",
           "description": "Investigate and diagnose the recurring out-of-memory crashes that cause 'aw snap error code 5' in the web UI",
           "source": "smart-add",
+          "startedAt": "2026-02-24T19:29:13.108Z",
+          "completedAt": "2026-02-24T19:29:13.108Z",
           "children": [
             {
               "id": "255e92f3-db5f-4151-ae4c-6feb67c32541",
@@ -14041,9 +14043,7 @@
             "matchedItemLevel": "feature",
             "matchedItemStatus": "completed",
             "createdAt": "2026-02-24T18:39:02.997Z"
-          },
-          "startedAt": "2026-02-24T19:29:13.108Z",
-          "completedAt": "2026-02-24T19:29:13.108Z"
+          }
         },
         {
           "id": "3eda1cdc-8a1f-4d09-984b-570c1e3edf2a",
@@ -14056,7 +14056,7 @@
             {
               "id": "eff2a091-30bc-4434-8d2c-13e25e60b2c0",
               "title": "Implement memory-efficient data loading strategies for large datasets",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Replace bulk data loading with pagination, lazy loading, or streaming approaches for dashboard components that handle large amounts of data",
               "acceptanceCriteria": [
@@ -14070,7 +14070,9 @@
                 "optimization",
                 "performance"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-24T19:29:58.899Z",
+              "completedAt": "2026-02-24T20:15:00.000Z"
             },
             {
               "id": "adb4c3db-9fd8-44c1-b6d6-b0595ba8c734",
