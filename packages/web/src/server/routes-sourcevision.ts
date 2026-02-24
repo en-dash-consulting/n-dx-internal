@@ -1098,14 +1098,35 @@ export function handleSourcevisionRoute(
     return true;
   }
 
-  // GET /api/sv/inventory
+  // GET /api/sv/inventory — supports ?offset=N&limit=N for pagination
   if (path === "inventory") {
-    const data = loadDataFile(ctx, DATA_FILES.inventory);
+    const data = loadDataFile(ctx, DATA_FILES.inventory) as Record<string, unknown> | null;
     if (!data) {
       errorResponse(res, 404, "No inventory data. Run 'sourcevision analyze' first.");
       return true;
     }
-    jsonResponse(res, 200, data);
+
+    // Support pagination via ?offset=N&limit=N query parameters
+    const offsetStr = params.get("offset");
+    const limitStr = params.get("limit");
+    const offset = offsetStr ? Math.max(0, parseInt(offsetStr, 10) || 0) : 0;
+    const limit = limitStr ? Math.max(0, parseInt(limitStr, 10) || 0) : 0;
+
+    if ((offset > 0 || limit > 0) && Array.isArray(data.files)) {
+      const allFiles = data.files as unknown[];
+      const total = allFiles.length;
+      const slicedFiles = limit > 0
+        ? allFiles.slice(offset, offset + limit)
+        : allFiles.slice(offset);
+
+      jsonResponse(res, 200, {
+        ...data,
+        files: slicedFiles,
+        pagination: { offset, limit: limit || total - offset, total },
+      });
+    } else {
+      jsonResponse(res, 200, data);
+    }
     return true;
   }
 

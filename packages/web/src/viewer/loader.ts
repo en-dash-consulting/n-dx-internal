@@ -2,6 +2,10 @@
  * Data loader for sourcevision viewer.
  * Fetches and validates .sourcevision/ JSON files.
  * Supports both server mode (fetch from /data/) and file drop mode.
+ *
+ * Memory-efficient strategies:
+ * - loadModule(): lazy-load individual data files on demand
+ * - Selective refresh: only reload files whose mtime changed
  */
 
 import type { Manifest, Inventory, Imports, Zones, Components, CallGraph } from "../schema/v1.js";
@@ -18,6 +22,28 @@ import { migrateData } from "./schema-compat.js";
 import type { LoadedData } from "./types.js";
 
 type DataChangeHandler = (data: LoadedData) => void;
+
+/** Module definition for lazy loading. */
+interface ModuleDef {
+  key: keyof LoadedData;
+  file: string;
+  validate: (d: unknown) => { ok: boolean; data?: unknown };
+}
+
+const MODULE_DEFS: ModuleDef[] = [
+  { key: "manifest", file: DATA_FILES.manifest, validate: validateManifest },
+  { key: "inventory", file: DATA_FILES.inventory, validate: validateInventory },
+  { key: "imports", file: DATA_FILES.imports, validate: validateImports },
+  { key: "zones", file: DATA_FILES.zones, validate: validateZones },
+  { key: "components", file: DATA_FILES.components, validate: validateComponents },
+  { key: "callGraph", file: DATA_FILES.callGraph, validate: validateCallGraph },
+];
+
+/** Map from data filename to its module key, for selective refresh. */
+const FILE_TO_KEY: Record<string, keyof LoadedData> = {};
+for (const mod of MODULE_DEFS) {
+  FILE_TO_KEY[mod.file] = mod.key;
+}
 
 let currentData: LoadedData = {
   manifest: null,
@@ -49,42 +75,59 @@ function notifyChange(): void {
   if (onChange) onChange(currentData);
 }
 
-/** Load data from the local dev server */
-export async function loadFromServer(): Promise<LoadedData> {
-  const modules: Array<{
-    key: keyof LoadedData;
-    file: string;
-    validate: (d: unknown) => { ok: boolean; data?: unknown };
-  }> = [
-    { key: "manifest", file: DATA_FILES.manifest, validate: validateManifest },
-    { key: "inventory", file: DATA_FILES.inventory, validate: validateInventory },
-    { key: "imports", file: DATA_FILES.imports, validate: validateImports },
-    { key: "zones", file: DATA_FILES.zones, validate: validateZones },
-    { key: "components", file: DATA_FILES.components, validate: validateComponents },
-    { key: "callGraph", file: DATA_FILES.callGraph, validate: validateCallGraph },
-  ];
-
-  const results = await Promise.allSettled(
-    modules.map(async (mod) => {
-      const res = await fetch(`/data/${mod.file}`);
-      if (!res.ok) return null;
-      const raw = await res.json();
-      const migrated = migrateData(mod.key, raw);
-      const result = mod.validate(migrated);
-      if (result.ok) {
-        return { key: mod.key, data: result.data };
-      }
-      console.warn(`Validation failed for ${mod.file}:`, result);
-      return null;
-    })
-  );
-
-  for (const r of results) {
-    if (r.status === "fulfilled" && r.value) {
-      (currentData as unknown as Record<string, unknown>)[r.value.key] = r.value.data;
+/** Fetch, validate, and store a single module. Returns true on success. */
+async function fetchModule(mod: ModuleDef): Promise<boolean> {
+  try {
+    const res = await fetch(`/data/${mod.file}`);
+    if (!res.ok) return false;
+    const raw = await res.json();
+    const migrated = migrateData(mod.key, raw);
+    const result = mod.validate(migrated);
+    if (result.ok) {
+      (currentData as unknown as Record<string, unknown>)[mod.key] = result.data;
+      return true;
     }
+    console.warn(`Validation failed for ${mod.file}:`, result);
+    return false;
+  } catch {
+    return false;
   }
+}
 
+/**
+ * Lazy-load a single data module by key. Fetches from the server, validates,
+ * and stores in currentData. Returns true if the module was loaded.
+ * If the module is already loaded, returns immediately without fetching.
+ */
+export async function loadModule(key: keyof LoadedData): Promise<boolean> {
+  if (currentData[key] !== null) return true;
+  const mod = MODULE_DEFS.find((m) => m.key === key);
+  if (!mod) return false;
+  const ok = await fetchModule(mod);
+  if (ok) notifyChange();
+  return ok;
+}
+
+/**
+ * Lazy-load multiple modules in parallel. Only fetches modules that
+ * are not already loaded. Returns the current data state.
+ */
+export async function loadModules(keys: Array<keyof LoadedData>): Promise<LoadedData> {
+  const toLoad = keys
+    .filter((key) => currentData[key] === null)
+    .map((key) => MODULE_DEFS.find((m) => m.key === key))
+    .filter((mod): mod is ModuleDef => mod !== undefined);
+
+  if (toLoad.length > 0) {
+    await Promise.allSettled(toLoad.map((mod) => fetchModule(mod)));
+    notifyChange();
+  }
+  return currentData;
+}
+
+/** Load data from the local dev server (all modules at once). */
+export async function loadFromServer(): Promise<LoadedData> {
+  await Promise.allSettled(MODULE_DEFS.map((mod) => fetchModule(mod)));
   notifyChange();
   return currentData;
 }
@@ -96,20 +139,7 @@ export async function loadFromFiles(files: FileList): Promise<LoadedData> {
     fileMap.set(f.name, f);
   }
 
-  const modules: Array<{
-    key: keyof LoadedData;
-    file: string;
-    validate: (d: unknown) => { ok: boolean; data?: unknown };
-  }> = [
-    { key: "manifest", file: DATA_FILES.manifest, validate: validateManifest },
-    { key: "inventory", file: DATA_FILES.inventory, validate: validateInventory },
-    { key: "imports", file: DATA_FILES.imports, validate: validateImports },
-    { key: "zones", file: DATA_FILES.zones, validate: validateZones },
-    { key: "components", file: DATA_FILES.components, validate: validateComponents },
-    { key: "callGraph", file: DATA_FILES.callGraph, validate: validateCallGraph },
-  ];
-
-  for (const mod of modules) {
+  for (const mod of MODULE_DEFS) {
     const file = fileMap.get(mod.file);
     if (!file) continue;
 
@@ -143,7 +173,38 @@ export async function detectMode(): Promise<"server" | "static"> {
   return "static";
 }
 
-/** Start polling for data changes */
+/**
+ * Selectively reload only the data files whose mtime has changed.
+ * More memory-efficient than reloading all files on every change.
+ */
+async function refreshChangedModules(newMtimes: Record<string, number>): Promise<void> {
+  const changedKeys: Array<keyof LoadedData> = [];
+
+  for (const [file, mtime] of Object.entries(newMtimes)) {
+    if (lastMtimes[file] !== mtime) {
+      const key = FILE_TO_KEY[file];
+      if (key) {
+        changedKeys.push(key);
+      }
+    }
+  }
+
+  if (changedKeys.length === 0) return;
+
+  lastMtimes = newMtimes;
+
+  // Only fetch the modules that actually changed
+  const toLoad = changedKeys
+    .map((key) => MODULE_DEFS.find((m) => m.key === key))
+    .filter((mod): mod is ModuleDef => mod !== undefined);
+
+  if (toLoad.length > 0) {
+    await Promise.allSettled(toLoad.map((mod) => fetchModule(mod)));
+    notifyChange();
+  }
+}
+
+/** Start polling for data changes (selective refresh — only changed files). */
 export function startPolling(intervalMs: number = 5000): void {
   if (pollTimer) return;
 
@@ -153,7 +214,7 @@ export function startPolling(intervalMs: number = 5000): void {
       if (!res.ok) return;
       const status: { mtimes: Record<string, number> } = await res.json();
 
-      // Compare mtimes
+      // Check if any file changed
       let changed = false;
       for (const [file, mtime] of Object.entries(status.mtimes)) {
         if (lastMtimes[file] !== mtime) {
@@ -163,8 +224,7 @@ export function startPolling(intervalMs: number = 5000): void {
       }
 
       if (changed) {
-        lastMtimes = status.mtimes;
-        await loadFromServer();
+        await refreshChangedModules(status.mtimes);
       }
     } catch {
       // Server may be down — ignore

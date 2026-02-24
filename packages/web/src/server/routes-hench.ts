@@ -281,29 +281,42 @@ export function handleHenchRoute(
     return handleMarkStuck(markStuckMatch[1], res, runsDir);
   }
 
-  // GET /api/hench/runs — list runs with summary
+  // GET /api/hench/runs — list runs with summary (?limit=N&offset=N)
   if (path === "runs" && method === "GET") {
     let files: string[];
     try {
       files = readdirSync(runsDir);
     } catch {
-      jsonResponse(res, 200, { runs: [] });
+      jsonResponse(res, 200, { runs: [], total: 0 });
       return true;
     }
 
     const jsonFiles = files.filter((f) => f.endsWith(".json"));
+    const total = jsonFiles.length;
 
-    // Parse limit from query string
+    // Parse limit and offset from query string
     let limit = 0;
+    let offset = 0;
     if (qIdx !== -1) {
       const params = new URLSearchParams(fullPath.slice(qIdx));
       const limitStr = params.get("limit");
-      if (limitStr) limit = parseInt(limitStr, 10);
+      const offsetStr = params.get("offset");
+      if (limitStr) limit = Math.max(0, parseInt(limitStr, 10) || 0);
+      if (offsetStr) offset = Math.max(0, parseInt(offsetStr, 10) || 0);
     }
 
-    // Load all runs, extract summaries, sort by startedAt descending
+    // Sort filenames descending (run IDs are timestamp-based, so filename
+    // sort approximates chronological order) to avoid loading every file
+    // when only a page is requested.
+    jsonFiles.sort((a, b) => b.localeCompare(a));
+
+    // When paginated, only load the slice of files we need
+    const filesToLoad = (limit > 0 || offset > 0)
+      ? jsonFiles.slice(offset, limit > 0 ? offset + limit : undefined)
+      : jsonFiles;
+
     const summaries: RunSummary[] = [];
-    for (const file of jsonFiles) {
+    for (const file of filesToLoad) {
       const id = file.replace(/\.json$/, "");
       const run = loadRunFile(runsDir, id);
       if (run && run.id && run.startedAt) {
@@ -311,10 +324,10 @@ export function handleHenchRoute(
       }
     }
 
+    // Final sort by startedAt descending for accurate ordering
     summaries.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
 
-    const result = limit > 0 ? summaries.slice(0, limit) : summaries;
-    jsonResponse(res, 200, { runs: result });
+    jsonResponse(res, 200, { runs: summaries, total });
     return true;
   }
 

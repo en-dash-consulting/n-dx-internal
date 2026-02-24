@@ -3,12 +3,17 @@
  *
  * Handles mode detection (server vs static file drop), data loading,
  * polling, drag-and-drop file loading, and the refresh toast notification.
+ *
+ * Memory-efficient loading strategy:
+ * 1. Load manifest + zones first (small, needed for sidebar/shell)
+ * 2. Load remaining modules in the background without blocking the UI
+ * 3. Polling uses selective refresh — only reloads files whose mtime changed
  */
 
 import { useState, useEffect, useRef } from "preact/hooks";
 import type { LoadedData } from "../types.js";
 import {
-  loadFromServer,
+  loadModules,
   loadFromFiles,
   detectMode,
   onDataChange,
@@ -34,6 +39,14 @@ const EMPTY_DATA: LoadedData = {
   components: null,
   callGraph: null,
 };
+
+/** Modules needed for the initial UI shell (sidebar, overview). */
+const PRIORITY_MODULES: Array<keyof LoadedData> = ["manifest", "zones"];
+
+/** Remaining modules loaded in background after shell renders. */
+const DEFERRED_MODULES: Array<keyof LoadedData> = [
+  "inventory", "imports", "components", "callGraph",
+];
 
 export function useAppData(): AppDataState {
   const [data, setData] = useState<LoadedData>(EMPTY_DATA);
@@ -62,10 +75,22 @@ export function useAppData(): AppDataState {
     detectMode().then(async (m) => {
       setMode(m);
       if (m === "server") {
-        await loadFromServer();
+        // Staged loading: load critical modules first for fast shell render,
+        // then load the rest in the background without blocking the UI.
+        await loadModules(PRIORITY_MODULES);
         setLoading(false);
         initialLoad.current = false;
         startPolling(5000);
+
+        // Load remaining modules in the background (non-blocking).
+        // Uses requestIdleCallback where available to avoid blocking the main
+        // thread; falls back to setTimeout for environments without it.
+        const scheduleDeferred = typeof requestIdleCallback === "function"
+          ? requestIdleCallback
+          : (cb: () => void) => setTimeout(cb, 50);
+        scheduleDeferred(() => {
+          loadModules(DEFERRED_MODULES);
+        });
       } else {
         setLoading(false);
         setShowDrop(true);

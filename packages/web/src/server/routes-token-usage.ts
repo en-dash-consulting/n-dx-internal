@@ -839,12 +839,30 @@ export function handleTokenUsageRoute(
     return true;
   }
 
-  // GET /api/token/events — raw event list
+  // GET /api/token/events — raw event list (?offset=N&limit=N&package=...)
   if (path === "events") {
     const events = collectAllEvents(ctx, since, until);
     const pkg = params.get("package") || undefined;
     const filtered = pkg ? events.filter((e) => e.package === pkg) : events;
-    jsonResponse(res, 200, { events: filtered });
+    const total = filtered.length;
+
+    // Support pagination via ?offset=N&limit=N
+    const offsetStr = params.get("offset");
+    const limitStr = params.get("limit");
+    const offset = offsetStr ? Math.max(0, parseInt(offsetStr, 10) || 0) : 0;
+    const limit = limitStr ? Math.max(0, parseInt(limitStr, 10) || 0) : 0;
+
+    if (offset > 0 || limit > 0) {
+      const sliced = limit > 0
+        ? filtered.slice(offset, offset + limit)
+        : filtered.slice(offset);
+      jsonResponse(res, 200, {
+        events: sliced,
+        pagination: { offset, limit: limit || total - offset, total },
+      });
+    } else {
+      jsonResponse(res, 200, { events: filtered });
+    }
     return true;
   }
 
