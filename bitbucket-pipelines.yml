@@ -1,0 +1,33 @@
+# Bitbucket Pipelines — PR validation for n-dx
+#
+# Runs the pr-check script (build + rex validate) on every pull request.
+# See pr-check.js for pipeline step details.
+
+image: node:22
+
+definitions:
+  caches:
+    pnpm-store: ~/.local/share/pnpm/store
+    build-hench: packages/hench/dist
+    build-llm-client: packages/llm-client/dist
+    build-rex: packages/rex/dist
+    build-sourcevision: packages/sourcevision/dist
+    build-web: packages/web/dist
+
+pipelines:
+  pull-requests:
+    '**':
+      - step:
+          name: PR Validation
+          caches:
+            - pnpm-store
+            - node
+            - build-hench
+            - build-llm-client
+            - build-rex
+            - build-sourcevision
+            - build-web
+          script:
+            - corepack enable
+            - pnpm install --frozen-lockfile
+            - pnpm pr-check
