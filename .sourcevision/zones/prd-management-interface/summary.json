@@ -1,8 +1,9 @@
 {
   "id": "prd-management-interface",
   "name": "PRD Management Interface",
-  "description": "Specialized UI components for PRD tree manipulation, task execution, and project analysis workflows.",
+  "description": "Specialized PRD tree components, execution panels, and domain-specific management features.",
   "files": [
+    "packages/web/src/viewer/components/guide.ts",
     "packages/web/src/viewer/components/prd-tree/add-item-form.ts",
     "packages/web/src/viewer/components/prd-tree/analyze-panel.ts",
     "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
@@ -23,6 +24,7 @@
     "packages/web/src/viewer/components/prd-tree/task-utilization.ts",
     "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
     "packages/web/src/viewer/components/prd-tree/types.ts",
+    "packages/web/src/viewer/components/theme-toggle.ts",
     "packages/web/src/viewer/views/analysis.ts",
     "packages/web/src/viewer/views/prd.ts",
     "packages/web/tests/unit/viewer/accessibility.test.ts",
@@ -38,13 +40,15 @@
     "packages/web/tests/unit/viewer/task-detail-usage.test.ts"
   ],
   "entryPoints": [
+    "packages/web/src/viewer/components/guide.ts",
     "packages/web/src/viewer/components/prd-tree/execution-panel.ts",
     "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+    "packages/web/src/viewer/components/theme-toggle.ts",
     "packages/web/src/viewer/views/analysis.ts",
     "packages/web/src/viewer/views/prd.ts"
   ],
-  "cohesion": 0.95,
-  "coupling": 0.05,
-  "fileCount": 33,
-  "lineCount": 11328
+  "cohesion": 0.93,
+  "coupling": 0.07,
+  "fileCount": 35,
+  "lineCount": 11515
 }

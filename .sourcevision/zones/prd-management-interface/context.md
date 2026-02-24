@@ -5,15 +5,16 @@
 <zone>
 
 Zone: PRD Management Interface (`prd-management-interface`)
-Files: 33, Cohesion: 0.95, Coupling: 0.05
-Description: Specialized UI components for PRD tree manipulation, task execution, and project analysis workflows.
-Entry points: packages/web/src/viewer/components/prd-tree/execution-panel.ts, packages/web/src/viewer/components/prd-tree/smart-add-input.ts, packages/web/src/viewer/views/analysis.ts, packages/web/src/viewer/views/prd.ts
-Lines: 11328
+Files: 35, Cohesion: 0.93, Coupling: 0.07
+Description: Specialized PRD tree components, execution panels, and domain-specific management features.
+Entry points: packages/web/src/viewer/components/guide.ts, packages/web/src/viewer/components/prd-tree/execution-panel.ts, packages/web/src/viewer/components/prd-tree/smart-add-input.ts, packages/web/src/viewer/components/theme-toggle.ts, packages/web/src/viewer/views/analysis.ts, packages/web/src/viewer/views/prd.ts
+Lines: 11515
 
 </zone>
 
 <files>
 
+packages/web/src/viewer/components/guide.ts (TypeScript, 151 lines, source)
 packages/web/src/viewer/components/prd-tree/add-item-form.ts (TypeScript, 325 lines, source)
 packages/web/src/viewer/components/prd-tree/analyze-panel.ts (TypeScript, 382 lines, source)
 packages/web/src/viewer/components/prd-tree/batch-import-panel.ts (TypeScript, 532 lines, source)
@@ -34,6 +35,7 @@ packages/web/src/viewer/components/prd-tree/task-detail.ts (TypeScript, 1365 lin
 packages/web/src/viewer/components/prd-tree/task-utilization.ts (TypeScript, 32 lines, source)
 packages/web/src/viewer/components/prd-tree/tree-utils.ts (TypeScript, 50 lines, source)
 packages/web/src/viewer/components/prd-tree/types.ts (TypeScript, 119 lines, source)
+packages/web/src/viewer/components/theme-toggle.ts (TypeScript, 36 lines, source)
 packages/web/src/viewer/views/analysis.ts (TypeScript, 157 lines, source)
 packages/web/src/viewer/views/prd.ts (TypeScript, 580 lines, source)
 packages/web/tests/unit/viewer/accessibility.test.ts (TypeScript, 400 lines, test)
@@ -131,9 +133,11 @@ Internal:
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/task-utilization.ts {resolveTaskUtilization}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {findItemById, getAncestorIds}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/types.ts {TaskUsageSummary, WeeklyBudgetResolution, WeeklyBudgetSource}
+  packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/guide.ts {Guide}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTree}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {StatusFilter, defaultStatusFilter}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDDocumentData}
+  packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/theme-toggle.ts {SidebarThemeToggle}
   packages/web/tests/unit/viewer/add-item-form.test.ts → packages/web/src/viewer/components/prd-tree/add-item-form.ts {AddItemForm}
   packages/web/tests/unit/viewer/add-item-form.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
   packages/web/tests/unit/viewer/batch-import-panel.test.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanel}
@@ -155,29 +159,27 @@ Internal:
   packages/web/tests/unit/viewer/task-detail-usage.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
 
 Outgoing (this zone → other zones):
-  → dashboard-ui-foundation: packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/components/copy-link-button.ts; packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/components/logos.ts; packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/types.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/guide.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/theme-toggle.ts
+  → dashboard-ui-foundation: packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/components/copy-link-button.ts; packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/components/logos.ts; packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/types.ts
 
 Incoming (other zones → this zone):
-  ← dashboard-ui-foundation: packages/web/src/viewer/main.ts → packages/web/src/viewer/views/analysis.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/views/prd.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/execution-panel.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts
+  ← dashboard-ui-foundation: packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/theme-toggle.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/components/guide.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/components/theme-toggle.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/views/analysis.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/views/prd.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/execution-panel.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts
 
 </imports>
 
 <findings>
 
-[observation] [info] High cohesion (0.95) — files are tightly interconnected
-[observation] [info] All components focus on PRD domain showing excellent functional cohesion
-[observation] [warning] Reverse imports to UI foundation suggest some components may belong in the foundation layer
+[observation] [info] High cohesion (0.93) — files are tightly interconnected
+[observation] [info] PRD-specific components are well-isolated while leveraging shared UI foundation, maintaining separation of concerns
 
 </findings>
 
 <insights>
 
-- High cohesion (0.95) — files are tightly interconnected
-- Domain-focused components (33 files) show clear specialization for PRD workflows
-- Higher coupling (0.05) reflects complex interactions with foundation layer but remains acceptable
-- Bidirectional dependency with UI foundation indicates potential component misplacement
-- All components focus on PRD domain showing excellent functional cohesion
-- Reverse imports to UI foundation suggest some components may belong in the foundation layer
-- [call graph] 462 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- High cohesion (0.93) — files are tightly interconnected
+- Domain-focused components with high cohesion (0.93) demonstrate clear feature boundaries
+- Higher coupling (0.07) reflects appropriate consumption of base UI foundation components
+- Specialized panels (execution, analysis, bulk actions) provide rich PRD manipulation capabilities
+- PRD-specific components are well-isolated while leveraging shared UI foundation, maintaining separation of concerns
+- [call graph] 463 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>

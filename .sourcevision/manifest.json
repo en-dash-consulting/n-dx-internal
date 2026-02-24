@@ -1,48 +1,43 @@
 {
   "schemaVersion": "1.0.0",
   "toolVersion": "0.1.0",
-  "analyzedAt": "2026-02-24T15:04:07.364Z",
+  "analyzedAt": "2026-02-24T15:08:32.526Z",
   "gitSha": "21786d24aeb21767389090712636b7f7c224e7e2",
   "gitBranch": "feature/integrate-codex",
   "targetPath": "/Users/ryankeith/work-internal/n-dx",
   "modules": {
     "inventory": {
       "status": "complete",
-      "startedAt": "2026-02-24T14:58:58.124Z",
-      "completedAt": "2026-02-24T14:58:58.283Z"
+      "startedAt": "2026-02-24T15:07:29.579Z",
+      "completedAt": "2026-02-24T15:07:29.612Z"
     },
     "imports": {
       "status": "complete",
-      "startedAt": "2026-02-24T14:58:58.283Z",
-      "completedAt": "2026-02-24T14:58:58.755Z"
+      "startedAt": "2026-02-24T15:07:29.612Z",
+      "completedAt": "2026-02-24T15:07:30.136Z"
     },
     "classifications": {
       "status": "complete",
-      "startedAt": "2026-02-24T14:58:58.755Z",
-      "completedAt": "2026-02-24T15:01:31.915Z"
+      "startedAt": "2026-02-24T15:07:30.136Z",
+      "completedAt": "2026-02-24T15:07:30.140Z"
     },
     "zones": {
       "status": "complete",
-      "startedAt": "2026-02-24T15:01:31.915Z",
-      "completedAt": "2026-02-24T15:04:05.295Z"
+      "startedAt": "2026-02-24T15:07:30.140Z",
+      "completedAt": "2026-02-24T15:08:30.665Z"
     },
     "components": {
       "status": "complete",
-      "startedAt": "2026-02-24T15:04:05.296Z",
-      "completedAt": "2026-02-24T15:04:05.459Z"
+      "startedAt": "2026-02-24T15:08:30.665Z",
+      "completedAt": "2026-02-24T15:08:30.808Z"
     },
     "callgraph": {
       "status": "complete",
-      "startedAt": "2026-02-24T15:04:05.460Z",
-      "completedAt": "2026-02-24T15:04:07.364Z"
+      "startedAt": "2026-02-24T15:08:30.808Z",
+      "completedAt": "2026-02-24T15:08:32.526Z"
     }
   },
   "children": [
-    {
-      "id": ".claude-worktrees-strange-volhard",
-      "prefix": ".claude/worktrees/strange-volhard",
-      "manifestPath": ".claude/worktrees/strange-volhard/.sourcevision/manifest.json"
-    },
     {
       "id": "packages-llm-client",
       "prefix": "packages/llm-client",
@@ -61,7 +56,7 @@
   ],
   "zoneOutputs": true,
   "tokenUsage": {
-    "calls": 6,
+    "calls": 2,
     "inputTokens": 0,
     "outputTokens": 0,
     "vendor": "claude",

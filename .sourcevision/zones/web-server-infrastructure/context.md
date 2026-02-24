@@ -6,7 +6,7 @@
 
 Zone: Web Server Infrastructure (`web-server-infrastructure`)
 Files: 59, Cohesion: 0.98, Coupling: 0.02
-Description: Core HTTP server foundation providing routing, gateways, and service orchestration for the unified dashboard and MCP endpoints.
+Description: Server runtime, MCP endpoints, domain gateways, and core web service infrastructure.
 Entry points: packages/web/src/schema/data-files.ts, packages/web/src/server/routes-sourcevision.ts, packages/web/src/server/types.ts
 Lines: 25357
 
@@ -228,19 +228,17 @@ Incoming (other zones → this zone):
 <findings>
 
 [observation] [info] High cohesion (0.98) — files are tightly interconnected
-[observation] [info] Exemplary low coupling (0.02) demonstrates clean architectural boundaries
-[observation] [info] Gateway modules successfully isolate cross-package dependencies for rex and sourcevision integration
+[observation] [info] Gateway modules consolidate all cross-package imports, making dependencies explicit and auditable
 
 </findings>
 
 <insights>
 
 - High cohesion (0.98) — files are tightly interconnected
-- Excellent architectural isolation with 0.02 coupling indicates clean server abstraction
-- Gateway pattern concentrates cross-package imports into dedicated modules for maintainable dependencies
-- High cohesion (0.98) shows well-organized server concerns with clear separation between routing, services, and utilities
-- Exemplary low coupling (0.02) demonstrates clean architectural boundaries
-- Gateway modules successfully isolate cross-package dependencies for rex and sourcevision integration
+- Exceptional architectural isolation with 0.98 cohesion and minimal 0.02 coupling
+- Gateway pattern implementation enforces clean cross-package dependency boundaries
+- Server concerns cleanly separated from UI components and business logic
+- Gateway modules consolidate all cross-package imports, making dependencies explicit and auditable
 - [call graph] 1292 internal calls, 21 outgoing, 2 incoming (cohesion: 0.98, coupling: 0.02)
 
 </insights>

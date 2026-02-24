@@ -566,216 +566,6 @@
       ]
     },
     {
-      "path": "packages/claude-client/src/api-provider.ts",
-      "archetype": "service",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "service",
-          "signalKind": "path",
-          "detail": "API access service provider",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/auth.ts",
-      "archetype": "service",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "service",
-          "signalKind": "path",
-          "detail": "Authentication service logic",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/cli-provider.ts",
-      "archetype": "service",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "service",
-          "signalKind": "path",
-          "detail": "CLI provider service functionality",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/config.ts",
-      "archetype": "config",
-      "confidence": 0.7,
-      "source": "algorithmic",
-      "evidence": [
-        {
-          "archetypeId": "config",
-          "signalKind": "filename",
-          "detail": "filename \"config.ts\" matches ^config\\.[tj]sx?$",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/create-client.ts",
-      "archetype": "service",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "service",
-          "signalKind": "path",
-          "detail": "Client factory service",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/exec.ts",
-      "archetype": "utility",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "utility",
-          "signalKind": "path",
-          "detail": "Execution utilities",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/help-format.ts",
-      "archetype": "utility",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "utility",
-          "signalKind": "path",
-          "detail": "Help formatting utilities",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/json.ts",
-      "archetype": "utility",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "utility",
-          "signalKind": "path",
-          "detail": "JSON processing utilities",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/output.ts",
-      "archetype": "utility",
-      "confidence": 0.7,
-      "source": "algorithmic",
-      "evidence": [
-        {
-          "archetypeId": "utility",
-          "signalKind": "filename",
-          "detail": "filename \"output.ts\" matches ^output\\.[tj]sx?$",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/project-config.ts",
-      "archetype": "config",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "config",
-          "signalKind": "path",
-          "detail": "Project configuration handling",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/project-dirs.ts",
-      "archetype": "utility",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "utility",
-          "signalKind": "path",
-          "detail": "Directory path utilities",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/public.ts",
-      "archetype": "entrypoint",
-      "confidence": 0.9,
-      "source": "algorithmic",
-      "evidence": [
-        {
-          "archetypeId": "entrypoint",
-          "signalKind": "filename",
-          "detail": "filename \"public.ts\" matches ^public\\.[tj]sx?$",
-          "weight": 0.9
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/suggest.ts",
-      "archetype": "service",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "service",
-          "signalKind": "path",
-          "detail": "Suggestion generation service",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/token-usage.ts",
-      "archetype": "service",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "service",
-          "signalKind": "path",
-          "detail": "Token usage tracking service",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/claude-client/src/types.ts",
-      "archetype": "types",
-      "confidence": 0.9,
-      "source": "algorithmic",
-      "evidence": [
-        {
-          "archetypeId": "types",
-          "signalKind": "filename",
-          "detail": "filename \"types.ts\" matches ^types\\.[tj]sx?$",
-          "weight": 0.9
-        }
-      ]
-    },
-    {
       "path": "packages/hench/src/agent/analysis/adaptive.ts",
       "archetype": "service",
       "confidence": 0.7,
@@ -5690,15 +5480,15 @@
     }
   ],
   "summary": {
-    "totalClassified": 356,
+    "totalClassified": 341,
     "totalUnclassified": 0,
     "byArchetype": {
-      "entrypoint": 32,
-      "config": 7,
-      "utility": 77,
-      "service": 62,
-      "types": 15,
+      "entrypoint": 31,
+      "config": 5,
+      "utility": 72,
+      "service": 56,
       "cli-command": 47,
+      "types": 14,
       "gateway": 3,
       "schema": 12,
       "store": 14,
@@ -5708,8 +5498,8 @@
       "hook": 6
     },
     "bySource": {
-      "llm": 132,
-      "algorithmic": 224
+      "llm": 121,
+      "algorithmic": 220
     }
   }
 }

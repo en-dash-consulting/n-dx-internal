@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Web (`web-2/web`)
-Files: 61, Cohesion: 0.92, Coupling: 0.08
-Description: 61 files, primarily TypeScript
+Files: 59, Cohesion: 0.92, Coupling: 0.08
+Description: 59 files, primarily TypeScript
 Entry points: packages/web/src/schema/v1.ts, packages/web/src/viewer/utils.ts, packages/web/src/viewer/components/logos.ts, packages/web/src/viewer/types.ts, packages/web/src/viewer/components/search-filter.ts
-Lines: 17979
+Lines: 17792
 
 </zone>
 
@@ -26,14 +26,12 @@ packages/web/src/viewer/components/data-display/tree-view.ts (TypeScript, 135 li
 packages/web/src/viewer/components/detail-panel.ts (TypeScript, 308 lines, source)
 packages/web/src/viewer/components/faq.ts (TypeScript, 277 lines, source)
 packages/web/src/viewer/components/favicon.ts (TypeScript, 107 lines, source)
-packages/web/src/viewer/components/guide.ts (TypeScript, 151 lines, source)
 packages/web/src/viewer/components/logos.ts (TypeScript, 62 lines, source)
 packages/web/src/viewer/components/notion-schema-wizard.ts (TypeScript, 435 lines, source)
 packages/web/src/viewer/components/rex-task-link.ts (TypeScript, 294 lines, source)
 packages/web/src/viewer/components/search-filter.ts (TypeScript, 68 lines, source)
 packages/web/src/viewer/components/sidebar.ts (TypeScript, 441 lines, source)
 packages/web/src/viewer/components/status-indicators.ts (TypeScript, 341 lines, source)
-packages/web/src/viewer/components/theme-toggle.ts (TypeScript, 36 lines, source)
 packages/web/src/viewer/graph/physics.ts (TypeScript, 443 lines, source)
 packages/web/src/viewer/graph/renderer.ts (TypeScript, 1584 lines, source)
 packages/web/src/viewer/hooks/use-app-data.ts (TypeScript, 108 lines, source)
@@ -97,7 +95,6 @@ Internal:
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/config-footer.ts {ConfigFooter}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/logos.ts {NdxLogoPng, ProductLogoPng}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/status-indicators.ts {useProjectStatus, SvFreshnessIndicator, RexCompletionIndicator, HenchActivityIndicator}
-  packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/theme-toggle.ts {SidebarThemeToggle}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/hooks/use-project-metadata.ts {useProjectMetadata}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/sourcevision-tabs.ts {SOURCEVISION_TABS}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/types.ts {ViewId}
@@ -117,9 +114,7 @@ Internal:
   packages/web/src/viewer/main.ts → packages/web/src/viewer/components/detail-panel.ts {DetailPanel}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/components/faq.ts {HeaderFAQ}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/components/favicon.ts {updateFavicon}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/guide.ts {Guide}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/components/sidebar.ts {Sidebar}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/theme-toggle.ts {initTheme}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/hooks/use-app-data.ts {useAppData}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/hooks/use-route-state.ts {useRouteState}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/sourcevision-tabs.ts {SOURCEVISION_TAB_IDS}

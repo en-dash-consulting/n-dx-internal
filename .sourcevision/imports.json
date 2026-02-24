@@ -71,375 +71,6 @@
       ]
     },
     {
-      "from": "packages/claude-client/src/api-provider.ts",
-      "to": "packages/claude-client/src/config.ts",
-      "type": "static",
-      "symbols": [
-        "resolveApiKey",
-        "resolveModel"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/api-provider.ts",
-      "to": "packages/claude-client/src/token-usage.ts",
-      "type": "static",
-      "symbols": [
-        "parseApiTokenUsage"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/api-provider.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "static",
-      "symbols": [
-        "ClaudeClientError"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/api-provider.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "type",
-      "symbols": [
-        "ClaudeClient",
-        "ClaudeClientOptions",
-        "CompletionRequest",
-        "CompletionResult"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/auth.ts",
-      "to": "packages/claude-client/src/config.ts",
-      "type": "static",
-      "symbols": [
-        "resolveApiKey",
-        "resolveCliPath"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/auth.ts",
-      "to": "packages/claude-client/src/exec.ts",
-      "type": "static",
-      "symbols": [
-        "exec"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/auth.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "static",
-      "symbols": [
-        "ClaudeClientError"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/auth.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "type",
-      "symbols": [
-        "AuthMode",
-        "ClaudeClientOptions"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/cli-provider.ts",
-      "to": "packages/claude-client/src/config.ts",
-      "type": "static",
-      "symbols": [
-        "resolveCliPath"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/cli-provider.ts",
-      "to": "packages/claude-client/src/token-usage.ts",
-      "type": "static",
-      "symbols": [
-        "parseCliTokenUsage",
-        "parseStreamTokenUsage"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/cli-provider.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "static",
-      "symbols": [
-        "ClaudeClientError"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/cli-provider.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "type",
-      "symbols": [
-        "ClaudeClient",
-        "ClaudeClientOptions",
-        "CompletionRequest",
-        "CompletionResult",
-        "TokenUsage"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/config.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "type",
-      "symbols": [
-        "ClaudeConfig"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/create-client.ts",
-      "to": "packages/claude-client/src/api-provider.ts",
-      "type": "static",
-      "symbols": [
-        "createApiClient"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/create-client.ts",
-      "to": "packages/claude-client/src/api-provider.ts",
-      "type": "type",
-      "symbols": [
-        "ApiProviderOptions"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/create-client.ts",
-      "to": "packages/claude-client/src/cli-provider.ts",
-      "type": "static",
-      "symbols": [
-        "createCliClient"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/create-client.ts",
-      "to": "packages/claude-client/src/cli-provider.ts",
-      "type": "type",
-      "symbols": [
-        "CliProviderOptions"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/create-client.ts",
-      "to": "packages/claude-client/src/config.ts",
-      "type": "static",
-      "symbols": [
-        "resolveApiKey"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/create-client.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "static",
-      "symbols": [
-        "ClaudeClientError"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/create-client.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "type",
-      "symbols": [
-        "AuthMode",
-        "ClaudeClient",
-        "ClaudeClientOptions"
-      ]
-    },
-    {
-      "from": "packages/claude-client/src/token-usage.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "type",
-      "symbols": [
-        "TokenUsage"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/api-provider.test.ts",
-      "to": "packages/claude-client/src/api-provider.ts",
-      "type": "static",
-      "symbols": [
-        "createApiClient"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/api-provider.test.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "static",
-      "symbols": [
-        "ClaudeClientError"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/auth.test.ts",
-      "to": "packages/claude-client/src/auth.ts",
-      "type": "static",
-      "symbols": [
-        "detectCliAvailability",
-        "validateApiKey",
-        "detectAvailableAuth",
-        "diagnoseAuth"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/auth.test.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "static",
-      "symbols": [
-        "ClaudeClientError"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/cli-provider.test.ts",
-      "to": "packages/claude-client/src/cli-provider.ts",
-      "type": "static",
-      "symbols": [
-        "createCliClient"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/cli-provider.test.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "static",
-      "symbols": [
-        "ClaudeClientError"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/config.test.ts",
-      "to": "packages/claude-client/src/config.ts",
-      "type": "static",
-      "symbols": [
-        "loadClaudeConfig",
-        "resolveApiKey",
-        "resolveCliPath"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/create-client.test.ts",
-      "to": "packages/claude-client/src/create-client.ts",
-      "type": "static",
-      "symbols": [
-        "createClient",
-        "detectAuthMode"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/create-client.test.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "static",
-      "symbols": [
-        "ClaudeClientError"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/create-client.test.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "type",
-      "symbols": [
-        "ClaudeConfig"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/exec.test.ts",
-      "to": "packages/claude-client/src/exec.ts",
-      "type": "static",
-      "symbols": [
-        "exec",
-        "execStdout",
-        "execShellCmd",
-        "getCurrentHead",
-        "spawnTool",
-        "spawnManaged",
-        "ProcessPool",
-        "ProcessLimitError"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/help-format.test.ts",
-      "to": "packages/claude-client/src/help-format.ts",
-      "type": "static",
-      "symbols": [
-        "isColorEnabled",
-        "resetColorCache",
-        "bold",
-        "dim",
-        "cyan",
-        "yellow",
-        "cmd",
-        "flag",
-        "sectionHeader",
-        "requiredParam",
-        "optionalParam",
-        "formatHelp",
-        "formatUsage"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/help-format.test.ts",
-      "to": "packages/claude-client/src/help-format.ts",
-      "type": "type",
-      "symbols": [
-        "HelpDefinition",
-        "UsageDefinition"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/json.test.ts",
-      "to": "packages/claude-client/src/json.ts",
-      "type": "static",
-      "symbols": [
-        "toCanonicalJSON"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/output.test.ts",
-      "to": "packages/claude-client/src/output.ts",
-      "type": "static",
-      "symbols": [
-        "setQuiet",
-        "isQuiet",
-        "info",
-        "result"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/project-config.test.ts",
-      "to": "packages/claude-client/src/project-config.ts",
-      "type": "static",
-      "symbols": [
-        "deepMerge",
-        "loadProjectOverrides",
-        "mergeWithOverrides"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/suggest.test.ts",
-      "to": "packages/claude-client/src/suggest.ts",
-      "type": "static",
-      "symbols": [
-        "editDistance",
-        "suggestCommands",
-        "formatTypoSuggestion"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/token-usage.test.ts",
-      "to": "packages/claude-client/src/token-usage.ts",
-      "type": "static",
-      "symbols": [
-        "parseApiTokenUsage",
-        "parseCliTokenUsage",
-        "parseStreamTokenUsage"
-      ]
-    },
-    {
-      "from": "packages/claude-client/tests/unit/types.test.ts",
-      "to": "packages/claude-client/src/types.ts",
-      "type": "static",
-      "symbols": [
-        "ClaudeClientError",
-        "CLIError"
-      ]
-    },
-    {
       "from": "packages/hench/src/agent/analysis/adaptive.ts",
       "to": "packages/hench/src/schema/v1.ts",
       "type": "type",
@@ -16655,9 +16286,6 @@
     {
       "package": "@anthropic-ai/sdk",
       "importedBy": [
-        "packages/claude-client/src/api-provider.ts",
-        "packages/claude-client/src/auth.ts",
-        "packages/claude-client/tests/unit/auth.test.ts",
         "packages/hench/src/agent/lifecycle/loop.ts",
         "packages/hench/src/tools/dispatch.ts",
         "packages/hench/tests/unit/agent/api-auth.test.ts",
@@ -16692,7 +16320,6 @@
     {
       "package": "@n-dx/llm-client",
       "importedBy": [
-        "packages/claude-client/src/public.ts",
         "packages/hench/src/agent/lifecycle/loop.ts",
         "packages/hench/src/agent/lifecycle/token-usage.ts",
         "packages/hench/src/agent/planning/brief.ts",
@@ -17122,20 +16749,6 @@
     {
       "package": "vitest",
       "importedBy": [
-        "packages/claude-client/tests/unit/api-provider.test.ts",
-        "packages/claude-client/tests/unit/auth.test.ts",
-        "packages/claude-client/tests/unit/cli-provider.test.ts",
-        "packages/claude-client/tests/unit/config.test.ts",
-        "packages/claude-client/tests/unit/create-client.test.ts",
-        "packages/claude-client/tests/unit/exec.test.ts",
-        "packages/claude-client/tests/unit/help-format.test.ts",
-        "packages/claude-client/tests/unit/json.test.ts",
-        "packages/claude-client/tests/unit/output.test.ts",
-        "packages/claude-client/tests/unit/project-config.test.ts",
-        "packages/claude-client/tests/unit/suggest.test.ts",
-        "packages/claude-client/tests/unit/token-usage.test.ts",
-        "packages/claude-client/tests/unit/types.test.ts",
-        "packages/claude-client/vitest.config.ts",
         "packages/hench/tests/e2e/cli-init.test.ts",
         "packages/hench/tests/integration/codex-token-accounting.test.ts",
         "packages/hench/tests/integration/store-roundtrip.test.ts",
@@ -17445,7 +17058,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 1806,
+    "totalEdges": 1766,
     "totalExternal": 18,
     "circularCount": 0,
     "circulars": [],
@@ -17523,14 +17136,14 @@
         "count": 10
       },
       {
-        "path": "packages/claude-client/src/types.ts",
+        "path": "packages/hench/src/agent/lifecycle/cli-loop.ts",
         "count": 9
       },
       {
-        "path": "packages/hench/src/agent/lifecycle/cli-loop.ts",
+        "path": "packages/hench/src/store/index.ts",
         "count": 9
       }
     ],
-    "avgImportsPerFile": 3.38
+    "avgImportsPerFile": 3.42
   }
 }

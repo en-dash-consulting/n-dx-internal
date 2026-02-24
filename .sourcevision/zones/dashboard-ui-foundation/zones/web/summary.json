@@ -1,7 +1,7 @@
 {
   "id": "web-2/web",
   "name": "Web",
-  "description": "61 files, primarily TypeScript",
+  "description": "59 files, primarily TypeScript",
   "files": [
     "packages/web/src/schema/v1.ts",
     "packages/web/src/schema/validate.ts",
@@ -15,14 +15,12 @@
     "packages/web/src/viewer/components/detail-panel.ts",
     "packages/web/src/viewer/components/faq.ts",
     "packages/web/src/viewer/components/favicon.ts",
-    "packages/web/src/viewer/components/guide.ts",
     "packages/web/src/viewer/components/logos.ts",
     "packages/web/src/viewer/components/notion-schema-wizard.ts",
     "packages/web/src/viewer/components/rex-task-link.ts",
     "packages/web/src/viewer/components/search-filter.ts",
     "packages/web/src/viewer/components/sidebar.ts",
     "packages/web/src/viewer/components/status-indicators.ts",
-    "packages/web/src/viewer/components/theme-toggle.ts",
     "packages/web/src/viewer/graph/physics.ts",
     "packages/web/src/viewer/graph/renderer.ts",
     "packages/web/src/viewer/hooks/use-app-data.ts",
@@ -74,6 +72,6 @@
   ],
   "cohesion": 0.92,
   "coupling": 0.08,
-  "fileCount": 61,
-  "lineCount": 17979
+  "fileCount": 59,
+  "lineCount": 17792
 }

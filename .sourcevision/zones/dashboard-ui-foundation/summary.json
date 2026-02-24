@@ -1,7 +1,7 @@
 {
   "id": "dashboard-ui-foundation",
   "name": "Dashboard UI Foundation",
-  "description": "Reusable viewer framework providing core dashboard components, theming, navigation, and data display primitives.",
+  "description": "Core UI component library, schema validation, and foundational viewer infrastructure.",
   "files": [
     "packages/web/src/schema/v1.ts",
     "packages/web/src/schema/validate.ts",
@@ -19,14 +19,12 @@
     "packages/web/src/viewer/components/detail-panel.ts",
     "packages/web/src/viewer/components/faq.ts",
     "packages/web/src/viewer/components/favicon.ts",
-    "packages/web/src/viewer/components/guide.ts",
     "packages/web/src/viewer/components/logos.ts",
     "packages/web/src/viewer/components/notion-schema-wizard.ts",
     "packages/web/src/viewer/components/rex-task-link.ts",
     "packages/web/src/viewer/components/search-filter.ts",
     "packages/web/src/viewer/components/sidebar.ts",
     "packages/web/src/viewer/components/status-indicators.ts",
-    "packages/web/src/viewer/components/theme-toggle.ts",
     "packages/web/src/viewer/darkmode_logo.png",
     "packages/web/src/viewer/graph/physics.ts",
     "packages/web/src/viewer/graph/renderer.ts",
@@ -125,13 +123,11 @@
   ],
   "entryPoints": [
     "packages/web/src/viewer/components/copy-link-button.ts",
-    "packages/web/src/viewer/components/guide.ts",
     "packages/web/src/viewer/components/logos.ts",
-    "packages/web/src/viewer/components/theme-toggle.ts",
     "packages/web/src/viewer/types.ts"
   ],
-  "cohesion": 0.97,
-  "coupling": 0.03,
-  "fileCount": 119,
-  "lineCount": 40689
+  "cohesion": 0.96,
+  "coupling": 0.04,
+  "fileCount": 117,
+  "lineCount": 40502
 }

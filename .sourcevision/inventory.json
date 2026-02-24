@@ -241,346 +241,6 @@
       "lastModified": 1771616669558
     },
     {
-      "path": "packages/claude-client/package-lock.json",
-      "size": 64292,
-      "language": "JSON",
-      "lineCount": 1936,
-      "hash": "7923121830a1d4148d4959747c73ce47d17283a7fa947df7c72ea455f4eec4f6",
-      "role": "generated",
-      "category": "claude-client",
-      "lastModified": 1771944694340
-    },
-    {
-      "path": "packages/claude-client/package.json",
-      "size": 682,
-      "language": "JSON",
-      "lineCount": 33,
-      "hash": "cde28a4c918a65d0b9fd452a00bf55d59893d1dadf7dd0472f5382b4ff036909",
-      "role": "config",
-      "category": "claude-client",
-      "lastModified": 1771944694340
-    },
-    {
-      "path": "packages/claude-client/src/api-provider.ts",
-      "size": 4992,
-      "language": "TypeScript",
-      "lineCount": 157,
-      "hash": "4e1d4e1e3867d803ef4d9faeb0ba0d3715002141e35ea5571690d059b37cf133",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669558
-    },
-    {
-      "path": "packages/claude-client/src/auth.ts",
-      "size": 8220,
-      "language": "TypeScript",
-      "lineCount": 230,
-      "hash": "4c93e7fe0a2ac313e52d2e14b2e4ea84a24f99ea89516a0bf3013b712846a5b0",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669559
-    },
-    {
-      "path": "packages/claude-client/src/cli-provider.ts",
-      "size": 8309,
-      "language": "TypeScript",
-      "lineCount": 252,
-      "hash": "ae5763b1ec41b17f291fa7a1f024750f114ffb50f36c51aedf514394bbbad7fb",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771823737782
-    },
-    {
-      "path": "packages/claude-client/src/config.ts",
-      "size": 3108,
-      "language": "TypeScript",
-      "lineCount": 94,
-      "hash": "a0f72661c7e451e1e39260aef292a8f3da22f64867e0b37d4e59127a2d096b71",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669559
-    },
-    {
-      "path": "packages/claude-client/src/create-client.ts",
-      "size": 3202,
-      "language": "TypeScript",
-      "lineCount": 86,
-      "hash": "7796851b9fc33703c9ac9c86a6d354184038d2c9afe5af13695cde5b77c9a207",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669559
-    },
-    {
-      "path": "packages/claude-client/src/exec.ts",
-      "size": 15540,
-      "language": "TypeScript",
-      "lineCount": 525,
-      "hash": "6c76cce1cf6e01d2e7bb031bb5fc5853b4d569176229d8f281b0a10a83d636f8",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669559
-    },
-    {
-      "path": "packages/claude-client/src/help-format.ts",
-      "size": 12218,
-      "language": "TypeScript",
-      "lineCount": 406,
-      "hash": "d73094c55a28bd83b53596197e54e056a7de8974c5b34419521aaafa6f6b0c23",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669559
-    },
-    {
-      "path": "packages/claude-client/src/json.ts",
-      "size": 608,
-      "language": "TypeScript",
-      "lineCount": 18,
-      "hash": "313360e152653f167e762ca47942e424d0ca5ccb1e4cf382e78b74591042e37e",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669559
-    },
-    {
-      "path": "packages/claude-client/src/output.ts",
-      "size": 1227,
-      "language": "TypeScript",
-      "lineCount": 41,
-      "hash": "fcfb152f061c8a8d8199877bee1b08d2121da555b7ee81452d57498df8f48b20",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669559
-    },
-    {
-      "path": "packages/claude-client/src/project-config.ts",
-      "size": 2430,
-      "language": "TypeScript",
-      "lineCount": 84,
-      "hash": "d25a15607eacca67ea2b9a6a9f7f57a5c138531e2079401b9894017596b0b58e",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669559
-    },
-    {
-      "path": "packages/claude-client/src/project-dirs.ts",
-      "size": 1284,
-      "language": "TypeScript",
-      "lineCount": 36,
-      "hash": "085bfe2c2e7c44cdf4c325f1d43ebfed0be9c369a90f88bab69fa27a023be236",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669559
-    },
-    {
-      "path": "packages/claude-client/src/public.ts",
-      "size": 304,
-      "language": "TypeScript",
-      "lineCount": 9,
-      "hash": "d6634bca81cce34d9f4dc059535fec3c6be40ebd39fd4e4a91233e06dad430b0",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771944694341
-    },
-    {
-      "path": "packages/claude-client/src/suggest.ts",
-      "size": 2060,
-      "language": "TypeScript",
-      "lineCount": 75,
-      "hash": "4890251b6e9914ac18b727dc67e561d99c72b319791ea93d9ee3376e2cd4f25e",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669560
-    },
-    {
-      "path": "packages/claude-client/src/token-usage.ts",
-      "size": 4334,
-      "language": "TypeScript",
-      "lineCount": 131,
-      "hash": "91698c96659fa800af3ba5c7350d39f4962f03b3d8367def74e2682003213bba",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669560
-    },
-    {
-      "path": "packages/claude-client/src/types.ts",
-      "size": 5117,
-      "language": "TypeScript",
-      "lineCount": 136,
-      "hash": "b73c2c9629929c11ba21b8945d647b1962ef6e0e74d14005779604d30b477ed1",
-      "role": "source",
-      "category": "claude-client",
-      "lastModified": 1771616669560
-    },
-    {
-      "path": "packages/claude-client/tests/e2e/.gitkeep",
-      "size": 0,
-      "language": "Other",
-      "lineCount": 0,
-      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669560
-    },
-    {
-      "path": "packages/claude-client/tests/integration/.gitkeep",
-      "size": 0,
-      "language": "Other",
-      "lineCount": 0,
-      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669560
-    },
-    {
-      "path": "packages/claude-client/tests/unit/api-provider.test.ts",
-      "size": 1835,
-      "language": "TypeScript",
-      "lineCount": 66,
-      "hash": "012cf6d242dadca01bcf46bdd0bf14fc5c540b0e32d58f33e5171c07c28b7749",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669560
-    },
-    {
-      "path": "packages/claude-client/tests/unit/auth.test.ts",
-      "size": 16019,
-      "language": "TypeScript",
-      "lineCount": 511,
-      "hash": "c7aad5a8d755fff2ce5af4e341abe6b8c98f4ccf947747bf98670adf8fe3c513",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669560
-    },
-    {
-      "path": "packages/claude-client/tests/unit/cli-provider.test.ts",
-      "size": 1838,
-      "language": "TypeScript",
-      "lineCount": 68,
-      "hash": "1faf907a649960b2caa884a3835a5f647dabff5fb19233d195bdbf72770397b3",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669560
-    },
-    {
-      "path": "packages/claude-client/tests/unit/config.test.ts",
-      "size": 4304,
-      "language": "TypeScript",
-      "lineCount": 147,
-      "hash": "1dfa9d44cff8f3ee03b38ac7dd79ee161975fe9ecdbd0d20c11239238defbdf9",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669560
-    },
-    {
-      "path": "packages/claude-client/tests/unit/create-client.test.ts",
-      "size": 2686,
-      "language": "TypeScript",
-      "lineCount": 107,
-      "hash": "7046d6516bceada38c00eb7f63be613611d442c2d58c2c0a20f3c4f13ef8af7d",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669560
-    },
-    {
-      "path": "packages/claude-client/tests/unit/exec.test.ts",
-      "size": 18759,
-      "language": "TypeScript",
-      "lineCount": 614,
-      "hash": "260ca84a97e5ec4e50c4da84b67e54b5838cf6ad4f6aacb77d9c490e16d73971",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669561
-    },
-    {
-      "path": "packages/claude-client/tests/unit/help-format.test.ts",
-      "size": 13291,
-      "language": "TypeScript",
-      "lineCount": 434,
-      "hash": "3cc8742ebce68a8cb39b982e9bfd81053613b0ad1f4e45bf1f6efbb4ae32f904",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669561
-    },
-    {
-      "path": "packages/claude-client/tests/unit/json.test.ts",
-      "size": 698,
-      "language": "TypeScript",
-      "lineCount": 25,
-      "hash": "e02a786d669dc8f9f22c4dd57d338c17ced41139cb861c46943e1b552fb1fbbc",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669561
-    },
-    {
-      "path": "packages/claude-client/tests/unit/output.test.ts",
-      "size": 1554,
-      "language": "TypeScript",
-      "lineCount": 59,
-      "hash": "2f9060e1780f4a8369a573091a7aa73f714a27be6dcb250614297bea86e01c32",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669561
-    },
-    {
-      "path": "packages/claude-client/tests/unit/project-config.test.ts",
-      "size": 3183,
-      "language": "TypeScript",
-      "lineCount": 102,
-      "hash": "71bee7bfdd9165c8e95de6d56e503b22a53ee10798bd18112fb42e84d40c17a5",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669561
-    },
-    {
-      "path": "packages/claude-client/tests/unit/suggest.test.ts",
-      "size": 3936,
-      "language": "TypeScript",
-      "lineCount": 116,
-      "hash": "bd2ab8d26402a2feeef35652e7fd6f93c2792926e021f011aae1e4b783dae359",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669561
-    },
-    {
-      "path": "packages/claude-client/tests/unit/token-usage.test.ts",
-      "size": 7109,
-      "language": "TypeScript",
-      "lineCount": 264,
-      "hash": "9cf0b0bf8c89d0403927c0faf6a488ba7854b93fdcb13a89a87aff2144726555",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669561
-    },
-    {
-      "path": "packages/claude-client/tests/unit/types.test.ts",
-      "size": 1986,
-      "language": "TypeScript",
-      "lineCount": 61,
-      "hash": "e2317739b5570322caa693a0116c25cac33b37082756571db6f43acc2b1be7a8",
-      "role": "test",
-      "category": "claude-client",
-      "lastModified": 1771616669561
-    },
-    {
-      "path": "packages/claude-client/tsconfig.json",
-      "size": 137,
-      "language": "JSON",
-      "lineCount": 8,
-      "hash": "1a9f0873fec04475a675b9b11b9402a9eca94c930c65a199019538b9f521b861",
-      "role": "config",
-      "category": "claude-client",
-      "lastModified": 1771616669561
-    },
-    {
-      "path": "packages/claude-client/vitest.config.ts",
-      "size": 262,
-      "language": "TypeScript",
-      "lineCount": 11,
-      "hash": "7f74cb1ac6af0cc8bf6a20322977ad0c0f4e3d99b4f8472d81d417890cef91f6",
-      "role": "config",
-      "category": "claude-client",
-      "lastModified": 1771616669561
-    },
-    {
       "path": "packages/hench/Hench-F.png",
       "size": 7788,
       "language": "Other",
@@ -7742,34 +7402,33 @@
     }
   ],
   "summary": {
-    "totalFiles": 774,
-    "totalLines": 247667,
+    "totalFiles": 740,
+    "totalLines": 240825,
     "byLanguage": {
-      "Other": 22,
-      "JSON": 32,
+      "Other": 20,
+      "JSON": 29,
       "Markdown": 18,
       "JavaScript": 27,
-      "TypeScript": 634,
+      "TypeScript": 605,
       "Text": 1,
       "HTML": 2,
       "CSS": 36,
       "YAML": 2
     },
     "byRole": {
-      "config": 23,
+      "config": 20,
       "other": 48,
       "docs": 18,
-      "source": 356,
+      "source": 341,
       "asset": 11,
-      "generated": 6,
-      "test": 312
+      "generated": 5,
+      "test": 297
     },
     "byCategory": {
       "root": 21,
       ".hench": 1,
       ".rex": 6,
       "docs": 5,
-      "claude-client": 34,
       "hench": 124,
       "llm-client": 47,
       "rex": 187,

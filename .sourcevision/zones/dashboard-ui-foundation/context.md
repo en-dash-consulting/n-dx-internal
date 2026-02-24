@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Dashboard UI Foundation (`dashboard-ui-foundation`)
-Files: 119, Cohesion: 0.97, Coupling: 0.03
-Description: Reusable viewer framework providing core dashboard components, theming, navigation, and data display primitives.
-Entry points: packages/web/src/viewer/components/copy-link-button.ts, packages/web/src/viewer/components/guide.ts, packages/web/src/viewer/components/logos.ts, packages/web/src/viewer/components/theme-toggle.ts, packages/web/src/viewer/types.ts
-Lines: 40689
+Files: 117, Cohesion: 0.96, Coupling: 0.04
+Description: Core UI component library, schema validation, and foundational viewer infrastructure.
+Entry points: packages/web/src/viewer/components/copy-link-button.ts, packages/web/src/viewer/components/logos.ts, packages/web/src/viewer/types.ts
+Lines: 40502
 
 </zone>
 
@@ -30,14 +30,12 @@ packages/web/src/viewer/components/data-display/zone-map.ts (TypeScript, 382 lin
 packages/web/src/viewer/components/detail-panel.ts (TypeScript, 308 lines, source)
 packages/web/src/viewer/components/faq.ts (TypeScript, 277 lines, source)
 packages/web/src/viewer/components/favicon.ts (TypeScript, 107 lines, source)
-packages/web/src/viewer/components/guide.ts (TypeScript, 151 lines, source)
 packages/web/src/viewer/components/logos.ts (TypeScript, 62 lines, source)
 packages/web/src/viewer/components/notion-schema-wizard.ts (TypeScript, 435 lines, source)
 packages/web/src/viewer/components/rex-task-link.ts (TypeScript, 294 lines, source)
 packages/web/src/viewer/components/search-filter.ts (TypeScript, 68 lines, source)
 packages/web/src/viewer/components/sidebar.ts (TypeScript, 441 lines, source)
 packages/web/src/viewer/components/status-indicators.ts (TypeScript, 341 lines, source)
-packages/web/src/viewer/components/theme-toggle.ts (TypeScript, 36 lines, source)
 packages/web/src/viewer/darkmode_logo.png (Other, 0 lines, asset)
 packages/web/src/viewer/graph/physics.ts (TypeScript, 443 lines, source)
 packages/web/src/viewer/graph/renderer.ts (TypeScript, 1584 lines, source)
@@ -158,7 +156,6 @@ Internal:
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/config-footer.ts {ConfigFooter}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/logos.ts {NdxLogoPng, ProductLogoPng}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/status-indicators.ts {useProjectStatus, SvFreshnessIndicator, RexCompletionIndicator, HenchActivityIndicator}
-  packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/theme-toggle.ts {SidebarThemeToggle}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/hooks/use-project-metadata.ts {useProjectMetadata}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/sourcevision-tabs.ts {SOURCEVISION_TABS}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/types.ts {ViewId}
@@ -180,9 +177,7 @@ Internal:
   packages/web/src/viewer/main.ts → packages/web/src/viewer/components/detail-panel.ts {DetailPanel}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/components/faq.ts {HeaderFAQ}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/components/favicon.ts {updateFavicon}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/guide.ts {Guide}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/components/sidebar.ts {Sidebar}
-  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/theme-toggle.ts {initTheme}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/hooks/use-app-data.ts {useAppData}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/hooks/use-route-state.ts {useRouteState}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/sourcevision-tabs.ts {SOURCEVISION_TAB_IDS}
@@ -320,31 +315,29 @@ Internal:
   packages/web/tests/unit/viewer/tree-view.test.ts → packages/web/src/viewer/components/data-display/tree-view.ts {TreeNode}
 
 Outgoing (this zone → other zones):
-  → prd-management-interface: packages/web/src/viewer/main.ts → packages/web/src/viewer/views/analysis.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/views/prd.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/execution-panel.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts
+  → prd-management-interface: packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/theme-toggle.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/components/guide.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/components/theme-toggle.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/views/analysis.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/views/prd.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/execution-panel.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts
   → web-server-infrastructure: packages/web/src/viewer/loader.ts → packages/web/src/schema/data-files.ts; packages/web/src/viewer/main.ts → packages/web/src/schema/data-files.ts; packages/web/tests/integration/pr-markdown-refresh.test.ts → packages/web/src/server/routes-sourcevision.ts; packages/web/tests/integration/pr-markdown-refresh.test.ts → packages/web/src/server/types.ts
 
 Incoming (other zones → this zone):
-  ← prd-management-interface: packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/components/copy-link-button.ts; packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/components/logos.ts; packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/types.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/guide.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/theme-toggle.ts
+  ← prd-management-interface: packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/components/copy-link-button.ts; packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/components/logos.ts; packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/types.ts
 
 </imports>
 
 <findings>
 
-[observation] [info] High cohesion (0.97) — files are tightly interconnected
-[observation] [warning] Bidirectional imports with PRD interface (4 imports each way) suggest architectural boundary confusion
-[observation] [info] Comprehensive component library with strong cohesion provides solid foundation for dashboard views
+[observation] [info] High cohesion (0.96) — files are tightly interconnected
+[observation] [info] Schema validation integrated with UI components enables type-safe data rendering throughout the dashboard
 
 </findings>
 
 <insights>
 
-- High cohesion (0.97) — files are tightly interconnected
-- Strong cohesion (0.97) indicates well-organized UI component library with consistent patterns
-- Bidirectional dependency with PRD interface suggests unclear component ownership boundaries
-- Rich component catalog (119 files) provides comprehensive dashboard building blocks
-- Bidirectional imports with PRD interface (4 imports each way) suggest architectural boundary confusion
-- Comprehensive component library with strong cohesion provides solid foundation for dashboard views
-- [call graph] 919 internal calls, 2 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- High cohesion (0.96) — files are tightly interconnected
+- Large component library (117 files) maintains high cohesion (0.96), indicating excellent organization
+- Acts as base layer for specialized UI features, establishing clear architectural layering
+- Co-locates schema validation with components, suggesting data-driven UI architecture
+- Schema validation integrated with UI components enables type-safe data rendering throughout the dashboard
+- [call graph] 917 internal calls, 3 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>
 
@@ -352,7 +345,7 @@ Incoming (other zones → this zone):
 
 This zone has 4 sub-zone(s):
 
-- **Web** (`web-2/web`): 61 files, cohesion 0.92, coupling 0.08
+- **Web** (`web-2/web`): 59 files, cohesion 0.92, coupling 0.08
 - **Web 2** (`web-2/web-2`): 7 files, cohesion 0.64, coupling 0.36
 - **Web 3** (`web-2/web-3`): 7 files, cohesion 0.5, coupling 0.5
 - **Web 4** (`web-2/web-4`): 3 files, cohesion 0.67, coupling 0.33

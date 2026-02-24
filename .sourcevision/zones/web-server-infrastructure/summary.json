@@ -1,7 +1,7 @@
 {
   "id": "web-server-infrastructure",
   "name": "Web Server Infrastructure",
-  "description": "Core HTTP server foundation providing routing, gateways, and service orchestration for the unified dashboard and MCP endpoints.",
+  "description": "Server runtime, MCP endpoints, domain gateways, and core web service infrastructure.",
   "files": [
     "packages/web/src/cli/index.ts",
     "packages/web/src/landing/index.html",
