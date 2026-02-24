@@ -1,5 +1,10 @@
 import type { PRDDocument } from "../../schema/index.js";
 import type { EpiclessFeature } from "../../core/structural.js";
+import {
+  correlateEpiclessFeatures,
+  formatScore,
+} from "../../core/epic-correlation.js";
+import type { CorrelationResult } from "../../core/epic-correlation.js";
 import { insertChild, removeFromTree } from "../../core/tree.js";
 import { info, warn } from "../output.js";
 
@@ -25,10 +30,14 @@ export type PromptFn = (question: string) => Promise<string>;
 /**
  * Present interactive prompts to resolve epicless features found during validation.
  *
- * For each epicless feature, the user can:
- * - **Correlate**: move it under an existing epic
+ * For each epicless feature, the system first runs correlation analysis to suggest
+ * semantically similar parent epics. The user can:
+ * - **Correlate**: move under a suggested epic (ranked by similarity) or browse all epics
  * - **Delete**: remove the feature (and its children) from the PRD
  * - **Skip**: leave it unchanged (still reported as validation error)
+ *
+ * When a high-confidence match is found (≥50% similarity), the top suggestion
+ * is highlighted in the prompt to guide the user.
  *
  * Returns an array of resolutions describing the chosen action per feature.
  *
@@ -49,12 +58,25 @@ export async function resolveEpiclessFeatures(
     (item) => item.level === "epic" && item.status !== "deleted",
   );
 
+  // Run correlation analysis for all epicless features
+  const correlations = correlateEpiclessFeatures(
+    doc.items,
+    epiclessFeatures,
+  );
+
+  // Build a lookup map for correlation results
+  const correlationMap = new Map<string, CorrelationResult>();
+  for (const cr of correlations) {
+    correlationMap.set(cr.featureId, cr);
+  }
+
   info("");
   info(
     `Found ${epiclessFeatures.length} feature${epiclessFeatures.length === 1 ? "" : "s"} without parent epic${epiclessFeatures.length === 1 ? "" : "s"}:`,
   );
 
   for (const feature of epiclessFeatures) {
+    const correlation = correlationMap.get(feature.itemId);
     const childInfo =
       feature.childCount > 0
         ? `, ${feature.childCount} child${feature.childCount === 1 ? "" : "ren"}`
@@ -64,7 +86,30 @@ export async function resolveEpiclessFeatures(
     info(
       `  Feature: "${feature.title}" [${feature.itemId.slice(0, 8)}] (${feature.status}${childInfo})`,
     );
-    info("    [1] Correlate — move under an existing epic");
+
+    // Show correlation suggestions if available
+    if (correlation && correlation.candidates.length > 0) {
+      info("");
+      info("  Suggested parent epics (by similarity):");
+      for (let i = 0; i < correlation.candidates.length; i++) {
+        const c = correlation.candidates[i];
+        const marker = i === 0 && correlation.hasHighConfidence ? " ★" : "";
+        info(
+          `    ${i + 1}. "${c.epicTitle}" [${c.epicId.slice(0, 8)}] — ${formatScore(c.score)} match${marker}`,
+        );
+      }
+      info("");
+    }
+
+    // Present action options with context-aware hints
+    if (correlation?.hasHighConfidence) {
+      const top = correlation.candidates[0];
+      info(
+        `    [1] Correlate — move under "${top.epicTitle}" (${formatScore(top.score)} match, recommended)`,
+      );
+    } else {
+      info("    [1] Correlate — move under an existing epic");
+    }
     info("    [2] Delete — remove this feature and its children");
     info("    [3] Skip — leave as-is");
 
@@ -78,26 +123,58 @@ export async function resolveEpiclessFeatures(
           break;
         }
 
+        // If high-confidence match, offer to accept the top suggestion directly
+        if (correlation?.hasHighConfidence) {
+          const top = correlation.candidates[0];
+          info("");
+          info(
+            `  Top suggestion: "${top.epicTitle}" (${formatScore(top.score)} match)`,
+          );
+          info("    [y] Accept this suggestion");
+          info("    [n] Browse all epics");
+
+          const accept = await prompt("  Accept? (y/n): ");
+
+          if (accept.trim().toLowerCase() === "y") {
+            resolutions.push({
+              featureId: feature.itemId,
+              action: "correlate",
+              targetEpicId: top.epicId,
+            });
+            info(`  ✓ Will move under "${top.epicTitle}"`);
+            break;
+          }
+        }
+
+        // Show full epic list (sorted by correlation score when available)
         info("");
         info("  Available epics:");
-        for (let i = 0; i < availableEpics.length; i++) {
+        const epicOrder = buildEpicDisplayOrder(
+          availableEpics,
+          correlation,
+        );
+        for (let i = 0; i < epicOrder.length; i++) {
+          const epic = epicOrder[i];
+          const scoreLabel = epic.score !== undefined
+            ? ` — ${formatScore(epic.score)} match`
+            : "";
           info(
-            `    [${i + 1}] "${availableEpics[i].title}" [${availableEpics[i].id.slice(0, 8)}]`,
+            `    [${i + 1}] "${epic.title}" [${epic.id.slice(0, 8)}]${scoreLabel}`,
           );
         }
 
         const epicChoice = await prompt(
-          `  Move under which epic? (1-${availableEpics.length}): `,
+          `  Move under which epic? (1-${epicOrder.length}): `,
         );
         const epicIdx = parseInt(epicChoice.trim(), 10) - 1;
 
-        if (epicIdx >= 0 && epicIdx < availableEpics.length) {
+        if (epicIdx >= 0 && epicIdx < epicOrder.length) {
           resolutions.push({
             featureId: feature.itemId,
             action: "correlate",
-            targetEpicId: availableEpics[epicIdx].id,
+            targetEpicId: epicOrder[epicIdx].id,
           });
-          info(`  \u2713 Will move under "${availableEpics[epicIdx].title}"`);
+          info(`  ✓ Will move under "${epicOrder[epicIdx].title}"`);
         } else {
           warn("  Invalid epic selection. Skipping.");
           resolutions.push({ featureId: feature.itemId, action: "skip" });
@@ -107,12 +184,12 @@ export async function resolveEpiclessFeatures(
 
       case "2":
         resolutions.push({ featureId: feature.itemId, action: "delete" });
-        info("  \u2713 Marked for deletion");
+        info("  ✓ Marked for deletion");
         break;
 
       case "3":
         resolutions.push({ featureId: feature.itemId, action: "skip" });
-        info("  \u2192 Skipped");
+        info("  → Skipped");
         break;
 
       default:
@@ -123,6 +200,50 @@ export async function resolveEpiclessFeatures(
   }
 
   return resolutions;
+}
+
+// ── Epic display ordering ────────────────────────────────────────────────────
+
+interface EpicDisplayEntry {
+  id: string;
+  title: string;
+  score?: number;
+}
+
+/**
+ * Build an ordered list of epics for display, merging correlation scores
+ * with the full epic list. Scored epics appear first (highest score first),
+ * followed by any unscored epics in their original order.
+ */
+function buildEpicDisplayOrder(
+  availableEpics: { id: string; title: string }[],
+  correlation: CorrelationResult | undefined,
+): EpicDisplayEntry[] {
+  if (!correlation || correlation.candidates.length === 0) {
+    return availableEpics.map((e) => ({ id: e.id, title: e.title }));
+  }
+
+  const scoreMap = new Map<string, number>();
+  for (const c of correlation.candidates) {
+    scoreMap.set(c.epicId, c.score);
+  }
+
+  const scored: EpicDisplayEntry[] = [];
+  const unscored: EpicDisplayEntry[] = [];
+
+  for (const epic of availableEpics) {
+    const s = scoreMap.get(epic.id);
+    if (s !== undefined) {
+      scored.push({ id: epic.id, title: epic.title, score: s });
+    } else {
+      unscored.push({ id: epic.id, title: epic.title });
+    }
+  }
+
+  // Sort scored epics by score descending
+  scored.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+
+  return [...scored, ...unscored];
 }
 
 // ── Apply resolutions ────────────────────────────────────────────────────────

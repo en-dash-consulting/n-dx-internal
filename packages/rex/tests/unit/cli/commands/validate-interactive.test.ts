@@ -323,6 +323,264 @@ describe("resolveEpiclessFeatures", () => {
     expect(featureLine).toBeDefined();
     expect(featureLine).not.toMatch(/\d+ child/);
   });
+
+  // ── Correlation-enhanced behavior ────────────────────────────────────────
+
+  it("displays correlation suggestions when candidates exist", async () => {
+    const doc = makeDoc({
+      items: [
+        {
+          id: "e1",
+          title: "User authentication system",
+          level: "epic",
+          status: "pending",
+          tags: ["auth"],
+          children: [],
+        },
+        {
+          id: "e2",
+          title: "Payment processing",
+          level: "epic",
+          status: "pending",
+          children: [],
+        },
+        {
+          id: "f1",
+          title: "User authentication login",
+          level: "feature",
+          status: "pending",
+          tags: ["auth"],
+        },
+      ],
+    });
+    const features: EpiclessFeature[] = [
+      {
+        itemId: "f1",
+        title: "User authentication login",
+        status: "pending",
+        childCount: 0,
+      },
+    ];
+    const prompt = mockPrompt(["3"]); // skip
+
+    await resolveEpiclessFeatures(doc, features, { prompt });
+
+    const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+    expect(output).toContain("Suggested parent epics");
+    expect(output).toMatch(/% match/); // at least one candidate with score
+  });
+
+  it("shows recommendation hint for high-confidence match", async () => {
+    const doc = makeDoc({
+      items: [
+        {
+          id: "e1",
+          title: "User authentication system",
+          level: "epic",
+          status: "pending",
+          description: "Build user auth with OAuth",
+          tags: ["auth"],
+          children: [],
+        },
+        {
+          id: "f1",
+          title: "User authentication login",
+          level: "feature",
+          status: "pending",
+          description: "Implement OAuth login flow",
+          tags: ["auth"],
+        },
+      ],
+    });
+    const features: EpiclessFeature[] = [
+      {
+        itemId: "f1",
+        title: "User authentication login",
+        status: "pending",
+        childCount: 0,
+      },
+    ];
+    const prompt = mockPrompt(["3"]); // skip
+
+    await resolveEpiclessFeatures(doc, features, { prompt });
+
+    const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+    // Should show "recommended" in the correlate option for high confidence
+    expect(output).toContain("recommended");
+  });
+
+  it("allows accepting top suggestion with 'y' for high-confidence match", async () => {
+    const doc = makeDoc({
+      items: [
+        {
+          id: "e1",
+          title: "User authentication system",
+          level: "epic",
+          status: "pending",
+          description: "Build user auth with OAuth",
+          tags: ["auth"],
+          children: [],
+        },
+        {
+          id: "f1",
+          title: "User authentication login",
+          level: "feature",
+          status: "pending",
+          description: "Implement OAuth login flow",
+          tags: ["auth"],
+        },
+      ],
+    });
+    const features: EpiclessFeature[] = [
+      {
+        itemId: "f1",
+        title: "User authentication login",
+        status: "pending",
+        childCount: 0,
+      },
+    ];
+    // "1" = correlate, "y" = accept top suggestion
+    const prompt = mockPrompt(["1", "y"]);
+
+    const resolutions = await resolveEpiclessFeatures(doc, features, {
+      prompt,
+    });
+
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0]).toEqual({
+      featureId: "f1",
+      action: "correlate",
+      targetEpicId: "e1",
+    });
+  });
+
+  it("allows declining top suggestion and browsing all epics", async () => {
+    const doc = makeDoc({
+      items: [
+        {
+          id: "e1",
+          title: "User authentication system",
+          level: "epic",
+          status: "pending",
+          description: "Build user auth with OAuth",
+          tags: ["auth"],
+          children: [],
+        },
+        {
+          id: "e2",
+          title: "Dashboard UI",
+          level: "epic",
+          status: "pending",
+          children: [],
+        },
+        {
+          id: "f1",
+          title: "User authentication login",
+          level: "feature",
+          status: "pending",
+          description: "Implement OAuth login flow",
+          tags: ["auth"],
+        },
+      ],
+    });
+    const features: EpiclessFeature[] = [
+      {
+        itemId: "f1",
+        title: "User authentication login",
+        status: "pending",
+        childCount: 0,
+      },
+    ];
+    // "1" = correlate, "n" = decline suggestion, "2" = pick second epic in list
+    const prompt = mockPrompt(["1", "n", "2"]);
+
+    const resolutions = await resolveEpiclessFeatures(doc, features, {
+      prompt,
+    });
+
+    expect(resolutions).toHaveLength(1);
+    expect(resolutions[0].action).toBe("correlate");
+    // Should have picked an epic (the exact one depends on display order)
+    expect(resolutions[0].targetEpicId).toBeDefined();
+  });
+
+  it("shows correlation scores in the epic list during browse", async () => {
+    const doc = makeDoc({
+      items: [
+        {
+          id: "e1",
+          title: "User authentication system",
+          level: "epic",
+          status: "pending",
+          tags: ["auth"],
+          children: [],
+        },
+        {
+          id: "f1",
+          title: "User authentication login",
+          level: "feature",
+          status: "pending",
+          tags: ["auth"],
+        },
+      ],
+    });
+    const features: EpiclessFeature[] = [
+      {
+        itemId: "f1",
+        title: "User authentication login",
+        status: "pending",
+        childCount: 0,
+      },
+    ];
+    // "1" = correlate, then select first epic
+    // If high confidence: "1" → "n" → "1" (decline suggestion, pick first)
+    // If not high confidence: "1" → "1" (pick first)
+    // Use "n" path to ensure we see the browse list either way
+    const prompt = mockPrompt(["1", "n", "1", "1"]);
+
+    await resolveEpiclessFeatures(doc, features, { prompt });
+
+    const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+    expect(output).toContain("% match");
+  });
+
+  it("shows star marker for high confidence top suggestion", async () => {
+    const doc = makeDoc({
+      items: [
+        {
+          id: "e1",
+          title: "User authentication system",
+          level: "epic",
+          status: "pending",
+          description: "Build user auth with OAuth",
+          tags: ["auth"],
+          children: [],
+        },
+        {
+          id: "f1",
+          title: "User authentication login",
+          level: "feature",
+          status: "pending",
+          description: "Implement OAuth login flow",
+          tags: ["auth"],
+        },
+      ],
+    });
+    const features: EpiclessFeature[] = [
+      {
+        itemId: "f1",
+        title: "User authentication login",
+        status: "pending",
+        childCount: 0,
+      },
+    ];
+    const prompt = mockPrompt(["3"]); // skip
+
+    await resolveEpiclessFeatures(doc, features, { prompt });
+
+    const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+    expect(output).toContain("★");
+  });
 });
 
 // ── applyEpiclessResolutions ─────────────────────────────────────────────────
