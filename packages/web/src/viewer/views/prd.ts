@@ -15,6 +15,7 @@ import { AddItemForm } from "../components/prd-tree/add-item-form.js";
 import { BulkActions } from "../components/prd-tree/bulk-actions.js";
 import { MergePreview } from "../components/prd-tree/merge-preview.js";
 import { PruneConfirmation } from "../components/prd-tree/prune-confirmation.js";
+import { DeleteConfirmation } from "../components/prd-tree/delete-confirmation.js";
 import { BrandedHeader } from "../components/prd-tree/shared-imports.js";
 import type { PRDDocumentData, PRDItemData, AddItemInput } from "../components/prd-tree/index.js";
 import type { TaskUsageSummary, WeeklyBudgetResolution, WeeklyBudgetSource } from "../components/prd-tree/types.js";
@@ -108,6 +109,8 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
   const [addParentId, setAddParentId] = useState<string | null>(null);
   const [bulkSelectedIds, setBulkSelectedIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
+  /** Item pending deletion confirmation via modal dialog. */
+  const [deleteTarget, setDeleteTarget] = useState<PRDItemData | null>(null);
 
   // Deep-link state
   const [deepLinkError, setDeepLinkError] = useState<string | null>(null);
@@ -387,18 +390,24 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
   );
 
   // Handle item removal from tree node (triggered by inline button or context menu)
+  // Opens the modal confirmation dialog instead of window.confirm().
   const handleRemoveItemFromTree = useCallback(
     (item: PRDItemData) => {
-      // Direct call with confirmation handled via a confirm dialog
-      const childCount = item.children?.length ?? 0;
-      const descriptor = childCount > 0
-        ? `"${item.title}" and all its ${childCount} descendant${childCount !== 1 ? "s" : ""}`
-        : `"${item.title}"`;
-      if (!window.confirm(`Delete ${item.level} ${descriptor}?`)) return;
-      handleRemoveItem(item.id).catch(() => {
+      setDeleteTarget(item);
+    },
+    [],
+  );
+
+  // Callback for the delete confirmation modal.
+  const handleConfirmDelete = useCallback(
+    async (id: string) => {
+      try {
+        await handleRemoveItem(id);
+      } catch {
         setToast("Failed to delete item");
         setTimeout(() => setToast(null), 3000);
-      });
+      }
+      setDeleteTarget(null);
     },
     [handleRemoveItem],
   );
@@ -627,6 +636,15 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     // Toast notification
     toast
       ? h("div", { class: "rex-toast", role: "status", "aria-live": "polite" }, toast)
+      : null,
+
+    // Delete confirmation modal
+    deleteTarget
+      ? h(DeleteConfirmation, {
+          item: deleteTarget,
+          onConfirm: handleConfirmDelete,
+          onCancel: () => setDeleteTarget(null),
+        })
       : null,
   );
 }

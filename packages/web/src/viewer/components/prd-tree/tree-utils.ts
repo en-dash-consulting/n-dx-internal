@@ -27,6 +27,19 @@ export function findItemById(items: PRDItemData[], id: string): PRDItemData | nu
 }
 
 /**
+ * Count total descendants (children, grandchildren, etc.) of an item.
+ * Returns 0 if the item has no children.
+ */
+export function countDescendants(item: PRDItemData): number {
+  if (!item.children || item.children.length === 0) return 0;
+  let count = 0;
+  for (const child of item.children) {
+    count += 1 + countDescendants(child);
+  }
+  return count;
+}
+
+/**
  * Collect the IDs of all ancestors of the target item (excluding the target itself).
  * Returns an empty array if the target is not found or is a root item.
  */
