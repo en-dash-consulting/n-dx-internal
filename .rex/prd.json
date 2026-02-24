@@ -13036,10 +13036,12 @@
         {
           "id": "7abd7295-1cd1-4283-8991-68def0b14eaa",
           "title": "Claude-client package migration",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Consolidate the claude-client compatibility bridge package into the main llm-client package to eliminate redundancy and simplify the architecture",
           "source": "smart-add",
+          "startedAt": "2026-02-24T04:42:25.130Z",
+          "completedAt": "2026-02-24T04:42:25.130Z",
           "children": [
             {
               "id": "b09c1316-009b-4bf9-992e-18ccc4f27ed5",
@@ -13104,7 +13106,7 @@
             {
               "id": "6101acf9-2699-4570-9c64-f481503be9b8",
               "title": "Remove claude-client package and update build configuration",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Delete the claude-client package directory and update all build, test, and package configuration files to reflect the removal",
               "acceptanceCriteria": [
@@ -13117,7 +13119,8 @@
                 "cleanup",
                 "build"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-24T04:42:22.752Z"
             }
           ]
         },
@@ -13152,7 +13155,7 @@
             {
               "id": "8c85433b-e0cf-4675-8991-5340a2cb68b1",
               "title": "Refactor existing claude adapter to use generic interface",
-              "status": "in_progress",
+              "status": "deferred",
               "level": "task",
               "description": "Update the current claude implementation to conform to the new generic provider interface while maintaining all existing functionality",
               "acceptanceCriteria": [
@@ -13189,7 +13192,7 @@
             {
               "id": "a649464f-7fb1-4e2d-a63e-d5ff3cc631c7",
               "title": "Add vendor-specific configuration management",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Extend the configuration system to handle vendor-specific settings like API keys, endpoints, and provider-specific options",
               "acceptanceCriteria": [
@@ -13202,7 +13205,8 @@
                 "configuration",
                 "validation"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-24T04:44:19.640Z"
             }
           ]
         },
