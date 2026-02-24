@@ -49,10 +49,25 @@
     },
     {
       "from": "cli.js",
+      "to": "refresh-validate.js",
+      "type": "static",
+      "symbols": [
+        "snapshotRefreshState",
+        "validateRefreshCompletion",
+        "rollbackRefreshState"
+      ]
+    },
+    {
+      "from": "cli.js",
       "to": "web.js",
       "type": "static",
       "symbols": [
-        "runWeb"
+        "runWeb",
+        "isProcessRunning",
+        "readPidFile",
+        "removePidFile",
+        "removePortFile",
+        "waitForProcessExit"
       ]
     },
     {
@@ -1873,15 +1888,6 @@
       "type": "type",
       "symbols": [
         "HenchConfig"
-      ]
-    },
-    {
-      "from": "packages/hench/src/schema/v1.ts",
-      "to": "packages/hench/src/guard/contracts.ts",
-      "type": "type",
-      "symbols": [
-        "GuardConfig",
-        "PolicyLimitsConfig"
       ]
     },
     {
@@ -3793,6 +3799,7 @@
         "isExecutableOnPath",
         "spawnTool",
         "spawnManaged",
+        "killWithFallback",
         "ProcessPool",
         "ProcessLimitError"
       ]
@@ -4119,6 +4126,7 @@
         "getCurrentHead",
         "spawnTool",
         "spawnManaged",
+        "killWithFallback",
         "ProcessPool",
         "ProcessLimitError"
       ]
@@ -11561,6 +11569,7 @@
         "Imports",
         "Zones",
         "Zone",
+        "Finding",
         "Components",
         "ImportType"
       ]
@@ -12709,6 +12718,7 @@
       "type": "reexport",
       "symbols": [
         "checkPort",
+        "checkPortWithRetry",
         "findAvailablePort"
       ]
     },
@@ -12718,7 +12728,8 @@
       "type": "type",
       "symbols": [
         "PortCheckResult",
-        "PortAllocationResult"
+        "PortAllocationResult",
+        "PortRetryOptions"
       ]
     },
     {
@@ -12771,6 +12782,7 @@
       "type": "reexport",
       "symbols": [
         "checkPort",
+        "checkPortWithRetry",
         "findAvailablePort"
       ]
     },
@@ -12780,7 +12792,8 @@
       "type": "type",
       "symbols": [
         "PortCheckResult",
-        "PortAllocationResult"
+        "PortAllocationResult",
+        "PortRetryOptions"
       ]
     },
     {
@@ -13324,7 +13337,8 @@
       "type": "static",
       "symbols": [
         "handleHenchRoute",
-        "startHeartbeatMonitor"
+        "startHeartbeatMonitor",
+        "shutdownActiveExecutions"
       ]
     },
     {
@@ -13364,7 +13378,8 @@
       "to": "packages/web/src/server/routes-rex.ts",
       "type": "static",
       "symbols": [
-        "handleRexRoute"
+        "handleRexRoute",
+        "shutdownRexExecution"
       ]
     },
     {
@@ -13986,6 +14001,15 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/shared-imports.ts",
+      "to": "packages/web/src/viewer/components/copy-link-button.ts",
+      "type": "reexport",
+      "symbols": [
+        "CopyLinkButton",
+        "buildShareableUrl"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/shared-imports.ts",
       "to": "packages/web/src/viewer/components/logos.ts",
       "type": "reexport",
       "symbols": [
@@ -13997,7 +14021,8 @@
       "to": "packages/web/src/viewer/types.ts",
       "type": "type",
       "symbols": [
-        "DetailItem"
+        "DetailItem",
+        "NavigateTo"
       ]
     },
     {
@@ -14026,18 +14051,18 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
-      "to": "packages/web/src/viewer/components/copy-link-button.ts",
-      "type": "static",
-      "symbols": [
-        "CopyLinkButton"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
       "to": "packages/web/src/viewer/components/prd-tree/compute.ts",
       "type": "static",
       "symbols": [
         "formatTimestamp"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/shared-imports.ts",
+      "type": "static",
+      "symbols": [
+        "CopyLinkButton"
       ]
     },
     {
@@ -14211,6 +14236,27 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/hooks/use-app-data.ts",
+      "to": "packages/web/src/viewer/loader.ts",
+      "type": "static",
+      "symbols": [
+        "loadFromServer",
+        "loadFromFiles",
+        "detectMode",
+        "onDataChange",
+        "startPolling",
+        "stopPolling"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-app-data.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/hooks/use-file-edges.ts",
       "to": "packages/web/src/viewer/views/zone-types.ts",
       "type": "type",
@@ -14220,6 +14266,24 @@
         "ZoneData",
         "FlowEdge",
         "BoxRect"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-route-state.ts",
+      "to": "packages/web/src/viewer/route-state.ts",
+      "type": "static",
+      "symbols": [
+        "parseLegacyHashRoute",
+        "resolveLocationRoute"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-route-state.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId",
+        "NavigateTo"
       ]
     },
     {
@@ -14346,24 +14410,18 @@
     },
     {
       "from": "packages/web/src/viewer/main.ts",
-      "to": "packages/web/src/viewer/loader.ts",
+      "to": "packages/web/src/viewer/hooks/use-app-data.ts",
       "type": "static",
       "symbols": [
-        "loadFromServer",
-        "loadFromFiles",
-        "detectMode",
-        "onDataChange",
-        "startPolling",
-        "stopPolling"
+        "useAppData"
       ]
     },
     {
       "from": "packages/web/src/viewer/main.ts",
-      "to": "packages/web/src/viewer/route-state.ts",
+      "to": "packages/web/src/viewer/hooks/use-route-state.ts",
       "type": "static",
       "symbols": [
-        "parseLegacyHashRoute",
-        "resolveLocationRoute"
+        "useRouteState"
       ]
     },
     {
@@ -14379,7 +14437,6 @@
       "to": "packages/web/src/viewer/types.ts",
       "type": "type",
       "symbols": [
-        "LoadedData",
         "ViewId",
         "NavigateTo",
         "DetailItem"
@@ -15049,7 +15106,8 @@
       "to": "packages/web/src/viewer/components/prd-tree/shared-imports.ts",
       "type": "type",
       "symbols": [
-        "DetailItem"
+        "DetailItem",
+        "NavigateTo"
       ]
     },
     {
@@ -15085,14 +15143,6 @@
         "TaskUsageSummary",
         "WeeklyBudgetResolution",
         "WeeklyBudgetSource"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/prd.ts",
-      "to": "packages/web/src/viewer/types.ts",
-      "type": "type",
-      "symbols": [
-        "NavigateTo"
       ]
     },
     {
@@ -15519,6 +15569,7 @@
       "type": "static",
       "symbols": [
         "checkPort",
+        "checkPortWithRetry",
         "findAvailablePort",
         "DEFAULT_PORT",
         "PORT_RANGE_START",
@@ -15674,6 +15725,23 @@
     },
     {
       "from": "packages/web/tests/unit/server/routes-hench-heartbeat.test.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-hench-shutdown.test.ts",
+      "to": "packages/web/src/server/routes-hench.ts",
+      "type": "static",
+      "symbols": [
+        "shutdownActiveExecutions",
+        "handleHenchRoute"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/routes-hench-shutdown.test.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "type",
       "symbols": [
@@ -15908,6 +15976,31 @@
       "symbols": [
         "ServerContext",
         "ViewerScope"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/shutdown-handler.test.ts",
+      "to": "packages/web/src/server/routes-hench.ts",
+      "type": "static",
+      "symbols": [
+        "shutdownActiveExecutions"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/shutdown-handler.test.ts",
+      "to": "packages/web/src/server/routes-rex.ts",
+      "type": "static",
+      "symbols": [
+        "shutdownRexExecution"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/shutdown-handler.test.ts",
+      "to": "packages/web/src/server/start.ts",
+      "type": "static",
+      "symbols": [
+        "registerShutdownHandlers",
+        "DEFAULT_SHUTDOWN_TIMEOUT_MS"
       ]
     },
     {
@@ -16402,6 +16495,17 @@
         "buildRefreshPlan",
         "RefreshPlanError"
       ]
+    },
+    {
+      "from": "tests/unit/refresh-validate.test.js",
+      "to": "refresh-validate.js",
+      "type": "static",
+      "symbols": [
+        "snapshotRefreshState",
+        "validateRefreshStep",
+        "validateRefreshCompletion",
+        "rollbackRefreshState"
+      ]
     }
   ],
   "external": [
@@ -16493,7 +16597,8 @@
         "packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts",
         "packages/web/src/server/routes-hench.ts",
         "packages/web/src/server/routes-project.ts",
-        "packages/web/src/server/routes-rex.ts"
+        "packages/web/src/server/routes-rex.ts",
+        "packages/web/tests/unit/server/routes-hench-shutdown.test.ts"
       ],
       "symbols": [
         "*",
@@ -16529,6 +16634,7 @@
         "info",
         "isExecutableOnPath",
         "isQuiet",
+        "killWithFallback",
         "loadClaudeConfig",
         "loadClaudeConfigFromDir",
         "loadLLMConfig",
@@ -16575,6 +16681,7 @@
         "ci.js",
         "cli.js",
         "refresh-artifacts.js",
+        "refresh-validate.js",
         "web.js"
       ],
       "symbols": [
@@ -16604,6 +16711,7 @@
         "ci.js",
         "cli.js",
         "refresh-artifacts.js",
+        "refresh-validate.js",
         "web.js"
       ],
       "symbols": [
@@ -16658,9 +16766,11 @@
         "packages/web/src/viewer/components/sidebar.ts",
         "packages/web/src/viewer/components/status-indicators.ts",
         "packages/web/src/viewer/components/theme-toggle.ts",
+        "packages/web/src/viewer/hooks/use-app-data.ts",
         "packages/web/src/viewer/hooks/use-file-edges.ts",
         "packages/web/src/viewer/hooks/use-pan-zoom.ts",
         "packages/web/src/viewer/hooks/use-project-metadata.ts",
+        "packages/web/src/viewer/hooks/use-route-state.ts",
         "packages/web/src/viewer/hooks/use-zone-drag.ts",
         "packages/web/src/viewer/main.ts",
         "packages/web/src/viewer/views/analysis.ts",
@@ -16709,6 +16819,7 @@
         "packages/web/tests/unit/viewer/tree-view.test.ts"
       ],
       "symbols": [
+        "ComponentChild",
         "ComponentChildren",
         "Fragment",
         "RefObject",
@@ -17086,6 +17197,7 @@
         "packages/web/tests/unit/server/routes-hench-execute.test.ts",
         "packages/web/tests/unit/server/routes-hench-health.test.ts",
         "packages/web/tests/unit/server/routes-hench-heartbeat.test.ts",
+        "packages/web/tests/unit/server/routes-hench-shutdown.test.ts",
         "packages/web/tests/unit/server/routes-hench-templates.test.ts",
         "packages/web/tests/unit/server/routes-mcp.test.ts",
         "packages/web/tests/unit/server/routes-notion.test.ts",
@@ -17099,6 +17211,7 @@
         "packages/web/tests/unit/server/routes-validation.test.ts",
         "packages/web/tests/unit/server/routes-workflow.test.ts",
         "packages/web/tests/unit/server/scope.test.ts",
+        "packages/web/tests/unit/server/shutdown-handler.test.ts",
         "packages/web/tests/unit/server/type-consistency.test.ts",
         "packages/web/tests/unit/server/websocket.test.ts",
         "packages/web/tests/unit/viewer/accessibility.test.ts",
@@ -17145,6 +17258,7 @@
         "tests/unit/help.test.js",
         "tests/unit/refresh-artifacts.test.js",
         "tests/unit/refresh-plan.test.js",
+        "tests/unit/refresh-validate.test.js",
         "vitest.config.js"
       ],
       "symbols": [
@@ -17177,7 +17291,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 1790,
+    "totalEdges": 1800,
     "totalExternal": 17,
     "circularCount": 4,
     "circulars": [
@@ -17283,18 +17397,18 @@
         "count": 10
       },
       {
+        "path": "packages/web/src/server/routes-hench.ts",
+        "count": 10
+      },
+      {
         "path": "packages/claude-client/src/types.ts",
         "count": 9
       },
       {
         "path": "packages/hench/src/agent/lifecycle/cli-loop.ts",
         "count": 9
-      },
-      {
-        "path": "packages/hench/src/store/index.ts",
-        "count": 9
       }
     ],
-    "avgImportsPerFile": 3.38
+    "avgImportsPerFile": 3.37
   }
 }

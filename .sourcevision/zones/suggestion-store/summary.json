@@ -1,7 +1,7 @@
 {
   "id": "suggestion-store",
-  "name": "Suggestion Store Slice",
-  "description": "Small, isolated state store that manages user or agent suggestions with matching tests.",
+  "name": "Suggestion Store",
+  "description": "Isolated state management for agent suggestions with minimal dependencies and focused responsibility.",
   "files": [
     "packages/hench/src/store/suggestions.ts",
     "packages/hench/tests/unit/store/suggestions.test.ts"

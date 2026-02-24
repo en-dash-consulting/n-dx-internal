@@ -8,7 +8,7 @@ Zone: Tests (`packages-sourcevision:tests`)
 Files: 68, Cohesion: 0.94, Coupling: 0.06
 Description: 66 files, primarily TypeScript
 Entry points: packages/sourcevision/src/cli/commands/analyze.ts, packages/sourcevision/src/cli/mcp.ts, packages/sourcevision/src/export/pdf-report.ts, packages/sourcevision/src/schema/data-files.ts, packages/sourcevision/src/schema/index.ts, packages/sourcevision/src/schema/v1.ts
-Lines: 23663
+Lines: 23628
 
 </zone>
 
@@ -38,7 +38,7 @@ packages/sourcevision/src/analyzers/zone-output.ts (TypeScript, 269 lines, sourc
 packages/sourcevision/src/analyzers/zones.ts (TypeScript, 1389 lines, source)
 packages/sourcevision/src/cli/commands/analyze.ts (TypeScript, 227 lines, source)
 packages/sourcevision/src/cli/mcp.ts (TypeScript, 555 lines, source)
-packages/sourcevision/src/export/pdf-report.ts (TypeScript, 598 lines, source)
+packages/sourcevision/src/export/pdf-report.ts (TypeScript, 563 lines, source)
 packages/sourcevision/src/public.ts (TypeScript, 107 lines, source)
 packages/sourcevision/src/schema/data-files.ts (TypeScript, 13 lines, source)
 packages/sourcevision/src/schema/index.ts (TypeScript, 21 lines, source)
@@ -173,7 +173,7 @@ Internal:
   packages/sourcevision/src/cli/mcp.ts → packages/sourcevision/src/analyzers/next-steps.ts {deriveNextSteps}
   packages/sourcevision/src/cli/mcp.ts → packages/sourcevision/src/schema/data-files.ts {DATA_FILES}
   packages/sourcevision/src/cli/mcp.ts → packages/sourcevision/src/schema/index.ts {Manifest, Inventory, Imports, Classifications, Zones, Components}
-  packages/sourcevision/src/export/pdf-report.ts → packages/sourcevision/src/schema/index.ts {Manifest, Inventory, Imports, Zones, Zone, Components, ImportType}
+  packages/sourcevision/src/export/pdf-report.ts → packages/sourcevision/src/schema/index.ts {Manifest, Inventory, Imports, Zones, Zone, Finding, Components, ImportType}
   packages/sourcevision/src/public.ts → packages/sourcevision/src/cli/mcp.ts {createSourcevisionMcpServer}
   packages/sourcevision/src/public.ts → packages/sourcevision/src/schema/data-files.ts {DATA_FILES, ALL_DATA_FILES, SUPPLEMENTARY_FILES}
   packages/sourcevision/src/public.ts → packages/sourcevision/src/schema/v1.ts {SV_SCHEMA_VERSION}
@@ -274,7 +274,7 @@ Incoming (other zones → this zone):
 
 - High cohesion (0.94) — files are tightly interconnected
 - Contains 70% of project files (68/97) — subdivided into 3 sub-zones
-- [call graph] 2174 internal calls, 39 outgoing, 145 incoming (cohesion: 0.98, coupling: 0.02)
+- [call graph] 2183 internal calls, 39 outgoing, 145 incoming (cohesion: 0.98, coupling: 0.02)
 
 </insights>
 
