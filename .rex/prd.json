@@ -14355,7 +14355,7 @@
     {
       "id": "1d50fba3-561b-4901-aaec-91b76a0e0580",
       "title": "Enhanced Rex Recommend Selective PRD Creation",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
@@ -14424,10 +14424,12 @@
         {
           "id": "716780a3-1db0-47c2-9725-5bf9bd8363c1",
           "title": "PRD Creation Integration",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Implement the actual PRD creation workflow for selected recommendations, going beyond the existing acknowledge functionality",
           "source": "smart-add",
+          "startedAt": "2026-02-25T15:45:38.461Z",
+          "completedAt": "2026-02-25T15:45:38.461Z",
           "children": [
             {
               "id": "842e10e1-1226-426a-82d1-c7f8d34ccfb7",
@@ -14453,7 +14455,7 @@
             {
               "id": "e64950a9-5bf3-4de9-9342-18caccd5c341",
               "title": "Add creation confirmation and summary output",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Provide clear feedback showing which recommendations were selected and successfully created as PRD items",
               "acceptanceCriteria": [
@@ -14467,7 +14469,9 @@
                 "cli",
                 "ux"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-25T15:37:40.706Z",
+              "completedAt": "2026-02-25T15:45:38.343Z"
             }
           ],
           "overrideMarker": {
@@ -14484,10 +14488,12 @@
         {
           "id": "bd9043b5-1958-4bc7-85e3-f6e3265a9384",
           "title": "Enhanced Validation and Error Handling",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Robust validation for the extended selector syntax and PRD creation workflow",
           "source": "smart-add",
+          "startedAt": "2026-02-25T16:15:09.286Z",
+          "completedAt": "2026-02-25T16:15:09.286Z",
           "children": [
             {
               "id": "e348ff22-c578-47ce-bc01-4614e035adad",
@@ -14513,7 +14519,7 @@
             {
               "id": "735a60c9-85c0-463a-837e-58e93367e0c3",
               "title": "Add PRD creation conflict detection and resolution",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Detect and handle conflicts when selected recommendations would create duplicate or conflicting PRD items",
               "acceptanceCriteria": [
@@ -14528,6 +14534,8 @@
                 "prd"
               ],
               "source": "smart-add",
+              "startedAt": "2026-02-25T15:45:38.614Z",
+              "completedAt": "2026-02-25T16:15:09.192Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "semantic_title",
@@ -14554,15 +14562,17 @@
         {
           "id": "bc2e4c15-7544-4464-8330-2c073ef3ec4d",
           "title": "Documentation and Testing",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Comprehensive documentation and test coverage for the enhanced recommendation acceptance workflow",
           "source": "smart-add",
+          "startedAt": "2026-02-25T16:21:53.511Z",
+          "completedAt": "2026-02-25T16:21:53.511Z",
           "children": [
             {
               "id": "96413554-abbc-4ea0-afe6-4f66a5ba3cb0",
               "title": "Update CLI help and documentation for enhanced recommend --accept syntax",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Document the new selector syntax options and provide clear usage examples for selective PRD creation",
               "acceptanceCriteria": [
@@ -14576,7 +14586,9 @@
                 "documentation",
                 "help"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-25T16:15:36.968Z",
+              "completedAt": "2026-02-25T16:21:53.393Z"
             },
             {
               "id": "d69a37f4-275c-4f4c-b7d8-a4e5011c8d69",
@@ -14612,7 +14624,9 @@
             "createdAt": "2026-02-25T14:55:39.403Z"
           }
         }
-      ]
+      ],
+      "startedAt": "2026-02-25T16:21:53.578Z",
+      "completedAt": "2026-02-25T16:21:53.578Z"
     }
   ]
 }
