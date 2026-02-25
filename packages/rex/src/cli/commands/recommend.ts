@@ -52,7 +52,7 @@ export function parseSelectionIndices(input: string, total: number): number[] {
   if (!normalized) {
     throw selectorFormatError("Invalid --accept selector format. Expected one or more indices after '='.");
   }
-  if (normalized === "all") return [];
+  if (normalized === "all" || normalized === ".") return [];
 
   const values = normalized
     .split(/[\s,]+/)
@@ -282,8 +282,9 @@ export async function cmdRecommend(
       );
     }
 
+    const isWildcard = acceptFlag === "=all" || acceptFlag === "=.";
     const selectedIndices = usesSelectorMode
-      ? (acceptFlag === "=all" ? null : parseSelectionIndices(acceptFlag, recommendations.length))
+      ? (isWildcard ? null : parseSelectionIndices(acceptFlag, recommendations.length))
       : null;
     const acceptedRecommendations = selectedIndices === null
       ? recommendations
@@ -301,6 +302,7 @@ export async function cmdRecommend(
     for (const item of created) {
       result(`Added: ${item.title} (${item.id})`);
     }
+    result(`\nAccepted ${created.length} recommendation${created.length === 1 ? "" : "s"}.`);
   } else {
     info("Run with --accept to add all recommendations to the PRD.");
     info("Run with --acknowledge=1,2 to acknowledge specific findings.");

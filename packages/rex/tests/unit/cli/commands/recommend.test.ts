@@ -190,6 +190,52 @@ describe("cmdRecommend --accept indexed selection", () => {
     }
   });
 
+  // ── Wildcard / =. (period) syntax ───────────────────────────────────
+
+  it("accepts all recommendations with =. selector", async () => {
+    await cmdRecommend(tmpDir, { accept: "=." });
+
+    const items = await readPrdItems(tmpDir);
+    expect(items).toHaveLength(3);
+    expect(items[0].title).toContain("Address auth issues");
+    expect(items[1].title).toContain("Address perf issues");
+    expect(items[2].title).toContain("Address security issues");
+  });
+
+  it("=. and =all produce equivalent results", async () => {
+    // Accept with =.
+    await cmdRecommend(tmpDir, { accept: "=." });
+    const itemsDot = await readPrdItems(tmpDir);
+
+    // Reset PRD
+    await writeFile(
+      join(tmpDir, ".rex", "prd.json"),
+      JSON.stringify({ schema: "rex/v1", title: "test-project", items: [] }),
+      "utf-8",
+    );
+
+    // Accept with =all
+    await cmdRecommend(tmpDir, { accept: "=all" });
+    const itemsAll = await readPrdItems(tmpDir);
+
+    expect(itemsDot.length).toBe(itemsAll.length);
+    for (let i = 0; i < itemsDot.length; i++) {
+      expect(itemsDot[i].title).toBe(itemsAll[i].title);
+      expect(itemsDot[i].level).toBe(itemsAll[i].level);
+      expect(itemsDot[i].priority).toBe(itemsAll[i].priority);
+    }
+  });
+
+  it("=. is a no-op when no findings exist", async () => {
+    await writeFindings(tmpDir, []);
+
+    // Should not throw; no recommendations to accept
+    await cmdRecommend(tmpDir, { accept: "=." });
+
+    const items = await readPrdItems(tmpDir);
+    expect(items).toHaveLength(0);
+  });
+
   // ── Single-recommendation scenarios ─────────────────────────────────
 
   it("works with a single recommendation (total=1, select=1)", async () => {
@@ -308,6 +354,18 @@ describe("cmdRecommend --accept indexed selection", () => {
     it("returns empty array for =all regardless of total count", () => {
       expect(parseSelectionIndices("=all", 1)).toEqual([]);
       expect(parseSelectionIndices("=all", 100)).toEqual([]);
+    });
+
+    // ── =. (period) wildcard ────────────────────────────────────────
+
+    it("returns empty array for =. (means select all)", () => {
+      const result = parseSelectionIndices("=.", 10);
+      expect(result).toEqual([]);
+    });
+
+    it("returns empty array for =. regardless of total count", () => {
+      expect(parseSelectionIndices("=.", 1)).toEqual([]);
+      expect(parseSelectionIndices("=.", 100)).toEqual([]);
     });
 
     // ── Single index ────────────────────────────────────────────────
