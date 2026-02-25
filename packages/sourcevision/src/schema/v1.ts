@@ -446,6 +446,91 @@ export interface Classifications {
   summary: ClassificationsSummary;
 }
 
+// ── Branch Work Records ─────────────────────────────────────────────────────
+
+/** Significance of changes introduced by a completed work item. */
+export type ChangeSignificance = "patch" | "minor" | "major";
+
+/** Reference to an ancestor in the PRD hierarchy (within a branch work record). */
+export interface BranchWorkParentRef {
+  id: string;
+  title: string;
+  level: string;
+}
+
+/**
+ * A completed work item persisted in a branch work record.
+ *
+ * Extends the collector's BranchWorkItem with optional classification
+ * metadata (change significance, breaking change flag).
+ */
+export interface BranchWorkRecordItem {
+  /** Unique PRD item ID. */
+  id: string;
+  /** Human-readable title. */
+  title: string;
+  /** PRD hierarchy level: "epic" | "feature" | "task" | "subtask". */
+  level: string;
+  /** ISO timestamp when the item was marked completed. */
+  completedAt: string;
+  /** Ancestor chain from root to parent (excludes the item itself). */
+  parentChain: BranchWorkParentRef[];
+  /** PRD priority (e.g. "high", "medium", "low"). */
+  priority?: string;
+  /** Free-form tags from the PRD item. */
+  tags?: string[];
+  /** PRD item description. */
+  description?: string;
+  /** PRD acceptance criteria. */
+  acceptanceCriteria?: string[];
+  /** Significance of the change this item represents. */
+  changeSignificance?: ChangeSignificance;
+  /** Whether this item introduces a breaking change. */
+  breakingChange?: boolean;
+}
+
+/** Per-epic summary of completed items in a branch work record. */
+export interface BranchWorkEpicSummary {
+  id: string;
+  title: string;
+  completedCount: number;
+}
+
+/** Optional record-level metadata. */
+export interface BranchWorkRecordMetadata {
+  /** Total number of completed items across the branch. */
+  totalCompletedCount?: number;
+  /** Git SHA at the time the record was created/updated. */
+  gitSha?: string;
+  /** Arbitrary extension fields. */
+  [key: string]: unknown;
+}
+
+/**
+ * Persistent branch work record — the system of record for completed
+ * PRD items on a specific branch.
+ *
+ * Stored at `.sourcevision/branch-work-{sanitized-branch}.json`.
+ */
+export interface BranchWorkRecord {
+  /** Schema version for forward compatibility. */
+  schemaVersion: string;
+  /** Branch this record tracks. */
+  branch: string;
+  /** Base branch used to compute the diff. */
+  baseBranch: string;
+  /** ISO timestamp when the record was first created. */
+  createdAt: string;
+  /** ISO timestamp of the most recent update. */
+  updatedAt: string;
+  /** Completed work items attributed to this branch. */
+  items: BranchWorkRecordItem[];
+  /** Per-epic aggregation of completed items. */
+  epicSummaries: BranchWorkEpicSummary[];
+  /** Optional record-level metadata. */
+  metadata?: BranchWorkRecordMetadata;
+}
+
 // ── Union type for all output modules ───────────────────────────────────────
 
 export interface SourcevisionOutput {
