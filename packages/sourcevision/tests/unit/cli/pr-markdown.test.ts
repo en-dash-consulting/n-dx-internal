@@ -3,9 +3,10 @@ import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { cmdPrMarkdown, toBranchWorkRecord } from "../../../src/cli/commands/pr-markdown.js";
+import { cmdPrMarkdown, toBranchWorkRecord, generatePrMarkdownFile, PR_MARKDOWN_FILENAME } from "../../../src/cli/commands/pr-markdown.js";
 import { CLIError } from "../../../src/cli/errors.js";
 import type { BranchWorkResult } from "../../../src/analyzers/branch-work-collector.js";
+import { existsSync } from "node:fs";
 
 function git(cwd: string, args: string[]): string {
   return execFileSync("git", args, { cwd, encoding: "utf-8" }).trim();
@@ -486,5 +487,112 @@ describe("cmdPrMarkdown", () => {
     expect(markdown).toContain("Branch task");
     expect(markdown).not.toContain("Base task");
     expect(markdown).toContain("**Completed items:** 1");
+  });
+});
+
+// ── generatePrMarkdownFile (shared core logic) ──────────────────────────────
+
+describe("generatePrMarkdownFile", () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), "sv-pr-gen-"));
+    vi.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    if (tmpDir) rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("writes pr-markdown.md to the specified svDir", async () => {
+    const svDir = join(tmpDir, ".sourcevision");
+    mkdirSync(svDir, { recursive: true });
+
+    writePRD(tmpDir, [
+      {
+        id: "epic-1",
+        title: "Core",
+        level: "epic",
+        status: "in_progress",
+        children: [{
+          id: "feature-1",
+          title: "API",
+          level: "feature",
+          status: "in_progress",
+          children: [
+            { id: "t-1", title: "Task A", level: "task", status: "completed", completedAt: "2026-01-01T00:00:00.000Z" },
+          ],
+        }],
+      },
+    ]);
+
+    const result = await generatePrMarkdownFile(tmpDir, svDir);
+
+    expect(result.outputPath).toBe(join(svDir, PR_MARKDOWN_FILENAME));
+    expect(result.itemCount).toBe(1);
+    expect(result.warnings).toEqual([]);
+    expect(existsSync(result.outputPath)).toBe(true);
+
+    const markdown = readFileSync(result.outputPath, "utf-8");
+    expect(markdown).toContain("## Summary");
+    expect(markdown).toContain("Task A");
+  });
+
+  it("returns zero itemCount when no PRD exists", async () => {
+    const svDir = join(tmpDir, ".sourcevision");
+    mkdirSync(svDir, { recursive: true });
+
+    const result = await generatePrMarkdownFile(tmpDir, svDir);
+
+    expect(result.itemCount).toBe(0);
+    expect(existsSync(result.outputPath)).toBe(true);
+
+    const markdown = readFileSync(result.outputPath, "utf-8");
+    expect(markdown).toContain("No completed work items on this branch.");
+  });
+
+  it("returns warnings from corrupted PRD", async () => {
+    const svDir = join(tmpDir, ".sourcevision");
+    mkdirSync(svDir, { recursive: true });
+    mkdirSync(join(tmpDir, ".rex"), { recursive: true });
+    writeFileSync(join(tmpDir, ".rex", "prd.json"), "{ broken", "utf-8");
+
+    const result = await generatePrMarkdownFile(tmpDir, svDir);
+
+    expect(result.itemCount).toBe(0);
+    expect(result.warnings.length).toBeGreaterThanOrEqual(0);
+    expect(existsSync(result.outputPath)).toBe(true);
+  });
+
+  it("overwrites existing pr-markdown.md", async () => {
+    const svDir = join(tmpDir, ".sourcevision");
+    mkdirSync(svDir, { recursive: true });
+    const outputPath = join(svDir, PR_MARKDOWN_FILENAME);
+    writeFileSync(outputPath, "old stale content", "utf-8");
+
+    writePRD(tmpDir, [
+      {
+        id: "epic-1",
+        title: "Fresh",
+        level: "epic",
+        status: "in_progress",
+        children: [{
+          id: "feature-1",
+          title: "New Feature",
+          level: "feature",
+          status: "in_progress",
+          children: [
+            { id: "t-1", title: "New Task", level: "task", status: "completed", completedAt: "2026-01-01T00:00:00.000Z" },
+          ],
+        }],
+      },
+    ]);
+
+    await generatePrMarkdownFile(tmpDir, svDir);
+
+    const markdown = readFileSync(outputPath, "utf-8");
+    expect(markdown).not.toContain("old stale content");
+    expect(markdown).toContain("New Task");
   });
 });

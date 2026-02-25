@@ -31,7 +31,8 @@ import type {
 } from "../../schema/v1.js";
 import type { BranchWorkResult } from "../../analyzers/branch-work-collector.js";
 
-const OUTPUT_FILENAME = "pr-markdown.md";
+/** Output filename for generated PR markdown. */
+export const PR_MARKDOWN_FILENAME = "pr-markdown.md";
 
 /**
  * Convert a {@link BranchWorkResult} from the collector into a
@@ -81,6 +82,44 @@ export function toBranchWorkRecord(result: BranchWorkResult): BranchWorkRecord {
   };
 }
 
+/** Result of PR markdown file generation. */
+export interface PrMarkdownGenerationResult {
+  /** Absolute path of the written file. */
+  outputPath: string;
+  /** Number of completed work items included in the markdown. */
+  itemCount: number;
+  /** Non-fatal warnings collected during generation. */
+  warnings: string[];
+}
+
+/**
+ * Generate PR markdown file from rex completion data.
+ *
+ * Core generation logic shared by the standalone `pr-markdown` command
+ * and the analyze command integration. Callers provide resolved paths
+ * — this function performs no CLI error checking.
+ *
+ * Gracefully handles:
+ * - Missing `.rex/prd.json` (produces "no completed work" output)
+ * - Non-git directories (all completed items treated as branch work)
+ * - Missing base branch (all completed items treated as branch work)
+ * - Corrupted PRD JSON (produces empty result with warnings)
+ */
+export async function generatePrMarkdownFile(
+  absDir: string,
+  svDir: string,
+): Promise<PrMarkdownGenerationResult> {
+  const result = await collectBranchWork({ dir: absDir });
+  const warnings = result.errors ? [...result.errors] : [];
+
+  const record = toBranchWorkRecord(result);
+  const markdown = renderPRMarkdownFromRecord(record);
+  const outputPath = join(svDir, PR_MARKDOWN_FILENAME);
+  writeFileSync(outputPath, markdown, "utf-8");
+
+  return { outputPath, itemCount: record.items.length, warnings };
+}
+
 /**
  * Generate PR markdown from rex completion data.
  *
@@ -98,17 +137,14 @@ export async function cmdPrMarkdown(targetDir: string): Promise<void> {
   const absDir = resolve(targetDir);
   requireSvDir(absDir);
 
-  const result = await collectBranchWork({ dir: absDir });
+  const { outputPath, warnings } = await generatePrMarkdownFile(
+    absDir,
+    join(absDir, SV_DIR),
+  );
 
-  if (result.errors && result.errors.length > 0) {
-    for (const err of result.errors) {
-      info(`Warning: ${err}`);
-    }
+  for (const warning of warnings) {
+    info(`Warning: ${warning}`);
   }
 
-  const record = toBranchWorkRecord(result);
-  const markdown = renderPRMarkdownFromRecord(record);
-  const outputPath = join(absDir, SV_DIR, OUTPUT_FILENAME);
-  writeFileSync(outputPath, markdown, "utf-8");
   info(`PR markdown regenerated → ${outputPath}`);
 }

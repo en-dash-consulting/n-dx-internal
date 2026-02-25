@@ -29,6 +29,7 @@ import {
   PhaseError,
 } from "./analyze-phases.js";
 import type { AnalyzeContext } from "./analyze-phases.js";
+import { generatePrMarkdownFile } from "./pr-markdown.js";
 
 type PhaseFilter =
   | { type: "all" }
@@ -158,6 +159,11 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
     generateOutputFiles(ctx);
   }
 
+  // ── Generate PR markdown from branch work record ───────────────────
+  if (filter.type === "all") {
+    await generatePrMarkdownStep(ctx);
+  }
+
   // ── Token usage summary ─────────────────────────────────────────────
   const usageLine = formatTokenUsage(ctx.tokenUsage);
   if (usageLine) {
@@ -178,6 +184,25 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
 
   info("");
   info("Done.");
+}
+
+// ── PR markdown generation ───────────────────────────────────────────
+
+async function generatePrMarkdownStep(ctx: AnalyzeContext): Promise<void> {
+  try {
+    const { outputPath, itemCount, warnings } = await generatePrMarkdownFile(
+      ctx.absDir,
+      ctx.svDir,
+    );
+
+    for (const warning of warnings) {
+      info(`  Warning: ${warning}`);
+    }
+
+    info(`[output] pr-markdown.md (${itemCount} item${itemCount !== 1 ? "s" : ""}) → ${outputPath}`);
+  } catch {
+    // Non-critical — don't fail the analysis
+  }
 }
 
 // ── Output generation ────────────────────────────────────────────────
