@@ -107,7 +107,7 @@ try {
       await cmdExportPdf(targetArg || ".", { output: outputPath });
       break;
     case "pr-markdown":
-      cmdPrMarkdown(targetArg || ".");
+      await cmdPrMarkdown(targetArg || ".");
       break;
     case "git-credential-helper":
       cmdGitCredentialHelper();

@@ -1,14 +1,135 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { execFileSync } from "node:child_process";
-import { dirname, join } from "node:path";
-import { chmodSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { cmdPrMarkdown } from "../../../src/cli/commands/pr-markdown.js";
+import { cmdPrMarkdown, toBranchWorkRecord } from "../../../src/cli/commands/pr-markdown.js";
 import { CLIError } from "../../../src/cli/errors.js";
+import type { BranchWorkResult } from "../../../src/analyzers/branch-work-collector.js";
 
 function git(cwd: string, args: string[]): string {
   return execFileSync("git", args, { cwd, encoding: "utf-8" }).trim();
 }
+
+function writePRD(dir: string, items: unknown[]): void {
+  mkdirSync(join(dir, ".rex"), { recursive: true });
+  writeFileSync(
+    join(dir, ".rex", "prd.json"),
+    JSON.stringify({ schema: "1.0.0", title: "Test Project", items }, null, 2),
+    "utf-8",
+  );
+}
+
+// ── toBranchWorkRecord (pure conversion) ────────────────────────────────────
+
+describe("toBranchWorkRecord", () => {
+  it("converts a BranchWorkResult with items to a BranchWorkRecord", () => {
+    const result: BranchWorkResult = {
+      branch: "feature/test",
+      baseBranch: "main",
+      collectedAt: "2026-01-01T00:00:00.000Z",
+      items: [
+        {
+          id: "task-1",
+          title: "Task One",
+          level: "task",
+          completedAt: "2026-01-01T00:00:00.000Z",
+          priority: "high",
+          tags: ["refactor"],
+          description: "A test task",
+          acceptanceCriteria: ["Tests pass"],
+          parentChain: [
+            { id: "epic-1", title: "Epic One", level: "epic" },
+            { id: "feature-1", title: "Feature One", level: "feature" },
+          ],
+        },
+      ],
+      epicSummaries: [
+        { id: "epic-1", title: "Epic One", completedCount: 1 },
+      ],
+    };
+
+    const record = toBranchWorkRecord(result);
+
+    expect(record.schemaVersion).toBe("1.0.0");
+    expect(record.branch).toBe("feature/test");
+    expect(record.baseBranch).toBe("main");
+    expect(record.createdAt).toBe("2026-01-01T00:00:00.000Z");
+    expect(record.updatedAt).toBe("2026-01-01T00:00:00.000Z");
+    expect(record.items).toHaveLength(1);
+    expect(record.items[0].id).toBe("task-1");
+    expect(record.items[0].completedAt).toBe("2026-01-01T00:00:00.000Z");
+    expect(record.items[0].priority).toBe("high");
+    expect(record.items[0].tags).toEqual(["refactor"]);
+    expect(record.items[0].description).toBe("A test task");
+    expect(record.items[0].acceptanceCriteria).toEqual(["Tests pass"]);
+    expect(record.items[0].parentChain).toEqual([
+      { id: "epic-1", title: "Epic One", level: "epic" },
+      { id: "feature-1", title: "Feature One", level: "feature" },
+    ]);
+    expect(record.epicSummaries).toHaveLength(1);
+    expect(record.epicSummaries[0].title).toBe("Epic One");
+    expect(record.epicSummaries[0].completedCount).toBe(1);
+  });
+
+  it("uses collectedAt as fallback for missing completedAt", () => {
+    const result: BranchWorkResult = {
+      branch: "feature/test",
+      baseBranch: "main",
+      collectedAt: "2026-02-01T12:00:00.000Z",
+      items: [
+        {
+          id: "task-1",
+          title: "Task Without Timestamp",
+          level: "task",
+          parentChain: [],
+        },
+      ],
+    };
+
+    const record = toBranchWorkRecord(result);
+    expect(record.items[0].completedAt).toBe("2026-02-01T12:00:00.000Z");
+  });
+
+  it("handles empty result with no items or epic summaries", () => {
+    const result: BranchWorkResult = {
+      branch: "unknown",
+      baseBranch: "main",
+      collectedAt: "2026-01-01T00:00:00.000Z",
+      items: [],
+    };
+
+    const record = toBranchWorkRecord(result);
+    expect(record.items).toHaveLength(0);
+    expect(record.epicSummaries).toHaveLength(0);
+    expect(record.branch).toBe("unknown");
+  });
+
+  it("omits optional fields when not present on source items", () => {
+    const result: BranchWorkResult = {
+      branch: "feature/minimal",
+      baseBranch: "main",
+      collectedAt: "2026-01-01T00:00:00.000Z",
+      items: [
+        {
+          id: "task-1",
+          title: "Minimal Task",
+          level: "task",
+          parentChain: [],
+        },
+      ],
+    };
+
+    const record = toBranchWorkRecord(result);
+    const item = record.items[0];
+    expect(item).not.toHaveProperty("priority");
+    expect(item).not.toHaveProperty("tags");
+    expect(item).not.toHaveProperty("description");
+    expect(item).not.toHaveProperty("acceptanceCriteria");
+  });
+});
+
+// ── cmdPrMarkdown (integration) ─────────────────────────────────────────────
 
 describe("cmdPrMarkdown", () => {
   let tmpDir: string;
@@ -23,468 +144,347 @@ describe("cmdPrMarkdown", () => {
     if (tmpDir) rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("throws when .sourcevision directory is missing", () => {
-    expect(() => cmdPrMarkdown(tmpDir)).toThrow(CLIError);
-    expect(() => cmdPrMarkdown(tmpDir)).toThrow(/Sourcevision directory not found/);
+  it("throws when .sourcevision directory is missing", async () => {
+    await expect(cmdPrMarkdown(tmpDir)).rejects.toThrow(CLIError);
+    await expect(cmdPrMarkdown(tmpDir)).rejects.toThrow(/Sourcevision directory not found/);
   });
 
-  it("writes .sourcevision/pr-markdown.md when git diff can be generated", () => {
+  it("generates markdown from rex PRD data on a feature branch", async () => {
     mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
 
     git(tmpDir, ["init", "-b", "main"]);
     git(tmpDir, ["config", "user.email", "test@example.com"]);
     git(tmpDir, ["config", "user.name", "Test User"]);
-
     writeFileSync(join(tmpDir, "base.txt"), "base\n", "utf-8");
-    git(tmpDir, ["add", "base.txt"]);
+    git(tmpDir, ["add", "."]);
     git(tmpDir, ["commit", "-m", "base"]);
 
-    git(tmpDir, ["checkout", "-b", "feature/add-pr-markdown"]);
-    writeFileSync(join(tmpDir, "feature.txt"), "line1\nline2\n", "utf-8");
-    git(tmpDir, ["add", "feature.txt"]);
-    git(tmpDir, ["commit", "-m", "feature"]);
+    git(tmpDir, ["checkout", "-b", "feature/rex-pr"]);
 
-    writeFileSync(join(tmpDir, "base.txt"), "base\nchanged\n", "utf-8");
-    writeFileSync(join(tmpDir, "scratch.tmp"), "temp\n", "utf-8");
-
-    cmdPrMarkdown(tmpDir);
-
-    const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
-    expect(markdown).toContain("## PR Overview");
-    expect(markdown).toContain("## Worked PRD Epics");
-    expect(markdown).toContain("- No completed branch-scoped Rex items found (no_branch_scoped_completed_rex_items).");
-    expect(markdown).toContain("## Important Changes");
-    expect(markdown).toContain("`main...HEAD`");
-    expect(markdown).toContain("- Diff footprint: 1 file(s) changed across 1 workstream(s).");
-    expect(markdown).toContain("## Modified But Unstaged Files");
-    expect(markdown).toContain("## Untracked Files");
-    expect(markdown).toContain("`scratch.tmp`");
-    expect(markdown).toContain("Workstream `(root)` had concentrated activity (1 added).");
-
-    expect(markdown.indexOf("## PR Overview")).toBeLessThan(markdown.indexOf("## Worked PRD Epics"));
-    expect(markdown.indexOf("## Worked PRD Epics")).toBeLessThan(markdown.indexOf("## Important Changes"));
-
-    // Regression guards: avoid exhaustive file/line enumerations in default mode.
-    expect(markdown).not.toContain("## Changed Files");
-    expect(markdown).not.toContain("| Status | Path | + | - |");
-    expect(markdown).not.toContain("## Workstream Breakdown");
-    expect(markdown).not.toContain("## Notable Changes");
-    expect(markdown).not.toMatch(/^- `[^`]+`: \d+ file\(s\), \+\d+ \/ -\d+/m);
-  });
-
-  it("renders explicit fallback lines when there are no important changes", () => {
-    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
-
-    git(tmpDir, ["init", "-b", "main"]);
-    git(tmpDir, ["config", "user.email", "test@example.com"]);
-    git(tmpDir, ["config", "user.name", "Test User"]);
-    writeFileSync(join(tmpDir, "file.txt"), "hello\n", "utf-8");
-    git(tmpDir, ["add", "file.txt"]);
-    git(tmpDir, ["commit", "-m", "init"]);
-
-    git(tmpDir, ["checkout", "-b", "feature/no-diff"]);
-
-    cmdPrMarkdown(tmpDir);
-
-    const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
-    expect(markdown).toContain("## PR Overview");
-    expect(markdown).toContain("## Worked PRD Epics");
-    expect(markdown).toContain("- No completed branch-scoped Rex items found (no_branch_scoped_completed_rex_items).");
-    expect(markdown).toContain("## Important Changes");
-    expect(markdown).toContain("- No important functional or feature-level changes identified.");
-  });
-
-  it("renders worked PRD tasks grouped by epic with stable ordering", () => {
-    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
-    mkdirSync(join(tmpDir, ".rex"), { recursive: true });
-
-    git(tmpDir, ["init", "-b", "main"]);
-    git(tmpDir, ["config", "user.email", "test@example.com"]);
-    git(tmpDir, ["config", "user.name", "Test User"]);
-
-    writeFileSync(join(tmpDir, "base.txt"), "base\n", "utf-8");
-    git(tmpDir, ["add", "base.txt"]);
-    git(tmpDir, ["commit", "-m", "base"]);
-    git(tmpDir, ["checkout", "-b", "feature/epic-list"]);
-
-    writeFileSync(join(tmpDir, "feature.txt"), "line1\n", "utf-8");
-    git(tmpDir, ["add", "feature.txt"]);
-    git(tmpDir, ["commit", "-m", "feature"]);
-
-    writeFileSync(
-      join(tmpDir, ".rex", "prd.json"),
-      `${JSON.stringify({
-        items: [
+    writePRD(tmpDir, [
+      {
+        id: "epic-1",
+        title: "Auth System",
+        level: "epic",
+        status: "in_progress",
+        children: [
           {
-            id: "epic-2",
-            title: "Epic Zebra",
-            level: "epic",
+            id: "feature-1",
+            title: "Login Flow",
+            level: "feature",
             status: "in_progress",
-            children: [{
-              id: "feature-2",
-              title: "Feature 2",
-              level: "feature",
-              status: "in_progress",
-              children: [
-                { id: "task-2a", title: "Task 2a", level: "task", status: "completed" },
-                { id: "task-2b", title: "Task 2b", level: "task", status: "in_progress" },
-              ],
-            }],
-          },
-          {
-            id: "epic-1",
-            title: "Epic Alpha",
-            level: "epic",
-            status: "in_progress",
-            children: [{
-              id: "feature-1",
-              title: "Feature 1",
-              level: "feature",
-              status: "in_progress",
-              children: [{ id: "task-1", title: "Task 1", level: "task", status: "completed" }],
-            }],
+            children: [
+              {
+                id: "task-1",
+                title: "Implement JWT tokens",
+                level: "task",
+                status: "completed",
+                completedAt: "2026-01-15T10:00:00.000Z",
+                priority: "high",
+              },
+              {
+                id: "task-2",
+                title: "Add refresh token rotation",
+                level: "task",
+                status: "completed",
+                completedAt: "2026-01-16T14:00:00.000Z",
+              },
+            ],
           },
         ],
-      }, null, 2)}\n`,
-      "utf-8",
-    );
+      },
+    ]);
 
-    writeFileSync(
-      join(tmpDir, ".rex", "execution-log.jsonl"),
-      [
-        JSON.stringify({ timestamp: "2099-01-01T00:00:00.000Z", itemId: "task-2a", branch: "feature/epic-list" }),
-        JSON.stringify({ timestamp: "2099-01-01T00:01:00.000Z", itemId: "task-2b", branch: "feature/epic-list" }),
-        JSON.stringify({ timestamp: "2099-01-01T00:02:00.000Z", itemId: "task-1", branch: "feature/epic-list" }),
-      ].join("\n") + "\n",
-      "utf-8",
-    );
+    git(tmpDir, ["add", "."]);
+    git(tmpDir, ["commit", "-m", "add rex data"]);
 
-    cmdPrMarkdown(tmpDir);
+    await cmdPrMarkdown(tmpDir);
 
     const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
-    expect(markdown).toContain("## Worked PRD Epics");
+
+    // Rex-based content sections
+    expect(markdown).toContain("## Summary");
+    expect(markdown).toContain("## Completed Work");
+    expect(markdown).toContain("Auth System");
+    expect(markdown).toContain("**Login Flow**");
+    expect(markdown).toContain("Implement JWT tokens");
+    expect(markdown).toContain("Add refresh token rotation");
+    expect(markdown).toContain("`feature/rex-pr`");
+    expect(markdown).toContain("`main`");
+
+    // No git-diff based sections
+    expect(markdown).not.toContain("## PR Overview");
+    expect(markdown).not.toContain("## Important Changes");
+    expect(markdown).not.toContain("Diff footprint");
+    expect(markdown).not.toContain("workstream");
+    expect(markdown).not.toContain("## Modified But Unstaged Files");
+    expect(markdown).not.toContain("## Untracked Files");
+  });
+
+  it("generates meaningful output when rex data is missing", async () => {
+    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
+
+    git(tmpDir, ["init", "-b", "main"]);
+    git(tmpDir, ["config", "user.email", "test@example.com"]);
+    git(tmpDir, ["config", "user.name", "Test User"]);
+    writeFileSync(join(tmpDir, "base.txt"), "base\n", "utf-8");
+    git(tmpDir, ["add", "."]);
+    git(tmpDir, ["commit", "-m", "init"]);
+
+    git(tmpDir, ["checkout", "-b", "feature/no-rex"]);
+
+    await cmdPrMarkdown(tmpDir);
+
+    const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
+    expect(markdown).toContain("## Summary");
+    expect(markdown).toContain("## Completed Work");
+    expect(markdown).toContain("No completed work items on this branch.");
+    expect(markdown).toContain("**Completed items:** 0");
+  });
+
+  it("works without git history (non-git directory)", async () => {
+    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
+
+    writePRD(tmpDir, [
+      {
+        id: "epic-1",
+        title: "Setup",
+        level: "epic",
+        status: "in_progress",
+        children: [
+          {
+            id: "feature-1",
+            title: "Init",
+            level: "feature",
+            status: "in_progress",
+            children: [
+              {
+                id: "task-1",
+                title: "Bootstrap project",
+                level: "task",
+                status: "completed",
+                completedAt: "2026-01-01T00:00:00.000Z",
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+
+    await cmdPrMarkdown(tmpDir);
+
+    const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
+    expect(markdown).toContain("## Summary");
+    expect(markdown).toContain("## Completed Work");
+    expect(markdown).toContain("Bootstrap project");
+    expect(markdown).toContain("Setup");
+    // Branch is "unknown" when git is unavailable
+    expect(markdown).toContain("`unknown`");
+  });
+
+  it("renders epic grouping with stable ordering from PRD hierarchy", async () => {
+    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
+
+    git(tmpDir, ["init", "-b", "main"]);
+    git(tmpDir, ["config", "user.email", "test@example.com"]);
+    git(tmpDir, ["config", "user.name", "Test User"]);
+    writeFileSync(join(tmpDir, "base.txt"), "base\n", "utf-8");
+    git(tmpDir, ["add", "."]);
+    git(tmpDir, ["commit", "-m", "base"]);
+    git(tmpDir, ["checkout", "-b", "feature/multi-epic"]);
+
+    writePRD(tmpDir, [
+      {
+        id: "epic-2",
+        title: "Epic Zebra",
+        level: "epic",
+        status: "in_progress",
+        children: [{
+          id: "feature-2",
+          title: "Feature Z",
+          level: "feature",
+          status: "in_progress",
+          children: [
+            { id: "task-2a", title: "Task Z1", level: "task", status: "completed", completedAt: "2026-01-01T00:00:00.000Z" },
+            { id: "task-2b", title: "Task Z2", level: "task", status: "completed", completedAt: "2026-01-02T00:00:00.000Z" },
+          ],
+        }],
+      },
+      {
+        id: "epic-1",
+        title: "Epic Alpha",
+        level: "epic",
+        status: "in_progress",
+        children: [{
+          id: "feature-1",
+          title: "Feature A",
+          level: "feature",
+          status: "in_progress",
+          children: [
+            { id: "task-1", title: "Task A1", level: "task", status: "completed", completedAt: "2026-01-03T00:00:00.000Z" },
+          ],
+        }],
+      },
+    ]);
+
+    git(tmpDir, ["add", "."]);
+    git(tmpDir, ["commit", "-m", "add prd"]);
+
+    await cmdPrMarkdown(tmpDir);
+
+    const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
+
     expect(markdown).toContain("### Epic Alpha");
     expect(markdown).toContain("### Epic Zebra");
-    expect(markdown).toContain("- `Task 1` [feature: Feature 1] [completed]");
-    expect(markdown).toContain("- `Task 2a` [feature: Feature 2] [completed]");
-    expect(markdown).toContain("- `Task 2b` [feature: Feature 2] [executed (current status: in_progress)]");
+    expect(markdown).toContain("Task A1");
+    expect(markdown).toContain("Task Z1");
+    expect(markdown).toContain("Task Z2");
 
+    // Epics are sorted alphabetically by the template
     const alphaIndex = markdown.indexOf("### Epic Alpha");
     const zebraIndex = markdown.indexOf("### Epic Zebra");
     expect(alphaIndex).toBeGreaterThan(-1);
     expect(zebraIndex).toBeGreaterThan(-1);
     expect(alphaIndex).toBeLessThan(zebraIndex);
 
-    const firstSection = markdown.slice(
-      markdown.indexOf("## Worked PRD Epics"),
-      markdown.indexOf("## Important Changes"),
-    );
-    expect(firstSection).toMatchInlineSnapshot(`
-      "## Worked PRD Epics
-
-      ### Epic Alpha
-      - \`Task 1\` [feature: Feature 1] [completed]
-
-      ### Epic Zebra
-      - \`Task 2a\` [feature: Feature 2] [completed]
-      - \`Task 2b\` [feature: Feature 2] [executed (current status: in_progress)]
-
-
-      "
-    `);
-
-    cmdPrMarkdown(tmpDir);
+    // Stable: running again produces identical output
+    await cmdPrMarkdown(tmpDir);
     const rerendered = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
-    const secondSection = rerendered.slice(
-      rerendered.indexOf("## Worked PRD Epics"),
-      rerendered.indexOf("## Important Changes"),
-    );
-    expect(secondSection).toBe(firstSection);
+    expect(rerendered).toBe(markdown);
   });
 
-  it("extracts significant exported-function and feature highlights with rationale", () => {
-    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
-    mkdirSync(join(tmpDir, "src"), { recursive: true });
-    mkdirSync(join(tmpDir, "app", "routes"), { recursive: true });
-
-    git(tmpDir, ["init", "-b", "main"]);
-    git(tmpDir, ["config", "user.email", "test@example.com"]);
-    git(tmpDir, ["config", "user.name", "Test User"]);
-
-    writeFileSync(
-      join(tmpDir, "src", "api.ts"),
-      "export function fetchProfile() {\n  return \"v1\";\n}\n",
-      "utf-8",
-    );
-    writeFileSync(
-      join(tmpDir, "app", "routes", "_index.tsx"),
-      "export default function Index() {\n  return <div>Home</div>;\n}\n",
-      "utf-8",
-    );
-    writeFileSync(
-      join(tmpDir, "src", "format-only.ts"),
-      "export function keepSpacing() {\n  return 1;\n}\n",
-      "utf-8",
-    );
-
-    git(tmpDir, ["add", "."]);
-    git(tmpDir, ["commit", "-m", "baseline"]);
-    git(tmpDir, ["checkout", "-b", "feature/significant-highlights"]);
-
-    writeFileSync(
-      join(tmpDir, "src", "api.ts"),
-      "export function fetchProfile() {\n  if (Math.random() > 0.5) return \"v2\";\n  return \"v1\";\n}\n",
-      "utf-8",
-    );
-    writeFileSync(
-      join(tmpDir, "app", "routes", "_index.tsx"),
-      "export default function Index() {\n  return <main>Dashboard</main>;\n}\n",
-      "utf-8",
-    );
-    writeFileSync(
-      join(tmpDir, "src", "format-only.ts"),
-      "export function keepSpacing() {\n      return 1 ;\n}\n",
-      "utf-8",
-    );
-    git(tmpDir, ["add", "."]);
-    git(tmpDir, ["commit", "-m", "significant edits"]);
-
-    cmdPrMarkdown(tmpDir);
-
-    const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
-    expect(markdown).toContain("## Important Changes");
-    expect(markdown).toContain("Modified exported function `fetchProfile` in `src/api.ts`");
-    expect(markdown).toContain("Behavior changed in an exported API");
-    expect(markdown).toContain("Updated route module `app/routes/_index.tsx`");
-    expect(markdown).toContain("User-visible navigation or request handling likely changed in this route");
-    expect(markdown).not.toContain("keepSpacing");
-  });
-
-  it("keeps default output narrative even when many workstreams change", () => {
+  it("includes epic summary table with completion counts", async () => {
     mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
 
     git(tmpDir, ["init", "-b", "main"]);
     git(tmpDir, ["config", "user.email", "test@example.com"]);
     git(tmpDir, ["config", "user.name", "Test User"]);
     writeFileSync(join(tmpDir, "base.txt"), "base\n", "utf-8");
-    git(tmpDir, ["add", "base.txt"]);
-    git(tmpDir, ["commit", "-m", "init"]);
+    git(tmpDir, ["add", "."]);
+    git(tmpDir, ["commit", "-m", "base"]);
+    git(tmpDir, ["checkout", "-b", "feature/summary"]);
 
-    git(tmpDir, ["checkout", "-b", "feature/over-limit-sections"]);
-
-    const changedFiles = [
-      "packages/alpha/a.ts",
-      "packages/beta/b.ts",
-      "apps/web/a.ts",
-      "apps/admin/b.ts",
-      "services/api/a.ts",
-      "services/auth/b.ts",
-      "docs/readme.md",
-      "tests/smoke.test.ts",
-      "scripts/setup.sh",
-    ];
-
-    for (const relativePath of changedFiles) {
-      mkdirSync(join(tmpDir, dirname(relativePath)), { recursive: true });
-      writeFileSync(join(tmpDir, relativePath), "content\n", "utf-8");
-    }
+    writePRD(tmpDir, [
+      {
+        id: "epic-1",
+        title: "Core",
+        level: "epic",
+        status: "in_progress",
+        children: [{
+          id: "feature-1",
+          title: "API",
+          level: "feature",
+          status: "in_progress",
+          children: [
+            { id: "t-1", title: "Endpoint A", level: "task", status: "completed", completedAt: "2026-01-01T00:00:00.000Z" },
+            { id: "t-2", title: "Endpoint B", level: "task", status: "completed", completedAt: "2026-01-02T00:00:00.000Z" },
+            { id: "t-3", title: "Endpoint C", level: "task", status: "pending" },
+          ],
+        }],
+      },
+    ]);
 
     git(tmpDir, ["add", "."]);
-    git(tmpDir, ["commit", "-m", "add many workstreams"]);
+    git(tmpDir, ["commit", "-m", "add prd"]);
 
-    cmdPrMarkdown(tmpDir);
+    await cmdPrMarkdown(tmpDir);
 
     const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
-    expect(markdown).toContain("## Important Changes");
-    expect(markdown).toContain("Workstream `apps/admin` had concentrated activity");
-    expect(markdown).toContain("Workstream `apps/web` had concentrated activity");
-    expect(markdown).toContain("Workstream `docs` had concentrated activity");
-    expect(markdown).not.toContain("## Workstream Breakdown");
-    expect(markdown).not.toMatch(/^- `[^`]+`: \d+ file\(s\), \+\d+ \/ -\d+/m);
+
+    // Summary section contains epic table
+    expect(markdown).toContain("| Epic | Completed |");
+    expect(markdown).toContain("| Core | 2 |");
+    expect(markdown).toContain("**Completed items:** 2");
   });
 
-  it("fails when no main or origin/main base branch can be resolved", () => {
+  it("produces valid output when .rex/prd.json exists but is empty", async () => {
+    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
+    mkdirSync(join(tmpDir, ".rex"), { recursive: true });
+
+    writeFileSync(join(tmpDir, ".rex", "prd.json"), "", "utf-8");
+
+    await cmdPrMarkdown(tmpDir);
+
+    const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
+    expect(markdown).toContain("## Summary");
+    expect(markdown).toContain("No completed work items on this branch.");
+  });
+
+  it("produces valid output when .rex/prd.json contains invalid JSON", async () => {
+    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
+    mkdirSync(join(tmpDir, ".rex"), { recursive: true });
+
+    writeFileSync(join(tmpDir, ".rex", "prd.json"), "{ invalid json", "utf-8");
+
+    await cmdPrMarkdown(tmpDir);
+
+    const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
+    expect(markdown).toContain("## Summary");
+    expect(markdown).toContain("No completed work items on this branch.");
+  });
+
+  it("only includes branch-specific completions when diffing against base", async () => {
     mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
 
-    git(tmpDir, ["init", "-b", "trunk"]);
+    git(tmpDir, ["init", "-b", "main"]);
     git(tmpDir, ["config", "user.email", "test@example.com"]);
     git(tmpDir, ["config", "user.name", "Test User"]);
-    writeFileSync(join(tmpDir, "file.txt"), "hello\n", "utf-8");
-    git(tmpDir, ["add", "file.txt"]);
-    git(tmpDir, ["commit", "-m", "init"]);
 
-    expect(() => cmdPrMarkdown(tmpDir)).toThrow(CLIError);
-    expect(() => cmdPrMarkdown(tmpDir)).toThrow(/Could not resolve a base branch/);
-  });
+    // Base branch has one completed task
+    writePRD(tmpDir, [
+      {
+        id: "epic-1",
+        title: "Core",
+        level: "epic",
+        status: "in_progress",
+        children: [{
+          id: "feature-1",
+          title: "Foundation",
+          level: "feature",
+          status: "in_progress",
+          children: [
+            { id: "task-base", title: "Base task", level: "task", status: "completed", completedAt: "2026-01-01T00:00:00.000Z" },
+            { id: "task-branch", title: "Branch task", level: "task", status: "pending" },
+          ],
+        }],
+      },
+    ]);
 
-  it("returns NOT_A_REPO outside a git repository and skips fetch/diff operations", () => {
-    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
-    const binDir = join(tmpDir, "bin");
-    mkdirSync(binDir, { recursive: true });
-    const callsPath = join(tmpDir, "git-calls.log");
-    const fakeGitPath = join(binDir, "git");
+    git(tmpDir, ["add", "."]);
+    git(tmpDir, ["commit", "-m", "base with one completed task"]);
 
-    writeFileSync(
-      fakeGitPath,
-      `#!/bin/sh
-echo "$@" >> "$GIT_CALLS_LOG"
-if [ "$1" = "rev-parse" ] && [ "$2" = "--is-inside-work-tree" ]; then
-  echo "fatal: not a git repository (or any of the parent directories): .git" 1>&2
-  exit 128
-fi
-echo "unexpected git call: $@" 1>&2
-exit 1
-`,
-      "utf-8",
-    );
-    chmodSync(fakeGitPath, 0o755);
+    // Feature branch adds another completion
+    git(tmpDir, ["checkout", "-b", "feature/diff"]);
 
-    const previousPath = process.env.PATH;
-    const previousCalls = process.env.GIT_CALLS_LOG;
-    process.env.PATH = `${binDir}:${previousPath ?? ""}`;
-    process.env.GIT_CALLS_LOG = callsPath;
-    try {
-      expect(() => cmdPrMarkdown(tmpDir)).toThrow(/NOT_A_REPO/);
-      const calls = readFileSync(callsPath, "utf-8");
-      expect(calls).toContain("rev-parse --is-inside-work-tree");
-      expect(calls).not.toContain("ls-remote");
-      expect(calls).not.toContain("diff ");
-    } finally {
-      process.env.PATH = previousPath;
-      if (previousCalls === undefined) delete process.env.GIT_CALLS_LOG;
-      else process.env.GIT_CALLS_LOG = previousCalls;
-    }
-  });
+    writePRD(tmpDir, [
+      {
+        id: "epic-1",
+        title: "Core",
+        level: "epic",
+        status: "in_progress",
+        children: [{
+          id: "feature-1",
+          title: "Foundation",
+          level: "feature",
+          status: "in_progress",
+          children: [
+            { id: "task-base", title: "Base task", level: "task", status: "completed", completedAt: "2026-01-01T00:00:00.000Z" },
+            { id: "task-branch", title: "Branch task", level: "task", status: "completed", completedAt: "2026-01-15T00:00:00.000Z" },
+          ],
+        }],
+      },
+    ]);
 
-  it("returns DETACHED_HEAD with commit SHA and skips fetch/diff operations", () => {
-    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
-    const binDir = join(tmpDir, "bin");
-    mkdirSync(binDir, { recursive: true });
-    const callsPath = join(tmpDir, "git-calls.log");
-    const fakeGitPath = join(binDir, "git");
-    const detachedSha = "1234567890abcdef1234567890abcdef12345678";
+    git(tmpDir, ["add", "."]);
+    git(tmpDir, ["commit", "-m", "complete branch task"]);
 
-    writeFileSync(
-      fakeGitPath,
-      `#!/bin/sh
-echo "$@" >> "$GIT_CALLS_LOG"
-if [ "$1" = "rev-parse" ] && [ "$2" = "--is-inside-work-tree" ]; then
-  echo "true"
-  exit 0
-fi
-if [ "$1" = "rev-parse" ] && [ "$2" = "--abbrev-ref" ] && [ "$3" = "HEAD" ]; then
-  echo "HEAD"
-  exit 0
-fi
-if [ "$1" = "rev-parse" ] && [ "$2" = "HEAD" ]; then
-  echo "${detachedSha}"
-  exit 0
-fi
-echo "unexpected git call: $@" 1>&2
-exit 1
-`,
-      "utf-8",
-    );
-    chmodSync(fakeGitPath, 0o755);
+    await cmdPrMarkdown(tmpDir);
 
-    const previousPath = process.env.PATH;
-    const previousCalls = process.env.GIT_CALLS_LOG;
-    process.env.PATH = `${binDir}:${previousPath ?? ""}`;
-    process.env.GIT_CALLS_LOG = callsPath;
-    try {
-      expect(() => cmdPrMarkdown(tmpDir)).toThrow(/DETACHED_HEAD/);
-      expect(() => cmdPrMarkdown(tmpDir)).toThrow(new RegExp(detachedSha));
-      const calls = readFileSync(callsPath, "utf-8");
-      expect(calls).toContain("rev-parse --is-inside-work-tree");
-      expect(calls).toContain("rev-parse --abbrev-ref HEAD");
-      expect(calls).toContain("rev-parse HEAD");
-      expect(calls).not.toContain("ls-remote");
-      expect(calls).not.toContain("diff ");
-    } finally {
-      process.env.PATH = previousPath;
-      if (previousCalls === undefined) delete process.env.GIT_CALLS_LOG;
-      else process.env.GIT_CALLS_LOG = previousCalls;
-    }
-  });
+    const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
 
-  it("skips remote connectivity checks and stays non-interactive during local diff generation", () => {
-    mkdirSync(join(tmpDir, ".sourcevision"), { recursive: true });
-    mkdirSync(join(tmpDir, "src"), { recursive: true });
-    writeFileSync(join(tmpDir, "src", "feature.ts"), "export function feature(): string {\n  return \"next\";\n}\n", "utf-8");
-    const binDir = join(tmpDir, "bin");
-    mkdirSync(binDir, { recursive: true });
-    const callsPath = join(tmpDir, "git-calls.log");
-    const fakeGitPath = join(binDir, "git");
-
-    writeFileSync(
-      fakeGitPath,
-      `#!/bin/sh
-echo "$@|GIT_TERMINAL_PROMPT=\${GIT_TERMINAL_PROMPT}|GCM_INTERACTIVE=\${GCM_INTERACTIVE}|GH_PROMPT_DISABLED=\${GH_PROMPT_DISABLED}" >> "$GIT_CALLS_LOG"
-if [ "$1" = "rev-parse" ] && [ "$2" = "--is-inside-work-tree" ]; then
-  echo "true"
-  exit 0
-fi
-if [ "$1" = "rev-parse" ] && [ "$2" = "--abbrev-ref" ] && [ "$3" = "HEAD" ]; then
-  echo "feature/local-only"
-  exit 0
-fi
-if [ "$1" = "rev-parse" ] && [ "$2" = "--verify" ] && [ "$3" = "main^{commit}" ]; then
-  echo "0123456789abcdef0123456789abcdef01234567"
-  exit 0
-fi
-if [ "$1" = "--no-pager" ] && [ "$2" = "diff" ] && [ "$3" = "--no-ext-diff" ] && [ "$4" = "--no-textconv" ] && [ "$5" = "--name-status" ] && [ "$6" = "main...HEAD" ]; then
-  echo "M\tsrc/feature.ts"
-  exit 0
-fi
-if [ "$1" = "--no-pager" ] && [ "$2" = "diff" ] && [ "$3" = "--no-ext-diff" ] && [ "$4" = "--no-textconv" ] && [ "$5" = "--numstat" ] && [ "$6" = "main...HEAD" ]; then
-  echo "2\t0\tsrc/feature.ts"
-  exit 0
-fi
-if [ "$1" = "--no-pager" ] && [ "$2" = "diff" ] && [ "$3" = "--no-ext-diff" ] && [ "$4" = "--no-textconv" ] && [ "$5" = "--unified=0" ] && [ "$6" = "--no-color" ] && [ "$7" = "main...HEAD" ]; then
-  cat <<'EOF'
-diff --git a/src/feature.ts b/src/feature.ts
-index 0123456..89abcde 100644
---- a/src/feature.ts
-+++ b/src/feature.ts
-@@ -1 +1,3 @@
-+export function feature(): string {
-+  return "next";
-+}
-EOF
-  exit 0
-fi
-if [ "$1" = "status" ] && [ "$2" = "--porcelain=v1" ] && [ "$3" = "--untracked-files=all" ]; then
-  exit 0
-fi
-if [ "$1" = "ls-remote" ]; then
-  echo "unexpected remote check" 1>&2
-  exit 99
-fi
-echo "unexpected git call: $@" 1>&2
-exit 1
-`,
-      "utf-8",
-    );
-    chmodSync(fakeGitPath, 0o755);
-
-    const previousPath = process.env.PATH;
-    const previousCalls = process.env.GIT_CALLS_LOG;
-    process.env.PATH = `${binDir}:${previousPath ?? ""}`;
-    process.env.GIT_CALLS_LOG = callsPath;
-    try {
-      cmdPrMarkdown(tmpDir);
-      const markdown = readFileSync(join(tmpDir, ".sourcevision", "pr-markdown.md"), "utf-8");
-      expect(markdown).toContain("## PR Overview");
-      expect(markdown).toContain("Base comparison: `main...HEAD`");
-      const calls = readFileSync(callsPath, "utf-8");
-      expect(calls).toContain("GIT_TERMINAL_PROMPT=0");
-      expect(calls).toContain("GCM_INTERACTIVE=never");
-      expect(calls).toContain("GH_PROMPT_DISABLED=1");
-      expect(calls).not.toContain("ls-remote");
-    } finally {
-      process.env.PATH = previousPath;
-      if (previousCalls === undefined) delete process.env.GIT_CALLS_LOG;
-      else process.env.GIT_CALLS_LOG = previousCalls;
-    }
+    // Only the branch-specific task should appear
+    expect(markdown).toContain("Branch task");
+    expect(markdown).not.toContain("Base task");
+    expect(markdown).toContain("**Completed items:** 1");
   });
 });
