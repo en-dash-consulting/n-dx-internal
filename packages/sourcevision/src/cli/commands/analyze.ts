@@ -188,6 +188,31 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
 
 // ── PR markdown generation ───────────────────────────────────────────
 
+/**
+ * Classify a PR markdown generation error into an actionable guidance message.
+ *
+ * Inspects the error message for common filesystem and configuration patterns
+ * and returns a human-readable suggestion for resolution.
+ */
+export function classifyPrMarkdownError(err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err);
+
+  if (/EACCES|EPERM/i.test(message)) {
+    return "Permission denied writing to .sourcevision/. Check directory permissions and try again.";
+  }
+  if (/ENOSPC/i.test(message)) {
+    return "Disk full. Free up space and re-run the analysis.";
+  }
+  if (/ENOENT/i.test(message) && /\.sourcevision/i.test(message)) {
+    return "The .sourcevision/ directory is missing. Run 'sourcevision init' first.";
+  }
+  if (/ENOENT/i.test(message)) {
+    return "A required file or directory was not found. Run 'sourcevision init' to ensure the project is set up.";
+  }
+
+  return `${message}. Re-run 'sourcevision analyze' or check .rex/prd.json integrity.`;
+}
+
 async function generatePrMarkdownStep(ctx: AnalyzeContext): Promise<void> {
   try {
     const { outputPath, itemCount, warnings } = await generatePrMarkdownFile(
@@ -200,8 +225,10 @@ async function generatePrMarkdownStep(ctx: AnalyzeContext): Promise<void> {
     }
 
     info(`[output] pr-markdown.md (${itemCount} item${itemCount !== 1 ? "s" : ""}) → ${outputPath}`);
-  } catch {
-    // Non-critical — don't fail the analysis
+  } catch (err) {
+    const guidance = classifyPrMarkdownError(err);
+    info("[output] pr-markdown.md — generation failed");
+    info(`  ${guidance}`);
   }
 }
 

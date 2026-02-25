@@ -418,6 +418,13 @@ export function PRMarkdownView() {
     !loading && !error && markdown
       ? h("div", { class: "card pr-markdown-success", role: "status", "aria-live": "polite" },
           h("h3", { class: "section-header-sm" }, "PR markdown ready"),
+          generatedAt
+            ? h("p", { class: "section-sub pr-markdown-gen-meta" },
+                cacheStatus === "fresh" ? "\u2713 " : "",
+                `Generated ${formatCachedTimestamp(generatedAt) ?? "at unknown time"}`,
+                cacheStatus === "fresh" ? " — fresh" : "",
+              )
+            : null,
           h("div", { class: "pr-markdown-mode-toggle", role: "group", "aria-label": "PR markdown view mode" },
             h("button", {
               type: "button",

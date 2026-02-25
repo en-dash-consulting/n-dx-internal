@@ -317,6 +317,11 @@
         {
           "file": "packages/web/src/server/routes-rex.ts",
           "method": "DELETE",
+          "path": "/api/rex/items/:id"
+        },
+        {
+          "file": "packages/web/src/server/routes-rex.ts",
+          "method": "DELETE",
           "path": "/api/rex/items/:id/requirements/:rid"
         },
         {
@@ -596,7 +601,7 @@
     "totalComponents": 5,
     "totalRouteModules": 0,
     "totalUsageEdges": 0,
-    "totalServerRoutes": 91,
+    "totalServerRoutes": 92,
     "routeConventions": {},
     "mostUsedComponents": [],
     "layoutDepth": 0

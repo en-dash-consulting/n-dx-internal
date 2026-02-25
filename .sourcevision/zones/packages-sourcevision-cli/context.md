@@ -66,6 +66,6 @@ Incoming (other zones → this zone):
 
 <insights>
 
-- [call graph] 73 internal calls, 5 outgoing, 46 incoming (cohesion: 0.94, coupling: 0.06)
+- [call graph] 73 internal calls, 5 outgoing, 51 incoming (cohesion: 0.94, coupling: 0.06)
 
 </insights>

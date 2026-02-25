@@ -8,7 +8,7 @@ Zone: Tests (`packages-sourcevision:tests`)
 Files: 68, Cohesion: 0.94, Coupling: 0.06
 Description: 66 files, primarily TypeScript
 Entry points: packages/sourcevision/src/cli/commands/analyze.ts, packages/sourcevision/src/cli/mcp.ts, packages/sourcevision/src/export/pdf-report.ts, packages/sourcevision/src/schema/data-files.ts, packages/sourcevision/src/schema/index.ts, packages/sourcevision/src/schema/v1.ts
-Lines: 23649
+Lines: 23840
 
 </zone>
 
@@ -36,14 +36,14 @@ packages/sourcevision/src/analyzers/token-usage.ts (TypeScript, 50 lines, source
 packages/sourcevision/src/analyzers/workspace.ts (TypeScript, 283 lines, source)
 packages/sourcevision/src/analyzers/zone-output.ts (TypeScript, 269 lines, source)
 packages/sourcevision/src/analyzers/zones.ts (TypeScript, 1389 lines, source)
-packages/sourcevision/src/cli/commands/analyze.ts (TypeScript, 227 lines, source)
+packages/sourcevision/src/cli/commands/analyze.ts (TypeScript, 279 lines, source)
 packages/sourcevision/src/cli/mcp.ts (TypeScript, 555 lines, source)
 packages/sourcevision/src/export/pdf-report.ts (TypeScript, 563 lines, source)
 packages/sourcevision/src/public.ts (TypeScript, 107 lines, source)
 packages/sourcevision/src/schema/data-files.ts (TypeScript, 13 lines, source)
-packages/sourcevision/src/schema/index.ts (TypeScript, 21 lines, source)
-packages/sourcevision/src/schema/v1.ts (TypeScript, 459 lines, source)
-packages/sourcevision/src/schema/validate.ts (TypeScript, 446 lines, source)
+packages/sourcevision/src/schema/index.ts (TypeScript, 23 lines, source)
+packages/sourcevision/src/schema/v1.ts (TypeScript, 544 lines, source)
+packages/sourcevision/src/schema/validate.ts (TypeScript, 498 lines, source)
 packages/sourcevision/src/util/merge.ts (TypeScript, 186 lines, source)
 packages/sourcevision/src/util/sort.ts (TypeScript, 222 lines, source)
 packages/sourcevision/tests/e2e/cli-analyze.test.ts (TypeScript, 159 lines, test)
@@ -179,7 +179,7 @@ Internal:
   packages/sourcevision/src/public.ts → packages/sourcevision/src/schema/v1.ts {SV_SCHEMA_VERSION}
   packages/sourcevision/src/public.ts → packages/sourcevision/src/schema/v1.ts {Manifest, ModuleInfo, ModuleStatus, SubAnalysisRef, AnalyzeTokenUsage, Inventory, FileEntry, FileRole, InventorySummary, Imports, ImportEdge, ImportType, ExternalImport, CircularDependency, ImportsSummary, Classifications, FileClassification, ClassificationEvidence, ClassificationsSummary, ArchetypeDefinition, ArchetypeSignal, Zones, Zone, ZoneSummary, ZoneCrossing, ZoneTokenUsage, Finding, FindingType, Components, ComponentDefinition, ComponentKind, ComponentUsageEdge, RouteModule, RouteExportKind, RouteTreeNode, ComponentsSummary, CallGraph, CallEdge, CallType, FunctionNode, CallGraphSummary, SourcevisionOutput, TokenUsage, NextStep}
   packages/sourcevision/src/schema/index.ts → packages/sourcevision/src/schema/v1.ts {*}
-  packages/sourcevision/src/schema/index.ts → packages/sourcevision/src/schema/validate.ts {ManifestSchema, InventorySchema, ImportsSchema, ClassificationsSchema, ZonesSchema, FindingSchema, ComponentsSchema, CallGraphSchema, validateManifest, validateInventory, validateImports, validateClassifications, validateZones, validateComponents, validateCallGraph, validateModule, formatValidationErrors}
+  packages/sourcevision/src/schema/index.ts → packages/sourcevision/src/schema/validate.ts {ManifestSchema, InventorySchema, ImportsSchema, ClassificationsSchema, ZonesSchema, FindingSchema, ComponentsSchema, CallGraphSchema, BranchWorkRecordSchema, validateManifest, validateInventory, validateImports, validateClassifications, validateZones, validateComponents, validateCallGraph, validateBranchWorkRecord, validateModule, formatValidationErrors}
   packages/sourcevision/src/schema/index.ts → packages/sourcevision/src/schema/validate.ts {ValidationResult}
   packages/sourcevision/src/schema/validate.ts → packages/sourcevision/src/schema/v1.ts {*}
   packages/sourcevision/src/util/merge.ts → packages/sourcevision/src/schema/index.ts {FileEntry, Inventory, InventorySummary, ImportEdge, ExternalImport, Imports, FileRole}
@@ -274,7 +274,7 @@ Incoming (other zones → this zone):
 
 - High cohesion (0.94) — files are tightly interconnected
 - Contains 70% of project files (68/97) — subdivided into 3 sub-zones
-- [call graph] 2183 internal calls, 42 outgoing, 145 incoming (cohesion: 0.98, coupling: 0.02)
+- [call graph] 2186 internal calls, 47 outgoing, 164 incoming (cohesion: 0.98, coupling: 0.02)
 
 </insights>
 

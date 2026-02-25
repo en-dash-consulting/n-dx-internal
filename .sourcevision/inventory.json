@@ -52,13 +52,13 @@
     },
     {
       "path": ".rex/execution-log.jsonl",
-      "size": 1011295,
+      "size": 1055037,
       "language": "Other",
-      "lineCount": 3072,
-      "hash": "2d5b194de1c54709107459c0ab6b7a8ef8240875a79272018d406b42cc53dfdd",
+      "lineCount": 3230,
+      "hash": "3b83ce68000f35cc86e745ab330866b1a10edba0d19099d98b485bd12658e427",
       "role": "other",
       "category": ".rex",
-      "lastModified": 1771944697075
+      "lastModified": 1771996487956
     },
     {
       "path": ".rex/pending-proposals.json",
@@ -72,13 +72,13 @@
     },
     {
       "path": ".rex/prd.json",
-      "size": 677823,
+      "size": 694648,
       "language": "JSON",
-      "lineCount": 13839,
-      "hash": "fb32ee0d746a2ad79e2fa20376f48038bf1e683170c7cfdedff265e6b9bdc315",
+      "lineCount": 14356,
+      "hash": "9c18283800b3cf04f5e86bdc0e4a4b9ea412a8049e1d27f017aa17980e051936",
       "role": "other",
       "category": ".rex",
-      "lastModified": 1771944697077
+      "lastModified": 1771996487955
     },
     {
       "path": ".rex/workflow.md",
@@ -92,13 +92,13 @@
     },
     {
       "path": "CLAUDE.md",
-      "size": 9004,
+      "size": 9014,
       "language": "Markdown",
       "lineCount": 207,
-      "hash": "55104fe4966c1a9df27d9c11609bb9f6ca39e284943ca030bce0e3039c5dcb9f",
+      "hash": "87c2e109eae5538b922a0321665a5c050cb5748b1df84e4641fc984a2b3de6e0",
       "role": "docs",
       "category": "root",
-      "lastModified": 1771944694337
+      "lastModified": 1771954028756
     },
     {
       "path": "CODEX.md",
@@ -122,13 +122,23 @@
     },
     {
       "path": "README.md",
-      "size": 10859,
+      "size": 12238,
       "language": "Markdown",
-      "lineCount": 318,
-      "hash": "097869926678251d2d343a44ab0dea0373f64abfb721fd603ecab5be21643ee4",
+      "lineCount": 355,
+      "hash": "5e586b307bfa7d5a39020ee6088f87104537c703cc6ba37ef9c2b312d7f1e24b",
       "role": "docs",
       "category": "root",
-      "lastModified": 1771944694338
+      "lastModified": 1771954007384
+    },
+    {
+      "path": "bitbucket-pipelines.yml",
+      "size": 956,
+      "language": "YAML",
+      "lineCount": 27,
+      "hash": "15153716c85921f14b48696cb5cb2c7bf8fce9b07485d8ade4b619ef4618a22d",
+      "role": "other",
+      "category": "root",
+      "lastModified": 1771956438774
     },
     {
       "path": "ci.js",
@@ -232,13 +242,13 @@
     },
     {
       "path": "package.json",
-      "size": 837,
+      "size": 873,
       "language": "JSON",
-      "lineCount": 28,
-      "hash": "9ed411bd0da2cc3746eb2ead41974c0e0057e29a5074fae237a95cdab18b094d",
+      "lineCount": 29,
+      "hash": "6cd62b6e09d374f561acc20e68a1a985244601d945167c94293720596086e4ce",
       "role": "config",
       "category": "root",
-      "lastModified": 1771616669558
+      "lastModified": 1771955599313
     },
     {
       "path": "packages/hench/Hench-F.png",
@@ -2232,13 +2242,13 @@
     },
     {
       "path": "packages/rex/src/cli/commands/constants.ts",
-      "size": 2897,
+      "size": 3003,
       "language": "TypeScript",
-      "lineCount": 48,
-      "hash": "8395f0811e96b51f9f30ff442c031f06b934f2bbc3c7e26150c9cc81bc525fc5",
+      "lineCount": 49,
+      "hash": "f6a78ebd60ff8b39cec2fbe03c42684b9ff5c0f85f85d7766b660d7eeceada8c",
       "role": "source",
       "category": "rex",
-      "lastModified": 1771944694369
+      "lastModified": 1771947689318
     },
     {
       "path": "packages/rex/src/cli/commands/fix.ts",
@@ -2301,14 +2311,24 @@
       "lastModified": 1771944694370
     },
     {
-      "path": "packages/rex/src/cli/commands/report.ts",
-      "size": 7523,
+      "path": "packages/rex/src/cli/commands/remove.ts",
+      "size": 5854,
       "language": "TypeScript",
-      "lineCount": 269,
-      "hash": "700f08a68685f3a2df7a81678e7560f424eec4d5fe9927eaa90687232d614a2d",
+      "lineCount": 188,
+      "hash": "91395c5450f955d8bb0f1712e90ff1b74ac1b4ceb85f77d6dcae5bf4214a4012",
       "role": "source",
       "category": "rex",
-      "lastModified": 1771616669577
+      "lastModified": 1771948083814
+    },
+    {
+      "path": "packages/rex/src/cli/commands/report.ts",
+      "size": 7772,
+      "language": "TypeScript",
+      "lineCount": 278,
+      "hash": "e34a8dbdbe6c92fe291418cb84ba460d48fae7494997263eb6144feea3c04392",
+      "role": "source",
+      "category": "rex",
+      "lastModified": 1771955960941
     },
     {
       "path": "packages/rex/src/cli/commands/reshape.ts",
@@ -2381,14 +2401,24 @@
       "lastModified": 1771616669578
     },
     {
-      "path": "packages/rex/src/cli/commands/validate.ts",
-      "size": 5553,
+      "path": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "size": 11848,
       "language": "TypeScript",
-      "lineCount": 200,
-      "hash": "0385ad00c597e12440cb8500eb717fffd23cd72b5cb185fd8171b932e9d89073",
+      "lineCount": 343,
+      "hash": "76c0429729bd0d69f1fb1d93e4c66a15aaf53fbfb98455056e144cdc175ea21c",
       "role": "source",
       "category": "rex",
-      "lastModified": 1771616669578
+      "lastModified": 1771967241305
+    },
+    {
+      "path": "packages/rex/src/cli/commands/validate.ts",
+      "size": 8259,
+      "language": "TypeScript",
+      "lineCount": 266,
+      "hash": "75e17b4c686f230a3086dc07d27d72f1f9f2bddc6803f4927855c8ca3775f70e",
+      "role": "source",
+      "category": "rex",
+      "lastModified": 1771965822918
     },
     {
       "path": "packages/rex/src/cli/commands/verify.ts",
@@ -2412,23 +2442,23 @@
     },
     {
       "path": "packages/rex/src/cli/help.ts",
-      "size": 20672,
+      "size": 22909,
       "language": "TypeScript",
-      "lineCount": 478,
-      "hash": "20cacbfd440ee19210d906d1f6135a42280829be5594ac488867d21a7e101288",
+      "lineCount": 525,
+      "hash": "b50ea3ba018adfa17d6473e67bd4031fefac2083a47a72a435f12e8dd59ea7d6",
       "role": "source",
       "category": "rex",
-      "lastModified": 1771944694372
+      "lastModified": 1771953691780
     },
     {
       "path": "packages/rex/src/cli/index.ts",
-      "size": 11530,
+      "size": 12782,
       "language": "TypeScript",
-      "lineCount": 344,
-      "hash": "34fe0e44a23adb72a94f71c0075926ce60d46783f3106ec88ad75c33600c5094",
+      "lineCount": 380,
+      "hash": "da17dc808885cb28dc8ec07c61a85678b3f12a7588d49f125b70ca8d39ea67c8",
       "role": "source",
       "category": "rex",
-      "lastModified": 1771944694372
+      "lastModified": 1771947664833
     },
     {
       "path": "packages/rex/src/cli/mcp-tools.ts",
@@ -2521,6 +2551,16 @@
       "lastModified": 1771616669579
     },
     {
+      "path": "packages/rex/src/core/epic-correlation.ts",
+      "size": 9132,
+      "language": "TypeScript",
+      "lineCount": 278,
+      "hash": "356581ac8240b3327a1b93a427c4725fa2940efbf070bb52824c10bfc3bb087a",
+      "role": "source",
+      "category": "rex",
+      "lastModified": 1771966450917
+    },
+    {
       "path": "packages/rex/src/core/fix.ts",
       "size": 7370,
       "language": "TypeScript",
@@ -2611,6 +2651,36 @@
       "lastModified": 1771616669580
     },
     {
+      "path": "packages/rex/src/core/remove-epic.ts",
+      "size": 2454,
+      "language": "TypeScript",
+      "lineCount": 74,
+      "hash": "8cb7145143d1674019bc1a20ed1df61523124f4e953e29c32600c9297e35fc7c",
+      "role": "source",
+      "category": "rex",
+      "lastModified": 1771946614210
+    },
+    {
+      "path": "packages/rex/src/core/remove-feature.ts",
+      "size": 9560,
+      "language": "TypeScript",
+      "lineCount": 286,
+      "hash": "1b5f309b257ecc74eeca665959309b9210ead6ee9ff04682c2ac7dce5286b9f9",
+      "role": "source",
+      "category": "rex",
+      "lastModified": 1771967216868
+    },
+    {
+      "path": "packages/rex/src/core/remove-task.ts",
+      "size": 5416,
+      "language": "TypeScript",
+      "lineCount": 154,
+      "hash": "df6913a601515d152a970fd03396bebacf854277f5b15d431241357989f243a3",
+      "role": "source",
+      "category": "rex",
+      "lastModified": 1771947295465
+    },
+    {
       "path": "packages/rex/src/core/requirements.ts",
       "size": 12300,
       "language": "TypeScript",
@@ -2642,13 +2712,13 @@
     },
     {
       "path": "packages/rex/src/core/structural.ts",
-      "size": 8469,
+      "size": 10974,
       "language": "TypeScript",
-      "lineCount": 295,
-      "hash": "d0335159a10c8b43deb24930969921dea69a12b893ad5fa67ac958387a7ee5b7",
+      "lineCount": 377,
+      "hash": "1a0799538a98301c8ddddc271dc02f74963a05de5ced3a790126e95444900f22",
       "role": "source",
       "category": "rex",
-      "lastModified": 1771616669581
+      "lastModified": 1771965764179
     },
     {
       "path": "packages/rex/src/core/sync-engine.ts",
@@ -2722,13 +2792,13 @@
     },
     {
       "path": "packages/rex/src/public.ts",
-      "size": 6538,
+      "size": 6996,
       "language": "TypeScript",
-      "lineCount": 200,
-      "hash": "f9ee7f86ae6952852daba00f1e222d0de2d306bd1054f43fed0efc2319c905f8",
+      "lineCount": 209,
+      "hash": "38b246b7f94a43c50a5fb141b02511dd9e4b735ff944b28bd851975b5f6e8f7d",
       "role": "source",
       "category": "rex",
-      "lastModified": 1771944694374
+      "lastModified": 1771967254611
     },
     {
       "path": "packages/rex/src/schema/index.ts",
@@ -3311,6 +3381,16 @@
       "lastModified": 1771944694378
     },
     {
+      "path": "packages/rex/tests/unit/cli/commands/remove.test.ts",
+      "size": 12189,
+      "language": "TypeScript",
+      "lineCount": 329,
+      "hash": "a6a93484bad3a42e257e5ddfdafb8faca31fd59fe2c875022633ba745dbf68df",
+      "role": "test",
+      "category": "rex",
+      "lastModified": 1771948088201
+    },
+    {
       "path": "packages/rex/tests/unit/cli/commands/report.test.ts",
       "size": 13012,
       "language": "TypeScript",
@@ -3391,14 +3471,34 @@
       "lastModified": 1771616669588
     },
     {
-      "path": "packages/rex/tests/unit/cli/commands/validate.test.ts",
-      "size": 14870,
+      "path": "packages/rex/tests/unit/cli/commands/validate-epicless.test.ts",
+      "size": 8794,
       "language": "TypeScript",
-      "lineCount": 516,
-      "hash": "39ef2ba6a65eeb0c1b37a1d74d09252f0f5867ccbdfd4fd4dcc47dae16722611",
+      "lineCount": 280,
+      "hash": "f37580a3e8258591e4681df8dfce6ea5452bd45da6a81920631b0c1401a4b239",
       "role": "test",
       "category": "rex",
-      "lastModified": 1771616669588
+      "lastModified": 1771965925697
+    },
+    {
+      "path": "packages/rex/tests/unit/cli/commands/validate-interactive.test.ts",
+      "size": 25667,
+      "language": "TypeScript",
+      "lineCount": 856,
+      "hash": "3cc8a4870dacfeec6688920fc4986cce47e9090bdae612d19becd5a34d6480e4",
+      "role": "test",
+      "category": "rex",
+      "lastModified": 1771967344496
+    },
+    {
+      "path": "packages/rex/tests/unit/cli/commands/validate.test.ts",
+      "size": 17150,
+      "language": "TypeScript",
+      "lineCount": 594,
+      "hash": "0d036367ab590473fc6c3b7f0d158f478825a341cce0102d391b5f9ded39048d",
+      "role": "test",
+      "category": "rex",
+      "lastModified": 1771955973678
     },
     {
       "path": "packages/rex/tests/unit/cli/commands/verify.test.ts",
@@ -3422,13 +3522,13 @@
     },
     {
       "path": "packages/rex/tests/unit/cli/help.test.ts",
-      "size": 3821,
+      "size": 4805,
       "language": "TypeScript",
-      "lineCount": 128,
-      "hash": "771f0b3ee44114dc5118fa865b7c4e208b673ca139cb99d9aeed906082c4e536",
+      "lineCount": 151,
+      "hash": "5cd0479871de4def316ddb7a585f7c8320a2463e81271b1ac53d972cef6c11f9",
       "role": "test",
       "category": "rex",
-      "lastModified": 1771944694380
+      "lastModified": 1771953858773
     },
     {
       "path": "packages/rex/tests/unit/cli/mcp.test.ts",
@@ -3479,6 +3579,26 @@
       "role": "test",
       "category": "rex",
       "lastModified": 1771616669589
+    },
+    {
+      "path": "packages/rex/tests/unit/core/epic-correlation.test.ts",
+      "size": 16051,
+      "language": "TypeScript",
+      "lineCount": 531,
+      "hash": "e2a38e25a5a257eb315cf4c63b94cb802a8019fc52ea43e0648811453d013c54",
+      "role": "test",
+      "category": "rex",
+      "lastModified": 1771966511590
+    },
+    {
+      "path": "packages/rex/tests/unit/core/epicless.test.ts",
+      "size": 4562,
+      "language": "TypeScript",
+      "lineCount": 196,
+      "hash": "eb846faeed78ce849dc5cd9f9e3f867a97590d871db51d82295f247593eb2d30",
+      "role": "test",
+      "category": "rex",
+      "lastModified": 1771965845195
     },
     {
       "path": "packages/rex/tests/unit/core/feature-filtered-task.test.ts",
@@ -3601,6 +3721,36 @@
       "lastModified": 1771616669591
     },
     {
+      "path": "packages/rex/tests/unit/core/remove-epic.test.ts",
+      "size": 4650,
+      "language": "TypeScript",
+      "lineCount": 163,
+      "hash": "283a7c424c1750423821829bb1216d30cb417ae28170d7de0343a3e7e169a991",
+      "role": "test",
+      "category": "rex",
+      "lastModified": 1771946577219
+    },
+    {
+      "path": "packages/rex/tests/unit/core/remove-feature.test.ts",
+      "size": 12825,
+      "language": "TypeScript",
+      "lineCount": 464,
+      "hash": "ff1af71c2f20fc84f3f6d04de472ea419dcf8f5341c7d1c75c63a7028c0560c2",
+      "role": "test",
+      "category": "rex",
+      "lastModified": 1771967304004
+    },
+    {
+      "path": "packages/rex/tests/unit/core/remove-task.test.ts",
+      "size": 9753,
+      "language": "TypeScript",
+      "lineCount": 331,
+      "hash": "a3d131d957b93ae2a6c24b7d0b18b013d4b782e3c6c1f30c2a361d9e182dc1d4",
+      "role": "test",
+      "category": "rex",
+      "lastModified": 1771947097570
+    },
+    {
       "path": "packages/rex/tests/unit/core/requirements-prioritization.test.ts",
       "size": 8183,
       "language": "TypeScript",
@@ -3622,13 +3772,13 @@
     },
     {
       "path": "packages/rex/tests/unit/core/structural.test.ts",
-      "size": 23979,
+      "size": 29336,
       "language": "TypeScript",
-      "lineCount": 717,
-      "hash": "158bd8ac7059f727233f6deb04e94b59f9fbf5cd4f146bae1034ff63212f2c90",
+      "lineCount": 882,
+      "hash": "8c5351c6948844d09b30bb1fe3af59d5137b3a3cdbec66558fc8a32bda443a9c",
       "role": "test",
       "category": "rex",
-      "lastModified": 1771616669591
+      "lastModified": 1771955902863
     },
     {
       "path": "packages/rex/tests/unit/core/sync-engine.test.ts",
@@ -3891,6 +4041,46 @@
       "lastModified": 1771616669602
     },
     {
+      "path": "packages/sourcevision/src/analyzers/branch-work-classifier.ts",
+      "size": 8226,
+      "language": "TypeScript",
+      "lineCount": 241,
+      "hash": "5c3326ba1c6059ee38656d5a5b15d68e076bb656a3d6a4afb985be528629fb2d",
+      "role": "source",
+      "category": "sourcevision",
+      "lastModified": 1771993694174
+    },
+    {
+      "path": "packages/sourcevision/src/analyzers/branch-work-collector.ts",
+      "size": 12722,
+      "language": "TypeScript",
+      "lineCount": 418,
+      "hash": "37103a996cdd30513523e8d3a605262ad704b71370fc67e679ef009e5cc28db7",
+      "role": "source",
+      "category": "sourcevision",
+      "lastModified": 1771990368335
+    },
+    {
+      "path": "packages/sourcevision/src/analyzers/branch-work-filter.ts",
+      "size": 11463,
+      "language": "TypeScript",
+      "lineCount": 377,
+      "hash": "ffb60683da686c13b8759cd1e56d952fe2c3c87dc3b342e954586a87148b3f48",
+      "role": "source",
+      "category": "sourcevision",
+      "lastModified": 1771994693073
+    },
+    {
+      "path": "packages/sourcevision/src/analyzers/branch-work-store.ts",
+      "size": 4774,
+      "language": "TypeScript",
+      "lineCount": 146,
+      "hash": "a4b3a97fa8c1ecb742c701118bd5cf8a05eafe39d7976c6235357c4fb48c6cba",
+      "role": "source",
+      "category": "sourcevision",
+      "lastModified": 1771990851323
+    },
+    {
       "path": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
       "size": 26787,
       "language": "TypeScript",
@@ -3929,6 +4119,16 @@
       "role": "source",
       "category": "sourcevision",
       "lastModified": 1771944694383
+    },
+    {
+      "path": "packages/sourcevision/src/analyzers/completion-reader.ts",
+      "size": 17320,
+      "language": "TypeScript",
+      "lineCount": 582,
+      "hash": "e4ff393e11f46254103726f6309fc9a097679957d4580afe0614e80959a5d8ac",
+      "role": "source",
+      "category": "sourcevision",
+      "lastModified": 1771991657902
     },
     {
       "path": "packages/sourcevision/src/analyzers/components.ts",
@@ -4142,13 +4342,13 @@
     },
     {
       "path": "packages/sourcevision/src/cli/commands/analyze.ts",
-      "size": 8402,
+      "size": 10378,
       "language": "TypeScript",
-      "lineCount": 227,
-      "hash": "08a175b3de725e32a712a2f965882bc7ab7f831842f308a7184c4f3aa110f6d2",
+      "lineCount": 279,
+      "hash": "4f59d90c2de90fe78a4eb2e86ace4b4e577009ad201f4a985942858ea73448f6",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1771944694385
+      "lastModified": 1771996271554
     },
     {
       "path": "packages/sourcevision/src/cli/commands/constants.ts",
@@ -4192,13 +4392,13 @@
     },
     {
       "path": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
-      "size": 24011,
+      "size": 5429,
       "language": "TypeScript",
-      "lineCount": 705,
-      "hash": "2bb10dd94e8cb828fc6b375e96158de7e4c4168305f546f30f01331ec179e212",
+      "lineCount": 158,
+      "hash": "1f3b3ed628d0f8cf17a7fc54140777bf68bca0caff3921f2c93b4ea6371e551f",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1771944694387
+      "lastModified": 1771993726147
     },
     {
       "path": "packages/sourcevision/src/cli/commands/prd-epic-resolver.ts",
@@ -4252,13 +4452,13 @@
     },
     {
       "path": "packages/sourcevision/src/cli/index.ts",
-      "size": 4334,
+      "size": 4340,
       "language": "TypeScript",
       "lineCount": 134,
-      "hash": "7bf9571857c83c81b31e776836e41797ca4064a79240218997a9a9c61ae2d03a",
+      "hash": "7734b8f58b70de657ff7c94684a84f2d0625f2a7f8db99ba73849b94b7aff07f",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1771944694388
+      "lastModified": 1771992473864
     },
     {
       "path": "packages/sourcevision/src/cli/mcp.ts",
@@ -4311,6 +4511,16 @@
       "lastModified": 1771944694389
     },
     {
+      "path": "packages/sourcevision/src/generators/pr-markdown-template.ts",
+      "size": 11216,
+      "language": "TypeScript",
+      "lineCount": 344,
+      "hash": "a8b9383f5c88858c44cd2e4b0e1ce170396a66a90bf320d15b5c18356c60ec3e",
+      "role": "source",
+      "category": "sourcevision",
+      "lastModified": 1771994157887
+    },
+    {
       "path": "packages/sourcevision/src/public.ts",
       "size": 2981,
       "language": "TypeScript",
@@ -4332,33 +4542,33 @@
     },
     {
       "path": "packages/sourcevision/src/schema/index.ts",
-      "size": 454,
+      "size": 508,
       "language": "TypeScript",
-      "lineCount": 21,
-      "hash": "fe0dd4e3984add2faf615163d672b26bd5c6e635431dc6c412e9e61ed7d3f280",
+      "lineCount": 23,
+      "hash": "53b1de1e8b0f850d8eea6f13cd24e9bedb1b2d68d5adfa7fae40cd93233ded4f",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1771616669607
+      "lastModified": 1771990824931
     },
     {
       "path": "packages/sourcevision/src/schema/v1.ts",
-      "size": 14258,
+      "size": 17136,
       "language": "TypeScript",
-      "lineCount": 459,
-      "hash": "bcc67145ca8316daf59483c71e627b974d26ebdaeb5245a18ac6c2df539b3824",
+      "lineCount": 544,
+      "hash": "3aeef66c69ecf8133ae35b5633b48c5e6aa2698db9e41ce1a67cdeec3d3bc5a6",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1771944694389
+      "lastModified": 1771990805236
     },
     {
       "path": "packages/sourcevision/src/schema/validate.ts",
-      "size": 13320,
+      "size": 14950,
       "language": "TypeScript",
-      "lineCount": 446,
-      "hash": "0f6fd3673fd576dc329a85502bc4746bf97bfbd6c8faedba01633854c39592c2",
+      "lineCount": 498,
+      "hash": "20a410fe732701e3f186558265b5ddae1ca2a9577b8704625beda61bbc45844a",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1771616669607
+      "lastModified": 1771990818786
     },
     {
       "path": "packages/sourcevision/src/util/merge.ts",
@@ -4592,13 +4802,13 @@
     },
     {
       "path": "packages/sourcevision/tests/integration/pr-markdown-reviewer-output.test.ts",
-      "size": 5154,
+      "size": 5720,
       "language": "TypeScript",
-      "lineCount": 143,
-      "hash": "72dd5d7a27c9489905fad379586a57974b3a210eb7d1165a7f0d0652c12fef5c",
+      "lineCount": 157,
+      "hash": "df186e2a985e6cb1993ca916e1ba064cc94147b587b88e53f59d10e0049f33c7",
       "role": "test",
       "category": "sourcevision",
-      "lastModified": 1771944694390
+      "lastModified": 1771992869248
     },
     {
       "path": "packages/sourcevision/tests/unit/analyzers/archetypes.test.ts",
@@ -4609,6 +4819,46 @@
       "role": "test",
       "category": "sourcevision",
       "lastModified": 1771616669609
+    },
+    {
+      "path": "packages/sourcevision/tests/unit/analyzers/branch-work-classifier.test.ts",
+      "size": 12771,
+      "language": "TypeScript",
+      "lineCount": 379,
+      "hash": "ff3fb2563582dc8e0a64de149757f9e2134692d792db7b07049447de96bcba2a",
+      "role": "test",
+      "category": "sourcevision",
+      "lastModified": 1771993637552
+    },
+    {
+      "path": "packages/sourcevision/tests/unit/analyzers/branch-work-collector.test.ts",
+      "size": 21572,
+      "language": "TypeScript",
+      "lineCount": 591,
+      "hash": "7c7f7d378257de32709247421b0484e25f245fe22e62cdbf96d3837224ac5926",
+      "role": "test",
+      "category": "sourcevision",
+      "lastModified": 1771990317815
+    },
+    {
+      "path": "packages/sourcevision/tests/unit/analyzers/branch-work-filter.test.ts",
+      "size": 13788,
+      "language": "TypeScript",
+      "lineCount": 441,
+      "hash": "ba702391aa92a923d34db96039bd9aee539490283af0ad915d0993fd3599b53d",
+      "role": "test",
+      "category": "sourcevision",
+      "lastModified": 1771994770587
+    },
+    {
+      "path": "packages/sourcevision/tests/unit/analyzers/branch-work-store.test.ts",
+      "size": 12340,
+      "language": "TypeScript",
+      "lineCount": 343,
+      "hash": "c861c763c8be6af526bcb18d05efdf91af2c385dfc3928c225f611960b225eb4",
+      "role": "test",
+      "category": "sourcevision",
+      "lastModified": 1771990781293
     },
     {
       "path": "packages/sourcevision/tests/unit/analyzers/callgraph-findings.test.ts",
@@ -4639,6 +4889,16 @@
       "role": "test",
       "category": "sourcevision",
       "lastModified": 1771944694390
+    },
+    {
+      "path": "packages/sourcevision/tests/unit/analyzers/completion-reader.test.ts",
+      "size": 20778,
+      "language": "TypeScript",
+      "lineCount": 667,
+      "hash": "935159f2f8b3ae1e64545a24be4c6a411d9e030d67c83876cdcce201232d68c8",
+      "role": "test",
+      "category": "sourcevision",
+      "lastModified": 1771991310270
     },
     {
       "path": "packages/sourcevision/tests/unit/analyzers/components.test.ts",
@@ -4802,13 +5062,13 @@
     },
     {
       "path": "packages/sourcevision/tests/unit/cli/analyze.test.ts",
-      "size": 1416,
+      "size": 3479,
       "language": "TypeScript",
-      "lineCount": 45,
-      "hash": "bd23a59d4570242e7d0bcda36c07d38f76f349126eecdd30f80b250e84cbc1a5",
+      "lineCount": 97,
+      "hash": "23b0560459a94009930eac5d571b71345ec6933168e143cd165d82b78884a9cf",
       "role": "test",
       "category": "sourcevision",
-      "lastModified": 1771944694391
+      "lastModified": 1771996327851
     },
     {
       "path": "packages/sourcevision/tests/unit/cli/errors.test.ts",
@@ -4872,13 +5132,13 @@
     },
     {
       "path": "packages/sourcevision/tests/unit/cli/pr-markdown.test.ts",
-      "size": 19079,
+      "size": 22893,
       "language": "TypeScript",
-      "lineCount": 490,
-      "hash": "13fc4e413947453be1f882b5dfaaed457f2af3afc8aa8454aa17377efce2565d",
+      "lineCount": 681,
+      "hash": "b609eb4d05ae62eaef00f60d5f4c677ebb0a0711bd121ebb95dcb7f9ebe3d252",
       "role": "test",
       "category": "sourcevision",
-      "lastModified": 1771944694392
+      "lastModified": 1771993751450
     },
     {
       "path": "packages/sourcevision/tests/unit/cli/prd-epic-resolver.test.ts",
@@ -4899,6 +5159,16 @@
       "role": "test",
       "category": "sourcevision",
       "lastModified": 1771616669612
+    },
+    {
+      "path": "packages/sourcevision/tests/unit/generators/pr-markdown-template.test.ts",
+      "size": 30597,
+      "language": "TypeScript",
+      "lineCount": 933,
+      "hash": "852b387ac03c35d4cdfb0113a9deb1a9f9bbbcbf7e9ec8dbca137b94b099cdb5",
+      "role": "test",
+      "category": "sourcevision",
+      "lastModified": 1771994247369
     },
     {
       "path": "packages/sourcevision/tests/unit/schema/data-files.test.ts",
@@ -4959,6 +5229,26 @@
       "role": "config",
       "category": "sourcevision",
       "lastModified": 1771944694392
+    },
+    {
+      "path": "packages/web/BROWSER_ERROR_CODE_5.md",
+      "size": 26844,
+      "language": "Markdown",
+      "lineCount": 580,
+      "hash": "a7f835d8df99485c0b100813bd1795d7b2d260543c51da73136f51b794605b3d",
+      "role": "docs",
+      "category": "web",
+      "lastModified": 1771961341408
+    },
+    {
+      "path": "packages/web/MEMORY_PROFILE.md",
+      "size": 27322,
+      "language": "Markdown",
+      "lineCount": 531,
+      "hash": "32961ca086669d7d1e8c2bc1b4c1d79fe41cb5552304c90c268fc53ef537352b",
+      "role": "docs",
+      "category": "web",
+      "lastModified": 1771959979353
     },
     {
       "path": "packages/web/SourceVision-F.png",
@@ -5172,13 +5462,13 @@
     },
     {
       "path": "packages/web/src/server/routes-data.ts",
-      "size": 3972,
+      "size": 4103,
       "language": "TypeScript",
-      "lineCount": 140,
-      "hash": "c51788c0d03f7d4ccb9812ac262079f12cd0eebc2c10061f217f82e60c7e2c09",
+      "lineCount": 147,
+      "hash": "48cdfad845475a17954fd9cbdc4d1944d5c12717e19fb0b29d5c18ad2cad9836",
       "role": "source",
       "category": "web",
-      "lastModified": 1771616669615
+      "lastModified": 1771961621554
     },
     {
       "path": "packages/web/src/server/routes-features.ts",
@@ -5192,13 +5482,13 @@
     },
     {
       "path": "packages/web/src/server/routes-hench.ts",
-      "size": 51690,
+      "size": 52300,
       "language": "TypeScript",
-      "lineCount": 1465,
-      "hash": "0f1dac78f7049f28be59c5839f35dd9b22223b9f8abcf0cdc92cfda4fc8642cf",
+      "lineCount": 1478,
+      "hash": "35a94c973941f6f2dea30ed5161aa55049c06d6f043527ee437620d11f84a69a",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944697123
+      "lastModified": 1771961670143
     },
     {
       "path": "packages/web/src/server/routes-integrations.ts",
@@ -5212,13 +5502,13 @@
     },
     {
       "path": "packages/web/src/server/routes-mcp.ts",
-      "size": 6175,
+      "size": 7933,
       "language": "TypeScript",
-      "lineCount": 179,
-      "hash": "57a65f2c4051c098ee679a2b98f238ba7e19e886676325364101be7f40964acc",
+      "lineCount": 226,
+      "hash": "61ce830ccba6d24f0391f09e210d8fae03d6346d9d5a5baf359b80dd1d9adc8a",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944694395
+      "lastModified": 1771960481836
     },
     {
       "path": "packages/web/src/server/routes-notion.ts",
@@ -5242,23 +5532,23 @@
     },
     {
       "path": "packages/web/src/server/routes-rex.ts",
-      "size": 90494,
+      "size": 92314,
       "language": "TypeScript",
-      "lineCount": 2850,
-      "hash": "87c7e08413ea786e6d2da662b846c95af39569c375e86c5b5f5f4a45de6988b3",
+      "lineCount": 2920,
+      "hash": "3fa5f31094ba6bf8d06317ff477770809db3a4586d3870626937870970a25b12",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944697124
+      "lastModified": 1771952961638
     },
     {
       "path": "packages/web/src/server/routes-sourcevision.ts",
-      "size": 43775,
+      "size": 17751,
       "language": "TypeScript",
-      "lineCount": 1231,
-      "hash": "53c3348e15f807e5303fb2470e518a9de6e12e7f98d8eca501bb5f053829ac20",
+      "lineCount": 523,
+      "hash": "db0daedd7f0ee72b2d71b4f27e25ac1466ad1c5499d39c5e1f91fde2894062f8",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944694395
+      "lastModified": 1771996284872
     },
     {
       "path": "packages/web/src/server/routes-static.ts",
@@ -5282,13 +5572,13 @@
     },
     {
       "path": "packages/web/src/server/routes-token-usage.ts",
-      "size": 30295,
+      "size": 30957,
       "language": "TypeScript",
-      "lineCount": 931,
-      "hash": "76343f442370d2da963aa99e2432204a6fa8bbd38fc8acbffa0ead230d3ad4a9",
+      "lineCount": 949,
+      "hash": "142d8bd0d74036116a67fa413e0edbceb31608cc708836e94fe5f41156afcf8f",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944694398
+      "lastModified": 1771961684441
     },
     {
       "path": "packages/web/src/server/routes-validation.ts",
@@ -5312,13 +5602,13 @@
     },
     {
       "path": "packages/web/src/server/start.ts",
-      "size": 21344,
+      "size": 23558,
       "language": "TypeScript",
-      "lineCount": 557,
-      "hash": "df72e6a39e8055f6a1b122e8c81530bb854ad671825ff170c314c2897de56380",
+      "lineCount": 616,
+      "hash": "ff4238c4d4778d9dff842fa1cba1949c81544264166c9810492bf1e92e132be7",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944697124
+      "lastModified": 1771960632583
     },
     {
       "path": "packages/web/src/server/types.ts",
@@ -5342,13 +5632,13 @@
     },
     {
       "path": "packages/web/src/viewer/components/active-tasks-panel.ts",
-      "size": 10599,
+      "size": 10755,
       "language": "TypeScript",
-      "lineCount": 304,
-      "hash": "07cac100f713f2bd69e46b0aca80390275f9ed247faf6fedd94b40b47df8aa96",
+      "lineCount": 308,
+      "hash": "0cd6f670195022362956ed329c04b313dbaf97c217d5236210dd5a2eeeb216af",
       "role": "source",
       "category": "web",
-      "lastModified": 1771616669617
+      "lastModified": 1771960588033
     },
     {
       "path": "packages/web/src/viewer/components/breadcrumb.ts",
@@ -5389,6 +5679,16 @@
       "role": "source",
       "category": "web",
       "lastModified": 1771616669618
+    },
+    {
+      "path": "packages/web/src/viewer/components/crash-recovery-banner.ts",
+      "size": 3051,
+      "language": "TypeScript",
+      "lineCount": 92,
+      "hash": "3d12caf236fa10abe1677bf533cf6fdbccbe0b3af8604eae6a4221284de7bb6b",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771963138405
     },
     {
       "path": "packages/web/src/viewer/components/data-display/collapsible-section.ts",
@@ -5451,6 +5751,16 @@
       "lastModified": 1771616669618
     },
     {
+      "path": "packages/web/src/viewer/components/degradation-banner.ts",
+      "size": 2832,
+      "language": "TypeScript",
+      "lineCount": 101,
+      "hash": "7f6e0b6ab228d499e007342da217a9f3a9a43adfbb9dc79562aadd468970d5ec",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771963659439
+    },
+    {
       "path": "packages/web/src/viewer/components/detail-panel.ts",
       "size": 9420,
       "language": "TypeScript",
@@ -5499,6 +5809,16 @@
       "role": "source",
       "category": "web",
       "lastModified": 1771616669618
+    },
+    {
+      "path": "packages/web/src/viewer/components/memory-warning.ts",
+      "size": 2582,
+      "language": "TypeScript",
+      "lineCount": 83,
+      "hash": "19a435541488aa54d8e720b987bebe6934cf3a789a911ac22f44eaadb31211fe",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771962481736
     },
     {
       "path": "packages/web/src/viewer/components/notion-schema-wizard.ts",
@@ -5561,6 +5881,16 @@
       "lastModified": 1771616669619
     },
     {
+      "path": "packages/web/src/viewer/components/prd-tree/delete-confirmation.ts",
+      "size": 4164,
+      "language": "TypeScript",
+      "lineCount": 151,
+      "hash": "f76d047ddb0aa1332eacd0e4aa661d71530f6f42f7463722b6369f7f835c7885",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771949814458
+    },
+    {
       "path": "packages/web/src/viewer/components/prd-tree/execution-panel.ts",
       "size": 13341,
       "language": "TypeScript",
@@ -5572,13 +5902,13 @@
     },
     {
       "path": "packages/web/src/viewer/components/prd-tree/index.ts",
-      "size": 2016,
+      "size": 2170,
       "language": "TypeScript",
-      "lineCount": 45,
-      "hash": "0f431a4247d9c50be7d544fba33c272b59ec985334eb26978b5f84ef1f5ecf41",
+      "lineCount": 47,
+      "hash": "f4d3479f38d4a809a501c66b41e19ca0dcbc820a4a15a744b0ad8be6ef46c05d",
       "role": "source",
       "category": "web",
-      "lastModified": 1771616669619
+      "lastModified": 1771949898824
     },
     {
       "path": "packages/web/src/viewer/components/prd-tree/inline-add-form.ts",
@@ -5602,13 +5932,13 @@
     },
     {
       "path": "packages/web/src/viewer/components/prd-tree/prd-tree.ts",
-      "size": 24014,
+      "size": 27995,
       "language": "TypeScript",
-      "lineCount": 692,
-      "hash": "ce7d098067a8ea972068121b47c4690623142e008ba9ac2550a7aa4c49336d21",
+      "lineCount": 804,
+      "hash": "103f72a62e6cdb4abcf87e61ec380a056de442dd2d51cd92337b8ac0f7682168",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944694403
+      "lastModified": 1771950581272
     },
     {
       "path": "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
@@ -5672,13 +6002,13 @@
     },
     {
       "path": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
-      "size": 45420,
+      "size": 47734,
       "language": "TypeScript",
-      "lineCount": 1365,
-      "hash": "5a52b26b3b1ad58ee242be13716033e3eb31b1db45b9d55d67b956e2de80f771",
+      "lineCount": 1419,
+      "hash": "5bdddffcdb92327ff05dae39ce6a38969848f8fabc5eedc2cbbdb1b11c9325c8",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944694403
+      "lastModified": 1771948923048
     },
     {
       "path": "packages/web/src/viewer/components/prd-tree/task-utilization.ts",
@@ -5692,13 +6022,13 @@
     },
     {
       "path": "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
-      "size": 1437,
+      "size": 3441,
       "language": "TypeScript",
-      "lineCount": 50,
-      "hash": "81e0b38eec0b00a13f957ffcf062c54649b1987be60a13ee94bca52d9e850df2",
+      "lineCount": 114,
+      "hash": "1b716e3ca4446cdb22a84485f0c1d1336114b2fb6e0c47ea811576207b31e94e",
       "role": "source",
       "category": "web",
-      "lastModified": 1771616669621
+      "lastModified": 1771950857564
     },
     {
       "path": "packages/web/src/viewer/components/prd-tree/types.ts",
@@ -5709,6 +6039,16 @@
       "role": "source",
       "category": "web",
       "lastModified": 1771944694404
+    },
+    {
+      "path": "packages/web/src/viewer/components/refresh-queue-status.ts",
+      "size": 3055,
+      "language": "TypeScript",
+      "lineCount": 99,
+      "hash": "69b34d37ec868e633b14cd728cad352997ac98bdee9b69c0a7602874e3f97f7b",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771964395135
     },
     {
       "path": "packages/web/src/viewer/components/rex-task-link.ts",
@@ -5742,13 +6082,13 @@
     },
     {
       "path": "packages/web/src/viewer/components/status-indicators.ts",
-      "size": 10888,
+      "size": 10929,
       "language": "TypeScript",
-      "lineCount": 341,
-      "hash": "c65cb41b0bbc91d5d2737b52f709e9865c0ed83ba008c6dfa7bb0102bf6eaba4",
+      "lineCount": 342,
+      "hash": "211c14e485dfd9ab1eec3b95476a718b9021edc4c7f5d98fa0013b4372f7edca",
       "role": "source",
       "category": "web",
-      "lastModified": 1771616669621
+      "lastModified": 1771960645968
     },
     {
       "path": "packages/web/src/viewer/components/theme-toggle.ts",
@@ -5761,6 +6101,16 @@
       "lastModified": 1771616669621
     },
     {
+      "path": "packages/web/src/viewer/crash-detector.ts",
+      "size": 9782,
+      "language": "TypeScript",
+      "lineCount": 316,
+      "hash": "b88f49c17a1da7fc6fa8c9d14569c4474191448c5b40f540d91c97d8e0ee0781",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771963106394
+    },
+    {
       "path": "packages/web/src/viewer/darkmode_logo.png",
       "size": 5128,
       "language": "Other",
@@ -5769,6 +6119,16 @@
       "role": "asset",
       "category": "web",
       "lastModified": 1771616669621
+    },
+    {
+      "path": "packages/web/src/viewer/graceful-degradation.ts",
+      "size": 7939,
+      "language": "TypeScript",
+      "lineCount": 223,
+      "hash": "01c22334b78093c1d350d3e89c7da5a118e27f5f6dd15f00c7e59261078bd1e2",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771963618855
     },
     {
       "path": "packages/web/src/viewer/graph/physics.ts",
@@ -5782,23 +6142,33 @@
     },
     {
       "path": "packages/web/src/viewer/graph/renderer.ts",
-      "size": 56950,
+      "size": 57693,
       "language": "TypeScript",
-      "lineCount": 1584,
-      "hash": "e01cf72a514098dcd6aca954b0f85a4cece316e640adebc41c567d99d012d441",
+      "lineCount": 1605,
+      "hash": "18d971f117dc8ec4df293c032fccecd71fe2855f03de57b062e4f57e791d7f6c",
       "role": "source",
       "category": "web",
-      "lastModified": 1771616669621
+      "lastModified": 1771960521630
     },
     {
       "path": "packages/web/src/viewer/hooks/use-app-data.ts",
-      "size": 2799,
+      "size": 5037,
       "language": "TypeScript",
-      "lineCount": 108,
-      "hash": "48d93acdac6f56846f37fb014f93b5170212ffd2d16145fc169c6a121818e059",
+      "lineCount": 162,
+      "hash": "d38defae7f7c960069f4b80880a47c91ba0a98589b2bbd83248aff79dde4b94f",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944694404
+      "lastModified": 1771964089777
+    },
+    {
+      "path": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
+      "size": 3867,
+      "language": "TypeScript",
+      "lineCount": 134,
+      "hash": "249c07eb80d302a5d97a34ed2c47457bc7866e9f5609db36db6ec5204895468d",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771963122786
     },
     {
       "path": "packages/web/src/viewer/hooks/use-file-edges.ts",
@@ -5809,6 +6179,26 @@
       "role": "source",
       "category": "web",
       "lastModified": 1771616669622
+    },
+    {
+      "path": "packages/web/src/viewer/hooks/use-graceful-degradation.ts",
+      "size": 2264,
+      "language": "TypeScript",
+      "lineCount": 78,
+      "hash": "ac1902af7446112af00b09d0479d4a4d36f6b67af9727840d79d600b2b3e12ac",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771963634704
+    },
+    {
+      "path": "packages/web/src/viewer/hooks/use-memory-monitor.ts",
+      "size": 3632,
+      "language": "TypeScript",
+      "lineCount": 126,
+      "hash": "e3ccc2491ca69a73e906c4f3f97cbfaf79df6e335d754c951a33fec7479a0f68",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771962468262
     },
     {
       "path": "packages/web/src/viewer/hooks/use-pan-zoom.ts",
@@ -5829,6 +6219,16 @@
       "role": "source",
       "category": "web",
       "lastModified": 1771616669622
+    },
+    {
+      "path": "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
+      "size": 3584,
+      "language": "TypeScript",
+      "lineCount": 112,
+      "hash": "f0b0ce4d5304a69e6a072c24c4e7a71844f5d2df39b36e5b59d75c2045e55976",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771964372118
     },
     {
       "path": "packages/web/src/viewer/hooks/use-route-state.ts",
@@ -5872,23 +6272,43 @@
     },
     {
       "path": "packages/web/src/viewer/loader.ts",
-      "size": 5167,
+      "size": 7111,
       "language": "TypeScript",
-      "lineCount": 176,
-      "hash": "0d5cb622f5bd3550dc35da68f5af385aa7ececb1d2dd65ab4e625fd3f4e1ea6b",
+      "lineCount": 241,
+      "hash": "483cd608a9b9d05ca3f3fd763f2e4049e47e079e8d8259e77bbce3c3560ab698",
       "role": "source",
       "category": "web",
-      "lastModified": 1771616669622
+      "lastModified": 1771961715537
     },
     {
       "path": "packages/web/src/viewer/main.ts",
-      "size": 9024,
+      "size": 12659,
       "language": "TypeScript",
-      "lineCount": 232,
-      "hash": "61a67ce6971bd1f1172114a0378e126baa71d22ab1bc4ea93ac77f3ff7f53f02",
+      "lineCount": 303,
+      "hash": "91899f843ab6887e8f146f16ea1a5b98de73054e0bbf2c3704c23908102b453d",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944694405
+      "lastModified": 1771964449864
+    },
+    {
+      "path": "packages/web/src/viewer/memory-monitor.ts",
+      "size": 9681,
+      "language": "TypeScript",
+      "lineCount": 281,
+      "hash": "d3f1644338dca6a5616b610c24b88d0ad9fb657ac3b57b6aa39c1a0954b86a28",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771962452927
+    },
+    {
+      "path": "packages/web/src/viewer/refresh-throttle.ts",
+      "size": 12062,
+      "language": "TypeScript",
+      "lineCount": 364,
+      "hash": "9f4c9a51d5b50b6055515fbb0538dbdefb1cd7573ecb7be1b80b6d61631471e9",
+      "role": "source",
+      "category": "web",
+      "lastModified": 1771964353434
     },
     {
       "path": "packages/web/src/viewer/route-state.ts",
@@ -6011,6 +6431,26 @@
       "lastModified": 1771616669623
     },
     {
+      "path": "packages/web/src/viewer/styles/crash-recovery.css",
+      "size": 2918,
+      "language": "CSS",
+      "lineCount": 152,
+      "hash": "7840c34a75340e285f83bf7f0ab0f487882c2cb3d6735a0b1c9c84faba65acdb",
+      "role": "other",
+      "category": "web",
+      "lastModified": 1771963155648
+    },
+    {
+      "path": "packages/web/src/viewer/styles/degradation-banner.css",
+      "size": 3202,
+      "language": "CSS",
+      "lineCount": 163,
+      "hash": "dbe7e24903edb893d192262336a3e6c8d5af5f90ce91e8879d98903b4391c0d0",
+      "role": "other",
+      "category": "web",
+      "lastModified": 1771963792070
+    },
+    {
       "path": "packages/web/src/viewer/styles/detail.css",
       "size": 2615,
       "language": "CSS",
@@ -6092,13 +6532,13 @@
     },
     {
       "path": "packages/web/src/viewer/styles/index.css",
-      "size": 918,
+      "size": 1049,
       "language": "CSS",
-      "lineCount": 34,
-      "hash": "404a423be56d8a243ece277e0575a185b47b45efce8c01bdb87370d1e3394436",
+      "lineCount": 38,
+      "hash": "03ef5766538099282840d93c305f1315c10dc21cb56311a6c1b5faabd5043675",
       "role": "other",
       "category": "web",
-      "lastModified": 1771944694406
+      "lastModified": 1771964431431
     },
     {
       "path": "packages/web/src/viewer/styles/integration-config.css",
@@ -6119,6 +6559,16 @@
       "role": "other",
       "category": "web",
       "lastModified": 1771616669625
+    },
+    {
+      "path": "packages/web/src/viewer/styles/memory-warning.css",
+      "size": 2167,
+      "language": "CSS",
+      "lineCount": 115,
+      "hash": "65454222fb8a64bad0fc42da543ebed05c3efab63a78b34910f8dfaae757bd9a",
+      "role": "other",
+      "category": "web",
+      "lastModified": 1771962495710
     },
     {
       "path": "packages/web/src/viewer/styles/notion-config.css",
@@ -6142,23 +6592,33 @@
     },
     {
       "path": "packages/web/src/viewer/styles/pr-markdown.css",
-      "size": 2835,
+      "size": 1713,
       "language": "CSS",
-      "lineCount": 166,
-      "hash": "ae918ca3e544e614efe5df6c5b6317c3a46cd9ed999b111e2cd549342dab7466",
+      "lineCount": 100,
+      "hash": "54b03f63d89b2f1e9aef1c55861598e868f20e8a9cfc6cdafafd63606921ea16",
       "role": "other",
       "category": "web",
-      "lastModified": 1771944694406
+      "lastModified": 1771995430161
     },
     {
       "path": "packages/web/src/viewer/styles/prd-tree.css",
-      "size": 90998,
+      "size": 99266,
       "language": "CSS",
-      "lineCount": 4573,
-      "hash": "6b5dd5d36fc183bbc43b19d140152fc8005a52311c71d735d1b9410bbd2b8005",
+      "lineCount": 4958,
+      "hash": "511f161b3e165c00daf35ea9e8cce39322d364246aad1f32b080997a7219e7eb",
       "role": "other",
       "category": "web",
-      "lastModified": 1771944694407
+      "lastModified": 1771953071028
+    },
+    {
+      "path": "packages/web/src/viewer/styles/refresh-queue.css",
+      "size": 2253,
+      "language": "CSS",
+      "lineCount": 105,
+      "hash": "cf3e4cfed739044e09c869dd86414b3f4ed4ff5b30f90e3a32984e3f61ca6868",
+      "role": "other",
+      "category": "web",
+      "lastModified": 1771964410558
     },
     {
       "path": "packages/web/src/viewer/styles/responsive.css",
@@ -6402,23 +6862,23 @@
     },
     {
       "path": "packages/web/src/viewer/views/pr-markdown.ts",
-      "size": 30290,
+      "size": 17973,
       "language": "TypeScript",
-      "lineCount": 742,
-      "hash": "ac511d3a3da6d18edfa7408a926a1942f5dc5b82dce42c616c983346f6ac6957",
+      "lineCount": 466,
+      "hash": "b1e135f30014b7888360bc757f149830f427485058d2550df532c415c5a4e83e",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944694408
+      "lastModified": 1771996303449
     },
     {
       "path": "packages/web/src/viewer/views/prd.ts",
-      "size": 18959,
+      "size": 24946,
       "language": "TypeScript",
-      "lineCount": 580,
-      "hash": "ebf11a34921fbc6f2a24df299cbe433e8488950f316789a8309118ab57ee5d7c",
+      "lineCount": 744,
+      "hash": "1df296ae1026fdac36bff58ce551e1d6202cc446e487a8fce72867b6e4c8fc4d",
       "role": "source",
       "category": "web",
-      "lastModified": 1771944694408
+      "lastModified": 1771953065080
     },
     {
       "path": "packages/web/src/viewer/views/problems.ts",
@@ -6542,23 +7002,23 @@
     },
     {
       "path": "packages/web/tests/integration/pr-markdown-refresh.test.ts",
-      "size": 30621,
+      "size": 6496,
       "language": "TypeScript",
-      "lineCount": 762,
-      "hash": "2badd42d8ec47ce2aa3b5b7640c4d7b9d142e5e1a00342cd8994837f11d1b86c",
+      "lineCount": 176,
+      "hash": "dd963cd0b70690a48f9d95183194bb4af8a03b0fd18df7f9a6c0e48ca72f7451",
       "role": "test",
       "category": "web",
-      "lastModified": 1771944694409
+      "lastModified": 1771995506172
     },
     {
       "path": "packages/web/tests/integration/pr-markdown-tab-parity.test.ts",
-      "size": 10285,
+      "size": 8577,
       "language": "TypeScript",
-      "lineCount": 268,
-      "hash": "36c77ddf95c0f6608efe077261273bea529204db7ed992a813eaec13f560916a",
+      "lineCount": 236,
+      "hash": "bbabdcc66cc9078452673d4188088fa45b9e8ab0e6b6f0a9c4d5083145b3e635",
       "role": "test",
       "category": "web",
-      "lastModified": 1771944694409
+      "lastModified": 1771995519285
     },
     {
       "path": "packages/web/tests/integration/token-usage-route-regression.test.ts",
@@ -6571,6 +7031,16 @@
       "lastModified": 1771944694409
     },
     {
+      "path": "packages/web/tests/unit/server/data-loading-efficiency.test.ts",
+      "size": 12187,
+      "language": "TypeScript",
+      "lineCount": 357,
+      "hash": "5e92113eed72f16cdc4268a8c0d4103a03fc1bf8291406aceb564f3132cf7a72",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771962016329
+    },
+    {
       "path": "packages/web/tests/unit/server/dev-reload.test.ts",
       "size": 4199,
       "language": "TypeScript",
@@ -6579,6 +7049,16 @@
       "role": "test",
       "category": "web",
       "lastModified": 1771616669629
+    },
+    {
+      "path": "packages/web/tests/unit/server/memory-leak-fixes.test.ts",
+      "size": 4127,
+      "language": "TypeScript",
+      "lineCount": 125,
+      "hash": "9d043509581131f48eed1e5736b5a0fd15800d22ab6ad807b00edc2bb4b0f873",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771960693745
     },
     {
       "path": "packages/web/tests/unit/server/port.test.ts",
@@ -6752,13 +7232,13 @@
     },
     {
       "path": "packages/web/tests/unit/server/routes-sourcevision.test.ts",
-      "size": 57240,
+      "size": 15368,
       "language": "TypeScript",
-      "lineCount": 1455,
-      "hash": "d11260a0c664cc5d44c5d10f14cf2b04daefd684d190137f9f3c8d2150e9abff",
+      "lineCount": 369,
+      "hash": "a6420cf04fa38e3b0a1f510e921bbf0e2252dd3ddfc37528f0ab9141443addf2",
       "role": "test",
       "category": "web",
-      "lastModified": 1771944694410
+      "lastModified": 1771995657513
     },
     {
       "path": "packages/web/tests/unit/server/routes-status.test.ts",
@@ -6911,6 +7391,46 @@
       "lastModified": 1771616669632
     },
     {
+      "path": "packages/web/tests/unit/viewer/crash-detector.test.ts",
+      "size": 9734,
+      "language": "TypeScript",
+      "lineCount": 277,
+      "hash": "d01dbedae5d3d366034f16b067e49057a2a4d7869533da15a8308aaf384bcb28",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771963238397
+    },
+    {
+      "path": "packages/web/tests/unit/viewer/crash-recovery-banner.test.ts",
+      "size": 7675,
+      "language": "TypeScript",
+      "lineCount": 274,
+      "hash": "4d7210b0cf4abf05d13e31235a4439689473291634d173d9a2eb62e64d6af88c",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771963263300
+    },
+    {
+      "path": "packages/web/tests/unit/viewer/degradation-banner.test.ts",
+      "size": 5322,
+      "language": "TypeScript",
+      "lineCount": 150,
+      "hash": "819c18176449bd67b63ea5910fea1de266b65836607b5431d0aff17042cb053e",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771963869358
+    },
+    {
+      "path": "packages/web/tests/unit/viewer/deletion-state-updates.test.ts",
+      "size": 9738,
+      "language": "TypeScript",
+      "lineCount": 284,
+      "hash": "49fd45afa6c00ee4e3f41102486660b2331366c8c16cebb349e8f86bfa972db2",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771953120312
+    },
+    {
       "path": "packages/web/tests/unit/viewer/detail-panel.test.ts",
       "size": 4011,
       "language": "TypeScript",
@@ -6939,6 +7459,26 @@
       "role": "test",
       "category": "web",
       "lastModified": 1771616669632
+    },
+    {
+      "path": "packages/web/tests/unit/viewer/graceful-degradation.test.ts",
+      "size": 13165,
+      "language": "TypeScript",
+      "lineCount": 402,
+      "hash": "020734376eb557fada84d02e1eca12a31a14899e2c34c8d73994b6e078c6bd5d",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771963849105
+    },
+    {
+      "path": "packages/web/tests/unit/viewer/graph-destroy.test.ts",
+      "size": 3425,
+      "language": "TypeScript",
+      "lineCount": 132,
+      "hash": "1e3e82854628b86466e1d83075cefedc4b2fd5cac7a49a82b92dc24a21d1c8f3",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771960712748
     },
     {
       "path": "packages/web/tests/unit/viewer/graph-interaction.test.ts",
@@ -6991,14 +7531,34 @@
       "lastModified": 1771616669632
     },
     {
-      "path": "packages/web/tests/unit/viewer/pr-markdown.test.ts",
-      "size": 25017,
+      "path": "packages/web/tests/unit/viewer/memory-monitor.test.ts",
+      "size": 11263,
       "language": "TypeScript",
-      "lineCount": 692,
-      "hash": "cdad7b0074ed16e2616efb81c16898d97dcd0164a5403aca30c8530c07c17924",
+      "lineCount": 381,
+      "hash": "3f7cb3da8f31475edfee9347795e6419c772171842b81519729c786c626f234d",
       "role": "test",
       "category": "web",
-      "lastModified": 1771944694411
+      "lastModified": 1771962572569
+    },
+    {
+      "path": "packages/web/tests/unit/viewer/memory-warning.test.ts",
+      "size": 5896,
+      "language": "TypeScript",
+      "lineCount": 216,
+      "hash": "81bbf72d49e7351606c83df20d620f9e9e53b6ba4e2b8f29d2188473c17387cc",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771962800542
+    },
+    {
+      "path": "packages/web/tests/unit/viewer/pr-markdown.test.ts",
+      "size": 12702,
+      "language": "TypeScript",
+      "lineCount": 341,
+      "hash": "2defba66c0f0143d294490f251d2d79d9c3255cb3242ffcdd25e5ae01a7b70fc",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771995476898
     },
     {
       "path": "packages/web/tests/unit/viewer/prd-tree-compute.test.ts",
@@ -7029,6 +7589,16 @@
       "role": "test",
       "category": "web",
       "lastModified": 1771616669633
+    },
+    {
+      "path": "packages/web/tests/unit/viewer/refresh-throttle.test.ts",
+      "size": 14629,
+      "language": "TypeScript",
+      "lineCount": 531,
+      "hash": "e9e77bd1e75a89eb984df0edc399423c5a2e644a5b0c6c04b0680254c76f1ca3",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771964550619
     },
     {
       "path": "packages/web/tests/unit/viewer/route-state.test.ts",
@@ -7121,6 +7691,16 @@
       "lastModified": 1771944694412
     },
     {
+      "path": "packages/web/tests/unit/viewer/tree-utils-deletion.test.ts",
+      "size": 4552,
+      "language": "TypeScript",
+      "lineCount": 128,
+      "hash": "0e4f1207fd22b9707f6e8551f0e92189b9baebc288df1e6f441fd2469888d452",
+      "role": "test",
+      "category": "web",
+      "lastModified": 1771950711694
+    },
+    {
       "path": "packages/web/tests/unit/viewer/tree-view.test.ts",
       "size": 1884,
       "language": "TypeScript",
@@ -7152,13 +7732,13 @@
     },
     {
       "path": "pnpm-lock.yaml",
-      "size": 92645,
+      "size": 92169,
       "language": "YAML",
-      "lineCount": 2995,
-      "hash": "22b6cb2a88df2076991eaa577869655eeb457df10fd5a376d757d6feca03f3e6",
+      "lineCount": 2976,
+      "hash": "58d5b24c2f6d21af394ea545adb3668cfbea79a8c2d10b7207a19677a57eac85",
       "role": "generated",
       "category": "root",
-      "lastModified": 1771944694413
+      "lastModified": 1771954214688
     },
     {
       "path": "pnpm-workspace.yaml",
@@ -7169,6 +7749,16 @@
       "role": "other",
       "category": "root",
       "lastModified": 1771616669634
+    },
+    {
+      "path": "pr-check.js",
+      "size": 6321,
+      "language": "JavaScript",
+      "lineCount": 202,
+      "hash": "79b8ac0f05974ea38065ef79f798fdd806df5e24661497d1e45b4b261d2259e5",
+      "role": "source",
+      "category": "root",
+      "lastModified": 1771955590969
     },
     {
       "path": "prd.md",
@@ -7279,6 +7869,16 @@
       "role": "test",
       "category": "tests",
       "lastModified": 1771944694414
+    },
+    {
+      "path": "tests/e2e/cli-pr-check.test.js",
+      "size": 9985,
+      "language": "JavaScript",
+      "lineCount": 325,
+      "hash": "5146faac899fccde87d310caf24f50f9f1b87d8c2083e097b2aee1e1d318fffe",
+      "role": "test",
+      "category": "tests",
+      "lastModified": 1771955638867
     },
     {
       "path": "tests/e2e/cli-refresh.test.js",
@@ -7402,39 +8002,39 @@
     }
   ],
   "summary": {
-    "totalFiles": 740,
-    "totalLines": 240825,
+    "totalFiles": 800,
+    "totalLines": 257598,
     "byLanguage": {
       "Other": 20,
       "JSON": 29,
-      "Markdown": 18,
-      "JavaScript": 27,
-      "TypeScript": 605,
+      "Markdown": 20,
+      "YAML": 3,
+      "JavaScript": 29,
+      "TypeScript": 656,
       "Text": 1,
       "HTML": 2,
-      "CSS": 36,
-      "YAML": 2
+      "CSS": 40
     },
     "byRole": {
       "config": 20,
-      "other": 48,
-      "docs": 18,
-      "source": 341,
+      "other": 53,
+      "docs": 20,
+      "source": 367,
       "asset": 11,
       "generated": 5,
-      "test": 297
+      "test": 324
     },
     "byCategory": {
-      "root": 21,
+      "root": 23,
       ".hench": 1,
       ".rex": 6,
       "docs": 5,
       "hench": 124,
       "llm-client": 47,
-      "rex": 187,
-      "sourcevision": 114,
-      "web": 219,
-      "tests": 16
+      "rex": 201,
+      "sourcevision": 126,
+      "web": 250,
+      "tests": 17
     }
   }
 }

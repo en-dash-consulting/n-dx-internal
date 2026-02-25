@@ -506,6 +506,15 @@ export function handleSourcevisionRoute(
       summary.callGraphSummary = cg.summary;
     }
 
+    // PR markdown generation status
+    const prSnapshot = getPRMarkdownFileSnapshot(ctx);
+    summary.prMarkdown = {
+      available: prSnapshot.markdown !== null,
+      cacheStatus: prSnapshot.cacheStatus,
+      generatedAt: prSnapshot.generatedAt,
+      mode: prSnapshot.mode,
+    };
+
     jsonResponse(res, 200, summary);
     return true;
   }

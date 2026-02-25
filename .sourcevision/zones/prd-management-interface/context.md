@@ -5,42 +5,41 @@
 <zone>
 
 Zone: PRD Management Interface (`prd-management-interface`)
-Files: 35, Cohesion: 0.93, Coupling: 0.07
-Description: Specialized PRD tree components, execution panels, and domain-specific management features.
-Entry points: packages/web/src/viewer/components/guide.ts, packages/web/src/viewer/components/prd-tree/execution-panel.ts, packages/web/src/viewer/components/prd-tree/smart-add-input.ts, packages/web/src/viewer/components/theme-toggle.ts, packages/web/src/viewer/views/analysis.ts, packages/web/src/viewer/views/prd.ts
-Lines: 11515
+Files: 35, Cohesion: 0.95, Coupling: 0.05
+Description: Specialized components for PRD tree visualization, task management, and analysis workflows within the web dashboard.
+Entry points: packages/web/src/viewer/components/prd-tree/execution-panel.ts, packages/web/src/viewer/components/prd-tree/smart-add-input.ts, packages/web/src/viewer/views/analysis.ts, packages/web/src/viewer/views/prd.ts
+Lines: 12268
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/components/guide.ts (TypeScript, 151 lines, source)
 packages/web/src/viewer/components/prd-tree/add-item-form.ts (TypeScript, 325 lines, source)
 packages/web/src/viewer/components/prd-tree/analyze-panel.ts (TypeScript, 382 lines, source)
 packages/web/src/viewer/components/prd-tree/batch-import-panel.ts (TypeScript, 532 lines, source)
 packages/web/src/viewer/components/prd-tree/bulk-actions.ts (TypeScript, 136 lines, source)
 packages/web/src/viewer/components/prd-tree/compute.ts (TypeScript, 139 lines, source)
+packages/web/src/viewer/components/prd-tree/delete-confirmation.ts (TypeScript, 151 lines, source)
 packages/web/src/viewer/components/prd-tree/execution-panel.ts (TypeScript, 367 lines, source)
-packages/web/src/viewer/components/prd-tree/index.ts (TypeScript, 45 lines, source)
+packages/web/src/viewer/components/prd-tree/index.ts (TypeScript, 47 lines, source)
 packages/web/src/viewer/components/prd-tree/inline-add-form.ts (TypeScript, 241 lines, source)
 packages/web/src/viewer/components/prd-tree/merge-preview.ts (TypeScript, 312 lines, source)
-packages/web/src/viewer/components/prd-tree/prd-tree.ts (TypeScript, 692 lines, source)
+packages/web/src/viewer/components/prd-tree/prd-tree.ts (TypeScript, 804 lines, source)
 packages/web/src/viewer/components/prd-tree/proposal-editor.ts (TypeScript, 704 lines, source)
 packages/web/src/viewer/components/prd-tree/prune-confirmation.ts (TypeScript, 595 lines, source)
 packages/web/src/viewer/components/prd-tree/prune-diff-tree.ts (TypeScript, 451 lines, source)
-packages/web/src/viewer/components/prd-tree/shared-imports.ts (TypeScript, 19 lines, source)
 packages/web/src/viewer/components/prd-tree/smart-add-input.ts (TypeScript, 629 lines, source)
 packages/web/src/viewer/components/prd-tree/status-filter.ts (TypeScript, 194 lines, source)
-packages/web/src/viewer/components/prd-tree/task-detail.ts (TypeScript, 1365 lines, source)
+packages/web/src/viewer/components/prd-tree/task-detail.ts (TypeScript, 1419 lines, source)
 packages/web/src/viewer/components/prd-tree/task-utilization.ts (TypeScript, 32 lines, source)
-packages/web/src/viewer/components/prd-tree/tree-utils.ts (TypeScript, 50 lines, source)
+packages/web/src/viewer/components/prd-tree/tree-utils.ts (TypeScript, 114 lines, source)
 packages/web/src/viewer/components/prd-tree/types.ts (TypeScript, 119 lines, source)
-packages/web/src/viewer/components/theme-toggle.ts (TypeScript, 36 lines, source)
 packages/web/src/viewer/views/analysis.ts (TypeScript, 157 lines, source)
-packages/web/src/viewer/views/prd.ts (TypeScript, 580 lines, source)
+packages/web/src/viewer/views/prd.ts (TypeScript, 744 lines, source)
 packages/web/tests/unit/viewer/accessibility.test.ts (TypeScript, 400 lines, test)
 packages/web/tests/unit/viewer/add-item-form.test.ts (TypeScript, 240 lines, test)
 packages/web/tests/unit/viewer/batch-import-panel.test.ts (TypeScript, 169 lines, test)
+packages/web/tests/unit/viewer/deletion-state-updates.test.ts (TypeScript, 284 lines, test)
 packages/web/tests/unit/viewer/prd-tree-compute.test.ts (TypeScript, 483 lines, test)
 packages/web/tests/unit/viewer/prd-tree.test.ts (TypeScript, 311 lines, test)
 packages/web/tests/unit/viewer/prune-diff-tree.test.ts (TypeScript, 229 lines, test)
@@ -49,6 +48,7 @@ packages/web/tests/unit/viewer/status-filter.test.ts (TypeScript, 257 lines, tes
 packages/web/tests/unit/viewer/task-detail-failure.test.ts (TypeScript, 184 lines, test)
 packages/web/tests/unit/viewer/task-detail-requirements.test.ts (TypeScript, 311 lines, test)
 packages/web/tests/unit/viewer/task-detail-usage.test.ts (TypeScript, 60 lines, test)
+packages/web/tests/unit/viewer/tree-utils-deletion.test.ts (TypeScript, 128 lines, test)
 
 </files>
 
@@ -62,6 +62,8 @@ Internal:
   packages/web/src/viewer/components/prd-tree/batch-import-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
   packages/web/src/viewer/components/prd-tree/bulk-actions.ts → packages/web/src/viewer/components/prd-tree/types.ts {ItemStatus}
   packages/web/src/viewer/components/prd-tree/compute.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, BranchStats, ItemStatus}
+  packages/web/src/viewer/components/prd-tree/delete-confirmation.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {countDescendants}
+  packages/web/src/viewer/components/prd-tree/delete-confirmation.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemLevel}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/add-item-form.ts {AddItemForm}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/add-item-form.ts {AddItemFormProps, AddItemInput}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/analyze-panel.ts {AnalyzePanel}
@@ -71,6 +73,8 @@ Internal:
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/bulk-actions.ts {BulkActions}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/bulk-actions.ts {BulkActionsProps}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/compute.ts {computeBranchStats, completionRatio, countChildStatuses, formatTimestamp, itemMatchesFilter, filterTree}
+  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/delete-confirmation.ts {DeleteConfirmation}
+  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/delete-confirmation.ts {DeleteConfirmationProps}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/execution-panel.ts {ExecutionPanel}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/execution-panel.ts {ExecutionPanelProps}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/inline-add-form.ts {InlineAddForm}
@@ -91,7 +95,7 @@ Internal:
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {StatusFilterProps, FilterPreset}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/task-detail.ts {TaskDetail}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/task-detail.ts {TaskDetailProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {findItemById}
+  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {findItemById, countDescendants}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, PRDDocumentData, ItemLevel, ItemStatus, Priority, BranchStats}
   packages/web/src/viewer/components/prd-tree/inline-add-form.ts → packages/web/src/viewer/components/prd-tree/types.ts {ItemLevel, Priority}
   packages/web/src/viewer/components/prd-tree/merge-preview.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemLevel}
@@ -110,7 +114,6 @@ Internal:
   packages/web/src/viewer/components/prd-tree/smart-add-input.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
   packages/web/src/viewer/components/prd-tree/status-filter.ts → packages/web/src/viewer/components/prd-tree/types.ts {ItemStatus}
   packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/compute.ts {formatTimestamp}
-  packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/shared-imports.ts {CopyLinkButton}
   packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/task-utilization.ts {resolveTaskUtilization}
   packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {findItemById}
   packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemStatus, Priority, ItemLevel, RequirementData, RequirementCategory, RequirementValidationType, TaskUsageSummary, WeeklyBudgetResolution}
@@ -118,29 +121,28 @@ Internal:
   packages/web/src/viewer/components/prd-tree/tree-utils.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
   packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/analyze-panel.ts {AnalyzePanel}
   packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanel}
-  packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/shared-imports.ts {BrandedHeader}
   packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts {SmartAddInput}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/add-item-form.ts {AddItemForm}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/bulk-actions.ts {BulkActions}
+  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/delete-confirmation.ts {DeleteConfirmation}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/index.ts {PRDTree}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/index.ts {PRDDocumentData, PRDItemData, AddItemInput}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/inline-add-form.ts {InlineAddInput}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/merge-preview.ts {MergePreview}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/prune-confirmation.ts {PruneConfirmation}
-  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/shared-imports.ts {BrandedHeader}
-  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/shared-imports.ts {DetailItem, NavigateTo}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/task-detail.ts {TaskDetail}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/task-utilization.ts {resolveTaskUtilization}
-  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {findItemById, getAncestorIds}
+  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {findItemById, getAncestorIds, collectSubtreeIds, removeItemById}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/types.ts {TaskUsageSummary, WeeklyBudgetResolution, WeeklyBudgetSource}
-  packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/guide.ts {Guide}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTree}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {StatusFilter, defaultStatusFilter}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDDocumentData}
-  packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/theme-toggle.ts {SidebarThemeToggle}
   packages/web/tests/unit/viewer/add-item-form.test.ts → packages/web/src/viewer/components/prd-tree/add-item-form.ts {AddItemForm}
   packages/web/tests/unit/viewer/add-item-form.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
   packages/web/tests/unit/viewer/batch-import-panel.test.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanel}
+  packages/web/tests/unit/viewer/deletion-state-updates.test.ts → packages/web/src/viewer/components/prd-tree/compute.ts {computeBranchStats, completionRatio}
+  packages/web/tests/unit/viewer/deletion-state-updates.test.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {removeItemById, collectSubtreeIds, findItemById}
+  packages/web/tests/unit/viewer/deletion-state-updates.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
   packages/web/tests/unit/viewer/prd-tree-compute.test.ts → packages/web/src/viewer/components/prd-tree/compute.ts {computeBranchStats, completionRatio, countChildStatuses, formatTimestamp, itemMatchesFilter, filterTree}
   packages/web/tests/unit/viewer/prd-tree-compute.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemStatus}
   packages/web/tests/unit/viewer/prd-tree.test.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTree}
@@ -157,29 +159,31 @@ Internal:
   packages/web/tests/unit/viewer/task-detail-requirements.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
   packages/web/tests/unit/viewer/task-detail-usage.test.ts → packages/web/src/viewer/components/prd-tree/task-detail.ts {TaskDetail}
   packages/web/tests/unit/viewer/task-detail-usage.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
+  packages/web/tests/unit/viewer/tree-utils-deletion.test.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {collectSubtreeIds, removeItemById}
+  packages/web/tests/unit/viewer/tree-utils-deletion.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
 
 Outgoing (this zone → other zones):
-  → dashboard-ui-foundation: packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/components/copy-link-button.ts; packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/components/logos.ts; packages/web/src/viewer/components/prd-tree/shared-imports.ts → packages/web/src/viewer/types.ts
+  → web-ui-framework: packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/shared-imports.ts; packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/shared-imports.ts; packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/shared-imports.ts; packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/shared-imports.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/guide.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/theme-toggle.ts
 
 Incoming (other zones → this zone):
-  ← dashboard-ui-foundation: packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/theme-toggle.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/components/guide.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/components/theme-toggle.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/views/analysis.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/views/prd.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/execution-panel.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts
+  ← web-ui-framework: packages/web/src/viewer/main.ts → packages/web/src/viewer/views/analysis.ts; packages/web/src/viewer/main.ts → packages/web/src/viewer/views/prd.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/execution-panel.ts; packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts
 
 </imports>
 
 <findings>
 
-[observation] [info] High cohesion (0.93) — files are tightly interconnected
-[observation] [info] PRD-specific components are well-isolated while leveraging shared UI foundation, maintaining separation of concerns
+[observation] [info] High cohesion (0.95) — files are tightly interconnected
+[observation] [info] Clean separation of PRD-specific functionality from general UI framework
 
 </findings>
 
 <insights>
 
-- High cohesion (0.93) — files are tightly interconnected
-- Domain-focused components with high cohesion (0.93) demonstrate clear feature boundaries
-- Higher coupling (0.07) reflects appropriate consumption of base UI foundation components
-- Specialized panels (execution, analysis, bulk actions) provide rich PRD manipulation capabilities
-- PRD-specific components are well-isolated while leveraging shared UI foundation, maintaining separation of concerns
-- [call graph] 463 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
+- High cohesion (0.95) — files are tightly interconnected
+- Strong domain cohesion (0.95) with clear functional boundaries around PRD tree operations
+- Bidirectional coupling with web-ui-framework (6 outbound, 4 inbound imports) indicates appropriate architectural layering
+- Contains both interactive components and computational logic for PRD tree management
+- Clean separation of PRD-specific functionality from general UI framework
+- [call graph] 559 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

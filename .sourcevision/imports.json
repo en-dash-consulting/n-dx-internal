@@ -5312,6 +5312,87 @@
       ]
     },
     {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/core/prune.ts",
+      "type": "static",
+      "symbols": [
+        "countSubtree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/core/remove-epic.ts",
+      "type": "static",
+      "symbols": [
+        "removeEpic"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/core/remove-task.ts",
+      "type": "static",
+      "symbols": [
+        "removeTask"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/core/timestamps.ts",
+      "type": "static",
+      "symbols": [
+        "computeTimestampUpdates"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
       "from": "packages/rex/src/cli/commands/report.ts",
       "to": "packages/rex/src/cli/commands/constants.ts",
       "type": "static",
@@ -5974,11 +6055,88 @@
       ]
     },
     {
+      "from": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "warn"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "to": "packages/rex/src/core/epic-correlation.ts",
+      "type": "static",
+      "symbols": [
+        "correlateEpiclessFeatures",
+        "formatScore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "to": "packages/rex/src/core/epic-correlation.ts",
+      "type": "type",
+      "symbols": [
+        "CorrelationResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "to": "packages/rex/src/core/remove-feature.ts",
+      "type": "static",
+      "symbols": [
+        "preCheckFeatureDeletion",
+        "removeFeature"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "type",
+      "symbols": [
+        "EpiclessFeature"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "insertChild",
+        "removeFromTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
       "from": "packages/rex/src/cli/commands/validate.ts",
       "to": "packages/rex/src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
         "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate.ts",
+      "to": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "type": "static",
+      "symbols": [
+        "resolveEpiclessFeatures",
+        "applyEpiclessResolutions"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate.ts",
+      "to": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "type": "type",
+      "symbols": [
+        "PromptFn"
       ]
     },
     {
@@ -6003,7 +6161,8 @@
       "to": "packages/rex/src/core/structural.ts",
       "type": "static",
       "symbols": [
-        "validateStructure"
+        "validateStructure",
+        "findEpiclessFeatures"
       ]
     },
     {
@@ -6029,6 +6188,14 @@
       "symbols": [
         "validateDocument",
         "validateConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
       ]
     },
     {
@@ -6166,6 +6333,14 @@
       "type": "dynamic",
       "symbols": [
         "cmdRecommend"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/remove.ts",
+      "type": "dynamic",
+      "symbols": [
+        "cmdRemove"
       ]
     },
     {
@@ -6579,6 +6754,38 @@
       ]
     },
     {
+      "from": "packages/rex/src/core/epic-correlation.ts",
+      "to": "packages/rex/src/analyze/dedupe.ts",
+      "type": "static",
+      "symbols": [
+        "similarity"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/epic-correlation.ts",
+      "to": "packages/rex/src/core/keywords.ts",
+      "type": "static",
+      "symbols": [
+        "extractKeywords"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/epic-correlation.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "type",
+      "symbols": [
+        "EpiclessFeature"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/epic-correlation.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
       "from": "packages/rex/src/core/fix.ts",
       "to": "packages/rex/src/core/tree.ts",
       "type": "static",
@@ -6777,6 +6984,91 @@
       "type": "type",
       "symbols": [
         "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-epic.ts",
+      "to": "packages/rex/src/core/delete.ts",
+      "type": "static",
+      "symbols": [
+        "deleteItem",
+        "cleanBlockedByRefs"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-epic.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-epic.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-feature.ts",
+      "to": "packages/rex/src/core/delete.ts",
+      "type": "static",
+      "symbols": [
+        "deleteItem",
+        "cleanBlockedByRefs"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-feature.ts",
+      "to": "packages/rex/src/core/sync.ts",
+      "type": "static",
+      "symbols": [
+        "extractSyncMeta"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-feature.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem",
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-feature.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-task.ts",
+      "to": "packages/rex/src/core/delete.ts",
+      "type": "static",
+      "symbols": [
+        "deleteItem",
+        "cleanBlockedByRefs"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-task.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "findItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-task.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemStatus"
       ]
     },
     {
@@ -7159,6 +7451,59 @@
       "type": "type",
       "symbols": [
         "PruneResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/remove-epic.ts",
+      "type": "reexport",
+      "symbols": [
+        "removeEpic"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/remove-epic.ts",
+      "type": "type",
+      "symbols": [
+        "RemoveEpicResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/remove-feature.ts",
+      "type": "reexport",
+      "symbols": [
+        "preCheckFeatureDeletion",
+        "removeFeature"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/remove-feature.ts",
+      "type": "type",
+      "symbols": [
+        "DeletionPreCheck",
+        "RemoveFeatureResult",
+        "ExternalDependent",
+        "SyncedItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/remove-task.ts",
+      "type": "reexport",
+      "symbols": [
+        "removeTask"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/remove-task.ts",
+      "type": "type",
+      "symbols": [
+        "RemoveTaskResult",
+        "ParentAutoCompletion"
       ]
     },
     {
@@ -8449,6 +8794,22 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/cli/commands/remove.test.ts",
+      "to": "packages/rex/src/cli/commands/remove.ts",
+      "type": "static",
+      "symbols": [
+        "cmdRemove"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/remove.test.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/cli/commands/report.test.ts",
       "to": "packages/rex/src/cli/commands/report.ts",
       "type": "static",
@@ -8696,6 +9057,56 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/cli/commands/validate-epicless.test.ts",
+      "to": "packages/rex/src/cli/commands/validate.ts",
+      "type": "static",
+      "symbols": [
+        "cmdValidate"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/validate-epicless.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/validate-interactive.test.ts",
+      "to": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "type": "static",
+      "symbols": [
+        "resolveEpiclessFeatures",
+        "applyEpiclessResolutions"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/validate-interactive.test.ts",
+      "to": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "type": "type",
+      "symbols": [
+        "EpiclessResolution",
+        "PromptFn"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/validate-interactive.test.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "type",
+      "symbols": [
+        "EpiclessFeature"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/validate-interactive.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/cli/commands/validate.test.ts",
       "to": "packages/rex/src/cli/commands/validate.ts",
       "type": "static",
@@ -8872,6 +9283,51 @@
     },
     {
       "from": "packages/rex/tests/unit/core/dag.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/epic-correlation.test.ts",
+      "to": "packages/rex/src/core/epic-correlation.ts",
+      "type": "static",
+      "symbols": [
+        "computeTagOverlap",
+        "computeCorrelationSignals",
+        "computeCombinedScore",
+        "rankEpicsForFeature",
+        "correlateEpiclessFeatures",
+        "formatScore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/epic-correlation.test.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "type",
+      "symbols": [
+        "EpiclessFeature"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/epic-correlation.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/epicless.test.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "static",
+      "symbols": [
+        "findEpiclessFeatures"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/epicless.test.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -9114,6 +9570,55 @@
     {
       "from": "packages/rex/tests/unit/core/prune.test.ts",
       "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/remove-epic.test.ts",
+      "to": "packages/rex/src/core/remove-epic.ts",
+      "type": "static",
+      "symbols": [
+        "removeEpic"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/remove-epic.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/remove-feature.test.ts",
+      "to": "packages/rex/src/core/remove-feature.ts",
+      "type": "static",
+      "symbols": [
+        "preCheckFeatureDeletion",
+        "removeFeature"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/remove-feature.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/remove-task.test.ts",
+      "to": "packages/rex/src/core/remove-task.ts",
+      "type": "static",
+      "symbols": [
+        "removeTask"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/remove-task.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "PRDItem"
@@ -9756,6 +10261,40 @@
       "type": "type",
       "symbols": [
         "ArchetypeDefinition"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/branch-work-classifier.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkRecordItem",
+        "BranchWorkEpicSummary",
+        "ChangeSignificance"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/branch-work-filter.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkRecordItem"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/branch-work-store.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkRecord"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/branch-work-store.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "BranchWorkRecordSchema"
       ]
     },
     {
@@ -10937,6 +11476,14 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "type": "static",
+      "symbols": [
+        "generatePrMarkdownFile"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
       "to": "packages/sourcevision/src/cli/errors.ts",
       "type": "static",
       "symbols": [
@@ -11073,6 +11620,30 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "to": "packages/sourcevision/src/analyzers/branch-work-classifier.ts",
+      "type": "static",
+      "symbols": [
+        "classifyItems"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "to": "packages/sourcevision/src/analyzers/branch-work-collector.ts",
+      "type": "static",
+      "symbols": [
+        "collectBranchWork"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "to": "packages/sourcevision/src/analyzers/branch-work-collector.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
       "to": "packages/sourcevision/src/cli/commands/constants.ts",
       "type": "static",
       "symbols": [
@@ -11081,26 +11652,9 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
-      "to": "packages/sourcevision/src/cli/commands/prd-epic-resolver.ts",
-      "type": "static",
-      "symbols": [
-        "resolveWorkedEpicTitlesForRange"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
-      "to": "packages/sourcevision/src/cli/commands/prd-epic-resolver.ts",
-      "type": "type",
-      "symbols": [
-        "ResolvedBranchScopedRexWork"
-      ]
-    },
-    {
-      "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
       "to": "packages/sourcevision/src/cli/errors.ts",
       "type": "static",
       "symbols": [
-        "CLIError",
         "requireSvDir"
       ]
     },
@@ -11110,6 +11664,24 @@
       "type": "static",
       "symbols": [
         "info"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "to": "packages/sourcevision/src/generators/pr-markdown-template.ts",
+      "type": "static",
+      "symbols": [
+        "renderPRMarkdownFromRecord"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkRecord",
+        "BranchWorkRecordItem",
+        "BranchWorkEpicSummary"
       ]
     },
     {
@@ -11349,6 +11921,16 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/generators/pr-markdown-template.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkRecord",
+        "BranchWorkRecordItem",
+        "ChangeSignificance"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/public.ts",
       "to": "packages/sourcevision/src/cli/mcp.ts",
       "type": "reexport",
@@ -11446,6 +12028,7 @@
         "FindingSchema",
         "ComponentsSchema",
         "CallGraphSchema",
+        "BranchWorkRecordSchema",
         "validateManifest",
         "validateInventory",
         "validateImports",
@@ -11453,6 +12036,7 @@
         "validateZones",
         "validateComponents",
         "validateCallGraph",
+        "validateBranchWorkRecord",
         "validateModule",
         "formatValidationErrors"
       ]
@@ -11711,6 +12295,100 @@
       ]
     },
     {
+      "from": "packages/sourcevision/tests/unit/analyzers/branch-work-classifier.test.ts",
+      "to": "packages/sourcevision/src/analyzers/branch-work-classifier.ts",
+      "type": "static",
+      "symbols": [
+        "classifyItems",
+        "classifyItem",
+        "isBreakingChange",
+        "inferSignificance"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/branch-work-classifier.test.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkRecordItem",
+        "BranchWorkEpicSummary"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/branch-work-collector.test.ts",
+      "to": "packages/sourcevision/src/analyzers/branch-work-collector.ts",
+      "type": "static",
+      "symbols": [
+        "collectBranchWork",
+        "parsePRDDocument",
+        "diffCompletedItems",
+        "buildBranchWorkItems"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/branch-work-collector.test.ts",
+      "to": "packages/sourcevision/src/analyzers/branch-work-collector.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkResult",
+        "CollectorOptions"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/branch-work-filter.test.ts",
+      "to": "packages/sourcevision/src/analyzers/branch-work-filter.ts",
+      "type": "static",
+      "symbols": [
+        "classifyBranchPattern",
+        "isWithinBranchLifecycle",
+        "filterItemsByBranchScope"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/branch-work-filter.test.ts",
+      "to": "packages/sourcevision/src/analyzers/branch-work-filter.ts",
+      "type": "type",
+      "symbols": [
+        "BranchLifecycle"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/branch-work-filter.test.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkRecordItem"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/branch-work-store.test.ts",
+      "to": "packages/sourcevision/src/analyzers/branch-work-store.ts",
+      "type": "static",
+      "symbols": [
+        "saveBranchWorkRecord",
+        "loadBranchWorkRecord",
+        "branchWorkRecordPath",
+        "sanitizeBranchName"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/branch-work-store.test.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkRecord",
+        "BranchWorkRecordItem"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/branch-work-store.test.ts",
+      "to": "packages/sourcevision/src/schema/validate.ts",
+      "type": "static",
+      "symbols": [
+        "BranchWorkRecordSchema"
+      ]
+    },
+    {
       "from": "packages/sourcevision/tests/unit/analyzers/callgraph-findings.test.ts",
       "to": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
       "type": "static",
@@ -11792,6 +12470,30 @@
         "Imports",
         "Classifications",
         "ArchetypeDefinition"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/completion-reader.test.ts",
+      "to": "packages/sourcevision/src/analyzers/completion-reader.ts",
+      "type": "static",
+      "symbols": [
+        "readCompletionStatus",
+        "extractItemCompletion",
+        "computeCompletionStats",
+        "detectInconsistencies",
+        "computeCompletionTimeline"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/completion-reader.test.ts",
+      "to": "packages/sourcevision/src/analyzers/completion-reader.ts",
+      "type": "type",
+      "symbols": [
+        "CompletionState",
+        "CompletionStats",
+        "CompletionTimeline",
+        "CompletionInconsistency",
+        "CompletionStatusResult"
       ]
     },
     {
@@ -12257,7 +12959,8 @@
       "to": "packages/sourcevision/src/cli/commands/analyze.ts",
       "type": "static",
       "symbols": [
-        "resolveAnalyzeTokenEventMetadata"
+        "resolveAnalyzeTokenEventMetadata",
+        "classifyPrMarkdownError"
       ]
     },
     {
@@ -12350,10 +13053,21 @@
     },
     {
       "from": "packages/sourcevision/tests/unit/cli/pr-markdown.test.ts",
+      "to": "packages/sourcevision/src/analyzers/branch-work-collector.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkResult"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/cli/pr-markdown.test.ts",
       "to": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
       "type": "static",
       "symbols": [
-        "cmdPrMarkdown"
+        "cmdPrMarkdown",
+        "toBranchWorkRecord",
+        "generatePrMarkdownFile",
+        "PR_MARKDOWN_FILENAME"
       ]
     },
     {
@@ -12391,6 +13105,33 @@
         "Imports",
         "Zones",
         "Components"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/generators/pr-markdown-template.test.ts",
+      "to": "packages/sourcevision/src/generators/pr-markdown-template.ts",
+      "type": "static",
+      "symbols": [
+        "renderPRMarkdownFromRecord",
+        "groupItemsByEpic",
+        "extractBreakingChanges",
+        "extractMajorChanges",
+        "extractMinorChanges",
+        "sortItemsBySignificance",
+        "renderEpicSection",
+        "renderBreakingChangesSection",
+        "renderMajorChangesSection",
+        "renderSummarySection"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/generators/pr-markdown-template.test.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "BranchWorkRecord",
+        "BranchWorkRecordItem",
+        "BranchWorkEpicSummary"
       ]
     },
     {
@@ -12905,13 +13646,7 @@
       "to": "packages/web/src/server/pr-markdown-refresh-diagnostics.ts",
       "type": "static",
       "symbols": [
-        "buildPRMarkdownRefreshFailure",
-        "classifyPRMarkdownRefreshFailureCode",
-        "getPRMarkdownRefreshRemediationHints",
-        "resolvePRMarkdownRefreshPreflightErrorContract",
-        "resolvePRMarkdownRefreshGuidance",
-        "shouldUsePRMarkdownFallbackForCode",
-        "validatePRMarkdownRefreshPreflightErrorContract"
+        "classifyPRMarkdownRefreshFailureCode"
       ]
     },
     {
@@ -13258,6 +13993,14 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/components/crash-recovery-banner.ts",
+      "to": "packages/web/src/viewer/crash-detector.ts",
+      "type": "type",
+      "symbols": [
+        "SavedNavigationState"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/components/data-display/findings-list.ts",
       "to": "packages/web/src/schema/v1.ts",
       "type": "type",
@@ -13300,6 +14043,22 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/components/degradation-banner.ts",
+      "to": "packages/web/src/viewer/graceful-degradation.ts",
+      "type": "type",
+      "symbols": [
+        "DegradableFeature"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/degradation-banner.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemoryLevel"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/components/detail-panel.ts",
       "to": "packages/web/src/viewer/types.ts",
       "type": "type",
@@ -13327,6 +14086,24 @@
       "type": "type",
       "symbols": [
         "ViewId"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/memory-warning.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "static",
+      "symbols": [
+        "formatBytes",
+        "formatRatio"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/memory-warning.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemorySnapshot",
+        "MemoryLevel"
       ]
     },
     {
@@ -13387,6 +14164,23 @@
         "PRDItemData",
         "BranchStats",
         "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/delete-confirmation.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
+      "type": "static",
+      "symbols": [
+        "countDescendants"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/delete-confirmation.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItemData",
+        "ItemLevel"
       ]
     },
     {
@@ -13465,6 +14259,22 @@
         "formatTimestamp",
         "itemMatchesFilter",
         "filterTree"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/delete-confirmation.ts",
+      "type": "reexport",
+      "symbols": [
+        "DeleteConfirmation"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/delete-confirmation.ts",
+      "type": "type",
+      "symbols": [
+        "DeleteConfirmationProps"
       ]
     },
     {
@@ -13637,7 +14447,8 @@
       "to": "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
       "type": "reexport",
       "symbols": [
-        "findItemById"
+        "findItemById",
+        "countDescendants"
       ]
     },
     {
@@ -13890,6 +14701,22 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/components/refresh-queue-status.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemoryLevel"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/refresh-queue-status.ts",
+      "to": "packages/web/src/viewer/refresh-throttle.ts",
+      "type": "type",
+      "symbols": [
+        "RefreshQueueState"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/components/rex-task-link.ts",
       "to": "packages/web/src/viewer/components/copy-link-button.ts",
       "type": "static",
@@ -13983,6 +14810,33 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/crash-detector.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/graceful-degradation.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "static",
+      "symbols": [
+        "onSnapshot",
+        "getCurrentLevel",
+        "getLatestSnapshot"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/graceful-degradation.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemoryLevel",
+        "MemorySnapshot"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/graph/renderer.ts",
       "to": "packages/web/src/viewer/graph/physics.ts",
       "type": "static",
@@ -14014,10 +14868,11 @@
       "to": "packages/web/src/viewer/loader.ts",
       "type": "static",
       "symbols": [
-        "loadFromServer",
+        "loadModules",
         "loadFromFiles",
         "detectMode",
         "onDataChange",
+        "clearOnChange",
         "startPolling",
         "stopPolling"
       ]
@@ -14031,6 +14886,36 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
+      "to": "packages/web/src/viewer/crash-detector.ts",
+      "type": "static",
+      "symbols": [
+        "detectCrash",
+        "saveNavigationState",
+        "clearSavedNavigationState",
+        "markRecoveryShown",
+        "wasRecoveryShown",
+        "resetCrashDetector"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
+      "to": "packages/web/src/viewer/crash-detector.ts",
+      "type": "type",
+      "symbols": [
+        "CrashDetectionResult",
+        "SavedNavigationState"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/hooks/use-file-edges.ts",
       "to": "packages/web/src/viewer/views/zone-types.ts",
       "type": "type",
@@ -14040,6 +14925,89 @@
         "ZoneData",
         "FlowEdge",
         "BoxRect"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-graceful-degradation.ts",
+      "to": "packages/web/src/viewer/graceful-degradation.ts",
+      "type": "static",
+      "symbols": [
+        "startDegradation",
+        "stopDegradation",
+        "onDegradationChange",
+        "getDegradationState",
+        "isFeatureDisabled"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-graceful-degradation.ts",
+      "to": "packages/web/src/viewer/graceful-degradation.ts",
+      "type": "type",
+      "symbols": [
+        "DegradableFeature",
+        "DegradationState"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-graceful-degradation.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemoryLevel"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-memory-monitor.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "static",
+      "symbols": [
+        "startMemoryMonitor",
+        "stopMemoryMonitor",
+        "onSnapshot",
+        "getLatestSnapshot",
+        "getSnapshotHistory",
+        "resetMemoryMonitor"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-memory-monitor.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemorySnapshot",
+        "MemoryLevel",
+        "MemoryThresholds"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemoryLevel"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
+      "to": "packages/web/src/viewer/refresh-throttle.ts",
+      "type": "static",
+      "symbols": [
+        "startRefreshThrottle",
+        "stopRefreshThrottle",
+        "onQueueChange",
+        "getQueueState",
+        "enqueueRefresh",
+        "getRecommendedInterval",
+        "resetRefreshThrottle"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
+      "to": "packages/web/src/viewer/refresh-throttle.ts",
+      "type": "type",
+      "symbols": [
+        "RefreshQueueState",
+        "RefreshPriority"
       ]
     },
     {
@@ -14136,6 +15104,22 @@
     },
     {
       "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/components/crash-recovery-banner.ts",
+      "type": "static",
+      "symbols": [
+        "CrashRecoveryBanner"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/components/degradation-banner.ts",
+      "type": "static",
+      "symbols": [
+        "DegradationBanner"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
       "to": "packages/web/src/viewer/components/detail-panel.ts",
       "type": "static",
       "symbols": [
@@ -14168,6 +15152,22 @@
     },
     {
       "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/components/memory-warning.ts",
+      "type": "static",
+      "symbols": [
+        "MemoryWarningBanner"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/components/refresh-queue-status.ts",
+      "type": "static",
+      "symbols": [
+        "RefreshQueueStatus"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
       "to": "packages/web/src/viewer/components/sidebar.ts",
       "type": "static",
       "symbols": [
@@ -14184,10 +15184,50 @@
     },
     {
       "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/graceful-degradation.ts",
+      "type": "type",
+      "symbols": [
+        "DegradableFeature"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
       "to": "packages/web/src/viewer/hooks/use-app-data.ts",
       "type": "static",
       "symbols": [
         "useAppData"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
+      "type": "static",
+      "symbols": [
+        "useCrashRecovery"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/hooks/use-graceful-degradation.ts",
+      "type": "static",
+      "symbols": [
+        "useGracefulDegradation"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/hooks/use-memory-monitor.ts",
+      "type": "static",
+      "symbols": [
+        "useMemoryMonitor"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/main.ts",
+      "to": "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
+      "type": "static",
+      "symbols": [
+        "useRefreshThrottle"
       ]
     },
     {
@@ -14390,6 +15430,25 @@
       "type": "static",
       "symbols": [
         "ZonesView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/refresh-throttle.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "static",
+      "symbols": [
+        "onSnapshot",
+        "getLatestSnapshot",
+        "getCurrentLevel"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/refresh-throttle.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemoryLevel",
+        "MemorySnapshot"
       ]
     },
     {
@@ -14827,6 +15886,14 @@
     },
     {
       "from": "packages/web/src/viewer/views/prd.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/delete-confirmation.ts",
+      "type": "static",
+      "symbols": [
+        "DeleteConfirmation"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/prd.ts",
       "to": "packages/web/src/viewer/components/prd-tree/index.ts",
       "type": "static",
       "symbols": [
@@ -14906,7 +15973,9 @@
       "type": "static",
       "symbols": [
         "findItemById",
-        "getAncestorIds"
+        "getAncestorIds",
+        "collectSubtreeIds",
+        "removeItemById"
       ]
     },
     {
@@ -15321,6 +16390,39 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/server/data-loading-efficiency.test.ts",
+      "to": "packages/web/src/server/routes-data.ts",
+      "type": "static",
+      "symbols": [
+        "createDataWatcher",
+        "handleDataRoute"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/data-loading-efficiency.test.ts",
+      "to": "packages/web/src/server/routes-hench.ts",
+      "type": "static",
+      "symbols": [
+        "handleHenchRoute"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/data-loading-efficiency.test.ts",
+      "to": "packages/web/src/server/routes-sourcevision.ts",
+      "type": "static",
+      "symbols": [
+        "handleSourcevisionRoute"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/data-loading-efficiency.test.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/server/dev-reload.test.ts",
       "to": "packages/web/src/server/routes-static.ts",
       "type": "static",
@@ -15335,6 +16437,24 @@
       "type": "type",
       "symbols": [
         "ServerContext"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/memory-leak-fixes.test.ts",
+      "to": "packages/web/src/server/routes-mcp.ts",
+      "type": "dynamic",
+      "symbols": [
+        "closeAllMcpSessions"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/memory-leak-fixes.test.ts",
+      "to": "packages/web/src/viewer/loader.ts",
+      "type": "dynamic",
+      "symbols": [
+        "onDataChange",
+        "clearOnChange",
+        "getData"
       ]
     },
     {
@@ -15927,6 +17047,98 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/crash-detector.test.ts",
+      "to": "packages/web/src/viewer/crash-detector.ts",
+      "type": "static",
+      "symbols": [
+        "detectCrash",
+        "saveNavigationState",
+        "clearSavedNavigationState",
+        "markRecoveryShown",
+        "wasRecoveryShown",
+        "getDetectionResult",
+        "clearCrashHistory",
+        "resetCrashDetector",
+        "_testHelpers"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/crash-detector.test.ts",
+      "to": "packages/web/src/viewer/crash-detector.ts",
+      "type": "type",
+      "symbols": [
+        "CrashDetectionResult",
+        "SavedNavigationState"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/crash-recovery-banner.test.ts",
+      "to": "packages/web/src/viewer/components/crash-recovery-banner.ts",
+      "type": "static",
+      "symbols": [
+        "CrashRecoveryBanner"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/crash-recovery-banner.test.ts",
+      "to": "packages/web/src/viewer/crash-detector.ts",
+      "type": "type",
+      "symbols": [
+        "SavedNavigationState"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/degradation-banner.test.ts",
+      "to": "packages/web/src/viewer/components/degradation-banner.ts",
+      "type": "static",
+      "symbols": [
+        "DegradationBanner"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/degradation-banner.test.ts",
+      "to": "packages/web/src/viewer/graceful-degradation.ts",
+      "type": "type",
+      "symbols": [
+        "DegradableFeature"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/degradation-banner.test.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemoryLevel"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/deletion-state-updates.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/compute.ts",
+      "type": "static",
+      "symbols": [
+        "computeBranchStats",
+        "completionRatio"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/deletion-state-updates.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
+      "type": "static",
+      "symbols": [
+        "removeItemById",
+        "collectSubtreeIds",
+        "findItemById"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/deletion-state-updates.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItemData"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/detail-panel.test.ts",
       "to": "packages/web/src/viewer/components/detail-panel.ts",
       "type": "static",
@@ -15959,6 +17171,56 @@
       "type": "static",
       "symbols": [
         "FlowDiagram"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/graceful-degradation.test.ts",
+      "to": "packages/web/src/viewer/graceful-degradation.ts",
+      "type": "static",
+      "symbols": [
+        "featuresForTier",
+        "summaryForTier",
+        "startDegradation",
+        "stopDegradation",
+        "onDegradationChange",
+        "isFeatureDisabled",
+        "getDegradationState",
+        "getCurrentTier",
+        "resetDegradation"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/graceful-degradation.test.ts",
+      "to": "packages/web/src/viewer/graceful-degradation.ts",
+      "type": "type",
+      "symbols": [
+        "DegradableFeature"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/graceful-degradation.test.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "static",
+      "symbols": [
+        "startMemoryMonitor",
+        "resetMemoryMonitor"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/graph-destroy.test.ts",
+      "to": "packages/web/src/viewer/graph/physics.ts",
+      "type": "static",
+      "symbols": [
+        "tick"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/graph-destroy.test.ts",
+      "to": "packages/web/src/viewer/graph/physics.ts",
+      "type": "type",
+      "symbols": [
+        "SimState",
+        "TickCallbacks"
       ]
     },
     {
@@ -16012,6 +17274,52 @@
       "symbols": [
         "truncateFilename",
         "basename"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/memory-monitor.test.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "static",
+      "symbols": [
+        "classifyLevel",
+        "takeSnapshot",
+        "formatBytes",
+        "formatRatio",
+        "startMemoryMonitor",
+        "stopMemoryMonitor",
+        "getLatestSnapshot",
+        "getSnapshotHistory",
+        "getCurrentLevel",
+        "onSnapshot",
+        "resetMemoryMonitor",
+        "hasPerformanceMemory"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/memory-monitor.test.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemoryThresholds",
+        "MemoryLevel",
+        "MemorySnapshot"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/memory-warning.test.ts",
+      "to": "packages/web/src/viewer/components/memory-warning.ts",
+      "type": "static",
+      "symbols": [
+        "MemoryWarningBanner"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/memory-warning.test.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "MemorySnapshot",
+        "MemoryLevel"
       ]
     },
     {
@@ -16082,6 +17390,38 @@
       "type": "type",
       "symbols": [
         "PRDDocumentData"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/refresh-throttle.test.ts",
+      "to": "packages/web/src/viewer/memory-monitor.ts",
+      "type": "static",
+      "symbols": [
+        "startMemoryMonitor",
+        "resetMemoryMonitor"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/refresh-throttle.test.ts",
+      "to": "packages/web/src/viewer/refresh-throttle.ts",
+      "type": "static",
+      "symbols": [
+        "startRefreshThrottle",
+        "stopRefreshThrottle",
+        "enqueueRefresh",
+        "getQueueState",
+        "getRecommendedInterval",
+        "getThrottleLevel",
+        "onQueueChange",
+        "resetRefreshThrottle"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/refresh-throttle.test.ts",
+      "to": "packages/web/src/viewer/refresh-throttle.ts",
+      "type": "type",
+      "symbols": [
+        "RefreshQueueState"
       ]
     },
     {
@@ -16221,6 +17561,23 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/tree-utils-deletion.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
+      "type": "static",
+      "symbols": [
+        "collectSubtreeIds",
+        "removeItemById"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/tree-utils-deletion.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItemData"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/tree-view.test.ts",
       "to": "packages/web/src/viewer/components/data-display/tree-view.ts",
       "type": "static",
@@ -16347,7 +17704,11 @@
         "packages/rex/src/core/token-usage.ts",
         "packages/rex/src/core/verify.ts",
         "packages/rex/src/store/project-config.ts",
+        "packages/sourcevision/src/analyzers/branch-work-collector.ts",
+        "packages/sourcevision/src/analyzers/branch-work-filter.ts",
+        "packages/sourcevision/src/analyzers/branch-work-store.ts",
         "packages/sourcevision/src/analyzers/claude-client.ts",
+        "packages/sourcevision/src/analyzers/completion-reader.ts",
         "packages/sourcevision/src/analyzers/inventory.ts",
         "packages/sourcevision/src/analyzers/manifest.ts",
         "packages/sourcevision/src/cli/commands/analyze-phases.ts",
@@ -16430,6 +17791,7 @@
       "importedBy": [
         "ci.js",
         "cli.js",
+        "pr-check.js",
         "web.js"
       ],
       "symbols": [
@@ -16450,6 +17812,7 @@
       "importedBy": [
         "ci.js",
         "cli.js",
+        "pr-check.js",
         "refresh-artifacts.js",
         "refresh-validate.js",
         "web.js"
@@ -16490,6 +17853,7 @@
       "importedBy": [
         "ci.js",
         "cli.js",
+        "pr-check.js",
         "refresh-artifacts.js",
         "refresh-validate.js",
         "web.js"
@@ -16516,21 +17880,25 @@
         "packages/web/src/viewer/components/breadcrumb.ts",
         "packages/web/src/viewer/components/config-footer.ts",
         "packages/web/src/viewer/components/copy-link-button.ts",
+        "packages/web/src/viewer/components/crash-recovery-banner.ts",
         "packages/web/src/viewer/components/data-display/collapsible-section.ts",
         "packages/web/src/viewer/components/data-display/findings-list.ts",
         "packages/web/src/viewer/components/data-display/health-gauge.ts",
         "packages/web/src/viewer/components/data-display/mini-charts.ts",
         "packages/web/src/viewer/components/data-display/tree-view.ts",
         "packages/web/src/viewer/components/data-display/zone-map.ts",
+        "packages/web/src/viewer/components/degradation-banner.ts",
         "packages/web/src/viewer/components/detail-panel.ts",
         "packages/web/src/viewer/components/faq.ts",
         "packages/web/src/viewer/components/guide.ts",
         "packages/web/src/viewer/components/logos.ts",
+        "packages/web/src/viewer/components/memory-warning.ts",
         "packages/web/src/viewer/components/notion-schema-wizard.ts",
         "packages/web/src/viewer/components/prd-tree/add-item-form.ts",
         "packages/web/src/viewer/components/prd-tree/analyze-panel.ts",
         "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
         "packages/web/src/viewer/components/prd-tree/bulk-actions.ts",
+        "packages/web/src/viewer/components/prd-tree/delete-confirmation.ts",
         "packages/web/src/viewer/components/prd-tree/execution-panel.ts",
         "packages/web/src/viewer/components/prd-tree/inline-add-form.ts",
         "packages/web/src/viewer/components/prd-tree/merge-preview.ts",
@@ -16541,15 +17909,20 @@
         "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
         "packages/web/src/viewer/components/prd-tree/status-filter.ts",
         "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+        "packages/web/src/viewer/components/refresh-queue-status.ts",
         "packages/web/src/viewer/components/rex-task-link.ts",
         "packages/web/src/viewer/components/search-filter.ts",
         "packages/web/src/viewer/components/sidebar.ts",
         "packages/web/src/viewer/components/status-indicators.ts",
         "packages/web/src/viewer/components/theme-toggle.ts",
         "packages/web/src/viewer/hooks/use-app-data.ts",
+        "packages/web/src/viewer/hooks/use-crash-recovery.ts",
         "packages/web/src/viewer/hooks/use-file-edges.ts",
+        "packages/web/src/viewer/hooks/use-graceful-degradation.ts",
+        "packages/web/src/viewer/hooks/use-memory-monitor.ts",
         "packages/web/src/viewer/hooks/use-pan-zoom.ts",
         "packages/web/src/viewer/hooks/use-project-metadata.ts",
+        "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
         "packages/web/src/viewer/hooks/use-route-state.ts",
         "packages/web/src/viewer/hooks/use-zone-drag.ts",
         "packages/web/src/viewer/main.ts",
@@ -16582,9 +17955,12 @@
         "packages/web/tests/unit/viewer/batch-import-panel.test.ts",
         "packages/web/tests/unit/viewer/collapsible-section.test.ts",
         "packages/web/tests/unit/viewer/copy-link-button.test.ts",
+        "packages/web/tests/unit/viewer/crash-recovery-banner.test.ts",
+        "packages/web/tests/unit/viewer/degradation-banner.test.ts",
         "packages/web/tests/unit/viewer/detail-panel.test.ts",
         "packages/web/tests/unit/viewer/flow-diagram.test.ts",
         "packages/web/tests/unit/viewer/hench-config.test.ts",
+        "packages/web/tests/unit/viewer/memory-warning.test.ts",
         "packages/web/tests/unit/viewer/pr-markdown.test.ts",
         "packages/web/tests/unit/viewer/prd-tree.test.ts",
         "packages/web/tests/unit/viewer/prune-diff-tree.test.ts",
@@ -16729,8 +18105,7 @@
         "packages/sourcevision/src/analyzers/components.ts",
         "packages/sourcevision/src/analyzers/imports.ts",
         "packages/sourcevision/src/analyzers/route-detection.ts",
-        "packages/sourcevision/src/analyzers/server-route-detection.ts",
-        "packages/sourcevision/src/cli/commands/pr-markdown.ts"
+        "packages/sourcevision/src/analyzers/server-route-detection.ts"
       ],
       "symbols": [
         "default"
@@ -16740,7 +18115,8 @@
       "package": "url",
       "importedBy": [
         "ci.js",
-        "cli.js"
+        "cli.js",
+        "pr-check.js"
       ],
       "symbols": [
         "fileURLToPath"
@@ -16859,6 +18235,7 @@
         "packages/rex/tests/unit/cli/commands/fix.test.ts",
         "packages/rex/tests/unit/cli/commands/move.test.ts",
         "packages/rex/tests/unit/cli/commands/recommend.test.ts",
+        "packages/rex/tests/unit/cli/commands/remove.test.ts",
         "packages/rex/tests/unit/cli/commands/report.test.ts",
         "packages/rex/tests/unit/cli/commands/smart-add-duplicates.test.ts",
         "packages/rex/tests/unit/cli/commands/smart-add-merge.test.ts",
@@ -16867,6 +18244,8 @@
         "packages/rex/tests/unit/cli/commands/sync.test.ts",
         "packages/rex/tests/unit/cli/commands/update.test.ts",
         "packages/rex/tests/unit/cli/commands/usage.test.ts",
+        "packages/rex/tests/unit/cli/commands/validate-epicless.test.ts",
+        "packages/rex/tests/unit/cli/commands/validate-interactive.test.ts",
         "packages/rex/tests/unit/cli/commands/validate.test.ts",
         "packages/rex/tests/unit/cli/commands/verify.test.ts",
         "packages/rex/tests/unit/cli/errors.test.ts",
@@ -16876,6 +18255,8 @@
         "packages/rex/tests/unit/cli/validate-input.test.ts",
         "packages/rex/tests/unit/core/canonical.test.ts",
         "packages/rex/tests/unit/core/dag.test.ts",
+        "packages/rex/tests/unit/core/epic-correlation.test.ts",
+        "packages/rex/tests/unit/core/epicless.test.ts",
         "packages/rex/tests/unit/core/feature-filtered-task.test.ts",
         "packages/rex/tests/unit/core/fix.test.ts",
         "packages/rex/tests/unit/core/keywords.test.ts",
@@ -16888,6 +18269,9 @@
         "packages/rex/tests/unit/core/parent-completion.test.ts",
         "packages/rex/tests/unit/core/parent-reset.test.ts",
         "packages/rex/tests/unit/core/prune.test.ts",
+        "packages/rex/tests/unit/core/remove-epic.test.ts",
+        "packages/rex/tests/unit/core/remove-feature.test.ts",
+        "packages/rex/tests/unit/core/remove-task.test.ts",
         "packages/rex/tests/unit/core/requirements-prioritization.test.ts",
         "packages/rex/tests/unit/core/requirements.test.ts",
         "packages/rex/tests/unit/core/structural.test.ts",
@@ -16917,9 +18301,14 @@
         "packages/sourcevision/tests/integration/pipeline.test.ts",
         "packages/sourcevision/tests/integration/pr-markdown-reviewer-output.test.ts",
         "packages/sourcevision/tests/unit/analyzers/archetypes.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/branch-work-classifier.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/branch-work-collector.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/branch-work-filter.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/branch-work-store.test.ts",
         "packages/sourcevision/tests/unit/analyzers/callgraph-findings.test.ts",
         "packages/sourcevision/tests/unit/analyzers/callgraph.test.ts",
         "packages/sourcevision/tests/unit/analyzers/classify.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/completion-reader.test.ts",
         "packages/sourcevision/tests/unit/analyzers/components.test.ts",
         "packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts",
         "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
@@ -16945,6 +18334,7 @@
         "packages/sourcevision/tests/unit/cli/pr-markdown.test.ts",
         "packages/sourcevision/tests/unit/cli/prd-epic-resolver.test.ts",
         "packages/sourcevision/tests/unit/export/pdf-report.test.ts",
+        "packages/sourcevision/tests/unit/generators/pr-markdown-template.test.ts",
         "packages/sourcevision/tests/unit/schema/data-files.test.ts",
         "packages/sourcevision/tests/unit/schema/validate.test.ts",
         "packages/sourcevision/tests/unit/util/merge.test.ts",
@@ -16953,7 +18343,9 @@
         "packages/web/tests/integration/pr-markdown-refresh.test.ts",
         "packages/web/tests/integration/pr-markdown-tab-parity.test.ts",
         "packages/web/tests/integration/token-usage-route-regression.test.ts",
+        "packages/web/tests/unit/server/data-loading-efficiency.test.ts",
         "packages/web/tests/unit/server/dev-reload.test.ts",
+        "packages/web/tests/unit/server/memory-leak-fixes.test.ts",
         "packages/web/tests/unit/server/port.test.ts",
         "packages/web/tests/unit/server/pr-markdown-refresh-diagnostics.test.ts",
         "packages/web/tests/unit/server/routes-adaptive.test.ts",
@@ -16987,18 +18379,27 @@
         "packages/web/tests/unit/viewer/batch-import-panel.test.ts",
         "packages/web/tests/unit/viewer/collapsible-section.test.ts",
         "packages/web/tests/unit/viewer/copy-link-button.test.ts",
+        "packages/web/tests/unit/viewer/crash-detector.test.ts",
+        "packages/web/tests/unit/viewer/crash-recovery-banner.test.ts",
+        "packages/web/tests/unit/viewer/degradation-banner.test.ts",
+        "packages/web/tests/unit/viewer/deletion-state-updates.test.ts",
         "packages/web/tests/unit/viewer/detail-panel.test.ts",
         "packages/web/tests/unit/viewer/favicon.test.ts",
         "packages/web/tests/unit/viewer/flow-diagram.test.ts",
+        "packages/web/tests/unit/viewer/graceful-degradation.test.ts",
+        "packages/web/tests/unit/viewer/graph-destroy.test.ts",
         "packages/web/tests/unit/viewer/graph-interaction.test.ts",
         "packages/web/tests/unit/viewer/graph-layout.test.ts",
         "packages/web/tests/unit/viewer/graph-zoom.test.ts",
         "packages/web/tests/unit/viewer/hench-config.test.ts",
         "packages/web/tests/unit/viewer/label-utils.test.ts",
+        "packages/web/tests/unit/viewer/memory-monitor.test.ts",
+        "packages/web/tests/unit/viewer/memory-warning.test.ts",
         "packages/web/tests/unit/viewer/pr-markdown.test.ts",
         "packages/web/tests/unit/viewer/prd-tree-compute.test.ts",
         "packages/web/tests/unit/viewer/prd-tree.test.ts",
         "packages/web/tests/unit/viewer/prune-diff-tree.test.ts",
+        "packages/web/tests/unit/viewer/refresh-throttle.test.ts",
         "packages/web/tests/unit/viewer/route-state.test.ts",
         "packages/web/tests/unit/viewer/sidebar.test.ts",
         "packages/web/tests/unit/viewer/smart-add-input.test.ts",
@@ -17008,6 +18409,7 @@
         "packages/web/tests/unit/viewer/task-detail-requirements.test.ts",
         "packages/web/tests/unit/viewer/task-detail-usage.test.ts",
         "packages/web/tests/unit/viewer/token-usage-nav.test.ts",
+        "packages/web/tests/unit/viewer/tree-utils-deletion.test.ts",
         "packages/web/tests/unit/viewer/tree-view.test.ts",
         "packages/web/vitest.config.ts",
         "tests/e2e/architecture-policy.test.js",
@@ -17017,6 +18419,7 @@
         "tests/e2e/cli-dev.test.js",
         "tests/e2e/cli-errors.test.js",
         "tests/e2e/cli-init.test.js",
+        "tests/e2e/cli-pr-check.test.js",
         "tests/e2e/cli-refresh.test.js",
         "tests/e2e/cli-start.test.js",
         "tests/e2e/cli-tool-resolution.test.js",
@@ -17058,34 +18461,34 @@
     }
   ],
   "summary": {
-    "totalEdges": 1766,
+    "totalEdges": 1917,
     "totalExternal": 18,
     "circularCount": 0,
     "circulars": [],
     "mostImported": [
       {
         "path": "packages/rex/src/core/tree.ts",
-        "count": 34
+        "count": 39
       },
       {
         "path": "packages/rex/src/store/index.ts",
-        "count": 25
+        "count": 27
       },
       {
         "path": "packages/rex/src/cli/commands/constants.ts",
-        "count": 24
+        "count": 25
       },
       {
         "path": "packages/rex/src/cli/errors.ts",
-        "count": 23
+        "count": 25
+      },
+      {
+        "path": "packages/rex/src/cli/output.ts",
+        "count": 24
       },
       {
         "path": "packages/rex/src/schema/index.ts",
         "count": 23
-      },
-      {
-        "path": "packages/rex/src/cli/output.ts",
-        "count": 22
       },
       {
         "path": "packages/web/src/viewer/components/logos.ts",
@@ -17120,6 +18523,10 @@
         "count": 11
       },
       {
+        "path": "packages/web/src/server/routes-hench.ts",
+        "count": 11
+      },
+      {
         "path": "packages/sourcevision/src/analyzers/claude-client.ts",
         "count": 10
       },
@@ -17132,10 +18539,6 @@
         "count": 10
       },
       {
-        "path": "packages/web/src/server/routes-hench.ts",
-        "count": 10
-      },
-      {
         "path": "packages/hench/src/agent/lifecycle/cli-loop.ts",
         "count": 9
       },
@@ -17144,6 +18547,6 @@
         "count": 9
       }
     ],
-    "avgImportsPerFile": 3.42
+    "avgImportsPerFile": 3.4
   }
 }

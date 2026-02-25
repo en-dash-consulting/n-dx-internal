@@ -13985,9 +13985,11 @@
     {
       "id": "e6e7f530-81fd-49d6-b4cb-42fa539d8771",
       "title": "Branch Work System of Record",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-25T04:48:07.956Z",
+      "completedAt": "2026-02-25T04:48:07.956Z",
       "children": [
         {
           "id": "98e69d5c-e589-45fa-8e3d-5af4211d8906",
@@ -14077,10 +14079,12 @@
         {
           "id": "49e08812-0d9b-457c-bad3-0ffb680460de",
           "title": "Rex completion data integration",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Integrate with existing rex PRD system to extract completion status and work item details for branch work tracking",
           "source": "smart-add",
+          "startedAt": "2026-02-25T04:48:07.886Z",
+          "completedAt": "2026-02-25T04:48:07.886Z",
           "children": [
             {
               "id": "84621aa2-51c6-472e-848b-e54f1ffed9b3",
@@ -14116,7 +14120,7 @@
             {
               "id": "93c67767-1c4e-40ca-a6e0-5a7528b359f0",
               "title": "Add branch-scoped work item filtering",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement filtering logic to identify which rex work items are relevant to the current branch based on git branch metadata and work item timestamps",
               "acceptanceCriteria": [
@@ -14131,6 +14135,8 @@
                 "git"
               ],
               "source": "smart-add",
+              "startedAt": "2026-02-25T04:39:39.604Z",
+              "completedAt": "2026-02-25T04:48:07.790Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "content_overlap",
@@ -14159,17 +14165,19 @@
     {
       "id": "7ce2cc2b-c2b8-49ea-a69e-a8e1fa5bedb0",
       "title": "Automatic PR Markdown Generation",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "1d377d59-dd17-4914-886f-0c24fb36950e",
           "title": "Sourcevision analyze integration",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Integrate PR markdown generation directly into the sourcevision analyze command flow, replacing the manual refresh mechanism",
           "source": "smart-add",
+          "startedAt": "2026-02-25T05:14:47.843Z",
+          "completedAt": "2026-02-25T05:14:47.843Z",
           "children": [
             {
               "id": "bd399848-2634-4f1d-ab82-0fc6e1aa0901",
@@ -14205,7 +14213,7 @@
             {
               "id": "867d6782-241b-403f-a433-59aa8341e001",
               "title": "Remove manual PR markdown refresh mechanism",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Remove the manual refresh button and endpoint from the SourceVision UI, making PR markdown generation fully automatic through the analyze flow",
               "acceptanceCriteria": [
@@ -14219,12 +14227,14 @@
                 "ui",
                 "cleanup"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-25T04:48:24.853Z",
+              "completedAt": "2026-02-25T05:06:43.430Z"
             },
             {
               "id": "d9d6b8ec-350e-4e7d-beef-b656c6c2c93f",
               "title": "Add PR markdown generation status to analyze output",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Include PR markdown generation status and results in the sourcevision analyze command output and web UI feedback",
               "acceptanceCriteria": [
@@ -14238,7 +14248,8 @@
                 "feedback",
                 "status"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-25T05:06:43.658Z"
             }
           ],
           "overrideMarker": {
@@ -14259,6 +14270,8 @@
           "level": "feature",
           "description": "Generate PR markdown content from rex completion data rather than git differences, focusing on completed work items and their significance",
           "source": "smart-add",
+          "startedAt": "2026-02-25T04:38:48.030Z",
+          "completedAt": "2026-02-25T04:38:48.030Z",
           "children": [
             {
               "id": "2d6166ac-fd1a-49a1-bee9-c7a59145b298",
@@ -14323,9 +14336,7 @@
               "startedAt": "2026-02-25T04:30:49.469Z",
               "completedAt": "2026-02-25T04:38:47.936Z"
             }
-          ],
-          "startedAt": "2026-02-25T04:38:48.030Z",
-          "completedAt": "2026-02-25T04:38:48.030Z"
+          ]
         }
       ],
       "overrideMarker": {
@@ -14337,7 +14348,9 @@
         "matchedItemLevel": "epic",
         "matchedItemStatus": "completed",
         "createdAt": "2026-02-25T03:25:22.943Z"
-      }
+      },
+      "startedAt": "2026-02-25T05:14:47.909Z",
+      "completedAt": "2026-02-25T05:14:47.909Z"
     }
   ]
 }
