@@ -204,6 +204,13 @@ export {
 } from "./analyze/acknowledge.js";
 export type { AcknowledgedFinding, AcknowledgedStore } from "./analyze/acknowledge.js";
 
+// ---- Recommend: PRD creation from recommendations ---------------------------
+
+export { createItemsFromRecommendations } from "./recommend/create-from-recommendations.js";
+export type {
+  EnrichedRecommendation, RecommendationMeta, CreationResult,
+} from "./recommend/create-from-recommendations.js";
+
 // ---- MCP server factory -----------------------------------------------------
 
 export { createRexMcpServer } from "./cli/mcp.js";

@@ -4,8 +4,7 @@ import { PROJECT_DIRS } from "@n-dx/llm-client";
 import { resolveStore } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
 import { info, result } from "../output.js";
-import type { PRDItem, ItemLevel } from "../../schema/index.js";
-import { randomUUID } from "node:crypto";
+import type { ItemLevel } from "../../schema/index.js";
 import {
   computeFindingHash,
   loadAcknowledged,
@@ -13,6 +12,13 @@ import {
   acknowledgeFinding,
   isAcknowledged,
 } from "../../analyze/acknowledge.js";
+import {
+  createItemsFromRecommendations,
+} from "../../recommend/create-from-recommendations.js";
+import type {
+  EnrichedRecommendation,
+  RecommendationMeta,
+} from "../../recommend/create-from-recommendations.js";
 
 interface Finding {
   severity: string;
@@ -28,6 +34,8 @@ interface Recommendation {
   description: string;
   priority: "critical" | "high" | "medium" | "low";
   source: string;
+  /** Metadata from the underlying findings for traceability. */
+  meta: RecommendationMeta;
 }
 
 function selectorFormatError(detail: string): Error {
@@ -130,16 +138,43 @@ function mapFindingsToRecommendations(findings: Finding[]): Recommendation[] {
   const recommendations: Recommendation[] = [];
   for (const [category, items] of grouped) {
     const hasCritical = items.some((f) => f.severity === "critical");
+
+    // Compute severity distribution for quality scoring
+    const severityDistribution: Record<string, number> = {};
+    for (const f of items) {
+      severityDistribution[f.severity] = (severityDistribution[f.severity] ?? 0) + 1;
+    }
+
     recommendations.push({
       title: `Address ${category} issues (${items.length} findings)`,
       level: "feature",
       description: items.map((f) => `- ${f.message}`).join("\n"),
       priority: hasCritical ? "critical" : "high",
       source: "sourcevision",
+      meta: {
+        findingHashes: items.map((f) => f.hash),
+        category,
+        severityDistribution,
+        findingCount: items.length,
+      },
     });
   }
 
   return recommendations;
+}
+
+/**
+ * Map local Recommendation type to EnrichedRecommendation for the creation pipeline.
+ */
+function toEnrichedRecommendation(rec: Recommendation): EnrichedRecommendation {
+  return {
+    title: rec.title,
+    level: rec.level,
+    description: rec.description,
+    priority: rec.priority,
+    source: rec.source,
+    meta: rec.meta,
+  };
 }
 
 export async function cmdRecommend(
@@ -259,18 +294,12 @@ export async function cmdRecommend(
       return;
     }
 
-    for (const rec of acceptedRecommendations) {
-      const item: PRDItem = {
-        id: randomUUID(),
-        title: rec.title,
-        level: rec.level,
-        status: "pending",
-        description: rec.description,
-        priority: rec.priority,
-        source: rec.source,
-      };
-      await store.addItem(item);
-      result(`Added: ${rec.title} (${item.id})`);
+    // Convert to enriched recommendations and create atomically
+    const enriched = acceptedRecommendations.map(toEnrichedRecommendation);
+    const { created } = await createItemsFromRecommendations(store, enriched);
+
+    for (const item of created) {
+      result(`Added: ${item.title} (${item.id})`);
     }
   } else {
     info("Run with --accept to add all recommendations to the PRD.");
