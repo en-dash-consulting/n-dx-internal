@@ -13981,6 +13981,345 @@
           ]
         }
       ]
+    },
+    {
+      "id": "e6e7f530-81fd-49d6-b4cb-42fa539d8771",
+      "title": "Branch Work System of Record",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "98e69d5c-e589-45fa-8e3d-5af4211d8906",
+          "title": "JSON-based branch work tracking infrastructure",
+          "status": "pending",
+          "level": "feature",
+          "description": "Create a persistent JSON-based system within sourcevision to track completed epics, features, and tasks on the current branch",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "d1389dda-9ce8-43b8-86cc-dcafd5ce7287",
+              "title": "Implement branch work record JSON schema and storage",
+              "status": "pending",
+              "level": "task",
+              "description": "Define a JSON schema for tracking branch-specific work completion and implement file-based storage within the sourcevision package directory structure",
+              "acceptanceCriteria": [
+                "JSON schema includes epic/feature/task hierarchy with completion timestamps",
+                "Schema supports metadata fields for change significance and breaking change flags",
+                "File is stored within .sourcevision/ directory with branch-specific naming",
+                "Schema validation prevents malformed records"
+              ],
+              "priority": "high",
+              "tags": [
+                "schema",
+                "storage"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "39e39bf0-e71d-4869-9a0a-78d3dc86d01f",
+              "title": "Create branch work collector service",
+              "status": "completed",
+              "level": "task",
+              "description": "Build a service that queries rex PRD data to identify completed work items associated with the current branch and populates the branch work record",
+              "acceptanceCriteria": [
+                "Service correctly identifies branch-specific completed rex items",
+                "Collector handles epic/feature/task hierarchy traversal",
+                "Service excludes work items not relevant to current branch",
+                "Collector gracefully handles missing or corrupted rex data"
+              ],
+              "priority": "high",
+              "tags": [
+                "integration",
+                "rex"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-25T03:25:34.846Z",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "content_overlap",
+                "reasonRef": "content_overlap:32f4490a-631a-408e-8996-40c25a8843b9",
+                "matchedItemId": "32f4490a-631a-408e-8996-40c25a8843b9",
+                "matchedItemTitle": "Implement branch-scoped Rex work item collector",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-25T03:25:22.943Z"
+              },
+              "completedAt": "2026-02-25T03:35:31.197Z"
+            },
+            {
+              "id": "5c55bb68-c312-42b3-99cc-b45e409a85ca",
+              "title": "Implement change significance classification",
+              "status": "pending",
+              "level": "task",
+              "description": "Add logic to classify completed work items by significance level (major changes, breaking changes, important functions) based on rex metadata and task descriptions",
+              "acceptanceCriteria": [
+                "Breaking change detection from rex task tags and descriptions",
+                "Major change identification based on epic scope and task count",
+                "Important function classification from task acceptance criteria",
+                "Classification results persisted in branch work record"
+              ],
+              "priority": "medium",
+              "tags": [
+                "classification",
+                "analysis"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "49e08812-0d9b-457c-bad3-0ffb680460de",
+          "title": "Rex completion data integration",
+          "status": "pending",
+          "level": "feature",
+          "description": "Integrate with existing rex PRD system to extract completion status and work item details for branch work tracking",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "84621aa2-51c6-472e-848b-e54f1ffed9b3",
+              "title": "Implement rex PRD completion status reader",
+              "status": "pending",
+              "level": "task",
+              "description": "Create a reader service that extracts completion status, timestamps, and metadata from rex PRD data for work items associated with the current branch",
+              "acceptanceCriteria": [
+                "Reader correctly parses rex .prd.json file format",
+                "Service extracts completion timestamps and status transitions",
+                "Reader handles rex validation errors gracefully",
+                "Integration preserves rex data integrity"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "integration"
+              ],
+              "source": "smart-add",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "semantic_title",
+                "reasonRef": "semantic_title:7d6fad57-9071-436e-bd37-319a48189b01",
+                "matchedItemId": "7d6fad57-9071-436e-bd37-319a48189b01",
+                "matchedItemTitle": "Add deletion commands to rex CLI",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-25T03:25:22.943Z"
+              }
+            },
+            {
+              "id": "93c67767-1c4e-40ca-a6e0-5a7528b359f0",
+              "title": "Add branch-scoped work item filtering",
+              "status": "pending",
+              "level": "task",
+              "description": "Implement filtering logic to identify which rex work items are relevant to the current branch based on git branch metadata and work item timestamps",
+              "acceptanceCriteria": [
+                "Filter correctly identifies work completed during branch lifecycle",
+                "Logic handles branch creation and merge scenarios",
+                "Filter excludes work items from other branches or main",
+                "Filtering works with both feature and hotfix branch patterns"
+              ],
+              "priority": "medium",
+              "tags": [
+                "filtering",
+                "git"
+              ],
+              "source": "smart-add",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "content_overlap",
+                "reasonRef": "content_overlap:32f4490a-631a-408e-8996-40c25a8843b9",
+                "matchedItemId": "32f4490a-631a-408e-8996-40c25a8843b9",
+                "matchedItemTitle": "Implement branch-scoped Rex work item collector",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-25T03:25:22.943Z"
+              }
+            }
+          ],
+          "overrideMarker": {
+            "type": "duplicate_guard_override",
+            "reason": "semantic_title",
+            "reasonRef": "semantic_title:6a1a02c8-18c9-4967-9182-26cc98cc1850",
+            "matchedItemId": "6a1a02c8-18c9-4967-9182-26cc98cc1850",
+            "matchedItemTitle": "Implement Rex command integration",
+            "matchedItemLevel": "task",
+            "matchedItemStatus": "completed",
+            "createdAt": "2026-02-25T03:25:22.943Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "7ce2cc2b-c2b8-49ea-a69e-a8e1fa5bedb0",
+      "title": "Automatic PR Markdown Generation",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "1d377d59-dd17-4914-886f-0c24fb36950e",
+          "title": "Sourcevision analyze integration",
+          "status": "pending",
+          "level": "feature",
+          "description": "Integrate PR markdown generation directly into the sourcevision analyze command flow, replacing the manual refresh mechanism",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "bd399848-2634-4f1d-ab82-0fc6e1aa0901",
+              "title": "Integrate PR markdown generation into sourcevision analyze command",
+              "status": "pending",
+              "level": "task",
+              "description": "Modify the sourcevision analyze command to automatically generate PR markdown as part of its standard execution flow using the branch work record",
+              "acceptanceCriteria": [
+                "PR markdown generation executes as final step of sourcevision analyze",
+                "Generation uses branch work record as primary data source",
+                "Command maintains existing analyze functionality unchanged",
+                "Generated markdown overwrites any existing cached PR content"
+              ],
+              "priority": "high",
+              "tags": [
+                "integration",
+                "cli"
+              ],
+              "source": "smart-add",
+              "overrideMarker": {
+                "type": "duplicate_guard_override",
+                "reason": "semantic_title",
+                "reasonRef": "semantic_title:e8da0d59-e873-452d-931e-1128063df53f",
+                "matchedItemId": "e8da0d59-e873-452d-931e-1128063df53f",
+                "matchedItemTitle": "Register PR Markdown in the shared SourceVision tab configuration",
+                "matchedItemLevel": "task",
+                "matchedItemStatus": "completed",
+                "createdAt": "2026-02-25T03:25:22.943Z"
+              }
+            },
+            {
+              "id": "867d6782-241b-403f-a433-59aa8341e001",
+              "title": "Remove manual PR markdown refresh mechanism",
+              "status": "pending",
+              "level": "task",
+              "description": "Remove the manual refresh button and endpoint from the SourceVision UI, making PR markdown generation fully automatic through the analyze flow",
+              "acceptanceCriteria": [
+                "Manual refresh button removed from SourceVision PR markdown tab",
+                "Refresh endpoint removed from web server routes",
+                "UI displays clear messaging about automatic generation via analyze",
+                "Existing cached PR markdown remains accessible until next analyze run"
+              ],
+              "priority": "medium",
+              "tags": [
+                "ui",
+                "cleanup"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "d9d6b8ec-350e-4e7d-beef-b656c6c2c93f",
+              "title": "Add PR markdown generation status to analyze output",
+              "status": "pending",
+              "level": "task",
+              "description": "Include PR markdown generation status and results in the sourcevision analyze command output and web UI feedback",
+              "acceptanceCriteria": [
+                "Analyze command reports PR markdown generation success/failure",
+                "Output includes path to generated markdown file",
+                "Web UI shows PR markdown refresh status in analyze feedback",
+                "Error messages provide actionable guidance for generation failures"
+              ],
+              "priority": "low",
+              "tags": [
+                "feedback",
+                "status"
+              ],
+              "source": "smart-add"
+            }
+          ],
+          "overrideMarker": {
+            "type": "duplicate_guard_override",
+            "reason": "semantic_title",
+            "reasonRef": "semantic_title:fdfebde2-7c1e-44c0-a61a-c38e52641d75",
+            "matchedItemId": "fdfebde2-7c1e-44c0-a61a-c38e52641d75",
+            "matchedItemTitle": "SourceVision Analysis Progress Integration",
+            "matchedItemLevel": "feature",
+            "matchedItemStatus": "completed",
+            "createdAt": "2026-02-25T03:25:22.943Z"
+          }
+        },
+        {
+          "id": "31100b02-1ef5-4e85-86b2-b44eb26008a2",
+          "title": "Rex-based content generation",
+          "status": "pending",
+          "level": "feature",
+          "description": "Generate PR markdown content from rex completion data rather than git differences, focusing on completed work items and their significance",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "2d6166ac-fd1a-49a1-bee9-c7a59145b298",
+              "title": "Implement rex-based PR markdown template",
+              "status": "pending",
+              "level": "task",
+              "description": "Create a new PR markdown template that generates content from branch work record data, emphasizing completed epics, features, and significant changes",
+              "acceptanceCriteria": [
+                "Template generates clean epic/feature completion list",
+                "Markdown highlights breaking changes with clear indicators",
+                "Template includes major change summary section",
+                "Important functions and features are prominently featured"
+              ],
+              "priority": "high",
+              "tags": [
+                "template",
+                "markdown"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "150e5c3a-ab21-4e0e-97bf-114418bd05d5",
+              "title": "Replace git-diff dependency with rex completion data",
+              "status": "pending",
+              "level": "task",
+              "description": "Remove reliance on git diff output for PR content generation, using rex completion status and branch work record as the authoritative source",
+              "acceptanceCriteria": [
+                "PR markdown generation no longer calls git diff commands",
+                "Content derived entirely from branch work record and rex data",
+                "Generation works without git history or remote access",
+                "Fallback behavior for missing rex data provides meaningful output"
+              ],
+              "priority": "high",
+              "tags": [
+                "refactor",
+                "git"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "eb66aff8-bb31-4931-8ccc-11babbd30c3a",
+              "title": "Implement significance-based content prioritization",
+              "status": "pending",
+              "level": "task",
+              "description": "Structure generated PR markdown to prioritize content by significance level, featuring breaking changes and major updates prominently",
+              "acceptanceCriteria": [
+                "Breaking changes appear in dedicated high-visibility section",
+                "Major features listed before minor tasks",
+                "Important function changes highlighted with code context",
+                "Content organization follows reviewer-friendly priority order"
+              ],
+              "priority": "medium",
+              "tags": [
+                "prioritization",
+                "ux"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ],
+      "overrideMarker": {
+        "type": "duplicate_guard_override",
+        "reason": "semantic_title",
+        "reasonRef": "semantic_title:d8b6399f-f670-4018-a9c9-366534f485ae",
+        "matchedItemId": "d8b6399f-f670-4018-a9c9-366534f485ae",
+        "matchedItemTitle": "Git-Independent PR Markdown Generation",
+        "matchedItemLevel": "epic",
+        "matchedItemStatus": "completed",
+        "createdAt": "2026-02-25T03:25:22.943Z"
+      }
     }
   ]
 }
