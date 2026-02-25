@@ -23,6 +23,7 @@ import { requireSvDir } from "../errors.js";
 import { SV_DIR } from "./constants.js";
 import { info } from "../output.js";
 import { collectBranchWork } from "../../analyzers/branch-work-collector.js";
+import { classifyItems } from "../../analyzers/branch-work-classifier.js";
 import { renderPRMarkdownFromRecord } from "../../generators/pr-markdown-template.js";
 import type {
   BranchWorkRecord,
@@ -41,11 +42,15 @@ export const PR_MARKDOWN_FILENAME = "pr-markdown.md";
  * Items without a `completedAt` timestamp use the collection timestamp
  * as a fallback — these are items that were marked completed in the PRD
  * but lack explicit timestamps.
+ *
+ * Each item is classified for change significance (patch/minor/major) and
+ * breaking change status using heuristic analysis of tags, descriptions,
+ * acceptance criteria, priority, and epic scope.
  */
 export function toBranchWorkRecord(result: BranchWorkResult): BranchWorkRecord {
   const now = result.collectedAt;
 
-  const items: BranchWorkRecordItem[] = result.items.map((item) => ({
+  const rawItems: BranchWorkRecordItem[] = result.items.map((item) => ({
     id: item.id,
     title: item.title,
     level: item.level,
@@ -70,6 +75,9 @@ export function toBranchWorkRecord(result: BranchWorkResult): BranchWorkRecord {
     title: s.title,
     completedCount: s.completedCount,
   }));
+
+  // Classify items for change significance and breaking change status
+  const items = classifyItems(rawItems, epicSummaries);
 
   return {
     schemaVersion: "1.0.0",

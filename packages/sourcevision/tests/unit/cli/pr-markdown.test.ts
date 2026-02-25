@@ -128,6 +128,89 @@ describe("toBranchWorkRecord", () => {
     expect(item).not.toHaveProperty("description");
     expect(item).not.toHaveProperty("acceptanceCriteria");
   });
+
+  it("classifies items with breaking change tags", () => {
+    const result: BranchWorkResult = {
+      branch: "feature/breaking",
+      baseBranch: "main",
+      collectedAt: "2026-01-01T00:00:00.000Z",
+      items: [
+        {
+          id: "task-1",
+          title: "Remove legacy API",
+          level: "task",
+          tags: ["breaking"],
+          parentChain: [],
+        },
+      ],
+    };
+
+    const record = toBranchWorkRecord(result);
+    expect(record.items[0].breakingChange).toBe(true);
+    expect(record.items[0].changeSignificance).toBe("major");
+  });
+
+  it("classifies epic-level items as major", () => {
+    const result: BranchWorkResult = {
+      branch: "feature/epic",
+      baseBranch: "main",
+      collectedAt: "2026-01-01T00:00:00.000Z",
+      items: [
+        {
+          id: "epic-1",
+          title: "Complete auth system",
+          level: "epic",
+          parentChain: [],
+        },
+      ],
+    };
+
+    const record = toBranchWorkRecord(result);
+    expect(record.items[0].changeSignificance).toBe("major");
+    expect(record.items[0].breakingChange).toBe(false);
+  });
+
+  it("classifies normal tasks as patch", () => {
+    const result: BranchWorkResult = {
+      branch: "feature/normal",
+      baseBranch: "main",
+      collectedAt: "2026-01-01T00:00:00.000Z",
+      items: [
+        {
+          id: "task-1",
+          title: "Add unit tests",
+          level: "task",
+          parentChain: [],
+        },
+      ],
+    };
+
+    const record = toBranchWorkRecord(result);
+    expect(record.items[0].changeSignificance).toBe("patch");
+    expect(record.items[0].breakingChange).toBe(false);
+  });
+
+  it("elevates tasks under large epics using epic summaries", () => {
+    const result: BranchWorkResult = {
+      branch: "feature/large-epic",
+      baseBranch: "main",
+      collectedAt: "2026-01-01T00:00:00.000Z",
+      items: [
+        {
+          id: "task-1",
+          title: "One of many tasks",
+          level: "task",
+          parentChain: [{ id: "epic-1", title: "Large Epic", level: "epic" }],
+        },
+      ],
+      epicSummaries: [
+        { id: "epic-1", title: "Large Epic", completedCount: 8 },
+      ],
+    };
+
+    const record = toBranchWorkRecord(result);
+    expect(record.items[0].changeSignificance).toBe("minor");
+  });
 });
 
 // ── cmdPrMarkdown (integration) ─────────────────────────────────────────────
