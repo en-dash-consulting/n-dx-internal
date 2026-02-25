@@ -11,6 +11,7 @@ import { HENCH_DIR, safeParseInt, safeParseNonNegInt } from "./constants.js";
 import { CLIError, EpicNotFoundError, requireLLMCLI } from "../errors.js";
 import { info, result as output } from "../output.js";
 import { loadLLMConfig, resolveLLMVendor, resolveVendorCliPath } from "../../store/project-config.js";
+import { ExecutionQueue, formatQueueStatus } from "../../queue/index.js";
 
 // ---------------------------------------------------------------------------
 // Epic resolution helpers (exported for testing)
@@ -206,6 +207,33 @@ export async function loadStuckTaskIds(
     info(`Stuck tasks detected (${stuck.size}): ${[...stuck].join(", ")}`);
   }
   return stuck;
+}
+
+// ---------------------------------------------------------------------------
+// Execution queue factory (exported for testing and external consumers)
+// ---------------------------------------------------------------------------
+
+/**
+ * Create an ExecutionQueue sized from the hench guard config.
+ *
+ * The queue limits concurrent task executions to
+ * `guard.maxConcurrentProcesses` (default 4). This is the same
+ * limit used for child process concurrency, applied here at the
+ * task-run level.
+ */
+export function createExecutionQueue(maxConcurrent: number): ExecutionQueue {
+  return new ExecutionQueue(maxConcurrent);
+}
+
+/**
+ * Log queue status if there are any queued tasks.
+ * Suppressed when the queue is idle.
+ */
+function logQueueStatus(queue: ExecutionQueue): void {
+  const lines = formatQueueStatus(queue.status());
+  for (const line of lines) {
+    info(line);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -435,8 +463,12 @@ export async function cmdRun(
     );
   }
 
+  // Create execution queue for concurrency control.
+  // The queue limits concurrent task runs to guard.maxConcurrentProcesses.
+  const queue = createExecutionQueue(config.guard.maxConcurrentProcesses);
+
   if (epicByEpic) {
-    await runEpicByEpic(dir, henchDir, rexDir, provider, dryRun, model, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review);
+    await runEpicByEpic(dir, henchDir, rexDir, provider, dryRun, model, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, queue);
     return;
   }
 
@@ -450,7 +482,7 @@ export async function cmdRun(
   // If --auto, --loop, or non-TTY, taskId stays undefined → assembleTaskBrief autoselects
 
   if (loop) {
-    await runLoop(dir, henchDir, rexDir, provider, taskId, dryRun, model, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, epicId);
+    await runLoop(dir, henchDir, rexDir, provider, taskId, dryRun, model, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, epicId, queue);
   } else {
     await runIterations(dir, henchDir, rexDir, provider, taskId, dryRun, model, maxTurns, tokenBudget, iterations, config.maxFailedAttempts, review, epicId);
   }
@@ -529,6 +561,7 @@ async function runLoop(
   maxFailedAttempts: number,
   review: boolean,
   epicId?: string,
+  queue?: ExecutionQueue,
 ): Promise<void> {
   // Graceful shutdown via SIGINT (Ctrl-C)
   const ac = new AbortController();
@@ -541,6 +574,7 @@ async function runLoop(
     }
     stopping = true;
     ac.abort();
+    if (queue) queue.drain();
     info("\nReceived interrupt — finishing current task then stopping…");
   };
 
@@ -562,6 +596,9 @@ async function runLoop(
       completed++;
       info(`\n=== Loop iteration ${completed} ===`);
 
+      // Show queue status if there are pending tasks
+      if (queue) logQueueStatus(queue);
+
       // Compute stuck tasks before each iteration so that
       // recently-stuck tasks are automatically skipped
       const isAutoselect = completed > 1 || !taskId;
@@ -571,16 +608,24 @@ async function runLoop(
 
       let status: string;
       try {
-        const result = await runOne(
-          dir, henchDir, rexDir, provider,
-          // Only use explicit taskId on the very first iteration
-          completed === 1 ? taskId : undefined,
-          dryRun, model, maxTurns, tokenBudget,
-          review,
-          stuckIds,
-          epicId,
-        );
-        status = result.status;
+        // Acquire a queue slot before starting the task run
+        if (queue) await queue.acquire(taskId ?? "auto", "medium");
+
+        try {
+          const result = await runOne(
+            dir, henchDir, rexDir, provider,
+            // Only use explicit taskId on the very first iteration
+            completed === 1 ? taskId : undefined,
+            dryRun, model, maxTurns, tokenBudget,
+            review,
+            stuckIds,
+            epicId,
+          );
+          status = result.status;
+        } finally {
+          // Release the queue slot after the task completes
+          if (queue) queue.release();
+        }
       } catch (err) {
         if (isNoTasksError(err)) {
           const scope = epicId ? " in epic" : "";
@@ -667,6 +712,7 @@ async function runEpicByEpic(
   pauseMs: number,
   maxFailedAttempts: number,
   review: boolean,
+  queue?: ExecutionQueue,
 ): Promise<void> {
   // Graceful shutdown via SIGINT (Ctrl-C)
   const ac = new AbortController();
@@ -678,6 +724,7 @@ async function runEpicByEpic(
     }
     stopping = true;
     ac.abort();
+    if (queue) queue.drain();
     info("\nReceived interrupt — finishing current task then stopping…");
   };
 
@@ -766,19 +813,30 @@ async function runEpicByEpic(
       while (true) {
         if (stopping) break;
 
+        // Show queue status if there are pending tasks
+        if (queue) logQueueStatus(queue);
+
         const stuckIds = await loadStuckTaskIds(henchDir, maxFailedAttempts);
 
         let status: string;
         try {
-          const result = await runOne(
-            dir, henchDir, rexDir, provider,
-            undefined, // autoselect within epic
-            dryRun, model, maxTurns, tokenBudget,
-            review,
-            stuckIds,
-            epic.id,
-          );
-          status = result.status;
+          // Acquire a queue slot before starting the task run
+          if (queue) await queue.acquire(epic.id, "medium");
+
+          try {
+            const result = await runOne(
+              dir, henchDir, rexDir, provider,
+              undefined, // autoselect within epic
+              dryRun, model, maxTurns, tokenBudget,
+              review,
+              stuckIds,
+              epic.id,
+            );
+            status = result.status;
+          } finally {
+            // Release the queue slot after the task completes
+            if (queue) queue.release();
+          }
         } catch (err) {
           if (isNoTasksError(err)) {
             // All tasks in this epic are done

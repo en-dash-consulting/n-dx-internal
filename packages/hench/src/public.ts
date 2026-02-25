@@ -83,6 +83,16 @@ export type {
   AdaptiveAnalysis,
 } from "./agent/analysis/adaptive.js";
 
+// ---- Execution queue -------------------------------------------------------
+
+export { ExecutionQueue, normalizePriority } from "./queue/index.js";
+
+export type {
+  TaskPriority,
+  QueueEntry,
+  QueueStatus,
+} from "./queue/index.js";
+
 // ---- Agent lifecycle types -------------------------------------------------
 
 export type { AgentLoopOptions, AgentLoopResult } from "./agent/lifecycle/loop.js";
