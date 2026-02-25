@@ -378,20 +378,54 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
     description:
       "Reads SourceVision analysis findings and suggests new PRD items based on\n" +
       "code quality issues, architectural anti-patterns, and missing tests.\n" +
-      "Requires .sourcevision/ to exist (run 'sourcevision analyze' first).",
+      "Requires .sourcevision/ to exist (run 'sourcevision analyze' first).\n" +
+      "\n" +
+      "Two workflows are available: acknowledge (suppress findings from future\n" +
+      "output) and accept (create PRD items from recommendations).",
+    sections: [
+      {
+        title: "Acknowledge vs accept",
+        content:
+          "--acknowledge    Marks findings as seen. Acknowledged findings are\n" +
+          "                hidden from subsequent runs (use --show-all to\n" +
+          "                reveal them). No PRD items are created.\n" +
+          "--accept        Creates new PRD items from the recommendations.\n" +
+          "                Each recommendation becomes a feature in the PRD\n" +
+          "                with its findings as the description. Conflict\n" +
+          "                detection prevents duplicate items.",
+      },
+      {
+        title: "Selector syntax (--accept)",
+        content:
+          "--accept              Accept all recommendations (no selector)\n" +
+          "--accept==all         Accept all recommendations (explicit)\n" +
+          "--accept==.           Accept all recommendations (dot wildcard)\n" +
+          "--accept==3           Accept only recommendation 3\n" +
+          "--accept==1,4,5       Accept recommendations 1, 4, and 5\n" +
+          "\n" +
+          "Indices are 1-based and correspond to the numbered output shown\n" +
+          "by 'rex recommend'. Range syntax (e.g. 1-3) is not supported;\n" +
+          "use comma-separated indices instead.",
+      },
+    ],
     options: [
-      { flag: "--accept[=all|=1,4,5]", description: "Accept all or selected recommendation indices into PRD" },
+      { flag: "--accept[=all|=1,4,5]", description: "Accept all or selected recommendations into PRD as new items" },
+      { flag: "--force", description: "Create items even when conflicts with existing PRD items are detected" },
       { flag: "--show-all", description: "Include acknowledged findings in recommendation output" },
-      { flag: "--acknowledge=<all|1,2>", description: "Acknowledge all or selected findings by index" },
+      { flag: "--acknowledge=<all|1,2>", description: "Acknowledge all or selected findings by index (hides from future runs)" },
       { flag: "--format=json", description: "Machine-readable output" },
     ],
     examples: [
-      { command: "rex recommend", description: "Show recommendations interactively" },
-      { command: "rex recommend --accept='=1,4,5' .", description: "Accept only recommendation items 1, 4, and 5" },
-      { command: "rex recommend --accept .", description: "Accept all recommendations into PRD" },
+      { command: "rex recommend", description: "Show recommendations (run first to see indices)" },
+      { command: "rex recommend --accept", description: "Accept all recommendations into PRD" },
+      { command: "rex recommend --accept==3", description: "Accept only recommendation 3" },
+      { command: "rex recommend --accept==1,4,5 .", description: "Accept recommendations 1, 4, and 5" },
+      { command: "rex recommend --accept==all --force", description: "Accept all, overriding conflicts" },
+      { command: "rex recommend --acknowledge=all", description: "Acknowledge all findings (no PRD changes)" },
+      { command: "rex recommend --show-all", description: "Include previously acknowledged findings" },
       { command: "rex recommend --format=json .", description: "JSON output for automation" },
     ],
-    related: ["analyze"],
+    related: ["analyze", "status"],
   },
   analyze: {
     tool: "rex",
@@ -484,7 +518,7 @@ const RELATED_COMMANDS: Record<string, string[]> = {
   usage: ["status"],
   report: ["validate"],
   verify: ["status"],
-  recommend: ["analyze"],
+  recommend: ["analyze", "status"],
   analyze: ["add", "recommend"],
   import: ["add", "recommend"],
   adapter: ["sync"],
