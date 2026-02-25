@@ -34,7 +34,9 @@
                 "Existing PRD provided as context to avoid duplicates"
               ],
               "priority": "critical",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "5c160a8b-ad78-44f6-9335-444e7727ccfd",
@@ -48,7 +50,9 @@
                 "Only approved items are added to PRD"
               ],
               "priority": "high",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "9e5d1d9c-6306-4255-9906-47329993307e",
@@ -62,7 +66,9 @@
                 "Auto-determines placement when no parent specified"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "1d92f102-9a80-4234-a3e9-f713ed42ab61",
@@ -76,7 +82,9 @@
                 "Explicit level specification supported"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "f6d75214-9714-41b0-8467-7ae40e412dc3",
@@ -112,6 +120,8 @@
           "level": "feature",
           "description": "Support multiple descriptions and file-based input for batch PRD creation",
           "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z",
           "children": [
             {
               "id": "0a24b5bd-fa59-41c0-b9ac-9bfd85eca54e",
@@ -125,7 +135,9 @@
                 "Results combined into coherent structure"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "ed902797-9b9f-4181-9d88-cac559014a91",
@@ -139,7 +151,9 @@
                 "Works with echo and other pipe sources"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "6b968585-1368-40e3-aa65-b966148e5c91",
@@ -154,7 +168,9 @@
                 "Distinct from formal spec import"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             }
           ]
         }
@@ -400,7 +416,9 @@
                 "Existing hierarchy still supported"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "2938285a-01bf-4eb2-8ff9-6ef1ef6315da",
@@ -414,7 +432,9 @@
                 "Circular dependencies detected"
               ],
               "priority": "high",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "a143409d-3428-4e11-8332-31c0c8c284a7",
@@ -456,7 +476,9 @@
                 "Used for dependency-blocked tasks"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "a42cfc8a-51c6-4183-b133-19f635c48dad",
@@ -486,7 +508,9 @@
                 "Clear error messages for invalid transitions"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "98ee2a19-494b-4717-810f-8d484c58a7ee",
@@ -574,6 +598,8 @@
       "status": "completed",
       "level": "epic",
       "source": "llm",
+      "startedAt": "2026-02-24T20:33:37.695Z",
+      "completedAt": "2026-02-24T20:33:37.695Z",
       "children": [
         {
           "id": "6f927f1f-811b-4eb3-a269-0bae5edd8017",
@@ -582,6 +608,8 @@
           "level": "feature",
           "description": "Enhance individual scanners to produce better quality analysis results",
           "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z",
           "children": [
             {
               "id": "9a7d6848-2054-47d4-9d10-e5bd144939e9",
@@ -595,7 +623,9 @@
                 "Focuses on human-written docs"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "dbcbbb03-7c1d-4d45-8764-abf7711fb87e",
@@ -609,7 +639,9 @@
                 "More actionable task descriptions"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "0cf5900a-dbac-4146-b0ac-880f19523d52",
@@ -624,14 +656,18 @@
                 "Notes engine requirements"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "05e9ee30-c4ab-43cb-8718-cccd4f648b6d",
               "title": "Improve scanDocs: numbered lists, clean headings, skip code blocks",
               "status": "completed",
               "level": "task",
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             }
           ]
         },
@@ -642,6 +678,8 @@
           "level": "feature",
           "description": "Improve file-based import functionality for better flexibility",
           "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z",
           "children": [
             {
               "id": "45a448f5-95b5-46bf-a32e-490181ccd56e",
@@ -655,7 +693,9 @@
                 "Combines results coherently"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "22f4144a-0ec1-4c19-8ce4-fa3a8fa294dc",
@@ -670,7 +710,9 @@
                 "Maintains markdown support"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "f5f4259c-8a98-4295-89e6-5f3870464d7a",
@@ -684,7 +726,9 @@
                 "User approval before applying"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             }
           ]
         },
@@ -746,6 +790,8 @@
       "status": "completed",
       "level": "epic",
       "source": "llm",
+      "startedAt": "2026-02-24T20:33:37.695Z",
+      "completedAt": "2026-02-24T20:33:37.695Z",
       "children": [
         {
           "id": "3a5378b3-1cb9-49de-9d51-f6572a92ac8d",
@@ -754,6 +800,8 @@
           "level": "feature",
           "description": "Create abstraction layer for different storage backends",
           "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z",
           "children": [
             {
               "id": "efee6790-0f15-40dd-afbe-5e66b6baf6dc",
@@ -768,7 +816,9 @@
                 "Interface well-documented"
               ],
               "priority": "high",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "5e85cd0f-f2b9-4260-9a67-e891ff10e8c6",
@@ -782,7 +832,9 @@
                 "Multiple adapters supported"
               ],
               "priority": "high",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "1a304d60-73c3-48cf-8ef2-559e7ca78e90",
@@ -796,7 +848,9 @@
                 "Conflict detection included"
               ],
               "priority": "high",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             }
           ]
         },
@@ -807,6 +861,8 @@
           "level": "feature",
           "description": "Specific implementation for Notion database integration",
           "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z",
           "children": [
             {
               "id": "8489d495-c32e-43b9-971c-8ac3142f6215",
@@ -820,7 +876,9 @@
                 "Hierarchy preserved correctly"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "2aaae13a-0d78-4706-bacf-687296f37b85",
@@ -835,7 +893,9 @@
                 "Rich text fields supported"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "1f98431d-0c61-471c-b9d7-fc596bb96d18",
@@ -849,7 +909,9 @@
                 "Maintains compatibility with rex values"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "9ccb5785-1bcd-4c29-a957-d56b9ff55430",
@@ -863,7 +925,9 @@
                 "Data integrity maintained"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             }
           ]
         }
@@ -875,6 +939,8 @@
       "status": "completed",
       "level": "epic",
       "source": "llm",
+      "startedAt": "2026-02-24T20:33:37.695Z",
+      "completedAt": "2026-02-24T20:33:37.695Z",
       "children": [
         {
           "id": "04ca00fe-ef44-4d81-890a-5d8772df540b",
@@ -883,6 +949,8 @@
           "level": "feature",
           "description": "Provide clear, actionable error messages instead of technical failures",
           "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z",
           "children": [
             {
               "id": "3a98fcc1-2af5-4564-baf4-9106a064b331",
@@ -896,7 +964,9 @@
                 "Suggested solutions included"
               ],
               "priority": "high",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "35e73e67-aa4b-471d-aea1-ac3826ece7f3",
@@ -910,7 +980,9 @@
                 "Avoids crashes"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "4345197b-c78f-4334-9748-b4a486c0a027",
@@ -924,7 +996,9 @@
                 "Graceful fallback behavior"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             }
           ]
         },
@@ -935,6 +1009,8 @@
           "level": "feature",
           "description": "Improve visual presentation and information density of command output",
           "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z",
           "children": [
             {
               "id": "ef35bbdc-1a62-4e01-9a46-98950bc12b4d",
@@ -948,7 +1024,9 @@
                 "Visually clear presentation"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "2a5c0077-de89-42b2-a783-45fb675f275a",
@@ -962,7 +1040,9 @@
                 "Indentation shows structure"
               ],
               "priority": "medium",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "5e68b89e-8f81-4c6b-b2a6-52b361eee707",
@@ -976,7 +1056,9 @@
                 "Easy to follow progress"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "da4fecd8-f501-4499-9af2-655eeafedb0c",
@@ -990,7 +1072,9 @@
                 "Consistent across all commands"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             }
           ]
         },
@@ -1001,6 +1085,8 @@
           "level": "feature",
           "description": "Unified configuration system across all packages",
           "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z",
           "children": [
             {
               "id": "cf194705-5786-44f9-8d8b-ddb8aa7bd924",
@@ -1014,7 +1100,9 @@
                 "Validates configuration values"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "20fee51e-b879-49ef-ab3c-6a28b7f39b4a",
@@ -1028,7 +1116,9 @@
                 "Project config takes precedence"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             },
             {
               "id": "a8a20d83-c58c-43c1-a3c7-9a2fecfb4988",
@@ -1042,7 +1132,9 @@
                 "Examples included where helpful"
               ],
               "priority": "low",
-              "source": "llm"
+              "source": "llm",
+              "startedAt": "2026-02-24T20:33:37.695Z",
+              "completedAt": "2026-02-24T20:33:37.695Z"
             }
           ]
         },
@@ -3238,7 +3330,9 @@
             "More relevant task generation"
           ],
           "priority": "medium",
-          "source": "llm"
+          "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z"
         },
         {
           "id": "0d818bc8-36f7-4c4f-a94f-a8572d3a429d",
@@ -3252,7 +3346,9 @@
             "Reduces noise in final output"
           ],
           "priority": "medium",
-          "source": "llm"
+          "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z"
         },
         {
           "id": "53558943-22ff-4e1a-b1e8-787b51bb7639",
@@ -3266,7 +3362,9 @@
             "Falls back to default if model unavailable"
           ],
           "priority": "low",
-          "source": "llm"
+          "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z"
         },
         {
           "id": "46f6c6a0-f5c0-4e3c-bfe2-74b25ce959ec",
@@ -3280,31 +3378,41 @@
             "Combines results coherently"
           ],
           "priority": "low",
-          "source": "llm"
+          "source": "llm",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z"
         },
         {
           "id": "337fd5f7-c548-4ab7-ada2-01450a79706d",
           "title": "Robust LLM response parsing with retry and recovery",
           "status": "completed",
-          "level": "task"
+          "level": "task",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z"
         },
         {
           "id": "8bb3e9b8-9c93-41bc-b60f-1c7ad7014d6d",
           "title": "Add few-shot examples to LLM prompts",
           "status": "completed",
-          "level": "task"
+          "level": "task",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z"
         },
         {
           "id": "bc3747a6-1c71-4aae-bbfa-5edb8c9d2a83",
           "title": "Add semantic quality validation for LLM output",
           "status": "completed",
-          "level": "task"
+          "level": "task",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z"
         },
         {
           "id": "9ef3a745-ed2b-41f0-ae12-4604b07c7658",
           "title": "Improve multi-chunk context carryover",
           "status": "completed",
-          "level": "task"
+          "level": "task",
+          "startedAt": "2026-02-24T20:33:37.695Z",
+          "completedAt": "2026-02-24T20:33:37.695Z"
         },
         {
           "id": "64ecb019-ca2b-4ff8-b6b7-559d4c8fdb55",
@@ -6000,8 +6108,7 @@
       "description": "- Zone architecture achieves perfect runtime decoupling (no cross-zone imports) but creates maintenance burden through systematic type and constant duplication - suggests need for shared foundation package or reconsideration of zone boundaries for common business logic\n- Zone architecture creates artificial boundaries that fragment natural business domain concepts - Priority and PRIORITY_ORDER are core domain concepts that transcend individual packages and should be centrally managed rather than duplicated",
       "priority": "high",
       "source": "sourcevision",
-      "startedAt": "2026-02-10T05:07:03.240Z",
-      "completedAt": "2026-02-10T05:15:37.947Z"
+      "startedAt": "2026-02-10T05:07:03.240Z"
     },
     {
       "id": "e96db771-5ed0-4ba8-a70b-74a30f462f65",
@@ -6503,8 +6610,7 @@
       "description": "- Hardcoded tool paths in cli.js create brittle coupling to dist/ structure - consider using package.json bin field resolution",
       "priority": "high",
       "source": "sourcevision",
-      "startedAt": "2026-02-10T05:02:21.023Z",
-      "completedAt": "2026-02-10T05:06:37.050Z"
+      "startedAt": "2026-02-10T05:02:21.023Z"
     },
     {
       "id": "1d4105c1-0d27-48a9-b5a8-6dbcf2a43b5f",
@@ -6732,8 +6838,7 @@
       "description": "- Two controlled coupling points: hench imports rex for task management, web imports all packages for unified interface",
       "priority": "high",
       "source": "sourcevision",
-      "startedAt": "2026-02-10T16:44:02.991Z",
-      "completedAt": "2026-02-10T16:49:25.109Z"
+      "startedAt": "2026-02-10T16:44:02.991Z"
     },
     {
       "id": "e3aa5235-b63b-4298-bbcf-b78c72638387",
@@ -13960,6 +14065,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-24T20:25:23.092Z",
+      "completedAt": "2026-02-24T20:25:23.092Z",
       "children": [
         {
           "id": "0cf188b5-61e7-4aab-8ba5-d101a5e0a582",
@@ -14220,9 +14327,98 @@
             }
           ]
         }
+      ]
+    },
+    {
+      "id": "e8eb20b9-7712-4a8d-8fd7-2bf2321d5857",
+      "title": "Interactive PRD Validation and Consistency Resolution",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "0f1065fb-1549-49f6-aa03-991d7e6eadee",
+          "title": "Interactive parent-child inconsistency resolution",
+          "status": "completed",
+          "level": "feature",
+          "description": "Enhance existing rex validate and fix commands to detect parent-child structural inconsistencies and provide interactive resolution workflows for user-guided corrections",
+          "source": "smart-add",
+          "startedAt": "2026-02-24T21:13:45.905Z",
+          "completedAt": "2026-02-24T21:13:45.905Z",
+          "children": [
+            {
+              "id": "614db87b-e102-4049-8ff0-47e9b5cf566e",
+              "title": "Add interactive prompts to rex validate for parent-child inconsistencies",
+              "status": "completed",
+              "level": "task",
+              "description": "Update rex validate command to detect epicless features and present interactive resolution options, allowing users to choose between correlation recovery and safe deletion workflows",
+              "acceptanceCriteria": [
+                "Detects features positioned at root level without parent epics during validation",
+                "Presents interactive prompt with correlation and deletion options",
+                "Maintains backward compatibility with existing non-interactive validation behavior",
+                "Handles user cancellation and invalid input gracefully"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "validation",
+                "interactive",
+                "cli"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T20:38:26.781Z",
+              "completedAt": "2026-02-24T20:50:45.663Z"
+            },
+            {
+              "id": "f4709451-4cce-48d4-9512-f054064dfc4e",
+              "title": "Implement epic correlation recovery for orphaned features",
+              "status": "completed",
+              "level": "task",
+              "description": "Build recovery workflow that analyzes epicless features and suggests appropriate parent epics based on content analysis and existing PRD structure, enabling automated reparenting with user approval",
+              "acceptanceCriteria": [
+                "Analyzes feature content and suggests semantically similar parent epics",
+                "Ranks suggestions based on content similarity and structural fit",
+                "Successfully reparents features while preserving all metadata and relationships",
+                "Provides fallback options when no suitable parent epic is found"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "recovery",
+                "correlation",
+                "reparenting"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T20:50:45.848Z",
+              "completedAt": "2026-02-24T21:01:48.790Z"
+            },
+            {
+              "id": "b5dfa9b2-ad8a-4dcd-b871-7c6308a378e5",
+              "title": "Add integrity-protected deletion option for epicless features",
+              "status": "deferred",
+              "level": "task",
+              "description": "Implement safe deletion workflow for epicless features with comprehensive dependency checks and corruption prevention safeguards, ensuring PRD structural integrity is maintained",
+              "acceptanceCriteria": [
+                "Validates no dependent tasks or external references before deletion",
+                "Checks adapter sync states and prevents deletion if external corruption risk exists",
+                "Requires explicit user confirmation with clear consequence warnings",
+                "Maintains all PRD relationships and referential integrity after deletion"
+              ],
+              "priority": "medium",
+              "tags": [
+                "rex",
+                "deletion",
+                "integrity",
+                "safety"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-02-24T21:02:19.880Z"
+            }
+          ]
+        }
       ],
-      "startedAt": "2026-02-24T20:25:23.092Z",
-      "completedAt": "2026-02-24T20:25:23.092Z"
+      "startedAt": "2026-02-24T21:13:45.978Z",
+      "completedAt": "2026-02-24T21:13:45.978Z"
     }
   ]
 }
