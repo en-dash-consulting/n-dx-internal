@@ -110,6 +110,17 @@ export type {
   ProcessLifecycleValidatorOptions,
 } from "./process/lifecycle.js";
 
+// ---- Run file change detection ----------------------------------------------
+
+export { RunChangeDetector } from "./store/run-change-detector.js";
+
+export type {
+  FileSnapshot,
+  AggregationCheckpoint,
+  RunFileChange,
+  DeltaResult,
+} from "./store/run-change-detector.js";
+
 // ---- Agent lifecycle types -------------------------------------------------
 
 export type { AgentLoopOptions, AgentLoopResult } from "./agent/lifecycle/loop.js";
