@@ -9,6 +9,7 @@
  * POST   /api/hench/runs/:id/mark-stuck   — mark a stuck run as failed
  * GET    /api/hench/task-usage            — incremental per-task token usage aggregation
  * GET    /api/hench/audit                 — audit info for active tasks (PIDs, resource usage)
+ * GET    /api/hench/concurrency           — concurrent execution count, limits, and queue status
  * POST   /api/hench/execute/:taskId/terminate — terminate a running task
  * GET    /api/hench/config                — current workflow configuration with field metadata
  * PUT    /api/hench/config                — update workflow configuration (partial or full)
@@ -289,6 +290,11 @@ export function handleHenchRoute(
   // GET /api/hench/audit — task execution audit info (PIDs, resource usage, logs)
   if (path === "audit" && method === "GET") {
     return handleAudit(res, runsDir);
+  }
+
+  // GET /api/hench/concurrency — concurrent execution count, limits, and queue status
+  if (path === "concurrency" && method === "GET") {
+    return handleConcurrency(res, ctx);
   }
 
   // POST /api/hench/execute/:taskId/terminate — terminate a running task
@@ -1241,6 +1247,289 @@ export function startHeartbeatMonitor(
   if (timer.unref) {
     timer.unref();
   }
+}
+
+/**
+ * Start a periodic concurrency status broadcaster.
+ *
+ * Broadcasts `hench:concurrency-status` via WebSocket every 10 seconds
+ * with current process count, max limit, utilization level, and queue info.
+ * This enables real-time updates of the concurrency panel in the dashboard.
+ *
+ * Call this once at server startup alongside startHeartbeatMonitor.
+ * The timer is unref'd so it won't prevent process exit.
+ */
+export function startConcurrencyMonitor(
+  ctx: ServerContext,
+  broadcast: WebSocketBroadcaster,
+): void {
+  const CONCURRENCY_BROADCAST_MS = 10_000; // 10 seconds
+
+  const timer = setInterval(() => {
+    const henchDir = join(ctx.projectDir, ".hench");
+    const locksDir = join(henchDir, "locks");
+    const runsDir = join(henchDir, "runs");
+
+    // Read max concurrent from config
+    const config = loadHenchConfig(ctx.projectDir);
+    const guard = config?.guard as Record<string, unknown> | undefined;
+    const maxConcurrent = typeof guard?.maxConcurrentProcesses === "number"
+      ? guard.maxConcurrentProcesses
+      : DEFAULT_MAX_CONCURRENT_PROCESSES;
+
+    // Read lock files
+    let processCount = 0;
+    try {
+      const files = readdirSync(locksDir);
+      for (const file of files) {
+        if (!file.endsWith(".lock")) continue;
+        try {
+          const raw = readFileSync(join(locksDir, file), "utf-8");
+          const lock = JSON.parse(raw) as ConcurrencyLockFile;
+          if (isPidAlive(lock.pid)) processCount++;
+        } catch {
+          // skip corrupted lock files
+        }
+      }
+    } catch {
+      // locks dir doesn't exist yet
+    }
+
+    // Dashboard active
+    const dashboardRunning = Array.from(activeExecutions.values()).filter(
+      (e) => e.state.status === "running" || e.state.status === "starting",
+    ).length;
+
+    // Disk running
+    const dashboardTaskIds = new Set(activeExecutions.keys());
+    let diskRunning = 0;
+    try {
+      const runFiles = readdirSync(runsDir);
+      for (const file of runFiles) {
+        if (!file.endsWith(".json")) continue;
+        const id = file.replace(/\.json$/, "");
+        const run = loadRunFile(runsDir, id);
+        if (run && run.status === "running" && !dashboardTaskIds.has(run.taskId as string)) {
+          diskRunning++;
+        }
+      }
+    } catch {
+      // runs dir may not exist
+    }
+
+    const totalRunning = dashboardRunning + diskRunning;
+    const utilization = maxConcurrent > 0 ? processCount / maxConcurrent : 0;
+    let level: ConcurrencyLevel;
+    if (processCount >= maxConcurrent) {
+      level = "at_limit";
+    } else if (utilization >= 0.67) {
+      level = "high";
+    } else if (utilization > 0) {
+      level = "moderate";
+    } else {
+      level = "low";
+    }
+
+    broadcast({
+      type: "hench:concurrency-status",
+      processCount,
+      maxConcurrent,
+      slotsAvailable: Math.max(0, maxConcurrent - processCount),
+      level,
+      utilization: Math.min(1, utilization),
+      totalRunning,
+      dashboardActive: activeExecutions.size,
+      diskRunning,
+      timestamp: new Date().toISOString(),
+    });
+  }, CONCURRENCY_BROADCAST_MS);
+
+  if (timer.unref) {
+    timer.unref();
+  }
+}
+
+// ── Concurrency status ────────────────────────────────────────────────
+
+/**
+ * Lock file shape — matches hench/src/process/limiter.ts LockFileData.
+ * Duplicated here to avoid runtime coupling with the hench package.
+ */
+interface ConcurrencyLockFile {
+  pid: number;
+  startedAt: string;
+  taskId?: string;
+}
+
+/** Default max concurrent processes (matches hench DEFAULT_HENCH_CONFIG). */
+const DEFAULT_MAX_CONCURRENT_PROCESSES = 3;
+
+/** Check whether a process with the given PID is still alive. */
+function isPidAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Concurrency utilization level for UI indicators. */
+type ConcurrencyLevel = "low" | "moderate" | "high" | "at_limit";
+
+/**
+ * GET /api/hench/concurrency — returns concurrent execution status.
+ *
+ * Combines three data sources:
+ * 1. PID lock files in .hench/locks/ (cross-process limiter)
+ * 2. In-memory dashboard-triggered executions
+ * 3. Disk-based running runs (.hench/runs/)
+ *
+ * Returns current/max counts, queue info, pending PRD tasks, and
+ * a utilization level for visual indicators.
+ */
+function handleConcurrency(res: ServerResponse, ctx: ServerContext): boolean {
+  const henchDir = join(ctx.projectDir, ".hench");
+  const locksDir = join(henchDir, "locks");
+  const runsDir = join(henchDir, "runs");
+
+  // 1. Read max concurrent from config
+  const config = loadHenchConfig(ctx.projectDir);
+  const guard = config?.guard as Record<string, unknown> | undefined;
+  const maxConcurrent = typeof guard?.maxConcurrentProcesses === "number"
+    ? guard.maxConcurrentProcesses
+    : DEFAULT_MAX_CONCURRENT_PROCESSES;
+
+  // 2. Read lock files and check PID liveness
+  const activeLocks: Array<{
+    pid: number;
+    startedAt: string;
+    taskId?: string;
+    alive: boolean;
+  }> = [];
+
+  try {
+    const files = readdirSync(locksDir);
+    for (const file of files) {
+      if (!file.endsWith(".lock")) continue;
+      try {
+        const raw = readFileSync(join(locksDir, file), "utf-8");
+        const lock = JSON.parse(raw) as ConcurrencyLockFile;
+        const alive = isPidAlive(lock.pid);
+        activeLocks.push({
+          pid: lock.pid,
+          startedAt: lock.startedAt,
+          taskId: lock.taskId,
+          alive,
+        });
+      } catch {
+        // Corrupted lock file — skip
+      }
+    }
+  } catch {
+    // Locks dir doesn't exist yet — no active locks
+  }
+
+  const aliveLocks = activeLocks.filter((l) => l.alive);
+
+  // 3. Count dashboard-triggered executions
+  const dashboardActive = activeExecutions.size;
+  const dashboardRunning = Array.from(activeExecutions.values()).filter(
+    (e) => e.state.status === "running" || e.state.status === "starting",
+  ).length;
+
+  // 4. Count disk-based running runs (excludes dashboard-tracked ones)
+  const dashboardTaskIds = new Set(activeExecutions.keys());
+  let diskRunningCount = 0;
+  try {
+    const runFiles = readdirSync(runsDir);
+    for (const file of runFiles) {
+      if (!file.endsWith(".json")) continue;
+      const id = file.replace(/\.json$/, "");
+      const run = loadRunFile(runsDir, id);
+      if (run && run.status === "running" && !dashboardTaskIds.has(run.taskId as string)) {
+        diskRunningCount++;
+      }
+    }
+  } catch {
+    // runs dir may not exist
+  }
+
+  // 5. Count pending PRD tasks
+  let pendingTaskCount = 0;
+  try {
+    const prdPath = join(ctx.rexDir, "prd.json");
+    if (existsSync(prdPath)) {
+      const prdRaw = readFileSync(prdPath, "utf-8");
+      const prd = JSON.parse(prdRaw) as Record<string, unknown>;
+      const items = prd.items as Array<Record<string, unknown>> | undefined;
+      if (items) {
+        pendingTaskCount = countPendingTasks(items);
+      }
+    }
+  } catch {
+    // PRD not available
+  }
+
+  // 6. Compute aggregate counts
+  // The "active process count" is the number of live lock-holding processes,
+  // which is the authoritative cross-process count.
+  const processCount = aliveLocks.length;
+
+  // Total running tasks combines dashboard + disk sources (deduplicated)
+  const totalRunning = dashboardRunning + diskRunningCount;
+
+  // Compute utilization level
+  const utilization = maxConcurrent > 0 ? processCount / maxConcurrent : 0;
+  let level: ConcurrencyLevel;
+  if (processCount >= maxConcurrent) {
+    level = "at_limit";
+  } else if (utilization >= 0.67) {
+    level = "high";
+  } else if (utilization > 0) {
+    level = "moderate";
+  } else {
+    level = "low";
+  }
+
+  // Slots remaining before limit is reached
+  const slotsAvailable = Math.max(0, maxConcurrent - processCount);
+
+  jsonResponse(res, 200, {
+    processCount,
+    maxConcurrent,
+    slotsAvailable,
+    level,
+    utilization: Math.min(1, utilization),
+    totalRunning,
+    dashboardActive,
+    diskRunning: diskRunningCount,
+    pendingTasks: pendingTaskCount,
+    locks: aliveLocks.map((l) => ({
+      pid: l.pid,
+      startedAt: l.startedAt,
+      taskId: l.taskId,
+    })),
+    timestamp: new Date().toISOString(),
+  });
+  return true;
+}
+
+/** Recursively count pending/blocked tasks (leaf tasks only). */
+function countPendingTasks(items: Array<Record<string, unknown>>): number {
+  let count = 0;
+  for (const item of items) {
+    const children = item.children as Array<Record<string, unknown>> | undefined;
+    if (children && children.length > 0) {
+      count += countPendingTasks(children);
+    } else {
+      const status = item.status as string;
+      if (status === "pending" || status === "blocked") {
+        count++;
+      }
+    }
+  }
+  return count;
 }
 
 // ── Audit interface ───────────────────────────────────────────────────

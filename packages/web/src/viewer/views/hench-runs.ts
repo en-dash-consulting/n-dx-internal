@@ -17,6 +17,7 @@ import { RexTaskLink } from "../components/rex-task-link.js";
 import { CopyLinkButton } from "../components/copy-link-button.js";
 import { ActiveTasksPanel } from "../components/active-tasks-panel.js";
 import type { ActiveRun } from "../components/active-tasks-panel.js";
+import { ConcurrencyPanel } from "../components/concurrency-panel.js";
 import type { NavigateTo } from "../types.js";
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -690,6 +691,9 @@ export function HenchRunsView({ navigateTo, initialRunId }: HenchRunsViewProps =
 
     // Active tasks panel — shown at top when there are running tasks
     h(ActiveTasksPanel, { runs: activeRuns, navigateTo }),
+
+    // Concurrency status — shows process count, limits, and utilization
+    h(ConcurrencyPanel, null),
 
     // Aggregate metrics
     h(RunMetrics, { runs }),
