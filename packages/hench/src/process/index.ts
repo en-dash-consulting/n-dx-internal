@@ -36,3 +36,16 @@ export type {
   ResourceThresholds,
   ProcessLifecycleValidatorOptions,
 } from "./lifecycle.js";
+
+export {
+  MemoryThrottle,
+  MemoryThrottleRejectError,
+  DEFAULT_MEMORY_THROTTLE_CONFIG,
+} from "./memory-throttle.js";
+
+export type {
+  MemoryThrottleConfig,
+  MemoryThrottleStatus,
+  ThrottleDecision,
+  SystemMemoryReader,
+} from "./memory-throttle.js";

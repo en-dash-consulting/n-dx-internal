@@ -13,6 +13,7 @@ import { info, result as output } from "../output.js";
 import { loadLLMConfig, resolveLLMVendor, resolveVendorCliPath } from "../../store/project-config.js";
 import { ExecutionQueue, formatQueueStatus } from "../../queue/index.js";
 import { ProcessLimiter } from "../../process/limiter.js";
+import { MemoryThrottle } from "../../process/memory-throttle.js";
 
 // ---------------------------------------------------------------------------
 // Epic resolution helpers (exported for testing)
@@ -463,6 +464,22 @@ export async function cmdRun(
       "Use --epic to scope to a single epic, or --epic-by-epic to process all epics sequentially.",
     );
   }
+
+  // Memory-based execution throttling.
+  // Delays or rejects runs when system memory is under pressure.
+  const throttle = new MemoryThrottle(config.guard.memoryThrottle);
+  await throttle.gate(({ decision, memoryUsagePercent, delayMs, attempt, maxRetries }) => {
+    if (decision === "delay") {
+      info(
+        `⏳ Memory usage high (${memoryUsagePercent.toFixed(1)}%) — ` +
+        `delaying execution ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})`,
+      );
+    } else if (decision === "reject") {
+      info(`🚫 Memory usage critical (${memoryUsagePercent.toFixed(1)}%) — rejecting execution`);
+    } else if (attempt > 0) {
+      info(`✓ Memory usage recovered (${memoryUsagePercent.toFixed(1)}%) — proceeding`);
+    }
+  });
 
   // Enforce cross-process concurrency limit.
   // Prevents multiple `hench run` invocations from exhausting memory.

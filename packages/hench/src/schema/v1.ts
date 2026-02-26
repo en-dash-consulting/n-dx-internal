@@ -1,4 +1,6 @@
 import { PROJECT_DIRS } from "@n-dx/llm-client";
+export type { MemoryThrottleConfig } from "../process/memory-throttle.js";
+import type { MemoryThrottleConfig } from "../process/memory-throttle.js";
 
 export const HENCH_SCHEMA_VERSION = "hench/v1";
 
@@ -44,6 +46,8 @@ export interface GuardConfig {
   allowedGitSubcommands: string[];
   /** Policy limits for session-aware rate limiting and resource tracking. */
   policy?: PolicyLimitsConfig;
+  /** Memory-based execution throttling configuration. */
+  memoryThrottle?: Partial<MemoryThrottleConfig>;
 }
 
 export interface RetryConfig {

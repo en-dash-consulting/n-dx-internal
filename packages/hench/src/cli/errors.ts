@@ -54,6 +54,13 @@ export class EpicNotFoundError extends CLIError {
  */
 const ERROR_HINTS: Array<[RegExp, string, string]> = [
   [
+    /System memory usage.*exceeds rejection threshold/,
+    "",  // Use original message (already user-friendly)
+    "Close other applications to free memory.\n" +
+    "       To adjust thresholds: hench config guard.memoryThrottle.rejectThreshold <number>\n" +
+    "       To disable throttling: hench config guard.memoryThrottle.enabled false",
+  ],
+  [
     /Concurrent process limit reached/,
     "",  // Use original message (already user-friendly)
     "Active hench processes will release their locks when they finish.\n" +

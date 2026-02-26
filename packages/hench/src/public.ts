@@ -35,6 +35,7 @@ export type {
   HenchConfig,
   GuardConfig,
   PolicyLimitsConfig,
+  MemoryThrottleConfig,
   RetryConfig,
   Provider,
   RunRecord,
@@ -109,6 +110,19 @@ export type {
   ResourceThresholds,
   ProcessLifecycleValidatorOptions,
 } from "./process/lifecycle.js";
+
+// ---- Memory throttle --------------------------------------------------------
+
+export {
+  MemoryThrottle,
+  MemoryThrottleRejectError,
+  DEFAULT_MEMORY_THROTTLE_CONFIG,
+} from "./process/memory-throttle.js";
+
+export type {
+  MemoryThrottleStatus,
+  ThrottleDecision,
+} from "./process/memory-throttle.js";
 
 // ---- Run file change detection ----------------------------------------------
 
