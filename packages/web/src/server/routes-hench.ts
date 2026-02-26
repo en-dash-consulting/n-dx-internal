@@ -21,6 +21,11 @@
  * POST   /api/hench/execute               — trigger Hench run for a specific task
  * GET    /api/hench/execute/status         — get all active execution statuses
  * GET    /api/hench/execute/status/:taskId — get specific task execution status
+ * GET    /api/hench/throttle              — current throttle state (paused, concurrency override, etc.)
+ * PUT    /api/hench/throttle              — adjust concurrency limit override
+ * POST   /api/hench/throttle/pause        — pause new task executions
+ * POST   /api/hench/throttle/resume       — resume new task executions
+ * POST   /api/hench/throttle/emergency-stop — terminate all running executions immediately
  */
 
 import { readFileSync, readdirSync, writeFileSync, existsSync } from "node:fs";
@@ -295,6 +300,31 @@ export function handleHenchRoute(
   // GET /api/hench/concurrency — concurrent execution count, limits, and queue status
   if (path === "concurrency" && method === "GET") {
     return handleConcurrency(res, ctx);
+  }
+
+  // GET /api/hench/throttle — current throttle state
+  if (path === "throttle" && method === "GET") {
+    return handleThrottleGet(res, ctx);
+  }
+
+  // PUT /api/hench/throttle — adjust concurrency limit override
+  if (path === "throttle" && method === "PUT") {
+    return handleThrottleUpdate(req, res, ctx, broadcast);
+  }
+
+  // POST /api/hench/throttle/pause — pause new executions
+  if (path === "throttle/pause" && method === "POST") {
+    return handleThrottlePause(res, broadcast, ctx);
+  }
+
+  // POST /api/hench/throttle/resume — resume new executions
+  if (path === "throttle/resume" && method === "POST") {
+    return handleThrottleResume(res, broadcast, ctx);
+  }
+
+  // POST /api/hench/throttle/emergency-stop — terminate all running executions
+  if (path === "throttle/emergency-stop" && method === "POST") {
+    return handleEmergencyStop(req, res, broadcast, ctx);
   }
 
   // POST /api/hench/execute/:taskId/terminate — terminate a running task
@@ -908,6 +938,12 @@ async function handleExecute(
     return true;
   }
 
+  // Check if new executions are paused via throttle controls
+  if (throttleState.paused) {
+    errorResponse(res, 503, "New executions are paused. Resume via the throttle controls before starting new tasks.");
+    return true;
+  }
+
   // Check for concurrent execution
   if (activeExecutions.has(taskId)) {
     const active = activeExecutions.get(taskId)!;
@@ -1270,12 +1306,8 @@ export function startConcurrencyMonitor(
     const locksDir = join(henchDir, "locks");
     const runsDir = join(henchDir, "runs");
 
-    // Read max concurrent from config
-    const config = loadHenchConfig(ctx.projectDir);
-    const guard = config?.guard as Record<string, unknown> | undefined;
-    const maxConcurrent = typeof guard?.maxConcurrentProcesses === "number"
-      ? guard.maxConcurrentProcesses
-      : DEFAULT_MAX_CONCURRENT_PROCESSES;
+    // Read max concurrent (respects runtime override from throttle controls)
+    const maxConcurrent = getEffectiveMaxConcurrent(ctx.projectDir);
 
     // Read lock files
     let processCount = 0;
@@ -1377,6 +1409,52 @@ function isPidAlive(pid: number): boolean {
 /** Concurrency utilization level for UI indicators. */
 type ConcurrencyLevel = "low" | "moderate" | "high" | "at_limit";
 
+// ── Throttle state ────────────────────────────────────────────────────
+
+/**
+ * In-memory throttle state for manual execution controls.
+ *
+ * This is a runtime-only override — it does not persist to disk and resets
+ * on server restart. The `concurrencyOverride` (when set) takes precedence
+ * over the config-file value for all concurrency calculations. When
+ * `paused` is true, new executions are rejected by the execute handler.
+ */
+interface ThrottleState {
+  /** Whether new task executions are paused. */
+  paused: boolean;
+  /** Timestamp when pause was activated, or null if not paused. */
+  pausedAt: string | null;
+  /** Runtime concurrency limit override. null = use config value. */
+  concurrencyOverride: number | null;
+  /** Timestamp of last emergency stop, or null if never. */
+  lastEmergencyStopAt: string | null;
+  /** Count of executions terminated by last emergency stop. */
+  lastEmergencyStopCount: number;
+}
+
+const throttleState: ThrottleState = {
+  paused: false,
+  pausedAt: null,
+  concurrencyOverride: null,
+  lastEmergencyStopAt: null,
+  lastEmergencyStopCount: 0,
+};
+
+/**
+ * Get the effective max concurrent processes, respecting the runtime
+ * override when set.
+ */
+function getEffectiveMaxConcurrent(projectDir: string): number {
+  if (throttleState.concurrencyOverride !== null) {
+    return throttleState.concurrencyOverride;
+  }
+  const config = loadHenchConfig(projectDir);
+  const guard = config?.guard as Record<string, unknown> | undefined;
+  return typeof guard?.maxConcurrentProcesses === "number"
+    ? guard.maxConcurrentProcesses
+    : DEFAULT_MAX_CONCURRENT_PROCESSES;
+}
+
 /**
  * GET /api/hench/concurrency — returns concurrent execution status.
  *
@@ -1393,12 +1471,8 @@ function handleConcurrency(res: ServerResponse, ctx: ServerContext): boolean {
   const locksDir = join(henchDir, "locks");
   const runsDir = join(henchDir, "runs");
 
-  // 1. Read max concurrent from config
-  const config = loadHenchConfig(ctx.projectDir);
-  const guard = config?.guard as Record<string, unknown> | undefined;
-  const maxConcurrent = typeof guard?.maxConcurrentProcesses === "number"
-    ? guard.maxConcurrentProcesses
-    : DEFAULT_MAX_CONCURRENT_PROCESSES;
+  // 1. Read max concurrent (respects runtime override from throttle controls)
+  const maxConcurrent = getEffectiveMaxConcurrent(ctx.projectDir);
 
   // 2. Read lock files and check PID liveness
   const activeLocks: Array<{
@@ -1791,4 +1865,250 @@ export async function shutdownActiveExecutions(
   }
 
   return { terminated, failed };
+}
+
+// ── Throttle controls ─────────────────────────────────────────────────
+
+/**
+ * GET /api/hench/throttle — return current throttle state.
+ *
+ * Includes the effective concurrency limit, pause state, and info
+ * about the config-file default for UI comparison.
+ */
+function handleThrottleGet(res: ServerResponse, ctx: ServerContext): boolean {
+  const config = loadHenchConfig(ctx.projectDir);
+  const guard = config?.guard as Record<string, unknown> | undefined;
+  const configMax = typeof guard?.maxConcurrentProcesses === "number"
+    ? guard.maxConcurrentProcesses
+    : DEFAULT_MAX_CONCURRENT_PROCESSES;
+
+  const effective = throttleState.concurrencyOverride ?? configMax;
+
+  jsonResponse(res, 200, {
+    paused: throttleState.paused,
+    pausedAt: throttleState.pausedAt,
+    concurrencyOverride: throttleState.concurrencyOverride,
+    effectiveMaxConcurrent: effective,
+    configMaxConcurrent: configMax,
+    lastEmergencyStopAt: throttleState.lastEmergencyStopAt,
+    lastEmergencyStopCount: throttleState.lastEmergencyStopCount,
+    activeExecutions: activeExecutions.size,
+    timestamp: new Date().toISOString(),
+  });
+  return true;
+}
+
+/**
+ * PUT /api/hench/throttle — adjust the runtime concurrency override.
+ *
+ * Body: { maxConcurrent: number | null }
+ * Pass null to clear the override and revert to the config-file value.
+ */
+async function handleThrottleUpdate(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
+): Promise<boolean> {
+  let body: Record<string, unknown>;
+  try {
+    const raw = await readBody(req);
+    body = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    errorResponse(res, 400, "Invalid JSON in request body");
+    return true;
+  }
+
+  const value = body.maxConcurrent;
+  if (value === null || value === undefined) {
+    // Clear override — revert to config value
+    throttleState.concurrencyOverride = null;
+  } else if (typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 20) {
+    throttleState.concurrencyOverride = value;
+  } else {
+    errorResponse(res, 400, "maxConcurrent must be an integer between 1 and 20, or null to clear");
+    return true;
+  }
+
+  // Broadcast updated concurrency status so the concurrency panel refreshes
+  if (broadcast) {
+    broadcastThrottleState(broadcast, ctx);
+  }
+
+  const effective = getEffectiveMaxConcurrent(ctx.projectDir);
+  jsonResponse(res, 200, {
+    ok: true,
+    concurrencyOverride: throttleState.concurrencyOverride,
+    effectiveMaxConcurrent: effective,
+  });
+  return true;
+}
+
+/**
+ * POST /api/hench/throttle/pause — pause new task executions.
+ *
+ * Running executions continue but no new ones can be started.
+ */
+function handleThrottlePause(
+  res: ServerResponse,
+  broadcast?: WebSocketBroadcaster,
+  ctx?: ServerContext,
+): boolean {
+  if (throttleState.paused) {
+    errorResponse(res, 409, "Executions are already paused");
+    return true;
+  }
+
+  throttleState.paused = true;
+  throttleState.pausedAt = new Date().toISOString();
+
+  if (broadcast && ctx) broadcastThrottleState(broadcast, ctx);
+
+  jsonResponse(res, 200, {
+    ok: true,
+    paused: true,
+    pausedAt: throttleState.pausedAt,
+  });
+  return true;
+}
+
+/**
+ * POST /api/hench/throttle/resume — resume new task executions.
+ */
+function handleThrottleResume(
+  res: ServerResponse,
+  broadcast?: WebSocketBroadcaster,
+  ctx?: ServerContext,
+): boolean {
+  if (!throttleState.paused) {
+    errorResponse(res, 409, "Executions are not paused");
+    return true;
+  }
+
+  throttleState.paused = false;
+  throttleState.pausedAt = null;
+
+  if (broadcast && ctx) broadcastThrottleState(broadcast, ctx);
+
+  jsonResponse(res, 200, {
+    ok: true,
+    paused: false,
+  });
+  return true;
+}
+
+/**
+ * POST /api/hench/throttle/emergency-stop — terminate all running executions.
+ *
+ * Sends SIGTERM to every active dashboard-managed execution and pauses new
+ * ones. Body must include `{ confirm: true }` to prevent accidental use.
+ */
+async function handleEmergencyStop(
+  req: IncomingMessage,
+  res: ServerResponse,
+  broadcast?: WebSocketBroadcaster,
+  ctx?: ServerContext,
+): Promise<boolean> {
+  let body: Record<string, unknown>;
+  try {
+    const raw = await readBody(req);
+    body = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    errorResponse(res, 400, "Invalid JSON in request body");
+    return true;
+  }
+
+  if (body.confirm !== true) {
+    errorResponse(res, 400, "Emergency stop requires { confirm: true } in request body");
+    return true;
+  }
+
+  const count = activeExecutions.size;
+
+  if (count === 0) {
+    jsonResponse(res, 200, {
+      ok: true,
+      terminated: 0,
+      failed: 0,
+      message: "No active executions to stop",
+    });
+    return true;
+  }
+
+  // Pause new executions automatically
+  throttleState.paused = true;
+  throttleState.pausedAt = new Date().toISOString();
+
+  // Terminate all active executions
+  console.log(`[emergency-stop] terminating ${count} active execution(s)`);
+
+  let terminated = 0;
+  let failed = 0;
+
+  const terminations = Array.from(activeExecutions.entries()).map(
+    async ([taskId, entry]) => {
+      const pid = entry.handle.pid;
+      const pidInfo = pid != null ? ` (pid ${pid})` : "";
+      try {
+        await killWithFallback(entry.handle, 3000);
+        console.log(`[emergency-stop] execution ${taskId}${pidInfo} terminated`);
+        terminated++;
+      } catch (err) {
+        const error = err as Error;
+        console.error(`[emergency-stop] execution ${taskId}${pidInfo} failed: ${error.message}`);
+        failed++;
+      } finally {
+        // Update state before removing
+        entry.state.status = "failed";
+        entry.state.finishedAt = new Date().toISOString();
+        entry.state.error = "Terminated via emergency stop";
+        broadcastExecState(broadcast, { ...entry.state });
+        activeExecutions.delete(taskId);
+      }
+    },
+  );
+
+  await Promise.all(terminations);
+
+  throttleState.lastEmergencyStopAt = new Date().toISOString();
+  throttleState.lastEmergencyStopCount = terminated + failed;
+
+  if (broadcast && ctx) broadcastThrottleState(broadcast, ctx);
+  clearStatusCache();
+
+  jsonResponse(res, 200, {
+    ok: true,
+    terminated,
+    failed,
+    paused: true,
+    message: `Emergency stop complete: ${terminated} terminated, ${failed} failed. New executions paused.`,
+  });
+  return true;
+}
+
+/**
+ * Broadcast updated throttle state over WebSocket for real-time UI updates.
+ */
+function broadcastThrottleState(
+  broadcast: WebSocketBroadcaster,
+  ctx: ServerContext,
+): void {
+  const config = loadHenchConfig(ctx.projectDir);
+  const guard = config?.guard as Record<string, unknown> | undefined;
+  const configMax = typeof guard?.maxConcurrentProcesses === "number"
+    ? guard.maxConcurrentProcesses
+    : DEFAULT_MAX_CONCURRENT_PROCESSES;
+
+  broadcast({
+    type: "hench:throttle-state",
+    paused: throttleState.paused,
+    pausedAt: throttleState.pausedAt,
+    concurrencyOverride: throttleState.concurrencyOverride,
+    effectiveMaxConcurrent: throttleState.concurrencyOverride ?? configMax,
+    configMaxConcurrent: configMax,
+    lastEmergencyStopAt: throttleState.lastEmergencyStopAt,
+    lastEmergencyStopCount: throttleState.lastEmergencyStopCount,
+    activeExecutions: activeExecutions.size,
+    timestamp: new Date().toISOString(),
+  });
 }
