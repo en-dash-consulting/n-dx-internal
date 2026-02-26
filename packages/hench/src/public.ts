@@ -163,6 +163,22 @@ export type {
   RuntimePoolStatus,
 } from "./process/pool.js";
 
+// ---- Process memory tracking -------------------------------------------------
+
+export {
+  ProcessMemoryTracker,
+  DEFAULT_PROCESS_MEMORY_TRACKER_CONFIG,
+} from "./process/process-memory-tracker.js";
+
+export type {
+  ProcessMemoryTrackerConfig,
+  ProcessMemorySample,
+  MemoryTrend,
+  ProcessMemoryHistory,
+  LeakReport,
+  LeakDetectionSummary,
+} from "./process/process-memory-tracker.js";
+
 // ---- Run file change detection ----------------------------------------------
 
 export { RunChangeDetector } from "./store/run-change-detector.js";

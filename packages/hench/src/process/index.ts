@@ -77,3 +77,17 @@ export type {
   PooledRuntimeInfo,
   RuntimePoolStatus,
 } from "./pool.js";
+
+export {
+  ProcessMemoryTracker,
+  DEFAULT_PROCESS_MEMORY_TRACKER_CONFIG,
+} from "./process-memory-tracker.js";
+
+export type {
+  ProcessMemoryTrackerConfig,
+  ProcessMemorySample,
+  MemoryTrend,
+  ProcessMemoryHistory,
+  LeakReport,
+  LeakDetectionSummary,
+} from "./process-memory-tracker.js";

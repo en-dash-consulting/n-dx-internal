@@ -10,6 +10,9 @@
  * GET    /api/hench/task-usage            — incremental per-task token usage aggregation
  * GET    /api/hench/audit                 — audit info for active tasks (PIDs, resource usage)
  * GET    /api/hench/memory               — system memory, per-process memory, and resource health
+ * GET    /api/hench/memory/history        — per-process memory history (all tracked processes)
+ * GET    /api/hench/memory/history/:taskId — memory history for a specific task
+ * GET    /api/hench/memory/leaks          — leak detection summary for all active processes
  * GET    /api/hench/concurrency           — concurrent execution count, limits, and queue status
  * POST   /api/hench/execute/:taskId/terminate — terminate a running task
  * GET    /api/hench/config                — current workflow configuration with field metadata
@@ -41,6 +44,7 @@ import { jsonResponse, errorResponse, readBody } from "./types.js";
 import type { WebSocketBroadcaster } from "./websocket.js";
 import { clearStatusCache } from "./routes-status.js";
 import { IncrementalTaskUsageAggregator } from "./incremental-task-usage.js";
+import { ProcessMemoryTracker } from "./process-memory-tracker.js";
 
 const HENCH_PREFIX = "/api/hench/";
 
@@ -58,6 +62,14 @@ function getAggregator(runsDir: string): IncrementalTaskUsageAggregator {
   }
   return aggregator;
 }
+
+/**
+ * Module-level process memory tracker singleton.
+ *
+ * Records per-process RSS samples during each memory broadcast cycle
+ * and provides historical data + leak detection via the API.
+ */
+const processMemoryTracker = new ProcessMemoryTracker();
 
 /** Minimal run shape for listing (avoids loading full toolCalls/transcript). */
 interface RunSummary {
@@ -303,6 +315,22 @@ export function handleHenchRoute(
   // GET /api/hench/memory — system memory, per-process memory, and resource health
   if (path === "memory" && method === "GET") {
     return handleMemory(res);
+  }
+
+  // GET /api/hench/memory/history/:taskId — memory history for a specific task
+  const memoryHistoryMatch = path.match(/^memory\/history\/([^/?]+)$/);
+  if (memoryHistoryMatch && method === "GET") {
+    return handleMemoryHistoryByTask(memoryHistoryMatch[1]!, res);
+  }
+
+  // GET /api/hench/memory/history — per-process memory history (all tracked processes)
+  if (path === "memory/history" && method === "GET") {
+    return handleMemoryHistory(res);
+  }
+
+  // GET /api/hench/memory/leaks — leak detection summary for all active processes
+  if (path === "memory/leaks" && method === "GET") {
+    return handleMemoryLeaks(res);
   }
 
   // GET /api/hench/concurrency — concurrent execution count, limits, and queue status
@@ -1024,6 +1052,7 @@ async function handleExecute(
         }
         broadcastExecState(broadcast, { ...entry.state });
       }
+      processMemoryTracker.markCompleted(taskId);
       activeExecutions.delete(taskId);
     })
     .catch((err) => {
@@ -1034,6 +1063,7 @@ async function handleExecute(
         entry.state.error = err instanceof Error ? err.message : String(err);
         broadcastExecState(broadcast, { ...entry.state });
       }
+      processMemoryTracker.markCompleted(taskId);
       activeExecutions.delete(taskId);
     });
 
@@ -1523,18 +1553,77 @@ function handleMemory(res: ServerResponse): boolean {
   return true;
 }
 
+/** GET /api/hench/memory/history — per-process memory history for all tracked processes. */
+function handleMemoryHistory(res: ServerResponse): boolean {
+  const histories = processMemoryTracker.getAllHistories();
+  jsonResponse(res, 200, {
+    histories,
+    activeProcesses: processMemoryTracker.activeCount,
+    completedProcesses: processMemoryTracker.completedCount,
+    timestamp: new Date().toISOString(),
+  });
+  return true;
+}
+
+/** GET /api/hench/memory/history/:taskId — memory history for a specific task. */
+function handleMemoryHistoryByTask(taskId: string, res: ServerResponse): boolean {
+  const history = processMemoryTracker.getHistory(taskId);
+  if (!history) {
+    jsonResponse(res, 404, {
+      error: "not_found",
+      message: `No memory history for task ${taskId}`,
+    });
+    return true;
+  }
+  jsonResponse(res, 200, history);
+  return true;
+}
+
+/** GET /api/hench/memory/leaks — leak detection summary for all active processes. */
+function handleMemoryLeaks(res: ServerResponse): boolean {
+  const summary = processMemoryTracker.detectLeaks();
+  jsonResponse(res, 200, summary);
+  return true;
+}
+
 /**
  * Periodically broadcast memory + resource health via WebSocket.
  * Runs every 10 seconds so the memory panel stays live.
+ *
+ * Also records per-process RSS samples into the process memory tracker
+ * for historical analysis and leak detection.
  */
 export function startMemoryMonitor(broadcast: WebSocketBroadcaster): void {
   const MEMORY_BROADCAST_MS = 10_000;
 
   const timer = setInterval(() => {
     const status = collectMemoryStatus();
+
+    // Record per-process samples for historical tracking + leak detection
+    for (const proc of status.processes) {
+      processMemoryTracker.recordSample(
+        proc.taskId,
+        proc.taskTitle,
+        proc.pid,
+        proc.rssBytes,
+      );
+    }
+
+    // Prune tracker entries for processes that are no longer active
+    // (the activeExecutions map is the source of truth)
+    for (const history of processMemoryTracker.getActiveHistories()) {
+      if (!activeExecutions.has(history.taskId)) {
+        processMemoryTracker.markCompleted(history.taskId);
+      }
+    }
+
+    // Include leak alerts in the broadcast when detected
+    const leakAlerts = processMemoryTracker.getLeakAlerts();
+
     broadcast({
       type: "hench:memory-status",
       ...status,
+      ...(leakAlerts.length > 0 ? { leakAlerts } : {}),
     });
   }, MEMORY_BROADCAST_MS);
 
@@ -1942,6 +2031,7 @@ function handleTerminate(
   entry.state.error = "Terminated via audit interface";
 
   broadcastExecState(broadcast, { ...entry.state });
+  processMemoryTracker.markCompleted(taskId);
   activeExecutions.delete(taskId);
   clearStatusCache();
 
@@ -2013,6 +2103,7 @@ export async function shutdownActiveExecutions(
         console.error(`[shutdown] execution ${taskId}${pidInfo} failed to terminate: ${error.message}`);
         failed++;
       } finally {
+        processMemoryTracker.markCompleted(taskId);
         activeExecutions.delete(taskId);
       }
     },
@@ -2225,6 +2316,7 @@ async function handleEmergencyStop(
         entry.state.finishedAt = new Date().toISOString();
         entry.state.error = "Terminated via emergency stop";
         broadcastExecState(broadcast, { ...entry.state });
+        processMemoryTracker.markCompleted(taskId);
         activeExecutions.delete(taskId);
       }
     },
