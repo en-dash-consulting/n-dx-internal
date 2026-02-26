@@ -15259,6 +15259,8 @@
           "level": "feature",
           "description": "Replace individual per-component timers with a shared timer service to reduce CPU overhead and coordinate updates",
           "source": "smart-add",
+          "startedAt": "2026-02-26T06:53:49.640Z",
+          "completedAt": "2026-02-26T06:53:49.640Z",
           "children": [
             {
               "id": "c872f54b-e5cb-4579-8942-de7e5393ee48",
@@ -15326,9 +15328,7 @@
               "startedAt": "2026-02-26T06:44:57.702Z",
               "completedAt": "2026-02-26T06:49:07.798Z"
             }
-          ],
-          "startedAt": "2026-02-26T06:53:49.640Z",
-          "completedAt": "2026-02-26T06:53:49.640Z"
+          ]
         },
         {
           "id": "26c67014-a21a-4e08-bcc6-989f4c338dbd",
@@ -15803,7 +15803,7 @@
             {
               "id": "fa6768f5-58d0-44ff-8cff-5502c10983aa",
               "title": "Suspend execution panel polling (3s interval) when tab is backgrounded",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Halt the 3-second execution panel polling when tab is inactive to reduce memory buffering",
               "acceptanceCriteria": [
@@ -15817,7 +15817,9 @@
                 "execution",
                 "performance"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T06:54:30.747Z",
+              "completedAt": "2026-02-26T06:59:05.514Z"
             },
             {
               "id": "d4bef0a2-79bb-4d5e-8127-59266cdb0219",
