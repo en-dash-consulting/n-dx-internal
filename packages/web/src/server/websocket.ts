@@ -7,7 +7,8 @@
  * Supports:
  * - Broadcasting PRD item changes to connected clients
  * - Broadcasting file-change events (sourcevision data updates)
- * - Ping/pong keepalive
+ * - Immediate disconnect detection via socket events + pre-broadcast pruning
+ * - Ping/pong keepalive (reduced interval safety net)
  */
 
 import { createHash } from "node:crypto";
@@ -22,6 +23,14 @@ interface WSClient {
   socket: Duplex;
   alive: boolean;
 }
+
+/**
+ * Keepalive ping interval (ms). Reduced from 30 s for faster detection
+ * of silently dropped connections. Primary disconnect detection is
+ * event-driven (close/error/end handlers); pings are a safety net for
+ * connections that go silent without a TCP FIN/RST.
+ */
+export const PING_INTERVAL_MS = 5_000;
 
 const WS_MAGIC = "258EAFA5-E914-47DA-95CA-5AB9DC65B11D";
 
@@ -108,7 +117,26 @@ export function createWebSocketManager(): {
   const clients = new Set<WSClient>();
   let pingInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Start keepalive pings every 30s
+  /** Idempotent client removal — safe to call from multiple event handlers. */
+  function removeClient(client: WSClient): void {
+    clients.delete(client);
+  }
+
+  /**
+   * Remove clients whose underlying socket is no longer writable.
+   * Called before each broadcast to catch connections that died between
+   * event-loop ticks without emitting a socket event.
+   */
+  function pruneDeadClients(): void {
+    for (const client of clients) {
+      if (client.socket.destroyed || !client.socket.writable) {
+        clients.delete(client);
+      }
+    }
+  }
+
+  // Keepalive pings — safety net for connections that go silent without
+  // a TCP FIN/RST (e.g. network drops). Primary detection is event-driven.
   function startPingInterval(): void {
     if (pingInterval) return;
     pingInterval = setInterval(() => {
@@ -126,7 +154,7 @@ export function createWebSocketManager(): {
           clients.delete(client);
         }
       }
-    }, 30000);
+    }, PING_INTERVAL_MS);
   }
 
   function handleUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer): void {
@@ -134,6 +162,17 @@ export function createWebSocketManager(): {
     if (!key) {
       socket.destroy();
       return;
+    }
+
+    // Enable TCP-level keepalive for OS-level dead-peer detection.
+    // The socket is typed as Duplex but is a net.Socket at runtime;
+    // guard with runtime checks so non-TCP transports still work.
+    const sock = socket as unknown as Record<string, unknown>;
+    if (typeof sock.setKeepAlive === "function") {
+      (sock.setKeepAlive as (enable: boolean, initialDelay: number) => void)(true, 1000);
+    }
+    if (typeof sock.setNoDelay === "function") {
+      (sock.setNoDelay as (noDelay: boolean) => void)(true);
     }
 
     const acceptKey = computeAcceptKey(key);
@@ -163,13 +202,12 @@ export function createWebSocketManager(): {
       processData(client, data);
     });
 
-    socket.on("close", () => {
-      clients.delete(client);
-    });
-
-    socket.on("error", () => {
-      clients.delete(client);
-    });
+    // Immediate disconnect detection — every socket lifecycle event that
+    // signals the connection is gone triggers client removal. Set.delete
+    // is idempotent so overlapping events are harmless.
+    socket.on("close", () => removeClient(client));
+    socket.on("error", () => removeClient(client));
+    socket.on("end", () => removeClient(client));
 
     // Send a welcome message
     try {
@@ -240,6 +278,12 @@ export function createWebSocketManager(): {
 
   function broadcast(data: unknown): void {
     if (clients.size === 0) return;
+
+    // Pre-broadcast health check: remove dead connections before writing
+    // so we never attempt I/O on a destroyed socket.
+    pruneDeadClients();
+    if (clients.size === 0) return;
+
     const msg = encodeFrame(JSON.stringify(data));
     for (const client of clients) {
       try {

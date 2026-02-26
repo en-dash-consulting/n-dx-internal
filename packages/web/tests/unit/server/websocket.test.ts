@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createServer, type Server } from "node:http";
 import { connect, type Socket } from "node:net";
-import { createWebSocketManager } from "../../../src/server/websocket.js";
+import { createWebSocketManager, PING_INTERVAL_MS } from "../../../src/server/websocket.js";
 
 /**
  * Connect a raw TCP socket to the server and perform the WebSocket handshake.
@@ -208,5 +208,71 @@ describe("WebSocket manager", () => {
   it("broadcast is a no-op with no clients", () => {
     ws.broadcast({ type: "noop" });
     expect(ws.clientCount()).toBe(0);
+  });
+
+  // ── Immediate disconnect detection ─────────────────────────────────
+
+  it("removes client immediately when socket is destroyed", async () => {
+    const { socket } = await connectRaw(port);
+    expect(ws.clientCount()).toBe(1);
+
+    socket.destroy();
+    // close event fires asynchronously — give the event loop one turn
+    await new Promise((r) => setTimeout(r, 50));
+    expect(ws.clientCount()).toBe(0);
+  });
+
+  it("removes client when socket emits end (half-close)", async () => {
+    const { socket } = await connectRaw(port);
+    expect(ws.clientCount()).toBe(1);
+
+    // end() sends FIN — the server-side socket receives "end" event
+    socket.end();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(ws.clientCount()).toBe(0);
+
+    socket.destroy();
+  });
+
+  it("handles overlapping close/error/end events without errors", async () => {
+    const c1 = await connectRaw(port);
+    const c2 = await connectRaw(port);
+    expect(ws.clientCount()).toBe(2);
+
+    // Forcefully destroy both — may fire close + error simultaneously
+    c1.socket.destroy();
+    c2.socket.destroy(new Error("simulated error"));
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Both should be cleaned up without double-removal errors
+    expect(ws.clientCount()).toBe(0);
+  });
+
+  it("prunes dead connections before broadcast", async () => {
+    const c1 = await connectRaw(port);
+    const c2 = await connectRaw(port);
+    expect(ws.clientCount()).toBe(2);
+
+    // Destroy one client and let event-loop process events
+    c1.socket.destroy();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(ws.clientCount()).toBe(1);
+
+    // Broadcast should succeed to the remaining live client
+    const messages = readMessages(c2.socket, Buffer.alloc(0), 300);
+    ws.broadcast({ type: "after-prune", ok: true });
+    const msgs = await messages;
+
+    const pruneMsg = msgs.find((m) => JSON.parse(m).type === "after-prune");
+    expect(pruneMsg).toBeDefined();
+    expect(JSON.parse(pruneMsg!).ok).toBe(true);
+
+    c2.socket.destroy();
+  });
+
+  it("exports a reduced ping interval constant", () => {
+    // The ping interval should be significantly less than the old 30s
+    expect(PING_INTERVAL_MS).toBeLessThanOrEqual(10_000);
+    expect(PING_INTERVAL_MS).toBeGreaterThan(0);
   });
 });
