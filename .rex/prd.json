@@ -15051,7 +15051,7 @@
         {
           "id": "f8b985a1-3c7e-4b22-bad3-dead0c200e05",
           "title": "Lazy Rendering and Node Culling",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Implement lazy rendering strategies to defer DOM creation until nodes are actually needed",
           "source": "smart-add",
@@ -15103,7 +15103,7 @@
             {
               "id": "159162ed-86f9-426e-bc33-cbac93b77571",
               "title": "Implement progressive tree loading for large datasets",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Load and render tree nodes in chunks rather than all at once for very large PRD trees",
               "acceptanceCriteria": [
@@ -15119,6 +15119,8 @@
                 "progressive-loading"
               ],
               "source": "smart-add",
+              "startedAt": "2026-02-26T16:52:20.650Z",
+              "completedAt": "2026-02-26T17:09:19.217Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "content_overlap",
@@ -15130,7 +15132,9 @@
                 "createdAt": "2026-02-25T19:47:45.671Z"
               }
             }
-          ]
+          ],
+          "startedAt": "2026-02-26T17:09:19.325Z",
+          "completedAt": "2026-02-26T17:09:19.325Z"
         },
         {
           "id": "9b281847-53ac-4c09-8600-60eba87fbefb",
@@ -16034,6 +16038,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-26T16:51:36.531Z",
+      "completedAt": "2026-02-26T16:51:36.531Z",
       "children": [
         {
           "id": "110d22ba-ec79-4a1c-aa9c-40da273140be",
@@ -16201,9 +16207,7 @@
         "matchedItemLevel": "feature",
         "matchedItemStatus": "completed",
         "createdAt": "2026-02-25T19:55:14.281Z"
-      },
-      "startedAt": "2026-02-26T16:51:36.531Z",
-      "completedAt": "2026-02-26T16:51:36.531Z"
+      }
     },
     {
       "id": "a5f844d4-da0c-48e1-9af5-077b75ccbc02",
