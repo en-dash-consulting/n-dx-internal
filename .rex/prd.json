@@ -15263,7 +15263,7 @@
             {
               "id": "c872f54b-e5cb-4579-8942-de7e5393ee48",
               "title": "Implement shared timer service for elapsed time updates",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create a centralized timer service that manages a single setInterval and distributes tick events to subscribed components, eliminating the need for individual timers per task card",
               "acceptanceCriteria": [
@@ -15278,7 +15278,9 @@
                 "frontend",
                 "timer"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T06:36:18.522Z",
+              "completedAt": "2026-02-26T06:44:21.185Z"
             },
             {
               "id": "4e51785f-d87a-4e26-82dd-da51f659ed34",
@@ -15303,7 +15305,7 @@
             {
               "id": "cb8190ed-2768-4121-8b3b-765015d3fdd3",
               "title": "Refactor active-tasks-panel.ts to use shared timer service",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Replace individual setInterval calls in active-tasks-panel.ts with subscriptions to the shared timer service, reducing timer overhead for the active tasks display",
               "acceptanceCriteria": [
@@ -15318,7 +15320,8 @@
                 "frontend",
                 "refactor"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T06:44:57.702Z"
             }
           ]
         },
@@ -15443,7 +15446,7 @@
             {
               "id": "33e0f73b-49f2-4b65-8a9d-a18f59635c94",
               "title": "Implement request deduplication for fetchTaskUsage calls",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add in-flight request tracking to prevent duplicate fetchTaskUsage API calls when WebSocket messages arrive during active polling requests",
               "acceptanceCriteria": [
@@ -15458,6 +15461,8 @@
                 "deduplication"
               ],
               "source": "smart-add",
+              "startedAt": "2026-02-26T06:31:17.895Z",
+              "completedAt": "2026-02-26T06:36:18.308Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "content_overlap",

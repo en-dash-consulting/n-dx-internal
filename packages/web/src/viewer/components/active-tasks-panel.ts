@@ -16,6 +16,7 @@
 import { h } from "preact";
 import { useState, useEffect, useCallback, useRef } from "preact/hooks";
 import { RexTaskLink } from "./rex-task-link.js";
+import { useTick } from "../hooks/use-tick.js";
 import type { NavigateTo } from "../types.js";
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -82,17 +83,8 @@ function formatStartTime(iso: string): string {
 // ── Active task card ─────────────────────────────────────────────────
 
 function ActiveTaskCard({ run, navigateTo }: { run: ActiveRun; navigateTo?: NavigateTo }) {
-  const [elapsed, setElapsed] = useState(() => formatElapsed(run.startedAt));
+  const elapsed = useTick(run.startedAt, formatElapsed);
   const stale = isStale(run);
-
-  // Live-tick the elapsed duration every second
-  useEffect(() => {
-    setElapsed(formatElapsed(run.startedAt));
-    const timer = setInterval(() => {
-      setElapsed(formatElapsed(run.startedAt));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [run.startedAt]);
 
   return h("div", {
     class: `active-task-card${stale ? " active-task-card-stale" : ""}`,
@@ -149,15 +141,7 @@ function ActiveTaskCard({ run, navigateTo }: { run: ActiveRun; navigateTo?: Navi
 // ── Execution state card (for dashboard-triggered executions) ────────
 
 function ExecutionCard({ exec }: { exec: ExecutionState }) {
-  const [elapsed, setElapsed] = useState(() => formatElapsed(exec.startedAt));
-
-  useEffect(() => {
-    setElapsed(formatElapsed(exec.startedAt));
-    const timer = setInterval(() => {
-      setElapsed(formatElapsed(exec.startedAt));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [exec.startedAt]);
+  const elapsed = useTick(exec.startedAt, formatElapsed);
 
   const isStarting = exec.status === "starting";
 
