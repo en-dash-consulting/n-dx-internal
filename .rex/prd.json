@@ -15776,7 +15776,7 @@
         {
           "id": "1291a3be-9d15-4aa2-9a9e-2d24ae7737f1",
           "title": "Polling Suspension for Background Tabs",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Suspend all polling intervals when browser tab is backgrounded to reduce resource consumption",
           "source": "smart-add",
@@ -15847,7 +15847,7 @@
             {
               "id": "9ae2ed51-e1d0-4ffa-9c21-2acca1e855e9",
               "title": "Suspend usage polling (10s interval) when tab is backgrounded",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Halt the 10-second usage polling when tab is inactive to reduce token usage data fetching",
               "acceptanceCriteria": [
@@ -15861,9 +15861,13 @@
                 "usage",
                 "performance"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T07:07:47.653Z",
+              "completedAt": "2026-02-26T07:12:17.901Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-26T07:12:18.010Z",
+          "completedAt": "2026-02-26T07:12:18.010Z"
         },
         {
           "id": "b7889f93-f610-4742-9be7-86c0d2da52bb",
