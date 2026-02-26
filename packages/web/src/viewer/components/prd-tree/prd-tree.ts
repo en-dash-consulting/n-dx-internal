@@ -23,6 +23,7 @@ import { InlineAddForm } from "./inline-add-form.js";
 import type { InlineAddInput } from "./inline-add-form.js";
 import { resolveTaskUtilization } from "./task-utilization.js";
 import { NodeCuller } from "./node-culler.js";
+import { LazyChildren } from "./lazy-children.js";
 
 /** Levels that can have children added via inline form. */
 const ADDABLE_LEVELS = new Set<ItemLevel>(["epic", "feature", "task"]);
@@ -590,33 +591,33 @@ function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, select
                 onCancel: onInlineAddCancel,
               })
             : null,
-          hasChildren && isOpen
-            ? h(
-                "div",
-                { class: "prd-children", role: "group" },
-                h(TreeNodes, {
-                  items: children,
-                  taskUsageById,
-                  weeklyBudget,
-                  depth: depth + 1,
-                  expanded,
-                  selectedItemId,
-                  activeStatuses,
-                  onToggle,
-                  onSelectItem,
-                  bulkSelectedIds,
-                  onToggleBulkSelect,
-                  inlineAddParentId,
-                  onInlineAdd,
-                  onInlineAddSubmit,
-                  onInlineAddCancel,
-                  highlightedItemId,
-                  highlightedNodeRef,
-                  onRemoveItem,
-                  deletingItemId,
-                  culler,
-                }),
-              )
+          hasChildren
+            ? h(LazyChildren, {
+                isOpen,
+                renderChildren: () =>
+                  h(TreeNodes, {
+                    items: children,
+                    taskUsageById,
+                    weeklyBudget,
+                    depth: depth + 1,
+                    expanded,
+                    selectedItemId,
+                    activeStatuses,
+                    onToggle,
+                    onSelectItem,
+                    bulkSelectedIds,
+                    onToggleBulkSelect,
+                    inlineAddParentId,
+                    onInlineAdd,
+                    onInlineAddSubmit,
+                    onInlineAddCancel,
+                    highlightedItemId,
+                    highlightedNodeRef,
+                    onRemoveItem,
+                    deletingItemId,
+                    culler,
+                  }),
+              })
             : null,
         );
       }),

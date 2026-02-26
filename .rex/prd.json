@@ -15042,7 +15042,7 @@
             {
               "id": "aeb4fc99-9663-49d9-913c-36ac3c5fec53",
               "title": "Implement lazy rendering for collapsed tree branches",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Defer DOM creation for child nodes under collapsed parents until the parent is expanded by the user",
               "acceptanceCriteria": [
@@ -15057,7 +15057,9 @@
                 "performance",
                 "lazy-loading"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T01:03:08.940Z",
+              "completedAt": "2026-02-26T01:15:48.912Z"
             },
             {
               "id": "a5487c58-8579-4ee4-8aa7-886989c1d4f8",

@@ -650,6 +650,14 @@
   margin-left: 18px;
 }
 
+/* Collapsed-but-still-mounted state during deferred unmount window.
+   Children are hidden immediately via display:none while the unmount
+   timer runs; if the parent is re-expanded before the timer fires,
+   children reappear instantly without a re-mount. */
+.prd-children-collapsed {
+  display: none;
+}
+
 /* Empty state */
 .prd-empty {
   text-align: center;
