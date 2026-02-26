@@ -15529,7 +15529,7 @@
             {
               "id": "543d10ae-d04a-4db7-b912-c933b481f6c4",
               "title": "Implement incremental token usage updates instead of full rebuilds",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Replace the current full aggregation rebuild in aggregateTaskUsage() with an incremental system that only processes new or changed run files since the last aggregation",
               "acceptanceCriteria": [
@@ -15544,12 +15544,14 @@
                 "hench",
                 "token-usage"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T01:30:05.293Z",
+              "completedAt": "2026-02-26T01:44:40.521Z"
             },
             {
               "id": "f7cc9444-d052-422e-a59c-e9f8e56a97a3",
               "title": "Add run file change detection and delta processing",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement file system monitoring or timestamp-based detection to identify which run files need processing, enabling efficient delta aggregation",
               "acceptanceCriteria": [
@@ -15564,7 +15566,9 @@
                 "file-system",
                 "hench"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T01:23:43.600Z",
+              "completedAt": "2026-02-26T01:29:37.665Z"
             },
             {
               "id": "ed2a3c6f-6b4b-4e03-8d31-c4ac8c7255e5",
@@ -15726,7 +15730,7 @@
             {
               "id": "37620ff4-7856-4266-84d5-134d794dfb92",
               "title": "Create centralized tab visibility state manager",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Build centralized service to coordinate tab visibility state across all polling components",
               "acceptanceCriteria": [
@@ -15739,7 +15743,9 @@
                 "architecture",
                 "state-management"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T01:44:40.746Z",
+              "completedAt": "2026-02-26T01:50:32.000Z"
             }
           ]
         },
@@ -16187,7 +16193,7 @@
             {
               "id": "1462cc71-f995-44bd-aeda-892050e33291",
               "title": "Add process lifecycle and resource cleanup validation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement validation and monitoring to ensure hench processes properly release resources on completion and detect resource leaks or orphaned processes",
               "acceptanceCriteria": [
@@ -16203,6 +16209,8 @@
                 "validation"
               ],
               "source": "smart-add",
+              "startedAt": "2026-02-26T01:16:23.348Z",
+              "completedAt": "2026-02-26T01:23:13.936Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "content_overlap",
