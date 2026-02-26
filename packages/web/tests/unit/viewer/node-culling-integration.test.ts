@@ -301,4 +301,79 @@ describe("PRDTree node culling integration", () => {
     const treeItems = culledNode!.querySelectorAll("[role='treeitem']");
     expect(treeItems.length).toBe(0);
   });
+
+  it("listener lifecycle manager is disposed on tree unmount", () => {
+    const root = document.createElement("div");
+    act(() => {
+      render(h(PRDTree, { document: sampleDoc }), root);
+    });
+
+    // Unmount
+    act(() => {
+      render(null, root);
+    });
+
+    // The culler observer should have been disconnected (verifies cleanup path)
+    const cullerObserver = mockObserverInstances[0];
+    expect(cullerObserver.disconnect).toHaveBeenCalled();
+  });
+
+  it("culled nodes have no residual interactive elements", () => {
+    const root = renderToDiv(h(PRDTree, {
+      document: sampleDoc,
+      defaultExpandDepth: 2,
+      onSelectItem: vi.fn(),
+      onRemoveItem: vi.fn(),
+    }));
+
+    const cullerObserver = mockObserverInstances[0];
+    const observedEls = Array.from(cullerObserver.observedElements);
+
+    // Cull all observed elements
+    act(() => {
+      const entries = observedEls.map(el => makeEntry(el, false, 40));
+      cullerObserver.trigger(entries);
+    });
+
+    // All culled nodes should have no treeitem children, buttons, or inputs
+    const culledNodes = root.querySelectorAll(".prd-node-culled");
+    for (const node of culledNodes) {
+      expect(node.querySelectorAll("[role='treeitem']").length).toBe(0);
+      expect(node.querySelectorAll("button").length).toBe(0);
+      expect(node.querySelectorAll("input").length).toBe(0);
+    }
+  });
+
+  it("listener count remains proportional during cull/uncull cycles", () => {
+    const root = renderToDiv(h(PRDTree, {
+      document: sampleDoc,
+      defaultExpandDepth: 2,
+      onSelectItem: vi.fn(),
+    }));
+
+    const cullerObserver = mockObserverInstances[0];
+    const observedEls = Array.from(cullerObserver.observedElements);
+
+    // Count initial treeitem elements
+    const initialTreeItems = root.querySelectorAll("[role='treeitem']").length;
+    expect(initialTreeItems).toBeGreaterThan(0);
+
+    // Cull first element
+    const firstEl = observedEls[0];
+    act(() => {
+      cullerObserver.trigger([makeEntry(firstEl, false, 40)]);
+    });
+
+    const afterCullItems = root.querySelectorAll("[role='treeitem']").length;
+    expect(afterCullItems).toBeLessThan(initialTreeItems);
+
+    // Uncull it
+    const culledNode = root.querySelector(".prd-node-culled");
+    act(() => {
+      cullerObserver.trigger([makeEntry(culledNode!, true)]);
+    });
+
+    const afterUncullItems = root.querySelectorAll("[role='treeitem']").length;
+    expect(afterUncullItems).toBe(initialTreeItems);
+  });
 });

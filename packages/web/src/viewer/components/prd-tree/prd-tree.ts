@@ -27,6 +27,7 @@ import { InlineAddForm } from "./inline-add-form.js";
 import type { InlineAddInput } from "./inline-add-form.js";
 import { resolveTaskUtilization } from "./task-utilization.js";
 import { NodeCuller } from "./node-culler.js";
+import { ListenerLifecycleManager } from "./listener-lifecycle.js";
 import { LazyChildren } from "./lazy-children.js";
 import { useTreeEventDelegation } from "./tree-event-delegate.js";
 import { countVisibleNodes, sliceVisibleTree, useProgressiveLoader, LoadMoreIndicator, DEFAULT_CHUNK_SIZE } from "./progressive-loader.js";
@@ -448,11 +449,15 @@ interface CulledNodeProps {
   culler: NodeCuller | null;
   /** Whether this node should never be culled (e.g. deep-link target). */
   neverCull?: boolean;
+  /** Node ID for listener lifecycle scope (cleanup on cull/unmount). */
+  nodeId?: string;
+  /** Shared listener lifecycle manager, or null to skip tracking. */
+  listenerManager?: ListenerLifecycleManager | null;
   /** Child VNodes to render when visible. */
   children: (VNode | null)[];
 }
 
-function CulledNode({ culler, neverCull, children }: CulledNodeProps) {
+function CulledNode({ culler, neverCull, nodeId, listenerManager, children }: CulledNodeProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
   const heightRef = useRef(CULLED_PLACEHOLDER_HEIGHT);
@@ -466,10 +471,23 @@ function CulledNode({ culler, neverCull, children }: CulledNodeProps) {
         // Record height before culling so the placeholder preserves scroll position.
         const recordedHeight = culler.getLastHeight(el);
         if (recordedHeight > 0) heightRef.current = recordedHeight;
+        // Clean up event listeners for this node scope when culled.
+        if (nodeId && listenerManager) {
+          listenerManager.cleanupScope(nodeId);
+        }
       }
       setVisible(isVisible);
     });
-  }, [culler, neverCull]);
+  }, [culler, neverCull, nodeId, listenerManager]);
+
+  // Ensure listener cleanup on unmount (covers data changes and filter removals).
+  useEffect(() => {
+    return () => {
+      if (nodeId && listenerManager) {
+        listenerManager.cleanupScope(nodeId);
+      }
+    };
+  }, [nodeId, listenerManager]);
 
   if (!visible && !neverCull) {
     return h("div", {
@@ -516,9 +534,11 @@ interface TreeNodesProps {
   deletingItemId?: string | null;
   /** Shared NodeCuller instance for off-screen node culling. */
   culler?: NodeCuller | null;
+  /** Shared listener lifecycle manager for scope-based cleanup. */
+  listenerManager?: ListenerLifecycleManager | null;
 }
 
-function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, selectedItemId, activeStatuses, bulkSelectedIds, onToggleBulkSelect, inlineAddParentId, canInlineAdd, onInlineAddSubmit, onInlineAddCancel, highlightedItemId, highlightedNodeRef, canDelete, deletingItemId, culler }: TreeNodesProps) {
+function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, selectedItemId, activeStatuses, bulkSelectedIds, onToggleBulkSelect, inlineAddParentId, canInlineAdd, onInlineAddSubmit, onInlineAddCancel, highlightedItemId, highlightedNodeRef, canDelete, deletingItemId, culler, listenerManager }: TreeNodesProps) {
   return h(
     Fragment,
     null,
@@ -537,6 +557,8 @@ function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, select
             key: item.id,
             culler: culler ?? null,
             neverCull: isHL || isInlineAddActive,
+            nodeId: item.id,
+            listenerManager: listenerManager ?? null,
           },
           h(NodeRow, {
             item,
@@ -588,6 +610,7 @@ function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, select
                     canDelete,
                     deletingItemId,
                     culler,
+                    listenerManager,
                   }),
               })
             : null,
@@ -740,10 +763,22 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExp
   if (!cullerRef.current && typeof IntersectionObserver !== "undefined") {
     cullerRef.current = new NodeCuller({ bufferPx: 200 });
   }
+
+  // ── Listener lifecycle manager ──────────────────────────────────────
+  // Tracks per-node event listeners by scope (node ID). When nodes are
+  // culled or unmounted, their listeners are batch-removed via
+  // cleanupScope(). Provides diagnostic state for memory profiling.
+  const listenerManagerRef = useRef<ListenerLifecycleManager | null>(null);
+  if (!listenerManagerRef.current) {
+    listenerManagerRef.current = new ListenerLifecycleManager();
+  }
+
   useEffect(() => {
     return () => {
       cullerRef.current?.dispose();
       cullerRef.current = null;
+      listenerManagerRef.current?.dispose();
+      listenerManagerRef.current = null;
     };
   }, []);
 
@@ -935,6 +970,7 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExp
         canDelete: !!onRemoveItem,
         deletingItemId,
         culler: cullerRef.current,
+        listenerManager: listenerManagerRef.current,
       }),
       // Context menu (tree-level, lifted from NodeRow)
       contextMenu
