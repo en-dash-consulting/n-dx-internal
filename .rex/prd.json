@@ -15126,7 +15126,7 @@
             {
               "id": "3896d4bd-4c71-476b-8a52-6444341e73ee",
               "title": "Implement event delegation for tree node interactions",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Replace individual event listeners on each tree node with delegated event handling on the tree container to reduce listener count",
               "acceptanceCriteria": [
@@ -15142,6 +15142,7 @@
                 "event-handling"
               ],
               "source": "smart-add",
+              "startedAt": "2026-02-26T02:11:39.450Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "semantic_title",
@@ -15151,7 +15152,8 @@
                 "matchedItemLevel": "task",
                 "matchedItemStatus": "completed",
                 "createdAt": "2026-02-25T19:47:45.671Z"
-              }
+              },
+              "completedAt": "2026-02-26T02:31:12.797Z"
             },
             {
               "id": "d9909ba1-7393-46b9-be0f-4fa8d89c3af1",
@@ -15708,6 +15710,8 @@
           "level": "feature",
           "description": "Implement browser tab visibility detection to enable resource-aware polling management",
           "source": "smart-add",
+          "startedAt": "2026-02-26T01:57:56.497Z",
+          "completedAt": "2026-02-26T01:57:56.497Z",
           "children": [
             {
               "id": "e79359ab-e11a-4140-8ed7-25d41f565ab4",
@@ -15749,9 +15753,7 @@
               "startedAt": "2026-02-26T01:44:40.746Z",
               "completedAt": "2026-02-26T01:50:32.000Z"
             }
-          ],
-          "startedAt": "2026-02-26T01:57:56.497Z",
-          "completedAt": "2026-02-26T01:57:56.497Z"
+          ]
         },
         {
           "id": "1291a3be-9d15-4aa2-9a9e-2d24ae7737f1",
@@ -16239,7 +16241,7 @@
             {
               "id": "82e0aa11-9c52-4fa3-b7ac-165f0db47d5d",
               "title": "Display concurrent execution count and limits in Hench UI",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add real-time display of current concurrent hench executions, configured limits, and queue status to the Hench dashboard section",
               "acceptanceCriteria": [
@@ -16254,7 +16256,9 @@
                 "ui",
                 "dashboard"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T01:59:02.514Z",
+              "completedAt": "2026-02-26T02:11:39.207Z"
             },
             {
               "id": "293e9411-dc86-4c8c-a1df-2495810b1e89",

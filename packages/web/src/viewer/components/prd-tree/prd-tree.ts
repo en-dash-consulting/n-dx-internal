@@ -8,10 +8,13 @@
  * Off-screen nodes are automatically culled via IntersectionObserver to prevent
  * DOM bloat and memory leaks during extended scrolling. Culled nodes are replaced
  * with height-preserving placeholders and re-created when scrolled back into view.
- * Event listeners are cleaned up when nodes are culled (Preact removes them when
- * the children unmount) and re-attached when nodes become visible again.
  *
- * @see ./node-culler.ts — IntersectionObserver-based culling engine
+ * Event handling uses delegation: a single set of click / contextmenu / keydown
+ * listeners on the `[role="tree"]` container replaces per-node handlers, reducing
+ * total listener count from O(N × 6) to O(1) + O(N_checkboxes).
+ *
+ * @see ./node-culler.ts  — IntersectionObserver-based culling engine
+ * @see ./tree-event-delegate.ts — delegated event handling hook
  */
 
 import { h, Fragment, VNode } from "preact";
@@ -24,6 +27,7 @@ import type { InlineAddInput } from "./inline-add-form.js";
 import { resolveTaskUtilization } from "./task-utilization.js";
 import { NodeCuller } from "./node-culler.js";
 import { LazyChildren } from "./lazy-children.js";
+import { useTreeEventDelegation } from "./tree-event-delegate.js";
 
 /** Levels that can have children added via inline form. */
 const ADDABLE_LEVELS = new Set<ItemLevel>(["epic", "feature", "task"]);
@@ -221,6 +225,18 @@ function NodeContextMenu({ item, x, y, onClose, onRemove }: NodeContextMenuProps
 }
 
 // ── Single tree node ────────────────────────────────────────────────
+//
+// NodeRow is a pure display component. It carries **no** event handlers of
+// its own for click / contextmenu / keydown — those are delegated to the
+// tree container via useTreeEventDelegation (see tree-event-delegate.ts).
+//
+// The only per-node listener that remains is the checkbox `onChange`, which
+// must stay on the <input> itself so Preact's controlled-input model keeps
+// the visual checked state in sync.
+//
+// Each row adds `data-node-id` and (optionally) `data-has-children` data
+// attributes so the delegated handler can identify the target node and its
+// capabilities from the bubbled event.
 
 interface NodeRowProps {
   item: PRDItemData;
@@ -230,27 +246,25 @@ interface NodeRowProps {
   isExpanded: boolean;
   hasChildren: boolean;
   isSelected: boolean;
-  onToggle: () => void;
-  onSelect?: (item: PRDItemData) => void;
   /** Whether the checkbox for bulk selection is checked. */
   isBulkSelected?: boolean;
-  /** Called when the checkbox is toggled. */
+  /** Called when the checkbox is toggled. Presence also enables the checkbox. */
   onToggleBulkSelect?: (item: PRDItemData) => void;
-  /** Called when the inline add button is clicked. */
-  onInlineAdd?: (item: PRDItemData) => void;
+  /** Whether to show the inline add child button. */
+  canInlineAdd?: boolean;
   /** Whether the inline add form is currently open for this node. */
   isInlineAddActive?: boolean;
   /** Whether this node is highlighted by a deep-link animation. */
   isHighlighted?: boolean;
   /** Ref callback for scroll-into-view on deep-link highlight. */
   nodeRef?: (el: HTMLDivElement | null) => void;
-  /** Called to remove/delete this item. */
-  onRemove?: (item: PRDItemData) => void;
+  /** Whether to show the inline delete button. */
+  canDelete?: boolean;
   /** Whether this item is currently being deleted (API in-flight). */
   isDeleting?: boolean;
 }
 
-function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren, isSelected, onToggle, onSelect, isBulkSelected, onToggleBulkSelect, onInlineAdd, isInlineAddActive, isHighlighted, nodeRef, onRemove, isDeleting }: NodeRowProps) {
+function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren, isSelected, isBulkSelected, onToggleBulkSelect, canInlineAdd, isInlineAddActive, isHighlighted, nodeRef, canDelete, isDeleting }: NodeRowProps) {
   const children = item.children ?? [];
   const stats = hasChildren ? computeBranchStats(children) : null;
   const ratio = stats ? completionRatio(stats) : 0;
@@ -263,65 +277,9 @@ function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren
   const utilization = usage.utilization ?? resolveTaskUtilization(usage.totalTokens, weeklyBudget);
 
   const indent = depth * 24;
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
-  const handleClick = (e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    // If clicking the checkbox or its container, don't process as row click
-    if (target.classList.contains("prd-bulk-checkbox") || target.closest(".prd-bulk-checkbox-wrapper")) {
-      return;
-    }
-    // If clicking the inline add button or delete button, don't process as row click
-    if (target.closest(".prd-inline-add-btn") || target.closest(".prd-inline-delete-btn")) {
-      return;
-    }
-    // If clicking the chevron area, toggle expand
-    if (target.classList.contains("prd-chevron")) {
-      if (hasChildren) onToggle();
-      return;
-    }
-    // Otherwise, select the item (and toggle expand if it has children)
-    if (onSelect) {
-      onSelect(item);
-    } else if (hasChildren) {
-      onToggle();
-    }
-  };
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      if (onSelect) {
-        onSelect(item);
-      } else if (hasChildren) {
-        onToggle();
-      }
-    }
-    // Arrow right to expand, left to collapse
-    if (hasChildren && e.key === "ArrowRight" && !isExpanded) {
-      e.preventDefault();
-      onToggle();
-    }
-    if (hasChildren && e.key === "ArrowLeft" && isExpanded) {
-      e.preventDefault();
-      onToggle();
-    }
-    // Arrow up/down to navigate between visible tree items
-    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault();
-      const target = e.currentTarget as HTMLElement;
-      const tree = target.closest('[role="tree"]');
-      if (!tree) return;
-      const items = Array.from(tree.querySelectorAll<HTMLElement>('[role="treeitem"]'));
-      const idx = items.indexOf(target);
-      if (idx < 0) return;
-      const next = e.key === "ArrowDown" ? idx + 1 : idx - 1;
-      if (next >= 0 && next < items.length) {
-        items[next].focus();
-      }
-    }
-  };
-
+  // Checkbox change is the only per-node listener. It must stay on the
+  // <input> for Preact's controlled-input diffing to work correctly.
   const handleCheckboxChange = (e: Event) => {
     e.stopPropagation();
     if (onToggleBulkSelect) {
@@ -329,26 +287,18 @@ function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren
     }
   };
 
-  const handleContextMenu = (e: MouseEvent) => {
-    // Only show context menu when there are actions available (delete)
-    if (!onRemove) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setContextMenu({ x: e.clientX, y: e.clientY });
-  };
-
   return h(
     "div",
     {
       class: `prd-node-row${hasChildren ? " prd-node-expandable" : ""}${isSelected ? " prd-node-selected" : ""}${isBulkSelected ? " prd-node-bulk-selected" : ""}${isHighlighted ? " prd-node-highlighted" : ""}${isDeleting ? " prd-node-deleting" : ""} prd-level-${item.level}`,
       style: `padding-left: ${indent + 8}px`,
-      onClick: handleClick,
-      onContextMenu: handleContextMenu,
+      // Data attributes for delegated event handling
+      "data-node-id": item.id,
+      ...(hasChildren ? { "data-has-children": "" } : {}),
       role: "treeitem",
       "aria-expanded": hasChildren ? String(isExpanded) : undefined,
       "aria-selected": String(isSelected),
       tabIndex: 0,
-      onKeyDown: handleKeyDown,
       ref: nodeRef,
     },
     // Bulk selection checkbox
@@ -360,7 +310,6 @@ function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren
             checked: isBulkSelected,
             onChange: handleCheckboxChange,
             "aria-label": `Select ${item.title} for bulk action`,
-            onClick: (e: MouseEvent) => e.stopPropagation(),
           }),
         )
       : null,
@@ -413,39 +362,24 @@ function NodeRow({ item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren
     // Timestamp
     h(TimestampSuffix, { item }),
     // Inline add child button (appears on hover, only for addable levels)
-    canAddChild && onInlineAdd
+    // No onClick — handled by delegated click on tree container.
+    canAddChild && canInlineAdd
       ? h("button", {
           class: `prd-inline-add-btn${isInlineAddActive ? " active" : ""}`,
-          onClick: (e: MouseEvent) => {
-            e.stopPropagation();
-            onInlineAdd(item);
-          },
           title: `Add child to ${item.title}`,
           "aria-label": `Add child item to ${item.title}`,
         }, "+")
       : null,
     // Inline delete button (appears on hover)
-    onRemove
+    // No onClick — handled by delegated click on tree container.
+    canDelete
       ? h("button", {
           class: "prd-inline-delete-btn",
-          onClick: (e: MouseEvent) => {
-            e.stopPropagation();
-            onRemove(item);
-          },
           title: `Delete ${LEVEL_LABELS[item.level]} "${item.title}"`,
           "aria-label": `Delete ${item.title}`,
         }, "\u2717")
       : null,
-    // Context menu (right-click)
-    contextMenu
-      ? h(NodeContextMenu, {
-          item,
-          x: contextMenu.x,
-          y: contextMenu.y,
-          onClose: () => setContextMenu(null),
-          onRemove,
-        })
-      : null,
+    // Context menu rendering moved to PRDTree (tree-level state)
   );
 }
 
@@ -518,14 +452,15 @@ interface TreeNodesProps {
   expanded: Set<string>;
   selectedItemId?: string | null;
   activeStatuses: Set<ItemStatus>;
-  onToggle: (id: string) => void;
-  onSelectItem?: (item: PRDItemData) => void;
+  // Event callbacks removed — click / contextmenu / keydown are delegated
+  // to the tree container via useTreeEventDelegation.
   bulkSelectedIds?: Set<string>;
+  /** Still per-node: checkbox onChange requires it on the <input>. */
   onToggleBulkSelect?: (item: PRDItemData) => void;
   /** ID of the parent node whose inline add form is currently open. */
   inlineAddParentId?: string | null;
-  /** Called when the inline add button is clicked on a node. */
-  onInlineAdd?: (item: PRDItemData) => void;
+  /** Whether to show inline add buttons (rendering flag). */
+  canInlineAdd?: boolean;
   /** Called when the inline add form is submitted. */
   onInlineAddSubmit?: (data: InlineAddInput) => Promise<void>;
   /** Called when the inline add form is cancelled. */
@@ -534,15 +469,15 @@ interface TreeNodesProps {
   highlightedItemId?: string | null;
   /** Ref callback for the highlighted node (scroll-into-view). */
   highlightedNodeRef?: (el: HTMLDivElement | null) => void;
-  /** Called to remove/delete an item. */
-  onRemoveItem?: (item: PRDItemData) => void;
+  /** Whether to show inline delete buttons (rendering flag). */
+  canDelete?: boolean;
   /** ID of item currently being deleted (shows loading state). */
   deletingItemId?: string | null;
   /** Shared NodeCuller instance for off-screen node culling. */
   culler?: NodeCuller | null;
 }
 
-function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, selectedItemId, activeStatuses, onToggle, onSelectItem, bulkSelectedIds, onToggleBulkSelect, inlineAddParentId, onInlineAdd, onInlineAddSubmit, onInlineAddCancel, highlightedItemId, highlightedNodeRef, onRemoveItem, deletingItemId, culler }: TreeNodesProps) {
+function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, selectedItemId, activeStatuses, bulkSelectedIds, onToggleBulkSelect, inlineAddParentId, canInlineAdd, onInlineAddSubmit, onInlineAddCancel, highlightedItemId, highlightedNodeRef, canDelete, deletingItemId, culler }: TreeNodesProps) {
   return h(
     Fragment,
     null,
@@ -570,15 +505,13 @@ function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, select
             isExpanded: isOpen,
             hasChildren,
             isSelected: selectedItemId === item.id,
-            onToggle: () => onToggle(item.id),
-            onSelect: onSelectItem,
             isBulkSelected: bulkSelectedIds?.has(item.id),
             onToggleBulkSelect,
-            onInlineAdd,
+            canInlineAdd,
             isInlineAddActive,
             isHighlighted: isHL,
             nodeRef: isHL ? highlightedNodeRef : undefined,
-            onRemove: onRemoveItem,
+            canDelete,
             isDeleting: deletingItemId === item.id,
           }),
           // Inline add form — rendered below the parent node, above its children
@@ -603,17 +536,15 @@ function TreeNodes({ items, taskUsageById, weeklyBudget, depth, expanded, select
                     expanded,
                     selectedItemId,
                     activeStatuses,
-                    onToggle,
-                    onSelectItem,
                     bulkSelectedIds,
                     onToggleBulkSelect,
                     inlineAddParentId,
-                    onInlineAdd,
+                    canInlineAdd,
                     onInlineAddSubmit,
                     onInlineAddCancel,
                     highlightedItemId,
                     highlightedNodeRef,
-                    onRemoveItem,
+                    canDelete,
                     deletingItemId,
                     culler,
                   }),
@@ -736,6 +667,21 @@ export interface PRDTreeProps {
   deletingItemId?: string | null;
 }
 
+// ── Item lookup helper ──────────────────────────────────────────────
+
+/** Build a flat Map of id → PRDItemData for O(1) lookup by the delegation hook. */
+function buildItemMap(items: PRDItemData[]): Map<string, PRDItemData> {
+  const map = new Map<string, PRDItemData>();
+  function walk(nodes: PRDItemData[]) {
+    for (const node of nodes) {
+      map.set(node.id, node);
+      if (node.children) walk(node.children);
+    }
+  }
+  walk(items);
+  return map;
+}
+
 export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onToggleBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds, onRemoveItem, deletingItemId }: PRDTreeProps) {
   // ── Node culler lifecycle ─────────────────────────────────────────
   // Create a shared NodeCuller on mount and dispose on unmount.
@@ -752,6 +698,10 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExp
       cullerRef.current = null;
     };
   }, []);
+
+  // ── Flat item map for delegated event handlers ────────────────────
+  const itemMap = useMemo(() => buildItemMap(doc.items), [doc.items]);
+  const getItem = useCallback((id: string) => itemMap.get(id) ?? null, [itemMap]);
 
   // Collect all IDs for expand-all
   const allIds = useMemo(() => {
@@ -843,6 +793,29 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExp
   const expandAll = useCallback(() => setExpanded(new Set(allIds)), [allIds]);
   const collapseAll = useCallback(() => setExpanded(new Set<string>()), []);
 
+  // ── Context menu state (lifted from NodeRow) ──────────────────────
+  const [contextMenu, setContextMenu] = useState<{ item: PRDItemData; x: number; y: number } | null>(null);
+  const handleContextMenu = useCallback((item: PRDItemData, x: number, y: number) => {
+    setContextMenu({ item, x, y });
+  }, []);
+  const handleContextMenuClose = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  // ── Delegated event handlers ──────────────────────────────────────
+  // A single set of click / contextmenu / keydown listeners on the tree
+  // container replaces the per-node handlers that were previously on every
+  // NodeRow. See tree-event-delegate.ts for routing logic.
+  const treeHandlers = useTreeEventDelegation({
+    getItem,
+    onToggle: toggle,
+    onSelectItem,
+    onInlineAdd: onInlineAddSubmit ? handleInlineAdd : undefined,
+    onRemoveItem,
+    onContextMenu: onRemoveItem ? handleContextMenu : undefined,
+    expanded,
+  });
+
   if (doc.items.length === 0) {
     return h(
       "div",
@@ -866,10 +839,17 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExp
     h(StatusFilter, { activeStatuses, onChange: setActiveStatuses }),
     // Summary
     h(SummaryBar, { items: doc.items }),
-    // Tree
+    // Tree — delegated event handlers replace per-node listeners
     h(
       "div",
-      { class: "prd-tree", role: "tree", "aria-label": "PRD hierarchy" },
+      {
+        class: "prd-tree",
+        role: "tree",
+        "aria-label": "PRD hierarchy",
+        onClick: treeHandlers.onClick,
+        onContextMenu: treeHandlers.onContextMenu,
+        onKeyDown: treeHandlers.onKeyDown,
+      },
       h(TreeNodes, {
         items: doc.items,
         taskUsageById,
@@ -878,20 +858,28 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExp
         expanded,
         selectedItemId,
         activeStatuses,
-        onToggle: toggle,
-        onSelectItem,
         bulkSelectedIds,
         onToggleBulkSelect,
         inlineAddParentId: onInlineAddSubmit ? inlineAddParentId : null,
-        onInlineAdd: onInlineAddSubmit ? handleInlineAdd : undefined,
+        canInlineAdd: !!onInlineAddSubmit,
         onInlineAddSubmit: onInlineAddSubmit ? handleInlineAddSubmit : undefined,
         onInlineAddCancel: onInlineAddSubmit ? handleInlineAddCancel : undefined,
         highlightedItemId,
         highlightedNodeRef: deepLinkNodeRef,
-        onRemoveItem,
+        canDelete: !!onRemoveItem,
         deletingItemId,
         culler: cullerRef.current,
       }),
+      // Context menu (tree-level, lifted from NodeRow)
+      contextMenu
+        ? h(NodeContextMenu, {
+            item: contextMenu.item,
+            x: contextMenu.x,
+            y: contextMenu.y,
+            onClose: handleContextMenuClose,
+            onRemove: onRemoveItem,
+          })
+        : null,
     ),
   );
 }
