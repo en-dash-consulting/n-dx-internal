@@ -1,0 +1,125 @@
+/**
+ * Shared tick timer service for elapsed time updates.
+ *
+ * Manages a single setInterval that fires every second and distributes
+ * tick events to all subscribed components. This eliminates the need for
+ * individual per-component timers, reducing CPU overhead when many task
+ * cards are visible simultaneously.
+ *
+ * The timer automatically starts when the first subscriber joins and
+ * stops when the last subscriber leaves, ensuring zero overhead when
+ * no components need elapsed time updates.
+ *
+ * Designed as a standalone module with zero framework dependencies —
+ * the Preact hook (`useTick`) is provided separately.
+ */
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+/** Callback invoked on each tick with the current timestamp (Date.now()). */
+export type TickListener = (now: number) => void;
+
+/** Read-only view of the tick timer's current state. */
+export interface TickTimerState {
+  /** Number of active subscribers. */
+  readonly subscriberCount: number;
+  /** Whether the shared interval is currently running. */
+  readonly running: boolean;
+}
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+/** Tick interval in milliseconds. */
+const TICK_INTERVAL_MS = 1000;
+
+// ─── Module state ────────────────────────────────────────────────────────────
+
+let listeners: TickListener[] = [];
+let timerId: ReturnType<typeof setInterval> | null = null;
+
+// ─── Internal helpers ────────────────────────────────────────────────────────
+
+/** Start the shared interval if not already running. */
+function startTimer(): void {
+  if (timerId !== null) return;
+  timerId = setInterval(tick, TICK_INTERVAL_MS);
+}
+
+/** Stop the shared interval. */
+function stopTimer(): void {
+  if (timerId === null) return;
+  clearInterval(timerId);
+  timerId = null;
+}
+
+/** Fire a tick event to all current listeners. */
+function tick(): void {
+  const now = Date.now();
+  // Snapshot the listener array so that subscribe/unsubscribe during
+  // iteration doesn't cause skips or double-fires within a single tick.
+  const snapshot = listeners.slice();
+  for (const listener of snapshot) {
+    try {
+      listener(now);
+    } catch {
+      // Swallow errors from individual listeners to prevent one bad
+      // subscriber from breaking all others.
+    }
+  }
+}
+
+// ─── Public API ──────────────────────────────────────────────────────────────
+
+/**
+ * Subscribe to 1-second tick events.
+ *
+ * The listener receives the current `Date.now()` timestamp on each tick.
+ * The shared interval starts automatically when the first subscriber joins.
+ *
+ * Returns an unsubscribe function. When the last subscriber unsubscribes,
+ * the shared interval is stopped.
+ *
+ * @param listener - Callback invoked on each tick.
+ * @returns Unsubscribe function (safe to call multiple times).
+ */
+export function onTick(listener: TickListener): () => void {
+  listeners.push(listener);
+
+  // Start the timer if this is the first subscriber.
+  if (listeners.length === 1) {
+    startTimer();
+  }
+
+  let removed = false;
+
+  return () => {
+    if (removed) return; // idempotent unsubscribe
+    removed = true;
+
+    listeners = listeners.filter((l) => l !== listener);
+
+    // Stop the timer if no subscribers remain.
+    if (listeners.length === 0) {
+      stopTimer();
+    }
+  };
+}
+
+/**
+ * Get the current state of the tick timer.
+ */
+export function getTickTimerState(): TickTimerState {
+  return {
+    subscriberCount: listeners.length,
+    running: timerId !== null,
+  };
+}
+
+/**
+ * Reset all module state (for testing). Clears all listeners and
+ * stops the interval.
+ */
+export function resetTickTimer(): void {
+  stopTimer();
+  listeners = [];
+}
