@@ -15552,7 +15552,7 @@
         {
           "id": "baf1a80c-fbe1-4df9-a08b-d1cfec3d0e6f",
           "title": "Incremental Aggregation System",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Replace full aggregation rebuilds with efficient incremental updates to handle large run histories",
           "source": "smart-add",
@@ -15604,7 +15604,7 @@
             {
               "id": "ed2a3c6f-6b4b-4e03-8d31-c4ac8c7255e5",
               "title": "Implement aggregation result caching with invalidation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Cache computed aggregation results to avoid redundant processing, with smart invalidation when underlying run data changes",
               "acceptanceCriteria": [
@@ -15619,9 +15619,13 @@
                 "caching",
                 "memory"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T16:26:37.385Z",
+              "completedAt": "2026-02-26T16:38:30.189Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-26T16:38:30.297Z",
+          "completedAt": "2026-02-26T16:38:30.297Z"
         },
         {
           "id": "8d286eb2-abe9-4045-9db7-1269c9a6fb75",
@@ -16112,6 +16116,8 @@
           "level": "feature",
           "description": "Implement memory monitoring and intelligent scheduling to prevent system resource exhaustion during hench task execution",
           "source": "smart-add",
+          "startedAt": "2026-02-26T16:25:57.056Z",
+          "completedAt": "2026-02-26T16:25:57.056Z",
           "children": [
             {
               "id": "02585739-1896-42e8-b4f2-788bff260917",
@@ -16179,9 +16185,7 @@
               "startedAt": "2026-02-26T16:14:09.113Z",
               "completedAt": "2026-02-26T16:25:56.948Z"
             }
-          ],
-          "startedAt": "2026-02-26T16:25:57.056Z",
-          "completedAt": "2026-02-26T16:25:57.056Z"
+          ]
         }
       ],
       "overrideMarker": {
