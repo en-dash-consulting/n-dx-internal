@@ -61,3 +61,19 @@ export type {
   SpawnMemoryCheck,
   MemoryMonitorOverrides,
 } from "./memory-monitor.js";
+
+export {
+  RuntimePool,
+  PoolExhaustedError,
+  DEFAULT_RUNTIME_POOL_CONFIG,
+} from "./pool.js";
+
+export type {
+  RuntimePoolConfig,
+  WorkerHandle,
+  WorkerFactory,
+  WorkerState,
+  PooledRuntime,
+  PooledRuntimeInfo,
+  RuntimePoolStatus,
+} from "./pool.js";

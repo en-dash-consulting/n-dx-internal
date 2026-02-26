@@ -1,8 +1,10 @@
 import { PROJECT_DIRS } from "@n-dx/llm-client";
 export type { MemoryThrottleConfig } from "../process/memory-throttle.js";
 export type { MemoryMonitorConfig } from "../process/memory-monitor.js";
+export type { RuntimePoolConfig } from "../process/pool.js";
 import type { MemoryThrottleConfig } from "../process/memory-throttle.js";
 import type { MemoryMonitorConfig } from "../process/memory-monitor.js";
+import type { RuntimePoolConfig } from "../process/pool.js";
 
 export const HENCH_SCHEMA_VERSION = "hench/v1";
 
@@ -52,6 +54,8 @@ export interface GuardConfig {
   memoryThrottle?: Partial<MemoryThrottleConfig>;
   /** Pre-spawn memory monitoring configuration. */
   memoryMonitor?: Partial<MemoryMonitorConfig>;
+  /** Runtime process pool configuration for warm worker reuse. */
+  pool?: Partial<RuntimePoolConfig>;
 }
 
 export interface RetryConfig {

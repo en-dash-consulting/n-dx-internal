@@ -37,6 +37,7 @@ export type {
   PolicyLimitsConfig,
   MemoryThrottleConfig,
   MemoryMonitorConfig,
+  RuntimePoolConfig,
   RetryConfig,
   Provider,
   RunRecord,
@@ -144,6 +145,23 @@ export type {
   SystemMemorySnapshot,
   SpawnMemoryCheck,
 } from "./process/memory-monitor.js";
+
+// ---- Runtime process pool ---------------------------------------------------
+
+export {
+  RuntimePool,
+  PoolExhaustedError,
+  DEFAULT_RUNTIME_POOL_CONFIG,
+} from "./process/pool.js";
+
+export type {
+  WorkerHandle,
+  WorkerFactory,
+  WorkerState,
+  PooledRuntime,
+  PooledRuntimeInfo,
+  RuntimePoolStatus,
+} from "./process/pool.js";
 
 // ---- Run file change detection ----------------------------------------------
 
