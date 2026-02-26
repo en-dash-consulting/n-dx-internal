@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createServer, type Server } from "node:http";
 import type { ServerContext } from "../../../src/server/types.js";
-import { handleTokenUsageRoute } from "../../../src/server/routes-token-usage.js";
+import { handleTokenUsageRoute, resetAggregationCache } from "../../../src/server/routes-token-usage.js";
 
 /** Create a hench run record with token usage. */
 function makeRun(
@@ -43,9 +43,9 @@ function makeLogEntry(
 /** Start a test server that only runs token usage routes. */
 function startTestServer(ctx: ServerContext): Promise<{ server: Server; port: number }> {
   return new Promise((resolve) => {
-    const server = createServer((req, res) => {
+    const server = createServer(async (req, res) => {
       res.setHeader("Access-Control-Allow-Origin", "*");
-      if (handleTokenUsageRoute(req, res, ctx)) return;
+      if (await handleTokenUsageRoute(req, res, ctx)) return;
       res.writeHead(404);
       res.end("Not found");
     });
@@ -130,6 +130,7 @@ describe("Token Usage API routes", () => {
 
   afterEach(async () => {
     server.close();
+    resetAggregationCache();
     await rm(tmpDir, { recursive: true, force: true });
   });
 

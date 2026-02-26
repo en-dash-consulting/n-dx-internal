@@ -18,6 +18,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse } from "./types.js";
+import { AggregationResultCache } from "./aggregation-cache.js";
 
 // ---------------------------------------------------------------------------
 // Types (mirrors rex/core/token-usage but kept local to avoid cross-package import)
@@ -812,12 +813,60 @@ export function resolveWeeklyBudget(
 // Route handler
 // ---------------------------------------------------------------------------
 
+/**
+ * Lazy cache instance, created on first request.
+ * Module-scoped because there is only one web server per process.
+ */
+let aggregationCache: AggregationResultCache | null = null;
+
+function getAggregationCache(ctx: ServerContext): AggregationResultCache {
+  if (!aggregationCache) {
+    aggregationCache = new AggregationResultCache(ctx.projectDir, ctx.rexDir);
+  }
+  return aggregationCache;
+}
+
+/** Reset the module-level cache (for testing). */
+export function resetAggregationCache(): void {
+  aggregationCache?.invalidate();
+  aggregationCache = null;
+}
+
+/** Get the current cache instance (for testing/monitoring). */
+export function getAggregationCacheInstance(): AggregationResultCache | null {
+  return aggregationCache;
+}
+
+/**
+ * Build a cache key from query scope parameters.
+ * Encodes all parameters that affect the events result.
+ */
+function eventsCacheKey(since?: string, until?: string): string {
+  return `events:${since ?? ""}:${until ?? ""}`;
+}
+
+/**
+ * Get cached events or collect fresh ones. The cache automatically
+ * invalidates when source files (hench runs, rex log, sv manifest) change.
+ */
+async function getCachedEvents(
+  ctx: ServerContext,
+  since?: string,
+  until?: string,
+): Promise<TokenEvent[]> {
+  const cache = getAggregationCache(ctx);
+  return cache.getOrCompute(
+    eventsCacheKey(since, until),
+    () => collectAllEvents(ctx, since, until),
+  );
+}
+
 /** Handle token usage API requests. Returns true if the request was handled. */
-export function handleTokenUsageRoute(
+export async function handleTokenUsageRoute(
   req: IncomingMessage,
   res: ServerResponse,
   ctx: ServerContext,
-): boolean {
+): Promise<boolean> {
   const url = req.url || "/";
   const method = req.method || "GET";
 
@@ -832,7 +881,7 @@ export function handleTokenUsageRoute(
 
   // GET /api/token/summary — aggregate usage with cost estimate
   if (path === "summary") {
-    const events = collectAllEvents(ctx, since, until);
+    const events = await getCachedEvents(ctx, since, until);
     const usage = eventsToAggregate(events);
     const cost = estimateCost(usage);
     jsonResponse(res, 200, { usage, cost, eventCount: events.length });
@@ -841,7 +890,7 @@ export function handleTokenUsageRoute(
 
   // GET /api/token/events — raw event list (?offset=N&limit=N&package=...)
   if (path === "events") {
-    const events = collectAllEvents(ctx, since, until);
+    const events = await getCachedEvents(ctx, since, until);
     const pkg = params.get("package") || undefined;
     const filtered = pkg ? events.filter((e) => e.package === pkg) : events;
     const total = filtered.length;
@@ -868,7 +917,7 @@ export function handleTokenUsageRoute(
 
   // GET /api/token/by-command — grouped by command
   if (path === "by-command") {
-    const events = collectAllEvents(ctx, since, until);
+    const events = await getCachedEvents(ctx, since, until);
     const commands = groupByCommand(events);
     jsonResponse(res, 200, { commands });
     return true;
@@ -881,7 +930,7 @@ export function handleTokenUsageRoute(
       errorResponse(res, 400, `Invalid period: ${period}. Use "day", "week", or "month".`);
       return true;
     }
-    const events = collectAllEvents(ctx, since, until);
+    const events = await getCachedEvents(ctx, since, until);
     const buckets = groupByTimePeriod(events, period);
     jsonResponse(res, 200, { period, buckets });
     return true;
@@ -889,7 +938,7 @@ export function handleTokenUsageRoute(
 
   // GET /api/token/budget — budget status
   if (path === "budget") {
-    const events = collectAllEvents(ctx, since, until);
+    const events = await getCachedEvents(ctx, since, until);
     const usage = eventsToAggregate(events);
     const config = loadRexConfig(ctx.rexDir);
     const result = checkBudget(usage, config?.budget);
@@ -907,7 +956,7 @@ export function handleTokenUsageRoute(
     }
 
     const configured = loadConfiguredModel(ctx.projectDir);
-    const events = collectAllEvents(ctx, since, until);
+    const events = await getCachedEvents(ctx, since, until);
     const usage = eventsToAggregate(events);
     const byVendorModel = aggregateByVendorModel(events);
     const trend = groupUtilizationTrend(events, period);
