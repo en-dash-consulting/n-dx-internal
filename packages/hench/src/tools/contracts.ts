@@ -1,4 +1,5 @@
 import type { PRDStore } from "rex";
+import type { SystemMemoryMonitor } from "../process/memory-monitor.js";
 
 /**
  * Minimal guard contract required by tool handlers.
@@ -26,6 +27,8 @@ export interface ToolContext {
   testCommand?: string;
   /** Commit hash captured before the agent started, for diffing against. */
   startingHead?: string;
+  /** System memory monitor for pre-spawn checks. */
+  memoryMonitor?: SystemMemoryMonitor;
 }
 
 export interface RexUpdateStatusParams {

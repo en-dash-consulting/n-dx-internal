@@ -7,6 +7,7 @@ import type { ToolContext } from "../../tools/contracts.js";
 import { rexToolHandlers } from "../../tools/rex.js";
 import { saveRun } from "../../store/index.js";
 import { section, subsection, stream, detail } from "../../types/output.js";
+import { SystemMemoryMonitor } from "../../process/memory-monitor.js";
 import {
   loadClaudeConfig,
   loadLLMConfig,
@@ -144,6 +145,10 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
   const client = new Anthropic(anthropicOpts as ConstructorParameters<typeof Anthropic>[0]);
   const guard = new GuardRails(projectDir, config.guard);
 
+  // Memory monitor for pre-spawn checks during tool dispatch.
+  // Uses platform-specific memory detection (Linux /proc/meminfo, macOS/Windows os module).
+  const memoryMonitor = new SystemMemoryMonitor(config.guard.memoryMonitor);
+
   const toolCtx: ToolContext = {
     guard,
     projectDir,
@@ -151,6 +156,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     taskId,
     testCommand: brief.project.testCommand,
     startingHead,
+    memoryMonitor,
   };
 
   // Shared: initialize run record

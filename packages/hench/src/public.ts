@@ -36,6 +36,7 @@ export type {
   GuardConfig,
   PolicyLimitsConfig,
   MemoryThrottleConfig,
+  MemoryMonitorConfig,
   RetryConfig,
   Provider,
   RunRecord,
@@ -123,6 +124,18 @@ export type {
   MemoryThrottleStatus,
   ThrottleDecision,
 } from "./process/memory-throttle.js";
+
+// ---- System memory monitor --------------------------------------------------
+
+export {
+  SystemMemoryMonitor,
+  DEFAULT_MEMORY_MONITOR_CONFIG,
+} from "./process/memory-monitor.js";
+
+export type {
+  SystemMemorySnapshot,
+  SpawnMemoryCheck,
+} from "./process/memory-monitor.js";
 
 // ---- Run file change detection ----------------------------------------------
 

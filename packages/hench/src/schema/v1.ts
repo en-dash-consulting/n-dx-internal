@@ -1,6 +1,8 @@
 import { PROJECT_DIRS } from "@n-dx/llm-client";
 export type { MemoryThrottleConfig } from "../process/memory-throttle.js";
+export type { MemoryMonitorConfig } from "../process/memory-monitor.js";
 import type { MemoryThrottleConfig } from "../process/memory-throttle.js";
+import type { MemoryMonitorConfig } from "../process/memory-monitor.js";
 
 export const HENCH_SCHEMA_VERSION = "hench/v1";
 
@@ -48,6 +50,8 @@ export interface GuardConfig {
   policy?: PolicyLimitsConfig;
   /** Memory-based execution throttling configuration. */
   memoryThrottle?: Partial<MemoryThrottleConfig>;
+  /** Pre-spawn memory monitoring configuration. */
+  memoryMonitor?: Partial<MemoryMonitorConfig>;
 }
 
 export interface RetryConfig {

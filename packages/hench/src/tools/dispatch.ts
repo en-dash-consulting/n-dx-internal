@@ -156,6 +156,26 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   },
 ];
 
+/** Tools that spawn child processes and should be memory-checked. */
+const PROCESS_SPAWNING_TOOLS = new Set(["run_command", "git"]);
+
+/**
+ * Check system memory before spawning a child process.
+ * Returns an error message if memory is too high, or undefined if OK.
+ */
+async function checkSpawnMemory(
+  ctx: ToolContext,
+  toolName: string,
+): Promise<string | undefined> {
+  if (!ctx.memoryMonitor || !PROCESS_SPAWNING_TOOLS.has(toolName)) return undefined;
+
+  const check = await ctx.memoryMonitor.checkBeforeSpawn();
+  if (!check.allowed) {
+    return `[MEMORY] ${check.reason}`;
+  }
+  return undefined;
+}
+
 export async function dispatchTool(
   ctx: ToolContext,
   name: string,
@@ -163,6 +183,10 @@ export async function dispatchTool(
   rexHandlers?: RexToolHandlers,
 ): Promise<string> {
   try {
+    // Pre-spawn memory check for process-spawning tools
+    const memoryBlock = await checkSpawnMemory(ctx, name);
+    if (memoryBlock) return memoryBlock;
+
     switch (name) {
       case "read_file":
         return await toolReadFile(ctx.guard, input as { path: string });

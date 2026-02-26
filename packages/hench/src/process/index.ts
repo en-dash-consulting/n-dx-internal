@@ -49,3 +49,15 @@ export type {
   ThrottleDecision,
   SystemMemoryReader,
 } from "./memory-throttle.js";
+
+export {
+  SystemMemoryMonitor,
+  DEFAULT_MEMORY_MONITOR_CONFIG,
+} from "./memory-monitor.js";
+
+export type {
+  MemoryMonitorConfig,
+  SystemMemorySnapshot,
+  SpawnMemoryCheck,
+  MemoryMonitorOverrides,
+} from "./memory-monitor.js";
