@@ -3,7 +3,9 @@
  * Tests for the tab visibility state manager.
  *
  * Covers: state detection, snapshot creation, monitor lifecycle (start/stop),
- * listener management, visibility change handling, and state reset.
+ * listener management, visibility change handling, browser compatibility
+ * (vendor prefixes, focus/blur fallback), capability reporting, transition
+ * history, and state reset.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -15,6 +17,9 @@ import {
   isTabVisible,
   onVisibilityChange,
   resetTabVisibility,
+  detectVisibilityAPI,
+  getVisibilityCapabilities,
+  getTransitionHistory,
   type TabVisibilitySnapshot,
   type TabVisibilityState,
 } from "../../../src/viewer/tab-visibility.js";
@@ -298,6 +303,346 @@ describe("onChange config callback", () => {
     document.dispatchEvent(new Event("visibilitychange"));
 
     expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+// ─── Browser compatibility: API detection ────────────────────────────────────
+
+describe("detectVisibilityAPI", () => {
+  it("detects standard API when visibilityState exists", () => {
+    const result = detectVisibilityAPI();
+    expect(result.method).toBe("standard");
+    expect(result.eventName).toBe("visibilitychange");
+  });
+
+  it("detects webkit prefix when only webkitVisibilityState exists", () => {
+    // Temporarily remove standard API and add webkit prefix
+    const origDescriptor = Object.getOwnPropertyDescriptor(
+      Document.prototype,
+      "visibilityState"
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (Document.prototype as any).visibilityState;
+    // Also remove any instance-level override
+    const origInstanceDescriptor = Object.getOwnPropertyDescriptor(
+      document,
+      "visibilityState"
+    );
+    if (origInstanceDescriptor) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (document as any).visibilityState;
+    }
+
+    Object.defineProperty(document, "webkitVisibilityState", {
+      value: "visible",
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      const result = detectVisibilityAPI();
+      expect(result.method).toBe("webkit");
+      expect(result.eventName).toBe("webkitvisibilitychange");
+    } finally {
+      // Restore standard API
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (document as any).webkitVisibilityState;
+      if (origDescriptor) {
+        Object.defineProperty(
+          Document.prototype,
+          "visibilityState",
+          origDescriptor
+        );
+      }
+      if (origInstanceDescriptor) {
+        Object.defineProperty(
+          document,
+          "visibilityState",
+          origInstanceDescriptor
+        );
+      } else {
+        // Re-apply the beforeEach value
+        Object.defineProperty(document, "visibilityState", {
+          value: "visible",
+          writable: true,
+          configurable: true,
+        });
+      }
+    }
+  });
+
+  it("detects ms prefix when only msVisibilityState exists", () => {
+    const origDescriptor = Object.getOwnPropertyDescriptor(
+      Document.prototype,
+      "visibilityState"
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (Document.prototype as any).visibilityState;
+    const origInstanceDescriptor = Object.getOwnPropertyDescriptor(
+      document,
+      "visibilityState"
+    );
+    if (origInstanceDescriptor) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (document as any).visibilityState;
+    }
+
+    Object.defineProperty(document, "msVisibilityState", {
+      value: "visible",
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      const result = detectVisibilityAPI();
+      expect(result.method).toBe("ms");
+      expect(result.eventName).toBe("msvisibilitychange");
+    } finally {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (document as any).msVisibilityState;
+      if (origDescriptor) {
+        Object.defineProperty(
+          Document.prototype,
+          "visibilityState",
+          origDescriptor
+        );
+      }
+      if (origInstanceDescriptor) {
+        Object.defineProperty(
+          document,
+          "visibilityState",
+          origInstanceDescriptor
+        );
+      } else {
+        Object.defineProperty(document, "visibilityState", {
+          value: "visible",
+          writable: true,
+          configurable: true,
+        });
+      }
+    }
+  });
+});
+
+// ─── Browser compatibility: capabilities reporting ───────────────────────────
+
+describe("getVisibilityCapabilities", () => {
+  it("reports no support before monitor starts", () => {
+    const caps = getVisibilityCapabilities();
+    expect(caps.supported).toBe(false);
+    expect(caps.method).toBe("none");
+    expect(caps.nativeAPI).toBe(false);
+    expect(caps.usingFallback).toBe(false);
+    expect(caps.eventName).toBeNull();
+  });
+
+  it("reports standard API capabilities after start", () => {
+    startTabVisibilityMonitor();
+    const caps = getVisibilityCapabilities();
+    expect(caps.supported).toBe(true);
+    expect(caps.method).toBe("standard");
+    expect(caps.nativeAPI).toBe(true);
+    expect(caps.usingFallback).toBe(false);
+    expect(caps.eventName).toBe("visibilitychange");
+  });
+
+  it("resets capabilities on resetTabVisibility", () => {
+    startTabVisibilityMonitor();
+    expect(getVisibilityCapabilities().supported).toBe(true);
+
+    resetTabVisibility();
+    expect(getVisibilityCapabilities().supported).toBe(false);
+    expect(getVisibilityCapabilities().method).toBe("none");
+  });
+});
+
+// ─── Browser compatibility: focus/blur fallback ──────────────────────────────
+
+describe("focus/blur fallback", () => {
+  let origDescriptor: PropertyDescriptor | undefined;
+  let origInstanceDescriptor: PropertyDescriptor | undefined;
+
+  beforeEach(() => {
+    // Remove the Page Visibility API entirely to force focus/blur fallback
+    origDescriptor = Object.getOwnPropertyDescriptor(
+      Document.prototype,
+      "visibilityState"
+    );
+    origInstanceDescriptor = Object.getOwnPropertyDescriptor(
+      document,
+      "visibilityState"
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (Document.prototype as any).visibilityState;
+    if (origInstanceDescriptor) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (document as any).visibilityState;
+    }
+  });
+
+  afterEach(() => {
+    resetTabVisibility();
+    // Restore the standard API
+    if (origDescriptor) {
+      Object.defineProperty(
+        Document.prototype,
+        "visibilityState",
+        origDescriptor
+      );
+    }
+    if (origInstanceDescriptor) {
+      Object.defineProperty(
+        document,
+        "visibilityState",
+        origInstanceDescriptor
+      );
+    } else {
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
+        writable: true,
+        configurable: true,
+      });
+    }
+  });
+
+  it("falls back to focus/blur when Page Visibility API is unavailable", () => {
+    startTabVisibilityMonitor();
+    const caps = getVisibilityCapabilities();
+    expect(caps.method).toBe("focus-blur");
+    expect(caps.usingFallback).toBe(true);
+    expect(caps.nativeAPI).toBe(false);
+    expect(caps.supported).toBe(true);
+  });
+
+  it("detects hidden state on window blur", () => {
+    startTabVisibilityMonitor();
+    expect(getTabVisibility()).toBe("visible");
+
+    window.dispatchEvent(new Event("blur"));
+    expect(getTabVisibility()).toBe("hidden");
+    expect(isTabVisible()).toBe(false);
+  });
+
+  it("detects visible state on window focus", () => {
+    startTabVisibilityMonitor();
+
+    window.dispatchEvent(new Event("blur"));
+    expect(getTabVisibility()).toBe("hidden");
+
+    window.dispatchEvent(new Event("focus"));
+    expect(getTabVisibility()).toBe("visible");
+    expect(isTabVisible()).toBe(true);
+  });
+
+  it("fires listeners on focus/blur transitions", () => {
+    const listener = vi.fn();
+    startTabVisibilityMonitor();
+    onVisibilityChange(listener);
+
+    window.dispatchEvent(new Event("blur"));
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener.mock.calls[0][0].state).toBe("hidden");
+
+    window.dispatchEvent(new Event("focus"));
+    expect(listener).toHaveBeenCalledTimes(2);
+    expect(listener.mock.calls[1][0].state).toBe("visible");
+  });
+
+  it("fires onChange callback on focus/blur transitions", () => {
+    const onChange = vi.fn();
+    startTabVisibilityMonitor({ onChange });
+
+    window.dispatchEvent(new Event("blur"));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0][0].state).toBe("hidden");
+    expect(onChange.mock.calls[0][1]).toBe("visible");
+
+    window.dispatchEvent(new Event("focus"));
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(onChange.mock.calls[1][0].state).toBe("visible");
+    expect(onChange.mock.calls[1][1]).toBe("hidden");
+  });
+
+  it("does not fire when blur event occurs while already hidden", () => {
+    const listener = vi.fn();
+    startTabVisibilityMonitor();
+    onVisibilityChange(listener);
+
+    window.dispatchEvent(new Event("blur"));
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    // Second blur should not fire
+    window.dispatchEvent(new Event("blur"));
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not fire when focus event occurs while already visible", () => {
+    const listener = vi.fn();
+    startTabVisibilityMonitor();
+    onVisibilityChange(listener);
+
+    // Already visible, focus should not fire
+    window.dispatchEvent(new Event("focus"));
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("cleans up focus/blur listeners on stop", () => {
+    const listener = vi.fn();
+    startTabVisibilityMonitor();
+    onVisibilityChange(listener);
+
+    stopTabVisibilityMonitor();
+
+    window.dispatchEvent(new Event("blur"));
+    window.dispatchEvent(new Event("focus"));
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+});
+
+// ─── Transition history ──────────────────────────────────────────────────────
+
+describe("transition history", () => {
+  it("starts with empty history", () => {
+    expect(getTransitionHistory()).toEqual([]);
+  });
+
+  it("records transitions", () => {
+    startTabVisibilityMonitor();
+
+    simulateVisibilityChange("hidden");
+    simulateVisibilityChange("visible");
+
+    const history = getTransitionHistory();
+    expect(history).toHaveLength(2);
+
+    expect(history[0].from).toBe("visible");
+    expect(history[0].state).toBe("hidden");
+    expect(typeof history[0].timestamp).toBe("string");
+
+    expect(history[1].from).toBe("hidden");
+    expect(history[1].state).toBe("visible");
+  });
+
+  it("clears history on reset", () => {
+    startTabVisibilityMonitor();
+    simulateVisibilityChange("hidden");
+    expect(getTransitionHistory()).toHaveLength(1);
+
+    resetTabVisibility();
+    expect(getTransitionHistory()).toEqual([]);
+  });
+
+  it("bounds history to 50 entries", () => {
+    startTabVisibilityMonitor();
+
+    // Generate 60 transitions (alternating hidden/visible)
+    for (let i = 0; i < 60; i++) {
+      simulateVisibilityChange(i % 2 === 0 ? "hidden" : "visible");
+    }
+
+    const history = getTransitionHistory();
+    expect(history.length).toBeLessThanOrEqual(50);
   });
 });
 

@@ -6,17 +6,18 @@
  * re-renders only when the visibility state changes.
  */
 
-import { useState, useEffect, useCallback } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import type {
   TabVisibilityState,
   TabVisibilitySnapshot,
+  VisibilityAPICapabilities,
 } from "../tab-visibility.js";
 import {
   startTabVisibilityMonitor,
   stopTabVisibilityMonitor,
   onVisibilityChange,
   getTabVisibilitySnapshot,
-  isTabVisible,
+  getVisibilityCapabilities,
 } from "../tab-visibility.js";
 
 export interface UseTabVisibilityResult {
@@ -26,6 +27,8 @@ export interface UseTabVisibilityResult {
   isVisible: boolean;
   /** Full visibility snapshot with timing information. */
   snapshot: TabVisibilitySnapshot;
+  /** Browser API capabilities for the Page Visibility API. */
+  capabilities: VisibilityAPICapabilities;
 }
 
 /**
@@ -33,8 +36,11 @@ export interface UseTabVisibilityResult {
  *
  * Usage:
  * ```tsx
- * const { isVisible, state } = useTabVisibility();
+ * const { isVisible, state, capabilities } = useTabVisibility();
  * if (!isVisible) return null; // skip rendering when hidden
+ * if (capabilities.usingFallback) {
+ *   console.warn("Using focus/blur fallback — precision is reduced");
+ * }
  * ```
  */
 export function useTabVisibility(): UseTabVisibilityResult {
@@ -62,5 +68,6 @@ export function useTabVisibility(): UseTabVisibilityResult {
     state: snapshot.state,
     isVisible: snapshot.isVisible,
     snapshot,
+    capabilities: getVisibilityCapabilities(),
   };
 }

@@ -15704,7 +15704,7 @@
         {
           "id": "af647f79-b553-49b3-b5db-2a86816655f0",
           "title": "Tab Visibility Detection and Control",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Implement browser tab visibility detection to enable resource-aware polling management",
           "source": "smart-add",
@@ -15712,7 +15712,7 @@
             {
               "id": "e79359ab-e11a-4140-8ed7-25d41f565ab4",
               "title": "Implement Page Visibility API for tab state detection",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Integrate browser Page Visibility API to detect when tab becomes active/inactive for resource management",
               "acceptanceCriteria": [
@@ -15725,7 +15725,9 @@
                 "performance",
                 "browser-api"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T01:51:01.753Z",
+              "completedAt": "2026-02-26T01:57:56.390Z"
             },
             {
               "id": "37620ff4-7856-4266-84d5-134d794dfb92",
@@ -15747,7 +15749,9 @@
               "startedAt": "2026-02-26T01:44:40.746Z",
               "completedAt": "2026-02-26T01:50:32.000Z"
             }
-          ]
+          ],
+          "startedAt": "2026-02-26T01:57:56.497Z",
+          "completedAt": "2026-02-26T01:57:56.497Z"
         },
         {
           "id": "1291a3be-9d15-4aa2-9a9e-2d24ae7737f1",
