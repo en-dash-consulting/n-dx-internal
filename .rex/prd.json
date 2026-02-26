@@ -14778,7 +14778,7 @@
             {
               "id": "1e3a6a48-70d9-4d16-a5f6-dd70da38ce5d",
               "title": "Add integration tests for memory-aware polling suspension",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create tests that simulate memory pressure conditions and verify all polling loops are properly suspended and restarted",
               "acceptanceCriteria": [
@@ -14792,7 +14792,9 @@
                 "polling",
                 "testing"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T21:12:53.065Z",
+              "completedAt": "2026-02-26T21:18:06.086Z"
             },
             {
               "id": "20be81d5-b692-4d57-a6b9-94d5cecd2212",
@@ -15248,7 +15250,7 @@
             {
               "id": "77391163-83d0-47fc-bf92-dac56d1c0aa0",
               "title": "Add large tree performance benchmarks",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create automated benchmarks to validate performance improvements on trees with 500, 1000, and 2000+ items",
               "acceptanceCriteria": [
@@ -15263,7 +15265,9 @@
                 "performance",
                 "testing"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T21:18:23.889Z",
+              "completedAt": "2026-02-26T21:25:29.288Z"
             }
           ]
         }
@@ -16229,22 +16233,26 @@
     {
       "id": "a5f844d4-da0c-48e1-9af5-077b75ccbc02",
       "title": "Hench Resource Monitoring and User Feedback",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-26T21:12:23.245Z",
+      "completedAt": "2026-02-26T21:12:23.245Z",
       "children": [
         {
           "id": "92cc58fd-77a3-402a-b8a6-3ac66bb7f331",
           "title": "Process Resource Tracking",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Implement comprehensive monitoring and tracking of hench process resource usage for visibility and management",
           "source": "smart-add",
+          "startedAt": "2026-02-26T21:12:23.137Z",
+          "completedAt": "2026-02-26T21:12:23.137Z",
           "children": [
             {
               "id": "9fdffc62-d7a8-4a78-9a22-00d331674a6a",
               "title": "Implement real-time hench process memory monitoring",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add per-process memory usage tracking for running hench tasks with historical data collection and trend analysis",
               "acceptanceCriteria": [
@@ -16259,12 +16267,14 @@
                 "monitoring",
                 "memory"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T20:40:32.885Z",
+              "completedAt": "2026-02-26T20:59:49.490Z"
             },
             {
               "id": "967eb37f-eed3-478b-87fa-fe06c9d5a81c",
               "title": "Track concurrent execution metrics and resource utilization",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement comprehensive metrics collection for concurrent process count, total memory usage, and resource utilization patterns across hench executions",
               "acceptanceCriteria": [
@@ -16279,7 +16289,9 @@
                 "metrics",
                 "resources"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T20:59:49.724Z",
+              "completedAt": "2026-02-26T21:12:23.030Z"
             },
             {
               "id": "1462cc71-f995-44bd-aeda-892050e33291",
@@ -16318,10 +16330,12 @@
         {
           "id": "9b6955b8-74b9-46cc-ab58-ea8ce5ae5ac8",
           "title": "UI Resource Visibility and Controls",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Provide user interface elements to display resource usage, execution limits, and manual controls for hench process management",
           "source": "smart-add",
+          "startedAt": "2026-02-26T20:39:57.069Z",
+          "completedAt": "2026-02-26T20:39:57.069Z",
           "children": [
             {
               "id": "82e0aa11-9c52-4fa3-b7ac-165f0db47d5d",
@@ -16348,7 +16362,7 @@
             {
               "id": "293e9411-dc86-4c8c-a1df-2495810b1e89",
               "title": "Show memory usage and system resource status in execution panel",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Integrate system memory usage, per-process memory consumption, and resource health indicators into the active execution monitoring panel",
               "acceptanceCriteria": [
@@ -16363,12 +16377,14 @@
                 "ui",
                 "monitoring"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T20:29:23.445Z",
+              "completedAt": "2026-02-26T20:39:56.962Z"
             },
             {
               "id": "48ac348c-edbc-46d0-8a22-a70565207af8",
               "title": "Add manual execution throttling controls and emergency stop",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement user controls to manually adjust concurrency limits, pause new executions, and emergency stop all running processes when needed",
               "acceptanceCriteria": [
@@ -16383,7 +16399,9 @@
                 "ui",
                 "controls"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-26T20:17:06.745Z",
+              "completedAt": "2026-02-26T20:29:23.210Z"
             }
           ],
           "overrideMarker": {
