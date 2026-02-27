@@ -43,6 +43,7 @@ import { CrashRecoveryBanner } from "./components/crash-recovery-banner.js";
 import { DegradationBanner } from "./components/degradation-banner.js";
 import { RefreshQueueStatus } from "./components/refresh-queue-status.js";
 import { PollingSuspensionIndicator } from "./components/polling-suspension-indicator.js";
+import { SearchOverlay, useSearchOverlay } from "./components/search-overlay.js";
 import { useRefreshThrottle } from "./hooks/use-refresh-throttle.js";
 import { usePollingSuspension } from "./hooks/use-polling-suspension.js";
 import type { DegradableFeature } from "./graceful-degradation.js";
@@ -214,6 +215,7 @@ function App({ scope }: { scope: string | null }) {
   } = useGracefulDegradation();
   const { state: refreshQueueState } = useRefreshThrottle();
   const { isSuspended: pollingSuspended, suspendedCount: pollingSuspendedCount } = usePollingSuspension();
+  const [searchOpen, , closeSearch] = useSearchOverlay();
   const { data, loading, refreshToast, showDrop } = useAppData({ pausePolling: isFeatureDisabled("autoRefresh") });
   const {
     showRecovery,
@@ -323,6 +325,7 @@ function App({ scope }: { scope: string | null }) {
           )
         )
       : null,
+    h(SearchOverlay, { visible: searchOpen, onClose: closeSearch, navigateTo }),
   );
 }
 
