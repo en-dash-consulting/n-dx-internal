@@ -59,7 +59,7 @@ const HENCH_PREFIX = "/api/hench/";
  */
 const aggregatorCache = new Map<string, IncrementalTaskUsageAggregator>();
 
-function getAggregator(runsDir: string): IncrementalTaskUsageAggregator {
+export function getAggregator(runsDir: string): IncrementalTaskUsageAggregator {
   let aggregator = aggregatorCache.get(runsDir);
   if (!aggregator) {
     aggregator = new IncrementalTaskUsageAggregator(runsDir);

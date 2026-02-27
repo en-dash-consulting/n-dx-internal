@@ -13,7 +13,8 @@ import { handleRexRoute, shutdownRexExecution } from "./routes-rex.js";
 import { handleSourcevisionRoute } from "./routes-sourcevision.js";
 import { handleTokenUsageRoute } from "./routes-token-usage.js";
 import { handleValidationRoute } from "./routes-validation.js";
-import { handleHenchRoute, startHeartbeatMonitor, startConcurrencyMonitor, startMemoryMonitor, shutdownActiveExecutions } from "./routes-hench.js";
+import { handleHenchRoute, startHeartbeatMonitor, startConcurrencyMonitor, startMemoryMonitor, shutdownActiveExecutions, getAggregator } from "./routes-hench.js";
+import { startUsageCleanupScheduler } from "./usage-cleanup-scheduler.js";
 import { handleWorkflowRoute } from "./routes-workflow.js";
 import { handleAdaptiveRoute } from "./routes-adaptive.js";
 import { handleMcpRoute } from "./routes-mcp.js";
@@ -612,6 +613,15 @@ export async function startServer(
     startHeartbeatMonitor(watcherHandles.henchRunsDir, ws.broadcast);
     startConcurrencyMonitor(ctx, ws.broadcast);
     startMemoryMonitor(ws.broadcast);
+
+    // Start periodic usage cleanup — prunes orphaned aggregation entries
+    // for tasks that no longer exist in the PRD (configurable, default weekly).
+    const cleanupInterval = startUsageCleanupScheduler(
+      ctx,
+      () => getAggregator(watcherHandles.henchRunsDir),
+      ws.broadcast,
+    );
+    watcherHandles.monitorIntervals.push(cleanupInterval);
   }
 
   // Start WS health broadcast — periodically sends connection health
