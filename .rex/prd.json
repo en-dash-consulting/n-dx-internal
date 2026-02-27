@@ -15597,7 +15597,7 @@
     {
       "id": "07874b87-6683-4b55-8ed9-1555c5bd0d88",
       "title": "Token Usage Aggregation Performance Optimization",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
@@ -15686,6 +15686,8 @@
           "level": "feature",
           "description": "Remove obsolete entries from usage aggregation to prevent memory bloat and improve accuracy",
           "source": "smart-add",
+          "startedAt": "2026-02-27T04:22:21.385Z",
+          "completedAt": "2026-02-27T04:22:21.385Z",
           "children": [
             {
               "id": "a964e65d-82ce-4508-8907-8bf818c3555d",
@@ -15731,22 +15733,22 @@
               "startedAt": "2026-02-27T04:11:56.529Z",
               "completedAt": "2026-02-27T04:22:21.277Z"
             }
-          ],
-          "startedAt": "2026-02-27T04:22:21.385Z",
-          "completedAt": "2026-02-27T04:22:21.385Z"
+          ]
         },
         {
           "id": "cebbe860-dba1-421c-84aa-bce5a60913ff",
           "title": "Run History Management",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Implement efficient storage and retention policies for historical run data to control growth",
           "source": "smart-add",
+          "startedAt": "2026-02-27T04:40:54.985Z",
+          "completedAt": "2026-02-27T04:40:54.985Z",
           "children": [
             {
               "id": "7f1fabf0-5751-4fef-8081-d5af4ac61786",
               "title": "Add run file archival and compression for old entries",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement automatic archival system that compresses or consolidates old run files to reduce file system overhead while preserving historical data",
               "acceptanceCriteria": [
@@ -15761,12 +15763,14 @@
                 "compression",
                 "maintenance"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-27T04:23:14.868Z",
+              "completedAt": "2026-02-27T04:32:29.040Z"
             },
             {
               "id": "86939921-6e7b-4298-98b2-cb49c8d395f8",
               "title": "Implement run history retention policies",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add configurable retention policies to automatically remove very old run files while preserving aggregated usage statistics",
               "acceptanceCriteria": [
@@ -15781,11 +15785,15 @@
                 "storage",
                 "policy"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-02-27T04:32:29.280Z",
+              "completedAt": "2026-02-27T04:40:54.854Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-02-27T04:40:55.059Z",
+      "completedAt": "2026-02-27T04:40:55.059Z"
     },
     {
       "id": "48fb83fc-91ea-4729-b05e-a9f74474a4b2",

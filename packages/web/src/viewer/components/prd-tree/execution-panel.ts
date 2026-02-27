@@ -10,6 +10,7 @@ import { h } from "preact";
 import { useState, useEffect, useCallback, useRef } from "preact/hooks";
 import { usePolling } from "../../hooks/use-polling.js";
 import { createRequestDedup } from "../../request-dedup.js";
+import { isFeatureDisabled, onDegradationChange } from "../../graceful-degradation.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -70,6 +71,19 @@ export function ExecutionPanel({ onPrdChanged }: ExecutionPanelProps) {
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+
+  // Track memory-pressure state reactively so usePolling's `enabled`
+  // parameter updates when the degradation tier changes.
+  const [autoRefreshDisabled, setAutoRefreshDisabled] = useState(
+    () => isFeatureDisabled("autoRefresh")
+  );
+
+  useEffect(() => {
+    const unsubscribe = onDegradationChange((state) => {
+      setAutoRefreshDisabled(state.disabledFeatures.has("autoRefresh"));
+    });
+    return unsubscribe;
+  }, []);
 
   // ── Fetch execution status (deduplicated) ──────────────────────────
   //
@@ -152,8 +166,9 @@ export function ExecutionPanel({ onPrdChanged }: ExecutionPanelProps) {
     return () => dedup.dispose();
   }, []);
 
-  // Poll as fallback (every 3s) — visibility-aware via polling manager
-  usePolling("execution-panel", fetchStatus, 3000);
+  // Poll as fallback (every 3s) — visibility-aware via polling manager.
+  // Automatically paused when memory pressure disables autoRefresh.
+  usePolling("execution-panel", fetchStatus, 3000, !autoRefreshDisabled);
 
   // ── Handlers ───────────────────────────────────────────────────────
 
