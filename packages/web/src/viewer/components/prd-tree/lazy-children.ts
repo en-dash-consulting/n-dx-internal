@@ -17,7 +17,7 @@
  */
 
 import { h } from "preact";
-import type { VNode } from "preact";
+import type { VNode, ComponentChildren } from "preact";
 import { useState, useEffect, useRef } from "preact/hooks";
 
 /**
@@ -34,7 +34,7 @@ export interface LazyChildrenProps {
   isOpen: boolean;
   /** Render function that produces the child VDOM tree. Only called when
    *  children should be in the DOM — avoids VDOM creation when unmounted. */
-  renderChildren: () => VNode;
+  renderChildren: () => ComponentChildren;
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────

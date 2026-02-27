@@ -191,6 +191,17 @@ export interface RunSummaryData {
   counts: SummaryCounts;
 }
 
+export interface RunMemoryStats {
+  /** Peak RSS of the hench process during this run (bytes). */
+  peakRssBytes: number;
+  /** System available memory at run start (bytes). -1 if unavailable. */
+  systemAvailableAtStartBytes: number;
+  /** System available memory at run end (bytes). -1 if unavailable. */
+  systemAvailableAtEndBytes: number;
+  /** System total memory (bytes). */
+  systemTotalBytes: number;
+}
+
 export interface RunRecord {
   id: string;
   taskId: string;
@@ -211,6 +222,8 @@ export interface RunRecord {
   retryAttempts?: number;
   /** Structured metadata derived from tool calls at run finalization. */
   structuredSummary?: RunSummaryData;
+  /** Memory usage statistics captured during the run. */
+  memoryStats?: RunMemoryStats;
 }
 
 export interface TaskBriefTask {

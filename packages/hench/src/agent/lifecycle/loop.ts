@@ -159,8 +159,8 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     memoryMonitor,
   };
 
-  // Shared: initialize run record
-  const run = await initRunRecord({
+  // Shared: initialize run record + capture start memory snapshot
+  const { run, memoryCtx } = await initRunRecord({
     taskId,
     taskTitle: brief.task.title,
     model,
@@ -326,8 +326,15 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     await runReviewGate(projectDir, store, taskId, run);
   }
 
-  // Shared: finalize run (build summary, post-task tests, save)
-  await finalizeRun(run, henchDir, projectDir, brief.project.testCommand);
+  // Shared: finalize run (build summary, memory stats, post-task tests, save)
+  await finalizeRun({
+    run,
+    henchDir,
+    projectDir,
+    testCommand: brief.project.testCommand,
+    heartbeat,
+    memoryCtx,
+  });
 
   return { run };
 }

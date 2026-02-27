@@ -27,6 +27,7 @@ function makeCtx(
       freemem: () => free,
       totalmem: () => total,
       readLinuxAvailable: async () => undefined,
+      readDarwinAvailable: async () => undefined,
     },
   );
 

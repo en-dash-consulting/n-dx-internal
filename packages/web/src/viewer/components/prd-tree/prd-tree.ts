@@ -18,7 +18,7 @@
  */
 
 import { h, Fragment, Component } from "preact";
-import type { VNode } from "preact";
+import type { VNode, ComponentChildren } from "preact";
 import { useState, useMemo, useCallback, useEffect, useRef } from "preact/hooks";
 import type { PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority, TaskUsageSummary, WeeklyBudgetResolution } from "./types.js";
 import { computeBranchStats, completionRatio, formatTimestamp, itemMatchesFilter } from "./compute.js";
@@ -454,7 +454,7 @@ interface CulledNodeProps {
   /** Shared listener lifecycle manager, or null to skip tracking. */
   listenerManager?: ListenerLifecycleManager | null;
   /** Child VNodes to render when visible. */
-  children: (VNode | null)[];
+  children?: ComponentChildren;
 }
 
 function CulledNode({ culler, neverCull, nodeId, listenerManager, children }: CulledNodeProps) {
@@ -498,7 +498,7 @@ function CulledNode({ culler, neverCull, nodeId, listenerManager, children }: Cu
     });
   }
 
-  return h("div", { ref, class: "prd-node" }, ...children);
+  return h("div", { ref, class: "prd-node" }, children);
 }
 
 // ── Recursive tree renderer ─────────────────────────────────────────

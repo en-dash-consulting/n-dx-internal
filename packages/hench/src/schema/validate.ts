@@ -116,6 +116,13 @@ const RunSummaryDataSchema = z.object({
   counts: SummaryCountsSchema,
 });
 
+const RunMemoryStatsSchema = z.object({
+  peakRssBytes: z.number(),
+  systemAvailableAtStartBytes: z.number(),
+  systemAvailableAtEndBytes: z.number(),
+  systemTotalBytes: z.number(),
+});
+
 export const RunRecordSchema = z.object({
   id: z.string(),
   taskId: z.string(),
@@ -133,6 +140,7 @@ export const RunRecordSchema = z.object({
   model: z.string(),
   retryAttempts: z.number().int().nonnegative().optional(),
   structuredSummary: RunSummaryDataSchema.optional(),
+  memoryStats: RunMemoryStatsSchema.optional(),
 });
 
 export function validateConfig(

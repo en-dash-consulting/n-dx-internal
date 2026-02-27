@@ -767,8 +767,8 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   // Shared: transition task to in_progress
   await transitionToInProgress(store, taskId, brief.task.status);
 
-  // Shared: initialize run record
-  const run = await initRunRecord({
+  // Shared: initialize run record + capture start memory snapshot
+  const { run, memoryCtx } = await initRunRecord({
     taskId,
     taskTitle: brief.task.title,
     model,
@@ -978,8 +978,15 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   // Stop heartbeat before finalization
   heartbeat.stop();
 
-  // Shared: finalize run (build summary, post-task tests, save)
-  await finalizeRun(run, henchDir, projectDir, brief.project.testCommand);
+  // Shared: finalize run (build summary, memory stats, post-task tests, save)
+  await finalizeRun({
+    run,
+    henchDir,
+    projectDir,
+    testCommand: brief.project.testCommand,
+    heartbeat,
+    memoryCtx,
+  });
 
   return { run };
 }

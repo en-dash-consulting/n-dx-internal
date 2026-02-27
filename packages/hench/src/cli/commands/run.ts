@@ -17,6 +17,18 @@ import { ProcessLimiter } from "../../process/limiter.js";
 import { MemoryThrottle } from "../../process/memory-throttle.js";
 
 // ---------------------------------------------------------------------------
+// Formatting helpers
+// ---------------------------------------------------------------------------
+
+function formatDuration(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+  return `${minutes}m ${remaining}s`;
+}
+
+// ---------------------------------------------------------------------------
 // Epic resolution helpers (exported for testing)
 // ---------------------------------------------------------------------------
 
@@ -434,9 +446,28 @@ async function runOne(
   output(`Run ID: ${run.id}`);
   output(`Task: ${run.taskTitle}`);
   output(`Status: ${run.status}`);
+
+  // Duration
+  if (run.startedAt && run.finishedAt) {
+    const durationMs = new Date(run.finishedAt).getTime() - new Date(run.startedAt).getTime();
+    info(`Duration: ${formatDuration(durationMs)}`);
+  }
+
   info(`Turns: ${run.turns}`);
   info(`Tokens: ${run.tokenUsage.input} in / ${run.tokenUsage.output} out`);
   info(`Tool calls: ${run.toolCalls.length}`);
+
+  // Memory stats
+  if (run.memoryStats) {
+    const peakMB = Math.round(run.memoryStats.peakRssBytes / 1024 / 1024);
+    const availGB = run.memoryStats.systemAvailableAtEndBytes >= 0
+      ? (run.memoryStats.systemAvailableAtEndBytes / 1024 / 1024 / 1024).toFixed(1)
+      : "?";
+    const totalGB = run.memoryStats.systemTotalBytes >= 0
+      ? (run.memoryStats.systemTotalBytes / 1024 / 1024 / 1024).toFixed(1)
+      : "?";
+    info(`Memory: ${peakMB} MB peak RSS (system: ${availGB} / ${totalGB} GB available)`);
+  }
 
   // Post-task test results
   const postTests = run.structuredSummary?.postRunTests;
