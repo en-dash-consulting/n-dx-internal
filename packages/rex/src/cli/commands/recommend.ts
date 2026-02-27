@@ -405,7 +405,7 @@ export async function cmdRecommend(
       throw err;
     }
 
-    const { created, skipped, conflictReport } = creationResult;
+    const { created, skipped, reparented, conflictReport } = creationResult;
 
     // ── Conflict summary (when items were skipped) ──────────────────
     if (conflictReport?.hasConflicts && skipped && skipped.length > 0) {
@@ -422,6 +422,14 @@ export async function cmdRecommend(
       }
     }
 
+    // ── Reparented items (completed-item conflicts created as children) ──
+    if (reparented && reparented.length > 0) {
+      info("");
+      for (const r of reparented) {
+        info(`  ↳ "${r.title}" created as ${r.newLevel} under completed "${r.parentTitle}"`);
+      }
+    }
+
     // ── Post-creation results ───────────────────────────────────────
     result("");
     for (const item of created) {
@@ -432,16 +440,12 @@ export async function cmdRecommend(
     const total = acceptedRecommendations.length;
     const createdCount = created.length;
     const skippedCount = skipped?.length ?? 0;
+    const reparentedCount = reparented?.length ?? 0;
     const countSuffix = total === 1 ? "" : "s";
-    if (skippedCount > 0) {
-      result(
-        `\n  ${createdCount}/${total} selected recommendation${countSuffix} created, ${skippedCount} skipped (conflicts).`,
-      );
-    } else {
-      result(
-        `\n  ${createdCount}/${total} selected recommendation${countSuffix} created.`,
-      );
-    }
+    const parts: string[] = [`${createdCount}/${total} selected recommendation${countSuffix} created`];
+    if (reparentedCount > 0) parts.push(`${reparentedCount} reparented`);
+    if (skippedCount > 0) parts.push(`${skippedCount} skipped (conflicts)`);
+    result(`\n  ${parts.join(", ")}.`);
   } else {
     info("Run with --accept to add all recommendations to the PRD.");
     info("Run with --acknowledge=1,2 to acknowledge specific findings.");

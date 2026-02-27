@@ -16,7 +16,7 @@
 import { randomUUID } from "node:crypto";
 import type { PRDStore } from "../store/types.js";
 import type { PRDItem, ItemLevel, Priority } from "../schema/index.js";
-import { LEVEL_HIERARCHY } from "../schema/index.js";
+import { LEVEL_HIERARCHY, CHILD_LEVEL } from "../schema/index.js";
 import { findItem, insertChild } from "../core/tree.js";
 import { validateDAG } from "../core/dag.js";
 import {
@@ -101,6 +101,24 @@ export interface SkippedRecommendation {
 }
 
 /**
+ * A recommendation that was reparented as a child of a completed item.
+ */
+export interface ReparentedRecommendation {
+  /** Index of the recommendation in the original input array. */
+  index: number;
+  /** Title of the recommendation. */
+  title: string;
+  /** Original level of the recommendation before demotion. */
+  originalLevel: ItemLevel;
+  /** New (demoted) level of the recommendation. */
+  newLevel: ItemLevel;
+  /** ID of the completed parent item. */
+  parentId: string;
+  /** Title of the completed parent item. */
+  parentTitle: string;
+}
+
+/**
  * Result of a successful batch creation.
  */
 export interface CreationResult {
@@ -113,6 +131,8 @@ export interface CreationResult {
   }>;
   /** Recommendations that were skipped due to conflicts (only with skip strategy). */
   skipped?: SkippedRecommendation[];
+  /** Recommendations reparented as children of completed items. */
+  reparented?: ReparentedRecommendation[];
   /** Full conflict report when conflict detection was run. */
   conflictReport?: ConflictReport;
 }
@@ -217,6 +237,7 @@ export async function createItemsFromRecommendations(
   let conflictReport: ConflictReport | undefined;
   let effectiveRecommendations = recommendations;
   const skipped: SkippedRecommendation[] = [];
+  const reparented: ReparentedRecommendation[] = [];
 
   if (strategy !== "force") {
     conflictReport = detectRecommendationConflicts(recommendations, doc.items);
@@ -239,7 +260,9 @@ export async function createItemsFromRecommendations(
         );
       }
 
-      // strategy === "skip": filter down to safe recommendations
+      // strategy === "skip": split completed-item conflicts (reparent) from active conflicts (skip)
+      const reparentedRecs: EnrichedRecommendation[] = [];
+
       for (const idx of conflictReport.conflictingIndices) {
         const rec = recommendations[idx];
         const conflict = conflictReport.conflicts.find(
@@ -248,6 +271,29 @@ export async function createItemsFromRecommendations(
         const intraDup = conflictReport.intraBatchDuplicates.find(
           (d) => d.indexB === idx,
         );
+
+        // Completed-item conflicts: reparent as child (if level allows demotion)
+        if (conflict && conflict.matchedItem.status === "completed") {
+          const childLevel = CHILD_LEVEL[rec.level];
+          if (childLevel) {
+            reparented.push({
+              index: idx,
+              title: rec.title,
+              originalLevel: rec.level,
+              newLevel: childLevel,
+              parentId: conflict.matchedItem.id,
+              parentTitle: conflict.matchedItem.title,
+            });
+            reparentedRecs.push({
+              ...rec,
+              level: childLevel,
+              parentId: conflict.matchedItem.id,
+            });
+            continue;
+          }
+          // subtask has no child level — fall through to skip
+        }
+
         const reason = conflict
           ? `Conflicts with existing ${conflict.matchedItem.level} "${conflict.matchedItem.title}"`
           : intraDup
@@ -256,12 +302,15 @@ export async function createItemsFromRecommendations(
         skipped.push({ index: idx, title: rec.title, reason });
       }
 
-      effectiveRecommendations = conflictReport.safeIndices.map(
-        (i) => recommendations[i],
-      );
+      effectiveRecommendations = [
+        ...conflictReport.safeIndices.map((i) => recommendations[i]),
+        ...reparentedRecs,
+      ];
 
       if (effectiveRecommendations.length === 0) {
-        return { created: [], skipped, conflictReport };
+        const result: CreationResult = { created: [], skipped, conflictReport };
+        if (reparented.length > 0) result.reparented = reparented;
+        return result;
       }
     }
   }
@@ -347,6 +396,7 @@ export async function createItemsFromRecommendations(
 
   const result: CreationResult = { created };
   if (skipped.length > 0) result.skipped = skipped;
+  if (reparented.length > 0) result.reparented = reparented;
   if (conflictReport) result.conflictReport = conflictReport;
   return result;
 }
