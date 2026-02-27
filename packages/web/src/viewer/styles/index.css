@@ -35,4 +35,5 @@
 @import "./crash-recovery.css";
 @import "./degradation-banner.css";
 @import "./refresh-queue.css";
+@import "./polling-suspension.css";
 @import "./responsive.css";

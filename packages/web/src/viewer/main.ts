@@ -1,6 +1,6 @@
 import { h, render, Fragment } from "preact";
 import type { VNode, ComponentChild } from "preact";
-import { useState, useEffect, useMemo } from "preact/hooks";
+import { useState, useEffect, useMemo, useCallback } from "preact/hooks";
 import type { ViewId, NavigateTo, DetailItem } from "./types.js";
 import { ALL_DATA_FILES } from "../schema/data-files.js";
 import { Sidebar } from "./components/sidebar.js";
@@ -42,7 +42,9 @@ import { MemoryWarningBanner } from "./components/memory-warning.js";
 import { CrashRecoveryBanner } from "./components/crash-recovery-banner.js";
 import { DegradationBanner } from "./components/degradation-banner.js";
 import { RefreshQueueStatus } from "./components/refresh-queue-status.js";
+import { PollingSuspensionIndicator } from "./components/polling-suspension-indicator.js";
 import { useRefreshThrottle } from "./hooks/use-refresh-throttle.js";
+import { usePollingSuspension } from "./hooks/use-polling-suspension.js";
 import type { DegradableFeature } from "./graceful-degradation.js";
 import { startTabVisibilityMonitor, stopTabVisibilityMonitor } from "./tab-visibility.js";
 import { startPollingManager, stopPollingManager } from "./polling-manager.js";
@@ -211,6 +213,7 @@ function App({ scope }: { scope: string | null }) {
     isDisabled: isFeatureDisabled,
   } = useGracefulDegradation();
   const { state: refreshQueueState } = useRefreshThrottle();
+  const { isSuspended: pollingSuspended, suspendedCount: pollingSuspendedCount } = usePollingSuspension();
   const { data, loading, refreshToast, showDrop } = useAppData({ pausePolling: isFeatureDisabled("autoRefresh") });
   const {
     showRecovery,
@@ -238,6 +241,10 @@ function App({ scope }: { scope: string | null }) {
       });
     }
   };
+
+  const handleManualRefresh = useCallback(() => {
+    window.location.reload();
+  }, []);
 
   const handleToggleSidebar = () => {
     setSidebarCollapsed((prev) => {
@@ -307,6 +314,7 @@ function App({ scope }: { scope: string | null }) {
       ? h("div", { class: "refresh-toast", role: "status", "aria-live": "polite" }, "Data updated")
       : null,
     h(RefreshQueueStatus, { state: refreshQueueState, visible: !isFeatureDisabled("autoRefresh") }),
+    h(PollingSuspensionIndicator, { isSuspended: pollingSuspended, suspendedCount: pollingSuspendedCount, onRefresh: handleManualRefresh }),
     (showDrop && !hasData)
       ? h("div", { class: "drop-overlay", role: "dialog", "aria-label": "File drop zone" },
           h("div", { class: "drop-box" },
