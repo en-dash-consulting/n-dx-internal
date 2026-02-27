@@ -222,6 +222,36 @@ export type {
   CompressedFileResult,
 } from "./store/run-archiver.js";
 
+// ---- Run history retention ---------------------------------------------------
+
+export {
+  enforceRetentionPolicy,
+  identifyRetainableRuns,
+  identifyWarningRuns,
+  extractUsageStats,
+  loadRetentionConfig,
+  DEFAULT_RETENTION_CONFIG,
+} from "./store/run-retention.js";
+
+export type {
+  RetentionConfig,
+  RetentionResult,
+  PreservedUsageStats,
+  RetentionLogEntry,
+} from "./store/run-retention.js";
+
+export {
+  startRetentionScheduler,
+  runRetentionCycle,
+  loadRetentionIntervalMs,
+  DEFAULT_RETENTION_INTERVAL_MS,
+} from "./store/run-retention-scheduler.js";
+
+export type {
+  WarningCallback,
+  RetentionSchedulerOptions,
+} from "./store/run-retention-scheduler.js";
+
 // ---- Agent lifecycle types -------------------------------------------------
 
 export type { AgentLoopOptions, AgentLoopResult } from "./agent/lifecycle/loop.js";
