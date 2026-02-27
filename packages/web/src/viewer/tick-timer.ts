@@ -146,6 +146,45 @@ export function onTick(listener: TickListener): () => void {
 }
 
 /**
+ * Suspend the tick timer.
+ *
+ * Clears the shared interval but keeps all listeners registered. The timer
+ * can be resumed later with `resumeTickTimer()`. Used by the tick visibility
+ * gate to pause elapsed time updates when the browser tab is hidden.
+ *
+ * No-op if the timer is already stopped.
+ */
+export function suspendTickTimer(): void {
+  clearTimer();
+}
+
+/**
+ * Resume a suspended tick timer.
+ *
+ * Restarts the shared interval if listeners exist. Fires an **immediate tick**
+ * before restarting the interval so that elapsed time displays catch up to
+ * the current wall-clock time without waiting up to 1 second for the next
+ * regular tick.
+ *
+ * Used by the tick visibility gate to resume elapsed time updates when the
+ * browser tab becomes visible again.
+ *
+ * No-op if the timer is already running or no listeners are registered.
+ */
+export function resumeTickTimer(): void {
+  if (timerId !== null) return; // already running
+  if (listeners.length === 0) return; // no subscribers
+
+  // Fire an immediate tick for catch-up. Elapsed time formatters compute
+  // from an absolute start timestamp, so a single tick is enough for all
+  // displays to jump to the correct current value.
+  tick();
+
+  // Restart the periodic interval.
+  timerId = setInterval(tick, TICK_INTERVAL_MS);
+}
+
+/**
  * Get the current state of the tick timer.
  */
 export function getTickTimerState(): TickTimerState {

@@ -10,6 +10,8 @@ import {
   onTick,
   getTickTimerState,
   resetTickTimer,
+  suspendTickTimer,
+  resumeTickTimer,
   type TickListener,
 } from "../../../src/viewer/tick-timer.js";
 
@@ -310,5 +312,145 @@ describe("edge cases", () => {
 
     outerUnsub();
     innerUnsub!();
+  });
+});
+
+// ─── Suspend / Resume ────────────────────────────────────────────────────────
+
+describe("suspendTickTimer", () => {
+  it("stops the timer without removing subscribers", () => {
+    const unsub = onTick(vi.fn());
+    expect(getTickTimerState().running).toBe(true);
+    expect(getTickTimerState().subscriberCount).toBe(1);
+
+    suspendTickTimer();
+
+    expect(getTickTimerState().running).toBe(false);
+    expect(getTickTimerState().subscriberCount).toBe(1);
+
+    unsub();
+  });
+
+  it("prevents ticks from firing after suspension", () => {
+    const listener = vi.fn();
+    const unsub = onTick(listener);
+
+    vi.advanceTimersByTime(1000);
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    suspendTickTimer();
+    listener.mockClear();
+
+    vi.advanceTimersByTime(5000);
+    expect(listener).not.toHaveBeenCalled();
+
+    unsub();
+  });
+
+  it("is a no-op when the timer is already stopped", () => {
+    // No subscribers → timer not running
+    expect(getTickTimerState().running).toBe(false);
+    suspendTickTimer(); // should not throw
+    expect(getTickTimerState().running).toBe(false);
+  });
+});
+
+describe("resumeTickTimer", () => {
+  it("restarts the timer after suspension", () => {
+    const listener = vi.fn();
+    const unsub = onTick(listener);
+
+    suspendTickTimer();
+    expect(getTickTimerState().running).toBe(false);
+
+    resumeTickTimer();
+    expect(getTickTimerState().running).toBe(true);
+
+    unsub();
+  });
+
+  it("fires an immediate tick on resume for catch-up", () => {
+    const listener = vi.fn();
+    const unsub = onTick(listener);
+
+    // Clear the initial timer state
+    vi.advanceTimersByTime(1000);
+    listener.mockClear();
+
+    suspendTickTimer();
+
+    // Advance time while suspended
+    vi.advanceTimersByTime(60000);
+    expect(listener).not.toHaveBeenCalled();
+
+    // Resume — immediate tick fires
+    resumeTickTimer();
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    unsub();
+  });
+
+  it("resumes regular ticking at 1-second intervals after catch-up", () => {
+    const listener = vi.fn();
+    const unsub = onTick(listener);
+
+    suspendTickTimer();
+    resumeTickTimer();
+    listener.mockClear();
+
+    vi.advanceTimersByTime(1000);
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(1000);
+    expect(listener).toHaveBeenCalledTimes(2);
+
+    unsub();
+  });
+
+  it("is a no-op when the timer is already running", () => {
+    const listener = vi.fn();
+    const unsub = onTick(listener);
+
+    expect(getTickTimerState().running).toBe(true);
+
+    // Should not start a second interval
+    resumeTickTimer();
+    expect(getTickTimerState().running).toBe(true);
+
+    // Verify only one tick fires per second (no double-interval)
+    vi.advanceTimersByTime(1000);
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    unsub();
+  });
+
+  it("is a no-op when there are no subscribers", () => {
+    // No subscribers → resume should not start the timer
+    resumeTickTimer();
+    expect(getTickTimerState().running).toBe(false);
+  });
+
+  it("handles suspend/resume cycles cleanly", () => {
+    const listener = vi.fn();
+    const unsub = onTick(listener);
+
+    // Cycle 1
+    suspendTickTimer();
+    resumeTickTimer();
+    listener.mockClear();
+
+    vi.advanceTimersByTime(1000);
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    // Cycle 2
+    suspendTickTimer();
+    vi.advanceTimersByTime(5000);
+    resumeTickTimer();
+    listener.mockClear();
+
+    vi.advanceTimersByTime(1000);
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    unsub();
   });
 });

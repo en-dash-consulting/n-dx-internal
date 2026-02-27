@@ -46,6 +46,8 @@ import { useRefreshThrottle } from "./hooks/use-refresh-throttle.js";
 import type { DegradableFeature } from "./graceful-degradation.js";
 import { startTabVisibilityMonitor, stopTabVisibilityMonitor } from "./tab-visibility.js";
 import { startPollingManager, stopPollingManager } from "./polling-manager.js";
+import { startPollingRestart } from "./polling-restart.js";
+import { createTickVisibilityGate } from "./tick-visibility-gate.js";
 
 initTheme();
 
@@ -55,6 +57,19 @@ initTheme();
 // pollers when the tab is backgrounded / foregrounded.
 startTabVisibilityMonitor();
 startPollingManager();
+
+// Start the tick visibility gate. This bridges tab visibility changes to
+// the tick timer's suspend/resume lifecycle: when the tab goes hidden,
+// the 1-second elapsed time interval is cleared to conserve CPU and
+// battery; when the tab returns, an immediate catch-up tick fires so
+// elapsed time displays jump to the correct current value.
+createTickVisibilityGate();
+
+// Start the polling restart coordinator. This bridges the graceful
+// degradation system to the centralized polling state: when memory
+// pressure disables autoRefresh, all non-essential polling sources are
+// suspended; when pressure subsides, they restart at original intervals.
+startPollingRestart();
 
 /** All known views grouped by product scope. */
 const VIEWS_BY_SCOPE: Record<string, ViewId[]> = {
