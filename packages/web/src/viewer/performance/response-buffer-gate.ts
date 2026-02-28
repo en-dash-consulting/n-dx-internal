@@ -34,7 +34,7 @@ import {
   onVisibilityChange,
   isTabVisible,
   type TabVisibilitySnapshot,
-} from "./tab-visibility.js";
+} from "../polling/tab-visibility.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

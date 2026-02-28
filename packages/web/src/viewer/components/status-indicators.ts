@@ -12,9 +12,9 @@
 import { h } from "preact";
 import { useState, useEffect, useCallback, useRef } from "preact/hooks";
 import { usePolling } from "../hooks/use-polling.js";
-import { createMessageCoalescer } from "../message-coalescer.js";
-import { createMessageThrottle } from "../message-throttle.js";
-import { isFeatureDisabled, onDegradationChange } from "../graceful-degradation.js";
+import { createMessageCoalescer } from "../messaging/message-coalescer.js";
+import { createMessageThrottle } from "../messaging/message-throttle.js";
+import { isFeatureDisabled, onDegradationChange } from "../performance/graceful-degradation.js";
 import type { ViewId } from "../types.js";
 
 // ---------------------------------------------------------------------------

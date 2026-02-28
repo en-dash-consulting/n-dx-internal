@@ -42,7 +42,7 @@ import {
   onVisibilityChange,
   isTabVisible,
   type TabVisibilitySnapshot,
-} from "./tab-visibility.js";
+} from "../polling/tab-visibility.js";
 import type { UpdateBatcher } from "./update-batcher.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

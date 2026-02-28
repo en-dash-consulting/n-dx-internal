@@ -98,7 +98,7 @@ export type DOMSnapshotHandler = (snapshot: DOMNodeSnapshot) => void;
 
 import {
   registerPollingSource,
-} from "./polling-state.js";
+} from "../polling/polling-state.js";
 
 // ─── Chrome-specific type augmentation ───────────────────────────────────────
 

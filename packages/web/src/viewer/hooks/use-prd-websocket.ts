@@ -22,22 +22,22 @@
  * Extracted from PRDView to isolate WebSocket side effects from the
  * component's render logic.
  *
- * @see ../message-coalescer.ts
- * @see ../message-throttle.ts
- * @see ../dom-update-gate.ts
- * @see ../update-batcher.ts
- * @see ../response-buffer-gate.ts
+ * @see ../messaging/message-coalescer.ts
+ * @see ../messaging/message-throttle.ts
+ * @see ../performance/dom-update-gate.ts
+ * @see ../performance/update-batcher.ts
+ * @see ../performance/response-buffer-gate.ts
  */
 
 import { useEffect } from "preact/hooks";
 import type { PRDDocumentData, PRDItemData } from "../components/prd-tree/types.js";
 import { applyItemUpdate } from "../components/prd-tree/tree-differ.js";
 import { removeItemById } from "../components/prd-tree/tree-utils.js";
-import { createMessageCoalescer } from "../message-coalescer.js";
-import { createMessageThrottle } from "../message-throttle.js";
-import { createUpdateBatcher } from "../update-batcher.js";
-import { createDomUpdateGate } from "../dom-update-gate.js";
-import { createResponseBufferGate } from "../response-buffer-gate.js";
+import { createMessageCoalescer } from "../messaging/message-coalescer.js";
+import { createMessageThrottle } from "../messaging/message-throttle.js";
+import { createUpdateBatcher } from "../performance/update-batcher.js";
+import { createDomUpdateGate } from "../performance/dom-update-gate.js";
+import { createResponseBufferGate } from "../performance/response-buffer-gate.js";
 
 export interface PRDWebSocketDeps {
   /** Setter for PRD document state (supports functional updates). */

@@ -37,7 +37,7 @@ import {
   onDegradationChange,
   isFeatureDisabled,
   type DegradationState,
-} from "./graceful-degradation.js";
+} from "../performance/graceful-degradation.js";
 
 // ─── Module state ────────────────────────────────────────────────────────────
 

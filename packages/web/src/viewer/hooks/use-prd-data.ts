@@ -13,8 +13,8 @@
  * - Cleanup of rate limiter timers on unmount
  *
  * @see ../components/prd-tree/tree-differ.ts — structural sharing implementation
- * @see ../request-dedup.ts — request deduplication
- * @see ../call-rate-limiter.ts — rate limiting
+ * @see ../messaging/request-dedup.ts — request deduplication
+ * @see ../messaging/call-rate-limiter.ts — rate limiting
  */
 
 import { useState, useEffect, useCallback, useRef } from "preact/hooks";
@@ -23,8 +23,8 @@ import type { TaskUsageSummary, WeeklyBudgetResolution } from "../components/prd
 import { resolveTaskUtilization } from "../components/prd-tree/task-utilization.js";
 import { diffDocument } from "../components/prd-tree/tree-differ.js";
 import { usePolling } from "./use-polling.js";
-import { createRequestDedup } from "../request-dedup.js";
-import { createCallRateLimiter } from "../call-rate-limiter.js";
+import { createRequestDedup } from "../messaging/request-dedup.js";
+import { createCallRateLimiter } from "../messaging/call-rate-limiter.js";
 
 /** Shape returned by the incremental /api/hench/task-usage endpoint. */
 interface ServerTaskUsage {

@@ -7,11 +7,11 @@
  */
 
 import { useState, useEffect, useCallback } from "preact/hooks";
-import type { MemoryLevel } from "../memory-monitor.js";
+import type { MemoryLevel } from "../performance/memory-monitor.js";
 import type {
   RefreshQueueState,
   RefreshPriority,
-} from "../refresh-throttle.js";
+} from "../performance/refresh-throttle.js";
 import {
   startRefreshThrottle,
   stopRefreshThrottle,
@@ -20,7 +20,7 @@ import {
   enqueueRefresh,
   getRecommendedInterval,
   resetRefreshThrottle,
-} from "../refresh-throttle.js";
+} from "../performance/refresh-throttle.js";
 
 export interface UseRefreshThrottleOptions {
   /** Base polling interval in milliseconds (default: 5000). */

@@ -46,11 +46,11 @@ import { PollingSuspensionIndicator } from "./components/polling-suspension-indi
 import { SearchOverlay, useSearchOverlay } from "./components/search-overlay.js";
 import { useRefreshThrottle } from "./hooks/use-refresh-throttle.js";
 import { usePollingSuspension } from "./hooks/use-polling-suspension.js";
-import type { DegradableFeature } from "./graceful-degradation.js";
-import { startTabVisibilityMonitor, stopTabVisibilityMonitor } from "./tab-visibility.js";
-import { startPollingManager, stopPollingManager } from "./polling-manager.js";
-import { startPollingRestart } from "./polling-restart.js";
-import { createTickVisibilityGate } from "./tick-visibility-gate.js";
+import type { DegradableFeature } from "./performance/graceful-degradation.js";
+import { startTabVisibilityMonitor, stopTabVisibilityMonitor } from "./polling/tab-visibility.js";
+import { startPollingManager, stopPollingManager } from "./polling/polling-manager.js";
+import { startPollingRestart } from "./polling/polling-restart.js";
+import { createTickVisibilityGate } from "./polling/tick-visibility-gate.js";
 
 initTheme();
 

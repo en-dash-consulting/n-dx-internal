@@ -20,7 +20,7 @@ import {
 import { DATA_FILES } from "../schema/data-files.js";
 import { migrateData } from "./schema-compat.js";
 import type { LoadedData } from "./types.js";
-import { registerPoller, unregisterPoller } from "./polling-manager.js";
+import { registerPoller, unregisterPoller } from "./polling/polling-manager.js";
 
 type DataChangeHandler = (data: LoadedData) => void;
 
