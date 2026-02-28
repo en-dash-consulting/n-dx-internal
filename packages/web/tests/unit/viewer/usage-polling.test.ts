@@ -23,11 +23,10 @@ import {
   startTabVisibilityMonitor,
   resetTabVisibility,
 } from "../../../src/viewer/polling/tab-visibility.js";
-
-// ─── Constants (mirror token-usage.ts) ────────────────────────────────────────
-
-const TOKEN_USAGE_KEY = "token-usage";
-const USAGE_POLL_INTERVAL_MS = 10_000;
+import {
+  TOKEN_USAGE_POLL_KEY as TOKEN_USAGE_KEY,
+  USAGE_POLL_INTERVAL_MS,
+} from "../../../src/viewer/usage/constants.js";
 
 /** Debounce delay used by the polling manager when the tab becomes visible. */
 const RESUME_DEBOUNCE_MS = 100;
