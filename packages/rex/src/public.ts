@@ -49,7 +49,7 @@
 // ---- Store ------------------------------------------------------------------
 
 export { resolveStore } from "./store/index.js";
-export type { PRDStore } from "./store/types.js";
+export type { PRDStore } from "./store/contracts.js";
 
 // ---- Integration schema system ----------------------------------------------
 

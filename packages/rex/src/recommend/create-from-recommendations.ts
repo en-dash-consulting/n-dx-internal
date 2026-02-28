@@ -14,7 +14,7 @@
  */
 
 import { randomUUID } from "node:crypto";
-import type { PRDStore } from "../store/types.js";
+import type { PRDStore } from "../store/contracts.js";
 import type { PRDItem, ItemLevel } from "../schema/index.js";
 import { LEVEL_HIERARCHY, CHILD_LEVEL } from "../schema/index.js";
 import { findItem, insertChild } from "../core/tree.js";

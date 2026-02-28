@@ -13,7 +13,7 @@
  * Adapters may mix backends: NotionStore keeps the PRD tree in Notion
  * but stores config, logs, and workflow on the local filesystem.
  *
- * @module store/types
+ * @module store/contracts
  */
 
 import type { PRDDocument, PRDItem, RexConfig, LogEntry } from "../schema/index.js";
