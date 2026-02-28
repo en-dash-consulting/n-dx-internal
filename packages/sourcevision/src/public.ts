@@ -81,6 +81,8 @@ export type {
   Zones,
   Zone,
   ZoneSummary,
+  ZoneRiskMetrics,
+  RiskLevel,
   ZoneCrossing,
   ZoneTokenUsage,
   Finding,

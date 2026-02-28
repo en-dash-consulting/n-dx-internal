@@ -54,6 +54,8 @@ export interface ZoneSummary {
   coupling: number;
   fileCount: number;
   lineCount: number;
+  /** Computed architectural risk metrics (present when risk scoring is enabled). */
+  riskMetrics?: ZoneRiskMetrics;
 }
 
 // ── Inventory ───────────────────────────────────────────────────────────────
@@ -170,6 +172,32 @@ export interface Zone {
   depth?: number;
   /** Sub-zones from recursive subdivision of large zones. */
   subZones?: Zone[];
+  /** Computed architectural risk metrics (deterministic, from cohesion/coupling). */
+  riskMetrics?: ZoneRiskMetrics;
+}
+
+// ── Risk Metrics ────────────────────────────────────────────────────────────
+
+/** Risk classification level for architectural governance. */
+export type RiskLevel = "healthy" | "at-risk" | "critical" | "catastrophic";
+
+/**
+ * Architectural risk metrics computed from zone cohesion and coupling.
+ *
+ * Governance threshold: cohesion < 0.4 AND coupling > 0.6 triggers
+ * mandatory refactoring. Catastrophic: cohesion < 0.3 AND coupling > 0.7.
+ */
+export interface ZoneRiskMetrics {
+  /** Zone cohesion (0–1, higher = more cohesive). */
+  cohesion: number;
+  /** Zone coupling (0–1, higher = more coupled). */
+  coupling: number;
+  /** Normalized risk score (0–1, 0 = healthy, 1 = worst). */
+  riskScore: number;
+  /** Risk classification: healthy | at-risk | critical | catastrophic. */
+  riskLevel: RiskLevel;
+  /** Whether the zone fails the governance threshold (cohesion < 0.4 AND coupling > 0.6). */
+  failsThreshold: boolean;
 }
 
 /** Token usage tracked per zone during per-zone enrichment */

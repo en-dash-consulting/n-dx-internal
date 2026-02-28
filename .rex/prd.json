@@ -16761,11 +16761,72 @@
     {
       "id": "d4148da9-5f03-4853-90c8-fd19cc2da658",
       "title": "Address pattern issues (9 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Client-server architectural boundary is well-maintained except for schema-infrastructure zone violation\n- Cross-cutting performance concerns are integrated into functional zones rather than separated into performance layers\n- Domain boundary success varies dramatically: hench achieves clean layered isolation while web shows architectural sprawl across 29 zones\n- Foundation anti-pattern where ui-foundation contains both infrastructure utilities and application-specific views\n- Inconsistent service abstraction patterns across utility zones - some achieve clean boundaries while others leak implementation details to consumers\n- Inconsistent use of abstraction patterns (hooks vs direct coupling) across similar UI zones indicates need for architectural standardization\n- Zone size distribution shows healthy specialization pattern broken by one oversized catch-all zone that needs decomposition\n- Critical architectural debt concentration in web package: 29 fragmented zones + god-zone pattern + systematic high coupling (12+ zones >0.6) indicates architectural reset needed before incremental improvements\n- Missing abstraction layer pattern spans visualization (charts + navigation), UI foundation (scattered across zones), and service interfaces (inconsistent contract patterns), indicating systematic under-architecture rather than over-engineering",
       "priority": "critical",
       "source": "sourcevision",
+      "startedAt": "2026-02-28T04:54:32.129Z",
+      "completedAt": "2026-02-28T05:09:25.735Z",
+      "children": [
+        {
+          "id": "821546fe-342f-4f03-b670-05695295ca34",
+          "title": "Extract viewer infrastructure into organized subdirectories",
+          "status": "completed",
+          "level": "task",
+          "description": "Move 19 root-level infrastructure files from viewer/ into logical subdirectories: viewer/performance/ (DOM optimization, memory, crash, degradation, gates), viewer/polling/ (state, manager, restart, visibility, tick, refresh), viewer/messaging/ (coalescer, throttle, rate limiter, dedup). Update all import paths. Add barrel exports. Addresses findings: cross-cutting performance concerns, oversized catch-all zone, god-zone pattern, missing abstraction layers.",
+          "acceptanceCriteria": [
+            "No infrastructure files remain at viewer/ root (only main.ts, types.ts, utils.ts, route-state.ts, sourcevision-tabs.ts, schema-compat.ts, loader.ts)",
+            "Files organized into viewer/performance/, viewer/polling/, viewer/messaging/",
+            "All import paths updated and build passes",
+            "Tests pass with no regressions"
+          ],
+          "priority": "critical",
+          "tags": [
+            "web",
+            "architecture",
+            "refactor"
+          ],
+          "startedAt": "2026-02-28T04:59:39.922Z",
+          "completedAt": "2026-02-28T05:08:53.277Z"
+        },
+        {
+          "id": "c6599984-d5d9-4ad1-8c6f-81d201213c71",
+          "title": "Fix foundation zone boundaries and standardize abstraction patterns",
+          "status": "pending",
+          "level": "task",
+          "description": "Address ui-foundation anti-pattern (web-7): domain-specific views mixed with infrastructure primitives. Standardize hook vs direct coupling patterns across UI zones. Addresses findings: foundation anti-pattern, inconsistent service abstraction patterns, inconsistent hook patterns.",
+          "acceptanceCriteria": [
+            "Foundation layer contains only infrastructure primitives, not domain views",
+            "Consistent hook abstraction pattern across all infrastructure services",
+            "Build and tests pass"
+          ],
+          "priority": "high",
+          "tags": [
+            "web",
+            "architecture",
+            "refactor"
+          ]
+        },
+        {
+          "id": "b527dfb0-19f5-4d86-b56f-96218c38e04c",
+          "title": "Fix schema-infrastructure client-server boundary violation",
+          "status": "pending",
+          "level": "task",
+          "description": "Clean separation between schema/ validation (server-side contracts) and viewer/ data loading (client-side). Address the zone violation where schema files are grouped with viewer files. Addresses findings: client-server boundary violation, domain boundary sprawl.",
+          "acceptanceCriteria": [
+            "Schema validation imports do not cross into viewer data-loading layer",
+            "Clean import boundaries between schema/ and viewer/",
+            "Build and tests pass"
+          ],
+          "priority": "high",
+          "tags": [
+            "web",
+            "architecture",
+            "refactor"
+          ]
+        }
+      ],
       "recommendationMeta": {
         "findingHashes": [
           "f17242ecf07f",
@@ -16809,11 +16870,32 @@
     {
       "id": "730569fd-371f-41af-888f-7a21bbc87670",
       "title": "Address anti-pattern issues (9 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Heavy cross-zone coupling (web-16 → web: 13 imports, web-24 → web-20: 9 imports) indicates missing abstraction layers between implementation details\n- Missing shared visualization interface abstraction forces chart and navigation zones to couple directly to different foundation systems\n- Multiple service layers (queue, validation) exceed expected coupling thresholds for isolated components, indicating insufficient architectural boundaries\n- Token usage views mixed into polling infrastructure zone instead of being consolidated with other usage analytics functionality\n- UI zone organization lacks consistent abstraction strategy - general utilities scattered across domain zones while application views leak into foundation layer\n- View components scattered across utility zones instead of grouped in dedicated view/page architectural layer\n- Web-16 zone imports heavily from multiple zones (13+8 imports) suggesting it occupies wrong architectural layer or needs interface abstraction\n- God function: PRDView in packages/web/src/viewer/views/prd.ts calls 83 unique functions — consider decomposing into smaller, focused functions\n- Web package exhibits god-zone anti-pattern where primary web zone (137 files) acts as catch-all while specialized concerns fragment into 28 micro-zones, inverting expected architectural hierarchy",
       "priority": "critical",
       "source": "sourcevision",
+      "startedAt": "2026-02-28T04:43:56.220Z",
+      "completedAt": "2026-02-28T04:53:44.817Z",
+      "children": [
+        {
+          "id": "6fde7365-32a6-4658-8bc5-2ff19da46e6a",
+          "title": "Decompose PRDView god function into focused hooks",
+          "status": "completed",
+          "level": "task",
+          "description": "Extract PRDView (941 lines, 83 unique function calls) into focused custom hooks: usePRDData (fetch/polling/dedup), usePRDWebSocket (WS pipeline), usePRDActions (CRUD mutations), usePRDDeepLink (deep link resolution), useToast (notification state). PRDView should become a thin render shell that composes these hooks.",
+          "acceptanceCriteria": [
+            "PRDView function body is under 200 lines",
+            "Each extracted hook has a single responsibility",
+            "No behavior changes - all existing functionality preserved",
+            "Tests continue to pass",
+            "TypeScript compiles without errors"
+          ],
+          "priority": "critical",
+          "startedAt": "2026-02-28T04:46:00.323Z",
+          "completedAt": "2026-02-28T04:53:44.664Z"
+        }
+      ],
       "recommendationMeta": {
         "findingHashes": [
           "3884f192adc8",
@@ -16837,11 +16919,73 @@
     {
       "id": "1c0d65ba-447b-4285-a3bb-8ecaf18827fa",
       "title": "Address suggestion issues (11 findings)",
-      "status": "pending",
+      "status": "in_progress",
       "level": "feature",
       "description": "- Audit test-implementation pairs to identify orphaned tests and incomplete features that may indicate architectural boundary violations\n- Consolidate scattered token usage functionality from polling-infrastructure and navigation-state-management into dedicated usage analytics zone\n- Contract definition inconsistency across service zones - only command-validation uses explicit contracts.ts pattern\n- Define architectural risk thresholds: zones with cohesion < 0.4 AND coupling > 0.6 should trigger mandatory refactoring\n- Implement architectural risk scoring to identify zones with both low cohesion (<0.3) and high coupling (>0.7) for priority refactoring\n- Prioritize refactoring zones with combined architectural risks: cohesion < 0.5 AND coupling > 0.6 indicate fragile components\n- Three zones show catastrophic fragility (coupling >0.65, cohesion <0.4) requiring immediate architectural intervention before further development\n- Decompose packages/web/src/viewer/views/prd.ts PRDView function (83 calls) into focused components: extract data fetching layer (estimated 20-25 calls), state management layer (estimated 15-20 calls), and presentation components (remaining calls)\n- Establish architectural governance thresholds: zones with cohesion <0.4 AND coupling >0.6 require mandatory refactoring before new feature development - currently affects web-8, web-10, web-12, web-16 requiring immediate intervention\n- Implement three-phase web package consolidation: Phase 1 - merge zones web-2,web-10,web-11,web-13 (shared coupling patterns), Phase 2 - consolidate visualization zones web-14,web-16,web-17,web-24, Phase 3 - extract shared UI foundation from primary web zone\n- Refactor web-16 zone to reduce 13+ imports from web zone by extracting shared interface layer or moving components to appropriate architectural tier",
       "priority": "critical",
       "source": "sourcevision",
+      "startedAt": "2026-02-28T05:09:26.029Z",
+      "children": [
+        {
+          "id": "3c7748ef-5881-43f7-962b-e6b36c10ed6d",
+          "title": "Implement architectural risk scoring module in sourcevision",
+          "status": "completed",
+          "level": "task",
+          "description": "Consolidates 5 overlapping suggestions about architectural risk thresholds into a single risk scoring module. Add risk metrics to zones, classify zones into risk levels, and generate structured findings. Standardize on cohesion < 0.4 AND coupling > 0.6 as the governance threshold.",
+          "acceptanceCriteria": [
+            "New risk-scoring.ts analyzer module computes risk scores for all zones",
+            "Zones get riskLevel classification: healthy | at-risk | critical | catastrophic",
+            "Risk thresholds are configurable constants (cohesion < 0.4, coupling > 0.6)",
+            "Zone schema type includes riskScore and riskLevel fields",
+            "Risk findings are emitted for zones exceeding thresholds",
+            "Unit tests cover risk scoring logic",
+            "Build and typecheck pass"
+          ],
+          "priority": "critical",
+          "tags": [
+            "sourcevision",
+            "architecture"
+          ],
+          "startedAt": "2026-02-28T05:12:57.427Z",
+          "completedAt": "2026-02-28T05:19:59.946Z"
+        },
+        {
+          "id": "fb020bb9-525b-4b3c-a612-4a05ba1b29e7",
+          "title": "Consolidate token usage files into dedicated zone boundary",
+          "status": "pending",
+          "level": "task",
+          "description": "Move scattered token usage functionality from polling-infrastructure (web-24) and navigation-state-management (web-26) zones into a coherent grouping. Address orphaned token-usage-nav.test.ts.",
+          "priority": "medium",
+          "tags": [
+            "web",
+            "architecture"
+          ]
+        },
+        {
+          "id": "fb8aa6a9-a6cd-48b3-b566-83405fb39907",
+          "title": "Refactor web-16 main.ts god component to reduce cross-zone coupling",
+          "status": "pending",
+          "level": "task",
+          "description": "Extract view registry pattern from main.ts to eliminate 13+ direct imports from web zone. Separate bootstrap concerns from view orchestration. Addresses web-16 coupling (0.8) and cohesion (0.2).",
+          "priority": "high",
+          "tags": [
+            "web",
+            "architecture"
+          ]
+        },
+        {
+          "id": "f087383f-f245-4a90-b174-0ba4d8fd5ccf",
+          "title": "Audit orphaned tests and standardize contract patterns",
+          "status": "pending",
+          "level": "task",
+          "description": "Address two suggestions: audit test-implementation pairs for orphaned tests / incomplete features, and evaluate contract definition consistency across service zones.",
+          "priority": "low",
+          "tags": [
+            "architecture",
+            "testing"
+          ]
+        }
+      ],
       "recommendationMeta": {
         "findingHashes": [
           "0d8d0569fe30",

@@ -7,6 +7,9 @@ import { readManifest, writeManifest } from "../../analyzers/manifest.js";
 import { generateLlmsTxt } from "../../analyzers/llms-txt.js";
 import { generateContext } from "../../analyzers/context.js";
 import { emitZoneOutputs } from "../../analyzers/zone-output.js";
+import { assessAllZoneRisks } from "../../analyzers/risk-scoring.js";
+import { deduplicateFindings, enforceSeverityRules } from "../../analyzers/enrich-parsing.js";
+import { toCanonicalJSON } from "../../util/sort.js";
 import { cmdInit } from "./init.js";
 import { info } from "../output.js";
 import { emptyAnalyzeTokenUsage, formatTokenUsage } from "../../analyzers/token-usage.js";
@@ -257,6 +260,35 @@ function generateOutputFiles(ctx: AnalyzeContext): void {
     const classData = existsSync(classificationsPath)
       ? JSON.parse(readFileSync(classificationsPath, "utf-8"))
       : null;
+
+    // Compute architectural risk scoring and attach metrics to zones
+    if (zonesData.zones.length > 0) {
+      const riskResult = assessAllZoneRisks(zonesData);
+
+      // Attach risk metrics to each zone object
+      for (const zone of zonesData.zones) {
+        const metrics = riskResult.metrics[zone.id];
+        if (metrics) {
+          zone.riskMetrics = metrics;
+        }
+      }
+
+      // Merge risk findings with existing findings (replace previous risk findings)
+      if (riskResult.findings.length > 0) {
+        const existingFindings = (zonesData.findings ?? []).filter(
+          (f: { pass: number; text: string }) =>
+            !(f.pass === 0 && (
+              f.text.includes("risk (score:") ||
+              f.text.includes("exceed architectural risk thresholds")
+            )),
+        );
+        zonesData.findings = enforceSeverityRules(
+          deduplicateFindings([...existingFindings, ...riskResult.findings]),
+        );
+      }
+
+      writeFileSync(join(ctx.svDir, DATA_FILES.zones), toCanonicalJSON(zonesData));
+    }
 
     const llmsTxt = generateLlmsTxt(manifest, inventory, importsData, zonesData, componentsData, classData);
     writeFileSync(join(ctx.svDir, SUPPLEMENTARY_FILES[0]), llmsTxt);

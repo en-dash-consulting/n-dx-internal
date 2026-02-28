@@ -13,6 +13,7 @@ import type {
   ZoneCrossing,
   Finding,
   ZoneSummary,
+  ZoneRiskMetrics,
 } from "../schema/index.js";
 import { toCanonicalJSON } from "../util/sort.js";
 
@@ -36,6 +37,9 @@ export function generateZoneContext(
   lines.push("");
   lines.push(`Zone: ${zone.name} (\`${zone.id}\`)`);
   lines.push(`Files: ${zone.files.length}, Cohesion: ${zone.cohesion.toFixed(2)}, Coupling: ${zone.coupling.toFixed(2)}`);
+  if (zone.riskMetrics) {
+    lines.push(`Risk: ${zone.riskMetrics.riskLevel} (score: ${zone.riskMetrics.riskScore.toFixed(2)})`);
+  }
   if (zone.description) {
     lines.push(`Description: ${zone.description}`);
   }
@@ -183,7 +187,7 @@ export function buildZoneSummary(
     .filter((f) => fileSet.has(f.path))
     .reduce((sum, f) => sum + f.lineCount, 0);
 
-  return {
+  const summary: ZoneSummary = {
     id: zone.id,
     name: zone.name,
     description: zone.description,
@@ -194,6 +198,13 @@ export function buildZoneSummary(
     fileCount: zone.files.length,
     lineCount,
   };
+
+  // Include risk metrics when available on the zone
+  if (zone.riskMetrics) {
+    summary.riskMetrics = zone.riskMetrics;
+  }
+
+  return summary;
 }
 
 /**
