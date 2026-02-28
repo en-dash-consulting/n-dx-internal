@@ -209,6 +209,7 @@ export type { AcknowledgedFinding, AcknowledgedStore } from "./analyze/acknowled
 export { createItemsFromRecommendations } from "./recommend/create-from-recommendations.js";
 export type {
   EnrichedRecommendation, RecommendationMeta, CreationResult,
+  SkippedRecommendation, ReparentedRecommendation,
 } from "./recommend/create-from-recommendations.js";
 
 // ---- MCP server factory -----------------------------------------------------

@@ -65,11 +65,14 @@ describe("rex recommend", () => {
     );
 
     const output = run(["recommend", "--accept==1,4,5", tmpDir]);
-    expect(output).toContain("Added: Address auth issues");
-    expect(output).toContain("Added: Address docs issues");
-    expect(output).toContain("Added: Address ops issues");
-    expect(output).not.toContain("Added: Address perf issues");
-    expect(output).not.toContain("Added: Address security issues");
+    // Check the creation result section (after "Creating N of M")
+    const creationSection = output.slice(output.indexOf("Creating 3 of 5"));
+    expect(creationSection).toContain("Address auth issues");
+    expect(creationSection).toContain("Address docs issues");
+    expect(creationSection).toContain("Address ops issues");
+    expect(creationSection).not.toContain("Address perf issues");
+    expect(creationSection).not.toContain("Address security issues");
+    expect(output).toContain("3/3 selected recommendation");
 
     const prd = JSON.parse(await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"));
     const titles = prd.items.map((item: { title: string }) => item.title);

@@ -38,8 +38,19 @@ const ALLOWED = new Set([
   "ci.js",
   "web.js",
   "config.js",
+  "pr-check.js",
   // Development scripts
   "packages/web/dev.js",
+  // Process monitoring — needs raw execFile for system commands (vm_stat, sysctl)
+  "packages/hench/src/process/memory-monitor.ts",
+  // Git operations — need execFileSync for git CLI calls
+  "packages/sourcevision/src/analyzers/branch-work-collector.ts",
+  "packages/sourcevision/src/analyzers/branch-work-filter.ts",
+  "packages/sourcevision/src/cli/commands/git-credential-helper.ts",
+  "packages/sourcevision/src/cli/commands/prd-epic-resolver.ts",
+  // Web server routes — spawn CLI subprocesses for domain tool execution
+  "packages/web/src/server/routes-hench.ts",
+  "packages/web/src/server/routes-sourcevision.ts",
 ]);
 
 /** Directories to skip entirely. */

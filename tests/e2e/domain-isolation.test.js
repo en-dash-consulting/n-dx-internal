@@ -139,8 +139,7 @@ describe("architecture policy: domain layer isolation", () => {
       const content = readFileSync(file, "utf-8");
 
       for (const pkg of forbidden) {
-        const pattern = new RegExp(`from\\s+["']${pkg.replace("/", "\\/")}["']`);
-        if (pattern.test(content)) {
+        if (hasRuntimeImportFrom(content, pkg)) {
           violations.push(`${rel} imports from "${pkg}"`);
         }
       }
@@ -217,6 +216,7 @@ describe("architecture policy: gateway enforcement", () => {
    */
   it("web runtime imports from domain packages must go through the gateway (server/domain-gateway.ts)", () => {
     const GATEWAY = "packages/web/src/server/domain-gateway.ts";
+    const REX_GATEWAY = "packages/web/src/server/rex-gateway.ts";
     const LEGACY_GATEWAY = "packages/web/src/server/mcp-deps.ts";
     const domainPkgs = ["rex", "sourcevision"];
     const webSrc = walk(join(ROOT, "packages/web/src"));
@@ -225,8 +225,8 @@ describe("architecture policy: gateway enforcement", () => {
     for (const file of webSrc) {
       const rel = relative(ROOT, file).replace(/\\/g, "/");
 
-      // The gateway itself and its legacy re-export are allowed
-      if (rel === GATEWAY || rel === LEGACY_GATEWAY) continue;
+      // The gateways themselves and legacy re-export are allowed
+      if (rel === GATEWAY || rel === REX_GATEWAY || rel === LEGACY_GATEWAY) continue;
 
       const content = readFileSync(file, "utf-8");
       for (const pkg of domainPkgs) {
