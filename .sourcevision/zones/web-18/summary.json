@@ -1,0 +1,25 @@
+{
+  "id": "web-18",
+  "name": "Web 18",
+  "description": "7 files, primarily TypeScript",
+  "files": [
+    "packages/web/src/viewer/components/prd-tree/analyze-panel.ts",
+    "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
+    "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
+    "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+    "packages/web/src/viewer/views/analysis.ts",
+    "packages/web/tests/unit/viewer/batch-import-panel.test.ts",
+    "packages/web/tests/unit/viewer/smart-add-input.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/components/prd-tree/analyze-panel.ts",
+    "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
+    "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
+    "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+    "packages/web/src/viewer/views/analysis.ts"
+  ],
+  "cohesion": 0.67,
+  "coupling": 0.33,
+  "fileCount": 7,
+  "lineCount": 3191
+}

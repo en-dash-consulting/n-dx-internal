@@ -16713,6 +16713,156 @@
           ]
         }
       ]
+    },
+    {
+      "id": "a073ce08-ccc6-4fd3-af0a-ef0d952e5161",
+      "title": "Address observation issues (26 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- 1 circular dependency chain detected — see imports.json for details\n- Bidirectional coupling: \"web\" ↔ \"web-18\" (8+1 crossings) — consider extracting shared interface\n- Four of five zones exceed healthy coupling thresholds (>0.6), suggesting systematic architecture review needed for UI component organization\n- Multiple zones show architectural boundary issues, with only Error Recovery system achieving good cohesion/coupling balance\n- 18 entry points — wide API surface, consider consolidating exports\n- High coupling (0.65) — 2 imports target \"web-2\"\n- Low cohesion (0.35) — files are loosely related, consider splitting this zone\n- High coupling (0.73) — 2 imports target \"web-2\"\n- High coupling (0.71) — 2 imports target \"web-7\"\n- Low cohesion (0.29) — files are loosely related, consider splitting this zone\n- High coupling (0.7) — 2 imports target \"web-10\"\n- High coupling (0.62) — 7 imports target \"web-17\"\n- Low cohesion (0.38) — files are loosely related, consider splitting this zone\n- High coupling (0.6) — 2 imports target \"web\"\n- High coupling (0.8) — 13 imports target \"web\"\n- Low cohesion (0.2) — files are loosely related, consider splitting this zone\n- High coupling (0.7) — 1 imports target \"web-23\"\n- Low cohesion (0.3) — files are loosely related, consider splitting this zone\n- High coupling (0.59) — 3 imports target \"web-7\"\n- High coupling (0.51) — 1 imports target \"web-28\"\n- High coupling (0.58) — 9 imports target \"web-20\"\n- High coupling (0.71) — 1 imports target \"web-23\"\n- High coupling (0.72) — 3 imports target \"web\"\n- Low cohesion (0.28) — files are loosely related, consider splitting this zone\n- High coupling (0.62) — 3 imports target \"web-7\"\n- Low cohesion (0.38) — files are loosely related, consider splitting this zone",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "ddc831d1e606",
+          "26cfb4e9244c",
+          "819db31ad7e3",
+          "396510974c68",
+          "53404d7921bf",
+          "00a34888261f",
+          "185cc8b2a9d4",
+          "8d4aa911253f",
+          "cb9475913de8",
+          "f0b5137e8c53",
+          "773f8a1d05df",
+          "980f18efccfd",
+          "4c15da0b5901",
+          "10a6240f1c32",
+          "7c7e31624919",
+          "8a0e591eca2e",
+          "0c622cf6160f",
+          "8e6f8ac50b42",
+          "8cfd10e3b866",
+          "4becd149b126",
+          "824590d0e41e",
+          "1ac221565b82",
+          "9c8a0a18cdab",
+          "b064101a040c",
+          "73d1bfc1b764",
+          "9ec502cad34e"
+        ],
+        "category": "observation",
+        "severityDistribution": {
+          "warning": 26
+        },
+        "findingCount": 26
+      }
+    },
+    {
+      "id": "d4148da9-5f03-4853-90c8-fd19cc2da658",
+      "title": "Address pattern issues (9 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Client-server architectural boundary is well-maintained except for schema-infrastructure zone violation\n- Cross-cutting performance concerns are integrated into functional zones rather than separated into performance layers\n- Domain boundary success varies dramatically: hench achieves clean layered isolation while web shows architectural sprawl across 29 zones\n- Foundation anti-pattern where ui-foundation contains both infrastructure utilities and application-specific views\n- Inconsistent service abstraction patterns across utility zones - some achieve clean boundaries while others leak implementation details to consumers\n- Inconsistent use of abstraction patterns (hooks vs direct coupling) across similar UI zones indicates need for architectural standardization\n- Zone size distribution shows healthy specialization pattern broken by one oversized catch-all zone that needs decomposition\n- Critical architectural debt concentration in web package: 29 fragmented zones + god-zone pattern + systematic high coupling (12+ zones >0.6) indicates architectural reset needed before incremental improvements\n- Missing abstraction layer pattern spans visualization (charts + navigation), UI foundation (scattered across zones), and service interfaces (inconsistent contract patterns), indicating systematic under-architecture rather than over-engineering",
+      "priority": "critical",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "f17242ecf07f",
+          "41aa7c79e88b",
+          "7560ae5a40cd",
+          "19e141012498",
+          "1aedce93a8d6",
+          "435ab6cdab66",
+          "53603aabd2d4",
+          "a67d5e8ed2e8",
+          "3e71ee30cc0c"
+        ],
+        "category": "pattern",
+        "severityDistribution": {
+          "warning": 7,
+          "critical": 2
+        },
+        "findingCount": 9
+      }
+    },
+    {
+      "id": "6eaa3bc2-5a63-4397-8ec2-e2e1f2ab0e99",
+      "title": "Address relationship issues (2 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Multi-level hub architecture with web-platform as primary hub and multiple secondary hubs creates complex dependency hierarchies\n- Visualization concerns fragmented across multiple zones without clear abstraction hierarchy",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "cbc3259da8a3",
+          "be72e8b0c8d3"
+        ],
+        "category": "relationship",
+        "severityDistribution": {
+          "warning": 2
+        },
+        "findingCount": 2
+      }
+    },
+    {
+      "id": "730569fd-371f-41af-888f-7a21bbc87670",
+      "title": "Address anti-pattern issues (9 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Heavy cross-zone coupling (web-16 → web: 13 imports, web-24 → web-20: 9 imports) indicates missing abstraction layers between implementation details\n- Missing shared visualization interface abstraction forces chart and navigation zones to couple directly to different foundation systems\n- Multiple service layers (queue, validation) exceed expected coupling thresholds for isolated components, indicating insufficient architectural boundaries\n- Token usage views mixed into polling infrastructure zone instead of being consolidated with other usage analytics functionality\n- UI zone organization lacks consistent abstraction strategy - general utilities scattered across domain zones while application views leak into foundation layer\n- View components scattered across utility zones instead of grouped in dedicated view/page architectural layer\n- Web-16 zone imports heavily from multiple zones (13+8 imports) suggesting it occupies wrong architectural layer or needs interface abstraction\n- God function: PRDView in packages/web/src/viewer/views/prd.ts calls 83 unique functions — consider decomposing into smaller, focused functions\n- Web package exhibits god-zone anti-pattern where primary web zone (137 files) acts as catch-all while specialized concerns fragment into 28 micro-zones, inverting expected architectural hierarchy",
+      "priority": "critical",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "3884f192adc8",
+          "fdb1f048437b",
+          "d531738b35b6",
+          "800579648223",
+          "450211fdf701",
+          "f3b76b3b3dd6",
+          "a72e23b2c0d8",
+          "98047f726f86",
+          "dc0c536ca47d"
+        ],
+        "category": "anti-pattern",
+        "severityDistribution": {
+          "critical": 3,
+          "warning": 6
+        },
+        "findingCount": 9
+      }
+    },
+    {
+      "id": "1c0d65ba-447b-4285-a3bb-8ecaf18827fa",
+      "title": "Address suggestion issues (11 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Audit test-implementation pairs to identify orphaned tests and incomplete features that may indicate architectural boundary violations\n- Consolidate scattered token usage functionality from polling-infrastructure and navigation-state-management into dedicated usage analytics zone\n- Contract definition inconsistency across service zones - only command-validation uses explicit contracts.ts pattern\n- Define architectural risk thresholds: zones with cohesion < 0.4 AND coupling > 0.6 should trigger mandatory refactoring\n- Implement architectural risk scoring to identify zones with both low cohesion (<0.3) and high coupling (>0.7) for priority refactoring\n- Prioritize refactoring zones with combined architectural risks: cohesion < 0.5 AND coupling > 0.6 indicate fragile components\n- Three zones show catastrophic fragility (coupling >0.65, cohesion <0.4) requiring immediate architectural intervention before further development\n- Decompose packages/web/src/viewer/views/prd.ts PRDView function (83 calls) into focused components: extract data fetching layer (estimated 20-25 calls), state management layer (estimated 15-20 calls), and presentation components (remaining calls)\n- Establish architectural governance thresholds: zones with cohesion <0.4 AND coupling >0.6 require mandatory refactoring before new feature development - currently affects web-8, web-10, web-12, web-16 requiring immediate intervention\n- Implement three-phase web package consolidation: Phase 1 - merge zones web-2,web-10,web-11,web-13 (shared coupling patterns), Phase 2 - consolidate visualization zones web-14,web-16,web-17,web-24, Phase 3 - extract shared UI foundation from primary web zone\n- Refactor web-16 zone to reduce 13+ imports from web zone by extracting shared interface layer or moving components to appropriate architectural tier",
+      "priority": "critical",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "0d8d0569fe30",
+          "41f3f4b700e7",
+          "c5cfd3f996ee",
+          "1ccaee67d1ba",
+          "fc99fa260be8",
+          "18350def8b69",
+          "99ddb9e6e7bc",
+          "cbaaa3dbca8f",
+          "550887f15c3d",
+          "e3830ec5dc61",
+          "387689bf872f"
+        ],
+        "category": "suggestion",
+        "severityDistribution": {
+          "warning": 10,
+          "critical": 1
+        },
+        "findingCount": 11
+      }
     }
   ]
 }

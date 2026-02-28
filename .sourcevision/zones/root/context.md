@@ -54,6 +54,14 @@ Internal:
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
+- Perfect isolation with maximum cohesion (1.0) and zero coupling demonstrates clean orchestration architecture
+- Entry point files (ci.js, cli.js, config.js) provide clear separation of concerns for different operational contexts
+- Small zone size (12 files) indicates focused responsibility without scope creep
+- Exemplary architectural boundary with perfect cohesion and zero coupling, serving as a model for other zones
+- Serves as architectural boundary example with zero external coupling while maintaining perfect internal cohesion
+- Demonstrates ideal zone isolation pattern with no cross-zone dependencies, serving as architectural template
+- Refresh script naming pattern (refresh-artifacts.js, refresh-plan.js, refresh-validate.js) suggests manual operation triggers that could benefit from automation or consolidation
+- Multiple refresh-* scripts suggest manual operations that could be consolidated into a single parameterized refresh command
 - [call graph] 386 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

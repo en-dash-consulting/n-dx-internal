@@ -1,0 +1,17 @@
+{
+  "id": "web-5",
+  "name": "Web 5",
+  "description": "3 files, primarily TypeScript",
+  "files": [
+    "packages/web/src/viewer/batched-tick-dispatcher.ts",
+    "packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts",
+    "packages/web/tests/unit/viewer/tick-visibility-gate.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/batched-tick-dispatcher.ts"
+  ],
+  "cohesion": 0.5,
+  "coupling": 0.5,
+  "fileCount": 3,
+  "lineCount": 1504
+}

@@ -1,0 +1,19 @@
+{
+  "id": "web-25",
+  "name": "Web 25",
+  "description": "4 files, primarily TypeScript",
+  "files": [
+    "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
+    "packages/web/src/viewer/refresh-throttle.ts",
+    "packages/web/tests/integration/memory-aware-polling-suspension.test.ts",
+    "packages/web/tests/unit/viewer/refresh-throttle.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
+    "packages/web/src/viewer/refresh-throttle.ts"
+  ],
+  "cohesion": 0.5,
+  "coupling": 0.5,
+  "fileCount": 4,
+  "lineCount": 2039
+}

@@ -5,65 +5,76 @@
 <zone>
 
 Zone: Hench 2 (`hench-2`)
-Files: 11, Cohesion: 0.77, Coupling: 0.23
-Description: 11 files, primarily TypeScript
-Entry points: packages/hench/src/agent/tools.ts, packages/hench/src/tools/contracts.ts, packages/hench/src/tools/dispatch.ts, packages/hench/src/tools/index.ts, packages/hench/src/tools/shell.ts
-Lines: 1689
+Files: 10, Cohesion: 0.90, Coupling: 0.10
+Description: 10 files, primarily TypeScript
+Entry points: packages/hench/src/guard/index.ts, packages/hench/src/guard/paths.ts
+Lines: 1802
 
 </zone>
 
 <files>
 
-packages/hench/src/agent/tools.ts (TypeScript, 8 lines, source)
-packages/hench/src/tools/contracts.ts (TypeScript, 70 lines, source)
-packages/hench/src/tools/dispatch.ts (TypeScript, 238 lines, source)
-packages/hench/src/tools/files.ts (TypeScript, 135 lines, source)
-packages/hench/src/tools/git.ts (TypeScript, 53 lines, source)
-packages/hench/src/tools/index.ts (TypeScript, 33 lines, source)
-packages/hench/src/tools/shell.ts (TypeScript, 17 lines, source)
-packages/hench/src/tools/test-runner.ts (TypeScript, 318 lines, source)
-packages/hench/tests/unit/tools/files.test.ts (TypeScript, 130 lines, test)
-packages/hench/tests/unit/tools/git.test.ts (TypeScript, 246 lines, test)
-packages/hench/tests/unit/tools/test-runner.test.ts (TypeScript, 441 lines, test)
+packages/hench/src/guard/commands.ts (TypeScript, 87 lines, source)
+packages/hench/src/guard/contracts.ts (TypeScript, 33 lines, source)
+packages/hench/src/guard/index.ts (TypeScript, 166 lines, source)
+packages/hench/src/guard/paths.ts (TypeScript, 127 lines, source)
+packages/hench/src/guard/policy.ts (TypeScript, 252 lines, source)
+packages/hench/tests/unit/guard/commands.test.ts (TypeScript, 191 lines, test)
+packages/hench/tests/unit/guard/guard-integration.test.ts (TypeScript, 194 lines, test)
+packages/hench/tests/unit/guard/paths.test.ts (TypeScript, 166 lines, test)
+packages/hench/tests/unit/guard/policy.test.ts (TypeScript, 269 lines, test)
+packages/hench/tests/unit/tools/shell.test.ts (TypeScript, 317 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/hench/src/agent/tools.ts → packages/hench/src/tools/contracts.ts {ToolContext}
-  packages/hench/src/agent/tools.ts → packages/hench/src/tools/dispatch.ts {TOOL_DEFINITIONS, dispatchTool}
-  packages/hench/src/tools/dispatch.ts → packages/hench/src/tools/contracts.ts {ToolContext, RexToolHandlers, RexUpdateStatusParams, RexAppendLogParams, RexAddSubtaskParams}
-  packages/hench/src/tools/dispatch.ts → packages/hench/src/tools/files.ts {toolReadFile, toolWriteFile, toolListDirectory, toolSearchFiles}
-  packages/hench/src/tools/dispatch.ts → packages/hench/src/tools/git.ts {toolGit}
-  packages/hench/src/tools/dispatch.ts → packages/hench/src/tools/shell.ts {toolRunCommand}
-  packages/hench/src/tools/files.ts → packages/hench/src/tools/contracts.ts {ToolGuard}
-  packages/hench/src/tools/git.ts → packages/hench/src/tools/contracts.ts {ToolGuard}
-  packages/hench/src/tools/index.ts → packages/hench/src/tools/dispatch.ts {TOOL_DEFINITIONS, dispatchTool}
-  packages/hench/src/tools/index.ts → packages/hench/src/tools/files.ts {toolReadFile, toolWriteFile, toolListDirectory, toolSearchFiles}
-  packages/hench/src/tools/index.ts → packages/hench/src/tools/git.ts {toolGit}
-  packages/hench/src/tools/index.ts → packages/hench/src/tools/shell.ts {toolRunCommand}
-  packages/hench/src/tools/index.ts → packages/hench/src/tools/test-runner.ts {runPostTaskTests, findRelevantTests, isTestFile, candidateTestPaths, detectRunner, buildScopedCommand}
-  packages/hench/src/tools/index.ts → packages/hench/src/tools/test-runner.ts {PostRunTestResult, TestRunnerOptions}
-  packages/hench/src/tools/shell.ts → packages/hench/src/tools/contracts.ts {ToolGuard}
-  packages/hench/tests/unit/tools/files.test.ts → packages/hench/src/tools/contracts.ts {ToolGuard}
-  packages/hench/tests/unit/tools/files.test.ts → packages/hench/src/tools/files.ts {toolReadFile, toolWriteFile, toolListDirectory, toolSearchFiles}
-  packages/hench/tests/unit/tools/git.test.ts → packages/hench/src/tools/contracts.ts {ToolGuard}
-  packages/hench/tests/unit/tools/git.test.ts → packages/hench/src/tools/git.ts {toolGit}
-  packages/hench/tests/unit/tools/test-runner.test.ts → packages/hench/src/tools/test-runner.ts {isTestFile, candidateTestPaths, findRelevantTests, detectRunner, buildScopedCommand, runPostTaskTests}
+  packages/hench/src/guard/commands.ts → packages/hench/src/guard/paths.ts {GuardError}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/commands.ts {validateCommand}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/commands.ts {validateCommand}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/contracts.ts {GuardConfig, PolicyLimitsConfig}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/paths.ts {GuardError, validatePath, simpleGlobMatch}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/paths.ts {validatePath, simpleGlobMatch, GuardError}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/policy.ts {PolicyEngine}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/policy.ts {PolicyEngine}
+  packages/hench/src/guard/index.ts → packages/hench/src/guard/policy.ts {AuditEntry, SessionCounters, PolicyLimits, OperationType, AuditVerdict}
+  packages/hench/src/guard/policy.ts → packages/hench/src/guard/paths.ts {GuardError}
+  packages/hench/tests/unit/guard/commands.test.ts → packages/hench/src/guard/commands.ts {validateCommand}
+  packages/hench/tests/unit/guard/commands.test.ts → packages/hench/src/guard/paths.ts {GuardError}
+  packages/hench/tests/unit/guard/guard-integration.test.ts → packages/hench/src/guard/index.ts {GuardRails, GuardError}
+  packages/hench/tests/unit/guard/paths.test.ts → packages/hench/src/guard/paths.ts {validatePath, simpleGlobMatch, GuardError}
+  packages/hench/tests/unit/guard/policy.test.ts → packages/hench/src/guard/paths.ts {GuardError}
+  packages/hench/tests/unit/guard/policy.test.ts → packages/hench/src/guard/policy.ts {PolicyEngine, DEFAULT_POLICY_LIMITS}
+  packages/hench/tests/unit/tools/shell.test.ts → packages/hench/src/guard/index.ts {GuardRails}
 
 Outgoing (this zone → other zones):
-  → hench: packages/hench/src/tools/git.ts → packages/hench/src/tools/exec-shell.ts; packages/hench/src/tools/shell.ts → packages/hench/src/tools/exec-shell.ts; packages/hench/src/tools/test-runner.ts → packages/hench/src/process/index.ts
-  → hench-3: packages/hench/src/tools/files.ts → packages/hench/src/guard/paths.ts
+  → hench: packages/hench/tests/unit/guard/guard-integration.test.ts → packages/hench/src/schema/v1.ts; packages/hench/tests/unit/tools/shell.test.ts → packages/hench/src/schema/v1.ts; packages/hench/tests/unit/tools/shell.test.ts → packages/hench/src/tools/shell.ts
 
 Incoming (other zones → this zone):
-  ← hench: packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/tools/contracts.ts; packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/tools/dispatch.ts; packages/hench/src/agent/lifecycle/shared.ts → packages/hench/src/tools/index.ts; packages/hench/src/tools/rex.ts → packages/hench/src/tools/contracts.ts; packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/agent/tools.ts
-  ← hench-3: packages/hench/tests/unit/tools/shell.test.ts → packages/hench/src/tools/shell.ts
+  ← hench: packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/guard/index.ts; packages/hench/src/tools/files.ts → packages/hench/src/guard/paths.ts
 
 </imports>
 
+<findings>
+
+[observation] [info] High cohesion (0.9) — files are tightly interconnected
+
+</findings>
+
 <insights>
 
-- [call graph] 112 internal calls, 4 outgoing, 37 incoming (cohesion: 0.97, coupling: 0.03)
+- High cohesion (0.9) — files are tightly interconnected
+- High cohesion (0.9) with low coupling (0.1) demonstrates clean separation from core agent logic
+- Guard pattern implementation provides essential safety layer between agent decisions and system execution
+- Contract-based validation enables type-safe command verification and prevents malformed operations
+- Well-architected safety mechanism with strong internal cohesion and appropriate external isolation
+- Acts as middle layer in hench package's three-tier architecture
+- Successful implementation of validation layer pattern between agent-core and execution systems
+- Bidirectional coupling with agent-core violates validation layer isolation principle
+- Guard layer has bidirectional dependencies with agent-core (2+3 crossings), violating pure service layer pattern - validation should be unidirectional dependency
+- Explicit contracts.ts interface file demonstrates good API contract design pattern not consistently applied across other service zones
+- contracts.ts pattern should be adopted by other service zones (execution-queue) for consistent interface definition
+- [call graph] 114 internal calls, 53 outgoing, 1 incoming (cohesion: 0.68, coupling: 0.32)
 
 </insights>

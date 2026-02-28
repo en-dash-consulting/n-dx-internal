@@ -1,0 +1,17 @@
+{
+  "id": "web-27",
+  "name": "Web 27",
+  "description": "3 files, primarily TypeScript",
+  "files": [
+    "packages/web/src/viewer/request-dedup.ts",
+    "packages/web/tests/unit/viewer/execution-panel-dedup.test.ts",
+    "packages/web/tests/unit/viewer/request-dedup.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/request-dedup.ts"
+  ],
+  "cohesion": 0.4,
+  "coupling": 0.6,
+  "fileCount": 3,
+  "lineCount": 598
+}

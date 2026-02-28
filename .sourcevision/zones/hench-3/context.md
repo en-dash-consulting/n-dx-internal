@@ -5,68 +5,65 @@
 <zone>
 
 Zone: Hench 3 (`hench-3`)
-Files: 10, Cohesion: 0.90, Coupling: 0.10
-Description: 10 files, primarily TypeScript
-Entry points: packages/hench/src/guard/index.ts, packages/hench/src/guard/paths.ts
-Lines: 1802
+Files: 7, Cohesion: 0.88, Coupling: 0.13
+Description: 7 files, primarily TypeScript
+Entry points: packages/hench/src/queue/index.ts
+Lines: 1140
 
 </zone>
 
 <files>
 
-packages/hench/src/guard/commands.ts (TypeScript, 87 lines, source)
-packages/hench/src/guard/contracts.ts (TypeScript, 33 lines, source)
-packages/hench/src/guard/index.ts (TypeScript, 166 lines, source)
-packages/hench/src/guard/paths.ts (TypeScript, 127 lines, source)
-packages/hench/src/guard/policy.ts (TypeScript, 252 lines, source)
-packages/hench/tests/unit/guard/commands.test.ts (TypeScript, 191 lines, test)
-packages/hench/tests/unit/guard/guard-integration.test.ts (TypeScript, 194 lines, test)
-packages/hench/tests/unit/guard/paths.test.ts (TypeScript, 166 lines, test)
-packages/hench/tests/unit/guard/policy.test.ts (TypeScript, 269 lines, test)
-packages/hench/tests/unit/tools/shell.test.ts (TypeScript, 317 lines, test)
+packages/hench/src/queue/execution-queue.ts (TypeScript, 277 lines, source)
+packages/hench/src/queue/format.ts (TypeScript, 59 lines, source)
+packages/hench/src/queue/index.ts (TypeScript, 24 lines, source)
+packages/hench/src/queue/priority-scheduler.ts (TypeScript, 152 lines, source)
+packages/hench/tests/unit/queue/execution-queue.test.ts (TypeScript, 410 lines, test)
+packages/hench/tests/unit/queue/format.test.ts (TypeScript, 77 lines, test)
+packages/hench/tests/unit/queue/priority-scheduler.test.ts (TypeScript, 141 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/hench/src/guard/commands.ts → packages/hench/src/guard/paths.ts {GuardError}
-  packages/hench/src/guard/index.ts → packages/hench/src/guard/commands.ts {validateCommand}
-  packages/hench/src/guard/index.ts → packages/hench/src/guard/commands.ts {validateCommand}
-  packages/hench/src/guard/index.ts → packages/hench/src/guard/contracts.ts {GuardConfig, PolicyLimitsConfig}
-  packages/hench/src/guard/index.ts → packages/hench/src/guard/paths.ts {GuardError, validatePath, simpleGlobMatch}
-  packages/hench/src/guard/index.ts → packages/hench/src/guard/paths.ts {validatePath, simpleGlobMatch, GuardError}
-  packages/hench/src/guard/index.ts → packages/hench/src/guard/policy.ts {PolicyEngine}
-  packages/hench/src/guard/index.ts → packages/hench/src/guard/policy.ts {PolicyEngine}
-  packages/hench/src/guard/index.ts → packages/hench/src/guard/policy.ts {AuditEntry, SessionCounters, PolicyLimits, OperationType, AuditVerdict}
-  packages/hench/src/guard/policy.ts → packages/hench/src/guard/paths.ts {GuardError}
-  packages/hench/tests/unit/guard/commands.test.ts → packages/hench/src/guard/commands.ts {validateCommand}
-  packages/hench/tests/unit/guard/commands.test.ts → packages/hench/src/guard/paths.ts {GuardError}
-  packages/hench/tests/unit/guard/guard-integration.test.ts → packages/hench/src/guard/index.ts {GuardRails, GuardError}
-  packages/hench/tests/unit/guard/paths.test.ts → packages/hench/src/guard/paths.ts {validatePath, simpleGlobMatch, GuardError}
-  packages/hench/tests/unit/guard/policy.test.ts → packages/hench/src/guard/paths.ts {GuardError}
-  packages/hench/tests/unit/guard/policy.test.ts → packages/hench/src/guard/policy.ts {PolicyEngine, DEFAULT_POLICY_LIMITS}
-  packages/hench/tests/unit/tools/shell.test.ts → packages/hench/src/guard/index.ts {GuardRails}
-
-Outgoing (this zone → other zones):
-  → hench: packages/hench/tests/unit/guard/guard-integration.test.ts → packages/hench/src/schema/v1.ts; packages/hench/tests/unit/tools/shell.test.ts → packages/hench/src/schema/v1.ts
-  → hench-2: packages/hench/tests/unit/tools/shell.test.ts → packages/hench/src/tools/shell.ts
+  packages/hench/src/queue/format.ts → packages/hench/src/queue/execution-queue.ts {QueueStatus}
+  packages/hench/src/queue/index.ts → packages/hench/src/queue/execution-queue.ts {ExecutionQueue, normalizePriority}
+  packages/hench/src/queue/index.ts → packages/hench/src/queue/execution-queue.ts {TaskPriority, QueueEntry, QueueStatus}
+  packages/hench/src/queue/index.ts → packages/hench/src/queue/format.ts {formatQueueStatus, formatQueueStatusJson}
+  packages/hench/src/queue/index.ts → packages/hench/src/queue/priority-scheduler.ts {resolveSchedulingPriority, extractPriorityFromTags}
+  packages/hench/src/queue/index.ts → packages/hench/src/queue/priority-scheduler.ts {TaskPriorityMetadata}
+  packages/hench/src/queue/priority-scheduler.ts → packages/hench/src/queue/execution-queue.ts {normalizePriority}
+  packages/hench/src/queue/priority-scheduler.ts → packages/hench/src/queue/execution-queue.ts {TaskPriority}
+  packages/hench/tests/unit/queue/execution-queue.test.ts → packages/hench/src/queue/execution-queue.ts {ExecutionQueue, normalizePriority}
+  packages/hench/tests/unit/queue/execution-queue.test.ts → packages/hench/src/queue/execution-queue.ts {TaskPriority, QueueStatus}
+  packages/hench/tests/unit/queue/format.test.ts → packages/hench/src/queue/execution-queue.ts {QueueStatus}
+  packages/hench/tests/unit/queue/format.test.ts → packages/hench/src/queue/format.ts {formatQueueStatus, formatQueueStatusJson}
+  packages/hench/tests/unit/queue/priority-scheduler.test.ts → packages/hench/src/queue/priority-scheduler.ts {resolveSchedulingPriority, extractPriorityFromTags}
+  packages/hench/tests/unit/queue/priority-scheduler.test.ts → packages/hench/src/queue/priority-scheduler.ts {TaskPriorityMetadata}
 
 Incoming (other zones → this zone):
-  ← hench: packages/hench/src/agent/lifecycle/loop.ts → packages/hench/src/guard/index.ts
-  ← hench-2: packages/hench/src/tools/files.ts → packages/hench/src/guard/paths.ts
+  ← hench: packages/hench/src/cli/commands/run.ts → packages/hench/src/queue/index.ts; packages/hench/src/cli/commands/run.ts → packages/hench/src/queue/index.ts; packages/hench/src/public.ts → packages/hench/src/queue/index.ts; packages/hench/src/public.ts → packages/hench/src/queue/index.ts
 
 </imports>
 
 <findings>
 
-[observation] [info] High cohesion (0.9) — files are tightly interconnected
+[observation] [info] High cohesion (0.88) — files are tightly interconnected
 
 </findings>
 
 <insights>
 
-- High cohesion (0.9) — files are tightly interconnected
-- [call graph] 114 internal calls, 53 outgoing, 1 incoming (cohesion: 0.68, coupling: 0.32)
+- High cohesion (0.88) — files are tightly interconnected
+- Good cohesion (0.88) with moderate coupling (0.13) indicates focused queue management responsibilities
+- Compact implementation (7 files) suggests lean, purpose-built queue system without unnecessary complexity
+- Format utilities indicate structured task representation supporting consistent execution workflows
+- Focused queue implementation with good internal organization and reasonable external dependencies
+- Moderate coupling (0.13) indicates queue service is not sufficiently isolated from consuming systems
+- Queue implementation shows higher coupling (0.13) than expected for isolated service component - should be closer to 0.05 for proper separation
+- Format utility (format.ts) embedded within queue module may indicate misplaced formatting concerns that could serve other zones
+- format.ts utility may be misplaced within queue-specific module if it provides general-purpose formatting capabilities
+- [call graph] 46 internal calls, 0 outgoing, 6 incoming (cohesion: 1, coupling: 0)
 
 </insights>
