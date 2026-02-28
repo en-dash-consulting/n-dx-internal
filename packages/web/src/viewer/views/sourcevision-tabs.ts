@@ -1,5 +1,12 @@
-import type { ViewId } from "./types.js";
-import { ENRICHMENT_THRESHOLDS } from "./components/constants.js";
+/**
+ * SourceVision tab configuration — domain-specific view tab definitions.
+ *
+ * Defines the tab IDs, labels, icons, and minimum enrichment pass required
+ * for each SourceVision view. This is sourcevision domain config, not a
+ * generic infrastructure primitive.
+ */
+import type { ViewId } from "../types.js";
+import { ENRICHMENT_THRESHOLDS } from "./enrichment-thresholds.js";
 
 export type SourceVisionTabId = Extract<
   ViewId,

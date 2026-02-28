@@ -12,7 +12,7 @@ import {
 } from "./status-indicators.js";
 import { ConfigFooter } from "./config-footer.js";
 import { useProjectMetadata } from "../hooks/use-project-metadata.js";
-import { SOURCEVISION_TABS } from "../sourcevision-tabs.js";
+import { SOURCEVISION_TABS } from "../views/sourcevision-tabs.js";
 
 const STORAGE_KEY = "sidebar-expanded-section";
 

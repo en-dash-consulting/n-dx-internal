@@ -1,9 +1,9 @@
-export const ENRICHMENT_THRESHOLDS = {
-  architecture: 2,
-  problems: 3,
-  suggestions: 4,
-} as const;
-
+/**
+ * Infrastructure design tokens — generic primitives shared across all views.
+ *
+ * Domain-specific constants (e.g. enrichment thresholds) live in their
+ * respective domain directories (see views/enrichment-thresholds.ts).
+ */
 export const ZONE_COLORS = [
   "#00E5B9", // brand teal
   "#6c41f0", // brand purple

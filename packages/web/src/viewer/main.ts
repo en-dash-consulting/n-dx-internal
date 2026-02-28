@@ -32,7 +32,7 @@ import { TaskAuditView } from "./views/task-audit.js";
 import { NotionConfigView } from "./views/notion-config.js";
 import { IntegrationConfigView } from "./views/integration-config.js";
 import { FeatureTogglesView } from "./views/feature-toggles.js";
-import { SOURCEVISION_TAB_IDS } from "./sourcevision-tabs.js";
+import { SOURCEVISION_TAB_IDS } from "./views/sourcevision-tabs.js";
 import { useRouteState } from "./hooks/use-route-state.js";
 import { useAppData } from "./hooks/use-app-data.js";
 import { useMemoryMonitor } from "./hooks/use-memory-monitor.js";
