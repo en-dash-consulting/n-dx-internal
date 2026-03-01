@@ -40,6 +40,7 @@ import {
 import { sortZonesData } from "../util/sort.js";
 import {
   buildUndirectedGraph,
+  addDirectoryProximityEdges,
   louvainPhase1,
   mergeBidirectionalCoupling,
   mergeSmallCommunities,
@@ -69,6 +70,12 @@ const GENERIC_SEGMENTS = new Set([
   "pkg",
 ]);
 
+/** Segments skipped during zone ID derivation (generic + test directories). */
+const SKIPPABLE_SEGMENTS = new Set([
+  ...GENERIC_SEGMENTS,
+  "tests", "test", "spec", "specs", "mocks",
+]);
+
 /**
  * Derive a zone ID from the most common directory segment among files.
  * Root-level files → "root".
@@ -80,8 +87,8 @@ const GENERIC_SEGMENTS = new Set([
 export function deriveZoneId(files: string[], parentId?: string): string {
   // When deriving sub-zone IDs, treat parent's ID segments as generic
   const skip = parentId
-    ? new Set([...GENERIC_SEGMENTS, ...parentId.split("/").map(s => s.toLowerCase())])
-    : GENERIC_SEGMENTS;
+    ? new Set([...SKIPPABLE_SEGMENTS, ...parentId.split("/").map(s => s.toLowerCase())])
+    : SKIPPABLE_SEGMENTS;
 
   const segmentCounts = new Map<string, number>();
 
@@ -96,21 +103,22 @@ export function deriveZoneId(files: string[], parentId?: string): string {
     // Find first non-skip segment
     let found = false;
     for (const part of parts) {
-      const normalized = part.toLowerCase().replace(/_/g, "-");
-      if (!skip.has(part) && !skip.has(normalized)) {
-        segmentCounts.set(
-          normalized,
-          (segmentCounts.get(normalized) ?? 0) + 1
-        );
-        found = true;
-        break;
-      }
+      const normalized = part.toLowerCase().replace(/_/g, "-").replace(/^-+|-+$/g, "");
+      if (!normalized || skip.has(part) || skip.has(normalized)) continue;
+      segmentCounts.set(
+        normalized,
+        (segmentCounts.get(normalized) ?? 0) + 1
+      );
+      found = true;
+      break;
     }
     // If all segments were skipped, use the last one
     if (!found && parts.length > 0) {
       const last = parts[parts.length - 1];
-      const normalized = last.toLowerCase().replace(/_/g, "-");
-      segmentCounts.set(normalized, (segmentCounts.get(normalized) ?? 0) + 1);
+      const normalized = last.toLowerCase().replace(/_/g, "-").replace(/^-+|-+$/g, "");
+      if (normalized) {
+        segmentCounts.set(normalized, (segmentCounts.get(normalized) ?? 0) + 1);
+      }
     }
   }
 
@@ -127,6 +135,65 @@ export function deriveZoneId(files: string[], parentId?: string): string {
   }
 
   return bestSegment;
+}
+
+/**
+ * Disambiguate a zone ID by finding the most common path segment that
+ * appears AFTER the baseId segment in file paths. Returns `${baseId}-${next}`
+ * (e.g., "routes-admin") or just `baseId` if no discriminator found.
+ */
+export function disambiguateZoneId(
+  baseId: string,
+  files: string[],
+  parentId?: string
+): string {
+  const parentSegments = parentId
+    ? new Set(parentId.split("/").map(s => s.toLowerCase()))
+    : new Set<string>();
+
+  const nextCounts = new Map<string, number>();
+
+  for (const file of files) {
+    const parts = dirname(file).split("/");
+    // Find the index of the baseId segment
+    let baseIdx = -1;
+    for (let i = 0; i < parts.length; i++) {
+      const normalized = parts[i].toLowerCase().replace(/_/g, "-").replace(/^-+|-+$/g, "");
+      if (normalized === baseId) {
+        baseIdx = i;
+        break;
+      }
+    }
+    if (baseIdx === -1) continue;
+
+    // Look for the first meaningful segment after baseId
+    for (let i = baseIdx + 1; i < parts.length; i++) {
+      const normalized = parts[i].toLowerCase().replace(/_/g, "-").replace(/^-+|-+$/g, "");
+      if (
+        !normalized ||
+        SKIPPABLE_SEGMENTS.has(normalized) ||
+        parentSegments.has(normalized)
+      ) {
+        continue;
+      }
+      nextCounts.set(normalized, (nextCounts.get(normalized) ?? 0) + 1);
+      break;
+    }
+  }
+
+  if (nextCounts.size === 0) return baseId;
+
+  // Pick the most common next segment, tie-break lexicographic
+  let bestSegment = "";
+  let bestCount = 0;
+  for (const [seg, count] of nextCounts) {
+    if (count > bestCount || (count === bestCount && seg < bestSegment)) {
+      bestSegment = seg;
+      bestCount = count;
+    }
+  }
+
+  return bestSegment ? `${baseId}-${bestSegment}` : baseId;
 }
 
 /**
@@ -314,9 +381,14 @@ export function subdivideZone(
   for (const [, members] of sortedCommunities) {
     let subId = deriveZoneId(members, zone.id);
     if (usedIds.has(subId)) {
-      let suffix = 2;
-      while (usedIds.has(`${subId}-${suffix}`)) suffix++;
-      subId = `${subId}-${suffix}`;
+      const disambiguated = disambiguateZoneId(subId, members, zone.id);
+      if (disambiguated !== subId && !usedIds.has(disambiguated)) {
+        subId = disambiguated;
+      } else {
+        let suffix = 2;
+        while (usedIds.has(`${subId}-${suffix}`)) suffix++;
+        subId = `${subId}-${suffix}`;
+      }
     }
     usedIds.add(subId);
 
@@ -786,9 +858,14 @@ function buildZonesFromCommunities(
   for (const [, members] of sortedCommunities) {
     let id = deriveZoneId(members);
     if (usedIds.has(id)) {
-      let suffix = 2;
-      while (usedIds.has(`${id}-${suffix}`)) suffix++;
-      id = `${id}-${suffix}`;
+      const disambiguated = disambiguateZoneId(id, members);
+      if (disambiguated !== id && !usedIds.has(disambiguated)) {
+        id = disambiguated;
+      } else {
+        let suffix = 2;
+        while (usedIds.has(`${id}-${suffix}`)) suffix++;
+        id = `${id}-${suffix}`;
+      }
     }
     usedIds.add(id);
 
@@ -1274,6 +1351,12 @@ export async function analyzeZones(
     : imports.edges;
 
   const graph = buildUndirectedGraph(filteredEdges);
+
+  // Add directory proximity edges to give Louvain directory-structure awareness
+  const inventoryFiles = inventory.files
+    .filter(f => !isSubAnalyzedFile(f.path, subAnalyzedPrefixes))
+    .map(f => f.path);
+  addDirectoryProximityEdges(graph, inventoryFiles);
 
   // Build set of test files for metric exclusion
   const testFiles = new Set<string>();

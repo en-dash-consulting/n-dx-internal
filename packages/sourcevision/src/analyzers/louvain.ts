@@ -467,6 +467,74 @@ export function splitLargeCommunities(
   return result;
 }
 
+// ── Directory proximity edges ────────────────────────────────────────────────
+
+/**
+ * Add chain-topology edges between files sharing a parent directory.
+ *
+ * Groups files by immediate parent directory, sorts each group, then adds
+ * edges between sorted adjacent pairs. This brings import-isolated files
+ * (configs, scripts, etc.) into the Louvain graph and gives the algorithm
+ * directory-structure awareness — critical for convention-based frameworks
+ * where directory layout defines architecture.
+ *
+ * Chain topology produces O(n) edges per directory (vs O(n²) for clique),
+ * providing enough signal without overwhelming import-based edge weights.
+ *
+ * @param weight - Edge weight for proximity edges (default 0.2).
+ *   Low enough to not override import edges (weight ≥1) but high enough
+ *   to influence clustering of otherwise-disconnected files.
+ */
+export function addDirectoryProximityEdges(
+  graph: UndirectedGraph,
+  files: string[],
+  weight = 0.2
+): void {
+  // Group files by immediate parent directory
+  const dirGroups = new Map<string, string[]>();
+  for (const file of files) {
+    const lastSlash = file.lastIndexOf("/");
+    const dir = lastSlash === -1 ? "." : file.slice(0, lastSlash);
+    let group = dirGroups.get(dir);
+    if (!group) {
+      group = [];
+      dirGroups.set(dir, group);
+    }
+    group.push(file);
+  }
+
+  function ensureNode(n: string): Map<string, number> {
+    let neighbors = graph.get(n);
+    if (!neighbors) {
+      neighbors = new Map();
+      graph.set(n, neighbors);
+    }
+    return neighbors;
+  }
+
+  for (const [, group] of dirGroups) {
+    if (group.length < 2) {
+      // Single-file directories: still ensure the node exists in graph
+      if (group.length === 1) ensureNode(group[0]);
+      continue;
+    }
+
+    group.sort();
+
+    for (let i = 0; i < group.length - 1; i++) {
+      const a = group[i];
+      const b = group[i + 1];
+      const na = ensureNode(a);
+      const nb = ensureNode(b);
+      // Only add if no edge exists yet (don't inflate existing import edges)
+      if (!na.has(b)) {
+        na.set(b, weight);
+        nb.set(a, weight);
+      }
+    }
+  }
+}
+
 // ── Cap zone count ──────────────────────────────────────────────────────────
 
 export function capZoneCount(

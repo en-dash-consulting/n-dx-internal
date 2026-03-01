@@ -1,10 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
   buildUndirectedGraph,
+  addDirectoryProximityEdges,
 } from "../../../src/analyzers/louvain.js";
 import {
   deriveZoneId,
   deriveZoneName,
+  disambiguateZoneId,
   analyzeZones,
   assignByProximity,
 } from "../../../src/analyzers/zones.js";
@@ -142,7 +144,7 @@ describe("deriveZoneName", () => {
 // ── Integration: analyzeZones ───────────────────────────────────────────────
 
 describe("analyzeZones", () => {
-  it("returns no zones and all unzoned for empty import graph", async () => {
+  it("groups root-level files into a zone via directory proximity", async () => {
     const inventory = makeInventory([
       makeFileEntry("README.md", { role: "docs" }),
       makeFileEntry("package.json", { role: "config" }),
@@ -151,10 +153,12 @@ describe("analyzeZones", () => {
 
     const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
 
-    expect(result.zones).toHaveLength(0);
+    // Directory proximity edges pull root-level files into the graph,
+    // forming a zone instead of leaving them unzoned
+    expect(result.zones).toHaveLength(1);
+    expect(result.zones[0].id).toBe("root");
     expect(result.crossings).toHaveLength(0);
-    expect(result.unzoned).toContain("README.md");
-    expect(result.unzoned).toContain("package.json");
+    expect(result.unzoned).toHaveLength(0);
   });
 
   it("detects two disconnected clusters as separate zones", async () => {
@@ -240,7 +244,7 @@ describe("analyzeZones", () => {
     }
   });
 
-  it("puts non-import files in unzoned", async () => {
+  it("assigns non-import files to zones via directory proximity", async () => {
     const inventory = makeInventory([
       makeFileEntry("src/m/a.ts"),
       makeFileEntry("src/m/b.ts"),
@@ -256,8 +260,14 @@ describe("analyzeZones", () => {
 
     const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
 
-    expect(result.unzoned).toContain("README.md");
-    expect(result.unzoned).toContain(".gitignore");
+    // Directory proximity edges pull non-import files into the graph,
+    // so they get assigned to zones instead of remaining unzoned
+    expect(result.unzoned).toHaveLength(0);
+    // All files should be accounted for in zones
+    const allZonedFiles = result.zones.flatMap(z => z.files);
+    expect(allZonedFiles).toContain("src/m/a.ts");
+    expect(allZonedFiles).toContain("README.md");
+    expect(allZonedFiles).toContain(".gitignore");
   });
 
   it("merges communities that derive the same zone ID into one zone", async () => {
@@ -445,6 +455,219 @@ describe("analyzeZones", () => {
     // a.ts and b.ts both only connect to each other → coupling should be 0
     // (if test file were counted, the test→other/x.ts edge would add coupling)
     expect(coreZone!.coupling).toBe(0);
+  });
+});
+
+// ── addDirectoryProximityEdges ────────────────────────────────────────────────
+
+describe("addDirectoryProximityEdges", () => {
+  it("creates chain edges between sorted adjacent files in same directory", () => {
+    const graph = buildUndirectedGraph([]);
+    addDirectoryProximityEdges(graph, [
+      "src/utils/c.ts",
+      "src/utils/a.ts",
+      "src/utils/b.ts",
+    ]);
+
+    // After sorting: a.ts, b.ts, c.ts → edges a↔b and b↔c
+    expect(graph.get("src/utils/a.ts")?.get("src/utils/b.ts")).toBe(0.2);
+    expect(graph.get("src/utils/b.ts")?.get("src/utils/a.ts")).toBe(0.2);
+    expect(graph.get("src/utils/b.ts")?.get("src/utils/c.ts")).toBe(0.2);
+    expect(graph.get("src/utils/c.ts")?.get("src/utils/b.ts")).toBe(0.2);
+    // No direct edge between a and c (chain topology, not clique)
+    expect(graph.get("src/utils/a.ts")?.has("src/utils/c.ts")).toBeFalsy();
+  });
+
+  it("handles single-file directories without adding edges", () => {
+    const graph = buildUndirectedGraph([]);
+    addDirectoryProximityEdges(graph, ["src/lonely/only.ts"]);
+
+    // Node should exist in graph but have no neighbors
+    expect(graph.has("src/lonely/only.ts")).toBe(true);
+    expect(graph.get("src/lonely/only.ts")?.size).toBe(0);
+  });
+
+  it("does not overwrite existing import edges", () => {
+    const graph = buildUndirectedGraph([
+      makeEdge("src/mod/a.ts", "src/mod/b.ts", ["foo", "bar"]),
+    ]);
+
+    addDirectoryProximityEdges(graph, ["src/mod/a.ts", "src/mod/b.ts"]);
+
+    // Import edge weight (2) should be preserved, not replaced with 0.2
+    expect(graph.get("src/mod/a.ts")?.get("src/mod/b.ts")).toBe(2);
+  });
+
+  it("groups files by immediate parent, not deeper ancestry", () => {
+    const graph = buildUndirectedGraph([]);
+    addDirectoryProximityEdges(graph, [
+      "src/a/x.ts",
+      "src/a/y.ts",
+      "src/b/z.ts",
+    ]);
+
+    // a/x.ts and a/y.ts should be connected, but not with b/z.ts
+    expect(graph.get("src/a/x.ts")?.has("src/a/y.ts")).toBe(true);
+    expect(graph.get("src/a/x.ts")?.has("src/b/z.ts")).toBeFalsy();
+  });
+});
+
+// ── disambiguateZoneId ──────────────────────────────────────────────────────
+
+describe("disambiguateZoneId", () => {
+  it("produces routes-admin style names from deeper path segments", () => {
+    const result = disambiguateZoneId("routes", [
+      "src/routes/admin/users.ts",
+      "src/routes/admin/settings.ts",
+      "src/routes/admin/dashboard.ts",
+    ]);
+    expect(result).toBe("routes-admin");
+  });
+
+  it("returns baseId when no discriminating segment found", () => {
+    const result = disambiguateZoneId("routes", [
+      "config/routes.ts",
+      "other/file.ts",
+    ]);
+    expect(result).toBe("routes");
+  });
+
+  it("skips generic segments when looking for discriminator", () => {
+    const result = disambiguateZoneId("routes", [
+      "src/routes/src/admin/x.ts",
+      "src/routes/src/admin/y.ts",
+    ]);
+    expect(result).toBe("routes-admin");
+  });
+
+  it("respects parentId to skip parent segments", () => {
+    const result = disambiguateZoneId("api", [
+      "packages/web/src/api/users/list.ts",
+      "packages/web/src/api/users/create.ts",
+    ], "web");
+    expect(result).toBe("api-users");
+  });
+
+  it("picks the most common next segment when files differ", () => {
+    const result = disambiguateZoneId("routes", [
+      "src/routes/blog/post.ts",
+      "src/routes/blog/list.ts",
+      "src/routes/admin/users.ts",
+    ]);
+    expect(result).toBe("routes-blog");
+  });
+});
+
+// ── Zone ID normalization ───────────────────────────────────────────────────
+
+describe("zone ID normalization", () => {
+  it("normalizes __tests__ to tests, not --tests--", () => {
+    expect(
+      deriveZoneId(["src/mylib/__tests__/a.test.ts", "src/mylib/__tests__/b.test.ts"])
+    ).toBe("mylib");
+  });
+
+  it("normalizes __mocks__ without leading/trailing hyphens", () => {
+    // __mocks__ should become "mocks" (then skipped), so the next segment wins
+    expect(
+      deriveZoneId(["src/api/__mocks__/handler.ts"])
+    ).toBe("api");
+  });
+
+  it("normalizes _internal to internal", () => {
+    // _internal → "internal" (which is in GENERIC_SEGMENTS, so it's skipped)
+    // The next meaningful segment should win
+    expect(
+      deriveZoneId(["packages/mylib/_internal/utils.ts"])
+    ).toBe("mylib");
+  });
+});
+
+// ── Integration: directory proximity + disambiguation ────────────────────────
+
+describe("directory proximity integration", () => {
+  it("creates non-empty crossings for disconnected clusters sharing a parent", async () => {
+    // Two clusters in different directories under src/ with no import edges
+    // between them. Directory proximity edges in their shared parent should
+    // create connections that may produce crossings.
+    const inventory = makeInventory([
+      makeFileEntry("src/auth/login.ts"),
+      makeFileEntry("src/auth/signup.ts"),
+      makeFileEntry("src/auth/verify.ts"),
+      makeFileEntry("src/billing/invoice.ts"),
+      makeFileEntry("src/billing/payment.ts"),
+      makeFileEntry("src/billing/refund.ts"),
+    ]);
+    const imports = makeImports([
+      // auth cluster
+      makeEdge("src/auth/login.ts", "src/auth/signup.ts"),
+      makeEdge("src/auth/signup.ts", "src/auth/verify.ts"),
+      makeEdge("src/auth/login.ts", "src/auth/verify.ts"),
+      // billing cluster
+      makeEdge("src/billing/invoice.ts", "src/billing/payment.ts"),
+      makeEdge("src/billing/payment.ts", "src/billing/refund.ts"),
+      makeEdge("src/billing/invoice.ts", "src/billing/refund.ts"),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // Should produce 2 zones
+    expect(result.zones.length).toBe(2);
+    // Zone IDs should be meaningful (auth and billing)
+    const ids = result.zones.map(z => z.id).sort();
+    expect(ids).toEqual(["auth", "billing"]);
+  });
+
+  it("reduces unzoned files by pulling import-isolated files into graph", async () => {
+    const inventory = makeInventory([
+      makeFileEntry("src/core/a.ts"),
+      makeFileEntry("src/core/b.ts"),
+      makeFileEntry("src/core/c.ts"),
+      // Config files with no imports — previously would be unzoned
+      makeFileEntry("src/core/config.json", { role: "config", language: "JSON" }),
+      makeFileEntry("src/core/types.d.ts", { language: "TypeScript" }),
+    ]);
+    const imports = makeImports([
+      makeEdge("src/core/a.ts", "src/core/b.ts"),
+      makeEdge("src/core/b.ts", "src/core/c.ts"),
+      makeEdge("src/core/a.ts", "src/core/c.ts"),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // All files should end up zoned (either in graph or via proximity assignment)
+    expect(result.unzoned).toHaveLength(0);
+  });
+
+  it("produces disambiguated zone names instead of numeric suffixes", async () => {
+    // Two clusters that would both derive "routes" as zone ID
+    const inventory = makeInventory([
+      makeFileEntry("src/routes/admin/users.ts"),
+      makeFileEntry("src/routes/admin/settings.ts"),
+      makeFileEntry("src/routes/admin/dashboard.ts"),
+      makeFileEntry("src/routes/blog/posts.ts"),
+      makeFileEntry("src/routes/blog/comments.ts"),
+      makeFileEntry("src/routes/blog/tags.ts"),
+    ]);
+    const imports = makeImports([
+      // admin cluster
+      makeEdge("src/routes/admin/users.ts", "src/routes/admin/settings.ts"),
+      makeEdge("src/routes/admin/settings.ts", "src/routes/admin/dashboard.ts"),
+      makeEdge("src/routes/admin/users.ts", "src/routes/admin/dashboard.ts"),
+      // blog cluster
+      makeEdge("src/routes/blog/posts.ts", "src/routes/blog/comments.ts"),
+      makeEdge("src/routes/blog/comments.ts", "src/routes/blog/tags.ts"),
+      makeEdge("src/routes/blog/posts.ts", "src/routes/blog/tags.ts"),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    const ids = result.zones.map(z => z.id).sort();
+    // Should produce "routes-admin" and "routes-blog" (or just "routes" if merged)
+    // rather than "routes" and "routes-2"
+    for (const id of ids) {
+      expect(id).not.toMatch(/-\d+$/);
+    }
   });
 });
 
