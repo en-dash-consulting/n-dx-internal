@@ -7,7 +7,7 @@
 
 Project: n-dx
 Git: feature/integrate-codex @ 21786d2
-Files: 930, Lines: 312109
+Files: 930, Lines: 312264
 Languages: TypeScript(778) CSS(42) JSON(30) JavaScript(29) Markdown(25)
 Zones: 39, Described: 39
 Import edges: 2231, External packages: 18
@@ -22,34 +22,34 @@ Circulars: 1
   files: packages/hench/src/agent/analysis/adaptive.ts [service], packages/hench/src/agent/analysis/review.ts [service], packages/hench/src/agent/analysis/stuck.ts [service], packages/hench/src/agent/analysis/summary.ts [service], packages/hench/src/agent/analysis/workflow.ts [service], packages/hench/src/agent/completion.ts [service], packages/hench/src/agent/index.ts [entrypoint], packages/hench/src/agent/lifecycle/cli-loop.ts [service], packages/hench/src/agent/lifecycle/heartbeat.ts [service], packages/hench/src/agent/lifecycle/loop.ts [service] +120
 [hench-2] Hench 2 (10 files, coh=0.90 coup=0.10)
   10 files, primarily TypeScript
-  files: packages/hench/src/guard/commands.ts [service], packages/hench/src/guard/contracts.ts [types], packages/hench/src/guard/index.ts [entrypoint], packages/hench/src/guard/paths.ts [service], packages/hench/src/guard/policy.ts [service], packages/hench/tests/unit/guard/commands.test.ts, packages/hench/tests/unit/guard/guard-integration.test.ts, packages/hench/tests/unit/guard/paths.test.ts, packages/hench/tests/unit/guard/policy.test.ts, packages/hench/tests/unit/tools/shell.test.ts
+  files: packages/hench/src/guard/commands.ts [service], packages/hench/src/guard/contracts.ts [types], packages/hench/src/guard/index.ts [entrypoint], packages/hench/src/guard/paths.ts [utility], packages/hench/src/guard/policy.ts [service], packages/hench/tests/unit/guard/commands.test.ts, packages/hench/tests/unit/guard/guard-integration.test.ts, packages/hench/tests/unit/guard/paths.test.ts, packages/hench/tests/unit/guard/policy.test.ts, packages/hench/tests/unit/tools/shell.test.ts
 [hench-3] Hench 3 (7 files, coh=0.88 coup=0.13)
   7 files, primarily TypeScript
-  files: packages/hench/src/queue/execution-queue.ts [utility], packages/hench/src/queue/format.ts [utility], packages/hench/src/queue/index.ts [entrypoint], packages/hench/src/queue/priority-scheduler.ts [utility], packages/hench/tests/unit/queue/execution-queue.test.ts, packages/hench/tests/unit/queue/format.test.ts, packages/hench/tests/unit/queue/priority-scheduler.test.ts
+  files: packages/hench/src/queue/execution-queue.ts [service], packages/hench/src/queue/format.ts [utility], packages/hench/src/queue/index.ts [entrypoint], packages/hench/src/queue/priority-scheduler.ts [service], packages/hench/tests/unit/queue/execution-queue.test.ts, packages/hench/tests/unit/queue/format.test.ts, packages/hench/tests/unit/queue/priority-scheduler.test.ts
 [packages-llm-client:src] Src (4 files, coh=0.29 coup=0.71)
   4 files, primarily TypeScript
   files: packages/llm-client/src/api-provider.ts [service], packages/llm-client/src/config.ts [config], packages/llm-client/tests/unit/api-provider.test.ts, packages/llm-client/tests/unit/config.test.ts
 [packages-llm-client:src-2] Src 2 (16 files, coh=0.63 coup=0.38)
   16 files, primarily TypeScript
-  files: packages/llm-client/src/auth.ts [utility], packages/llm-client/src/exec.ts [utility], packages/llm-client/src/help-format.ts [utility], packages/llm-client/src/json.ts [utility], packages/llm-client/src/output.ts [utility], packages/llm-client/src/project-config.ts [config], packages/llm-client/src/project-dirs.ts [utility], packages/llm-client/src/public.ts [entrypoint], packages/llm-client/src/suggest.ts [utility], packages/llm-client/tests/unit/auth.test.ts +6
+  files: packages/llm-client/src/auth.ts [service], packages/llm-client/src/exec.ts [utility], packages/llm-client/src/help-format.ts [utility], packages/llm-client/src/json.ts [utility], packages/llm-client/src/output.ts [utility], packages/llm-client/src/project-config.ts [config], packages/llm-client/src/project-dirs.ts [utility], packages/llm-client/src/public.ts [entrypoint], packages/llm-client/src/suggest.ts [service], packages/llm-client/tests/unit/auth.test.ts +6
 [packages-llm-client:src-3] Src 3 (17 files, coh=0.65 coup=0.35)
   17 files, primarily TypeScript
-  files: packages/llm-client/src/cli-provider.ts [service], packages/llm-client/src/codex-cli-provider.ts [service], packages/llm-client/src/create-client.ts [utility], packages/llm-client/src/llm-client.ts [service], packages/llm-client/src/provider-interface.ts [types], packages/llm-client/src/provider-registry.ts [service], packages/llm-client/src/provider-session.ts [service], packages/llm-client/src/token-usage.ts [utility], packages/llm-client/src/types.ts [types], packages/llm-client/tests/unit/cli-provider.test.ts +7
+  files: packages/llm-client/src/cli-provider.ts [service], packages/llm-client/src/codex-cli-provider.ts [service], packages/llm-client/src/create-client.ts [utility], packages/llm-client/src/llm-client.ts [service], packages/llm-client/src/provider-interface.ts [types], packages/llm-client/src/provider-registry.ts [service], packages/llm-client/src/provider-session.ts [service], packages/llm-client/src/token-usage.ts [service], packages/llm-client/src/types.ts [types], packages/llm-client/tests/unit/cli-provider.test.ts +7
 [packages-llm-client:src-4] Src 4 (3 files, coh=0.20 coup=0.80)
   3 files, primarily TypeScript
   files: packages/llm-client/src/llm-config.ts [config], packages/llm-client/src/llm-types.ts [types], packages/llm-client/tests/unit/llm-config.test.ts
 [packages-rex:rex-cli] Rex PRD Management CLI (36 files, coh=1.00 coup=0.00)
   A self-contained CLI tool and MCP server for managing hierarchical product requirements documents, including code analysis, tree operations, validation, persistence, and AI-agent workflow integration.
-  files: packages/rex/src/analyze/index.ts [entrypoint], packages/rex/src/analyze/propose.ts [service], packages/rex/src/analyze/reconcile.ts [utility], packages/rex/src/analyze/scanners.ts [service], packages/rex/src/cli/commands/add.ts [cli-command], packages/rex/src/cli/commands/analyze.ts [cli-command], packages/rex/src/cli/commands/constants.ts [types], packages/rex/src/cli/commands/init.ts [cli-command], packages/rex/src/cli/commands/next.ts [cli-command], packages/rex/src/cli/commands/recommend.ts [cli-command] +26
+  files: packages/rex/src/analyze/index.ts [entrypoint], packages/rex/src/analyze/propose.ts [service], packages/rex/src/analyze/reconcile.ts [service], packages/rex/src/analyze/scanners.ts [service], packages/rex/src/cli/commands/add.ts [cli-command], packages/rex/src/cli/commands/analyze.ts [cli-command], packages/rex/src/cli/commands/constants.ts [types], packages/rex/src/cli/commands/init.ts [cli-command], packages/rex/src/cli/commands/next.ts [cli-command], packages/rex/src/cli/commands/recommend.ts [cli-command] +26
 [packages-sourcevision:cli] Cli (12 files, coh=0.74 coup=0.26)
   12 files, primarily TypeScript
   files: packages/sourcevision/src/cli/commands/constants.ts [types], packages/sourcevision/src/cli/commands/export-pdf.ts [cli-command], packages/sourcevision/src/cli/commands/init.ts [cli-command], packages/sourcevision/src/cli/commands/reset.ts [cli-command], packages/sourcevision/src/cli/commands/validate.ts [cli-command], packages/sourcevision/src/cli/errors.ts [utility], packages/sourcevision/src/cli/index.ts [entrypoint], packages/sourcevision/src/cli/output.ts [utility], packages/sourcevision/src/cli/serve.ts [cli-command], packages/sourcevision/tests/unit/cli/errors.test.ts +2
 [packages-sourcevision:tests] Tests (68 files, coh=0.94 coup=0.06)
   66 files, primarily TypeScript
-  files: packages/sourcevision/src/analyzers/callgraph-findings.ts [utility], packages/sourcevision/src/analyzers/callgraph.ts [service], packages/sourcevision/src/analyzers/claude-client.ts [service], packages/sourcevision/src/analyzers/components.ts [service], packages/sourcevision/src/analyzers/context.ts [service], packages/sourcevision/src/analyzers/enrich-batch.ts [service], packages/sourcevision/src/analyzers/enrich-config.ts [service], packages/sourcevision/src/analyzers/enrich-parsing.ts [service], packages/sourcevision/src/analyzers/enrich-per-zone.ts [service], packages/sourcevision/src/analyzers/enrich.ts [service] +58
+  files: packages/sourcevision/src/analyzers/callgraph-findings.ts [service], packages/sourcevision/src/analyzers/callgraph.ts [service], packages/sourcevision/src/analyzers/claude-client.ts [service], packages/sourcevision/src/analyzers/components.ts [utility], packages/sourcevision/src/analyzers/context.ts [utility], packages/sourcevision/src/analyzers/enrich-batch.ts [utility], packages/sourcevision/src/analyzers/enrich-config.ts [config], packages/sourcevision/src/analyzers/enrich-parsing.ts [utility], packages/sourcevision/src/analyzers/enrich-per-zone.ts [utility], packages/sourcevision/src/analyzers/enrich.ts [utility] +58
 [root] Root (12 files, coh=1.00 coup=0.00)
   12 files, primarily JavaScript
-  files: ci.js [entrypoint], cli.js [entrypoint], config.js [config], help.js [utility], refresh-artifacts.js [utility], refresh-plan.js [utility], refresh-validate.js [utility], tests/unit/help.test.js, tests/unit/refresh-artifacts.test.js, tests/unit/refresh-plan.test.js +2
+  files: ci.js [entrypoint], cli.js [entrypoint], config.js [config], help.js [utility], refresh-artifacts.js, refresh-plan.js, refresh-validate.js, tests/unit/help.test.js, tests/unit/refresh-artifacts.test.js, tests/unit/refresh-plan.test.js +2
 [web] Web (137 files, coh=0.87 coup=0.13)
   132 files, primarily TypeScript
   files: packages/web/src/cli/index.ts [entrypoint], packages/web/src/landing/index.html, packages/web/src/landing/landing.css, packages/web/src/landing/landing.ts [page], packages/web/src/public.ts [entrypoint], packages/web/src/schema/data-files.ts [schema], packages/web/src/server/aggregation-cache.ts [utility], packages/web/src/server/concurrent-execution-metrics.ts [utility], packages/web/src/server/domain-gateway.ts [gateway], packages/web/src/server/index.ts [entrypoint] +127
@@ -127,7 +127,7 @@ Circulars: 1
   files: packages/web/src/viewer/call-rate-limiter.ts [utility], packages/web/src/viewer/message-coalescer.ts [utility], packages/web/src/viewer/message-throttle.ts [utility], packages/web/tests/integration/request-dedup.test.ts, packages/web/tests/unit/viewer/call-rate-limiter.test.ts, packages/web/tests/unit/viewer/message-coalescer.test.ts, packages/web/tests/unit/viewer/message-throttle.test.ts
 [web-7] Web 7 (10 files, coh=0.28 coup=0.72)
   10 files, primarily TypeScript
-  files: packages/web/src/viewer/components/breadcrumb.ts [component], packages/web/src/viewer/components/constants.ts [types], packages/web/src/viewer/components/detail-panel.ts [component], packages/web/src/viewer/components/favicon.ts [component], packages/web/src/viewer/sourcevision-tabs.ts [types], packages/web/src/viewer/types.ts [types], packages/web/src/viewer/views/architecture.ts [page], packages/web/src/viewer/views/rex-dashboard.ts [page], packages/web/tests/unit/viewer/detail-panel.test.ts, packages/web/tests/unit/viewer/favicon.test.ts
+  files: packages/web/src/viewer/components/breadcrumb.ts [component], packages/web/src/viewer/components/constants.ts [types], packages/web/src/viewer/components/detail-panel.ts [component], packages/web/src/viewer/components/favicon.ts [component], packages/web/src/viewer/sourcevision-tabs.ts [utility], packages/web/src/viewer/types.ts [types], packages/web/src/viewer/views/architecture.ts [page], packages/web/src/viewer/views/rex-dashboard.ts [page], packages/web/tests/unit/viewer/detail-panel.test.ts, packages/web/tests/unit/viewer/favicon.test.ts
 [web-8] Web 8 (6 files, coh=0.38 coup=0.62)
   6 files, primarily TypeScript
   files: packages/web/src/viewer/components/config-footer.ts [component], packages/web/src/viewer/components/sidebar.ts [component], packages/web/src/viewer/components/status-indicators.ts [component], packages/web/src/viewer/hooks/use-project-metadata.ts [hook], packages/web/tests/unit/viewer/sidebar.test.ts, packages/web/tests/unit/viewer/status-indicators.test.ts
@@ -290,8 +290,9 @@ Server routes: 106 endpoints in 14 handler(s)
 
 [warning] 1 circular dependency chain detected — see imports.json for details
 [warning] Bidirectional coupling: "web" ↔ "web-18" (8+1 crossings) — consider extracting shared interface
-[warning] Four of five zones exceed healthy coupling thresholds (>0.6), suggesting systematic architecture review needed for UI component organization
+[critical] Four of five zones exceed healthy coupling thresholds (>0.6), suggesting systematic architecture review needed for UI component organization
 [warning] Multiple zones show architectural boundary issues, with only Error Recovery system achieving good cohesion/coupling balance
+[critical] Web package fragmentation into 29 separate zones indicates potential architectural debt requiring consolidation
 [warning] 18 entry points — wide API surface, consider consolidating exports [web]
 [warning] High coupling (0.65) — 2 imports target "web-2" [web-10]
 [warning] Low cohesion (0.35) — files are loosely related, consider splitting this zone [web-10]
@@ -302,13 +303,15 @@ Server routes: 106 endpoints in 14 handler(s)
 [warning] High coupling (0.62) — 7 imports target "web-17" [web-14]
 [warning] Low cohesion (0.38) — files are loosely related, consider splitting this zone [web-14]
 [warning] High coupling (0.6) — 2 imports target "web" [web-15]
-[warning] High coupling (0.8) — 13 imports target "web" [web-16]
-... +42 more
+... +49 more
 
 </findings>
 
 <next-steps>
 
+[high] Extract interface adapter layer for web-16 zone to reduce 13 imports from web z…
+  files: packages/web/src/viewer/components/faq.ts, packages/web/src/viewer/components/polling-suspension-indicator.ts, packages/web/src/viewer/components/refresh-queue-status.ts
+  category: fix
 [high] Refactor web-16 zone to reduce 13+ imports from web zone by extracting shared i…
   files: packages/web/src/viewer/components/faq.ts, packages/web/src/viewer/components/polling-suspension-indicator.ts, packages/web/src/viewer/components/refresh-queue-status.ts
   category: refactor
@@ -350,9 +353,6 @@ Server routes: 106 endpoints in 14 handler(s)
   category: refactor
 [high] Low cohesion (0.35) — files are loosely related, consider splitting this zone
   files: packages/web/src/viewer/components/data-display/collapsible-section.ts, packages/web/src/viewer/components/data-display/findings-list.ts, packages/web/src/viewer/components/search-filter.ts
-  category: refactor
-[high] High coupling (0.62) — 7 imports target "web-17"
-  files: packages/web/src/viewer/components/degradation-banner.ts, packages/web/src/viewer/components/prd-tree/execution-panel.ts, packages/web/src/viewer/graceful-degradation.ts
   category: refactor
 
 </next-steps>

@@ -1555,6 +1555,8 @@
         "Web package exhibits god-zone anti-pattern where primary web zone (137 files) acts as catch-all while specialized concerns fragment into 28 micro-zones, inverting expected architectural hierarchy",
         "Web package exhibits systematic architectural debt requiring comprehensive refactoring strategy rather than incremental fixes",
         "Implement three-phase web package consolidation: Phase 1 - merge zones web-2,web-10,web-11,web-13 (shared coupling patterns), Phase 2 - consolidate visualization zones web-14,web-16,web-17,web-24, Phase 3 - extract shared UI foundation from primary web zone",
+        "Primary web zone acts as architectural sink, accumulating 137 files while proper domain separation fragments into 28+ micro-zones, indicating inverted architectural hierarchy",
+        "Implement emergency web package restructuring: Phase 1 - extract shared UI foundation from primary 137-file zone into dedicated @n-dx/ui-foundation package, Phase 2 - migrate visualization zones (web-14,web-16,web-17,web-24) into consolidated visualization layer, Phase 3 - merge coupling clusters (web-2,web-10,web-11,web-13) based on shared dependency patterns identified in zone metrics",
         "[call graph] 2699 internal calls, 34 outgoing, 5 incoming (cohesion: 0.99, coupling: 0.01)"
       ]
     },
@@ -1822,6 +1824,7 @@
         "Zone occupies wrong architectural layer based on heavy import pattern (13+ imports from web zone)",
         "Refactor web-16 zone to reduce 13+ imports from web zone by extracting shared interface layer or moving components to appropriate architectural tier",
         "Zone demonstrates classic wrong-layer anti-pattern with 13+ imports suggesting misplaced architectural responsibility",
+        "Extract interface adapter layer for web-16 zone to reduce 13 imports from web zone: create packages/web/src/interfaces/web-platform-adapter.ts consolidating cross-zone dependencies, then refactor web-16 components to depend on adapter contracts rather than direct web zone imports",
         "[call graph] 126 internal calls, 14 outgoing, 0 incoming (cohesion: 0.9, coupling: 0.1)"
       ]
     },
@@ -4854,6 +4857,13 @@
     "Missing abstraction layer pattern spans visualization (charts + navigation), UI foundation (scattered across zones), and service interfaces (inconsistent contract patterns), indicating systematic under-architecture rather than over-engineering",
     "Decompose packages/web/src/viewer/views/prd.ts PRDView function (83 calls) into focused components: extract data fetching layer (estimated 20-25 calls), state management layer (estimated 15-20 calls), and presentation components (remaining calls)",
     "Establish architectural governance thresholds: zones with cohesion <0.4 AND coupling >0.6 require mandatory refactoring before new feature development - currently affects web-8, web-10, web-12, web-16 requiring immediate intervention",
+    "Architectural debt cascade pattern: god-zone anti-pattern in web package creates fragmentation pressure, leading to micro-zone proliferation, which increases coupling as fragments reach across boundaries, ultimately requiring missing abstraction layers - this cascade affects 12+ zones with coupling >0.6",
+    "Foundation-application boundary erosion pattern: UI foundation concerns mixed with application views across multiple zones indicates systematic violation of layered architecture principles, requiring clear separation between infrastructure utilities and domain-specific implementations",
+    "Visualization architecture gap pattern: chart, navigation, and performance visualization concerns distributed across 6+ zones without shared abstraction layer, forcing direct coupling to different foundation systems and preventing reuse opportunities",
+    "Service contract inconsistency pattern: only command-validation zone implements explicit contracts.ts pattern while other service zones use implicit interfaces, indicating need for architectural standardization across service boundaries",
+    "Critical mass architectural reset pattern: web package exhibits simultaneous god-zone (137 files), fragmentation (29 zones), and high-coupling (12+ zones >0.6) symptoms indicating architectural debt has exceeded incremental fix threshold and requires systematic restructuring before new development",
+    "Implement architectural governance pipeline: establish automated coupling/cohesion threshold enforcement (cohesion >0.4, coupling <0.6) with CI/CD gates preventing commits that worsen metrics for zones already exceeding thresholds, particularly web-8, web-10, web-12, web-16 requiring immediate intervention",
+    "Create visualization abstraction layer: extract packages/web/src/visualization/index.ts consolidating chart rendering, navigation state, and performance monitoring patterns currently scattered across web-14, web-16, web-17, web-24 zones, reducing 30+ cross-zone imports to single interface dependency",
     "[call graph] 61 calls: \"web-14\" → \"web-24\"",
     "[call graph] 53 calls: \"hench-2\" → \"hench\"",
     "[call graph] 35 calls: \"web-24\" → \"web-20\"",
@@ -4901,7 +4911,7 @@
       "pass": 1,
       "scope": "global",
       "text": "Four of five zones exceed healthy coupling thresholds (>0.6), suggesting systematic architecture review needed for UI component organization",
-      "severity": "warning"
+      "severity": "critical"
     },
     {
       "type": "observation",
@@ -4936,7 +4946,7 @@
       "pass": 1,
       "scope": "global",
       "text": "Web package fragmentation into 29 separate zones indicates potential architectural debt requiring consolidation",
-      "severity": "info"
+      "severity": "critical"
     },
     {
       "type": "observation",
@@ -5173,7 +5183,7 @@
       "pass": 2,
       "scope": "global",
       "text": "Error-recovery zone demonstrates how focused responsibility leads to excellent architectural metrics (0.64 cohesion, 0.36 coupling)",
-      "severity": "info"
+      "severity": "critical"
     },
     {
       "type": "pattern",
@@ -5250,6 +5260,13 @@
       "pass": 5,
       "scope": "global",
       "text": "Critical architectural debt concentration in web package: 29 fragmented zones + god-zone pattern + systematic high coupling (12+ zones >0.6) indicates architectural reset needed before incremental improvements",
+      "severity": "critical"
+    },
+    {
+      "type": "pattern",
+      "pass": 5,
+      "scope": "global",
+      "text": "Critical mass architectural reset pattern: web package exhibits simultaneous god-zone (137 files), fragmentation (29 zones), and high-coupling (12+ zones >0.6) symptoms indicating architectural debt has exceeded incremental fix threshold and requires systematic restructuring before new development",
       "severity": "critical"
     },
     {
@@ -5494,6 +5511,13 @@
       "type": "suggestion",
       "pass": 5,
       "scope": "global",
+      "text": "Create visualization abstraction layer: extract packages/web/src/visualization/index.ts consolidating chart rendering, navigation state, and performance monitoring patterns currently scattered across web-14, web-16, web-17, web-24 zones, reducing 30+ cross-zone imports to single interface dependency",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
       "text": "Decompose packages/web/src/viewer/views/prd.ts PRDView function (83 calls) into focused components: extract data fetching layer (estimated 20-25 calls), state management layer (estimated 15-20 calls), and presentation components (remaining calls)",
       "severity": "critical"
     },
@@ -5502,6 +5526,13 @@
       "pass": 5,
       "scope": "global",
       "text": "Establish architectural governance thresholds: zones with cohesion <0.4 AND coupling >0.6 require mandatory refactoring before new feature development - currently affects web-8, web-10, web-12, web-16 requiring immediate intervention",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Implement architectural governance pipeline: establish automated coupling/cohesion threshold enforcement (cohesion >0.4, coupling <0.6) with CI/CD gates preventing commits that worsen metrics for zones already exceeding thresholds, particularly web-8, web-10, web-12, web-16 requiring immediate intervention",
       "severity": "warning"
     },
     {
@@ -5618,8 +5649,22 @@
       "type": "suggestion",
       "pass": 5,
       "scope": "web",
+      "text": "Implement emergency web package restructuring: Phase 1 - extract shared UI foundation from primary 137-file zone into dedicated @n-dx/ui-foundation package, Phase 2 - migrate visualization zones (web-14,web-16,web-17,web-24) into consolidated visualization layer, Phase 3 - merge coupling clusters (web-2,web-10,web-11,web-13) based on shared dependency patterns identified in zone metrics",
+      "severity": "critical"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "web",
       "text": "Implement three-phase web package consolidation: Phase 1 - merge zones web-2,web-10,web-11,web-13 (shared coupling patterns), Phase 2 - consolidate visualization zones web-14,web-16,web-17,web-24, Phase 3 - extract shared UI foundation from primary web zone",
       "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "web-16",
+      "text": "Extract interface adapter layer for web-16 zone to reduce 13 imports from web zone: create packages/web/src/interfaces/web-platform-adapter.ts consolidating cross-zone dependencies, then refactor web-16 components to depend on adapter contracts rather than direct web zone imports",
+      "severity": "critical"
     },
     {
       "type": "suggestion",
@@ -5630,7 +5675,7 @@
     }
   ],
   "enrichmentPass": 4,
-  "metaEvaluationCount": 2,
+  "metaEvaluationCount": 3,
   "structureHash": "a0e5fabcaedd4ff2",
   "zoneContentHashes": {
     "root": "b1b6cef4af64326f",

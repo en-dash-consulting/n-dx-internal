@@ -502,6 +502,7 @@ Incoming (other zones → this zone):
 [observation] [warning] 18 entry points — wide API surface, consider consolidating exports
 [observation] [info] High cohesion (0.87) — files are tightly interconnected
 [anti-pattern] [critical] Web package exhibits god-zone anti-pattern where primary web zone (137 files) acts as catch-all while specialized concerns fragment into 28 micro-zones, inverting expected architectural hierarchy
+[suggestion] [critical] Implement emergency web package restructuring: Phase 1 - extract shared UI foundation from primary 137-file zone into dedicated @n-dx/ui-foundation package, Phase 2 - migrate visualization zones (web-14,web-16,web-17,web-24) into consolidated visualization layer, Phase 3 - merge coupling clusters (web-2,web-10,web-11,web-13) based on shared dependency patterns identified in zone metrics
 [suggestion] [warning] Implement three-phase web package consolidation: Phase 1 - merge zones web-2,web-10,web-11,web-13 (shared coupling patterns), Phase 2 - consolidate visualization zones web-14,web-16,web-17,web-24, Phase 3 - extract shared UI foundation from primary web zone
 
 </findings>
@@ -524,6 +525,8 @@ Incoming (other zones → this zone):
 - Web package exhibits god-zone anti-pattern where primary web zone (137 files) acts as catch-all while specialized concerns fragment into 28 micro-zones, inverting expected architectural hierarchy
 - Web package exhibits systematic architectural debt requiring comprehensive refactoring strategy rather than incremental fixes
 - Implement three-phase web package consolidation: Phase 1 - merge zones web-2,web-10,web-11,web-13 (shared coupling patterns), Phase 2 - consolidate visualization zones web-14,web-16,web-17,web-24, Phase 3 - extract shared UI foundation from primary web zone
+- Primary web zone acts as architectural sink, accumulating 137 files while proper domain separation fragments into 28+ micro-zones, indicating inverted architectural hierarchy
+- Implement emergency web package restructuring: Phase 1 - extract shared UI foundation from primary 137-file zone into dedicated @n-dx/ui-foundation package, Phase 2 - migrate visualization zones (web-14,web-16,web-17,web-24) into consolidated visualization layer, Phase 3 - merge coupling clusters (web-2,web-10,web-11,web-13) based on shared dependency patterns identified in zone metrics
 - [call graph] 2699 internal calls, 34 outgoing, 5 incoming (cohesion: 0.99, coupling: 0.01)
 
 </insights>

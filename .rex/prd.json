@@ -16717,11 +16717,13 @@
     {
       "id": "a073ce08-ccc6-4fd3-af0a-ef0d952e5161",
       "title": "Address observation issues (26 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- 1 circular dependency chain detected — see imports.json for details\n- Bidirectional coupling: \"web\" ↔ \"web-18\" (8+1 crossings) — consider extracting shared interface\n- Four of five zones exceed healthy coupling thresholds (>0.6), suggesting systematic architecture review needed for UI component organization\n- Multiple zones show architectural boundary issues, with only Error Recovery system achieving good cohesion/coupling balance\n- 18 entry points — wide API surface, consider consolidating exports\n- High coupling (0.65) — 2 imports target \"web-2\"\n- Low cohesion (0.35) — files are loosely related, consider splitting this zone\n- High coupling (0.73) — 2 imports target \"web-2\"\n- High coupling (0.71) — 2 imports target \"web-7\"\n- Low cohesion (0.29) — files are loosely related, consider splitting this zone\n- High coupling (0.7) — 2 imports target \"web-10\"\n- High coupling (0.62) — 7 imports target \"web-17\"\n- Low cohesion (0.38) — files are loosely related, consider splitting this zone\n- High coupling (0.6) — 2 imports target \"web\"\n- High coupling (0.8) — 13 imports target \"web\"\n- Low cohesion (0.2) — files are loosely related, consider splitting this zone\n- High coupling (0.7) — 1 imports target \"web-23\"\n- Low cohesion (0.3) — files are loosely related, consider splitting this zone\n- High coupling (0.59) — 3 imports target \"web-7\"\n- High coupling (0.51) — 1 imports target \"web-28\"\n- High coupling (0.58) — 9 imports target \"web-20\"\n- High coupling (0.71) — 1 imports target \"web-23\"\n- High coupling (0.72) — 3 imports target \"web\"\n- Low cohesion (0.28) — files are loosely related, consider splitting this zone\n- High coupling (0.62) — 3 imports target \"web-7\"\n- Low cohesion (0.38) — files are loosely related, consider splitting this zone",
       "priority": "high",
       "source": "sourcevision",
+      "startedAt": "2026-02-28T13:07:51.957Z",
+      "completedAt": "2026-02-28T13:27:11.100Z",
       "recommendationMeta": {
         "findingHashes": [
           "ddc831d1e606",
@@ -16793,7 +16795,7 @@
         {
           "id": "c6599984-d5d9-4ad1-8c6f-81d201213c71",
           "title": "Fix foundation zone boundaries and standardize abstraction patterns",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Address ui-foundation anti-pattern (web-7): domain-specific views mixed with infrastructure primitives. Standardize hook vs direct coupling patterns across UI zones. Addresses findings: foundation anti-pattern, inconsistent service abstraction patterns, inconsistent hook patterns.",
           "acceptanceCriteria": [
@@ -16806,12 +16808,14 @@
             "web",
             "architecture",
             "refactor"
-          ]
+          ],
+          "startedAt": "2026-02-28T05:20:52.028Z",
+          "completedAt": "2026-02-28T05:29:35.854Z"
         },
         {
           "id": "b527dfb0-19f5-4d86-b56f-96218c38e04c",
           "title": "Fix schema-infrastructure client-server boundary violation",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Clean separation between schema/ validation (server-side contracts) and viewer/ data loading (client-side). Address the zone violation where schema files are grouped with viewer files. Addresses findings: client-server boundary violation, domain boundary sprawl.",
           "acceptanceCriteria": [
@@ -16824,7 +16828,9 @@
             "web",
             "architecture",
             "refactor"
-          ]
+          ],
+          "startedAt": "2026-02-28T05:29:59.436Z",
+          "completedAt": "2026-02-28T05:37:07.312Z"
         }
       ],
       "recommendationMeta": {
@@ -16850,11 +16856,13 @@
     {
       "id": "6eaa3bc2-5a63-4397-8ec2-e2e1f2ab0e99",
       "title": "Address relationship issues (2 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Multi-level hub architecture with web-platform as primary hub and multiple secondary hubs creates complex dependency hierarchies\n- Visualization concerns fragmented across multiple zones without clear abstraction hierarchy",
       "priority": "high",
       "source": "sourcevision",
+      "startedAt": "2026-02-28T13:27:39.772Z",
+      "completedAt": "2026-02-28T13:36:13.619Z",
       "recommendationMeta": {
         "findingHashes": [
           "cbc3259da8a3",
@@ -16919,12 +16927,13 @@
     {
       "id": "1c0d65ba-447b-4285-a3bb-8ecaf18827fa",
       "title": "Address suggestion issues (11 findings)",
-      "status": "in_progress",
+      "status": "completed",
       "level": "feature",
       "description": "- Audit test-implementation pairs to identify orphaned tests and incomplete features that may indicate architectural boundary violations\n- Consolidate scattered token usage functionality from polling-infrastructure and navigation-state-management into dedicated usage analytics zone\n- Contract definition inconsistency across service zones - only command-validation uses explicit contracts.ts pattern\n- Define architectural risk thresholds: zones with cohesion < 0.4 AND coupling > 0.6 should trigger mandatory refactoring\n- Implement architectural risk scoring to identify zones with both low cohesion (<0.3) and high coupling (>0.7) for priority refactoring\n- Prioritize refactoring zones with combined architectural risks: cohesion < 0.5 AND coupling > 0.6 indicate fragile components\n- Three zones show catastrophic fragility (coupling >0.65, cohesion <0.4) requiring immediate architectural intervention before further development\n- Decompose packages/web/src/viewer/views/prd.ts PRDView function (83 calls) into focused components: extract data fetching layer (estimated 20-25 calls), state management layer (estimated 15-20 calls), and presentation components (remaining calls)\n- Establish architectural governance thresholds: zones with cohesion <0.4 AND coupling >0.6 require mandatory refactoring before new feature development - currently affects web-8, web-10, web-12, web-16 requiring immediate intervention\n- Implement three-phase web package consolidation: Phase 1 - merge zones web-2,web-10,web-11,web-13 (shared coupling patterns), Phase 2 - consolidate visualization zones web-14,web-16,web-17,web-24, Phase 3 - extract shared UI foundation from primary web zone\n- Refactor web-16 zone to reduce 13+ imports from web zone by extracting shared interface layer or moving components to appropriate architectural tier",
       "priority": "critical",
       "source": "sourcevision",
       "startedAt": "2026-02-28T05:09:26.029Z",
+      "completedAt": "2026-02-28T05:20:51.730Z",
       "children": [
         {
           "id": "3c7748ef-5881-43f7-962b-e6b36c10ed6d",
@@ -16952,38 +16961,44 @@
         {
           "id": "fb020bb9-525b-4b3c-a612-4a05ba1b29e7",
           "title": "Consolidate token usage files into dedicated zone boundary",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Move scattered token usage functionality from polling-infrastructure (web-24) and navigation-state-management (web-26) zones into a coherent grouping. Address orphaned token-usage-nav.test.ts.",
           "priority": "medium",
           "tags": [
             "web",
             "architecture"
-          ]
+          ],
+          "startedAt": "2026-02-28T13:36:38.557Z",
+          "completedAt": "2026-02-28T13:44:11.371Z"
         },
         {
           "id": "fb8aa6a9-a6cd-48b3-b566-83405fb39907",
           "title": "Refactor web-16 main.ts god component to reduce cross-zone coupling",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Extract view registry pattern from main.ts to eliminate 13+ direct imports from web zone. Separate bootstrap concerns from view orchestration. Addresses web-16 coupling (0.8) and cohesion (0.2).",
           "priority": "high",
           "tags": [
             "web",
             "architecture"
-          ]
+          ],
+          "startedAt": "2026-02-28T05:37:59.657Z",
+          "completedAt": "2026-02-28T05:44:14.464Z"
         },
         {
           "id": "f087383f-f245-4a90-b174-0ba4d8fd5ccf",
           "title": "Audit orphaned tests and standardize contract patterns",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Address two suggestions: audit test-implementation pairs for orphaned tests / incomplete features, and evaluate contract definition consistency across service zones.",
           "priority": "low",
           "tags": [
             "architecture",
             "testing"
-          ]
+          ],
+          "startedAt": "2026-02-28T13:44:35.784Z",
+          "completedAt": "2026-02-28T13:52:37.355Z"
         }
       ],
       "recommendationMeta": {

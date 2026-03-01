@@ -6,11 +6,11 @@
 ## Project Overview
 
 - **Files**: 930
-- **Lines of code**: 312,109
+- **Lines of code**: 312,264
 - **Languages**: TypeScript (778), CSS (42), JSON (30), JavaScript (29), Markdown (25)
 - **Zones**: 39 (39 with descriptions)
 - **Git**: feature/integrate-codex @ 21786d2
-- **Analyzed**: 2026-02-28T04:02:38.226Z
+- **Analyzed**: 2026-02-28T04:21:07.987Z
 
 ## Architecture Zones
 
@@ -595,14 +595,14 @@ POST    /api/hench/workflow/suggestions/:id
 - Client-server architectural boundary is well-maintained except for schema-infrastructure zone violation [warning]
 - Cross-cutting performance concerns are integrated into functional zones rather than separated into performance layers [critical]
 - Domain boundary success varies dramatically: hench achieves clean layered isolation while web shows architectural sprawl across 29 zones [warning]
-- Error-recovery zone demonstrates how focused responsibility leads to excellent architectural metrics (0.64 cohesion, 0.36 coupling) [info]
+- Error-recovery zone demonstrates how focused responsibility leads to excellent architectural metrics (0.64 cohesion, 0.36 coupling) [critical]
 - Foundation anti-pattern where ui-foundation contains both infrastructure utilities and application-specific views [warning]
 - Functional zone clustering (polling, performance, visualization) suggests opportunities for architectural consolidation [info]
 - Hook-component co-location pattern provides good separation between state management and presentation across zones [info]
 - Hub-and-spoke architecture with UI zones radiating from different foundation systems creates clean separation but misses opportunities for shared abstractions [info]
 - Inconsistent service abstraction patterns across utility zones - some achieve clean boundaries while others leak implementation details to consumers [warning]
 - Inconsistent use of abstraction patterns (hooks vs direct coupling) across similar UI zones indicates need for architectural standardization [warning]
-- ... and 7 more
+- ... and 8 more
 
 ### Relationships
 
@@ -620,7 +620,7 @@ POST    /api/hench/workflow/suggestions/:id
 - Hub: packages/web/src/viewer/types.ts is imported by 12 zones — cross-cutting dependency [info]
 - Size imbalance: largest zone has 137 files vs smallest with 3 — uneven decomposition [info]
 - Cross-zone import from Event Dispatching to Timer Infrastructure follows logical dependency patterns for event timing [info]
-- Four of five zones exceed healthy coupling thresholds (>0.6), suggesting systematic architecture review needed for UI component organization [warning]
+- Four of five zones exceed healthy coupling thresholds (>0.6), suggesting systematic architecture review needed for UI component organization [critical]
 - Heavy cross-zone imports (web-16 → web: 13 imports) suggest some module boundaries need strengthening [info]
 - Multiple zones show architectural boundary issues, with only Error Recovery system achieving good cohesion/coupling balance [warning]
 - Performance optimization is distributed across multiple specialized zones, suggesting a mature approach to web viewer performance management [info]
@@ -639,13 +639,16 @@ POST    /api/hench/workflow/suggestions/:id
 - Establish naming convention enforcement: 'layer' suffix reserved for interface abstractions, not concrete implementations [info]
 - Establish naming convention enforcement: specialized zone files should use descriptive names reflecting zone purpose rather than generic terms like 'utils.ts' [info]
 - File naming conventions need governance - domain-specific prefixes in foundation zones and generic names in domain zones indicate missing standards [info]
-- ... and 21 more
+- ... and 25 more
 
 ## Next Steps
 
 Prioritized work items derived from analysis:
 
 ### High Priority
+
+1. **Extract interface adapter layer for web-16 zone to reduce 13 imports from web z…**
+   Files: `packages/web/src/viewer/components/faq.ts`, `packages/web/src/viewer/components/polling-suspension-indicator.ts`, `packages/web/src/viewer/components/refresh-queue-status.ts`
 
 1. **Refactor web-16 zone to reduce 13+ imports from web zone by extracting shared i…**
    Files: `packages/web/src/viewer/components/faq.ts`, `packages/web/src/viewer/components/polling-suspension-indicator.ts`, `packages/web/src/viewer/components/refresh-queue-status.ts`
@@ -673,9 +676,6 @@ Prioritized work items derived from analysis:
 
 1. **High coupling (0.71) — 1 imports target "web-23"**
    Files: `packages/web/src/viewer/tick-timer.ts`, `packages/web/tests/unit/viewer/elapsed-time-memoization.test.ts`, `packages/web/tests/unit/viewer/tick-timer.test.ts`
-
-1. **High coupling (0.7) — 2 imports target "web-10"**
-   Files: `packages/web/src/viewer/components/data-display/tree-view.ts`, `packages/web/src/viewer/views/routes.ts`, `packages/web/tests/unit/viewer/tree-view.test.ts`
 
 ### Medium Priority
 
@@ -798,7 +798,7 @@ Prioritized work items derived from analysis:
 | `packages/hench/src/guard/commands.ts` | source | service | hench-2 |
 | `packages/hench/src/guard/contracts.ts` | source | types | hench-2 |
 | `packages/hench/src/guard/index.ts` | source | entrypoint | hench-2 |
-| `packages/hench/src/guard/paths.ts` | source | service | hench-2 |
+| `packages/hench/src/guard/paths.ts` | source | utility | hench-2 |
 | `packages/hench/src/guard/policy.ts` | source | service | hench-2 |
 | `packages/hench/src/prd/ops.ts` | source | service | hench |
 | `packages/hench/src/prd/rex-gateway.ts` | source | gateway | hench |
@@ -813,10 +813,10 @@ Prioritized work items derived from analysis:
 | `packages/hench/src/process/pool.ts` | source | utility | hench |
 | `packages/hench/src/process/process-memory-tracker.ts` | source | utility | hench |
 | `packages/hench/src/public.ts` | source | entrypoint | hench |
-| `packages/hench/src/queue/execution-queue.ts` | source | utility | hench-3 |
+| `packages/hench/src/queue/execution-queue.ts` | source | service | hench-3 |
 | `packages/hench/src/queue/format.ts` | source | utility | hench-3 |
 | `packages/hench/src/queue/index.ts` | source | entrypoint | hench-3 |
-| `packages/hench/src/queue/priority-scheduler.ts` | source | utility | hench-3 |
+| `packages/hench/src/queue/priority-scheduler.ts` | source | service | hench-3 |
 | `packages/hench/src/schema/index.ts` | source | entrypoint | hench |
 | `packages/hench/src/schema/templates.ts` | source | schema | hench |
 | `packages/hench/src/schema/v1.ts` | source | schema | hench |
@@ -834,12 +834,12 @@ Prioritized work items derived from analysis:
 | `packages/hench/src/store/suggestions.ts` | source | store | hench |
 | `packages/hench/src/store/templates.ts` | source | store | hench |
 | `packages/hench/src/tools/contracts.ts` | source | types | hench |
-| `packages/hench/src/tools/dispatch.ts` | source | utility | hench |
+| `packages/hench/src/tools/dispatch.ts` | source | service | hench |
 | `packages/hench/src/tools/exec-shell.ts` | source | utility | hench |
 | `packages/hench/src/tools/files.ts` | source | utility | hench |
 | `packages/hench/src/tools/git.ts` | source | utility | hench |
 | `packages/hench/src/tools/index.ts` | source | entrypoint | hench |
-| `packages/hench/src/tools/rex.ts` | source | utility | hench |
+| `packages/hench/src/tools/rex.ts` | source | service | hench |
 | `packages/hench/src/tools/shell.ts` | source | utility | hench |
 | `packages/hench/src/tools/test-runner.ts` | source | utility | hench |
 | `packages/hench/src/types/index.ts` | source | entrypoint | hench |
@@ -919,7 +919,7 @@ Prioritized work items derived from analysis:
 | `packages/llm-client/package-lock.json` | generated |  |  |
 | `packages/llm-client/package.json` | config |  |  |
 | `packages/llm-client/src/api-provider.ts` | source | service | packages-llm-client:src |
-| `packages/llm-client/src/auth.ts` | source | utility | packages-llm-client:src-2 |
+| `packages/llm-client/src/auth.ts` | source | service | packages-llm-client:src-2 |
 | `packages/llm-client/src/cli-provider.ts` | source | service | packages-llm-client:src-3 |
 | `packages/llm-client/src/codex-cli-provider.ts` | source | service | packages-llm-client:src-3 |
 | `packages/llm-client/src/config.ts` | source | config | packages-llm-client:src |
@@ -937,8 +937,8 @@ Prioritized work items derived from analysis:
 | `packages/llm-client/src/provider-registry.ts` | source | service | packages-llm-client:src-3 |
 | `packages/llm-client/src/provider-session.ts` | source | service | packages-llm-client:src-3 |
 | `packages/llm-client/src/public.ts` | source | entrypoint | packages-llm-client:src-2 |
-| `packages/llm-client/src/suggest.ts` | source | utility | packages-llm-client:src-2 |
-| `packages/llm-client/src/token-usage.ts` | source | utility | packages-llm-client:src-3 |
+| `packages/llm-client/src/suggest.ts` | source | service | packages-llm-client:src-2 |
+| `packages/llm-client/src/token-usage.ts` | source | service | packages-llm-client:src-3 |
 | `packages/llm-client/src/types.ts` | source | types | packages-llm-client:src-3 |
 | `packages/llm-client/tests/e2e/.gitkeep` | test |  |  |
 | `packages/llm-client/tests/integration/.gitkeep` | test |  |  |
@@ -974,18 +974,18 @@ Prioritized work items derived from analysis:
 | `packages/rex/llms.txt` | docs |  |  |
 | `packages/rex/package-lock.json` | generated |  |  |
 | `packages/rex/package.json` | config |  |  |
-| `packages/rex/src/analyze/acknowledge.ts` | source | utility |  |
+| `packages/rex/src/analyze/acknowledge.ts` | source | service |  |
 | `packages/rex/src/analyze/dedupe.ts` | source | utility |  |
-| `packages/rex/src/analyze/diff.ts` | source | utility |  |
+| `packages/rex/src/analyze/diff.ts` | source | service |  |
 | `packages/rex/src/analyze/guided.ts` | source | service |  |
 | `packages/rex/src/analyze/index.ts` | source | entrypoint | packages-rex:rex-cli |
-| `packages/rex/src/analyze/modify-reason.ts` | source | utility |  |
+| `packages/rex/src/analyze/modify-reason.ts` | source | service |  |
 | `packages/rex/src/analyze/propose.ts` | source | service | packages-rex:rex-cli |
-| `packages/rex/src/analyze/reason.ts` | source | utility |  |
-| `packages/rex/src/analyze/reconcile.ts` | source | utility | packages-rex:rex-cli |
-| `packages/rex/src/analyze/reshape-reason.ts` | source | utility |  |
+| `packages/rex/src/analyze/reason.ts` | source | service |  |
+| `packages/rex/src/analyze/reconcile.ts` | source | service | packages-rex:rex-cli |
+| `packages/rex/src/analyze/reshape-reason.ts` | source | service |  |
 | `packages/rex/src/analyze/scanners.ts` | source | service | packages-rex:rex-cli |
-| `packages/rex/src/analyze/validate-modification.ts` | source | utility |  |
+| `packages/rex/src/analyze/validate-modification.ts` | source | service |  |
 | `packages/rex/src/cli/commands/adapter.ts` | source | cli-command |  |
 | `packages/rex/src/cli/commands/add.ts` | source | cli-command | packages-rex:rex-cli |
 | `packages/rex/src/cli/commands/analyze.ts` | source | cli-command | packages-rex:rex-cli |
@@ -1011,9 +1011,9 @@ Prioritized work items derived from analysis:
 | `packages/rex/src/cli/commands/validate.ts` | source | cli-command | packages-rex:rex-cli |
 | `packages/rex/src/cli/commands/verify.ts` | source | cli-command |  |
 | `packages/rex/src/cli/errors.ts` | source | utility |  |
-| `packages/rex/src/cli/help.ts` | source | cli-command |  |
+| `packages/rex/src/cli/help.ts` | source | utility |  |
 | `packages/rex/src/cli/index.ts` | source | entrypoint | packages-rex:rex-cli |
-| `packages/rex/src/cli/mcp-tools.ts` | source | cli-command |  |
+| `packages/rex/src/cli/mcp-tools.ts` | source | utility |  |
 | `packages/rex/src/cli/mcp.ts` | source | cli-command | packages-rex:rex-cli |
 | `packages/rex/src/cli/output.ts` | source | utility |  |
 | `packages/rex/src/cli/validate-input.ts` | source | utility |  |
@@ -1047,7 +1047,7 @@ Prioritized work items derived from analysis:
 | `packages/rex/src/core/tree.ts` | source | utility | packages-rex:rex-cli |
 | `packages/rex/src/core/verify.ts` | source | utility |  |
 | `packages/rex/src/public.ts` | source | entrypoint |  |
-| `packages/rex/src/recommend/conflict-detection.ts` | source | utility |  |
+| `packages/rex/src/recommend/conflict-detection.ts` | source | service |  |
 | `packages/rex/src/recommend/create-from-recommendations.ts` | source | service |  |
 | `packages/rex/src/schema/index.ts` | source | entrypoint | packages-rex:rex-cli |
 | `packages/rex/src/schema/v1.ts` | source | schema | packages-rex:rex-cli |
@@ -1175,35 +1175,35 @@ Prioritized work items derived from analysis:
 | `packages/sourcevision/package-lock.json` | generated |  |  |
 | `packages/sourcevision/package.json` | config |  |  |
 | `packages/sourcevision/src/analyzers/archetypes.ts` | source | service |  |
-| `packages/sourcevision/src/analyzers/branch-work-classifier.ts` | source | utility |  |
-| `packages/sourcevision/src/analyzers/branch-work-collector.ts` | source | utility |  |
-| `packages/sourcevision/src/analyzers/branch-work-filter.ts` | source | utility |  |
-| `packages/sourcevision/src/analyzers/branch-work-store.ts` | source | store |  |
-| `packages/sourcevision/src/analyzers/callgraph-findings.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/branch-work-classifier.ts` | source | service |  |
+| `packages/sourcevision/src/analyzers/branch-work-collector.ts` | source | service |  |
+| `packages/sourcevision/src/analyzers/branch-work-filter.ts` | source | service |  |
+| `packages/sourcevision/src/analyzers/branch-work-store.ts` | source | service |  |
+| `packages/sourcevision/src/analyzers/callgraph-findings.ts` | source | service | packages-sourcevision:tests |
 | `packages/sourcevision/src/analyzers/callgraph.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/classify.ts` | source | service |  |
+| `packages/sourcevision/src/analyzers/classify.ts` | source | utility |  |
 | `packages/sourcevision/src/analyzers/claude-client.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/completion-reader.ts` | source | service |  |
-| `packages/sourcevision/src/analyzers/components.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/context.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/enrich-batch.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/enrich-config.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/enrich-parsing.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/enrich-per-zone.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/enrich.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/imports.ts` | source | service | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/completion-reader.ts` | source | utility |  |
+| `packages/sourcevision/src/analyzers/components.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/context.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/enrich-batch.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/enrich-config.ts` | source | config | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/enrich-parsing.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/enrich-per-zone.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/enrich.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/imports.ts` | source | utility | packages-sourcevision:tests |
 | `packages/sourcevision/src/analyzers/index.ts` | source | entrypoint | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/inventory.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/llms-txt.ts` | source | service | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/inventory.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/llms-txt.ts` | source | utility | packages-sourcevision:tests |
 | `packages/sourcevision/src/analyzers/louvain.ts` | source | utility | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/manifest.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/next-steps.ts` | source | service | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/manifest.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/next-steps.ts` | source | utility | packages-sourcevision:tests |
 | `packages/sourcevision/src/analyzers/route-detection.ts` | source | route-handler | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/server-route-detection.ts` | source | service |  |
-| `packages/sourcevision/src/analyzers/token-usage.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/workspace.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/zone-output.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/analyzers/zones.ts` | source | service | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/server-route-detection.ts` | source | utility |  |
+| `packages/sourcevision/src/analyzers/token-usage.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/workspace.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/zone-output.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/analyzers/zones.ts` | source | utility | packages-sourcevision:tests |
 | `packages/sourcevision/src/cli/commands/analyze-phases.ts` | source | cli-command |  |
 | `packages/sourcevision/src/cli/commands/analyze.ts` | source | cli-command | packages-sourcevision:tests |
 | `packages/sourcevision/src/cli/commands/constants.ts` | source | types | packages-sourcevision:cli |
@@ -1221,8 +1221,8 @@ Prioritized work items derived from analysis:
 | `packages/sourcevision/src/cli/output.ts` | source | utility | packages-sourcevision:cli |
 | `packages/sourcevision/src/cli/serve.ts` | source | cli-command | packages-sourcevision:cli |
 | `packages/sourcevision/src/constants.ts` | source | types |  |
-| `packages/sourcevision/src/export/pdf-report.ts` | source | service | packages-sourcevision:tests |
-| `packages/sourcevision/src/generators/pr-markdown-template.ts` | source | service |  |
+| `packages/sourcevision/src/export/pdf-report.ts` | source | utility | packages-sourcevision:tests |
+| `packages/sourcevision/src/generators/pr-markdown-template.ts` | source | utility |  |
 | `packages/sourcevision/src/public.ts` | source | entrypoint | packages-sourcevision:tests |
 | `packages/sourcevision/src/schema/data-files.ts` | source | schema | packages-sourcevision:tests |
 | `packages/sourcevision/src/schema/index.ts` | source | entrypoint | packages-sourcevision:tests |
@@ -1314,8 +1314,8 @@ Prioritized work items derived from analysis:
 | `packages/web/src/server/domain-gateway.ts` | source | gateway | web |
 | `packages/web/src/server/incremental-task-usage.ts` | source | utility | web-3 |
 | `packages/web/src/server/index.ts` | source | entrypoint | web |
-| `packages/web/src/server/mcp-deps.ts` | source | utility | web |
-| `packages/web/src/server/port.ts` | source | utility | web |
+| `packages/web/src/server/mcp-deps.ts` | source | config | web |
+| `packages/web/src/server/port.ts` | source | config | web |
 | `packages/web/src/server/pr-markdown-refresh-diagnostics.ts` | source | utility | web |
 | `packages/web/src/server/process-memory-tracker.ts` | source | utility | web |
 | `packages/web/src/server/rex-gateway.ts` | source | gateway | web |
@@ -1441,7 +1441,7 @@ Prioritized work items derived from analysis:
 | `packages/web/src/viewer/response-buffer-gate.ts` | source | utility | web-20 |
 | `packages/web/src/viewer/route-state.ts` | source | route-handler | web-26 |
 | `packages/web/src/viewer/schema-compat.ts` | source | utility | web-2 |
-| `packages/web/src/viewer/sourcevision-tabs.ts` | source | types | web-7 |
+| `packages/web/src/viewer/sourcevision-tabs.ts` | source | utility | web-7 |
 | `packages/web/src/viewer/styles/a11y.css` | other |  | web-20 |
 | `packages/web/src/viewer/styles/analysis.css` | other |  | web-20 |
 | `packages/web/src/viewer/styles/base.css` | other |  | web-20 |
@@ -1635,11 +1635,11 @@ Prioritized work items derived from analysis:
 | `packages/web/vitest.config.ts` | config |  |  |
 | `pnpm-lock.yaml` | generated |  |  |
 | `pnpm-workspace.yaml` | other |  |  |
-| `pr-check.js` | source | utility |  |
+| `pr-check.js` | source |  |  |
 | `prd.md` | docs |  |  |
-| `refresh-artifacts.js` | source | utility | root |
-| `refresh-plan.js` | source | utility | root |
-| `refresh-validate.js` | source | utility | root |
+| `refresh-artifacts.js` | source |  | root |
+| `refresh-plan.js` | source |  | root |
+| `refresh-validate.js` | source |  | root |
 | `tests/e2e/architecture-policy.test.js` | test |  |  |
 | `tests/e2e/cli-ci.test.js` | test |  |  |
 | `tests/e2e/cli-config.test.js` | test |  |  |

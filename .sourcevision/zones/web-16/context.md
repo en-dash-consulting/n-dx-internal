@@ -65,6 +65,7 @@ Outgoing (this zone → other zones):
 
 [observation] [warning] High coupling (0.8) — 13 imports target "web"
 [observation] [warning] Low cohesion (0.2) — files are loosely related, consider splitting this zone
+[suggestion] [critical] Extract interface adapter layer for web-16 zone to reduce 13 imports from web zone: create packages/web/src/interfaces/web-platform-adapter.ts consolidating cross-zone dependencies, then refactor web-16 components to depend on adapter contracts rather than direct web zone imports
 [suggestion] [warning] Refactor web-16 zone to reduce 13+ imports from web zone by extracting shared interface layer or moving components to appropriate architectural tier
 
 </findings>
@@ -93,6 +94,7 @@ Outgoing (this zone → other zones):
 - Zone occupies wrong architectural layer based on heavy import pattern (13+ imports from web zone)
 - Refactor web-16 zone to reduce 13+ imports from web zone by extracting shared interface layer or moving components to appropriate architectural tier
 - Zone demonstrates classic wrong-layer anti-pattern with 13+ imports suggesting misplaced architectural responsibility
+- Extract interface adapter layer for web-16 zone to reduce 13 imports from web zone: create packages/web/src/interfaces/web-platform-adapter.ts consolidating cross-zone dependencies, then refactor web-16 components to depend on adapter contracts rather than direct web zone imports
 - [call graph] 126 internal calls, 14 outgoing, 0 incoming (cohesion: 0.9, coupling: 0.1)
 
 </insights>
