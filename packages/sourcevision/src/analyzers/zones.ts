@@ -912,6 +912,7 @@ async function applyEnrichment(
   enrich: boolean,
   perZone: boolean,
   fileArchetypes?: Map<string, string | null>,
+  currentContentHashes?: Record<string, string>,
 ): Promise<EnrichmentResult> {
   let finalZones = expandedZones;
   let aiZoneInsights = new Map<string, string[]>();
@@ -954,6 +955,7 @@ async function applyEnrichment(
     } else {
       const result = await enrichZonesWithAI(
         expandedZones, preCrossings, inventory, imports, validPrevious, fileArchetypes,
+        currentContentHashes,
       );
       finalZones = result.zones;
       aiZoneInsights = result.newZoneInsights;
@@ -1320,6 +1322,7 @@ export async function analyzeZones(
   // ── AI enrichment or preserve previous ──
   const enrichResult = await applyEnrichment(
     expandedZones, imports, inventory, validPrevious, enrich, perZone, options?.fileArchetypes,
+    zoneContentHashes,
   );
   const { finalZones, aiZoneInsights, aiGlobalInsights, aiFindings,
     enrichmentPass, metaUpdatedFindings, enrichTokenUsage } = enrichResult;
