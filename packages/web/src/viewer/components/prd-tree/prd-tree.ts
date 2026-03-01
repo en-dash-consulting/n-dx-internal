@@ -22,6 +22,7 @@ import type { VNode, ComponentChildren } from "preact";
 import { useState, useMemo, useCallback, useEffect, useRef } from "preact/hooks";
 import type { PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority, TaskUsageSummary, WeeklyBudgetResolution } from "./types.js";
 import { computeBranchStats, completionRatio, formatTimestamp, itemMatchesFilter } from "./compute.js";
+import { isWorkItem, isRootLevel } from "./levels.js";
 import { StatusFilter, defaultStatusFilter } from "./status-filter.js";
 import { InlineAddForm } from "./inline-add-form.js";
 import type { InlineAddInput } from "./inline-add-form.js";
@@ -389,7 +390,7 @@ class NodeRow extends Component<NodeRowProps> {
         ? h(TagList, { tags: item.tags })
         : null,
       // Aggregated task token usage
-      item.level === "task" || item.level === "subtask"
+      isWorkItem(item.level)
         ? h(
             "span",
             {

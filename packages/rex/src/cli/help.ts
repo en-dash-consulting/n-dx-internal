@@ -481,6 +481,49 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
     ],
     related: ["sync"],
   },
+  reorganize: {
+    tool: "rex",
+    command: "reorganize",
+    summary: "detect and fix structural issues in the PRD",
+    usage: "rex reorganize [options] [dir]",
+    description:
+      "Analyzes the PRD tree for structural issues: orphaned features, empty\n" +
+      "containers, near-duplicate items, oversized/undersized containers, and\n" +
+      "prunable completed subtrees. Proposes reorganization actions (merge,\n" +
+      "move, delete, prune, collapse, split).",
+    options: [
+      { flag: "--accept", description: "Apply all low-risk proposals automatically" },
+      { flag: "--accept=<ids>", description: "Apply specific proposals by ID (comma-separated)" },
+      { flag: "--include-completed", description: "Include completed items in similarity analysis" },
+      { flag: "--format=json", description: "Machine-readable output" },
+    ],
+    examples: [
+      { command: "rex reorganize", description: "Detect issues and show proposals" },
+      { command: "rex reorganize --accept", description: "Apply all low-risk proposals" },
+      { command: "rex reorganize --accept=1,3", description: "Apply proposals 1 and 3" },
+      { command: "rex reorganize --format=json .", description: "JSON output for scripting" },
+    ],
+    related: ["health", "prune", "reshape"],
+  },
+  health: {
+    tool: "rex",
+    command: "health",
+    summary: "show structure health score",
+    usage: "rex health [options] [dir]",
+    description:
+      "Computes a multi-dimensional health score (0–100) for the PRD structure.\n" +
+      "Evaluates depth (items at correct nesting), balance (even distribution),\n" +
+      "granularity (task quality), completeness (metadata coverage), and\n" +
+      "staleness (stale in-progress items). Includes up to 3 improvement suggestions.",
+    options: [
+      { flag: "--format=json", description: "Machine-readable output" },
+    ],
+    examples: [
+      { command: "rex health", description: "Show health score with dimension breakdown" },
+      { command: "rex health --format=json .", description: "JSON output for CI dashboards" },
+    ],
+    related: ["reorganize", "report", "validate"],
+  },
   mcp: {
     tool: "rex",
     command: "mcp",
@@ -522,6 +565,8 @@ const RELATED_COMMANDS: Record<string, string[]> = {
   analyze: ["add", "recommend"],
   import: ["add", "recommend"],
   adapter: ["sync"],
+  reorganize: ["health", "prune", "reshape"],
+  health: ["reorganize", "report", "validate"],
   mcp: [],
 };
 

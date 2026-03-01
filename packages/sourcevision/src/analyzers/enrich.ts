@@ -92,7 +92,7 @@ export async function enrichZonesWithAI(
   if (currentContentHashes && previousZones?.zoneContentHashes && prevEnrichPass > 0) {
     const prevGlobalHash = computeGlobalContentHash(previousZones.zoneContentHashes);
     const curGlobalHash = computeGlobalContentHash(currentContentHashes);
-    if (prevGlobalHash === curGlobalHash) {
+    if (prevGlobalHash === curGlobalHash && passNumber <= prevEnrichPass) {
       console.log(`  [enrich] Content unchanged — skipping enrichment (pass ${prevEnrichPass} preserved)`);
       // Preserve previous names/descriptions on current zones
       const prevZones = previousZones.zones;

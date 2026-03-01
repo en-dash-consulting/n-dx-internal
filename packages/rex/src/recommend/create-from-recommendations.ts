@@ -16,7 +16,7 @@
 import { randomUUID } from "node:crypto";
 import type { PRDStore } from "../store/contracts.js";
 import type { PRDItem, ItemLevel } from "../schema/index.js";
-import { LEVEL_HIERARCHY, CHILD_LEVEL } from "../schema/index.js";
+import { LEVEL_HIERARCHY, CHILD_LEVEL, isLeafLevel, getLevelLabel } from "../schema/index.js";
 import { findItem, insertChild } from "../core/tree.js";
 import { validateDAG } from "../core/dag.js";
 import {
@@ -142,17 +142,17 @@ function validatePlacement(
     }
   } else {
     // Root placement: only reject levels that strictly require a parent.
-    // Subtasks always need a task parent; other levels are allowed at root
-    // for recommendation workflows (e.g. features from sourcevision).
+    // Leaf levels (subtasks) always need a parent; other levels are allowed
+    // at root for recommendation workflows (e.g. features from sourcevision).
     const canBeRoot = allowedParents.includes(null);
     if (!canBeRoot && allowedParentLevels.length > 0) {
-      // Only block if every allowed parent is a specific level (e.g. subtask→task)
+      // Only block if this is a leaf-only level (e.g. subtask→task)
       // Allow epics, features, and tasks at root for recommendation flexibility
       const isStrictlyChildOnly =
-        allowedParentLevels.length > 0 && item.level === "subtask";
+        allowedParentLevels.length > 0 && isLeafLevel(item.level);
       if (isStrictlyChildOnly) {
-        const parentNames = allowedParentLevels.join(" or ");
-        return `A ${item.level} requires a parent (${parentNames}).`;
+        const parentNames = allowedParentLevels.map(getLevelLabel).join(" or ");
+        return `A ${getLevelLabel(item.level)} requires a parent (${parentNames}).`;
       }
     }
   }

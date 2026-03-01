@@ -4,6 +4,7 @@ import { z } from "zod";
 import { join } from "node:path";
 import { resolveStore, resolveRemoteStore, SyncEngine } from "../store/index.js";
 import { REX_DIR, TOOL_VERSION } from "./commands/constants.js";
+import { getAllLevels } from "../schema/index.js";
 import {
   handleGetPrdStatus,
   handleGetNextTask,
@@ -17,6 +18,8 @@ import {
   handleGetRecommendations,
   handleVerifyCriteria,
   handleGetCapabilities,
+  handleReorganize,
+  handleHealth,
 } from "./mcp-tools.js";
 
 /**
@@ -70,7 +73,7 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
     "Add a new item to the PRD",
     {
       title: z.string().describe("Item title"),
-      level: z.enum(["epic", "feature", "task", "subtask"]).describe("Item level"),
+      level: z.enum(getAllLevels() as [string, ...string[]]).describe("Item level"),
       parentId: z.string().optional().describe("Parent item ID"),
       description: z.string().optional().describe("Item description"),
       priority: z.enum(["critical", "high", "medium", "low"]).optional().describe("Priority"),
@@ -147,6 +150,19 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
     },
     async (args) => handleVerifyCriteria(store, dir, args),
   );
+
+  server.tool(
+    "reorganize",
+    "Detect structural issues in the PRD and propose reorganizations (merge, move, delete, prune, collapse, split)",
+    {
+      accept: z.string().optional().describe("Apply proposals: 'low-risk' (default when set), 'all', or comma-separated IDs like '1,3'"),
+      includeCompleted: z.boolean().optional().describe("Include completed items in similarity analysis (default: false)"),
+    },
+    async (args) => handleReorganize(store, args),
+  );
+
+  server.tool("health", "Get structure health score with dimensional breakdown (depth, balance, granularity, completeness, staleness)", {},
+    async () => handleHealth(store));
 
   server.tool("get_capabilities", "Get Rex server capabilities and configuration", {},
     async () => handleGetCapabilities(store));

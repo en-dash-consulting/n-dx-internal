@@ -9,6 +9,7 @@ import { REX_DIR } from "./constants.js";
 import { CLIError } from "../errors.js";
 import { info, result } from "../output.js";
 import type { ItemStatus } from "../../schema/index.js";
+import { isRootLevel, getLevelLabel } from "../../schema/index.js";
 
 /**
  * Supported levels for the remove command.
@@ -72,7 +73,7 @@ export async function cmdRemove(
     if (item.level !== level) {
       const article = level === "epic" ? "an" : "a";
       throw new CLIError(
-        `Item "${id}" is a ${item.level}, not ${article} ${level}.`,
+        `Item "${id}" is a ${getLevelLabel(item.level)}, not ${article} ${getLevelLabel(level)}.`,
         `Use 'rex remove ${item.level} ${id}' instead.`,
       );
     }
@@ -80,7 +81,7 @@ export async function cmdRemove(
     // Auto-detect: validate the item is a removable level
     if (!REMOVABLE_LEVELS.has(item.level)) {
       throw new CLIError(
-        `Cannot remove a ${item.level} directly.`,
+        `Cannot remove a ${getLevelLabel(item.level)} directly.`,
         "Only epics and tasks can be removed. Use 'rex remove epic <id>' or 'rex remove task <id>'.",
       );
     }
@@ -107,7 +108,7 @@ export async function cmdRemove(
   }
 
   // Execute the removal
-  if (item.level === "epic") {
+  if (isRootLevel(item.level)) {
     const epicResult = removeEpic(doc.items, id);
     if (!epicResult.ok) {
       throw new CLIError(epicResult.error!, "Check the ID with 'rex status' and try again.");

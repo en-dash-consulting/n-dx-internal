@@ -122,7 +122,7 @@ describe("cmdRemove", () => {
       ).rejects.toThrow(CLIError);
       await expect(
         cmdRemove(tmp, "t1", "epic", { yes: "true" }),
-      ).rejects.toThrow(/not an epic/);
+      ).rejects.toThrow(/not an Epic/);
     });
   });
 
@@ -194,7 +194,7 @@ describe("cmdRemove", () => {
       ).rejects.toThrow(CLIError);
       await expect(
         cmdRemove(tmp, "e1", "task", { yes: "true" }),
-      ).rejects.toThrow(/not a task/);
+      ).rejects.toThrow(/not a Task/);
     });
   });
 
@@ -230,7 +230,7 @@ describe("cmdRemove", () => {
       ).rejects.toThrow(CLIError);
       await expect(
         cmdRemove(tmp, "f1", undefined, { yes: "true" }),
-      ).rejects.toThrow(/Cannot remove a feature/);
+      ).rejects.toThrow(/Cannot remove a Feature/);
     });
 
     it("throws CLIError for non-removable level (subtask)", async () => {
@@ -241,7 +241,7 @@ describe("cmdRemove", () => {
       ).rejects.toThrow(CLIError);
       await expect(
         cmdRemove(tmp, "s1", undefined, { yes: "true" }),
-      ).rejects.toThrow(/Cannot remove a subtask/);
+      ).rejects.toThrow(/Cannot remove a Subtask/);
     });
   });
 

@@ -100,6 +100,29 @@ export {
   DEFAULT_CONFIG,
 } from "./schema/v1.js";
 
+// ---- Schema: level helpers --------------------------------------------------
+
+export type { LevelDisplay } from "./schema/levels.js";
+export {
+  isRootLevel,
+  isWorkItem,
+  isContainerLevel,
+  isLeafLevel,
+  isValidLevel,
+  getLevelLabel,
+  getLevelPlural,
+  getLevelEmoji,
+  getLevelDisplayMap,
+  getChildLevel,
+  getParentLevels,
+  getAllLevels,
+  getWorkItemLevels,
+  getContainerLevels,
+  formatLevelSummary,
+  setLevelDisplay,
+  resetLevelDisplay,
+} from "./schema/levels.js";
+
 // ---- Core: tree utilities ---------------------------------------------------
 
 export {
@@ -185,6 +208,36 @@ export {
   findPrunableItems, pruneItems,
 } from "./core/prune.js";
 export type { PruneResult } from "./core/prune.js";
+
+// ---- Core: reorganize -------------------------------------------------------
+
+export {
+  detectReorganizations,
+  formatReorganizationPlan,
+} from "./core/reorganize.js";
+export type {
+  ProposalType, RiskLevel,
+  ReorganizationProposal, ReorganizationPlan,
+  ProposalDetail, MergeDetail, MoveDetail, SplitDetail,
+  DeleteDetail, PruneDetail, CollapseDetail,
+  DetectorOptions,
+} from "./core/reorganize.js";
+
+export {
+  applyProposals,
+  formatApplyResult,
+} from "./core/reorganize-executor.js";
+export type { ApplyResult, ProposalResult } from "./core/reorganize-executor.js";
+
+// ---- Core: health -----------------------------------------------------------
+
+export {
+  computeHealthScore,
+  formatHealthScore,
+} from "./core/health.js";
+export type {
+  StructureHealthScore, HealthDimensions, HealthOptions,
+} from "./core/health.js";
 
 // ---- Core: analytics --------------------------------------------------------
 

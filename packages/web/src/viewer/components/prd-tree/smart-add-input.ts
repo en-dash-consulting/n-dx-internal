@@ -13,6 +13,7 @@ import { h, Fragment } from "preact";
 import { useState, useCallback, useRef, useEffect, useMemo } from "preact/hooks";
 import { ProposalEditor } from "./proposal-editor.js";
 import type { RawProposal } from "./proposal-editor.js";
+import { isContainerLevel, isRootLevel, getLevelLabel } from "./levels.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -95,9 +96,9 @@ export function SmartAddInput({ onPrdChanged, compact }: SmartAddInputProps) {
         const options: ScopeOption[] = [];
         function walk(items: Array<{ id: string; title: string; level: string; children?: unknown[] }>, depth: number) {
           for (const item of items) {
-            if (item.level === "epic" || item.level === "feature") {
+            if (isContainerLevel(item.level)) {
               options.push({ id: item.id, title: item.title, level: item.level, depth });
-              if (item.level === "epic" && Array.isArray(item.children)) {
+              if (isRootLevel(item.level) && Array.isArray(item.children)) {
                 walk(item.children as typeof items, depth + 1);
               }
             }
@@ -347,7 +348,7 @@ export function SmartAddInput({ onPrdChanged, compact }: SmartAddInputProps) {
             h("option", { value: "" }, "Entire project (new epics)"),
             scopeOptions.map((opt) =>
               h("option", { key: opt.id, value: opt.id },
-                `${"  ".repeat(opt.depth)}${opt.level === "epic" ? "Epic" : "Feature"}: ${opt.title}`,
+                `${"  ".repeat(opt.depth)}${getLevelLabel(opt.level)}: ${opt.title}`,
               ),
             ),
           ),

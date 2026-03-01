@@ -36,6 +36,10 @@ export {
   isItemLevel,
   isRequirementCategory,
   isValidationType,
+  isRootLevel,
+  isWorkItem,
+  isContainerLevel,
+  getLevelLabel,
 } from "rex";
 
 // ---- Rex tree utilities -----------------------------------------------------

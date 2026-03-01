@@ -1295,7 +1295,7 @@ describe("createItemsFromRecommendations", () => {
           source: "sourcevision",
         },
       ]),
-    ).rejects.toThrow(/subtask.*requires a parent/);
+    ).rejects.toThrow(/[Ss]ubtask.*requires a parent/);
   });
 
   it("reports multiple placement errors when several items fail", async () => {

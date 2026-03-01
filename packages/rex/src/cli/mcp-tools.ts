@@ -20,6 +20,9 @@ import { cascadeParentReset } from "../core/cascade-reset.js";
 import { validateMove, moveItem } from "../core/move.js";
 import { validateMerge, previewMerge, mergeItems } from "../core/merge.js";
 import { verify } from "../core/verify.js";
+import { detectReorganizations } from "../core/reorganize.js";
+import { applyProposals } from "../core/reorganize-executor.js";
+import { computeHealthScore } from "../core/health.js";
 import { TOOL_VERSION } from "./commands/constants.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../schema/index.js";
 import type { PRDStore } from "../store/index.js";
@@ -452,6 +455,75 @@ export async function handleVerifyCriteria(
       runTests: args.runTests ?? true,
     });
     return textResult(JSON.stringify(result, null, 2));
+  } catch (err) {
+    return textResult(`Error: ${(err as Error).message}`, true);
+  }
+}
+
+export async function handleReorganize(
+  store: PRDStore,
+  args: { accept?: string; includeCompleted?: boolean },
+): Promise<McpResult> {
+  try {
+    const doc = await store.loadDocument();
+    if (doc.items.length === 0) {
+      return textResult(JSON.stringify({ proposals: [], stats: {} }, null, 2));
+    }
+
+    const plan = detectReorganizations(doc.items, {
+      includeCompleted: args.includeCompleted ?? false,
+    });
+
+    if (!args.accept) {
+      // Detection only
+      return textResult(JSON.stringify({
+        proposals: plan.proposals.map((p) => ({
+          id: p.id,
+          type: p.type,
+          description: p.description,
+          risk: p.risk,
+          confidence: p.confidence,
+          items: p.items,
+        })),
+        stats: plan.stats,
+      }, null, 2));
+    }
+
+    // Apply proposals
+    let toApply = plan.proposals;
+    if (args.accept === "low-risk") {
+      toApply = plan.proposals.filter((p) => p.risk === "low");
+    } else if (args.accept !== "all") {
+      // Parse comma-separated IDs
+      const ids = new Set(args.accept.split(",").map((s) => parseInt(s.trim(), 10)));
+      toApply = plan.proposals.filter((p) => ids.has(p.id));
+    }
+
+    if (toApply.length === 0) {
+      return textResult(JSON.stringify({ applied: 0, failed: 0, results: [] }, null, 2));
+    }
+
+    const result = applyProposals(doc.items, toApply);
+    if (result.applied > 0) {
+      await store.saveDocument(doc);
+      await store.appendLog({
+        timestamp: new Date().toISOString(),
+        event: "reorganize_applied",
+        detail: `Applied ${result.applied} reorganization proposals via MCP`,
+      });
+    }
+
+    return textResult(JSON.stringify(result, null, 2));
+  } catch (err) {
+    return textResult(`Error: ${(err as Error).message}`, true);
+  }
+}
+
+export async function handleHealth(store: PRDStore): Promise<McpResult> {
+  try {
+    const doc = await store.loadDocument();
+    const health = computeHealthScore(doc.items);
+    return textResult(JSON.stringify(health, null, 2));
   } catch (err) {
     return textResult(`Error: ${(err as Error).message}`, true);
   }

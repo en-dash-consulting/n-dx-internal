@@ -87,6 +87,8 @@ import {
   computeEpicStats,
   computePriorityDistribution,
   computeRequirementsSummary,
+  isRootLevel,
+  isWorkItem,
 } from "./rex-gateway.js";
 
 const REX_PREFIX = "/api/rex/";
@@ -1085,7 +1087,7 @@ function computeEpicImpact(
     let removedCount = 0;
 
     function countBefore(node: PRDItem): void {
-      if (node.level === "task" || node.level === "subtask") {
+      if (isWorkItem(node.level)) {
         if (node.status !== "deleted") {
           beforeTotal++;
           if (node.status === "completed") beforeCompleted++;
@@ -1100,7 +1102,7 @@ function computeEpicImpact(
       if (prunableIds.has(node.id)) {
         // Count all tasks/subtasks in this subtree as removed
         function countAll(n: PRDItem): void {
-          if (n.level === "task" || n.level === "subtask") {
+          if (isWorkItem(n.level)) {
             if (n.status !== "deleted") removedCount++;
           }
           if (Array.isArray(n.children)) {
@@ -1124,7 +1126,7 @@ function computeEpicImpact(
     function countRemovedCompleted(node: PRDItem): void {
       if (prunableIds.has(node.id)) {
         function countComp(n: PRDItem): void {
-          if ((n.level === "task" || n.level === "subtask") && n.status === "completed") {
+          if (isWorkItem(n.level) && n.status === "completed") {
             removedCompleted++;
           }
           if (Array.isArray(n.children)) {
@@ -2222,7 +2224,7 @@ async function handleStartEpicByEpic(
     };
 
     // Build the list of epics to execute
-    const allEpics = doc.items.filter((item) => item.level === "epic");
+    const allEpics = doc.items.filter((item) => isRootLevel(item.level));
 
     let epicsToRun: PRDItem[];
     if (input.epicIds && input.epicIds.length > 0) {

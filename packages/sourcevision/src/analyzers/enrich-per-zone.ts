@@ -283,7 +283,7 @@ export async function enrichZonesPerZone(
     );
 
     // Skip if structure unchanged and already enriched
-    if (prevZone?.structureHash === hash && prevEnrichPass > 0) {
+    if (prevZone?.structureHash === hash && passNumber <= prevEnrichPass) {
       unchangedZones.push({
         ...zone,
         id: prevZone.id,

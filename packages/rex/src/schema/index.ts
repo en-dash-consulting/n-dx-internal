@@ -45,3 +45,24 @@ export type {
   TokenUsage,
   AnalyzeTokenUsage,
 } from "./v1.js";
+
+export {
+  isRootLevel,
+  isWorkItem,
+  isContainerLevel,
+  isLeafLevel,
+  isValidLevel,
+  getLevelLabel,
+  getLevelPlural,
+  getLevelEmoji,
+  getLevelDisplayMap,
+  getChildLevel,
+  getParentLevels,
+  getAllLevels,
+  getWorkItemLevels,
+  getContainerLevels,
+  formatLevelSummary,
+  setLevelDisplay,
+  resetLevelDisplay,
+} from "./levels.js";
+export type { LevelDisplay } from "./levels.js";

@@ -7,6 +7,7 @@ import { showCommandHelp } from "./help.js";
 import { CLIError, handleCLIError, requireRexDir } from "./errors.js";
 import { setQuiet } from "./output.js";
 import { formatTypoSuggestion } from "@n-dx/llm-client";
+import { isItemLevel } from "../schema/index.js";
 
 /**
  * Read all data from stdin when input is piped (not a TTY).
@@ -150,7 +151,6 @@ async function main(): Promise<void> {
         break;
       }
       case "add": {
-        const VALID_LEVELS = new Set(["epic", "feature", "task", "subtask"]);
         const firstArg = positional[0];
         const hasFileFlag = !!(multiFlags.file?.length || flags.file);
 
@@ -161,8 +161,8 @@ async function main(): Promise<void> {
         //   1. Positional level:  rex add task --title="..." --parent=<id>
         //   2. --level flag:      rex add --level=task --title="..." --parent=<id>
         //   3. --title flag only: rex add --title="..." (defaults to epic)
-        const positionalLevel = firstArg && VALID_LEVELS.has(firstArg);
-        const flagLevel = flags.level && VALID_LEVELS.has(flags.level);
+        const positionalLevel = firstArg && isItemLevel(firstArg);
+        const flagLevel = flags.level && isItemLevel(flags.level);
         const isManualMode = positionalLevel || flagLevel || flags.title;
 
         if (isManualMode) {
@@ -354,6 +354,16 @@ async function main(): Promise<void> {
         await cmdAdapter(dir, adapterPositional, flags);
         break;
       }
+      case "reorganize": {
+        const { cmdReorganize } = await import("./commands/reorganize.js");
+        await cmdReorganize(resolveDir(), flags);
+        break;
+      }
+      case "health": {
+        const { cmdHealth } = await import("./commands/health.js");
+        await cmdHealth(resolveDir(), flags);
+        break;
+      }
       case "mcp": {
         const { startMcpServer } = await import("./mcp.js");
         await startMcpServer(resolveDir());
@@ -363,7 +373,7 @@ async function main(): Promise<void> {
         const REX_COMMANDS = [
           "init", "status", "next", "add", "update", "move", "remove", "reshape",
           "prune", "validate", "fix", "sync", "usage", "report", "verify",
-          "recommend", "analyze", "import", "adapter", "mcp",
+          "recommend", "analyze", "import", "adapter", "reorganize", "health", "mcp",
         ];
         const typoHint = formatTypoSuggestion(command, REX_COMMANDS, "rex ");
         throw new CLIError(

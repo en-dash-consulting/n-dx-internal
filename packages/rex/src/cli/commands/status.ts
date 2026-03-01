@@ -13,6 +13,7 @@ import { CLIError, BudgetExceededError } from "../errors.js";
 import { REX_DIR } from "./constants.js";
 import { info, warn, result, isQuiet } from "../output.js";
 import type { PRDItem } from "../../schema/index.js";
+import { isRootLevel } from "../../schema/index.js";
 import type { TreeStats } from "../../core/stats.js";
 import type { VerifyResult } from "../../core/verify.js";
 import type { TokenUsageFilter } from "../../core/token-usage.js";
@@ -198,7 +199,7 @@ export function renderTree(
       const stats = computeStats(item.children);
       const count = `[${stats.completed}/${stats.total}]`;
 
-      if (item.level === "epic") {
+      if (isRootLevel(item.level)) {
         const ratio = stats.total > 0 ? stats.completed / stats.total : 0;
         const pct = Math.round(ratio * 100);
         const bar = renderProgressBar(ratio);
