@@ -308,7 +308,7 @@ export function mergeBidirectionalCoupling(
 
   // Compute internal edge count per community and cross-edge counts per pair
   const internalEdges = new Map<string, number>();
-  const crossEdges = new Map<string, number>(); // "commA\0commB" → count (A < B)
+  const crossEdges = new Map<string, number>(); // "commA\x01commB" → count (A < B)
 
   for (const [node, neighbors] of graph) {
     const nodeComm = result.get(node)!;
@@ -319,8 +319,8 @@ export function mergeBidirectionalCoupling(
       } else {
         const key =
           nodeComm < neighborComm
-            ? `${nodeComm}\0${neighborComm}`
-            : `${neighborComm}\0${nodeComm}`;
+            ? `${nodeComm}\x01${neighborComm}`
+            : `${neighborComm}\x01${nodeComm}`;
         crossEdges.set(key, (crossEdges.get(key) ?? 0) + 1);
       }
     }
@@ -339,7 +339,7 @@ export function mergeBidirectionalCoupling(
   const mergeCandidates: Array<{ commA: string; commB: string; ratio: number }> = [];
 
   for (const [pair, cross] of crossEdges) {
-    const [commA, commB] = pair.split("\0");
+    const [commA, commB] = pair.split("\x01");
     const intA = internalEdges.get(commA) ?? 0;
     const intB = internalEdges.get(commB) ?? 0;
     const minInternal = Math.min(intA, intB);
@@ -567,8 +567,8 @@ export function capZoneCount(
         if (nodeComm === neighborComm) continue;
         const key =
           nodeComm < neighborComm
-            ? `${nodeComm}\0${neighborComm}`
-            : `${neighborComm}\0${nodeComm}`;
+            ? `${nodeComm}\x01${neighborComm}`
+            : `${neighborComm}\x01${nodeComm}`;
         communityPairWeight.set(
           key,
           (communityPairWeight.get(key) ?? 0) + weight
@@ -599,7 +599,7 @@ export function capZoneCount(
       }
     }
 
-    const [commA, commB] = bestPair.split("\0");
+    const [commA, commB] = bestPair.split("\x01");
     // Merge smaller into larger (tie-break lexicographic)
     const sizeA = members.get(commA)?.length ?? 0;
     const sizeB = members.get(commB)?.length ?? 0;

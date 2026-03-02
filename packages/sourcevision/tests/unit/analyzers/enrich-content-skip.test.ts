@@ -110,21 +110,19 @@ describe("enrichZonesWithAI content-hash skip (Opt 1)", () => {
     mockedCallClaude.mockReset();
   });
 
-  it("skips enrichment when content unchanged and previously enriched", async () => {
+  it("advances to next pass even when content unchanged", async () => {
     const contentHashes = buildContentHashes(zones);
     const prev = makePreviousZones(zones, contentHashes, 2);
+
+    // Pass 3 proceeds because each pass has different focus
+    mockClaudeResponse(makePass2Response(prev.zones));
 
     const result = await enrichZonesWithAI(
       zones, crossings, inventory, imports, prev, undefined, contentHashes,
     );
 
-    expect(mockedCallClaude).not.toHaveBeenCalled();
-    expect(result.pass).toBe(2); // preserved, not advanced
-    // Previous names should be applied
-    expect(result.zones[0].id).toBe("enriched-zone-a");
-    expect(result.zones[0].name).toBe("Enriched Zone-a");
-    expect(result.newFindings).toEqual([]);
-    expect(result.newGlobalInsights).toEqual([]);
+    expect(mockedCallClaude).toHaveBeenCalled();
+    expect(result.pass).toBe(3); // advanced, not preserved
   });
 
   it("does not skip when content unchanged but never enriched (pass 0)", async () => {
