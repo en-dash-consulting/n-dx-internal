@@ -64,8 +64,10 @@ const PADDING = 40;
  * Convert raw Zone sub-zones into ZoneData for drill-down display.
  * Uses zone metadata only (file counts, descriptions) since full call
  * graph enrichment is scoped to the top-level analysis.
+ *
+ * @internal Exported for testing.
  */
-function convertSubZones(subZones: Zone[]): ZoneData[] {
+export function convertSubZones(subZones: Zone[]): ZoneData[] {
   return subZones.map((sz, i) => {
     const subData: ZoneData = {
       id: sz.id,
@@ -92,8 +94,12 @@ function convertSubZones(subZones: Zone[]): ZoneData[] {
   });
 }
 
-/** Convert ZoneCrossing[] to FlowEdge[] (aggregate by zone pair). */
-function convertCrossings(crossings?: ZoneCrossing[]): FlowEdge[] {
+/**
+ * Convert ZoneCrossing[] to FlowEdge[] (aggregate by zone pair).
+ *
+ * @internal Exported for testing.
+ */
+export function convertCrossings(crossings?: ZoneCrossing[]): FlowEdge[] {
   if (!crossings || crossings.length === 0) return [];
   const pairCounts = new Map<string, number>();
   for (const c of crossings) {
@@ -563,8 +569,10 @@ function ZoneBreadcrumbSep() {
  *
  * Hidden at root level (drillPath has only the root entry).
  * Clicking a crumb navigates back to that level by truncating the drill path.
+ *
+ * @internal Exported for testing.
  */
-function ZoneBreadcrumbNav({
+export function ZoneBreadcrumbNav({
   drillPath,
   onNavigate,
 }: {
