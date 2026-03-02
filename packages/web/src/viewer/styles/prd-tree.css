@@ -4580,6 +4580,109 @@
   word-break: break-all;
   max-height: 80px;
   overflow: hidden;
+  transition: max-height 0.2s ease;
+}
+
+.batch-import-item-preview-expanded {
+  max-height: 400px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+}
+
+/* File metadata (size, lines, words) */
+.batch-import-item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.batch-import-item-meta-sep {
+  color: var(--border);
+}
+
+/* Expand/collapse toggle */
+.batch-import-expand-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: var(--font-xs);
+  padding: 0 var(--space-1);
+  line-height: 1;
+  transition: color var(--transition-normal);
+}
+
+.batch-import-expand-btn:hover {
+  color: var(--accent);
+}
+
+.batch-import-expand-btn-active {
+  color: var(--accent);
+}
+
+/* Stage-based progress indicator */
+.batch-import-progress {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  margin-bottom: var(--space-3);
+}
+
+.batch-import-progress-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+}
+
+.batch-import-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.batch-import-progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.batch-import-progress-text {
+  font-size: var(--font-sm);
+  color: var(--text);
+  font-weight: var(--weight-medium);
+}
+
+.batch-import-progress-detail {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.batch-import-progress-stages {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.batch-import-stage {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  transition: color var(--transition-normal);
+}
+
+.batch-import-stage-active {
+  color: var(--accent);
+  font-weight: var(--weight-medium);
+}
+
+.batch-import-stage-done {
+  color: var(--green);
 }
 
 /* Process button */
