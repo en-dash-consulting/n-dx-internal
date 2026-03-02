@@ -11,7 +11,7 @@
 import { h } from "preact";
 import { useState, useMemo, useCallback, useEffect } from "preact/hooks";
 import type { LoadedData, DetailItem, NavigateTo } from "../types.js";
-import type { CallGraph, Zone } from "../../schema/v1.js";
+import type { CallGraph, Zone, ZoneCrossing } from "../../schema/v1.js";
 import {
   CollapsibleSection,
   buildFileToZoneMap,
@@ -59,6 +59,52 @@ const GAP_Y = 60;
 const PADDING = 40;
 
 // ── Data transformation ──────────────────────────────────────────────
+
+/**
+ * Convert raw Zone sub-zones into ZoneData for drill-down display.
+ * Uses zone metadata only (file counts, descriptions) since full call
+ * graph enrichment is scoped to the top-level analysis.
+ */
+function convertSubZones(subZones: Zone[]): ZoneData[] {
+  return subZones.map((sz, i) => {
+    const subData: ZoneData = {
+      id: sz.id,
+      name: sz.name,
+      color: getZoneColorByIndex(i),
+      description: sz.description,
+      cohesion: sz.cohesion,
+      coupling: sz.coupling,
+      files: [],
+      totalFiles: sz.files.length,
+      totalFunctions: 0,
+      internalCalls: 0,
+      crossZoneCalls: 0,
+    };
+
+    // Recurse if deeper levels exist
+    if (sz.subZones && sz.subZones.length > 0) {
+      subData.subZones = convertSubZones(sz.subZones);
+      subData.subCrossings = convertCrossings(sz.subCrossings);
+      subData.hasDrillDown = true;
+    }
+
+    return subData;
+  });
+}
+
+/** Convert ZoneCrossing[] to FlowEdge[] (aggregate by zone pair). */
+function convertCrossings(crossings?: ZoneCrossing[]): FlowEdge[] {
+  if (!crossings || crossings.length === 0) return [];
+  const pairCounts = new Map<string, number>();
+  for (const c of crossings) {
+    const key = `${c.fromZone}->${c.toZone}`;
+    pairCounts.set(key, (pairCounts.get(key) ?? 0) + 1);
+  }
+  return [...pairCounts.entries()].map(([key, weight]) => {
+    const [from, to] = key.split("->");
+    return { from, to, weight };
+  });
+}
 
 function buildExplorerData(
   callGraph: CallGraph,
@@ -144,7 +190,7 @@ function buildExplorerData(
       const internalCalls = files.reduce((sum, f) => sum + f.internalCalls, 0);
       const crossZoneCalls = files.reduce((sum, f) => sum + f.crossZoneCalls, 0);
 
-      zoneDataList.push({
+      const zd: ZoneData = {
         id: z.id,
         name: z.name,
         color: getZoneColorByIndex(i),
@@ -156,7 +202,16 @@ function buildExplorerData(
         totalFunctions,
         internalCalls,
         crossZoneCalls,
-      });
+      };
+
+      // Attach sub-zone data for drill-down when available
+      if (z.subZones && z.subZones.length > 0) {
+        zd.subZones = convertSubZones(z.subZones);
+        zd.subCrossings = convertCrossings(z.subCrossings);
+        zd.hasDrillDown = true;
+      }
+
+      zoneDataList.push(zd);
     }
   }
 
@@ -699,6 +754,7 @@ function ZoneBox({
   onSelectZone,
   onSelectFile,
   onDblClickFile,
+  onDrillDown,
 }: {
   zone: ZoneData;
   box: BoxRect;
@@ -711,6 +767,7 @@ function ZoneBox({
   onSelectZone: () => void;
   onSelectFile: (path: string) => void;
   onDblClickFile: (path: string) => void;
+  onDrillDown?: () => void;
 }) {
   const fileCount = zone.totalFiles;
   const visibleFiles = zone.files.slice(0, FILE_ROWS_MAX);
@@ -763,6 +820,32 @@ function ZoneBox({
       y: box.y + 22,
       "text-anchor": "end",
     }, expanded ? "\u25B4" : "\u25BE"),
+
+    // Drill-down button — visible only for zones with sub-zones
+    zone.hasDrillDown && onDrillDown
+      ? h("g", {
+          class: "cg-zone-drill-btn",
+          onClick: (e: Event) => { e.stopPropagation(); onDrillDown(); },
+        },
+          h("rect", {
+            x: box.x + box.w - 40,
+            y: box.y + 4,
+            width: 18,
+            height: 18,
+            rx: 4,
+            class: "cg-drill-btn-bg",
+          }),
+          h("path", {
+            d: `M ${box.x + box.w - 36} ${box.y + 10} l 5 3.5 -5 3.5`,
+            fill: "none",
+            stroke: "currentColor",
+            "stroke-width": "1.5",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+            class: "cg-drill-btn-icon",
+          }),
+        )
+      : null,
 
     expanded
       ? h("g", null,
@@ -866,6 +949,7 @@ function ZoneDiagram({
   onSelectZone,
   onSelectFile,
   onDblClickFile,
+  onDrillDown,
 }: {
   zones: ZoneData[];
   edges: FlowEdge[];
@@ -878,6 +962,7 @@ function ZoneDiagram({
   onSelectZone: (zd: ZoneData) => void;
   onSelectFile: (path: string) => void;
   onDblClickFile: (path: string) => void;
+  onDrillDown?: (zoneId: string) => void;
 }) {
   const [hoveredEdge, setHoveredEdge] = useState<string | null>(null);
 
@@ -1132,6 +1217,9 @@ function ZoneDiagram({
             onSelectZone: () => onSelectZone(zone),
             onSelectFile,
             onDblClickFile,
+            onDrillDown: zone.hasDrillDown && onDrillDown
+              ? () => onDrillDown(zone.id)
+              : undefined,
           });
         }),
       ),
@@ -1320,7 +1408,7 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   const effectiveExpandedZones = useMemo(() => {
     if (!searchQ) return expandedZones;
     const set = new Set(expandedZones);
-    for (const zd of zoneDataList) {
+    for (const zd of visibleZones) {
       const nameMatch = zd.name.toLowerCase().includes(searchQ);
       const fileMatch = zd.files.some((f) =>
         f.path.toLowerCase().includes(searchQ) ||
@@ -1329,7 +1417,7 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
       if (nameMatch || fileMatch) set.add(zd.id);
     }
     return set;
-  }, [searchQ, zoneDataList, expandedZones]);
+  }, [searchQ, visibleZones, expandedZones]);
 
   // Handlers
   const toggleZone = useCallback((id: string) => {
@@ -1371,7 +1459,16 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   /** Navigate the drill-down breadcrumb: truncate path to the given depth. */
   const handleBreadcrumbNavigate = useCallback((depth: number) => {
     setDrillPath((prev) => prev.slice(0, depth + 1));
+    setExpandedZones(new Set());
   }, []);
+
+  /** Drill into a zone: push a new breadcrumb and reset expanded state. */
+  const handleDrillDown = useCallback((zoneId: string) => {
+    const zone = visibleZones.find((z) => z.id === zoneId);
+    if (!zone?.hasDrillDown) return;
+    setDrillPath((prev) => [...prev, { zoneId, label: zone.name }]);
+    setExpandedZones(new Set());
+  }, [visibleZones]);
 
   return h("div", null,
     h("div", { class: "view-header" },
@@ -1379,7 +1476,9 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
       h("h2", { class: "section-header" }, "Zones"),
     ),
     h("p", { class: "section-sub" },
-      `${zones.zones.length} zones, ${zones.crossings.length} cross-zone dependencies, ${zones.unzoned.length} unzoned files`
+      drillPath.length <= 1
+        ? `${zones.zones.length} zones, ${zones.crossings.length} cross-zone dependencies, ${zones.unzoned.length} unzoned files`
+        : `${visibleZones.length} sub-zones in ${drillPath[drillPath.length - 1].label}`,
     ),
 
     // Search
@@ -1409,10 +1508,10 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
     h(ZoneBreadcrumbNav, { drillPath, onNavigate: handleBreadcrumbNavigate }),
 
     // Zone Diagram
-    zoneDataList.length > 0
+    visibleZones.length > 0
       ? h(ZoneDiagram, {
-          zones: zoneDataList,
-          edges: flowEdges,
+          zones: visibleZones,
+          edges: visibleCrossings,
           expandedZones: effectiveExpandedZones,
           selectedZoneId: slideoutZone?.id ?? null,
           searchQ,
@@ -1422,6 +1521,7 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
           onSelectZone: handleDiagramZoneSelect,
           onSelectFile: handleFileSelect,
           onDblClickFile: handleFileDblClick,
+          onDrillDown: handleDrillDown,
         })
       : null,
 
