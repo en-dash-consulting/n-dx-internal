@@ -172,6 +172,8 @@ export interface Zone {
   depth?: number;
   /** Sub-zones from recursive subdivision of large zones. */
   subZones?: Zone[];
+  /** Cross-zone import edges within this zone's sub-zones. */
+  subCrossings?: ZoneCrossing[];
   /** Computed architectural risk metrics (deterministic, from cohesion/coupling). */
   riskMetrics?: ZoneRiskMetrics;
 }
