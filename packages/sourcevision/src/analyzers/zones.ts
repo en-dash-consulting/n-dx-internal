@@ -23,6 +23,7 @@ import { createHash } from "node:crypto";
 import type {
   Inventory,
   Imports,
+  ImportEdge,
   Zone,
   ZoneCrossing,
   Zones,
@@ -57,6 +58,39 @@ export interface AnalyzeZonesResult {
   tokenUsage?: AnalyzeTokenUsage;
   /** True when zone structure changed and enrichment pass was reset to 1 */
   structureChanged: boolean;
+}
+
+/** Options for the reusable zone detection pipeline. */
+export interface ZonePipelineOptions {
+  /** Import edges to cluster (pre-filtered for scope). */
+  edges: ImportEdge[];
+  /** Full inventory for zone descriptions and file metadata. */
+  inventory: Inventory;
+  /** Full imports for entry point detection and crossing computation. */
+  imports: Imports;
+  /** File paths in scope for zone assignment. */
+  scopeFiles: string[];
+  /** Maximum number of root-level zones. Default: 15. */
+  maxZones?: number;
+  /**
+   * Maximum percentage of scope files a single zone may contain (1–100).
+   * Default: {@link DEFAULT_MAX_ZONE_PERCENT} (30%).
+   * Set to `100` to disable the zone size cap.
+   */
+  maxZonePercent?: number;
+  /** Parent zone ID for sub-zone ID derivation. Reserved for subdivision. */
+  parentId?: string;
+  /** Current recursion depth. Reserved for subdivision. */
+  depth?: number;
+  /** Test files excluded from cohesion/coupling metric computation. */
+  testFiles?: Set<string>;
+}
+
+/** Result of running the zone detection pipeline. */
+export interface ZonePipelineResult {
+  zones: Zone[];
+  crossings: ZoneCrossing[];
+  unzoned: string[];
 }
 
 // ── Zone ID / name derivation ───────────────────────────────────────────────
@@ -1306,7 +1340,7 @@ function backPopulateInsights(
   }
 }
 
-// ── Main entry point ────────────────────────────────────────────────────────
+// ── Zone detection pipeline ──────────────────────────────────────────────────
 
 /**
  * Maximum percentage of project files a single zone should contain.
@@ -1314,6 +1348,87 @@ function backPopulateInsights(
  * Default: 30% — prevents over-aggregation where one zone dominates the codebase.
  */
 export const DEFAULT_MAX_ZONE_PERCENT = 30;
+
+/**
+ * Run the full zone detection pipeline: graph construction, Louvain community
+ * detection, community merging/splitting, zone construction with subdivision,
+ * proximity assignment, and crossing computation.
+ *
+ * This is the shared pipeline used by both root-level analysis and (future)
+ * recursive zone subdivision.
+ */
+export function runZonePipeline(options: ZonePipelineOptions): ZonePipelineResult {
+  const {
+    edges,
+    inventory,
+    imports,
+    scopeFiles,
+    maxZones = 15,
+    maxZonePercent = DEFAULT_MAX_ZONE_PERCENT,
+    testFiles = new Set<string>(),
+  } = options;
+
+  // ── Build undirected graph ──
+  const graph = buildUndirectedGraph(edges);
+
+  // ── Add directory proximity edges ──
+  // Only for files not already in the import graph, and only those sharing
+  // a directory with at least one other non-import file. Files with imports
+  // are clustered purely by import structure; files without imports get
+  // proximity-based grouping among themselves.
+  const importGraphNodes = new Set(graph.keys());
+  const nonImportFiles = scopeFiles.filter(f => !importGraphNodes.has(f));
+
+  const nonImportDirCounts = new Map<string, number>();
+  for (const f of nonImportFiles) {
+    const lastSlash = f.lastIndexOf("/");
+    const dir = lastSlash === -1 ? "." : f.slice(0, lastSlash);
+    nonImportDirCounts.set(dir, (nonImportDirCounts.get(dir) ?? 0) + 1);
+  }
+  const clusterableNonImportFiles = nonImportFiles.filter(f => {
+    const lastSlash = f.lastIndexOf("/");
+    const dir = lastSlash === -1 ? "." : f.slice(0, lastSlash);
+    return (nonImportDirCounts.get(dir) ?? 0) >= 2;
+  });
+  addDirectoryProximityEdges(graph, clusterableNonImportFiles);
+
+  // ── Louvain community detection ──
+  let community = louvainPhase1(graph);
+  community = mergeBidirectionalCoupling(community, graph);
+  community = mergeSmallCommunities(community, graph);
+  community = capZoneCount(community, graph, maxZones);
+
+  // ── Split oversized communities ──
+  const maxPct = Math.max(1, Math.min(100, maxZonePercent));
+  const graphNodeCount = graph.size;
+  const maxZoneSize = Math.max(3, Math.ceil(graphNodeCount * maxPct / 100));
+  community = splitLargeCommunities(community, graph, maxZoneSize);
+
+  mergeSameIdCommunities(community, maxPct < 100 ? maxZoneSize : undefined);
+  community = capZoneCount(community, graph, maxZones);  // re-cap after split
+
+  // ── Build zones from communities ──
+  const zones = buildZonesFromCommunities(
+    community, graph, imports, inventory, testFiles
+  );
+
+  // ── Assign unzoned files by directory proximity ──
+  const zonedFiles = new Set<string>();
+  for (const zone of zones) {
+    for (const f of zone.files) zonedFiles.add(f);
+  }
+  const initialUnzoned = scopeFiles.filter(f => !zonedFiles.has(f));
+  const { zones: expandedZones, remaining: unzoned } = assignByProximity(
+    zones, initialUnzoned
+  );
+
+  // ── Build crossings ──
+  const crossings = buildCrossings(expandedZones, imports, []);
+
+  return { zones: expandedZones, crossings, unzoned };
+}
+
+// ── Main entry point ────────────────────────────────────────────────────────
 
 export async function analyzeZones(
   inventory: Inventory,
@@ -1353,36 +1468,9 @@ export async function analyzeZones(
       )
     : imports.edges;
 
-  const graph = buildUndirectedGraph(filteredEdges);
-
-  // Add directory proximity edges ONLY for files not already in the import graph.
-  // This gives Louvain directory-structure awareness for non-import files (configs,
-  // assets, docs) without creating bridges between disconnected import clusters.
-  // Files with imports are clustered purely by import structure; files without
-  // imports get proximity-based grouping among themselves.
-  //
-  // Only include non-import files that share a directory with at least one other
-  // non-import file — isolated singletons would form useless singleton zones and
-  // conflict with import-based zone names. They're better handled by the
-  // assignByProximity step later.
-  const inventoryFiles = inventory.files
+  const scopeFiles = inventory.files
     .filter(f => !isSubAnalyzedFile(f.path, subAnalyzedPrefixes))
     .map(f => f.path);
-  const importGraphNodes = new Set(graph.keys());
-  const nonImportFiles = inventoryFiles.filter(f => !importGraphNodes.has(f));
-
-  const nonImportDirCounts = new Map<string, number>();
-  for (const f of nonImportFiles) {
-    const lastSlash = f.lastIndexOf("/");
-    const dir = lastSlash === -1 ? "." : f.slice(0, lastSlash);
-    nonImportDirCounts.set(dir, (nonImportDirCounts.get(dir) ?? 0) + 1);
-  }
-  const clusterableNonImportFiles = nonImportFiles.filter(f => {
-    const lastSlash = f.lastIndexOf("/");
-    const dir = lastSlash === -1 ? "." : f.slice(0, lastSlash);
-    return (nonImportDirCounts.get(dir) ?? 0) >= 2;
-  });
-  addDirectoryProximityEdges(graph, clusterableNonImportFiles);
 
   // Build set of test files for metric exclusion
   const testFiles = new Set<string>();
@@ -1390,31 +1478,16 @@ export async function analyzeZones(
     if (f.role === "test") testFiles.add(f.path);
   }
 
-  // ── Louvain community detection ──
-  let community = louvainPhase1(graph);
-  community = mergeBidirectionalCoupling(community, graph);
-  community = mergeSmallCommunities(community, graph);
-  community = capZoneCount(community, graph, 15);
-
-  // ── Split oversized communities ──
-  const maxPct = Math.max(1, Math.min(100, options?.maxZonePercent ?? DEFAULT_MAX_ZONE_PERCENT));
-  const graphNodeCount = graph.size;
-  const maxZoneSize = Math.max(3, Math.ceil(graphNodeCount * maxPct / 100));
-  community = splitLargeCommunities(community, graph, maxZoneSize);
-
-  mergeSameIdCommunities(community, maxPct < 100 ? maxZoneSize : undefined);
-  community = capZoneCount(community, graph, 15);  // re-cap after split
-
-  // ── Build zones from communities ──
-  const zones = buildZonesFromCommunities(
-    community, graph, imports, inventory, testFiles
-  );
-
-  // ── Assign unzoned files by directory proximity ──
-  const initialUnzoned = collectUnzonedFiles(zones, inventory, subAnalyzedPrefixes);
-  const { zones: expandedZones, remaining: unzoned } = assignByProximity(
-    zones, initialUnzoned
-  );
+  // ── Run zone detection pipeline ──
+  const pipeline = runZonePipeline({
+    edges: filteredEdges,
+    inventory,
+    imports,
+    scopeFiles,
+    maxZonePercent: options?.maxZonePercent,
+    testFiles,
+  });
+  const { zones: expandedZones, unzoned } = pipeline;
 
   // ── Structure hash & change detection ──
   const structureHash = computeStructureHash(expandedZones);
