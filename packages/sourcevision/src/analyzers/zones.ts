@@ -354,13 +354,18 @@ export const SUBDIVISION_THRESHOLD = 50;
 export const MAX_SUBDIVISION_DEPTH = 3;
 
 /**
- * Subdivide a large zone by running Louvain on its internal import graph.
- * Returns sub-zones with IDs prefixed by parent zone ID.
+ * Subdivide a large zone by running the full zone pipeline on its internal
+ * import graph. Returns sub-zones with IDs prefixed by parent zone ID.
+ *
+ * Uses the same algorithm at every zoom level (resolution escalation,
+ * proximity edges, splitLargeCommunities, mergeSameIdCommunities) and
+ * stores cross-sub-zone edges on `zone.subCrossings`.
  */
 export function subdivideZone(
   zone: Zone,
   imports: Imports,
   inventory: Inventory,
+  testFiles: Set<string> = new Set(),
   depth: number = 0
 ): Zone[] {
   // Don't subdivide small zones or if we've hit max depth
@@ -380,105 +385,29 @@ export function subdivideZone(
     return [];
   }
 
-  // Build sub-graph and run Louvain
-  const subGraph = buildUndirectedGraph(internalEdges);
-  let community = louvainPhase1(subGraph);
-  community = mergeBidirectionalCoupling(community, subGraph);
-  community = mergeSmallCommunities(community, subGraph);
-  // Cap at 8 sub-zones per parent
-  community = capZoneCount(community, subGraph, 8);
+  // Run full pipeline on the zone's internal graph
+  const result = runZonePipeline({
+    edges: internalEdges,
+    inventory,
+    imports,
+    scopeFiles: zone.files,
+    maxZones: 8,
+    parentId: zone.id,
+    depth: depth + 1,
+    testFiles,
+  });
 
-  // Gather community → members
-  const communityMembers = new Map<string, string[]>();
-  for (const [node, comm] of community) {
-    let list = communityMembers.get(comm);
-    if (!list) {
-      list = [];
-      communityMembers.set(comm, list);
-    }
-    list.push(node);
-  }
-
-  // If Louvain found only 1 community, no meaningful subdivision
-  if (communityMembers.size <= 1) {
+  // If pipeline found only 1 or 0 zones, no meaningful subdivision
+  if (result.zones.length <= 1) {
     return [];
   }
 
-  // Build sub-zones
-  const usedIds = new Set<string>();
-  const subZones: Zone[] = [];
-
-  const sortedCommunities = [...communityMembers.entries()]
-    .map(([comm, members]) => [comm, members.sort()] as const)
-    .sort(([, a], [, b]) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-
-  for (const [, members] of sortedCommunities) {
-    let subId = deriveZoneId(members, zone.id);
-    if (usedIds.has(subId)) {
-      const disambiguated = disambiguateZoneId(subId, members, zone.id);
-      if (disambiguated !== subId && !usedIds.has(disambiguated)) {
-        subId = disambiguated;
-      } else {
-        let suffix = 2;
-        while (usedIds.has(`${subId}-${suffix}`)) suffix++;
-        subId = `${subId}-${suffix}`;
-      }
-    }
-    usedIds.add(subId);
-
-    // Prefix with parent zone ID
-    const fullId = `${zone.id}/${subId}`;
-
-    // Entry points: files imported from outside this sub-zone (but within parent zone)
-    const memberSet = new Set(members);
-    const entryPoints: string[] = [];
-    for (const edge of internalEdges) {
-      if (memberSet.has(edge.to) && !memberSet.has(edge.from)) {
-        if (!entryPoints.includes(edge.to)) {
-          entryPoints.push(edge.to);
-        }
-      }
-    }
-
-    // Cohesion / coupling from sub-graph
-    let internalEdgeCount = 0;
-    let totalEdgesFromSubZone = 0;
-    for (const node of members) {
-      const neighbors = subGraph.get(node);
-      if (!neighbors) continue;
-      for (const [neighbor] of neighbors) {
-        totalEdgesFromSubZone++;
-        if (memberSet.has(neighbor)) internalEdgeCount++;
-      }
-    }
-    const cohesion =
-      totalEdgesFromSubZone > 0 ? internalEdgeCount / totalEdgesFromSubZone : 1;
-    const coupling =
-      totalEdgesFromSubZone > 0
-        ? (totalEdgesFromSubZone - internalEdgeCount) / totalEdgesFromSubZone
-        : 0;
-
-    const subZone: Zone = {
-      id: fullId,
-      name: deriveZoneName(subId),
-      description: describeZone(members, inventory),
-      files: members,
-      entryPoints,
-      cohesion: Math.round(cohesion * 100) / 100,
-      coupling: Math.round(coupling * 100) / 100,
-      depth: (zone.depth ?? 0) + 1,
-    };
-
-    // Recursively subdivide if still large
-    const nestedSubZones = subdivideZone(subZone, imports, inventory, depth + 1);
-    if (nestedSubZones.length > 0) {
-      subZone.subZones = nestedSubZones;
-    }
-
-    subZones.push(subZone);
+  // Store sub-crossings on parent zone
+  if (result.crossings.length > 0) {
+    zone.subCrossings = result.crossings;
   }
 
-  return subZones;
+  return result.zones;
 }
 
 // ── Structure hash ──────────────────────────────────────────────────────────
@@ -864,13 +793,19 @@ function dominantPackageRoot(files: string[]): string | null {
 /**
  * Convert Louvain community assignments into Zone objects with metrics.
  * Computes entry points, cohesion/coupling, and recursive subdivision.
+ *
+ * When `parentId` is provided (subdivision), zone IDs are derived relative
+ * to the parent and prefixed with `parentId/`. The `depth` parameter is
+ * threaded to `subdivideZone` for recursion limiting.
  */
 function buildZonesFromCommunities(
   community: Map<string, string>,
   graph: Map<string, Map<string, number>>,
   imports: Imports,
   inventory: Inventory,
-  testFiles: Set<string>
+  testFiles: Set<string>,
+  parentId?: string,
+  depth: number = 0,
 ): Zone[] {
   const communityMembers = new Map<string, string[]>();
   for (const [node, comm] of community) {
@@ -890,9 +825,9 @@ function buildZonesFromCommunities(
     .sort(([, a], [, b]) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
 
   for (const [, members] of sortedCommunities) {
-    let id = deriveZoneId(members);
+    let id = deriveZoneId(members, parentId);
     if (usedIds.has(id)) {
-      const disambiguated = disambiguateZoneId(id, members);
+      const disambiguated = disambiguateZoneId(id, members, parentId);
       if (disambiguated !== id && !usedIds.has(disambiguated)) {
         id = disambiguated;
       } else {
@@ -902,6 +837,11 @@ function buildZonesFromCommunities(
       }
     }
     usedIds.add(id);
+
+    // Prefix with parent zone ID for subdivision
+    if (parentId) {
+      id = `${parentId}/${id}`;
+    }
 
     const memberSet = new Set(members);
     const entryPoints: string[] = [];
@@ -942,9 +882,10 @@ function buildZonesFromCommunities(
       entryPoints,
       cohesion: Math.round(cohesion * 100) / 100,
       coupling: Math.round(coupling * 100) / 100,
+      ...(depth > 0 ? { depth } : {}),
     };
 
-    const subZones = subdivideZone(zone, imports, inventory);
+    const subZones = subdivideZone(zone, imports, inventory, testFiles, depth);
     if (subZones.length > 0) {
       zone.subZones = subZones;
     }
@@ -1365,6 +1306,8 @@ export function runZonePipeline(options: ZonePipelineOptions): ZonePipelineResul
     scopeFiles,
     maxZones = 15,
     maxZonePercent = DEFAULT_MAX_ZONE_PERCENT,
+    parentId,
+    depth = 0,
     testFiles = new Set<string>(),
   } = options;
 
@@ -1409,7 +1352,7 @@ export function runZonePipeline(options: ZonePipelineOptions): ZonePipelineResul
 
   // ── Build zones from communities ──
   const zones = buildZonesFromCommunities(
-    community, graph, imports, inventory, testFiles
+    community, graph, imports, inventory, testFiles, parentId, depth
   );
 
   // ── Assign unzoned files by directory proximity ──

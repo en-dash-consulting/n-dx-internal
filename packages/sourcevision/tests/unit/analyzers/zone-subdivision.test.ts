@@ -182,7 +182,7 @@ describe("subdivideZone", () => {
     const imports = makeImports(edges);
 
     // Call with depth at max
-    const subZones = subdivideZone(zone, imports, inventory, MAX_SUBDIVISION_DEPTH);
+    const subZones = subdivideZone(zone, imports, inventory, new Set(), MAX_SUBDIVISION_DEPTH);
 
     // Should return empty (depth exceeded)
     expect(subZones).toEqual([]);
