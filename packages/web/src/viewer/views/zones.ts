@@ -15,6 +15,7 @@ import type { CallGraph, Zone, Finding } from "../../schema/v1.js";
 import {
   CollapsibleSection,
   buildFileToZoneMap,
+  buildFlowEdges,
   buildCallFlowEdges,
   buildExternalImportEdges,
   getZoneColorByIndex,
@@ -150,6 +151,7 @@ function buildExplorerData(
         cohesion: z.cohesion,
         coupling: z.coupling,
         files,
+        totalFiles: z.files.length,
         totalFunctions,
         internalCalls,
         crossZoneCalls,
@@ -647,9 +649,9 @@ function ZoneBox({
   onSelectFile: (path: string) => void;
   onDblClickFile: (path: string) => void;
 }) {
-  const fileCount = zone.files.length;
+  const fileCount = zone.totalFiles;
   const visibleFiles = zone.files.slice(0, FILE_ROWS_MAX);
-  const overflow = fileCount - FILE_ROWS_MAX;
+  const overflow = zone.files.length - FILE_ROWS_MAX;
 
   return h("g", {
     class: `cg-zone-box${expanded ? " expanded" : ""}${dimmed ? " search-dim" : ""}`,
@@ -1178,13 +1180,14 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   }, [callGraph, fileToZoneMap, zones]);
 
   const flowEdges = useMemo(() => {
+    const crossingEdges = zones ? buildFlowEdges(zones.crossings) : [];
     const callEdges = callGraph ? buildCallFlowEdges(callGraph.edges, fileToZoneMap) : [];
     const importEdges = importsData && zones
       ? buildExternalImportEdges(importsData.external, fileToZoneMap, zones)
       : [];
 
     const merged = new Map<string, { from: string; to: string; weight: number }>();
-    for (const e of [...callEdges, ...importEdges]) {
+    for (const e of [...crossingEdges, ...callEdges, ...importEdges]) {
       const key = `${e.from}->${e.to}`;
       const existing = merged.get(key);
       if (existing) {

@@ -1355,11 +1355,34 @@ export async function analyzeZones(
 
   const graph = buildUndirectedGraph(filteredEdges);
 
-  // Add directory proximity edges to give Louvain directory-structure awareness
+  // Add directory proximity edges ONLY for files not already in the import graph.
+  // This gives Louvain directory-structure awareness for non-import files (configs,
+  // assets, docs) without creating bridges between disconnected import clusters.
+  // Files with imports are clustered purely by import structure; files without
+  // imports get proximity-based grouping among themselves.
+  //
+  // Only include non-import files that share a directory with at least one other
+  // non-import file — isolated singletons would form useless singleton zones and
+  // conflict with import-based zone names. They're better handled by the
+  // assignByProximity step later.
   const inventoryFiles = inventory.files
     .filter(f => !isSubAnalyzedFile(f.path, subAnalyzedPrefixes))
     .map(f => f.path);
-  addDirectoryProximityEdges(graph, inventoryFiles);
+  const importGraphNodes = new Set(graph.keys());
+  const nonImportFiles = inventoryFiles.filter(f => !importGraphNodes.has(f));
+
+  const nonImportDirCounts = new Map<string, number>();
+  for (const f of nonImportFiles) {
+    const lastSlash = f.lastIndexOf("/");
+    const dir = lastSlash === -1 ? "." : f.slice(0, lastSlash);
+    nonImportDirCounts.set(dir, (nonImportDirCounts.get(dir) ?? 0) + 1);
+  }
+  const clusterableNonImportFiles = nonImportFiles.filter(f => {
+    const lastSlash = f.lastIndexOf("/");
+    const dir = lastSlash === -1 ? "." : f.slice(0, lastSlash);
+    return (nonImportDirCounts.get(dir) ?? 0) >= 2;
+  });
+  addDirectoryProximityEdges(graph, clusterableNonImportFiles);
 
   // Build set of test files for metric exclusion
   const testFiles = new Set<string>();

@@ -29,6 +29,7 @@ export interface ZoneData {
   cohesion: number;
   coupling: number;
   files: FileInfo[];
+  totalFiles: number;
   totalFunctions: number;
   internalCalls: number;
   crossZoneCalls: number;

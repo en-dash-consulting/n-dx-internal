@@ -671,6 +671,188 @@ describe("directory proximity integration", () => {
   });
 });
 
+// ── Proximity isolation: non-import files don't bridge import clusters ────────
+
+describe("proximity isolation", () => {
+  it("does not merge disconnected import clusters via shared-directory non-import files", async () => {
+    // Two completely disconnected import clusters under app/components/,
+    // plus non-import files (SVGs, JSON) in the same parent directory.
+    // Before fix: proximity edges bridged the clusters into one mega-zone.
+    // After fix: each import cluster stays separate.
+    const inventory = makeInventory([
+      // Cluster A: forms components
+      makeFileEntry("app/components/Button.tsx"),
+      makeFileEntry("app/components/ButtonGroup.tsx"),
+      makeFileEntry("app/components/ButtonIcon.tsx"),
+      // Cluster B: forms modals
+      makeFileEntry("app/components/Modal.tsx"),
+      makeFileEntry("app/components/ModalHeader.tsx"),
+      makeFileEntry("app/components/ModalBody.tsx"),
+      // Non-import files in the same directory — should NOT bridge A and B
+      makeFileEntry("app/components/icon.svg", { role: "asset", language: "SVG" }),
+      makeFileEntry("app/components/styles.css", { role: "style", language: "CSS" }),
+    ]);
+    const imports = makeImports([
+      // Cluster A: tightly connected
+      makeEdge("app/components/Button.tsx", "app/components/ButtonGroup.tsx"),
+      makeEdge("app/components/ButtonGroup.tsx", "app/components/ButtonIcon.tsx"),
+      makeEdge("app/components/Button.tsx", "app/components/ButtonIcon.tsx"),
+      // Cluster B: tightly connected
+      makeEdge("app/components/Modal.tsx", "app/components/ModalHeader.tsx"),
+      makeEdge("app/components/ModalHeader.tsx", "app/components/ModalBody.tsx"),
+      makeEdge("app/components/Modal.tsx", "app/components/ModalBody.tsx"),
+      // No edges between A and B
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // Should have at least 2 zones (the two import clusters).
+    // Non-import files should be assigned to one of them or form their own zone.
+    // Critically: Button files and Modal files must NOT be in the same zone.
+    const buttonZone = result.zones.find(z => z.files.includes("app/components/Button.tsx"));
+    const modalZone = result.zones.find(z => z.files.includes("app/components/Modal.tsx"));
+    expect(buttonZone).toBeDefined();
+    expect(modalZone).toBeDefined();
+    expect(buttonZone!.id).not.toBe(modalZone!.id);
+  });
+
+  it("produces crossings when import clusters are split instead of merged", async () => {
+    // Two import clusters with a cross-cluster edge.
+    // Plus non-import files in shared parent directories.
+    // The cross-cluster edge should appear as a crossing, not be hidden
+    // inside a mega-zone.
+    const inventory = makeInventory([
+      makeFileEntry("app/routes/admin/users.ts"),
+      makeFileEntry("app/routes/admin/settings.ts"),
+      makeFileEntry("app/routes/admin/dashboard.ts"),
+      makeFileEntry("app/routes/blog/posts.ts"),
+      makeFileEntry("app/routes/blog/comments.ts"),
+      makeFileEntry("app/routes/blog/tags.ts"),
+      // Non-import files that would previously bridge the clusters
+      makeFileEntry("app/routes/layout.tsx", { role: "config" }),
+      makeFileEntry("app/routes/error.tsx", { role: "config" }),
+    ]);
+    const imports = makeImports([
+      // admin cluster
+      makeEdge("app/routes/admin/users.ts", "app/routes/admin/settings.ts"),
+      makeEdge("app/routes/admin/settings.ts", "app/routes/admin/dashboard.ts"),
+      makeEdge("app/routes/admin/users.ts", "app/routes/admin/dashboard.ts"),
+      // blog cluster
+      makeEdge("app/routes/blog/posts.ts", "app/routes/blog/comments.ts"),
+      makeEdge("app/routes/blog/comments.ts", "app/routes/blog/tags.ts"),
+      makeEdge("app/routes/blog/posts.ts", "app/routes/blog/tags.ts"),
+      // Cross-cluster edge
+      makeEdge("app/routes/admin/users.ts", "app/routes/blog/posts.ts"),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // The cross-cluster edge should produce a crossing
+    expect(result.crossings.length).toBeGreaterThan(0);
+    // All files should be zoned
+    expect(result.unzoned).toHaveLength(0);
+  });
+
+  it("keeps import-cluster metrics pure (not inflated by proximity edges)", async () => {
+    // A cluster of import-connected files. Metrics should be based on
+    // import edges only, not diluted by proximity edges.
+    const inventory = makeInventory([
+      makeFileEntry("src/core/a.ts"),
+      makeFileEntry("src/core/b.ts"),
+      makeFileEntry("src/core/c.ts"),
+      makeFileEntry("src/utils/x.ts"),
+      makeFileEntry("src/utils/y.ts"),
+      makeFileEntry("src/utils/z.ts"),
+    ]);
+    const imports = makeImports([
+      makeEdge("src/core/a.ts", "src/core/b.ts"),
+      makeEdge("src/core/b.ts", "src/core/c.ts"),
+      makeEdge("src/core/a.ts", "src/core/c.ts"),
+      makeEdge("src/utils/x.ts", "src/utils/y.ts"),
+      makeEdge("src/utils/y.ts", "src/utils/z.ts"),
+      makeEdge("src/utils/x.ts", "src/utils/z.ts"),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // Each cluster should be its own zone with perfect cohesion
+    expect(result.zones.length).toBe(2);
+    for (const zone of result.zones) {
+      expect(zone.cohesion).toBe(1);
+      expect(zone.coupling).toBe(0);
+    }
+  });
+
+  it("handles a scale scenario similar to the n-site mega-zone bug", async () => {
+    // Simulate the real bug: many disconnected import clusters across
+    // different route directories, plus many non-import files (JSON, SVG, etc.)
+    // all under shared parent directories.
+    const inventory = makeInventory([
+      // Route cluster 1: admin (3 files, fully connected)
+      makeFileEntry("app/routes/admin/users.ts"),
+      makeFileEntry("app/routes/admin/settings.ts"),
+      makeFileEntry("app/routes/admin/roles.ts"),
+      // Route cluster 2: blog (3 files, fully connected)
+      makeFileEntry("app/routes/blog/posts.ts"),
+      makeFileEntry("app/routes/blog/editor.ts"),
+      makeFileEntry("app/routes/blog/tags.ts"),
+      // Route cluster 3: shop (3 files, fully connected)
+      makeFileEntry("app/routes/shop/products.ts"),
+      makeFileEntry("app/routes/shop/cart.ts"),
+      makeFileEntry("app/routes/shop/checkout.ts"),
+      // Components cluster (3 files, fully connected)
+      makeFileEntry("app/components/Header.tsx"),
+      makeFileEntry("app/components/Footer.tsx"),
+      makeFileEntry("app/components/Layout.tsx"),
+      // Non-import files scattered across directories
+      makeFileEntry("app/routes/admin/styles.css", { role: "style", language: "CSS" }),
+      makeFileEntry("app/routes/blog/data.json", { role: "config", language: "JSON" }),
+      makeFileEntry("app/routes/shop/logo.svg", { role: "asset", language: "SVG" }),
+      makeFileEntry("app/components/icon.svg", { role: "asset", language: "SVG" }),
+      makeFileEntry("app/styles/global.css", { role: "style", language: "CSS" }),
+      makeFileEntry("app/config.json", { role: "config", language: "JSON" }),
+    ]);
+    const imports = makeImports([
+      // Admin cluster
+      makeEdge("app/routes/admin/users.ts", "app/routes/admin/settings.ts"),
+      makeEdge("app/routes/admin/settings.ts", "app/routes/admin/roles.ts"),
+      makeEdge("app/routes/admin/users.ts", "app/routes/admin/roles.ts"),
+      // Blog cluster
+      makeEdge("app/routes/blog/posts.ts", "app/routes/blog/editor.ts"),
+      makeEdge("app/routes/blog/editor.ts", "app/routes/blog/tags.ts"),
+      makeEdge("app/routes/blog/posts.ts", "app/routes/blog/tags.ts"),
+      // Shop cluster
+      makeEdge("app/routes/shop/products.ts", "app/routes/shop/cart.ts"),
+      makeEdge("app/routes/shop/cart.ts", "app/routes/shop/checkout.ts"),
+      makeEdge("app/routes/shop/products.ts", "app/routes/shop/checkout.ts"),
+      // Components cluster
+      makeEdge("app/components/Header.tsx", "app/components/Footer.tsx"),
+      makeEdge("app/components/Footer.tsx", "app/components/Layout.tsx"),
+      makeEdge("app/components/Header.tsx", "app/components/Layout.tsx"),
+    ]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // Should NOT produce a single mega-zone containing everything.
+    // Each import cluster should be its own zone (or meaningfully merged).
+    const maxZoneFiles = Math.max(...result.zones.map(z => z.files.length));
+    expect(maxZoneFiles).toBeLessThan(12); // No zone should have all 12 import files
+
+    // No zone should have a numeric suffix like "routes-2"
+    for (const zone of result.zones) {
+      expect(zone.id).not.toMatch(/^routes-\d+$/);
+    }
+
+    // Import files should all be in zones; some isolated non-import files
+    // (those without a zone nearby) may remain unzoned — that's correct
+    const allZonedFiles = result.zones.flatMap(z => z.files);
+    expect(allZonedFiles).toContain("app/routes/admin/users.ts");
+    expect(allZonedFiles).toContain("app/routes/blog/posts.ts");
+    expect(allZonedFiles).toContain("app/routes/shop/products.ts");
+    expect(allZonedFiles).toContain("app/components/Header.tsx");
+  });
+});
+
 // ── assignByProximity ────────────────────────────────────────────────────────
 
 describe("assignByProximity", () => {
