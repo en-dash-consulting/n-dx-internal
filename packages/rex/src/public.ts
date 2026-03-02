@@ -307,6 +307,16 @@ export type {
   AffectedTask, UncoveredChange, CrossReferenceResult,
 } from "./core/code-coverage.js";
 
+// ---- Analyze: structured extraction -----------------------------------------
+
+export {
+  extractFromMarkdown,
+  extractFromText,
+  extractFromFile,
+  classifyHeadingLevels,
+} from "./analyze/extract.js";
+export type { ExtractionOptions, ExtractionResult } from "./analyze/extract.js";
+
 // ---- MCP server factory -----------------------------------------------------
 
 export { createRexMcpServer } from "./cli/mcp.js";

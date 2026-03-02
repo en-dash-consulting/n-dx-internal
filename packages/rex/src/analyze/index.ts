@@ -78,3 +78,6 @@ export { buildModifyPrompt, modifyProposals } from "./modify-reason.js";
 
 export type { ValidationResult, ClassificationResult } from "./validate-modification.js";
 export { validateModificationRequest, classifyModificationRequest } from "./validate-modification.js";
+
+export type { ExtractionOptions, ExtractionResult } from "./extract.js";
+export { extractFromMarkdown, extractFromText, extractFromFile, classifyHeadingLevels } from "./extract.js";

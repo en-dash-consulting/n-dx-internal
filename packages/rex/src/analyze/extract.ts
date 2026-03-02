@@ -1,0 +1,617 @@
+/**
+ * Structured requirements extraction engine.
+ *
+ * Parses markdown and plain text documents into hierarchical PRD proposals
+ * (epics → features → tasks) using pattern recognition. Falls back to LLM
+ * assistance only when document structure is genuinely ambiguous.
+ *
+ * The extraction pipeline:
+ * 1. Parse document structure (headings, bullets, paragraphs, code fences)
+ * 2. Classify heading levels → PRD levels (epic/feature/task)
+ * 3. Build hierarchical proposals from classified sections
+ * 4. Deduplicate against existing PRD items
+ * 5. Optionally use LLM for disambiguation of flat/unclear structures
+ *
+ * @module rex/analyze/extract
+ */
+
+import { readFile } from "node:fs/promises";
+import type { PRDItem, AnalyzeTokenUsage } from "../schema/index.js";
+import type { Proposal, ProposalTask } from "./propose.js";
+import { detectFileFormat } from "./reason.js";
+import type { FileFormat } from "./reason.js";
+
+// ── Types ──────────────────────────────────────────────────────────
+
+export interface ExtractionOptions {
+  /** Existing PRD items for deduplication. */
+  existingItems?: PRDItem[];
+  /** Use LLM to disambiguate unclear structures. Default: false. */
+  useLLM?: boolean;
+  /** LLM model to use when disambiguation is needed. */
+  model?: string;
+}
+
+export interface ExtractionResult {
+  /** Extracted proposals in standard PRD format. */
+  proposals: Proposal[];
+  /** Whether LLM was invoked during extraction. */
+  usedLLM: boolean;
+  /** Token usage if LLM was used. */
+  tokenUsage?: AnalyzeTokenUsage;
+}
+
+/** PRD level assignment for a heading depth. */
+type HeadingRole = "epic" | "feature" | "task";
+
+// ── Internal types ─────────────────────────────────────────────────
+
+/** A parsed section from the document. */
+interface Section {
+  heading: string;
+  headingLevel: number;
+  /** Paragraph text (non-bullet, non-heading lines). */
+  paragraphs: string[];
+  /** Bullet/numbered list items under this heading. */
+  bullets: string[];
+  /** Child sections (sub-headings). */
+  children: Section[];
+}
+
+// ── Heading classification ─────────────────────────────────────────
+
+/**
+ * Determine which PRD level each heading depth maps to.
+ *
+ * Strategy:
+ * - With 3+ distinct levels: shallowest = epic, next = feature, rest = task
+ * - With 2 levels: shallowest = epic, deeper = feature
+ * - With 1 level: treat as feature (ambiguous without more context)
+ * - Empty: no mapping
+ */
+export function classifyHeadingLevels(
+  levels: number[],
+): Record<number, HeadingRole> {
+  if (levels.length === 0) return {};
+
+  const sorted = [...new Set(levels)].sort((a, b) => a - b);
+  const map: Record<number, HeadingRole> = {};
+
+  if (sorted.length >= 3) {
+    map[sorted[0]] = "epic";
+    map[sorted[1]] = "feature";
+    for (let i = 2; i < sorted.length; i++) {
+      map[sorted[i]] = "task";
+    }
+  } else if (sorted.length === 2) {
+    map[sorted[0]] = "epic";
+    map[sorted[1]] = "feature";
+  } else {
+    // Single level — treat as feature
+    map[sorted[0]] = "feature";
+  }
+
+  return map;
+}
+
+// ── Markdown parsing ───────────────────────────────────────────────
+
+/** Strip inline markdown formatting from a heading string. */
+function cleanHeading(raw: string): string {
+  let h = raw;
+  h = h.replace(/\*{1,2}([^*]+)\*{1,2}/g, "$1");
+  h = h.replace(/_{1,2}([^_]+)_{1,2}/g, "$1");
+  h = h.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
+  h = h.replace(/`([^`]+)`/g, "$1");
+  h = h.replace(/~~([^~]+)~~/g, "$1");
+  return h.trim();
+}
+
+/**
+ * Parse markdown content into a tree of sections.
+ * Handles code fences, heading hierarchy, bullets, and paragraph text.
+ */
+function parseMarkdownSections(content: string): {
+  sections: Section[];
+  headingLevels: number[];
+} {
+  const lines = content.split("\n");
+  const headingLevels: number[] = [];
+
+  // Root-level container for top-level sections
+  const root: Section = {
+    heading: "",
+    headingLevel: 0,
+    paragraphs: [],
+    bullets: [],
+    children: [],
+  };
+
+  // Stack tracks the nesting path from root to current section
+  const stack: Section[] = [root];
+  let inCodeBlock = false;
+
+  for (const line of lines) {
+    // Track fenced code blocks (``` or ~~~)
+    if (/^\s*(`{3,}|~{3,})/.test(line)) {
+      inCodeBlock = !inCodeBlock;
+      continue;
+    }
+    if (inCodeBlock) continue;
+
+    // Check for heading
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const heading = cleanHeading(headingMatch[2]);
+      headingLevels.push(level);
+
+      const section: Section = {
+        heading,
+        headingLevel: level,
+        paragraphs: [],
+        bullets: [],
+        children: [],
+      };
+
+      // Pop stack until we find a parent with a shallower heading level
+      while (stack.length > 1 && stack[stack.length - 1].headingLevel >= level) {
+        stack.pop();
+      }
+
+      stack[stack.length - 1].children.push(section);
+      stack.push(section);
+      continue;
+    }
+
+    // Check for bullet/numbered list item
+    const bulletMatch = line.match(/^\s*(?:[-*]|\d+\.)\s+(.+)/);
+    if (bulletMatch) {
+      const current = stack[stack.length - 1];
+      current.bullets.push(bulletMatch[1].trim());
+      continue;
+    }
+
+    // Paragraph text (non-empty, non-heading, non-bullet)
+    const trimmed = line.trim();
+    if (trimmed) {
+      const current = stack[stack.length - 1];
+      current.paragraphs.push(trimmed);
+    }
+  }
+
+  return { sections: root.children, headingLevels };
+}
+
+// ── Normalization for dedup ────────────────────────────────────────
+
+function normalize(s: string): string {
+  return s.toLowerCase().trim();
+}
+
+// ── Proposal building ──────────────────────────────────────────────
+
+const SOURCE = "file-import";
+
+/**
+ * Build a ProposalTask from a title, optional description, and optional
+ * acceptance criteria.
+ */
+function makeTask(
+  title: string,
+  description?: string,
+  acceptanceCriteria?: string[],
+): ProposalTask {
+  return {
+    title,
+    source: SOURCE,
+    sourceFile: "",
+    description,
+    acceptanceCriteria:
+      acceptanceCriteria && acceptanceCriteria.length > 0
+        ? acceptanceCriteria
+        : undefined,
+  };
+}
+
+/**
+ * Convert a section tree into proposals using the heading→role mapping.
+ */
+function buildProposalsFromSections(
+  sections: Section[],
+  roleMap: Record<number, HeadingRole>,
+  existingTitles: Set<string>,
+): Proposal[] {
+  const proposals: Proposal[] = [];
+
+  for (const section of sections) {
+    const role = roleMap[section.headingLevel];
+
+    if (role === "epic") {
+      const proposal = buildEpicProposal(section, roleMap, existingTitles);
+      if (proposal.features.length > 0 || !existingTitles.has(normalize(section.heading))) {
+        proposals.push(proposal);
+      }
+    } else if (role === "feature") {
+      // Feature at top level — wrap in a default epic
+      const feature = buildFeature(section, roleMap, existingTitles);
+      if (feature) {
+        const existing = proposals.find(
+          (p) => normalize(p.epic.title) === normalize("Imported Requirements"),
+        );
+        if (existing) {
+          existing.features.push(feature);
+        } else {
+          proposals.push({
+            epic: { title: "Imported Requirements", source: SOURCE },
+            features: [feature],
+          });
+        }
+      }
+    } else if (role === "task") {
+      // Task at top level — wrap in default epic/feature
+      const task = buildTaskFromSection(section, existingTitles);
+      if (task) {
+        addOrphanTask(proposals, task, existingTitles);
+      }
+    }
+  }
+
+  return proposals;
+}
+
+/** Build an epic-level proposal from a section and its children. */
+function buildEpicProposal(
+  section: Section,
+  roleMap: Record<number, HeadingRole>,
+  existingTitles: Set<string>,
+): Proposal {
+  const features = [];
+
+  // Direct bullets under the epic (no feature grouping) → create a default feature
+  if (section.bullets.length > 0) {
+    const tasks = section.bullets
+      .filter((b) => !existingTitles.has(normalize(b)))
+      .map((b) => makeTask(b));
+    if (tasks.length > 0) {
+      features.push({
+        title: section.heading,
+        source: SOURCE,
+        description: section.paragraphs.join(" ") || undefined,
+        tasks,
+      });
+    }
+  }
+
+  // Child sections → features or tasks based on role mapping
+  for (const child of section.children) {
+    const childRole = roleMap[child.headingLevel];
+    if (childRole === "feature") {
+      const feature = buildFeature(child, roleMap, existingTitles);
+      if (feature) features.push(feature);
+    } else if (childRole === "task") {
+      // Task directly under epic — group into a feature named after the epic
+      const task = buildTaskFromSection(child, existingTitles);
+      if (task) {
+        // Find or create a "General" feature under this epic
+        let generalFeature: { title: string; source: string; description?: string; tasks: ProposalTask[] } | undefined =
+          features.find((f) => normalize(f.title) === normalize(section.heading));
+        if (!generalFeature) {
+          generalFeature = {
+            title: section.heading,
+            source: SOURCE,
+            description: section.paragraphs.join(" ") || undefined,
+            tasks: [],
+          };
+          features.push(generalFeature);
+        }
+        generalFeature.tasks.push(task);
+      }
+    }
+  }
+
+  // If no features were created but there are paragraphs, create a placeholder
+  if (features.length === 0 && section.paragraphs.length > 0) {
+    features.push({
+      title: section.heading,
+      source: SOURCE,
+      description: section.paragraphs.join(" "),
+      tasks: [],
+    });
+  }
+
+  return {
+    epic: { title: section.heading, source: SOURCE },
+    features,
+  };
+}
+
+/** Build a feature from a section. Returns null if all content is duplicate. */
+function buildFeature(
+  section: Section,
+  roleMap: Record<number, HeadingRole>,
+  existingTitles: Set<string>,
+): { title: string; source: string; description?: string; tasks: ProposalTask[] } | null {
+  if (existingTitles.has(normalize(section.heading))) return null;
+
+  const tasks: ProposalTask[] = [];
+
+  // Bullets under this feature → tasks
+  for (const bullet of section.bullets) {
+    if (!existingTitles.has(normalize(bullet))) {
+      tasks.push(makeTask(bullet));
+    }
+  }
+
+  // Child sections that are task-level
+  for (const child of section.children) {
+    const childRole = roleMap[child.headingLevel];
+    if (childRole === "task" || !childRole) {
+      const task = buildTaskFromSection(child, existingTitles);
+      if (task) tasks.push(task);
+    }
+  }
+
+  const description = section.paragraphs.join(" ") || undefined;
+
+  return {
+    title: section.heading,
+    source: SOURCE,
+    description,
+    tasks,
+  };
+}
+
+/** Build a task from a section (heading with optional description/bullets). */
+function buildTaskFromSection(
+  section: Section,
+  existingTitles: Set<string>,
+): ProposalTask | null {
+  if (existingTitles.has(normalize(section.heading))) return null;
+
+  return makeTask(
+    section.heading,
+    section.paragraphs.join(" ") || undefined,
+    section.bullets.length > 0 ? section.bullets : undefined,
+  );
+}
+
+/** Add an orphan task (no parent feature) into the proposals. */
+function addOrphanTask(
+  proposals: Proposal[],
+  task: ProposalTask,
+  _existingTitles: Set<string>,
+): void {
+  const defaultEpicTitle = "Imported Requirements";
+  const defaultFeatureTitle = "General";
+
+  let epicProposal = proposals.find(
+    (p) => normalize(p.epic.title) === normalize(defaultEpicTitle),
+  );
+  if (!epicProposal) {
+    epicProposal = {
+      epic: { title: defaultEpicTitle, source: SOURCE },
+      features: [],
+    };
+    proposals.push(epicProposal);
+  }
+
+  let feature = epicProposal.features.find(
+    (f) => normalize(f.title) === normalize(defaultFeatureTitle),
+  );
+  if (!feature) {
+    feature = { title: defaultFeatureTitle, source: SOURCE, tasks: [] };
+    epicProposal.features.push(feature);
+  }
+
+  feature.tasks.push(task);
+}
+
+// ── Plain text parsing ─────────────────────────────────────────────
+
+/** Check if content looks like markdown (contains headings). */
+function looksLikeMarkdown(content: string): boolean {
+  return /^#{1,6}\s+/m.test(content);
+}
+
+/**
+ * Parse plain text into sections separated by blank lines.
+ * Each section has a potential title (first non-bullet line) and bullets.
+ */
+function parsePlainTextBlocks(
+  content: string,
+): { title: string | null; bullets: string[] }[] {
+  const lines = content.split("\n");
+  const blocks: { title: string | null; bullets: string[] }[] = [];
+  let currentTitle: string | null = null;
+  let currentBullets: string[] = [];
+  let hasContent = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Blank line → end of block
+    if (!trimmed) {
+      if (hasContent) {
+        blocks.push({ title: currentTitle, bullets: [...currentBullets] });
+        currentTitle = null;
+        currentBullets = [];
+        hasContent = false;
+      }
+      continue;
+    }
+
+    // Bullet or numbered item
+    const bulletMatch = trimmed.match(/^(?:[-*]|\d+\.)\s+(.+)/);
+    if (bulletMatch) {
+      currentBullets.push(bulletMatch[1].trim());
+      hasContent = true;
+      continue;
+    }
+
+    // Non-bullet text line — potential title for this block
+    if (currentTitle === null && currentBullets.length === 0) {
+      currentTitle = trimmed;
+    }
+    hasContent = true;
+  }
+
+  // Flush remaining
+  if (hasContent) {
+    blocks.push({ title: currentTitle, bullets: [...currentBullets] });
+  }
+
+  return blocks;
+}
+
+// ── Public API ─────────────────────────────────────────────────────
+
+/**
+ * Extract structured requirements from markdown content.
+ *
+ * Uses heading hierarchy to determine epic/feature/task mapping:
+ * - Shallowest heading → epic
+ * - Next level → feature
+ * - Deeper levels → task
+ *
+ * Bullet points under features become tasks. Bullet points under task
+ * headings become acceptance criteria. Paragraph text becomes descriptions.
+ */
+export function extractFromMarkdown(
+  content: string,
+  options?: ExtractionOptions,
+): ExtractionResult {
+  if (!content.trim()) {
+    return { proposals: [], usedLLM: false };
+  }
+
+  const existingTitles = new Set(
+    (options?.existingItems ?? []).map((item) => normalize(item.title)),
+  );
+
+  const { sections, headingLevels } = parseMarkdownSections(content);
+
+  // No headings at all — just bullets or prose
+  if (headingLevels.length === 0) {
+    return buildFromFlatContent(content, existingTitles);
+  }
+
+  const roleMap = classifyHeadingLevels(headingLevels);
+  const proposals = buildProposalsFromSections(sections, roleMap, existingTitles);
+
+  // Filter out empty proposals
+  const filtered = proposals.filter(
+    (p) => p.features.length > 0,
+  );
+
+  return { proposals: filtered, usedLLM: false };
+}
+
+/**
+ * Extract structured requirements from plain text content.
+ *
+ * If the text contains markdown headings, delegates to `extractFromMarkdown`.
+ * Otherwise, uses blank-line-separated blocks to identify features, and
+ * bullet/numbered items as tasks.
+ */
+export function extractFromText(
+  content: string,
+  options?: ExtractionOptions,
+): ExtractionResult {
+  if (!content.trim()) {
+    return { proposals: [], usedLLM: false };
+  }
+
+  // If content looks like markdown, use the markdown extractor
+  if (looksLikeMarkdown(content)) {
+    return extractFromMarkdown(content, options);
+  }
+
+  const existingTitles = new Set(
+    (options?.existingItems ?? []).map((item) => normalize(item.title)),
+  );
+
+  return buildFromFlatContent(content, existingTitles);
+}
+
+/**
+ * Extract structured requirements from a file. Auto-detects format
+ * (markdown vs text) and delegates to the appropriate extractor.
+ */
+export async function extractFromFile(
+  filePath: string,
+  options?: ExtractionOptions,
+): Promise<ExtractionResult> {
+  const content = await readFile(filePath, "utf-8");
+  const format = detectFileFormat(filePath);
+
+  if (format === "markdown") {
+    return extractFromMarkdown(content, options);
+  }
+  // For text files and unknown formats, use text extractor
+  return extractFromText(content, options);
+}
+
+// ── Flat content handler ───────────────────────────────────────────
+
+/**
+ * Build proposals from content that has no heading structure.
+ * Used for plain text and headingless markdown.
+ */
+function buildFromFlatContent(
+  content: string,
+  existingTitles: Set<string>,
+): ExtractionResult {
+  const blocks = parsePlainTextBlocks(content);
+
+  // If there are no bullets at all, we can't extract structured items
+  const hasBullets = blocks.some((b) => b.bullets.length > 0);
+  if (!hasBullets) {
+    return { proposals: [], usedLLM: false };
+  }
+
+  const features: {
+    title: string;
+    source: string;
+    description?: string;
+    tasks: ProposalTask[];
+  }[] = [];
+
+  for (const block of blocks) {
+    if (block.bullets.length === 0) continue;
+
+    const tasks = block.bullets
+      .filter((b) => !existingTitles.has(normalize(b)))
+      .map((b) => makeTask(b));
+
+    if (tasks.length === 0) continue;
+
+    const featureTitle = block.title ?? "General";
+    const existing = features.find(
+      (f) => normalize(f.title) === normalize(featureTitle),
+    );
+    if (existing) {
+      existing.tasks.push(...tasks);
+    } else {
+      features.push({
+        title: featureTitle,
+        source: SOURCE,
+        tasks,
+      });
+    }
+  }
+
+  if (features.length === 0) {
+    return { proposals: [], usedLLM: false };
+  }
+
+  return {
+    proposals: [
+      {
+        epic: { title: "Imported Requirements", source: SOURCE },
+        features,
+      },
+    ],
+    usedLLM: false,
+  };
+}
