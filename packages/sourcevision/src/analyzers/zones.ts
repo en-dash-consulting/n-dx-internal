@@ -1380,6 +1380,7 @@ export async function analyzeZones(
   community = splitLargeCommunities(community, graph, maxZoneSize);
 
   mergeSameIdCommunities(community, maxPct < 100 ? maxZoneSize : undefined);
+  community = capZoneCount(community, graph, 15);  // re-cap after split
 
   // ── Build zones from communities ──
   const zones = buildZonesFromCommunities(

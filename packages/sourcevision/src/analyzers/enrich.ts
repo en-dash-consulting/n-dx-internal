@@ -139,7 +139,7 @@ export async function enrichZonesWithAI(
   let zonesToEnrich = zones;
   let unchangedZones: Zone[] = [];
 
-  if (currentContentHashes && previousZones?.zoneContentHashes && prevEnrichPass > 0) {
+  if (currentContentHashes && previousZones?.zoneContentHashes && passNumber <= prevEnrichPass) {
     const changed: Zone[] = [];
     const unchanged: Zone[] = [];
     for (const zone of zones) {
@@ -220,8 +220,15 @@ export async function enrichZonesWithAI(
     }
   }
 
-  if ((authFailed && allBatchResults.length === 0) || allBatchResults.length === 0) {
-    if (!authFailed) console.warn("  [enrich] All batches failed — using algorithmic names");
+  if (allBatchResults.length === 0) {
+    if (authFailed) {
+      // auth error already logged upstream
+    } else if (batches.length === 0 && unchangedZones.length > 0) {
+      // All zones preserved from previous enrichment — return them
+      return { ...empty, zones: unchangedZones, pass: prevEnrichPass };
+    } else if (batches.length > 0) {
+      console.warn("  [enrich] All batches failed — using algorithmic names");
+    }
     return empty;
   }
 
