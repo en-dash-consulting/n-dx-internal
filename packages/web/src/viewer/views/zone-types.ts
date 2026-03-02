@@ -33,6 +33,20 @@ export interface ZoneData {
   totalFunctions: number;
   internalCalls: number;
   crossZoneCalls: number;
+  /** Nested sub-zones when recursive analysis is available. */
+  subZones?: ZoneData[];
+  /** Cross-zone edges between sub-zones at this level. */
+  subCrossings?: FlowEdge[];
+  /** Whether this zone has sub-zone data available for drill-down. */
+  hasDrillDown?: boolean;
+}
+
+/** Breadcrumb entry for tracking the drill-down navigation path. */
+export interface ZoneBreadcrumb {
+  /** Zone ID at this level, or null for the root (all zones) level. */
+  zoneId: string | null;
+  /** Human-readable label for the breadcrumb. */
+  label: string;
 }
 
 export interface BoxRect {

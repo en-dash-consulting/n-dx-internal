@@ -31,13 +31,14 @@ import type {
   FileConnectionMap,
   FileToFileMap,
   FileInfo,
+  ZoneBreadcrumb,
 } from "./zone-types.js";
 import { usePanZoom } from "../hooks/use-pan-zoom.js";
 import { useZoneDrag } from "../hooks/use-zone-drag.js";
 import { useFileEdges } from "../hooks/use-file-edges.js";
 
 // ── Re-export types for downstream consumers ─────────────────────────
-export type { ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap } from "./zone-types.js";
+export type { ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap, ZoneBreadcrumb } from "./zone-types.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -1160,6 +1161,10 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   const [expandedZones, setExpandedZones] = useState<Set<string>>(new Set());
   const [slideoutZone, setSlideoutZone] = useState<Zone | null>(null);
 
+  // ── Drill-down navigation state ─────────────────────────────────────
+  const ROOT_BREADCRUMB: ZoneBreadcrumb = { zoneId: null, label: "All Zones" };
+  const [drillPath, setDrillPath] = useState<ZoneBreadcrumb[]>([ROOT_BREADCRUMB]);
+
   if (!zones) {
     return h("div", { class: "loading" }, "No zone data available.");
   }
@@ -1191,6 +1196,33 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
     }
     return [...merged.values()];
   }, [callGraph, fileToZoneMap, importsData, zones]);
+
+  // ── Drill-down derived data ─────────────────────────────────────────
+  // Walk the drill path to resolve the current zone level. At root (depth 0),
+  // show top-level zones. When drilled into a zone, show its subZones.
+  const { visibleZones, visibleCrossings } = useMemo(() => {
+    // Root level — show all top-level zones and top-level flow edges
+    if (drillPath.length <= 1) {
+      return { visibleZones: zoneDataList, visibleCrossings: flowEdges };
+    }
+
+    // Walk the drill path starting from the top-level zone data
+    let currentZones: ZoneData[] = zoneDataList;
+    let currentCrossings: FlowEdge[] = flowEdges;
+
+    for (let i = 1; i < drillPath.length; i++) {
+      const crumb = drillPath[i];
+      const parent = currentZones.find((z) => z.id === crumb.zoneId);
+      if (!parent?.subZones) {
+        // Drill path points to a zone without sub-zones — fall back to parent level
+        return { visibleZones: currentZones, visibleCrossings: currentCrossings };
+      }
+      currentZones = parent.subZones;
+      currentCrossings = parent.subCrossings ?? [];
+    }
+
+    return { visibleZones: currentZones, visibleCrossings: currentCrossings };
+  }, [drillPath, zoneDataList, flowEdges]);
 
   const fileConnections = useMemo(() => {
     if (!callGraph) return new Map() as FileConnectionMap;
