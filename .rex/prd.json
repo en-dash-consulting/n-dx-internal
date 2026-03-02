@@ -8560,15 +8560,17 @@
         {
           "id": "cbb1582f-a335-4956-8c63-d2d4f7f2d671",
           "title": "Replace grid layout with interactive slideout",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Transform the SourceVision zones page from a grid-based layout to an interactive slideout-based interface for better user experience",
           "source": "smart-add",
+          "startedAt": "2026-03-02T07:16:24.344Z",
+          "completedAt": "2026-03-02T07:16:24.344Z",
           "children": [
             {
               "id": "3eb17c46-2ad2-4ec1-af15-314c3ade1ec0",
               "title": "Remove zone grid display from SourceVision zones page",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Remove the large grid of zones that currently displays under the graph on the SourceVision zones page to clean up the interface and prepare for slideout-based interaction",
               "acceptanceCriteria": [
@@ -8582,12 +8584,13 @@
                 "sourcevision",
                 "zones"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-02T07:12:59.359Z"
             },
             {
               "id": "971d710d-50be-4ef3-9361-6c0d191712a2",
               "title": "Implement slideout panel component for zone details",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Create a new slideout/sidepanel component that will display zone details when a zone is selected from the graph, replacing the grid-based display",
               "acceptanceCriteria": [
@@ -8603,14 +8606,14 @@
                 "slideout",
                 "zones"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-02T06:56:02.437Z"
             },
             {
               "id": "63185f9b-5ffb-423c-b2bc-324ef1b8f6e9",
               "title": "Wire graph click events to open zone detail slideout",
+              "status": "deferred",
               "level": "task",
-              "status": "pending",
-              "source": "smart-add",
               "description": "Update the zones graph interaction to open the slideout panel instead of scrolling to grid section when a zone is clicked, creating a more fluid user experience",
               "acceptanceCriteria": [
                 "Clicking a zone in the graph opens the slideout with that zone's details",
@@ -8624,7 +8627,9 @@
                 "graph",
                 "zones",
                 "ui"
-              ]
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-02T07:01:29.253Z"
             }
           ]
         }
@@ -16364,22 +16369,26 @@
     {
       "id": "f6531625-6e2f-47bc-9173-9304ba9b659e",
       "title": "File Format Enhancement for Requirements Import",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-03-02T08:01:56.604Z",
+      "completedAt": "2026-03-02T08:01:56.604Z",
       "children": [
         {
           "id": "a372d24d-aa4e-49e1-b49e-82531a78b92b",
           "title": "Markdown and Text File Processing",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Enable rex add command to accept and process markdown and text files containing product requirements and descriptions",
           "source": "smart-add",
+          "startedAt": "2026-03-02T08:01:56.527Z",
+          "completedAt": "2026-03-02T08:01:56.527Z",
           "children": [
             {
               "id": "935284b6-5cd8-4409-bcf3-0e1aff807c75",
               "title": "Implement markdown file parsing for rex add command",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Add support for parsing markdown files in the rex add command, extracting structured requirements from markdown format including headers, lists, and sections",
               "acceptanceCriteria": [
@@ -16394,12 +16403,13 @@
                 "file-import",
                 "markdown"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-02T07:25:11.824Z"
             },
             {
               "id": "710072f7-b895-40f3-be57-75e918094f9b",
               "title": "Implement text file parsing for rex add command",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Add support for parsing plain text files in the rex add command, using natural language processing to extract requirements and structure from unstructured text",
               "acceptanceCriteria": [
@@ -16415,12 +16425,13 @@
                 "text",
                 "nlp"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-02T07:31:47.994Z"
             },
             {
               "id": "66b6e1b8-2e15-4acf-ac7f-05fa55b4183a",
               "title": "Add structured requirements extraction engine",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Implement intelligent parsing logic to extract epics, features, and tasks from markdown and text documents using pattern recognition and LLM assistance",
               "acceptanceCriteria": [
@@ -16436,12 +16447,13 @@
                 "llm",
                 "requirements"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-02T07:16:47.451Z"
             },
             {
               "id": "21f89819-e032-44c2-8d94-05edcb82610d",
               "title": "Integrate file upload support in rex add UI interface",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Add file upload capability to the rex add web interface, allowing users to drag and drop or select markdown/text files for requirements import",
               "acceptanceCriteria": [
@@ -16458,6 +16470,7 @@
                 "web"
               ],
               "source": "smart-add",
+              "startedAt": "2026-03-02T07:50:35.863Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "semantic_title",
@@ -16472,7 +16485,7 @@
             {
               "id": "f0200d1b-edbe-42c7-9051-48f4ab0a8307",
               "title": "Add file format validation and error handling",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Implement comprehensive validation for markdown and text file inputs, with clear error messages for unsupported formats or malformed content",
               "acceptanceCriteria": [
@@ -16489,6 +16502,7 @@
                 "file-processing"
               ],
               "source": "smart-add",
+              "startedAt": "2026-03-02T07:43:10.841Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "semantic_title",
@@ -16513,6 +16527,218 @@
         "matchedItemStatus": "completed",
         "createdAt": "2026-03-02T05:41:33.798Z"
       }
+    },
+    {
+      "id": "epic-recursive-zone-arch",
+      "title": "Recursive zone architecture",
+      "status": "pending",
+      "level": "epic",
+      "description": "Make subdivision use the same full pipeline as root analysis. Same algorithm at every zoom level — fractal zones. Zone detection currently lumps components, routes, utils, and configs into mega-zones because subdivideZone() runs a stripped-down Louvain without resolution escalation, proximity edges, or splitLargeCommunities.",
+      "tags": [
+        "sourcevision",
+        "zones",
+        "architecture"
+      ],
+      "children": [
+        {
+          "id": "feat-full-pipeline-subdivision",
+          "title": "Full-pipeline zone subdivision",
+          "status": "pending",
+          "level": "feature",
+          "description": "Phase 1: Make subdivideZone use the same full Louvain pipeline as root analysis, with sub-crossings computation.",
+          "children": [
+            {
+              "id": "task-subcrossings-schema",
+              "title": "Add subCrossings field to Zone schema",
+              "status": "completed",
+              "level": "task",
+              "description": "Add optional subCrossings?: ZoneCrossing[] to Zone interface in packages/sourcevision/src/schema/v1.ts.",
+              "acceptanceCriteria": [
+                "Zone interface has optional subCrossings?: ZoneCrossing[]",
+                "Field populated during subdivision",
+                "Existing consumers unaffected (non-breaking)"
+              ],
+              "priority": "high",
+              "startedAt": "2026-03-02T08:09:43.749Z",
+              "completedAt": "2026-03-02T14:38:34.708Z"
+            },
+            {
+              "id": "task-extract-runzonepipeline",
+              "title": "Extract runZonePipeline from analyzeZones",
+              "status": "completed",
+              "level": "task",
+              "description": "Extract the shared Louvain pipeline steps (buildUndirectedGraph, proximity edges, louvainPhase1, mergeBidirectionalCoupling, mergeSmallCommunities, capZoneCount, splitLargeCommunities, mergeSameIdCommunities, buildZonesFromCommunities, recursive subdivideZone, buildCrossings, assignByProximity) into a reusable runZonePipeline function in packages/sourcevision/src/analyzers/zones.ts. Accepts ZonePipelineOptions {edges, inventory, imports, scopeFiles, maxZones?, maxZonePercent?, parentId?, depth?, testFiles?} and returns ZonePipelineResult {zones, crossings, unzoned}.",
+              "acceptanceCriteria": [
+                "Shared function encapsulates Louvain pipeline steps",
+                "analyzeZones refactored to call runZonePipeline",
+                "All existing tests pass with identical output",
+                "Function accepts maxZones, maxZonePercent, parentId, depth params"
+              ],
+              "priority": "critical",
+              "startedAt": "2026-03-02T08:02:22.882Z",
+              "completedAt": "2026-03-02T14:38:34.237Z"
+            },
+            {
+              "id": "task-rewrite-subdividezone",
+              "title": "Rewrite subdivideZone to use full pipeline",
+              "status": "in_progress",
+              "level": "task",
+              "description": "Replace the stripped-down Louvain in subdivideZone with a runZonePipeline call. Filter imports.edges to zone's internal edges, pass zone.files as scopeFiles, maxZones: 8, parentId: zone.id, depth: depth + 1. Prefix sub-zone IDs with zone.id/. Compute sub-crossings and store on zone.subCrossings. Thread testFiles through to subdivision.",
+              "acceptanceCriteria": [
+                "subdivideZone calls runZonePipeline instead of stripped-down Louvain",
+                "Resolution escalation active during subdivision",
+                "Proximity edges added for non-import files within zone",
+                "mergeSameIdCommunities prevents duplicate sub-zone names",
+                "Sub-crossings computed and stored on zone.subCrossings",
+                "testFiles exclusion propagated to sub-zone metrics"
+              ],
+              "priority": "critical",
+              "blockedBy": [
+                "task-extract-runzonepipeline"
+              ],
+              "startedAt": "2026-03-02T14:39:22.590Z"
+            },
+            {
+              "id": "task-zone-output-subcrossings",
+              "title": "Update zone-output.ts for sub-crossings",
+              "status": "pending",
+              "level": "task",
+              "description": "In packages/sourcevision/src/analyzers/zone-output.ts, add a <sub-crossings> section to zone context.md generation showing cross-dependency counts between sub-zones grouped by zone pair.",
+              "acceptanceCriteria": [
+                "Zone context.md includes sub-crossings section when present",
+                "Shows cross-dependency counts grouped by zone pair"
+              ],
+              "priority": "medium",
+              "blockedBy": [
+                "task-rewrite-subdividezone"
+              ]
+            },
+            {
+              "id": "task-subdivision-tests",
+              "title": "Add subdivision enhancement tests",
+              "status": "pending",
+              "level": "task",
+              "description": "New test file packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts plus updates to existing zone-detection.test.ts.",
+              "acceptanceCriteria": [
+                "Tests for sub-crossings computation between sub-zones",
+                "Tests for resolution escalation at subdivision level",
+                "Tests for proximity edges at subdivision level",
+                "Tests for mergeSameIdCommunities at subdivision level",
+                "Tests for recursive multi-depth subdivision with sub-crossings",
+                "Tests for testFiles exclusion propagation to sub-zone metrics",
+                "End-to-end test: analyzeZones produces subCrossings on large zones",
+                "Regression test: refactored pipeline produces identical output on existing fixtures"
+              ],
+              "priority": "high",
+              "blockedBy": [
+                "task-rewrite-subdividezone"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "feat-web-viewer-drilldown",
+          "title": "Web viewer zone drill-down",
+          "status": "pending",
+          "level": "feature",
+          "description": "Phase 2: Add drill-down navigation in the web viewer so users can explore sub-zones interactively with breadcrumb navigation.",
+          "children": [
+            {
+              "id": "task-drilldown-types",
+              "title": "Add drill-down types and navigation state",
+              "status": "completed",
+              "level": "task",
+              "description": "In packages/web/src/viewer/views/zone-types.ts, add ZoneBreadcrumb {zoneId: string | null; label: string} interface. Extend ZoneData with subZones?: ZoneData[], subCrossings?: FlowEdge[], hasDrillDown?: boolean. In packages/web/src/viewer/views/zones.ts, add drillPath state (stack of ZoneBreadcrumb[]) starting at [{zoneId: null, label: 'All Zones'}]. Derive visibleZones and visibleCrossings from current drill level.",
+              "acceptanceCriteria": [
+                "ZoneBreadcrumb type defined",
+                "ZoneData extended with subZones, subCrossings, hasDrillDown",
+                "drillPath state in ZonesView with derived visibleZones/visibleCrossings"
+              ],
+              "priority": "high",
+              "startedAt": "2026-03-02T08:11:30.921Z",
+              "completedAt": "2026-03-02T14:38:35.470Z"
+            },
+            {
+              "id": "task-breadcrumb-nav",
+              "title": "Implement breadcrumb navigation component",
+              "status": "pending",
+              "level": "task",
+              "description": "Render breadcrumbs above diagram when drillPath.length > 1. Clicking a breadcrumb pops back to that level. Hidden at root level.",
+              "acceptanceCriteria": [
+                "Breadcrumbs render above diagram when drilled in",
+                "Clicking breadcrumb navigates back to that level",
+                "Hidden at root level (no unnecessary UI)"
+              ],
+              "priority": "high",
+              "blockedBy": [
+                "task-drilldown-types"
+              ]
+            },
+            {
+              "id": "task-drilldown-interaction",
+              "title": "Add drill-down interaction to zone boxes",
+              "status": "pending",
+              "level": "task",
+              "description": "Add drill-down arrow button on zone boxes that have subZones. Click pushes new breadcrumb, re-renders diagram with sub-zones. Reset expanded zones on drill. Zone cards use visibleZones. Summary line reflects current drill level.",
+              "acceptanceCriteria": [
+                "Zones with subZones show drill-down affordance",
+                "Clicking drill-down pushes breadcrumb and renders sub-zones",
+                "Zone cards update to show sub-zone data",
+                "Summary line reflects current drill level"
+              ],
+              "priority": "high",
+              "blockedBy": [
+                "task-breadcrumb-nav"
+              ]
+            },
+            {
+              "id": "task-drilldown-tests",
+              "title": "Add drill-down tests",
+              "status": "pending",
+              "level": "task",
+              "description": "New test file packages/web/tests/unit/viewer/zone-drill-down.test.ts.",
+              "acceptanceCriteria": [
+                "Tests for breadcrumb rendering",
+                "Tests for sub-zone diagram rendering after drill-down",
+                "Tests for back navigation restoring parent view",
+                "Tests for nested 3-level drill-down",
+                "Tests for buildFlowEdges working with sub-crossings"
+              ],
+              "priority": "medium",
+              "blockedBy": [
+                "task-drilldown-interaction"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "feat-multi-repo-workspace",
+          "title": "Multi-repo workspace aggregation",
+          "status": "deferred",
+          "level": "feature",
+          "description": "Phase 3 (future): sourcevision workspace [dirs...] command. Each repo's analysis becomes a top-level zone. Cross-repo crossings from external import resolution. The fractal property from Phase 1/2 makes this a data assembly problem.",
+          "children": [
+            {
+              "id": "task-workspace-design",
+              "title": "Design workspace command and config format",
+              "status": "deferred",
+              "level": "task"
+            },
+            {
+              "id": "task-workspace-zone-builder",
+              "title": "Implement workspace zone builder",
+              "status": "deferred",
+              "level": "task"
+            },
+            {
+              "id": "task-cross-repo-crossings",
+              "title": "Implement cross-repo crossing computation",
+              "status": "deferred",
+              "level": "task"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

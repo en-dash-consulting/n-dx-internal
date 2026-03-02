@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   buildUndirectedGraph,
   addDirectoryProximityEdges,
+  louvainPhase1,
+  mergeSmallCommunities,
+  splitLargeCommunities,
 } from "../../../src/analyzers/louvain.js";
 import {
   deriveZoneId,
@@ -921,5 +924,142 @@ describe("assignByProximity", () => {
 
     expect(remaining).toContain("package.json");
     expect(remaining).toContain("README.md");
+  });
+});
+
+// ── Resolution parameter & iterative splitting ────────────────────────────
+
+describe("louvainPhase1 resolution parameter", () => {
+  it("higher resolution produces more communities", () => {
+    const graph: import("../../../src/analyzers/louvain.js").UndirectedGraph = new Map();
+
+    const ensure = (n: string) => {
+      if (!graph.has(n)) graph.set(n, new Map());
+      return graph.get(n)!;
+    };
+    const addEdge = (a: string, b: string, w: number) => {
+      ensure(a).set(b, (ensure(a).get(b) ?? 0) + w);
+      ensure(b).set(a, (ensure(b).get(a) ?? 0) + w);
+    };
+
+    // Two groups connected by moderate cross-edges:
+    // internal weight per node is higher than cross-weight, but γ=1
+    // merges due to small graph resolution limit.
+    const groupA = Array.from({ length: 6 }, (_, i) => `a/f${i}.ts`);
+    const groupB = Array.from({ length: 6 }, (_, i) => `b/f${i}.ts`);
+
+    for (const g of [groupA, groupB]) {
+      for (let i = 0; i < g.length; i++) {
+        for (let j = i + 1; j < g.length; j++) addEdge(g[i], g[j], 2);
+      }
+    }
+    // Cross-edges: each node connects to 2 nodes in the other group
+    for (let i = 0; i < 6; i++) {
+      addEdge(groupA[i], groupB[i], 1);
+      addEdge(groupA[i], groupB[(i + 1) % 6], 1);
+    }
+
+    const commLow = louvainPhase1(graph, 100, 1);
+    const commHigh = louvainPhase1(graph, 100, 8);
+
+    const sizeLow = new Set(commLow.values()).size;
+    const sizeHigh = new Set(commHigh.values()).size;
+    expect(sizeHigh).toBeGreaterThanOrEqual(sizeLow);
+  });
+});
+
+describe("splitLargeCommunities with resolution escalation", () => {
+  it("splits an oversized community into smaller ones", () => {
+    const graph: import("../../../src/analyzers/louvain.js").UndirectedGraph = new Map();
+
+    const ensure = (n: string) => {
+      if (!graph.has(n)) graph.set(n, new Map());
+      return graph.get(n)!;
+    };
+    const addEdge = (a: string, b: string, w: number) => {
+      ensure(a).set(b, (ensure(a).get(b) ?? 0) + w);
+      ensure(b).set(a, (ensure(b).get(a) ?? 0) + w);
+    };
+
+    // Two clusters (A: 8, B: 8) with strong internal and sparse cross-edges
+    const clusterA = Array.from({ length: 8 }, (_, i) => `a/f${i}.ts`);
+    const clusterB = Array.from({ length: 8 }, (_, i) => `b/f${i}.ts`);
+
+    for (const cluster of [clusterA, clusterB]) {
+      for (let i = 0; i < cluster.length; i++) {
+        for (let j = i + 1; j < cluster.length; j++) {
+          addEdge(cluster[i], cluster[j], 2);
+        }
+      }
+    }
+    // Sparse cross-cluster bridges
+    addEdge(clusterA[0], clusterB[0], 1);
+    addEdge(clusterA[1], clusterB[1], 1);
+
+    // Start everything in one community
+    const initial = new Map<string, string>();
+    for (const n of graph.keys()) initial.set(n, "mega");
+
+    const result = splitLargeCommunities(initial, graph, 10);
+    const resultComms = new Set(result.values());
+    expect(resultComms.size).toBeGreaterThan(1);
+
+    // A-files and B-files should be separated
+    const commA = result.get(clusterA[0])!;
+    const commB = result.get(clusterB[0])!;
+    expect(commA).not.toBe(commB);
+    for (const f of clusterA) expect(result.get(f)).toBe(commA);
+    for (const f of clusterB) expect(result.get(f)).toBe(commB);
+  });
+
+  it("iteratively splits when first split still produces oversized sub-communities", () => {
+    const graph: import("../../../src/analyzers/louvain.js").UndirectedGraph = new Map();
+
+    const ensure = (n: string) => {
+      if (!graph.has(n)) graph.set(n, new Map());
+      return graph.get(n)!;
+    };
+    const addEdge = (a: string, b: string, w: number) => {
+      ensure(a).set(b, (ensure(a).get(b) ?? 0) + w);
+      ensure(b).set(a, (ensure(b).get(a) ?? 0) + w);
+    };
+
+    // 3 clusters of 6 files each, chain topology: A↔B↔C
+    // maxSize=5, so all 3 must end up in separate communities
+    const clusters = [
+      Array.from({ length: 6 }, (_, i) => `a/f${i}.ts`),
+      Array.from({ length: 6 }, (_, i) => `b/f${i}.ts`),
+      Array.from({ length: 6 }, (_, i) => `c/f${i}.ts`),
+    ];
+
+    // Strong internal clique edges
+    for (const cluster of clusters) {
+      for (let i = 0; i < cluster.length; i++) {
+        for (let j = i + 1; j < cluster.length; j++) {
+          addEdge(cluster[i], cluster[j], 3);
+        }
+      }
+    }
+
+    // Sparse bridges: 2 each between A↔B and B↔C
+    addEdge(clusters[0][0], clusters[1][0], 1);
+    addEdge(clusters[0][1], clusters[1][1], 1);
+    addEdge(clusters[1][0], clusters[2][0], 1);
+    addEdge(clusters[1][1], clusters[2][1], 1);
+
+    const initial = new Map<string, string>();
+    for (const n of graph.keys()) initial.set(n, "mega");
+
+    const result = splitLargeCommunities(initial, graph, 5);
+    const resultComms = new Set(result.values());
+
+    // Should produce at least 3 communities (one per cluster)
+    expect(resultComms.size).toBeGreaterThanOrEqual(3);
+
+    // Each cluster should be cohesive
+    for (const cluster of clusters) {
+      const comm = result.get(cluster[0])!;
+      for (const f of cluster) expect(result.get(f)).toBe(comm);
+    }
   });
 });

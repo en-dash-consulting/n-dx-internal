@@ -84,7 +84,8 @@ export function buildUndirectedGraph(edges: ImportEdge[]): UndirectedGraph {
  */
 export function louvainPhase1(
   graph: UndirectedGraph,
-  maxPasses = 100
+  maxPasses = 100,
+  resolution = 1.0
 ): Map<string, string> {
   // Each node starts in its own community (ID = node name)
   const community = new Map<string, string>();
@@ -158,11 +159,12 @@ export function louvainPhase1(
 
         const candidateDegreeSum = communityDegreeSum.get(candidateCommunity)!;
 
-        // ΔQ = [weight_to_candidate/m - nodeDegree * candidateDegreeSum / (2m²)]
-        //     - [weight_to_own/m - nodeDegree * ownCommunityDegreeWithout / (2m²)]
+        // ΔQ = [weight_to_candidate/m - γ * nodeDegree * candidateDegreeSum / (2m²)]
+        //     - [weight_to_own/m - γ * nodeDegree * ownCommunityDegreeWithout / (2m²)]
+        // resolution γ > 1 penalises large communities → smaller zones.
         const deltaQ =
           (weightToCandidate - weightToOwnCommunity) / m2 -
-          (nodeDegree * (candidateDegreeSum - ownCommunityDegreeWithout)) /
+          resolution * (nodeDegree * (candidateDegreeSum - ownCommunityDegreeWithout)) /
             (m2 * m2) * 2;
 
         if (
@@ -393,11 +395,15 @@ export function mergeBidirectionalCoupling(
 
 /**
  * Split communities that exceed `maxSize` files by running Louvain
- * internally on their subgraph. If subdivision produces only one
- * community (the zone is truly monolithic), the zone is left intact.
+ * internally on their subgraph with increasing resolution (γ).
  *
- * Deterministic: processes communities in sorted order, applies
- * deterministic Louvain subdivision.
+ * Standard Louvain (γ=1) has a resolution limit that prevents it from
+ * finding sub-communities inside dense, uniformly-connected subgraphs —
+ * exactly what happens when routes → components → utils form one big
+ * cluster. Increasing γ penalises large communities, forcing splits.
+ *
+ * Iterates until no oversized communities remain or no further splits
+ * are possible. Deterministic: processes communities in sorted order.
  */
 export function splitLargeCommunities(
   community: Map<string, string>,
@@ -406,62 +412,79 @@ export function splitLargeCommunities(
 ): Map<string, string> {
   const result = new Map(community);
 
-  // Gather community → members
-  const members = new Map<string, string[]>();
-  for (const [node, comm] of result) {
-    let list = members.get(comm);
-    if (!list) {
-      list = [];
-      members.set(comm, list);
+  // Track communities that resisted splitting so we don't retry them
+  const unsplittable = new Set<string>();
+
+  for (let round = 0; round < 10; round++) {
+    // Gather community → members
+    const members = new Map<string, string[]>();
+    for (const [node, comm] of result) {
+      let list = members.get(comm);
+      if (!list) { list = []; members.set(comm, list); }
+      list.push(node);
     }
-    list.push(node);
-  }
 
-  // Process oversized communities in sorted order for determinism
-  const oversized = [...members.entries()]
-    .filter(([, m]) => m.length > maxSize)
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    // Find oversized communities we haven't already failed to split
+    const oversized = [...members.entries()]
+      .filter(([comm, m]) => m.length > maxSize && !unsplittable.has(comm))
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 
-  for (const [comm, commMembers] of oversized) {
-    // Build subgraph containing only nodes in this community
-    const memberSet = new Set(commMembers);
-    const subGraph: UndirectedGraph = new Map();
+    if (oversized.length === 0) break;
 
-    for (const node of commMembers) {
-      const neighbors = graph.get(node);
-      if (!neighbors) continue;
+    let splitAny = false;
 
-      const subNeighbors = new Map<string, number>();
-      for (const [neighbor, weight] of neighbors) {
-        if (memberSet.has(neighbor)) {
-          subNeighbors.set(neighbor, weight);
+    for (const [comm, commMembers] of oversized) {
+      // Build subgraph containing only nodes in this community
+      const memberSet = new Set(commMembers);
+      const subGraph: UndirectedGraph = new Map();
+
+      for (const node of commMembers) {
+        const neighbors = graph.get(node);
+        if (!neighbors) continue;
+
+        const subNeighbors = new Map<string, number>();
+        for (const [neighbor, weight] of neighbors) {
+          if (memberSet.has(neighbor)) {
+            subNeighbors.set(neighbor, weight);
+          }
+        }
+        if (subNeighbors.size > 0) {
+          subGraph.set(node, subNeighbors);
         }
       }
-      if (subNeighbors.size > 0) {
-        subGraph.set(node, subNeighbors);
+
+      // Ensure all member nodes exist in the subgraph (even if isolated)
+      for (const node of commMembers) {
+        if (!subGraph.has(node)) {
+          subGraph.set(node, new Map());
+        }
       }
-    }
 
-    // Ensure all member nodes exist in the subgraph (even if isolated)
-    for (const node of commMembers) {
-      if (!subGraph.has(node)) {
-        subGraph.set(node, new Map());
+      // Try increasing resolution until the community splits
+      let subCommunity: Map<string, string> | null = null;
+      for (const γ of [1, 2, 4, 8]) {
+        let attempt = louvainPhase1(subGraph, 100, γ);
+        attempt = mergeSmallCommunities(attempt, subGraph);
+        const subComms = new Set(attempt.values());
+        if (subComms.size > 1) {
+          subCommunity = attempt;
+          break;
+        }
       }
+
+      if (!subCommunity) {
+        unsplittable.add(comm);
+        continue;
+      }
+
+      // Apply sub-community assignments: use "parentComm\0subComm" as new ID
+      for (const [node, subComm] of subCommunity) {
+        result.set(node, `${comm}\0${subComm}`);
+      }
+      splitAny = true;
     }
 
-    // Run Louvain on the subgraph
-    let subCommunity = louvainPhase1(subGraph);
-    subCommunity = mergeSmallCommunities(subCommunity, subGraph);
-
-    // Check if subdivision was meaningful (>1 community)
-    const subComms = new Set(subCommunity.values());
-    if (subComms.size <= 1) continue;
-
-    // Apply sub-community assignments: use "parentComm\0subComm" as new ID
-    // to avoid collisions with existing community IDs
-    for (const [node, subComm] of subCommunity) {
-      result.set(node, `${comm}\0${subComm}`);
-    }
+    if (!splitAny) break;
   }
 
   return result;
