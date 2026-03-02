@@ -154,12 +154,13 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
 
   server.tool(
     "reorganize",
-    "Detect structural issues in the PRD and propose reorganizations (merge, move, delete, prune, collapse, split)",
+    "Detect structural issues in the PRD and propose reorganizations (merge, move, delete, prune, collapse, split). Runs both programmatic detectors and LLM analysis by default.",
     {
       accept: z.string().optional().describe("Apply proposals: 'low-risk' (default when set), 'all', or comma-separated IDs like '1,3'"),
       includeCompleted: z.boolean().optional().describe("Include completed items in similarity analysis (default: false)"),
+      mode: z.enum(["fast", "full"]).optional().describe("Analysis mode: 'fast' (programmatic only) or 'full' (programmatic + LLM, default)"),
     },
-    async (args) => handleReorganize(store, args),
+    async (args) => handleReorganize(store, dir, args),
   );
 
   server.tool("health", "Get structure health score with dimensional breakdown (depth, balance, granularity, completeness, staleness)", {},

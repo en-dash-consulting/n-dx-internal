@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { z } from "zod";
 import type { PRDItem, TokenUsage, AnalyzeTokenUsage } from "../schema/index.js";
+import { isContainerLevel } from "../schema/index.js";
 import type { ScanResult } from "./scanners.js";
 import type { Proposal, ProposalTask } from "./propose.js";
 import { walkTree } from "../core/tree.js";
@@ -185,11 +186,15 @@ const ProposalTaskSchema = z.object({
 const ProposalFeatureSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
+  existingId: z.string().optional(),
   tasks: z.array(ProposalTaskSchema),
 });
 
 const ProposalSchema = z.object({
-  epic: z.object({ title: z.string() }),
+  epic: z.object({
+    title: z.string(),
+    existingId: z.string().optional(),
+  }),
   features: z.array(ProposalFeatureSchema),
 });
 
@@ -197,11 +202,16 @@ const ProposalArraySchema = z.array(ProposalSchema);
 
 // ── Helpers ──
 
-function summarizeExisting(items: PRDItem[]): string {
+function summarizeExisting(
+  items: PRDItem[],
+  options?: { withIds?: boolean },
+): string {
   const lines: string[] = [];
   for (const { item, parents } of walkTree(items)) {
     const indent = "  ".repeat(parents.length);
-    lines.push(`${indent}- [${item.level}] ${item.title} (${item.status})`);
+    const showId = options?.withIds && isContainerLevel(item.level);
+    const idPart = showId ? ` (id: ${item.id})` : "";
+    lines.push(`${indent}- [${item.level}] ${item.title} (${item.status})${idPart}`);
   }
   return lines.length > 0 ? lines.join("\n") : "(empty PRD)";
 }
@@ -555,11 +565,12 @@ function normalizeProposals(
   validated: z.infer<typeof ProposalArraySchema>,
 ): Proposal[] {
   return validated.map((p) => ({
-    epic: { title: p.epic.title, source: "llm" },
+    epic: { title: p.epic.title, source: "llm", existingId: p.epic.existingId },
     features: p.features.map((f) => ({
       title: f.title,
       source: "llm",
       description: f.description,
+      existingId: f.existingId,
       tasks: f.tasks.map((t) => ({
         title: t.title,
         source: "llm",
@@ -887,8 +898,9 @@ const FORMAT_HINTS: Record<FileFormat, string> = {
  * (one source of truth instead of repeating the shape in every prompt).
  */
 export const PRD_SCHEMA = `Each element must be an object with:
-- "epic": { "title": string }
-- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }`;
+- "epic": { "title": string, "existingId"?: string }
+- "features": array of { "title": string, "description"?: string, "existingId"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }
+The optional "existingId" on epics and features references an existing PRD item by ID — use it to place new items under existing containers instead of creating duplicates.`;
 
 /**
  * Shared task-quality guidelines that every PRD prompt should include.
@@ -919,6 +931,21 @@ export const ANTI_PATTERNS = `Avoid these common mistakes:
  */
 export const OUTPUT_INSTRUCTION = `Respond with ONLY a valid JSON array. No explanation, no markdown fences, no commentary — just the JSON.`;
 
+/**
+ * Auto-placement instruction block. Included in prompts when no explicit
+ * parentId is specified, telling the LLM it can reference existing PRD
+ * items by ID to place new items under them.
+ */
+export const AUTO_PLACEMENT_INSTRUCTION = `
+## Placement
+The existing PRD includes item IDs for epics and features. When new items
+naturally belong under an existing epic or feature, set "existingId" on the
+epic/feature object to reference it by ID. Only create new epics/features
+when the items genuinely represent new work areas not covered by the existing tree.
+
+If an existing parent's title needs to expand to accommodate the new scope,
+use "existingId" to reference it AND set the title to the updated version.`;
+
 // ── Few-shot example for LLM prompts ──
 
 /**
@@ -944,6 +971,28 @@ export const FEW_SHOT_EXAMPLE = `Example output (for reference — do NOT includ
             ],
             "priority": "high",
             "tags": ["auth", "backend"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "epic": { "title": "API Infrastructure", "existingId": "abc-123" },
+    "features": [
+      {
+        "title": "Rate Limiting",
+        "description": "Protect API endpoints from abuse with configurable rate limits",
+        "tasks": [
+          {
+            "title": "Implement token bucket rate limiter middleware",
+            "description": "Add per-endpoint rate limiting using a token bucket algorithm with configurable burst and sustained rates",
+            "acceptanceCriteria": [
+              "Returns 429 with Retry-After header when limit exceeded",
+              "Configurable per-route limits via middleware options",
+              "Supports both IP-based and API-key-based limiting"
+            ],
+            "priority": "high",
+            "tags": ["api", "security"]
           }
         ]
       }
@@ -1349,7 +1398,8 @@ export async function buildAddPrompt(
   dir: string,
   options?: AddPromptOptions,
 ): Promise<string> {
-  const existingSummary = summarizeExisting(existingItems);
+  const hasParent = !!options?.parentId;
+  const existingSummary = summarizeExisting(existingItems, { withIds: !hasParent });
   const projectContext = await readProjectContext(dir);
 
   const contextBlock = projectContext
@@ -1357,19 +1407,22 @@ export async function buildAddPrompt(
     : "";
 
   let parentConstraint = "";
-  if (options?.parentId) {
+  let placementBlock = "";
+  if (hasParent) {
     // Find the parent in the tree and describe it
-    const parentEntry = findItemInTree(existingItems, options.parentId);
+    const parentEntry = findItemInTree(existingItems, options!.parentId!);
     if (parentEntry) {
       parentConstraint = `
 IMPORTANT: Scope your response to fit under this existing parent item:
-  ID: ${options.parentId}
+  ID: ${options!.parentId}
   Level: ${parentEntry.level}
   Title: ${parentEntry.title}
 
 Only create children appropriate for a ${parentEntry.level}. For example, if the parent is an epic, create features and tasks. If the parent is a feature, create only tasks.
 Do NOT create a new epic — instead use the parent's title as the epic title in your response.`;
     }
+  } else if (existingItems.length > 0) {
+    placementBlock = AUTO_PLACEMENT_INSTRUCTION;
   }
 
   return `You are a product requirements analyst. Given the following natural-language description, create a structured PRD breakdown as a JSON array.
@@ -1391,7 +1444,7 @@ Deduplication:
 - Use the project context to understand terminology and architecture.
 
 ${ANTI_PATTERNS}
-${parentConstraint}
+${parentConstraint}${placementBlock}
 ${contextBlock}
 Existing PRD:
 ${existingSummary}
@@ -1449,7 +1502,8 @@ export async function buildMultiAddPrompt(
   dir: string,
   options?: AddPromptOptions,
 ): Promise<string> {
-  const existingSummary = summarizeExisting(existingItems);
+  const hasParent = !!options?.parentId;
+  const existingSummary = summarizeExisting(existingItems, { withIds: !hasParent });
   const projectContext = await readProjectContext(dir);
 
   const contextBlock = projectContext
@@ -1457,18 +1511,21 @@ export async function buildMultiAddPrompt(
     : "";
 
   let parentConstraint = "";
-  if (options?.parentId) {
-    const parentEntry = findItemInTree(existingItems, options.parentId);
+  let placementBlock = "";
+  if (hasParent) {
+    const parentEntry = findItemInTree(existingItems, options!.parentId!);
     if (parentEntry) {
       parentConstraint = `
 IMPORTANT: Scope your response to fit under this existing parent item:
-  ID: ${options.parentId}
+  ID: ${options!.parentId}
   Level: ${parentEntry.level}
   Title: ${parentEntry.title}
 
 Only create children appropriate for a ${parentEntry.level}. For example, if the parent is an epic, create features and tasks. If the parent is a feature, create only tasks.
 Do NOT create a new epic — instead use the parent's title as the epic title in your response.`;
     }
+  } else if (existingItems.length > 0) {
+    placementBlock = AUTO_PLACEMENT_INSTRUCTION;
   }
 
   const numbered = descriptions
@@ -1494,7 +1551,7 @@ Deduplication:
 - Use the project context to understand terminology and architecture.
 
 ${ANTI_PATTERNS}
-${parentConstraint}
+${parentConstraint}${placementBlock}
 ${contextBlock}
 Existing PRD:
 ${existingSummary}
@@ -1826,7 +1883,8 @@ export async function buildIdeasPrompt(
   dir: string,
   options?: AddPromptOptions,
 ): Promise<string> {
-  const existingSummary = summarizeExisting(existingItems);
+  const hasParent = !!options?.parentId;
+  const existingSummary = summarizeExisting(existingItems, { withIds: !hasParent });
   const projectContext = await readProjectContext(dir);
 
   const contextBlock = projectContext
@@ -1834,18 +1892,21 @@ export async function buildIdeasPrompt(
     : "";
 
   let parentConstraint = "";
-  if (options?.parentId) {
-    const parentEntry = findItemInTree(existingItems, options.parentId);
+  let placementBlock = "";
+  if (hasParent) {
+    const parentEntry = findItemInTree(existingItems, options!.parentId!);
     if (parentEntry) {
       parentConstraint = `
 IMPORTANT: Scope your response to fit under this existing parent item:
-  ID: ${options.parentId}
+  ID: ${options!.parentId}
   Level: ${parentEntry.level}
   Title: ${parentEntry.title}
 
 Only create children appropriate for a ${parentEntry.level}. For example, if the parent is an epic, create features and tasks. If the parent is a feature, create only tasks.
 Do NOT create a new epic — instead use the parent's title as the epic title in your response.`;
     }
+  } else if (existingItems.length > 0) {
+    placementBlock = AUTO_PLACEMENT_INSTRUCTION;
   }
 
   return `You are a product requirements analyst reading raw brainstorming notes. These are NOT formal specs — they are rough ideas, bullet points, half-formed thoughts, and informal shorthand. Distill every idea into a well-structured PRD as a JSON array.
@@ -1870,7 +1931,7 @@ Deduplication:
 - Use the project context to understand terminology, architecture, and domain-specific jargon in the notes.
 
 ${ANTI_PATTERNS}
-${parentConstraint}
+${parentConstraint}${placementBlock}
 ${contextBlock}
 Existing PRD:
 ${existingSummary}

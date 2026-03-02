@@ -230,6 +230,16 @@ export {
 } from "./core/reorganize-executor.js";
 export type { ApplyResult, ProposalResult } from "./core/reorganize-executor.js";
 
+// ---- Core: reshape ----------------------------------------------------------
+
+export { applyReshape } from "./core/reshape.js";
+export type { ReshapeProposal, ReshapeAction, ReshapeResult } from "./core/reshape.js";
+
+// ---- Analyze: reshape-reason ------------------------------------------------
+
+export { reasonForReshape, formatReshapeProposal } from "./analyze/reshape-reason.js";
+export type { ReshapeReasonOptions, ReshapeReasonResult } from "./analyze/reshape-reason.js";
+
 // ---- Core: health -----------------------------------------------------------
 
 export {

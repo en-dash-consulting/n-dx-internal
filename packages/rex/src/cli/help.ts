@@ -491,21 +491,28 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
     summary: "detect and fix structural issues in the PRD",
     usage: "rex reorganize [options] [dir]",
     description:
-      "Analyzes the PRD tree for structural issues: orphaned features, empty\n" +
-      "containers, near-duplicate items, oversized/undersized containers, and\n" +
-      "prunable completed subtrees. Proposes reorganization actions (merge,\n" +
-      "move, delete, prune, collapse, split).",
+      "Analyzes the PRD tree using both programmatic detectors and LLM reasoning.\n" +
+      "Programmatic: orphaned features, near-duplicates, oversized/undersized containers.\n" +
+      "LLM: semantic merge, update, reparent, split, and obsolete proposals.\n" +
+      "Use --fast to skip LLM analysis for quick structural checks only.",
     options: [
-      { flag: "--accept", description: "Apply all low-risk proposals automatically" },
-      { flag: "--accept=<ids>", description: "Apply specific proposals by ID (comma-separated)" },
+      { flag: "--accept", description: "Apply all low-risk structural proposals" },
+      { flag: "--accept=<ids>", description: "Apply specific structural proposals by ID (comma-separated)" },
+      { flag: "--accept=all", description: "Apply structural (low-risk) + all LLM proposals" },
+      { flag: "--accept-llm", description: "Apply all LLM proposals" },
+      { flag: "--accept-llm=<ids>", description: "Apply specific LLM proposals by display index" },
+      { flag: "--fast", description: "Programmatic analysis only (no LLM call)" },
+      { flag: "--model=<model>", description: "LLM model to use for analysis" },
       { flag: "--include-completed", description: "Include completed items in similarity analysis" },
       { flag: "--format=json", description: "Machine-readable output" },
     ],
     examples: [
-      { command: "rex reorganize", description: "Detect issues and show proposals" },
-      { command: "rex reorganize --accept", description: "Apply all low-risk proposals" },
-      { command: "rex reorganize --accept=1,3", description: "Apply proposals 1 and 3" },
-      { command: "rex reorganize --format=json .", description: "JSON output for scripting" },
+      { command: "rex reorganize", description: "Detect issues and show all proposals" },
+      { command: "rex reorganize --fast", description: "Structural analysis only (no LLM)" },
+      { command: "rex reorganize --accept", description: "Apply low-risk structural proposals" },
+      { command: "rex reorganize --accept-llm", description: "Apply all LLM proposals" },
+      { command: "rex reorganize --accept=all", description: "Apply structural + LLM proposals" },
+      { command: "rex reorganize --accept-llm=1,3", description: "Apply LLM proposals 1 and 3" },
     ],
     related: ["health", "prune", "reshape"],
   },

@@ -106,14 +106,20 @@ export function formatProposalTree(
       // Default: full epic → feature → task tree
       const prefix = numbered ? `${i + 1}. ` : "  ";
       if (!parentLevel) {
-        lines.push(`${prefix}📦 ${p.epic.title}`);
+        const epicLabel = p.epic.existingId
+          ? `${prefix}📦 Under existing: "${p.epic.title}" (${p.epic.existingId.slice(0, 8)}...)`
+          : `${prefix}📦 ${p.epic.title}`;
+        lines.push(epicLabel);
       }
 
       for (let fi = 0; fi < p.features.length; fi++) {
         const f = p.features[fi];
         const isLastFeature = fi === p.features.length - 1;
         const branch = isLastFeature ? "└─" : "├─";
-        lines.push(`    ${branch} 📋 ${f.title}`);
+        const featureLabel = f.existingId
+          ? `    ${branch} 📋 Under existing: "${f.title}" (${f.existingId.slice(0, 8)}...)`
+          : `    ${branch} 📋 ${f.title}`;
+        lines.push(featureLabel);
         if (f.description) {
           const cont = isLastFeature ? "  " : "│ ";
           lines.push(`    ${cont}   ${f.description}`);
@@ -284,6 +290,35 @@ export function parseDuplicatePromptInput(input: string): DuplicatePromptDecisio
 
 function hasDuplicateMatches(matches: ProposalDuplicateMatch[]): boolean {
   return matches.some((match) => match.duplicate);
+}
+
+/**
+ * Filter out duplicate matches for proposal nodes that have `existingId` set.
+ * These nodes were intentionally placed by the LLM under existing items,
+ * so programmatic duplicate detection is redundant and would be confusing.
+ */
+function filterPlacedDuplicateMatches(
+  matches: ProposalDuplicateMatch[],
+  proposals: Proposal[],
+): ProposalDuplicateMatch[] {
+  return matches.filter((match) => {
+    const parsed = parseNodeKey(match.node.key);
+    if (!parsed) return true;
+    const proposal = proposals[parsed.proposalIndex];
+    if (!proposal) return true;
+
+    // Skip epics with existingId
+    if (parsed.suffix === "epic" && proposal.epic.existingId) return false;
+
+    // Skip features with existingId
+    const featureMatch = /^feature:(\d+)$/.exec(parsed.suffix);
+    if (featureMatch) {
+      const fIdx = parseInt(featureMatch[1], 10);
+      if (proposal.features[fIdx]?.existingId) return false;
+    }
+
+    return true;
+  });
 }
 
 function parseNodeKey(key: string): { proposalIndex: number; suffix: string } | null {
@@ -740,11 +775,29 @@ async function acceptProposals(
   for (let pIdx = 0; pIdx < proposals.length; pIdx++) {
     const p = proposals[pIdx];
     if (!parentId) {
-      // No parent — create a new top-level epic with features and tasks beneath
+      // No parent — create a new top-level epic (or reuse existing via existingId)
       const epicMergeTarget = mergeTargetsByNodeKey?.[`p${pIdx}:epic`];
-      const epicId = epicMergeTarget ?? randomUUID();
+      let epicId = epicMergeTarget ?? randomUUID();
       const epicMarker = overrideMarkersByNodeKey?.[`p${pIdx}:epic`];
-      if (!epicMergeTarget) {
+
+      // Check for existingId — LLM-directed placement under existing epic
+      const epicExistingRef = p.epic.existingId;
+      let epicReused = false;
+      if (epicExistingRef && !epicMergeTarget) {
+        const doc = await store.loadDocument();
+        const existing = findItem(doc.items, epicExistingRef);
+        if (existing) {
+          epicId = epicExistingRef;
+          epicReused = true;
+          // Update title if the LLM expanded the scope
+          if (p.epic.title && p.epic.title !== existing.item.title) {
+            await store.updateItem(epicExistingRef, { title: p.epic.title });
+          }
+        }
+        // If not found, fall through to create a new epic (LLM hallucinated the ID)
+      }
+
+      if (!epicMergeTarget && !epicReused) {
         await store.addItem({
           id: epicId,
           title: p.epic.title,
@@ -760,9 +813,25 @@ async function acceptProposals(
         const f = p.features[fIdx];
         const featureKey = `p${pIdx}:feature:${fIdx}`;
         const featureMergeTarget = mergeTargetsByNodeKey?.[featureKey];
-        const featureId = featureMergeTarget ?? randomUUID();
+        let featureId = featureMergeTarget ?? randomUUID();
         const featureMarker = overrideMarkersByNodeKey?.[`p${pIdx}:feature:${fIdx}`];
-        if (!featureMergeTarget) {
+
+        // Check for existingId — LLM-directed placement under existing feature
+        const featureExistingRef = f.existingId;
+        let featureReused = false;
+        if (featureExistingRef && !featureMergeTarget) {
+          const doc = await store.loadDocument();
+          const existing = findItem(doc.items, featureExistingRef);
+          if (existing) {
+            featureId = featureExistingRef;
+            featureReused = true;
+            if (f.title && f.title !== existing.item.title) {
+              await store.updateItem(featureExistingRef, { title: f.title });
+            }
+          }
+        }
+
+        if (!featureMergeTarget && !featureReused) {
           await store.addItem(
             {
               id: featureId,
@@ -1202,7 +1271,10 @@ async function runInteractiveSmartAddApproval(params: {
           info(formatProposalTree(currentProposals, parentLevel));
           info("");
 
-          currentDuplicateMatches = matchProposalNodesToPRD(currentProposals, existing);
+          currentDuplicateMatches = filterPlacedDuplicateMatches(
+            matchProposalNodesToPRD(currentProposals, existing),
+            currentProposals,
+          );
           await maybeCacheSmartAddProposals(dir, currentProposals, parentId);
         } else {
           adjSpinner.stop("LLM returned no proposals. Original proposals unchanged.");
@@ -1441,7 +1513,10 @@ export async function cmdSmartAdd(
     return;
   }
 
-  const duplicateMatches = matchProposalNodesToPRD(proposals, existing);
+  const duplicateMatches = filterPlacedDuplicateMatches(
+    matchProposalNodesToPRD(proposals, existing),
+    proposals,
+  );
   const proposalsWithReasons = attachDuplicateReasonsToProposals(proposals, duplicateMatches);
   const qualityIssues = validateProposalQuality(proposalsWithReasons);
   if (input.isJson && !input.accept) {

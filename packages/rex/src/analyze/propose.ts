@@ -39,6 +39,8 @@ export interface ProposalFeature {
   description?: string;
   tasks: ProposalTask[];
   duplicateReason?: DuplicateReasonMetadata;
+  /** When set, references an existing PRD item to place children under instead of creating a new feature. */
+  existingId?: string;
 }
 
 export interface ProposalEpic {
@@ -46,6 +48,8 @@ export interface ProposalEpic {
   source: string;
   description?: string;
   duplicateReason?: DuplicateReasonMetadata;
+  /** When set, references an existing PRD item to place children under instead of creating a new epic. */
+  existingId?: string;
 }
 
 export interface Proposal {

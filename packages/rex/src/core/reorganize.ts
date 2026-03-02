@@ -1,9 +1,13 @@
 /**
  * Reorganization detector: analyzes PRD tree structure and proposes
- * improvements such as merges, moves, pruning, and splits.
+ * improvements such as merges, moves, and splits.
+ *
+ * Philosophy: The PRD is a living document. Reorganize strengthens and
+ * clarifies structure — it never deletes or prunes items. Completed work
+ * stays as a record of what was built. Use `rex prune` for explicit cleanup.
  *
  * Detection pipeline (ordered by confidence):
- * 1. Structural checks — orphans, empty containers, completed subtrees
+ * 1. Structural checks — orphaned features
  * 2. Similarity checks — near-duplicate items
  * 3. Balance checks — oversized/undersized/single-child containers
  *
@@ -23,7 +27,7 @@ import {
 } from "../schema/index.js";
 import { walkTree, findItem } from "./tree.js";
 import { findEpiclessFeatures } from "./structural.js";
-import { isFullyCompleted, countSubtree, findPrunableItems } from "./prune.js";
+
 import { similarity } from "../analyze/dedupe.js";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -160,12 +164,9 @@ export function detectReorganizations(
   for (const p of detectOrphanedFeatures(items)) {
     proposals.push({ ...p, id: nextId++ });
   }
-  for (const p of detectEmptyContainers(items)) {
-    proposals.push({ ...p, id: nextId++ });
-  }
-  for (const p of detectPrunableSubtrees(items)) {
-    proposals.push({ ...p, id: nextId++ });
-  }
+  // Note: Empty container deletion and completed subtree pruning are intentionally
+  // excluded from reorganize. The PRD is a living document — completed items stay
+  // as a record of what was built. Use `rex prune` for explicit cleanup.
 
   // Stage 2: Similarity checks (medium confidence)
   for (const p of detectNearDuplicates(items, opts)) {
@@ -255,66 +256,6 @@ function detectOrphanedFeatures(items: PRDItem[]): PartialProposal[] {
       },
     };
   });
-}
-
-/**
- * Detect containers (epics/features) with no live children.
- */
-function detectEmptyContainers(items: PRDItem[]): PartialProposal[] {
-  const proposals: PartialProposal[] = [];
-
-  for (const { item, parents } of walkTree(items)) {
-    if (!isContainerLevel(item.level)) continue;
-    // Skip terminal statuses
-    if (item.status === "completed" || item.status === "deferred" || item.status === "deleted") continue;
-
-    const liveChildren = (item.children ?? []).filter((c) => c.status !== "deleted");
-    if (liveChildren.length > 0) continue;
-
-    const label = getLevelLabel(item.level);
-    const parentId = parents.length > 0 ? parents[parents.length - 1].id : null;
-
-    proposals.push({
-      type: "delete",
-      description: `Delete empty ${label.toLowerCase()} "${item.title}"`,
-      reason: `${label} has no child items. It may be a placeholder that was never populated.`,
-      confidence: 0.8,
-      risk: "low",
-      items: [item.id],
-      detail: {
-        kind: "delete",
-        itemId: item.id,
-        subtreeCount: 1,
-      },
-    });
-  }
-
-  return proposals;
-}
-
-/**
- * Detect fully completed subtrees that can be pruned.
- * Reuses the existing `findPrunableItems()` utility.
- */
-function detectPrunableSubtrees(items: PRDItem[]): PartialProposal[] {
-  const prunable = findPrunableItems(items);
-  if (prunable.length === 0) return [];
-
-  const totalCount = prunable.reduce((sum, item) => sum + countSubtree(item), 0);
-
-  return [{
-    type: "prune",
-    description: `Prune ${prunable.length} completed subtree${prunable.length === 1 ? "" : "s"} (${totalCount} item${totalCount === 1 ? "" : "s"} total)`,
-    reason: "All items in these subtrees are completed. Pruning reduces clutter while preserving the record.",
-    confidence: 0.9,
-    risk: "low",
-    items: prunable.map((i) => i.id),
-    detail: {
-      kind: "prune",
-      itemIds: prunable.map((i) => i.id),
-      totalCount,
-    },
-  }];
 }
 
 // ── Stage 2: Similarity checks ──────────────────────────────────────────────

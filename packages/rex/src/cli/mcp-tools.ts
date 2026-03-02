@@ -463,30 +463,61 @@ export async function handleVerifyCriteria(
 
 export async function handleReorganize(
   store: PRDStore,
-  args: { accept?: string; includeCompleted?: boolean },
+  dir: string,
+  args: { accept?: string; includeCompleted?: boolean; mode?: string },
 ): Promise<McpResult> {
   try {
     const doc = await store.loadDocument();
     if (doc.items.length === 0) {
-      return textResult(JSON.stringify({ proposals: [], stats: {} }, null, 2));
+      return textResult(JSON.stringify({ structural: { proposals: [], stats: {} }, llm: [] }, null, 2));
     }
 
     const plan = detectReorganizations(doc.items, {
       includeCompleted: args.includeCompleted ?? false,
     });
 
+    // LLM proposals (unless mode=fast)
+    let llmProposals: Array<{ id: string; action: string; reason: string }> = [];
+    if (args.mode !== "fast") {
+      try {
+        const { reasonForReshape } = await import("../analyze/reshape-reason.js");
+        const { setLLMConfig, setClaudeConfig } = await import("../analyze/reason.js");
+        const { loadLLMConfig, loadClaudeConfig } = await import("../store/project-config.js");
+        const { REX_DIR } = await import("./commands/constants.js");
+        const { join } = await import("node:path");
+
+        const rexDir = join(dir, REX_DIR);
+        const llmConfig = await loadLLMConfig(rexDir);
+        setLLMConfig(llmConfig);
+        const claudeConfig = await loadClaudeConfig(rexDir);
+        setClaudeConfig(claudeConfig);
+
+        const { proposals } = await reasonForReshape(doc.items, { dir });
+        llmProposals = proposals.map((p) => ({
+          id: p.id,
+          action: p.action.action,
+          reason: p.action.reason,
+        }));
+      } catch {
+        // LLM unavailable — continue with structural only
+      }
+    }
+
     if (!args.accept) {
       // Detection only
       return textResult(JSON.stringify({
-        proposals: plan.proposals.map((p) => ({
-          id: p.id,
-          type: p.type,
-          description: p.description,
-          risk: p.risk,
-          confidence: p.confidence,
-          items: p.items,
-        })),
-        stats: plan.stats,
+        structural: {
+          proposals: plan.proposals.map((p) => ({
+            id: p.id,
+            type: p.type,
+            description: p.description,
+            risk: p.risk,
+            confidence: p.confidence,
+            items: p.items,
+          })),
+          stats: plan.stats,
+        },
+        llm: llmProposals,
       }, null, 2));
     }
 
@@ -500,21 +531,25 @@ export async function handleReorganize(
       toApply = plan.proposals.filter((p) => ids.has(p.id));
     }
 
-    if (toApply.length === 0) {
-      return textResult(JSON.stringify({ applied: 0, failed: 0, results: [] }, null, 2));
+    let applied = 0;
+    let failed = 0;
+
+    if (toApply.length > 0) {
+      const result = applyProposals(doc.items, toApply);
+      applied = result.applied;
+      failed = result.failed;
     }
 
-    const result = applyProposals(doc.items, toApply);
-    if (result.applied > 0) {
+    if (applied > 0) {
       await store.saveDocument(doc);
       await store.appendLog({
         timestamp: new Date().toISOString(),
         event: "reorganize_applied",
-        detail: `Applied ${result.applied} reorganization proposals via MCP`,
+        detail: `Applied ${applied} reorganization proposals via MCP`,
       });
     }
 
-    return textResult(JSON.stringify(result, null, 2));
+    return textResult(JSON.stringify({ applied, failed, llm: llmProposals }, null, 2));
   } catch (err) {
     return textResult(`Error: ${(err as Error).message}`, true);
   }

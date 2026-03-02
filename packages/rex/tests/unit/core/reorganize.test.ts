@@ -7,8 +7,6 @@ import type {
   ReorganizationPlan,
   MergeDetail,
   MoveDetail,
-  DeleteDetail,
-  PruneDetail,
   CollapseDetail,
 } from "../../../src/core/reorganize.js";
 import type { PRDItem } from "../../../src/schema/index.js";
@@ -93,39 +91,11 @@ describe("detectReorganizations — structural checks", () => {
     });
   });
 
-  describe("empty containers", () => {
-    it("detects epic with no children", () => {
+  describe("living document philosophy — no destructive proposals", () => {
+    it("does not propose deleting empty containers", () => {
       const items: PRDItem[] = [
         makeEpic("e-empty"),
         makeEpic("e1", [makeFeature("f1", [makeTask("t1")])]),
-      ];
-
-      const plan = detectReorganizations(items);
-      const del = findProposal(plan, "delete");
-
-      expect(del).toBeDefined();
-      expect((del!.detail as DeleteDetail).itemId).toBe("e-empty");
-      expect(del!.risk).toBe("low");
-    });
-
-    it("detects feature with no children", () => {
-      const items: PRDItem[] = [
-        makeEpic("e1", [
-          makeFeature("f-empty"),
-          makeFeature("f1", [makeTask("t1")]),
-        ]),
-      ];
-
-      const plan = detectReorganizations(items);
-      const del = findProposal(plan, "delete");
-
-      expect(del).toBeDefined();
-      expect((del!.detail as DeleteDetail).itemId).toBe("f-empty");
-    });
-
-    it("ignores completed empty containers", () => {
-      const items: PRDItem[] = [
-        makeEpic("e1", [], { status: "completed" }),
       ];
 
       const plan = detectReorganizations(items);
@@ -133,23 +103,7 @@ describe("detectReorganizations — structural checks", () => {
       expect(deletes).toHaveLength(0);
     });
 
-    it("ignores containers where all children are deleted", () => {
-      const items: PRDItem[] = [
-        makeEpic("e1", [
-          makeFeature("f1", [makeTask("t1")], { status: "deleted" }),
-        ]),
-      ];
-
-      const plan = detectReorganizations(items);
-      const del = findProposal(plan, "delete");
-      // e1 has no live children, so it's detected as empty
-      expect(del).toBeDefined();
-      expect((del!.detail as DeleteDetail).itemId).toBe("e1");
-    });
-  });
-
-  describe("prunable subtrees", () => {
-    it("detects fully completed subtrees", () => {
+    it("does not propose pruning completed subtrees", () => {
       const items: PRDItem[] = [
         makeEpic("e1", [
           makeFeature("f1", [
@@ -163,27 +117,8 @@ describe("detectReorganizations — structural checks", () => {
       ];
 
       const plan = detectReorganizations(items);
-      const prune = findProposal(plan, "prune");
-
-      expect(prune).toBeDefined();
-      expect((prune!.detail as PruneDetail).itemIds).toContain("e1");
-      expect(prune!.confidence).toBeGreaterThanOrEqual(0.8);
-    });
-
-    it("does not prune partially completed containers", () => {
-      // Epic has mix of completed and pending — epic itself is not prunable
-      const items: PRDItem[] = [
-        makeEpic("e1", [
-          makeFeature("f1", [
-            makeTask("t1", { status: "in_progress" }),
-            makeTask("t2"),
-          ]),
-        ]),
-      ];
-
-      const plan = detectReorganizations(items);
-      const prune = findProposal(plan, "prune");
-      expect(prune).toBeUndefined();
+      const prunes = findAllProposals(plan, "prune");
+      expect(prunes).toHaveLength(0);
     });
   });
 });

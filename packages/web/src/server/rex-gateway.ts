@@ -82,3 +82,8 @@ export type { StructureHealthScore, HealthDimensions, HealthOptions } from "rex"
 // ---- Rex reorganize ---------------------------------------------------------
 export { detectReorganizations, applyProposals, formatApplyResult } from "rex";
 export type { ReorganizationProposal, ReorganizationPlan, ApplyResult } from "rex";
+
+// ---- Rex reshape (LLM-powered restructuring) --------------------------------
+export { applyReshape, reasonForReshape, formatReshapeProposal } from "rex";
+export type { ReshapeProposal, ReshapeAction, ReshapeResult } from "rex";
+export type { ReshapeReasonOptions, ReshapeReasonResult } from "rex";

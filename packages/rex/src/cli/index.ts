@@ -45,6 +45,7 @@ const VALUE_KEYS = new Set([
   "host",
   "port",
   "group-by",
+  "accept-llm",
   ...MULTI_VALUE_KEYS,
 ]);
 
