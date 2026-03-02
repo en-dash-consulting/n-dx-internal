@@ -410,6 +410,18 @@ export function processStreamLine(
             if (block.type === "text" && block.text) {
               stream("Agent", block.text);
               result.summary = block.text.slice(0, MAX_SUMMARY_LENGTH);
+            } else if (block.type === "tool_use") {
+              const b = block as { name?: string; input?: Record<string, unknown> };
+              const toolName = b.name || "unknown";
+              const toolInput = b.input || {};
+              stream("Tool", `${toolName}(${JSON.stringify(toolInput).slice(0, 100)})`);
+              result.toolCalls.push({
+                turn: turnCounter.value,
+                tool: toolName,
+                input: toolInput,
+                output: "",
+                durationMs: 0,
+              });
             }
           }
         }
@@ -448,6 +460,18 @@ export function processStreamLine(
           if (block.type === "text" && block.text) {
             stream("Agent", block.text);
             result.summary = block.text.slice(0, MAX_SUMMARY_LENGTH);
+          } else if (block.type === "tool_use") {
+            const b = block as { name?: string; input?: Record<string, unknown> };
+            const toolName = b.name || "unknown";
+            const toolInput = b.input || {};
+            stream("Tool", `${toolName}(${JSON.stringify(toolInput).slice(0, 100)})`);
+            result.toolCalls.push({
+              turn: turnCounter.value,
+              tool: toolName,
+              input: toolInput,
+              output: "",
+              durationMs: 0,
+            });
           }
         }
       }

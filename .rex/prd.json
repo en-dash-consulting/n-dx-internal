@@ -16531,7 +16531,7 @@
     {
       "id": "epic-recursive-zone-arch",
       "title": "Recursive zone architecture",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Make subdivision use the same full pipeline as root analysis. Same algorithm at every zoom level — fractal zones. Zone detection currently lumps components, routes, utils, and configs into mega-zones because subdivideZone() runs a stripped-down Louvain without resolution escalation, proximity edges, or splitLargeCommunities.",
       "tags": [
@@ -16539,13 +16539,17 @@
         "zones",
         "architecture"
       ],
+      "startedAt": "2026-03-02T16:33:26.638Z",
+      "completedAt": "2026-03-02T16:33:26.638Z",
       "children": [
         {
           "id": "feat-full-pipeline-subdivision",
           "title": "Full-pipeline zone subdivision",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Phase 1: Make subdivideZone use the same full Louvain pipeline as root analysis, with sub-crossings computation.",
+          "startedAt": "2026-03-02T16:28:00.235Z",
+          "completedAt": "2026-03-02T16:28:00.235Z",
           "children": [
             {
               "id": "task-subcrossings-schema",
@@ -16581,7 +16585,7 @@
             {
               "id": "task-rewrite-subdividezone",
               "title": "Rewrite subdivideZone to use full pipeline",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Replace the stripped-down Louvain in subdivideZone with a runZonePipeline call. Filter imports.edges to zone's internal edges, pass zone.files as scopeFiles, maxZones: 8, parentId: zone.id, depth: depth + 1. Prefix sub-zone IDs with zone.id/. Compute sub-crossings and store on zone.subCrossings. Thread testFiles through to subdivision.",
               "acceptanceCriteria": [
@@ -16596,12 +16600,13 @@
               "blockedBy": [
                 "task-extract-runzonepipeline"
               ],
-              "startedAt": "2026-03-02T14:39:22.590Z"
+              "startedAt": "2026-03-02T14:39:22.590Z",
+              "completedAt": "2026-03-02T14:57:13.970Z"
             },
             {
               "id": "task-zone-output-subcrossings",
               "title": "Update zone-output.ts for sub-crossings",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "In packages/sourcevision/src/analyzers/zone-output.ts, add a <sub-crossings> section to zone context.md generation showing cross-dependency counts between sub-zones grouped by zone pair.",
               "acceptanceCriteria": [
@@ -16611,12 +16616,14 @@
               "priority": "medium",
               "blockedBy": [
                 "task-rewrite-subdividezone"
-              ]
+              ],
+              "startedAt": "2026-03-02T16:26:03.778Z",
+              "completedAt": "2026-03-02T16:28:00.086Z"
             },
             {
               "id": "task-subdivision-tests",
               "title": "Add subdivision enhancement tests",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "New test file packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts plus updates to existing zone-detection.test.ts.",
               "acceptanceCriteria": [
@@ -16632,16 +16639,19 @@
               "priority": "high",
               "blockedBy": [
                 "task-rewrite-subdividezone"
-              ]
+              ],
+              "startedAt": "2026-03-02T14:58:01.009Z"
             }
           ]
         },
         {
           "id": "feat-web-viewer-drilldown",
           "title": "Web viewer zone drill-down",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Phase 2: Add drill-down navigation in the web viewer so users can explore sub-zones interactively with breadcrumb navigation.",
+          "startedAt": "2026-03-02T16:33:26.558Z",
+          "completedAt": "2026-03-02T16:33:26.558Z",
           "children": [
             {
               "id": "task-drilldown-types",
@@ -16661,7 +16671,7 @@
             {
               "id": "task-breadcrumb-nav",
               "title": "Implement breadcrumb navigation component",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Render breadcrumbs above diagram when drillPath.length > 1. Clicking a breadcrumb pops back to that level. Hidden at root level.",
               "acceptanceCriteria": [
@@ -16672,12 +16682,14 @@
               "priority": "high",
               "blockedBy": [
                 "task-drilldown-types"
-              ]
+              ],
+              "startedAt": "2026-03-02T16:16:05.077Z",
+              "completedAt": "2026-03-02T16:20:16.498Z"
             },
             {
               "id": "task-drilldown-interaction",
               "title": "Add drill-down interaction to zone boxes",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add drill-down arrow button on zone boxes that have subZones. Click pushes new breadcrumb, re-renders diagram with sub-zones. Reset expanded zones on drill. Zone cards use visibleZones. Summary line reflects current drill level.",
               "acceptanceCriteria": [
@@ -16689,12 +16701,14 @@
               "priority": "high",
               "blockedBy": [
                 "task-breadcrumb-nav"
-              ]
+              ],
+              "startedAt": "2026-03-02T16:20:41.495Z",
+              "completedAt": "2026-03-02T16:25:11.992Z"
             },
             {
               "id": "task-drilldown-tests",
               "title": "Add drill-down tests",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "New test file packages/web/tests/unit/viewer/zone-drill-down.test.ts.",
               "acceptanceCriteria": [
@@ -16707,7 +16721,9 @@
               "priority": "medium",
               "blockedBy": [
                 "task-drilldown-interaction"
-              ]
+              ],
+              "startedAt": "2026-03-02T16:28:19.831Z",
+              "completedAt": "2026-03-02T16:33:26.403Z"
             }
           ]
         },
