@@ -1,17 +1,17 @@
 /**
- * Zones — Zone cards grid + SVG box-and-line zone diagram.
+ * Zones — SVG box-and-line zone diagram with slideout details.
  *
  * Zones rendered as rectangular boxes on a topology-aware grid,
  * connected by Bézier edges weighted by call traffic.
  * Zones expand on click to reveal file rows inside.
  * When expanded, file-level edges show which files bridge zones.
- * Below the diagram, zone cards show metrics and insights.
+ * Clicking a zone opens a slideout panel with details.
  */
 
 import { h } from "preact";
 import { useState, useMemo, useCallback, useEffect } from "preact/hooks";
 import type { LoadedData, DetailItem, NavigateTo } from "../types.js";
-import type { CallGraph, Zone, Finding } from "../../schema/v1.js";
+import type { CallGraph, Zone } from "../../schema/v1.js";
 import {
   CollapsibleSection,
   buildFileToZoneMap,
@@ -19,7 +19,6 @@ import {
   buildCallFlowEdges,
   buildExternalImportEdges,
   getZoneColorByIndex,
-  meterClass,
 } from "../visualization/index.js";
 import { basename } from "../utils.js";
 import { SearchFilter } from "../components/search-filter.js";
@@ -1158,24 +1157,11 @@ function TopFunctionsTables({ summary }: TopFunctionsTablesProps) {
 export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   const { zones, callGraph, imports: importsData } = data;
   const [search, setSearch] = useState("");
-  const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [expandedZones, setExpandedZones] = useState<Set<string>>(new Set());
   const [slideoutZone, setSlideoutZone] = useState<Zone | null>(null);
 
   if (!zones) {
     return h("div", { class: "loading" }, "No zone data available.");
-  }
-
-  // Cross-zone traffic summary
-  const zoneTraffic = new Map<string, { incoming: number; outgoing: number }>();
-  for (const z of zones.zones) {
-    zoneTraffic.set(z.id, { incoming: 0, outgoing: 0 });
-  }
-  for (const c of zones.crossings) {
-    const from = zoneTraffic.get(c.fromZone);
-    const to = zoneTraffic.get(c.toZone);
-    if (from) from.outgoing++;
-    if (to) to.incoming++;
   }
 
   // Diagram data
@@ -1254,20 +1240,6 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   }, [searchQ, zoneDataList, expandedZones]);
 
   // Handlers
-  const handleZoneCardClick = (zone: Zone) => {
-    setSelectedZone(zone.id === selectedZone ? null : zone.id);
-    onSelect({
-      type: "zone",
-      title: zone.name,
-      id: zone.id,
-      description: zone.description,
-      files: zone.files.length,
-      entryPoints: zone.entryPoints,
-      cohesion: zone.cohesion.toFixed(2),
-      coupling: zone.coupling.toFixed(2),
-    });
-  };
-
   const toggleZone = useCallback((id: string) => {
     setExpandedZones((prev) => {
       const next = new Set(prev);
@@ -1351,123 +1323,6 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
           onSelectFile: handleFileSelect,
           onDblClickFile: handleFileDblClick,
         })
-      : null,
-
-    // Zone cards grid
-    h("div", { class: "zone-grid" },
-      filteredZones.map((zone, i) => {
-        const globalIdx = zones.zones.indexOf(zone);
-        const traffic = zoneTraffic.get(zone.id);
-        const color = getZoneColorByIndex(globalIdx);
-
-        return h("div", {
-          key: zone.id,
-          id: `zone-card-${zone.id}`,
-          class: `zone-card ${selectedZone === zone.id ? "selected" : ""}`,
-          style: selectedZone === zone.id ? `border-color: ${color}` : "",
-          onClick: () => handleZoneCardClick(zone),
-        },
-          h("div", { class: "flex-row" },
-            h("div", {
-              class: "zone-dot",
-              style: `background: ${color}`,
-            }),
-            h("h3", null, zone.name)
-          ),
-          h("p", { class: "desc" }, zone.description),
-          h("div", { class: "zone-metrics" },
-            h("div", { class: "zone-metric" },
-              h("div", { class: "val" }, zone.files.length),
-              h("div", { class: "lbl" }, "Files")
-            ),
-            h("div", { class: "zone-metric" },
-              h("div", { class: "val" }, zone.cohesion.toFixed(2)),
-              h("div", { class: "lbl" }, "Cohesion"),
-              h("div", { class: "meter" },
-                h("div", {
-                  class: `meter-fill ${meterClass(zone.cohesion)}`,
-                  style: `width: ${zone.cohesion * 100}%`,
-                })
-              )
-            ),
-            h("div", { class: "zone-metric" },
-              h("div", { class: "val" }, zone.coupling.toFixed(2)),
-              h("div", { class: "lbl" }, "Coupling"),
-              h("div", { class: "meter" },
-                h("div", {
-                  class: `meter-fill ${meterClass(zone.coupling, true)}`,
-                  style: `width: ${zone.coupling * 100}%`,
-                })
-              )
-            ),
-            traffic
-              ? h("div", { class: "zone-metric" },
-                  h("div", { class: "val" }, `${traffic.incoming}/${traffic.outgoing}`),
-                  h("div", { class: "lbl" }, "In/Out")
-                )
-              : null
-          ),
-          // Per-zone findings/insights
-          (() => {
-            const zoneFindings: Finding[] = (zones.findings ?? []).filter(
-              (f: Finding) => f.scope === zone.id
-            );
-            const insightTexts = zoneFindings.length > 0
-              ? zoneFindings.map((f) => f.text)
-              : zone.insights ?? [];
-            if (insightTexts.length === 0) return null;
-
-            return h(CollapsibleSection, {
-              title: "Insights",
-              count: insightTexts.length,
-              defaultOpen: true,
-              threshold: 3,
-            },
-              ...insightTexts.map((text, j) =>
-                h("div", { key: j, class: "insight-item" }, text)
-              )
-            );
-          })()
-        );
-      })
-    ),
-
-    // Selected zone file list
-    selectedZone
-      ? (() => {
-          const zone = zones.zones.find((z) => z.id === selectedZone);
-          if (!zone) return null;
-
-          return h(CollapsibleSection, {
-            title: `Files in "${zone.name}"`,
-            count: zone.files.length,
-            defaultOpen: true,
-            threshold: 20,
-          },
-            h("div", { class: "data-table-wrapper" },
-              h("table", { class: "data-table" },
-                h("thead", null,
-                  h("tr", null,
-                    h("th", null, "Path"),
-                    h("th", null, "Entry Point")
-                  )
-                ),
-                h("tbody", null,
-                  zone.files.map((f) =>
-                    h("tr", { key: f },
-                      h("td", { class: "mono-sm" }, f),
-                      h("td", null,
-                        zone.entryPoints.includes(f)
-                          ? h("span", { class: "tag tag-test" }, "entry")
-                          : null
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          );
-        })()
       : null,
 
     // Unzoned files
