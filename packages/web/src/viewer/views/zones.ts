@@ -24,6 +24,7 @@ import {
 import { basename } from "../utils.js";
 import { SearchFilter } from "../components/search-filter.js";
 import { BrandedHeader } from "../components/logos.js";
+import { ZoneSlideout } from "../components/zone-slideout.js";
 import type {
   ZoneData,
   BoxRect,
@@ -630,6 +631,7 @@ function ZoneBox({
   zone,
   box,
   expanded,
+  selected,
   dimmed,
   searchQ,
   matchingFiles,
@@ -641,6 +643,7 @@ function ZoneBox({
   zone: ZoneData;
   box: BoxRect;
   expanded: boolean;
+  selected: boolean;
   dimmed: boolean;
   searchQ: string;
   matchingFiles: Set<string>;
@@ -654,7 +657,7 @@ function ZoneBox({
   const overflow = zone.files.length - FILE_ROWS_MAX;
 
   return h("g", {
-    class: `cg-zone-box${expanded ? " expanded" : ""}${dimmed ? " search-dim" : ""}`,
+    class: `cg-zone-box${expanded ? " expanded" : ""}${selected ? " selected" : ""}${dimmed ? " search-dim" : ""}`,
     "data-zone-id": zone.id,
     style: "cursor: grab;",
   },
@@ -795,6 +798,7 @@ function ZoneDiagram({
   zones,
   edges,
   expandedZones,
+  selectedZoneId,
   searchQ,
   fileConnections,
   fileToFileMap,
@@ -806,6 +810,7 @@ function ZoneDiagram({
   zones: ZoneData[];
   edges: FlowEdge[];
   expandedZones: Set<string>;
+  selectedZoneId: string | null;
   searchQ: string;
   fileConnections: FileConnectionMap;
   fileToFileMap: FileToFileMap;
@@ -1059,6 +1064,7 @@ function ZoneDiagram({
             zone,
             box,
             expanded: expandedZones.has(zone.id),
+            selected: selectedZoneId === zone.id,
             dimmed: dimmedZones.has(zone.id),
             searchQ,
             matchingFiles: matchingFilesByZone.get(zone.id) ?? new Set(),
@@ -1154,6 +1160,7 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   const [search, setSearch] = useState("");
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [expandedZones, setExpandedZones] = useState<Set<string>>(new Set());
+  const [slideoutZone, setSlideoutZone] = useState<Zone | null>(null);
 
   if (!zones) {
     return h("div", { class: "loading" }, "No zone data available.");
@@ -1267,27 +1274,18 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
-    // Scroll to the corresponding zone card
-    const el = document.getElementById(`zone-card-${id}`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, []);
+    // Open slideout for the clicked zone
+    if (!zones) return;
+    const zone = zones.zones.find((z) => z.id === id);
+    if (zone) setSlideoutZone(zone);
+  }, [zones]);
 
   const handleDiagramZoneSelect = useCallback((zd: ZoneData) => {
     if (!zones) return;
     const zone = zones.zones.find((z) => z.id === zd.id);
     if (!zone) return;
-    onSelect({
-      type: "zone",
-      title: zone.name,
-      id: zone.id,
-      zoneId: zone.id,
-      description: zone.description,
-      files: zone.files.length,
-      entryPoints: zone.entryPoints,
-      cohesion: zone.cohesion.toFixed(2),
-      coupling: zone.coupling.toFixed(2),
-    });
-  }, [zones, onSelect]);
+    setSlideoutZone(zone);
+  }, [zones]);
 
   const handleFileSelect = useCallback((filePath: string) => {
     onSelect({
@@ -1301,6 +1299,10 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   const handleFileDblClick = useCallback((filePath: string) => {
     if (navigateTo) navigateTo("files", { file: filePath });
   }, [navigateTo]);
+
+  const handleSlideoutClose = useCallback(() => {
+    setSlideoutZone(null);
+  }, []);
 
   return h("div", null,
     h("div", { class: "view-header" },
@@ -1340,6 +1342,7 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
           zones: zoneDataList,
           edges: flowEdges,
           expandedZones: effectiveExpandedZones,
+          selectedZoneId: slideoutZone?.id ?? null,
           searchQ,
           fileConnections,
           fileToFileMap,
@@ -1487,5 +1490,15 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
 
     // Top functions (only when call graph data available)
     callGraph ? h(TopFunctionsTables, { summary: callGraph.summary }) : null,
+
+    // Zone slideout panel
+    h(ZoneSlideout, {
+      zone: slideoutZone,
+      crossings: zones.crossings,
+      allZones: zones.zones,
+      onClose: handleSlideoutClose,
+      onFileClick: handleFileSelect,
+      navigateTo,
+    }),
   );
 }

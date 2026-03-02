@@ -48,6 +48,12 @@
   stroke-width: 2;
 }
 
+.cg-zone-box.selected .cg-zone-rect {
+  stroke: var(--zone-color, var(--accent));
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--zone-color, var(--accent)) 40%, transparent));
+}
+
 .cg-zone-name {
   font-family: var(--font-mono, monospace);
   font-size: 13px;
