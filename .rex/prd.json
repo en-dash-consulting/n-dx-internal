@@ -16966,6 +16966,8 @@
           "level": "feature",
           "description": "Address small, broken, and inconsistently sized text across all Rex pages — including task cards, detail panels, status badges, and section headers",
           "source": "smart-add",
+          "startedAt": "2026-03-03T08:57:59.556Z",
+          "completedAt": "2026-03-03T08:57:59.556Z",
           "children": [
             {
               "id": "a06d1971-0b90-47be-aebd-c7bb5f233f78",
@@ -17011,9 +17013,7 @@
               "startedAt": "2026-03-03T08:18:02.213Z",
               "completedAt": "2026-03-03T08:57:59.407Z"
             }
-          ],
-          "startedAt": "2026-03-03T08:57:59.556Z",
-          "completedAt": "2026-03-03T08:57:59.556Z"
+          ]
         },
         {
           "id": "5af8caa9-43b5-4eb3-9b43-dd11b424b0b1",
@@ -17155,7 +17155,7 @@
             {
               "id": "fd71defa-7b02-4125-a0ce-7f7639586d59",
               "title": "Align status badge and chip styles across Rex task and epic displays",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Status indicators (pending, in_progress, completed, failing, blocked) render with different sizes, colors, and border radii depending on where they appear. Centralize the badge/chip component and apply it uniformly across the PRD tree, task detail panel, and dashboard summary cards.",
               "acceptanceCriteria": [
@@ -17171,7 +17171,9 @@
                 "styling",
                 "components"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-03T09:11:27.846Z",
+              "completedAt": "2026-03-03T11:11:58.204Z"
             }
           ]
         }
