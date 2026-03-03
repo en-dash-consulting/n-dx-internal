@@ -240,11 +240,11 @@ export function ExecutionPanel({ onPrdChanged }: ExecutionPanelProps) {
       h("h3", { class: "exec-panel-title" }, "Epic-by-Epic Execution"),
       isActive
         ? h("span", {
-            class: `exec-panel-status-badge exec-panel-status-${status!.status}`,
+            class: `status-badge status-badge--${status!.status}`,
           }, status!.status === "running" ? "Running" : "Paused")
         : isDone
           ? h("span", {
-              class: `exec-panel-status-badge exec-panel-status-${status!.status}`,
+              class: `status-badge status-badge--${status!.status}`,
             }, status!.status === "completed" ? "Complete" : "Failed")
           : null,
     ),

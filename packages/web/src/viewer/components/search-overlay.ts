@@ -545,7 +545,7 @@ function renderResult(
     ? getContextSnippet(result.description, queryTerms)
     : null;
 
-  const statusClass = `search-result-status search-result-status--${result.status}`;
+  const statusClass = `status-badge status-badge--${result.status}`;
   const statusLabel = STATUS_LABELS[result.status] ?? result.status;
   const levelIcon = getLevelEmoji(result.level);
 

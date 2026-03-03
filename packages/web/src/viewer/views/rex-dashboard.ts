@@ -230,12 +230,12 @@ function EpicCard({ epic, navigateTo }: { epic: EpicStats; navigateTo?: Navigate
           class: "rex-dash-epic-link",
         }),
         stats.inProgress > 0
-          ? h("span", { class: "rex-dash-epic-active-badge" },
+          ? h("span", { class: "status-badge status-badge--in_progress" },
               `${stats.inProgress} active`,
             )
           : null,
         stats.blocked > 0
-          ? h("span", { class: "rex-dash-epic-blocked-badge" },
+          ? h("span", { class: "status-badge status-badge--blocked" },
               `${stats.blocked} blocked`,
             )
           : null,
@@ -443,7 +443,7 @@ export function RexDashboard({ navigateTo }: RexDashboardProps) {
                   nextTask.status === "pending"
                     ? h(StartButton, { taskId: nextTask.id, onStarted: fetchDashboard })
                     : nextTask.status === "in_progress"
-                      ? h("span", { class: "rex-dash-next-status-badge" }, "In Progress")
+                      ? h("span", { class: "status-badge status-badge--in_progress" }, "In Progress")
                       : null,
                 ),
                 h(RexTaskLink, {
