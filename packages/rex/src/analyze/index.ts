@@ -32,6 +32,7 @@ export {
   CHUNK_CHAR_LIMIT,
   CHUNK_ITEM_LIMIT,
   FEW_SHOT_EXAMPLE,
+  CONSOLIDATION_INSTRUCTION,
   spawnClaude,
   reasonFromFile,
   reasonFromFiles,

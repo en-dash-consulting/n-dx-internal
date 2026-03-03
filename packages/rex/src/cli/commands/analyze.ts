@@ -194,6 +194,10 @@ async function acceptProposals(
           acceptanceCriteria: t.acceptanceCriteria,
           priority: t.priority as PRDItem["priority"],
           tags: t.tags,
+          // LoE fields — optional, present when the LLM included estimates
+          ...(t.loe !== undefined && { loe: t.loe }),
+          ...(t.loeRationale !== undefined && { loeRationale: t.loeRationale }),
+          ...(t.loeConfidence !== undefined && { loeConfidence: t.loeConfidence }),
         };
         await store.addItem(taskItem, featureId);
         addedCount++;
