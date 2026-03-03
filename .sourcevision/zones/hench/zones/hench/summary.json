@@ -1,0 +1,16 @@
+{
+  "id": "hench/hench",
+  "name": "Hench/hench",
+  "description": "4 files, primarily Other, Markdown, JSON",
+  "files": [
+    "packages/hench/Hench-F.png",
+    "packages/hench/Hench.png",
+    "packages/hench/README.md",
+    "packages/hench/package-lock.json"
+  ],
+  "entryPoints": [],
+  "cohesion": 0.86,
+  "coupling": 0.14,
+  "fileCount": 4,
+  "lineCount": 2078
+}

@@ -1,12 +1,25 @@
 {
   "id": "root",
   "name": "Root",
-  "description": "12 files, primarily JavaScript",
+  "description": "27 files, primarily JavaScript, Markdown, Other",
   "files": [
+    ".gitignore",
+    ".npmrc",
+    "CLAUDE.md",
+    "CODEX.md",
+    "PACKAGE_GUIDELINES.md",
+    "README.md",
+    "bitbucket-pipelines.yml",
     "ci.js",
     "cli.js",
     "config.js",
     "help.js",
+    "n-dx.png",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "pr-check.js",
+    "prd.md",
     "refresh-artifacts.js",
     "refresh-plan.js",
     "refresh-validate.js",
@@ -14,11 +27,20 @@
     "tests/unit/refresh-artifacts.test.js",
     "tests/unit/refresh-plan.test.js",
     "tests/unit/refresh-validate.test.js",
+    "tsconfig.base.json",
+    "vitest.config.js",
     "web.js"
   ],
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 12,
-  "lineCount": 4472
+  "fileCount": 27,
+  "lineCount": 8932,
+  "riskMetrics": {
+    "cohesion": 1,
+    "coupling": 0,
+    "riskScore": 0,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
 }

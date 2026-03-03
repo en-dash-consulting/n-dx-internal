@@ -61,11 +61,11 @@
     "tests/unit/util/sort.test.ts"
   ],
   "entryPoints": [
-    "src/schema/v1.ts",
     "src/analyzers/components.ts",
     "src/analyzers/imports.ts",
     "src/analyzers/inventory.ts",
-    "src/analyzers/zones.ts"
+    "src/analyzers/zones.ts",
+    "src/schema/v1.ts"
   ],
   "cohesion": 0.98,
   "coupling": 0.02,

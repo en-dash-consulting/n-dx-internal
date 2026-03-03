@@ -16955,9 +16955,11 @@
     {
       "id": "b73ae2ff-6ed0-46dd-94a3-e297e837549f",
       "title": "Rex UI Consistency and Polish",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-03-03T13:02:37.327Z",
+      "completedAt": "2026-03-03T13:02:37.327Z",
       "children": [
         {
           "id": "9a56a5a1-ee74-4e34-8f6a-185e5490b760",
@@ -17075,15 +17077,17 @@
         {
           "id": "3c630e22-d440-4a94-a65a-d5009881ce1c",
           "title": "Interactive Element Placement Standardization",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Rationalize the placement of action buttons, filters, and contextual controls across Rex pages — currently each page has invented its own layout for these, producing a disjointed experience",
           "source": "smart-add",
+          "startedAt": "2026-03-03T13:02:37.248Z",
+          "completedAt": "2026-03-03T13:02:37.248Z",
           "children": [
             {
               "id": "4e691d1d-3709-4a7e-8275-c1d145c9b5d3",
               "title": "Consolidate and reposition misplaced filter and sort controls in Rex PRD tree",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Filter controls (status filter, search, quick presets) are scattered at different vertical positions depending on which Rex sub-view is active. Consolidate them into a single persistent filter bar directly above the tree, visible on all Rex tree-based views.",
               "acceptanceCriteria": [
@@ -17099,12 +17103,14 @@
                 "ux",
                 "filters"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-03T11:45:47.946Z",
+              "completedAt": "2026-03-03T12:51:35.794Z"
             },
             {
               "id": "df1e460c-962d-4a24-9baf-218b5ab7716c",
               "title": "Standardize per-item action menus and inline control placement across Rex tree nodes",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Task and epic nodes expose different controls in different positions — some show action buttons inline, some reveal them on hover, some have context menus that appear in unpredictable locations. Establish a single hover-reveal inline action pattern for all tree nodes.",
               "acceptanceCriteria": [
@@ -17120,22 +17126,26 @@
                 "ux",
                 "tree"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-03T12:52:10.645Z",
+              "completedAt": "2026-03-03T13:02:37.063Z"
             }
           ]
         },
         {
           "id": "b29321f8-f42e-4915-85af-a10fd1f835ee",
           "title": "Visual and Spacing Consistency",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Normalize spacing, padding, border, and color usage across all Rex views to eliminate the patchwork appearance caused by independently styled page sections",
           "source": "smart-add",
+          "startedAt": "2026-03-03T11:45:11.430Z",
+          "completedAt": "2026-03-03T11:45:11.430Z",
           "children": [
             {
               "id": "09465857-883c-440b-b3c4-9ee3cd6a677a",
               "title": "Audit and normalize spacing and padding across all Rex page sections",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Rex pages currently mix arbitrary px values and inconsistent spacing tokens, making the layout feel cobbled together. Conduct a spacing audit and apply consistent margin/padding using the project's existing CSS custom properties or utility classes.",
               "acceptanceCriteria": [
@@ -17150,7 +17160,9 @@
                 "ui",
                 "styling"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-03T11:12:55.996Z",
+              "completedAt": "2026-03-03T11:45:11.248Z"
             },
             {
               "id": "fd71defa-7b02-4125-a0ce-7f7639586d59",

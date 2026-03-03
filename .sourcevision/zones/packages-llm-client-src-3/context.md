@@ -9,13 +9,13 @@ Files: 17, Cohesion: 0.65, Coupling: 0.35
 Risk: healthy (score: 0.35)
 Description: 17 files, primarily TypeScript
 Entry points: packages/llm-client/src/cli-provider.ts, packages/llm-client/src/codex-cli-provider.ts, packages/llm-client/src/create-client.ts, packages/llm-client/src/llm-client.ts, packages/llm-client/src/provider-interface.ts, packages/llm-client/src/provider-registry.ts, packages/llm-client/src/provider-session.ts, packages/llm-client/src/token-usage.ts, packages/llm-client/src/types.ts
-Lines: 3088
+Lines: 3093
 
 </zone>
 
 <files>
 
-packages/llm-client/src/cli-provider.ts (TypeScript, 247 lines, source)
+packages/llm-client/src/cli-provider.ts (TypeScript, 252 lines, source)
 packages/llm-client/src/codex-cli-provider.ts (TypeScript, 245 lines, source)
 packages/llm-client/src/create-client.ts (TypeScript, 90 lines, source)
 packages/llm-client/src/llm-client.ts (TypeScript, 75 lines, source)

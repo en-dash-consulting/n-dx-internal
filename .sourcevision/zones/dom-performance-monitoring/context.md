@@ -6,15 +6,16 @@
 
 Zone: DOM Performance Monitoring (`dom-performance-monitoring`)
 Files: 3, Cohesion: 0.75, Coupling: 0.25
-Description: Tracks DOM operation performance metrics and provides React hooks for performance-aware components.
+Risk: healthy (score: 0.25)
+Description: Encapsulates DOM-level performance tracking via a React hook wrapper over a utility class, cleanly separating concerns between measurement logic and component integration.
 Lines: 1691
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/dom-performance-monitor.ts (TypeScript, 505 lines, source)
 packages/web/src/viewer/hooks/use-dom-performance-monitor.ts (TypeScript, 175 lines, source)
+packages/web/src/viewer/performance/dom-performance-monitor.ts (TypeScript, 505 lines, source)
 packages/web/tests/unit/viewer/dom-performance-monitor.test.ts (TypeScript, 1011 lines, test)
 
 </files>
@@ -22,26 +23,33 @@ packages/web/tests/unit/viewer/dom-performance-monitor.test.ts (TypeScript, 1011
 <imports>
 
 Internal:
-  packages/web/src/viewer/hooks/use-dom-performance-monitor.ts → packages/web/src/viewer/dom-performance-monitor.ts {startDOMPerformanceMonitor, stopDOMPerformanceMonitor, onDOMSnapshot, getLatestDOMSnapshot, getDOMSnapshotHistory, getRenderTimings, getUpdateComparisons, recordRender, recordUpdate, measureOperation, computeSummary, resetDOMPerformanceMonitor, countDOMNodes, readHeapUsage}
-  packages/web/src/viewer/hooks/use-dom-performance-monitor.ts → packages/web/src/viewer/dom-performance-monitor.ts {DOMNodeSnapshot, DOMPerformanceConfig, RenderTiming, UpdateComparison, PerformanceSummary}
-  packages/web/tests/unit/viewer/dom-performance-monitor.test.ts → packages/web/src/viewer/dom-performance-monitor.ts {countDOMNodes, readHeapUsage, formatDuration, formatNodeCount, formatDelta, recordRender, recordUpdate, measureOperation, takeDOMSnapshot, computeSummary, startDOMPerformanceMonitor, stopDOMPerformanceMonitor, onDOMSnapshot, getLatestDOMSnapshot, getDOMSnapshotHistory, getRenderTimings, getUpdateComparisons, setObservedContainer, getObservedContainer, resetDOMPerformanceMonitor}
-  packages/web/tests/unit/viewer/dom-performance-monitor.test.ts → packages/web/src/viewer/dom-performance-monitor.ts {DOMNodeSnapshot, RenderTiming, UpdateComparison, PerformanceSummary}
+  packages/web/src/viewer/hooks/use-dom-performance-monitor.ts → packages/web/src/viewer/performance/dom-performance-monitor.ts {startDOMPerformanceMonitor, stopDOMPerformanceMonitor, onDOMSnapshot, getLatestDOMSnapshot, getDOMSnapshotHistory, getRenderTimings, getUpdateComparisons, recordRender, recordUpdate, measureOperation, computeSummary, resetDOMPerformanceMonitor, countDOMNodes, readHeapUsage}
+  packages/web/src/viewer/hooks/use-dom-performance-monitor.ts → packages/web/src/viewer/performance/dom-performance-monitor.ts {DOMNodeSnapshot, DOMPerformanceConfig, RenderTiming, UpdateComparison, PerformanceSummary}
+  packages/web/tests/unit/viewer/dom-performance-monitor.test.ts → packages/web/src/viewer/performance/dom-performance-monitor.ts {countDOMNodes, readHeapUsage, formatDuration, formatNodeCount, formatDelta, recordRender, recordUpdate, measureOperation, takeDOMSnapshot, computeSummary, startDOMPerformanceMonitor, stopDOMPerformanceMonitor, onDOMSnapshot, getLatestDOMSnapshot, getDOMSnapshotHistory, getRenderTimings, getUpdateComparisons, setObservedContainer, getObservedContainer, resetDOMPerformanceMonitor}
+  packages/web/tests/unit/viewer/dom-performance-monitor.test.ts → packages/web/src/viewer/performance/dom-performance-monitor.ts {DOMNodeSnapshot, RenderTiming, UpdateComparison, PerformanceSummary}
 
 Outgoing (this zone → other zones):
-  → polling-lifecycle-management: packages/web/src/viewer/dom-performance-monitor.ts → packages/web/src/viewer/polling-state.ts
+  → web-dashboard-mcp-server: packages/web/src/viewer/performance/dom-performance-monitor.ts → packages/web/src/viewer/polling/polling-state.ts
 
 </imports>
 
+<findings>
+
+[suggestion] [info] Zone name 'dom-performance-monitoring' diverges from both its own file stems ('dom-performance-monitor.*') and the 'viewer-' prefix convention used by every other viewer zone. Renaming to 'viewer-dom-performance-monitor' would unify the naming scheme across all viewer zones.
+
+</findings>
+
 <insights>
 
-- Focused solely on DOM performance measurement with excellent architectural boundaries
-- Provides both utility-level monitoring and React hook integration
-- Small, focused zone with single responsibility for performance tracking
-- Excellent cohesion (0.75) and low coupling (0.25) showcase ideal zone architecture for a focused performance monitoring system
-- Exemplifies ideal zone architecture with focused responsibility and minimal external dependencies
-- Demonstrates optimal zone size and boundary design - small, focused, and self-contained with excellent cohesion/coupling ratio
-- Demonstrates proper separation pattern that memory-monitoring-system should follow - utility and hook kept distinct
-- Exemplifies ideal utility+hook architectural pattern that other monitoring zones should follow
+- The hook/utility/test trio is textbook separation of concerns — the utility owns measurement, the hook owns React lifecycle integration
+- Zero coupling outward (0.25) makes this easy to test and replace without affecting consumers
+- No declared entry point suggests this is consumed only via the hook layer in web-viewer, which is the right dependency direction
+- High cohesion (0.75) and low coupling (0.25) make this one of the cleanest zones in the viewer — a model for how to structure hook+utility pairs.
+- Alongside cli-e2e-test-suite, this zone is one of two reference-quality boundaries in the codebase — perfect cohesion, zero circular involvement, no role in any cross-zone coupling hotspot. It demonstrates the target state for all hook+utility+test triads.
+- Zero involvement in any circular dependency chain and no inbound imports from cross-zone hotspots make this zone a structural reference point for the intended zone design.
+- Zone name 'dom-performance-monitoring' uses a different prefix pattern than all three sibling viewer zones ('viewer-call-rate-limiter', 'viewer-message-flow-control', 'viewer-request-deduplication') — a naming inconsistency in the zone taxonomy since all four originate from packages/web/src/viewer/.
+- All three source files use the stem 'dom-performance-monitor' (no trailing 'ing') while the zone is named 'dom-performance-monitoring' — the zone name does not match the file naming convention it contains.
+- Zone name 'dom-performance-monitoring' diverges from both its own file stems ('dom-performance-monitor.*') and the 'viewer-' prefix convention used by every other viewer zone. Renaming to 'viewer-dom-performance-monitor' would unify the naming scheme across all viewer zones.
 - [call graph] 248 internal calls, 1 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

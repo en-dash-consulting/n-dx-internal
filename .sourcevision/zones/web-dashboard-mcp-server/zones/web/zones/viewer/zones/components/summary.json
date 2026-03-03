@@ -1,0 +1,22 @@
+{
+  "id": "web-viewer/web/viewer/components",
+  "name": "Web Viewer/web/viewer/components",
+  "description": "7 files, primarily TypeScript",
+  "files": [
+    "packages/web/src/viewer/components/active-tasks-panel.ts",
+    "packages/web/src/viewer/components/concurrency-panel.ts",
+    "packages/web/src/viewer/components/memory-panel.ts",
+    "packages/web/src/viewer/components/rex-task-link.ts",
+    "packages/web/src/viewer/components/throttle-controls.ts",
+    "packages/web/src/viewer/components/ws-health-panel.ts",
+    "packages/web/src/viewer/views/hench-runs.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/components/rex-task-link.ts",
+    "packages/web/src/viewer/views/hench-runs.ts"
+  ],
+  "cohesion": 0.54,
+  "coupling": 0.46,
+  "fileCount": 7,
+  "lineCount": 2682
+}

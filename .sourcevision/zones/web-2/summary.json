@@ -1,21 +1,21 @@
 {
   "id": "web-2",
   "name": "Web 2",
-  "description": "6 files, primarily TypeScript",
+  "description": "2 files, primarily TypeScript",
   "files": [
-    "packages/web/src/schema/v1.ts",
-    "packages/web/src/schema/validate.ts",
-    "packages/web/src/viewer/hooks/use-app-data.ts",
-    "packages/web/src/viewer/loader.ts",
-    "packages/web/src/viewer/schema-compat.ts",
-    "packages/web/tests/unit/server/memory-leak-fixes.test.ts"
+    "packages/web/src/viewer/components/prd-tree/node-culler.ts",
+    "packages/web/tests/unit/viewer/node-culler.test.ts"
   ],
-  "entryPoints": [
-    "packages/web/src/schema/v1.ts",
-    "packages/web/src/viewer/hooks/use-app-data.ts"
-  ],
-  "cohesion": 0.41,
-  "coupling": 0.59,
-  "fileCount": 6,
-  "lineCount": 1334
+  "entryPoints": [],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 2,
+  "lineCount": 522,
+  "riskMetrics": {
+    "cohesion": 1,
+    "coupling": 0,
+    "riskScore": 0,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
 }

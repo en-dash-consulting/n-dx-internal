@@ -743,7 +743,8 @@
         "collectCompletedIds",
         "findItem",
         "walkTree",
-        "collectRequirements"
+        "collectRequirements",
+        "isWorkItem"
       ]
     },
     {
@@ -961,7 +962,9 @@
         "findNextTask",
         "findActionable",
         "findItem",
-        "collectCompletedIds"
+        "collectCompletedIds",
+        "isRootLevel",
+        "isWorkItem"
       ]
     },
     {
@@ -5028,6 +5031,99 @@
       ]
     },
     {
+      "from": "packages/rex/src/analyze/consolidation-guard.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/consolidation-guard.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "spawnClaude",
+        "DEFAULT_MODEL",
+        "parseProposalResponse",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "FEW_SHOT_EXAMPLE",
+        "OUTPUT_INSTRUCTION",
+        "PRD_SCHEMA",
+        "TASK_QUALITY_RULES"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/consolidation-guard.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "LOE_DEFAULTS"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/consolidation-guard.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "LoEConfig",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/decompose.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "ProposalTask",
+        "ProposalFeature"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/decompose.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "spawnClaude",
+        "DEFAULT_MODEL",
+        "extractJson",
+        "repairTruncatedJson",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "PRD_SCHEMA",
+        "TASK_QUALITY_RULES",
+        "OUTPUT_INSTRUCTION"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/decompose.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "type",
+      "symbols": [
+        "ReasonResult",
+        "ClaudeResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/decompose.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "LOE_DEFAULTS"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/decompose.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "LoEConfig",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
       "from": "packages/rex/src/analyze/dedupe.ts",
       "to": "packages/rex/src/analyze/scanners.ts",
       "type": "type",
@@ -5065,6 +5161,70 @@
       "type": "type",
       "symbols": [
         "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/extract.ts",
+      "to": "packages/rex/src/analyze/file-validation.ts",
+      "type": "static",
+      "symbols": [
+        "validateFileInput",
+        "validateMarkdownContent",
+        "validateTextContent",
+        "validateJsonContent",
+        "validateYamlContent",
+        "FileValidationError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/extract.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "ProposalTask"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/extract.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "detectFileFormat",
+        "spawnClaude",
+        "DEFAULT_MODEL",
+        "extractJson",
+        "repairTruncatedJson",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "PRD_SCHEMA",
+        "TASK_QUALITY_RULES",
+        "OUTPUT_INSTRUCTION"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/extract.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "type",
+      "symbols": [
+        "FileFormat"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/extract.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/file-validation.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "type",
+      "symbols": [
+        "FileFormat"
       ]
     },
     {
@@ -5110,6 +5270,44 @@
     },
     {
       "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/consolidation-guard.ts",
+      "type": "reexport",
+      "symbols": [
+        "countProposalTasks",
+        "buildConsolidationGuardPrompt",
+        "applyConsolidationGuard"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/consolidation-guard.ts",
+      "type": "type",
+      "symbols": [
+        "ConsolidationGuardResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/decompose.ts",
+      "type": "reexport",
+      "symbols": [
+        "buildDecompositionPrompt",
+        "parseDecompositionResponse",
+        "decomposeTask",
+        "applyDecompositionPass"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/decompose.ts",
+      "type": "type",
+      "symbols": [
+        "DecomposedTask",
+        "DecompositionResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
       "to": "packages/rex/src/analyze/dedupe.ts",
       "type": "reexport",
       "symbols": [
@@ -5123,6 +5321,57 @@
       "type": "reexport",
       "symbols": [
         "formatDiff"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/extract.ts",
+      "type": "reexport",
+      "symbols": [
+        "extractFromMarkdown",
+        "extractFromText",
+        "extractFromFile",
+        "extractPriorityTag",
+        "classifyHeadingLevels"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/extract.ts",
+      "type": "type",
+      "symbols": [
+        "ExtractionOptions",
+        "ExtractionResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/file-validation.ts",
+      "type": "reexport",
+      "symbols": [
+        "validateFileInput",
+        "validateMarkdownContent",
+        "validateTextContent",
+        "validateJsonContent",
+        "validateYamlContent",
+        "detectMagicBytes",
+        "FileValidationError",
+        "SUPPORTED_EXTENSIONS",
+        "MAX_FILE_SIZE_BYTES",
+        "LARGE_FILE_WARNING_BYTES"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/file-validation.ts",
+      "type": "type",
+      "symbols": [
+        "FileValidationResult",
+        "MarkdownValidationResult",
+        "TextValidationResult",
+        "JsonValidationResult",
+        "YamlValidationResult",
+        "FileValidationErrorCode"
       ]
     },
     {
@@ -5179,6 +5428,7 @@
         "ProposalEpic",
         "ProposalFeature",
         "ProposalTask",
+        "TaskDecomposition",
         "DuplicateReasonType",
         "DuplicateReasonReference",
         "DuplicateReasonMetadata"
@@ -5200,6 +5450,7 @@
         "CHUNK_CHAR_LIMIT",
         "CHUNK_ITEM_LIMIT",
         "FEW_SHOT_EXAMPLE",
+        "CONSOLIDATION_INSTRUCTION",
         "spawnClaude",
         "reasonFromFile",
         "reasonFromFiles",
@@ -5415,6 +5666,15 @@
     },
     {
       "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/analyze/extract.ts",
+      "type": "dynamic",
+      "symbols": [
+        "extractFromText",
+        "extractFromMarkdown"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
       "to": "packages/rex/src/analyze/propose.ts",
       "type": "type",
       "symbols": [
@@ -5436,6 +5696,14 @@
       "type": "static",
       "symbols": [
         "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isContainerLevel"
       ]
     },
     {
@@ -5713,7 +5981,9 @@
         "setLLMConfig",
         "setClaudeConfig",
         "getAuthMode",
-        "getLLMVendor"
+        "getLLMVendor",
+        "applyDecompositionPass",
+        "applyConsolidationGuard"
       ]
     },
     {
@@ -5750,6 +6020,26 @@
       "type": "static",
       "symbols": [
         "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/cli/commands/decomposition-review.ts",
+      "type": "dynamic",
+      "symbols": [
+        "countDecomposedTasks",
+        "autoResolveDecompositions",
+        "runDecompositionReview",
+        "formatDecompositionSummary"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/cli/commands/format-loe.ts",
+      "type": "static",
+      "symbols": [
+        "formatTaskLoE",
+        "formatTaskLoERationale"
       ]
     },
     {
@@ -5791,11 +6081,20 @@
     {
       "from": "packages/rex/src/cli/commands/analyze.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "LOE_DEFAULTS"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "PRDItem",
         "PRDDocument",
-        "AnalyzeTokenUsage"
+        "AnalyzeTokenUsage",
+        "LoEConfig"
       ]
     },
     {
@@ -5829,6 +6128,15 @@
       "type": "static",
       "symbols": [
         "classifyModificationRequest"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/chunked-review-state.ts",
+      "to": "packages/rex/src/cli/commands/format-loe.ts",
+      "type": "static",
+      "symbols": [
+        "formatTaskLoE",
+        "formatTaskLoERationale"
       ]
     },
     {
@@ -5907,6 +6215,24 @@
       ]
     },
     {
+      "from": "packages/rex/src/cli/commands/decomposition-review.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "ProposalTask",
+        "ProposalFeature"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/decomposition-review.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
+      ]
+    },
+    {
       "from": "packages/rex/src/cli/commands/fix.ts",
       "to": "packages/rex/src/cli/commands/constants.ts",
       "type": "static",
@@ -5943,6 +6269,47 @@
     },
     {
       "from": "packages/rex/src/cli/commands/fix.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/format-loe.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "ProposalTask"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/health.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/health.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "result"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/health.ts",
+      "to": "packages/rex/src/core/health.ts",
+      "type": "static",
+      "symbols": [
+        "computeHealthScore",
+        "formatHealthScore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/health.ts",
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
@@ -6171,6 +6538,15 @@
     {
       "from": "packages/rex/src/cli/commands/prune.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "getLevelEmoji",
+        "formatLevels"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "PRDItem"
@@ -6287,6 +6663,7 @@
       "type": "static",
       "symbols": [
         "info",
+        "warn",
         "result"
       ]
     },
@@ -6304,6 +6681,15 @@
       "type": "static",
       "symbols": [
         "removeEpic"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/core/remove-feature.ts",
+      "type": "static",
+      "symbols": [
+        "preCheckFeatureDeletion",
+        "removeFeature"
       ]
     },
     {
@@ -6333,6 +6719,15 @@
     {
       "from": "packages/rex/src/cli/commands/remove.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isRootLevel",
+        "getLevelLabel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/remove.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "ItemStatus"
@@ -6344,6 +6739,109 @@
       "type": "static",
       "symbols": [
         "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "dynamic",
+      "symbols": [
+        "setLLMConfig",
+        "setClaudeConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/analyze/reshape-reason.ts",
+      "type": "dynamic",
+      "symbols": [
+        "reasonForReshape",
+        "formatReshapeProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info",
+        "result",
+        "startSpinner"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/core/reorganize-executor.ts",
+      "type": "static",
+      "symbols": [
+        "applyProposals",
+        "formatApplyResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/core/reorganize.ts",
+      "type": "static",
+      "symbols": [
+        "detectReorganizations",
+        "formatReorganizationPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/core/reorganize.ts",
+      "type": "type",
+      "symbols": [
+        "ReorganizationProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "static",
+      "symbols": [
+        "applyReshape"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "type",
+      "symbols": [
+        "ReshapeProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/store/project-config.ts",
+      "type": "static",
+      "symbols": [
+        "loadClaudeConfig",
+        "loadLLMConfig"
       ]
     },
     {
@@ -6586,7 +7084,8 @@
         "setLLMConfig",
         "setClaudeConfig",
         "getAuthMode",
-        "getLLMVendor"
+        "getLLMVendor",
+        "applyConsolidationGuard"
       ]
     },
     {
@@ -6604,6 +7103,15 @@
       "type": "static",
       "symbols": [
         "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/smart-add.ts",
+      "to": "packages/rex/src/cli/commands/format-loe.ts",
+      "type": "static",
+      "symbols": [
+        "formatTaskLoE",
+        "formatTaskLoERationale"
       ]
     },
     {
@@ -6665,7 +7173,8 @@
       "type": "static",
       "symbols": [
         "CHILD_LEVEL",
-        "PRIORITY_ORDER"
+        "PRIORITY_ORDER",
+        "LOE_DEFAULTS"
       ]
     },
     {
@@ -6675,7 +7184,8 @@
       "symbols": [
         "PRDItem",
         "ItemLevel",
-        "DuplicateOverrideMarker"
+        "DuplicateOverrideMarker",
+        "LoEConfig"
       ]
     },
     {
@@ -6725,6 +7235,15 @@
     },
     {
       "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/core/facets.ts",
+      "type": "static",
+      "symbols": [
+        "groupByFacet",
+        "getFacetValue"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
       "to": "packages/rex/src/core/prune.ts",
       "type": "static",
       "symbols": [
@@ -6749,6 +7268,14 @@
     },
     {
       "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "static",
+      "symbols": [
+        "validateStructure"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
       "to": "packages/rex/src/core/token-usage.ts",
       "type": "static",
       "symbols": [
@@ -6764,6 +7291,14 @@
       "type": "type",
       "symbols": [
         "TokenUsageFilter"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
       ]
     },
     {
@@ -6785,9 +7320,18 @@
     {
       "from": "packages/rex/src/cli/commands/status.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isRootLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
-        "PRDItem"
+        "PRDItem",
+        "ItemStatus"
       ]
     },
     {
@@ -7063,6 +7607,14 @@
     {
       "from": "packages/rex/src/cli/commands/validate-interactive.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isRootLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/validate-interactive.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "PRDDocument"
@@ -7251,6 +7803,14 @@
     },
     {
       "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/health.ts",
+      "type": "dynamic",
+      "symbols": [
+        "cmdHealth"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
       "to": "packages/rex/src/cli/commands/init.ts",
       "type": "dynamic",
       "symbols": [
@@ -7295,6 +7855,14 @@
       "type": "dynamic",
       "symbols": [
         "cmdRemove"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/reorganize.ts",
+      "type": "dynamic",
+      "symbols": [
+        "cmdReorganize"
       ]
     },
     {
@@ -7404,6 +7972,39 @@
       ]
     },
     {
+      "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isItemLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp-tools.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "dynamic",
+      "symbols": [
+        "setLLMConfig",
+        "setClaudeConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp-tools.ts",
+      "to": "packages/rex/src/analyze/reshape-reason.ts",
+      "type": "dynamic",
+      "symbols": [
+        "reasonForReshape"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp-tools.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "dynamic",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
       "from": "packages/rex/src/cli/mcp-tools.ts",
       "to": "packages/rex/src/cli/commands/constants.ts",
       "type": "static",
@@ -7434,6 +8035,24 @@
       "symbols": [
         "deleteItem",
         "cleanBlockedByRefs"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp-tools.ts",
+      "to": "packages/rex/src/core/facets.ts",
+      "type": "static",
+      "symbols": [
+        "computeFacetDistribution",
+        "suggestFacets",
+        "getItemFacets"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp-tools.ts",
+      "to": "packages/rex/src/core/health.ts",
+      "type": "static",
+      "symbols": [
+        "computeHealthScore"
       ]
     },
     {
@@ -7471,6 +8090,22 @@
       "type": "static",
       "symbols": [
         "findAutoCompletions"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp-tools.ts",
+      "to": "packages/rex/src/core/reorganize-executor.ts",
+      "type": "static",
+      "symbols": [
+        "applyProposals"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp-tools.ts",
+      "to": "packages/rex/src/core/reorganize.ts",
+      "type": "static",
+      "symbols": [
+        "detectReorganizations"
       ]
     },
     {
@@ -7541,6 +8176,15 @@
       ]
     },
     {
+      "from": "packages/rex/src/cli/mcp-tools.ts",
+      "to": "packages/rex/src/store/project-config.ts",
+      "type": "dynamic",
+      "symbols": [
+        "loadLLMConfig",
+        "loadClaudeConfig"
+      ]
+    },
+    {
       "from": "packages/rex/src/cli/mcp.ts",
       "to": "packages/rex/src/cli/commands/constants.ts",
       "type": "static",
@@ -7565,7 +8209,18 @@
         "handleSyncWithRemote",
         "handleGetRecommendations",
         "handleVerifyCriteria",
-        "handleGetCapabilities"
+        "handleGetCapabilities",
+        "handleReorganize",
+        "handleHealth",
+        "handleFacets"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/mcp.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "getAllLevels"
       ]
     },
     {
@@ -7593,7 +8248,8 @@
       "symbols": [
         "LEVEL_HIERARCHY",
         "VALID_LEVELS",
-        "isItemLevel"
+        "isItemLevel",
+        "getLevelLabel"
       ]
     },
     {
@@ -7618,6 +8274,15 @@
       "type": "type",
       "symbols": [
         "TreeStats"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/analytics.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isRootLevel",
+        "isWorkItem"
       ]
     },
     {
@@ -7670,6 +8335,22 @@
       "type": "type",
       "symbols": [
         "PRDStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/code-coverage.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/code-coverage.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
       ]
     },
     {
@@ -7734,9 +8415,34 @@
     {
       "from": "packages/rex/src/core/epic-correlation.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isRootLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/epic-correlation.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/facets.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/facets.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "RexConfig"
       ]
     },
     {
@@ -7755,6 +8461,43 @@
       "symbols": [
         "PRDItem",
         "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/health.ts",
+      "to": "packages/rex/src/core/prune.ts",
+      "type": "static",
+      "symbols": [
+        "isFullyCompleted",
+        "countSubtree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/health.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/health.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isContainerLevel",
+        "isWorkItem",
+        "isRootLevel",
+        "getLevelLabel",
+        "getLevelPlural"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/health.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
       ]
     },
     {
@@ -7877,7 +8620,8 @@
       "to": "packages/rex/src/schema/index.ts",
       "type": "static",
       "symbols": [
-        "SCHEMA_VERSION"
+        "SCHEMA_VERSION",
+        "isRootLevel"
       ]
     },
     {
@@ -7961,6 +8705,14 @@
     {
       "from": "packages/rex/src/core/remove-epic.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "getLevelLabel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-epic.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "PRDItem"
@@ -7995,6 +8747,14 @@
     {
       "from": "packages/rex/src/core/remove-feature.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "getLevelLabel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-feature.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "PRDItem"
@@ -8020,10 +8780,119 @@
     {
       "from": "packages/rex/src/core/remove-task.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "getLevelLabel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/remove-task.ts",
+      "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
         "PRDItem",
         "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize-executor.ts",
+      "to": "packages/rex/src/core/merge.ts",
+      "type": "static",
+      "symbols": [
+        "mergeItems"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize-executor.ts",
+      "to": "packages/rex/src/core/move.ts",
+      "type": "static",
+      "symbols": [
+        "moveItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize-executor.ts",
+      "to": "packages/rex/src/core/prune.ts",
+      "type": "static",
+      "symbols": [
+        "pruneItems"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize-executor.ts",
+      "to": "packages/rex/src/core/reorganize.ts",
+      "type": "type",
+      "symbols": [
+        "ReorganizationProposal",
+        "MergeDetail",
+        "MoveDetail",
+        "DeleteDetail",
+        "PruneDetail",
+        "CollapseDetail",
+        "SplitDetail"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize-executor.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "removeFromTree",
+        "findItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize-executor.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize.ts",
+      "to": "packages/rex/src/analyze/dedupe.ts",
+      "type": "static",
+      "symbols": [
+        "similarity"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "static",
+      "symbols": [
+        "findEpiclessFeatures"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree",
+        "findItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isRootLevel",
+        "isContainerLevel",
+        "isWorkItem",
+        "getLevelLabel",
+        "getLevelPlural"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/reorganize.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "ItemLevel"
       ]
     },
     {
@@ -8074,11 +8943,43 @@
       ]
     },
     {
+      "from": "packages/rex/src/core/scope-creep.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/scope-creep.ts",
+      "to": "packages/rex/src/schema/levels.ts",
+      "type": "static",
+      "symbols": [
+        "isContainerLevel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/scope-creep.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
       "from": "packages/rex/src/core/stats.ts",
       "to": "packages/rex/src/core/tree.ts",
       "type": "static",
       "symbols": [
         "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/stats.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isWorkItem"
       ]
     },
     {
@@ -8103,7 +9004,9 @@
       "to": "packages/rex/src/schema/index.ts",
       "type": "static",
       "symbols": [
-        "LEVEL_HIERARCHY"
+        "LEVEL_HIERARCHY",
+        "isRootLevel",
+        "getContainerLevels"
       ]
     },
     {
@@ -8277,6 +9180,112 @@
     },
     {
       "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/consolidation-guard.ts",
+      "type": "reexport",
+      "symbols": [
+        "countProposalTasks",
+        "buildConsolidationGuardPrompt",
+        "applyConsolidationGuard"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/consolidation-guard.ts",
+      "type": "type",
+      "symbols": [
+        "ConsolidationGuardResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/decompose.ts",
+      "type": "reexport",
+      "symbols": [
+        "applyDecompositionPass",
+        "buildDecompositionPrompt"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/decompose.ts",
+      "type": "type",
+      "symbols": [
+        "DecomposedTask",
+        "DecompositionResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/extract.ts",
+      "type": "reexport",
+      "symbols": [
+        "extractFromMarkdown",
+        "extractFromText",
+        "extractFromFile",
+        "classifyHeadingLevels",
+        "isAmbiguousStructure",
+        "maybeDisambiguate"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/extract.ts",
+      "type": "type",
+      "symbols": [
+        "ExtractionOptions",
+        "ExtractionResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/file-validation.ts",
+      "type": "reexport",
+      "symbols": [
+        "validateFileInput",
+        "validateMarkdownContent",
+        "validateTextContent",
+        "validateJsonContent",
+        "validateYamlContent",
+        "detectMagicBytes",
+        "FileValidationError",
+        "SUPPORTED_EXTENSIONS",
+        "MAX_FILE_SIZE_BYTES",
+        "LARGE_FILE_WARNING_BYTES"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/file-validation.ts",
+      "type": "type",
+      "symbols": [
+        "FileValidationResult",
+        "MarkdownValidationResult",
+        "TextValidationResult",
+        "JsonValidationResult",
+        "YamlValidationResult",
+        "FileValidationErrorCode"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/reshape-reason.ts",
+      "type": "reexport",
+      "symbols": [
+        "reasonForReshape",
+        "formatReshapeProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/reshape-reason.ts",
+      "type": "type",
+      "symbols": [
+        "ReshapeReasonOptions",
+        "ReshapeReasonResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
       "to": "packages/rex/src/cli/mcp.ts",
       "type": "reexport",
       "symbols": [
@@ -8313,11 +9322,74 @@
     },
     {
       "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/code-coverage.ts",
+      "type": "reexport",
+      "symbols": [
+        "crossReferenceChanges"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/code-coverage.ts",
+      "type": "type",
+      "symbols": [
+        "AffectedTask",
+        "UncoveredChange",
+        "CrossReferenceResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
       "to": "packages/rex/src/core/delete.ts",
       "type": "reexport",
       "symbols": [
         "deleteItem",
         "cleanBlockedByRefs"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/facets.ts",
+      "type": "reexport",
+      "symbols": [
+        "isFacetTag",
+        "parseFacetTag",
+        "getFacetValue",
+        "setFacetValue",
+        "removeFacet",
+        "getItemFacets",
+        "getItemsByFacet",
+        "groupByFacet",
+        "suggestFacets",
+        "computeFacetDistribution"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/facets.ts",
+      "type": "type",
+      "symbols": [
+        "FacetConfig",
+        "FacetSuggestion"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/health.ts",
+      "type": "reexport",
+      "symbols": [
+        "computeHealthScore",
+        "formatHealthScore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/health.ts",
+      "type": "type",
+      "symbols": [
+        "StructureHealthScore",
+        "HealthDimensions",
+        "HealthOptions"
       ]
     },
     {
@@ -8463,6 +9535,52 @@
     },
     {
       "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/reorganize-executor.ts",
+      "type": "reexport",
+      "symbols": [
+        "applyProposals",
+        "formatApplyResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/reorganize-executor.ts",
+      "type": "type",
+      "symbols": [
+        "ApplyResult",
+        "ProposalResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/reorganize.ts",
+      "type": "reexport",
+      "symbols": [
+        "detectReorganizations",
+        "formatReorganizationPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/reorganize.ts",
+      "type": "type",
+      "symbols": [
+        "ProposalType",
+        "RiskLevel",
+        "ReorganizationProposal",
+        "ReorganizationPlan",
+        "ProposalDetail",
+        "MergeDetail",
+        "MoveDetail",
+        "SplitDetail",
+        "DeleteDetail",
+        "PruneDetail",
+        "CollapseDetail",
+        "DetectorOptions"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
       "to": "packages/rex/src/core/requirements.ts",
       "type": "reexport",
       "symbols": [
@@ -8484,6 +9602,41 @@
         "RequirementValidationResult",
         "RequirementsValidationSummary",
         "CommandExecutor"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "reexport",
+      "symbols": [
+        "applyReshape"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "type",
+      "symbols": [
+        "ReshapeProposal",
+        "ReshapeAction",
+        "ReshapeResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/scope-creep.ts",
+      "type": "reexport",
+      "symbols": [
+        "detectScopeCreep",
+        "setInitialChildCount"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/core/scope-creep.ts",
+      "type": "type",
+      "symbols": [
+        "ScopeCreepResult"
       ]
     },
     {
@@ -8553,6 +9706,38 @@
     },
     {
       "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/schema/levels.ts",
+      "type": "reexport",
+      "symbols": [
+        "isRootLevel",
+        "isWorkItem",
+        "isContainerLevel",
+        "isLeafLevel",
+        "isValidLevel",
+        "getLevelLabel",
+        "getLevelPlural",
+        "getLevelEmoji",
+        "getLevelDisplayMap",
+        "getChildLevel",
+        "getParentLevels",
+        "getAllLevels",
+        "getWorkItemLevels",
+        "getContainerLevels",
+        "formatLevelSummary",
+        "setLevelDisplay",
+        "resetLevelDisplay"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/schema/levels.ts",
+      "type": "type",
+      "symbols": [
+        "LevelDisplay"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
       "to": "packages/rex/src/schema/v1.ts",
       "type": "reexport",
       "symbols": [
@@ -8564,6 +9749,7 @@
         "VALID_REQUIREMENT_CATEGORIES",
         "VALID_VALIDATION_TYPES",
         "CHILD_LEVEL",
+        "LOE_DEFAULTS",
         "isPriority",
         "isItemLevel",
         "isItemStatus",
@@ -8585,7 +9771,9 @@
         "RexConfig",
         "RequirementCategory",
         "RequirementValidationType",
-        "Requirement"
+        "Requirement",
+        "FacetDefinition",
+        "LoEConfig"
       ]
     },
     {
@@ -8739,7 +9927,9 @@
       "type": "static",
       "symbols": [
         "LEVEL_HIERARCHY",
-        "CHILD_LEVEL"
+        "CHILD_LEVEL",
+        "isLeafLevel",
+        "getLevelLabel"
       ]
     },
     {
@@ -8770,6 +9960,38 @@
     },
     {
       "from": "packages/rex/src/schema/index.ts",
+      "to": "packages/rex/src/schema/levels.ts",
+      "type": "reexport",
+      "symbols": [
+        "isRootLevel",
+        "isWorkItem",
+        "isContainerLevel",
+        "isLeafLevel",
+        "isValidLevel",
+        "getLevelLabel",
+        "getLevelPlural",
+        "getLevelEmoji",
+        "getLevelDisplayMap",
+        "getChildLevel",
+        "getParentLevels",
+        "getAllLevels",
+        "getWorkItemLevels",
+        "getContainerLevels",
+        "formatLevelSummary",
+        "setLevelDisplay",
+        "resetLevelDisplay"
+      ]
+    },
+    {
+      "from": "packages/rex/src/schema/index.ts",
+      "to": "packages/rex/src/schema/levels.ts",
+      "type": "type",
+      "symbols": [
+        "LevelDisplay"
+      ]
+    },
+    {
+      "from": "packages/rex/src/schema/index.ts",
       "to": "packages/rex/src/schema/v1.ts",
       "type": "reexport",
       "symbols": [
@@ -8782,6 +10004,7 @@
         "VALID_REQUIREMENT_CATEGORIES",
         "VALID_VALIDATION_TYPES",
         "CHILD_LEVEL",
+        "LOE_DEFAULTS",
         "isPriority",
         "isItemLevel",
         "isItemStatus",
@@ -8806,10 +10029,29 @@
         "PRDItem",
         "PRDDocument",
         "RexConfig",
+        "FacetDefinition",
         "BudgetThresholds",
+        "LoEConfig",
         "LogEntry",
         "TokenUsage",
         "AnalyzeTokenUsage"
+      ]
+    },
+    {
+      "from": "packages/rex/src/schema/levels.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "LEVEL_HIERARCHY",
+        "CHILD_LEVEL"
+      ]
+    },
+    {
+      "from": "packages/rex/src/schema/levels.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "ItemLevel"
       ]
     },
     {
@@ -9437,6 +10679,68 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/analyze/consolidation-guard.test.ts",
+      "to": "packages/rex/src/analyze/consolidation-guard.ts",
+      "type": "static",
+      "symbols": [
+        "countProposalTasks",
+        "buildConsolidationGuardPrompt",
+        "applyConsolidationGuard"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/consolidation-guard.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "ProposalTask"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/consolidation-guard.test.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "spawnClaude"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/consolidation-guard.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "LoEConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/decompose.test.ts",
+      "to": "packages/rex/src/analyze/decompose.ts",
+      "type": "static",
+      "symbols": [
+        "buildDecompositionPrompt",
+        "parseDecompositionResponse",
+        "applyDecompositionPass"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/decompose.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "ProposalTask",
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/decompose.test.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "dynamic",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/analyze/dedupe.test.ts",
       "to": "packages/rex/src/analyze/dedupe.ts",
       "type": "static",
@@ -9478,6 +10782,107 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/analyze/extract-llm-mock.test.ts",
+      "to": "packages/rex/src/analyze/extract.ts",
+      "type": "static",
+      "symbols": [
+        "maybeDisambiguate",
+        "extractFromText"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/extract-llm-mock.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/extract-llm.test.ts",
+      "to": "packages/rex/src/analyze/extract.ts",
+      "type": "static",
+      "symbols": [
+        "isAmbiguousStructure",
+        "maybeDisambiguate",
+        "extractFromText",
+        "extractFromMarkdown"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/extract-llm.test.ts",
+      "to": "packages/rex/src/analyze/extract.ts",
+      "type": "type",
+      "symbols": [
+        "ExtractionResult"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/extract-llm.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/extract-text.test.ts",
+      "to": "packages/rex/src/analyze/extract.ts",
+      "type": "static",
+      "symbols": [
+        "extractFromText",
+        "classifyHeadingLevels",
+        "isAllCapsHeader",
+        "isRequirementSentence",
+        "extractRequirementSentences",
+        "parseNumberedSection",
+        "extractPriorityTag"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/extract-text.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/extract.test.ts",
+      "to": "packages/rex/src/analyze/extract.ts",
+      "type": "static",
+      "symbols": [
+        "extractFromMarkdown",
+        "extractFromText",
+        "classifyHeadingLevels"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/extract.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/file-validation.test.ts",
+      "to": "packages/rex/src/analyze/file-validation.ts",
+      "type": "static",
+      "symbols": [
+        "validateFileInput",
+        "validateMarkdownContent",
+        "validateTextContent",
+        "validateJsonContent",
+        "validateYamlContent",
+        "detectMagicBytes",
+        "FileValidationError",
+        "SUPPORTED_EXTENSIONS",
+        "MAX_FILE_SIZE_BYTES",
+        "LARGE_FILE_WARNING_BYTES"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/analyze/guided.test.ts",
       "to": "packages/rex/src/analyze/guided.ts",
       "type": "static",
@@ -9500,6 +10905,27 @@
       "type": "static",
       "symbols": [
         "spawnClaude"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/loe-proposal-schema.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "ProposalTask"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/analyze/loe-proposal-schema.test.ts",
+      "to": "packages/rex/src/analyze/reason.ts",
+      "type": "static",
+      "symbols": [
+        "parseProposalResponse",
+        "buildAddPrompt",
+        "PRD_SCHEMA",
+        "FEW_SHOT_EXAMPLE",
+        "CONSOLIDATION_INSTRUCTION"
       ]
     },
     {
@@ -9833,6 +11259,31 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/cli/commands/decomposition-review.test.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "ProposalTask",
+        "TaskDecomposition"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/decomposition-review.test.ts",
+      "to": "packages/rex/src/cli/commands/decomposition-review.ts",
+      "type": "static",
+      "symbols": [
+        "formatDecomposedTask",
+        "formatProposalsWithDecomposition",
+        "countDecomposedTasks",
+        "applyDecompositionChoice",
+        "resolveDecompositions",
+        "autoResolveDecompositions",
+        "parseDecompositionInput",
+        "formatDecompositionSummary"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/cli/commands/fix.test.ts",
       "to": "packages/rex/src/cli/commands/fix.ts",
       "type": "static",
@@ -9846,6 +11297,49 @@
       "type": "type",
       "symbols": [
         "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/format-loe.test.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "ProposalTask"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/format-loe.test.ts",
+      "to": "packages/rex/src/cli/commands/format-loe.ts",
+      "type": "static",
+      "symbols": [
+        "formatTaskLoE",
+        "formatTaskLoERationale"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/loe-display.test.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "ProposalTask"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/loe-display.test.ts",
+      "to": "packages/rex/src/cli/commands/chunked-review-state.ts",
+      "type": "static",
+      "symbols": [
+        "createReviewState",
+        "formatChunk"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/loe-display.test.ts",
+      "to": "packages/rex/src/cli/commands/smart-add.ts",
+      "type": "static",
+      "symbols": [
+        "formatProposalTree"
       ]
     },
     {
@@ -10422,6 +11916,39 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/core/facets.test.ts",
+      "to": "packages/rex/src/core/facets.ts",
+      "type": "static",
+      "symbols": [
+        "isFacetTag",
+        "parseFacetTag",
+        "getFacetValue",
+        "setFacetValue",
+        "removeFacet",
+        "getItemFacets",
+        "getItemsByFacet",
+        "groupByFacet",
+        "suggestFacets",
+        "computeFacetDistribution"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/facets.test.ts",
+      "to": "packages/rex/src/core/facets.ts",
+      "type": "type",
+      "symbols": [
+        "FacetConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/facets.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/core/feature-filtered-task.test.ts",
       "to": "packages/rex/src/core/next-task.ts",
       "type": "static",
@@ -10452,6 +11979,23 @@
     },
     {
       "from": "packages/rex/tests/unit/core/fix.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/health.test.ts",
+      "to": "packages/rex/src/core/health.ts",
+      "type": "static",
+      "symbols": [
+        "computeHealthScore",
+        "formatHealthScore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/health.test.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -10705,6 +12249,59 @@
     },
     {
       "from": "packages/rex/tests/unit/core/remove-task.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/reorganize-executor.test.ts",
+      "to": "packages/rex/src/core/reorganize-executor.ts",
+      "type": "static",
+      "symbols": [
+        "applyProposals",
+        "formatApplyResult"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/reorganize-executor.test.ts",
+      "to": "packages/rex/src/core/reorganize.ts",
+      "type": "type",
+      "symbols": [
+        "ReorganizationProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/reorganize-executor.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/reorganize.test.ts",
+      "to": "packages/rex/src/core/reorganize.ts",
+      "type": "static",
+      "symbols": [
+        "detectReorganizations",
+        "formatReorganizationPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/reorganize.test.ts",
+      "to": "packages/rex/src/core/reorganize.ts",
+      "type": "type",
+      "symbols": [
+        "ReorganizationPlan",
+        "MergeDetail",
+        "MoveDetail",
+        "CollapseDetail"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/reorganize.test.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -11939,6 +13536,14 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/enrich.ts",
+      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "type": "static",
+      "symbols": [
+        "computeGlobalContentHash"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/enrich.ts",
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -12096,7 +13701,8 @@
       "to": "packages/sourcevision/src/analyzers/zones.ts",
       "type": "reexport",
       "symbols": [
-        "analyzeZones"
+        "analyzeZones",
+        "runZonePipeline"
       ]
     },
     {
@@ -12104,7 +13710,9 @@
       "to": "packages/sourcevision/src/analyzers/zones.ts",
       "type": "type",
       "symbols": [
-        "AnalyzeZonesResult"
+        "AnalyzeZonesResult",
+        "ZonePipelineOptions",
+        "ZonePipelineResult"
       ]
     },
     {
@@ -12274,6 +13882,140 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/analyzers/context.ts",
+      "type": "static",
+      "symbols": [
+        "generateContext"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/analyzers/llms-txt.ts",
+      "type": "static",
+      "symbols": [
+        "generateLlmsTxt"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace-crossings.ts",
+      "type": "static",
+      "symbols": [
+        "buildPackageMap",
+        "computeCrossRepoCrossings"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "promoteZones",
+        "promoteCrossings",
+        "buildSubAnalysisRefs",
+        "detectSubAnalyses"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "type",
+      "symbols": [
+        "SubAnalysis"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/constants.ts",
+      "type": "static",
+      "symbols": [
+        "SV_DIR",
+        "TOOL_VERSION"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/schema/data-files.ts",
+      "type": "static",
+      "symbols": [
+        "DATA_FILES",
+        "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "WorkspaceConfig",
+        "WorkspaceMember",
+        "Manifest",
+        "Inventory",
+        "FileEntry",
+        "InventorySummary",
+        "Imports",
+        "ImportEdge",
+        "ExternalImport",
+        "ImportsSummary",
+        "Zones",
+        "Zone",
+        "ZoneCrossing"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/util/paths.ts",
+      "type": "static",
+      "symbols": [
+        "toPosix"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "to": "packages/sourcevision/src/util/sort.ts",
+      "type": "static",
+      "symbols": [
+        "sortInventory",
+        "sortImports",
+        "sortZonesData",
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-crossings.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "type",
+      "symbols": [
+        "SubAnalysis"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-crossings.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/workspace-crossings.ts",
+      "to": "packages/sourcevision/src/util/paths.ts",
+      "type": "static",
+      "symbols": [
+        "toPosix"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/analyzers/workspace.ts",
       "to": "packages/sourcevision/src/constants.ts",
       "type": "static",
@@ -12296,6 +14038,7 @@
       "symbols": [
         "Manifest",
         "Inventory",
+        "Imports",
         "Zones",
         "Zone",
         "ZoneCrossing",
@@ -12366,6 +14109,7 @@
       "type": "static",
       "symbols": [
         "buildUndirectedGraph",
+        "addDirectoryProximityEdges",
         "louvainPhase1",
         "mergeBidirectionalCoupling",
         "mergeSmallCommunities",
@@ -12399,6 +14143,7 @@
       "symbols": [
         "Inventory",
         "Imports",
+        "ImportEdge",
         "Zone",
         "ZoneCrossing",
         "Zones",
@@ -12929,6 +14674,51 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/cli/commands/workspace.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "type": "static",
+      "symbols": [
+        "loadWorkspaceConfig",
+        "saveWorkspaceConfig",
+        "resolveMembers",
+        "writeWorkspaceOutput",
+        "getWorkspaceStatus"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/workspace.ts",
+      "to": "packages/sourcevision/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/workspace.ts",
+      "to": "packages/sourcevision/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "info"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/workspace.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "WorkspaceConfig",
+        "WorkspaceMember"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/workspace.ts",
+      "to": "packages/sourcevision/src/util/paths.ts",
+      "type": "static",
+      "symbols": [
+        "toPosix"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/cli/errors.ts",
       "to": "packages/sourcevision/src/cli/commands/constants.ts",
       "type": "static",
@@ -12998,6 +14788,14 @@
       "type": "static",
       "symbols": [
         "cmdValidate"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/index.ts",
+      "to": "packages/sourcevision/src/cli/commands/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "cmdWorkspace"
       ]
     },
     {
@@ -13187,6 +14985,8 @@
         "CallType",
         "FunctionNode",
         "CallGraphSummary",
+        "WorkspaceMember",
+        "WorkspaceConfig",
         "SourcevisionOutput",
         "TokenUsage",
         "NextStep"
@@ -13736,6 +15536,53 @@
       ]
     },
     {
+      "from": "packages/sourcevision/tests/unit/analyzers/enrich-content-skip.test.ts",
+      "to": "packages/sourcevision/src/analyzers/claude-client.ts",
+      "type": "static",
+      "symbols": [
+        "callClaude"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/enrich-content-skip.test.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich.ts",
+      "type": "static",
+      "symbols": [
+        "enrichZonesWithAI"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/enrich-content-skip.test.ts",
+      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "type": "static",
+      "symbols": [
+        "computeZoneContentHash",
+        "computeGlobalContentHash"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/enrich-content-skip.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing",
+        "Zones"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/enrich-content-skip.test.ts",
+      "to": "packages/sourcevision/tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeFileEntry",
+        "makeInventory",
+        "makeEdge",
+        "makeImports",
+        "makeZone"
+      ]
+    },
+    {
       "from": "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
       "to": "packages/sourcevision/src/analyzers/claude-client.ts",
       "type": "static",
@@ -13775,6 +15622,32 @@
         "Zone",
         "ZoneCrossing",
         "Zones"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/hints.test.ts",
+      "to": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "type": "static",
+      "symbols": [
+        "buildMetaPrompt"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/hints.test.ts",
+      "to": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "type": "static",
+      "symbols": [
+        "loadHints"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/hints.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "Finding",
+        "ZoneCrossing"
       ]
     },
     {
@@ -13895,6 +15768,89 @@
       ]
     },
     {
+      "from": "packages/sourcevision/tests/unit/analyzers/workspace-aggregate.test.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "type": "static",
+      "symbols": [
+        "loadWorkspaceConfig",
+        "saveWorkspaceConfig",
+        "resolveWorkspaceMembers",
+        "aggregateInventory",
+        "aggregateImports",
+        "aggregateZones",
+        "writeWorkspaceOutput",
+        "getWorkspaceStatus",
+        "resolveMembers"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/workspace-aggregate.test.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "type",
+      "symbols": [
+        "SubAnalysis"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/workspace-aggregate.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing",
+        "Zones",
+        "Inventory",
+        "FileEntry",
+        "Imports",
+        "ExternalImport",
+        "ImportEdge",
+        "Manifest",
+        "WorkspaceConfig"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/workspace-crossings.test.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace-crossings.ts",
+      "type": "static",
+      "symbols": [
+        "buildPackageMap",
+        "resolveEntryFile",
+        "computeCrossRepoCrossings",
+        "readMemberPackageInfo"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/workspace-crossings.test.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace-crossings.ts",
+      "type": "type",
+      "symbols": [
+        "MemberPackageInfo"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/workspace-crossings.test.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "type",
+      "symbols": [
+        "SubAnalysis"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/workspace-crossings.test.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing",
+        "Zones",
+        "Inventory",
+        "FileEntry",
+        "Imports",
+        "ExternalImport",
+        "Manifest"
+      ]
+    },
+    {
       "from": "packages/sourcevision/tests/unit/analyzers/workspace.test.ts",
       "to": "packages/sourcevision/src/analyzers/workspace.ts",
       "type": "static",
@@ -13932,7 +15888,11 @@
       "to": "packages/sourcevision/src/analyzers/louvain.ts",
       "type": "static",
       "symbols": [
-        "buildUndirectedGraph"
+        "buildUndirectedGraph",
+        "addDirectoryProximityEdges",
+        "louvainPhase1",
+        "mergeSmallCommunities",
+        "splitLargeCommunities"
       ]
     },
     {
@@ -13942,8 +15902,10 @@
       "symbols": [
         "deriveZoneId",
         "deriveZoneName",
+        "disambiguateZoneId",
         "analyzeZones",
-        "assignByProximity"
+        "assignByProximity",
+        "SUBDIVISION_THRESHOLD"
       ]
     },
     {
@@ -13951,7 +15913,8 @@
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
       "symbols": [
-        "Zone"
+        "Zone",
+        "ImportEdge"
       ]
     },
     {
@@ -14113,6 +16076,7 @@
         "computeZoneContentHash",
         "computeGlobalContentHash",
         "subdivideZone",
+        "runZonePipeline",
         "SUBDIVISION_THRESHOLD",
         "MAX_SUBDIVISION_DEPTH"
       ]
@@ -14123,6 +16087,7 @@
       "type": "type",
       "symbols": [
         "Zone",
+        "ZoneCrossing",
         "Zones",
         "ImportEdge"
       ]
@@ -14291,6 +16256,14 @@
       "type": "static",
       "symbols": [
         "resolveBranchScopedCompletedRexWorkFromData"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/cli/workspace.test.ts",
+      "to": "packages/sourcevision/src/cli/commands/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "parseWorkspaceFlags"
       ]
     },
     {
@@ -14793,6 +16766,14 @@
     {
       "from": "packages/web/src/server/routes-rex.ts",
       "to": "packages/web/src/server/rex-gateway.ts",
+      "type": "dynamic",
+      "symbols": [
+        "reasonForReshape"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-rex.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
       "type": "static",
       "symbols": [
         "PRIORITY_ORDER",
@@ -14825,7 +16806,13 @@
         "pruneItems",
         "computeEpicStats",
         "computePriorityDistribution",
-        "computeRequirementsSummary"
+        "computeRequirementsSummary",
+        "isRootLevel",
+        "isWorkItem",
+        "computeHealthScore",
+        "detectReorganizations",
+        "applyProposals",
+        "applyReshape"
       ]
     },
     {
@@ -14843,7 +16830,8 @@
         "MergeValidation",
         "EpicStats",
         "PriorityDistribution",
-        "RequirementsSummary"
+        "RequirementsSummary",
+        "ReshapeProposal"
       ]
     },
     {
@@ -15579,6 +17567,14 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/compute.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/levels.ts",
+      "type": "static",
+      "symbols": [
+        "isWorkItem"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/compute.ts",
       "to": "packages/web/src/viewer/components/prd-tree/types.ts",
       "type": "type",
       "symbols": [
@@ -15647,6 +17643,23 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/status-filter.ts",
+      "type": "reexport",
+      "symbols": [
+        "StatusFilter",
+        "defaultStatusFilter"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/status-filter.ts",
+      "type": "type",
+      "symbols": [
+        "StatusFilterProps"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
       "to": "packages/web/src/viewer/components/prd-tree/types.ts",
       "type": "type",
       "symbols": [
@@ -15665,6 +17678,22 @@
       "symbols": [
         "ItemLevel",
         "Priority"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/inline-status-picker.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/levels.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "ItemLevel"
       ]
     },
     {
@@ -15705,38 +17734,19 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/prd-tree.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/lazy-children.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/inline-status-picker.ts",
       "type": "static",
       "symbols": [
-        "LazyChildren"
+        "InlineStatusPicker"
       ]
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/prd-tree.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/levels.ts",
       "type": "static",
       "symbols": [
-        "ListenerLifecycleManager"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/components/prd-tree/prd-tree.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/node-culler.ts",
-      "type": "static",
-      "symbols": [
-        "NodeCuller"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/components/prd-tree/prd-tree.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/progressive-loader.ts",
-      "type": "static",
-      "symbols": [
-        "countVisibleNodes",
-        "sliceVisibleTree",
-        "useProgressiveLoader",
-        "LoadMoreIndicator",
-        "DEFAULT_CHUNK_SIZE"
+        "isWorkItem",
+        "isRootLevel"
       ]
     },
     {
@@ -15744,7 +17754,6 @@
       "to": "packages/web/src/viewer/components/prd-tree/status-filter.ts",
       "type": "static",
       "symbols": [
-        "StatusFilter",
         "defaultStatusFilter"
       ]
     },
@@ -15779,6 +17788,25 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/components/prd-tree/prd-tree.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
+      "type": "static",
+      "symbols": [
+        "flattenVisibleTree",
+        "useVirtualScroll",
+        "findFlatNodeIndex",
+        "DEFAULT_ITEM_HEIGHT"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/prd-tree.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
+      "type": "type",
+      "symbols": [
+        "FlatNode"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/components/prd-tree/progressive-loader.ts",
       "to": "packages/web/src/viewer/components/prd-tree/compute.ts",
       "type": "static",
@@ -15793,6 +17821,15 @@
       "symbols": [
         "PRDItemData",
         "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/prune-confirmation.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/levels.ts",
+      "type": "static",
+      "symbols": [
+        "getLevelLabel",
+        "getLevelPlural"
       ]
     },
     {
@@ -15841,6 +17878,16 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/levels.ts",
+      "type": "static",
+      "symbols": [
+        "isContainerLevel",
+        "isRootLevel",
+        "getLevelLabel"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
       "to": "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
       "type": "static",
       "symbols": [
@@ -15877,6 +17924,16 @@
       "type": "static",
       "symbols": [
         "formatTimestamp"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/levels.ts",
+      "type": "static",
+      "symbols": [
+        "isWorkItem",
+        "getLevelLabel",
+        "getChildLevel"
       ]
     },
     {
@@ -15955,6 +18012,23 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/compute.ts",
+      "type": "static",
+      "symbols": [
+        "itemMatchesFilter"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItemData",
+        "ItemStatus"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/components/refresh-queue-status.ts",
       "to": "packages/web/src/viewer/performance/memory-monitor.ts",
       "type": "type",
@@ -15984,6 +18058,14 @@
       "type": "type",
       "symbols": [
         "ViewId"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/search-overlay.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/levels.ts",
+      "type": "static",
+      "symbols": [
+        "getLevelEmoji"
       ]
     },
     {
@@ -16088,6 +18170,47 @@
       "type": "type",
       "symbols": [
         "ViewId"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/zone-slideout.ts",
+      "to": "packages/web/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/zone-slideout.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "NavigateTo"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/zone-slideout.ts",
+      "to": "packages/web/src/viewer/utils.ts",
+      "type": "static",
+      "symbols": [
+        "basename"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/zone-slideout.ts",
+      "to": "packages/web/src/viewer/visualization/colors.ts",
+      "type": "static",
+      "symbols": [
+        "getZoneColorByIndex"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/zone-slideout.ts",
+      "to": "packages/web/src/viewer/visualization/metrics.ts",
+      "type": "static",
+      "symbols": [
+        "meterClass"
       ]
     },
     {
@@ -16273,6 +18396,22 @@
         "MemorySnapshot",
         "MemoryLevel",
         "MemoryThresholds"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-persistent-filter.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/status-filter.ts",
+      "type": "static",
+      "symbols": [
+        "defaultStatusFilter"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-persistent-filter.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus"
       ]
     },
     {
@@ -17558,7 +19697,8 @@
       "to": "packages/web/src/viewer/components/prd-tree/index.ts",
       "type": "static",
       "symbols": [
-        "PRDTree"
+        "PRDTree",
+        "StatusFilter"
       ]
     },
     {
@@ -17583,6 +19723,14 @@
       "type": "static",
       "symbols": [
         "PruneConfirmation"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/prd.ts",
+      "to": "packages/web/src/viewer/hooks/use-persistent-filter.ts",
+      "type": "static",
+      "symbols": [
+        "usePersistentFilter"
       ]
     },
     {
@@ -17693,6 +19841,14 @@
     },
     {
       "from": "packages/web/src/viewer/views/rex-dashboard.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/reorganize-panel.ts",
+      "type": "static",
+      "symbols": [
+        "ReorganizePanel"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/rex-dashboard.ts",
       "to": "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
       "type": "static",
       "symbols": [
@@ -17722,6 +19878,14 @@
       "symbols": [
         "ViewId",
         "NavigateTo"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/rex-dashboard.ts",
+      "to": "packages/web/src/viewer/visualization/index.ts",
+      "type": "static",
+      "symbols": [
+        "HealthGauge"
       ]
     },
     {
@@ -18132,7 +20296,7 @@
       "symbols": [
         "CallGraph",
         "Zone",
-        "Finding"
+        "ZoneCrossing"
       ]
     },
     {
@@ -18149,6 +20313,14 @@
       "type": "static",
       "symbols": [
         "SearchFilter"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/zones.ts",
+      "to": "packages/web/src/viewer/components/zone-slideout.ts",
+      "type": "static",
+      "symbols": [
+        "ZoneSlideout"
       ]
     },
     {
@@ -18203,7 +20375,8 @@
         "FlowEdge",
         "FileConnectionMap",
         "FileToFileMap",
-        "FileInfo"
+        "FileInfo",
+        "ZoneBreadcrumb"
       ]
     },
     {
@@ -18213,10 +20386,10 @@
       "symbols": [
         "CollapsibleSection",
         "buildFileToZoneMap",
+        "buildFlowEdges",
         "buildCallFlowEdges",
         "buildExternalImportEdges",
-        "getZoneColorByIndex",
-        "meterClass"
+        "getZoneColorByIndex"
       ]
     },
     {
@@ -19294,7 +21467,16 @@
       "to": "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
       "type": "static",
       "symbols": [
-        "BatchImportPanel"
+        "BatchImportPanel",
+        "BatchItemRow"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/batch-import-panel.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
+      "type": "type",
+      "symbols": [
+        "BatchItem"
       ]
     },
     {
@@ -19576,6 +21758,26 @@
       "type": "type",
       "symbols": [
         "ViewId"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/flow-data-builders.test.ts",
+      "to": "packages/web/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneCrossing",
+        "CallEdge",
+        "Zones"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/flow-data-builders.test.ts",
+      "to": "packages/web/src/viewer/visualization/flow.ts",
+      "type": "static",
+      "symbols": [
+        "buildFlowEdges",
+        "buildCallFlowEdges",
+        "buildFileToZoneMap"
       ]
     },
     {
@@ -19952,6 +22154,30 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/persistent-filter.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/status-filter.ts",
+      "type": "static",
+      "symbols": [
+        "defaultStatusFilter"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/persistent-filter.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/persistent-filter.test.ts",
+      "to": "packages/web/src/viewer/hooks/use-persistent-filter.ts",
+      "type": "static",
+      "symbols": [
+        "usePersistentFilter"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/polling-manager.test.ts",
       "to": "packages/web/src/viewer/polling/polling-manager.ts",
       "type": "static",
@@ -20059,7 +22285,8 @@
       "to": "packages/web/src/viewer/components/prd-tree/types.ts",
       "type": "type",
       "symbols": [
-        "PRDDocumentData"
+        "PRDDocumentData",
+        "ItemStatus"
       ]
     },
     {
@@ -20089,14 +22316,6 @@
       "type": "static",
       "symbols": [
         "PRDTree"
-      ]
-    },
-    {
-      "from": "packages/web/tests/unit/viewer/progressive-loading-integration.test.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/progressive-loader.ts",
-      "type": "static",
-      "symbols": [
-        "PROGRESSIVE_THRESHOLD"
       ]
     },
     {
@@ -20649,6 +22868,64 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItemData",
+        "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
+      "type": "static",
+      "symbols": [
+        "flattenVisibleTree",
+        "computeVisibleRange",
+        "findFlatNodeIndex",
+        "DEFAULT_ITEM_HEIGHT",
+        "DEFAULT_BUFFER_COUNT"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
+      "type": "type",
+      "symbols": [
+        "FlatNode"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/zone-drill-down.test.ts",
+      "to": "packages/web/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/zone-drill-down.test.ts",
+      "to": "packages/web/src/viewer/views/zone-types.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneData",
+        "FlowEdge",
+        "ZoneBreadcrumb"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/zone-drill-down.test.ts",
+      "to": "packages/web/src/viewer/views/zones.ts",
+      "type": "static",
+      "symbols": [
+        "convertSubZones",
+        "convertCrossings",
+        "ZoneBreadcrumbNav"
+      ]
+    },
+    {
       "from": "tests/unit/help.test.js",
       "to": "help.js",
       "type": "static",
@@ -20779,6 +23056,7 @@
         "packages/sourcevision/src/util/sort.ts",
         "packages/sourcevision/tests/integration/claude-config.test.ts",
         "packages/sourcevision/tests/unit/analyzers/classify.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/enrich-content-skip.test.ts",
         "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts",
         "packages/web/src/server/routes-hench.ts",
@@ -20960,6 +23238,7 @@
         "packages/web/src/viewer/components/prd-tree/delete-confirmation.ts",
         "packages/web/src/viewer/components/prd-tree/execution-panel.ts",
         "packages/web/src/viewer/components/prd-tree/inline-add-form.ts",
+        "packages/web/src/viewer/components/prd-tree/inline-status-picker.ts",
         "packages/web/src/viewer/components/prd-tree/lazy-children.ts",
         "packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts",
         "packages/web/src/viewer/components/prd-tree/merge-preview.ts",
@@ -20968,10 +23247,12 @@
         "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
         "packages/web/src/viewer/components/prd-tree/prune-confirmation.ts",
         "packages/web/src/viewer/components/prd-tree/prune-diff-tree.ts",
+        "packages/web/src/viewer/components/prd-tree/reorganize-panel.ts",
         "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
         "packages/web/src/viewer/components/prd-tree/status-filter.ts",
         "packages/web/src/viewer/components/prd-tree/task-detail.ts",
         "packages/web/src/viewer/components/prd-tree/tree-event-delegate.ts",
+        "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
         "packages/web/src/viewer/components/refresh-queue-status.ts",
         "packages/web/src/viewer/components/rex-task-link.ts",
         "packages/web/src/viewer/components/search-filter.ts",
@@ -20981,6 +23262,7 @@
         "packages/web/src/viewer/components/theme-toggle.ts",
         "packages/web/src/viewer/components/throttle-controls.ts",
         "packages/web/src/viewer/components/ws-health-panel.ts",
+        "packages/web/src/viewer/components/zone-slideout.ts",
         "packages/web/src/viewer/hooks/use-app-data.ts",
         "packages/web/src/viewer/hooks/use-crash-recovery.ts",
         "packages/web/src/viewer/hooks/use-dom-performance-monitor.ts",
@@ -20988,6 +23270,7 @@
         "packages/web/src/viewer/hooks/use-graceful-degradation.ts",
         "packages/web/src/viewer/hooks/use-memory-monitor.ts",
         "packages/web/src/viewer/hooks/use-pan-zoom.ts",
+        "packages/web/src/viewer/hooks/use-persistent-filter.ts",
         "packages/web/src/viewer/hooks/use-polling-suspension.ts",
         "packages/web/src/viewer/hooks/use-polling.ts",
         "packages/web/src/viewer/hooks/use-prd-actions.ts",
@@ -21042,6 +23325,7 @@
         "packages/web/tests/unit/viewer/lazy-children.test.ts",
         "packages/web/tests/unit/viewer/memory-warning.test.ts",
         "packages/web/tests/unit/viewer/node-culling-integration.test.ts",
+        "packages/web/tests/unit/viewer/persistent-filter.test.ts",
         "packages/web/tests/unit/viewer/polling-suspension-indicator.test.ts",
         "packages/web/tests/unit/viewer/pr-markdown.test.ts",
         "packages/web/tests/unit/viewer/prd-tree.test.ts",
@@ -21059,7 +23343,8 @@
         "packages/web/tests/unit/viewer/token-usage-nav.test.ts",
         "packages/web/tests/unit/viewer/tree-event-delegate.test.ts",
         "packages/web/tests/unit/viewer/tree-view.test.ts",
-        "packages/web/tests/unit/viewer/use-polling-suspension.test.ts"
+        "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
+        "packages/web/tests/unit/viewer/zone-drill-down.test.ts"
       ],
       "symbols": [
         "Component",
@@ -21114,9 +23399,12 @@
       ],
       "symbols": [
         "*",
+        "ApplyResult",
         "CHILD_LEVEL",
         "CommandExecutor",
         "EpicStats",
+        "HealthDimensions",
+        "HealthOptions",
         "ItemLevel",
         "ItemStatus",
         "LEVEL_HIERARCHY",
@@ -21129,10 +23417,18 @@
         "PRIORITY_ORDER",
         "Priority",
         "PriorityDistribution",
+        "ReorganizationPlan",
+        "ReorganizationProposal",
         "Requirement",
         "RequirementCategory",
         "RequirementValidationType",
         "RequirementsSummary",
+        "ReshapeAction",
+        "ReshapeProposal",
+        "ReshapeReasonOptions",
+        "ReshapeReasonResult",
+        "ReshapeResult",
+        "StructureHealthScore",
         "TreeEntry",
         "TreeStats",
         "VALID_LEVELS",
@@ -21141,10 +23437,13 @@
         "VALID_STATUSES",
         "VALID_VALIDATION_TYPES",
         "acknowledgeFinding",
+        "applyProposals",
+        "applyReshape",
         "collectAllIds",
         "collectCompletedIds",
         "collectRequirements",
         "computeEpicStats",
+        "computeHealthScore",
         "computePriorityDistribution",
         "computeRequirementsSummary",
         "computeStats",
@@ -21152,22 +23451,31 @@
         "countSubtree",
         "createRexMcpServer",
         "createStore",
+        "detectReorganizations",
         "findActionableTasks",
         "findAutoCompletions",
         "findItem",
         "findNextTask",
         "findPrunableItems",
+        "formatApplyResult",
+        "formatHealthScore",
         "formatRequirementsValidation",
+        "formatReshapeProposal",
+        "getLevelLabel",
         "insertChild",
+        "isContainerLevel",
         "isFullyCompleted",
         "isItemLevel",
         "isPriority",
         "isRequirementCategory",
+        "isRootLevel",
         "isValidationType",
+        "isWorkItem",
         "loadAcknowledged",
         "mergeItems",
         "previewMerge",
         "pruneItems",
+        "reasonForReshape",
         "removeFromTree",
         "resolveStore",
         "saveAcknowledged",
@@ -21317,9 +23625,17 @@
         "packages/rex/tests/integration/smart-add-duplicate-outcomes.test.ts",
         "packages/rex/tests/integration/store-roundtrip.test.ts",
         "packages/rex/tests/unit/analyze/acknowledge.test.ts",
+        "packages/rex/tests/unit/analyze/consolidation-guard.test.ts",
+        "packages/rex/tests/unit/analyze/decompose.test.ts",
         "packages/rex/tests/unit/analyze/dedupe.test.ts",
         "packages/rex/tests/unit/analyze/diff.test.ts",
+        "packages/rex/tests/unit/analyze/extract-llm-mock.test.ts",
+        "packages/rex/tests/unit/analyze/extract-llm.test.ts",
+        "packages/rex/tests/unit/analyze/extract-text.test.ts",
+        "packages/rex/tests/unit/analyze/extract.test.ts",
+        "packages/rex/tests/unit/analyze/file-validation.test.ts",
         "packages/rex/tests/unit/analyze/guided.test.ts",
+        "packages/rex/tests/unit/analyze/loe-proposal-schema.test.ts",
         "packages/rex/tests/unit/analyze/modify-reason.test.ts",
         "packages/rex/tests/unit/analyze/propose.test.ts",
         "packages/rex/tests/unit/analyze/reason-assessment.test.ts",
@@ -21337,7 +23653,10 @@
         "packages/rex/tests/unit/cli/commands/add.test.ts",
         "packages/rex/tests/unit/cli/commands/analyze-guided.test.ts",
         "packages/rex/tests/unit/cli/commands/chunked-review.test.ts",
+        "packages/rex/tests/unit/cli/commands/decomposition-review.test.ts",
         "packages/rex/tests/unit/cli/commands/fix.test.ts",
+        "packages/rex/tests/unit/cli/commands/format-loe.test.ts",
+        "packages/rex/tests/unit/cli/commands/loe-display.test.ts",
         "packages/rex/tests/unit/cli/commands/move.test.ts",
         "packages/rex/tests/unit/cli/commands/recommend.test.ts",
         "packages/rex/tests/unit/cli/commands/remove.test.ts",
@@ -21362,8 +23681,10 @@
         "packages/rex/tests/unit/core/dag.test.ts",
         "packages/rex/tests/unit/core/epic-correlation.test.ts",
         "packages/rex/tests/unit/core/epicless.test.ts",
+        "packages/rex/tests/unit/core/facets.test.ts",
         "packages/rex/tests/unit/core/feature-filtered-task.test.ts",
         "packages/rex/tests/unit/core/fix.test.ts",
+        "packages/rex/tests/unit/core/health.test.ts",
         "packages/rex/tests/unit/core/keywords.test.ts",
         "packages/rex/tests/unit/core/merge.test.ts",
         "packages/rex/tests/unit/core/move.test.ts",
@@ -21377,6 +23698,8 @@
         "packages/rex/tests/unit/core/remove-epic.test.ts",
         "packages/rex/tests/unit/core/remove-feature.test.ts",
         "packages/rex/tests/unit/core/remove-task.test.ts",
+        "packages/rex/tests/unit/core/reorganize-executor.test.ts",
+        "packages/rex/tests/unit/core/reorganize.test.ts",
         "packages/rex/tests/unit/core/requirements-prioritization.test.ts",
         "packages/rex/tests/unit/core/requirements.test.ts",
         "packages/rex/tests/unit/core/structural.test.ts",
@@ -21418,13 +23741,17 @@
         "packages/sourcevision/tests/unit/analyzers/completion-reader.test.ts",
         "packages/sourcevision/tests/unit/analyzers/components.test.ts",
         "packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/enrich-content-skip.test.ts",
         "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/hints.test.ts",
         "packages/sourcevision/tests/unit/analyzers/imports.test.ts",
         "packages/sourcevision/tests/unit/analyzers/inventory.test.ts",
         "packages/sourcevision/tests/unit/analyzers/manifest.test.ts",
         "packages/sourcevision/tests/unit/analyzers/next-steps.test.ts",
         "packages/sourcevision/tests/unit/analyzers/risk-scoring.test.ts",
         "packages/sourcevision/tests/unit/analyzers/token-usage.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/workspace-aggregate.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/workspace-crossings.test.ts",
         "packages/sourcevision/tests/unit/analyzers/workspace.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts",
@@ -21441,6 +23768,7 @@
         "packages/sourcevision/tests/unit/cli/output.test.ts",
         "packages/sourcevision/tests/unit/cli/pr-markdown.test.ts",
         "packages/sourcevision/tests/unit/cli/prd-epic-resolver.test.ts",
+        "packages/sourcevision/tests/unit/cli/workspace.test.ts",
         "packages/sourcevision/tests/unit/export/pdf-report.test.ts",
         "packages/sourcevision/tests/unit/generators/pr-markdown-template.test.ts",
         "packages/sourcevision/tests/unit/schema/data-files.test.ts",
@@ -21512,6 +23840,7 @@
         "packages/web/tests/unit/viewer/execution-panel-dedup.test.ts",
         "packages/web/tests/unit/viewer/execution-panel-polling.test.ts",
         "packages/web/tests/unit/viewer/favicon.test.ts",
+        "packages/web/tests/unit/viewer/flow-data-builders.test.ts",
         "packages/web/tests/unit/viewer/flow-diagram.test.ts",
         "packages/web/tests/unit/viewer/graceful-degradation.test.ts",
         "packages/web/tests/unit/viewer/graph-destroy.test.ts",
@@ -21531,6 +23860,7 @@
         "packages/web/tests/unit/viewer/message-throttle.test.ts",
         "packages/web/tests/unit/viewer/node-culler.test.ts",
         "packages/web/tests/unit/viewer/node-culling-integration.test.ts",
+        "packages/web/tests/unit/viewer/persistent-filter.test.ts",
         "packages/web/tests/unit/viewer/polling-manager.test.ts",
         "packages/web/tests/unit/viewer/polling-state.test.ts",
         "packages/web/tests/unit/viewer/polling-suspension-indicator.test.ts",
@@ -21565,6 +23895,8 @@
         "packages/web/tests/unit/viewer/update-batcher.test.ts",
         "packages/web/tests/unit/viewer/usage-polling.test.ts",
         "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
+        "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
+        "packages/web/tests/unit/viewer/zone-drill-down.test.ts",
         "packages/web/vitest.config.ts",
         "tests/e2e/architecture-policy.test.js",
         "tests/e2e/cli-ci.test.js",
@@ -21599,6 +23931,8 @@
       "package": "zod",
       "importedBy": [
         "packages/hench/src/schema/validate.ts",
+        "packages/rex/src/analyze/decompose.ts",
+        "packages/rex/src/analyze/extract.ts",
         "packages/rex/src/analyze/guided.ts",
         "packages/rex/src/analyze/reason.ts",
         "packages/rex/src/analyze/reshape-reason.ts",
@@ -21615,33 +23949,69 @@
     }
   ],
   "summary": {
-    "totalEdges": 2240,
+    "totalEdges": 2475,
     "totalExternal": 18,
-    "circularCount": 0,
-    "circulars": [],
+    "circularCount": 5,
+    "circulars": [
+      {
+        "cycle": [
+          "packages/rex/src/analyze/reason.ts",
+          "packages/rex/src/analyze/extract.ts"
+        ]
+      },
+      {
+        "cycle": [
+          "packages/rex/src/analyze/reason.ts",
+          "packages/rex/src/analyze/extract.ts"
+        ]
+      },
+      {
+        "cycle": [
+          "packages/rex/src/analyze/reason.ts",
+          "packages/rex/src/analyze/extract.ts",
+          "packages/rex/src/analyze/file-validation.ts"
+        ]
+      },
+      {
+        "cycle": [
+          "packages/sourcevision/src/analyzers/enrich.ts",
+          "packages/sourcevision/src/analyzers/zones.ts"
+        ]
+      },
+      {
+        "cycle": [
+          "packages/sourcevision/src/analyzers/enrich.ts",
+          "packages/sourcevision/src/analyzers/zones.ts"
+        ]
+      }
+    ],
     "mostImported": [
       {
         "path": "packages/rex/src/core/tree.ts",
-        "count": 41
-      },
-      {
-        "path": "packages/rex/src/store/index.ts",
-        "count": 28
-      },
-      {
-        "path": "packages/rex/src/cli/commands/constants.ts",
-        "count": 25
-      },
-      {
-        "path": "packages/rex/src/cli/errors.ts",
-        "count": 25
-      },
-      {
-        "path": "packages/rex/src/cli/output.ts",
-        "count": 24
+        "count": 48
       },
       {
         "path": "packages/rex/src/schema/index.ts",
+        "count": 42
+      },
+      {
+        "path": "packages/rex/src/store/index.ts",
+        "count": 30
+      },
+      {
+        "path": "packages/rex/src/cli/commands/constants.ts",
+        "count": 28
+      },
+      {
+        "path": "packages/rex/src/cli/output.ts",
+        "count": 27
+      },
+      {
+        "path": "packages/rex/src/cli/errors.ts",
+        "count": 26
+      },
+      {
+        "path": "packages/rex/src/analyze/reason.ts",
         "count": 24
       },
       {
@@ -21657,10 +24027,6 @@
         "count": 19
       },
       {
-        "path": "packages/rex/src/analyze/reason.ts",
-        "count": 16
-      },
-      {
         "path": "packages/rex/src/core/canonical.ts",
         "count": 16
       },
@@ -21670,7 +24036,7 @@
       },
       {
         "path": "packages/sourcevision/src/cli/output.ts",
-        "count": 13
+        "count": 14
       },
       {
         "path": "packages/web/src/server/routes-hench.ts",
@@ -21681,7 +24047,15 @@
         "count": 12
       },
       {
+        "path": "packages/sourcevision/src/util/sort.ts",
+        "count": 12
+      },
+      {
         "path": "packages/web/src/viewer/polling/polling-manager.ts",
+        "count": 12
+      },
+      {
+        "path": "packages/web/src/viewer/visualization/index.ts",
         "count": 12
       },
       {
@@ -21689,18 +24063,10 @@
         "count": 11
       },
       {
-        "path": "packages/sourcevision/src/util/sort.ts",
-        "count": 11
-      },
-      {
-        "path": "packages/web/src/viewer/performance/memory-monitor.ts",
-        "count": 11
-      },
-      {
-        "path": "packages/web/src/viewer/visualization/index.ts",
+        "path": "packages/sourcevision/src/analyzers/claude-client.ts",
         "count": 11
       }
     ],
-    "avgImportsPerFile": 3.3
+    "avgImportsPerFile": 3.41
   }
 }

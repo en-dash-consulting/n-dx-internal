@@ -1,19 +1,22 @@
 {
   "id": "web-3",
   "name": "Web 3",
-  "description": "4 files, primarily TypeScript",
+  "description": "3 files, primarily Other, HTML",
   "files": [
-    "packages/web/src/server/incremental-task-usage.ts",
-    "packages/web/src/server/usage-cleanup-scheduler.ts",
-    "packages/web/tests/unit/server/incremental-task-usage.test.ts",
-    "packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts"
+    "packages/web/src/viewer/darkmode_logo.png",
+    "packages/web/src/viewer/index.html",
+    "packages/web/src/viewer/lightmode_logo.png"
   ],
-  "entryPoints": [
-    "packages/web/src/server/incremental-task-usage.ts",
-    "packages/web/src/server/usage-cleanup-scheduler.ts"
-  ],
-  "cohesion": 0.63,
-  "coupling": 0.38,
-  "fileCount": 4,
-  "lineCount": 1560
+  "entryPoints": [],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 3,
+  "lineCount": 21,
+  "riskMetrics": {
+    "cohesion": 1,
+    "coupling": 0,
+    "riskScore": 0,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
 }

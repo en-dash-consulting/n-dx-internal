@@ -1,0 +1,24 @@
+{
+  "id": "web-integration",
+  "name": "Web Integration",
+  "description": "3 files, primarily TypeScript",
+  "files": [
+    "packages/web/src/viewer/messaging/call-rate-limiter.ts",
+    "packages/web/tests/integration/request-dedup.test.ts",
+    "packages/web/tests/unit/viewer/call-rate-limiter.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/messaging/call-rate-limiter.ts"
+  ],
+  "cohesion": 0.67,
+  "coupling": 0.33,
+  "fileCount": 3,
+  "lineCount": 1187,
+  "riskMetrics": {
+    "cohesion": 0.67,
+    "coupling": 0.33,
+    "riskScore": 0.32999999999999996,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

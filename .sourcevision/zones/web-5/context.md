@@ -5,49 +5,53 @@
 <zone>
 
 Zone: Web 5 (`web-5`)
-Files: 3, Cohesion: 0.50, Coupling: 0.50
-Description: 3 files, primarily TypeScript
-Entry points: packages/web/src/viewer/batched-tick-dispatcher.ts
-Lines: 1504
+Files: 5, Cohesion: 0.45, Coupling: 0.55
+Risk: healthy (score: 0.55)
+Description: 4 files, primarily TypeScript
+Entry points: packages/web/src/viewer/messaging/message-coalescer.ts, packages/web/src/viewer/messaging/message-throttle.ts
+Lines: 1536
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/batched-tick-dispatcher.ts (TypeScript, 240 lines, source)
-packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts (TypeScript, 655 lines, test)
-packages/web/tests/unit/viewer/tick-visibility-gate.test.ts (TypeScript, 609 lines, test)
+packages/web/src/viewer/messaging/.gitkeep (Other, 0 lines, other)
+packages/web/src/viewer/messaging/message-coalescer.ts (TypeScript, 194 lines, source)
+packages/web/src/viewer/messaging/message-throttle.ts (TypeScript, 230 lines, source)
+packages/web/tests/unit/viewer/message-coalescer.test.ts (TypeScript, 534 lines, test)
+packages/web/tests/unit/viewer/message-throttle.test.ts (TypeScript, 578 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts → packages/web/src/viewer/batched-tick-dispatcher.ts {registerTickUpdater, getBatchedTickDispatcherState, flushBatchedTicks, resetBatchedTickDispatcher}
-  packages/web/tests/unit/viewer/tick-visibility-gate.test.ts → packages/web/src/viewer/batched-tick-dispatcher.ts {resetBatchedTickDispatcher, registerTickUpdater, getBatchedTickDispatcherState}
-
-Outgoing (this zone → other zones):
-  → web-20: packages/web/tests/unit/viewer/tick-visibility-gate.test.ts → packages/web/src/viewer/tab-visibility.ts; packages/web/tests/unit/viewer/tick-visibility-gate.test.ts → packages/web/src/viewer/tick-visibility-gate.ts; packages/web/tests/unit/viewer/tick-visibility-gate.test.ts → packages/web/src/viewer/tick-visibility-gate.ts
-  → web-28: packages/web/src/viewer/batched-tick-dispatcher.ts → packages/web/src/viewer/tick-timer.ts; packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts → packages/web/src/viewer/tick-timer.ts; packages/web/tests/unit/viewer/tick-visibility-gate.test.ts → packages/web/src/viewer/tick-timer.ts
+  packages/web/src/viewer/messaging/message-throttle.ts → packages/web/src/viewer/messaging/message-coalescer.ts {ParsedWSMessage}
+  packages/web/tests/unit/viewer/message-coalescer.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer}
+  packages/web/tests/unit/viewer/message-coalescer.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {MessageCoalescer, CoalescedBatch, ParsedWSMessage}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {ParsedWSMessage}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {MessageThrottle, ThrottledHandlerConfig}
 
 Incoming (other zones → this zone):
-  ← web-15: packages/web/src/viewer/hooks/use-tick.ts → packages/web/src/viewer/batched-tick-dispatcher.ts
+  ← web-integration: packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/message-throttle.ts
+  ← web-viewer: packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/message-throttle.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/message-throttle.ts
 
 </imports>
 
 <insights>
 
-- Small, focused zone handling specific event timing and batching concerns
-- Visibility gating suggests sophisticated UI performance optimizations
-- Balanced metrics appropriate for a specialized utility zone
-- Compact zone with balanced metrics (0.5/0.5) demonstrates focused responsibility for event coordination
-- Visibility gating integration shows advanced UI performance optimization strategies
-- Forms performance optimization layer alongside message-flow-control for viewer-side efficiency
-- Clean client-side boundary focused on event timing without server concerns shows good separation
-- Missing implementation file for tick-visibility-gate despite having test coverage suggests incomplete zone
-- Test file 'tick-visibility-gate.test.ts' exists without corresponding implementation file - either test is misplaced or implementation is missing
-- Test-implementation mismatch: tick-visibility-gate.test.ts exists without corresponding implementation file, indicating incomplete feature or misplaced test
-- Resolve test-implementation mismatch: either create tick-visibility-gate.ts implementation or move test to appropriate zone with existing implementation
-- [call graph] 145 internal calls, 57 outgoing, 1 incoming (cohesion: 0.72, coupling: 0.28)
+- The two utilities serve distinct but complementary roles — coalescing collapses redundant messages, throttling enforces timing intervals — they pair naturally and are rightly co-located
+- A .gitkeep file in the messaging directory is included as a zone member, artificially inflating the file count and slightly depressing cohesion
+- web-viewer's 4 inbound imports make this the most-consumed messaging zone, confirming it is the core flow-control layer
+- Cohesion of 0.45 with coupling of 0.55 approaches warning thresholds; the presence of a .gitkeep file as a zone member skews metrics — removing it would improve calculated cohesion.
+- The coalescer and throttle utilities together form a natural 'message pipeline' abstraction; a thin façade module exporting both would make web-viewer's 4 direct imports easier to maintain.
+- web-viewer's 4 direct imports into this zone combined with web-integration's 2 imports create a fan-in pattern where both the production hub and the integration layer independently couple to these primitives — a sign that the intended abstraction boundary was never fully closed.
+- Dual consumption by both web-viewer (4 imports) and web-integration (2 imports) without a shared facade means changes to message-coalescer or message-throttle require verifying compatibility in two independent consumers.
+- The four messaging utilities (message-coalescer, message-throttle, call-rate-limiter, request-dedup) share an identical factory-pattern shape: each exports a createX factory function, a Config interface, and a Runtime interface. This uniform API structure makes a barrel index module trivially wrappable — the facade is architecturally sound not just as a coupling fix but because the pattern is already there.
+- The messaging directory contains four related utilities and a .gitkeep but no index.ts barrel export. Consumers must know all four internal module names. The uniform factory-pattern API across all four files makes an index module a straightforward addition that would collapse web-viewer's 7 cross-zone imports to 1.
+- The .gitkeep file is the only non-source, non-test zone member across all five analyzed zones — its inclusion is anomalous and uniquely actionable: deleting it is a zero-risk one-line change that immediately raises the cohesion score and removes the only semantically empty zone member in the entire analyzed set.
+- Delete packages/web/src/viewer/messaging/.gitkeep. The messaging directory already contains four source files — the placeholder serves no purpose and its zone membership artificially depresses cohesion metrics.
+- [call graph] 150 internal calls, 0 outgoing, 6 incoming (cohesion: 1, coupling: 0)
 
 </insights>

@@ -7,7 +7,7 @@
 Zone: Analyzers (`tests/analyzers`)
 Files: 56, Cohesion: 0.98, Coupling: 0.02
 Description: 56 files, primarily TypeScript
-Entry points: src/schema/v1.ts, src/analyzers/components.ts, src/analyzers/imports.ts, src/analyzers/inventory.ts, src/analyzers/zones.ts
+Entry points: src/analyzers/components.ts, src/analyzers/imports.ts, src/analyzers/inventory.ts, src/analyzers/zones.ts, src/schema/v1.ts
 Lines: 0
 
 </zone>

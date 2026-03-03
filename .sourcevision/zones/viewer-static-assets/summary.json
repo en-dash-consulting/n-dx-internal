@@ -1,0 +1,22 @@
+{
+  "id": "viewer-static-assets",
+  "name": "Viewer Static Assets",
+  "description": "Static resource zone for the viewer entry point — the HTML shell and light/dark mode logo images with no code dependencies.",
+  "files": [
+    "packages/web/src/viewer/darkmode_logo.png",
+    "packages/web/src/viewer/index.html",
+    "packages/web/src/viewer/lightmode_logo.png"
+  ],
+  "entryPoints": [],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 3,
+  "lineCount": 21,
+  "riskMetrics": {
+    "cohesion": 1,
+    "coupling": 0,
+    "riskScore": 0,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

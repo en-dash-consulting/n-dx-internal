@@ -1,0 +1,29 @@
+{
+  "id": "web-package-build-infrastructure",
+  "name": "Web Package Build Infrastructure",
+  "description": "Build tooling, package metadata, and configuration files for the @n-dx/web package, forming the build contract shell separate from the application source code.",
+  "files": [
+    "packages/web/BROWSER_ERROR_CODE_5.md",
+    "packages/web/MEMORY_PROFILE.md",
+    "packages/web/SourceVision-F.png",
+    "packages/web/SourceVision.png",
+    "packages/web/build.js",
+    "packages/web/dev.js",
+    "packages/web/package.json",
+    "packages/web/tests/e2e/.gitkeep",
+    "packages/web/tsconfig.json",
+    "packages/web/vitest.config.ts"
+  ],
+  "entryPoints": [],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 10,
+  "lineCount": 1544,
+  "riskMetrics": {
+    "cohesion": 1,
+    "coupling": 0,
+    "riskScore": 0,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

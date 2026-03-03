@@ -5,48 +5,45 @@
 <zone>
 
 Zone: Web 4 (`web-4`)
-Files: 5, Cohesion: 0.50, Coupling: 0.50
-Description: 5 files, primarily TypeScript
-Entry points: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts
-Lines: 1477
+Files: 3, Cohesion: 0.75, Coupling: 0.25
+Risk: healthy (score: 0.25)
+Description: 3 files, primarily TypeScript
+Lines: 1691
 
 </zone>
 
 <files>
 
-packages/web/src/server/websocket.ts (TypeScript, 370 lines, source)
-packages/web/src/server/ws-health-tracker.ts (TypeScript, 275 lines, source)
-packages/web/tests/unit/server/websocket.test.ts (TypeScript, 454 lines, test)
-packages/web/tests/unit/server/ws-health-integration.test.ts (TypeScript, 154 lines, test)
-packages/web/tests/unit/server/ws-health-tracker.test.ts (TypeScript, 224 lines, test)
+packages/web/src/viewer/hooks/use-dom-performance-monitor.ts (TypeScript, 175 lines, source)
+packages/web/src/viewer/performance/dom-performance-monitor.ts (TypeScript, 505 lines, source)
+packages/web/tests/unit/viewer/dom-performance-monitor.test.ts (TypeScript, 1011 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/src/server/websocket.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker, CleanupReason}
-  packages/web/tests/unit/server/websocket.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager, PING_INTERVAL_MS}
-  packages/web/tests/unit/server/ws-health-integration.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager}
-  packages/web/tests/unit/server/ws-health-integration.test.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
-  packages/web/tests/unit/server/ws-health-tracker.test.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
+  packages/web/src/viewer/hooks/use-dom-performance-monitor.ts → packages/web/src/viewer/performance/dom-performance-monitor.ts {startDOMPerformanceMonitor, stopDOMPerformanceMonitor, onDOMSnapshot, getLatestDOMSnapshot, getDOMSnapshotHistory, getRenderTimings, getUpdateComparisons, recordRender, recordUpdate, measureOperation, computeSummary, resetDOMPerformanceMonitor, countDOMNodes, readHeapUsage}
+  packages/web/src/viewer/hooks/use-dom-performance-monitor.ts → packages/web/src/viewer/performance/dom-performance-monitor.ts {DOMNodeSnapshot, DOMPerformanceConfig, RenderTiming, UpdateComparison, PerformanceSummary}
+  packages/web/tests/unit/viewer/dom-performance-monitor.test.ts → packages/web/src/viewer/performance/dom-performance-monitor.ts {countDOMNodes, readHeapUsage, formatDuration, formatNodeCount, formatDelta, recordRender, recordUpdate, measureOperation, takeDOMSnapshot, computeSummary, startDOMPerformanceMonitor, stopDOMPerformanceMonitor, onDOMSnapshot, getLatestDOMSnapshot, getDOMSnapshotHistory, getRenderTimings, getUpdateComparisons, setObservedContainer, getObservedContainer, resetDOMPerformanceMonitor}
+  packages/web/tests/unit/viewer/dom-performance-monitor.test.ts → packages/web/src/viewer/performance/dom-performance-monitor.ts {DOMNodeSnapshot, RenderTiming, UpdateComparison, PerformanceSummary}
 
-Incoming (other zones → this zone):
-  ← web: packages/web/src/public.ts → packages/web/src/server/websocket.ts; packages/web/src/server/index.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-hench.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-rex.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/ws-health-tracker.ts
+Outgoing (this zone → other zones):
+  → web-viewer: packages/web/src/viewer/performance/dom-performance-monitor.ts → packages/web/src/viewer/polling/polling-state.ts
 
 </imports>
 
 <insights>
 
-- Balanced cohesion and coupling indicate appropriate scope for WebSocket functionality
-- Health tracking component shows mature approach to connection reliability
-- Clear separation between core WebSocket logic and health monitoring concerns
-- Balanced metrics (0.5 cohesion, 0.5 coupling) suggest appropriately scoped real-time communication zone
-- Dedicated health tracking component indicates robust approach to connection reliability
-- Implements service+health-tracker pattern consistent with usage-analytics zone architecture
-- Service+health-tracking pattern provides robust foundation for real-time communication
-- Health tracking file naming follows abbreviation convention (ws-health-tracker.ts) while main service uses full name (websocket.ts) - inconsistent verbosity within zone
-- Standardize file naming verbosity: either websocket.ts + websocket-health-tracker.ts OR ws.ts + ws-health-tracker.ts
-- [call graph] 71 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
+- The hook/utility/test trio is textbook separation of concerns — the utility owns measurement, the hook owns React lifecycle integration
+- Zero coupling outward (0.25) makes this easy to test and replace without affecting consumers
+- No declared entry point suggests this is consumed only via the hook layer in web-viewer, which is the right dependency direction
+- High cohesion (0.75) and low coupling (0.25) make this one of the cleanest zones in the viewer — a model for how to structure hook+utility pairs.
+- Alongside cli-e2e-test-suite, this zone is one of two reference-quality boundaries in the codebase — perfect cohesion, zero circular involvement, no role in any cross-zone coupling hotspot. It demonstrates the target state for all hook+utility+test triads.
+- Zero involvement in any circular dependency chain and no inbound imports from cross-zone hotspots make this zone a structural reference point for the intended zone design.
+- Zone name 'dom-performance-monitoring' uses a different prefix pattern than all three sibling viewer zones ('viewer-call-rate-limiter', 'viewer-message-flow-control', 'viewer-request-deduplication') — a naming inconsistency in the zone taxonomy since all four originate from packages/web/src/viewer/.
+- All three source files use the stem 'dom-performance-monitor' (no trailing 'ing') while the zone is named 'dom-performance-monitoring' — the zone name does not match the file naming convention it contains.
+- Zone name 'dom-performance-monitoring' diverges from both its own file stems ('dom-performance-monitor.*') and the 'viewer-' prefix convention used by every other viewer zone. Renaming to 'viewer-dom-performance-monitor' would unify the naming scheme across all viewer zones.
+- [call graph] 248 internal calls, 1 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

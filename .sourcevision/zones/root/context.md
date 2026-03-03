@@ -5,18 +5,32 @@
 <zone>
 
 Zone: Root (`root`)
-Files: 12, Cohesion: 1.00, Coupling: 0.00
-Description: 12 files, primarily JavaScript
-Lines: 4472
+Files: 27, Cohesion: 1.00, Coupling: 0.00
+Risk: healthy (score: 0.00)
+Description: 27 files, primarily JavaScript, Markdown, Other
+Lines: 8932
 
 </zone>
 
 <files>
 
+.gitignore (Other, 12 lines, config)
+.npmrc (Other, 2 lines, config)
+CLAUDE.md (Markdown, 207 lines, docs)
+CODEX.md (Markdown, 276 lines, docs)
+PACKAGE_GUIDELINES.md (Markdown, 177 lines, docs)
+README.md (Markdown, 355 lines, docs)
+bitbucket-pipelines.yml (YAML, 27 lines, other)
 ci.js (JavaScript, 269 lines, source)
 cli.js (JavaScript, 840 lines, source)
-config.js (JavaScript, 1013 lines, source)
+config.js (JavaScript, 1021 lines, source)
 help.js (JavaScript, 899 lines, source)
+n-dx.png (Other, 0 lines, asset)
+package.json (JSON, 29 lines, config)
+pnpm-lock.yaml (YAML, 2976 lines, generated)
+pnpm-workspace.yaml (YAML, 2 lines, other)
+pr-check.js (JavaScript, 202 lines, source)
+prd.md (Markdown, 164 lines, docs)
 refresh-artifacts.js (JavaScript, 54 lines, source)
 refresh-plan.js (JavaScript, 79 lines, source)
 refresh-validate.js (JavaScript, 175 lines, source)
@@ -24,7 +38,9 @@ tests/unit/help.test.js (JavaScript, 253 lines, test)
 tests/unit/refresh-artifacts.test.js (JavaScript, 32 lines, test)
 tests/unit/refresh-plan.test.js (JavaScript, 69 lines, test)
 tests/unit/refresh-validate.test.js (JavaScript, 335 lines, test)
-web.js (JavaScript, 454 lines, source)
+tsconfig.base.json (JSON, 14 lines, config)
+vitest.config.js (JavaScript, 5 lines, config)
+web.js (JavaScript, 458 lines, source)
 
 </files>
 
@@ -54,14 +70,18 @@ Internal:
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Perfect isolation with maximum cohesion (1.0) and zero coupling demonstrates clean orchestration architecture
-- Entry point files (ci.js, cli.js, config.js) provide clear separation of concerns for different operational contexts
-- Small zone size (12 files) indicates focused responsibility without scope creep
-- Exemplary architectural boundary with perfect cohesion and zero coupling, serving as a model for other zones
-- Serves as architectural boundary example with zero external coupling while maintaining perfect internal cohesion
-- Demonstrates ideal zone isolation pattern with no cross-zone dependencies, serving as architectural template
-- Refresh script naming pattern (refresh-artifacts.js, refresh-plan.js, refresh-validate.js) suggests manual operation triggers that could benefit from automation or consolidation
-- Multiple refresh-* scripts suggest manual operations that could be consolidated into a single parameterized refresh command
-- [call graph] 386 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- Contains multiple explicit entry scripts (ci.js, cli.js, web.js, config.js) that form the CLI surface — keeping these thin and delegating to package APIs is the right pattern
+- 27 files with cohesion 1.0 and zero coupling confirms the root tier correctly acts as an orchestration boundary with no upstream dependencies
+- CLAUDE.md and CODEX.md co-existing at root level indicates AI-assisted development is a first-class workflow, which aligns with the four-tier dependency model
+- Perfect cohesion (1.0) and zero coupling confirm the root layer correctly enforces the orchestration boundary — no leakage into domain packages.
+- Multiple top-level entry scripts (ci.js, cli.js, web.js, config.js) provide clean separation of orchestration concerns without bundling them into a single monolithic entry point.
+- The 27-file root zone mixes package metadata, CI config, and developer docs — non-executable files like CODEX.md could move to docs/ to reduce root clutter, though this is a low-priority cosmetic concern.
+- cli.js statically imports ci.js, web.js, and other root scripts — meaning the orchestration layer IS traversed by the import graph, but since all root scripts land in the same zone these cross-file dependencies are intra-zone and do not surface as cross-zone coupling.
+- The confirmed use of child_process.spawn by root scripts (ci.js, cli.js, web.js) explains their zero cross-zone coupling: process-boundary delegation is invisible to static import analysis, making subprocess spawning the actual enforcement mechanism for the orchestration boundary.
+- Root entry scripts delegate to package CLIs via child_process.spawn rather than library imports, making the orchestration boundary a process-isolation contract that static analysis cannot verify — delegation correctness depends entirely on the spawned CLI commands being kept in sync with package APIs.
+- cli.js statically importing ci.js, web.js, and config.js means requiring cli.js also loads all orchestration siblings — any top-level initialization code, environment assertions, or I/O in those sibling files executes eagerly on every CLI invocation regardless of the subcommand, potentially causing unexpected side effects or slow startup times.
+- The four-tier dependency hierarchy is documented in CLAUDE.md but has no automated enforcement mechanism (no ESLint boundary rules, no dependency-cruiser configuration, no CI gate on cross-layer imports) — the boundary is maintained solely by the gateway pattern and code review, making it fragile to one-off violations that bypass the gateway without automated rejection.
+- cli.js uses static imports for ci.js, web.js, and config.js, causing all sibling orchestration scripts to load on every CLI invocation regardless of the subcommand. If any sibling contains top-level side effects (environment validation, file I/O, process.exit calls), they fire unconditionally — replace static imports with dynamic import() or lazy require() so siblings load only when their subcommand is invoked.
+- [call graph] 405 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

@@ -5,60 +5,48 @@
 <zone>
 
 Zone: Web 6 (`web-6`)
-Files: 7, Cohesion: 0.64, Coupling: 0.36
-Description: 7 files, primarily TypeScript
-Entry points: packages/web/src/viewer/call-rate-limiter.ts, packages/web/src/viewer/message-coalescer.ts, packages/web/src/viewer/message-throttle.ts
-Lines: 2723
+Files: 3, Cohesion: 0.40, Coupling: 0.60
+Risk: healthy (score: 0.60)
+Description: 3 files, primarily TypeScript
+Entry points: packages/web/src/viewer/messaging/request-dedup.ts
+Lines: 598
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/call-rate-limiter.ts (TypeScript, 153 lines, source)
-packages/web/src/viewer/message-coalescer.ts (TypeScript, 194 lines, source)
-packages/web/src/viewer/message-throttle.ts (TypeScript, 230 lines, source)
-packages/web/tests/integration/request-dedup.test.ts (TypeScript, 626 lines, test)
-packages/web/tests/unit/viewer/call-rate-limiter.test.ts (TypeScript, 408 lines, test)
-packages/web/tests/unit/viewer/message-coalescer.test.ts (TypeScript, 534 lines, test)
-packages/web/tests/unit/viewer/message-throttle.test.ts (TypeScript, 578 lines, test)
+packages/web/src/viewer/messaging/request-dedup.ts (TypeScript, 84 lines, source)
+packages/web/tests/unit/viewer/execution-panel-dedup.test.ts (TypeScript, 279 lines, test)
+packages/web/tests/unit/viewer/request-dedup.test.ts (TypeScript, 235 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/src/viewer/message-throttle.ts → packages/web/src/viewer/message-coalescer.ts {ParsedWSMessage}
-  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/call-rate-limiter.ts {createCallRateLimiter}
-  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/message-coalescer.ts {createMessageCoalescer}
-  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/message-throttle.ts {createMessageThrottle}
-  packages/web/tests/unit/viewer/call-rate-limiter.test.ts → packages/web/src/viewer/call-rate-limiter.ts {createCallRateLimiter}
-  packages/web/tests/unit/viewer/call-rate-limiter.test.ts → packages/web/src/viewer/call-rate-limiter.ts {CallRateLimiter}
-  packages/web/tests/unit/viewer/message-coalescer.test.ts → packages/web/src/viewer/message-coalescer.ts {createMessageCoalescer}
-  packages/web/tests/unit/viewer/message-coalescer.test.ts → packages/web/src/viewer/message-coalescer.ts {MessageCoalescer, CoalescedBatch, ParsedWSMessage}
-  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/message-coalescer.ts {ParsedWSMessage}
-  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/message-throttle.ts {createMessageThrottle}
-  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/message-throttle.ts {MessageThrottle, ThrottledHandlerConfig}
-
-Outgoing (this zone → other zones):
-  → web-27: packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/request-dedup.ts
+  packages/web/tests/unit/viewer/execution-panel-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
+  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
+  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {RequestDedup}
 
 Incoming (other zones → this zone):
-  ← web: packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/call-rate-limiter.ts; packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/message-coalescer.ts; packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/message-throttle.ts
-  ← web-8: packages/web/src/viewer/components/status-indicators.ts → packages/web/src/viewer/message-coalescer.ts; packages/web/src/viewer/components/status-indicators.ts → packages/web/src/viewer/message-throttle.ts
+  ← web-integration: packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts
+  ← web-viewer: packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/messaging/request-dedup.ts; packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/request-dedup.ts
 
 </imports>
 
 <insights>
 
-- Excellent cohesion and low coupling demonstrate well-designed flow control architecture
-- Comprehensive approach covering multiple aspects of message management
-- Multiple entry points suggest flexible, composable rate limiting utilities
-- Excellent cohesion (0.64) with low coupling (0.36) exemplifies well-architected utility zone design
-- Comprehensive flow control toolkit covering rate limiting, coalescing, and throttling provides robust message management
-- Complements event-dispatching to create comprehensive viewer performance management layer
-- Excellent cohesion with low coupling demonstrates ideal architectural boundaries for utility zones
-- Test categorization inconsistency: request-dedup.test.ts placed in integration/ despite being unit-level functionality comparable to other utilities in this zone
-- Move request-dedup.test.ts to unit/viewer/ to match other flow control utility tests, or justify integration categorization with cross-zone dependencies
-- [call graph] 256 internal calls, 7 outgoing, 6 incoming (cohesion: 0.97, coupling: 0.03)
+- Two test files for one source file — one generic, one execution-panel-specific — suggests the dedup logic is load-bearing for a high-traffic UI surface and warrants the extra coverage
+- High coupling (0.6) combined with low cohesion (0.4) suggests this utility is imported broadly but shares little internal structure with its co-located tests — a sign its test files may belong closer to the callers
+- The execution-panel-dedup test implies request-dedup is not purely generic infrastructure but has domain-specific callers; extracting an execution-panel-specific wrapper could improve cohesion
+- Low cohesion (0.4) and high coupling (0.6) cross the warning threshold — the utility is used in multiple contexts but the zone groups it with tests that cover caller-specific behavior rather than the utility itself.
+- web-viewer imports this zone directly (2x) while also importing web-integration which itself imports this zone (1x), creating a diamond dependency: web-viewer reaches request-dedup both directly and transitively through web-integration. This dual path is the clearest evidence that web-integration has not consolidated into a true messaging facade.
+- Diamond dependency: web-viewer imports request-dedup both directly (2x) and transitively via web-integration (1x). If request-dedup's API changes, both import paths must be updated independently — the transitivity provides no insulation.
+- The integration test's createPipeline helper is the only location in the codebase that documents the intended composition order (throttle → coalescer → rateLimiter → dedup). This pipeline definition exists as test scaffolding, not as a production abstraction — the canonical wiring of the messaging subsystem lives in a test file rather than in maintained production code.
+- The authoritative composition of the four-layer messaging pipeline is encoded only in a test helper (createPipeline in tests/integration/request-dedup.test.ts). If the pipeline wiring changes in production but the test helper is not updated, tests continue passing against a now-incorrect topology. Promoting createPipeline to a production factory would make the pipeline order a first-class, tested contract.
+- execution-panel-dedup.test.ts follows a '{consumer}-{utility}.test.ts' naming pattern that no other unit test in the codebase uses — all other unit tests follow '{utility}.test.ts'. This naming outlier signals that the test covers caller-specific behavior rather than the utility's own contract, which is the proximate cause of the zone's below-threshold cohesion.
+- viewer-request-deduplication is the only zone in the entire analyzed set where BOTH cohesion (0.4) AND coupling (0.6) simultaneously cross their warning thresholds — every other zone fails at most one metric. This dual failure makes it the highest-fragility zone: changes to request-dedup.ts propagate broadly (high coupling) while the zone has no coherent internal structure to absorb them (low cohesion).
+- viewer-request-deduplication is the sole zone with both cohesion < 0.5 and coupling > 0.5 simultaneously — the only dual-threshold failure in the codebase. Rename execution-panel-dedup.test.ts to request-dedup.execution-panel.test.ts to restore naming consistency, and consider extracting an execution-panel-specific wrapper module to separate generic utility coverage from caller-specific behavior.
+- [call graph] 77 internal calls, 0 outgoing, 10 incoming (cohesion: 1, coupling: 0)
 
 </insights>

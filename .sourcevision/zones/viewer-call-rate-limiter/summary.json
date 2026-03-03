@@ -1,0 +1,24 @@
+{
+  "id": "viewer-call-rate-limiter",
+  "name": "Viewer Call Rate Limiter",
+  "description": "Controls the frequency of outbound viewer API calls to prevent backend flooding, with the rate limiter as the declared entry point for the messaging subsystem.",
+  "files": [
+    "packages/web/src/viewer/messaging/call-rate-limiter.ts",
+    "packages/web/tests/integration/request-dedup.test.ts",
+    "packages/web/tests/unit/viewer/call-rate-limiter.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/messaging/call-rate-limiter.ts"
+  ],
+  "cohesion": 0.67,
+  "coupling": 0.33,
+  "fileCount": 3,
+  "lineCount": 1187,
+  "riskMetrics": {
+    "cohesion": 0.67,
+    "coupling": 0.33,
+    "riskScore": 0.32999999999999996,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

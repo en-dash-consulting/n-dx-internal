@@ -1,0 +1,42 @@
+{
+  "id": "hench/unit/agent/process",
+  "name": "Hench/unit/agent/process",
+  "description": "22 files, primarily TypeScript",
+  "files": [
+    "packages/hench/src/agent/analysis/adaptive.ts",
+    "packages/hench/src/agent/analysis/summary.ts",
+    "packages/hench/src/agent/analysis/workflow.ts",
+    "packages/hench/src/cli/commands/config.ts",
+    "packages/hench/src/process/limiter.ts",
+    "packages/hench/src/process/memory-monitor.ts",
+    "packages/hench/src/process/memory-throttle.ts",
+    "packages/hench/src/public.ts",
+    "packages/hench/src/schema/v1.ts",
+    "packages/hench/src/store/run-archiver.ts",
+    "packages/hench/src/store/run-change-detector.ts",
+    "packages/hench/tests/e2e/cli-init.test.ts",
+    "packages/hench/tests/unit/agent/adaptive.test.ts",
+    "packages/hench/tests/unit/agent/prompt.test.ts",
+    "packages/hench/tests/unit/agent/summary.test.ts",
+    "packages/hench/tests/unit/agent/workflow.test.ts",
+    "packages/hench/tests/unit/cli/commands/config.test.ts",
+    "packages/hench/tests/unit/process/limiter.test.ts",
+    "packages/hench/tests/unit/process/memory-monitor.test.ts",
+    "packages/hench/tests/unit/process/memory-throttle.test.ts",
+    "packages/hench/tests/unit/store/run-archiver.test.ts",
+    "packages/hench/tests/unit/store/run-change-detector.test.ts"
+  ],
+  "entryPoints": [
+    "packages/hench/src/agent/analysis/summary.ts",
+    "packages/hench/src/cli/commands/config.ts",
+    "packages/hench/src/process/limiter.ts",
+    "packages/hench/src/process/memory-monitor.ts",
+    "packages/hench/src/process/memory-throttle.ts",
+    "packages/hench/src/schema/v1.ts",
+    "packages/hench/src/store/run-change-detector.ts"
+  ],
+  "cohesion": 0.6,
+  "coupling": 0.4,
+  "fileCount": 22,
+  "lineCount": 7203
+}

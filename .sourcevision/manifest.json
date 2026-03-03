@@ -1,40 +1,40 @@
 {
   "schemaVersion": "1.0.0",
   "toolVersion": "0.1.0",
-  "analyzedAt": "2026-03-01T03:15:44.179Z",
+  "analyzedAt": "2026-03-03T16:00:16.216Z",
   "gitSha": "21786d24aeb21767389090712636b7f7c224e7e2",
   "gitBranch": "feature/integrate-codex",
   "targetPath": "/Users/ryankeith/work-internal/n-dx",
   "modules": {
     "inventory": {
       "status": "complete",
-      "startedAt": "2026-03-01T03:04:08.528Z",
-      "completedAt": "2026-03-01T03:04:09.230Z"
+      "startedAt": "2026-03-03T15:49:23.899Z",
+      "completedAt": "2026-03-03T15:49:24.034Z"
     },
     "imports": {
       "status": "complete",
-      "startedAt": "2026-03-01T03:04:09.231Z",
-      "completedAt": "2026-03-01T03:04:10.539Z"
+      "startedAt": "2026-03-03T15:49:24.034Z",
+      "completedAt": "2026-03-03T15:49:24.681Z"
     },
     "classifications": {
       "status": "complete",
-      "startedAt": "2026-03-01T03:04:10.540Z",
-      "completedAt": "2026-03-01T03:07:04.626Z"
+      "startedAt": "2026-03-03T15:49:24.681Z",
+      "completedAt": "2026-03-03T15:58:00.440Z"
     },
     "zones": {
       "status": "complete",
-      "startedAt": "2026-03-01T03:07:04.626Z",
-      "completedAt": "2026-03-01T03:15:41.944Z"
+      "startedAt": "2026-03-03T15:58:00.441Z",
+      "completedAt": "2026-03-03T16:00:13.826Z"
     },
     "components": {
       "status": "complete",
-      "startedAt": "2026-03-01T03:15:41.945Z",
-      "completedAt": "2026-03-01T03:15:42.152Z"
+      "startedAt": "2026-03-03T16:00:13.828Z",
+      "completedAt": "2026-03-03T16:00:13.969Z"
     },
     "callgraph": {
       "status": "complete",
-      "startedAt": "2026-03-01T03:15:42.152Z",
-      "completedAt": "2026-03-01T03:15:44.179Z"
+      "startedAt": "2026-03-03T16:00:13.969Z",
+      "completedAt": "2026-03-03T16:00:16.216Z"
     }
   },
   "children": [
@@ -56,10 +56,10 @@
   ],
   "zoneOutputs": true,
   "tokenUsage": {
-    "calls": 18,
+    "calls": 7,
     "inputTokens": 0,
     "outputTokens": 0,
     "vendor": "claude",
-    "model": "claude-sonnet-4-20250514"
+    "model": "claude-sonnet-4-6"
   }
 }

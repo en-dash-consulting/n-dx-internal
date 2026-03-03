@@ -5,48 +5,39 @@
 <zone>
 
 Zone: Web 3 (`web-3`)
-Files: 4, Cohesion: 0.63, Coupling: 0.38
-Description: 4 files, primarily TypeScript
-Entry points: packages/web/src/server/incremental-task-usage.ts, packages/web/src/server/usage-cleanup-scheduler.ts
-Lines: 1560
+Files: 3, Cohesion: 1.00, Coupling: 0.00
+Risk: healthy (score: 0.00)
+Description: 3 files, primarily Other, HTML
+Lines: 21
 
 </zone>
 
 <files>
 
-packages/web/src/server/incremental-task-usage.ts (TypeScript, 311 lines, source)
-packages/web/src/server/usage-cleanup-scheduler.ts (TypeScript, 306 lines, source)
-packages/web/tests/unit/server/incremental-task-usage.test.ts (TypeScript, 457 lines, test)
-packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts (TypeScript, 486 lines, test)
+packages/web/src/viewer/darkmode_logo.png (Other, 0 lines, asset)
+packages/web/src/viewer/index.html (HTML, 21 lines, other)
+packages/web/src/viewer/lightmode_logo.png (Other, 0 lines, asset)
 
 </files>
 
-<imports>
+<findings>
 
-Internal:
-  packages/web/src/server/usage-cleanup-scheduler.ts → packages/web/src/server/incremental-task-usage.ts {IncrementalTaskUsageAggregator, TaskUsageAccumulator}
-  packages/web/tests/unit/server/incremental-task-usage.test.ts → packages/web/src/server/incremental-task-usage.ts {IncrementalTaskUsageAggregator}
-  packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts → packages/web/src/server/incremental-task-usage.ts {IncrementalTaskUsageAggregator}
-  packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts → packages/web/src/server/usage-cleanup-scheduler.ts {identifyOrphanedEntries, writeCleanupLog, loadCleanupConfig, runCleanupCycle, startUsageCleanupScheduler, DEFAULT_CLEANUP_INTERVAL_MS}
-  packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts → packages/web/src/server/usage-cleanup-scheduler.ts {OrphanedEntry, CleanupResult}
+[observation] [info] High cohesion (1) — files are tightly interconnected
 
-Outgoing (this zone → other zones):
-  → web: packages/web/src/server/usage-cleanup-scheduler.ts → packages/web/src/server/rex-gateway.ts; packages/web/src/server/usage-cleanup-scheduler.ts → packages/web/src/server/rex-gateway.ts
-
-Incoming (other zones → this zone):
-  ← web: packages/web/src/server/routes-hench.ts → packages/web/src/server/incremental-task-usage.ts; packages/web/src/server/start.ts → packages/web/src/server/usage-cleanup-scheduler.ts
-
-</imports>
+</findings>
 
 <insights>
 
-- Well-focused zone with clear separation between usage tracking and cleanup concerns
-- High cohesion indicates related functionality is properly grouped together
-- Automated cleanup scheduling shows proactive data management
-- Strong cohesion (0.63) and moderate coupling (0.38) demonstrate well-designed separation of concerns
-- Incremental tracking with automated cleanup suggests efficient resource management
-- Follows service+monitoring architectural pattern with usage tracking paired with cleanup scheduling
-- Clean server-side boundary with no client-side file mixing demonstrates good architectural separation
-- [call graph] 100 internal calls, 1 outgoing, 1 incoming (cohesion: 0.99, coupling: 0.01)
+- High cohesion (1) — files are tightly interconnected
+- No import-graph edges in or out confirms these are pure static assets consumed by the build tool rather than imported by TypeScript modules.
+- Bundling HTML and image assets into a detected zone suggests the community detection algorithm picked up file co-location rather than import relationships.
+- The light/dark logo pair signals theme support in the viewer; ensure both variants are referenced through a single theme-aware asset path to avoid drift.
+- This zone contains no executable code — its presence as a detected community reflects file proximity rather than logical coupling, which is expected and harmless for static assets.
+- Two logo variants (darkmode_logo.png, lightmode_logo.png) should be managed together whenever branding changes; co-locating them in this zone makes that maintenance visible and easy.
+- viewer-static-assets has no import relationships with prd-tree-lifecycle-tests or prd-tree-node-culler despite all three being viewer-layer zones — the three satellite zones are orthogonal to each other, which further validates that the web package's leaf-cluster architecture is correctly decomposed with no hidden lateral coupling among leaves.
+- packages/web/src/viewer/index.html is the Vite/build-tool SPA entry point that implicitly pulls in all viewer TypeScript modules at build time. This creates a build-time dependency from this zone to the entire viewer tree that static import analysis cannot detect — the zone's zero-coupling score reflects the import graph but not the build graph, making it the only zone in the codebase where the two graphs diverge materially.
+- The zero-coupling score for viewer-static-assets is a static-analysis artifact: index.html is the build-tool entry that transitively bundles the full viewer TypeScript tree. Zone metrics based on import edges are blind to this coupling. Any architectural decision that relies on viewer-static-assets having zero coupling to the hub will be incorrect in practice.
+- The two logo files use a {theme}mode_{name}.png naming pattern ('darkmode_logo.png', 'lightmode_logo.png') that concatenates a compound theme word with an underscore before the asset type. If additional themed assets are added (icons, favicons, splash screens), contributors have no documented convention and will likely diverge — 'dark-mode-icon.png', 'icon_dark.png', and 'darkmode_icon.png' are all equally plausible extensions of the current pattern. The absence of an asset naming convention is low-risk today with two files but becomes a maintenance liability at scale.
+- Standardize themed static asset names to a single separator convention, e.g. logo-dark.png / logo-light.png (hyphen-separated, theme as suffix modifier). The current 'darkmode_logo.png' / 'lightmode_logo.png' pattern mixes compound words and underscores in a way that will produce inconsistent names as new themed assets are added.
 
 </insights>

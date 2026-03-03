@@ -1,0 +1,21 @@
+{
+  "id": "prd-tree-node-culler",
+  "name": "PRD Tree Node Culler",
+  "description": "A minimal, self-contained zone housing the node-culler performance component and its unit test.",
+  "files": [
+    "packages/web/src/viewer/components/prd-tree/node-culler.ts",
+    "packages/web/tests/unit/viewer/node-culler.test.ts"
+  ],
+  "entryPoints": [],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 2,
+  "lineCount": 522,
+  "riskMetrics": {
+    "cohesion": 1,
+    "coupling": 0,
+    "riskScore": 0,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

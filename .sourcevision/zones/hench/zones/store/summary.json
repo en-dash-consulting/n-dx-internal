@@ -1,6 +1,6 @@
 {
   "id": "hench/store",
-  "name": "Store",
+  "name": "Hench/store",
   "description": "2 files, primarily TypeScript",
   "files": [
     "packages/hench/src/store/suggestions.ts",
