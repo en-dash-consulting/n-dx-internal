@@ -16811,6 +16811,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-03-03T07:50:01.582Z",
+      "completedAt": "2026-03-03T07:50:01.582Z",
       "children": [
         {
           "id": "b4127ae4-3f1c-4201-82ba-f648a7915037",
@@ -16948,9 +16950,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-03-03T07:50:01.582Z",
-      "completedAt": "2026-03-03T07:50:01.582Z"
+      ]
     },
     {
       "id": "b73ae2ff-6ed0-46dd-94a3-e297e837549f",
@@ -16970,7 +16970,7 @@
             {
               "id": "a06d1971-0b90-47be-aebd-c7bb5f233f78",
               "title": "Audit and fix font size and weight inconsistencies across Rex pages",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Walk every Rex view (Dashboard, PRD tree, task detail, proposals, validation, token usage) and produce a consistent type scale. Currently some labels render at unreadable sizes and headings vary arbitrarily between pages, making the UI feel unfinished.",
               "acceptanceCriteria": [
@@ -16985,7 +16985,9 @@
                 "ui",
                 "typography"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-03T08:09:34.818Z",
+              "completedAt": "2026-03-03T08:17:22.410Z"
             },
             {
               "id": "6f4539a3-24d9-48a5-84d1-4b9a1c0ea1d7",
@@ -17012,15 +17014,17 @@
         {
           "id": "5af8caa9-43b5-4eb3-9b43-dd11b424b0b1",
           "title": "Broken and Non-Functional UI Element Repair",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Identify and fix buttons, toggles, inputs, and other interactive controls across Rex pages that are visually present but non-functional, incorrectly wired, or produce no feedback",
           "source": "smart-add",
+          "startedAt": "2026-03-03T08:09:04.401Z",
+          "completedAt": "2026-03-03T08:09:04.401Z",
           "children": [
             {
               "id": "d526ccae-0f7c-4522-96b1-caa936f12d6c",
               "title": "Audit all Rex page controls for broken interactivity and fix unresponsive elements",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Systematically test every clickable and input element across Rex views. Non-functional controls erode user trust and make it unclear whether actions succeeded. Produce a fix list covering buttons that fire no handler, dropdowns that do not open, and status toggles that show no loading or confirmation state.",
               "acceptanceCriteria": [
@@ -17035,12 +17039,14 @@
                 "ui",
                 "bug"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-03T07:50:53.394Z",
+              "completedAt": "2026-03-03T08:00:26.402Z"
             },
             {
               "id": "f1daf91a-30dc-43c4-b917-34bb6796bf4b",
               "title": "Fix broken layout containers and collapsed or zero-height sections",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Several Rex page sections render with zero height, invisible content areas, or collapsed containers that appear empty even when data is present. These are likely CSS flex/grid issues or missing height constraints on parent elements.",
               "acceptanceCriteria": [
@@ -17056,7 +17062,9 @@
                 "layout",
                 "bug"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-03T08:00:57.735Z",
+              "completedAt": "2026-03-03T08:09:04.216Z"
             }
           ]
         },

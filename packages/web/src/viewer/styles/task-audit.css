@@ -321,7 +321,7 @@
 }
 
 .audit-chip-icon {
-  font-size: 9px;
+  font-size: var(--font-sm);
   opacity: 0.7;
 }
 

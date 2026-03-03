@@ -808,7 +808,7 @@
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 24px;
+  font-size: var(--font-3xl);
   cursor: pointer;
   padding: 4px 8px;
   border-radius: var(--radius-sm);
@@ -910,7 +910,7 @@
 }
 
 .reorg-risk {
-  font-size: 11px;
+  font-size: var(--font-sm);
   font-weight: 600;
   text-transform: uppercase;
   padding: 1px 6px;
@@ -946,7 +946,7 @@
 }
 
 .reorg-affected {
-  font-size: 11px;
+  font-size: var(--font-sm);
   color: var(--text-dim);
   margin-top: 4px;
   white-space: nowrap;
