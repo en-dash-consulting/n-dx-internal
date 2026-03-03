@@ -17,10 +17,11 @@ import {
   setClaudeConfig,
   getAuthMode,
   getLLMVendor,
+  applyConsolidationGuard,
 } from "../../analyze/index.js";
 import type { Proposal, QualityIssue } from "../../analyze/index.js";
-import { CHILD_LEVEL, PRIORITY_ORDER } from "../../schema/index.js";
-import type { PRDItem, ItemLevel, DuplicateOverrideMarker } from "../../schema/index.js";
+import { CHILD_LEVEL, PRIORITY_ORDER, LOE_DEFAULTS } from "../../schema/index.js";
+import type { PRDItem, ItemLevel, DuplicateOverrideMarker, LoEConfig } from "../../schema/index.js";
 import { loadClaudeConfig, loadLLMConfig } from "../../store/project-config.js";
 import {
   matchProposalNodesToPRD,
@@ -29,6 +30,7 @@ import {
 } from "./smart-add-duplicates.js";
 import type { ProposalDuplicateMatch } from "./smart-add-duplicates.js";
 import type { LLMVendor } from "@n-dx/llm-client";
+import { formatTaskLoE, formatTaskLoERationale } from "./format-loe.js";
 
 const PENDING_FILE = "pending-smart-proposals.json";
 
@@ -95,6 +97,7 @@ export function countProposalItems(
 export function formatProposalTree(
   proposals: Proposal[],
   parentLevel?: ItemLevel,
+  thresholdWeeks?: number,
 ): string {
   const numbered = proposals.length > 1;
   const lines: string[] = [];
@@ -130,7 +133,10 @@ export function formatProposalTree(
           const cont = isLastFeature ? "  " : "│ ";
           const taskBranch = isLastTask ? "└─" : "├─";
           const pri = t.priority ? ` [${t.priority}]` : "";
-          lines.push(`    ${cont}   ${taskBranch} ○ ${t.title}${pri}`);
+          const loe = formatTaskLoE(t, thresholdWeeks);
+          lines.push(`    ${cont}   ${taskBranch} ○ ${t.title}${pri}${loe}`);
+          const rationale = formatTaskLoERationale(t, `    ${cont}   ${isLastTask ? "  " : "│ "}   `);
+          if (rationale) lines.push(rationale);
           if (t.acceptanceCriteria?.length) {
             const taskCont = isLastTask ? "  " : "│ ";
             for (const ac of t.acceptanceCriteria) {
@@ -147,7 +153,10 @@ export function formatProposalTree(
           const isLast = ti === f.tasks.length - 1;
           const branch = isLast ? "└─" : "├─";
           const pri = t.priority ? ` [${t.priority}]` : "";
-          lines.push(`    ${branch} ○ ${t.title}${pri}`);
+          const loe = formatTaskLoE(t, thresholdWeeks);
+          lines.push(`    ${branch} ○ ${t.title}${pri}${loe}`);
+          const rationale = formatTaskLoERationale(t, `    ${isLast ? "  " : "│ "}   `);
+          if (rationale) lines.push(rationale);
           if (t.description) {
             const cont = isLast ? "  " : "│ ";
             lines.push(`    ${cont}   ${t.description}`);
@@ -168,7 +177,10 @@ export function formatProposalTree(
           const isLast = ti === f.tasks.length - 1;
           const branch = isLast ? "└─" : "├─";
           const pri = t.priority ? ` [${t.priority}]` : "";
-          lines.push(`    ${branch} ○ ${t.title}${pri}`);
+          const loe = formatTaskLoE(t, thresholdWeeks);
+          lines.push(`    ${branch} ○ ${t.title}${pri}${loe}`);
+          const rationale = formatTaskLoERationale(t, `    ${isLast ? "  " : "│ "}   `);
+          if (rationale) lines.push(rationale);
           if (t.description) {
             const cont = isLast ? "  " : "│ ";
             lines.push(`    ${cont}   ${t.description}`);
@@ -1183,8 +1195,9 @@ function renderSmartAddProposals(params: {
   parentLevel?: ItemLevel;
   qualityIssues: QualityIssue[];
   isJson: boolean;
+  thresholdWeeks?: number;
 }): void {
-  const { proposals, parentId, parentLevel, qualityIssues, isJson } = params;
+  const { proposals, parentId, parentLevel, qualityIssues, isJson, thresholdWeeks } = params;
   if (isJson) return;
 
   const summary = formatProposalSummary(proposals, parentLevel);
@@ -1193,7 +1206,7 @@ function renderSmartAddProposals(params: {
   } else {
     info(`\nProposed structure (${summary}):`);
   }
-  info(formatProposalTree(proposals, parentLevel));
+  info(formatProposalTree(proposals, parentLevel, thresholdWeeks));
 
   if (qualityIssues.length > 0) {
     warn("");
@@ -1221,8 +1234,9 @@ async function runInteractiveSmartAddApproval(params: {
   parentId?: string;
   parentLevel?: ItemLevel;
   model?: string;
+  thresholdWeeks?: number;
 }): Promise<void> {
-  const { dir, existing, parentId, parentLevel, model } = params;
+  const { dir, existing, parentId, parentLevel, model, thresholdWeeks } = params;
   const { adjustGranularity } = await import("../../analyze/index.js");
   const resolvedModel = model ?? DEFAULT_MODEL;
   let currentProposals = params.proposals;
@@ -1271,7 +1285,7 @@ async function runInteractiveSmartAddApproval(params: {
 
           const updatedSummary = formatProposalSummary(currentProposals, parentLevel);
           info(`\nUpdated structure (${updatedSummary}):`);
-          info(formatProposalTree(currentProposals, parentLevel));
+          info(formatProposalTree(currentProposals, parentLevel, thresholdWeeks));
           info("");
 
           currentDuplicateMatches = filterPlacedDuplicateMatches(
@@ -1418,6 +1432,7 @@ async function finalizeSmartAdd(params: {
   isJson: boolean;
   parentLevel?: ItemLevel;
   model?: string;
+  thresholdWeeks?: number;
 }): Promise<void> {
   const {
     dir,
@@ -1430,6 +1445,7 @@ async function finalizeSmartAdd(params: {
     isJson,
     parentLevel,
     model,
+    thresholdWeeks,
   } = params;
 
   await maybeCacheSmartAddProposals(dir, proposals, parentId);
@@ -1472,6 +1488,7 @@ async function finalizeSmartAdd(params: {
       parentId,
       parentLevel,
       model,
+      thresholdWeeks,
     });
     return;
   }
@@ -1516,11 +1533,46 @@ export async function cmdSmartAdd(
     return;
   }
 
+  // Load LoE config for consolidation guard and LoE display
+  let loeConfig: LoEConfig | undefined;
+  try {
+    const rexDir = join(dir, REX_DIR);
+    const store = await resolveStore(rexDir);
+    const config = await store.loadConfig();
+    loeConfig = config.loe;
+  } catch {
+    // Config unreadable — use defaults
+  }
+  const thresholdWeeks = loeConfig?.taskThresholdWeeks ?? LOE_DEFAULTS.taskThresholdWeeks;
+
+  // Post-processing consolidation guard: reduce over-granular LLM output
+  let consolidatedProposals = proposals;
+  {
+    const guardResult = await applyConsolidationGuard(
+      consolidatedProposals,
+      loeConfig,
+      model,
+    );
+
+    if (guardResult.triggered) {
+      consolidatedProposals = guardResult.proposals;
+      if (!input.isJson) {
+        if (guardResult.reduced) {
+          info(
+            `Consolidation guard: reduced from ${guardResult.originalTaskCount} to ${guardResult.finalTaskCount} tasks (ceiling: ${guardResult.ceiling}).`,
+          );
+        } else if (guardResult.warning) {
+          warn(guardResult.warning);
+        }
+      }
+    }
+  }
+
   const duplicateMatches = filterPlacedDuplicateMatches(
-    matchProposalNodesToPRD(proposals, existing),
-    proposals,
+    matchProposalNodesToPRD(consolidatedProposals, existing),
+    consolidatedProposals,
   );
-  const proposalsWithReasons = attachDuplicateReasonsToProposals(proposals, duplicateMatches);
+  const proposalsWithReasons = attachDuplicateReasonsToProposals(consolidatedProposals, duplicateMatches);
   const qualityIssues = validateProposalQuality(proposalsWithReasons);
   if (input.isJson && !input.accept) {
     result(JSON.stringify({ proposals: proposalsWithReasons, qualityIssues }, null, 2));
@@ -1533,6 +1585,7 @@ export async function cmdSmartAdd(
     parentLevel,
     qualityIssues,
     isJson: input.isJson,
+    thresholdWeeks,
   });
 
   await finalizeSmartAdd({
@@ -1546,5 +1599,6 @@ export async function cmdSmartAdd(
     isJson: input.isJson,
     parentLevel,
     model,
+    thresholdWeeks,
   });
 }

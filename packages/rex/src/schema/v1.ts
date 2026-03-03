@@ -232,12 +232,21 @@ export interface LoEConfig {
    * Default: 2.
    */
   maxDecompositionDepth?: number;
+  /**
+   * Maximum number of proposal task items per input description before
+   * triggering a secondary LLM consolidation pass. When the LLM produces
+   * more tasks than this ceiling, a re-consolidation prompt is sent to
+   * reduce over-granular output.
+   * Default: 10.
+   */
+  proposalCeiling?: number;
 }
 
 /** Default LoE configuration values. */
 export const LOE_DEFAULTS = {
   taskThresholdWeeks: 2,
   maxDecompositionDepth: 2,
+  proposalCeiling: 10,
 } as const;
 
 /** Configuration for a single facet dimension (stored in config.json). */

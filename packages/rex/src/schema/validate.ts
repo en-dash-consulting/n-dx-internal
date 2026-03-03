@@ -100,6 +100,7 @@ const LoEConfigSchema = z
   .object({
     taskThresholdWeeks: z.number().positive("taskThresholdWeeks must be a positive number").optional(),
     maxDecompositionDepth: z.number().int().positive("maxDecompositionDepth must be a positive integer").optional(),
+    proposalCeiling: z.number().int().positive("proposalCeiling must be a positive integer").optional(),
   })
   .strict();
 

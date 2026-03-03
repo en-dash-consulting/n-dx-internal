@@ -540,6 +540,8 @@ Rex LoE settings (level-of-effort estimation and decomposition):
                                            automatic decomposition (default: 2)
   rex.loe.maxDecompositionDepth  number    Max recursion depth for decomposition
                                            (default: 2)
+  rex.loe.proposalCeiling        number    Max proposal tasks per input description
+                                           before triggering consolidation (default: 10)
 
 Hench settings (.hench/config.json):
   hench.provider           string    API provider: "cli" or "api" (default: "cli")

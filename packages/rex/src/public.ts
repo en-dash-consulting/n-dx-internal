@@ -313,6 +313,11 @@ export type {
 export type { DecomposedTask, DecompositionResult } from "./analyze/decompose.js";
 export { applyDecompositionPass, buildDecompositionPrompt } from "./analyze/decompose.js";
 
+// ---- Analyze: consolidation guard -------------------------------------------
+
+export type { ConsolidationGuardResult } from "./analyze/consolidation-guard.js";
+export { countProposalTasks, buildConsolidationGuardPrompt, applyConsolidationGuard } from "./analyze/consolidation-guard.js";
+
 // ---- Analyze: structured extraction -----------------------------------------
 
 export {

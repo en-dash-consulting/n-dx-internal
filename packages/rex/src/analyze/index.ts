@@ -89,3 +89,6 @@ export { extractFromMarkdown, extractFromText, extractFromFile, extractPriorityT
 
 export type { FileValidationResult, MarkdownValidationResult, TextValidationResult, JsonValidationResult, YamlValidationResult, FileValidationErrorCode } from "./file-validation.js";
 export { validateFileInput, validateMarkdownContent, validateTextContent, validateJsonContent, validateYamlContent, detectMagicBytes, FileValidationError, SUPPORTED_EXTENSIONS, MAX_FILE_SIZE_BYTES, LARGE_FILE_WARNING_BYTES } from "./file-validation.js";
+
+export type { ConsolidationGuardResult } from "./consolidation-guard.js";
+export { countProposalTasks, buildConsolidationGuardPrompt, applyConsolidationGuard } from "./consolidation-guard.js";

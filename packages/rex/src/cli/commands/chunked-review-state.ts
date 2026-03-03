@@ -1,5 +1,6 @@
 import type { Proposal } from "../../analyze/index.js";
 import { classifyModificationRequest } from "../../analyze/validate-modification.js";
+import { formatTaskLoE, formatTaskLoERationale } from "./format-loe.js";
 
 const DEFAULT_CHUNK_SIZE = 5;
 
@@ -49,6 +50,8 @@ export interface ChunkReviewState {
   granularityHistory: GranularityAdjustmentRecord[];
   /** Cached assessment from most recent `g` command, for use by `apply` action. */
   lastAssessment?: ProposalAssessment[];
+  /** LoE decomposition threshold for flagging oversized tasks in display. */
+  thresholdWeeks?: number;
 }
 
 /** User's choice from the chunk review menu. */
@@ -143,6 +146,7 @@ export type ModificationHandler = (
 export function createReviewState(
   proposals: Proposal[],
   chunkSize: number = DEFAULT_CHUNK_SIZE,
+  thresholdWeeks?: number,
 ): ChunkReviewState {
   return {
     proposals,
@@ -151,6 +155,7 @@ export function createReviewState(
     accepted: new Set(),
     rejected: new Set(),
     granularityHistory: [],
+    thresholdWeeks,
   };
 }
 
@@ -220,11 +225,16 @@ export function formatChunk(
           lines.push(`       [task] ${t.title}${pri} ⚡ decomposed (LoE: ${loeLabel} > ${thresholdLabel} threshold)`);
           for (const child of t.decomposition.children) {
             const childPri = child.priority ? ` [${child.priority}]` : "";
-            const childLoe = child.loe !== undefined ? ` (LoE: ${child.loe}w)` : "";
+            const childLoe = formatTaskLoE(child, state.thresholdWeeks);
             lines.push(`         ↳ ${child.title}${childPri}${childLoe}`);
+            const childRationale = formatTaskLoERationale(child, "            ");
+            if (childRationale) lines.push(childRationale);
           }
         } else {
-          lines.push(`       [task] ${t.title}${pri}`);
+          const loe = formatTaskLoE(t, state.thresholdWeeks);
+          lines.push(`       [task] ${t.title}${pri}${loe}`);
+          const rationale = formatTaskLoERationale(t, "         ");
+          if (rationale) lines.push(rationale);
         }
       }
     }
@@ -714,6 +724,7 @@ export function replaceProposals(
       : state.granularityHistory,
     // Clear cached assessment since proposal indices have changed
     lastAssessment: undefined,
+    thresholdWeeks: state.thresholdWeeks,
   };
 }
 

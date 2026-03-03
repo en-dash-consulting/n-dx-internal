@@ -16808,17 +16808,19 @@
     {
       "id": "8feca975-1a79-4eb2-8fb8-50fea69012f6",
       "title": "LoE-Calibrated Proposal Generation in rex add",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "b4127ae4-3f1c-4201-82ba-f648a7915037",
           "title": "LoE-Aware Consolidated Proposal Generation",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Enhance the rex add proposal pipeline so the LLM produces fewer, larger work packages by default and attaches structured LoE estimates (engineer-weeks, rationale, confidence) to each item. Changes span the proposal Zod schema, the system prompt, post-processing guardrails, and the CLI review display.",
           "source": "smart-add",
+          "startedAt": "2026-03-03T07:50:01.464Z",
+          "completedAt": "2026-03-03T07:50:01.464Z",
           "children": [
             {
               "id": "c277b516-6b48-4d58-8d2b-7254a7d4d0b2",
@@ -16850,7 +16852,7 @@
             {
               "id": "c7a696d0-cbb2-4887-bcc6-094ecffa28e8",
               "title": "Add post-processing consolidation guard and LoE display to proposal review",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "After the LLM returns proposals, apply a post-processing pass that detects over-granular output (item count exceeds a configurable ceiling, default 10) and triggers a secondary re-consolidation prompt as a safety net. Additionally, update the interactive proposal review CLI to show loe and loeRationale for each item, visually flagging items that exceed the decomposition threshold so reviewers can make informed decisions before accepting.",
               "acceptanceCriteria": [
@@ -16873,7 +16875,9 @@
                 "loe",
                 "ux"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-03T07:32:16.796Z",
+              "completedAt": "2026-03-03T07:50:01.316Z"
             }
           ]
         },
@@ -16884,6 +16888,8 @@
           "level": "feature",
           "description": "Implement an automatic decomposition pass that splits proposal items exceeding the LoE threshold into smaller child items. The threshold defaults to 2 engineer-weeks and is user-configurable. Decomposed items are presented inline in the review so users can accept children, keep the original, or skip entirely.",
           "source": "smart-add",
+          "startedAt": "2026-03-03T07:31:24.963Z",
+          "completedAt": "2026-03-03T07:31:24.963Z",
           "children": [
             {
               "id": "b91ff0ae-ef1b-43c1-ac8d-500caa1ff61e",
@@ -16940,11 +16946,11 @@
               "startedAt": "2026-03-03T07:20:07.467Z",
               "completedAt": "2026-03-03T07:31:24.814Z"
             }
-          ],
-          "startedAt": "2026-03-03T07:31:24.963Z",
-          "completedAt": "2026-03-03T07:31:24.963Z"
+          ]
         }
-      ]
+      ],
+      "startedAt": "2026-03-03T07:50:01.582Z",
+      "completedAt": "2026-03-03T07:50:01.582Z"
     },
     {
       "id": "b73ae2ff-6ed0-46dd-94a3-e297e837549f",
