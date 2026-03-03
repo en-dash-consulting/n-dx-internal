@@ -226,6 +226,66 @@ describe("validateConfig", () => {
     });
   });
 
+  describe("guard.memoryThrottle preservation", () => {
+    it("preserves memoryThrottle when present in guard config", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      (config.guard as Record<string, unknown>).memoryThrottle = { enabled: false };
+      const result = validateConfig(config);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.guard.memoryThrottle).toEqual({ enabled: false });
+      }
+    });
+
+    it("accepts memoryThrottle with partial overrides", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      (config.guard as Record<string, unknown>).memoryThrottle = {
+        enabled: true,
+        delayThreshold: 70,
+        rejectThreshold: 90,
+      };
+      const result = validateConfig(config);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.guard.memoryThrottle).toEqual({
+          enabled: true,
+          delayThreshold: 70,
+          rejectThreshold: 90,
+        });
+      }
+    });
+
+    it("accepts config without memoryThrottle (backward compat)", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      const result = validateConfig(config);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.guard.memoryThrottle).toBeUndefined();
+      }
+    });
+  });
+
+  describe("guard.memoryMonitor preservation", () => {
+    it("preserves memoryMonitor when present in guard config", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      (config.guard as Record<string, unknown>).memoryMonitor = { enabled: false };
+      const result = validateConfig(config);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.guard.memoryMonitor).toEqual({ enabled: false });
+      }
+    });
+
+    it("accepts config without memoryMonitor (backward compat)", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      const result = validateConfig(config);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.guard.memoryMonitor).toBeUndefined();
+      }
+    });
+  });
+
   describe("loopPauseMs defaults and validation", () => {
     it("is optional in schema and defaults to 2000", () => {
       const { loopPauseMs, ...configWithout } = DEFAULT_HENCH_CONFIG();
