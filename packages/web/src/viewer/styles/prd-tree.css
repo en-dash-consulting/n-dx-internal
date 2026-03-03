@@ -103,12 +103,28 @@
 .prd-status-dot.prd-status-failing { background: var(--red); opacity: 0.7; }
 .prd-status-dot.prd-status-deferred { background: var(--orange); opacity: 0.5; }
 
+/* Sticky filter bar — consolidated above the tree, persists on scroll */
+.prd-filter-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  padding: var(--space-2) 0 var(--space-3);
+  margin-bottom: var(--space-2);
+  /* Subtle bottom edge when floating over scrolled content */
+  border-bottom: 1px solid transparent;
+}
+
+/* Show bottom border only when filter bar is sticky (scrolled past) */
+.prd-filter-bar:not(:first-child) {
+  transition: border-color 0.15s;
+}
+
 /* Status filter */
 .prd-status-filter {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-4);
   flex-wrap: wrap;
 }
 

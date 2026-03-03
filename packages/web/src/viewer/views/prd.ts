@@ -18,7 +18,7 @@
 import { h, Fragment } from "preact";
 import type { VNode } from "preact";
 import { useEffect } from "preact/hooks";
-import { PRDTree } from "../components/prd-tree/index.js";
+import { PRDTree, StatusFilter } from "../components/prd-tree/index.js";
 import { AddItemForm } from "../components/prd-tree/add-item-form.js";
 import { BulkActions } from "../components/prd-tree/bulk-actions.js";
 import { MergePreview } from "../components/prd-tree/merge-preview.js";
@@ -32,6 +32,7 @@ import { usePRDData } from "../hooks/use-prd-data.js";
 import { usePRDWebSocket } from "../hooks/use-prd-websocket.js";
 import { usePRDActions } from "../hooks/use-prd-actions.js";
 import { usePRDDeepLink } from "../hooks/use-prd-deep-link.js";
+import { usePersistentFilter } from "../hooks/use-persistent-filter.js";
 
 export interface PRDViewProps {
   /** Pre-loaded PRD data. If not provided, fetches from /data/prd.json. */
@@ -69,6 +70,9 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     onSelectItem, onDetailContent,
     taskUsageById, weeklyBudget,
   });
+
+  // ── Status filter (persists across view switches) ────────────
+  const { activeStatuses, setActiveStatuses } = usePersistentFilter();
 
   // ── Deep-link resolution ───────────────────────────────────────
   const { deepLinkError, setDeepLinkError, highlightedTaskId, deepLinkExpandIds } =
@@ -169,6 +173,11 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
         })
       : null,
 
+    // Sticky filter bar — consolidated above the tree
+    h("div", { class: "prd-filter-bar" },
+      h(StatusFilter, { activeStatuses, onChange: setActiveStatuses }),
+    ),
+
     // PRD tree
     h(PRDTree, {
       document: data,
@@ -184,6 +193,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
       deepLinkExpandIds,
       onRemoveItem: actions.handleRemoveItemFromTree,
       deletingItemId: actions.deletingItemId,
+      activeStatuses,
     }),
 
     // Bulk actions bar (floating at bottom)

@@ -8,6 +8,8 @@
  */
 export { PRDTree } from "./prd-tree.js";
 export type { PRDTreeProps } from "./prd-tree.js";
+export { StatusFilter, defaultStatusFilter } from "./status-filter.js";
+export type { StatusFilterProps } from "./status-filter.js";
 export type {
   PRDItemData,
   PRDDocumentData,

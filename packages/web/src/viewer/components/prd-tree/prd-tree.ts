@@ -24,7 +24,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "preact/hooks"
 import type { PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority, TaskUsageSummary, WeeklyBudgetResolution } from "./types.js";
 import { computeBranchStats, completionRatio, formatTimestamp, itemMatchesFilter } from "./compute.js";
 import { isWorkItem, isRootLevel } from "./levels.js";
-import { StatusFilter, defaultStatusFilter } from "./status-filter.js";
+import { defaultStatusFilter } from "./status-filter.js";
 import { InlineAddForm } from "./inline-add-form.js";
 import type { InlineAddInput } from "./inline-add-form.js";
 import { resolveTaskUtilization } from "./task-utilization.js";
@@ -543,6 +543,12 @@ export interface PRDTreeProps {
   /** ID of item currently being deleted (shows loading state). */
   deletingItemId?: string | null;
   /**
+   * Controlled status filter: set of visible statuses.
+   * When provided, the tree uses this instead of internal filter state.
+   * The parent is responsible for rendering the StatusFilter component.
+   */
+  activeStatuses?: Set<ItemStatus>;
+  /**
    * @deprecated Virtual scrolling replaces progressive loading.
    * This prop is accepted for backward compatibility but has no effect.
    */
@@ -564,7 +570,7 @@ function buildItemMap(items: PRDItemData[]): Map<string, PRDItemData> {
   return map;
 }
 
-export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onToggleBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds, onRemoveItem, deletingItemId, chunkSize }: PRDTreeProps) {
+export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onToggleBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds, onRemoveItem, deletingItemId, activeStatuses: externalStatuses, chunkSize }: PRDTreeProps) {
   // ── Flat item map for delegated event handlers ────────────────────
   const itemMap = useMemo(() => buildItemMap(doc.items), [doc.items]);
   const getItem = useCallback((id: string) => itemMap.get(id) ?? null, [itemMap]);
@@ -598,9 +604,9 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExp
     });
   }, [deepLinkExpandIds]);
 
-  const [activeStatuses, setActiveStatuses] = useState<Set<ItemStatus>>(() =>
-    defaultStatusFilter(),
-  );
+  // Status filter: controlled (from parent) or internal fallback
+  const [internalStatuses] = useState<Set<ItemStatus>>(() => defaultStatusFilter());
+  const activeStatuses = externalStatuses ?? internalStatuses;
 
   // ── Virtual scroll ────────────────────────────────────────────────
   // Flatten the tree into a linear array respecting expansion and filter
@@ -736,8 +742,6 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExp
       h("h2", { class: "prd-title" }, doc.title),
       h(Toolbar, { onExpandAll: expandAll, onCollapseAll: collapseAll }),
     ),
-    // Status filter
-    h(StatusFilter, { activeStatuses, onChange: setActiveStatuses }),
     // Summary
     h(SummaryBar, { items: doc.items }),
     // Tree — virtual scroll container with delegated event handlers
