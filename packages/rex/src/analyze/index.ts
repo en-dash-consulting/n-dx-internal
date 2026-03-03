@@ -80,7 +80,7 @@ export type { ValidationResult, ClassificationResult } from "./validate-modifica
 export { validateModificationRequest, classifyModificationRequest } from "./validate-modification.js";
 
 export type { ExtractionOptions, ExtractionResult } from "./extract.js";
-export { extractFromMarkdown, extractFromText, extractFromFile, classifyHeadingLevels } from "./extract.js";
+export { extractFromMarkdown, extractFromText, extractFromFile, extractPriorityTag, classifyHeadingLevels } from "./extract.js";
 
-export type { FileValidationResult, MarkdownValidationResult, FileValidationErrorCode } from "./file-validation.js";
-export { validateFileInput, validateMarkdownContent, FileValidationError, SUPPORTED_EXTENSIONS, MAX_FILE_SIZE_BYTES } from "./file-validation.js";
+export type { FileValidationResult, MarkdownValidationResult, TextValidationResult, FileValidationErrorCode } from "./file-validation.js";
+export { validateFileInput, validateMarkdownContent, validateTextContent, FileValidationError, SUPPORTED_EXTENSIONS, MAX_FILE_SIZE_BYTES } from "./file-validation.js";

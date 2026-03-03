@@ -255,6 +255,76 @@ export function validateMarkdownContent(content: string): MarkdownValidationResu
   };
 }
 
+/**
+ * Validate plain text content for potential quality issues.
+ *
+ * Like `validateMarkdownContent`, this does not reject content — it returns
+ * warnings that might affect extraction quality. Text is always processable.
+ *
+ * Checks:
+ * - Mixed indentation (tabs + spaces) which can confuse hierarchy detection
+ * - Very long lines that may indicate non-requirements content
+ * - No detectable structure (no headers, bullets, or requirement keywords)
+ */
+export function validateTextContent(content: string): TextValidationResult {
+  const warnings: string[] = [];
+  const lines = content.split("\n");
+
+  // Check for mixed indentation (tabs and spaces in the same file)
+  let hasTabs = false;
+  let hasSpaceIndent = false;
+  for (const line of lines) {
+    if (/^\t/.test(line)) hasTabs = true;
+    if (/^ {2,}/.test(line) && !/^\s*$/.test(line)) hasSpaceIndent = true;
+  }
+  if (hasTabs && hasSpaceIndent) {
+    warnings.push(
+      "Mixed indentation detected (tabs and spaces). Indentation-based hierarchy detection may be less accurate.",
+    );
+  }
+
+  // Check for very long lines (>500 chars) — may indicate pasted logs or data
+  const longLines = lines.filter((l) => l.length > 500);
+  if (longLines.length > 3) {
+    warnings.push(
+      `${longLines.length} lines exceed 500 characters. Very long lines are typically truncated during extraction.`,
+    );
+  }
+
+  // Check for zero detectable structure
+  const hasHeaders = lines.some((l) => {
+    const t = l.trim();
+    // ALL CAPS (multi-word or 6+ chars)
+    if (/^[A-Z][A-Z0-9 ]{4,}$/.test(t) && /\s/.test(t)) return true;
+    // Colon header
+    if (/^[A-Z][^:]{0,50}:\s*/.test(t)) return true;
+    // Numbered section
+    if (/^\d+\.\d+/.test(t)) return true;
+    return false;
+  });
+  const hasBullets = lines.some((l) => /^\s*(?:[-*]|\d+\.)\s+/.test(l));
+  const hasUnderlines = lines.some((l) => /^[=-]{3,}$/.test(l.trim()));
+  const REQUIREMENT_RE = /\b(?:must|shall|should|will|need to|required to|implement|support|provide|enable)\b/i;
+  const hasRequirements = lines.some((l) => REQUIREMENT_RE.test(l));
+
+  if (!hasHeaders && !hasBullets && !hasUnderlines && !hasRequirements) {
+    warnings.push(
+      "No detectable structure or requirement keywords found. " +
+      "Consider adding headings, bullet points, or requirement language (must, should, shall) for better extraction.",
+    );
+  }
+
+  return { valid: true, warnings };
+}
+
+/** Plain text content validation result. */
+export interface TextValidationResult {
+  /** Whether the content is processable (always true). */
+  valid: boolean;
+  /** Non-fatal warnings about potential quality issues. */
+  warnings: string[];
+}
+
 // ── Internal helpers ──────────────────────────────────────────────
 
 /**

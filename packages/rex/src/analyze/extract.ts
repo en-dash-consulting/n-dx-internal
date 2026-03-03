@@ -32,8 +32,8 @@ import {
   OUTPUT_INSTRUCTION,
 } from "./reason.js";
 import type { FileFormat } from "./reason.js";
-import { validateFileInput, validateMarkdownContent } from "./file-validation.js";
-import type { MarkdownValidationResult } from "./file-validation.js";
+import { validateFileInput, validateMarkdownContent, validateTextContent } from "./file-validation.js";
+import type { MarkdownValidationResult, TextValidationResult } from "./file-validation.js";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -690,11 +690,120 @@ function isColonHeader(line: string): { header: string; description: string | nu
 }
 
 /**
+ * Detect whether a line is a separator (e.g., "---", "===", "***", "___").
+ * A separator acts as a section break between blocks of content.
+ * Requires at least 3 repeated characters and nothing else on the line.
+ */
+function isSeparatorLine(line: string): boolean {
+  return /^[-=*_]{3,}$/.test(line.trim());
+}
+
+/**
+ * Extract priority or tag annotations from text.
+ *
+ * Detects common conventions:
+ * - Bracketed tags: `[HIGH]`, `[P1]`, `[MUST]`, `[CRITICAL]`
+ * - Parenthetical tags: `(HIGH)`, `(P1)`, `(MUST-HAVE)`
+ * - Prefix labels: `TODO:`, `REQ:`, `REQUIREMENT:`, `ACTION:`
+ *
+ * Returns the cleaned text (tag removed) and the detected priority, or
+ * null if no tag was found.
+ */
+export function extractPriorityTag(text: string): {
+  cleaned: string;
+  priority: "critical" | "high" | "medium" | "low" | null;
+  tag: string | null;
+} {
+  let cleaned = text;
+  let priority: "critical" | "high" | "medium" | "low" | null = null;
+  let tag: string | null = null;
+
+  // Map keywords to priorities
+  const PRIORITY_MAP: Record<string, "critical" | "high" | "medium" | "low"> = {
+    critical: "critical",
+    "p0": "critical",
+    "p1": "high",
+    high: "high",
+    "must": "high",
+    "must-have": "high",
+    "required": "high",
+    "p2": "medium",
+    medium: "medium",
+    "should": "medium",
+    "nice-to-have": "low",
+    "p3": "low",
+    low: "low",
+    "could": "low",
+    "optional": "low",
+  };
+
+  // Check for bracketed tags: [HIGH], [P1], [MUST]
+  const bracketMatch = cleaned.match(/\[([A-Za-z0-9-]+)\]/);
+  if (bracketMatch) {
+    const tagValue = bracketMatch[1].toLowerCase();
+    if (PRIORITY_MAP[tagValue]) {
+      priority = PRIORITY_MAP[tagValue];
+      tag = bracketMatch[1];
+      cleaned = cleaned.replace(bracketMatch[0], "").trim();
+    }
+  }
+
+  // Check for parenthetical tags: (HIGH), (P1), (MUST-HAVE)
+  if (!priority) {
+    const parenMatch = cleaned.match(/\(([A-Za-z0-9-]+)\)$/);
+    if (parenMatch) {
+      const tagValue = parenMatch[1].toLowerCase();
+      if (PRIORITY_MAP[tagValue]) {
+        priority = PRIORITY_MAP[tagValue];
+        tag = parenMatch[1];
+        cleaned = cleaned.replace(parenMatch[0], "").trim();
+      }
+    }
+  }
+
+  // Check for prefix labels: TODO:, REQ:, REQUIREMENT:, ACTION:
+  const prefixMatch = cleaned.match(
+    /^(?:TODO|REQ|REQUIREMENT|ACTION|FIXME|HACK|NOTE):\s*/i,
+  );
+  if (prefixMatch) {
+    if (!tag) tag = prefixMatch[0].replace(/:\s*$/, "").trim();
+    cleaned = cleaned.slice(prefixMatch[0].length).trim();
+    // Prefix labels default to high priority if no other priority was set
+    if (!priority) {
+      const label = prefixMatch[0].toLowerCase().trim();
+      if (label.startsWith("fixme") || label.startsWith("req") || label.startsWith("requirement")) {
+        priority = "high";
+      } else if (label.startsWith("todo") || label.startsWith("action")) {
+        priority = "medium";
+      }
+    }
+  }
+
+  return { cleaned, priority, tag };
+}
+
+/**
+ * Measure the indentation depth of a line in spaces.
+ * Tabs are counted as 4 spaces.
+ */
+function measureIndent(line: string): number {
+  let indent = 0;
+  for (const ch of line) {
+    if (ch === " ") indent++;
+    else if (ch === "\t") indent += 4;
+    else break;
+  }
+  return indent;
+}
+
+/**
  * Parse plain text into hierarchical sections using multiple heuristics:
  * - ALL CAPS lines as top-level headers
  * - Underlined text (=== / ---) as headers
  * - Numbered sections (1., 1.1, etc.)
  * - Colon-delimited headers
+ * - Separator lines (---, ===, ***) as section breaks
+ * - Indentation-based hierarchy (tabs/spaces for nesting)
  * - Blank-line-separated blocks as implicit sections
  *
  * Returns detected sections plus a flag indicating whether any structured
@@ -717,6 +826,15 @@ function parseTextSections(content: string): {
 
     // Skip blank lines (they separate blocks)
     if (!trimmed) {
+      i++;
+      continue;
+    }
+
+    // Check for separator lines (---, ===, ***) that act as section breaks
+    // but are NOT underlines for the previous line (standalone separators)
+    if (isSeparatorLine(trimmed) && (i === 0 || lines[i - 1].trim() === "")) {
+      // Standalone separator — end current section
+      currentSection = null;
       i++;
       continue;
     }
@@ -786,18 +904,19 @@ function parseTextSections(content: string): {
       }
     }
 
-    // Check for bullet/numbered list item
+    // Check for bullet/numbered list item (with indentation-aware nesting)
     const bulletMatch = trimmed.match(/^(?:[-*]|\d+\.)\s+(.+)/);
     if (bulletMatch) {
+      const bulletText = bulletMatch[1].trim();
       if (currentSection) {
-        currentSection.bullets.push(bulletMatch[1].trim());
+        currentSection.bullets.push(bulletText);
       } else {
         // Orphan bullet — create an implicit section
         currentSection = {
           header: "",
           depth: 0,
           paragraphs: [],
-          bullets: [bulletMatch[1].trim()],
+          bullets: [bulletText],
           children: [],
         };
         sections.push(currentSection);
@@ -824,6 +943,84 @@ function parseTextSections(content: string): {
   }
 
   return { sections, hasStructuredHeaders };
+}
+
+/**
+ * Parse text where hierarchy is defined by indentation levels rather than
+ * explicit headers. Each indentation level maps to a PRD depth.
+ *
+ * Example:
+ *   User Management          → epic (indent 0)
+ *     Registration            → feature (indent 4)
+ *       Email validation      → task (indent 8)
+ *       Password rules        → task (indent 8)
+ *     Login                   → feature (indent 4)
+ *       OAuth support         → task (indent 8)
+ */
+function parseIndentedText(content: string): {
+  sections: TextSection[];
+  hasIndentedStructure: boolean;
+} {
+  const lines = content.split("\n").filter((l) => l.trim().length > 0);
+  if (lines.length < 2) return { sections: [], hasIndentedStructure: false };
+
+  // Measure indentation of all non-empty, non-bullet lines
+  const indents: number[] = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Skip bullets and lines that are just punctuation
+    if (/^(?:[-*]|\d+\.)\s+/.test(trimmed)) continue;
+    const indent = measureIndent(line);
+    indents.push(indent);
+  }
+
+  // Check if we have a meaningful indentation hierarchy
+  const uniqueIndents = [...new Set(indents)].sort((a, b) => a - b);
+  if (uniqueIndents.length < 2) {
+    return { sections: [], hasIndentedStructure: false };
+  }
+
+  // Need at least a couple of lines at the shallowest indent to be useful
+  const minIndent = uniqueIndents[0];
+  const topLevelCount = indents.filter((i) => i === minIndent).length;
+  if (topLevelCount < 1) {
+    return { sections: [], hasIndentedStructure: false };
+  }
+
+  // Map indent levels to depths
+  const indentToDepth: Record<number, number> = {};
+  for (let d = 0; d < uniqueIndents.length; d++) {
+    indentToDepth[uniqueIndents[d]] = d;
+  }
+
+  // Build sections from indented lines
+  const sections: TextSection[] = [];
+  let currentSection: TextSection | null = null;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const indent = measureIndent(line);
+
+    // Check for bullet under current section
+    const bulletMatch = trimmed.match(/^(?:[-*]|\d+\.)\s+(.+)/);
+    if (bulletMatch && currentSection) {
+      currentSection.bullets.push(bulletMatch[1].trim());
+      continue;
+    }
+
+    // Non-bullet line — treat as a header at this indent level
+    const depth = indentToDepth[indent] ?? 0;
+    currentSection = {
+      header: trimmed,
+      depth,
+      paragraphs: [],
+      bullets: [],
+      children: [],
+    };
+    sections.push(currentSection);
+  }
+
+  return { sections, hasIndentedStructure: sections.length >= 2 };
 }
 
 /** Convert ALL CAPS text to Title Case. */
@@ -1009,10 +1206,14 @@ export function extractFromMarkdown(
  * Uses a multi-strategy approach:
  * 1. If the text contains markdown headings, delegates to `extractFromMarkdown`.
  * 2. Detects text conventions: ALL CAPS headers, underlined headers (=== / ---),
- *    numbered sections (1., 1.1), and colon-delimited headers.
- * 3. Falls back to blank-line-separated blocks with bullet extraction.
- * 4. For unstructured prose, uses NLP-like heuristics to extract requirement
+ *    numbered sections (1., 1.1), colon-delimited headers, and separator lines.
+ * 3. Tries indentation-based hierarchy detection (tabs/spaces for nesting).
+ * 4. Falls back to blank-line-separated blocks with bullet extraction.
+ * 5. For unstructured prose, uses NLP-like heuristics to extract requirement
  *    sentences (must, should, shall, etc.).
+ *
+ * Priority and tag annotations (`[HIGH]`, `(P1)`, `TODO:`) are extracted
+ * from task titles and attached as metadata when detected.
  */
 export function extractFromText(
   content: string,
@@ -1032,23 +1233,54 @@ export function extractFromText(
   );
   const sourceFile = options?.sourceFile;
 
-  // Try structured text parsing (ALL CAPS, underlined, numbered headers)
+  // Try structured text parsing (ALL CAPS, underlined, numbered, separator headers)
   const { sections, hasStructuredHeaders } = parseTextSections(content);
   if (hasStructuredHeaders) {
     const proposals = buildFromStructuredText(sections, existingTitles, sourceFile);
     if (proposals.length > 0) {
-      return { proposals, usedLLM: false };
+      return { proposals: applyPriorityExtraction(proposals), usedLLM: false };
+    }
+  }
+
+  // Try indentation-based hierarchy (tabs/spaces)
+  const { sections: indentSections, hasIndentedStructure } = parseIndentedText(content);
+  if (hasIndentedStructure) {
+    const proposals = buildFromStructuredText(indentSections, existingTitles, sourceFile);
+    if (proposals.length > 0) {
+      return { proposals: applyPriorityExtraction(proposals), usedLLM: false };
     }
   }
 
   // Fall back to block-based parsing (blank-line-separated)
   const blockResult = buildFromFlatContent(content, existingTitles, sourceFile);
   if (blockResult.proposals.length > 0) {
-    return blockResult;
+    return { ...blockResult, proposals: applyPriorityExtraction(blockResult.proposals) };
   }
 
   // Final fallback: extract requirement sentences from prose
-  return buildFromProse(content, existingTitles, sourceFile);
+  const proseResult = buildFromProse(content, existingTitles, sourceFile);
+  return { ...proseResult, proposals: applyPriorityExtraction(proseResult.proposals) };
+}
+
+/**
+ * Apply priority/tag extraction to task titles across all proposals.
+ * Modifies task titles to remove inline priority annotations and sets
+ * the priority field when detected.
+ */
+function applyPriorityExtraction(proposals: Proposal[]): Proposal[] {
+  return proposals.map((p) => ({
+    ...p,
+    features: p.features.map((f) => ({
+      ...f,
+      tasks: f.tasks.map((t) => {
+        const { cleaned, priority } = extractPriorityTag(t.title);
+        if (priority && cleaned !== t.title) {
+          return { ...t, title: cleaned, priority };
+        }
+        return t;
+      }),
+    })),
+  }));
 }
 
 /**
@@ -1074,11 +1306,14 @@ export async function extractFromFile(
     sourceFile: options?.sourceFile ?? filePath,
   };
 
-  // For markdown files, run content-level syntax validation
+  // Run content-level validation for supported formats
   let contentWarnings: string[] = [];
   if (validation.format === "markdown") {
     const mdValidation = validateMarkdownContent(content);
     contentWarnings = mdValidation.warnings;
+  } else if (validation.format === "text") {
+    const txtValidation = validateTextContent(content);
+    contentWarnings = txtValidation.warnings;
   }
 
   let result: ExtractionResult;

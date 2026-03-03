@@ -6,6 +6,7 @@ import {
   isRequirementSentence,
   extractRequirementSentences,
   parseNumberedSection,
+  extractPriorityTag,
 } from "../../../src/analyze/extract.js";
 import type { Proposal } from "../../../src/analyze/propose.js";
 
@@ -508,5 +509,270 @@ Frontend:
     expect(result.proposals.length).toBeGreaterThan(0);
     expect(taskTitles(result.proposals)).toContain("REST API endpoints");
     expect(taskTitles(result.proposals)).toContain("React component library");
+  });
+});
+
+// ── extractPriorityTag ──
+
+describe("extractPriorityTag", () => {
+  it("extracts bracketed priority tags", () => {
+    expect(extractPriorityTag("[HIGH] Implement login")).toEqual({
+      cleaned: "Implement login",
+      priority: "high",
+      tag: "HIGH",
+    });
+    expect(extractPriorityTag("[CRITICAL] Fix security vulnerability")).toEqual({
+      cleaned: "Fix security vulnerability",
+      priority: "critical",
+      tag: "CRITICAL",
+    });
+    expect(extractPriorityTag("[P1] Add OAuth support")).toEqual({
+      cleaned: "Add OAuth support",
+      priority: "high",
+      tag: "P1",
+    });
+  });
+
+  it("extracts parenthetical priority tags at end of line", () => {
+    expect(extractPriorityTag("Implement login (HIGH)")).toEqual({
+      cleaned: "Implement login",
+      priority: "high",
+      tag: "HIGH",
+    });
+    expect(extractPriorityTag("Add caching (P2)")).toEqual({
+      cleaned: "Add caching",
+      priority: "medium",
+      tag: "P2",
+    });
+  });
+
+  it("extracts priority from P0-P3 tags", () => {
+    expect(extractPriorityTag("[P0] Critical bug fix")).toEqual({
+      cleaned: "Critical bug fix",
+      priority: "critical",
+      tag: "P0",
+    });
+    expect(extractPriorityTag("[P3] Nice-to-have polish")).toEqual({
+      cleaned: "Nice-to-have polish",
+      priority: "low",
+      tag: "P3",
+    });
+  });
+
+  it("extracts prefix labels (TODO:, REQ:, etc.)", () => {
+    expect(extractPriorityTag("TODO: Add unit tests")).toEqual({
+      cleaned: "Add unit tests",
+      priority: "medium",
+      tag: "TODO",
+    });
+    expect(extractPriorityTag("REQ: Support multi-tenancy")).toEqual({
+      cleaned: "Support multi-tenancy",
+      priority: "high",
+      tag: "REQ",
+    });
+    expect(extractPriorityTag("ACTION: Review security audit")).toEqual({
+      cleaned: "Review security audit",
+      priority: "medium",
+      tag: "ACTION",
+    });
+  });
+
+  it("handles combined bracket + prefix", () => {
+    const result = extractPriorityTag("[HIGH] TODO: Fix login bug");
+    expect(result.cleaned).toBe("Fix login bug");
+    expect(result.priority).toBe("high");
+  });
+
+  it("returns null priority for plain text", () => {
+    expect(extractPriorityTag("Implement login flow")).toEqual({
+      cleaned: "Implement login flow",
+      priority: null,
+      tag: null,
+    });
+  });
+
+  it("handles MUST/SHOULD keywords", () => {
+    expect(extractPriorityTag("[MUST] Validate input")).toEqual({
+      cleaned: "Validate input",
+      priority: "high",
+      tag: "MUST",
+    });
+    expect(extractPriorityTag("[OPTIONAL] Add dark mode")).toEqual({
+      cleaned: "Add dark mode",
+      priority: "low",
+      tag: "OPTIONAL",
+    });
+  });
+});
+
+// ── extractFromText — separator lines ──
+
+describe("extractFromText — separator lines", () => {
+  it("treats standalone --- as section break", () => {
+    const text = `Authentication:
+- Implement login
+- Add SSO
+
+---
+
+Billing:
+- Payment processing
+- Invoice generation
+`;
+    const result = extractFromText(text);
+    expect(result.proposals.length).toBeGreaterThan(0);
+    expect(taskTitles(result.proposals)).toContain("Implement login");
+    expect(taskTitles(result.proposals)).toContain("Payment processing");
+  });
+
+  it("treats standalone === as section break", () => {
+    const text = `First Section:
+- Task one
+- Task two
+
+===
+
+Second Section:
+- Task three
+- Task four
+`;
+    const result = extractFromText(text);
+    expect(result.proposals.length).toBeGreaterThan(0);
+    expect(taskTitles(result.proposals)).toContain("Task one");
+    expect(taskTitles(result.proposals)).toContain("Task three");
+  });
+
+  it("treats standalone *** as section break", () => {
+    const text = `Frontend:
+- Component library
+- State management
+
+***
+
+Backend:
+- API endpoints
+- Database schema
+`;
+    const result = extractFromText(text);
+    expect(taskTitles(result.proposals)).toContain("Component library");
+    expect(taskTitles(result.proposals)).toContain("API endpoints");
+  });
+});
+
+// ── extractFromText — indentation-based hierarchy ──
+
+describe("extractFromText — indentation-based hierarchy", () => {
+  it("detects tab-indented hierarchy", () => {
+    const text = `User Management
+\tRegistration
+\t\tEmail validation
+\t\tPassword rules
+\tLogin
+\t\tOAuth support
+\t\tSession management
+`;
+    const result = extractFromText(text);
+    expect(result.proposals.length).toBeGreaterThan(0);
+    expect(result.usedLLM).toBe(false);
+    const tasks = taskTitles(result.proposals);
+    expect(tasks).toContain("Email validation");
+    expect(tasks).toContain("OAuth support");
+  });
+
+  it("detects space-indented hierarchy", () => {
+    const text = `Authentication
+    Login Flow
+        Credential validation
+        Error handling
+    Password Reset
+        Send reset email
+        Token verification
+`;
+    const result = extractFromText(text);
+    expect(result.proposals.length).toBeGreaterThan(0);
+    const tasks = taskTitles(result.proposals);
+    expect(tasks).toContain("Credential validation");
+    expect(tasks).toContain("Send reset email");
+  });
+
+  it("maps shallowest indent to epic and deeper levels to features/tasks", () => {
+    const text = `Platform Features
+    Core
+        User auth
+        Permissions
+    Data
+        Import
+        Export
+`;
+    const result = extractFromText(text);
+    expect(result.proposals.length).toBeGreaterThan(0);
+    expect(epicTitles(result.proposals)).toContain("Platform Features");
+    expect(featureTitles(result.proposals)).toContain("Core");
+    expect(featureTitles(result.proposals)).toContain("Data");
+  });
+});
+
+// ── extractFromText — priority extraction ──
+
+describe("extractFromText — priority extraction from tasks", () => {
+  it("extracts [HIGH] priority from bullet tasks", () => {
+    const text = `FEATURES
+- [HIGH] Implement authentication
+- [LOW] Add dark mode
+- Regular task
+`;
+    const result = extractFromText(text);
+    const tasks = result.proposals.flatMap((p) =>
+      p.features.flatMap((f) => f.tasks),
+    );
+    const highTask = tasks.find((t) => t.title === "Implement authentication");
+    expect(highTask).toBeDefined();
+    expect(highTask!.priority).toBe("high");
+    const lowTask = tasks.find((t) => t.title === "Add dark mode");
+    expect(lowTask).toBeDefined();
+    expect(lowTask!.priority).toBe("low");
+    // Regular task should not have priority
+    const regularTask = tasks.find((t) => t.title === "Regular task");
+    expect(regularTask).toBeDefined();
+    expect(regularTask!.priority).toBeUndefined();
+  });
+
+  it("extracts (P1) priority from parenthetical tags", () => {
+    const text = `Todo:
+- Fix login bug (P1)
+- Add logging (P3)
+`;
+    const result = extractFromText(text);
+    const tasks = result.proposals.flatMap((p) =>
+      p.features.flatMap((f) => f.tasks),
+    );
+    const p1Task = tasks.find((t) => t.title === "Fix login bug");
+    expect(p1Task).toBeDefined();
+    expect(p1Task!.priority).toBe("high");
+    const p3Task = tasks.find((t) => t.title === "Add logging");
+    expect(p3Task).toBeDefined();
+    expect(p3Task!.priority).toBe("low");
+  });
+
+  it("extracts TODO: prefixes from prose", () => {
+    const text = "TODO: Implement input validation. REQ: Support multi-tenant architecture.";
+    const result = extractFromText(text);
+    const tasks = taskTitles(result.proposals);
+    // TODO: prefix should be removed from task titles
+    expect(tasks.some((t) => t.includes("Implement input validation"))).toBe(true);
+  });
+
+  it("cleans priority tags from task titles", () => {
+    const text = `Requirements:
+- [CRITICAL] Fix security vulnerability
+- [MUST] Validate all user input
+`;
+    const result = extractFromText(text);
+    const tasks = taskTitles(result.proposals);
+    // Tags should be stripped from titles
+    expect(tasks).not.toContain("[CRITICAL] Fix security vulnerability");
+    expect(tasks).toContain("Fix security vulnerability");
+    expect(tasks).not.toContain("[MUST] Validate all user input");
+    expect(tasks).toContain("Validate all user input");
   });
 });

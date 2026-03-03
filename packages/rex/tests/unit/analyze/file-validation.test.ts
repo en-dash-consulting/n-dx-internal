@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import {
   validateFileInput,
   validateMarkdownContent,
+  validateTextContent,
   FileValidationError,
   SUPPORTED_EXTENSIONS,
   MAX_FILE_SIZE_BYTES,
@@ -298,5 +299,76 @@ const x = 1;
 `;
     const result = validateMarkdownContent(md);
     expect(result.warnings.some((w) => w.includes("skip"))).toBe(true);
+  });
+});
+
+// ── validateTextContent ──
+
+describe("validateTextContent", () => {
+  it("returns no warnings for well-structured text", () => {
+    const text = `USER AUTHENTICATION
+- Implement login flow
+- Add OAuth2 support
+
+API INFRASTRUCTURE
+- Set up rate limiting
+- Configure caching
+`;
+    const result = validateTextContent(text);
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("returns no warnings for text with requirement keywords", () => {
+    const text = "The system must validate all user input. Users should be able to reset their passwords.";
+    const result = validateTextContent(text);
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("warns about mixed indentation (tabs and spaces)", () => {
+    const text = "\tTabbed line\n    Spaced line\nNormal line";
+    const result = validateTextContent(text);
+    expect(result.valid).toBe(true);
+    expect(result.warnings.some((w) => w.includes("Mixed indentation"))).toBe(true);
+  });
+
+  it("warns about very long lines", () => {
+    const longLine = "x".repeat(600);
+    const text = `${longLine}\n${longLine}\n${longLine}\n${longLine}\nNormal line`;
+    const result = validateTextContent(text);
+    expect(result.valid).toBe(true);
+    expect(result.warnings.some((w) => w.includes("500 characters"))).toBe(true);
+  });
+
+  it("warns when no structure or requirements detected", () => {
+    const text = "This is a general observation about the project timeline and team dynamics.";
+    const result = validateTextContent(text);
+    expect(result.valid).toBe(true);
+    expect(result.warnings.some((w) => w.includes("No detectable structure"))).toBe(true);
+  });
+
+  it("accepts text with bullets (no headers needed)", () => {
+    const text = "- First item\n- Second item\n- Third item";
+    const result = validateTextContent(text);
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("accepts text with underlined headers", () => {
+    const text = `Section
+=======
+Some content here
+`;
+    const result = validateTextContent(text);
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("accepts text with colon headers", () => {
+    const text = `Backend: server components\n- API endpoints\n- Database`;
+    const result = validateTextContent(text);
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toEqual([]);
   });
 });
