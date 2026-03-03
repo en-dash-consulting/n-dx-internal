@@ -449,3 +449,122 @@ Notification System
     expect(result.proposals[0].epic.source).toBe("file-import");
   });
 });
+
+// ── sourceFile tracking ──
+
+describe("sourceFile tracking", () => {
+  it("populates sourceFile on tasks when option is provided", () => {
+    const md = `# Epic
+## Feature
+- Implement login form
+`;
+    const result = extractFromMarkdown(md, {
+      sourceFile: "requirements.md",
+    });
+    expect(result.proposals[0].features[0].tasks[0].sourceFile).toBe(
+      "requirements.md",
+    );
+  });
+
+  it("defaults sourceFile to empty string when option is omitted", () => {
+    const md = `# Epic
+## Feature
+- Implement login form
+`;
+    const result = extractFromMarkdown(md);
+    expect(result.proposals[0].features[0].tasks[0].sourceFile).toBe("");
+  });
+
+  it("populates sourceFile on tasks from extractFromText", () => {
+    const text = `Requirements:
+- Build the thing
+`;
+    const result = extractFromText(text, {
+      sourceFile: "ideas.txt",
+    });
+    expect(result.proposals[0].features[0].tasks[0].sourceFile).toBe(
+      "ideas.txt",
+    );
+  });
+
+  it("populates sourceFile on all tasks in complex documents", () => {
+    const md = `# Auth
+## Login
+- Validate credentials
+- Handle OAuth2
+
+# Dashboard
+## Charts
+- Display charts
+`;
+    const result = extractFromMarkdown(md, {
+      sourceFile: "prd.md",
+    });
+    for (const proposal of result.proposals) {
+      for (const feature of proposal.features) {
+        for (const task of feature.tasks) {
+          expect(task.sourceFile).toBe("prd.md");
+        }
+      }
+    }
+  });
+
+  it("populates sourceFile on acceptance-criteria tasks from heading sections", () => {
+    const md = `# Epic
+## Feature
+### Implement rate limiting
+- Returns 429 when limit exceeded
+- Configurable per-route limits
+`;
+    const result = extractFromMarkdown(md, {
+      sourceFile: "api-spec.md",
+    });
+    expect(result.proposals[0].features[0].tasks[0].sourceFile).toBe(
+      "api-spec.md",
+    );
+  });
+});
+
+// ── Markdown section context ──
+
+describe("markdown section context", () => {
+  it("preserves section path context in task descriptions when enabled", () => {
+    const md = `# User Authentication
+## OAuth2 Integration
+- Implement Google OAuth2 flow
+- Implement GitHub OAuth2 flow
+`;
+    const result = extractFromMarkdown(md, {
+      preserveContext: true,
+    });
+    const tasks = result.proposals[0].features[0].tasks;
+    expect(tasks[0].description).toContain("User Authentication");
+    expect(tasks[0].description).toContain("OAuth2 Integration");
+  });
+
+  it("does not add context to tasks that already have descriptions from headings", () => {
+    const md = `# Epic
+## Feature
+### Implement caching layer
+Add Redis caching for hot paths.
+`;
+    const result = extractFromMarkdown(md, {
+      preserveContext: true,
+    });
+    const task = result.proposals[0].features[0].tasks[0];
+    // Description should be the original paragraph text, context is appended
+    expect(task.description).toContain("Add Redis caching for hot paths");
+  });
+
+  it("does not inject context when preserveContext is false", () => {
+    const md = `# Epic
+## Feature
+- Simple task
+`;
+    const result = extractFromMarkdown(md, {
+      preserveContext: false,
+    });
+    const task = result.proposals[0].features[0].tasks[0];
+    expect(task.description).toBeUndefined();
+  });
+});

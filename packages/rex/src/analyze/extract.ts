@@ -44,6 +44,10 @@ export interface ExtractionOptions {
   useLLM?: boolean;
   /** LLM model to use when disambiguation is needed. */
   model?: string;
+  /** Source file path to attach to extracted proposals. */
+  sourceFile?: string;
+  /** Preserve markdown section context as breadcrumbs in task descriptions. Default: false. */
+  preserveContext?: boolean;
 }
 
 export interface ExtractionResult {
@@ -210,6 +214,15 @@ function normalize(s: string): string {
 const SOURCE = "file-import";
 
 /**
+ * Build a context description breadcrumb from a section path.
+ * Returns a human-readable string like "Epic > Feature" or undefined.
+ */
+function contextDescription(contextPath?: string[]): string | undefined {
+  if (!contextPath || contextPath.length === 0) return undefined;
+  return `From: ${contextPath.join(" > ")}`;
+}
+
+/**
  * Build a ProposalTask from a title, optional description, and optional
  * acceptance criteria.
  */
@@ -217,11 +230,12 @@ function makeTask(
   title: string,
   description?: string,
   acceptanceCriteria?: string[],
+  sourceFile?: string,
 ): ProposalTask {
   return {
     title,
     source: SOURCE,
-    sourceFile: "",
+    sourceFile: sourceFile ?? "",
     description,
     acceptanceCriteria:
       acceptanceCriteria && acceptanceCriteria.length > 0
@@ -237,6 +251,8 @@ function buildProposalsFromSections(
   sections: Section[],
   roleMap: Record<number, HeadingRole>,
   existingTitles: Set<string>,
+  sourceFile?: string,
+  preserveContext?: boolean,
 ): Proposal[] {
   const proposals: Proposal[] = [];
 
@@ -244,13 +260,13 @@ function buildProposalsFromSections(
     const role = roleMap[section.headingLevel];
 
     if (role === "epic") {
-      const proposal = buildEpicProposal(section, roleMap, existingTitles);
+      const proposal = buildEpicProposal(section, roleMap, existingTitles, sourceFile, preserveContext ? [section.heading] : undefined);
       if (proposal.features.length > 0 || !existingTitles.has(normalize(section.heading))) {
         proposals.push(proposal);
       }
     } else if (role === "feature") {
       // Feature at top level — wrap in a default epic
-      const feature = buildFeature(section, roleMap, existingTitles);
+      const feature = buildFeature(section, roleMap, existingTitles, sourceFile, preserveContext ? ["Imported Requirements", section.heading] : undefined);
       if (feature) {
         const existing = proposals.find(
           (p) => normalize(p.epic.title) === normalize("Imported Requirements"),
@@ -266,7 +282,7 @@ function buildProposalsFromSections(
       }
     } else if (role === "task") {
       // Task at top level — wrap in default epic/feature
-      const task = buildTaskFromSection(section, existingTitles);
+      const task = buildTaskFromSection(section, existingTitles, sourceFile);
       if (task) {
         addOrphanTask(proposals, task, existingTitles);
       }
@@ -281,14 +297,17 @@ function buildEpicProposal(
   section: Section,
   roleMap: Record<number, HeadingRole>,
   existingTitles: Set<string>,
+  sourceFile?: string,
+  contextPath?: string[],
 ): Proposal {
   const features = [];
 
   // Direct bullets under the epic (no feature grouping) → create a default feature
   if (section.bullets.length > 0) {
+    const featureContext = contextPath ? [...contextPath, section.heading] : undefined;
     const tasks = section.bullets
       .filter((b) => !existingTitles.has(normalize(b)))
-      .map((b) => makeTask(b));
+      .map((b) => makeTask(b, contextDescription(featureContext), undefined, sourceFile));
     if (tasks.length > 0) {
       features.push({
         title: section.heading,
@@ -303,11 +322,12 @@ function buildEpicProposal(
   for (const child of section.children) {
     const childRole = roleMap[child.headingLevel];
     if (childRole === "feature") {
-      const feature = buildFeature(child, roleMap, existingTitles);
+      const featureContext = contextPath ? [...contextPath, child.heading] : undefined;
+      const feature = buildFeature(child, roleMap, existingTitles, sourceFile, featureContext);
       if (feature) features.push(feature);
     } else if (childRole === "task") {
       // Task directly under epic — group into a feature named after the epic
-      const task = buildTaskFromSection(child, existingTitles);
+      const task = buildTaskFromSection(child, existingTitles, sourceFile, contextPath ? [...contextPath, section.heading] : undefined);
       if (task) {
         // Find or create a "General" feature under this epic
         let generalFeature: { title: string; source: string; description?: string; tasks: ProposalTask[] } | undefined =
@@ -347,6 +367,8 @@ function buildFeature(
   section: Section,
   roleMap: Record<number, HeadingRole>,
   existingTitles: Set<string>,
+  sourceFile?: string,
+  contextPath?: string[],
 ): { title: string; source: string; description?: string; tasks: ProposalTask[] } | null {
   if (existingTitles.has(normalize(section.heading))) return null;
 
@@ -355,7 +377,7 @@ function buildFeature(
   // Bullets under this feature → tasks
   for (const bullet of section.bullets) {
     if (!existingTitles.has(normalize(bullet))) {
-      tasks.push(makeTask(bullet));
+      tasks.push(makeTask(bullet, contextDescription(contextPath), undefined, sourceFile));
     }
   }
 
@@ -363,7 +385,7 @@ function buildFeature(
   for (const child of section.children) {
     const childRole = roleMap[child.headingLevel];
     if (childRole === "task" || !childRole) {
-      const task = buildTaskFromSection(child, existingTitles);
+      const task = buildTaskFromSection(child, existingTitles, sourceFile, contextPath);
       if (task) tasks.push(task);
     }
   }
@@ -382,13 +404,23 @@ function buildFeature(
 function buildTaskFromSection(
   section: Section,
   existingTitles: Set<string>,
+  sourceFile?: string,
+  contextPath?: string[],
 ): ProposalTask | null {
   if (existingTitles.has(normalize(section.heading))) return null;
 
+  const paragraphDesc = section.paragraphs.join(" ") || undefined;
+  const contextDesc = contextDescription(contextPath);
+  // Merge paragraph description with context breadcrumb
+  const description = paragraphDesc && contextDesc
+    ? `${paragraphDesc} [${contextDesc}]`
+    : paragraphDesc ?? contextDesc;
+
   return makeTask(
     section.heading,
-    section.paragraphs.join(" ") || undefined,
+    description,
     section.bullets.length > 0 ? section.bullets : undefined,
+    sourceFile,
   );
 }
 
@@ -808,6 +840,7 @@ function titleCase(text: string): string {
 function buildFromStructuredText(
   sections: TextSection[],
   existingTitles: Set<string>,
+  sourceFile?: string,
 ): Proposal[] {
   const proposals: Proposal[] = [];
 
@@ -840,14 +873,14 @@ function buildFromStructuredText(
       // Direct bullets → tasks under a default feature
       const bulletTasks = section.bullets
         .filter((b) => !existingTitles.has(normalize(b)))
-        .map((b) => makeTask(b));
+        .map((b) => makeTask(b, undefined, undefined, sourceFile));
 
       // Extract requirement sentences from paragraphs
       const proseText = section.paragraphs.join(" ");
       const reqSentences = extractRequirementSentences(proseText);
       const reqTasks = reqSentences
         .filter((s) => !existingTitles.has(normalize(s)))
-        .map((s) => makeTask(s));
+        .map((s) => makeTask(s, undefined, undefined, sourceFile));
 
       const allTasks = [...bulletTasks, ...reqTasks];
       if (allTasks.length > 0) {
@@ -870,14 +903,14 @@ function buildFromStructuredText(
     } else if (role === "feature") {
       const tasks = section.bullets
         .filter((b) => !existingTitles.has(normalize(b)))
-        .map((b) => makeTask(b));
+        .map((b) => makeTask(b, undefined, undefined, sourceFile));
 
       // Extract requirement sentences from paragraphs
       const proseText = section.paragraphs.join(" ");
       const reqSentences = extractRequirementSentences(proseText);
       const reqTasks = reqSentences
         .filter((s) => !existingTitles.has(normalize(s)))
-        .map((s) => makeTask(s));
+        .map((s) => makeTask(s, undefined, undefined, sourceFile));
 
       const allTasks = [...tasks, ...reqTasks];
       if (existingTitles.has(normalize(section.header)) && allTasks.length === 0) continue;
@@ -912,6 +945,7 @@ function buildFromStructuredText(
         section.header,
         section.paragraphs.join(" ") || undefined,
         section.bullets.length > 0 ? section.bullets : undefined,
+        sourceFile,
       );
       addOrphanTask(proposals, task, existingTitles);
     }
@@ -949,11 +983,17 @@ export function extractFromMarkdown(
 
   // No headings at all — just bullets or prose
   if (headingLevels.length === 0) {
-    return buildFromFlatContent(content, existingTitles);
+    return buildFromFlatContent(content, existingTitles, options?.sourceFile);
   }
 
   const roleMap = classifyHeadingLevels(headingLevels);
-  const proposals = buildProposalsFromSections(sections, roleMap, existingTitles);
+  const proposals = buildProposalsFromSections(
+    sections,
+    roleMap,
+    existingTitles,
+    options?.sourceFile,
+    options?.preserveContext,
+  );
 
   // Filter out empty proposals
   const filtered = proposals.filter(
@@ -990,24 +1030,25 @@ export function extractFromText(
   const existingTitles = new Set(
     (options?.existingItems ?? []).map((item) => normalize(item.title)),
   );
+  const sourceFile = options?.sourceFile;
 
   // Try structured text parsing (ALL CAPS, underlined, numbered headers)
   const { sections, hasStructuredHeaders } = parseTextSections(content);
   if (hasStructuredHeaders) {
-    const proposals = buildFromStructuredText(sections, existingTitles);
+    const proposals = buildFromStructuredText(sections, existingTitles, sourceFile);
     if (proposals.length > 0) {
       return { proposals, usedLLM: false };
     }
   }
 
   // Fall back to block-based parsing (blank-line-separated)
-  const blockResult = buildFromFlatContent(content, existingTitles);
+  const blockResult = buildFromFlatContent(content, existingTitles, sourceFile);
   if (blockResult.proposals.length > 0) {
     return blockResult;
   }
 
   // Final fallback: extract requirement sentences from prose
-  return buildFromProse(content, existingTitles);
+  return buildFromProse(content, existingTitles, sourceFile);
 }
 
 /**
@@ -1027,6 +1068,12 @@ export async function extractFromFile(
 
   const content = await readFile(filePath, "utf-8");
 
+  // Auto-populate sourceFile from the file path when not explicitly provided
+  const effectiveOptions: ExtractionOptions = {
+    ...options,
+    sourceFile: options?.sourceFile ?? filePath,
+  };
+
   // For markdown files, run content-level syntax validation
   let contentWarnings: string[] = [];
   if (validation.format === "markdown") {
@@ -1036,12 +1083,12 @@ export async function extractFromFile(
 
   let result: ExtractionResult;
   if (validation.format === "markdown") {
-    result = extractFromMarkdown(content, options);
+    result = extractFromMarkdown(content, effectiveOptions);
   } else if (validation.format === "text") {
-    result = extractFromText(content, options);
+    result = extractFromText(content, effectiveOptions);
   } else {
     // For JSON/YAML and unknown formats, try text extractor as fallback
-    result = extractFromText(content, options);
+    result = extractFromText(content, effectiveOptions);
   }
 
   // Attach any warnings from validation
@@ -1061,6 +1108,7 @@ export async function extractFromFile(
 function buildFromFlatContent(
   content: string,
   existingTitles: Set<string>,
+  sourceFile?: string,
 ): ExtractionResult {
   const blocks = parsePlainTextBlocks(content);
 
@@ -1082,7 +1130,7 @@ function buildFromFlatContent(
 
     const tasks = block.bullets
       .filter((b) => !existingTitles.has(normalize(b)))
-      .map((b) => makeTask(b));
+      .map((b) => makeTask(b, undefined, undefined, sourceFile));
 
     if (tasks.length === 0) continue;
 
@@ -1128,11 +1176,12 @@ function buildFromFlatContent(
 function buildFromProse(
   content: string,
   existingTitles: Set<string>,
+  sourceFile?: string,
 ): ExtractionResult {
   const requirements = extractRequirementSentences(content);
   const tasks = requirements
     .filter((r) => !existingTitles.has(normalize(r)))
-    .map((r) => makeTask(r));
+    .map((r) => makeTask(r, undefined, undefined, sourceFile));
 
   if (tasks.length === 0) {
     return { proposals: [], usedLLM: false };

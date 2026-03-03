@@ -2001,7 +2001,7 @@ export async function reasonFromIdeasFile(
     // Try local markdown extraction (no LLM needed)
     if (format === "markdown") {
       const { extractFromMarkdown } = await import("./extract.js");
-      const extraction = extractFromMarkdown(content, { existingItems });
+      const extraction = extractFromMarkdown(content, { existingItems, sourceFile: fp });
       if (extraction.proposals.length > 0) {
         localProposals.push(...extraction.proposals);
         continue;
@@ -2012,7 +2012,7 @@ export async function reasonFromIdeasFile(
     // Try local plain text extraction (no LLM needed)
     if (format === "text") {
       const { extractFromText } = await import("./extract.js");
-      const extraction = extractFromText(content, { existingItems });
+      const extraction = extractFromText(content, { existingItems, sourceFile: fp });
       if (extraction.proposals.length > 0) {
         localProposals.push(...extraction.proposals);
         continue;

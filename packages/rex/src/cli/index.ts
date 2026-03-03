@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { resolve } from "node:path";
+import { resolve, extname } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { usage } from "./commands/constants.js";
 import { showCommandHelp } from "./help.js";
@@ -181,6 +181,7 @@ async function main(): Promise<void> {
         } else if (firstArg || flags.description || hasFileFlag || stdinText) {
           // Smart mode: rex add "desc1" "desc2" ... [dir]
           //   or file mode: rex add --file=ideas.txt [dir]
+          //   or positional file: rex add requirements.md [dir]
           //   or piped:     echo "desc" | rex add [dir]
           // Last positional may be a dir path — check if it's an existing directory
           let descParts = [...positional];
@@ -197,8 +198,29 @@ async function main(): Promise<void> {
             }
           }
 
-          // Collect descriptions: positional args + --description flag + piped stdin
-          const descriptions: string[] = [...descParts];
+          // Auto-detect file paths in positional arguments:
+          // If a positional arg has a supported extension and the file exists,
+          // treat it as a file import (as if --file was used).
+          const FILE_EXTENSIONS = new Set([".md", ".markdown", ".txt", ".text", ".json", ".yaml", ".yml"]);
+          const detectedFiles: string[] = [];
+          const remainingDescs: string[] = [];
+          for (const part of descParts) {
+            const ext = extname(part).toLowerCase();
+            if (FILE_EXTENSIONS.has(ext) && existsSync(part)) {
+              detectedFiles.push(part);
+            } else {
+              remainingDescs.push(part);
+            }
+          }
+
+          // Merge detected files into the --file multiFlags
+          if (detectedFiles.length > 0) {
+            const existingFiles = multiFlags.file ?? (flags.file ? [flags.file] : []);
+            multiFlags.file = [...existingFiles, ...detectedFiles];
+          }
+
+          // Collect descriptions: remaining positional args + --description flag + piped stdin
+          const descriptions: string[] = [...remainingDescs];
           if (flags.description) {
             descriptions.push(flags.description);
           }
@@ -206,7 +228,8 @@ async function main(): Promise<void> {
             descriptions.push(stdinText);
           }
 
-          if (descriptions.length === 0 && !hasFileFlag) {
+          const hasDetectedFiles = detectedFiles.length > 0;
+          if (descriptions.length === 0 && !hasFileFlag && !hasDetectedFiles) {
             throw new CLIError(
               "Missing description or --file flag.",
               'Usage: rex add <level> --title="..." or rex add "<description>" ["<desc2>" ...] or rex add --file=ideas.txt or echo "desc" | rex add',
