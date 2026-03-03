@@ -314,6 +314,8 @@ export {
   extractFromText,
   extractFromFile,
   classifyHeadingLevels,
+  isAmbiguousStructure,
+  maybeDisambiguate,
 } from "./analyze/extract.js";
 export type { ExtractionOptions, ExtractionResult } from "./analyze/extract.js";
 

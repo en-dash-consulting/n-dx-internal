@@ -16,9 +16,21 @@
  */
 
 import { readFile } from "node:fs/promises";
+import { z } from "zod";
 import type { PRDItem, AnalyzeTokenUsage } from "../schema/index.js";
 import type { Proposal, ProposalTask } from "./propose.js";
-import { detectFileFormat } from "./reason.js";
+import {
+  detectFileFormat,
+  spawnClaude,
+  DEFAULT_MODEL,
+  extractJson,
+  repairTruncatedJson,
+  emptyAnalyzeTokenUsage,
+  accumulateTokenUsage,
+  PRD_SCHEMA,
+  TASK_QUALITY_RULES,
+  OUTPUT_INSTRUCTION,
+} from "./reason.js";
 import type { FileFormat } from "./reason.js";
 import { validateFileInput, validateMarkdownContent } from "./file-validation.js";
 import type { MarkdownValidationResult } from "./file-validation.js";
@@ -1141,4 +1153,208 @@ function buildFromProse(
     ],
     usedLLM: false,
   };
+}
+
+// ── LLM disambiguation ───────────────────────────────────────────
+
+/**
+ * Zod schema for LLM disambiguation response.
+ * The LLM returns a structured JSON array of proposals matching the
+ * standard Proposal shape used across the rex analyze pipeline.
+ */
+const DisambiguationTaskSchema = z.object({
+  title: z.string(),
+  description: z.string().optional(),
+  acceptanceCriteria: z.array(z.string()).optional(),
+});
+
+const DisambiguationFeatureSchema = z.object({
+  title: z.string(),
+  description: z.string().optional(),
+  tasks: z.array(DisambiguationTaskSchema),
+});
+
+const DisambiguationProposalSchema = z.object({
+  epic: z.object({ title: z.string() }),
+  features: z.array(DisambiguationFeatureSchema),
+});
+
+const DisambiguationResponseSchema = z.array(DisambiguationProposalSchema);
+
+/**
+ * Determine whether the pattern-recognition result is ambiguous enough
+ * to benefit from LLM assistance.
+ *
+ * Ambiguous signals:
+ * - Empty proposals from a non-trivial document (content exists but couldn't be structured)
+ * - All items landed in the default "Imported Requirements" / "General" bucket
+ * - Single heading level (unclear epic vs feature distinction)
+ * - Prose-only content with extracted requirement sentences that could be better grouped
+ */
+export function isAmbiguousStructure(
+  proposals: Proposal[],
+  content: string,
+): boolean {
+  const trimmed = content.trim();
+  // Don't consider very short content ambiguous — not enough to justify an LLM call
+  if (trimmed.length < 100) return false;
+
+  // No proposals from non-trivial content → the heuristics couldn't parse it
+  if (proposals.length === 0) return true;
+
+  // Everything fell into the default "Imported Requirements" bucket → unclear structure
+  const allDefault = proposals.every(
+    (p) => normalize(p.epic.title) === normalize("Imported Requirements"),
+  );
+  if (allDefault) return true;
+
+  // Single epic with a single feature and many tasks → might benefit from LLM grouping
+  if (
+    proposals.length === 1 &&
+    proposals[0].features.length === 1 &&
+    proposals[0].features[0].tasks.length > 5
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Build the LLM prompt for disambiguating an unclear document structure.
+ * The prompt includes the raw content and asks the LLM to classify it
+ * into the standard epic → feature → task hierarchy.
+ */
+function buildDisambiguationPrompt(
+  content: string,
+  existingTitles: Set<string>,
+): string {
+  const existingList = existingTitles.size > 0
+    ? `\nExisting items to avoid duplicating:\n${[...existingTitles].map((t) => `- ${t}`).join("\n")}\n`
+    : "";
+
+  return `You are a product requirements analyst. The following document contains requirements but its structure is ambiguous. Analyze the content and organize it into a hierarchical PRD structure.
+
+${PRD_SCHEMA}
+
+${TASK_QUALITY_RULES}
+
+Guidelines for disambiguation:
+- Group related requirements under coherent epics and features.
+- Identify implicit groupings from context (e.g., authentication-related items belong together).
+- Separate distinct concerns into different epics.
+- Convert prose requirements into actionable task titles.
+- Extract acceptance criteria from detailed descriptions.
+- Do NOT include items that duplicate existing ones listed below.
+${existingList}
+Document to analyze:
+---
+${content.slice(0, 20_000)}
+---
+
+${OUTPUT_INSTRUCTION}`;
+}
+
+/**
+ * Parse the LLM disambiguation response into Proposal objects.
+ * Applies the standard source annotation and validates with Zod.
+ */
+function parseDisambiguationResponse(raw: string): Proposal[] {
+  const jsonText = extractJson(raw);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(jsonText);
+  } catch {
+    // Try repair
+    const repaired = repairTruncatedJson(jsonText);
+    if (!repaired) return [];
+    try {
+      parsed = JSON.parse(repaired);
+    } catch {
+      return [];
+    }
+  }
+
+  // Handle both array and single-object responses
+  const arrayData = Array.isArray(parsed) ? parsed : [parsed];
+  const result = DisambiguationResponseSchema.safeParse(arrayData);
+  if (!result.success) return [];
+
+  return result.data.map((item) => ({
+    epic: { title: item.epic.title, source: SOURCE },
+    features: item.features.map((f) => ({
+      title: f.title,
+      source: SOURCE,
+      description: f.description,
+      tasks: f.tasks.map((t) => makeTask(
+        t.title,
+        t.description,
+        t.acceptanceCriteria,
+      )),
+    })),
+  }));
+}
+
+/**
+ * Attempt LLM disambiguation of ambiguous content.
+ * Only called when useLLM is true and the pattern-recognition pass
+ * produced ambiguous results.
+ *
+ * Falls back to the original (pattern-based) result on any LLM failure.
+ */
+async function disambiguateWithLLM(
+  content: string,
+  existingTitles: Set<string>,
+  patternResult: ExtractionResult,
+  model?: string,
+): Promise<ExtractionResult> {
+  const tokenUsage = emptyAnalyzeTokenUsage();
+
+  try {
+    const prompt = buildDisambiguationPrompt(content, existingTitles);
+    const result = await spawnClaude(prompt, model ?? DEFAULT_MODEL);
+    accumulateTokenUsage(tokenUsage, result.tokenUsage);
+
+    const proposals = parseDisambiguationResponse(result.text);
+
+    // If the LLM produced a meaningful result, use it
+    if (proposals.length > 0) {
+      // Filter out empty proposals (no features)
+      const filtered = proposals.filter((p) => p.features.length > 0);
+      if (filtered.length > 0) {
+        return {
+          proposals: filtered,
+          usedLLM: true,
+          tokenUsage,
+          warnings: patternResult.warnings,
+        };
+      }
+    }
+
+    // LLM didn't produce useful results — fall back to pattern-based
+    return { ...patternResult, tokenUsage };
+  } catch {
+    // LLM call failed — fall back to pattern-based results silently
+    return patternResult;
+  }
+}
+
+/**
+ * Optionally enhance extraction results with LLM disambiguation.
+ * Called at the end of both extractFromMarkdown and extractFromText
+ * when useLLM is true and the result is ambiguous.
+ */
+export async function maybeDisambiguate(
+  content: string,
+  patternResult: ExtractionResult,
+  options?: ExtractionOptions,
+): Promise<ExtractionResult> {
+  if (!options?.useLLM) return patternResult;
+  if (!isAmbiguousStructure(patternResult.proposals, content)) return patternResult;
+
+  const existingTitles = new Set(
+    (options?.existingItems ?? []).map((item) => normalize(item.title)),
+  );
+
+  return disambiguateWithLLM(content, existingTitles, patternResult, options.model);
 }
