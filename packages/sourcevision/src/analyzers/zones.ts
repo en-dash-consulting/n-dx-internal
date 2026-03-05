@@ -1162,6 +1162,44 @@ function computeContentHashes(
   return { zoneContentHashes, globalContentHash };
 }
 
+/**
+ * Remap content hash keys from pre-enrichment zone IDs to post-enrichment IDs.
+ *
+ * Enrichment (AI or fast-mode preservation) may rename zone IDs. This function
+ * builds a mapping by matching zones positionally (same index = same zone) and
+ * returns a new hash record keyed by the final zone IDs.
+ *
+ * If no IDs changed, the original record is returned as-is for efficiency.
+ */
+function remapContentHashKeys(
+  originalHashes: Record<string, string>,
+  preEnrichmentZones: Zone[],
+  postEnrichmentZones: Zone[],
+): Record<string, string> {
+  // Build old→new ID mapping. Zones are matched by array position since
+  // enrichment preserves zone order and count.
+  const idMap = new Map<string, string>();
+  let anyChanged = false;
+  const limit = Math.min(preEnrichmentZones.length, postEnrichmentZones.length);
+  for (let i = 0; i < limit; i++) {
+    const oldId = preEnrichmentZones[i].id;
+    const newId = postEnrichmentZones[i].id;
+    if (oldId !== newId) {
+      anyChanged = true;
+    }
+    idMap.set(oldId, newId);
+  }
+
+  if (!anyChanged) return originalHashes;
+
+  const remapped: Record<string, string> = {};
+  for (const [key, hash] of Object.entries(originalHashes)) {
+    const newKey = idMap.get(key) ?? key;
+    remapped[newKey] = hash;
+  }
+  return remapped;
+}
+
 // ── Helper: AI enrichment ────────────────────────────────────────────────────
 
 /** Result of enrichment or preservation of previous zone data. */
@@ -1688,6 +1726,14 @@ export async function analyzeZones(
   const { finalZones, aiZoneInsights, aiGlobalInsights, aiFindings,
     enrichmentPass, metaUpdatedFindings, enrichTokenUsage } = enrichResult;
 
+  // ── Remap content hashes to post-enrichment zone IDs ──
+  // Enrichment may rename zone IDs (e.g. "dom" → "dom-performance-monitoring").
+  // The content hashes were computed with pre-enrichment IDs and must be remapped
+  // so that downstream consumers can join zone metadata with content hashes by ID.
+  const remappedContentHashes = remapContentHashKeys(
+    zoneContentHashes, expandedZones, finalZones,
+  );
+
   // ── Promote zones from sub-analyses ──
   const promotedZones: Zone[] = [];
   const promotedCrossings: ZoneCrossing[] = [];
@@ -1722,7 +1768,7 @@ export async function analyzeZones(
   // ── Assemble findings ──
   const allFindings = assembleFindings(
     finalZones, structural, aiFindings, metaUpdatedFindings,
-    validPrevious, previousZones, zoneContentHashes, globalContentHash
+    validPrevious, previousZones, remappedContentHashes, globalContentHash
   );
 
   // ── Back-populate findings into insights for backward compatibility ──
@@ -1746,7 +1792,7 @@ export async function analyzeZones(
       enrichmentPass: allFindings.length > 0 ? displayPass : undefined,
       ...(metaEvaluationCount ? { metaEvaluationCount } : {}),
       structureHash,
-      zoneContentHashes,
+      zoneContentHashes: remappedContentHashes,
       ...(lastReset ? { lastReset } : {}),
     }),
     tokenUsage: enrichTokenUsage,
