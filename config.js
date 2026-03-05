@@ -257,7 +257,7 @@ async function testApiConnection(apiKey, endpoint, model) {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: model || "claude-sonnet-4-20250514",
+        model: model || "claude-sonnet-4-6",
         max_tokens: 1,
         messages: [{ role: "user", content: "hi" }],
       }),
@@ -535,6 +535,14 @@ Rex budget settings (token/cost usage limits):
   rex.budget.warnAt        number    Warning threshold percentage (default: 80)
   rex.budget.abort         boolean   Abort operations when budget exceeded (default: false)
 
+Rex LoE settings (level-of-effort estimation and decomposition):
+  rex.loe.taskThresholdWeeks     number    Max task size in engineer-weeks before
+                                           automatic decomposition (default: 2)
+  rex.loe.maxDecompositionDepth  number    Max recursion depth for decomposition
+                                           (default: 2)
+  rex.loe.proposalCeiling        number    Max proposal tasks per input description
+                                           before triggering consolidation (default: 10)
+
 Hench settings (.hench/config.json):
   hench.provider           string    API provider: "cli" or "api" (default: "cli")
   hench.model              string    Claude model name (default: "sonnet")
@@ -573,8 +581,8 @@ Claude settings (.n-dx.json — shared across all packages):
                                     Validated: must be a valid HTTP(S) URL.
   claude.model             string    Default Claude model for API calls (optional)
                                     Override the default model used by all packages.
-                                    Examples: claude-sonnet-4-20250514, claude-opus-4-20250514
-                                    Default: claude-sonnet-4-20250514
+                                    Examples: claude-sonnet-4-6, claude-opus-4-20250514
+                                    Default: claude-sonnet-4-6
 
 LLM vendor settings (.n-dx.json — preferred for multi-vendor setup):
   llm.vendor               string    Active LLM vendor: "claude" or "codex"

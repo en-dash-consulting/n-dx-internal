@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { h, render } from "preact";
 import { PRDTree } from "../../../src/viewer/components/prd-tree/prd-tree.js";
-import type { PRDDocumentData } from "../../../src/viewer/components/prd-tree/types.js";
+import type { PRDDocumentData, ItemStatus } from "../../../src/viewer/components/prd-tree/types.js";
 
 function renderToDiv(vnode: ReturnType<typeof h>) {
   const root = document.createElement("div");
@@ -237,23 +237,26 @@ describe("PRDTree", () => {
     expect(segments.length).toBeGreaterThan(0);
   });
 
-  it("renders status filter controls", () => {
+  it("does not render status filter controls (filter bar is now external)", () => {
     const root = renderToDiv(h(PRDTree, { document: sampleDoc }));
+    // StatusFilter is now rendered by PRDView, not by PRDTree
     const filterGroup = root.querySelector("[role='group'][aria-label='Filter by status']");
-    expect(filterGroup).not.toBeNull();
+    expect(filterGroup).toBeNull();
   });
 
-  it("renders status filter chips for all statuses", () => {
-    const root = renderToDiv(h(PRDTree, { document: sampleDoc }));
-    const chips = root.querySelectorAll(".prd-status-chip");
-    // Should have chips for all 7 statuses
-    expect(chips.length).toBe(7);
+  it("accepts controlled activeStatuses prop to show all items", () => {
+    const allStatuses = new Set<ItemStatus>(["pending", "in_progress", "completed", "failing", "blocked", "deferred", "deleted"]);
+    const root = renderToDiv(h(PRDTree, { document: sampleDoc, activeStatuses: allStatuses, defaultExpandDepth: 3 }));
+    // With all statuses visible, completed task should appear
+    expect(root.textContent).toContain("Build login form");
   });
 
-  it("renders filter preset buttons", () => {
-    const root = renderToDiv(h(PRDTree, { document: sampleDoc }));
-    const presets = root.querySelectorAll(".prd-status-preset");
-    expect(presets.length).toBe(4); // "All Items", "Active Work", "Completed", "Blocked/Deferred"
+  it("uses default Active Work filter when activeStatuses prop is omitted", () => {
+    const root = renderToDiv(h(PRDTree, { document: sampleDoc, defaultExpandDepth: 3 }));
+    // Completed items should be hidden by the default Active Work filter
+    expect(root.textContent).not.toContain("Build login form");
+    // In-progress items should be visible
+    expect(root.textContent).toContain("Add OAuth support");
   });
 
   it("hides deleted items by default", () => {

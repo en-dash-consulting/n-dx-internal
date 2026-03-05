@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createRequestDedup } from "../../../src/viewer/request-dedup.js";
+import { createRequestDedup } from "../../../src/viewer/messaging/request-dedup.js";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@ import { validateDocument, validateConfig, validateLogEntry } from "../schema/va
 import { toCanonicalJSON } from "../core/canonical.js";
 import { findItem, insertChild, updateInTree, removeFromTree } from "../core/tree.js";
 import { loadProjectOverrides, mergeWithOverrides } from "./project-config.js";
-import type { PRDStore, StoreCapabilities } from "./types.js";
+import type { PRDStore, StoreCapabilities } from "./contracts.js";
 
 export class FileStore implements PRDStore {
   private rexDir: string;

@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
-import { resolve } from "node:path";
+import { resolve, extname } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { usage } from "./commands/constants.js";
 import { showCommandHelp } from "./help.js";
 import { CLIError, handleCLIError, requireRexDir } from "./errors.js";
 import { setQuiet } from "./output.js";
 import { formatTypoSuggestion } from "@n-dx/llm-client";
+import { isItemLevel } from "../schema/index.js";
 
 /**
  * Read all data from stdin when input is piped (not a TTY).
@@ -43,6 +44,8 @@ const VALUE_KEYS = new Set([
   "output",
   "host",
   "port",
+  "group-by",
+  "accept-llm",
   ...MULTI_VALUE_KEYS,
 ]);
 
@@ -150,7 +153,6 @@ async function main(): Promise<void> {
         break;
       }
       case "add": {
-        const VALID_LEVELS = new Set(["epic", "feature", "task", "subtask"]);
         const firstArg = positional[0];
         const hasFileFlag = !!(multiFlags.file?.length || flags.file);
 
@@ -161,8 +163,8 @@ async function main(): Promise<void> {
         //   1. Positional level:  rex add task --title="..." --parent=<id>
         //   2. --level flag:      rex add --level=task --title="..." --parent=<id>
         //   3. --title flag only: rex add --title="..." (defaults to epic)
-        const positionalLevel = firstArg && VALID_LEVELS.has(firstArg);
-        const flagLevel = flags.level && VALID_LEVELS.has(flags.level);
+        const positionalLevel = firstArg && isItemLevel(firstArg);
+        const flagLevel = flags.level && isItemLevel(flags.level);
         const isManualMode = positionalLevel || flagLevel || flags.title;
 
         if (isManualMode) {
@@ -179,6 +181,7 @@ async function main(): Promise<void> {
         } else if (firstArg || flags.description || hasFileFlag || stdinText) {
           // Smart mode: rex add "desc1" "desc2" ... [dir]
           //   or file mode: rex add --file=ideas.txt [dir]
+          //   or positional file: rex add requirements.md [dir]
           //   or piped:     echo "desc" | rex add [dir]
           // Last positional may be a dir path — check if it's an existing directory
           let descParts = [...positional];
@@ -195,8 +198,29 @@ async function main(): Promise<void> {
             }
           }
 
-          // Collect descriptions: positional args + --description flag + piped stdin
-          const descriptions: string[] = [...descParts];
+          // Auto-detect file paths in positional arguments:
+          // If a positional arg has a supported extension and the file exists,
+          // treat it as a file import (as if --file was used).
+          const FILE_EXTENSIONS = new Set([".md", ".markdown", ".txt", ".text", ".json", ".yaml", ".yml"]);
+          const detectedFiles: string[] = [];
+          const remainingDescs: string[] = [];
+          for (const part of descParts) {
+            const ext = extname(part).toLowerCase();
+            if (FILE_EXTENSIONS.has(ext) && existsSync(part)) {
+              detectedFiles.push(part);
+            } else {
+              remainingDescs.push(part);
+            }
+          }
+
+          // Merge detected files into the --file multiFlags
+          if (detectedFiles.length > 0) {
+            const existingFiles = multiFlags.file ?? (flags.file ? [flags.file] : []);
+            multiFlags.file = [...existingFiles, ...detectedFiles];
+          }
+
+          // Collect descriptions: remaining positional args + --description flag + piped stdin
+          const descriptions: string[] = [...remainingDescs];
           if (flags.description) {
             descriptions.push(flags.description);
           }
@@ -204,7 +228,8 @@ async function main(): Promise<void> {
             descriptions.push(stdinText);
           }
 
-          if (descriptions.length === 0 && !hasFileFlag) {
+          const hasDetectedFiles = detectedFiles.length > 0;
+          if (descriptions.length === 0 && !hasFileFlag && !hasDetectedFiles) {
             throw new CLIError(
               "Missing description or --file flag.",
               'Usage: rex add <level> --title="..." or rex add "<description>" ["<desc2>" ...] or rex add --file=ideas.txt or echo "desc" | rex add',
@@ -249,13 +274,13 @@ async function main(): Promise<void> {
         break;
       }
       case "remove": {
-        const REMOVABLE_LEVELS = new Set(["epic", "task"]);
+        const REMOVABLE_LEVELS = new Set(["epic", "feature", "task"]);
         const firstArg = positional[0];
         let removeLevel: string | undefined;
         let removeId: string;
 
         if (firstArg && REMOVABLE_LEVELS.has(firstArg)) {
-          // rex remove epic <id> [dir]  or  rex remove task <id> [dir]
+          // rex remove epic <id> [dir]  or  rex remove feature <id> [dir]  or  rex remove task <id> [dir]
           removeLevel = firstArg;
           removeId = positional[1];
           if (!removeId) {
@@ -270,7 +295,7 @@ async function main(): Promise<void> {
         } else {
           throw new CLIError(
             "Missing item ID.",
-            "Usage: rex remove <epic|task> <id> or rex remove <id>",
+            "Usage: rex remove <epic|feature|task> <id> or rex remove <id>",
           );
         }
 
@@ -354,6 +379,16 @@ async function main(): Promise<void> {
         await cmdAdapter(dir, adapterPositional, flags);
         break;
       }
+      case "reorganize": {
+        const { cmdReorganize } = await import("./commands/reorganize.js");
+        await cmdReorganize(resolveDir(), flags);
+        break;
+      }
+      case "health": {
+        const { cmdHealth } = await import("./commands/health.js");
+        await cmdHealth(resolveDir(), flags);
+        break;
+      }
       case "mcp": {
         const { startMcpServer } = await import("./mcp.js");
         await startMcpServer(resolveDir());
@@ -363,7 +398,7 @@ async function main(): Promise<void> {
         const REX_COMMANDS = [
           "init", "status", "next", "add", "update", "move", "remove", "reshape",
           "prune", "validate", "fix", "sync", "usage", "report", "verify",
-          "recommend", "analyze", "import", "adapter", "mcp",
+          "recommend", "analyze", "import", "adapter", "reorganize", "health", "mcp",
         ];
         const typoHint = formatTypoSuggestion(command, REX_COMMANDS, "rex ");
         throw new CLIError(

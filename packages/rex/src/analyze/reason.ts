@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { z } from "zod";
 import type { PRDItem, TokenUsage, AnalyzeTokenUsage } from "../schema/index.js";
+import { isContainerLevel } from "../schema/index.js";
 import type { ScanResult } from "./scanners.js";
 import type { Proposal, ProposalTask } from "./propose.js";
 import { walkTree } from "../core/tree.js";
@@ -17,7 +18,7 @@ import {
   detectLLMAuthMode,
 } from "@n-dx/llm-client";
 
-export const DEFAULT_MODEL = "claude-sonnet-4-20250514";
+export const DEFAULT_MODEL = "claude-sonnet-4-6";
 export const DEFAULT_CODEX_MODEL = "gpt-5-codex";
 
 /** Maximum number of LLM retry attempts for transient/parse failures. */
@@ -180,16 +181,23 @@ const ProposalTaskSchema = z.object({
   acceptanceCriteria: z.array(z.string()).optional(),
   priority: z.enum(["critical", "high", "medium", "low"]).optional(),
   tags: z.array(z.string()).optional(),
+  loe: z.number().positive().optional(),
+  loeRationale: z.string().optional(),
+  loeConfidence: z.enum(["low", "medium", "high"]).optional(),
 });
 
 const ProposalFeatureSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
+  existingId: z.string().optional(),
   tasks: z.array(ProposalTaskSchema),
 });
 
 const ProposalSchema = z.object({
-  epic: z.object({ title: z.string() }),
+  epic: z.object({
+    title: z.string(),
+    existingId: z.string().optional(),
+  }),
   features: z.array(ProposalFeatureSchema),
 });
 
@@ -197,11 +205,16 @@ const ProposalArraySchema = z.array(ProposalSchema);
 
 // ── Helpers ──
 
-function summarizeExisting(items: PRDItem[]): string {
+function summarizeExisting(
+  items: PRDItem[],
+  options?: { withIds?: boolean },
+): string {
   const lines: string[] = [];
   for (const { item, parents } of walkTree(items)) {
     const indent = "  ".repeat(parents.length);
-    lines.push(`${indent}- [${item.level}] ${item.title} (${item.status})`);
+    const showId = options?.withIds && isContainerLevel(item.level);
+    const idPart = showId ? ` (id: ${item.id})` : "";
+    lines.push(`${indent}- [${item.level}] ${item.title} (${item.status})${idPart}`);
   }
   return lines.length > 0 ? lines.join("\n") : "(empty PRD)";
 }
@@ -555,11 +568,12 @@ function normalizeProposals(
   validated: z.infer<typeof ProposalArraySchema>,
 ): Proposal[] {
   return validated.map((p) => ({
-    epic: { title: p.epic.title, source: "llm" },
+    epic: { title: p.epic.title, source: "llm", existingId: p.epic.existingId },
     features: p.features.map((f) => ({
       title: f.title,
       source: "llm",
       description: f.description,
+      existingId: f.existingId,
       tasks: f.tasks.map((t) => ({
         title: t.title,
         source: "llm",
@@ -568,6 +582,9 @@ function normalizeProposals(
         acceptanceCriteria: t.acceptanceCriteria,
         priority: t.priority,
         tags: t.tags,
+        loe: t.loe,
+        loeRationale: t.loeRationale,
+        loeConfidence: t.loeConfidence,
       })),
     })),
   }));
@@ -681,11 +698,11 @@ export async function spawnClaude(prompt: string, model: string, claudeConfig?: 
 
 // ── Format detection ──
 
-export type FileFormat = "markdown" | "json" | "yaml";
+export type FileFormat = "markdown" | "text" | "json" | "yaml";
 
 const FORMAT_MAP: Record<string, FileFormat> = {
   ".md": "markdown",
-  ".txt": "markdown",
+  ".txt": "text",
   ".json": "json",
   ".yaml": "yaml",
   ".yml": "yaml",
@@ -779,7 +796,7 @@ export function parseStructuredFile(
   format: FileFormat,
   existingItems: PRDItem[],
 ): Proposal[] | null {
-  if (format === "markdown") return null;
+  if (format === "markdown" || format === "text") return null;
 
   // For JSON, first try to parse as the full Proposal schema
   if (format === "json") {
@@ -873,6 +890,8 @@ export function parseStructuredFile(
 const FORMAT_HINTS: Record<FileFormat, string> = {
   markdown:
     "The document is in Markdown format. Pay attention to headings, bullet points, and structured sections.",
+  text:
+    "The document is in plain text format. Look for section headers (ALL CAPS, underlined, numbered), bullet points, and requirement keywords (must, should, shall).",
   json:
     "The document is in JSON format. Extract meaningful requirements from the structured data, including nested objects and arrays.",
   yaml:
@@ -887,8 +906,15 @@ const FORMAT_HINTS: Record<FileFormat, string> = {
  * (one source of truth instead of repeating the shape in every prompt).
  */
 export const PRD_SCHEMA = `Each element must be an object with:
-- "epic": { "title": string }
-- "features": array of { "title": string, "description"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[] } }`;
+- "epic": { "title": string, "existingId"?: string }
+- "features": array of { "title": string, "description"?: string, "existingId"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[], "loe"?: number, "loeRationale"?: string, "loeConfidence"?: "low"|"medium"|"high" } }
+The optional "existingId" on epics and features references an existing PRD item by ID — use it to place new items under existing containers instead of creating duplicates.
+
+Level-of-Effort (LoE) fields on tasks:
+- "loe": estimated effort in engineer-weeks (positive number, e.g. 0.5, 1, 2, 4).
+- "loeRationale": one-sentence explanation justifying the estimate (mention key cost drivers).
+- "loeConfidence": your confidence in the estimate — "low" (novel domain, many unknowns), "medium" (some unknowns but bounded scope), or "high" (well-understood, similar work done before).
+Include all three LoE fields on every task.`;
 
 /**
  * Shared task-quality guidelines that every PRD prompt should include.
@@ -919,6 +945,45 @@ export const ANTI_PATTERNS = `Avoid these common mistakes:
  */
 export const OUTPUT_INSTRUCTION = `Respond with ONLY a valid JSON array. No explanation, no markdown fences, no commentary — just the JSON.`;
 
+/**
+ * Auto-placement instruction block. Included in prompts when no explicit
+ * parentId is specified, telling the LLM it can reference existing PRD
+ * items by ID to place new items under them.
+ */
+export const AUTO_PLACEMENT_INSTRUCTION = `
+## Placement
+The existing PRD includes item IDs for epics and features. When new items
+naturally belong under an existing epic or feature, set "existingId" on the
+epic/feature object to reference it by ID. Only create new epics/features
+when the items genuinely represent new work areas not covered by the existing tree.
+
+If an existing parent's title needs to expand to accommodate the new scope,
+use "existingId" to reference it AND set the title to the updated version.`;
+
+/**
+ * Consolidation instruction block. Guides the LLM toward producing fewer,
+ * larger work packages rather than many micro-tasks. Included in prompts
+ * that process broad input (scan results, natural-language descriptions)
+ * to produce sprint-sized proposals.
+ */
+export const CONSOLIDATION_INSTRUCTION = `
+## Consolidation
+Prefer consolidated, sprint-sized work packages over many small tasks.
+For broad input covering multiple areas, aim for 3–7 top-level proposals
+(epics) rather than 10+ micro-items. Each task should represent a
+meaningful deliverable — not a single function or file change.
+
+Guidelines:
+- Merge related scan findings into a single task when they address the
+  same concern (e.g. "add input validation" across multiple routes →
+  one task covering the validation pattern).
+- Prefer one well-scoped task with clear acceptance criteria over three
+  trivially small tasks that would be completed together anyway.
+- If a broad description covers an entire feature area, create 1–2
+  features with 2–5 tasks each, not a flat list of 15 micro-tasks.
+- Each task should still be completable in a single focused sprint
+  (roughly 0.5–4 engineer-weeks), not so large it becomes vague.`;
+
 // ── Few-shot example for LLM prompts ──
 
 /**
@@ -936,14 +1001,43 @@ export const FEW_SHOT_EXAMPLE = `Example output (for reference — do NOT includ
         "tasks": [
           {
             "title": "Implement OAuth2 callback handler",
-            "description": "Handle the authorization code exchange and token storage after provider redirects back to our app",
+            "description": "Handle the authorization code exchange and token storage after provider redirects back to our app. Covers Google and GitHub providers with a pluggable adapter pattern for future providers.",
             "acceptanceCriteria": [
-              "Handles Google OAuth2 flow end-to-end",
-              "Stores refresh token securely",
-              "Returns meaningful error on provider rejection"
+              "Handles Google and GitHub OAuth2 flows end-to-end",
+              "Stores refresh token securely in encrypted session storage",
+              "Returns meaningful error on provider rejection",
+              "Provider adapter interface documented with at least one example"
             ],
             "priority": "high",
-            "tags": ["auth", "backend"]
+            "tags": ["auth", "backend"],
+            "loe": 2,
+            "loeRationale": "Two providers with shared adapter pattern, plus token storage and error handling — bounded by well-documented OAuth2 spec.",
+            "loeConfidence": "high"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "epic": { "title": "API Infrastructure", "existingId": "abc-123" },
+    "features": [
+      {
+        "title": "Rate Limiting",
+        "description": "Protect API endpoints from abuse with configurable rate limits",
+        "tasks": [
+          {
+            "title": "Implement token bucket rate limiter middleware",
+            "description": "Add per-endpoint rate limiting using a token bucket algorithm with configurable burst and sustained rates",
+            "acceptanceCriteria": [
+              "Returns 429 with Retry-After header when limit exceeded",
+              "Configurable per-route limits via middleware options",
+              "Supports both IP-based and API-key-based limiting"
+            ],
+            "priority": "high",
+            "tags": ["api", "security"],
+            "loe": 1.5,
+            "loeRationale": "Standard middleware pattern with token bucket algorithm; main effort is the configuration surface and tests.",
+            "loeConfidence": "medium"
           }
         ]
       }
@@ -1118,10 +1212,19 @@ export async function reasonFromFile(
   const tokenUsage = emptyAnalyzeTokenUsage();
 
   // For JSON/YAML, try direct structured parsing first
-  if (format !== "markdown") {
+  if (format !== "markdown" && format !== "text") {
     const structured = parseStructuredFile(content, format, existingItems);
     if (structured !== null) {
       return { proposals: structured, tokenUsage };
+    }
+  }
+
+  // For text files, try local extraction before LLM
+  if (format === "text") {
+    const { extractFromText } = await import("./extract.js");
+    const extraction = extractFromText(content, { existingItems });
+    if (extraction.proposals.length > 0) {
+      return { proposals: extraction.proposals, tokenUsage };
     }
   }
 
@@ -1299,6 +1402,7 @@ export async function reasonFromScanResults(
 ${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
+${CONSOLIDATION_INSTRUCTION}
 
 Structuring guidelines:
 - Near-duplicate items have already been merged. Focus on semantic grouping and structure.
@@ -1349,7 +1453,8 @@ export async function buildAddPrompt(
   dir: string,
   options?: AddPromptOptions,
 ): Promise<string> {
-  const existingSummary = summarizeExisting(existingItems);
+  const hasParent = !!options?.parentId;
+  const existingSummary = summarizeExisting(existingItems, { withIds: !hasParent });
   const projectContext = await readProjectContext(dir);
 
   const contextBlock = projectContext
@@ -1357,19 +1462,22 @@ export async function buildAddPrompt(
     : "";
 
   let parentConstraint = "";
-  if (options?.parentId) {
+  let placementBlock = "";
+  if (hasParent) {
     // Find the parent in the tree and describe it
-    const parentEntry = findItemInTree(existingItems, options.parentId);
+    const parentEntry = findItemInTree(existingItems, options!.parentId!);
     if (parentEntry) {
       parentConstraint = `
 IMPORTANT: Scope your response to fit under this existing parent item:
-  ID: ${options.parentId}
+  ID: ${options!.parentId}
   Level: ${parentEntry.level}
   Title: ${parentEntry.title}
 
 Only create children appropriate for a ${parentEntry.level}. For example, if the parent is an epic, create features and tasks. If the parent is a feature, create only tasks.
 Do NOT create a new epic — instead use the parent's title as the epic title in your response.`;
     }
+  } else if (existingItems.length > 0) {
+    placementBlock = AUTO_PLACEMENT_INSTRUCTION;
   }
 
   return `You are a product requirements analyst. Given the following natural-language description, create a structured PRD breakdown as a JSON array.
@@ -1377,6 +1485,7 @@ Do NOT create a new epic — instead use the parent's title as the epic title in
 ${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
+${CONSOLIDATION_INSTRUCTION}
 
 Structuring guidelines:
 - Break the description into a logical hierarchy of epics, features, and tasks.
@@ -1391,7 +1500,7 @@ Deduplication:
 - Use the project context to understand terminology and architecture.
 
 ${ANTI_PATTERNS}
-${parentConstraint}
+${parentConstraint}${placementBlock}
 ${contextBlock}
 Existing PRD:
 ${existingSummary}
@@ -1449,7 +1558,8 @@ export async function buildMultiAddPrompt(
   dir: string,
   options?: AddPromptOptions,
 ): Promise<string> {
-  const existingSummary = summarizeExisting(existingItems);
+  const hasParent = !!options?.parentId;
+  const existingSummary = summarizeExisting(existingItems, { withIds: !hasParent });
   const projectContext = await readProjectContext(dir);
 
   const contextBlock = projectContext
@@ -1457,18 +1567,21 @@ export async function buildMultiAddPrompt(
     : "";
 
   let parentConstraint = "";
-  if (options?.parentId) {
-    const parentEntry = findItemInTree(existingItems, options.parentId);
+  let placementBlock = "";
+  if (hasParent) {
+    const parentEntry = findItemInTree(existingItems, options!.parentId!);
     if (parentEntry) {
       parentConstraint = `
 IMPORTANT: Scope your response to fit under this existing parent item:
-  ID: ${options.parentId}
+  ID: ${options!.parentId}
   Level: ${parentEntry.level}
   Title: ${parentEntry.title}
 
 Only create children appropriate for a ${parentEntry.level}. For example, if the parent is an epic, create features and tasks. If the parent is a feature, create only tasks.
 Do NOT create a new epic — instead use the parent's title as the epic title in your response.`;
     }
+  } else if (existingItems.length > 0) {
+    placementBlock = AUTO_PLACEMENT_INSTRUCTION;
   }
 
   const numbered = descriptions
@@ -1480,6 +1593,7 @@ Do NOT create a new epic — instead use the parent's title as the epic title in
 ${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
+${CONSOLIDATION_INSTRUCTION}
 
 Structuring guidelines:
 - Treat each description as a distinct piece of work.
@@ -1494,7 +1608,7 @@ Deduplication:
 - Use the project context to understand terminology and architecture.
 
 ${ANTI_PATTERNS}
-${parentConstraint}
+${parentConstraint}${placementBlock}
 ${contextBlock}
 Existing PRD:
 ${existingSummary}
@@ -1826,7 +1940,8 @@ export async function buildIdeasPrompt(
   dir: string,
   options?: AddPromptOptions,
 ): Promise<string> {
-  const existingSummary = summarizeExisting(existingItems);
+  const hasParent = !!options?.parentId;
+  const existingSummary = summarizeExisting(existingItems, { withIds: !hasParent });
   const projectContext = await readProjectContext(dir);
 
   const contextBlock = projectContext
@@ -1834,18 +1949,21 @@ export async function buildIdeasPrompt(
     : "";
 
   let parentConstraint = "";
-  if (options?.parentId) {
-    const parentEntry = findItemInTree(existingItems, options.parentId);
+  let placementBlock = "";
+  if (hasParent) {
+    const parentEntry = findItemInTree(existingItems, options!.parentId!);
     if (parentEntry) {
       parentConstraint = `
 IMPORTANT: Scope your response to fit under this existing parent item:
-  ID: ${options.parentId}
+  ID: ${options!.parentId}
   Level: ${parentEntry.level}
   Title: ${parentEntry.title}
 
 Only create children appropriate for a ${parentEntry.level}. For example, if the parent is an epic, create features and tasks. If the parent is a feature, create only tasks.
 Do NOT create a new epic — instead use the parent's title as the epic title in your response.`;
     }
+  } else if (existingItems.length > 0) {
+    placementBlock = AUTO_PLACEMENT_INSTRUCTION;
   }
 
   return `You are a product requirements analyst reading raw brainstorming notes. These are NOT formal specs — they are rough ideas, bullet points, half-formed thoughts, and informal shorthand. Distill every idea into a well-structured PRD as a JSON array.
@@ -1853,6 +1971,7 @@ Do NOT create a new epic — instead use the parent's title as the epic title in
 ${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
+${CONSOLIDATION_INSTRUCTION}
 
 Interpreting rough notes:
 - Capture EVERY idea, no matter how brief or fragmentary. A single word like "caching" is still an idea worth structuring.
@@ -1870,7 +1989,7 @@ Deduplication:
 - Use the project context to understand terminology, architecture, and domain-specific jargon in the notes.
 
 ${ANTI_PATTERNS}
-${parentConstraint}
+${parentConstraint}${placementBlock}
 ${contextBlock}
 Existing PRD:
 ${existingSummary}
@@ -1882,9 +2001,15 @@ ${OUTPUT_INSTRUCTION}`;
 }
 
 /**
- * Read one or more freeform idea files and structure them into proposals via
- * LLM. Unlike `reasonFromFile` / `reasonFromFiles` (used by `analyze --file`
- * for formal spec import), this function uses a prompt specifically tuned for
+ * Read one or more freeform idea files and structure them into proposals.
+ *
+ * For well-structured files (markdown with headings, JSON matching the Proposal
+ * schema, YAML with title/name fields), extraction is performed locally without
+ * an LLM call. Files that cannot be meaningfully extracted fall back to the LLM
+ * ideas pipeline.
+ *
+ * Unlike `reasonFromFile` / `reasonFromFiles` (used by `analyze --file` for
+ * formal spec import), the LLM fallback uses a prompt specifically tuned for
  * rough brainstorming notes.
  */
 export async function reasonFromIdeasFile(
@@ -1898,28 +2023,71 @@ export async function reasonFromIdeasFile(
 
   const dir = options?.dir ?? process.cwd();
 
-  // Read and concatenate all idea files
-  const sections: string[] = [];
+  // Phase 1: Try local extraction for each file.
+  // Collect proposals from files that can be parsed without LLM, and
+  // accumulate content from files that need LLM fallback.
+  const localProposals: Proposal[] = [];
+  const llmSections: string[] = [];
+
   for (const fp of filePaths) {
     const content = await readFile(fp, "utf-8");
     if (content.trim().length === 0) continue;
+
+    const format = detectFileFormat(fp);
+
+    // Try structured parsing for JSON/YAML files (no LLM needed)
+    if (format === "json" || format === "yaml") {
+      const structured = parseStructuredFile(content, format, existingItems);
+      if (structured !== null && structured.length > 0) {
+        localProposals.push(...structured);
+        continue;
+      }
+      // Fall through to LLM processing
+    }
+
+    // Try local markdown extraction (no LLM needed)
+    if (format === "markdown") {
+      const { extractFromMarkdown } = await import("./extract.js");
+      const extraction = extractFromMarkdown(content, { existingItems, sourceFile: fp });
+      if (extraction.proposals.length > 0) {
+        localProposals.push(...extraction.proposals);
+        continue;
+      }
+      // Fall through to LLM processing
+    }
+
+    // Try local plain text extraction (no LLM needed)
+    if (format === "text") {
+      const { extractFromText } = await import("./extract.js");
+      const extraction = extractFromText(content, { existingItems, sourceFile: fp });
+      if (extraction.proposals.length > 0) {
+        localProposals.push(...extraction.proposals);
+        continue;
+      }
+      // Fall through to LLM processing
+    }
+
+    // File could not be locally extracted — queue for LLM
     if (filePaths.length > 1) {
-      sections.push(`--- ${fp} ---\n${content.trim()}`);
+      llmSections.push(`--- ${fp} ---\n${content.trim()}`);
     } else {
-      sections.push(content.trim());
+      llmSections.push(content.trim());
     }
   }
 
-  if (sections.length === 0) return { proposals: [], tokenUsage };
+  // Phase 2: Fall back to LLM for files that couldn't be locally parsed.
+  if (llmSections.length > 0) {
+    const combined = llmSections.join("\n\n");
+    const prompt = await buildIdeasPrompt(combined, existingItems, dir, {
+      parentId: options?.parentId,
+    });
 
-  const combined = sections.join("\n\n");
-  const prompt = await buildIdeasPrompt(combined, existingItems, dir, {
-    parentId: options?.parentId,
-  });
+    const result = await spawnClaude(prompt, options?.model ?? DEFAULT_MODEL);
+    accumulateTokenUsage(tokenUsage, result.tokenUsage);
+    localProposals.push(...parseProposalResponse(result.text));
+  }
 
-  const result = await spawnClaude(prompt, options?.model ?? DEFAULT_MODEL);
-  accumulateTokenUsage(tokenUsage, result.tokenUsage);
-  return { proposals: parseProposalResponse(result.text), tokenUsage };
+  return { proposals: localProposals, tokenUsage };
 }
 
 // ── Batch import ──

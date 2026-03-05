@@ -1,13 +1,18 @@
 ## Summary
 
-**Branch:** `feature/integrate-codex`
+**Branch:** `featuer/oops`
 **Base:** `main`
-**Completed items:** 293
+**Completed items:** 444
 
 | Epic | Completed |
 |------|-----------|
+| External sync and Notion integration | 1 |
+| Rex Smart Operations UI Integration | 1 |
+| Resolve critical SourceVision architectural findings | 11 |
+| Project-aware Navigation and Context | 4 |
+| SourceVision UI Import Graph Enhancement | 4 |
 | Codex Vendor Reliability and Documentation | 9 |
-| Selective Recommendation Acceptance Syntax | 6 |
+| Selective Recommendation Acceptance Syntax | 10 |
 | Init-time LLM Onboarding and Authentication | 8 |
 | Live PR Markdown in SourceVision UI | 11 |
 | SourceVision PR Markdown Tab Parity Hardening | 7 |
@@ -16,38 +21,52 @@
 | ndx Dashboard Refresh Orchestration | 12 |
 | Token Event Attribution Accuracy | 8 |
 | Deterministic Task Utilization Budget Fallback | 6 |
-| Dashboard Navigation Information Architecture | 4 |
 | Duplicate-aware Proposal Override for rex add | 12 |
 | Dashboard Route Ownership Decoupling | 6 |
 | PR Markdown Reviewer Context Enrichment | 6 |
 | SourceVision PR Markdown Refresh Degraded-Mode Hardening | 8 |
 | SourceVision PR Markdown Git Preflight and Credential Diagnostics | 7 |
-| SourceVision Semantic Diff Failure UX Hardening | 6 |
+| SourceVision Semantic Diff Failure UX Hardening | 10 |
 | SourceVision PR Markdown Artifact-Based Fallback Mode | 11 |
 | Git Credential Helper Opt-In Recovery | 6 |
-| SourceVision Semantic Diff Determinism and Tooling-Drift Hardening | 5 |
 | Git-Independent PR Markdown Generation | 7 |
 | PR Markdown View Toggle and Copy UX | 6 |
-| Process Lifecycle Management and Graceful Shutdown | 14 |
+| Process Lifecycle Management and Graceful Shutdown | 19 |
 | LLM Client Circular Dependency Resolution | 12 |
-| Rex Task and Epic Deletion Functionality | 12 |
+| Rex Task and Epic Deletion Functionality | 18 |
 | PR Build Pipeline and Code Quality Automation | 6 |
-| Web UI Memory Management and Crash Resolution | 11 |
-| Interactive PRD Validation and Consistency Resolution | 3 |
+| Web UI Memory Management and Crash Resolution | 12 |
 | Branch Work System of Record | 7 |
 | Automatic PR Markdown Generation | 7 |
 | Enhanced Rex Recommend Selective PRD Creation | 12 |
+| Memory-Aware Polling Loop Management | 8 |
+| WebSocket Message Performance Optimization | 6 |
+| TreeNodes DOM Performance Optimization | 12 |
+| Timer Performance Optimization and Re-render Reduction | 8 |
+| Token Usage Aggregation Performance Optimization | 10 |
+| Background Tab Resource Optimization | 14 |
+| Hench Process Concurrency Management | 8 |
+| Hench Resource Monitoring and User Feedback | 8 |
+| File Format Enhancement for Requirements Import | 6 |
+| Recursive zone architecture | 15 |
+| LoE-Calibrated Proposal Generation in rex add | 6 |
+| Rex UI Consistency and Polish | 12 |
 
 ## ⚠️ Breaking Changes
 
+- **Top-level Token Usage Navigation**
+  Expose Token Usage as a first-class dashboard destination at the same hierarchy level as Settings without breaking existing navigation contracts.
+- **Remove zone grid display from SourceVision zones page**
+  Remove the large grid of zones that currently displays under the graph on the SourceVision zones page to clean up the interface and prepare for slideout-based interaction
+  - Zone grid component is removed from zones page layout
+  - Page displays only the graph without grid below
+  - No layout shifts or broken UI elements after removal
 - **Add PR Markdown tab to SourceVision navigation and routing**
   Expose a first-class tab so users can find PR-ready output without leaving SourceVision or running separate commands.
   - Sidebar or section navigation includes a PR Markdown entry under SourceVision
   - Selecting the tab updates URL/hash routing consistently with existing patterns
   - Tab loads without breaking existing SourceVision views
   - Tab displays initial loading, success, and empty states
-- **Top-level Token Usage Navigation**
-  Expose Token Usage as a first-class dashboard destination at the same hierarchy level as Settings without breaking existing navigation contracts.
 - **Expose override markers in CLI/status and machine-readable outputs**
   Ensure override decisions are visible to operators and automation so duplicate exceptions can be reviewed and governed.
   - Rex status/output surfaces an indicator for items created via force-create override
@@ -207,9 +226,44 @@ The llm-client module has 7 distinct layers:
   - Major features listed before minor tasks
   - Important function changes highlighted with code context
   - Content organization follows reviewer-friendly priority order
+- **Add subCrossings field to Zone schema**
+  Add optional subCrossings?: ZoneCrossing[] to Zone interface in packages/sourcevision/src/schema/v1.ts.
+  - Zone interface has optional subCrossings?: ZoneCrossing[]
+  - Field populated during subdivision
+  - Existing consumers unaffected (non-breaking)
 
 ## Major Changes
 
+- **Decompose PRDView god function into focused hooks** [critical]
+  Extract PRDView (941 lines, 83 unique function calls) into focused custom hooks: usePRDData (fetch/polling/dedup), usePRDWebSocket (WS pipeline), usePRDActions (CRUD mutations), usePRDDeepLink (deep link resolution), useToast (notification state). PRDView should become a thin render shell that composes these hooks.
+- **Address pattern issues (9 findings)** [critical]
+  - Client-server architectural boundary is well-maintained except for schema-infrastructure zone violation
+- Cross-cutting performance concerns are integrated into functional zones rather than separated into performance layers
+- Domain boundary success varies dramatically: hench achieves clean layered isolation while web shows architectural sprawl across 29 zones
+- Foundation anti-pattern where ui-foundation contains both infrastructure utilities and application-specific views
+- Inconsistent service abstraction patterns across utility zones - some achieve clean boundaries while others leak implementation details to consumers
+- Inconsistent use of abstraction patterns (hooks vs direct coupling) across similar UI zones indicates need for architectural standardization
+- Zone size distribution shows healthy specialization pattern broken by one oversized catch-all zone that needs decomposition
+- Critical architectural debt concentration in web package: 29 fragmented zones + god-zone pattern + systematic high coupling (12+ zones >0.6) indicates architectural reset needed before incremental improvements
+- Missing abstraction layer pattern spans visualization (charts + navigation), UI foundation (scattered across zones), and service interfaces (inconsistent contract patterns), indicating systematic under-architecture rather than over-engineering
+- **Extract viewer infrastructure into organized subdirectories** [critical]
+  Move 19 root-level infrastructure files from viewer/ into logical subdirectories: viewer/performance/ (DOM optimization, memory, crash, degradation, gates), viewer/polling/ (state, manager, restart, visibility, tick, refresh), viewer/messaging/ (coalescer, throttle, rate limiter, dedup). Update all import paths. Add barrel exports. Addresses findings: cross-cutting performance concerns, oversized catch-all zone, god-zone pattern, missing abstraction layers.
+- **Address suggestion issues (11 findings)** [critical]
+  - Audit test-implementation pairs to identify orphaned tests and incomplete features that may indicate architectural boundary violations
+- Consolidate scattered token usage functionality from polling-infrastructure and navigation-state-management into dedicated usage analytics zone
+- Contract definition inconsistency across service zones - only command-validation uses explicit contracts.ts pattern
+- Define architectural risk thresholds: zones with cohesion < 0.4 AND coupling > 0.6 should trigger mandatory refactoring
+- Implement architectural risk scoring to identify zones with both low cohesion (<0.3) and high coupling (>0.7) for priority refactoring
+- Prioritize refactoring zones with combined architectural risks: cohesion < 0.5 AND coupling > 0.6 indicate fragile components
+- Three zones show catastrophic fragility (coupling >0.65, cohesion <0.4) requiring immediate architectural intervention before further development
+- Decompose packages/web/src/viewer/views/prd.ts PRDView function (83 calls) into focused components: extract data fetching layer (estimated 20-25 calls), state management layer (estimated 15-20 calls), and presentation components (remaining calls)
+- Establish architectural governance thresholds: zones with cohesion <0.4 AND coupling >0.6 require mandatory refactoring before new feature development - currently affects web-8, web-10, web-12, web-16 requiring immediate intervention
+- Implement three-phase web package consolidation: Phase 1 - merge zones web-2,web-10,web-11,web-13 (shared coupling patterns), Phase 2 - consolidate visualization zones web-14,web-16,web-17,web-24, Phase 3 - extract shared UI foundation from primary web zone
+- Refactor web-16 zone to reduce 13+ imports from web zone by extracting shared interface layer or moving components to appropriate architectural tier
+- **Implement architectural risk scoring module in sourcevision** [critical]
+  Consolidates 5 overlapping suggestions about architectural risk thresholds into a single risk scoring module. Add risk metrics to zones, classify zones into risk levels, and generate structured findings. Standardize on cohesion < 0.4 AND coupling > 0.6 as the governance threshold.
+- **Preserve legacy deep links by routing old Token Usage URLs to the new top-level destination** [critical]
+  Existing bookmarks and shared links must continue working so teams do not lose access patterns after the navigation restructure.
 - **Codex Vendor Reliability and Documentation**
 - **Implement normalized Codex response extraction in Hench run parser** [critical]
   Add a dedicated normalization layer that converts Codex-mode responses (including tool calls, partial text blocks, and completion markers) into the internal run event format used by Hench.
@@ -278,9 +332,6 @@ The llm-client module has 7 distinct layers:
   Create a single resolver that selects the weekly budget in a fixed order to eliminate ambiguous behavior when model-specific configuration is missing.
 - **Wire deterministic budget resolver into task chip and detail utilization calculations** [critical]
   Route all task-level utilization percentage computation through the shared resolver so chips and detail panels cannot diverge.
-- **Dashboard Navigation Information Architecture**
-- **Preserve legacy deep links by routing old Token Usage URLs to the new top-level destination** [critical]
-  Existing bookmarks and shared links must continue working so teams do not lose access patterns after the navigation restructure.
 - **Duplicate-aware Proposal Override for rex add**
 - **Implement proposal-to-PRD duplicate matching across open and completed items** [critical]
   Prevent accidental duplicate creation by comparing generated proposal nodes against current PRD hierarchy, including completed epics/features/tasks that should still be considered duplicates.
@@ -309,6 +360,10 @@ The llm-client module has 7 distinct layers:
 - **SourceVision Semantic Diff Failure UX Hardening**
 - **Guard cached PR markdown from semantic diff-stage invalidation** [critical]
   Prevent refresh from overwriting or clearing the last successful PR markdown artifact when failure occurs specifically during semantic diff inspection, preserving reviewer continuity.
+- **Enforce deterministic non-interactive flags for semantic diff git invocations** [critical]
+  Prevent local external diff drivers, textconv filters, or interactive paging from changing semantic diff behavior so refresh results stay consistent across environments.
+- **Split semantic diff and name-status diff execution into independently classified stages** [critical]
+  Ensure a semantic diff failure does not get conflated with name-status collection so diagnostics and fallback decisions are accurate.
 - **SourceVision PR Markdown Artifact-Based Fallback Mode**
 - **Implement git-failure fallback routing in PR markdown refresh pipeline** [critical]
   Route refresh execution to a fallback generator whenever preflight, fetch, or diff stages fail so the endpoint returns usable PR content instead of only an error state.
@@ -319,11 +374,6 @@ The llm-client module has 7 distinct layers:
   When refresh fails due to credential or auth issues, return a specific failure classification with a clear suggestion to run the new helper command instead of generic git errors.
 - **Enforce non-interactive default behavior in refresh path** [critical]
   Ensure refresh never opens interactive credential flows unless explicitly requested, preventing hangs in CI and preserving existing automation behavior.
-- **SourceVision Semantic Diff Determinism and Tooling-Drift Hardening**
-- **Enforce deterministic non-interactive flags for semantic diff git invocations** [critical]
-  Prevent local external diff drivers, textconv filters, or interactive paging from changing semantic diff behavior so refresh results stay consistent across environments.
-- **Split semantic diff and name-status diff execution into independently classified stages** [critical]
-  Ensure a semantic diff failure does not get conflated with name-status collection so diagnostics and fallback decisions are accurate.
 - **Git-Independent PR Markdown Generation**
 - **Implement branch-scoped Rex work item collector** [critical]
   Build a collector that selects epics, features, and tasks relevant to the current branch from Rex state so PR summaries are grounded in planned and completed work, not git remote reachability.
@@ -351,14 +401,36 @@ The llm-client module has 7 distinct layers:
 - **Web UI Memory Management and Crash Resolution**
 - **Profile memory usage patterns during web UI load and refresh cycles** [critical]
   Use browser dev tools and memory profiling to identify memory allocation patterns, leaks, and peak usage during initial load and subsequent refresh operations
+- **Analyze refresh task orchestration for memory-intensive operations** [critical]
+  Examine the ndx refresh command and related web UI refresh behaviors to identify operations that may be loading excessive data into memory
 - **Fix memory leaks in refresh orchestration and component lifecycle** [critical]
   Identify and resolve memory leaks in React components, event listeners, timers, and refresh orchestration that prevent proper garbage collection
-- **Interactive PRD Validation and Consistency Resolution**
 - **Branch Work System of Record**
 - **Automatic PR Markdown Generation**
 - **Enhanced Rex Recommend Selective PRD Creation**
 - **Implement selective PRD creation from selected recommendations** [critical]
   Create PRD items from the selected recommendations using the existing rex add pipeline, replacing the acknowledge-only behavior
+- **Memory-Aware Polling Loop Management**
+- **WebSocket Message Performance Optimization**
+- **TreeNodes DOM Performance Optimization**
+- **Implement virtual scrolling container for TreeNodes component** [critical]
+  Replace full tree rendering with a virtual scrolling container that only renders items within the viewport plus a configurable buffer zone
+- **Timer Performance Optimization and Re-render Reduction**
+- **Token Usage Aggregation Performance Optimization**
+- **Background Tab Resource Optimization**
+- **Hench Process Concurrency Management**
+- **Hench Resource Monitoring and User Feedback**
+- **File Format Enhancement for Requirements Import**
+- **Recursive zone architecture**
+  Make subdivision use the same full pipeline as root analysis. Same algorithm at every zoom level — fractal zones. Zone detection currently lumps components, routes, utils, and configs into mega-zones because subdivideZone() runs a stripped-down Louvain without resolution escalation, proximity edges, or splitLargeCommunities.
+- **Extract runZonePipeline from analyzeZones** [critical]
+  Extract the shared Louvain pipeline steps (buildUndirectedGraph, proximity edges, louvainPhase1, mergeBidirectionalCoupling, mergeSmallCommunities, capZoneCount, splitLargeCommunities, mergeSameIdCommunities, buildZonesFromCommunities, recursive subdivideZone, buildCrossings, assignByProximity) into a reusable runZonePipeline function in packages/sourcevision/src/analyzers/zones.ts. Accepts ZonePipelineOptions {edges, inventory, imports, scopeFiles, maxZones?, maxZonePercent?, parentId?, depth?, testFiles?} and returns ZonePipelineResult {zones, crossings, unzoned}.
+- **Rewrite subdivideZone to use full pipeline** [critical]
+  Replace the stripped-down Louvain in subdivideZone with a runZonePipeline call. Filter imports.edges to zone's internal edges, pass zone.files as scopeFiles, maxZones: 8, parentId: zone.id, depth: depth + 1. Prefix sub-zone IDs with zone.id/. Compute sub-crossings and store on zone.subCrossings. Thread testFiles through to subdivision.
+- **LoE-Calibrated Proposal Generation in rex add**
+- **Rex UI Consistency and Polish**
+- **Audit all Rex page controls for broken interactivity and fix unresponsive elements** [critical]
+  Systematically test every clickable and input element across Rex views. Non-functional controls erode user trust and make it unclear whether actions succeeded. Produce a fix list covering buttons that fire no handler, dropdowns that do not open, and status toggles that show no loading or confirmation state.
 
 ## Completed Work
 
@@ -402,6 +474,75 @@ The llm-client module has 7 distinct layers:
   Integrate PR markdown generation directly into the sourcevision analyze command flow, replacing the manual refresh mechanism
 - Rex-based content generation *(feature)*
   Generate PR markdown content from rex completion data rather than git differences, focusing on completed work items and their significance
+
+### Background Tab Resource Optimization
+
+**Memory and DOM Optimization for Inactive Tabs**
+- Prevent DOM updates during tab inactive state
+  Block DOM updates and re-renders when tab is backgrounded to save memory and CPU resources
+  - Queues DOM updates instead of applying them during inactive state
+  - Prevents unnecessary component re-renders in background tabs
+  - Maintains UI state consistency for deferred updates
+- Implement memory-efficient response buffering suspension
+  Suspend response buffering and data processing during background tab state to reduce memory usage
+  - Stops accumulating API response data during inactive state
+  - Prevents memory buildup from background polling responses
+  - Maintains data integrity when buffering resumes
+
+**Polling Suspension for Background Tabs**
+- Suspend loader polling (5s interval) when tab is backgrounded
+  Halt the 5-second loader polling interval when tab becomes inactive to prevent unnecessary API calls
+  - Pauses 5s loader polling when tab visibility becomes hidden
+  - Prevents loader API requests during background state
+  - Maintains loader state consistency during suspension
+- Suspend execution panel polling (3s interval) when tab is backgrounded
+  Halt the 3-second execution panel polling when tab is inactive to reduce memory buffering
+  - Pauses 3s execution panel polling when tab becomes hidden
+  - Stops execution status API requests during background state
+  - Preserves execution panel state during suspension period
+- Suspend status polling (10s interval) when tab is backgrounded
+  Halt the 10-second status polling when tab is inactive to prevent unnecessary status updates
+  - Pauses 10s status polling when tab visibility becomes hidden
+  - Stops status API requests during background state
+  - Maintains status consistency during suspension
+- Suspend usage polling (10s interval) when tab is backgrounded
+  Halt the 10-second usage polling when tab is inactive to reduce token usage data fetching
+  - Pauses 10s usage polling when tab becomes hidden
+  - Stops usage API requests during background state
+  - Preserves usage data state during suspension period
+
+**Tab Activation Recovery and Synchronization**
+- Resume all suspended polling when tab becomes active
+  Restart all polling intervals immediately when tab visibility changes from hidden to visible
+  - Resumes all suspended polling intervals when tab becomes active
+  - Restarts polling with original intervals (5s, 3s, 10s, 10s)
+  - Handles multiple rapid visibility changes gracefully
+- Add integration tests for background suspension and recovery
+  Create comprehensive tests for tab visibility polling suspension and recovery workflow
+  - Tests polling suspension behavior when tab becomes inactive
+  - Validates polling resumption when tab becomes active
+  - Confirms memory optimization during background state
+
+**Tab Visibility Detection and Control**
+- Implement Page Visibility API for tab state detection
+  Integrate browser Page Visibility API to detect when tab becomes active/inactive for resource management
+  - Detects tab visibility state changes using Page Visibility API
+  - Fires visibility change events to registered listeners
+  - Handles browser compatibility and API availability gracefully
+- Create centralized tab visibility state manager
+  Build centralized service to coordinate tab visibility state across all polling components
+  - Provides single source of truth for tab visibility state
+  - Allows components to register for visibility change notifications
+  - Maintains consistent state across all polling intervals
+
+- Tab Visibility Detection and Control *(feature)*
+  Implement browser tab visibility detection to enable resource-aware polling management
+- Polling Suspension for Background Tabs *(feature)*
+  Suspend all polling intervals when browser tab is backgrounded to reduce resource consumption
+- Memory and DOM Optimization for Inactive Tabs *(feature)*
+  Prevent memory waste from DOM updates and response buffering when tab is not visible
+- Tab Activation Recovery and Synchronization *(feature)*
+  Restore polling and synchronize data when tab becomes active again
 
 ### Branch Work System of Record
 
@@ -488,28 +629,6 @@ The llm-client module has 7 distinct layers:
   Ensure Hench records token usage correctly in Codex mode so usage reporting and budget enforcement remain trustworthy.
 - Rex and Hench Vendor Behavior Documentation *(feature)*
   Clarify how Rex and Hench behave across vendors, with explicit notes for Codex mode, to reduce operator confusion and support issues.
-
-### Dashboard Navigation Information Architecture
-
-**Top-level Token Usage Navigation**
-- 🔶 **Preserve legacy deep links by routing old Token Usage URLs to the new top-level destination**
-  Existing bookmarks and shared links must continue working so teams do not lose access patterns after the navigation restructure.
-  - Legacy Token Usage route patterns resolve to the new top-level Token Usage destination
-  - URL normalization preserves query params and hash fragments used by existing links
-  - No 404 or blank-state regressions occur when opening previously valid deep links
-- Add Token Usage as a peer top-level nav item to Settings
-  Users need direct access to utilization analytics from primary navigation rather than discovering it inside Rex-specific views; this change improves findability and reinforces Token Usage as a cross-tool concern.
-  - Main dashboard navigation renders a Token Usage item at the same hierarchy level as Settings
-  - Selecting Token Usage loads the existing Token Usage view content without regressions in data rendering
-  - Navigation ordering and visibility are deterministic across page reloads
-- Align active-state highlighting with normalized Token Usage routes
-  Active-state logic must remain trustworthy after route remapping so users always see accurate location context in navigation.
-  - Token Usage nav item is highlighted for both new and legacy-normalized Token Usage URLs
-  - Settings and other top-level items are not highlighted when Token Usage is active
-  - Automated tests cover active-state behavior for direct load, in-app navigation, and legacy deep-link entry
-
-- ⚠️ **Top-level Token Usage Navigation** *(feature)*
-  Expose Token Usage as a first-class dashboard destination at the same hierarchy level as Settings without breaking existing navigation contracts.
 
 ### Dashboard Route Ownership Decoupling
 
@@ -702,6 +821,54 @@ The llm-client module has 7 distinct layers:
 - Documentation and Testing *(feature)*
   Comprehensive documentation and test coverage for the enhanced recommendation acceptance workflow
 
+### External sync and Notion integration
+
+**Notion adapter implementation**
+- 🔶 **Decompose PRDView god function into focused hooks**
+  Extract PRDView (941 lines, 83 unique function calls) into focused custom hooks: usePRDData (fetch/polling/dedup), usePRDWebSocket (WS pipeline), usePRDActions (CRUD mutations), usePRDDeepLink (deep link resolution), useToast (notification state). PRDView should become a thin render shell that composes these hooks.
+  - PRDView function body is under 200 lines
+  - Each extracted hook has a single responsibility
+  - No behavior changes - all existing functionality preserved
+  - Tests continue to pass
+  - TypeScript compiles without errors
+
+### File Format Enhancement for Requirements Import
+
+**Markdown and Text File Processing**
+- Implement markdown file parsing for rex add command
+  Add support for parsing markdown files in the rex add command, extracting structured requirements from markdown format including headers, lists, and sections
+  - Rex add command accepts .md file paths as input
+  - Parses markdown headers as potential epic/feature titles
+  - Extracts bullet points and numbered lists as tasks or acceptance criteria
+  - Maintains markdown formatting context in parsed output
+- Implement text file parsing for rex add command
+  Add support for parsing plain text files in the rex add command, using natural language processing to extract requirements and structure from unstructured text
+  - Rex add command accepts .txt file paths as input
+  - Parses plain text using NLP to identify requirements structure
+  - Handles various text formatting styles and conventions
+  - Provides fallback parsing for unstructured requirement documents
+- Add structured requirements extraction engine
+  Implement intelligent parsing logic to extract epics, features, and tasks from markdown and text documents using pattern recognition and LLM assistance
+  - Identifies epic-level requirements from document structure
+  - Extracts feature-level requirements from subsections
+  - Parses task-level items from bullet points and paragraphs
+  - Uses LLM to disambiguate unclear requirement structures
+- Integrate file upload support in rex add UI interface
+  Add file upload capability to the rex add web interface, allowing users to drag and drop or select markdown/text files for requirements import
+  - File upload component supports .md and .txt files
+  - Drag and drop functionality for file selection
+  - File preview before processing with rex add
+  - Progress indicator during file processing and import
+- Add file format validation and error handling
+  Implement comprehensive validation for markdown and text file inputs, with clear error messages for unsupported formats or malformed content
+  - Validates file extensions and MIME types before processing
+  - Detects and reports malformed markdown syntax
+  - Handles large files with appropriate memory management
+  - Provides clear error messages for parsing failures
+
+- Markdown and Text File Processing *(feature)*
+  Enable rex add command to accept and process markdown and text files containing product requirements and descriptions
+
 ### Git Credential Helper Opt-In Recovery
 
 **Credential Helper Command Surface**
@@ -769,6 +936,100 @@ The llm-client module has 7 distinct layers:
 - Work-History Narrative Synthesis *(feature)*
   Generate reviewer-ready PR markdown from completed Rex tasks and corresponding Hench execution history in a consistent structure.
 
+### Hench Process Concurrency Management
+
+**Execution Concurrency Controls**
+- Implement configurable maximum concurrent hench processes
+  Add configuration setting and enforcement logic to limit the number of simultaneously running hench processes to prevent memory exhaustion from unlimited concurrent execution
+  - Configuration option for max concurrent processes (default: 3)
+  - Process count tracking prevents spawning beyond limit
+  - Returns meaningful error when limit reached
+  - Integrates with existing hench configuration system
+- Add execution queue for pending tasks when at concurrency limit
+  Implement queuing system to hold task execution requests when maximum concurrent processes are already running, with FIFO scheduling and queue status visibility
+  - Tasks queue automatically when concurrency limit reached
+  - FIFO execution order with priority override support
+  - Queue status visible via API and CLI
+  - Graceful queue cleanup on shutdown
+- Implement hench process pool with reuse to reduce memory overhead
+  Create process pooling mechanism to reuse existing Node.js runtimes for multiple task executions instead of spawning fresh processes, reducing memory consumption per task
+  - Process pool maintains warm Node.js runtimes
+  - Task isolation maintained between reused processes
+  - Memory usage reduced by 60%+ for sequential tasks
+  - Pool cleanup and refresh on idle timeout
+
+**Resource-Aware Execution Scheduling**
+- Monitor system memory usage before spawning hench processes
+  Add system memory monitoring to check available memory before allowing new hench process creation, preventing system-wide memory pressure
+  - Real-time system memory usage detection
+  - Configurable memory threshold for execution blocking
+  - Memory check integrated into process spawn logic
+  - Cross-platform memory monitoring (macOS, Linux, Windows)
+- Implement memory-based execution throttling
+  Add intelligent throttling that delays or rejects new hench executions when system memory usage exceeds safe thresholds, with graceful degradation
+  - Automatic execution delay when memory usage > 80%
+  - Execution rejection when memory usage > 95%
+  - Throttling status exposed via API
+  - User notification of memory-based delays
+- Add task priority-based scheduling within resource constraints
+  Implement task prioritization system that schedules high-priority tasks first when operating under resource constraints, with configurable priority levels
+  - Task priority metadata captured and used for scheduling
+  - High-priority tasks bypass normal queue position
+  - Priority configuration via task tags or explicit priority
+  - Priority override available for urgent tasks
+
+- Execution Concurrency Controls *(feature)*
+  Implement limits and queuing for concurrent hench task execution to prevent resource exhaustion
+- Resource-Aware Execution Scheduling *(feature)*
+  Implement memory monitoring and intelligent scheduling to prevent system resource exhaustion during hench task execution
+
+### Hench Resource Monitoring and User Feedback
+
+**Process Resource Tracking**
+- Implement real-time hench process memory monitoring
+  Add per-process memory usage tracking for running hench tasks with historical data collection and trend analysis
+  - Individual process memory usage tracked in real-time
+  - Memory usage history stored for analysis
+  - Memory leak detection for long-running tasks
+  - Process memory data exposed via API
+- Track concurrent execution metrics and resource utilization
+  Implement comprehensive metrics collection for concurrent process count, total memory usage, and resource utilization patterns across hench executions
+  - Real-time concurrent process count tracking
+  - Total memory utilization across all hench processes
+  - Resource utilization metrics (CPU, memory) per task
+  - Metrics available via API for dashboard consumption
+- Add process lifecycle and resource cleanup validation
+  Implement validation and monitoring to ensure hench processes properly release resources on completion and detect resource leaks or orphaned processes
+  - Process termination validation with resource cleanup checks
+  - Orphaned process detection and automatic cleanup
+  - Resource leak alerts for processes exceeding memory thresholds
+  - Process lifecycle audit trail for debugging
+
+**UI Resource Visibility and Controls**
+- Display concurrent execution count and limits in Hench UI
+  Add real-time display of current concurrent hench executions, configured limits, and queue status to the Hench dashboard section
+  - Current/max concurrent process count displayed prominently
+  - Queue length and pending task count visible
+  - Visual indicators for approaching resource limits
+  - Updates in real-time via WebSocket or polling
+- Show memory usage and system resource status in execution panel
+  Integrate system memory usage, per-process memory consumption, and resource health indicators into the active execution monitoring panel
+  - System memory usage percentage displayed
+  - Individual task memory consumption shown
+  - Resource health indicators (green/yellow/red status)
+  - Memory pressure warnings visible to users
+- Add manual execution throttling controls and emergency stop
+  Implement user controls to manually adjust concurrency limits, pause new executions, and emergency stop all running processes when needed
+  - Manual concurrency limit adjustment via UI
+  - Pause/resume button for new task execution
+  - Emergency stop all executions button with confirmation
+  - Throttling status and control state clearly indicated
+
+- Process Resource Tracking *(feature)*
+  Implement comprehensive monitoring and tracking of hench process resource usage for visibility and management
+- UI Resource Visibility and Controls *(feature)*
+  Provide user interface elements to display resource usage, execution limits, and manual controls for hench process management
+
 ### Init-time LLM Onboarding and Authentication
 
 **Interactive init banner and provider selection**
@@ -809,25 +1070,6 @@ The llm-client module has 7 distinct layers:
   Make `n-dx init`/`ndx init` guide first-time setup with a prominent terminal banner and a clear LLM provider picker so users can configure execution without manual config edits.
 - Provider authentication preflight during init *(feature)*
   After provider selection, validate that the current terminal session is authenticated for that provider and guide users to the correct login command when needed.
-
-### Interactive PRD Validation and Consistency Resolution
-
-**Interactive parent-child inconsistency resolution**
-- Add interactive prompts to rex validate for parent-child inconsistencies
-  Update rex validate command to detect epicless features and present interactive resolution options, allowing users to choose between correlation recovery and safe deletion workflows
-  - Detects features positioned at root level without parent epics during validation
-  - Presents interactive prompt with correlation and deletion options
-  - Maintains backward compatibility with existing non-interactive validation behavior
-  - Handles user cancellation and invalid input gracefully
-- Implement epic correlation recovery for orphaned features
-  Build recovery workflow that analyzes epicless features and suggests appropriate parent epics based on content analysis and existing PRD structure, enabling automated reparenting with user approval
-  - Analyzes feature content and suggests semantically similar parent epics
-  - Ranks suggestions based on content similarity and structural fit
-  - Successfully reparents features while preserving all metadata and relationships
-  - Provides fallback options when no suitable parent epic is found
-
-- Interactive parent-child inconsistency resolution *(feature)*
-  Enhance existing rex validate and fix commands to detect parent-child structural inconsistencies and provide interactive resolution workflows for user-guided corrections
 
 ### Live PR Markdown in SourceVision UI
 
@@ -1051,6 +1293,95 @@ The llm-client module has 7 distinct layers:
 - Validation and Testing *(feature)*
   Verify that circular dependencies are resolved and functionality is preserved through comprehensive testing
 
+### LoE-Calibrated Proposal Generation in rex add
+
+**LoE Threshold-Driven Proposal Decomposition**
+- Implement configurable LoE threshold and automatic decomposition pass
+  Introduce an loe.taskThresholdWeeks key (default: 2) into the rex configuration system and wire it through ndx config for reading, setting, and validation. Implement the decomposition pass: after the initial proposal step, identify items whose loe exceeds the threshold and run a secondary LLM call per item to produce child proposals, each with their own LoE estimates. Recursively decompose children that still exceed the threshold up to a configurable depth limit (default: 2 levels).
+  - ndx config loe.taskThresholdWeeks returns the current value (default: 2)
+  - ndx config loe.taskThresholdWeeks 3 updates and persists the value to the config file
+  - Negative or non-numeric values are rejected with a helpful validation error
+  - The key appears in ndx config --help output with a description and default value
+  - Items with loe > loe.taskThresholdWeeks trigger the decomposition pass automatically
+  - Decomposition LLM call produces child items whose individual LoE values fall at or below the threshold
+  - Each child item carries its own loe, loeRationale, and loeConfidence
+  - Items already at or below the threshold are not decomposed
+  - Decomposition depth is capped at a configurable limit (default: 2 levels) to prevent runaway recursion
+- Add decomposition confirmation UI to proposal review workflow
+  When decomposition has occurred for a proposal item, present the decomposed children indented beneath their parent during the review step. The user can accept the decomposed version (adds children, discards the parent), keep the original consolidated item, or skip entirely. Non-interactive mode defaults to accepting decomposed items. Output should clearly label which items were auto-decomposed and the LoE value that triggered decomposition.
+  - Decomposed children are shown indented beneath their parent item in the review output
+  - Review prompt offers three choices for decomposed items: accept decomposed, keep original, skip
+  - Choosing 'accept decomposed' adds child items to the PRD and does not add the parent
+  - Choosing 'keep original' adds the parent item unmodified
+  - Non-interactive (--yes) mode defaults to accepting the decomposed version
+  - Review output labels auto-decomposed items with the LoE value that triggered decomposition
+
+**LoE-Aware Consolidated Proposal Generation**
+- Redesign proposal schema and LLM prompt to elicit consolidated, LoE-estimated proposals
+  Add optional loe (number, engineer-weeks), loeRationale (string), and loeConfidence ('low'|'medium'|'high') fields to the proposal item Zod schema, then revise the rex add system prompt to (a) generate consolidated, sprint-sized work packages (3–7 items for broad input) rather than micro-tasks, and (b) return structured LoE estimates as JSON fields with a worked example. Prompt wording should be isolated in a named constant or template file for independent iteration.
+  - Proposal item Zod schema includes loe, loeRationale, and loeConfidence as optional fields
+  - Existing proposals without LoE fields parse without error
+  - LoE fields round-trip correctly through proposal serialization and PRD item creation
+  - tsc --noEmit passes with no new type errors after the schema change
+  - System prompt explicitly instructs the LLM to prefer consolidated proposals; sample outputs for broad input produce 3–7 high-level items rather than 10+ micro-tasks
+  - Prompt explicitly requests loe, loeRationale, and loeConfidence as structured JSON fields and includes a worked example
+  - Prompt wording is isolated in a named constant or template file
+- Add post-processing consolidation guard and LoE display to proposal review
+  After the LLM returns proposals, apply a post-processing pass that detects over-granular output (item count exceeds a configurable ceiling, default 10) and triggers a secondary re-consolidation prompt as a safety net. Additionally, update the interactive proposal review CLI to show loe and loeRationale for each item, visually flagging items that exceed the decomposition threshold so reviewers can make informed decisions before accepting.
+  - Post-processing detects when proposal item count exceeds a configurable ceiling (default: 10 items per input description)
+  - Over-granular results trigger a secondary LLM consolidation pass using a defined re-prompt template
+  - Consolidation pass reduces item count to within the ceiling or emits a labeled warning if it cannot
+  - The ceiling value is configurable via rex config and exposed in ndx config --help
+  - Proposal review output shows loe value and rationale for each item that carries LoE data
+  - Items with loe exceeding the configured decomposition threshold are flagged with a visible indicator
+  - Items without LoE data display cleanly without empty brackets or missing-field noise
+  - LoE display is consistent between interactive and --yes (non-interactive) modes
+
+- LoE-Aware Consolidated Proposal Generation *(feature)*
+  Enhance the rex add proposal pipeline so the LLM produces fewer, larger work packages by default and attaches structured LoE estimates (engineer-weeks, rationale, confidence) to each item. Changes span the proposal Zod schema, the system prompt, post-processing guardrails, and the CLI review display.
+- LoE Threshold-Driven Proposal Decomposition *(feature)*
+  Implement an automatic decomposition pass that splits proposal items exceeding the LoE threshold into smaller child items. The threshold defaults to 2 engineer-weeks and is user-configurable. Decomposed items are presented inline in the review so users can accept children, keep the original, or skip entirely.
+
+### Memory-Aware Polling Loop Management
+
+**Memory Pressure Polling Suspension**
+- Wire memory pressure flag to loader polling suspension
+  Connect the existing isFeatureDisabled(autoRefresh) flag to call stopPolling() in loader.ts when memory pressure reaches 50% threshold
+  - Loader 5s polling stops when isFeatureDisabled(autoRefresh) returns true
+  - stopPolling() function is invoked from memory degradation system
+  - Loader polling remains stopped until memory pressure subsides
+- Suspend status indicator polling during memory pressure
+  Stop the 10s status-indicator polling loop when memory pressure is detected to minimize background processing
+  - Status indicator polling stops when isFeatureDisabled(autoRefresh) is true
+  - No status update requests during memory pressure
+  - Status indicator shows last known state without updates
+
+**Memory-Aware Polling Validation**
+- Add integration tests for memory-aware polling suspension
+  Create tests that simulate memory pressure conditions and verify all polling loops are properly suspended and restarted
+  - Tests verify all three polling loops stop under simulated memory pressure
+  - Tests confirm polling restart when memory pressure clears
+  - Tests validate no resource leaks during suspension/restart cycles
+- Add polling suspension status indicators
+  Display UI indicators when polling is suspended due to memory pressure to inform users of degraded functionality
+  - Visual indicator shows when polling is suspended due to memory pressure
+  - Indicator explains why auto-refresh is disabled
+  - Manual refresh options remain available during suspension
+
+**Polling Restart and Recovery Logic**
+- Add polling state management and cleanup
+  Implement centralized polling state management to prevent orphaned intervals and ensure clean suspension/restart cycles
+  - All polling intervals are tracked and can be cleanly stopped
+  - No memory leaks from orphaned polling intervals
+  - Polling state persists across component remounts during memory pressure
+
+- Memory Pressure Polling Suspension *(feature)*
+  Integrate memory pressure detection with active polling loops to prevent resource consumption during high memory usage
+- Polling Restart and Recovery Logic *(feature)*
+  Implement automatic polling restart when memory pressure subsides to restore normal UI functionality
+- Memory-Aware Polling Validation *(feature)*
+  Add testing and monitoring to ensure polling suspension works correctly under memory pressure scenarios
+
 ### ndx Dashboard Refresh Orchestration
 
 **Dashboard Data and PR Markdown Refresh Flow**
@@ -1210,6 +1541,28 @@ The llm-client module has 7 distinct layers:
 
 ### Process Lifecycle Management and Graceful Shutdown
 
+**Dead Connection Detection and Cleanup**
+- Implement immediate WebSocket disconnect detection
+  Replace the 30-second ping/pong cycle with immediate connection state monitoring to detect client disconnections as soon as they occur
+  - WebSocket disconnect events are detected within 1 second of occurrence
+  - Dead connections are identified before the next broadcast attempt
+  - Connection state monitoring has minimal performance overhead
+- Remove dead clients from broadcast set immediately
+  Automatically prune disconnected clients from the active broadcast list to prevent wasted serialization and write operations
+  - Dead clients are removed from broadcast set within 1 second of disconnect detection
+  - Broadcast operations skip dead clients entirely
+  - Memory usage decreases immediately when clients disconnect
+- Optimize broadcast operations for active connections only
+  Ensure JSON serialization and socket write operations only target verified active connections to eliminate wasted CPU cycles
+  - JSON.stringify is only called for confirmed active connections
+  - Socket write attempts are eliminated for dead connections
+  - Broadcast performance scales with active connection count, not total connection history
+- Add WebSocket connection health monitoring dashboard
+  Create visibility into WebSocket connection health, cleanup metrics, and resource usage to monitor the effectiveness of dead connection removal
+  - Dashboard shows active vs total connection counts in real-time
+  - Cleanup success rate and timing metrics are displayed
+  - Resource usage trends are visible before and after cleanup improvements
+
 **Graceful Shutdown Implementation**
 - 🔶 **Implement unified signal handler with cascading cleanup**
   Implemented unified signal handler with cascading cleanup (commit cb60d1c). Changes: (1) packages/web/src/server/start.ts: extracted registerShutdownHandlers() as an exported testable function with 30s overall timeout (configurable via N_DX_SHUTDOWN_TIMEOUT_MS env var), double-signal handling (second SIGINT/SIGTERM forces immediate exit(1) while graceful shutdown is still running), signal name in logs, and injectable exit dep for testing. The function runs cleanup in dependency order: hench child processes first then WebSocket connections then HTTP server then port file. (2) packages/web/tests/unit/server/shutdown-handler.test.ts: 13 new unit tests covering signal handler registration, cleanup ordering, SIGINT/SIGTERM name logging, double-signal force-exit, timeout force-exit, timeout error message, port file removal, and completion log.
@@ -1273,6 +1626,199 @@ The llm-client module has 7 distinct layers:
   Implement comprehensive graceful shutdown procedures that properly clean up all processes, ports, and resources when dashboard is terminated
 - Refresh Command Process Management *(feature)*
   Enhance the ndx refresh command to properly detect and clean up existing dashboard processes before starting refresh operations
+- Dead Connection Detection and Cleanup *(feature)*
+  Implement immediate detection and removal of disconnected WebSocket clients to prevent resource waste
+
+### Project-aware Navigation and Context
+
+**Top-level Token Usage Navigation**
+- 🔶 **Preserve legacy deep links by routing old Token Usage URLs to the new top-level destination**
+  Existing bookmarks and shared links must continue working so teams do not lose access patterns after the navigation restructure.
+  - Legacy Token Usage route patterns resolve to the new top-level Token Usage destination
+  - URL normalization preserves query params and hash fragments used by existing links
+  - No 404 or blank-state regressions occur when opening previously valid deep links
+- Add Token Usage as a peer top-level nav item to Settings
+  Users need direct access to utilization analytics from primary navigation rather than discovering it inside Rex-specific views; this change improves findability and reinforces Token Usage as a cross-tool concern.
+  - Main dashboard navigation renders a Token Usage item at the same hierarchy level as Settings
+  - Selecting Token Usage loads the existing Token Usage view content without regressions in data rendering
+  - Navigation ordering and visibility are deterministic across page reloads
+- Align active-state highlighting with normalized Token Usage routes
+  Active-state logic must remain trustworthy after route remapping so users always see accurate location context in navigation.
+  - Token Usage nav item is highlighted for both new and legacy-normalized Token Usage URLs
+  - Settings and other top-level items are not highlighted when Token Usage is active
+  - Automated tests cover active-state behavior for direct load, in-app navigation, and legacy deep-link entry
+
+- ⚠️ **Top-level Token Usage Navigation** *(feature)*
+  Expose Token Usage as a first-class dashboard destination at the same hierarchy level as Settings without breaking existing navigation contracts.
+
+### Recursive zone architecture
+
+**Full-pipeline zone subdivision**
+- ⚠️ **Add subCrossings field to Zone schema**
+  Add optional subCrossings?: ZoneCrossing[] to Zone interface in packages/sourcevision/src/schema/v1.ts.
+  - Zone interface has optional subCrossings?: ZoneCrossing[]
+  - Field populated during subdivision
+  - Existing consumers unaffected (non-breaking)
+- 🔶 **Extract runZonePipeline from analyzeZones**
+  Extract the shared Louvain pipeline steps (buildUndirectedGraph, proximity edges, louvainPhase1, mergeBidirectionalCoupling, mergeSmallCommunities, capZoneCount, splitLargeCommunities, mergeSameIdCommunities, buildZonesFromCommunities, recursive subdivideZone, buildCrossings, assignByProximity) into a reusable runZonePipeline function in packages/sourcevision/src/analyzers/zones.ts. Accepts ZonePipelineOptions {edges, inventory, imports, scopeFiles, maxZones?, maxZonePercent?, parentId?, depth?, testFiles?} and returns ZonePipelineResult {zones, crossings, unzoned}.
+  - Shared function encapsulates Louvain pipeline steps
+  - analyzeZones refactored to call runZonePipeline
+  - All existing tests pass with identical output
+  - Function accepts maxZones, maxZonePercent, parentId, depth params
+- 🔶 **Rewrite subdivideZone to use full pipeline**
+  Replace the stripped-down Louvain in subdivideZone with a runZonePipeline call. Filter imports.edges to zone's internal edges, pass zone.files as scopeFiles, maxZones: 8, parentId: zone.id, depth: depth + 1. Prefix sub-zone IDs with zone.id/. Compute sub-crossings and store on zone.subCrossings. Thread testFiles through to subdivision.
+  - subdivideZone calls runZonePipeline instead of stripped-down Louvain
+  - Resolution escalation active during subdivision
+  - Proximity edges added for non-import files within zone
+  - mergeSameIdCommunities prevents duplicate sub-zone names
+  - Sub-crossings computed and stored on zone.subCrossings
+  - testFiles exclusion propagated to sub-zone metrics
+- Update zone-output.ts for sub-crossings
+  In packages/sourcevision/src/analyzers/zone-output.ts, add a <sub-crossings> section to zone context.md generation showing cross-dependency counts between sub-zones grouped by zone pair.
+  - Zone context.md includes sub-crossings section when present
+  - Shows cross-dependency counts grouped by zone pair
+- Add subdivision enhancement tests
+  New test file packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts plus updates to existing zone-detection.test.ts.
+  - Tests for sub-crossings computation between sub-zones
+  - Tests for resolution escalation at subdivision level
+  - Tests for proximity edges at subdivision level
+  - Tests for mergeSameIdCommunities at subdivision level
+  - Tests for recursive multi-depth subdivision with sub-crossings
+  - Tests for testFiles exclusion propagation to sub-zone metrics
+  - End-to-end test: analyzeZones produces subCrossings on large zones
+  - Regression test: refactored pipeline produces identical output on existing fixtures
+
+**Multi-repo workspace aggregation**
+- Design workspace command and config format
+- Implement workspace zone builder
+- Implement cross-repo crossing computation
+
+**Web viewer zone drill-down**
+- Add drill-down types and navigation state
+  In packages/web/src/viewer/views/zone-types.ts, add ZoneBreadcrumb {zoneId: string | null; label: string} interface. Extend ZoneData with subZones?: ZoneData[], subCrossings?: FlowEdge[], hasDrillDown?: boolean. In packages/web/src/viewer/views/zones.ts, add drillPath state (stack of ZoneBreadcrumb[]) starting at [{zoneId: null, label: 'All Zones'}]. Derive visibleZones and visibleCrossings from current drill level.
+  - ZoneBreadcrumb type defined
+  - ZoneData extended with subZones, subCrossings, hasDrillDown
+  - drillPath state in ZonesView with derived visibleZones/visibleCrossings
+- Implement breadcrumb navigation component
+  Render breadcrumbs above diagram when drillPath.length > 1. Clicking a breadcrumb pops back to that level. Hidden at root level.
+  - Breadcrumbs render above diagram when drilled in
+  - Clicking breadcrumb navigates back to that level
+  - Hidden at root level (no unnecessary UI)
+- Add drill-down interaction to zone boxes
+  Add drill-down arrow button on zone boxes that have subZones. Click pushes new breadcrumb, re-renders diagram with sub-zones. Reset expanded zones on drill. Zone cards use visibleZones. Summary line reflects current drill level.
+  - Zones with subZones show drill-down affordance
+  - Clicking drill-down pushes breadcrumb and renders sub-zones
+  - Zone cards update to show sub-zone data
+  - Summary line reflects current drill level
+- Add drill-down tests
+  New test file packages/web/tests/unit/viewer/zone-drill-down.test.ts.
+  - Tests for breadcrumb rendering
+  - Tests for sub-zone diagram rendering after drill-down
+  - Tests for back navigation restoring parent view
+  - Tests for nested 3-level drill-down
+  - Tests for buildFlowEdges working with sub-crossings
+
+- Full-pipeline zone subdivision *(feature)*
+  Phase 1: Make subdivideZone use the same full Louvain pipeline as root analysis, with sub-crossings computation.
+- Web viewer zone drill-down *(feature)*
+  Phase 2: Add drill-down navigation in the web viewer so users can explore sub-zones interactively with breadcrumb navigation.
+- Multi-repo workspace aggregation *(feature)*
+  Phase 3 (future): sourcevision workspace [dirs...] command. Each repo's analysis becomes a top-level zone. Cross-repo crossings from external import resolution. The fractal property from Phase 1/2 makes this a data assembly problem.
+
+### Resolve critical SourceVision architectural findings
+
+**Address pattern issues (9 findings)**
+- 🔶 **Extract viewer infrastructure into organized subdirectories**
+  Move 19 root-level infrastructure files from viewer/ into logical subdirectories: viewer/performance/ (DOM optimization, memory, crash, degradation, gates), viewer/polling/ (state, manager, restart, visibility, tick, refresh), viewer/messaging/ (coalescer, throttle, rate limiter, dedup). Update all import paths. Add barrel exports. Addresses findings: cross-cutting performance concerns, oversized catch-all zone, god-zone pattern, missing abstraction layers.
+  - No infrastructure files remain at viewer/ root (only main.ts, types.ts, utils.ts, route-state.ts, sourcevision-tabs.ts, schema-compat.ts, loader.ts)
+  - Files organized into viewer/performance/, viewer/polling/, viewer/messaging/
+  - All import paths updated and build passes
+  - Tests pass with no regressions
+- Fix foundation zone boundaries and standardize abstraction patterns
+  Address ui-foundation anti-pattern (web-7): domain-specific views mixed with infrastructure primitives. Standardize hook vs direct coupling patterns across UI zones. Addresses findings: foundation anti-pattern, inconsistent service abstraction patterns, inconsistent hook patterns.
+  - Foundation layer contains only infrastructure primitives, not domain views
+  - Consistent hook abstraction pattern across all infrastructure services
+  - Build and tests pass
+- Fix schema-infrastructure client-server boundary violation
+  Clean separation between schema/ validation (server-side contracts) and viewer/ data loading (client-side). Address the zone violation where schema files are grouped with viewer files. Addresses findings: client-server boundary violation, domain boundary sprawl.
+  - Schema validation imports do not cross into viewer data-loading layer
+  - Clean import boundaries between schema/ and viewer/
+  - Build and tests pass
+
+**Address suggestion issues (11 findings)**
+- 🔶 **Implement architectural risk scoring module in sourcevision**
+  Consolidates 5 overlapping suggestions about architectural risk thresholds into a single risk scoring module. Add risk metrics to zones, classify zones into risk levels, and generate structured findings. Standardize on cohesion < 0.4 AND coupling > 0.6 as the governance threshold.
+  - New risk-scoring.ts analyzer module computes risk scores for all zones
+  - Zones get riskLevel classification: healthy | at-risk | critical | catastrophic
+  - Risk thresholds are configurable constants (cohesion < 0.4, coupling > 0.6)
+  - Zone schema type includes riskScore and riskLevel fields
+  - Risk findings are emitted for zones exceeding thresholds
+  - Unit tests cover risk scoring logic
+  - Build and typecheck pass
+- Consolidate token usage files into dedicated zone boundary
+  Move scattered token usage functionality from polling-infrastructure (web-24) and navigation-state-management (web-26) zones into a coherent grouping. Address orphaned token-usage-nav.test.ts.
+- Refactor web-16 main.ts god component to reduce cross-zone coupling
+  Extract view registry pattern from main.ts to eliminate 13+ direct imports from web zone. Separate bootstrap concerns from view orchestration. Addresses web-16 coupling (0.8) and cohesion (0.2).
+- Audit orphaned tests and standardize contract patterns
+  Address two suggestions: audit test-implementation pairs for orphaned tests / incomplete features, and evaluate contract definition consistency across service zones.
+
+- 🔶 **Address pattern issues (9 findings)** *(feature)*
+  - Client-server architectural boundary is well-maintained except for schema-infrastructure zone violation
+- Cross-cutting performance concerns are integrated into functional zones rather than separated into performance layers
+- Domain boundary success varies dramatically: hench achieves clean layered isolation while web shows architectural sprawl across 29 zones
+- Foundation anti-pattern where ui-foundation contains both infrastructure utilities and application-specific views
+- Inconsistent service abstraction patterns across utility zones - some achieve clean boundaries while others leak implementation details to consumers
+- Inconsistent use of abstraction patterns (hooks vs direct coupling) across similar UI zones indicates need for architectural standardization
+- Zone size distribution shows healthy specialization pattern broken by one oversized catch-all zone that needs decomposition
+- Critical architectural debt concentration in web package: 29 fragmented zones + god-zone pattern + systematic high coupling (12+ zones >0.6) indicates architectural reset needed before incremental improvements
+- Missing abstraction layer pattern spans visualization (charts + navigation), UI foundation (scattered across zones), and service interfaces (inconsistent contract patterns), indicating systematic under-architecture rather than over-engineering
+- 🔶 **Address suggestion issues (11 findings)** *(feature)*
+  - Audit test-implementation pairs to identify orphaned tests and incomplete features that may indicate architectural boundary violations
+- Consolidate scattered token usage functionality from polling-infrastructure and navigation-state-management into dedicated usage analytics zone
+- Contract definition inconsistency across service zones - only command-validation uses explicit contracts.ts pattern
+- Define architectural risk thresholds: zones with cohesion < 0.4 AND coupling > 0.6 should trigger mandatory refactoring
+- Implement architectural risk scoring to identify zones with both low cohesion (<0.3) and high coupling (>0.7) for priority refactoring
+- Prioritize refactoring zones with combined architectural risks: cohesion < 0.5 AND coupling > 0.6 indicate fragile components
+- Three zones show catastrophic fragility (coupling >0.65, cohesion <0.4) requiring immediate architectural intervention before further development
+- Decompose packages/web/src/viewer/views/prd.ts PRDView function (83 calls) into focused components: extract data fetching layer (estimated 20-25 calls), state management layer (estimated 15-20 calls), and presentation components (remaining calls)
+- Establish architectural governance thresholds: zones with cohesion <0.4 AND coupling >0.6 require mandatory refactoring before new feature development - currently affects web-8, web-10, web-12, web-16 requiring immediate intervention
+- Implement three-phase web package consolidation: Phase 1 - merge zones web-2,web-10,web-11,web-13 (shared coupling patterns), Phase 2 - consolidate visualization zones web-14,web-16,web-17,web-24, Phase 3 - extract shared UI foundation from primary web zone
+- Refactor web-16 zone to reduce 13+ imports from web zone by extracting shared interface layer or moving components to appropriate architectural tier
+- Address observation issues (26 findings) *(feature)*
+  - 1 circular dependency chain detected — see imports.json for details
+- Bidirectional coupling: "web" ↔ "web-18" (8+1 crossings) — consider extracting shared interface
+- Four of five zones exceed healthy coupling thresholds (>0.6), suggesting systematic architecture review needed for UI component organization
+- Multiple zones show architectural boundary issues, with only Error Recovery system achieving good cohesion/coupling balance
+- 18 entry points — wide API surface, consider consolidating exports
+- High coupling (0.65) — 2 imports target "web-2"
+- Low cohesion (0.35) — files are loosely related, consider splitting this zone
+- High coupling (0.73) — 2 imports target "web-2"
+- High coupling (0.71) — 2 imports target "web-7"
+- Low cohesion (0.29) — files are loosely related, consider splitting this zone
+- High coupling (0.7) — 2 imports target "web-10"
+- High coupling (0.62) — 7 imports target "web-17"
+- Low cohesion (0.38) — files are loosely related, consider splitting this zone
+- High coupling (0.6) — 2 imports target "web"
+- High coupling (0.8) — 13 imports target "web"
+- Low cohesion (0.2) — files are loosely related, consider splitting this zone
+- High coupling (0.7) — 1 imports target "web-23"
+- Low cohesion (0.3) — files are loosely related, consider splitting this zone
+- High coupling (0.59) — 3 imports target "web-7"
+- High coupling (0.51) — 1 imports target "web-28"
+- High coupling (0.58) — 9 imports target "web-20"
+- High coupling (0.71) — 1 imports target "web-23"
+- High coupling (0.72) — 3 imports target "web"
+- Low cohesion (0.28) — files are loosely related, consider splitting this zone
+- High coupling (0.62) — 3 imports target "web-7"
+- Low cohesion (0.38) — files are loosely related, consider splitting this zone
+- Address relationship issues (2 findings) *(feature)*
+  - Multi-level hub architecture with web-platform as primary hub and multiple secondary hubs creates complex dependency hierarchies
+- Visualization concerns fragmented across multiple zones without clear abstraction hierarchy
+
+### Rex Smart Operations UI Integration
+
+**Smart Add UI Integration**
+- Add advanced search features and keyboard navigation
 
 ### Rex Task and Epic Deletion Functionality
 
@@ -1300,6 +1846,20 @@ The llm-client module has 7 distinct layers:
   - rex remove task <id> command removes specified task
   - Commands include confirmation prompts for safety
   - Commands provide clear success/failure feedback
+- Build complete search backend infrastructure
+  Create comprehensive search system including REST endpoints, searchable index of PRD content, and query processing with relevance scoring for fast text matching across all PRD items
+  - GET /api/search endpoint accepts query parameter and returns JSON results
+  - Search results include item ID, title, description, and relevance score
+  - Response time under 200ms for typical PRD sizes (1000+ items)
+  - Supports search across epics, features, tasks, and subtasks
+  - Index includes item titles, descriptions, and acceptance criteria text
+  - Index updates automatically when PRD items are modified
+  - Supports fuzzy matching and partial word matching
+  - Index rebuild completes in under 5 seconds for large PRDs
+  - Supports exact phrase matching with quotes
+  - Ranks results by relevance (title matches higher than description)
+  - Handles multi-word queries with AND/OR logic
+  - Returns results sorted by relevance score descending
 
 **Documentation and Help Updates**
 - Update README with deletion command documentation
@@ -1314,6 +1874,28 @@ The llm-client module has 7 distinct layers:
   - rex help remove provides detailed usage instructions
   - Help text explains difference between removing epics vs tasks
   - Help includes warnings about data loss and confirmation requirements
+
+**Request deduplication infrastructure**
+- Implement request deduplication for fetchPRDData calls
+  Add in-flight request tracking to prevent duplicate fetchPRDData API calls when WebSocket messages arrive during active polling requests
+  - fetchPRDData returns same promise when called while previous request is in-flight
+  - WebSocket message during 10s poll does not trigger duplicate API call
+  - Request tracking cleanup occurs when API call completes or fails
+- Implement request deduplication for fetchTaskUsage calls
+  Add in-flight request tracking to prevent duplicate fetchTaskUsage API calls when WebSocket messages arrive during active polling requests
+  - fetchTaskUsage returns same promise when called while previous request is in-flight
+  - Multiple simultaneous usage requests resolve to single API call
+  - Request tracking handles both successful and error responses
+- Coordinate execution panel polling with WebSocket triggers
+  Implement coordination mechanism between execution-panel 3s polling and WebSocket message triggers to prevent simultaneous /api/rex/execute/status requests
+  - Execution panel polling respects in-flight requests from WebSocket handlers
+  - WebSocket handlers respect in-flight requests from polling loop
+  - Maximum one /api/rex/execute/status request active at any time
+- Add integration tests for request deduplication
+  Create comprehensive test suite validating that request deduplication works correctly under various timing scenarios and prevents duplicate API calls
+  - Tests verify no duplicate API calls during overlapping fetch operations
+  - Tests cover WebSocket message arrival during active polling
+  - Tests validate request cleanup after completion and errors
 
 **Rex UI Deletion Interface**
 - Add delete buttons to Rex UI task and epic items
@@ -1336,11 +1918,13 @@ The llm-client module has 7 distinct layers:
   - Error messages displayed if deletion fails
 
 - Backend Deletion API Implementation *(feature)*
-  Implement backend functions and CLI commands to support deletion of epics and tasks from the PRD structure
+  Build complete server-side search infrastructure including API endpoints, indexing system, and query processing with relevance scoring
 - Rex UI Deletion Interface *(feature)*
   Add interactive deletion capabilities to the Rex web UI task tab with proper user confirmation flows
 - Documentation and Help Updates *(feature)*
   Update project documentation to reflect the new deletion capabilities in both CLI and UI
+- Request deduplication infrastructure *(feature)*
+  Prevent duplicate in-flight requests by tracking active API calls and returning shared promises for identical requests
 
 ### Rex Token Usage & LLM Utilization UX Overhaul
 
@@ -1351,10 +1935,14 @@ The llm-client module has 7 distinct layers:
   - UI renders cause-specific fallback messages instead of silent zero values
   - Diagnostic state includes remediation hint for unavailable provider metadata
 - Add codex and claude regression tests for parsing, aggregation, and budget percentages
-  Create fixture-driven tests that validate vendor-specific payload parsing and end-to-end totals/percentages across tools and time windows.
+  Each Rex view currently places primary actions (Add, Prune, Filter, Refresh) in different positions — some inline with section headers, some floating, some embedded mid-content. Define a single page-header action bar pattern and apply it consistently across Dashboard, PRD tree, proposals, and validation pages.
   - Tests cover codex and claude payload variants including missing fields
   - Aggregation tests verify per-tool, per-vendor/model, task, and project totals
   - Percentage tests verify correct outputs for normal, zero-budget, and missing-budget scenarios
+  - All Rex views with primary actions use the same header action bar layout
+  - Primary actions (Add, Filter, Refresh) appear in the top-right of their respective page header on every Rex view
+  - Secondary/contextual actions (per-item operations) remain in context menus or inline controls, not in the page header
+  - The action bar pattern is documented in a code comment or component prop contract for future contributors
 
 **Rex Dashboard IA and LLM Utilization View**
 - Promote Token Usage to a top-level Rex dashboard section
@@ -1415,6 +2003,73 @@ The llm-client module has 7 distinct layers:
 - Diagnostics, Fallbacks, and Test Coverage *(feature)*
   Provide explicit diagnostics for missing usage metadata and add comprehensive tests for parsing and utilization math.
 
+### Rex UI Consistency and Polish
+
+**Broken and Non-Functional UI Element Repair**
+- 🔶 **Audit all Rex page controls for broken interactivity and fix unresponsive elements**
+  Systematically test every clickable and input element across Rex views. Non-functional controls erode user trust and make it unclear whether actions succeeded. Produce a fix list covering buttons that fire no handler, dropdowns that do not open, and status toggles that show no loading or confirmation state.
+  - Every button and toggle in Rex views has an attached handler or is visibly disabled with a reason
+  - Clicking any active control produces a visible response within 200ms (spinner, state change, or error message)
+  - No interactive element is present in the DOM but invisible to click due to a z-index or pointer-events issue
+  - Audit covers: Dashboard, PRD tree, task detail panel, smart add, prune, proposals, validation, and token usage views
+- Fix broken layout containers and collapsed or zero-height sections
+  Several Rex page sections render with zero height, invisible content areas, or collapsed containers that appear empty even when data is present. These are likely CSS flex/grid issues or missing height constraints on parent elements.
+  - No Rex view section renders with zero height when it contains data
+  - Scrollable content areas have explicit max-height or flex-grow constraints that prevent content from being clipped
+  - Collapsible panels retain their last open/closed state across page navigation
+  - Tested with both small (5 items) and large (100+ items) data sets
+
+**Interactive Element Placement Standardization**
+- Consolidate and reposition misplaced filter and sort controls in Rex PRD tree
+  Filter controls (status filter, search, quick presets) are scattered at different vertical positions depending on which Rex sub-view is active. Consolidate them into a single persistent filter bar directly above the tree, visible on all Rex tree-based views.
+  - Status filter, search input, and quick filter presets appear in a single bar directly above the PRD tree on all Rex tree views
+  - Filter bar is sticky and remains visible when scrolling through a long tree
+  - Filter state persists when switching between Rex sub-views (e.g., Dashboard → tree and back)
+  - No filter controls appear below the tree or inside individual tree nodes
+- Standardize per-item action menus and inline control placement across Rex tree nodes
+  Task and epic nodes expose different controls in different positions — some show action buttons inline, some reveal them on hover, some have context menus that appear in unpredictable locations. Establish a single hover-reveal inline action pattern for all tree nodes.
+  - All tree nodes (epic, feature, task, subtask) reveal the same set of contextual actions (Edit, Delete, Change status) on hover using a consistent icon-button row
+  - Action buttons appear in the same position relative to the node label on every node type
+  - No node type shows actions in a floating dropdown that covers adjacent rows
+  - Keyboard navigation reaches inline node actions via Tab after the node label
+
+**Typography and Text Rendering Fixes**
+- Audit and fix font size and weight inconsistencies across Rex pages
+  Walk every Rex view (Dashboard, PRD tree, task detail, proposals, validation, token usage) and produce a consistent type scale. Currently some labels render at unreadable sizes and headings vary arbitrarily between pages, making the UI feel unfinished.
+  - All body text in Rex views uses a single consistent base size
+  - Heading levels (h2/h3/h4) map to a documented type scale and do not vary between pages
+  - No label or status badge text is smaller than 11px
+  - Changes verified visually at 1280px and 1440px viewport widths
+- Fix text overflow and truncation in task cards and detail panels
+  Long task titles and descriptions currently overflow their containers or get clipped without ellipsis, and tooltip fallbacks are missing. This makes content unreadable without expanding items manually.
+  - Task titles truncate with ellipsis at container boundary and show full text in a tooltip on hover
+  - Description text in detail panels wraps correctly and does not overflow its scrollable region
+  - Epic and feature titles in the PRD tree do not bleed outside their nodes
+  - Behavior verified with titles of 30, 80, and 150 characters
+
+**Visual and Spacing Consistency**
+- Audit and normalize spacing and padding across all Rex page sections
+  Rex pages currently mix arbitrary px values and inconsistent spacing tokens, making the layout feel cobbled together. Conduct a spacing audit and apply consistent margin/padding using the project's existing CSS custom properties or utility classes.
+  - All Rex page sections use spacing values from a defined scale (e.g., 4px increments)
+  - Card and panel components use uniform internal padding across all Rex views
+  - Section separators and whitespace between stacked components are consistent within and across pages
+  - No hard-coded px values for spacing remain outside of the design token definitions
+- Align status badge and chip styles across Rex task and epic displays
+  Status indicators (pending, in_progress, completed, failing, blocked) render with different sizes, colors, and border radii depending on where they appear. Centralize the badge/chip component and apply it uniformly across the PRD tree, task detail panel, and dashboard summary cards.
+  - All status badges across Rex views use the same component with identical color, border-radius, and font-size
+  - Priority chips (critical, high, medium, low) use a consistent color coding across the PRD tree, detail panel, and dashboard
+  - Tag chips in task detail and tree nodes are visually identical
+  - Changes do not regress any existing Vitest/component tests for badge or chip components
+
+- Typography and Text Rendering Fixes *(feature)*
+  Address small, broken, and inconsistently sized text across all Rex pages — including task cards, detail panels, status badges, and section headers
+- Broken and Non-Functional UI Element Repair *(feature)*
+  Identify and fix buttons, toggles, inputs, and other interactive controls across Rex pages that are visually present but non-functional, incorrectly wired, or produce no feedback
+- Interactive Element Placement Standardization *(feature)*
+  Rationalize the placement of action buttons, filters, and contextual controls across Rex pages — currently each page has invented its own layout for these, producing a disjointed experience
+- Visual and Spacing Consistency *(feature)*
+  Normalize spacing, padding, border, and color usage across all Rex views to eliminate the patchwork appearance caused by independently styled page sections
+
 ### Selective Recommendation Acceptance Syntax
 
 **Indexed opt-in parsing for `recommend --accept`**
@@ -1428,6 +2083,26 @@ The llm-client module has 7 distinct layers:
   - Only specified indices are accepted and written to PRD state
   - Unselected recommendations remain pending and are not mutated
   - Accepted items preserve the same relative order they had in the recommendation list
+
+**Interactive parent-child inconsistency resolution**
+- Add interactive prompts to rex validate for parent-child inconsistencies
+  Update rex validate command to detect epicless features and present interactive resolution options, allowing users to choose between correlation recovery and safe deletion workflows
+  - Detects features positioned at root level without parent epics during validation
+  - Presents interactive prompt with correlation and deletion options
+  - Maintains backward compatibility with existing non-interactive validation behavior
+  - Handles user cancellation and invalid input gracefully
+- Implement epic correlation recovery for orphaned features
+  Build recovery workflow that analyzes epicless features and suggests appropriate parent epics based on content analysis and existing PRD structure, enabling automated reparenting with user approval
+  - Analyzes feature content and suggests semantically similar parent epics
+  - Ranks suggestions based on content similarity and structural fit
+  - Successfully reparents features while preserving all metadata and relationships
+  - Provides fallback options when no suitable parent epic is found
+- Add integrity-protected deletion option for epicless features
+  Implement safe deletion workflow for epicless features with comprehensive dependency checks and corruption prevention safeguards, ensuring PRD structural integrity is maintained
+  - Validates no dependent tasks or external references before deletion
+  - Checks adapter sync states and prevents deletion if external corruption risk exists
+  - Requires explicit user confirmation with clear consequence warnings
+  - Maintains all PRD relationships and referential integrity after deletion
 
 **Validation and UX messaging for selector input**
 - Validate selector format and index bounds before applying acceptance
@@ -1445,6 +2120,8 @@ The llm-client module has 7 distinct layers:
   Allow users to accept only specific recommended items by providing an equals-prefixed index list (for example `=1,4,5`) instead of accepting all recommendations.
 - Validation and UX messaging for selector input *(feature)*
   Provide clear guardrails and user feedback for malformed or out-of-range index selectors so partial acceptance is safe and predictable.
+- Interactive parent-child inconsistency resolution *(feature)*
+  Enhance existing rex validate and fix commands to detect parent-child structural inconsistencies and provide interactive resolution workflows for user-guided corrections
 
 ### SourceVision PR Markdown Artifact-Based Fallback Mode
 
@@ -1682,32 +2359,6 @@ The llm-client module has 7 distinct layers:
 - Endpoint Integration and Diagnostic States *(feature)*
   Ensure PR Markdown data and availability state come from the dedicated APIs with clear, actionable UI feedback for unavailable scenarios.
 
-### SourceVision Semantic Diff Determinism and Tooling-Drift Hardening
-
-**Deterministic Semantic Diff Command Execution**
-- 🔶 **Enforce deterministic non-interactive flags for semantic diff git invocations**
-  Prevent local external diff drivers, textconv filters, or interactive paging from changing semantic diff behavior so refresh results stay consistent across environments.
-  - Semantic diff extraction runs with `--no-ext-diff` and `--no-textconv` on every refresh path.
-  - Semantic diff command execution is non-interactive and does not invoke a pager or prompt for input.
-  - Integration test verifies identical semantic diff extraction behavior when local git config enables external diff/textconv.
-- 🔶 **Split semantic diff and name-status diff execution into independently classified stages**
-  Ensure a semantic diff failure does not get conflated with name-status collection so diagnostics and fallback decisions are accurate.
-  - Semantic diff and name-status diff run as separate stage executions with distinct status fields.
-  - A semantic diff failure with successful name-status diff returns a mixed-stage result instead of a single generic failure.
-  - Regression test covers semantic-stage failure while name-status stage succeeds and validates separate classification output.
-
-**Subcommand-Level Diagnostics and Remediation Surfacing**
-- Include exact failing semantic diff subcommand metadata in refresh diagnostics
-  Give operators precise visibility into which git subcommand failed so they can quickly reproduce and fix local tooling drift issues.
-  - Refresh API error payload includes the failing semantic diff subcommand string and stage identifier.
-  - Payload preserves stderr/exit-code context in structured fields suitable for UI rendering.
-  - Sensitive values are redacted according to existing logging/error policies.
-
-- Deterministic Semantic Diff Command Execution *(feature)*
-  Make semantic diff extraction resilient to local Git config/tooling differences by forcing a stable, non-interactive command path.
-- Subcommand-Level Diagnostics and Remediation Surfacing *(feature)*
-  Expose actionable failure details for semantic diff drift scenarios in both API and UI without losing usable cached output.
-
 ### SourceVision Semantic Diff Failure UX Hardening
 
 **Actionable UI diagnostics and retry guidance**
@@ -1725,6 +2376,23 @@ The llm-client module has 7 distinct layers:
   - Failure classifier maps local-history stderr patterns to local remediation guidance
   - UI and API both expose the resolved guidance category and command suggestions for each classification path
 
+**Deterministic Semantic Diff Command Execution**
+- 🔶 **Enforce deterministic non-interactive flags for semantic diff git invocations**
+  Prevent local external diff drivers, textconv filters, or interactive paging from changing semantic diff behavior so refresh results stay consistent across environments.
+  - Semantic diff extraction runs with `--no-ext-diff` and `--no-textconv` on every refresh path.
+  - Semantic diff command execution is non-interactive and does not invoke a pager or prompt for input.
+  - Integration test verifies identical semantic diff extraction behavior when local git config enables external diff/textconv.
+- 🔶 **Split semantic diff and name-status diff execution into independently classified stages**
+  Ensure a semantic diff failure does not get conflated with name-status collection so diagnostics and fallback decisions are accurate.
+  - Semantic diff and name-status diff run as separate stage executions with distinct status fields.
+  - A semantic diff failure with successful name-status diff returns a mixed-stage result instead of a single generic failure.
+  - Regression test covers semantic-stage failure while name-status stage succeeds and validates separate classification output.
+- Include exact failing semantic diff subcommand metadata in refresh diagnostics
+  Give operators precise visibility into which git subcommand failed so they can quickly reproduce and fix local tooling drift issues.
+  - Refresh API error payload includes the failing semantic diff subcommand string and stage identifier.
+  - Payload preserves stderr/exit-code context in structured fields suitable for UI rendering.
+  - Sensitive values are redacted according to existing logging/error policies.
+
 **Diff-stage cache safety and API diagnostics**
 - 🔶 **Guard cached PR markdown from semantic diff-stage invalidation**
   Prevent refresh from overwriting or clearing the last successful PR markdown artifact when failure occurs specifically during semantic diff inspection, preserving reviewer continuity.
@@ -1741,6 +2409,83 @@ The llm-client module has 7 distinct layers:
   Harden refresh behavior when semantic diff inspection fails so users keep prior output and receive machine-readable failure details.
 - Actionable UI diagnostics and retry guidance *(feature)*
   Improve operator recovery by surfacing exact failure context and tailored next actions based on failure category.
+- Deterministic Semantic Diff Command Execution *(feature)*
+  Make semantic diff extraction resilient to local Git config/tooling differences by forcing a stable, non-interactive command path.
+
+---
+
+Expose actionable failure details for semantic diff drift scenarios in both API and UI without losing usable cached output.
+
+### SourceVision UI Import Graph Enhancement
+
+**Replace grid layout with interactive slideout**
+- ⚠️ **Remove zone grid display from SourceVision zones page**
+  Remove the large grid of zones that currently displays under the graph on the SourceVision zones page to clean up the interface and prepare for slideout-based interaction
+  - Zone grid component is removed from zones page layout
+  - Page displays only the graph without grid below
+  - No layout shifts or broken UI elements after removal
+- Implement slideout panel component for zone details
+  Create a new slideout/sidepanel component that will display zone details when a zone is selected from the graph, replacing the grid-based display
+  - Slideout panel slides in from right side of viewport
+  - Panel displays zone details previously shown in grid
+  - Panel has close button and can be dismissed by clicking outside
+  - Panel is responsive and works on different screen sizes
+- Wire graph click events to open zone detail slideout
+  Update the zones graph interaction to open the slideout panel instead of scrolling to grid section when a zone is clicked, creating a more fluid user experience
+  - Clicking a zone in the graph opens the slideout with that zone's details
+  - No viewport scrolling occurs on zone click
+  - Graph interaction remains smooth and responsive
+  - Selected zone is highlighted in graph while slideout is open
+
+- Replace grid layout with interactive slideout *(feature)*
+  Transform the SourceVision zones page from a grid-based layout to an interactive slideout-based interface for better user experience
+
+### Timer Performance Optimization and Re-render Reduction
+
+**Centralized Timer Management**
+- Implement shared timer service for elapsed time updates
+  Create a centralized timer service that manages a single setInterval and distributes tick events to subscribed components, eliminating the need for individual timers per task card
+  - Single setInterval runs at 1-second intervals regardless of number of subscribers
+  - Components can subscribe/unsubscribe from timer events
+  - Timer service automatically starts when first subscriber joins and stops when last subscriber leaves
+  - Memory leaks prevented through proper cleanup of event listeners
+- Refactor task-audit.ts to use shared timer service
+  Replace individual setInterval calls in task-audit.ts with subscriptions to the shared timer service, reducing timer overhead for multiple visible task cards
+  - All individual setInterval calls removed from task-audit.ts
+  - Elapsed time updates continue to work correctly
+  - Component properly subscribes on mount and unsubscribes on unmount
+  - No performance regression in elapsed time accuracy
+- Refactor active-tasks-panel.ts to use shared timer service
+  Replace individual setInterval calls in active-tasks-panel.ts with subscriptions to the shared timer service, reducing timer overhead for the active tasks display
+  - All individual setInterval calls removed from active-tasks-panel.ts
+  - Active task elapsed time updates continue to work correctly
+  - Component properly subscribes on mount and unsubscribes on unmount
+  - No performance regression in elapsed time accuracy
+
+**Re-render Optimization**
+- Implement batched state updates for elapsed time displays
+  Group multiple elapsed time state updates into batched operations to reduce the frequency of component re-renders when many task cards are visible simultaneously
+  - State updates for elapsed time are batched within the same tick cycle
+  - Re-render frequency reduced compared to individual setState calls
+  - UI remains responsive with smooth elapsed time updates
+  - Performance improvement measurable with 20+ visible task cards
+- Add memoization for elapsed time calculations
+  Implement React.memo or useMemo to prevent unnecessary re-renders of elapsed time components when only the time value changes but other props remain constant
+  - Elapsed time components only re-render when elapsed time actually changes
+  - Components with identical props skip re-render cycles
+  - Memory usage for memoization remains acceptable
+  - Elapsed time display accuracy maintained
+- Implement timer pause mechanism for inactive tabs
+  Pause elapsed time timer updates when the browser tab becomes inactive to reduce unnecessary computation and battery usage
+  - Timer pauses when document.visibilityState becomes 'hidden'
+  - Timer resumes when document.visibilityState becomes 'visible'
+  - Elapsed time catches up correctly when tab becomes active again
+  - Page Visibility API properly handles all browser tab states
+
+- Centralized Timer Management *(feature)*
+  Replace individual per-component timers with a shared timer service to reduce CPU overhead and coordinate updates
+- Re-render Optimization *(feature)*
+  Minimize component re-renders caused by frequent timer updates through batching and memoization strategies
 
 ### Token Event Attribution Accuracy
 
@@ -1783,6 +2528,130 @@ The llm-client module has 7 distinct layers:
   Ensure every token usage event records the actual LLM vendor and model used at execution time so later reporting is based on facts, not mutable config.
 - Event-metadata-driven utilization aggregation *(feature)*
   Rework utilization calculations to aggregate by per-event vendor/model metadata rather than current configured model values.
+
+### Token Usage Aggregation Performance Optimization
+
+**Incremental Aggregation System**
+- Implement incremental token usage updates instead of full rebuilds
+  Replace the current full aggregation rebuild in aggregateTaskUsage() with an incremental system that only processes new or changed run files since the last aggregation
+  - aggregateTaskUsage() only processes new/modified run files on subsequent calls
+  - Initial aggregation still processes all existing run files
+  - Aggregation time remains constant regardless of total run history size
+  - Token usage totals remain accurate after incremental updates
+- Add run file change detection and delta processing
+  Implement file system monitoring or timestamp-based detection to identify which run files need processing, enabling efficient delta aggregation
+  - System detects new run files added since last aggregation
+  - System detects modified run files and re-processes them
+  - Delta processing handles file deletions gracefully
+  - Change detection works reliably across process restarts
+- Implement aggregation result caching with invalidation
+  Cache computed aggregation results to avoid redundant processing, with smart invalidation when underlying run data changes
+  - Aggregation results are cached between polling intervals
+  - Cache is invalidated when new run files are detected
+  - Cache keys properly differentiate between different task scopes
+  - Memory usage of cache is bounded and doesn't grow indefinitely
+
+**Run History Management**
+- Add run file archival and compression for old entries
+  Implement automatic archival system that compresses or consolidates old run files to reduce file system overhead while preserving historical data
+  - Run files older than configurable threshold are compressed
+  - Compressed files maintain all necessary token usage metadata
+  - Aggregation system can read both compressed and uncompressed files
+  - Disk space usage grows more slowly with large run histories
+- Implement run history retention policies
+  Add configurable retention policies to automatically remove very old run files while preserving aggregated usage statistics
+  - Retention policy is configurable (default 6 months)
+  - Usage statistics are preserved even after individual runs are deleted
+  - Policy enforcement runs automatically on schedule
+  - Users receive warnings before data deletion occurs
+
+**Stale Data Cleanup**
+- Remove deleted task entries from usage aggregation state
+  Clean up token usage entries for tasks that have been deleted from the PRD, preventing accumulation of stale data in the aggregation results
+  - Deleted task usage entries are removed from aggregation state
+  - Cleanup happens automatically during aggregation cycles
+  - UI no longer displays usage data for non-existent tasks
+  - Memory usage decreases when tasks are deleted
+- Implement periodic cleanup of orphaned usage records
+  Add scheduled cleanup process to remove usage records that no longer correspond to any PRD items, maintaining data consistency over time
+  - Orphaned usage records are identified by cross-referencing with current PRD state
+  - Cleanup runs on a configurable schedule (default weekly)
+  - Cleanup process logs removed entries for auditability
+  - Critical usage data is preserved through PRD restructuring
+
+- Incremental Aggregation System *(feature)*
+  Replace full aggregation rebuilds with efficient incremental updates to handle large run histories
+- Stale Data Cleanup *(feature)*
+  Remove obsolete entries from usage aggregation to prevent memory bloat and improve accuracy
+- Run History Management *(feature)*
+  Implement efficient storage and retention policies for historical run data to control growth
+
+### TreeNodes DOM Performance Optimization
+
+**Event Listener Optimization**
+- Implement event delegation for tree node interactions
+  Replace individual event listeners on each tree node with delegated event handling on the tree container to reduce listener count
+  - Single delegated event listener handles all tree node clicks
+  - Event delegation correctly identifies target tree nodes
+  - All existing tree interactions work identically
+  - Dramatic reduction in total event listener count
+- Add event listener lifecycle management
+  Implement proper cleanup and management of event listeners during node creation and destruction cycles
+  - Event listeners removed when nodes are destroyed
+  - No memory leaks from orphaned event listeners
+  - Event listener count remains proportional to visible nodes
+  - Memory profiling shows stable listener count during scrolling
+
+**Lazy Rendering and Node Culling**
+- Implement lazy rendering for collapsed tree branches
+  Defer DOM creation for child nodes under collapsed parents until the parent is expanded by the user
+  - Child nodes under collapsed parents are not rendered to DOM
+  - Child nodes render on-demand when parent is expanded
+  - State is preserved correctly across expand/collapse cycles
+  - No visual flickering during expand/collapse operations
+- Add off-screen node culling with cleanup
+  Remove DOM nodes that scroll out of viewport and clean up associated event listeners to prevent memory bloat
+  - DOM nodes removed when scrolled out of viewport buffer
+  - Event listeners cleaned up when nodes are culled
+  - Nodes re-created correctly when scrolled back into view
+  - Memory usage remains stable during extended scrolling
+- Implement progressive tree loading for large datasets
+  Load and render tree nodes in chunks rather than all at once for very large PRD trees
+  - Tree loads in configurable chunks (e.g., 50 nodes at a time)
+  - Loading indicator shown while chunks are being processed
+  - User can trigger loading of additional chunks on demand
+  - Search and filter operations work across all loaded chunks
+
+**Performance Monitoring and Metrics**
+- Implement DOM performance monitoring dashboard
+  Add performance metrics tracking for DOM node count, render time, and memory usage in tree components
+  - Tracks active DOM node count in tree components
+  - Measures tree render and update performance
+  - Shows memory usage metrics for tree operations
+  - Provides before/after comparison data
+- Add large tree performance benchmarks
+  Create automated benchmarks to validate performance improvements on trees with 500, 1000, and 2000+ items
+  - Benchmark suite tests trees of various sizes
+  - Measures DOM node count, render time, and memory usage
+  - Validates performance targets are met
+  - Includes regression testing for performance degradation
+
+**Virtual Scrolling and Windowing Implementation**
+- 🔶 **Implement virtual scrolling container for TreeNodes component**
+  Replace full tree rendering with a virtual scrolling container that only renders items within the viewport plus a configurable buffer zone
+  - TreeNodes only renders visible items plus buffer zone
+  - Scroll position accurately reflects virtual tree height
+  - Tree expansion/collapse works correctly with virtual scrolling
+  - Performance improvement measurable on 500+ item trees
+
+- Virtual Scrolling and Windowing Implementation *(feature)*
+  Implement viewport-based rendering to only create DOM nodes for visible tree items
+- Lazy Rendering and Node Culling *(feature)*
+  Implement lazy rendering strategies to defer DOM creation until nodes are actually needed
+- Event Listener Optimization *(feature)*
+  Optimize event listener management to handle large trees efficiently without creating thousands of individual listeners
+- Performance Monitoring and Metrics *(feature)*
+  Add performance monitoring and metrics to track DOM performance improvements and identify bottlenecks
 
 ### Web UI Memory Management and Crash Resolution
 
@@ -1831,6 +2700,11 @@ The llm-client module has 7 distinct layers:
   - Memory usage baseline established for normal UI operations
   - Memory spikes during refresh operations identified and quantified
   - Specific components or operations causing excessive memory allocation documented
+- 🔶 **Analyze refresh task orchestration for memory-intensive operations**
+  Examine the ndx refresh command and related web UI refresh behaviors to identify operations that may be loading excessive data into memory
+  - All refresh tasks and their memory footprint catalogued
+  - Data loading patterns in dashboard refresh operations analyzed
+  - Refresh orchestration flow documented with memory impact assessment
 - Investigate browser error code 5 triggers and recovery scenarios
   Research Chrome/browser error code 5 specifics and analyze crash dump data to understand the exact failure conditions and memory thresholds
   - Error code 5 trigger conditions documented
@@ -1844,6 +2718,41 @@ The llm-client module has 7 distinct layers:
 - Crash Recovery and User Experience *(feature)*
   Implement crash detection, recovery mechanisms, and improved user experience during memory-related issues
 
+### WebSocket Message Performance Optimization
+
+**Message Throttling and Coalescing**
+- Implement throttled WebSocket message handler with configurable debounce
+  Replace direct message handlers with throttled versions that can handle rapid message sequences without triggering excessive API calls
+  - WebSocket messages are debounced with configurable delay (default 250ms)
+  - Throttling applies to rex:prd-changed, rex:item-updated, and rex:item-deleted messages
+  - Configuration allows per-message-type throttle intervals
+  - Memory footprint remains stable during message bursts
+- Implement message coalescing for rapid sequential updates
+  Batch multiple WebSocket messages that arrive in quick succession to reduce redundant fetchPRDData and fetchTaskUsage calls
+  - Sequential messages of same type are coalesced within throttle window
+  - Mixed message types are batched appropriately without data loss
+  - Coalescing preserves message ordering semantics
+  - Batch size limits prevent unbounded memory growth
+- Add rate limiting for fetchPRDData and fetchTaskUsage calls
+  Implement call-level rate limiting to prevent these expensive operations from being invoked more frequently than necessary
+  - fetchPRDData calls are rate-limited to maximum 2 per second
+  - fetchTaskUsage calls are rate-limited to maximum 2 per second
+  - Rate limits are configurable via application settings
+  - Queued calls are deduplicated to prevent redundant requests
+
+**UI Update Optimization**
+- Implement intelligent tree re-render optimization
+  Replace full tree re-renders with targeted updates that only modify changed nodes, reducing CPU load and improving UI responsiveness
+  - Tree updates use virtual DOM diffing to minimize DOM manipulation
+  - Only changed nodes and their ancestors are re-rendered
+  - Re-render performance scales sub-linearly with tree size
+  - UI remains responsive during rapid update sequences
+
+- Message Throttling and Coalescing *(feature)*
+  Implement intelligent throttling and batching mechanisms to handle high-frequency WebSocket messages without overwhelming the UI
+- UI Update Optimization *(feature)*
+  Optimize rendering pipeline to minimize unnecessary DOM updates and improve responsiveness during high-frequency data changes
+
 ### (Ungrouped)
 
 - 🔶 **Codex Vendor Reliability and Documentation** *(epic)*
@@ -1856,7 +2765,6 @@ The llm-client module has 7 distinct layers:
 - 🔶 **ndx Dashboard Refresh Orchestration** *(epic)*
 - 🔶 **Token Event Attribution Accuracy** *(epic)*
 - 🔶 **Deterministic Task Utilization Budget Fallback** *(epic)*
-- 🔶 **Dashboard Navigation Information Architecture** *(epic)*
 - 🔶 **Duplicate-aware Proposal Override for rex add** *(epic)*
 - 🔶 **Dashboard Route Ownership Decoupling** *(epic)*
 - 🔶 **PR Markdown Reviewer Context Enrichment** *(epic)*
@@ -1865,7 +2773,6 @@ The llm-client module has 7 distinct layers:
 - 🔶 **SourceVision Semantic Diff Failure UX Hardening** *(epic)*
 - 🔶 **SourceVision PR Markdown Artifact-Based Fallback Mode** *(epic)*
 - 🔶 **Git Credential Helper Opt-In Recovery** *(epic)*
-- 🔶 **SourceVision Semantic Diff Determinism and Tooling-Drift Hardening** *(epic)*
 - 🔶 **Git-Independent PR Markdown Generation** *(epic)*
 - 🔶 **PR Markdown View Toggle and Copy UX** *(epic)*
 - 🔶 **Process Lifecycle Management and Graceful Shutdown** *(epic)*
@@ -1873,8 +2780,20 @@ The llm-client module has 7 distinct layers:
 - 🔶 **Rex Task and Epic Deletion Functionality** *(epic)*
 - 🔶 **PR Build Pipeline and Code Quality Automation** *(epic)*
 - 🔶 **Web UI Memory Management and Crash Resolution** *(epic)*
-- 🔶 **Interactive PRD Validation and Consistency Resolution** *(epic)*
 - 🔶 **Branch Work System of Record** *(epic)*
 - 🔶 **Automatic PR Markdown Generation** *(epic)*
 - 🔶 **Enhanced Rex Recommend Selective PRD Creation** *(epic)*
+- 🔶 **Memory-Aware Polling Loop Management** *(epic)*
+- 🔶 **WebSocket Message Performance Optimization** *(epic)*
+- 🔶 **TreeNodes DOM Performance Optimization** *(epic)*
+- 🔶 **Timer Performance Optimization and Re-render Reduction** *(epic)*
+- 🔶 **Token Usage Aggregation Performance Optimization** *(epic)*
+- 🔶 **Background Tab Resource Optimization** *(epic)*
+- 🔶 **Hench Process Concurrency Management** *(epic)*
+- 🔶 **Hench Resource Monitoring and User Feedback** *(epic)*
+- 🔶 **File Format Enhancement for Requirements Import** *(epic)*
+- 🔶 **Recursive zone architecture** *(epic)*
+  Make subdivision use the same full pipeline as root analysis. Same algorithm at every zoom level — fractal zones. Zone detection currently lumps components, routes, utils, and configs into mega-zones because subdivideZone() runs a stripped-down Louvain without resolution escalation, proximity edges, or splitLargeCommunities.
+- 🔶 **LoE-Calibrated Proposal Generation in rex add** *(epic)*
+- 🔶 **Rex UI Consistency and Polish** *(epic)*
 

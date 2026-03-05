@@ -11,8 +11,9 @@ import { useState, useCallback, useEffect, useRef } from "preact/hooks";
 import type { PRDItemData, ItemStatus, Priority, ItemLevel, RequirementData, RequirementCategory, RequirementValidationType, TaskUsageSummary, WeeklyBudgetResolution } from "./types.js";
 import { formatTimestamp } from "./compute.js";
 import { findItemById } from "./tree-utils.js";
-import { CopyLinkButton } from "./shared-imports.js";
+import { CopyLinkButton } from "../copy-link-button.js";
 import { resolveTaskUtilization } from "./task-utilization.js";
+import { isWorkItem, getLevelLabel, getChildLevel } from "./levels.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -57,12 +58,7 @@ const PRIORITY_OPTIONS: Array<{ value: Priority; label: string }> = [
   { value: "low", label: "Low" },
 ];
 
-const LEVEL_LABELS: Record<string, string> = {
-  epic: "Epic",
-  feature: "Feature",
-  task: "Task",
-  subtask: "Subtask",
-};
+// Level labels now provided by getLevelLabel() from ./levels.ts
 
 function formatTokenCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -256,7 +252,7 @@ function DependencyList({
           ),
           h("span", { class: "task-dep-title" }, dep ? dep.title : depId),
           dep
-            ? h("span", { class: `prd-level-badge prd-level-${dep.level}` }, LEVEL_LABELS[dep.level] || dep.level)
+            ? h("span", { class: `prd-level-badge prd-level-${dep.level}` }, getLevelLabel(dep.level))
             : null,
         );
       }),
@@ -318,7 +314,7 @@ function ChildrenSummary({
             tabIndex: onNavigate ? 0 : undefined,
           },
           h("span", { class: `prd-status-icon prd-status-${child.status}` }, statusIcons[child.status] || "○"),
-          h("span", { class: `prd-level-badge prd-level-${child.level}` }, LEVEL_LABELS[child.level] || child.level),
+          h("span", { class: `prd-level-badge prd-level-${child.level}` }, getLevelLabel(child.level)),
           h("span", { class: "task-child-title" }, child.title),
         ),
       ),
@@ -328,13 +324,7 @@ function ChildrenSummary({
 
 // ── Add Child Form ────────────────────────────────────────────────────
 
-/** Infer child level from parent level. */
-const CHILD_LEVEL: Record<string, ItemLevel | null> = {
-  epic: "feature",
-  feature: "task",
-  task: "subtask",
-  subtask: null,
-};
+// Child level inference now provided by getChildLevel() from ./levels.ts
 
 /** Inline form for adding a child item within the detail panel. */
 function AddChildForm({
@@ -355,10 +345,10 @@ function AddChildForm({
   const [error, setError] = useState<string | null>(null);
   const [showExtra, setShowExtra] = useState(false);
 
-  const childLevel = CHILD_LEVEL[parentLevel];
+  const childLevel = getChildLevel(parentLevel);
   if (!childLevel) return null;
 
-  const childLabel = LEVEL_LABELS[childLevel] || childLevel;
+  const childLabel = getLevelLabel(childLevel);
 
   const handleSubmit = useCallback(async () => {
     const trimmedTitle = title.trim();
@@ -834,7 +824,7 @@ function ExecuteTaskButton({
   const resultTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isTriggerable = TRIGGERABLE_STATUSES.has(item.status);
-  const isTaskLevel = item.level === "task" || item.level === "subtask";
+  const isTaskLevel = isWorkItem(item.level);
 
   // Check initial execution status on mount (handles page refresh during execution)
   useEffect(() => {
@@ -1063,7 +1053,7 @@ export function TaskDetail({ item, taskUsage, weeklyBudget, allItems, onUpdate, 
   const utilization = usageSummary.utilization ?? resolveTaskUtilization(usageSummary.totalTokens, weeklyBudget);
 
   // Determine if this item can have children added
-  const canAddChild = onAddChild != null && CHILD_LEVEL[item.level] != null;
+  const canAddChild = onAddChild != null && getChildLevel(item.level) != null;
 
   // Reset add-child form and remove confirmation when item changes
   useEffect(() => {
@@ -1137,7 +1127,7 @@ export function TaskDetail({ item, taskUsage, weeklyBudget, allItems, onUpdate, 
     h(
       "div",
       { class: "task-meta-header" },
-      h("span", { class: `prd-level-badge prd-level-${item.level}` }, LEVEL_LABELS[item.level] || item.level),
+      h("span", { class: `prd-level-badge prd-level-${item.level}` }, getLevelLabel(item.level)),
       h("span", { class: "task-id" }, item.id.slice(0, 8)),
       h(CopyLinkButton, { path: `/prd/${item.id}`, compact: true }),
     ),
@@ -1339,9 +1329,9 @@ export function TaskDetail({ item, taskUsage, weeklyBudget, allItems, onUpdate, 
                   {
                     class: "task-add-child-btn",
                     onClick: () => setShowAddChild(true),
-                    title: `Add ${LEVEL_LABELS[CHILD_LEVEL[item.level] as ItemLevel] || "child"} to this ${LEVEL_LABELS[item.level] || item.level}`,
+                    title: `Add ${getLevelLabel(getChildLevel(item.level) ?? "child")} to this ${getLevelLabel(item.level)}`,
                   },
-                  `+ Add ${LEVEL_LABELS[CHILD_LEVEL[item.level] as ItemLevel] || "Child"}`,
+                  `+ Add ${getLevelLabel(getChildLevel(item.level) ?? "child")}`,
                 )
             : null,
         )
@@ -1379,7 +1369,7 @@ export function TaskDetail({ item, taskUsage, weeklyBudget, allItems, onUpdate, 
                 "div",
                 { class: "task-remove-confirm" },
                 h("p", { class: "task-remove-confirm-msg" },
-                  `Are you sure you want to delete this ${LEVEL_LABELS[item.level] || item.level}`,
+                  `Are you sure you want to delete this ${getLevelLabel(item.level)}`,
                   (item.children && item.children.length > 0)
                     ? ` and all its ${item.children.length} descendant${item.children.length !== 1 ? "s" : ""}?`
                     : "?",
@@ -1408,10 +1398,10 @@ export function TaskDetail({ item, taskUsage, weeklyBudget, allItems, onUpdate, 
             : h("button", {
                 class: "task-remove-btn",
                 onClick: () => setConfirmingRemove(true),
-                title: `Delete this ${LEVEL_LABELS[item.level] || item.level} and all its descendants`,
+                title: `Delete this ${getLevelLabel(item.level)} and all its descendants`,
               },
                 h("span", { class: "task-remove-btn-icon" }, "\u2717"),
-                `Delete ${LEVEL_LABELS[item.level] || item.level}`,
+                `Delete ${getLevelLabel(item.level)}`,
               ),
         )
       : null,

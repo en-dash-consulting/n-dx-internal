@@ -4,6 +4,7 @@ import { z } from "zod";
 import { join } from "node:path";
 import { resolveStore, resolveRemoteStore, SyncEngine } from "../store/index.js";
 import { REX_DIR, TOOL_VERSION } from "./commands/constants.js";
+import { getAllLevels } from "../schema/index.js";
 import {
   handleGetPrdStatus,
   handleGetNextTask,
@@ -17,6 +18,9 @@ import {
   handleGetRecommendations,
   handleVerifyCriteria,
   handleGetCapabilities,
+  handleReorganize,
+  handleHealth,
+  handleFacets,
 } from "./mcp-tools.js";
 
 /**
@@ -70,7 +74,7 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
     "Add a new item to the PRD",
     {
       title: z.string().describe("Item title"),
-      level: z.enum(["epic", "feature", "task", "subtask"]).describe("Item level"),
+      level: z.enum(getAllLevels() as [string, ...string[]]).describe("Item level"),
       parentId: z.string().optional().describe("Parent item ID"),
       description: z.string().optional().describe("Item description"),
       priority: z.enum(["critical", "high", "medium", "low"]).optional().describe("Priority"),
@@ -146,6 +150,29 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       runTests: z.boolean().optional().describe("Whether to execute tests (default: true)"),
     },
     async (args) => handleVerifyCriteria(store, dir, args),
+  );
+
+  server.tool(
+    "reorganize",
+    "Detect structural issues in the PRD and propose reorganizations (merge, move, delete, prune, collapse, split). Runs both programmatic detectors and LLM analysis by default.",
+    {
+      accept: z.string().optional().describe("Apply proposals: 'low-risk' (default when set), 'all', or comma-separated IDs like '1,3'"),
+      includeCompleted: z.boolean().optional().describe("Include completed items in similarity analysis (default: false)"),
+      mode: z.enum(["fast", "full"]).optional().describe("Analysis mode: 'fast' (programmatic only) or 'full' (programmatic + LLM, default)"),
+    },
+    async (args) => handleReorganize(store, dir, args),
+  );
+
+  server.tool("health", "Get structure health score with dimensional breakdown (depth, balance, granularity, completeness, staleness)", {},
+    async () => handleHealth(store));
+
+  server.tool(
+    "facets",
+    "List configured facets with distribution, or suggest facets for an item",
+    {
+      itemId: z.string().optional().describe("Item ID to get facet suggestions for (omit for overview)"),
+    },
+    async (args) => handleFacets(store, args),
   );
 
   server.tool("get_capabilities", "Get Rex server capabilities and configuration", {},

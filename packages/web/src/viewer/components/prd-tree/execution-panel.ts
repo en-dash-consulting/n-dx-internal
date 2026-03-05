@@ -9,8 +9,8 @@
 import { h } from "preact";
 import { useState, useEffect, useCallback, useRef } from "preact/hooks";
 import { usePolling } from "../../hooks/use-polling.js";
-import { createRequestDedup } from "../../request-dedup.js";
-import { isFeatureDisabled, onDegradationChange } from "../../graceful-degradation.js";
+import { createRequestDedup } from "../../messaging/request-dedup.js";
+import { isFeatureDisabled, onDegradationChange } from "../../performance/graceful-degradation.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -240,11 +240,11 @@ export function ExecutionPanel({ onPrdChanged }: ExecutionPanelProps) {
       h("h3", { class: "exec-panel-title" }, "Epic-by-Epic Execution"),
       isActive
         ? h("span", {
-            class: `exec-panel-status-badge exec-panel-status-${status!.status}`,
+            class: `status-badge status-badge--${status!.status}`,
           }, status!.status === "running" ? "Running" : "Paused")
         : isDone
           ? h("span", {
-              class: `exec-panel-status-badge exec-panel-status-${status!.status}`,
+              class: `status-badge status-badge--${status!.status}`,
             }, status!.status === "completed" ? "Complete" : "Failed")
           : null,
     ),
@@ -333,7 +333,7 @@ export function ExecutionPanel({ onPrdChanged }: ExecutionPanelProps) {
                     class: `exec-panel-epic-icon exec-panel-epic-icon-${epic.status}`,
                     "aria-label": EPIC_STATUS_LABELS[epic.status] ?? epic.status,
                   }, EPIC_STATUS_ICONS[epic.status] ?? "○"),
-                  h("span", { class: "exec-panel-epic-title" }, epic.title),
+                  h("span", { class: "exec-panel-epic-title", title: epic.title }, epic.title),
                   h("span", { class: "exec-panel-epic-count" },
                     `${epic.tasksCompleted}/${epic.tasksTotal}`,
                   ),
@@ -383,7 +383,7 @@ export function ExecutionPanel({ onPrdChanged }: ExecutionPanelProps) {
                       h("span", {
                         class: `exec-panel-epic-icon exec-panel-epic-icon-${epic.status}`,
                       }, EPIC_STATUS_ICONS[epic.status] ?? "○"),
-                      h("span", { class: "exec-panel-epic-title" }, epic.title),
+                      h("span", { class: "exec-panel-epic-title", title: epic.title }, epic.title),
                       h("span", { class: "exec-panel-epic-count" },
                         `${epic.tasksCompleted}/${epic.tasksTotal}`,
                       ),

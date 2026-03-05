@@ -7,8 +7,8 @@
  */
 
 import { h } from "preact";
-import type { MemoryLevel } from "../memory-monitor.js";
-import type { RefreshQueueState } from "../refresh-throttle.js";
+import type { MemoryLevel } from "../performance/memory-monitor.js";
+import type { RefreshQueueState } from "../performance/refresh-throttle.js";
 
 export interface RefreshQueueStatusProps {
   /** Current queue state from the refresh throttle. */
