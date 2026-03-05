@@ -1028,13 +1028,13 @@ Cross-dependencies between sub-zones:
 
 This zone has 8 sub-zone(s):
 
+- **Web Viewer/web/hench** (`web-viewer/web/hench`): 4 files, cohesion 0.86, coupling 0.14
 - **Web Viewer/web/server** (`web-viewer/web/server`): 4 files, cohesion 0.63, coupling 0.38
 - **Web Viewer/web/viewer** (`web-viewer/web/viewer`): 272 files, cohesion 0.99, coupling 0.01
-  - Has 8 nested sub-zone(s)
+  - Has 7 nested sub-zone(s)
 - **Web Viewer/web/viewer 2** (`web-viewer/web/viewer-2`): 4 files, cohesion 0.75, coupling 0.25
 - **Web Viewer/web/viewer 3** (`web-viewer/web/viewer-3`): 4 files, cohesion 0.75, coupling 0.25
 - **Web Viewer/web/viewer 4** (`web-viewer/web/viewer-4`): 4 files, cohesion 0.75, coupling 0.25
-- **Web Viewer/web/viewer 5** (`web-viewer/web/viewer-5`): 4 files, cohesion 0.86, coupling 0.14
 - **Web Viewer/web/viewer Components** (`web-viewer/web/viewer-components`): 5 files, cohesion 0.64, coupling 0.36
 - **Web Viewer/web/viewer Styles** (`web-viewer/web/viewer-styles`): 4 files, cohesion 0.86, coupling 0.14
 

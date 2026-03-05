@@ -473,8 +473,12 @@ export function splitLargeCommunities(
       }
 
       if (!subCommunity) {
-        unsplittable.add(comm);
-        continue;
+        // Fallback: split by directory structure
+        subCommunity = splitByDirectory(commMembers, maxSize);
+        if (!subCommunity || new Set(subCommunity.values()).size <= 1) {
+          unsplittable.add(comm);
+          continue;
+        }
       }
 
       // Apply sub-community assignments: use "parentComm\0subComm" as new ID
@@ -637,4 +641,62 @@ export function capZoneCount(
   }
 
   return result;
+}
+
+// ── Directory-based fallback splitting ───────────────────────────────────────
+
+/**
+ * Split files into communities based on directory structure.
+ * Used as a fallback when Louvain cannot split an oversized community
+ * (e.g., fully-connected import graph with no internal structure).
+ *
+ * Groups files by their directory prefix (depth 2, falling back to depth 3
+ * if all files share the same depth-2 prefix). Returns null if files cannot
+ * be meaningfully split by directory.
+ */
+export function splitByDirectory(
+  files: string[],
+  _maxSize: number,
+): Map<string, string> | null {
+  // Group files by depth-2 directory prefix (e.g., "app/components", "app/lib")
+  let dirGroups = groupByPrefix(files, 2);
+
+  // If everything is in one group, try deeper
+  if (dirGroups.size <= 1) {
+    dirGroups = groupByPrefix(files, 3);
+  }
+
+  if (dirGroups.size <= 1) return null;
+
+  // Reject splits where most groups are singletons — not a meaningful
+  // directory-based split (e.g., root-level files with no directory structure)
+  const meaningfulGroups = [...dirGroups.values()].filter((g) => g.length >= 2);
+  if (meaningfulGroups.length < 2) return null;
+
+  // Assign each directory group a community ID
+  const result = new Map<string, string>();
+  let communityIdx = 0;
+  for (const [, group] of [...dirGroups.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    const commId = `dir-${communityIdx++}`;
+    for (const file of group) {
+      result.set(file, commId);
+    }
+  }
+  return result;
+}
+
+function groupByPrefix(files: string[], depth: number): Map<string, string[]> {
+  const groups = new Map<string, string[]>();
+  for (const file of files) {
+    const parts = file.split("/");
+    // Use directory segments only (exclude filename)
+    const dirParts = parts.slice(0, -1);
+    const key = dirParts.length >= depth
+      ? dirParts.slice(0, depth).join("/")
+      : dirParts.join("/") || parts[0];
+    let list = groups.get(key);
+    if (!list) { list = []; groups.set(key, list); }
+    list.push(file);
+  }
+  return groups;
 }

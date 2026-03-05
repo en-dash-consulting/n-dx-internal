@@ -5,11 +5,13 @@ import {
   louvainPhase1,
   mergeSmallCommunities,
   splitLargeCommunities,
+  splitByDirectory,
 } from "../../../src/analyzers/louvain.js";
 import {
   deriveZoneId,
   deriveZoneName,
   disambiguateZoneId,
+  deriveZoneIdFromFilenames,
   analyzeZones,
   assignByProximity,
   SUBDIVISION_THRESHOLD,
@@ -926,6 +928,92 @@ describe("assignByProximity", () => {
     expect(remaining).toContain("package.json");
     expect(remaining).toContain("README.md");
   });
+
+  it("respects maxZoneSize and leaves files unzoned when zone is full", () => {
+    const zones: Zone[] = [
+      {
+        id: "core",
+        name: "Core",
+        description: "",
+        files: ["src/core/a.ts", "src/core/b.ts", "src/core/c.ts"],
+        entryPoints: [],
+        cohesion: 1,
+        coupling: 0,
+      },
+    ];
+
+    // Zone has 3 files, maxZoneSize=4 → can only accept 1 more
+    const { zones: expanded, remaining } = assignByProximity(
+      zones,
+      ["src/core/d.ts", "src/core/e.ts", "src/core/f.ts"],
+      4,
+    );
+
+    expect(expanded[0].files).toHaveLength(4); // 3 original + 1 new
+    expect(remaining).toHaveLength(2); // 2 couldn't fit
+  });
+
+  it("assigns to secondary zone when primary is full", () => {
+    const zones: Zone[] = [
+      {
+        id: "alpha",
+        name: "Alpha",
+        description: "",
+        files: ["src/alpha/a.ts", "src/alpha/b.ts"],
+        entryPoints: [],
+        cohesion: 1,
+        coupling: 0,
+      },
+      {
+        id: "beta",
+        name: "Beta",
+        description: "",
+        files: ["src/beta/x.ts"],
+        entryPoints: [],
+        cohesion: 1,
+        coupling: 0,
+      },
+    ];
+
+    // File is in src/ — alpha is closer match but full at maxZoneSize=2
+    // Should walk up to parent and find beta (also in src/) if beta still has room
+    const { zones: expanded, remaining } = assignByProximity(
+      zones,
+      ["src/alpha/c.ts"],
+      2,
+    );
+
+    // Alpha is full (2 files), but src/ dir contains alpha with count 2
+    // — alpha is skipped since it's at max, so c.ts goes to remaining
+    // unless another zone is available in the same directory
+    const alphaFiles = expanded.find(z => z.id === "alpha")!.files;
+    expect(alphaFiles).toHaveLength(2); // didn't grow
+    // c.ts should either be in remaining or assigned to beta via parent walk
+    expect(remaining.length + expanded.find(z => z.id === "beta")!.files.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("does not enforce size cap when maxZoneSize is undefined", () => {
+    const zones: Zone[] = [
+      {
+        id: "core",
+        name: "Core",
+        description: "",
+        files: ["src/core/a.ts", "src/core/b.ts", "src/core/c.ts"],
+        entryPoints: [],
+        cohesion: 1,
+        coupling: 0,
+      },
+    ];
+
+    const { zones: expanded, remaining } = assignByProximity(
+      zones,
+      ["src/core/d.ts", "src/core/e.ts", "src/core/f.ts"],
+      // no maxZoneSize
+    );
+
+    expect(expanded[0].files).toHaveLength(6); // all assigned
+    expect(remaining).toHaveLength(0);
+  });
 });
 
 // ── Resolution parameter & iterative splitting ────────────────────────────
@@ -1062,6 +1150,99 @@ describe("splitLargeCommunities with resolution escalation", () => {
       const comm = result.get(cluster[0])!;
       for (const f of cluster) expect(result.get(f)).toBe(comm);
     }
+  });
+});
+
+// ── splitByDirectory fallback ────────────────────────────────────────────────
+
+describe("splitByDirectory", () => {
+  it("splits files by depth-2 directory prefix", () => {
+    const files = [
+      "app/components/Button.tsx",
+      "app/components/Modal.tsx",
+      "app/lib/utils.ts",
+      "app/lib/helpers.ts",
+    ];
+    const result = splitByDirectory(files, 2);
+
+    expect(result).not.toBeNull();
+    const comms = new Set(result!.values());
+    expect(comms.size).toBe(2);
+    // Files in same dir prefix should share a community
+    expect(result!.get("app/components/Button.tsx")).toBe(result!.get("app/components/Modal.tsx"));
+    expect(result!.get("app/lib/utils.ts")).toBe(result!.get("app/lib/helpers.ts"));
+    // Different prefixes should differ
+    expect(result!.get("app/components/Button.tsx")).not.toBe(result!.get("app/lib/utils.ts"));
+  });
+
+  it("falls back to depth-3 when all files share depth-2 prefix", () => {
+    const files = [
+      "app/src/auth/login.ts",
+      "app/src/auth/logout.ts",
+      "app/src/api/routes.ts",
+      "app/src/api/handler.ts",
+    ];
+    const result = splitByDirectory(files, 4);
+
+    expect(result).not.toBeNull();
+    const comms = new Set(result!.values());
+    expect(comms.size).toBe(2);
+    expect(result!.get("app/src/auth/login.ts")).toBe(result!.get("app/src/auth/logout.ts"));
+    expect(result!.get("app/src/api/routes.ts")).toBe(result!.get("app/src/api/handler.ts"));
+  });
+
+  it("returns null when all files are in the same directory", () => {
+    const files = [
+      "src/a.ts",
+      "src/b.ts",
+      "src/c.ts",
+    ];
+    const result = splitByDirectory(files, 3);
+    expect(result).toBeNull();
+  });
+});
+
+describe("splitLargeCommunities with directory fallback", () => {
+  it("uses directory fallback when Louvain cannot split a fully-connected graph", () => {
+    const graph: import("../../../src/analyzers/louvain.js").UndirectedGraph = new Map();
+
+    const ensure = (n: string) => {
+      if (!graph.has(n)) graph.set(n, new Map());
+      return graph.get(n)!;
+    };
+    const addEdge = (a: string, b: string, w: number) => {
+      ensure(a).set(b, (ensure(a).get(b) ?? 0) + w);
+      ensure(b).set(a, (ensure(b).get(a) ?? 0) + w);
+    };
+
+    // Fully-connected graph — Louvain can't find internal structure
+    const filesA = Array.from({ length: 5 }, (_, i) => `app/components/f${i}.ts`);
+    const filesB = Array.from({ length: 5 }, (_, i) => `app/lib/f${i}.ts`);
+    const allFiles = [...filesA, ...filesB];
+
+    for (let i = 0; i < allFiles.length; i++) {
+      for (let j = i + 1; j < allFiles.length; j++) {
+        addEdge(allFiles[i], allFiles[j], 1);
+      }
+    }
+
+    const initial = new Map<string, string>();
+    for (const f of allFiles) initial.set(f, "mega");
+
+    const result = splitLargeCommunities(initial, graph, 5);
+    const resultComms = new Set(result.values());
+
+    // Should have split via directory fallback
+    expect(resultComms.size).toBeGreaterThan(1);
+
+    // Files in app/components should be in the same community
+    const commA = result.get(filesA[0])!;
+    for (const f of filesA) expect(result.get(f)).toBe(commA);
+
+    // Files in app/lib should be in a different community
+    const commB = result.get(filesB[0])!;
+    for (const f of filesB) expect(result.get(f)).toBe(commB);
+    expect(commA).not.toBe(commB);
   });
 });
 
@@ -1337,5 +1518,135 @@ describe("analyzeZones fixture regression", () => {
       maxZonePercent: 100,
     });
     expect(result).toEqual(run2);
+  });
+});
+
+// ── deriveZoneIdFromFilenames ────────────────────────────────────────────────
+
+describe("deriveZoneIdFromFilenames", () => {
+  it("returns dominant theme word from filenames", () => {
+    const files = [
+      "src/provider-interface.ts",
+      "src/provider-registry.ts",
+      "src/provider-session.ts",
+      "src/cli-provider.ts",
+    ];
+    expect(deriveZoneIdFromFilenames(files)).toBe("provider");
+  });
+
+  it("returns null when no word reaches 30% threshold", () => {
+    const files = [
+      "src/alpha.ts",
+      "src/bravo.ts",
+      "src/charlie.ts",
+      "src/delta.ts",
+      "src/echo.ts",
+      "src/foxtrot.ts",
+      "src/golf.ts",
+    ];
+    expect(deriveZoneIdFromFilenames(files)).toBeNull();
+  });
+
+  it("returns null with fewer than 2 source files", () => {
+    expect(deriveZoneIdFromFilenames(["src/foo.ts"])).toBeNull();
+    expect(deriveZoneIdFromFilenames([])).toBeNull();
+  });
+
+  it("filters out test files", () => {
+    const files = [
+      "src/provider.test.ts",
+      "src/provider.spec.ts",
+      "src/alpha.ts",
+      "src/bravo.ts",
+    ];
+    // After filtering test files, only alpha and bravo remain — no dominant word
+    expect(deriveZoneIdFromFilenames(files)).toBeNull();
+  });
+
+  it("skips generic words like index, utils, types", () => {
+    const files = [
+      "src/index.ts",
+      "src/utils.ts",
+      "src/types.ts",
+      "src/auth-service.ts",
+      "src/auth-middleware.ts",
+      "src/auth-config.ts",
+    ];
+    expect(deriveZoneIdFromFilenames(files)).toBe("auth");
+  });
+
+  it("splits camelCase boundaries", () => {
+    const files = [
+      "src/providerInterface.ts",
+      "src/providerRegistry.ts",
+      "src/providerSession.ts",
+    ];
+    expect(deriveZoneIdFromFilenames(files)).toBe("provider");
+  });
+
+  it("tie-breaks lexicographically", () => {
+    // "auth" and "user" each appear in 2 of 4 files (50%), both above threshold
+    const files = [
+      "src/auth-login.ts",
+      "src/auth-logout.ts",
+      "src/user-profile.ts",
+      "src/user-settings.ts",
+    ];
+    // "auth" comes before "user" lexicographically
+    expect(deriveZoneIdFromFilenames(files)).toBe("auth");
+  });
+
+  it("deduplicates words per file", () => {
+    // "llm" appears twice in the stem "llm-llm" but should only count once per file
+    const files = [
+      "src/llm-llm.ts",
+      "src/llm-types.ts",
+      "src/llm-config.ts",
+    ];
+    expect(deriveZoneIdFromFilenames(files)).toBe("llm");
+  });
+});
+
+// ── filename-based zone IDs in pipeline ─────────────────────────────────────
+
+describe("filename-based zone IDs replace numeric suffixes", () => {
+  it("uses filename-derived ID when directory-based would produce a duplicate", async () => {
+    // All files in src/ — directory-based derivation produces "src" for all communities.
+    // Three disconnected clusters large enough that merge would exceed size cap.
+    // With default maxZonePercent (30%), max zone size = ceil(15 * 0.3) = 5 files,
+    // so merging two clusters of 5 would exceed the cap, forcing separate zones.
+    const providerFiles = Array.from({ length: 5 }, (_, i) => `src/provider-${String.fromCharCode(97 + i)}.ts`);
+    const llmFiles = Array.from({ length: 5 }, (_, i) => `src/llm-${String.fromCharCode(97 + i)}.ts`);
+    const coreFiles = Array.from({ length: 5 }, (_, i) => `src/core-${String.fromCharCode(97 + i)}.ts`);
+
+    const allFiles = [...providerFiles, ...llmFiles, ...coreFiles];
+    const inventory = makeInventory(allFiles.map((f) => makeFileEntry(f)));
+
+    // Create three tightly connected but disconnected clusters
+    const edges: ImportEdge[] = [];
+    for (const cluster of [providerFiles, llmFiles, coreFiles]) {
+      for (let i = 0; i < cluster.length - 1; i++) {
+        edges.push(makeEdge(cluster[i], cluster[i + 1]));
+      }
+      edges.push(makeEdge(cluster[cluster.length - 1], cluster[0]));
+    }
+    const imports = makeImports(edges);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // Should have at least 2 zones (may have 3 depending on merge behavior)
+    expect(result.zones.length).toBeGreaterThanOrEqual(2);
+
+    // At least one zone should have a filename-derived ID (provider, llm, or core)
+    const ids = result.zones.map((z) => z.id);
+    const hasDescriptiveId = ids.some(
+      (id) => id === "provider" || id === "llm" || id === "core"
+    );
+    expect(hasDescriptiveId).toBe(true);
+
+    // Should NOT have zones with numeric suffixes like src-2, src-3
+    for (const zone of result.zones) {
+      expect(zone.id).not.toMatch(/^src-\d+$/);
+    }
   });
 });

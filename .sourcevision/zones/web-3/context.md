@@ -22,6 +22,7 @@ packages/web/src/viewer/lightmode_logo.png (Other, 0 lines, asset)
 
 <findings>
 
+[observation] [warning] Generic zone name "Web 3" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 [observation] [info] High cohesion (1) — files are tightly interconnected
 
 </findings>
@@ -29,6 +30,7 @@ packages/web/src/viewer/lightmode_logo.png (Other, 0 lines, asset)
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
+- Generic zone name "Web 3" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 - No import-graph edges in or out confirms these are pure static assets consumed by the build tool rather than imported by TypeScript modules.
 - Bundling HTML and image assets into a detected zone suggests the community detection algorithm picked up file co-location rather than import relationships.
 - The light/dark logo pair signals theme support in the viewer; ensure both variants are referenced through a single theme-aware asset path to avoid drift.
@@ -39,5 +41,6 @@ packages/web/src/viewer/lightmode_logo.png (Other, 0 lines, asset)
 - The zero-coupling score for viewer-static-assets is a static-analysis artifact: index.html is the build-tool entry that transitively bundles the full viewer TypeScript tree. Zone metrics based on import edges are blind to this coupling. Any architectural decision that relies on viewer-static-assets having zero coupling to the hub will be incorrect in practice.
 - The two logo files use a {theme}mode_{name}.png naming pattern ('darkmode_logo.png', 'lightmode_logo.png') that concatenates a compound theme word with an underscore before the asset type. If additional themed assets are added (icons, favicons, splash screens), contributors have no documented convention and will likely diverge — 'dark-mode-icon.png', 'icon_dark.png', and 'darkmode_icon.png' are all equally plausible extensions of the current pattern. The absence of an asset naming convention is low-risk today with two files but becomes a maintenance liability at scale.
 - Standardize themed static asset names to a single separator convention, e.g. logo-dark.png / logo-light.png (hyphen-separated, theme as suffix modifier). The current 'darkmode_logo.png' / 'lightmode_logo.png' pattern mixes compound words and underscores in a way that will produce inconsistent names as new themed assets are added.
+- Generic zone name creates false-positive propagation risk identical to the web-integration precedent: any multi-pass enrichment that misidentifies this zone's role by its opaque alias will produce cascading misdiagnoses across subsequent passes before the error is caught. Semantic naming must precede architectural enrichment for all five generic web zones.
 
 </insights>

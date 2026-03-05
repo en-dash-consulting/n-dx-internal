@@ -7,7 +7,7 @@
 Zone: CLI End-to-End Test Suite (`cli-e2e-test-suite`)
 Files: 13, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Full end-to-end tests for all n-dx CLI orchestration commands, covering init, config, delegation, CI pipeline, error handling, and PR-check workflows.
+Description: Root-level end-to-end tests that validate the full CLI surface — init, delegation, config, CI pipeline, dev mode, error handling, PR checks, and architecture policy.
 Lines: 3873
 
 </zone>
@@ -33,18 +33,26 @@ tests/e2e/domain-isolation.test.js (JavaScript, 287 lines, test)
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
+[suggestion] [warning] 'cli-dev.test.js' covers a command not listed in CLAUDE.md. Verify whether 'ndx dev' is a real, documented command or a removed/renamed one. If removed, delete the test to avoid false CI confidence; if undocumented, add it to CLAUDE.md.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Perfect cohesion (1.0) and zero coupling confirm the test suite is fully self-contained — no production imports bleed in, which is the correct structure for e2e tests
-- Coverage spans the breadth of CLI commands (ci, config, delegation, dev, errors, init, pr-check) indicating systematic command-level regression coverage
-- The architecture-policy test is a notable inclusion — it enforces structural invariants programmatically, making architectural rules executable rather than just documented
-- Including an architecture-policy test in the e2e suite is excellent practice — it ensures dependency direction rules and zone constraints are continuously validated as part of CI.
-- The architecture-policy test in this zone makes the dependency direction rules from CLAUDE.md executable at CI time. This creates a feedback loop: the four-tier hierarchy and gateway patterns are enforced by automated tests, not just documentation — a structural enforcement mechanism absent from the messaging zones where leaky abstractions currently exist.
-- The architecture-policy test is the enforcement backstop for the gateway pattern and four-tier hierarchy. Its presence in the e2e suite means architectural regressions are caught at the same CI stage as functional regressions — a strong structural guarantee.
+- Perfect cohesion (1.0) and zero coupling mean these tests are fully self-contained, exercising the CLI as a black box with no shared test infrastructure bleeding between zones — an ideal end-to-end boundary
+- The architecture-policy test is a valuable enforcement point for the four-tier dependency hierarchy; ensure it is run in CI and fails loudly on violations
+- The breadth of coverage (init, config, delegation, errors, ci, pr-check, dev) mirrors the full orchestration command set — keeping this suite in sync with new ndx commands as they are added is critical
+- Cohesion of 1.0 and coupling of 0.0 reflect an exemplary test zone design — no shared dependencies means these tests are portable, fast to reason about, and immune to cross-zone refactoring churn.
+- architecture-policy.test.js co-located with CLI e2e tests is a strong pattern for enforcing structural invariants; consider promoting its findings to CI gate status if not already done.
+- With 13 files covering the full CLI surface, this suite is the primary safety net for orchestration regressions — any new ndx command (e.g. ndx sync, ndx usage) should have a corresponding e2e test added here.
+- The cli-e2e-test-suite exercises the orchestration tier (ndx commands) as a black box but has zero imports from or to the web/messaging zones — web messaging stack behavior (throttling, coalescing, rate limiting) has no e2e coverage path through this suite, leaving a gap between unit tests in messaging zones and full system validation
+- CLI e2e tests cover orchestration commands but not the web server stack; the messaging infrastructure zones (viewer-message-flow-control, viewer-call-rate-limiter) are only covered by unit tests — consider an e2e or integration test that starts ndx start and exercises the MCP/dashboard endpoints to validate the messaging layer under real HTTP traffic
+- The suite has zero imports from the web messaging stack zones, confirming there is no composed-stack validation path — a regression in the interaction between viewer-message-flow-control and viewer-call-rate-limiter would be invisible to CI unless a web-layer e2e test is added
+- No e2e or integration test starts the ndx web server and exercises the MCP or dashboard endpoints under realistic HTTP traffic. The messaging stack (viewer-message-flow-control → viewer-call-rate-limiter → web-viewer) is validated only by isolated unit tests, leaving composed behavior — including throttling under concurrent requests — untested at the system level. This is a coverage gap for a zone batch that is otherwise well-isolated.
+- 'cli-dev.test.js' exists in this suite but 'ndx dev' does not appear in CLAUDE.md's command reference — this test may cover a removed, renamed, or undocumented command; if the command was removed, the test is dead coverage that creates false confidence in CI
+- The cli-e2e-test-suite has no .gitkeep files while both messaging zones do — this contrast reflects two different development maturity cultures within the same repo: the CLI test suite is complete-as-is, while the messaging layer has speculative placeholder scaffolding, suggesting the messaging layer was designed top-down (directories first, code second) while CLI tests were written bottom-up (code first, tests follow)
+- 'cli-dev.test.js' covers a command not listed in CLAUDE.md. Verify whether 'ndx dev' is a real, documented command or a removed/renamed one. If removed, delete the test to avoid false CI confidence; if undocumented, add it to CLAUDE.md.
 - [call graph] 318 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

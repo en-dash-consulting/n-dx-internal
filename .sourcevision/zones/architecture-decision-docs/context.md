@@ -7,7 +7,7 @@
 Zone: Architecture Decision Docs (`architecture-decision-docs`)
 Files: 14, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Design documents, architectural decision records, and memory system design notes capturing the reasoning behind major system choices.
+Description: A collection of design documents, architectural analyses, and memory-system explorations that record decisions and rationale for the n-dx toolkit.
 Lines: 4143
 
 </zone>
@@ -34,20 +34,22 @@ docs/viewer-audit.md (Markdown, 237 lines, docs)
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
+[suggestion] [info] Adopt a consistent naming convention across all docs — either date-prefix all files (YYYY-MM-DD-description.md) or none — so the corpus has a machine-readable chronological order and uniform discoverability.
+[suggestion] [info] Organize docs into subdirectories by decision track (e.g., docs/memory/, docs/levels/, docs/architecture/) to prevent the zone from becoming an undifferentiated collection as the corpus grows beyond 14 files.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- The docs are heavily focused on the memory and PRD architecture domain — this indicates both subsystems are actively evolving and benefit from written design rationale
-- Date-stamped files (e.g., 2026-03-03-refresh-orchestration-memory-analysis.md) alongside undated reference files suggests mixed ADR discipline — standardizing on a consistent naming convention would improve discoverability over time
-- 14 doc files with cohesion 1.0 and zero code coupling is healthy — documentation that imports nothing cannot break the build or introduce coupling debt
-- The cluster of memory-system docs (memory-architecture.md, memory-improvements.md, memory-os-behavior.md, memory-risks-and-flaws.md) signals this subsystem is an active area of design exploration with strong documentation discipline.
-- Mixing date-stamped analysis files with undated reference documents in a flat directory makes it harder to distinguish ephemeral analysis from stable reference material — a subdirectory split (e.g., docs/adr/ vs docs/reference/) would improve navigation.
-- prd-steward-vision.md and level-system-reference.md indicate forward-looking design specs exist alongside retrospective analysis — a strong sign of intentional architecture governance.
-- The flat docs/ directory mixes stable living reference documents (level-system-reference.md, memory-architecture.md), forward-looking design specs (prd-steward-vision.md), and time-bounded analysis snapshots (2026-03-03-refresh-orchestration-memory-analysis.md) with no visual or structural distinction between their lifecycle states — readers cannot determine which documents are still active decisions vs. superseded exploration without reading each file.
-- The memory-system doc cluster (memory-architecture.md, memory-improvements.md, memory-os-behavior.md, memory-risks-and-flaws.md) addresses AI-agent-runtime concerns while prd-steward-vision.md and level-system-reference.md address human project management concerns — co-locating both audiences in a flat directory reduces discoverability for each.
-- docs/ mixes stable reference material, forward-looking design specs, and time-bounded analysis snapshots in a flat directory. Without a subdirectory split (e.g., docs/adr/, docs/reference/, docs/analysis/) or consistent naming convention indicating lifecycle status, documents accumulate indefinitely with no signal to readers or tooling about whether they represent active decisions or superseded exploration.
+- All 14 files are Markdown with zero coupling, which is correct — documentation should never be a runtime dependency and this zone confirms that discipline is maintained.
+- The concentration of memory-architecture and memory-OS-behavior docs alongside PRD steward vision docs suggests active design work on the agent memory layer, which maps directly to hench's adaptive analysis modules.
+- Having refresh-orchestration and level-system reference docs in the same zone as broader architectural memos creates a flat structure that may become harder to navigate as the doc corpus grows — consider subdirectory organization.
+- The memory-focused documents (memory-architecture.md, memory-improvements.md, memory-os-behavior.md, memory-risks-and-flaws.md) form a coherent sub-corpus; grouping them under a docs/memory/ subdirectory would improve discoverability without changing the zone boundary.
+- Design documents are versioned alongside code in the repo rather than in an external wiki, which ensures decisions stay synchronized with the implementation they describe — a good practice for a toolkit that evolves quickly.
+- Only one file uses a date prefix (2026-03-03-refresh-orchestration-memory-analysis.md) while the remaining 13 files use pure descriptive names — the inconsistent dating convention means the doc corpus has no reliable chronological ordering without inspecting file system metadata.
+- The 14 files span at least two distinct decision tracks (memory subsystem: memory-architecture.md, memory-improvements.md, memory-os-behavior.md, memory-risks-and-flaws.md) and hierarchy/level design (level-refactor-and-steward-plan.md, level-system-reference.md) — these tracks are currently indistinguishable at the directory level.
+- Adopt a consistent naming convention across all docs — either date-prefix all files (YYYY-MM-DD-description.md) or none — so the corpus has a machine-readable chronological order and uniform discoverability.
+- Organize docs into subdirectories by decision track (e.g., docs/memory/, docs/levels/, docs/architecture/) to prevent the zone from becoming an undifferentiated collection as the corpus grows beyond 14 files.
 
 </insights>

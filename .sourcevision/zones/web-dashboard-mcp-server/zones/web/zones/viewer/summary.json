@@ -1,7 +1,7 @@
 {
   "id": "web-viewer/web/viewer",
   "name": "Web Viewer/web/viewer",
-  "description": "272 files, primarily TypeScript",
+  "description": "274 files, primarily TypeScript",
   "files": [
     "packages/web/src/cli/index.ts",
     "packages/web/src/public.ts",
@@ -116,6 +116,7 @@
     "packages/web/src/viewer/hooks/use-project-status.ts",
     "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
     "packages/web/src/viewer/hooks/use-route-state.ts",
+    "packages/web/src/viewer/hooks/use-subzone-edges.ts",
     "packages/web/src/viewer/hooks/use-tab-visibility.ts",
     "packages/web/src/viewer/hooks/use-tick.ts",
     "packages/web/src/viewer/hooks/use-toast.ts",
@@ -274,7 +275,8 @@
     "packages/web/tests/unit/viewer/usage-polling.test.ts",
     "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
     "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
-    "packages/web/tests/unit/viewer/zone-drill-down.test.ts"
+    "packages/web/tests/unit/viewer/zone-drill-down.test.ts",
+    "packages/web/tests/unit/viewer/zone-inline-subzones.test.ts"
   ],
   "entryPoints": [
     "packages/web/src/server/rex-gateway.ts",
@@ -283,6 +285,6 @@
   ],
   "cohesion": 0.99,
   "coupling": 0.01,
-  "fileCount": 272,
-  "lineCount": 88169
+  "fileCount": 274,
+  "lineCount": 88921
 }

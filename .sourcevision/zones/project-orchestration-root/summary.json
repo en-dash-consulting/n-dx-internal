@@ -1,7 +1,7 @@
 {
   "id": "project-orchestration-root",
   "name": "Project Orchestration Root",
-  "description": "Top-level project configuration, CI/CD pipeline scripts, and orchestration entry points that coordinate all packages without importing domain logic directly.",
+  "description": "Top-level project scaffolding, orchestration entry points, and cross-cutting configuration files that wire all packages together.",
   "files": [
     ".gitignore",
     ".npmrc",

@@ -37,7 +37,7 @@ export const PASS_CONFIGS: PassConfig[] = [
   { focus: "", expectedTypes: ["observation"] }, // pass 0 = algorithmic only
   {
     focus: `For each zone, provide:
-1. A meaningful, descriptive name (not generic like "utilities" or "misc" — reflect the zone's actual domain role)
+1. A meaningful, descriptive name (not generic like "utilities" or "misc", and never keep numeric suffixes like "Src 2" or "Lib 3" — reflect the zone's actual domain role)
 2. A one-sentence description of the zone's architectural purpose
 3. 2-3 actionable observations about its role and quality
 

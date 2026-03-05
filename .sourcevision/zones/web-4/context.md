@@ -33,8 +33,15 @@ Outgoing (this zone → other zones):
 
 </imports>
 
+<findings>
+
+[observation] [warning] Generic zone name "Web 4" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
+
+</findings>
+
 <insights>
 
+- Generic zone name "Web 4" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 - The hook/utility/test trio is textbook separation of concerns — the utility owns measurement, the hook owns React lifecycle integration
 - Zero coupling outward (0.25) makes this easy to test and replace without affecting consumers
 - No declared entry point suggests this is consumed only via the hook layer in web-viewer, which is the right dependency direction
@@ -44,6 +51,7 @@ Outgoing (this zone → other zones):
 - Zone name 'dom-performance-monitoring' uses a different prefix pattern than all three sibling viewer zones ('viewer-call-rate-limiter', 'viewer-message-flow-control', 'viewer-request-deduplication') — a naming inconsistency in the zone taxonomy since all four originate from packages/web/src/viewer/.
 - All three source files use the stem 'dom-performance-monitor' (no trailing 'ing') while the zone is named 'dom-performance-monitoring' — the zone name does not match the file naming convention it contains.
 - Zone name 'dom-performance-monitoring' diverges from both its own file stems ('dom-performance-monitor.*') and the 'viewer-' prefix convention used by every other viewer zone. Renaming to 'viewer-dom-performance-monitor' would unify the naming scheme across all viewer zones.
+- Generic zone name creates false-positive propagation risk identical to the web-integration precedent: any multi-pass enrichment that misidentifies this zone's role by its opaque alias will produce cascading misdiagnoses across subsequent passes before the error is caught. Semantic naming must precede architectural enrichment for all five generic web zones.
 - [call graph] 248 internal calls, 1 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

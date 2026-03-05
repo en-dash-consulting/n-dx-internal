@@ -49,7 +49,7 @@ for (const a of args.slice(1)) {
     quiet = true;
   } else if (a === "--help" || a === "-h") {
     help = true;
-  } else if (a.startsWith("--phase=") || a.startsWith("--only=") || a === "--fast" || a === "--full") {
+  } else if (a.startsWith("--phase=") || a.startsWith("--only=") || a === "--fast" || a === "--full" || a === "--deep") {
     passthrough.push(a);
   }
 }

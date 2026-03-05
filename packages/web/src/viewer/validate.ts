@@ -137,7 +137,14 @@ const FindingSchema = z.object({
 
 // ── Zones ───────────────────────────────────────────────────────────────────
 
-const ZoneSchema = z.object({
+const ZoneCrossingSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  fromZone: z.string(),
+  toZone: z.string(),
+});
+
+const ZoneSchema: z.ZodType<V1.Zone> = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
@@ -146,13 +153,9 @@ const ZoneSchema = z.object({
   cohesion: z.number().min(0).max(1),
   coupling: z.number().min(0).max(1),
   insights: z.array(z.string()).optional(),
-});
-
-const ZoneCrossingSchema = z.object({
-  from: z.string(),
-  to: z.string(),
-  fromZone: z.string(),
-  toZone: z.string(),
+  depth: z.number().int().nonnegative().optional(),
+  subZones: z.lazy(() => z.array(ZoneSchema)).optional(),
+  subCrossings: z.array(ZoneCrossingSchema).optional(),
 });
 
 const ZonesSchema = z.object({

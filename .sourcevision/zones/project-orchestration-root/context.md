@@ -7,7 +7,7 @@
 Zone: Project Orchestration Root (`project-orchestration-root`)
 Files: 27, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Top-level project configuration, CI/CD pipeline scripts, and orchestration entry points that coordinate all packages without importing domain logic directly.
+Description: Top-level project scaffolding, orchestration entry points, and cross-cutting configuration files that wire all packages together.
 Lines: 8932
 
 </zone>
@@ -64,24 +64,25 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
+[suggestion] [warning] Add integration tests for the orchestration scripts that verify the correct CLI commands are constructed and invoked — child-process delegation logic is currently untested and regressions would be invisible to the per-package test suites.
+[suggestion] [info] Consider moving root-level orchestration scripts (ci.js, cli.js, web.js, config.js) into a bin/ directory or adding a consistent suffix (e.g., *-cmd.js) to distinguish entry points from configuration files at a glance.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Contains multiple explicit entry scripts (ci.js, cli.js, web.js, config.js) that form the CLI surface — keeping these thin and delegating to package APIs is the right pattern
-- 27 files with cohesion 1.0 and zero coupling confirms the root tier correctly acts as an orchestration boundary with no upstream dependencies
-- CLAUDE.md and CODEX.md co-existing at root level indicates AI-assisted development is a first-class workflow, which aligns with the four-tier dependency model
-- Perfect cohesion (1.0) and zero coupling confirm the root layer correctly enforces the orchestration boundary — no leakage into domain packages.
-- Multiple top-level entry scripts (ci.js, cli.js, web.js, config.js) provide clean separation of orchestration concerns without bundling them into a single monolithic entry point.
-- The 27-file root zone mixes package metadata, CI config, and developer docs — non-executable files like CODEX.md could move to docs/ to reduce root clutter, though this is a low-priority cosmetic concern.
-- cli.js statically imports ci.js, web.js, and other root scripts — meaning the orchestration layer IS traversed by the import graph, but since all root scripts land in the same zone these cross-file dependencies are intra-zone and do not surface as cross-zone coupling.
-- The confirmed use of child_process.spawn by root scripts (ci.js, cli.js, web.js) explains their zero cross-zone coupling: process-boundary delegation is invisible to static import analysis, making subprocess spawning the actual enforcement mechanism for the orchestration boundary.
-- Root entry scripts delegate to package CLIs via child_process.spawn rather than library imports, making the orchestration boundary a process-isolation contract that static analysis cannot verify — delegation correctness depends entirely on the spawned CLI commands being kept in sync with package APIs.
-- cli.js statically importing ci.js, web.js, and config.js means requiring cli.js also loads all orchestration siblings — any top-level initialization code, environment assertions, or I/O in those sibling files executes eagerly on every CLI invocation regardless of the subcommand, potentially causing unexpected side effects or slow startup times.
-- The four-tier dependency hierarchy is documented in CLAUDE.md but has no automated enforcement mechanism (no ESLint boundary rules, no dependency-cruiser configuration, no CI gate on cross-layer imports) — the boundary is maintained solely by the gateway pattern and code review, making it fragile to one-off violations that bypass the gateway without automated rejection.
-- cli.js uses static imports for ci.js, web.js, and config.js, causing all sibling orchestration scripts to load on every CLI invocation regardless of the subcommand. If any sibling contains top-level side effects (environment validation, file I/O, process.exit calls), they fire unconditionally — replace static imports with dynamic import() or lazy require() so siblings load only when their subcommand is invoked.
+- Acts as the thin orchestration layer above all domain packages — ci.js, cli.js, web.js delegate to package CLIs without importing library code directly, which correctly enforces the four-tier hierarchy.
+- Perfect cohesion and zero coupling confirm this zone is self-contained; the orchestration scripts rely only on child process spawning rather than direct imports, which is the intended architectural pattern.
+- With 27 files including CLAUDE.md, PACKAGE_GUIDELINES.md, and CODEX.md alongside runnable scripts, this zone doubles as both the runtime entry layer and the canonical source of architectural governance documentation.
+- Zero coupling is the correct outcome for an orchestration layer that intentionally delegates via CLI spawning rather than library imports — this confirms the boundary is holding.
+- Governance documents (CLAUDE.md, PACKAGE_GUIDELINES.md, CODEX.md) co-located with runnable orchestration scripts makes the architectural intent immediately discoverable for new contributors.
+- No zone in the codebase imports from project-orchestration-root, confirming it is a pure consumer at the top of the dependency stack — nothing depends on orchestration scripts, which is the correct direction for the four-tier hierarchy.
+- project-orchestration-root has zero inbound imports across all zones, correctly placing it as a pure top-of-stack consumer that delegates downward only via CLI spawning — no zone in the web, hench, rex, or foundation layer reaches back up into it.
+- The four root-level orchestration scripts (ci.js, cli.js, web.js, config.js) have no naming suffix or directory placement that distinguishes them from configuration files to a first-time reader — scanning the root directory gives no immediate signal that these are the four primary entry points of the toolkit.
+- No test coverage exists for the orchestration delegation logic itself — since ci.js, cli.js, web.js, and config.js all spawn child processes, regressions in command construction or argument forwarding would not be caught by any package-level test suite.
+- Consider moving root-level orchestration scripts (ci.js, cli.js, web.js, config.js) into a bin/ directory or adding a consistent suffix (e.g., *-cmd.js) to distinguish entry points from configuration files at a glance.
+- Add integration tests for the orchestration scripts that verify the correct CLI commands are constructed and invoked — child-process delegation logic is currently untested and regressions would be invisible to the per-package test suites.
 - [call graph] 405 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

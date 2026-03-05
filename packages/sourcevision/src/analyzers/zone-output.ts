@@ -3,7 +3,7 @@
  * to .sourcevision/zones/{zone-id}/.
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type {
   Inventory,
@@ -241,8 +241,37 @@ export function emitZoneOutputs(
 ): void {
   const zonesDir = join(outputDir, "zones");
 
+  pruneStaleZoneFolders(zonesDir, zones);
+
   for (const zone of zones.zones) {
     emitSingleZoneOutput(zonesDir, zone, inventory, imports, zones);
+  }
+}
+
+/**
+ * Remove zone folders that no longer correspond to any active zone.
+ * Prevents stale folders from accumulating when zone IDs change between runs.
+ */
+export function pruneStaleZoneFolders(zonesDir: string, zones: Zones): void {
+  if (!existsSync(zonesDir)) return;
+
+  // Collect all active zone folder names (leaf segment of zone.id, colon→dash)
+  const activeNames = new Set<string>();
+  function collectNames(zoneList: Zone[]): void {
+    for (const zone of zoneList) {
+      const dirName = zone.id.includes("/")
+        ? zone.id.split("/").pop()!.replace(/:/g, "-")
+        : zone.id.replace(/:/g, "-");
+      activeNames.add(dirName);
+      if (zone.subZones) collectNames(zone.subZones);
+    }
+  }
+  collectNames(zones.zones);
+
+  for (const entry of readdirSync(zonesDir, { withFileTypes: true })) {
+    if (entry.isDirectory() && !activeNames.has(entry.name)) {
+      rmSync(join(zonesDir, entry.name), { recursive: true });
+    }
   }
 }
 

@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Web Viewer/web (`web-viewer/web`)
-Files: 301, Cohesion: 1.00, Coupling: 0.00
-Description: 301 files, primarily TypeScript, CSS
+Files: 303, Cohesion: 1.00, Coupling: 0.00
+Description: 303 files, primarily TypeScript, CSS
 Entry points: packages/web/src/viewer/polling/polling-state.ts
-Lines: 96377
+Lines: 97164
 
 </zone>
 
@@ -64,7 +64,7 @@ packages/web/src/viewer/components/data-display/findings-list.ts (TypeScript, 19
 packages/web/src/viewer/components/data-display/health-gauge.ts (TypeScript, 111 lines, source)
 packages/web/src/viewer/components/data-display/mini-charts.ts (TypeScript, 183 lines, source)
 packages/web/src/viewer/components/data-display/tree-view.ts (TypeScript, 135 lines, source)
-packages/web/src/viewer/components/data-display/zone-map.ts (TypeScript, 382 lines, source)
+packages/web/src/viewer/components/data-display/zone-map.ts (TypeScript, 387 lines, source)
 packages/web/src/viewer/components/degradation-banner.ts (TypeScript, 101 lines, source)
 packages/web/src/viewer/components/detail-panel.ts (TypeScript, 309 lines, source)
 packages/web/src/viewer/components/elapsed-time.ts (TypeScript, 51 lines, source)
@@ -112,11 +112,11 @@ packages/web/src/viewer/components/status-indicators.ts (TypeScript, 219 lines, 
 packages/web/src/viewer/components/theme-toggle.ts (TypeScript, 36 lines, source)
 packages/web/src/viewer/components/throttle-controls.ts (TypeScript, 382 lines, source)
 packages/web/src/viewer/components/ws-health-panel.ts (TypeScript, 389 lines, source)
-packages/web/src/viewer/components/zone-slideout.ts (TypeScript, 283 lines, source)
+packages/web/src/viewer/components/zone-slideout.ts (TypeScript, 303 lines, source)
 packages/web/src/viewer/graph/renderer.ts (TypeScript, 1605 lines, source)
 packages/web/src/viewer/hooks/use-app-data.ts (TypeScript, 186 lines, source)
 packages/web/src/viewer/hooks/use-crash-recovery.ts (TypeScript, 134 lines, source)
-packages/web/src/viewer/hooks/use-file-edges.ts (TypeScript, 282 lines, source)
+packages/web/src/viewer/hooks/use-file-edges.ts (TypeScript, 286 lines, source)
 packages/web/src/viewer/hooks/use-graceful-degradation.ts (TypeScript, 78 lines, source)
 packages/web/src/viewer/hooks/use-memory-monitor.ts (TypeScript, 126 lines, source)
 packages/web/src/viewer/hooks/use-pan-zoom.ts (TypeScript, 146 lines, source)
@@ -131,6 +131,7 @@ packages/web/src/viewer/hooks/use-project-metadata.ts (TypeScript, 79 lines, sou
 packages/web/src/viewer/hooks/use-project-status.ts (TypeScript, 194 lines, source)
 packages/web/src/viewer/hooks/use-refresh-throttle.ts (TypeScript, 112 lines, source)
 packages/web/src/viewer/hooks/use-route-state.ts (TypeScript, 136 lines, source)
+packages/web/src/viewer/hooks/use-subzone-edges.ts (TypeScript, 187 lines, source)
 packages/web/src/viewer/hooks/use-tab-visibility.ts (TypeScript, 73 lines, source)
 packages/web/src/viewer/hooks/use-tick.ts (TypeScript, 90 lines, source)
 packages/web/src/viewer/hooks/use-toast.ts (TypeScript, 43 lines, source)
@@ -159,7 +160,7 @@ packages/web/src/viewer/styles/badges.css (CSS, 110 lines, other)
 packages/web/src/viewer/styles/base.css (CSS, 34 lines, other)
 packages/web/src/viewer/styles/branding.css (CSS, 125 lines, other)
 packages/web/src/viewer/styles/breadcrumb.css (CSS, 167 lines, other)
-packages/web/src/viewer/styles/call-graph-explorer.css (CSS, 274 lines, other)
+packages/web/src/viewer/styles/call-graph-explorer.css (CSS, 309 lines, other)
 packages/web/src/viewer/styles/cards.css (CSS, 253 lines, other)
 packages/web/src/viewer/styles/components.css (CSS, 193 lines, other)
 packages/web/src/viewer/styles/copy-link.css (CSS, 83 lines, other)
@@ -177,7 +178,7 @@ packages/web/src/viewer/types.ts (TypeScript, 64 lines, source)
 packages/web/src/viewer/usage/constants.ts (TypeScript, 18 lines, source)
 packages/web/src/viewer/usage/index.ts (TypeScript, 12 lines, source)
 packages/web/src/viewer/utils.ts (TypeScript, 65 lines, source)
-packages/web/src/viewer/validate.ts (TypeScript, 339 lines, source)
+packages/web/src/viewer/validate.ts (TypeScript, 342 lines, source)
 packages/web/src/viewer/views/analysis.ts (TypeScript, 157 lines, source)
 packages/web/src/viewer/views/architecture.ts (TypeScript, 103 lines, source)
 packages/web/src/viewer/views/enrichment-thresholds.ts (TypeScript, 11 lines, source)
@@ -202,8 +203,8 @@ packages/web/src/viewer/views/token-usage.ts (TypeScript, 760 lines, source)
 packages/web/src/viewer/views/validation.ts (TypeScript, 819 lines, source)
 packages/web/src/viewer/views/view-registry.ts (TypeScript, 160 lines, source)
 packages/web/src/viewer/views/workflow-optimization.ts (TypeScript, 598 lines, source)
-packages/web/src/viewer/views/zone-types.ts (TypeScript, 77 lines, source)
-packages/web/src/viewer/views/zones.ts (TypeScript, 1567 lines, source)
+packages/web/src/viewer/views/zone-types.ts (TypeScript, 80 lines, source)
+packages/web/src/viewer/views/zones.ts (TypeScript, 1840 lines, source)
 packages/web/src/viewer/visualization/colors.ts (TypeScript, 44 lines, source)
 packages/web/src/viewer/visualization/flow.ts (TypeScript, 146 lines, source)
 packages/web/src/viewer/visualization/index.ts (TypeScript, 57 lines, source)
@@ -315,6 +316,7 @@ packages/web/tests/unit/viewer/usage-polling.test.ts (TypeScript, 209 lines, tes
 packages/web/tests/unit/viewer/use-polling-suspension.test.ts (TypeScript, 128 lines, test)
 packages/web/tests/unit/viewer/virtual-scroll.test.ts (TypeScript, 392 lines, test)
 packages/web/tests/unit/viewer/zone-drill-down.test.ts (TypeScript, 543 lines, test)
+packages/web/tests/unit/viewer/zone-inline-subzones.test.ts (TypeScript, 257 lines, test)
 
 </files>
 
@@ -570,6 +572,7 @@ Internal:
   packages/web/src/viewer/hooks/use-refresh-throttle.ts → packages/web/src/viewer/performance/refresh-throttle.ts {RefreshQueueState, RefreshPriority}
   packages/web/src/viewer/hooks/use-route-state.ts → packages/web/src/viewer/route-state.ts {parseLegacyHashRoute, resolveLocationRoute}
   packages/web/src/viewer/hooks/use-route-state.ts → packages/web/src/viewer/types.ts {ViewId, NavigateTo}
+  packages/web/src/viewer/hooks/use-subzone-edges.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, FlowEdge, BoxRect, FileConnectionMap, ExpandedSubZones}
   packages/web/src/viewer/hooks/use-tab-visibility.ts → packages/web/src/viewer/polling/tab-visibility.ts {startTabVisibilityMonitor, stopTabVisibilityMonitor, onVisibilityChange, getTabVisibilitySnapshot, getVisibilityCapabilities}
   packages/web/src/viewer/hooks/use-tab-visibility.ts → packages/web/src/viewer/polling/tab-visibility.ts {TabVisibilityState, TabVisibilitySnapshot, VisibilityAPICapabilities}
   packages/web/src/viewer/hooks/use-tick.ts → packages/web/src/viewer/polling/batched-tick-dispatcher.ts {registerTickUpdater}
@@ -760,10 +763,11 @@ Internal:
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/components/zone-slideout.ts {ZoneSlideout}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-file-edges.ts {useFileEdges}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-pan-zoom.ts {usePanZoom}
+  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-subzone-edges.ts {useSubZoneEdges}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-zone-drag.ts {useZoneDrag}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/types.ts {LoadedData, DetailItem, NavigateTo}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/utils.ts {basename}
-  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap, FileInfo, ZoneBreadcrumb}
+  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap, FileInfo, ZoneBreadcrumb, ExpandedSubZones}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/visualization/index.ts {CollapsibleSection, buildFileToZoneMap, buildFlowEdges, buildCallFlowEdges, buildExternalImportEdges, getZoneColorByIndex}
   packages/web/src/viewer/visualization/colors.ts → packages/web/src/schema/v1.ts {Zones}
   packages/web/src/viewer/visualization/flow.ts → packages/web/src/schema/v1.ts {Zones, CallEdge, ExternalImport}
@@ -1011,6 +1015,9 @@ Internal:
   packages/web/tests/unit/viewer/zone-drill-down.test.ts → packages/web/src/schema/v1.ts {Zone, ZoneCrossing}
   packages/web/tests/unit/viewer/zone-drill-down.test.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, FlowEdge, ZoneBreadcrumb}
   packages/web/tests/unit/viewer/zone-drill-down.test.ts → packages/web/src/viewer/views/zones.ts {convertSubZones, convertCrossings, ZoneBreadcrumbNav}
+  packages/web/tests/unit/viewer/zone-inline-subzones.test.ts → packages/web/src/schema/v1.ts {Zone}
+  packages/web/tests/unit/viewer/zone-inline-subzones.test.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, FileInfo, FlowEdge, BoxRect, FileConnectionMap, ExpandedSubZones}
+  packages/web/tests/unit/viewer/zone-inline-subzones.test.ts → packages/web/src/viewer/views/zones.ts {convertSubZones}
 
 </imports>
 
@@ -1028,13 +1035,13 @@ Cross-dependencies between sub-zones:
 
 This zone has 8 sub-zone(s):
 
+- **Web Viewer/web/hench** (`web-viewer/web/hench`): 4 files, cohesion 0.86, coupling 0.14
 - **Web Viewer/web/server** (`web-viewer/web/server`): 4 files, cohesion 0.63, coupling 0.38
-- **Web Viewer/web/viewer** (`web-viewer/web/viewer`): 272 files, cohesion 0.99, coupling 0.01
-  - Has 8 nested sub-zone(s)
+- **Web Viewer/web/viewer** (`web-viewer/web/viewer`): 274 files, cohesion 0.99, coupling 0.01
+  - Has 6 nested sub-zone(s)
 - **Web Viewer/web/viewer 2** (`web-viewer/web/viewer-2`): 4 files, cohesion 0.75, coupling 0.25
 - **Web Viewer/web/viewer 3** (`web-viewer/web/viewer-3`): 4 files, cohesion 0.75, coupling 0.25
 - **Web Viewer/web/viewer 4** (`web-viewer/web/viewer-4`): 4 files, cohesion 0.75, coupling 0.25
-- **Web Viewer/web/viewer 5** (`web-viewer/web/viewer-5`): 4 files, cohesion 0.86, coupling 0.14
 - **Web Viewer/web/viewer Components** (`web-viewer/web/viewer-components`): 5 files, cohesion 0.64, coupling 0.36
 - **Web Viewer/web/viewer Styles** (`web-viewer/web/viewer-styles`): 4 files, cohesion 0.86, coupling 0.14
 

@@ -7,7 +7,7 @@
 Zone: Rex Runtime State (`rex-runtime-state`)
 Files: 7, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Persisted runtime state for the Rex PRD tracker, including the task tree, execution log, configuration, and staged proposals awaiting review.
+Description: Persisted PRD state and execution metadata written and consumed by the rex package at runtime, not imported by any code.
 Lines: 22771
 
 </zone>
@@ -27,20 +27,24 @@ Lines: 22771
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
+[suggestion] [info] Add a schemaVersion field to .rex/prd.json and .rex/config.json so that tooling can detect and handle stale state directories when the rex data model evolves.
+[suggestion] [warning] Define and implement a maximum-entry or size-based rotation policy for .rex/execution-log.jsonl to prevent unbounded growth in long-running projects.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- The .rex directory is pure data — no source code — making it safe to selectively gitignore high-churn files (execution-log.jsonl) while committing authoritative state (prd.json, config.json)
-- Having execution-log.jsonl alongside prd.json co-locates observability and authority, which aids debugging and auditing without mixing concerns
-- The presence of both archive.json and pending-proposals.json reflects a deliberate staged workflow: proposals are reviewed before becoming active tasks, providing an explicit acceptance gate
-- The .rex zone is correctly isolated as a data-only zone with cohesion 1.0 and zero coupling — runtime state never bleeds into source code.
-- acknowledged-findings.json and pending-proposals.json represent an explicit review gate in the PRD lifecycle, providing an audit trail for accepted versus deferred work.
-- workflow.md provides a human-readable complement to machine-readable prd.json, enabling non-tool consumers (code review, team members) to understand project state without running CLI commands.
-- execution-log.jsonl appearing in git status on every session confirms it is tracked in version control; its append-only, high-churn nature means every rex command invocation generates a dirty working tree, inflating commit history with operational noise rather than authoritative state deltas.
-- prd.json (bounded authoritative state) and execution-log.jsonl (unbounded append-only log) share the .rex/ root without sub-grouping — as the log grows it will dominate directory listings and make git diff output harder to scan when reviewing meaningful prd.json or config.json changes.
-- execution-log.jsonl is a high-churn append-only log currently tracked in version control (confirmed by git status). Committing it on every rex command run pollutes commit history with operational noise. Add .rex/execution-log.jsonl to .gitignore to keep the repository history focused on authoritative state changes in prd.json and config.json.
+- These seven files are pure data artifacts (JSON, JSONL, Markdown) — they represent the live state of the PRD tree and agent execution log, not source code, so perfect cohesion with zero coupling is the expected and correct outcome.
+- The presence of both prd.json and archive.json suggests a two-tier lifecycle model where completed or removed items are moved to archive rather than deleted, which supports auditability.
+- execution-log.jsonl as a separate append-only log is a good pattern for agent run traceability distinct from the PRD tree structure itself.
+- Separating pending-proposals.json from prd.json cleanly decouples the proposal/review flow from the committed PRD state, reducing the risk of unreviewed items contaminating the canonical tree.
+- acknowledged-findings.json alongside pending-proposals.json indicates a two-step acceptance workflow for sourcevision findings, which is a healthy UX pattern for surfacing actionable analysis without forcing immediate commitment.
+- rex-runtime-state has zero inbound imports from any zone, including hench — the agent reads and writes these files through the rex library API (via rex-gateway.ts), not through direct file imports, confirming proper encapsulation of the data state behind the domain layer.
+- rex-runtime-state is a pure data-artifact zone with no code consumers at the zone-graph level; the hench agent accesses it exclusively through the rex API gateway, not through file-level imports — this is the correct encapsulation pattern.
+- The .rex/execution-log.jsonl append-only log has no documented size limit or rotation policy — in a long-running project with many agent runs this file could grow indefinitely, impacting tools that read the full log on every operation.
+- The seven state files use three distinct formats (JSON objects, JSONL, Markdown) with no schema version field visible in zone metadata — if the rex data model evolves there is no migration path indicator to detect stale state directories.
+- Define and implement a maximum-entry or size-based rotation policy for .rex/execution-log.jsonl to prevent unbounded growth in long-running projects.
+- Add a schemaVersion field to .rex/prd.json and .rex/config.json so that tooling can detect and handle stale state directories when the rex data model evolves.
 
 </insights>

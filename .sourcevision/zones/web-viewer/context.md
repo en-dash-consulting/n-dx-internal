@@ -5,7 +5,7 @@
 <zone>
 
 Zone: Web Viewer (`web-viewer`)
-Files: 330, Cohesion: 0.99, Coupling: 0.01
+Files: 327, Cohesion: 0.99, Coupling: 0.01
 Risk: healthy (score: 0.01)
 Description: 327 files, primarily TypeScript, CSS
 Entry points: packages/web/src/viewer/polling/polling-state.ts
@@ -139,7 +139,6 @@ packages/web/src/viewer/hooks/use-toast.ts (TypeScript, 43 lines, source)
 packages/web/src/viewer/hooks/use-zone-drag.ts (TypeScript, 94 lines, source)
 packages/web/src/viewer/loader.ts (TypeScript, 248 lines, source)
 packages/web/src/viewer/main.ts (TypeScript, 198 lines, source)
-packages/web/src/viewer/performance/.gitkeep (Other, 0 lines, other)
 packages/web/src/viewer/performance/crash-detector.ts (TypeScript, 316 lines, source)
 packages/web/src/viewer/performance/dom-update-gate.ts (TypeScript, 353 lines, source)
 packages/web/src/viewer/performance/graceful-degradation.ts (TypeScript, 227 lines, source)
@@ -147,7 +146,6 @@ packages/web/src/viewer/performance/memory-monitor.ts (TypeScript, 327 lines, so
 packages/web/src/viewer/performance/refresh-throttle.ts (TypeScript, 364 lines, source)
 packages/web/src/viewer/performance/response-buffer-gate.ts (TypeScript, 258 lines, source)
 packages/web/src/viewer/performance/update-batcher.ts (TypeScript, 188 lines, source)
-packages/web/src/viewer/polling/.gitkeep (Other, 0 lines, other)
 packages/web/src/viewer/polling/batched-tick-dispatcher.ts (TypeScript, 240 lines, source)
 packages/web/src/viewer/polling/polling-manager.ts (TypeScript, 316 lines, source)
 packages/web/src/viewer/polling/polling-restart.ts (TypeScript, 143 lines, source)
@@ -235,7 +233,6 @@ packages/web/src/viewer/visualization/colors.ts (TypeScript, 44 lines, source)
 packages/web/src/viewer/visualization/flow.ts (TypeScript, 146 lines, source)
 packages/web/src/viewer/visualization/index.ts (TypeScript, 57 lines, source)
 packages/web/src/viewer/visualization/metrics.ts (TypeScript, 14 lines, source)
-packages/web/tests/integration/.gitkeep (Other, 0 lines, test)
 packages/web/tests/integration/background-suspension-recovery.test.ts (TypeScript, 930 lines, test)
 packages/web/tests/integration/memory-aware-polling-suspension.test.ts (TypeScript, 1032 lines, test)
 packages/web/tests/integration/pr-markdown-refresh.test.ts (TypeScript, 176 lines, test)
@@ -1049,55 +1046,50 @@ Internal:
   packages/web/tests/unit/viewer/zone-drill-down.test.ts → packages/web/src/viewer/views/zones.ts {convertSubZones, convertCrossings, ZoneBreadcrumbNav}
 
 Outgoing (this zone → other zones):
-  → packages-rex:rex-cli: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
-  → web-5: packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/message-throttle.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/message-throttle.ts
-  → web-6: packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/messaging/request-dedup.ts; packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/request-dedup.ts
+  → message: packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/message-throttle.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/message-throttle.ts
+  → packages-rex:prd-analysis-engine: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
+  → web: packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/messaging/request-dedup.ts; packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/request-dedup.ts
   → web-integration: packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts
 
 Incoming (other zones → this zone):
-  ← web-4: packages/web/src/viewer/performance/dom-performance-monitor.ts → packages/web/src/viewer/polling/polling-state.ts
+  ← dom: packages/web/src/viewer/performance/dom-performance-monitor.ts → packages/web/src/viewer/polling/polling-state.ts
 
 </imports>
 
 <findings>
 
-[observation] [info] Contains 56% of project files (330/587) — subdivided into 8 sub-zones
+[observation] [info] Contains 56% of project files (327/587) — subdivided into 8 sub-zones
 [observation] [info] High cohesion (0.99) — files are tightly interconnected
-[suggestion] [info] execution-panel.ts uses ../../messaging while hooks use ../messaging to reach the same directory — inconsistent relative depths are a fragility symptom of the missing barrel export. Until messaging/index.ts is added, document a canonical import alias (e.g. via tsconfig paths) so that all consumers reference messaging by the same stable path regardless of their directory depth.
-[suggestion] [warning] use-project-status.ts and use-prd-websocket.ts both independently import and wire createMessageCoalescer + createMessageThrottle. Introduce a single factory (e.g. createWebSocketFlowControl) in messaging/ that composes the two, replacing the duplicated two-import wiring in both hooks with a single call and preventing future consumers from re-implementing the same composition.
-[suggestion] [warning] viewer/polling/ and viewer/performance/ both lack an index.ts barrel export, forcing 11 and 12 consumers respectively to import individual files by path. Adding index.ts to each directory would fix the same import-surface problem already documented for messaging/ and establish a consistent barrel-export convention across all three viewer subdirectories simultaneously.
-[suggestion] [warning] Add packages/web/src/viewer/messaging/index.ts re-exporting all four utilities (createMessageCoalescer, createMessageThrottle, createRateLimiter, createRequestDedup). This single file collapses three fragmented zones into one coherent directory, eliminates 7 cross-zone import edges, restores cohesion scores in viewer-message-flow-control and viewer-request-deduplication, and removes the duplicated two-import wiring in use-project-status.ts and use-prd-websocket.ts. Host the createMessagingPipeline factory here as well (global finding 25) so the canonical pipeline order is a production concern rather than an implicit test-only pattern.
-[suggestion] [warning] Add packages/web/src/viewer/polling/index.ts and packages/web/src/viewer/performance/index.ts. Both directories exceed the 3-consumer threshold by a wide margin (11 and 12 consumers respectively), making barrel exports unambiguously justified. Adopt a monorepo-wide convention: any viewer subdirectory with 3 or more consumers requires an index.ts. This prevents directory-to-zone fragmentation from recurring in future subdirectories.
+[suggestion] [info] Zone "web-viewer" has files across 20 directories — consider consolidating under a dedicated directory
 
 </findings>
 
 <insights>
 
 - High cohesion (0.99) — files are tightly interconnected
-- Contains 56% of project files (330/587) — subdivided into 8 sub-zones
-- At 330 files with cohesion 0.99 and coupling 0.01, this zone demonstrates exceptional internal organization — a rare combination at this scale.
-- The zone bundles server infrastructure (aggregation-cache, incremental-task-usage, concurrent-execution-metrics) alongside the viewer UI, which may warrant internal layer separation as the package grows.
-- Outbound imports to web-5 and web-6 (6 total) suggest a small set of utility or shared-component zones that feed into this hub — worth monitoring to ensure those dependencies stay intentional.
-- Cohesion of 0.99 with coupling of 0.01 across 330 files is architecturally excellent; the gateway pattern (domain-gateway.ts, rex-gateway.ts) is likely a key driver of this low coupling.
-- The zone spans both server (MCP, aggregation, metrics) and client (viewer UI) concerns; as the package scales, consider tracking whether server and viewer sub-trees remain internally decoupled.
-- web-4 imports into this zone (1 import), creating a minor reverse dependency worth confirming is intentional rather than a stray cross-boundary reference.
-- The prd-tree-lifecycle-tests, prd-tree-node-culler, and viewer-static-assets zones being separate from this hub confirms the Louvain algorithm correctly identified that the most self-contained viewer utilities have no runtime import path back to the server layer — the hub's high cohesion is partly explained by these components being carved out naturally.
-- web-4's single inbound import into this zone warrants inspection: if web-4 is a bootstrap or configuration shim, the direction is intentional; if it is supposed to be a lower-level utility, the dependency direction is inverted and should be reversed.
-- web-viewer imports from web-integration (1 import): production code referencing an integration-test zone is a layer violation — the shared symbol should be extracted into a non-test module accessible to both production and test consumers.
-- web-4 imports into the main hub (1 import) with no return edge — this asymmetry is architecturally acceptable if web-4 is a consumer or extension point, but if web-4 is intended as a lower-level utility the dependency direction is inverted and should be corrected.
-- The server/browser runtime boundary (src/server/ targeting Node.js vs src/viewer/ targeting the browser) is entirely unenforced at the zone level — both environments are grouped into a single 330-file zone, meaning a stray import from a viewer module to a Node.js-only built-in (fs, crypto, net) compiles cleanly but fails at browser runtime with no zone-level coupling signal.
-- The apparent hub-and-satellite topology described in previous passes is overstated: import graph data confirms the three satellite viewer component zones (lazy-children.ts, listener-lifecycle.ts, node-culler.ts) have zero production importers anywhere in the codebase, including this hub. They are not satellites feeding the hub — they are orphaned from it entirely.
-- No zone boundary or import rule enforces the Node.js/browser runtime split within the web package. src/server/ and src/viewer/ are co-zoned, leaving the cross-environment constraint enforced only by convention. A single misplaced import from viewer to a Node.js module would reach production undetected by zone-level metrics.
-- The zone name 'web-dashboard-mcp-server' concatenates three orthogonal responsibilities (dashboard UI, MCP protocol server, HTTP server) into a single identifier. Zone names that list multiple distinct roles signal scope ambiguity — if these concerns ever require independent deployment, separate ownership, or different lifecycle management, the composite name provides no decomposition guidance.
-- aggregation-cache.ts, concurrent-execution-metrics.ts, and incremental-task-usage.ts are each consumed by different callers (routes-token-usage.ts, routes-hench.ts, and routes-hench.ts plus usage-cleanup-scheduler.ts respectively) with no shared interface or composition point. They share a thematic operational character (caching, metrics, usage accumulation) but are not a composable subsystem — unlike the messaging primitives, they have no natural pipeline order or facade candidate. An src/server/operational/ or src/server/infra/ subdirectory would make the implicit grouping visible without implying false pipeline semantics.
-- The zone name uses an unexpanded acronym ('mcp') alongside fully spelled-out domain terms ('dashboard', 'server'). Inconsistent abbreviation policy within a single zone name makes text-search results diverge depending on whether a developer searches for 'Model Context Protocol', 'mcp', or 'server', reducing the zone's discoverability in grep and documentation search.
-- Introduce a src/server/operational/ or src/server/infra/ subdirectory to group aggregation-cache.ts, concurrent-execution-metrics.ts, and incremental-task-usage.ts. All three are non-domain operational services with no shared interface; a directory boundary makes the grouping legible to static analysis and zone detection without implying false pipeline semantics.
-- Six independent findings (global 26, 36, 37; zone 1, 2; and 3-zone fragmentation) converge on a single root cause: the missing messaging/index.ts. No other finding in the full set has more than three corroborating signals. This is the highest-confidence, highest-leverage fix available in the entire analysis.
-- execution-panel.ts uses ../../messaging while hooks use ../messaging to reach the same directory — inconsistent relative depths are a fragility symptom of the missing barrel export. Until messaging/index.ts is added, document a canonical import alias (e.g. via tsconfig paths) so that all consumers reference messaging by the same stable path regardless of their directory depth.
-- use-project-status.ts and use-prd-websocket.ts both independently import and wire createMessageCoalescer + createMessageThrottle. Introduce a single factory (e.g. createWebSocketFlowControl) in messaging/ that composes the two, replacing the duplicated two-import wiring in both hooks with a single call and preventing future consumers from re-implementing the same composition.
-- viewer/polling/ and viewer/performance/ both lack an index.ts barrel export, forcing 11 and 12 consumers respectively to import individual files by path. Adding index.ts to each directory would fix the same import-surface problem already documented for messaging/ and establish a consistent barrel-export convention across all three viewer subdirectories simultaneously.
-- Add packages/web/src/viewer/messaging/index.ts re-exporting all four utilities (createMessageCoalescer, createMessageThrottle, createRateLimiter, createRequestDedup). This single file collapses three fragmented zones into one coherent directory, eliminates 7 cross-zone import edges, restores cohesion scores in viewer-message-flow-control and viewer-request-deduplication, and removes the duplicated two-import wiring in use-project-status.ts and use-prd-websocket.ts. Host the createMessagingPipeline factory here as well (global finding 25) so the canonical pipeline order is a production concern rather than an implicit test-only pattern.
-- Add packages/web/src/viewer/polling/index.ts and packages/web/src/viewer/performance/index.ts. Both directories exceed the 3-consumer threshold by a wide margin (11 and 12 consumers respectively), making barrel exports unambiguously justified. Adopt a monorepo-wide convention: any viewer subdirectory with 3 or more consumers requires an index.ts. This prevents directory-to-zone fragmentation from recurring in future subdirectories.
+- Contains 56% of project files (327/587) — subdivided into 8 sub-zones
+- With 327 files and cohesion of 0.99, this zone is extremely self-contained but may be too broad — consider whether server-side MCP logic and client-side viewer logic should be tracked as distinct architectural concerns.
+- The extremely low coupling (0.01) despite 4 outbound imports to message and web-integration zones suggests the gateway pattern is working effectively to contain cross-package dependencies.
+- The single entry point being polling-state.ts rather than the server index is worth validating — polling state is a runtime concern, not a package boundary.
+- Zone spans 327 files across server, viewer, CLI, and schema layers — the Louvain algorithm treats them as one community, but architectural separation between server-side MCP handlers and browser-side viewer components would improve navigability.
+- Cohesion of 0.99 with coupling of 0.01 is an exceptionally clean boundary for a zone this large, validating the gateway module pattern described in CLAUDE.md.
+- Four imports into the 'message' zone suggest a shared messaging or event contract that could warrant its own named gateway if it grows.
+- Zone "web-dashboard-mcp-server" has files across 20 directories — consider consolidating under a dedicated directory
+- polling-state.ts acts as a registration hub within this zone, receiving registerPollingSource calls from at least 4 distinct subsystems (dom-performance-monitor, memory-monitor, polling-manager, tick-timer) — it is the highest fan-in node in the viewer polling subsystem and the de-facto lifecycle registry for all polling actors.
+- The 5 circular dependency chains detected in the codebase are contained within this single 327-file zone, meaning the problem is scoped to intra-zone cycles rather than cross-zone architectural violations — they should still be resolved but do not threaten the inter-zone boundary health.
+- polling-state.ts is a high-fan-in registry node consumed by performance, memory, timer, and lifecycle subsystems within the zone. If it is ever extracted or renamed, all four subsystems require simultaneous updates — consider defining a PollingSource registration interface to decouple consumers from the concrete module.
+- All 5 detected circular dependency chains reside within this zone. The zone boundary is clean, but internal cycles indicate that some subsystems within the 327-file zone have bidirectional dependencies that will complicate tree-shaking and incremental compilation.
+- Circular dependency chains within this zone are invisible to inter-zone coupling metrics and can grow incrementally without triggering any architectural health alert until tree-shaking or incremental compilation encounters the cycle.
+- packages/web/src/schema/v1.ts is co-zoned with 326 service, component, and CLI files — schema type stability cannot be independently tracked, and the blast radius of a schema change is unassessable without isolating the schema layer into its own zone.
+- Gateway modules domain-gateway.ts and rex-gateway.ts are indistinguishable from 325 surrounding files at zone granularity — their role as intentional architectural seams is invisible to zone-level coupling metrics, reducing the enforceability of the gateway pattern documented in CLAUDE.md.
+- Zone name 'web-dashboard-mcp-server' misrepresents the zone's actual content: viewer React components, client-side hooks, CLI entrypoint, schema definitions, and server-side MCP logic all coexist here. The misleading name causes developers to misjudge which files belong here and obscures ownership boundaries across a 327-file zone.
+- packages/web/src/schema/v1.ts (schema/type layer) is co-zoned with volatile service, hook, and component files. Schema types are the most stable layer of the stack; co-location with 326 files makes it impossible to independently monitor schema churn or assess the downstream impact of a type change using zone-level metrics alone.
+- packages/web/src/cli/index.ts (Node.js runtime) is co-zoned with browser-rendered viewer components — CLI code and viewer code execute in fundamentally different runtimes; a Node.js-specific API accidentally imported by a viewer file would fail silently in production unless the bundler is configured to error on Node.js globals in browser targets.
+- The 327-file zone's internal import-graph density must be extremely high to produce cohesion 0.99 with only 4 outbound edges — this means the Louvain algorithm is treating intra-zone cycles (the 5 known circular dependency chains) as cohesion signals rather than architectural warnings, inflating the apparent health score of the zone.
+- aggregation-cache.ts and concurrent-execution-metrics.ts are runtime optimization files co-located with schema/v1.ts — in a diff, a schema type change is visually indistinguishable from a cache invalidation change, making per-file blame and review scope ambiguous across the most stable and most volatile layers of the stack.
+- The CLI entrypoint (packages/web/src/cli/index.ts) and browser viewer components share a zone despite executing in different runtimes. Add a bundler-level check (e.g. Vite's ssr.target or a custom Rollup plugin) that errors if Node.js built-in module references appear in the viewer bundle entry point — this makes the runtime boundary machine-enforceable rather than convention-only.
+- Cohesion 0.99 is inflated by intra-zone cycles being counted as connectivity rather than penalized. The zone's apparent health score masks the 5 circular dependency chains — add a per-zone cycle count to the zone health metrics so inflated cohesion from cycles is distinguishable from genuine cohesion from clean mutual imports.
+- Zone "web-viewer" has files across 20 directories — consider consolidating under a dedicated directory
 - [call graph] 6072 internal calls, 30 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>
@@ -1119,9 +1111,9 @@ This zone has 8 sub-zone(s):
 - **Web Viewer/web 3** (`web-viewer/web-3`): 4 files, cohesion 0.75, coupling 0.25
 - **Web Viewer/web 4** (`web-viewer/web-4`): 4 files, cohesion 0.75, coupling 0.25
 - **Web Viewer/web 5** (`web-viewer/web-5`): 4 files, cohesion 0.75, coupling 0.25
-- **Web Viewer/web 6** (`web-viewer/web-6`): 3 files, cohesion 0.8, coupling 0.2
 - **Web Viewer/web Unit** (`web-viewer/web-unit`): 3 files, cohesion 0.67, coupling 0.33
 - **Web Viewer/web Viewer** (`web-viewer/web-viewer`): 4 files, cohesion 0.75, coupling 0.25
+- **Web Viewer/zone** (`web-viewer/zone`): 3 files, cohesion 0.8, coupling 0.2
 
 Detailed sub-zone context available in `zones/{sub-zone-id}/context.md`
 

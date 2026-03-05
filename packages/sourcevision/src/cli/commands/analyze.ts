@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { resolve, join } from "node:path";
+import { resolve, join, relative } from "node:path";
 import { SV_DIR } from "../../constants.js";
 import { CLIError } from "../errors.js";
 import { DATA_FILES, SUPPLEMENTARY_FILES } from "../../schema/data-files.js";
@@ -14,6 +14,7 @@ import { cmdInit } from "./init.js";
 import { info } from "../output.js";
 import { emptyAnalyzeTokenUsage, formatTokenUsage } from "../../analyzers/token-usage.js";
 import { loadLLMConfig } from "@n-dx/llm-client";
+import { detectSubAnalyses } from "../../analyzers/workspace.js";
 import {
   setLLMConfig,
   getAuthMode,
@@ -123,6 +124,23 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
     tokenUsage: emptyAnalyzeTokenUsage(),
     inventoryResult: null,
   };
+
+  // ── Deep mode: re-analyze sub-packages first ──────────────────────
+  if (extraArgs.includes("--deep")) {
+    const subAnalyses = detectSubAnalyses(absDir);
+    if (subAnalyses.length > 0) {
+      info(`[deep] Found ${subAnalyses.length} sub-package${subAnalyses.length > 1 ? "s" : ""}: ${subAnalyses.map((s) => s.prefix).join(", ")}`);
+      // Pass through flags except --deep (avoid infinite recursion)
+      const childArgs = extraArgs.filter((a) => a !== "--deep");
+      for (const sub of subAnalyses) {
+        const subDir = join(absDir, sub.prefix);
+        info(`\n[deep] Analyzing ${sub.prefix}...`);
+        await cmdAnalyze(subDir, childArgs);
+        info("");
+      }
+      info(`[deep] Sub-package analysis complete, proceeding with root.\n`);
+    }
+  }
 
   info(`Analyzing: ${absDir}`);
   info("");

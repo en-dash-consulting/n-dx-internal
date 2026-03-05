@@ -5,10 +5,11 @@
 <zone>
 
 Zone: Web (`web`)
-Files: 10, Cohesion: 1.00, Coupling: 0.00
-Risk: healthy (score: 0.00)
-Description: 9 files, primarily Markdown, Other, JavaScript
-Lines: 1544
+Files: 15, Cohesion: 0.86, Coupling: 0.14
+Risk: healthy (score: 0.14)
+Description: 14 files, primarily TypeScript, Markdown, Other
+Entry points: packages/web/src/viewer/messaging/request-dedup.ts
+Lines: 2664
 
 </zone>
 
@@ -21,32 +22,61 @@ packages/web/SourceVision.png (Other, 0 lines, asset)
 packages/web/build.js (JavaScript, 225 lines, source)
 packages/web/dev.js (JavaScript, 114 lines, source)
 packages/web/package.json (JSON, 50 lines, config)
+packages/web/src/viewer/components/prd-tree/node-culler.ts (TypeScript, 172 lines, source)
+packages/web/src/viewer/messaging/request-dedup.ts (TypeScript, 84 lines, source)
 packages/web/tests/e2e/.gitkeep (Other, 0 lines, test)
+packages/web/tests/unit/viewer/execution-panel-dedup.test.ts (TypeScript, 279 lines, test)
+packages/web/tests/unit/viewer/node-culler.test.ts (TypeScript, 350 lines, test)
+packages/web/tests/unit/viewer/request-dedup.test.ts (TypeScript, 235 lines, test)
 packages/web/tsconfig.json (JSON, 11 lines, config)
 packages/web/vitest.config.ts (TypeScript, 33 lines, config)
 
 </files>
 
+<imports>
+
+Internal:
+  packages/web/tests/unit/viewer/execution-panel-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
+  packages/web/tests/unit/viewer/node-culler.test.ts → packages/web/src/viewer/components/prd-tree/node-culler.ts {NodeCuller}
+  packages/web/tests/unit/viewer/node-culler.test.ts → packages/web/src/viewer/components/prd-tree/node-culler.ts {VisibilityCallback}
+  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
+  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {RequestDedup}
+
+Incoming (other zones → this zone):
+  ← web-integration: packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts
+  ← web-viewer: packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/messaging/request-dedup.ts; packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/request-dedup.ts
+
+</imports>
+
 <findings>
 
-[observation] [info] High cohesion (1) — files are tightly interconnected
+[observation] [info] High cohesion (0.86) — files are tightly interconnected
+[suggestion] [info] Zone "web" has files across 5 directories — consider consolidating under a dedicated directory
 
 </findings>
 
 <insights>
 
-- High cohesion (1) — files are tightly interconnected
-- 10 files with no source code and zero coupling form a pure configuration shell — the actual application logic lives in the web-viewer and other web-* zones detected by the import graph
-- build.js and dev.js as separate config-classified scripts suggest a custom build pipeline; ensure these are synchronized with the monorepo pnpm build command to avoid CI drift
-- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md appear to be debugging artifacts committed to the package root — review whether these should be archived to docs/ or removed once the issues are resolved
-- This zone is correctly recognized as infrastructure-only (10 files, no source logic) — the real application code is distributed across the web-viewer and web-* zones as expected for a complex frontend package.
-- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md appear to be debugging artifacts committed at the package root — these should be archived to docs/ or removed to keep the package root clean.
-- Separate build.js and dev.js scripts alongside vitest.config.ts and tsconfig.json give the web package a complete, explicit build contract, which is good for CI reproducibility and developer onboarding.
-- esbuild is the sole external bundler in the web package build pipeline — the absence of webpack, rollup, or vite in external imports confirms an intentionally minimal single-vendor build toolchain.
-- build.js and dev.js are classified as 'config' by the file inventory, but config-classified files are conventionally passive configuration objects (tsconfig.json, vitest.config.ts). If build.js and dev.js contain imperative esbuild invocations with side effects (file writes, process.exit), the 'config' classification understates their role as build scripts and may cause them to be omitted from entrypoint-based reachability analysis.
-- This zone contains zero TypeScript source files — its 1.0 cohesion score reflects perfect interconnection among configuration artifacts only, not production source coherence. Interpreting this score as a signal of healthy source modularity would be misleading; the zone's role is purely infrastructural.
-- build.js and dev.js classified as 'config' rather than 'script' or 'entrypoint' may be excluded from entrypoint-based dead-code and reachability analysis. If these files contain imperative build logic with side effects, the misclassification causes the build pipeline to be invisible to import graph traversal, undermining the accuracy of reachability metrics for the entire web package.
-- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md are debugging artifacts co-located with production build configuration at the package root. If they document unresolved issues, they belong in an issue tracker or docs/debug/ rather than source control, where they persist indefinitely and leave contributors uncertain about whether the described problems are still active.
-- [call graph] 21 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- High cohesion (0.86) — files are tightly interconnected
+- The presence of BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md alongside source files indicates active performance debugging artifacts that should be moved to docs/ or .gitignored once the investigations are resolved.
+- request-dedup.ts being the zone's sole entry point signals it is the primary integration surface consumed by web-viewer and web-integration — any interface changes here will ripple to both downstream zones.
+- Cohesion of 0.86 reflects a slight mix of concerns (package config files + runtime viewer utilities) that community detection grouped together due to weak import linkage; this is benign but worth watching if the zone grows.
+- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md appear to be debugging artifacts committed to the repo — consider moving them to docs/ with an ADR-style header or removing them once the issues are resolved.
+- node-culler.ts being classified as a component while living outside the viewer zone suggests it may belong architecturally in web-viewer; confirm its import graph is consistent with that placement.
+- build.js and dev.js are classified as config, correctly separating build tooling from runtime source — this is a clean pattern that keeps esbuild/Vite configuration out of the viewer zone.
+- Zone "web-viewer-infrastructure" has files across 5 directories — consider consolidating under a dedicated directory
+- web-viewer-infrastructure is the only zone in this analysis batch with non-zero coupling (0.14), making it the sole structural bridge between the isolated upper tiers and the coupled web presentation layer. Its position as the entry-point zone for request-dedup.ts means it sits at the exact seam where the inert shell meets the live import graph.
+- The 0.14 coupling value for a 15-file zone implies approximately two outbound import edges to other zones — consistent with request-dedup.ts being consumed by both web-viewer and web-integration, making this zone a de facto shared utility layer that currently lacks the formal gateway treatment applied to rex and sourcevision cross-package dependencies.
+- web-viewer-infrastructure's request-dedup.ts is consumed by both web-viewer and web-integration but is not formalized as a gateway module. A breaking change to its interface propagates simultaneously to two consumers with no architectural enforcement preventing direct imports from bypassing it. Applying the same gateway pattern used for rex and sourcevision (single re-export file, no logic) would make this shared contract explicit and auditable.
+- node-culler.ts is classified as a component and lives in web-viewer-infrastructure, but it does not appear as a source or target in any cross-zone import edge. Either it has no active consumer (potential dead code), or it is consumed by web-viewer through an intra-package import that should appear as a cross-zone edge but does not — indicating a gap in the import graph for this file.
+- The zone co-locates build lifecycle artifacts (build.js, dev.js — classified as config) with runtime viewer utilities (request-dedup.ts, node-culler.ts). These have different change cadences and different deployment blast radius: a build config change should not require a runtime risk assessment, and vice versa.
+- node-culler.ts (a runtime component) has no cross-zone import edges either inbound or outbound, yet it lives alongside actively-consumed utilities. It is either dead code or its consumer relationship is missing from the import graph. Verify active consumers exist before the next refactor to avoid maintaining unused code.
+- build.js and dev.js (build tooling) are co-located in the same zone as request-dedup.ts and node-culler.ts (runtime utilities). Build tooling and runtime code should be separate zones so that infrastructure changes and feature changes can be assessed independently.
+- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md use UPPER_SNAKE_CASE naming while every other documentation file in the repository uses kebab-case.md. This naming divergence signals ad-hoc debugging notes that were never normalized — UPPER_SNAKE_CASE is conventionally reserved for environment variables and constants, not documentation files.
+- request-dedup.ts resides at packages/web/src/viewer/messaging/ but is attributed to the web-viewer-infrastructure zone rather than a messaging-specific zone. Its filesystem location implies membership in the messaging subsystem, but its zone attribution places it alongside build infrastructure (build.js, dev.js) — making both the messaging subsystem inventory and the infrastructure zone inventory simultaneously inaccurate.
+- Rename BROWSER_ERROR_CODE_5.md → browser-error-code-5.md and MEMORY_PROFILE.md → memory-profile.md, then move both to docs/. UPPER_SNAKE_CASE .md files create a visual inconsistency implying special-purpose files and will confuse contributors scanning the directory.
+- request-dedup.ts is located in packages/web/src/viewer/messaging/ but attributed to web-viewer-infrastructure by community detection. Its placement beside build.js and dev.js is architecturally misleading. Move it to the messaging zone or create an explicit barrel export in the messaging directory that the infrastructure zone re-exports, making the boundary between runtime messaging and build infrastructure explicit.
+- Zone "web" has files across 5 directories — consider consolidating under a dedicated directory
+- [call graph] 131 internal calls, 0 outgoing, 10 incoming (cohesion: 1, coupling: 0)
 
 </insights>

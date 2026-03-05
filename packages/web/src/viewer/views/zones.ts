@@ -32,10 +32,12 @@ import type {
   FileToFileMap,
   FileInfo,
   ZoneBreadcrumb,
+  ExpandedSubZones,
 } from "./zone-types.js";
 import { usePanZoom } from "../hooks/use-pan-zoom.js";
 import { useZoneDrag } from "../hooks/use-zone-drag.js";
 import { useFileEdges } from "../hooks/use-file-edges.js";
+import { useSubZoneEdges } from "../hooks/use-subzone-edges.js";
 
 // ── Re-export types for downstream consumers ─────────────────────────
 export type { ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap, ZoneBreadcrumb } from "./zone-types.js";
@@ -57,6 +59,9 @@ const FILE_ROWS_MAX = 15;
 const GAP_X = 80;
 const GAP_Y = 60;
 const PADDING = 40;
+const SUBZONE_ROW_H = 28;
+const SUBZONE_ROWS_MAX = 10;
+const SUBZONE_FILE_INDENT = 12;
 
 // ── Data transformation ──────────────────────────────────────────────
 
@@ -110,6 +115,33 @@ export function convertCrossings(crossings?: ZoneCrossing[]): FlowEdge[] {
     const [from, to] = key.split("->");
     return { from, to, weight };
   });
+}
+
+/**
+ * Distribute a parent zone's enriched FileInfo[] to each subzone by matching
+ * file paths from the raw Zone.files string array.
+ */
+function enrichSubZoneFiles(
+  subZoneData: ZoneData[],
+  parentFiles: FileInfo[],
+  rawSubZones: Zone[],
+): void {
+  const fileMap = new Map(parentFiles.map((f) => [f.path, f]));
+  for (let i = 0; i < subZoneData.length; i++) {
+    const rawSz = rawSubZones[i];
+    if (!rawSz) continue;
+    const matched: FileInfo[] = [];
+    for (const path of rawSz.files) {
+      const info = fileMap.get(path);
+      if (info) matched.push(info);
+    }
+    matched.sort((a, b) => b.crossZoneCalls - a.crossZoneCalls || a.path.localeCompare(b.path));
+    subZoneData[i].files = matched;
+    // Recurse if deeper subzones exist
+    if (subZoneData[i].subZones && rawSz.subZones) {
+      enrichSubZoneFiles(subZoneData[i].subZones!, matched, rawSz.subZones!);
+    }
+  }
 }
 
 function buildExplorerData(
@@ -213,6 +245,7 @@ function buildExplorerData(
       // Attach sub-zone data for drill-down when available
       if (z.subZones && z.subZones.length > 0) {
         zd.subZones = convertSubZones(z.subZones);
+        enrichSubZoneFiles(zd.subZones, files, z.subZones);
         zd.subCrossings = convertCrossings(z.subCrossings);
         zd.hasDrillDown = true;
       }
@@ -334,8 +367,31 @@ function buildFileToFileMap(
 
 // ── Layout pure functions ────────────────────────────────────────────
 
-function boxHeight(zone: ZoneData, expanded: boolean): number {
+function boxHeight(
+  zone: ZoneData,
+  expanded: boolean,
+  expandedSubZoneIds?: Set<string>,
+): number {
   if (!expanded) return BOX_H_COLLAPSED;
+
+  // Zone has subzones → show subzone rows instead of files
+  if (zone.subZones && zone.subZones.length > 0) {
+    const visibleCount = Math.min(zone.subZones.length, SUBZONE_ROWS_MAX);
+    let h = BOX_H_COLLAPSED + visibleCount * SUBZONE_ROW_H + 16;
+    // Expanded subzones show nested files
+    if (expandedSubZoneIds) {
+      for (const sz of zone.subZones.slice(0, SUBZONE_ROWS_MAX)) {
+        if (expandedSubZoneIds.has(sz.id)) {
+          const fileRows = Math.min(sz.files.length, FILE_ROWS_MAX);
+          h += fileRows * FILE_ROW_H + (sz.files.length > FILE_ROWS_MAX ? 20 : 0);
+        }
+      }
+    }
+    if (zone.subZones.length > SUBZONE_ROWS_MAX) h += 20;
+    return h;
+  }
+
+  // No subzones → show files directly
   const rows = Math.min(zone.files.length, FILE_ROWS_MAX);
   return BOX_H_COLLAPSED + rows * FILE_ROW_H + 16 + (zone.files.length > FILE_ROWS_MAX ? 20 : 0);
 }
@@ -362,6 +418,7 @@ function computeZoneLayout(
   zones: ZoneData[],
   edges: FlowEdge[],
   expandedZones: Set<string>,
+  expandedSubZones?: ExpandedSubZones,
 ): { boxes: Map<string, BoxRect>; totalW: number; totalH: number } {
   if (zones.length === 0) return { boxes: new Map(), totalW: 0, totalH: 0 };
 
@@ -473,7 +530,7 @@ function computeZoneLayout(
   for (const [id, pos] of placed) {
     const zone = zoneMap.get(id);
     if (!zone) continue;
-    const bh = boxHeight(zone, expandedZones.has(id));
+    const bh = boxHeight(zone, expandedZones.has(id), expandedSubZones?.get(id));
     rowHeights[pos.row] = Math.max(rowHeights[pos.row], bh);
   }
 
@@ -490,7 +547,7 @@ function computeZoneLayout(
       x,
       y,
       w: BOX_W,
-      h: boxHeight(zone, expandedZones.has(id)),
+      h: boxHeight(zone, expandedZones.has(id), expandedSubZones?.get(id)),
       gridCol: pos.col,
       gridRow: pos.row,
     });
@@ -750,6 +807,71 @@ function EdgeLabel({
   }, `${edge.weight} call${edge.weight !== 1 ? "s" : ""}`);
 }
 
+function SubZoneRow({
+  subZone,
+  y,
+  boxX,
+  boxW,
+  expanded,
+  onToggle,
+}: {
+  subZone: ZoneData;
+  y: number;
+  boxX: number;
+  boxW: number;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const name = subZone.name.length > 14
+    ? subZone.name.slice(0, 12) + "\u2026"
+    : subZone.name;
+
+  return h("g", {
+    class: `cg-subzone-row${expanded ? " expanded" : ""}`,
+    style: `--zone-color: ${subZone.color}`,
+    onClick: (e: Event) => { e.stopPropagation(); onToggle(); },
+  },
+    h("rect", {
+      class: "cg-subzone-bg",
+      x: boxX + 6,
+      y,
+      width: boxW - 12,
+      height: SUBZONE_ROW_H - 2,
+      rx: 4,
+    }),
+    // Color bar
+    h("rect", {
+      x: boxX + 6,
+      y,
+      width: 3,
+      height: SUBZONE_ROW_H - 2,
+      rx: 1.5,
+      fill: subZone.color,
+      style: "pointer-events: none;",
+    }),
+    // Name
+    h("text", {
+      class: "cg-subzone-name",
+      x: boxX + 14,
+      y: y + 18,
+    }, name),
+    // File count
+    h("text", {
+      class: "cg-subzone-stats",
+      x: boxX + boxW - 30,
+      y: y + 18,
+      "text-anchor": "end",
+    }, `${subZone.totalFiles}f`),
+    // Expand chevron
+    h("text", {
+      class: "cg-subzone-expand-icon",
+      x: boxX + boxW - 16,
+      y: y + 18,
+      "text-anchor": "end",
+    }, expanded ? "\u25B4" : "\u25BE"),
+  );
+}
+
 function ZoneBox({
   zone,
   box,
@@ -759,10 +881,12 @@ function ZoneBox({
   searchQ,
   matchingFiles,
   fileConnections,
+  expandedSubZoneIds,
   onSelectZone,
   onSelectFile,
   onDblClickFile,
   onDrillDown,
+  onToggleSubZone,
 }: {
   zone: ZoneData;
   box: BoxRect;
@@ -772,14 +896,121 @@ function ZoneBox({
   searchQ: string;
   matchingFiles: Set<string>;
   fileConnections: FileConnectionMap;
+  expandedSubZoneIds?: Set<string>;
   onSelectZone: () => void;
   onSelectFile: (path: string) => void;
   onDblClickFile: (path: string) => void;
   onDrillDown?: () => void;
+  onToggleSubZone?: (subZoneId: string) => void;
 }) {
   const fileCount = zone.totalFiles;
-  const visibleFiles = zone.files.slice(0, FILE_ROWS_MAX);
-  const overflow = zone.files.length - FILE_ROWS_MAX;
+  const hasSubZones = !!(zone.subZones && zone.subZones.length > 0);
+
+  // Build expanded content elements
+  const renderFileContent = () => {
+    const visibleFiles = zone.files.slice(0, FILE_ROWS_MAX);
+    const overflow = zone.files.length - FILE_ROWS_MAX;
+    return [
+      ...visibleFiles.map((file, i) => {
+        const fy = box.y + BOX_H_COLLAPSED - 4 + i * FILE_ROW_H;
+        const isMatch = !searchQ || matchingFiles.has(file.path);
+        const hasCrossZone = fileConnections.has(file.path);
+        return h(FileRow, {
+          key: file.path,
+          file,
+          y: fy,
+          boxX: box.x,
+          boxW: box.w,
+          searchMatch: searchQ ? isMatch : false,
+          hasCrossZone,
+          onClick: () => onSelectFile(file.path),
+          onDblClick: () => onDblClickFile(file.path),
+        });
+      }),
+      overflow > 0
+        ? h("text", {
+            key: "overflow",
+            class: "cg-file-overflow",
+            x: box.x + 14,
+            y: box.y + BOX_H_COLLAPSED - 4 + FILE_ROWS_MAX * FILE_ROW_H + 14,
+          }, `+${overflow} more`)
+        : null,
+    ];
+  };
+
+  const renderSubZoneContent = () => {
+    if (!zone.subZones) return [];
+    const visible = zone.subZones.slice(0, SUBZONE_ROWS_MAX);
+    const overflow = zone.subZones.length - SUBZONE_ROWS_MAX;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elements: any[] = [];
+    let curY = box.y + BOX_H_COLLAPSED - 4;
+
+    for (const sz of visible) {
+      const szExpanded = expandedSubZoneIds?.has(sz.id) ?? false;
+      elements.push(
+        h(SubZoneRow, {
+          key: sz.id,
+          subZone: sz,
+          y: curY,
+          boxX: box.x,
+          boxW: box.w,
+          expanded: szExpanded,
+          onToggle: () => onToggleSubZone?.(sz.id),
+        }),
+      );
+      curY += SUBZONE_ROW_H;
+
+      // Nested file rows when subzone is expanded
+      if (szExpanded) {
+        const szFiles = sz.files.slice(0, FILE_ROWS_MAX);
+        const szOverflow = sz.files.length - FILE_ROWS_MAX;
+        for (let fi = 0; fi < szFiles.length; fi++) {
+          const file = szFiles[fi];
+          const fy = curY;
+          const hasCrossZone = fileConnections.has(file.path);
+          elements.push(
+            h(FileRow, {
+              key: `${sz.id}-${file.path}`,
+              file,
+              y: fy,
+              boxX: box.x + SUBZONE_FILE_INDENT,
+              boxW: box.w - SUBZONE_FILE_INDENT,
+              searchMatch: searchQ ? matchingFiles.has(file.path) : false,
+              hasCrossZone,
+              onClick: () => onSelectFile(file.path),
+              onDblClick: () => onDblClickFile(file.path),
+            }),
+          );
+          curY += FILE_ROW_H;
+        }
+        if (szOverflow > 0) {
+          elements.push(
+            h("text", {
+              key: `${sz.id}-overflow`,
+              class: "cg-file-overflow",
+              x: box.x + SUBZONE_FILE_INDENT + 14,
+              y: curY + 14,
+            }, `+${szOverflow} more`),
+          );
+          curY += 20;
+        }
+      }
+    }
+
+    if (overflow > 0) {
+      elements.push(
+        h("text", {
+          key: "sz-overflow",
+          class: "cg-file-overflow",
+          x: box.x + 14,
+          y: curY + 14,
+        }, `+${overflow} more sub-zones`),
+      );
+    }
+
+    return elements;
+  };
 
   return h("g", {
     class: `cg-zone-box${expanded ? " expanded" : ""}${selected ? " selected" : ""}${dimmed ? " search-dim" : ""}`,
@@ -829,29 +1060,27 @@ function ZoneBox({
       "text-anchor": "end",
     }, expanded ? "\u25B4" : "\u25BE"),
 
-    // Drill-down button — visible only for zones with sub-zones
-    zone.hasDrillDown && onDrillDown
+    // Drill-down badge — visible only for zones with sub-zones
+    zone.hasDrillDown && zone.subZones && onDrillDown
       ? h("g", {
           class: "cg-zone-drill-btn",
           onClick: (e: Event) => { e.stopPropagation(); onDrillDown(); },
         },
           h("rect", {
-            x: box.x + box.w - 40,
-            y: box.y + 4,
-            width: 18,
-            height: 18,
+            x: box.x + box.w - 88,
+            y: box.y + 36,
+            width: 74,
+            height: 20,
             rx: 4,
             class: "cg-drill-btn-bg",
+            style: `--zone-color: ${zone.color}`,
           }),
-          h("path", {
-            d: `M ${box.x + box.w - 36} ${box.y + 10} l 5 3.5 -5 3.5`,
-            fill: "none",
-            stroke: "currentColor",
-            "stroke-width": "1.5",
-            "stroke-linecap": "round",
-            "stroke-linejoin": "round",
-            class: "cg-drill-btn-icon",
-          }),
+          h("text", {
+            x: box.x + box.w - 56,
+            y: box.y + 50,
+            "text-anchor": "middle",
+            class: "cg-drill-btn-label",
+          }, `${zone.subZones.length} sub-zones \u203A`),
         )
       : null,
 
@@ -884,29 +1113,7 @@ function ZoneBox({
             y2: box.y + BOX_H_COLLAPSED - 12,
             class: "cg-zone-divider",
           }),
-          ...visibleFiles.map((file, i) => {
-            const fy = box.y + BOX_H_COLLAPSED - 4 + i * FILE_ROW_H;
-            const isMatch = !searchQ || matchingFiles.has(file.path);
-            const hasCrossZone = fileConnections.has(file.path);
-            return h(FileRow, {
-              key: file.path,
-              file,
-              y: fy,
-              boxX: box.x,
-              boxW: box.w,
-              searchMatch: searchQ ? isMatch : false,
-              hasCrossZone,
-              onClick: () => onSelectFile(file.path),
-              onDblClick: () => onDblClickFile(file.path),
-            });
-          }),
-          overflow > 0
-            ? h("text", {
-                class: "cg-file-overflow",
-                x: box.x + 14,
-                y: box.y + BOX_H_COLLAPSED - 4 + FILE_ROWS_MAX * FILE_ROW_H + 14,
-              }, `+${overflow} more`)
-            : null,
+          ...(hasSubZones ? renderSubZoneContent() : renderFileContent()),
         )
       : null,
   );
@@ -949,6 +1156,7 @@ function ZoneDiagram({
   zones,
   edges,
   expandedZones,
+  expandedSubZones,
   selectedZoneId,
   searchQ,
   fileConnections,
@@ -957,11 +1165,14 @@ function ZoneDiagram({
   onSelectZone,
   onSelectFile,
   onDblClickFile,
+  onDblClickZone,
   onDrillDown,
+  onToggleSubZone,
 }: {
   zones: ZoneData[];
   edges: FlowEdge[];
   expandedZones: Set<string>;
+  expandedSubZones: ExpandedSubZones;
   selectedZoneId: string | null;
   searchQ: string;
   fileConnections: FileConnectionMap;
@@ -970,7 +1181,9 @@ function ZoneDiagram({
   onSelectZone: (zd: ZoneData) => void;
   onSelectFile: (path: string) => void;
   onDblClickFile: (path: string) => void;
+  onDblClickZone: (id: string) => void;
   onDrillDown?: (zoneId: string) => void;
+  onToggleSubZone: (parentId: string, subZoneId: string) => void;
 }) {
   const [hoveredEdge, setHoveredEdge] = useState<string | null>(null);
 
@@ -978,8 +1191,8 @@ function ZoneDiagram({
 
   // Layout computation
   const { boxes: baseBoxes, totalW, totalH } = useMemo(
-    () => computeZoneLayout(zones, edges, expandedZones),
-    [zones, edges, expandedZones],
+    () => computeZoneLayout(zones, edges, expandedZones, expandedSubZones),
+    [zones, edges, expandedZones, expandedSubZones],
   );
 
   const fitVB = useMemo(() => ({
@@ -1008,10 +1221,18 @@ function ZoneDiagram({
     return result;
   }, [baseBoxes, zoneDrag.dragOffsets]);
 
-  // Edge computations (extracted hook)
-  const { fileEdgeElements, hiddenZoneEdges } = useFileEdges(
+  // Edge computations (extracted hooks)
+  const { fileEdgeElements, hiddenZoneEdges: fileHiddenEdges } = useFileEdges(
     edges, boxes, expandedZones, zoneById, fileConnections, fileToFileMap,
   );
+  const { subZoneEdgeElements, hiddenZoneEdges: szHiddenEdges } = useSubZoneEdges(
+    edges, boxes, expandedZones, expandedSubZones, zoneById, fileConnections,
+  );
+  const hiddenZoneEdges = useMemo(() => {
+    const merged = new Set(fileHiddenEdges);
+    for (const k of szHiddenEdges) merged.add(k);
+    return merged;
+  }, [fileHiddenEdges, szHiddenEdges]);
 
   // Edge weight stats
   const maxWeight = useMemo(() => {
@@ -1124,6 +1345,13 @@ function ZoneDiagram({
       onMouseDown: handleMouseDown,
       onMouseMove: handleMouseMove,
       onMouseUp: handleMouseUp,
+      onDblClick: (e: MouseEvent) => {
+        const zoneEl = (e.target as Element)?.closest?.(".cg-zone-box[data-zone-id]");
+        if (zoneEl) {
+          const zoneId = zoneEl.getAttribute("data-zone-id");
+          if (zoneId) onDblClickZone(zoneId);
+        }
+      },
     },
       h("defs", null,
         h("marker", {
@@ -1169,6 +1397,22 @@ function ZoneDiagram({
             onLeave: () => setHoveredEdge(null),
           });
         }),
+      ),
+
+      // Subzone-level edges (between subzone rows and external zones)
+      h("g", { class: "cg-subzone-edges" },
+        subZoneEdgeElements.map((se) =>
+          h("path", {
+            key: se.key,
+            class: se.dashed ? "cg-subzone-edge" : "cg-file-edge",
+            d: se.d,
+            fill: "none",
+            stroke: se.color,
+            "stroke-width": Math.max(1, Math.min(2.5, se.weight * 0.4 + 0.8)),
+            opacity: se.dashed ? 0.4 : 0.55,
+            "stroke-dasharray": se.dashed ? "4 3" : undefined,
+          }),
+        ),
       ),
 
       // File-level edges (from expanded zone files to other zones)
@@ -1222,12 +1466,14 @@ function ZoneDiagram({
             searchQ,
             matchingFiles: matchingFilesByZone.get(zone.id) ?? new Set(),
             fileConnections,
+            expandedSubZoneIds: expandedSubZones.get(zone.id),
             onSelectZone: () => onSelectZone(zone),
             onSelectFile,
             onDblClickFile,
             onDrillDown: zone.hasDrillDown && onDrillDown
               ? () => onDrillDown(zone.id)
               : undefined,
+            onToggleSubZone: (szId: string) => onToggleSubZone(zone.id, szId),
           });
         }),
       ),
@@ -1315,6 +1561,7 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   const { zones, callGraph, imports: importsData } = data;
   const [search, setSearch] = useState("");
   const [expandedZones, setExpandedZones] = useState<Set<string>>(new Set());
+  const [expandedSubZones, setExpandedSubZones] = useState<ExpandedSubZones>(new Map());
   const [slideoutZone, setSlideoutZone] = useState<Zone | null>(null);
 
   // ── Drill-down navigation state ─────────────────────────────────────
@@ -1431,10 +1678,33 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   const toggleZone = useCallback((id: string) => {
     setExpandedZones((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+        // Clean up subzone expansion state when collapsing
+        setExpandedSubZones((prevSz) => {
+          if (!prevSz.has(id)) return prevSz;
+          const nextSz = new Map(prevSz);
+          nextSz.delete(id);
+          return nextSz;
+        });
+      } else {
+        next.add(id);
+      }
       return next;
     });
-    // Open slideout for the clicked zone
+  }, []);
+
+  const toggleSubZone = useCallback((parentId: string, subZoneId: string) => {
+    setExpandedSubZones((prev) => {
+      const next = new Map(prev);
+      const set = new Set(prev.get(parentId) ?? []);
+      if (set.has(subZoneId)) set.delete(subZoneId); else set.add(subZoneId);
+      if (set.size === 0) next.delete(parentId); else next.set(parentId, set);
+      return next;
+    });
+  }, []);
+
+  const handleZoneDblClick = useCallback((id: string) => {
     if (!zones) return;
     const zone = zones.zones.find((z) => z.id === id);
     if (zone) setSlideoutZone(zone);
@@ -1521,6 +1791,7 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
           zones: visibleZones,
           edges: visibleCrossings,
           expandedZones: effectiveExpandedZones,
+          expandedSubZones,
           selectedZoneId: slideoutZone?.id ?? null,
           searchQ,
           fileConnections,
@@ -1529,7 +1800,9 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
           onSelectZone: handleDiagramZoneSelect,
           onSelectFile: handleFileSelect,
           onDblClickFile: handleFileDblClick,
+          onDblClickZone: handleZoneDblClick,
           onDrillDown: handleDrillDown,
+          onToggleSubZone: toggleSubZone,
         })
       : null,
 

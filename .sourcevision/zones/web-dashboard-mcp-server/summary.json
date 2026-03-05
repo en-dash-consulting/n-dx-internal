@@ -1,7 +1,7 @@
 {
   "id": "web-dashboard-mcp-server",
   "name": "Web Dashboard & MCP Server",
-  "description": "The primary web package zone encompassing the viewer dashboard UI, MCP HTTP server, CLI entrypoint, and all supporting services.",
+  "description": "The primary web package zone containing the full-stack dashboard application, MCP HTTP server infrastructure, viewer components, schema definitions, and all supporting services.",
   "files": [
     "packages/web/src/cli/index.ts",
     "packages/web/src/public.ts",
@@ -121,13 +121,13 @@
     "packages/web/src/viewer/hooks/use-project-status.ts",
     "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
     "packages/web/src/viewer/hooks/use-route-state.ts",
+    "packages/web/src/viewer/hooks/use-subzone-edges.ts",
     "packages/web/src/viewer/hooks/use-tab-visibility.ts",
     "packages/web/src/viewer/hooks/use-tick.ts",
     "packages/web/src/viewer/hooks/use-toast.ts",
     "packages/web/src/viewer/hooks/use-zone-drag.ts",
     "packages/web/src/viewer/loader.ts",
     "packages/web/src/viewer/main.ts",
-    "packages/web/src/viewer/performance/.gitkeep",
     "packages/web/src/viewer/performance/crash-detector.ts",
     "packages/web/src/viewer/performance/dom-update-gate.ts",
     "packages/web/src/viewer/performance/graceful-degradation.ts",
@@ -135,7 +135,6 @@
     "packages/web/src/viewer/performance/refresh-throttle.ts",
     "packages/web/src/viewer/performance/response-buffer-gate.ts",
     "packages/web/src/viewer/performance/update-batcher.ts",
-    "packages/web/src/viewer/polling/.gitkeep",
     "packages/web/src/viewer/polling/batched-tick-dispatcher.ts",
     "packages/web/src/viewer/polling/polling-manager.ts",
     "packages/web/src/viewer/polling/polling-restart.ts",
@@ -223,7 +222,6 @@
     "packages/web/src/viewer/visualization/flow.ts",
     "packages/web/src/viewer/visualization/index.ts",
     "packages/web/src/viewer/visualization/metrics.ts",
-    "packages/web/tests/integration/.gitkeep",
     "packages/web/tests/integration/background-suspension-recovery.test.ts",
     "packages/web/tests/integration/memory-aware-polling-suspension.test.ts",
     "packages/web/tests/integration/pr-markdown-refresh.test.ts",
@@ -332,15 +330,16 @@
     "packages/web/tests/unit/viewer/usage-polling.test.ts",
     "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
     "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
-    "packages/web/tests/unit/viewer/zone-drill-down.test.ts"
+    "packages/web/tests/unit/viewer/zone-drill-down.test.ts",
+    "packages/web/tests/unit/viewer/zone-inline-subzones.test.ts"
   ],
   "entryPoints": [
     "packages/web/src/viewer/polling/polling-state.ts"
   ],
   "cohesion": 0.99,
   "coupling": 0.01,
-  "fileCount": 330,
-  "lineCount": 110371,
+  "fileCount": 329,
+  "lineCount": 111172,
   "riskMetrics": {
     "cohesion": 0.99,
     "coupling": 0.01,

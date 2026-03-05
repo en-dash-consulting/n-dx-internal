@@ -511,27 +511,59 @@
   "files": [
     {
       "path": "src/api-provider.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "Implements the API-based LLM provider — creates API clients, handles completions, and manages API-level business logic.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/auth.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Authentication detection and validation utilities — detectCliAvailability, validateApiKey, diagnoseAuth — shared helpers with no state.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/cli-provider.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "Implements the CLI-based LLM provider — drives the Claude CLI process, parses streaming output, handles completions.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/codex-cli-provider.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "Implements the Codex CLI provider variant — same pattern as cli-provider.ts but for the OpenAI Codex CLI.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/config.ts",
@@ -549,45 +581,101 @@
     },
     {
       "path": "src/create-client.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "Factory service that selects and instantiates the correct provider (API vs CLI) based on auth mode and options.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/exec.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Low-level process execution utilities — exec, spawnTool, ProcessPool — foundational infrastructure with high fan-in.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/help-format.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "CLI help text formatting helpers — bold, dim, formatHelp, formatUsage — pure formatting utilities.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/json.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Minimal JSON utility — toCanonicalJSON — a single shared helper function.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/llm-client.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "Top-level vendor-neutral LLM client factory — createLLMClient dispatches to the right provider based on LLMConfig.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/llm-config.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "config",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "config",
+          "signalKind": "path",
+          "detail": "Loads and resolves LLM configuration (vendor, model, keys) from disk and environment.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/llm-types.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "types",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "types",
+          "signalKind": "path",
+          "detail": "LLM-layer type definitions — LLMVendor, LLMConfig, CodexConfig — no logic, purely type declarations.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/output.ts",
@@ -605,33 +693,73 @@
     },
     {
       "path": "src/project-config.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "config",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "config",
+          "signalKind": "path",
+          "detail": "Loads and merges project-level config overrides (.n-dx.json) — deepMerge, loadProjectOverrides, mergeWithOverrides.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/project-dirs.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "types",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "types",
+          "signalKind": "path",
+          "detail": "PROJECT_DIRS constant and ProjectDir type — pure constants/types, no logic.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/provider-interface.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "types",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "types",
+          "signalKind": "path",
+          "detail": "Defines the LLMProvider interface and related types (ProviderInfo, StreamChunk, etc.) — contract definitions only.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/provider-registry.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "ProviderRegistry class that maps vendor names to provider factories and resolves providers at runtime.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/provider-session.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "ProviderSession manages a resolved provider instance for a given LLMConfig, encapsulating session lifecycle.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/public.ts",
@@ -649,15 +777,31 @@
     },
     {
       "path": "src/suggest.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "CLI typo-correction utilities — editDistance, suggestCommands — pure algorithmic helpers.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/token-usage.ts",
-      "archetype": null,
-      "confidence": 0,
-      "source": "algorithmic"
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Parses token usage from API responses and CLI output — stateless parsing helpers shared across providers.",
+          "weight": 0.7
+        }
+      ]
     },
     {
       "path": "src/types.ts",
@@ -675,16 +819,18 @@
     }
   ],
   "summary": {
-    "totalClassified": 4,
-    "totalUnclassified": 18,
+    "totalClassified": 22,
+    "totalUnclassified": 0,
     "byArchetype": {
-      "config": 1,
-      "utility": 1,
-      "entrypoint": 1,
-      "types": 1
+      "service": 7,
+      "utility": 7,
+      "config": 3,
+      "types": 4,
+      "entrypoint": 1
     },
     "bySource": {
-      "algorithmic": 22
+      "llm": 18,
+      "algorithmic": 4
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "id": "viewer-message-flow-control",
   "name": "Viewer Message Flow Control",
-  "description": "Provides message batching (coalescer) and rate-throttling primitives for controlling the volume and cadence of viewer-to-server communication.",
+  "description": "Provides message coalescing and throttling utilities that regulate the frequency and batching of viewer-to-server message delivery.",
   "files": [
     "packages/web/src/viewer/messaging/.gitkeep",
     "packages/web/src/viewer/messaging/message-coalescer.ts",

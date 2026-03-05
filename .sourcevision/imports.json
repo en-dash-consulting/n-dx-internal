@@ -14357,6 +14357,14 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "detectSubAnalyses"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
       "to": "packages/sourcevision/src/analyzers/zone-output.ts",
       "type": "static",
       "symbols": [
@@ -15892,7 +15900,8 @@
         "addDirectoryProximityEdges",
         "louvainPhase1",
         "mergeSmallCommunities",
-        "splitLargeCommunities"
+        "splitLargeCommunities",
+        "splitByDirectory"
       ]
     },
     {
@@ -15903,6 +15912,7 @@
         "deriveZoneId",
         "deriveZoneName",
         "disambiguateZoneId",
+        "deriveZoneIdFromFilenames",
         "analyzeZones",
         "assignByProximity",
         "SUBDIVISION_THRESHOLD"
@@ -15982,7 +15992,8 @@
       "type": "static",
       "symbols": [
         "analyzeZones",
-        "generateStructuralInsights"
+        "generateStructuralInsights",
+        "runZonePipeline"
       ]
     },
     {
@@ -16017,7 +16028,8 @@
       "symbols": [
         "generateZoneContext",
         "buildZoneSummary",
-        "emitZoneOutputs"
+        "emitZoneOutputs",
+        "pruneStaleZoneFolders"
       ]
     },
     {
@@ -18718,6 +18730,18 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/hooks/use-subzone-edges.ts",
+      "to": "packages/web/src/viewer/views/zone-types.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneData",
+        "FlowEdge",
+        "BoxRect",
+        "FileConnectionMap",
+        "ExpandedSubZones"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/hooks/use-tab-visibility.ts",
       "to": "packages/web/src/viewer/polling/tab-visibility.ts",
       "type": "static",
@@ -20341,6 +20365,14 @@
     },
     {
       "from": "packages/web/src/viewer/views/zones.ts",
+      "to": "packages/web/src/viewer/hooks/use-subzone-edges.ts",
+      "type": "static",
+      "symbols": [
+        "useSubZoneEdges"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/zones.ts",
       "to": "packages/web/src/viewer/hooks/use-zone-drag.ts",
       "type": "static",
       "symbols": [
@@ -20376,7 +20408,8 @@
         "FileConnectionMap",
         "FileToFileMap",
         "FileInfo",
-        "ZoneBreadcrumb"
+        "ZoneBreadcrumb",
+        "ExpandedSubZones"
       ]
     },
     {
@@ -22926,6 +22959,35 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/zone-inline-subzones.test.ts",
+      "to": "packages/web/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Zone"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/zone-inline-subzones.test.ts",
+      "to": "packages/web/src/viewer/views/zone-types.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneData",
+        "FileInfo",
+        "FlowEdge",
+        "BoxRect",
+        "FileConnectionMap",
+        "ExpandedSubZones"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/zone-inline-subzones.test.ts",
+      "to": "packages/web/src/viewer/views/zones.ts",
+      "type": "static",
+      "symbols": [
+        "convertSubZones"
+      ]
+    },
+    {
       "from": "tests/unit/help.test.js",
       "to": "help.js",
       "type": "static",
@@ -23281,6 +23343,7 @@
         "packages/web/src/viewer/hooks/use-project-status.ts",
         "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
         "packages/web/src/viewer/hooks/use-route-state.ts",
+        "packages/web/src/viewer/hooks/use-subzone-edges.ts",
         "packages/web/src/viewer/hooks/use-tab-visibility.ts",
         "packages/web/src/viewer/hooks/use-tick.ts",
         "packages/web/src/viewer/hooks/use-toast.ts",
@@ -23897,6 +23960,7 @@
         "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
         "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
         "packages/web/tests/unit/viewer/zone-drill-down.test.ts",
+        "packages/web/tests/unit/viewer/zone-inline-subzones.test.ts",
         "packages/web/vitest.config.ts",
         "tests/e2e/architecture-policy.test.js",
         "tests/e2e/cli-ci.test.js",
@@ -23949,7 +24013,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 2475,
+    "totalEdges": 2481,
     "totalExternal": 18,
     "circularCount": 5,
     "circulars": [

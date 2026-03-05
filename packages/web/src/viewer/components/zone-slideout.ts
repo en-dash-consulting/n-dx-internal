@@ -182,6 +182,26 @@ export function ZoneSlideout({
           )
         : null,
 
+      // Sub-zones
+      zone.subZones && zone.subZones.length > 0
+        ? h("div", { class: "zone-slideout-section" },
+            h("h4", null, "Sub-zones"),
+            h("ul", { class: "zone-slideout-list" },
+              zone.subZones.slice(0, 6).map((sz) =>
+                h("li", { key: sz.id, class: "zone-slideout-dep-item" },
+                  h("span", null, sz.name),
+                  h("span", { class: "zone-slideout-dep-count" }, `${sz.files.length} files`),
+                ),
+              ),
+              zone.subZones.length > 6
+                ? h("li", { class: "zone-slideout-list-more" },
+                    `+${zone.subZones.length - 6} more`,
+                  )
+                : null,
+            ),
+          )
+        : null,
+
       // Dependencies
       (Object.keys(incomingByZone).length > 0 || Object.keys(outgoingByZone).length > 0)
         ? h("div", { class: "zone-slideout-section" },

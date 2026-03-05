@@ -5,6 +5,7 @@ import {
   generateZoneContext,
   buildZoneSummary,
   emitZoneOutputs,
+  pruneStaleZoneFolders,
 } from "../../../src/analyzers/zone-output.js";
 import type {
   Inventory,
@@ -434,5 +435,84 @@ describe("emitZoneOutputs", () => {
     expect(context).toContain("**Parent/child**"); // Name derived from ID
     expect(context).toContain("`parent/child`");
     expect(context).toContain("cohesion 0.9");
+  });
+
+  it("prunes stale zone folders from previous runs", () => {
+    const zonesDir = join(tmpDir, "zones");
+
+    // Simulate previous run: create stale folders
+    mkdirSync(join(zonesDir, "old-zone"), { recursive: true });
+    writeFileSync(join(zonesDir, "old-zone", "context.md"), "stale");
+    mkdirSync(join(zonesDir, "another-stale"), { recursive: true });
+    writeFileSync(join(zonesDir, "another-stale", "summary.json"), "{}");
+
+    // Current run has only "core" zone
+    const zone = makeZone("core", ["src/a.ts"]);
+    const inventory = makeInventory([makeFileEntry("src/a.ts")]);
+    const imports = makeImports([]);
+    const zones = makeZones([zone]);
+
+    emitZoneOutputs(tmpDir, inventory, imports, zones);
+
+    // Active zone should exist
+    expect(existsSync(join(zonesDir, "core", "context.md"))).toBe(true);
+    // Stale folders should be removed
+    expect(existsSync(join(zonesDir, "old-zone"))).toBe(false);
+    expect(existsSync(join(zonesDir, "another-stale"))).toBe(false);
+  });
+
+  it("preserves zone folders that match current zones", () => {
+    const zonesDir = join(tmpDir, "zones");
+
+    // Pre-create folders for both current zones
+    mkdirSync(join(zonesDir, "core"), { recursive: true });
+    writeFileSync(join(zonesDir, "core", "context.md"), "old content");
+    mkdirSync(join(zonesDir, "auth"), { recursive: true });
+    writeFileSync(join(zonesDir, "auth", "context.md"), "old content");
+
+    const core = makeZone("core", ["src/a.ts"]);
+    const auth = makeZone("auth", ["src/b.ts"]);
+    const inventory = makeInventory([
+      makeFileEntry("src/a.ts"),
+      makeFileEntry("src/b.ts"),
+    ]);
+    const imports = makeImports([]);
+    const zones = makeZones([core, auth]);
+
+    emitZoneOutputs(tmpDir, inventory, imports, zones);
+
+    expect(existsSync(join(zonesDir, "core", "context.md"))).toBe(true);
+    expect(existsSync(join(zonesDir, "auth", "context.md"))).toBe(true);
+  });
+});
+
+// ── pruneStaleZoneFolders ────────────────────────────────────────────────────
+
+describe("pruneStaleZoneFolders", () => {
+  const tmpDir2 = join(process.cwd(), "tests/.tmp-prune-test");
+
+  beforeEach(() => {
+    mkdirSync(tmpDir2, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir2, { recursive: true, force: true });
+  });
+
+  it("does nothing when zones directory does not exist", () => {
+    const zones = makeZones([makeZone("core", ["a.ts"])]);
+    // Should not throw
+    pruneStaleZoneFolders(join(tmpDir2, "nonexistent"), zones);
+  });
+
+  it("ignores non-directory entries", () => {
+    // Create a file (not a directory) in the zones dir
+    writeFileSync(join(tmpDir2, "not-a-dir.txt"), "hello");
+
+    const zones = makeZones([makeZone("core", ["a.ts"])]);
+    pruneStaleZoneFolders(tmpDir2, zones);
+
+    // File should not be deleted (we only remove directories)
+    expect(existsSync(join(tmpDir2, "not-a-dir.txt"))).toBe(true);
   });
 });

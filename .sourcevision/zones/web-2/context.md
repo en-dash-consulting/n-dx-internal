@@ -29,6 +29,7 @@ Internal:
 
 <findings>
 
+[observation] [warning] Generic zone name "Web 2" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 [observation] [info] High cohesion (1) — files are tightly interconnected
 
 </findings>
@@ -36,6 +37,7 @@ Internal:
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
+- Generic zone name "Web 2" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 - A two-file zone (one source, one test) is the smallest coherent unit — this level of isolation indicates excellent single-responsibility design.
 - Node culling is a performance-critical concern for large PRD trees; keeping it in its own zone makes it easy to profile, replace, or optimize independently.
 - Zero coupling means the culling algorithm can be iterated on without risk of breaking other viewer subsystems.
@@ -46,6 +48,7 @@ Internal:
 - 'Culler' is unexplained domain jargon with no in-code definition, no JSDoc, and no README reference. Combined with zero confirmed static importers, a contributor cannot determine from the zone name or file name alone whether node-culler.ts is actively loaded via dynamic import, a planned feature awaiting integration, or dead code. The opaque name and absent documentation compound the dead-code ambiguity and make a removal decision harder to reach confidently.
 - node-culler.ts is one of 29 files in packages/web/src/viewer/components/prd-tree/. Its zero-importer status is indistinguishable from its active neighbors by directory scan — the structural isolation is only visible through import graph traversal. Any contributor refactoring the prd-tree component directory may inadvertently preserve or reference this file under the assumption that it is an active peer component.
 - Add a single JSDoc block to node-culler.ts (and NodeCuller class) explaining: (1) what 'culling' means in the context of the PRD tree, (2) whether this module is loaded via dynamic import() and from where, or (3) if it is pending integration. Without this, the file's status cannot be determined without a full import graph query, and its presence among 28 active peer components creates continuous ambiguity.
+- Generic zone name creates false-positive propagation risk identical to the web-integration precedent: any multi-pass enrichment that misidentifies this zone's role by its opaque alias will produce cascading misdiagnoses across subsequent passes before the error is caught. Semantic naming must precede architectural enrichment for all five generic web zones.
 - [call graph] 33 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

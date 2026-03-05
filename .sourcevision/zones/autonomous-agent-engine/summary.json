@@ -1,7 +1,7 @@
 {
   "id": "autonomous-agent-engine",
   "name": "Autonomous Agent Engine",
-  "description": "The hench package implementing the autonomous task execution agent that selects PRD tasks, builds execution briefs, and runs Claude-powered tool-use loops.",
+  "description": "The complete hench package implementing the autonomous agent loop — task selection, LLM orchestration, tool dispatch, safety guards, and run persistence.",
   "files": [
     "packages/hench/Hench-F.png",
     "packages/hench/Hench.png",

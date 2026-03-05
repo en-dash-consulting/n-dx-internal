@@ -1,7 +1,7 @@
 {
   "id": "web",
   "name": "Web",
-  "description": "9 files, primarily Markdown, Other, JavaScript",
+  "description": "14 files, primarily TypeScript, Markdown, Other",
   "files": [
     "packages/web/BROWSER_ERROR_CODE_5.md",
     "packages/web/MEMORY_PROFILE.md",
@@ -10,19 +10,26 @@
     "packages/web/build.js",
     "packages/web/dev.js",
     "packages/web/package.json",
+    "packages/web/src/viewer/components/prd-tree/node-culler.ts",
+    "packages/web/src/viewer/messaging/request-dedup.ts",
     "packages/web/tests/e2e/.gitkeep",
+    "packages/web/tests/unit/viewer/execution-panel-dedup.test.ts",
+    "packages/web/tests/unit/viewer/node-culler.test.ts",
+    "packages/web/tests/unit/viewer/request-dedup.test.ts",
     "packages/web/tsconfig.json",
     "packages/web/vitest.config.ts"
   ],
-  "entryPoints": [],
-  "cohesion": 1,
-  "coupling": 0,
-  "fileCount": 10,
-  "lineCount": 1544,
+  "entryPoints": [
+    "packages/web/src/viewer/messaging/request-dedup.ts"
+  ],
+  "cohesion": 0.86,
+  "coupling": 0.14,
+  "fileCount": 15,
+  "lineCount": 2664,
   "riskMetrics": {
-    "cohesion": 1,
-    "coupling": 0,
-    "riskScore": 0,
+    "cohesion": 0.86,
+    "coupling": 0.14,
+    "riskScore": 0.14,
     "riskLevel": "healthy",
     "failsThreshold": false
   }

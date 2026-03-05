@@ -1,7 +1,7 @@
 {
   "id": "rex-runtime-state",
   "name": "Rex Runtime State",
-  "description": "Persisted runtime state for the Rex PRD tracker, including the task tree, execution log, configuration, and staged proposals awaiting review.",
+  "description": "Persisted PRD state and execution metadata written and consumed by the rex package at runtime, not imported by any code.",
   "files": [
     ".rex/acknowledged-findings.json",
     ".rex/archive.json",

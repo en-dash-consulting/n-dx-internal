@@ -39,8 +39,16 @@ Incoming (other zones → this zone):
 
 </imports>
 
+<findings>
+
+[observation] [warning] Generic zone name "Web 5" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
+[suggestion] [warning] Cohesion 0.45 is the second-lowest in the codebase and this zone receives confirmed imports from both web-viewer and web-integration, marking it as a shared-utility cluster without a documented public API. The dependency-cruiser config proposed in global finding 51 requires stable semantic zone identifiers — 'web-5' cannot serve as an enforced boundary name. Identify the files in this zone, assign a semantic name (candidate: 'viewer-shared-io' or 'viewer-transport-utils' based on import context), and update zones.json before the next enrichment pass. This is a prerequisite for the CI enforcement change, not a cosmetic rename.
+
+</findings>
+
 <insights>
 
+- Generic zone name "Web 5" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 - The two utilities serve distinct but complementary roles — coalescing collapses redundant messages, throttling enforces timing intervals — they pair naturally and are rightly co-located
 - A .gitkeep file in the messaging directory is included as a zone member, artificially inflating the file count and slightly depressing cohesion
 - web-viewer's 4 inbound imports make this the most-consumed messaging zone, confirming it is the core flow-control layer
@@ -52,6 +60,8 @@ Incoming (other zones → this zone):
 - The messaging directory contains four related utilities and a .gitkeep but no index.ts barrel export. Consumers must know all four internal module names. The uniform factory-pattern API across all four files makes an index module a straightforward addition that would collapse web-viewer's 7 cross-zone imports to 1.
 - The .gitkeep file is the only non-source, non-test zone member across all five analyzed zones — its inclusion is anomalous and uniquely actionable: deleting it is a zero-risk one-line change that immediately raises the cohesion score and removes the only semantically empty zone member in the entire analyzed set.
 - Delete packages/web/src/viewer/messaging/.gitkeep. The messaging directory already contains four source files — the placeholder serves no purpose and its zone membership artificially depresses cohesion metrics.
+- Generic zone name compounds existing cohesion warnings: web-5 already has depressed cohesion (0.45) and receives imports from multiple consumers, but its opaque alias prevents multi-pass analysis from distinguishing its legitimate shared-utility role from a fragmentation artifact. The web-integration false-positive cluster demonstrates that unnamed zones with coupling anomalies are the highest-risk candidates for misdiagnosis.
+- Cohesion 0.45 is the second-lowest in the codebase and this zone receives confirmed imports from both web-viewer and web-integration, marking it as a shared-utility cluster without a documented public API. The dependency-cruiser config proposed in global finding 51 requires stable semantic zone identifiers — 'web-5' cannot serve as an enforced boundary name. Identify the files in this zone, assign a semantic name (candidate: 'viewer-shared-io' or 'viewer-transport-utils' based on import context), and update zones.json before the next enrichment pass. This is a prerequisite for the CI enforcement change, not a cosmetic rename.
 - [call graph] 150 internal calls, 0 outgoing, 6 incoming (cohesion: 1, coupling: 0)
 
 </insights>

@@ -7,7 +7,7 @@
 Zone: PRD Tree Lifecycle Tests (`prd-tree-lifecycle-tests`)
 Files: 4, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Unit test zone pairing the prd-tree lazy-children and listener-lifecycle components with their dedicated test files.
+Description: Focused unit test zone covering the lazy-children and listener-lifecycle components that manage dynamic loading and event subscription within the PRD tree viewer.
 Lines: 1030
 
 </zone>
@@ -32,27 +32,23 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[suggestion] [warning] Rename this zone to 'prd-tree-lifecycle-utilities' or 'prd-tree-lifecycle-components'. The '-tests' suffix causes the zone to be misread as test-only infrastructure in both dead-code audits and component searches, leading to incorrect classification decisions for the two production source files it contains.
+[suggestion] [warning] Rename zone to 'prd-tree-lifecycle' to eliminate the false '-tests' suffix signal. The current name implies a test-only zone but it contains production components; the mislabeling will cause contributor confusion and may break tooling that distinguishes source zones from test zones by name suffix. Every other '-tests'-suffixed zone in the codebase contains only test files.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Co-locating source and test files in the same detected zone confirms tight semantic coupling between these two lifecycle utilities and their tests.
-- lazy-children and listener-lifecycle handle non-trivial async and DOM-event concerns in the PRD tree; their isolation as a unit-tested pair reflects good separation of behavior from rendering.
-- No imports into other zones means these components are self-contained utilities — a green flag for reuse and testability.
-- Community detection placing test files in the same zone as their source is a positive signal that these modules have no extraneous dependencies pulling them into larger clusters.
-- Two related but distinct concerns (lazy loading and listener cleanup) share a zone; if they grow, splitting into separate files with separate test suites will keep each concern auditable.
-- This zone and prd-tree-node-culler form a satellite cluster of viewer utilities that are architecturally detached from the main web-dashboard-mcp-server hub — they provide functionality to the viewer without creating inbound coupling to the server layer, which is the correct dependency direction for UI utilities.
-- The zone name includes 'tests' but its source files (lazy-children.ts, listener-lifecycle.ts) are production components — the Louvain algorithm named the zone after the dominant file pattern in the cluster; the actual source modules are not test infrastructure.
-- prd-tree-lifecycle-tests and prd-tree-node-culler share identical structural form (one source file + one co-located test, zero external coupling) — this recurring pattern suggests an emergent convention for isolating performance-sensitive and lifecycle-critical viewer utilities that is worth formally documenting as a zone template.
-- Import graph data confirms lazy-children.ts and listener-lifecycle.ts have exactly one importer each — their respective test files. Neither file has any production consumer anywhere in the 587-file codebase. They are either loaded via dynamic import() (invisible to static analysis) or are dead production code that tests keep alive artificially.
-- The confirmed zero-production-importer status means these files cannot be validated as correct by integration or e2e tests — only unit tests exercise them, so any behavioral regression in a real rendering context would go undetected.
-- lazy-children.ts and listener-lifecycle.ts have no production importers — confirmed by full import graph traversal. If not dynamically imported, both files are dead code whose only consumers are their unit tests. Carrying untested-in-production code inflates the zone count and creates false confidence from passing unit tests.
-- lazy-children.ts and listener-lifecycle.ts are co-located in the same 29-file prd-tree directory as 26 actively-imported production components (prd-tree.ts, virtual-scroll.ts, compute.ts, etc.). Their zero-importer status is invisible from the directory listing — a contributor scanning the directory has no signal that these two files are structurally isolated from the rest of the component tree. This is a higher-risk situation than the node-culler case because the surrounding active files create a false expectation of active use.
-- The zone name ending in '-tests' contains two production source files. A contributor auditing test-only zones for dead-code removal would incorrectly treat lazy-children.ts and listener-lifecycle.ts as test infrastructure; a contributor searching for the production lifecycle components would not look in a zone named 'tests'. The Louvain-derived name is misleading in both directions simultaneously.
-- Rename this zone to 'prd-tree-lifecycle-utilities' or 'prd-tree-lifecycle-components'. The '-tests' suffix causes the zone to be misread as test-only infrastructure in both dead-code audits and component searches, leading to incorrect classification decisions for the two production source files it contains.
+- Perfect cohesion with zero coupling demonstrates ideal co-location of tests with their implementation targets — each source file has a direct test counterpart.
+- The two component files (lazy-children, listener-lifecycle) suggest the PRD tree uses a lifecycle pattern for deferred rendering and event cleanup; tests here validate that contract.
+- This zone's isolation from the broader web-viewer zone means these tests can be run and maintained independently without pulling in the full viewer dependency graph.
+- 1:1 pairing of source files to test files (2 components, 2 tests) reflects disciplined test coverage for the PRD tree's most behavior-sensitive lifecycle utilities.
+- Zone is completely decoupled from web-viewer at the module graph level — if this changes (e.g. tests start importing viewer utilities), the zone should be merged back into the main test suite.
+- The 1:1 pairing of lazy-children and listener-lifecycle (the two most behavior-sensitive lifecycle components in the PRD tree) with their own isolated test zone suggests these were deliberately extracted from the broader test suite to give them a stable, independently runnable test boundary — a signal that these components have historically been high-churn or high-risk.
+- The zone separation from web-dashboard-mcp-server is an artifact of import graph sparsity in lazy-children.ts and listener-lifecycle.ts, not an intentional architectural boundary — the two source files are physically in the same directory tree as the other prd-tree components but are algorithmically partitioned into a separate zone because they have fewer shared imports. This is a Louvain detection artifact, not a design boundary.
+- Source files lazy-children.ts and listener-lifecycle.ts are co-located in packages/web/src/viewer/components/prd-tree/ with other prd-tree components that belong to web-dashboard-mcp-server. The zone split exists only in the import graph, not in the file system — any new import between these files and their sibling prd-tree components will silently collapse the zone boundary without any lint or build signal. Either the lifecycle files should be moved to a distinct directory to make the boundary physical, or the zone should be merged back into web-dashboard-mcp-server.
+- The zone ID ends in '-tests' but contains 2 production source files (lazy-children.ts, listener-lifecycle.ts) alongside their test counterparts — any tooling or contributor convention that filters zones by the '-tests' suffix to identify test-only zones will incorrectly classify these production components as test artifacts, potentially excluding them from source coverage analysis, static archetype pipelines, or build optimization that skips test zones.
+- Rename zone to 'prd-tree-lifecycle' to eliminate the false '-tests' suffix signal. The current name implies a test-only zone but it contains production components; the mislabeling will cause contributor confusion and may break tooling that distinguishes source zones from test zones by name suffix. Every other '-tests'-suffixed zone in the codebase contains only test files.
 - [call graph] 30 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

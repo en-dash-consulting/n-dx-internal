@@ -5,9 +5,9 @@
 <zone>
 
 Zone: Viewer Static Assets (`viewer-static-assets`)
-Files: 3, Cohesion: 1.00, Coupling: 0.00
+Files: 4, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Static resource zone for the viewer entry point — the HTML shell and light/dark mode logo images with no code dependencies.
+Description: Static asset zone for the viewer entry point, including the HTML shell, dark/light mode logo images, and a polling directory placeholder.
 Lines: 21
 
 </zone>
@@ -17,28 +17,26 @@ Lines: 21
 packages/web/src/viewer/darkmode_logo.png (Other, 0 lines, asset)
 packages/web/src/viewer/index.html (HTML, 21 lines, other)
 packages/web/src/viewer/lightmode_logo.png (Other, 0 lines, asset)
+packages/web/src/viewer/polling/.gitkeep (Other, 0 lines, other)
 
 </files>
 
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[suggestion] [info] Standardize themed static asset names to a single separator convention, e.g. logo-dark.png / logo-light.png (hyphen-separated, theme as suffix modifier). The current 'darkmode_logo.png' / 'lightmode_logo.png' pattern mixes compound words and underscores in a way that will produce inconsistent names as new themed assets are added.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- No import-graph edges in or out confirms these are pure static assets consumed by the build tool rather than imported by TypeScript modules.
-- Bundling HTML and image assets into a detected zone suggests the community detection algorithm picked up file co-location rather than import relationships.
-- The light/dark logo pair signals theme support in the viewer; ensure both variants are referenced through a single theme-aware asset path to avoid drift.
-- This zone contains no executable code — its presence as a detected community reflects file proximity rather than logical coupling, which is expected and harmless for static assets.
-- Two logo variants (darkmode_logo.png, lightmode_logo.png) should be managed together whenever branding changes; co-locating them in this zone makes that maintenance visible and easy.
-- viewer-static-assets has no import relationships with prd-tree-lifecycle-tests or prd-tree-node-culler despite all three being viewer-layer zones — the three satellite zones are orthogonal to each other, which further validates that the web package's leaf-cluster architecture is correctly decomposed with no hidden lateral coupling among leaves.
-- packages/web/src/viewer/index.html is the Vite/build-tool SPA entry point that implicitly pulls in all viewer TypeScript modules at build time. This creates a build-time dependency from this zone to the entire viewer tree that static import analysis cannot detect — the zone's zero-coupling score reflects the import graph but not the build graph, making it the only zone in the codebase where the two graphs diverge materially.
-- The zero-coupling score for viewer-static-assets is a static-analysis artifact: index.html is the build-tool entry that transitively bundles the full viewer TypeScript tree. Zone metrics based on import edges are blind to this coupling. Any architectural decision that relies on viewer-static-assets having zero coupling to the hub will be incorrect in practice.
-- The two logo files use a {theme}mode_{name}.png naming pattern ('darkmode_logo.png', 'lightmode_logo.png') that concatenates a compound theme word with an underscore before the asset type. If additional themed assets are added (icons, favicons, splash screens), contributors have no documented convention and will likely diverge — 'dark-mode-icon.png', 'icon_dark.png', and 'darkmode_icon.png' are all equally plausible extensions of the current pattern. The absence of an asset naming convention is low-risk today with two files but becomes a maintenance liability at scale.
-- Standardize themed static asset names to a single separator convention, e.g. logo-dark.png / logo-light.png (hyphen-separated, theme as suffix modifier). The current 'darkmode_logo.png' / 'lightmode_logo.png' pattern mixes compound words and underscores in a way that will produce inconsistent names as new themed assets are added.
+- The presence of a .gitkeep in the polling directory suggests a build-time or runtime artifact directory that is intentionally tracked but currently empty.
+- Logo assets (darkmode_logo.png, lightmode_logo.png) indicate the viewer supports theming — confirm these are referenced via the same mechanism as the CSS dark-mode toggle to avoid drift.
+- This zone will never have meaningful cohesion metrics beyond 1.0 since it contains only static files; its isolation is expected and healthy.
+- The polling/.gitkeep placeholder alongside polling-state.ts in the main web-viewer zone suggests the polling directory serves a runtime role; document its expected contents to avoid confusion.
+- Dual logo assets for dark and light modes are isolated from any component logic — confirm the viewer's theme switching references these files via a stable build path rather than hardcoded strings.
+- The polling/ directory tracked via .gitkeep in viewer-static-assets places an empty runtime artifact directory inside the static assets zone. If the polling mechanism writes files to this directory at runtime, those files will be in a zone classified as static assets — mixing build-time static content with runtime-generated content in the same tracked directory is an architectural mismatch that could cause confusion in deployment or caching pipelines.
+- packages/web/src/viewer/polling/.gitkeep tracks an empty runtime directory inside the static assets zone. If polling artifacts are written here at runtime, the directory conflates static (build-time) and dynamic (runtime-generated) content in the same tracked path. This should either be moved outside the src/ tree (e.g. into a runtime data directory excluded from the static asset build) or explicitly documented as an intentional build output placeholder.
+- The polling/.gitkeep in viewer-static-assets and the performance/.gitkeep in dom-performance-monitoring are the only two speculative directory reservations in the entire monorepo src/ tree, and both are in the web package. No other package (hench, rex, sourcevision, llm-client) uses this convention, making it a web-package-local informal standard that will not be recognized by contributors whose primary context is another package.
 
 </insights>

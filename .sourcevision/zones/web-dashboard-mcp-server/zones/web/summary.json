@@ -1,7 +1,7 @@
 {
   "id": "web-viewer/web",
   "name": "Web Viewer/web",
-  "description": "301 files, primarily TypeScript, CSS",
+  "description": "303 files, primarily TypeScript, CSS",
   "files": [
     "packages/web/src/cli/index.ts",
     "packages/web/src/public.ts",
@@ -120,6 +120,7 @@
     "packages/web/src/viewer/hooks/use-project-status.ts",
     "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
     "packages/web/src/viewer/hooks/use-route-state.ts",
+    "packages/web/src/viewer/hooks/use-subzone-edges.ts",
     "packages/web/src/viewer/hooks/use-tab-visibility.ts",
     "packages/web/src/viewer/hooks/use-tick.ts",
     "packages/web/src/viewer/hooks/use-toast.ts",
@@ -303,13 +304,14 @@
     "packages/web/tests/unit/viewer/usage-polling.test.ts",
     "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
     "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
-    "packages/web/tests/unit/viewer/zone-drill-down.test.ts"
+    "packages/web/tests/unit/viewer/zone-drill-down.test.ts",
+    "packages/web/tests/unit/viewer/zone-inline-subzones.test.ts"
   ],
   "entryPoints": [
     "packages/web/src/viewer/polling/polling-state.ts"
   ],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 301,
-  "lineCount": 96377
+  "fileCount": 303,
+  "lineCount": 97164
 }

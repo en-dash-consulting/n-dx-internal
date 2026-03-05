@@ -5,31 +5,34 @@
 <zone>
 
 Zone: Hench/unit/agent 2 (`hench/unit/agent-2`)
-Files: 5, Cohesion: 0.55, Coupling: 0.45
-Description: 5 files, primarily TypeScript
-Entry points: packages/hench/src/validation/completion.ts
-Lines: 923
+Files: 6, Cohesion: 0.29, Coupling: 0.71
+Description: 6 files, primarily TypeScript
+Entry points: packages/hench/src/store/config.ts
+Lines: 999
 
 </zone>
 
 <files>
 
-packages/hench/src/agent/completion.ts (TypeScript, 15 lines, source)
-packages/hench/src/validation/completion.ts (TypeScript, 113 lines, source)
-packages/hench/src/validation/index.ts (TypeScript, 16 lines, source)
-packages/hench/tests/unit/agent/completion.test.ts (TypeScript, 474 lines, test)
-packages/hench/tests/unit/tools/completion-validation.test.ts (TypeScript, 305 lines, test)
+packages/hench/src/store/config.ts (TypeScript, 49 lines, source)
+packages/hench/tests/integration/store-roundtrip.test.ts (TypeScript, 126 lines, test)
+packages/hench/tests/unit/agent/atomic-transition.test.ts (TypeScript, 381 lines, test)
+packages/hench/tests/unit/agent/loop.test.ts (TypeScript, 109 lines, test)
+packages/hench/tests/unit/agent/task-failure.test.ts (TypeScript, 248 lines, test)
+packages/hench/tests/unit/store/project-config.test.ts (TypeScript, 86 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/hench/src/agent/completion.ts → packages/hench/src/validation/completion.ts {validateCompletion, formatValidationResult}
-  packages/hench/src/agent/completion.ts → packages/hench/src/validation/completion.ts {CompletionValidationResult, CompletionValidationOptions}
-  packages/hench/src/validation/index.ts → packages/hench/src/validation/completion.ts {validateCompletion, formatValidationResult}
-  packages/hench/src/validation/index.ts → packages/hench/src/validation/completion.ts {CompletionValidationResult, CompletionValidationOptions}
-  packages/hench/tests/unit/agent/completion.test.ts → packages/hench/src/agent/completion.ts {validateCompletion, formatValidationResult}
-  packages/hench/tests/unit/tools/completion-validation.test.ts → packages/hench/src/validation/completion.ts {validateCompletion, formatValidationResult}
+  packages/hench/tests/integration/store-roundtrip.test.ts → packages/hench/src/store/config.ts {ensureHenchDir, loadConfig, saveConfig, configExists, initConfig}
+  packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/store/config.ts {loadConfig}
+  packages/hench/tests/unit/agent/atomic-transition.test.ts → packages/hench/src/store/config.ts {initConfig}
+  packages/hench/tests/unit/agent/loop.test.ts → packages/hench/src/store/config.ts {loadConfig}
+  packages/hench/tests/unit/agent/loop.test.ts → packages/hench/src/store/config.ts {ensureHenchDir, initConfig}
+  packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/store/config.ts {loadConfig}
+  packages/hench/tests/unit/agent/task-failure.test.ts → packages/hench/src/store/config.ts {initConfig}
+  packages/hench/tests/unit/store/project-config.test.ts → packages/hench/src/store/config.ts {ensureHenchDir, loadConfig, initConfig}
 
 </imports>

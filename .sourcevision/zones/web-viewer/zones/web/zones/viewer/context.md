@@ -968,39 +968,34 @@ Internal:
 <sub-crossings>
 
 Cross-dependencies between sub-zones:
-  web-viewer/web/viewer/components → web-viewer/web/viewer/components-3: 1
-  web-viewer/web/viewer/components → web-viewer/web/viewer/unit: 8
-  web-viewer/web/viewer/components-2 → web-viewer/web/viewer/components-3: 1
-  web-viewer/web/viewer/components-2 → web-viewer/web/viewer/unit: 7
-  web-viewer/web/viewer/components-3 → web-viewer/web/viewer/components: 1
-  web-viewer/web/viewer/components-3 → web-viewer/web/viewer/components-prd-tree: 1
-  web-viewer/web/viewer/components-3 → web-viewer/web/viewer/unit: 5
+  web-viewer/web/viewer/components → web-viewer/web/viewer/components-prd-tree: 1
+  web-viewer/web/viewer/components → web-viewer/web/viewer/unit: 13
   web-viewer/web/viewer/components-prd-tree → web-viewer/web/viewer/unit: 2
-  web-viewer/web/viewer/unit → web-viewer/web/viewer/components: 2
-  web-viewer/web/viewer/unit → web-viewer/web/viewer/components-2: 2
-  web-viewer/web/viewer/unit → web-viewer/web/viewer/components-3: 3
+  web-viewer/web/viewer/project → web-viewer/web/viewer/components: 1
+  web-viewer/web/viewer/project → web-viewer/web/viewer/unit: 7
+  web-viewer/web/viewer/route → web-viewer/web/viewer/project: 1
+  web-viewer/web/viewer/route → web-viewer/web/viewer/unit: 4
+  web-viewer/web/viewer/route → web-viewer/web/viewer/usage: 1
+  web-viewer/web/viewer/unit → web-viewer/web/viewer/components: 5
   web-viewer/web/viewer/unit → web-viewer/web/viewer/components-prd-tree: 1
-  web-viewer/web/viewer/unit → web-viewer/web/viewer/unit-2: 1
+  web-viewer/web/viewer/unit → web-viewer/web/viewer/project: 2
+  web-viewer/web/viewer/unit → web-viewer/web/viewer/route: 1
   web-viewer/web/viewer/unit → web-viewer/web/viewer/unit-server: 6
   web-viewer/web/viewer/unit → web-viewer/web/viewer/usage: 2
-  web-viewer/web/viewer/unit-2 → web-viewer/web/viewer/components-2: 1
-  web-viewer/web/viewer/unit-2 → web-viewer/web/viewer/unit: 4
-  web-viewer/web/viewer/unit-2 → web-viewer/web/viewer/usage: 1
-  web-viewer/web/viewer/usage → web-viewer/web/viewer/components-3: 1
+  web-viewer/web/viewer/usage → web-viewer/web/viewer/components: 1
   web-viewer/web/viewer/usage → web-viewer/web/viewer/unit: 3
 
 </sub-crossings>
 
 <sub-zones>
 
-This zone has 8 sub-zone(s):
+This zone has 7 sub-zone(s):
 
-- **Web Viewer/web/viewer/components** (`web-viewer/web/viewer/components`): 7 files, cohesion 0.54, coupling 0.46
-- **Web Viewer/web/viewer/components 2** (`web-viewer/web/viewer/components-2`): 7 files, cohesion 0.48, coupling 0.52
-- **Web Viewer/web/viewer/components 3** (`web-viewer/web/viewer/components-3`): 3 files, cohesion 0.24, coupling 0.76
+- **Web Viewer/web/viewer/components** (`web-viewer/web/viewer/components`): 10 files, cohesion 0.51, coupling 0.49
 - **Web Viewer/web/viewer/components Prd Tree** (`web-viewer/web/viewer/components-prd-tree`): 7 files, cohesion 0.78, coupling 0.22
+- **Web Viewer/web/viewer/project** (`web-viewer/web/viewer/project`): 7 files, cohesion 0.48, coupling 0.52
+- **Web Viewer/web/viewer/route** (`web-viewer/web/viewer/route`): 4 files, cohesion 0.57, coupling 0.43
 - **Web Viewer/web/viewer/unit** (`web-viewer/web/viewer/unit`): 236 files, cohesion 0.95, coupling 0.05
-- **Web Viewer/web/viewer/unit 2** (`web-viewer/web/viewer/unit-2`): 4 files, cohesion 0.57, coupling 0.43
 - **Web Viewer/web/viewer/unit Server** (`web-viewer/web/viewer/unit-server`): 5 files, cohesion 0.5, coupling 0.5
 - **Web Viewer/web/viewer/usage** (`web-viewer/web/viewer/usage`): 3 files, cohesion 0.36, coupling 0.64
 

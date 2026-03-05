@@ -1,7 +1,7 @@
 {
   "id": "cli-e2e-test-suite",
   "name": "CLI End-to-End Test Suite",
-  "description": "Full end-to-end tests for all n-dx CLI orchestration commands, covering init, config, delegation, CI pipeline, error handling, and PR-check workflows.",
+  "description": "Root-level end-to-end tests that validate the full CLI surface — init, delegation, config, CI pipeline, dev mode, error handling, PR checks, and architecture policy.",
   "files": [
     "tests/e2e/architecture-policy.test.js",
     "tests/e2e/cli-ci.test.js",

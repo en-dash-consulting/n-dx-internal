@@ -5,11 +5,11 @@
 <zone>
 
 Zone: Web Dashboard & MCP Server (`web-dashboard-mcp-server`)
-Files: 330, Cohesion: 0.99, Coupling: 0.01
+Files: 329, Cohesion: 0.99, Coupling: 0.01
 Risk: healthy (score: 0.01)
-Description: The primary web package zone encompassing the viewer dashboard UI, MCP HTTP server, CLI entrypoint, and all supporting services.
+Description: The primary web package zone containing the full-stack dashboard application, MCP HTTP server infrastructure, viewer components, schema definitions, and all supporting services.
 Entry points: packages/web/src/viewer/polling/polling-state.ts
-Lines: 110371
+Lines: 111172
 
 </zone>
 
@@ -65,7 +65,7 @@ packages/web/src/viewer/components/data-display/findings-list.ts (TypeScript, 19
 packages/web/src/viewer/components/data-display/health-gauge.ts (TypeScript, 111 lines, source)
 packages/web/src/viewer/components/data-display/mini-charts.ts (TypeScript, 183 lines, source)
 packages/web/src/viewer/components/data-display/tree-view.ts (TypeScript, 135 lines, source)
-packages/web/src/viewer/components/data-display/zone-map.ts (TypeScript, 382 lines, source)
+packages/web/src/viewer/components/data-display/zone-map.ts (TypeScript, 387 lines, source)
 packages/web/src/viewer/components/degradation-banner.ts (TypeScript, 101 lines, source)
 packages/web/src/viewer/components/detail-panel.ts (TypeScript, 309 lines, source)
 packages/web/src/viewer/components/elapsed-time.ts (TypeScript, 51 lines, source)
@@ -113,12 +113,12 @@ packages/web/src/viewer/components/status-indicators.ts (TypeScript, 219 lines, 
 packages/web/src/viewer/components/theme-toggle.ts (TypeScript, 36 lines, source)
 packages/web/src/viewer/components/throttle-controls.ts (TypeScript, 382 lines, source)
 packages/web/src/viewer/components/ws-health-panel.ts (TypeScript, 389 lines, source)
-packages/web/src/viewer/components/zone-slideout.ts (TypeScript, 283 lines, source)
+packages/web/src/viewer/components/zone-slideout.ts (TypeScript, 303 lines, source)
 packages/web/src/viewer/graph/physics.ts (TypeScript, 443 lines, source)
 packages/web/src/viewer/graph/renderer.ts (TypeScript, 1605 lines, source)
 packages/web/src/viewer/hooks/use-app-data.ts (TypeScript, 186 lines, source)
 packages/web/src/viewer/hooks/use-crash-recovery.ts (TypeScript, 134 lines, source)
-packages/web/src/viewer/hooks/use-file-edges.ts (TypeScript, 282 lines, source)
+packages/web/src/viewer/hooks/use-file-edges.ts (TypeScript, 286 lines, source)
 packages/web/src/viewer/hooks/use-graceful-degradation.ts (TypeScript, 78 lines, source)
 packages/web/src/viewer/hooks/use-memory-monitor.ts (TypeScript, 126 lines, source)
 packages/web/src/viewer/hooks/use-pan-zoom.ts (TypeScript, 146 lines, source)
@@ -133,13 +133,13 @@ packages/web/src/viewer/hooks/use-project-metadata.ts (TypeScript, 79 lines, sou
 packages/web/src/viewer/hooks/use-project-status.ts (TypeScript, 194 lines, source)
 packages/web/src/viewer/hooks/use-refresh-throttle.ts (TypeScript, 112 lines, source)
 packages/web/src/viewer/hooks/use-route-state.ts (TypeScript, 136 lines, source)
+packages/web/src/viewer/hooks/use-subzone-edges.ts (TypeScript, 187 lines, source)
 packages/web/src/viewer/hooks/use-tab-visibility.ts (TypeScript, 73 lines, source)
 packages/web/src/viewer/hooks/use-tick.ts (TypeScript, 90 lines, source)
 packages/web/src/viewer/hooks/use-toast.ts (TypeScript, 43 lines, source)
 packages/web/src/viewer/hooks/use-zone-drag.ts (TypeScript, 94 lines, source)
 packages/web/src/viewer/loader.ts (TypeScript, 248 lines, source)
 packages/web/src/viewer/main.ts (TypeScript, 198 lines, source)
-packages/web/src/viewer/performance/.gitkeep (Other, 0 lines, other)
 packages/web/src/viewer/performance/crash-detector.ts (TypeScript, 316 lines, source)
 packages/web/src/viewer/performance/dom-update-gate.ts (TypeScript, 353 lines, source)
 packages/web/src/viewer/performance/graceful-degradation.ts (TypeScript, 227 lines, source)
@@ -147,7 +147,6 @@ packages/web/src/viewer/performance/memory-monitor.ts (TypeScript, 327 lines, so
 packages/web/src/viewer/performance/refresh-throttle.ts (TypeScript, 364 lines, source)
 packages/web/src/viewer/performance/response-buffer-gate.ts (TypeScript, 258 lines, source)
 packages/web/src/viewer/performance/update-batcher.ts (TypeScript, 188 lines, source)
-packages/web/src/viewer/polling/.gitkeep (Other, 0 lines, other)
 packages/web/src/viewer/polling/batched-tick-dispatcher.ts (TypeScript, 240 lines, source)
 packages/web/src/viewer/polling/polling-manager.ts (TypeScript, 316 lines, source)
 packages/web/src/viewer/polling/polling-restart.ts (TypeScript, 143 lines, source)
@@ -163,7 +162,7 @@ packages/web/src/viewer/styles/badges.css (CSS, 110 lines, other)
 packages/web/src/viewer/styles/base.css (CSS, 34 lines, other)
 packages/web/src/viewer/styles/branding.css (CSS, 125 lines, other)
 packages/web/src/viewer/styles/breadcrumb.css (CSS, 167 lines, other)
-packages/web/src/viewer/styles/call-graph-explorer.css (CSS, 274 lines, other)
+packages/web/src/viewer/styles/call-graph-explorer.css (CSS, 309 lines, other)
 packages/web/src/viewer/styles/cards.css (CSS, 253 lines, other)
 packages/web/src/viewer/styles/components.css (CSS, 193 lines, other)
 packages/web/src/viewer/styles/copy-link.css (CSS, 83 lines, other)
@@ -198,13 +197,13 @@ packages/web/src/viewer/styles/token-usage.css (CSS, 487 lines, other)
 packages/web/src/viewer/styles/tokens.css (CSS, 112 lines, other)
 packages/web/src/viewer/styles/utils.css (CSS, 375 lines, other)
 packages/web/src/viewer/styles/validation.css (CSS, 784 lines, other)
-packages/web/src/viewer/styles/zone-map.css (CSS, 489 lines, other)
+packages/web/src/viewer/styles/zone-map.css (CSS, 503 lines, other)
 packages/web/src/viewer/styles/zone-slideout.css (CSS, 350 lines, other)
 packages/web/src/viewer/types.ts (TypeScript, 64 lines, source)
 packages/web/src/viewer/usage/constants.ts (TypeScript, 18 lines, source)
 packages/web/src/viewer/usage/index.ts (TypeScript, 12 lines, source)
 packages/web/src/viewer/utils.ts (TypeScript, 65 lines, source)
-packages/web/src/viewer/validate.ts (TypeScript, 339 lines, source)
+packages/web/src/viewer/validate.ts (TypeScript, 342 lines, source)
 packages/web/src/viewer/views/analysis.ts (TypeScript, 157 lines, source)
 packages/web/src/viewer/views/architecture.ts (TypeScript, 103 lines, source)
 packages/web/src/viewer/views/enrichment-thresholds.ts (TypeScript, 11 lines, source)
@@ -229,13 +228,12 @@ packages/web/src/viewer/views/token-usage.ts (TypeScript, 760 lines, source)
 packages/web/src/viewer/views/validation.ts (TypeScript, 819 lines, source)
 packages/web/src/viewer/views/view-registry.ts (TypeScript, 160 lines, source)
 packages/web/src/viewer/views/workflow-optimization.ts (TypeScript, 598 lines, source)
-packages/web/src/viewer/views/zone-types.ts (TypeScript, 77 lines, source)
-packages/web/src/viewer/views/zones.ts (TypeScript, 1567 lines, source)
+packages/web/src/viewer/views/zone-types.ts (TypeScript, 80 lines, source)
+packages/web/src/viewer/views/zones.ts (TypeScript, 1840 lines, source)
 packages/web/src/viewer/visualization/colors.ts (TypeScript, 44 lines, source)
 packages/web/src/viewer/visualization/flow.ts (TypeScript, 146 lines, source)
 packages/web/src/viewer/visualization/index.ts (TypeScript, 57 lines, source)
 packages/web/src/viewer/visualization/metrics.ts (TypeScript, 14 lines, source)
-packages/web/tests/integration/.gitkeep (Other, 0 lines, test)
 packages/web/tests/integration/background-suspension-recovery.test.ts (TypeScript, 930 lines, test)
 packages/web/tests/integration/memory-aware-polling-suspension.test.ts (TypeScript, 1032 lines, test)
 packages/web/tests/integration/pr-markdown-refresh.test.ts (TypeScript, 176 lines, test)
@@ -345,6 +343,7 @@ packages/web/tests/unit/viewer/usage-polling.test.ts (TypeScript, 209 lines, tes
 packages/web/tests/unit/viewer/use-polling-suspension.test.ts (TypeScript, 128 lines, test)
 packages/web/tests/unit/viewer/virtual-scroll.test.ts (TypeScript, 392 lines, test)
 packages/web/tests/unit/viewer/zone-drill-down.test.ts (TypeScript, 543 lines, test)
+packages/web/tests/unit/viewer/zone-inline-subzones.test.ts (TypeScript, 257 lines, test)
 
 </files>
 
@@ -602,6 +601,7 @@ Internal:
   packages/web/src/viewer/hooks/use-refresh-throttle.ts → packages/web/src/viewer/performance/refresh-throttle.ts {RefreshQueueState, RefreshPriority}
   packages/web/src/viewer/hooks/use-route-state.ts → packages/web/src/viewer/route-state.ts {parseLegacyHashRoute, resolveLocationRoute}
   packages/web/src/viewer/hooks/use-route-state.ts → packages/web/src/viewer/types.ts {ViewId, NavigateTo}
+  packages/web/src/viewer/hooks/use-subzone-edges.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, FlowEdge, BoxRect, FileConnectionMap, ExpandedSubZones}
   packages/web/src/viewer/hooks/use-tab-visibility.ts → packages/web/src/viewer/polling/tab-visibility.ts {startTabVisibilityMonitor, stopTabVisibilityMonitor, onVisibilityChange, getTabVisibilitySnapshot, getVisibilityCapabilities}
   packages/web/src/viewer/hooks/use-tab-visibility.ts → packages/web/src/viewer/polling/tab-visibility.ts {TabVisibilityState, TabVisibilitySnapshot, VisibilityAPICapabilities}
   packages/web/src/viewer/hooks/use-tick.ts → packages/web/src/viewer/polling/batched-tick-dispatcher.ts {registerTickUpdater}
@@ -792,10 +792,11 @@ Internal:
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/components/zone-slideout.ts {ZoneSlideout}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-file-edges.ts {useFileEdges}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-pan-zoom.ts {usePanZoom}
+  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-subzone-edges.ts {useSubZoneEdges}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-zone-drag.ts {useZoneDrag}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/types.ts {LoadedData, DetailItem, NavigateTo}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/utils.ts {basename}
-  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap, FileInfo, ZoneBreadcrumb}
+  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap, FileInfo, ZoneBreadcrumb, ExpandedSubZones}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/visualization/index.ts {CollapsibleSection, buildFileToZoneMap, buildFlowEdges, buildCallFlowEdges, buildExternalImportEdges, getZoneColorByIndex}
   packages/web/src/viewer/visualization/colors.ts → packages/web/src/schema/v1.ts {Zones}
   packages/web/src/viewer/visualization/flow.ts → packages/web/src/schema/v1.ts {Zones, CallEdge, ExternalImport}
@@ -1047,12 +1048,15 @@ Internal:
   packages/web/tests/unit/viewer/zone-drill-down.test.ts → packages/web/src/schema/v1.ts {Zone, ZoneCrossing}
   packages/web/tests/unit/viewer/zone-drill-down.test.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, FlowEdge, ZoneBreadcrumb}
   packages/web/tests/unit/viewer/zone-drill-down.test.ts → packages/web/src/viewer/views/zones.ts {convertSubZones, convertCrossings, ZoneBreadcrumbNav}
+  packages/web/tests/unit/viewer/zone-inline-subzones.test.ts → packages/web/src/schema/v1.ts {Zone}
+  packages/web/tests/unit/viewer/zone-inline-subzones.test.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, FileInfo, FlowEdge, BoxRect, FileConnectionMap, ExpandedSubZones}
+  packages/web/tests/unit/viewer/zone-inline-subzones.test.ts → packages/web/src/viewer/views/zones.ts {convertSubZones}
 
 Outgoing (this zone → other zones):
-  → packages-rex:rex-cli: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
+  → packages-rex:prd-analysis-engine: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
   → viewer-call-rate-limiter: packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts
   → viewer-message-flow-control: packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/message-throttle.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/message-throttle.ts
-  → viewer-request-deduplication: packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/messaging/request-dedup.ts; packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/request-dedup.ts
+  → web-package-scaffolding: packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/messaging/request-dedup.ts; packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/request-dedup.ts
 
 Incoming (other zones → this zone):
   ← dom-performance-monitoring: packages/web/src/viewer/performance/dom-performance-monitor.ts → packages/web/src/viewer/polling/polling-state.ts
@@ -1061,34 +1065,33 @@ Incoming (other zones → this zone):
 
 <findings>
 
-[observation] [info] Contains 56% of project files (330/587) — subdivided into 8 sub-zones
+[observation] [info] Contains 56% of project files (329/589) — subdivided into 8 sub-zones
 [observation] [info] High cohesion (0.99) — files are tightly interconnected
-[suggestion] [info] Introduce a src/server/operational/ or src/server/infra/ subdirectory to group aggregation-cache.ts, concurrent-execution-metrics.ts, and incremental-task-usage.ts. All three are non-domain operational services with no shared interface; a directory boundary makes the grouping legible to static analysis and zone detection without implying false pipeline semantics.
+[suggestion] [info] Zone "web-dashboard-mcp-server" has files across 20 directories — consider consolidating under a dedicated directory
+[suggestion] [info] The zone name 'web-dashboard-mcp-server' actively misleads contributors adding client-side viewer components, hooks, or styles — they have no signal from the name that this 329-file zone is the correct destination. Consider renaming to 'web-dashboard' to communicate both server and viewer scope, or use the eventual zone split (server vs viewer) as the naming boundary. The current name indexes on a server implementation detail rather than the zone's primary architectural identity.
 
 </findings>
 
 <insights>
 
 - High cohesion (0.99) — files are tightly interconnected
-- Contains 56% of project files (330/587) — subdivided into 8 sub-zones
-- At 330 files with cohesion 0.99 and coupling 0.01, this zone demonstrates exceptional internal organization — a rare combination at this scale.
-- The zone bundles server infrastructure (aggregation-cache, incremental-task-usage, concurrent-execution-metrics) alongside the viewer UI, which may warrant internal layer separation as the package grows.
-- Outbound imports to web-5 and web-6 (6 total) suggest a small set of utility or shared-component zones that feed into this hub — worth monitoring to ensure those dependencies stay intentional.
-- Cohesion of 0.99 with coupling of 0.01 across 330 files is architecturally excellent; the gateway pattern (domain-gateway.ts, rex-gateway.ts) is likely a key driver of this low coupling.
-- The zone spans both server (MCP, aggregation, metrics) and client (viewer UI) concerns; as the package scales, consider tracking whether server and viewer sub-trees remain internally decoupled.
-- web-4 imports into this zone (1 import), creating a minor reverse dependency worth confirming is intentional rather than a stray cross-boundary reference.
-- The prd-tree-lifecycle-tests, prd-tree-node-culler, and viewer-static-assets zones being separate from this hub confirms the Louvain algorithm correctly identified that the most self-contained viewer utilities have no runtime import path back to the server layer — the hub's high cohesion is partly explained by these components being carved out naturally.
-- web-4's single inbound import into this zone warrants inspection: if web-4 is a bootstrap or configuration shim, the direction is intentional; if it is supposed to be a lower-level utility, the dependency direction is inverted and should be reversed.
-- web-viewer imports from web-integration (1 import): production code referencing an integration-test zone is a layer violation — the shared symbol should be extracted into a non-test module accessible to both production and test consumers.
-- web-4 imports into the main hub (1 import) with no return edge — this asymmetry is architecturally acceptable if web-4 is a consumer or extension point, but if web-4 is intended as a lower-level utility the dependency direction is inverted and should be corrected.
-- The server/browser runtime boundary (src/server/ targeting Node.js vs src/viewer/ targeting the browser) is entirely unenforced at the zone level — both environments are grouped into a single 330-file zone, meaning a stray import from a viewer module to a Node.js-only built-in (fs, crypto, net) compiles cleanly but fails at browser runtime with no zone-level coupling signal.
-- The apparent hub-and-satellite topology described in previous passes is overstated: import graph data confirms the three satellite viewer component zones (lazy-children.ts, listener-lifecycle.ts, node-culler.ts) have zero production importers anywhere in the codebase, including this hub. They are not satellites feeding the hub — they are orphaned from it entirely.
-- No zone boundary or import rule enforces the Node.js/browser runtime split within the web package. src/server/ and src/viewer/ are co-zoned, leaving the cross-environment constraint enforced only by convention. A single misplaced import from viewer to a Node.js module would reach production undetected by zone-level metrics.
-- The zone name 'web-dashboard-mcp-server' concatenates three orthogonal responsibilities (dashboard UI, MCP protocol server, HTTP server) into a single identifier. Zone names that list multiple distinct roles signal scope ambiguity — if these concerns ever require independent deployment, separate ownership, or different lifecycle management, the composite name provides no decomposition guidance.
-- aggregation-cache.ts, concurrent-execution-metrics.ts, and incremental-task-usage.ts are each consumed by different callers (routes-token-usage.ts, routes-hench.ts, and routes-hench.ts plus usage-cleanup-scheduler.ts respectively) with no shared interface or composition point. They share a thematic operational character (caching, metrics, usage accumulation) but are not a composable subsystem — unlike the messaging primitives, they have no natural pipeline order or facade candidate. An src/server/operational/ or src/server/infra/ subdirectory would make the implicit grouping visible without implying false pipeline semantics.
-- The zone name uses an unexpanded acronym ('mcp') alongside fully spelled-out domain terms ('dashboard', 'server'). Inconsistent abbreviation policy within a single zone name makes text-search results diverge depending on whether a developer searches for 'Model Context Protocol', 'mcp', or 'server', reducing the zone's discoverability in grep and documentation search.
-- Introduce a src/server/operational/ or src/server/infra/ subdirectory to group aggregation-cache.ts, concurrent-execution-metrics.ts, and incremental-task-usage.ts. All three are non-domain operational services with no shared interface; a directory boundary makes the grouping legible to static analysis and zone detection without implying false pipeline semantics.
-- [call graph] 6072 internal calls, 30 outgoing, 1 incoming (cohesion: 1, coupling: 0)
+- Contains 56% of project files (329/589) — subdivided into 8 sub-zones
+- At 329 files with 0.99 cohesion and 0.01 coupling, this zone is remarkably self-contained for its size — a sign of well-enforced internal boundaries.
+- The gateway pattern (rex-gateway.ts, domain-gateway.ts) concentrates cross-package imports into auditable single files, keeping the rest of the zone clean.
+- The zone's only outbound coupling is 4 imports into a 'message' zone and 2 into the scaffolding zone, indicating disciplined dependency management.
+- Zone contains 329 files with near-perfect cohesion (0.99) — the gateway module pattern enforcing explicit cross-package boundaries is clearly working well here.
+- The 4 imports into the 'message' zone suggest a shared messaging or event abstraction that both the viewer and integration layers depend on; worth ensuring that boundary stays intentional.
+- Server-side services (aggregation-cache, concurrent-execution-metrics, incremental-task-usage) are co-located with the viewer — if server and client grow further, a future split may be warranted.
+- Zone "web-dashboard-mcp-server" has files across 20 directories — consider consolidating under a dedicated directory
+- The zone coexists in the same package as landing-page and viewer-static-assets but shares zero module-level coupling with either — the web package contains three architecturally distinct sub-systems (app shell, landing, static assets) that are correctly isolated at the module graph level despite sharing a package.json boundary.
+- web-dashboard-mcp-server shares a package boundary with landing-page and viewer-static-assets but has zero module coupling to either — confirm the build entry points are intentionally separate to preserve this isolation at bundle time.
+- Server-side services (aggregation-cache.ts, concurrent-execution-metrics.ts, incremental-task-usage.ts) are co-located at the zone level with viewer UI components — at 329 files, the server/client boundary exists only by directory convention, not by zone enforcement, meaning a misrouted import between server and viewer code would not be detected by zone-level coupling metrics.
+- The prd-tree component family is split across two zones: lazy-children.ts and listener-lifecycle.ts live in prd-tree-lifecycle-tests while all other prd-tree components remain in this zone — Louvain detected an import-graph separation, but this split means prd-tree is not a coherent zone and changes to prd-tree internals require tracking two separate zone boundaries.
+- Server-side services (aggregation-cache, concurrent-execution-metrics, incremental-task-usage) share a zone boundary with client-side viewer components. No zone-level coupling metric will catch a server→client or client→server import violation because they are in the same zone. A dedicated server-services sub-zone (or enforced directory lint rule) is needed to make this boundary machine-checkable.
+- The prd-tree component family is fragmented across two zones (web-dashboard-mcp-server and prd-tree-lifecycle-tests). The lifecycle files (lazy-children.ts, listener-lifecycle.ts) were algorithmically separated because their import graph was sufficiently isolated, but this means the prd-tree directory is not a coherent architectural unit at the zone level. Contributors navigating prd-tree by directory will not see the zone split and may add imports that collapse the boundary silently.
+- The zone name 'web-dashboard-mcp-server' describes only the server transport layer (MCP endpoint) of a 329-file zone that also contains all viewer React components, client-side hooks, performance monitors, styles, and test suites. A developer adding a new viewer React component has no naming signal that this is the correct zone — the name implies server infrastructure, not a UI component home. This is the largest name-to-content mismatch of any zone in the codebase: every other zone's name (landing-page, dom-performance-monitoring, viewer-static-assets) correctly identifies its primary content.
+- The zone name 'web-dashboard-mcp-server' actively misleads contributors adding client-side viewer components, hooks, or styles — they have no signal from the name that this 329-file zone is the correct destination. Consider renaming to 'web-dashboard' to communicate both server and viewer scope, or use the eventual zone split (server vs viewer) as the naming boundary. The current name indexes on a server implementation detail rather than the zone's primary architectural identity.
+- [call graph] 6101 internal calls, 30 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>
 
@@ -1103,15 +1106,15 @@ Cross-dependencies between sub-zones:
 
 This zone has 8 sub-zone(s):
 
-- **Web Viewer/web** (`web-viewer/web`): 301 files, cohesion 1, coupling 0
+- **Web Viewer/web** (`web-viewer/web`): 303 files, cohesion 1, coupling 0
   - Has 8 nested sub-zone(s)
 - **Web Viewer/web 2** (`web-viewer/web-2`): 4 files, cohesion 0.75, coupling 0.25
 - **Web Viewer/web 3** (`web-viewer/web-3`): 4 files, cohesion 0.75, coupling 0.25
 - **Web Viewer/web 4** (`web-viewer/web-4`): 4 files, cohesion 0.75, coupling 0.25
 - **Web Viewer/web 5** (`web-viewer/web-5`): 4 files, cohesion 0.75, coupling 0.25
-- **Web Viewer/web 6** (`web-viewer/web-6`): 3 files, cohesion 0.8, coupling 0.2
 - **Web Viewer/web Unit** (`web-viewer/web-unit`): 3 files, cohesion 0.67, coupling 0.33
 - **Web Viewer/web Viewer** (`web-viewer/web-viewer`): 4 files, cohesion 0.75, coupling 0.25
+- **Web Viewer/zone** (`web-viewer/zone`): 3 files, cohesion 0.8, coupling 0.2
 
 Detailed sub-zone context available in `zones/{sub-zone-id}/context.md`
 

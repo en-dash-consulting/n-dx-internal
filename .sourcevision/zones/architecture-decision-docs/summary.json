@@ -1,7 +1,7 @@
 {
   "id": "architecture-decision-docs",
   "name": "Architecture Decision Docs",
-  "description": "Design documents, architectural decision records, and memory system design notes capturing the reasoning behind major system choices.",
+  "description": "A collection of design documents, architectural analyses, and memory-system explorations that record decisions and rationale for the n-dx toolkit.",
   "files": [
     "docs/2026-03-03-refresh-orchestration-memory-analysis.md",
     "docs/level-refactor-and-steward-plan.md",

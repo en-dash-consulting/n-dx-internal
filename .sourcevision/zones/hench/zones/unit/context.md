@@ -512,29 +512,29 @@ Internal:
 <sub-crossings>
 
 Cross-dependencies between sub-zones:
-  hench/unit/agent → hench/unit/agent-2: 5
-  hench/unit/agent → hench/unit/agent-3: 7
+  hench/unit/agent → hench/unit/agent-2: 7
   hench/unit/agent → hench/unit/agent-lifecycle: 5
   hench/unit/agent → hench/unit/cli: 8
+  hench/unit/agent → hench/unit/completion: 5
   hench/unit/agent → hench/unit/schema: 4
   hench/unit/agent → hench/unit/store: 1
   hench/unit/agent → hench/unit/tools: 3
-  hench/unit/agent-2 → hench/unit/agent: 2
-  hench/unit/agent-3 → hench/unit/agent: 10
-  hench/unit/agent-3 → hench/unit/store: 2
-  hench/unit/agent-3 → hench/unit/tools: 1
+  hench/unit/agent-2 → hench/unit/agent: 10
+  hench/unit/agent-2 → hench/unit/store: 2
+  hench/unit/agent-2 → hench/unit/tools: 1
   hench/unit/agent-lifecycle → hench/unit/agent: 2
   hench/unit/cli → hench/unit/agent: 7
-  hench/unit/cli → hench/unit/agent-3: 2
+  hench/unit/cli → hench/unit/agent-2: 2
   hench/unit/cli → hench/unit/agent-lifecycle: 1
   hench/unit/cli → hench/unit/schema: 1
   hench/unit/cli → hench/unit/store: 1
+  hench/unit/completion → hench/unit/agent: 2
   hench/unit/schema → hench/unit/agent: 4
-  hench/unit/schema → hench/unit/agent-3: 1
+  hench/unit/schema → hench/unit/agent-2: 1
   hench/unit/schema → hench/unit/cli: 2
   hench/unit/schema → hench/unit/store: 1
   hench/unit/store → hench/unit/agent: 5
-  hench/unit/store → hench/unit/agent-3: 2
+  hench/unit/store → hench/unit/agent-2: 2
   hench/unit/tools → hench/unit/agent: 4
 
 </sub-crossings>
@@ -544,11 +544,11 @@ Cross-dependencies between sub-zones:
 This zone has 8 sub-zone(s):
 
 - **Hench/unit/agent** (`hench/unit/agent`): 79 files, cohesion 0.83, coupling 0.17
-  - Has 8 nested sub-zone(s)
-- **Hench/unit/agent 2** (`hench/unit/agent-2`): 5 files, cohesion 0.55, coupling 0.45
-- **Hench/unit/agent 3** (`hench/unit/agent-3`): 6 files, cohesion 0.29, coupling 0.71
+  - Has 5 nested sub-zone(s)
+- **Hench/unit/agent 2** (`hench/unit/agent-2`): 6 files, cohesion 0.29, coupling 0.71
 - **Hench/unit/agent Lifecycle** (`hench/unit/agent-lifecycle`): 4 files, cohesion 0.42, coupling 0.58
 - **Hench/unit/cli** (`hench/unit/cli`): 14 files, cohesion 0.67, coupling 0.33
+- **Hench/unit/completion** (`hench/unit/completion`): 5 files, cohesion 0.55, coupling 0.45
 - **Hench/unit/schema** (`hench/unit/schema`): 5 files, cohesion 0.47, coupling 0.53
 - **Hench/unit/store** (`hench/unit/store`): 4 files, cohesion 0.4, coupling 0.6
 - **Hench/unit/tools** (`hench/unit/tools`): 9 files, cohesion 0.77, coupling 0.23

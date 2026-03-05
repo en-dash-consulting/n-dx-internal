@@ -7,7 +7,7 @@
 Zone: Viewer Message Flow Control (`viewer-message-flow-control`)
 Files: 5, Cohesion: 0.45, Coupling: 0.55
 Risk: healthy (score: 0.55)
-Description: Provides message batching (coalescer) and rate-throttling primitives for controlling the volume and cadence of viewer-to-server communication.
+Description: Provides message coalescing and throttling utilities that regulate the frequency and batching of viewer-to-server message delivery.
 Entry points: packages/web/src/viewer/messaging/message-coalescer.ts, packages/web/src/viewer/messaging/message-throttle.ts
 Lines: 1536
 
@@ -41,23 +41,30 @@ Incoming (other zones → this zone):
 
 <findings>
 
-[suggestion] [warning] Delete packages/web/src/viewer/messaging/.gitkeep. The messaging directory already contains four source files — the placeholder serves no purpose and its zone membership artificially depresses cohesion metrics.
+[suggestion] [warning] FRAGILE ZONE: viewer-message-flow-control has both the lowest cohesion (0.45) and coupling approaching the warning threshold (0.55) simultaneously. This combination — structurally weak internally, heavily consumed externally — makes it the single highest-risk zone for cascading breakage. Prioritize splitting or stabilizing this zone before adding new consumers.
+[suggestion] [warning] Three-way naming conflict: source files use 'message-' prefix, zone ID is 'viewer-message-flow-control', import graph alias is 'message'. Establish a single canonical name (recommend 'messaging-primitives') and propagate it to all three: filenames, zone ID in zones.json, and the import graph key in imports.json.
 
 </findings>
 
 <insights>
 
-- The two utilities serve distinct but complementary roles — coalescing collapses redundant messages, throttling enforces timing intervals — they pair naturally and are rightly co-located
-- A .gitkeep file in the messaging directory is included as a zone member, artificially inflating the file count and slightly depressing cohesion
-- web-viewer's 4 inbound imports make this the most-consumed messaging zone, confirming it is the core flow-control layer
-- Cohesion of 0.45 with coupling of 0.55 approaches warning thresholds; the presence of a .gitkeep file as a zone member skews metrics — removing it would improve calculated cohesion.
-- The coalescer and throttle utilities together form a natural 'message pipeline' abstraction; a thin façade module exporting both would make web-viewer's 4 direct imports easier to maintain.
-- web-viewer's 4 direct imports into this zone combined with web-integration's 2 imports create a fan-in pattern where both the production hub and the integration layer independently couple to these primitives — a sign that the intended abstraction boundary was never fully closed.
-- Dual consumption by both web-viewer (4 imports) and web-integration (2 imports) without a shared facade means changes to message-coalescer or message-throttle require verifying compatibility in two independent consumers.
-- The four messaging utilities (message-coalescer, message-throttle, call-rate-limiter, request-dedup) share an identical factory-pattern shape: each exports a createX factory function, a Config interface, and a Runtime interface. This uniform API structure makes a barrel index module trivially wrappable — the facade is architecturally sound not just as a coupling fix but because the pattern is already there.
-- The messaging directory contains four related utilities and a .gitkeep but no index.ts barrel export. Consumers must know all four internal module names. The uniform factory-pattern API across all four files makes an index module a straightforward addition that would collapse web-viewer's 7 cross-zone imports to 1.
-- The .gitkeep file is the only non-source, non-test zone member across all five analyzed zones — its inclusion is anomalous and uniquely actionable: deleting it is a zero-risk one-line change that immediately raises the cohesion score and removes the only semantically empty zone member in the entire analyzed set.
-- Delete packages/web/src/viewer/messaging/.gitkeep. The messaging directory already contains four source files — the placeholder serves no purpose and its zone membership artificially depresses cohesion metrics.
+- Two distinct primitives (coalescer and throttle) share a zone but have separate entry points — if they share no internal imports they may be better understood as a small messaging utility library rather than a single cohesive module
+- Coupling of 0.55 is approaching the warning threshold (0.6); web-viewer accounts for 4 of those inbound imports, making the dashboard the dominant consumer — changes here will ripple into the viewer layer
+- Both source files have corresponding unit tests co-located in the zone, which is a good practice worth preserving as the messaging layer grows
+- Coupling at 0.55 is near the warning threshold; the 4 imports from web-viewer make this zone a high-traffic dependency — keep its public API narrow to avoid tight coupling spreading further.
+- Cohesion of 0.45 is the lowest in this batch; if message-coalescer and message-throttle do not import each other, the zone boundary is purely spatial (same directory) rather than semantic — consider whether they should be documented as a unified messaging-primitives module.
+- The .gitkeep in the messaging source directory suggests additional messaging utilities were anticipated; document the intended expansion (e.g. debounce, backpressure) or remove the placeholder.
+- web-integration imports this zone (2 imports) in addition to web-viewer's 4 imports — two distinct consumers at different architectural levels (viewer client vs integration/server layer) both depend on the same low-cohesion primitives, which means a change here propagates to both the UI and server-side paths simultaneously
+- viewer-message-flow-control is consumed by both web-viewer (UI layer) and web-integration (server-adjacent layer) — cross-cutting consumers at different tiers on a low-cohesion zone is a coupling risk; the zone should either split by consumer tier or define a formal stable interface to buffer both
+- The .gitkeep in packages/web/src/viewer/messaging/ is included in zone membership, making the effective source file count 2 (coalescer + throttle) rather than the reported 3; this means the 0.45 cohesion score is computed over a zone that is effectively a two-file module, which is below the threshold where cohesion scoring is statistically meaningful
+- The zone is referenced as 'message' in the cross-zone import graph but identified as 'viewer-message-flow-control' in zone metadata — this label mismatch indicates either a zone rename that was not propagated to the import graph index or an alias collision that could cause tooling to mis-attribute imports to the wrong zone
+- The zone is labeled 'viewer-message-flow-control' in zone metadata but appears as 'message' in the cross-zone import graph. This naming inconsistency means import attribution, zone health reports, and any tooling that joins on zone ID will produce mismatched results. The canonical ID should be reconciled across all output files.
+- packages/web/src/viewer/messaging/.gitkeep is counted as a zone member, reducing the effective source density to 2 meaningful files (message-coalescer.ts, message-throttle.ts). At 2 source files, the zone is below the minimum size where Louvain cohesion scoring is reliable — consider either expanding the zone with the planned messaging utilities or merging it into viewer-call-rate-limiter as a sub-module.
+- This zone satisfies the exact definition of a fragile zone: coupling (0.55) is near the warning threshold AND cohesion (0.45) is the lowest in the codebase simultaneously — it is both structurally weak internally and heavily depended on externally, making it the highest-risk zone for cascading breakage
+- Source files 'message-coalescer.ts' and 'message-throttle.ts' use a 'message-' prefix while the zone is named 'viewer-message-flow-control' — the file prefix ('message-') and zone prefix ('viewer-') are inconsistent, and neither matches the import graph alias ('message'), creating a three-way naming conflict for the same boundary
+- The 'viewer-' prefix in the zone name is contradicted by web-integration (server-adjacent) importing this zone — contributors seeing 'viewer-message-flow-control' will assume server-side code should not depend on it, but it already does, meaning future server-side engineers may redundantly reimplement coalescing logic rather than reuse this zone
+- FRAGILE ZONE: viewer-message-flow-control has both the lowest cohesion (0.45) and coupling approaching the warning threshold (0.55) simultaneously. This combination — structurally weak internally, heavily consumed externally — makes it the single highest-risk zone for cascading breakage. Prioritize splitting or stabilizing this zone before adding new consumers.
+- Three-way naming conflict: source files use 'message-' prefix, zone ID is 'viewer-message-flow-control', import graph alias is 'message'. Establish a single canonical name (recommend 'messaging-primitives') and propagate it to all three: filenames, zone ID in zones.json, and the import graph key in imports.json.
 - [call graph] 150 internal calls, 0 outgoing, 6 incoming (cohesion: 1, coupling: 0)
 
 </insights>

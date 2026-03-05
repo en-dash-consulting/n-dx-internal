@@ -319,47 +319,29 @@ Internal:
 <sub-crossings>
 
 Cross-dependencies between sub-zones:
-  hench/unit/agent/agent → hench/unit/agent/agent-2: 2
-  hench/unit/agent/agent → hench/unit/agent/agent-lifecycle: 6
+  hench/unit/agent/agent → hench/unit/agent/agent-lifecycle: 2
   hench/unit/agent/agent → hench/unit/agent/cli: 2
-  hench/unit/agent/agent → hench/unit/agent/process: 2
-  hench/unit/agent/agent → hench/unit/agent/process-2: 1
-  hench/unit/agent/agent → hench/unit/agent/schema: 2
-  hench/unit/agent/agent-2 → hench/unit/agent/schema: 1
-  hench/unit/agent/agent-lifecycle → hench/unit/agent/agent: 1
-  hench/unit/agent/agent-lifecycle → hench/unit/agent/agent-2: 2
-  hench/unit/agent/agent-lifecycle → hench/unit/agent/cli: 5
-  hench/unit/agent/agent-lifecycle → hench/unit/agent/process: 6
-  hench/unit/agent/agent-lifecycle → hench/unit/agent/process-2: 1
-  hench/unit/agent/agent-lifecycle → hench/unit/agent/schema: 6
-  hench/unit/agent/agent-lifecycle → hench/unit/agent/store: 5
+  hench/unit/agent/agent → hench/unit/agent/process: 11
+  hench/unit/agent/agent-lifecycle → hench/unit/agent/process: 1
   hench/unit/agent/cli → hench/unit/agent/agent: 1
-  hench/unit/agent/cli → hench/unit/agent/agent-lifecycle: 3
-  hench/unit/agent/cli → hench/unit/agent/process: 4
-  hench/unit/agent/cli → hench/unit/agent/process-2: 1
-  hench/unit/agent/cli → hench/unit/agent/schema: 2
+  hench/unit/agent/cli → hench/unit/agent/process: 10
   hench/unit/agent/cli → hench/unit/agent/store: 1
-  hench/unit/agent/process → hench/unit/agent/agent-lifecycle: 3
-  hench/unit/agent/process → hench/unit/agent/process-2: 9
-  hench/unit/agent/process → hench/unit/agent/schema: 3
-  hench/unit/agent/process → hench/unit/agent/store: 4
-  hench/unit/agent/process-2 → hench/unit/agent/process: 5
-  hench/unit/agent/schema → hench/unit/agent/process: 3
+  hench/unit/agent/process → hench/unit/agent/agent: 1
+  hench/unit/agent/process → hench/unit/agent/agent-lifecycle: 2
+  hench/unit/agent/process → hench/unit/agent/cli: 5
+  hench/unit/agent/process → hench/unit/agent/store: 9
   hench/unit/agent/store → hench/unit/agent/process: 1
 
 </sub-crossings>
 
 <sub-zones>
 
-This zone has 8 sub-zone(s):
+This zone has 5 sub-zone(s):
 
 - **Hench/unit/agent/agent** (`hench/unit/agent/agent`): 5 files, cohesion 0.35, coupling 0.65
-- **Hench/unit/agent/agent 2** (`hench/unit/agent/agent-2`): 3 files, cohesion 0.33, coupling 0.67
-- **Hench/unit/agent/agent Lifecycle** (`hench/unit/agent/agent-lifecycle`): 16 files, cohesion 0.54, coupling 0.46
+- **Hench/unit/agent/agent Lifecycle** (`hench/unit/agent/agent-lifecycle`): 3 files, cohesion 0.33, coupling 0.67
 - **Hench/unit/agent/cli** (`hench/unit/agent/cli`): 10 files, cohesion 0.52, coupling 0.48
-- **Hench/unit/agent/process** (`hench/unit/agent/process`): 22 files, cohesion 0.6, coupling 0.4
-- **Hench/unit/agent/process 2** (`hench/unit/agent/process-2`): 13 files, cohesion 0.66, coupling 0.34
-- **Hench/unit/agent/schema** (`hench/unit/agent/schema`): 4 files, cohesion 0.25, coupling 0.75
+- **Hench/unit/agent/process** (`hench/unit/agent/process`): 55 files, cohesion 0.83, coupling 0.17
 - **Hench/unit/agent/store** (`hench/unit/agent/store`): 6 files, cohesion 0.53, coupling 0.47
 
 Detailed sub-zone context available in `zones/{sub-zone-id}/context.md`

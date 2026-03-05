@@ -1,9 +1,10 @@
 {
   "id": "viewer-call-rate-limiter",
   "name": "Viewer Call Rate Limiter",
-  "description": "Controls the frequency of outbound viewer API calls to prevent backend flooding, with the rate limiter as the declared entry point for the messaging subsystem.",
+  "description": "Implements request deduplication and call-rate limiting for the viewer messaging pipeline.",
   "files": [
     "packages/web/src/viewer/messaging/call-rate-limiter.ts",
+    "packages/web/tests/integration/.gitkeep",
     "packages/web/tests/integration/request-dedup.test.ts",
     "packages/web/tests/unit/viewer/call-rate-limiter.test.ts"
   ],
@@ -12,7 +13,7 @@
   ],
   "cohesion": 0.67,
   "coupling": 0.33,
-  "fileCount": 3,
+  "fileCount": 4,
   "lineCount": 1187,
   "riskMetrics": {
     "cohesion": 0.67,

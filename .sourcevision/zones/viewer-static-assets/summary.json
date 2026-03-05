@@ -1,16 +1,17 @@
 {
   "id": "viewer-static-assets",
   "name": "Viewer Static Assets",
-  "description": "Static resource zone for the viewer entry point — the HTML shell and light/dark mode logo images with no code dependencies.",
+  "description": "Static asset zone for the viewer entry point, including the HTML shell, dark/light mode logo images, and a polling directory placeholder.",
   "files": [
     "packages/web/src/viewer/darkmode_logo.png",
     "packages/web/src/viewer/index.html",
-    "packages/web/src/viewer/lightmode_logo.png"
+    "packages/web/src/viewer/lightmode_logo.png",
+    "packages/web/src/viewer/polling/.gitkeep"
   ],
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 3,
+  "fileCount": 4,
   "lineCount": 21,
   "riskMetrics": {
     "cohesion": 1,

@@ -7,7 +7,7 @@
 Zone: Autonomous Agent Engine (`autonomous-agent-engine`)
 Files: 159, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: The hench package implementing the autonomous task execution agent that selects PRD tasks, builds execution briefs, and runs Claude-powered tool-use loops.
+Description: The complete hench package implementing the autonomous agent loop — task selection, LLM orchestration, tool dispatch, safety guards, and run persistence.
 Lines: 38230
 
 </zone>
@@ -596,27 +596,32 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[suggestion] [warning] DEFAULT_CODEX_MODEL is privately defined in llm-client but not exported from its public.ts, forcing rex, hench, and sourcevision to each independently hardcode the same string. Exporting DEFAULT_CODEX_MODEL (and DEFAULT_MODEL) from @n-dx/llm-client's public API would give all domain packages a single source of truth and eliminate the three independent definitions that must be manually synchronized when the default model changes.
+[suggestion] [info] Zone "autonomous-agent-engine" has files across 31 directories — consider consolidating under a dedicated directory
+[suggestion] [info] Rename spin.ts to a name that describes the analytical strategy it implements (e.g., reframe.ts, divergent.ts) to make the three-strategy catalog (adaptive, review, ?) self-documenting at the filename level.
+[suggestion] [warning] Verify that packages/hench/src/public.ts exists and exports the complete public API surface — if it is missing, hench is the only package breaking the public.ts convention stated in CLAUDE.md, creating an undocumented exception in the five-package pattern.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- 159 files with perfect cohesion (1.0) and zero coupling confirms hench is a well-encapsulated package — all cross-package dependencies are correctly mediated through the rex-gateway
-- The analysis sub-package (adaptive.ts, review.ts, spin.ts) suggests a multi-strategy agent with distinct execution modes, which is a clean separation of concerns for complex agent behavior
-- No listed entryPoints for a 159-file package warrants verification — ensure the CLI entry (packages/hench/src/cli/index.ts) is correctly classified as an entrypoint by sourcevision's inventory
-- Zero cross-zone coupling for the largest non-viewer source package confirms the gateway pattern is working — hench imports from rex exclusively through rex-gateway.ts with no direct cross-package leakage.
-- Brand assets (Hench.png, Hench-F.png) committed at the package root are benign but could be moved to a top-level assets/ directory to keep package roots focused on source artifacts.
-- No detected entrypoints in a 159-file package may indicate an inventory gap — verify the CLI binary entry file is reachable from the import graph so sourcevision can correctly classify it.
-- @n-dx/llm-client is consumed as an external scoped package by hench, causing the import graph to classify the foundation-layer dependency as external rather than a cross-zone edge — the zone's reported coupling of 0 understates its real dependency surface, which includes the entire llm-client tier.
-- The 159-file hench zone has no detected cross-package source edges despite confirmed runtime dependency on rex (via rex-gateway.ts) — workspace package imports via @n-dx/* scoped names are treated as external by the import graph, making gateway-pattern compliance invisible to zone coupling metrics and verifiable only by code inspection.
-- Workspace package imports (rex, sourcevision, @n-dx/llm-client) resolve as external dependencies in the import graph, causing zone coupling to read as zero for all domain and execution tier zones regardless of actual cross-package dependency depth — coupling metrics are accurate for detecting unintended imports but blind to intended workspace consumption.
-- Binary brand assets (Hench.png, Hench-F.png) are included in the 159-file zone, inflating the file count without contributing to import graph edges. The zone's 1.0 cohesion score includes these non-source files, meaning the metric reflects zone membership rather than true source-file interconnectedness and overstates structural quality.
-- Without a detected entrypoint the import graph for this zone is unrooted — Louvain community detection treats all edges as equal-weight undirected connections, but without a root node, transitive reachability analysis from the CLI surface is unverifiable, making dead-code detection unreliable for the entire 159-file zone.
-- No entrypoint is detected in the 159-file hench package, leaving the import graph for this zone unrooted. Without a confirmed entrypoint, transitive dead-code analysis from the CLI surface is unreliable and any reachability-based tooling will produce incorrect results. Verify that packages/hench/src/cli/index.ts is reachable in the import graph and correctly classified as an entrypoint by the inventory.
-- DEFAULT_CODEX_MODEL = "gpt-5-codex" is independently defined as a local constant in packages/hench/src/agent/lifecycle/cli-loop.ts rather than imported from @n-dx/llm-client. The same string is also independently defined in packages/rex/src/analyze/reason.ts and packages/sourcevision/src/analyzers/claude-client.ts — three domain packages independently hardcode the same foundation-layer default with no shared contract. @n-dx/llm-client defines this constant privately (unexported) in codex-cli-provider.ts, meaning the foundation layer itself does not offer a public API to centralize on, forcing domain packages to duplicate the string independently.
-- DEFAULT_CODEX_MODEL is privately defined in llm-client but not exported from its public.ts, forcing rex, hench, and sourcevision to each independently hardcode the same string. Exporting DEFAULT_CODEX_MODEL (and DEFAULT_MODEL) from @n-dx/llm-client's public API would give all domain packages a single source of truth and eliminate the three independent definitions that must be manually synchronized when the default model changes.
+- At 159 files with cohesion 1.0 and coupling 0, the entire hench package is detected as a single zone, which reflects strong internal connectivity through the rex-gateway pattern and clean external isolation.
+- The presence of adaptive.ts, review.ts, and spin.ts under agent/analysis suggests a multi-strategy analysis pipeline where different analytical lenses (adaptive, review, spin) are composed rather than monolithic — a healthy extensibility pattern.
+- Zero external coupling at the zone level is correct: hench imports rex exclusively through src/prd/rex-gateway.ts and LLM calls through llm-client, both of which are gateways that encapsulate the cross-package surface.
+- A 159-file single zone with perfect cohesion confirms the gateway pattern is working: all external dependencies are funneled through explicit gateways rather than scattered imports, keeping the community detection boundary clean.
+- The agent/analysis subdirectory with distinct adaptive, review, and spin strategies implies the agent can select or compose analytical modes per task — worth ensuring these strategies share a common interface so new strategies can be added without modifying the dispatch layer.
+- No cross-zone imports into hench from web-viewer or message confirms hench is purely a backend execution engine with no UI-layer entanglement, consistent with the four-tier hierarchy.
+- Zone "autonomous-agent-engine" has files across 31 directories — consider consolidating under a dedicated directory
+- The autonomous-agent-engine zone has zero cross-zone edges in both directions — no zone imports from it and it imports from no zone — meaning hench integrates with rex and llm-client exclusively through gateway modules that are invisible to the community detection algorithm, not through any shared source files.
+- hench is architecturally invisible to the web layer at the source level: no cross-zone edge exists between autonomous-agent-engine and any web zone. Integration occurs only at the protocol boundary (MCP HTTP or CLI spawn), which is the intended isolation for the execution tier.
+- The three analysis strategies (adaptive.ts, review.ts, spin.ts) under agent/analysis have no zone-level visibility into whether they share a common TypeScript interface — since they are collapsed into a single 159-file zone, interface divergence between strategies would not surface in zone-level metrics and could only be detected by reading each file individually.
+- The 159-file single zone spanning 31 directories means hench's internal architectural layers (analysis strategies, tool dispatch, process management, store, CLI, guard) are opaque to zone-level structural analysis — if internal coupling between these sub-concerns increases over time, it will not be detectable until the zone graph changes, providing no early warning signal.
+- The agent/analysis subdirectory contains three strategy files (adaptive.ts, review.ts, spin.ts) with no enforced shared interface at the type or zone level. If one strategy diverges in its return type or call signature, the dispatch layer must be updated asymmetrically — this missing interface contract makes the multi-strategy pattern fragile as new strategies are added.
+- 159 files across 31 directories collapsed into one zone makes it impossible for zone-level tooling to detect if internal sub-concerns (analysis strategies, process management, store, CLI) are developing cross-cutting coupling. The zone boundary should be complemented by explicit internal module boundaries (barrel index files per sub-concern) to preserve decomposability as the package grows.
+- The strategy name spin.ts is semantically ambiguous alongside adaptive.ts and review.ts — 'spin' does not communicate an analytical approach the way 'adaptive' and 'review' do, making the three-strategy catalog only partially self-documenting at the file-name level.
+- CLAUDE.md states all five packages expose their public API through src/public.ts, but the 159-file zone spanning 31 directories does not confirm the presence of this barrel in the metadata — if hench lacks a public.ts entry point, the stated convention is silently broken for the execution tier.
+- Rename spin.ts to a name that describes the analytical strategy it implements (e.g., reframe.ts, divergent.ts) to make the three-strategy catalog (adaptive, review, ?) self-documenting at the filename level.
+- Verify that packages/hench/src/public.ts exists and exports the complete public API surface — if it is missing, hench is the only package breaking the public.ts convention stated in CLAUDE.md, creating an undocumented exception in the five-package pattern.
 - [call graph] 2838 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>
@@ -634,11 +639,10 @@ Cross-dependencies between sub-zones:
 
 <sub-zones>
 
-This zone has 8 sub-zone(s):
+This zone has 7 sub-zone(s):
 
 - **Hench/guard** (`hench/guard`): 10 files, cohesion 0.9, coupling 0.1
-- **Hench/hench** (`hench/hench`): 4 files, cohesion 0.86, coupling 0.14
-- **Hench/hench 2** (`hench/hench-2`): 3 files, cohesion 0.8, coupling 0.2
+- **Hench/hench** (`hench/hench`): 7 files, cohesion 1, coupling 0
 - **Hench/queue** (`hench/queue`): 7 files, cohesion 0.88, coupling 0.13
 - **Hench/store** (`hench/store`): 2 files, cohesion 1, coupling 0
 - **Hench/tools** (`hench/tools`): 3 files, cohesion 0.33, coupling 0.67

@@ -75,3 +75,6 @@ export type FileConnectionMap = Map<string, FileZoneLink[]>;
 
 /** Maps (sourceFile → targetFile → weight) for file-to-file edges. */
 export type FileToFileMap = Map<string, Map<string, number>>;
+
+/** Parent zone ID → set of expanded subzone IDs within that zone. */
+export type ExpandedSubZones = Map<string, Set<string>>;
