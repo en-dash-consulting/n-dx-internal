@@ -110,6 +110,7 @@ function spawnOnce(
 
     const proc = spawn(cliBinary, args, {
       stdio: ["ignore", "pipe", "pipe"],
+      shell: process.platform === "win32",
     });
 
     let stdout = "";
