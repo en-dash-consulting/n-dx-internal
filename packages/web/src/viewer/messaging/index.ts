@@ -1,11 +1,27 @@
 /**
- * Messaging primitives library — WebSocket flow control utilities.
+ * Messaging integration layer — stable public interface for flow control.
  *
- * This zone collects four independent, framework-agnostic primitives that
- * regulate the frequency and batching of viewer-to-server message delivery,
- * plus two composed pipelines that capture common usage patterns:
+ * ## Responsibility boundary
  *
- * **Primitives:**
+ * This barrel is the **only sanctioned import path** for viewer-to-server
+ * messaging utilities. It isolates consumers (hooks, components) from the
+ * internal module structure of the messaging zone. If an internal file is
+ * renamed, split, or merged, consumers are unaffected as long as this
+ * barrel's exports remain stable.
+ *
+ * ## Import rules
+ *
+ * - **Consumers** (hooks, components, views) → import from this barrel.
+ * - **Messaging internals** (pipeline files) → may import siblings directly.
+ * - **Type-only imports** are exempt (erased at compile time).
+ *
+ * ## Exports
+ *
+ * **Composed pipelines (preferred for new consumers):**
+ *   - **WSPipeline** — throttle → coalescer chain for WebSocket messages.
+ *   - **FetchPipeline** — rate limiter → dedup chain for API fetch calls.
+ *
+ * **Primitives (for custom composition only):**
  *   - **MessageCoalescer** — batches rapid sequential WebSocket messages
  *     into a single flush to avoid redundant fetch calls.
  *   - **MessageThrottle** — per-type trailing-edge debounce with independent
@@ -14,10 +30,6 @@
  *     queue draining.
  *   - **RequestDedup** — deduplicates in-flight requests by key, returning
  *     the same promise to all concurrent callers.
- *
- * **Composed pipelines (preferred for new consumers):**
- *   - **WSPipeline** — throttle → coalescer chain for WebSocket messages.
- *   - **FetchPipeline** — rate limiter → dedup chain for API fetch calls.
  *
  * New consumers should prefer the composed pipelines unless they need
  * custom composition. All consumers should import from this barrel rather
