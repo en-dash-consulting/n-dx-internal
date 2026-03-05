@@ -17304,10 +17304,12 @@
         {
           "id": "15d4efdc-7b69-4f15-9a57-bd3ce75b914f",
           "title": "Consolidate shared utilities into packages/web/src/shared/",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Move node-culler.ts and request-dedup.ts into packages/web/src/shared/ with an index.ts barrel export. The directory already exists with data-files.ts.",
-          "priority": "medium"
+          "priority": "medium",
+          "startedAt": "2026-03-05T05:34:38.734Z",
+          "completedAt": "2026-03-05T05:37:48.718Z"
         },
         {
           "id": "be99cf02-d39f-46d0-9ce1-c7c1599e6ac7",
@@ -17322,18 +17324,22 @@
         {
           "id": "5f3f3249-72f8-4433-a7d3-d05db96c2da9",
           "title": "Add orchestration script integration tests",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Add tests that verify cli.js constructs and invokes correct CLI commands for each orchestration path. Child-process delegation is currently untested.",
-          "priority": "medium"
+          "priority": "medium",
+          "startedAt": "2026-03-05T05:22:21.681Z",
+          "completedAt": "2026-03-05T05:34:10.245Z"
         },
         {
           "id": "2ac170c5-b201-4cee-9046-3772087c22a3",
           "title": "Zone naming conventions and renaming",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Document zone naming convention (source vs test zones). Rename prd-tree-lifecycle-tests to prd-tree-lifecycle. Document web zone content contract. These are output-quality improvements that will be addressed by re-running analysis after the zone ID fix.",
-          "priority": "low"
+          "priority": "low",
+          "startedAt": "2026-03-05T05:41:52.894Z",
+          "completedAt": "2026-03-05T05:48:46.765Z"
         }
       ],
       "recommendationMeta": {
@@ -17374,6 +17380,7 @@
       "priority": "high",
       "source": "sourcevision",
       "startedAt": "2026-03-05T05:03:33.614Z",
+      "completedAt": "2026-03-05T05:12:39.923Z",
       "recommendationMeta": {
         "findingHashes": [
           "cac60522219f",
@@ -17384,17 +17391,18 @@
           "warning": 2
         },
         "findingCount": 2
-      },
-      "completedAt": "2026-03-05T05:12:39.923Z"
+      }
     },
     {
       "id": "251fbe0a-8b4f-4cb0-a22a-326bf24e64f4",
       "title": "Address relationship issues (3 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- web-viewer bypasses web-integration for 4 of its 6 message-zone imports, importing message directly rather than through the integration layer. This partial bypass means web-integration is not enforcing a stable interface over message for web-viewer, leaving web-viewer exposed to message internals directly.\n- web-viewer simultaneously imports from web, web-integration, viewer-call-rate-limiter, and viewer-message-flow-control — it is the hub of all non-zero coupling in the web layer; if web-viewer grows further, these four inbound dependency paths will become increasingly difficult to untangle\n- web-integration acts as an implicit middleware hub: it imports from both message and web while being imported by web-viewer. This three-way relay role is not documented and risks becoming a catch-all as the codebase grows. Define a clear responsibility boundary for this zone.",
       "priority": "high",
       "source": "sourcevision",
+      "startedAt": "2026-03-05T05:13:25.945Z",
+      "completedAt": "2026-03-05T05:18:59.365Z",
       "recommendationMeta": {
         "findingHashes": [
           "fbd735535482",
@@ -17482,18 +17490,22 @@
         {
           "id": "2c30b5b9-ec41-44d8-a06b-b5c25d7b4823",
           "title": "Add messaging stack integration test",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Write an integration test validating the composed messaging stack (message-flow-control → call-rate-limiter → web-viewer) under real conditions, verifying rate limiting and throttling work end-to-end.",
-          "priority": "medium"
+          "priority": "medium",
+          "startedAt": "2026-03-05T05:19:15.482Z",
+          "completedAt": "2026-03-05T05:21:55.257Z"
         },
         {
           "id": "962e64af-c978-45ea-b327-63923d4e7a35",
           "title": "Document web-integration zone architectural role",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Clarify that web-integration is a parallel consumer, not a facade. Either refactor to make it a true facade or document its actual role to prevent confusion.",
-          "priority": "low"
+          "priority": "low",
+          "startedAt": "2026-03-05T05:38:04.727Z",
+          "completedAt": "2026-03-05T05:41:20.138Z"
         }
       ],
       "recommendationMeta": {
