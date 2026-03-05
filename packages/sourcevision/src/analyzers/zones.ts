@@ -545,19 +545,11 @@ export function computeZoneContentHash(
   return createHash("sha256").update(data).digest("hex").slice(0, 16);
 }
 
-/**
- * Hash all zone content hashes into a single global content hash.
- * Changes when any zone's content changes.
- */
-export function computeGlobalContentHash(
-  zoneContentHashes: Record<string, string>
-): string {
-  const data = Object.keys(zoneContentHashes)
-    .sort()
-    .map((id) => `${id}\0${zoneContentHashes[id]}`)
-    .join("\n");
-  return createHash("sha256").update(data).digest("hex").slice(0, 16);
-}
+// Imported from zone-hash.ts to break circular dependency with enrich.ts.
+// Both zones.ts and enrich.ts need this function; placing it in a third
+// module prevents the cycle.
+import { computeGlobalContentHash } from "./zone-hash.js";
+export { computeGlobalContentHash } from "./zone-hash.js";
 
 // ── Structural insights ─────────────────────────────────────────────────────
 
