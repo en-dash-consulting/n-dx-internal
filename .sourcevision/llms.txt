@@ -245,13 +245,13 @@ Top-level monorepo scaffolding including documentation, build configuration, and
 - Cohesion: 1.00, Coupling: 0.00
 - Detail: `.sourcevision/zones/packages-sourcevision-workspace-root/context.md`
 
-### PRD Tree Lifecycle Tests (`prd-tree-lifecycle-tests`)
+### PRD Tree Lifecycle (`prd-tree-lifecycle`)
 
-Focused unit test zone covering the lazy-children and listener-lifecycle components that manage dynamic loading and event subscription within the PRD tree viewer.
+Production lifecycle components (lazy-children, listener-lifecycle) and their unit tests for the PRD tree viewer's dynamic loading and event subscription.
 
 - Files: 4
 - Cohesion: 1.00, Coupling: 0.00
-- Detail: `.sourcevision/zones/prd-tree-lifecycle-tests/context.md`
+- Detail: `.sourcevision/zones/prd-tree-lifecycle/context.md`
 
 ### Project Orchestration Root (`project-orchestration-root`)
 
@@ -583,11 +583,11 @@ POST    /api/hench/workflow/suggestions/:id
 - Zone "autonomous-agent-engine" has files across 31 directories — consider consolidating under a dedicated directory [info] (autonomous-agent-engine)
 - Rename spin.ts to a name that describes the analytical strategy it implements (e.g., reframe.ts, divergent.ts) to make the three-strategy catalog (adaptive, review, ?) self-documenting at the filename level. [info] (autonomous-agent-engine)
 - Verify that packages/hench/src/public.ts exists and exports the complete public API surface — if it is missing, hench is the only package breaking the public.ts convention stated in CLAUDE.md, creating an undocumented exception in the five-package pattern. [warning] (autonomous-agent-engine)
-- packages/web/tests/unit/viewer/ contains files from 7 zones (autonomous-agent-engine, dom-performance-monitoring, prd-tree-lifecycle-tests, viewer-call-rate-limiter, viewer-message-flow-control, web-dashboard-mcp-server, web-package-scaffolding) — consider grouping into subdirectories to clarify architectural boundaries [info]
+- packages/web/tests/unit/viewer/ contains files from 7 zones (autonomous-agent-engine, dom-performance-monitoring, prd-tree-lifecycle, viewer-call-rate-limiter, viewer-message-flow-control, web-dashboard-mcp-server, web-package-scaffolding) — consider grouping into subdirectories to clarify architectural boundaries [info]
 - Add zone coupling and cohesion threshold assertions to ci.js — for example, fail CI if any non-asset zone's coupling exceeds 0.25 or cohesion drops below 0.5 — so architectural degradation is caught automatically rather than requiring manual analysis runs. [warning]
 - Adopt a policy of excluding .gitkeep files from zone membership in the sourcevision inventory phase. These files provide no semantic signal and distort cohesion/coupling scores most severely in small, low-cohesion zones — exactly the zones where accurate metrics matter most for architectural decision-making. [warning]
 - Define a consistent file deprecation signal for large zones — a deprecated/ subdirectory convention or a @deprecated JSDoc annotation enforced by lint — to make legacy code visible to zone-level tooling before it becomes invisible technical debt inside the 329-file web-viewer zone. [info]
-- Establish and document an explicit zone naming convention distinguishing source zones from test zones: zones containing production source files should never carry a '-tests' suffix regardless of whether they also contain test files. The single violation ('prd-tree-lifecycle-tests' containing 2 production components) is low-cost to fix now but will compound as contributors use the zone name as a template for future lifecycle component zones. [warning]
+- Establish and document an explicit zone naming convention distinguishing source zones from test zones: zones containing production source files should never carry a '-tests' suffix regardless of whether they also contain test files. The single violation ('prd-tree-lifecycle' containing 2 production components) is low-cost to fix now but will compound as contributors use the zone name as a template for future lifecycle component zones. [warning]
 - Exclude asset-only zones (e.g., logo) from cohesion and coupling health metrics in sourcevision output — image and static asset files have no import relationships so their zone scores are structurally uninformative and pollute architectural health dashboards. [info]
 - The 'web' zone (15 files, cohesion 0.86) is the second-lowest cohesion zone among actively-imported zones in the web layer and receives imports from both web-viewer and web-integration simultaneously — the same dual-consumer blast-radius risk profile as the message zone. Unlike message, it has received no explicit review or documentation of what belongs there. Define and document the web zone's content contract before it accumulates heterogeneous content that degrades its cohesion further. [warning]
 - ... and 34 more
@@ -1358,9 +1358,9 @@ Prioritized work items derived from analysis:
 | `packages/web/src/viewer/components/prd-tree/index.ts` | source | entrypoint | web-dashboard-mcp-server |
 | `packages/web/src/viewer/components/prd-tree/inline-add-form.ts` | source | component | web-dashboard-mcp-server |
 | `packages/web/src/viewer/components/prd-tree/inline-status-picker.ts` | source | component | web-dashboard-mcp-server |
-| `packages/web/src/viewer/components/prd-tree/lazy-children.ts` | source | component | prd-tree-lifecycle-tests |
+| `packages/web/src/viewer/components/prd-tree/lazy-children.ts` | source | component | prd-tree-lifecycle |
 | `packages/web/src/viewer/components/prd-tree/levels.ts` | source | component | web-dashboard-mcp-server |
-| `packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts` | source | component | prd-tree-lifecycle-tests |
+| `packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts` | source | component | prd-tree-lifecycle |
 | `packages/web/src/viewer/components/prd-tree/merge-preview.ts` | source | component | web-dashboard-mcp-server |
 | `packages/web/src/viewer/components/prd-tree/node-culler.ts` | source | component | web-package-scaffolding |
 | `packages/web/src/viewer/components/prd-tree/prd-tree.ts` | source | component | web-dashboard-mcp-server |
@@ -1596,8 +1596,8 @@ Prioritized work items derived from analysis:
 | `packages/web/tests/unit/viewer/hench-config.test.ts` | test |  | web-dashboard-mcp-server |
 | `packages/web/tests/unit/viewer/label-utils.test.ts` | test |  | web-dashboard-mcp-server |
 | `packages/web/tests/unit/viewer/large-tree-performance.test.ts` | test |  | web-dashboard-mcp-server |
-| `packages/web/tests/unit/viewer/lazy-children.test.ts` | test |  | prd-tree-lifecycle-tests |
-| `packages/web/tests/unit/viewer/listener-lifecycle.test.ts` | test |  | prd-tree-lifecycle-tests |
+| `packages/web/tests/unit/viewer/lazy-children.test.ts` | test |  | prd-tree-lifecycle |
+| `packages/web/tests/unit/viewer/listener-lifecycle.test.ts` | test |  | prd-tree-lifecycle |
 | `packages/web/tests/unit/viewer/loader-memory.test.ts` | test |  | web-dashboard-mcp-server |
 | `packages/web/tests/unit/viewer/loader-polling.test.ts` | test |  | web-dashboard-mcp-server |
 | `packages/web/tests/unit/viewer/memory-monitor.test.ts` | test |  | web-dashboard-mcp-server |

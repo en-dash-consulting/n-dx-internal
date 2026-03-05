@@ -71,6 +71,42 @@ The messaging subsystem spans three zones with distinct responsibilities:
 
 All three are re-exported through the messaging barrel (`src/viewer/messaging/index.ts`), which provides composed pipelines (`WSPipeline`, `FetchPipeline`) as the preferred consumer API.
 
+## Web Dashboard Zone Content Contract
+
+The `web-dashboard-mcp-server` zone (329 files) is the hub zone for the web package. Its name reflects the MCP server entry point, but its actual scope is broader — it contains the full-stack dashboard application.
+
+### What belongs here
+
+| Content type | Examples |
+|-------------|----------|
+| Server routes | `src/server/routes-*.ts` |
+| Server infrastructure | `start.ts`, `websocket.ts`, `search-index.ts` |
+| Viewer components | `src/viewer/components/**/*.ts` |
+| Viewer hooks | `src/viewer/hooks/**/*.ts` |
+| Viewer state | `src/viewer/polling/**/*.ts`, `src/viewer/state/**/*.ts` |
+| Shared schema | `src/schema/v1.ts` |
+| Package entry | `src/public.ts`, `src/cli/index.ts` |
+| Unit + integration tests | `tests/unit/viewer/**/*.ts`, `tests/integration/**/*.ts` |
+
+### What does NOT belong here
+
+| Content type | Correct zone |
+|-------------|-------------|
+| Static assets (HTML, CSS, images) | `viewer-static-assets`, `landing-page` |
+| Messaging primitives (coalescer, throttle) | `viewer-message-flow-control` |
+| Rate limiting utilities | `viewer-call-rate-limiter` |
+| Build config, package metadata | `web-package-scaffolding` |
+| DOM performance monitors | `dom-performance-monitoring` |
+| Lifecycle components with sparse imports | `prd-tree-lifecycle` |
+
+### Cohesion monitoring
+
+Current cohesion is 0.99 (healthy). The primary risk is the server/client co-location: server-side services and viewer UI components share a zone boundary. No zone-level coupling metric will catch a server-to-client import violation because they are in the same zone. Contributors should:
+
+1. Keep server imports in `src/server/` files only
+2. Keep viewer imports in `src/viewer/` files only
+3. Use `src/shared/` for code genuinely needed by both
+
 ## Related Decisions
 
 - **Messaging barrel**: Created as part of the "Create messaging zone public interface" task. See `packages/web/src/viewer/messaging/index.ts`.
