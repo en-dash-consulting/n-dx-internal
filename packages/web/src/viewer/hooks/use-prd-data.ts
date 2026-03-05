@@ -23,8 +23,7 @@ import type { TaskUsageSummary, WeeklyBudgetResolution } from "../components/prd
 import { resolveTaskUtilization } from "../components/prd-tree/task-utilization.js";
 import { diffDocument } from "../components/prd-tree/tree-differ.js";
 import { usePolling } from "./use-polling.js";
-import { createRequestDedup } from "../messaging/request-dedup.js";
-import { createCallRateLimiter } from "../messaging/call-rate-limiter.js";
+import { createRequestDedup, createCallRateLimiter } from "../messaging/index.js";
 
 /** Shape returned by the incremental /api/hench/task-usage endpoint. */
 interface ServerTaskUsage {

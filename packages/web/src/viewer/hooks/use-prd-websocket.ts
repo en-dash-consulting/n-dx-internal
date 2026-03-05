@@ -33,11 +33,8 @@ import { useEffect } from "preact/hooks";
 import type { PRDDocumentData, PRDItemData } from "../components/prd-tree/types.js";
 import { applyItemUpdate } from "../components/prd-tree/tree-differ.js";
 import { removeItemById } from "../components/prd-tree/tree-utils.js";
-import { createMessageCoalescer } from "../messaging/message-coalescer.js";
-import { createMessageThrottle } from "../messaging/message-throttle.js";
-import { createUpdateBatcher } from "../performance/update-batcher.js";
-import { createDomUpdateGate } from "../performance/dom-update-gate.js";
-import { createResponseBufferGate } from "../performance/response-buffer-gate.js";
+import { createMessageCoalescer, createMessageThrottle } from "../messaging/index.js";
+import { createUpdateBatcher, createDomUpdateGate, createResponseBufferGate } from "../performance/index.js";
 
 export interface PRDWebSocketDeps {
   /** Setter for PRD document state (supports functional updates). */

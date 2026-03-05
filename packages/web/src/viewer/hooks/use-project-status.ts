@@ -17,9 +17,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "preact/hooks";
 import { usePolling } from "./use-polling.js";
-import { createMessageCoalescer } from "../messaging/message-coalescer.js";
-import { createMessageThrottle } from "../messaging/message-throttle.js";
-import { isFeatureDisabled, onDegradationChange } from "../performance/graceful-degradation.js";
+import { createMessageCoalescer, createMessageThrottle } from "../messaging/index.js";
+import { isFeatureDisabled, onDegradationChange } from "../performance/index.js";
 
 // ---------------------------------------------------------------------------
 // Types (mirror server-side ProjectStatus shape)

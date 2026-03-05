@@ -9,7 +9,7 @@
 import { h } from "preact";
 import type { ComponentChild, VNode } from "preact";
 import type { ViewId, NavigateTo, DetailItem, LoadedData } from "../types.js";
-import type { DegradableFeature } from "../performance/graceful-degradation.js";
+import type { DegradableFeature } from "../performance/index.js";
 import { SOURCEVISION_TAB_IDS } from "./sourcevision-tabs.js";
 
 // ── View component imports ─────────────────────────────────────

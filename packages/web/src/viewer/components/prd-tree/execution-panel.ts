@@ -9,8 +9,8 @@
 import { h } from "preact";
 import { useState, useEffect, useCallback, useRef } from "preact/hooks";
 import { usePolling } from "../../hooks/use-polling.js";
-import { createRequestDedup } from "../../messaging/request-dedup.js";
-import { isFeatureDisabled, onDegradationChange } from "../../performance/graceful-degradation.js";
+import { createRequestDedup } from "../../messaging/index.js";
+import { isFeatureDisabled, onDegradationChange } from "../../performance/index.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
