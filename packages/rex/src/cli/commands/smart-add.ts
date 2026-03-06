@@ -798,6 +798,8 @@ async function acceptProposals(
   const parentLevel = await resolveParentLevel(dir, parentId);
 
   let addedCount = 0;
+  // Track newly created container IDs so we can clean up empty ones after merges
+  const newContainerIds: string[] = [];
 
   for (let pIdx = 0; pIdx < proposals.length; pIdx++) {
     const p = proposals[pIdx];
@@ -836,6 +838,7 @@ async function acceptProposals(
           ...(epicMarker ? { overrideMarker: epicMarker } : {}),
         });
         addedCount++;
+        newContainerIds.push(epicId);
       }
 
       for (let fIdx = 0; fIdx < p.features.length; fIdx++) {
@@ -876,6 +879,7 @@ async function acceptProposals(
             epicId,
           );
           addedCount++;
+          newContainerIds.push(featureId);
         }
 
         for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
@@ -928,6 +932,7 @@ async function acceptProposals(
             parentId,
           );
           addedCount++;
+          newContainerIds.push(featureId);
         }
 
         for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
@@ -1016,6 +1021,35 @@ async function acceptProposals(
           );
           addedCount++;
         }
+      }
+    }
+  }
+
+  // Clean up empty containers created during this operation.
+  // When all children of a proposed epic/feature were merged with existing items,
+  // the parent container was still created but has no children — remove it.
+  // Process bottom-up (features before epics) so epic cleanup sees the final state.
+  if (newContainerIds.length > 0) {
+    // Partition into features (remove first) and epics (remove second)
+    const featureIds: string[] = [];
+    const epicIds: string[] = [];
+    {
+      const doc = await store.loadDocument();
+      for (const id of newContainerIds) {
+        const entry = findItem(doc.items, id);
+        if (!entry) continue;
+        if (entry.item.level === "feature") featureIds.push(id);
+        else epicIds.push(id);
+      }
+    }
+    // Remove childless features first, then childless epics
+    for (const containerId of [...featureIds, ...epicIds]) {
+      const doc = await store.loadDocument();
+      const entry = findItem(doc.items, containerId);
+      if (!entry) continue;
+      if ((entry.item.children ?? []).length === 0) {
+        await store.removeItem(containerId);
+        addedCount--;
       }
     }
   }
