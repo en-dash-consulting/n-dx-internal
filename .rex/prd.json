@@ -13141,8 +13141,32 @@
                   "title": "Log",
                   "status": "completed",
                   "level": "subtask",
+                  "description": "Implement PRD hash validation to detect when cached proposals are stale due to PRD changes since generation, with appropriate warning messages and cache invalidation",
+                  "acceptanceCriteria": [
+                    "Current PRD hash computed and compared with cached hash before using proposals",
+                    "Warning message displayed when PRD has changed since cache generation",
+                    "Stale cache automatically cleared when hash mismatch detected",
+                    "Fresh flag parsing implemented to force regeneration"
+                  ],
+                  "priority": "high",
+                  "tags": [
+                    "rex",
+                    "validation",
+                    "caching"
+                  ],
                   "startedAt": "2026-02-24T07:21:50.555Z",
-                  "completedAt": "2026-02-24T07:21:50.555Z"
+                  "completedAt": "2026-02-24T07:21:50.555Z",
+                  "mergedProposals": [
+                    {
+                      "proposalNodeKey": "p0:task:0:1",
+                      "proposalTitle": "Add cache validation and hash checking logic",
+                      "proposalKind": "task",
+                      "reason": "semantic_title",
+                      "score": 0.7,
+                      "mergedAt": "2026-03-06T05:08:54.743Z",
+                      "source": "smart-add"
+                    }
+                  ]
                 }
               ]
             }
@@ -15600,6 +15624,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-02-27T04:40:55.059Z",
+      "completedAt": "2026-02-27T04:40:55.059Z",
       "children": [
         {
           "id": "baf1a80c-fbe1-4df9-a08b-d1cfec3d0e6f",
@@ -15791,9 +15817,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-02-27T04:40:55.059Z",
-      "completedAt": "2026-02-27T04:40:55.059Z"
+      ]
     },
     {
       "id": "48fb83fc-91ea-4729-b05e-a9f74474a4b2",
@@ -16582,6 +16606,164 @@
           ]
         }
       ]
+    },
+    {
+      "id": "ff24d31d-6bfc-4ed8-979e-2bc790ed8549",
+      "title": "Smart Prune Proposal Caching Enhancement",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-03-06T05:59:33.851Z",
+      "completedAt": "2026-03-06T05:59:33.851Z",
+      "children": [
+        {
+          "id": "3691e747-c898-4d76-b2ab-bae1d34b5656",
+          "title": "LLM Proposal Caching for Prune Operations",
+          "status": "completed",
+          "level": "feature",
+          "description": "Implement caching system for smart prune proposals to enable reuse between dry-run and accept operations without redundant LLM calls",
+          "source": "smart-add",
+          "startedAt": "2026-03-06T05:59:33.646Z",
+          "completedAt": "2026-03-06T05:59:33.646Z",
+          "children": [
+            {
+              "id": "3b13ba93-c5f1-4f48-a0ba-c1e19436b62e",
+              "title": "Implement pending smart prune cache infrastructure",
+              "status": "completed",
+              "level": "task",
+              "description": "Create cache file structure, interfaces, and utility functions for smart prune proposals following the reshape.ts pattern with PendingSmartPruneCache interface and file operations",
+              "acceptanceCriteria": [
+                "PENDING_SMART_PRUNE_FILE constant defined as 'pending-smart-prune.json'",
+                "PendingSmartPruneCache interface includes generatedAt, prdHash, and proposals fields",
+                "savePendingSmartPrune, loadPendingSmartPrune, and clearPendingSmartPrune functions implemented",
+                "hashPRD function implemented using SHA256 hash of canonical JSON"
+              ],
+              "priority": "critical",
+              "tags": [
+                "rex",
+                "caching",
+                "backend"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-06T05:44:55.116Z",
+              "completedAt": "2026-03-06T05:49:44.946Z"
+            },
+            {
+              "id": "f6e8b37f-0ad4-41a2-abc2-79af26d5bc79",
+              "title": "Integrate cache with smart prune workflow",
+              "status": "completed",
+              "level": "task",
+              "description": "Wire cache operations into the existing smartPrune function to check cache before LLM calls, save proposals after generation, and clear cache after successful application",
+              "acceptanceCriteria": [
+                "Cache checked before LLM call in smartPrune function with hash validation",
+                "Cached proposals used when valid with 'Using cached proposals' log message",
+                "Proposals saved to cache after LLM generation with current PRD hash",
+                "Cache cleared after successful prune application",
+                "Required imports added for crypto and filesystem operations"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "integration",
+                "workflow"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-06T05:55:06.130Z",
+              "completedAt": "2026-03-06T05:59:33.382Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6772d41b-37bf-44ea-9cf9-e7dc25c15c79",
+      "title": "Smart Add Cache Validation Enhancement",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "e8159df5-c695-4c99-b0c0-852f340bf809",
+          "title": "PRD Hash Validation for Smart Add Cache",
+          "status": "completed",
+          "level": "feature",
+          "description": "Add PRD hash validation to smart-add pending proposal cache to prevent applying stale proposals when PRD changes between generation and acceptance",
+          "source": "smart-add",
+          "startedAt": "2026-03-06T06:05:30.268Z",
+          "completedAt": "2026-03-06T06:05:30.268Z",
+          "children": [
+            {
+              "id": "d96ec242-803d-40ff-a008-609baa3d3366",
+              "title": "Implement PRD hash validation in smart-add cache structure",
+              "status": "completed",
+              "level": "task",
+              "description": "Update pending proposal cache to include PRD hash metadata and implement hash calculation function for PRD change detection",
+              "acceptanceCriteria": [
+                "hashPRD function implemented using SHA256 of canonical JSON",
+                "savePending function updated to accept and store prdHash parameter",
+                "loadPending function return type updated to include optional prdHash field",
+                "Required crypto and canonical JSON imports added"
+              ],
+              "priority": "critical",
+              "tags": [
+                "rex",
+                "caching",
+                "validation"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-06T05:49:45.412Z",
+              "completedAt": "2026-03-06T05:55:05.622Z"
+            },
+            {
+              "id": "5bdab225-50f0-4d3b-b58f-5e6b884e1ac6",
+              "title": "Add staleness detection for cached proposals",
+              "status": "completed",
+              "level": "task",
+              "description": "Implement validation logic in tryAcceptCachedProposals to detect when PRD has changed since cached proposals were generated and handle stale cache appropriately",
+              "acceptanceCriteria": [
+                "Current PRD hash computed and compared with cached prdHash in tryAcceptCachedProposals",
+                "Warning message displayed when PRD changes detected: 'PRD has changed since proposals were generated'",
+                "Stale cache automatically cleared when hash mismatch found",
+                "Backwards compatibility maintained for cache entries without hash",
+                "Function returns false when stale cache detected to trigger regeneration"
+              ],
+              "priority": "medium",
+              "tags": [
+                "rex",
+                "validation",
+                "staleness-detection"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-06T05:37:14.315Z",
+              "completedAt": "2026-03-06T06:05:29.949Z"
+            },
+            {
+              "id": "f254899a-6ef9-4ff8-8380-59752d29b5aa",
+              "title": "Update cache save operations with hash metadata",
+              "status": "completed",
+              "level": "task",
+              "description": "Modify all savePending call sites to compute and pass PRD hash, ensuring cache entries include hash metadata for validation",
+              "acceptanceCriteria": [
+                "Both savePending call sites (around lines 1140 and 1326) updated to compute and pass PRD hash",
+                "PRD items accessible at call sites for hash computation",
+                "Cache structure consistently includes prdHash field across all save operations",
+                "Hash computation uses current PRD state at time of caching"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "caching",
+                "integration"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-06T05:59:34.169Z",
+              "completedAt": "2026-03-06T06:03:07.165Z"
+            }
+          ]
+        }
+      ],
+      "startedAt": "2026-03-06T06:05:30.434Z",
+      "completedAt": "2026-03-06T06:05:30.434Z"
     }
   ]
 }
