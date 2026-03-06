@@ -5,11 +5,11 @@
 <zone>
 
 Zone: Web Viewer (`web-viewer`)
-Files: 327, Cohesion: 0.99, Coupling: 0.01
-Risk: healthy (score: 0.01)
-Description: 327 files, primarily TypeScript, CSS
-Entry points: packages/web/src/viewer/polling/polling-state.ts
-Lines: 110371
+Files: 349, Cohesion: 0.98, Coupling: 0.02
+Risk: healthy (score: 0.02)
+Description: 349 files, primarily TypeScript, CSS
+Entry points: packages/web/src/server/rex-gateway.ts, packages/web/src/viewer/components/logos.ts, packages/web/src/viewer/components/rex-task-link.ts, packages/web/src/viewer/polling/index.ts, packages/web/src/viewer/polling/polling-state.ts, packages/web/src/viewer/types.ts
+Lines: 115340
 
 </zone>
 
@@ -21,7 +21,6 @@ packages/web/src/schema/v1.ts (TypeScript, 378 lines, source)
 packages/web/src/server/aggregation-cache.ts (TypeScript, 222 lines, source)
 packages/web/src/server/concurrent-execution-metrics.ts (TypeScript, 382 lines, source)
 packages/web/src/server/domain-gateway.ts (TypeScript, 19 lines, source)
-packages/web/src/server/incremental-task-usage.ts (TypeScript, 311 lines, source)
 packages/web/src/server/index.ts (TypeScript, 40 lines, source)
 packages/web/src/server/mcp-deps.ts (TypeScript, 6 lines, source)
 packages/web/src/server/port.ts (TypeScript, 195 lines, source)
@@ -31,8 +30,8 @@ packages/web/src/server/rex-gateway.ts (TypeScript, 89 lines, source)
 packages/web/src/server/routes-adaptive.ts (TypeScript, 873 lines, source)
 packages/web/src/server/routes-config.ts (TypeScript, 309 lines, source)
 packages/web/src/server/routes-data.ts (TypeScript, 147 lines, source)
-packages/web/src/server/routes-features.ts (TypeScript, 293 lines, source)
-packages/web/src/server/routes-hench.ts (TypeScript, 2466 lines, source)
+packages/web/src/server/routes-features.ts (TypeScript, 302 lines, source)
+packages/web/src/server/routes-hench.ts (TypeScript, 2508 lines, source)
 packages/web/src/server/routes-integrations.ts (TypeScript, 377 lines, source)
 packages/web/src/server/routes-mcp.ts (TypeScript, 226 lines, source)
 packages/web/src/server/routes-notion.ts (TypeScript, 843 lines, source)
@@ -48,10 +47,10 @@ packages/web/src/server/routes-workflow.ts (TypeScript, 660 lines, source)
 packages/web/src/server/search-index.ts (TypeScript, 452 lines, source)
 packages/web/src/server/start.ts (TypeScript, 682 lines, source)
 packages/web/src/server/types.ts (TypeScript, 62 lines, source)
-packages/web/src/server/usage-cleanup-scheduler.ts (TypeScript, 306 lines, source)
-packages/web/src/server/websocket.ts (TypeScript, 370 lines, source)
-packages/web/src/server/ws-health-tracker.ts (TypeScript, 275 lines, source)
 packages/web/src/shared/data-files.ts (TypeScript, 20 lines, source)
+packages/web/src/shared/index.ts (TypeScript, 13 lines, source)
+packages/web/src/shared/node-culler.ts (TypeScript, 170 lines, source)
+packages/web/src/shared/request-dedup.ts (TypeScript, 84 lines, source)
 packages/web/src/viewer/bootstrap.ts (TypeScript, 38 lines, source)
 packages/web/src/viewer/components/active-tasks-panel.ts (TypeScript, 290 lines, source)
 packages/web/src/viewer/components/breadcrumb.ts (TypeScript, 168 lines, source)
@@ -65,11 +64,10 @@ packages/web/src/viewer/components/data-display/findings-list.ts (TypeScript, 19
 packages/web/src/viewer/components/data-display/health-gauge.ts (TypeScript, 111 lines, source)
 packages/web/src/viewer/components/data-display/mini-charts.ts (TypeScript, 183 lines, source)
 packages/web/src/viewer/components/data-display/tree-view.ts (TypeScript, 135 lines, source)
-packages/web/src/viewer/components/data-display/zone-map.ts (TypeScript, 382 lines, source)
-packages/web/src/viewer/components/degradation-banner.ts (TypeScript, 101 lines, source)
+packages/web/src/viewer/components/data-display/zone-map.ts (TypeScript, 387 lines, source)
+packages/web/src/viewer/components/degradation-banner.ts (TypeScript, 100 lines, source)
 packages/web/src/viewer/components/detail-panel.ts (TypeScript, 309 lines, source)
-packages/web/src/viewer/components/elapsed-time.ts (TypeScript, 51 lines, source)
-packages/web/src/viewer/components/faq.ts (TypeScript, 277 lines, source)
+packages/web/src/viewer/components/faq.ts (TypeScript, 321 lines, source)
 packages/web/src/viewer/components/favicon.ts (TypeScript, 107 lines, source)
 packages/web/src/viewer/components/guide.ts (TypeScript, 151 lines, source)
 packages/web/src/viewer/components/logos.ts (TypeScript, 62 lines, source)
@@ -83,13 +81,14 @@ packages/web/src/viewer/components/prd-tree/batch-import-panel.ts (TypeScript, 6
 packages/web/src/viewer/components/prd-tree/bulk-actions.ts (TypeScript, 136 lines, source)
 packages/web/src/viewer/components/prd-tree/compute.ts (TypeScript, 140 lines, source)
 packages/web/src/viewer/components/prd-tree/delete-confirmation.ts (TypeScript, 151 lines, source)
-packages/web/src/viewer/components/prd-tree/execution-panel.ts (TypeScript, 405 lines, source)
-packages/web/src/viewer/components/prd-tree/index.ts (TypeScript, 20 lines, source)
+packages/web/src/viewer/components/prd-tree/execution-panel.ts (TypeScript, 406 lines, source)
+packages/web/src/viewer/components/prd-tree/facet-filter.ts (TypeScript, 165 lines, source)
+packages/web/src/viewer/components/prd-tree/index.ts (TypeScript, 22 lines, source)
 packages/web/src/viewer/components/prd-tree/inline-add-form.ts (TypeScript, 241 lines, source)
 packages/web/src/viewer/components/prd-tree/inline-status-picker.ts (TypeScript, 136 lines, source)
 packages/web/src/viewer/components/prd-tree/levels.ts (TypeScript, 87 lines, source)
 packages/web/src/viewer/components/prd-tree/merge-preview.ts (TypeScript, 312 lines, source)
-packages/web/src/viewer/components/prd-tree/prd-tree.ts (TypeScript, 794 lines, source)
+packages/web/src/viewer/components/prd-tree/prd-tree.ts (TypeScript, 836 lines, source)
 packages/web/src/viewer/components/prd-tree/progressive-loader.ts (TypeScript, 356 lines, source)
 packages/web/src/viewer/components/prd-tree/proposal-editor.ts (TypeScript, 704 lines, source)
 packages/web/src/viewer/components/prd-tree/prune-confirmation.ts (TypeScript, 591 lines, source)
@@ -97,56 +96,67 @@ packages/web/src/viewer/components/prd-tree/prune-diff-tree.ts (TypeScript, 451 
 packages/web/src/viewer/components/prd-tree/reorganize-panel.ts (TypeScript, 292 lines, source)
 packages/web/src/viewer/components/prd-tree/smart-add-input.ts (TypeScript, 630 lines, source)
 packages/web/src/viewer/components/prd-tree/status-filter.ts (TypeScript, 194 lines, source)
-packages/web/src/viewer/components/prd-tree/task-detail.ts (TypeScript, 1409 lines, source)
+packages/web/src/viewer/components/prd-tree/task-detail.ts (TypeScript, 1822 lines, source)
 packages/web/src/viewer/components/prd-tree/task-utilization.ts (TypeScript, 32 lines, source)
 packages/web/src/viewer/components/prd-tree/tree-differ.ts (TypeScript, 233 lines, source)
-packages/web/src/viewer/components/prd-tree/tree-event-delegate.ts (TypeScript, 194 lines, source)
+packages/web/src/viewer/components/prd-tree/tree-event-delegate.ts (TypeScript, 220 lines, source)
+packages/web/src/viewer/components/prd-tree/tree-search.ts (TypeScript, 242 lines, source)
 packages/web/src/viewer/components/prd-tree/tree-utils.ts (TypeScript, 114 lines, source)
 packages/web/src/viewer/components/prd-tree/types.ts (TypeScript, 119 lines, source)
-packages/web/src/viewer/components/prd-tree/virtual-scroll.ts (TypeScript, 272 lines, source)
-packages/web/src/viewer/components/refresh-queue-status.ts (TypeScript, 99 lines, source)
+packages/web/src/viewer/components/prd-tree/virtual-scroll.ts (TypeScript, 279 lines, source)
+packages/web/src/viewer/components/refresh-queue-status.ts (TypeScript, 98 lines, source)
 packages/web/src/viewer/components/rex-task-link.ts (TypeScript, 320 lines, source)
 packages/web/src/viewer/components/search-filter.ts (TypeScript, 68 lines, source)
 packages/web/src/viewer/components/search-overlay.ts (TypeScript, 621 lines, source)
-packages/web/src/viewer/components/sidebar.ts (TypeScript, 441 lines, source)
+packages/web/src/viewer/components/sidebar.ts (TypeScript, 434 lines, source)
 packages/web/src/viewer/components/status-indicators.ts (TypeScript, 219 lines, source)
 packages/web/src/viewer/components/theme-toggle.ts (TypeScript, 36 lines, source)
 packages/web/src/viewer/components/throttle-controls.ts (TypeScript, 382 lines, source)
 packages/web/src/viewer/components/ws-health-panel.ts (TypeScript, 389 lines, source)
-packages/web/src/viewer/components/zone-slideout.ts (TypeScript, 283 lines, source)
+packages/web/src/viewer/components/zone-slideout.ts (TypeScript, 303 lines, source)
 packages/web/src/viewer/graph/physics.ts (TypeScript, 443 lines, source)
-packages/web/src/viewer/graph/renderer.ts (TypeScript, 1605 lines, source)
+packages/web/src/viewer/graph/renderer.ts (TypeScript, 1636 lines, source)
 packages/web/src/viewer/hooks/use-app-data.ts (TypeScript, 186 lines, source)
 packages/web/src/viewer/hooks/use-crash-recovery.ts (TypeScript, 134 lines, source)
-packages/web/src/viewer/hooks/use-file-edges.ts (TypeScript, 282 lines, source)
-packages/web/src/viewer/hooks/use-graceful-degradation.ts (TypeScript, 78 lines, source)
+packages/web/src/viewer/hooks/use-facet-state.ts (TypeScript, 154 lines, source)
+packages/web/src/viewer/hooks/use-feature-toggle.ts (TypeScript, 61 lines, source)
+packages/web/src/viewer/hooks/use-file-edges.ts (TypeScript, 286 lines, source)
+packages/web/src/viewer/hooks/use-graceful-degradation.ts (TypeScript, 74 lines, source)
 packages/web/src/viewer/hooks/use-memory-monitor.ts (TypeScript, 126 lines, source)
 packages/web/src/viewer/hooks/use-pan-zoom.ts (TypeScript, 146 lines, source)
 packages/web/src/viewer/hooks/use-persistent-filter.ts (TypeScript, 55 lines, source)
 packages/web/src/viewer/hooks/use-polling-suspension.ts (TypeScript, 61 lines, source)
 packages/web/src/viewer/hooks/use-polling.ts (TypeScript, 68 lines, source)
-packages/web/src/viewer/hooks/use-prd-actions.ts (TypeScript, 521 lines, source)
-packages/web/src/viewer/hooks/use-prd-data.ts (TypeScript, 239 lines, source)
+packages/web/src/viewer/hooks/use-prd-actions.ts (TypeScript, 588 lines, source)
+packages/web/src/viewer/hooks/use-prd-data.ts (TypeScript, 215 lines, source)
 packages/web/src/viewer/hooks/use-prd-deep-link.ts (TypeScript, 100 lines, source)
-packages/web/src/viewer/hooks/use-prd-websocket.ts (TypeScript, 166 lines, source)
+packages/web/src/viewer/hooks/use-prd-websocket.ts (TypeScript, 157 lines, source)
 packages/web/src/viewer/hooks/use-project-metadata.ts (TypeScript, 79 lines, source)
-packages/web/src/viewer/hooks/use-project-status.ts (TypeScript, 194 lines, source)
-packages/web/src/viewer/hooks/use-refresh-throttle.ts (TypeScript, 112 lines, source)
+packages/web/src/viewer/hooks/use-project-status.ts (TypeScript, 185 lines, source)
+packages/web/src/viewer/hooks/use-refresh-throttle.ts (TypeScript, 108 lines, source)
 packages/web/src/viewer/hooks/use-route-state.ts (TypeScript, 136 lines, source)
+packages/web/src/viewer/hooks/use-subzone-edges.ts (TypeScript, 187 lines, source)
 packages/web/src/viewer/hooks/use-tab-visibility.ts (TypeScript, 73 lines, source)
-packages/web/src/viewer/hooks/use-tick.ts (TypeScript, 90 lines, source)
 packages/web/src/viewer/hooks/use-toast.ts (TypeScript, 43 lines, source)
 packages/web/src/viewer/hooks/use-zone-drag.ts (TypeScript, 94 lines, source)
 packages/web/src/viewer/loader.ts (TypeScript, 248 lines, source)
 packages/web/src/viewer/main.ts (TypeScript, 198 lines, source)
+packages/web/src/viewer/messaging/call-rate-limiter.ts (TypeScript, 153 lines, source)
+packages/web/src/viewer/messaging/fetch-pipeline.ts (TypeScript, 104 lines, source)
+packages/web/src/viewer/messaging/index.ts (TypeScript, 78 lines, source)
+packages/web/src/viewer/messaging/message-coalescer.ts (TypeScript, 194 lines, source)
+packages/web/src/viewer/messaging/message-throttle.ts (TypeScript, 230 lines, source)
+packages/web/src/viewer/messaging/ws-pipeline.ts (TypeScript, 130 lines, source)
 packages/web/src/viewer/performance/crash-detector.ts (TypeScript, 316 lines, source)
 packages/web/src/viewer/performance/dom-update-gate.ts (TypeScript, 353 lines, source)
 packages/web/src/viewer/performance/graceful-degradation.ts (TypeScript, 227 lines, source)
+packages/web/src/viewer/performance/index.ts (TypeScript, 64 lines, source)
 packages/web/src/viewer/performance/memory-monitor.ts (TypeScript, 327 lines, source)
 packages/web/src/viewer/performance/refresh-throttle.ts (TypeScript, 364 lines, source)
 packages/web/src/viewer/performance/response-buffer-gate.ts (TypeScript, 258 lines, source)
 packages/web/src/viewer/performance/update-batcher.ts (TypeScript, 188 lines, source)
 packages/web/src/viewer/polling/batched-tick-dispatcher.ts (TypeScript, 240 lines, source)
+packages/web/src/viewer/polling/index.ts (TypeScript, 15 lines, source)
 packages/web/src/viewer/polling/polling-manager.ts (TypeScript, 316 lines, source)
 packages/web/src/viewer/polling/polling-restart.ts (TypeScript, 143 lines, source)
 packages/web/src/viewer/polling/polling-state.ts (TypeScript, 398 lines, source)
@@ -161,14 +171,14 @@ packages/web/src/viewer/styles/badges.css (CSS, 110 lines, other)
 packages/web/src/viewer/styles/base.css (CSS, 34 lines, other)
 packages/web/src/viewer/styles/branding.css (CSS, 125 lines, other)
 packages/web/src/viewer/styles/breadcrumb.css (CSS, 167 lines, other)
-packages/web/src/viewer/styles/call-graph-explorer.css (CSS, 274 lines, other)
+packages/web/src/viewer/styles/call-graph-explorer.css (CSS, 309 lines, other)
 packages/web/src/viewer/styles/cards.css (CSS, 253 lines, other)
 packages/web/src/viewer/styles/components.css (CSS, 193 lines, other)
 packages/web/src/viewer/styles/copy-link.css (CSS, 83 lines, other)
 packages/web/src/viewer/styles/crash-recovery.css (CSS, 152 lines, other)
 packages/web/src/viewer/styles/degradation-banner.css (CSS, 163 lines, other)
 packages/web/src/viewer/styles/detail.css (CSS, 134 lines, other)
-packages/web/src/viewer/styles/faq.css (CSS, 158 lines, other)
+packages/web/src/viewer/styles/faq.css (CSS, 161 lines, other)
 packages/web/src/viewer/styles/feature-toggles.css (CSS, 376 lines, other)
 packages/web/src/viewer/styles/forms.css (CSS, 128 lines, other)
 packages/web/src/viewer/styles/graph.css (CSS, 356 lines, other)
@@ -183,9 +193,9 @@ packages/web/src/viewer/styles/notion-config.css (CSS, 770 lines, other)
 packages/web/src/viewer/styles/overview.css (CSS, 219 lines, other)
 packages/web/src/viewer/styles/polling-suspension.css (CSS, 104 lines, other)
 packages/web/src/viewer/styles/pr-markdown.css (CSS, 100 lines, other)
-packages/web/src/viewer/styles/prd-tree.css (CSS, 5104 lines, other)
+packages/web/src/viewer/styles/prd-tree.css (CSS, 5659 lines, other)
 packages/web/src/viewer/styles/refresh-queue.css (CSS, 105 lines, other)
-packages/web/src/viewer/styles/responsive.css (CSS, 300 lines, other)
+packages/web/src/viewer/styles/responsive.css (CSS, 314 lines, other)
 packages/web/src/viewer/styles/rex-dashboard.css (CSS, 1384 lines, other)
 packages/web/src/viewer/styles/routes.css (CSS, 39 lines, other)
 packages/web/src/viewer/styles/search-overlay.css (CSS, 336 lines, other)
@@ -196,17 +206,21 @@ packages/web/src/viewer/styles/token-usage.css (CSS, 487 lines, other)
 packages/web/src/viewer/styles/tokens.css (CSS, 112 lines, other)
 packages/web/src/viewer/styles/utils.css (CSS, 375 lines, other)
 packages/web/src/viewer/styles/validation.css (CSS, 784 lines, other)
-packages/web/src/viewer/styles/zone-map.css (CSS, 489 lines, other)
+packages/web/src/viewer/styles/zone-map.css (CSS, 503 lines, other)
 packages/web/src/viewer/styles/zone-slideout.css (CSS, 350 lines, other)
 packages/web/src/viewer/types.ts (TypeScript, 64 lines, source)
 packages/web/src/viewer/usage/constants.ts (TypeScript, 18 lines, source)
 packages/web/src/viewer/usage/index.ts (TypeScript, 12 lines, source)
 packages/web/src/viewer/utils.ts (TypeScript, 65 lines, source)
-packages/web/src/viewer/validate.ts (TypeScript, 339 lines, source)
+packages/web/src/viewer/validate.ts (TypeScript, 342 lines, source)
 packages/web/src/viewer/views/analysis.ts (TypeScript, 157 lines, source)
 packages/web/src/viewer/views/architecture.ts (TypeScript, 103 lines, source)
+packages/web/src/viewer/views/domain-hench.ts (TypeScript, 14 lines, source)
+packages/web/src/viewer/views/domain-rex.ts (TypeScript, 18 lines, source)
+packages/web/src/viewer/views/domain-settings.ts (TypeScript, 13 lines, source)
+packages/web/src/viewer/views/domain-sourcevision.ts (TypeScript, 22 lines, source)
 packages/web/src/viewer/views/enrichment-thresholds.ts (TypeScript, 11 lines, source)
-packages/web/src/viewer/views/feature-toggles.ts (TypeScript, 329 lines, source)
+packages/web/src/viewer/views/feature-toggles.ts (TypeScript, 332 lines, source)
 packages/web/src/viewer/views/files.ts (TypeScript, 278 lines, source)
 packages/web/src/viewer/views/graph.ts (TypeScript, 388 lines, source)
 packages/web/src/viewer/views/hench-config.ts (TypeScript, 674 lines, source)
@@ -216,32 +230,33 @@ packages/web/src/viewer/views/integration-config.ts (TypeScript, 796 lines, sour
 packages/web/src/viewer/views/notion-config.ts (TypeScript, 567 lines, source)
 packages/web/src/viewer/views/overview.ts (TypeScript, 362 lines, source)
 packages/web/src/viewer/views/pr-markdown.ts (TypeScript, 466 lines, source)
-packages/web/src/viewer/views/prd.ts (TypeScript, 226 lines, source)
+packages/web/src/viewer/views/prd.ts (TypeScript, 340 lines, source)
 packages/web/src/viewer/views/problems.ts (TypeScript, 102 lines, source)
 packages/web/src/viewer/views/rex-dashboard.ts (TypeScript, 640 lines, source)
 packages/web/src/viewer/views/routes.ts (TypeScript, 354 lines, source)
 packages/web/src/viewer/views/sourcevision-tabs.ts (TypeScript, 35 lines, source)
 packages/web/src/viewer/views/suggestions.ts (TypeScript, 82 lines, source)
-packages/web/src/viewer/views/task-audit.ts (TypeScript, 637 lines, source)
 packages/web/src/viewer/views/token-usage.ts (TypeScript, 760 lines, source)
 packages/web/src/viewer/views/validation.ts (TypeScript, 819 lines, source)
-packages/web/src/viewer/views/view-registry.ts (TypeScript, 160 lines, source)
+packages/web/src/viewer/views/view-registry.ts (TypeScript, 177 lines, source)
 packages/web/src/viewer/views/workflow-optimization.ts (TypeScript, 598 lines, source)
-packages/web/src/viewer/views/zone-types.ts (TypeScript, 77 lines, source)
-packages/web/src/viewer/views/zones.ts (TypeScript, 1567 lines, source)
+packages/web/src/viewer/views/zone-types.ts (TypeScript, 80 lines, source)
+packages/web/src/viewer/views/zones.ts (TypeScript, 1863 lines, source)
 packages/web/src/viewer/visualization/colors.ts (TypeScript, 44 lines, source)
 packages/web/src/viewer/visualization/flow.ts (TypeScript, 146 lines, source)
 packages/web/src/viewer/visualization/index.ts (TypeScript, 57 lines, source)
 packages/web/src/viewer/visualization/metrics.ts (TypeScript, 14 lines, source)
 packages/web/tests/integration/background-suspension-recovery.test.ts (TypeScript, 930 lines, test)
 packages/web/tests/integration/memory-aware-polling-suspension.test.ts (TypeScript, 1032 lines, test)
+packages/web/tests/integration/messaging-stack.test.ts (TypeScript, 464 lines, test)
 packages/web/tests/integration/pr-markdown-refresh.test.ts (TypeScript, 176 lines, test)
 packages/web/tests/integration/pr-markdown-tab-parity.test.ts (TypeScript, 236 lines, test)
+packages/web/tests/integration/request-dedup.test.ts (TypeScript, 626 lines, test)
+packages/web/tests/integration/smart-add-dispatch.test.ts (TypeScript, 274 lines, test)
 packages/web/tests/integration/token-usage-route-regression.test.ts (TypeScript, 200 lines, test)
 packages/web/tests/unit/server/aggregation-cache.test.ts (TypeScript, 492 lines, test)
 packages/web/tests/unit/server/data-loading-efficiency.test.ts (TypeScript, 357 lines, test)
 packages/web/tests/unit/server/dev-reload.test.ts (TypeScript, 118 lines, test)
-packages/web/tests/unit/server/incremental-task-usage.test.ts (TypeScript, 457 lines, test)
 packages/web/tests/unit/server/memory-leak-fixes.test.ts (TypeScript, 125 lines, test)
 packages/web/tests/unit/server/port.test.ts (TypeScript, 304 lines, test)
 packages/web/tests/unit/server/pr-markdown-refresh-diagnostics.test.ts (TypeScript, 195 lines, test)
@@ -273,15 +288,12 @@ packages/web/tests/unit/server/scope.test.ts (TypeScript, 263 lines, test)
 packages/web/tests/unit/server/search-index.test.ts (TypeScript, 552 lines, test)
 packages/web/tests/unit/server/shutdown-handler.test.ts (TypeScript, 506 lines, test)
 packages/web/tests/unit/server/type-consistency.test.ts (TypeScript, 236 lines, test)
-packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts (TypeScript, 486 lines, test)
-packages/web/tests/unit/server/websocket.test.ts (TypeScript, 454 lines, test)
-packages/web/tests/unit/server/ws-health-integration.test.ts (TypeScript, 154 lines, test)
-packages/web/tests/unit/server/ws-health-tracker.test.ts (TypeScript, 224 lines, test)
 packages/web/tests/unit/viewer/accessibility.test.ts (TypeScript, 401 lines, test)
 packages/web/tests/unit/viewer/add-item-form.test.ts (TypeScript, 240 lines, test)
 packages/web/tests/unit/viewer/bar-chart.test.ts (TypeScript, 47 lines, test)
 packages/web/tests/unit/viewer/batch-import-panel.test.ts (TypeScript, 372 lines, test)
 packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts (TypeScript, 655 lines, test)
+packages/web/tests/unit/viewer/call-rate-limiter.test.ts (TypeScript, 408 lines, test)
 packages/web/tests/unit/viewer/collapsible-section.test.ts (TypeScript, 149 lines, test)
 packages/web/tests/unit/viewer/copy-link-button.test.ts (TypeScript, 146 lines, test)
 packages/web/tests/unit/viewer/crash-detector.test.ts (TypeScript, 277 lines, test)
@@ -291,8 +303,10 @@ packages/web/tests/unit/viewer/deletion-state-updates.test.ts (TypeScript, 284 l
 packages/web/tests/unit/viewer/detail-panel.test.ts (TypeScript, 101 lines, test)
 packages/web/tests/unit/viewer/dom-update-gate.test.ts (TypeScript, 942 lines, test)
 packages/web/tests/unit/viewer/elapsed-time-memoization.test.ts (TypeScript, 282 lines, test)
+packages/web/tests/unit/viewer/execution-panel-dedup.test.ts (TypeScript, 280 lines, test)
 packages/web/tests/unit/viewer/execution-panel-polling.test.ts (TypeScript, 210 lines, test)
 packages/web/tests/unit/viewer/favicon.test.ts (TypeScript, 157 lines, test)
+packages/web/tests/unit/viewer/fetch-pipeline.test.ts (TypeScript, 133 lines, test)
 packages/web/tests/unit/viewer/flow-data-builders.test.ts (TypeScript, 95 lines, test)
 packages/web/tests/unit/viewer/flow-diagram.test.ts (TypeScript, 55 lines, test)
 packages/web/tests/unit/viewer/graceful-degradation.test.ts (TypeScript, 402 lines, test)
@@ -305,6 +319,10 @@ packages/web/tests/unit/viewer/loader-memory.test.ts (TypeScript, 298 lines, tes
 packages/web/tests/unit/viewer/loader-polling.test.ts (TypeScript, 211 lines, test)
 packages/web/tests/unit/viewer/memory-monitor.test.ts (TypeScript, 381 lines, test)
 packages/web/tests/unit/viewer/memory-warning.test.ts (TypeScript, 216 lines, test)
+packages/web/tests/unit/viewer/message-coalescer.test.ts (TypeScript, 534 lines, test)
+packages/web/tests/unit/viewer/message-throttle.test.ts (TypeScript, 578 lines, test)
+packages/web/tests/unit/viewer/multi-select.test.ts (TypeScript, 169 lines, test)
+packages/web/tests/unit/viewer/node-culler.test.ts (TypeScript, 350 lines, test)
 packages/web/tests/unit/viewer/node-culling-integration.test.ts (TypeScript, 209 lines, test)
 packages/web/tests/unit/viewer/persistent-filter.test.ts (TypeScript, 71 lines, test)
 packages/web/tests/unit/viewer/polling-manager.test.ts (TypeScript, 626 lines, test)
@@ -312,15 +330,16 @@ packages/web/tests/unit/viewer/polling-state.test.ts (TypeScript, 725 lines, tes
 packages/web/tests/unit/viewer/polling-suspension-indicator.test.ts (TypeScript, 114 lines, test)
 packages/web/tests/unit/viewer/pr-markdown.test.ts (TypeScript, 341 lines, test)
 packages/web/tests/unit/viewer/prd-tree-compute.test.ts (TypeScript, 483 lines, test)
-packages/web/tests/unit/viewer/prd-tree.test.ts (TypeScript, 314 lines, test)
+packages/web/tests/unit/viewer/prd-tree.test.ts (TypeScript, 368 lines, test)
 packages/web/tests/unit/viewer/progressive-loader.test.ts (TypeScript, 526 lines, test)
 packages/web/tests/unit/viewer/progressive-loading-integration.test.ts (TypeScript, 245 lines, test)
 packages/web/tests/unit/viewer/prune-diff-tree.test.ts (TypeScript, 229 lines, test)
 packages/web/tests/unit/viewer/refresh-throttle.test.ts (TypeScript, 531 lines, test)
+packages/web/tests/unit/viewer/request-dedup.test.ts (TypeScript, 235 lines, test)
 packages/web/tests/unit/viewer/response-buffer-gate.test.ts (TypeScript, 590 lines, test)
 packages/web/tests/unit/viewer/route-state.test.ts (TypeScript, 64 lines, test)
 packages/web/tests/unit/viewer/search-overlay.test.ts (TypeScript, 441 lines, test)
-packages/web/tests/unit/viewer/sidebar.test.ts (TypeScript, 597 lines, test)
+packages/web/tests/unit/viewer/sidebar.test.ts (TypeScript, 616 lines, test)
 packages/web/tests/unit/viewer/smart-add-input.test.ts (TypeScript, 618 lines, test)
 packages/web/tests/unit/viewer/status-filter.test.ts (TypeScript, 257 lines, test)
 packages/web/tests/unit/viewer/status-indicators-memory.test.ts (TypeScript, 297 lines, test)
@@ -329,19 +348,22 @@ packages/web/tests/unit/viewer/status-indicators.test.ts (TypeScript, 379 lines,
 packages/web/tests/unit/viewer/tab-visibility.test.ts (TypeScript, 693 lines, test)
 packages/web/tests/unit/viewer/task-detail-failure.test.ts (TypeScript, 184 lines, test)
 packages/web/tests/unit/viewer/task-detail-requirements.test.ts (TypeScript, 311 lines, test)
-packages/web/tests/unit/viewer/task-detail-usage.test.ts (TypeScript, 60 lines, test)
+packages/web/tests/unit/viewer/task-detail-usage.test.ts (TypeScript, 80 lines, test)
 packages/web/tests/unit/viewer/tick-timer.test.ts (TypeScript, 456 lines, test)
 packages/web/tests/unit/viewer/tick-visibility-gate.test.ts (TypeScript, 609 lines, test)
 packages/web/tests/unit/viewer/token-usage-nav.test.ts (TypeScript, 123 lines, test)
 packages/web/tests/unit/viewer/tree-differ.test.ts (TypeScript, 394 lines, test)
 packages/web/tests/unit/viewer/tree-event-delegate.test.ts (TypeScript, 267 lines, test)
+packages/web/tests/unit/viewer/tree-search.test.ts (TypeScript, 415 lines, test)
 packages/web/tests/unit/viewer/tree-utils-deletion.test.ts (TypeScript, 128 lines, test)
 packages/web/tests/unit/viewer/tree-view.test.ts (TypeScript, 58 lines, test)
 packages/web/tests/unit/viewer/update-batcher.test.ts (TypeScript, 537 lines, test)
 packages/web/tests/unit/viewer/usage-polling.test.ts (TypeScript, 209 lines, test)
 packages/web/tests/unit/viewer/use-polling-suspension.test.ts (TypeScript, 128 lines, test)
 packages/web/tests/unit/viewer/virtual-scroll.test.ts (TypeScript, 392 lines, test)
+packages/web/tests/unit/viewer/ws-pipeline.test.ts (TypeScript, 146 lines, test)
 packages/web/tests/unit/viewer/zone-drill-down.test.ts (TypeScript, 543 lines, test)
+packages/web/tests/unit/viewer/zone-inline-subzones.test.ts (TypeScript, 257 lines, test)
 
 </files>
 
@@ -355,13 +377,11 @@ Internal:
   packages/web/src/public.ts → packages/web/src/server/start.ts {startServer, PORT_FILE}
   packages/web/src/public.ts → packages/web/src/server/start.ts {ServerOptions, StartResult}
   packages/web/src/public.ts → packages/web/src/server/types.ts {ServerContext, RouteHandler, ViewerScope}
-  packages/web/src/public.ts → packages/web/src/server/websocket.ts {WebSocketBroadcaster}
   packages/web/src/server/index.ts → packages/web/src/server/port.ts {checkPort, checkPortWithRetry, findAvailablePort}
   packages/web/src/server/index.ts → packages/web/src/server/port.ts {PortCheckResult, PortAllocationResult, PortRetryOptions}
   packages/web/src/server/index.ts → packages/web/src/server/start.ts {startServer, PORT_FILE}
   packages/web/src/server/index.ts → packages/web/src/server/start.ts {ServerOptions, StartResult}
   packages/web/src/server/index.ts → packages/web/src/server/types.ts {ServerContext, RouteHandler}
-  packages/web/src/server/index.ts → packages/web/src/server/websocket.ts {WebSocketBroadcaster}
   packages/web/src/server/mcp-deps.ts → packages/web/src/server/domain-gateway.ts {*}
   packages/web/src/server/mcp-deps.ts → packages/web/src/server/rex-gateway.ts {*}
   packages/web/src/server/routes-adaptive.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
@@ -374,14 +394,12 @@ Internal:
   packages/web/src/server/routes-features.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
   packages/web/src/server/routes-features.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-hench.ts → packages/web/src/server/concurrent-execution-metrics.ts {ConcurrentExecutionMetrics}
-  packages/web/src/server/routes-hench.ts → packages/web/src/server/incremental-task-usage.ts {IncrementalTaskUsageAggregator}
   packages/web/src/server/routes-hench.ts → packages/web/src/server/process-memory-tracker.ts {ProcessMemoryTracker}
   packages/web/src/server/routes-hench.ts → packages/web/src/server/rex-gateway.ts {collectAllIds}
   packages/web/src/server/routes-hench.ts → packages/web/src/server/rex-gateway.ts {PRDDocument}
   packages/web/src/server/routes-hench.ts → packages/web/src/server/routes-status.ts {clearStatusCache}
   packages/web/src/server/routes-hench.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
   packages/web/src/server/routes-hench.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/src/server/routes-hench.ts → packages/web/src/server/websocket.ts {WebSocketBroadcaster}
   packages/web/src/server/routes-integrations.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
   packages/web/src/server/routes-integrations.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-mcp.ts → packages/web/src/server/domain-gateway.ts {createSourcevisionMcpServer}
@@ -396,7 +414,6 @@ Internal:
   packages/web/src/server/routes-rex.ts → packages/web/src/server/rex-gateway.ts {Priority, ItemLevel, ItemStatus, PRDItem, PRDDocument, TreeEntry, TreeStats, MergeValidation, EpicStats, PriorityDistribution, RequirementsSummary, ReshapeProposal}
   packages/web/src/server/routes-rex.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
   packages/web/src/server/routes-rex.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/src/server/routes-rex.ts → packages/web/src/server/websocket.ts {WebSocketBroadcaster}
   packages/web/src/server/routes-search.ts → packages/web/src/server/search-index.ts {SearchIndex}
   packages/web/src/server/routes-search.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse}
   packages/web/src/server/routes-search.ts → packages/web/src/server/types.ts {ServerContext}
@@ -440,40 +457,35 @@ Internal:
   packages/web/src/server/start.ts → packages/web/src/server/routes-validation.ts {handleValidationRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-workflow.ts {handleWorkflowRoute}
   packages/web/src/server/start.ts → packages/web/src/server/types.ts {ServerContext, ViewerScope}
-  packages/web/src/server/start.ts → packages/web/src/server/usage-cleanup-scheduler.ts {startUsageCleanupScheduler}
-  packages/web/src/server/start.ts → packages/web/src/server/websocket.ts {createWebSocketManager}
-  packages/web/src/server/start.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
   packages/web/src/server/start.ts → packages/web/src/shared/data-files.ts {ALL_DATA_FILES}
-  packages/web/src/server/usage-cleanup-scheduler.ts → packages/web/src/server/incremental-task-usage.ts {IncrementalTaskUsageAggregator, TaskUsageAccumulator}
-  packages/web/src/server/usage-cleanup-scheduler.ts → packages/web/src/server/rex-gateway.ts {collectAllIds}
-  packages/web/src/server/usage-cleanup-scheduler.ts → packages/web/src/server/rex-gateway.ts {PRDDocument}
-  packages/web/src/server/websocket.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker, CleanupReason}
+  packages/web/src/shared/index.ts → packages/web/src/shared/data-files.ts {DATA_FILES, ALL_DATA_FILES, SUPPLEMENTARY_FILES}
+  packages/web/src/shared/index.ts → packages/web/src/shared/node-culler.ts {NodeCuller}
+  packages/web/src/shared/index.ts → packages/web/src/shared/node-culler.ts {NodeCullerOptions, NodeCullerState, VisibilityCallback}
+  packages/web/src/shared/index.ts → packages/web/src/shared/request-dedup.ts {createRequestDedup}
+  packages/web/src/shared/index.ts → packages/web/src/shared/request-dedup.ts {RequestDedup}
   packages/web/src/viewer/bootstrap.ts → packages/web/src/viewer/components/theme-toggle.ts {initTheme}
   packages/web/src/viewer/bootstrap.ts → packages/web/src/viewer/polling/polling-manager.ts {startPollingManager}
   packages/web/src/viewer/bootstrap.ts → packages/web/src/viewer/polling/polling-restart.ts {startPollingRestart}
   packages/web/src/viewer/bootstrap.ts → packages/web/src/viewer/polling/tab-visibility.ts {startTabVisibilityMonitor}
   packages/web/src/viewer/bootstrap.ts → packages/web/src/viewer/polling/tick-visibility-gate.ts {createTickVisibilityGate}
-  packages/web/src/viewer/components/active-tasks-panel.ts → packages/web/src/viewer/components/elapsed-time.ts {ElapsedTime}
   packages/web/src/viewer/components/active-tasks-panel.ts → packages/web/src/viewer/components/rex-task-link.ts {RexTaskLink}
   packages/web/src/viewer/components/active-tasks-panel.ts → packages/web/src/viewer/types.ts {NavigateTo}
   packages/web/src/viewer/components/breadcrumb.ts → packages/web/src/viewer/hooks/use-project-metadata.ts {useProjectMetadata}
   packages/web/src/viewer/components/breadcrumb.ts → packages/web/src/viewer/types.ts {ViewId, NavigateTo}
   packages/web/src/viewer/components/constants.ts → packages/web/src/viewer/visualization/colors.ts {ZONE_COLORS}
-  packages/web/src/viewer/components/crash-recovery-banner.ts → packages/web/src/viewer/performance/crash-detector.ts {SavedNavigationState}
+  packages/web/src/viewer/components/crash-recovery-banner.ts → packages/web/src/viewer/performance/index.ts {SavedNavigationState}
   packages/web/src/viewer/components/data-display/findings-list.ts → packages/web/src/schema/v1.ts {Finding}
   packages/web/src/viewer/components/data-display/findings-list.ts → packages/web/src/viewer/components/data-display/collapsible-section.ts {CollapsibleSection}
   packages/web/src/viewer/components/data-display/findings-list.ts → packages/web/src/viewer/components/search-filter.ts {SearchFilter}
   packages/web/src/viewer/components/data-display/zone-map.ts → packages/web/src/schema/v1.ts {Zone, ZoneCrossing}
   packages/web/src/viewer/components/data-display/zone-map.ts → packages/web/src/viewer/utils.ts {getZoneColorByIndex, basename}
-  packages/web/src/viewer/components/degradation-banner.ts → packages/web/src/viewer/performance/graceful-degradation.ts {DegradableFeature}
-  packages/web/src/viewer/components/degradation-banner.ts → packages/web/src/viewer/performance/memory-monitor.ts {MemoryLevel}
+  packages/web/src/viewer/components/degradation-banner.ts → packages/web/src/viewer/performance/index.ts {MemoryLevel, DegradableFeature}
   packages/web/src/viewer/components/detail-panel.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem, FileDetail, ZoneDetail}
   packages/web/src/viewer/components/detail-panel.ts → packages/web/src/viewer/utils.ts {basename}
   packages/web/src/viewer/components/detail-panel.ts → packages/web/src/viewer/visualization/index.ts {meterClass, getZoneColorByIndex}
-  packages/web/src/viewer/components/elapsed-time.ts → packages/web/src/viewer/hooks/use-tick.ts {useTick}
   packages/web/src/viewer/components/favicon.ts → packages/web/src/viewer/types.ts {ViewId}
-  packages/web/src/viewer/components/memory-warning.ts → packages/web/src/viewer/performance/memory-monitor.ts {formatBytes, formatRatio}
-  packages/web/src/viewer/components/memory-warning.ts → packages/web/src/viewer/performance/memory-monitor.ts {MemorySnapshot, MemoryLevel}
+  packages/web/src/viewer/components/memory-warning.ts → packages/web/src/viewer/performance/index.ts {formatBytes, formatRatio}
+  packages/web/src/viewer/components/memory-warning.ts → packages/web/src/viewer/performance/index.ts {MemorySnapshot, MemoryLevel}
   packages/web/src/viewer/components/prd-tree/add-item-form.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemLevel, Priority}
   packages/web/src/viewer/components/prd-tree/analyze-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
   packages/web/src/viewer/components/prd-tree/analyze-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
@@ -485,7 +497,11 @@ Internal:
   packages/web/src/viewer/components/prd-tree/delete-confirmation.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {countDescendants}
   packages/web/src/viewer/components/prd-tree/delete-confirmation.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemLevel}
   packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/hooks/use-polling.ts {usePolling}
-  packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/performance/graceful-degradation.ts {isFeatureDisabled, onDegradationChange}
+  packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/messaging/index.ts {createFetchPipeline}
+  packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/performance/index.ts {isFeatureDisabled, onDegradationChange}
+  packages/web/src/viewer/components/prd-tree/facet-filter.ts → packages/web/src/viewer/components/prd-tree/types.ts {ItemStatus}
+  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/facet-filter.ts {FacetFilter}
+  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/facet-filter.ts {FacetFilterProps}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTree}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTreeProps}
   packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {StatusFilter, defaultStatusFilter}
@@ -503,6 +519,7 @@ Internal:
   packages/web/src/viewer/components/prd-tree/prd-tree.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {defaultStatusFilter}
   packages/web/src/viewer/components/prd-tree/prd-tree.ts → packages/web/src/viewer/components/prd-tree/task-utilization.ts {resolveTaskUtilization}
   packages/web/src/viewer/components/prd-tree/prd-tree.ts → packages/web/src/viewer/components/prd-tree/tree-event-delegate.ts {useTreeEventDelegation}
+  packages/web/src/viewer/components/prd-tree/prd-tree.ts → packages/web/src/viewer/components/prd-tree/tree-search.ts {highlightSearchText}
   packages/web/src/viewer/components/prd-tree/prd-tree.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority, TaskUsageSummary, WeeklyBudgetResolution}
   packages/web/src/viewer/components/prd-tree/prd-tree.ts → packages/web/src/viewer/components/prd-tree/virtual-scroll.ts {flattenVisibleTree, useVirtualScroll, findFlatNodeIndex, DEFAULT_ITEM_HEIGHT}
   packages/web/src/viewer/components/prd-tree/prd-tree.ts → packages/web/src/viewer/components/prd-tree/virtual-scroll.ts {FlatNode}
@@ -524,21 +541,24 @@ Internal:
   packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/task-utilization.ts {resolveTaskUtilization}
   packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {findItemById}
   packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemStatus, Priority, ItemLevel, RequirementData, RequirementCategory, RequirementValidationType, TaskUsageSummary, WeeklyBudgetResolution}
+  packages/web/src/viewer/components/prd-tree/task-detail.ts → packages/web/src/viewer/types.ts {NavigateTo}
   packages/web/src/viewer/components/prd-tree/task-utilization.ts → packages/web/src/viewer/components/prd-tree/types.ts {TaskUtilizationSummary, WeeklyBudgetResolution, WeeklyBudgetSource}
   packages/web/src/viewer/components/prd-tree/tree-differ.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {removeItemById}
   packages/web/src/viewer/components/prd-tree/tree-differ.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, PRDDocumentData}
   packages/web/src/viewer/components/prd-tree/tree-event-delegate.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
+  packages/web/src/viewer/components/prd-tree/tree-search.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemStatus}
   packages/web/src/viewer/components/prd-tree/tree-utils.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
   packages/web/src/viewer/components/prd-tree/virtual-scroll.ts → packages/web/src/viewer/components/prd-tree/compute.ts {itemMatchesFilter}
+  packages/web/src/viewer/components/prd-tree/virtual-scroll.ts → packages/web/src/viewer/components/prd-tree/tree-search.ts {itemMatchesSearch}
   packages/web/src/viewer/components/prd-tree/virtual-scroll.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemStatus}
-  packages/web/src/viewer/components/refresh-queue-status.ts → packages/web/src/viewer/performance/memory-monitor.ts {MemoryLevel}
-  packages/web/src/viewer/components/refresh-queue-status.ts → packages/web/src/viewer/performance/refresh-throttle.ts {RefreshQueueState}
+  packages/web/src/viewer/components/refresh-queue-status.ts → packages/web/src/viewer/performance/index.ts {MemoryLevel, RefreshQueueState}
   packages/web/src/viewer/components/rex-task-link.ts → packages/web/src/viewer/components/copy-link-button.ts {buildShareableUrl}
   packages/web/src/viewer/components/rex-task-link.ts → packages/web/src/viewer/types.ts {ViewId}
   packages/web/src/viewer/components/search-overlay.ts → packages/web/src/viewer/components/prd-tree/levels.ts {getLevelEmoji}
   packages/web/src/viewer/components/search-overlay.ts → packages/web/src/viewer/types.ts {NavigateTo}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/schema/v1.ts {Manifest, Zones}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/config-footer.ts {ConfigFooter}
+  packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/faq.ts {GlobalFAQ}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/logos.ts {NdxLogoPng, ProductLogoPng}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/status-indicators.ts {useProjectStatus, SvFreshnessIndicator, RexCompletionIndicator, HenchActivityIndicator}
   packages/web/src/viewer/components/sidebar.ts → packages/web/src/viewer/components/theme-toggle.ts {SidebarThemeToggle}
@@ -557,22 +577,23 @@ Internal:
   packages/web/src/viewer/graph/renderer.ts → packages/web/src/viewer/graph/physics.ts {SimState, TickCallbacks}
   packages/web/src/viewer/graph/renderer.ts → packages/web/src/viewer/utils.ts {basename, truncateFilename}
   packages/web/src/viewer/hooks/use-app-data.ts → packages/web/src/viewer/loader.ts {loadModules, loadFromFiles, detectMode, onDataChange, clearOnChange, startPolling, stopPolling}
-  packages/web/src/viewer/hooks/use-app-data.ts → packages/web/src/viewer/performance/graceful-degradation.ts {isFeatureDisabled, onDegradationChange}
+  packages/web/src/viewer/hooks/use-app-data.ts → packages/web/src/viewer/performance/index.ts {isFeatureDisabled, onDegradationChange}
   packages/web/src/viewer/hooks/use-app-data.ts → packages/web/src/viewer/types.ts {LoadedData}
   packages/web/src/viewer/hooks/use-crash-recovery.ts → packages/web/src/viewer/performance/crash-detector.ts {detectCrash, saveNavigationState, clearSavedNavigationState, markRecoveryShown, wasRecoveryShown, resetCrashDetector}
-  packages/web/src/viewer/hooks/use-crash-recovery.ts → packages/web/src/viewer/performance/crash-detector.ts {CrashDetectionResult, SavedNavigationState}
+  packages/web/src/viewer/hooks/use-crash-recovery.ts → packages/web/src/viewer/performance/index.ts {CrashDetectionResult, SavedNavigationState}
   packages/web/src/viewer/hooks/use-crash-recovery.ts → packages/web/src/viewer/types.ts {ViewId}
+  packages/web/src/viewer/hooks/use-facet-state.ts → packages/web/src/viewer/components/prd-tree/tree-search.ts {SearchFacets}
+  packages/web/src/viewer/hooks/use-facet-state.ts → packages/web/src/viewer/components/prd-tree/types.ts {ItemStatus}
   packages/web/src/viewer/hooks/use-file-edges.ts → packages/web/src/viewer/views/zone-types.ts {FileConnectionMap, FileToFileMap, ZoneData, FlowEdge, BoxRect}
   packages/web/src/viewer/hooks/use-graceful-degradation.ts → packages/web/src/viewer/performance/graceful-degradation.ts {startDegradation, stopDegradation, onDegradationChange, getDegradationState, isFeatureDisabled}
-  packages/web/src/viewer/hooks/use-graceful-degradation.ts → packages/web/src/viewer/performance/graceful-degradation.ts {DegradableFeature, DegradationState}
-  packages/web/src/viewer/hooks/use-graceful-degradation.ts → packages/web/src/viewer/performance/memory-monitor.ts {MemoryLevel}
+  packages/web/src/viewer/hooks/use-graceful-degradation.ts → packages/web/src/viewer/performance/index.ts {MemoryLevel, DegradableFeature, DegradationState}
   packages/web/src/viewer/hooks/use-memory-monitor.ts → packages/web/src/viewer/performance/memory-monitor.ts {startMemoryMonitor, stopMemoryMonitor, onSnapshot, getLatestSnapshot, getSnapshotHistory, resetMemoryMonitor}
   packages/web/src/viewer/hooks/use-memory-monitor.ts → packages/web/src/viewer/performance/memory-monitor.ts {MemorySnapshot, MemoryLevel, MemoryThresholds}
   packages/web/src/viewer/hooks/use-persistent-filter.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {defaultStatusFilter}
   packages/web/src/viewer/hooks/use-persistent-filter.ts → packages/web/src/viewer/components/prd-tree/types.ts {ItemStatus}
   packages/web/src/viewer/hooks/use-polling-suspension.ts → packages/web/src/viewer/polling/polling-state.ts {onPollingStateChange, getPollingState}
   packages/web/src/viewer/hooks/use-polling-suspension.ts → packages/web/src/viewer/polling/polling-state.ts {PollingStateSnapshot}
-  packages/web/src/viewer/hooks/use-polling.ts → packages/web/src/viewer/polling/polling-manager.ts {registerPoller, unregisterPoller}
+  packages/web/src/viewer/hooks/use-polling.ts → packages/web/src/viewer/polling/index.ts {registerPoller, unregisterPoller}
   packages/web/src/viewer/hooks/use-prd-actions.ts → packages/web/src/viewer/components/prd-tree/add-item-form.ts {AddItemInput}
   packages/web/src/viewer/hooks/use-prd-actions.ts → packages/web/src/viewer/components/prd-tree/inline-add-form.ts {InlineAddInput}
   packages/web/src/viewer/hooks/use-prd-actions.ts → packages/web/src/viewer/components/prd-tree/task-detail.ts {TaskDetail}
@@ -584,24 +605,24 @@ Internal:
   packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/components/prd-tree/tree-differ.ts {diffDocument}
   packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDDocumentData, TaskUsageSummary, WeeklyBudgetResolution}
   packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/hooks/use-polling.ts {usePolling}
+  packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/index.ts {createFetchPipeline}
   packages/web/src/viewer/hooks/use-prd-deep-link.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {findItemById, getAncestorIds}
   packages/web/src/viewer/hooks/use-prd-deep-link.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDDocumentData, PRDItemData}
   packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/components/prd-tree/tree-differ.ts {applyItemUpdate}
   packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {removeItemById}
   packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDDocumentData, PRDItemData}
-  packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/performance/dom-update-gate.ts {createDomUpdateGate}
-  packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/performance/response-buffer-gate.ts {createResponseBufferGate}
-  packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/performance/update-batcher.ts {createUpdateBatcher}
+  packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/index.ts {createWSPipeline}
+  packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/performance/index.ts {createUpdateBatcher, createDomUpdateGate, createResponseBufferGate}
   packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/hooks/use-polling.ts {usePolling}
-  packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/performance/graceful-degradation.ts {isFeatureDisabled, onDegradationChange}
-  packages/web/src/viewer/hooks/use-refresh-throttle.ts → packages/web/src/viewer/performance/memory-monitor.ts {MemoryLevel}
+  packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/index.ts {createWSPipeline}
+  packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/performance/index.ts {isFeatureDisabled, onDegradationChange}
+  packages/web/src/viewer/hooks/use-refresh-throttle.ts → packages/web/src/viewer/performance/index.ts {MemoryLevel, RefreshQueueState, RefreshPriority}
   packages/web/src/viewer/hooks/use-refresh-throttle.ts → packages/web/src/viewer/performance/refresh-throttle.ts {startRefreshThrottle, stopRefreshThrottle, onQueueChange, getQueueState, enqueueRefresh, getRecommendedInterval, resetRefreshThrottle}
-  packages/web/src/viewer/hooks/use-refresh-throttle.ts → packages/web/src/viewer/performance/refresh-throttle.ts {RefreshQueueState, RefreshPriority}
   packages/web/src/viewer/hooks/use-route-state.ts → packages/web/src/viewer/route-state.ts {parseLegacyHashRoute, resolveLocationRoute}
   packages/web/src/viewer/hooks/use-route-state.ts → packages/web/src/viewer/types.ts {ViewId, NavigateTo}
+  packages/web/src/viewer/hooks/use-subzone-edges.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, FlowEdge, BoxRect, FileConnectionMap, ExpandedSubZones}
   packages/web/src/viewer/hooks/use-tab-visibility.ts → packages/web/src/viewer/polling/tab-visibility.ts {startTabVisibilityMonitor, stopTabVisibilityMonitor, onVisibilityChange, getTabVisibilitySnapshot, getVisibilityCapabilities}
   packages/web/src/viewer/hooks/use-tab-visibility.ts → packages/web/src/viewer/polling/tab-visibility.ts {TabVisibilityState, TabVisibilitySnapshot, VisibilityAPICapabilities}
-  packages/web/src/viewer/hooks/use-tick.ts → packages/web/src/viewer/polling/batched-tick-dispatcher.ts {registerTickUpdater}
   packages/web/src/viewer/hooks/use-zone-drag.ts → packages/web/src/viewer/hooks/use-pan-zoom.ts {ViewBox}
   packages/web/src/viewer/loader.ts → packages/web/src/schema/v1.ts {Manifest, Inventory, Imports, Zones, Components, CallGraph}
   packages/web/src/viewer/loader.ts → packages/web/src/shared/data-files.ts {DATA_FILES}
@@ -632,18 +653,42 @@ Internal:
   packages/web/src/viewer/main.ts → packages/web/src/viewer/hooks/use-route-state.ts {useRouteState}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/types.ts {ViewId, DetailItem}
   packages/web/src/viewer/main.ts → packages/web/src/viewer/views/view-registry.ts {renderActiveView, buildValidViews}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/shared/request-dedup.ts {createRequestDedup}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/shared/request-dedup.ts {RequestDedup}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {CallRateLimiter, CallRateLimiterConfig}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/shared/request-dedup.ts {createRequestDedup, RequestDedup}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter, CallRateLimiter, CallRateLimiterConfig}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/fetch-pipeline.ts {createFetchPipeline, FetchPipeline, FetchPipelineConfig}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer, MessageCoalescer, MessageCoalescerConfig, ParsedWSMessage, CoalescedBatch}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle, MessageThrottle, ThrottledHandlerConfig}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/ws-pipeline.ts {createWSPipeline, WSPipeline, WSPipelineConfig}
+  packages/web/src/viewer/messaging/message-throttle.ts → packages/web/src/viewer/messaging/message-coalescer.ts {ParsedWSMessage}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-coalescer.ts {MessageCoalescer, ParsedWSMessage, CoalescedBatch}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-throttle.ts {MessageThrottle}
   packages/web/src/viewer/performance/crash-detector.ts → packages/web/src/viewer/types.ts {ViewId}
   packages/web/src/viewer/performance/dom-update-gate.ts → packages/web/src/viewer/performance/update-batcher.ts {UpdateBatcher}
   packages/web/src/viewer/performance/dom-update-gate.ts → packages/web/src/viewer/polling/tab-visibility.ts {onVisibilityChange, isTabVisible}
   packages/web/src/viewer/performance/dom-update-gate.ts → packages/web/src/viewer/polling/tab-visibility.ts {TabVisibilitySnapshot}
   packages/web/src/viewer/performance/graceful-degradation.ts → packages/web/src/viewer/performance/memory-monitor.ts {onSnapshot, getCurrentLevel, getLatestSnapshot}
   packages/web/src/viewer/performance/graceful-degradation.ts → packages/web/src/viewer/performance/memory-monitor.ts {MemoryLevel, MemorySnapshot}
+  packages/web/src/viewer/performance/index.ts → packages/web/src/viewer/performance/crash-detector.ts {CrashDetectionResult, SavedNavigationState}
+  packages/web/src/viewer/performance/index.ts → packages/web/src/viewer/performance/dom-update-gate.ts {createDomUpdateGate, DomUpdateGate, DomUpdateGateConfig}
+  packages/web/src/viewer/performance/index.ts → packages/web/src/viewer/performance/graceful-degradation.ts {isFeatureDisabled, onDegradationChange, DegradableFeature, DegradationState, DegradationChangeHandler}
+  packages/web/src/viewer/performance/index.ts → packages/web/src/viewer/performance/memory-monitor.ts {formatBytes, formatRatio, MemorySnapshot, MemoryLevel}
+  packages/web/src/viewer/performance/index.ts → packages/web/src/viewer/performance/refresh-throttle.ts {RefreshQueueState, RefreshPriority}
+  packages/web/src/viewer/performance/index.ts → packages/web/src/viewer/performance/response-buffer-gate.ts {createResponseBufferGate, ResponseBufferGate, ResponseBufferGateConfig}
+  packages/web/src/viewer/performance/index.ts → packages/web/src/viewer/performance/update-batcher.ts {createUpdateBatcher, UpdateBatcher, UpdateBatcherConfig}
   packages/web/src/viewer/performance/memory-monitor.ts → packages/web/src/viewer/polling/polling-state.ts {registerPollingSource}
   packages/web/src/viewer/performance/refresh-throttle.ts → packages/web/src/viewer/performance/memory-monitor.ts {onSnapshot, getLatestSnapshot, getCurrentLevel}
   packages/web/src/viewer/performance/refresh-throttle.ts → packages/web/src/viewer/performance/memory-monitor.ts {MemoryLevel, MemorySnapshot}
   packages/web/src/viewer/performance/response-buffer-gate.ts → packages/web/src/viewer/polling/tab-visibility.ts {onVisibilityChange, isTabVisible}
   packages/web/src/viewer/performance/response-buffer-gate.ts → packages/web/src/viewer/polling/tab-visibility.ts {TabVisibilitySnapshot}
   packages/web/src/viewer/polling/batched-tick-dispatcher.ts → packages/web/src/viewer/polling/tick-timer.ts {onTick}
+  packages/web/src/viewer/polling/index.ts → packages/web/src/viewer/polling/batched-tick-dispatcher.ts {registerTickUpdater}
+  packages/web/src/viewer/polling/index.ts → packages/web/src/viewer/polling/polling-manager.ts {registerPoller, unregisterPoller}
   packages/web/src/viewer/polling/polling-manager.ts → packages/web/src/viewer/polling/polling-state.ts {registerPollingSource, unregisterPollingSource}
   packages/web/src/viewer/polling/polling-manager.ts → packages/web/src/viewer/polling/tab-visibility.ts {onVisibilityChange, isTabVisible}
   packages/web/src/viewer/polling/polling-manager.ts → packages/web/src/viewer/polling/tab-visibility.ts {TabVisibilitySnapshot}
@@ -672,6 +717,27 @@ Internal:
   packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/types.ts {LoadedData, NavigateTo, DetailItem}
   packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/views/enrichment-thresholds.ts {ENRICHMENT_THRESHOLDS}
   packages/web/src/viewer/views/architecture.ts → packages/web/src/viewer/visualization/index.ts {FindingsList, BarChart}
+  packages/web/src/viewer/views/domain-hench.ts → packages/web/src/viewer/views/hench-config.ts {HenchConfigView}
+  packages/web/src/viewer/views/domain-hench.ts → packages/web/src/viewer/views/hench-runs.ts {HenchRunsView}
+  packages/web/src/viewer/views/domain-hench.ts → packages/web/src/viewer/views/hench-templates.ts {HenchTemplatesView}
+  packages/web/src/viewer/views/domain-rex.ts → packages/web/src/viewer/views/prd.ts {PRDView}
+  packages/web/src/viewer/views/domain-rex.ts → packages/web/src/viewer/views/rex-dashboard.ts {RexDashboard}
+  packages/web/src/viewer/views/domain-rex.ts → packages/web/src/viewer/views/token-usage.ts {TokenUsageView}
+  packages/web/src/viewer/views/domain-rex.ts → packages/web/src/viewer/views/validation.ts {ValidationView}
+  packages/web/src/viewer/views/domain-rex.ts → packages/web/src/viewer/views/workflow-optimization.ts {WorkflowOptimizationView}
+  packages/web/src/viewer/views/domain-settings.ts → packages/web/src/viewer/views/feature-toggles.ts {FeatureTogglesView}
+  packages/web/src/viewer/views/domain-settings.ts → packages/web/src/viewer/views/integration-config.ts {IntegrationConfigView}
+  packages/web/src/viewer/views/domain-settings.ts → packages/web/src/viewer/views/notion-config.ts {NotionConfigView}
+  packages/web/src/viewer/views/domain-sourcevision.ts → packages/web/src/viewer/views/analysis.ts {AnalysisView}
+  packages/web/src/viewer/views/domain-sourcevision.ts → packages/web/src/viewer/views/architecture.ts {ArchitectureView}
+  packages/web/src/viewer/views/domain-sourcevision.ts → packages/web/src/viewer/views/files.ts {FilesView}
+  packages/web/src/viewer/views/domain-sourcevision.ts → packages/web/src/viewer/views/graph.ts {Graph}
+  packages/web/src/viewer/views/domain-sourcevision.ts → packages/web/src/viewer/views/overview.ts {Overview}
+  packages/web/src/viewer/views/domain-sourcevision.ts → packages/web/src/viewer/views/pr-markdown.ts {PRMarkdownView}
+  packages/web/src/viewer/views/domain-sourcevision.ts → packages/web/src/viewer/views/problems.ts {ProblemsView}
+  packages/web/src/viewer/views/domain-sourcevision.ts → packages/web/src/viewer/views/routes.ts {RoutesView}
+  packages/web/src/viewer/views/domain-sourcevision.ts → packages/web/src/viewer/views/suggestions.ts {SuggestionsView}
+  packages/web/src/viewer/views/domain-sourcevision.ts → packages/web/src/viewer/views/zones.ts {ZonesView}
   packages/web/src/viewer/views/feature-toggles.ts → packages/web/src/viewer/components/logos.ts {NdxLogoPng}
   packages/web/src/viewer/views/files.ts → packages/web/src/schema/v1.ts {FileEntry}
   packages/web/src/viewer/views/files.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
@@ -710,10 +776,14 @@ Internal:
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/add-item-form.ts {AddItemForm}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/bulk-actions.ts {BulkActions}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/delete-confirmation.ts {DeleteConfirmation}
+  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/facet-filter.ts {FacetFilter}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/index.ts {PRDTree, StatusFilter}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/index.ts {PRDDocumentData}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/merge-preview.ts {MergePreview}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/prune-confirmation.ts {PruneConfirmation}
+  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/components/prd-tree/tree-search.ts {searchTree, collectAllTags}
+  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/hooks/use-facet-state.ts {useFacetState}
+  packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/hooks/use-feature-toggle.ts {useFeatureToggle}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/hooks/use-persistent-filter.ts {usePersistentFilter}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/hooks/use-prd-actions.ts {usePRDActions}
   packages/web/src/viewer/views/prd.ts → packages/web/src/viewer/hooks/use-prd-data.ts {usePRDData}
@@ -747,41 +817,19 @@ Internal:
   packages/web/src/viewer/views/suggestions.ts → packages/web/src/viewer/types.ts {LoadedData}
   packages/web/src/viewer/views/suggestions.ts → packages/web/src/viewer/views/enrichment-thresholds.ts {ENRICHMENT_THRESHOLDS}
   packages/web/src/viewer/views/suggestions.ts → packages/web/src/viewer/visualization/index.ts {FindingsList}
-  packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/elapsed-time.ts {ElapsedTime}
-  packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
-  packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/rex-task-link.ts {RexTaskLink}
-  packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/types.ts {NavigateTo}
   packages/web/src/viewer/views/token-usage.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
   packages/web/src/viewer/views/token-usage.ts → packages/web/src/viewer/hooks/use-polling.ts {usePolling}
   packages/web/src/viewer/views/token-usage.ts → packages/web/src/viewer/usage/constants.ts {TOKEN_USAGE_POLL_KEY, USAGE_POLL_INTERVAL_MS}
   packages/web/src/viewer/views/token-usage.ts → packages/web/src/viewer/visualization/index.ts {MetricCard, BarChart}
   packages/web/src/viewer/views/validation.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
   packages/web/src/viewer/views/validation.ts → packages/web/src/viewer/types.ts {NavigateTo}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/performance/graceful-degradation.ts {DegradableFeature}
+  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/performance/index.ts {DegradableFeature}
   packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/types.ts {ViewId, NavigateTo, DetailItem, LoadedData}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/analysis.ts {AnalysisView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/architecture.ts {ArchitectureView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/feature-toggles.ts {FeatureTogglesView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/files.ts {FilesView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/graph.ts {Graph}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/hench-config.ts {HenchConfigView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/hench-runs.ts {HenchRunsView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/hench-templates.ts {HenchTemplatesView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/integration-config.ts {IntegrationConfigView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/notion-config.ts {NotionConfigView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/overview.ts {Overview}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/pr-markdown.ts {PRMarkdownView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/prd.ts {PRDView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/problems.ts {ProblemsView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/rex-dashboard.ts {RexDashboard}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/routes.ts {RoutesView}
+  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/domain-hench.ts {HenchRunsView, HenchConfigView, HenchTemplatesView}
+  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/domain-rex.ts {PRDView, RexDashboard, TokenUsageView, ValidationView, TaskAuditView, WorkflowOptimizationView}
+  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/domain-settings.ts {NotionConfigView, IntegrationConfigView, FeatureTogglesView}
+  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/domain-sourcevision.ts {Overview, Graph, ZonesView, FilesView, ArchitectureView, ProblemsView, SuggestionsView, PRMarkdownView, RoutesView, AnalysisView}
   packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/sourcevision-tabs.ts {SOURCEVISION_TAB_IDS}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/suggestions.ts {SuggestionsView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/task-audit.ts {TaskAuditView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/token-usage.ts {TokenUsageView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/validation.ts {ValidationView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/workflow-optimization.ts {WorkflowOptimizationView}
-  packages/web/src/viewer/views/view-registry.ts → packages/web/src/viewer/views/zones.ts {ZonesView}
   packages/web/src/viewer/views/workflow-optimization.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
   packages/web/src/viewer/views/zones.ts → packages/web/src/schema/v1.ts {CallGraph, Zone, ZoneCrossing}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
@@ -789,10 +837,11 @@ Internal:
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/components/zone-slideout.ts {ZoneSlideout}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-file-edges.ts {useFileEdges}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-pan-zoom.ts {usePanZoom}
+  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-subzone-edges.ts {useSubZoneEdges}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/hooks/use-zone-drag.ts {useZoneDrag}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/types.ts {LoadedData, DetailItem, NavigateTo}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/utils.ts {basename}
-  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap, FileInfo, ZoneBreadcrumb}
+  packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap, FileInfo, ZoneBreadcrumb, ExpandedSubZones}
   packages/web/src/viewer/views/zones.ts → packages/web/src/viewer/visualization/index.ts {CollapsibleSection, buildFileToZoneMap, buildFlowEdges, buildCallFlowEdges, buildExternalImportEdges, getZoneColorByIndex}
   packages/web/src/viewer/visualization/colors.ts → packages/web/src/schema/v1.ts {Zones}
   packages/web/src/viewer/visualization/flow.ts → packages/web/src/schema/v1.ts {Zones, CallEdge, ExternalImport}
@@ -816,10 +865,18 @@ Internal:
   packages/web/tests/integration/memory-aware-polling-suspension.test.ts → packages/web/src/viewer/performance/refresh-throttle.ts {startRefreshThrottle, getQueueState, enqueueRefresh, getRecommendedInterval, resetRefreshThrottle}
   packages/web/tests/integration/memory-aware-polling-suspension.test.ts → packages/web/src/viewer/polling/polling-manager.ts {startPollingManager, registerPoller, unregisterPoller, isSuspended, isPollerActive, getRegisteredPollers, getPollerCount, resetPollingManager}
   packages/web/tests/integration/memory-aware-polling-suspension.test.ts → packages/web/src/viewer/polling/tab-visibility.ts {startTabVisibilityMonitor, resetTabVisibility}
+  packages/web/tests/integration/messaging-stack.test.ts → packages/web/src/viewer/messaging/index.ts {createWSPipeline, createFetchPipeline}
+  packages/web/tests/integration/messaging-stack.test.ts → packages/web/src/viewer/messaging/index.ts {WSPipeline, FetchPipeline, CoalescedBatch, ParsedWSMessage}
   packages/web/tests/integration/pr-markdown-refresh.test.ts → packages/web/src/server/routes-sourcevision.ts {handleSourcevisionRoute}
   packages/web/tests/integration/pr-markdown-refresh.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/integration/pr-markdown-refresh.test.ts → packages/web/src/viewer/views/pr-markdown.ts {PRMarkdownView}
   packages/web/tests/integration/pr-markdown-tab-parity.test.ts → packages/web/src/viewer/main.ts {*}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/shared/request-dedup.ts {createRequestDedup}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle}
+  packages/web/tests/integration/smart-add-dispatch.test.ts → packages/web/src/server/routes-rex.ts {handleRexRoute}
+  packages/web/tests/integration/smart-add-dispatch.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/integration/token-usage-route-regression.test.ts → packages/web/src/viewer/main.ts {*}
   packages/web/tests/unit/server/aggregation-cache.test.ts → packages/web/src/server/aggregation-cache.ts {AggregationResultCache, takeFingerprint, fingerprintsMatch}
   packages/web/tests/unit/server/aggregation-cache.test.ts → packages/web/src/server/aggregation-cache.ts {SourceFingerprint}
@@ -829,7 +886,6 @@ Internal:
   packages/web/tests/unit/server/data-loading-efficiency.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/dev-reload.test.ts → packages/web/src/server/routes-static.ts {resolveStaticAssets, handleStaticRoute}
   packages/web/tests/unit/server/dev-reload.test.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/tests/unit/server/incremental-task-usage.test.ts → packages/web/src/server/incremental-task-usage.ts {IncrementalTaskUsageAggregator}
   packages/web/tests/unit/server/memory-leak-fixes.test.ts → packages/web/src/server/routes-mcp.ts {closeAllMcpSessions}
   packages/web/tests/unit/server/memory-leak-fixes.test.ts → packages/web/src/viewer/loader.ts {onDataChange, clearOnChange, getData}
   packages/web/tests/unit/server/port.test.ts → packages/web/src/server/port.ts {checkPort, checkPortWithRetry, findAvailablePort, DEFAULT_PORT, PORT_RANGE_START, PORT_RANGE_END}
@@ -892,13 +948,6 @@ Internal:
   packages/web/tests/unit/server/shutdown-handler.test.ts → packages/web/src/server/routes-rex.ts {shutdownRexExecution}
   packages/web/tests/unit/server/shutdown-handler.test.ts → packages/web/src/server/start.ts {registerShutdownHandlers, DEFAULT_SHUTDOWN_TIMEOUT_MS}
   packages/web/tests/unit/server/type-consistency.test.ts → packages/web/src/server/rex-gateway.ts {GATEWAY_PRIORITY_ORDER, GATEWAY_LEVEL_HIERARCHY, GATEWAY_VALID_LEVELS, GATEWAY_VALID_STATUSES, GATEWAY_VALID_PRIORITIES, GATEWAY_VALID_REQ_CATEGORIES, GATEWAY_VALID_VALIDATION_TYPES, GATEWAY_CHILD_LEVEL, gatewayIsPriority, gatewayIsItemLevel, gatewayIsReqCategory, gatewayIsValidationType}
-  packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts → packages/web/src/server/incremental-task-usage.ts {IncrementalTaskUsageAggregator}
-  packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts → packages/web/src/server/usage-cleanup-scheduler.ts {identifyOrphanedEntries, writeCleanupLog, loadCleanupConfig, runCleanupCycle, startUsageCleanupScheduler, DEFAULT_CLEANUP_INTERVAL_MS}
-  packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts → packages/web/src/server/usage-cleanup-scheduler.ts {OrphanedEntry, CleanupResult}
-  packages/web/tests/unit/server/websocket.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager, PING_INTERVAL_MS}
-  packages/web/tests/unit/server/ws-health-integration.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager}
-  packages/web/tests/unit/server/ws-health-integration.test.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
-  packages/web/tests/unit/server/ws-health-tracker.test.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/guide.ts {Guide}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTree}
   packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {StatusFilter, defaultStatusFilter}
@@ -911,6 +960,8 @@ Internal:
   packages/web/tests/unit/viewer/batch-import-panel.test.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchItem}
   packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts → packages/web/src/viewer/polling/batched-tick-dispatcher.ts {registerTickUpdater, getBatchedTickDispatcherState, flushBatchedTicks, resetBatchedTickDispatcher}
   packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts → packages/web/src/viewer/polling/tick-timer.ts {resetTickTimer}
+  packages/web/tests/unit/viewer/call-rate-limiter.test.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter}
+  packages/web/tests/unit/viewer/call-rate-limiter.test.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {CallRateLimiter}
   packages/web/tests/unit/viewer/collapsible-section.test.ts → packages/web/src/viewer/components/data-display/collapsible-section.ts {CollapsibleSection}
   packages/web/tests/unit/viewer/copy-link-button.test.ts → packages/web/src/viewer/components/copy-link-button.ts {CopyLinkButton, buildShareableUrl}
   packages/web/tests/unit/viewer/crash-detector.test.ts → packages/web/src/viewer/performance/crash-detector.ts {detectCrash, saveNavigationState, clearSavedNavigationState, markRecoveryShown, wasRecoveryShown, getDetectionResult, clearCrashHistory, resetCrashDetector, _testHelpers}
@@ -929,10 +980,13 @@ Internal:
   packages/web/tests/unit/viewer/dom-update-gate.test.ts → packages/web/src/viewer/performance/update-batcher.ts {createUpdateBatcher}
   packages/web/tests/unit/viewer/dom-update-gate.test.ts → packages/web/src/viewer/polling/tab-visibility.ts {startTabVisibilityMonitor, resetTabVisibility}
   packages/web/tests/unit/viewer/elapsed-time-memoization.test.ts → packages/web/src/viewer/polling/tick-timer.ts {onTick, resetTickTimer}
+  packages/web/tests/unit/viewer/execution-panel-dedup.test.ts → packages/web/src/viewer/messaging/fetch-pipeline.ts {createFetchPipeline}
   packages/web/tests/unit/viewer/execution-panel-polling.test.ts → packages/web/src/viewer/polling/polling-manager.ts {startPollingManager, registerPoller, isSuspended, isPollerActive, getRegisteredPollers, resetPollingManager}
   packages/web/tests/unit/viewer/execution-panel-polling.test.ts → packages/web/src/viewer/polling/tab-visibility.ts {startTabVisibilityMonitor, resetTabVisibility}
   packages/web/tests/unit/viewer/favicon.test.ts → packages/web/src/viewer/components/favicon.ts {updateFavicon, resetFavicon, FAVICON_PNGS, VIEW_TO_PRODUCT}
   packages/web/tests/unit/viewer/favicon.test.ts → packages/web/src/viewer/types.ts {ViewId}
+  packages/web/tests/unit/viewer/fetch-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {createFetchPipeline}
+  packages/web/tests/unit/viewer/fetch-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {FetchPipeline}
   packages/web/tests/unit/viewer/flow-data-builders.test.ts → packages/web/src/schema/v1.ts {ZoneCrossing, CallEdge, Zones}
   packages/web/tests/unit/viewer/flow-data-builders.test.ts → packages/web/src/viewer/visualization/flow.ts {buildFlowEdges, buildCallFlowEdges, buildFileToZoneMap}
   packages/web/tests/unit/viewer/flow-diagram.test.ts → packages/web/src/viewer/components/data-display/mini-charts.ts {FlowDiagram}
@@ -962,6 +1016,14 @@ Internal:
   packages/web/tests/unit/viewer/memory-monitor.test.ts → packages/web/src/viewer/performance/memory-monitor.ts {MemoryThresholds, MemoryLevel, MemorySnapshot}
   packages/web/tests/unit/viewer/memory-warning.test.ts → packages/web/src/viewer/components/memory-warning.ts {MemoryWarningBanner}
   packages/web/tests/unit/viewer/memory-warning.test.ts → packages/web/src/viewer/performance/memory-monitor.ts {MemorySnapshot, MemoryLevel}
+  packages/web/tests/unit/viewer/message-coalescer.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer}
+  packages/web/tests/unit/viewer/message-coalescer.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {MessageCoalescer, CoalescedBatch, ParsedWSMessage}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {ParsedWSMessage}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {MessageThrottle, ThrottledHandlerConfig}
+  packages/web/tests/unit/viewer/multi-select.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
+  packages/web/tests/unit/viewer/node-culler.test.ts → packages/web/src/shared/node-culler.ts {NodeCuller}
+  packages/web/tests/unit/viewer/node-culler.test.ts → packages/web/src/shared/node-culler.ts {VisibilityCallback}
   packages/web/tests/unit/viewer/node-culling-integration.test.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTree}
   packages/web/tests/unit/viewer/node-culling-integration.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDDocumentData}
   packages/web/tests/unit/viewer/persistent-filter.test.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts {defaultStatusFilter}
@@ -987,6 +1049,8 @@ Internal:
   packages/web/tests/unit/viewer/refresh-throttle.test.ts → packages/web/src/viewer/performance/memory-monitor.ts {startMemoryMonitor, resetMemoryMonitor}
   packages/web/tests/unit/viewer/refresh-throttle.test.ts → packages/web/src/viewer/performance/refresh-throttle.ts {startRefreshThrottle, stopRefreshThrottle, enqueueRefresh, getQueueState, getRecommendedInterval, getThrottleLevel, onQueueChange, resetRefreshThrottle}
   packages/web/tests/unit/viewer/refresh-throttle.test.ts → packages/web/src/viewer/performance/refresh-throttle.ts {RefreshQueueState}
+  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/shared/request-dedup.ts {createRequestDedup}
+  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/shared/request-dedup.ts {RequestDedup}
   packages/web/tests/unit/viewer/response-buffer-gate.test.ts → packages/web/src/viewer/performance/response-buffer-gate.ts {createResponseBufferGate}
   packages/web/tests/unit/viewer/response-buffer-gate.test.ts → packages/web/src/viewer/polling/tab-visibility.ts {startTabVisibilityMonitor, resetTabVisibility}
   packages/web/tests/unit/viewer/route-state.test.ts → packages/web/src/viewer/route-state.ts {parseLegacyHashRoute, parsePathnameRoute, resolveLocationRoute}
@@ -1026,6 +1090,9 @@ Internal:
   packages/web/tests/unit/viewer/tree-differ.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, PRDDocumentData}
   packages/web/tests/unit/viewer/tree-event-delegate.test.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts {PRDTree}
   packages/web/tests/unit/viewer/tree-event-delegate.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDDocumentData, PRDItemData}
+  packages/web/tests/unit/viewer/tree-search.test.ts → packages/web/src/viewer/components/prd-tree/tree-search.ts {searchTree, itemMatchesSearch, highlightSearchText, collectAllTags}
+  packages/web/tests/unit/viewer/tree-search.test.ts → packages/web/src/viewer/components/prd-tree/tree-search.ts {SearchFacets}
+  packages/web/tests/unit/viewer/tree-search.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
   packages/web/tests/unit/viewer/tree-utils-deletion.test.ts → packages/web/src/viewer/components/prd-tree/tree-utils.ts {collectSubtreeIds, removeItemById}
   packages/web/tests/unit/viewer/tree-utils-deletion.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData}
   packages/web/tests/unit/viewer/tree-view.test.ts → packages/web/src/viewer/components/data-display/tree-view.ts {TreeView}
@@ -1041,79 +1108,104 @@ Internal:
   packages/web/tests/unit/viewer/virtual-scroll.test.ts → packages/web/src/viewer/components/prd-tree/types.ts {PRDItemData, ItemStatus}
   packages/web/tests/unit/viewer/virtual-scroll.test.ts → packages/web/src/viewer/components/prd-tree/virtual-scroll.ts {flattenVisibleTree, computeVisibleRange, findFlatNodeIndex, DEFAULT_ITEM_HEIGHT, DEFAULT_BUFFER_COUNT}
   packages/web/tests/unit/viewer/virtual-scroll.test.ts → packages/web/src/viewer/components/prd-tree/virtual-scroll.ts {FlatNode}
+  packages/web/tests/unit/viewer/ws-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {createWSPipeline}
+  packages/web/tests/unit/viewer/ws-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {WSPipeline, CoalescedBatch, ParsedWSMessage}
   packages/web/tests/unit/viewer/zone-drill-down.test.ts → packages/web/src/schema/v1.ts {Zone, ZoneCrossing}
   packages/web/tests/unit/viewer/zone-drill-down.test.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, FlowEdge, ZoneBreadcrumb}
   packages/web/tests/unit/viewer/zone-drill-down.test.ts → packages/web/src/viewer/views/zones.ts {convertSubZones, convertCrossings, ZoneBreadcrumbNav}
+  packages/web/tests/unit/viewer/zone-inline-subzones.test.ts → packages/web/src/schema/v1.ts {Zone}
+  packages/web/tests/unit/viewer/zone-inline-subzones.test.ts → packages/web/src/viewer/views/zone-types.ts {ZoneData, FileInfo, FlowEdge, BoxRect, FileConnectionMap, ExpandedSubZones}
+  packages/web/tests/unit/viewer/zone-inline-subzones.test.ts → packages/web/src/viewer/views/zones.ts {convertSubZones}
 
 Outgoing (this zone → other zones):
-  → message: packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/message-throttle.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/message-coalescer.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/message-throttle.ts
-  → packages-rex:prd-analysis-engine: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
-  → web: packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/messaging/request-dedup.ts; packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/request-dedup.ts
-  → web-integration: packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts
+  → packages-rex:prd-analysis-core: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
+  → web: packages/web/src/viewer/components/active-tasks-panel.ts → packages/web/src/viewer/components/elapsed-time.ts; packages/web/src/viewer/views/domain-rex.ts → packages/web/src/viewer/views/task-audit.ts
+  → web-server: packages/web/src/server/routes-hench.ts → packages/web/src/server/incremental-task-usage.ts; packages/web/src/server/start.ts → packages/web/src/server/usage-cleanup-scheduler.ts
+  → web-unit: packages/web/src/public.ts → packages/web/src/server/websocket.ts; packages/web/src/server/index.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-hench.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-rex.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/ws-health-tracker.ts
 
 Incoming (other zones → this zone):
   ← dom: packages/web/src/viewer/performance/dom-performance-monitor.ts → packages/web/src/viewer/polling/polling-state.ts
+  ← web: packages/web/src/viewer/hooks/use-tick.ts → packages/web/src/viewer/polling/index.ts; packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/logos.ts; packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/rex-task-link.ts; packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/types.ts
+  ← web-server: packages/web/src/server/usage-cleanup-scheduler.ts → packages/web/src/server/rex-gateway.ts; packages/web/src/server/usage-cleanup-scheduler.ts → packages/web/src/server/rex-gateway.ts
 
 </imports>
 
 <findings>
 
-[observation] [info] Contains 56% of project files (327/587) — subdivided into 8 sub-zones
-[observation] [info] High cohesion (0.99) — files are tightly interconnected
-[suggestion] [info] Zone "web-viewer" has files across 20 directories — consider consolidating under a dedicated directory
+[observation] [info] Contains 57% of project files (349/611) — subdivided into 7 sub-zones
+[observation] [info] High cohesion (0.98) — files are tightly interconnected
+[suggestion] [info] Zone "web-viewer" has files across 21 directories — consider consolidating under a dedicated directory
 
 </findings>
 
 <insights>
 
+- High cohesion (0.98) — files are tightly interconnected
+- Contains 57% of project files (349/611) — subdivided into 7 sub-zones
 - High cohesion (0.99) — files are tightly interconnected
-- Contains 56% of project files (327/587) — subdivided into 8 sub-zones
-- With 327 files and cohesion of 0.99, this zone is extremely self-contained but may be too broad — consider whether server-side MCP logic and client-side viewer logic should be tracked as distinct architectural concerns.
-- The extremely low coupling (0.01) despite 4 outbound imports to message and web-integration zones suggests the gateway pattern is working effectively to contain cross-package dependencies.
-- The single entry point being polling-state.ts rather than the server index is worth validating — polling state is a runtime concern, not a package boundary.
-- Zone spans 327 files across server, viewer, CLI, and schema layers — the Louvain algorithm treats them as one community, but architectural separation between server-side MCP handlers and browser-side viewer components would improve navigability.
-- Cohesion of 0.99 with coupling of 0.01 is an exceptionally clean boundary for a zone this large, validating the gateway module pattern described in CLAUDE.md.
-- Four imports into the 'message' zone suggest a shared messaging or event contract that could warrant its own named gateway if it grows.
-- Zone "web-dashboard-mcp-server" has files across 20 directories — consider consolidating under a dedicated directory
-- polling-state.ts acts as a registration hub within this zone, receiving registerPollingSource calls from at least 4 distinct subsystems (dom-performance-monitor, memory-monitor, polling-manager, tick-timer) — it is the highest fan-in node in the viewer polling subsystem and the de-facto lifecycle registry for all polling actors.
-- The 5 circular dependency chains detected in the codebase are contained within this single 327-file zone, meaning the problem is scoped to intra-zone cycles rather than cross-zone architectural violations — they should still be resolved but do not threaten the inter-zone boundary health.
-- polling-state.ts is a high-fan-in registry node consumed by performance, memory, timer, and lifecycle subsystems within the zone. If it is ever extracted or renamed, all four subsystems require simultaneous updates — consider defining a PollingSource registration interface to decouple consumers from the concrete module.
-- All 5 detected circular dependency chains reside within this zone. The zone boundary is clean, but internal cycles indicate that some subsystems within the 327-file zone have bidirectional dependencies that will complicate tree-shaking and incremental compilation.
-- Circular dependency chains within this zone are invisible to inter-zone coupling metrics and can grow incrementally without triggering any architectural health alert until tree-shaking or incremental compilation encounters the cycle.
-- packages/web/src/schema/v1.ts is co-zoned with 326 service, component, and CLI files — schema type stability cannot be independently tracked, and the blast radius of a schema change is unassessable without isolating the schema layer into its own zone.
-- Gateway modules domain-gateway.ts and rex-gateway.ts are indistinguishable from 325 surrounding files at zone granularity — their role as intentional architectural seams is invisible to zone-level coupling metrics, reducing the enforceability of the gateway pattern documented in CLAUDE.md.
-- Zone name 'web-dashboard-mcp-server' misrepresents the zone's actual content: viewer React components, client-side hooks, CLI entrypoint, schema definitions, and server-side MCP logic all coexist here. The misleading name causes developers to misjudge which files belong here and obscures ownership boundaries across a 327-file zone.
-- packages/web/src/schema/v1.ts (schema/type layer) is co-zoned with volatile service, hook, and component files. Schema types are the most stable layer of the stack; co-location with 326 files makes it impossible to independently monitor schema churn or assess the downstream impact of a type change using zone-level metrics alone.
-- packages/web/src/cli/index.ts (Node.js runtime) is co-zoned with browser-rendered viewer components — CLI code and viewer code execute in fundamentally different runtimes; a Node.js-specific API accidentally imported by a viewer file would fail silently in production unless the bundler is configured to error on Node.js globals in browser targets.
-- The 327-file zone's internal import-graph density must be extremely high to produce cohesion 0.99 with only 4 outbound edges — this means the Louvain algorithm is treating intra-zone cycles (the 5 known circular dependency chains) as cohesion signals rather than architectural warnings, inflating the apparent health score of the zone.
-- aggregation-cache.ts and concurrent-execution-metrics.ts are runtime optimization files co-located with schema/v1.ts — in a diff, a schema type change is visually indistinguishable from a cache invalidation change, making per-file blame and review scope ambiguous across the most stable and most volatile layers of the stack.
-- The CLI entrypoint (packages/web/src/cli/index.ts) and browser viewer components share a zone despite executing in different runtimes. Add a bundler-level check (e.g. Vite's ssr.target or a custom Rollup plugin) that errors if Node.js built-in module references appear in the viewer bundle entry point — this makes the runtime boundary machine-enforceable rather than convention-only.
-- Cohesion 0.99 is inflated by intra-zone cycles being counted as connectivity rather than penalized. The zone's apparent health score masks the 5 circular dependency chains — add a per-zone cycle count to the zone health metrics so inflated cohesion from cycles is distinguishable from genuine cohesion from clean mutual imports.
-- Zone "web-viewer" has files across 20 directories — consider consolidating under a dedicated directory
-- [call graph] 6072 internal calls, 30 outgoing, 1 incoming (cohesion: 1, coupling: 0)
+- Contains 57% of project files (349/611) — subdivided into 7 sub-zones
+- Contains 57% of project files (349/610) — subdivided into 7 sub-zones
+- With 349 files and cohesion of 0.99, this zone is architecturally cohesive but enormous — consider whether viewer components, server infrastructure, and MCP tooling could be split into sub-zones for navigability
+- The gateway pattern (rex-gateway.ts, domain-gateway.ts, mcp-deps.ts) cleanly isolates cross-package dependencies, making the dependency surface auditable
+- Near-zero coupling (0.01) with the rest of the codebase is a strong signal that boundaries are well-drawn
+- Zone is extremely large (349 files) with excellent cohesion — the monolithic size is manageable now but worth monitoring as the package grows.
+- Gateway modules (rex-gateway.ts, domain-gateway.ts) correctly centralize all cross-package runtime imports per the project's gateway convention.
+- 6 imports from this zone into web-unit and 2 into web-server suggest those small satellite zones may be fragments of this zone that were separated by the community detection algorithm.
+- Zone "dashboard-mcp-server" has files across 21 directories — consider consolidating under a dedicated directory
+- Acts as the hub in a hub-and-spoke topology for the entire web package — all functional satellite zones (task-usage-tracking, websocket-realtime-layer) ultimately depend on it, with only the static asset zones fully decoupled
+- The 6398 internal calls vs 23 outgoing calls ratio (277:1) makes this the most self-contained zone in the project — external coupling is negligible relative to internal activity
+- The single cycle in the entire web package inter-zone graph runs through this zone (↔ task-usage-tracking); breaking it would make the full zone graph a DAG
+- dashboard-mcp-server is the sole hub in a hub-and-spoke topology: all 3 functional satellite zones point inward. This is structurally sound but creates a single point of fragility — changes to dashboard-mcp-server can ripple to all satellites simultaneously.
+- Internal call density (6398 calls) vastly exceeds cross-zone traffic (26 total). The zone is effectively a self-contained monolith within the web package; consider whether the 7 sub-zones provide enough navigational structure.
+- The 7 internal sub-zones are not surfaced in the current zone analysis output, meaning the tooling navigates this 349-file zone as a flat list — sub-zone boundaries exist in the data model but are invisible during analysis, which defeats their purpose as navigational landmarks
+- The gateway modules (rex-gateway.ts, domain-gateway.ts, mcp-deps.ts) are the only files in this zone explicitly designed to limit coupling growth, but there is no enforcement mechanism (lint rule or CI check) preventing leaf files from importing directly across package boundaries, making the gateway convention fragile under rapid development
+- No automated enforcement (ESLint no-restricted-imports or equivalent) prevents leaf files from bypassing gateway modules and importing directly from rex or sourcevision — the gateway convention is documentation-only and will drift under sustained development pressure
+- 7 sub-zones are declared but not rendered in zone analysis output, making the 349-file zone appear flat to any tool consuming zone data — sub-zone metadata is present but not actionable without tooling support
+- Zone name 'dashboard-mcp-server' implies MCP server infrastructure scope but the zone spans 349 files covering UI components, viewer logic, React hooks, and server code — the name understates the zone's true scope and will systematically mislead contributors triaging files
+- mcp-deps.ts is classified as a gateway in the zone file list but does not follow the *-gateway.ts naming convention used by rex-gateway.ts and domain-gateway.ts — it is less discoverable as a gateway module and breaks the implicit naming contract
+- concurrent-execution-metrics.ts and aggregation-cache.ts are server-infrastructure concerns co-located in the hub zone with no dedicated sub-zone — if task-usage-tracking was extracted for being a usage-analytics concern, concurrent metrics deserves the same treatment for consistency
+- Rename mcp-deps.ts to mcp-gateway.ts (or deps-gateway.ts) to match the *-gateway.ts naming convention established by rex-gateway.ts and domain-gateway.ts. A developer scanning src/server/ for gateways will not recognize mcp-deps.ts as one.
+- Zone name 'dashboard-mcp-server' should be updated to reflect the zone's actual scope (full web package application layer). The current name implies a narrow MCP server role but the zone owns 349 files including all viewer, component, and dashboard logic — the mismatch will cause systematic mis-categorization when contributors use the zone name to reason about file placement.
+- Zone "web-viewer" has files across 21 directories — consider consolidating under a dedicated directory
+- [call graph] 6483 internal calls, 23 outgoing, 3 incoming (cohesion: 1, coupling: 0)
 
 </insights>
 
 <sub-crossings>
 
 Cross-dependencies between sub-zones:
+  web-viewer/polling → web-viewer/web-2: 2
   web-viewer/web → web-viewer/web-unit: 2
+  web-viewer/web → web-viewer/web-viewer: 1
+  web-viewer/web-2 → web-viewer/polling: 6
+  web-viewer/web-2 → web-viewer/web-3: 5
+  web-viewer/web-2 → web-viewer/web-unit: 3
+  web-viewer/web-2 → web-viewer/web-viewer: 5
+  web-viewer/web-3 → web-viewer/polling: 1
+  web-viewer/web-3 → web-viewer/web-2: 2
+  web-viewer/web-3 → web-viewer/web-unit: 1
+  web-viewer/web-3 → web-viewer/web-viewer: 7
+  web-viewer/web-viewer → web-viewer/polling: 1
+  web-viewer/web-viewer → web-viewer/web: 4
+  web-viewer/web-viewer → web-viewer/web-2: 14
+  web-viewer/web-viewer → web-viewer/web-3: 8
 
 </sub-crossings>
 
 <sub-zones>
 
-This zone has 8 sub-zone(s):
+This zone has 7 sub-zone(s):
 
-- **Web Viewer/web** (`web-viewer/web`): 301 files, cohesion 1, coupling 0
-  - Has 8 nested sub-zone(s)
-- **Web Viewer/web 2** (`web-viewer/web-2`): 4 files, cohesion 0.75, coupling 0.25
-- **Web Viewer/web 3** (`web-viewer/web-3`): 4 files, cohesion 0.75, coupling 0.25
-- **Web Viewer/web 4** (`web-viewer/web-4`): 4 files, cohesion 0.75, coupling 0.25
-- **Web Viewer/web 5** (`web-viewer/web-5`): 4 files, cohesion 0.75, coupling 0.25
-- **Web Viewer/web Unit** (`web-viewer/web-unit`): 3 files, cohesion 0.67, coupling 0.33
-- **Web Viewer/web Viewer** (`web-viewer/web-viewer`): 4 files, cohesion 0.75, coupling 0.25
-- **Web Viewer/zone** (`web-viewer/zone`): 3 files, cohesion 0.8, coupling 0.2
+- **Web Viewer/polling** (`web-viewer/polling`): 10 files, cohesion 0.53, coupling 0.47
+- **Web Viewer/web** (`web-viewer/web`): 72 files, cohesion 0.96, coupling 0.04
+  - Has 4 nested sub-zone(s)
+- **Web Viewer/web 2** (`web-viewer/web-2`): 44 files, cohesion 0.65, coupling 0.35
+- **Web Viewer/web 3** (`web-viewer/web-3`): 62 files, cohesion 0.88, coupling 0.12
+  - Has 3 nested sub-zone(s)
+- **Web Viewer/web 4** (`web-viewer/web-4`): 43 files, cohesion 1, coupling 0
+- **Web Viewer/web Unit** (`web-viewer/web-unit`): 16 files, cohesion 0.81, coupling 0.19
+- **Web Viewer/web Viewer** (`web-viewer/web-viewer`): 102 files, cohesion 0.91, coupling 0.09
+  - Has 6 nested sub-zone(s)
 
 Detailed sub-zone context available in `zones/{sub-zone-id}/context.md`
 

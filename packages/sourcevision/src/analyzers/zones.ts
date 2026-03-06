@@ -45,6 +45,7 @@ import {
   louvainPhase1,
   mergeBidirectionalCoupling,
   mergeSmallCommunities,
+  mergeSatelliteCommunities,
   capZoneCount,
   splitLargeCommunities,
 } from "./louvain.js";
@@ -545,19 +546,11 @@ export function computeZoneContentHash(
   return createHash("sha256").update(data).digest("hex").slice(0, 16);
 }
 
-/**
- * Hash all zone content hashes into a single global content hash.
- * Changes when any zone's content changes.
- */
-export function computeGlobalContentHash(
-  zoneContentHashes: Record<string, string>
-): string {
-  const data = Object.keys(zoneContentHashes)
-    .sort()
-    .map((id) => `${id}\0${zoneContentHashes[id]}`)
-    .join("\n");
-  return createHash("sha256").update(data).digest("hex").slice(0, 16);
-}
+// Imported from zone-hash.ts to break circular dependency with enrich.ts.
+// Both zones.ts and enrich.ts need this function; placing it in a third
+// module prevents the cycle.
+import { computeGlobalContentHash } from "./zone-hash.js";
+export { computeGlobalContentHash } from "./zone-hash.js";
 
 // ── Structural insights ─────────────────────────────────────────────────────
 
@@ -961,8 +954,11 @@ function dominantPackageRoot(files: string[]): string | null {
 
 /**
  * Compute cohesion and coupling metrics for a set of files in a zone.
- * Test files are excluded from the calculation because test→source edges
- * represent test dependencies, not architectural coupling.
+ * Test files are excluded from the calculation — both as iteration sources
+ * and as neighbors — because test→source and source→test edges represent
+ * test dependencies, not architectural coupling. Without this exclusion,
+ * zones with many test files (e.g. E2E suites) produce misleading metrics
+ * where test-file neighbors inflate internal/external edge counts.
  */
 function computeZoneMetrics(
   files: string[],
@@ -972,14 +968,23 @@ function computeZoneMetrics(
   const memberSet = new Set(files);
   let internalEdgeCount = 0;
   let totalEdgesFromZone = 0;
+  let productionNodeCount = 0;
   for (const node of files) {
     if (testFiles.has(node)) continue;
+    productionNodeCount++;
     const neighbors = graph.get(node);
     if (!neighbors) continue;
     for (const [neighbor] of neighbors) {
+      if (testFiles.has(neighbor)) continue;
       totalEdgesFromZone++;
       if (memberSet.has(neighbor)) internalEdgeCount++;
     }
+  }
+  // A zone with ≤1 production files cannot form internal production edges,
+  // so cohesion/coupling are structurally meaningless. Return healthy defaults
+  // to avoid false-positive risk alerts on test-dominated or single-file zones.
+  if (productionNodeCount <= 1) {
+    return { cohesion: 1, coupling: 0 };
   }
   return {
     cohesion: totalEdgesFromZone > 0
@@ -1160,6 +1165,44 @@ function computeContentHashes(
   }
   const globalContentHash = computeGlobalContentHash(zoneContentHashes);
   return { zoneContentHashes, globalContentHash };
+}
+
+/**
+ * Remap content hash keys from pre-enrichment zone IDs to post-enrichment IDs.
+ *
+ * Enrichment (AI or fast-mode preservation) may rename zone IDs. This function
+ * builds a mapping by matching zones positionally (same index = same zone) and
+ * returns a new hash record keyed by the final zone IDs.
+ *
+ * If no IDs changed, the original record is returned as-is for efficiency.
+ */
+function remapContentHashKeys(
+  originalHashes: Record<string, string>,
+  preEnrichmentZones: Zone[],
+  postEnrichmentZones: Zone[],
+): Record<string, string> {
+  // Build old→new ID mapping. Zones are matched by array position since
+  // enrichment preserves zone order and count.
+  const idMap = new Map<string, string>();
+  let anyChanged = false;
+  const limit = Math.min(preEnrichmentZones.length, postEnrichmentZones.length);
+  for (let i = 0; i < limit; i++) {
+    const oldId = preEnrichmentZones[i].id;
+    const newId = postEnrichmentZones[i].id;
+    if (oldId !== newId) {
+      anyChanged = true;
+    }
+    idMap.set(oldId, newId);
+  }
+
+  if (!anyChanged) return originalHashes;
+
+  const remapped: Record<string, string> = {};
+  for (const [key, hash] of Object.entries(originalHashes)) {
+    const newKey = idMap.get(key) ?? key;
+    remapped[newKey] = hash;
+  }
+  return remapped;
 }
 
 // ── Helper: AI enrichment ────────────────────────────────────────────────────
@@ -1576,6 +1619,7 @@ export function runZonePipeline(options: ZonePipelineOptions): ZonePipelineResul
   let community = louvainPhase1(graph);
   community = mergeBidirectionalCoupling(community, graph);
   community = mergeSmallCommunities(community, graph);
+  community = mergeSatelliteCommunities(community, graph);
   community = capZoneCount(community, graph, scaledMaxZones);
 
   // ── Split oversized communities ──
@@ -1688,6 +1732,14 @@ export async function analyzeZones(
   const { finalZones, aiZoneInsights, aiGlobalInsights, aiFindings,
     enrichmentPass, metaUpdatedFindings, enrichTokenUsage } = enrichResult;
 
+  // ── Remap content hashes to post-enrichment zone IDs ──
+  // Enrichment may rename zone IDs (e.g. "dom" → "dom-performance-monitoring").
+  // The content hashes were computed with pre-enrichment IDs and must be remapped
+  // so that downstream consumers can join zone metadata with content hashes by ID.
+  const remappedContentHashes = remapContentHashKeys(
+    zoneContentHashes, expandedZones, finalZones,
+  );
+
   // ── Promote zones from sub-analyses ──
   const promotedZones: Zone[] = [];
   const promotedCrossings: ZoneCrossing[] = [];
@@ -1722,7 +1774,7 @@ export async function analyzeZones(
   // ── Assemble findings ──
   const allFindings = assembleFindings(
     finalZones, structural, aiFindings, metaUpdatedFindings,
-    validPrevious, previousZones, zoneContentHashes, globalContentHash
+    validPrevious, previousZones, remappedContentHashes, globalContentHash
   );
 
   // ── Back-populate findings into insights for backward compatibility ──
@@ -1746,7 +1798,7 @@ export async function analyzeZones(
       enrichmentPass: allFindings.length > 0 ? displayPass : undefined,
       ...(metaEvaluationCount ? { metaEvaluationCount } : {}),
       structureHash,
-      zoneContentHashes,
+      zoneContentHashes: remappedContentHashes,
       ...(lastReset ? { lastReset } : {}),
     }),
     tokenUsage: enrichTokenUsage,

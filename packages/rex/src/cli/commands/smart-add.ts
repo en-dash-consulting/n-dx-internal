@@ -762,6 +762,21 @@ export function formatQualityWarnings(issues: QualityIssue[]): string {
   return lines.join("\n");
 }
 
+/**
+ * Validate that a merge target exists and has the expected level.
+ * Returns the merge target ID if valid, or undefined to fall back to creation.
+ */
+async function validateMergeTarget(
+  store: Awaited<ReturnType<typeof resolveStore>>,
+  mergeTargetId: string | undefined,
+  expectedLevel: ItemLevel,
+): Promise<string | undefined> {
+  if (!mergeTargetId) return undefined;
+  const item = await store.getItem(mergeTargetId);
+  if (!item || item.level !== expectedLevel) return undefined;
+  return mergeTargetId;
+}
+
 async function acceptProposals(
   dir: string,
   proposals: Proposal[],
@@ -783,12 +798,16 @@ async function acceptProposals(
   const parentLevel = await resolveParentLevel(dir, parentId);
 
   let addedCount = 0;
+  // Track newly created container IDs so we can clean up empty ones after merges
+  const newContainerIds: string[] = [];
 
   for (let pIdx = 0; pIdx < proposals.length; pIdx++) {
     const p = proposals[pIdx];
     if (!parentId) {
       // No parent — create a new top-level epic (or reuse existing via existingId)
-      const epicMergeTarget = mergeTargetsByNodeKey?.[`p${pIdx}:epic`];
+      const epicMergeTarget = await validateMergeTarget(
+        store, mergeTargetsByNodeKey?.[`p${pIdx}:epic`], "epic",
+      );
       let epicId = epicMergeTarget ?? randomUUID();
       const epicMarker = overrideMarkersByNodeKey?.[`p${pIdx}:epic`];
 
@@ -819,12 +838,15 @@ async function acceptProposals(
           ...(epicMarker ? { overrideMarker: epicMarker } : {}),
         });
         addedCount++;
+        newContainerIds.push(epicId);
       }
 
       for (let fIdx = 0; fIdx < p.features.length; fIdx++) {
         const f = p.features[fIdx];
         const featureKey = `p${pIdx}:feature:${fIdx}`;
-        const featureMergeTarget = mergeTargetsByNodeKey?.[featureKey];
+        const featureMergeTarget = await validateMergeTarget(
+          store, mergeTargetsByNodeKey?.[featureKey], "feature",
+        );
         let featureId = featureMergeTarget ?? randomUUID();
         const featureMarker = overrideMarkersByNodeKey?.[`p${pIdx}:feature:${fIdx}`];
 
@@ -857,12 +879,16 @@ async function acceptProposals(
             epicId,
           );
           addedCount++;
+          newContainerIds.push(featureId);
         }
 
         for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
           const t = f.tasks[tIdx];
           const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
-          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMergeTarget = await validateMergeTarget(
+            store, mergeTargetsByNodeKey?.[taskKey], "task",
+          );
+          if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
@@ -887,7 +913,9 @@ async function acceptProposals(
       for (let fIdx = 0; fIdx < p.features.length; fIdx++) {
         const f = p.features[fIdx];
         const featureKey = `p${pIdx}:feature:${fIdx}`;
-        const featureMergeTarget = mergeTargetsByNodeKey?.[featureKey];
+        const featureMergeTarget = await validateMergeTarget(
+          store, mergeTargetsByNodeKey?.[featureKey], "feature",
+        );
         const featureId = featureMergeTarget ?? randomUUID();
         const featureMarker = overrideMarkersByNodeKey?.[`p${pIdx}:feature:${fIdx}`];
         if (!featureMergeTarget) {
@@ -904,12 +932,16 @@ async function acceptProposals(
             parentId,
           );
           addedCount++;
+          newContainerIds.push(featureId);
         }
 
         for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
           const t = f.tasks[tIdx];
           const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
-          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMergeTarget = await validateMergeTarget(
+            store, mergeTargetsByNodeKey?.[taskKey], "task",
+          );
+          if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
@@ -937,7 +969,10 @@ async function acceptProposals(
         for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
           const t = f.tasks[tIdx];
           const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
-          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMergeTarget = await validateMergeTarget(
+            store, mergeTargetsByNodeKey?.[taskKey], "task",
+          );
+          if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
@@ -964,7 +999,10 @@ async function acceptProposals(
         for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
           const t = f.tasks[tIdx];
           const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
-          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMergeTarget = await validateMergeTarget(
+            store, mergeTargetsByNodeKey?.[taskKey], "subtask",
+          );
+          if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
@@ -983,6 +1021,35 @@ async function acceptProposals(
           );
           addedCount++;
         }
+      }
+    }
+  }
+
+  // Clean up empty containers created during this operation.
+  // When all children of a proposed epic/feature were merged with existing items,
+  // the parent container was still created but has no children — remove it.
+  // Process bottom-up (features before epics) so epic cleanup sees the final state.
+  if (newContainerIds.length > 0) {
+    // Partition into features (remove first) and epics (remove second)
+    const featureIds: string[] = [];
+    const epicIds: string[] = [];
+    {
+      const doc = await store.loadDocument();
+      for (const id of newContainerIds) {
+        const entry = findItem(doc.items, id);
+        if (!entry) continue;
+        if (entry.item.level === "feature") featureIds.push(id);
+        else epicIds.push(id);
+      }
+    }
+    // Remove childless features first, then childless epics
+    for (const containerId of [...featureIds, ...epicIds]) {
+      const doc = await store.loadDocument();
+      const entry = findItem(doc.items, containerId);
+      if (!entry) continue;
+      if ((entry.item.children ?? []).length === 0) {
+        await store.removeItem(containerId);
+        addedCount--;
       }
     }
   }

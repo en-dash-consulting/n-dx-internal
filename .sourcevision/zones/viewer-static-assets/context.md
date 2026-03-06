@@ -5,9 +5,9 @@
 <zone>
 
 Zone: Viewer Static Assets (`viewer-static-assets`)
-Files: 4, Cohesion: 1.00, Coupling: 0.00
+Files: 3, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Static asset zone for the viewer entry point, including the HTML shell, dark/light mode logo images, and a polling directory placeholder.
+Description: Raw static assets (light/dark logo PNGs and the viewer's root HTML shell) that are bundled directly into the dashboard viewer at build time.
 Lines: 21
 
 </zone>
@@ -17,26 +17,36 @@ Lines: 21
 packages/web/src/viewer/darkmode_logo.png (Other, 0 lines, asset)
 packages/web/src/viewer/index.html (HTML, 21 lines, other)
 packages/web/src/viewer/lightmode_logo.png (Other, 0 lines, asset)
-packages/web/src/viewer/polling/.gitkeep (Other, 0 lines, other)
 
 </files>
 
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
+[observation] [info] Maintaining separate lightmode and darkmode PNG files requires manual synchronization on any branding update; SVG with CSS variables would eliminate this duplication.
+[observation] [info] Zero coupling and perfect cohesion confirm this is a pure static asset zone with no runtime logic — ideal for independent caching and CDN delivery.
+[observation] [info] index.html is the root shell for the viewer SPA; changes to build output filenames must be reflected here to avoid broken asset references in production.
+[relationship] [warning] viewer-static-assets has zero import-graph coupling but carries hidden deployment coupling to web-dashboard via build manifest filenames; this contract is not enforced by TypeScript and breaks silently if build output names change.
+[anti-pattern] [warning] No shared design-token layer exists between viewer-static-assets and web-landing despite both being presentation zones in the same package; brand drift between landing page and viewer is undetectable at build time
+[suggestion] [info] Rename the zone to 'viewer-entry-assets' or split 'index.html' into its own 'viewer-shell' zone — 'static-assets' implies immutable binary files, but index.html is a deployment artifact with build-time coupling to hashed filenames; the name obscures this coupling from zone health reviewers.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- The presence of a .gitkeep in the polling directory suggests a build-time or runtime artifact directory that is intentionally tracked but currently empty.
-- Logo assets (darkmode_logo.png, lightmode_logo.png) indicate the viewer supports theming — confirm these are referenced via the same mechanism as the CSS dark-mode toggle to avoid drift.
-- This zone will never have meaningful cohesion metrics beyond 1.0 since it contains only static files; its isolation is expected and healthy.
-- The polling/.gitkeep placeholder alongside polling-state.ts in the main web-viewer zone suggests the polling directory serves a runtime role; document its expected contents to avoid confusion.
-- Dual logo assets for dark and light modes are isolated from any component logic — confirm the viewer's theme switching references these files via a stable build path rather than hardcoded strings.
-- The polling/ directory tracked via .gitkeep in viewer-static-assets places an empty runtime artifact directory inside the static assets zone. If the polling mechanism writes files to this directory at runtime, those files will be in a zone classified as static assets — mixing build-time static content with runtime-generated content in the same tracked directory is an architectural mismatch that could cause confusion in deployment or caching pipelines.
-- packages/web/src/viewer/polling/.gitkeep tracks an empty runtime directory inside the static assets zone. If polling artifacts are written here at runtime, the directory conflates static (build-time) and dynamic (runtime-generated) content in the same tracked path. This should either be moved outside the src/ tree (e.g. into a runtime data directory excluded from the static asset build) or explicitly documented as an intentional build output placeholder.
-- The polling/.gitkeep in viewer-static-assets and the performance/.gitkeep in dom-performance-monitoring are the only two speculative directory reservations in the entire monorepo src/ tree, and both are in the web package. No other package (hench, rex, sourcevision, llm-client) uses this convention, making it a web-package-local informal standard that will not be recognized by contributors whose primary context is another package.
+- With cohesion 1.0 and zero coupling, this zone is a pure asset bundle — no logic lives here and no other zone depends on it at the module level
+- The dual lightmode/darkmode logo PNGs indicate theme-aware branding is handled at the asset level rather than via CSS filters, which is correct for PNG assets but may need updating if SVG logos are adopted
+- index.html is the viewer entry shell; ensure its script/link tags stay aligned with the build output manifest so asset hashing doesn't break references
+- Zero coupling and perfect cohesion confirm this is a pure static asset zone with no runtime logic — ideal for independent caching and CDN delivery.
+- Maintaining separate lightmode and darkmode PNG files requires manual synchronization on any branding update; SVG with CSS variables would eliminate this duplication.
+- index.html is the root shell for the viewer SPA; changes to build output filenames must be reflected here to avoid broken asset references in production.
+- Build-time coupling between viewer-static-assets and web-dashboard exists via the build manifest (index.html script/link tags reference hashed filenames) — this coupling is invisible to the import graph but creates a deployment-time contract that must be maintained manually
+- viewer-static-assets has zero import-graph coupling but carries hidden deployment coupling to web-dashboard via build manifest filenames; this contract is not enforced by TypeScript and breaks silently if build output names change.
+- viewer-static-assets and web-landing are co-resident in the same package but share no CSS variables, design tokens, or brand asset layer — any global brand update (color, logo, typography) requires manual synchronization across two independently deployed zones with no compile-time enforcement
+- No shared design-token layer exists between viewer-static-assets and web-landing despite both being presentation zones in the same package; brand drift between landing page and viewer is undetectable at build time
+- 'index.html' in viewer-static-assets is an application shell file (references build-output scripts and stylesheets) rather than a static asset — naming the zone 'viewer-static-assets' misclassifies the HTML entrypoint, which carries deployment-time coupling to the build manifest, as equivalent to the logo PNGs which are truly static
+- The two logo files (darkmode_logo.png, lightmode_logo.png) follow a consistent '{theme}_logo.png' naming pattern, but 'index.html' breaks the pattern — the zone contains files of three distinct types (binary asset, binary asset, application shell) that serve fundamentally different purposes grouped under a single zone label
+- Rename the zone to 'viewer-entry-assets' or split 'index.html' into its own 'viewer-shell' zone — 'static-assets' implies immutable binary files, but index.html is a deployment artifact with build-time coupling to hashed filenames; the name obscures this coupling from zone health reviewers.
 
 </insights>

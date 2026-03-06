@@ -3,14 +3,14 @@
   "name": "Web Viewer/web/viewer 5",
   "description": "4 files, primarily CSS",
   "files": [
-    "packages/web/src/viewer/styles/graph.css",
-    "packages/web/src/viewer/styles/hench-config.css",
-    "packages/web/src/viewer/styles/hench-runs.css",
-    "packages/web/src/viewer/styles/hench-templates.css"
+    "packages/web/src/viewer/styles/index.css",
+    "packages/web/src/viewer/styles/integration-config.css",
+    "packages/web/src/viewer/styles/layout.css",
+    "packages/web/src/viewer/styles/memory-warning.css"
   ],
   "entryPoints": [],
   "cohesion": 0.86,
   "coupling": 0.14,
   "fileCount": 4,
-  "lineCount": 3028
+  "lineCount": 1150
 }

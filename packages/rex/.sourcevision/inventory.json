@@ -58,7 +58,7 @@
       "hash": "66a43d021e125714265e6d50f1376843785daaa9e62104b23e78fe46f1638d30",
       "role": "docs",
       "category": "root",
-      "lastModified": 1772432096011
+      "lastModified": 1772682844134
     },
     {
       "path": "Rex-F.png",
@@ -108,7 +108,7 @@
       "hash": "6a43fa4dc311c30f6630d4aa34ea5c997bad0bf219c0a532cbd6bda8e1883410",
       "role": "generated",
       "category": "root",
-      "lastModified": 1772211205435
+      "lastModified": 1772682844134
     },
     {
       "path": "package.json",
@@ -118,7 +118,7 @@
       "hash": "46a73adfcb86c898b7dea41fbe23d4e3f316b2402af0c2b2f2051b62f2fce004",
       "role": "config",
       "category": "root",
-      "lastModified": 1772211205435
+      "lastModified": 1772682844134
     },
     {
       "path": "src/analyze/acknowledge.ts",
@@ -131,6 +131,16 @@
       "lastModified": 1772432096040
     },
     {
+      "path": "src/analyze/analyze-shared.ts",
+      "size": 12862,
+      "language": "TypeScript",
+      "lineCount": 377,
+      "hash": "53d97598bff63cc38960f1721942b5d944a22cc216d4a6227ad2fec858499b72",
+      "role": "source",
+      "category": "analyze",
+      "lastModified": 1772686569813
+    },
+    {
       "path": "src/analyze/consolidation-guard.ts",
       "size": 5918,
       "language": "TypeScript",
@@ -138,7 +148,7 @@
       "hash": "7ad3cb07642dd14592f15b90e93dd06ab3c0bb8151fcd5ca0bbaf76182f44532",
       "role": "source",
       "category": "analyze",
-      "lastModified": 1772523440252
+      "lastModified": 1772682844135
     },
     {
       "path": "src/analyze/decompose.ts",
@@ -148,7 +158,7 @@
       "hash": "c75049a01efcb73d7e041228115805bbd69d0797d17f66cd9d2a454bb01204a9",
       "role": "source",
       "category": "analyze",
-      "lastModified": 1772522716444
+      "lastModified": 1772682844135
     },
     {
       "path": "src/analyze/dedupe.ts",
@@ -168,27 +178,27 @@
       "hash": "196814f2637c216a9abd5f754ad7de090353a0775088448cae3d09b002cb1cbc",
       "role": "source",
       "category": "analyze",
-      "lastModified": 1772522840534
+      "lastModified": 1772682844135
     },
     {
       "path": "src/analyze/extract.ts",
-      "size": 54425,
+      "size": 54473,
       "language": "TypeScript",
       "lineCount": 1688,
-      "hash": "67bf473dfa5da8043ec70a9aa444f21a91230c7e1b02744fdfefc041cb7125cf",
+      "hash": "4d4de1e0f2bef4eef4afeaf655f479a8e6d178e33c4a82bb4b8df7fcfd132b32",
       "role": "source",
       "category": "analyze",
-      "lastModified": 1772518110360
+      "lastModified": 1772764680768
     },
     {
       "path": "src/analyze/file-validation.ts",
-      "size": 19899,
+      "size": 19907,
       "language": "TypeScript",
       "lineCount": 587,
-      "hash": "1e519717884dad2840f46a683cde4d05cc3171bf76653ed7d86668bf0790c0cd",
+      "hash": "0c4b74c9c68a818dc1b3df68880da55121505e0b0c76e14979dde7bde5d90c89",
       "role": "source",
       "category": "analyze",
-      "lastModified": 1772518062525
+      "lastModified": 1772686681318
     },
     {
       "path": "src/analyze/guided.ts",
@@ -208,7 +218,17 @@
       "hash": "9bbadd5845ede414566726fa59307952397a92e4740943cf3c902526339943c0",
       "role": "source",
       "category": "analyze",
-      "lastModified": 1772523449064
+      "lastModified": 1772682844135
+    },
+    {
+      "path": "src/analyze/llm-bridge.ts",
+      "size": 4493,
+      "language": "TypeScript",
+      "lineCount": 156,
+      "hash": "cb64d5730dda90847aa1491e0bc3b767a8e4210d966da2cfaf8473f763664ae3",
+      "role": "source",
+      "category": "analyze",
+      "lastModified": 1772764646908
     },
     {
       "path": "src/analyze/modify-reason.ts",
@@ -228,17 +248,17 @@
       "hash": "5eb5f71a4d385ea8fd668c33deacdf1064879488b545ad8f510bf463d88b1a71",
       "role": "source",
       "category": "analyze",
-      "lastModified": 1772522688660
+      "lastModified": 1772682844136
     },
     {
       "path": "src/analyze/reason.ts",
-      "size": 75631,
+      "size": 60407,
       "language": "TypeScript",
-      "lineCount": 2222,
-      "hash": "ccdb5a3eddf804d1f4a5ef6cebe5038b6562197f6a7d87be00f8358608f0172b",
+      "lineCount": 1765,
+      "hash": "ec00af51c9b1ae728fafd0c073a21ab56805076c538799d733899cf5a92df33c",
       "role": "source",
       "category": "analyze",
-      "lastModified": 1772522104086
+      "lastModified": 1772764708269
     },
     {
       "path": "src/analyze/reconcile.ts",
@@ -268,7 +288,7 @@
       "hash": "3118585b1d687287ca98b0c994a45f6f16efc17faa48228c472fb223d43bd09a",
       "role": "source",
       "category": "analyze",
-      "lastModified": 1772432096040
+      "lastModified": 1772682844136
     },
     {
       "path": "src/analyze/validate-modification.ts",
@@ -302,13 +322,13 @@
     },
     {
       "path": "src/cli/commands/analyze.ts",
-      "size": 25425,
+      "size": 25417,
       "language": "TypeScript",
       "lineCount": 739,
-      "hash": "859f735ce07b94020205984257bae840c30c39ab3beb3050a1c9f4d5896af9e0",
+      "hash": "63f3222c506e845961daa81c79a483b37292131aa30934bdf742ba801da06fcb",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772523667943
+      "lastModified": 1772764013271
     },
     {
       "path": "src/cli/commands/chunked-review-state.ts",
@@ -318,7 +338,7 @@
       "hash": "15671ff6a9a8af6d70cc98477c7517c08b10ae71a6df6c29ba3425a36b79d0c8",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772523625845
+      "lastModified": 1772682844137
     },
     {
       "path": "src/cli/commands/chunked-review.ts",
@@ -328,7 +348,7 @@
       "hash": "b28b2b76c458bf02ace32c2ca2c9610684586b13a95a0f47cc2f9ea488b38bf8",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772523641963
+      "lastModified": 1772682844137
     },
     {
       "path": "src/cli/commands/constants.ts",
@@ -338,7 +358,7 @@
       "hash": "2c748ee8616f80a139e910bc8a55826bc17855b644c9df45d1720ccbfdd4c5b3",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096034
+      "lastModified": 1772682844137
     },
     {
       "path": "src/cli/commands/decomposition-review.ts",
@@ -348,7 +368,7 @@
       "hash": "547e57e41992219e64fb79a0aef777d7da8be8a8eab344c2cd818babc9c970fd",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772522765339
+      "lastModified": 1772682844137
     },
     {
       "path": "src/cli/commands/fix.ts",
@@ -368,7 +388,7 @@
       "hash": "bc584d2929164f16a1d1c08765b86b3073b8134d0cd99bad4dbaf2fb1cd77cc5",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772523549362
+      "lastModified": 1772682844137
     },
     {
       "path": "src/cli/commands/health.ts",
@@ -378,7 +398,7 @@
       "hash": "3de193002799ac6fd41d3b7985801e86a738a489d9651dca57e2ee6d4441cb15",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096035
+      "lastModified": 1772682844137
     },
     {
       "path": "src/cli/commands/init.ts",
@@ -418,7 +438,7 @@
       "hash": "830a642dc48f5a3e511249a872d38daaeed6b4896449648e1eb8442d3026e0e4",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096031
+      "lastModified": 1772682844137
     },
     {
       "path": "src/cli/commands/recommend.ts",
@@ -428,7 +448,7 @@
       "hash": "b2f07d58a9ef5ee9fcb701ce69b784f88bb5d521d4c5fd1169cb4698295c4ae4",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096033
+      "lastModified": 1772682844138
     },
     {
       "path": "src/cli/commands/remove.ts",
@@ -438,7 +458,7 @@
       "hash": "951338c427102a91e45b114bffa9a5fc6df174edb0efa916ae27ca429ef36fe5",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772512751072
+      "lastModified": 1772682844138
     },
     {
       "path": "src/cli/commands/reorganize.ts",
@@ -448,7 +468,7 @@
       "hash": "e0ff7e13910d4b3177f4a53a720efbdbf02fc99c5f5dfb7d0eaf3b7f7b8cfb07",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096032
+      "lastModified": 1772682844138
     },
     {
       "path": "src/cli/commands/report.ts",
@@ -458,7 +478,7 @@
       "hash": "e34a8dbdbe6c92fe291418cb84ba460d48fae7494997263eb6144feea3c04392",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096029
+      "lastModified": 1772682844138
     },
     {
       "path": "src/cli/commands/reshape.ts",
@@ -468,37 +488,37 @@
       "hash": "96f10a60b94d91aee60984f8a4a0f1f79967c65a5aba67d235fd9863d9540cb6",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096035
+      "lastModified": 1772682844138
     },
     {
       "path": "src/cli/commands/smart-add-duplicates.ts",
-      "size": 9616,
+      "size": 9748,
       "language": "TypeScript",
-      "lineCount": 332,
-      "hash": "6461497d05ee8476b9d979d1d14db3c3d0b4a8e4cc14d26207664b3fad46c850",
+      "lineCount": 335,
+      "hash": "2d7ac2cfc45968146e6fd0a9c7c93821d20ded79d8db9f3b80ac91f2cdbf65df",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096030
+      "lastModified": 1772777116618
     },
     {
       "path": "src/cli/commands/smart-add.ts",
-      "size": 53567,
+      "size": 56159,
       "language": "TypeScript",
-      "lineCount": 1604,
-      "hash": "fdc3c244eded7f76583c663f2837edbc3a93b03dac4cdaff82466271c4524f15",
+      "lineCount": 1671,
+      "hash": "4a7693b6e82a50778a91ea2838ea66b41c7c6e1ab1ce8ab417d331eadbd0c49b",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772523790563
+      "lastModified": 1772781875788
     },
     {
       "path": "src/cli/commands/status.ts",
-      "size": 16180,
+      "size": 17010,
       "language": "TypeScript",
-      "lineCount": 496,
-      "hash": "5982620b0babe8fe63d613f794e76ca1c7f5f02a5d2d888cf17617b38970e0ae",
+      "lineCount": 518,
+      "hash": "a6752ed066e666763012ee93b3c26612bfc05b938ce262fdaf5b1e9f9a24a739",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096028
+      "lastModified": 1772822013470
     },
     {
       "path": "src/cli/commands/sync.ts",
@@ -509,6 +529,16 @@
       "role": "source",
       "category": "cli",
       "lastModified": 1772432096036
+    },
+    {
+      "path": "src/cli/commands/token-format.ts",
+      "size": 3292,
+      "language": "TypeScript",
+      "lineCount": 115,
+      "hash": "7133b380d5b24b3f21aab56e5ed6b25f61950caa5bcdec99df9b39ef18cacda9",
+      "role": "source",
+      "category": "cli",
+      "lastModified": 1772763961062
     },
     {
       "path": "src/cli/commands/update.ts",
@@ -522,13 +552,13 @@
     },
     {
       "path": "src/cli/commands/usage.ts",
-      "size": 7157,
+      "size": 7189,
       "language": "TypeScript",
-      "lineCount": 249,
-      "hash": "0bada61849cc5ed3623f14f8f4ead4123a1f8da1c6b66050197c481d6d9b137c",
+      "lineCount": 248,
+      "hash": "eaf2b090f10289368b4dc5014930a4eb5fe99e9729455aac3c5c0a57e2bb207d",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096029
+      "lastModified": 1772764003155
     },
     {
       "path": "src/cli/commands/validate-interactive.ts",
@@ -538,7 +568,7 @@
       "hash": "86bfd8091cdb059007ed8c4107c9564077aeaff2f83c4b5db1396360c179b902",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096034
+      "lastModified": 1772682844139
     },
     {
       "path": "src/cli/commands/validate.ts",
@@ -548,7 +578,7 @@
       "hash": "75e17b4c686f230a3086dc07d27d72f1f9f2bddc6803f4927855c8ca3775f70e",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096034
+      "lastModified": 1772682844139
     },
     {
       "path": "src/cli/commands/verify.ts",
@@ -568,27 +598,27 @@
       "hash": "0165525555246e2af01349237f35ebf6846ffd479cefad7146d3aca395a711a4",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096026
+      "lastModified": 1772682844139
     },
     {
       "path": "src/cli/help.ts",
-      "size": 28279,
+      "size": 28333,
       "language": "TypeScript",
-      "lineCount": 615,
-      "hash": "dd1a07ff6675d0ddcd47a61944ebd9574c1ae0f2db8208f8a15086a3bb2ba395",
+      "lineCount": 616,
+      "hash": "3beef9040dc2c6db494d25049c3c518f1c6a6c79dc6370cfd6973138cf8f3118",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096026
+      "lastModified": 1772822004448
     },
     {
       "path": "src/cli/index.ts",
-      "size": 14324,
+      "size": 14680,
       "language": "TypeScript",
-      "lineCount": 415,
-      "hash": "31bd51739c1ac9c6a390580f8e05bbce9daf2a30c07519be4a7b4a22f2e21dc3",
+      "lineCount": 469,
+      "hash": "33393a0d2d0a2f284d2b14a0618d0bdf272813e0603d6f9f69343f8008f770d2",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772516135756
+      "lastModified": 1772821079505
     },
     {
       "path": "src/cli/mcp-tools.ts",
@@ -598,17 +628,17 @@
       "hash": "41916eb2b9f7e8cb9e4f3bc1e9e97af30e93b4d0800f931dfcdf735890604cf1",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096027
+      "lastModified": 1772682844140
     },
     {
       "path": "src/cli/mcp.ts",
-      "size": 8254,
+      "size": 8732,
       "language": "TypeScript",
       "lineCount": 226,
-      "hash": "2d41f1bf45098955a6ae499ac48bc439c6cf5a2ce2863933774ed7e3e7e9efd1",
+      "hash": "00f2338cfa2d4f2804d7450c32cd783487be99497c360a9f65f4f6d0da9fc5e3",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096026
+      "lastModified": 1772775918624
     },
     {
       "path": "src/cli/output.ts",
@@ -618,7 +648,7 @@
       "hash": "4d4862095f055b81b54344e57b650ab7b7b39a738453b9d37314684d69fa6fe5",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096025
+      "lastModified": 1772682844140
     },
     {
       "path": "src/cli/validate-input.ts",
@@ -628,7 +658,7 @@
       "hash": "34582ba326e3f0cf87dad1c42377a3a5d92db14f9427c9053ba1b9d8f49738bb",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772432096038
+      "lastModified": 1772682844140
     },
     {
       "path": "src/core/analytics.ts",
@@ -638,7 +668,7 @@
       "hash": "a566132fedc91d6ae21583664c7e38eadd3b62f0e197b83566c51f270799d6bb",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096015
+      "lastModified": 1772682844141
     },
     {
       "path": "src/core/canonical.ts",
@@ -648,7 +678,7 @@
       "hash": "2fc4d774ff88eae80add20232cb6223644dd624db3b48831b034105c64ab2a2c",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096017
+      "lastModified": 1772682844141
     },
     {
       "path": "src/core/cascade-reset.ts",
@@ -658,7 +688,7 @@
       "hash": "f53f4137e195d1300debd50202441f288591e47abccc5f8df67b8e463fa91ac5",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096013
+      "lastModified": 1772682844141
     },
     {
       "path": "src/core/code-coverage.ts",
@@ -668,7 +698,7 @@
       "hash": "5f1e8d41fa2968ed5bfebc9b0d05682b560ff30c91d0a53a8d7171620077ab9d",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096019
+      "lastModified": 1772682844141
     },
     {
       "path": "src/core/dag.ts",
@@ -698,7 +728,7 @@
       "hash": "dd80bc1eac0774b4f47c07feda93174656bafe82851cc21f330f27dae966c9c2",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096018
+      "lastModified": 1772682844141
     },
     {
       "path": "src/core/facets.ts",
@@ -708,7 +738,7 @@
       "hash": "2b062e206a5468c8c3be3f8aca49a8c9940832d12ca985ee6dda09e994f4659d",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096013
+      "lastModified": 1772682844141
     },
     {
       "path": "src/core/fix.ts",
@@ -728,7 +758,7 @@
       "hash": "cf60edf9011cd89c9e8ac7e5765ac85f2a73b1fd2fb38d9c830149611b2d50e1",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096020
+      "lastModified": 1772682844141
     },
     {
       "path": "src/core/keywords.ts",
@@ -768,7 +798,7 @@
       "hash": "3b4f94d9ab83248daa5768b2e76e94892bfd3209ed60ea7b45c4339d7cf30336",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096014
+      "lastModified": 1772682844141
     },
     {
       "path": "src/core/notion-map.ts",
@@ -778,7 +808,7 @@
       "hash": "e0f8dd7e9e6f192091eb038ce5a0bfda9ff3c545094db56151afaf1ed9d4dcdc",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096016
+      "lastModified": 1772682844142
     },
     {
       "path": "src/core/parent-completion.ts",
@@ -818,7 +848,7 @@
       "hash": "fa56fd95e01c287aeff02169602956e93bc4edd677083ee495fcafd2bd4355e2",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096024
+      "lastModified": 1772682844142
     },
     {
       "path": "src/core/remove-feature.ts",
@@ -828,7 +858,7 @@
       "hash": "bfaa208b1712b2ef4c80757d1f9c6236b56ce7584406aecaa0638bc788fed3c1",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096018
+      "lastModified": 1772682844142
     },
     {
       "path": "src/core/remove-task.ts",
@@ -838,7 +868,7 @@
       "hash": "22eb214fd22f15b34d44db6c439cbdb526964442420d2bd0757430d5106016ec",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096021
+      "lastModified": 1772682844142
     },
     {
       "path": "src/core/reorganize-executor.ts",
@@ -848,7 +878,7 @@
       "hash": "f782681d8676a7d8bf209d923ba77b2979daddd2aedc11c2eca1ac6456f81f6d",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096019
+      "lastModified": 1772682844142
     },
     {
       "path": "src/core/reorganize.ts",
@@ -858,7 +888,7 @@
       "hash": "2438887fbb462ed5b869aa85b3bdba8fd022753bf05c9e2a33ff88b41c31fc15",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096016
+      "lastModified": 1772682844142
     },
     {
       "path": "src/core/requirements.ts",
@@ -888,7 +918,7 @@
       "hash": "a497f8e637f1f5777227a5d0373bdf3be4dba9ebb7c1cf168dff50ee00819338",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096014
+      "lastModified": 1772682844142
     },
     {
       "path": "src/core/stats.ts",
@@ -898,7 +928,7 @@
       "hash": "69809c77640df44fe5b07a2962c4598f8a820e6ab78b75db175b5aa3621bb6d9",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096015
+      "lastModified": 1772682844143
     },
     {
       "path": "src/core/structural.ts",
@@ -908,7 +938,7 @@
       "hash": "9767af2c578e65f95d4d49a3621b48ff24236be800c5e62c4974fe9d78869aa0",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096024
+      "lastModified": 1772682844143
     },
     {
       "path": "src/core/sync-engine.ts",
@@ -918,7 +948,7 @@
       "hash": "2723373b4c4c090255e798d8df6c26d123a43b5fa66457461aad79331b2c8f19",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096022
+      "lastModified": 1772682844143
     },
     {
       "path": "src/core/sync.ts",
@@ -942,13 +972,13 @@
     },
     {
       "path": "src/core/token-usage.ts",
-      "size": 25197,
+      "size": 22249,
       "language": "TypeScript",
-      "lineCount": 837,
-      "hash": "8f739fd4e32c5fff1aa227eb4f4281ab53ffe898985675d5a1bd3a269fd5bcb8",
+      "lineCount": 739,
+      "hash": "609feaa910fe2b1ba9ce3c7d90d4b827afa58e387c495101b1e8e7de12e0d6df",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096021
+      "lastModified": 1772763994997
     },
     {
       "path": "src/core/transitions.ts",
@@ -978,7 +1008,7 @@
       "hash": "5353bc68caa49664bc0cb132f3fd4acd18a614daa5e20b4fb9ad803452d2f859",
       "role": "source",
       "category": "core",
-      "lastModified": 1772432096014
+      "lastModified": 1772682844143
     },
     {
       "path": "src/public.ts",
@@ -988,7 +1018,7 @@
       "hash": "0e720e684e48ed83cd193e0681b1818ccad4abbefa50f13ed74ec8087ae97ead",
       "role": "source",
       "category": "src",
-      "lastModified": 1772524134707
+      "lastModified": 1772682844144
     },
     {
       "path": "src/recommend/conflict-detection.ts",
@@ -998,7 +1028,7 @@
       "hash": "6fbce06e17eedebfb431b51429303c3e1b638d3462d513db07e29e125105aa8b",
       "role": "source",
       "category": "recommend",
-      "lastModified": 1772432096025
+      "lastModified": 1772682844144
     },
     {
       "path": "src/recommend/create-from-recommendations.ts",
@@ -1008,7 +1038,7 @@
       "hash": "a675a1f16911a77d74cc133ff74683e935ed7ea276ba3de50c0dcda736f400e4",
       "role": "source",
       "category": "recommend",
-      "lastModified": 1772432096025
+      "lastModified": 1772682844144
     },
     {
       "path": "src/recommend/types.ts",
@@ -1018,17 +1048,17 @@
       "hash": "d9eda1948e3a62940189e4301ac05fd464ed568b55756dc98cd273ff4613beb8",
       "role": "source",
       "category": "recommend",
-      "lastModified": 1772432096025
+      "lastModified": 1772682844144
     },
     {
       "path": "src/schema/index.ts",
-      "size": 1549,
+      "size": 1973,
       "language": "TypeScript",
-      "lineCount": 71,
-      "hash": "a20dfefc7854397ecf304ee2c0d27d3835e7d7b298b4004054e35650cd8391da",
+      "lineCount": 79,
+      "hash": "5900540bfcd666dce6192297bb66f405122d87aeb1d43ccb17433ffe85563bd5",
       "role": "source",
       "category": "schema",
-      "lastModified": 1772521209513
+      "lastModified": 1772686893779
     },
     {
       "path": "src/schema/levels.ts",
@@ -1038,7 +1068,7 @@
       "hash": "718521bfed12bb78170050e1ee1c8552c2aaa043fff365f25d2d3b5c3a24cae8",
       "role": "source",
       "category": "schema",
-      "lastModified": 1772432096038
+      "lastModified": 1772682844144
     },
     {
       "path": "src/schema/v1.ts",
@@ -1048,17 +1078,17 @@
       "hash": "fcbb0ff9692e2d0624655b984c303aea0d3578df23db8c2eb19c0a257620d13c",
       "role": "source",
       "category": "schema",
-      "lastModified": 1772523384358
+      "lastModified": 1772682844145
     },
     {
       "path": "src/schema/validate.ts",
-      "size": 4837,
+      "size": 5027,
       "language": "TypeScript",
-      "lineCount": 172,
-      "hash": "25a896ae0dafc4cd44198c43ed98851d3507f52f7df860af96c0f0dc880ef776",
+      "lineCount": 166,
+      "hash": "836cad5c2291e3964c7446b216263750a6760e4fc4be8183c4af55ac3d36e80b",
       "role": "source",
       "category": "schema",
-      "lastModified": 1772523389953
+      "lastModified": 1772818271863
     },
     {
       "path": "src/store/adapter-registry.ts",
@@ -1068,7 +1098,7 @@
       "hash": "4cc9cf635ff8129183766364f2c3f6034f366a8a6421baaa67351c42fddce290",
       "role": "source",
       "category": "store",
-      "lastModified": 1772432096046
+      "lastModified": 1772682844145
     },
     {
       "path": "src/store/contracts.ts",
@@ -1078,17 +1108,17 @@
       "hash": "cd96647dd4f027443c89478377322682d3b2c26161231e3f3acf4c03e432d65f",
       "role": "source",
       "category": "store",
-      "lastModified": 1772432096045
+      "lastModified": 1772682844145
     },
     {
       "path": "src/store/file-adapter.ts",
-      "size": 4872,
+      "size": 5580,
       "language": "TypeScript",
-      "lineCount": 152,
-      "hash": "8e86302555fc98bb33d0f4ee0369474be68cbeb3335f49efb08a7a88ddd33cbf",
+      "lineCount": 168,
+      "hash": "e7ad9cd9839cc794ad101dc1868c5fd04786c12967a0f56f94247652989c7189",
       "role": "source",
       "category": "store",
-      "lastModified": 1772432096047
+      "lastModified": 1772686115448
     },
     {
       "path": "src/store/index.ts",
@@ -1098,7 +1128,7 @@
       "hash": "ef5241c96a68516afb0a8be4c731c3083dd6af1955297c5127556a0cd3cfa318",
       "role": "source",
       "category": "store",
-      "lastModified": 1772432096047
+      "lastModified": 1772682844145
     },
     {
       "path": "src/store/integration-schema.ts",
@@ -1148,7 +1178,7 @@
       "hash": "93d86ed6d38828bde101a135f60ee7e972928e1712396d186aa186aaa0279546",
       "role": "source",
       "category": "store",
-      "lastModified": 1772432096045
+      "lastModified": 1772682844146
     },
     {
       "path": "src/store/notion-client.ts",
@@ -1168,7 +1198,7 @@
       "hash": "7f2187977498ec637cdbb3d3f9f5c9cefd2e36eecbe9036325085e48168beb54",
       "role": "source",
       "category": "store",
-      "lastModified": 1772432096047
+      "lastModified": 1772682844146
     },
     {
       "path": "src/workflow/default.ts",
@@ -1198,7 +1228,7 @@
       "hash": "38a7731557033b242aa90e121bb4755a089e613cd17573ed10389a8008102691",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772438463318
+      "lastModified": 1772682844146
     },
     {
       "path": "tests/e2e/cli-import.test.ts",
@@ -1248,7 +1278,7 @@
       "hash": "2d699edbdda3773b6a0def0adaad01380a0ff19f569351ef72b840cda4ddbd2a",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432096010
+      "lastModified": 1772682844146
     },
     {
       "path": "tests/e2e/cli-smart-add.test.ts",
@@ -1258,7 +1288,7 @@
       "hash": "0a35c3816d1f828c4b15c7ae7b8832fae8b9ca6baed8637c828d5dc6893207d5",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772515790924
+      "lastModified": 1772682844146
     },
     {
       "path": "tests/e2e/cli-sync.test.ts",
@@ -1328,7 +1358,7 @@
       "hash": "5a1785b14a12f052c85bc725ddde3f3b7aa83e51f9a330521d76737df2e22286",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772211205439
+      "lastModified": 1772682844146
     },
     {
       "path": "tests/integration/claude-config.test.ts",
@@ -1352,13 +1382,23 @@
     },
     {
       "path": "tests/integration/smart-add-duplicate-outcomes.test.ts",
-      "size": 7276,
+      "size": 9391,
       "language": "TypeScript",
-      "lineCount": 204,
-      "hash": "5d642dcb97f94491df9d367daed8bb28d37f13212ae7ea28bfa14b6b324c0229",
+      "lineCount": 257,
+      "hash": "1f054b5fdeaa05fcb5d92ee04cfebd276c570c5c47931cf6eff20d90e5ad911b",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432096005
+      "lastModified": 1772781977939
+    },
+    {
+      "path": "tests/integration/smart-add-orphaned-parent.test.ts",
+      "size": 11111,
+      "language": "TypeScript",
+      "lineCount": 330,
+      "hash": "91aa1a56cc7450a22d4df40a9f7a8dfd506dfb8908a558f19cf90a78de2c7a7d",
+      "role": "test",
+      "category": "tests",
+      "lastModified": 1772782624265
     },
     {
       "path": "tests/integration/store-roundtrip.test.ts",
@@ -1368,7 +1408,7 @@
       "hash": "bedb42edc6c1909b3b5f376ed309451951710c07c2a8cc3f6cc4ce8c6391b171",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432096006
+      "lastModified": 1772682844147
     },
     {
       "path": "tests/unit/analyze/acknowledge.test.ts",
@@ -1388,7 +1428,7 @@
       "hash": "9ef0d6753c5ea1d77c2f6d02a30473e15a782bfd3b54a342548648b7efe1e912",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772523911235
+      "lastModified": 1772682844147
     },
     {
       "path": "tests/unit/analyze/decompose.test.ts",
@@ -1398,7 +1438,7 @@
       "hash": "e3d5ca9aafb34b83851332a3069b30e8f197706d3aff3cbc608d1eb99233cace",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772522951903
+      "lastModified": 1772682844147
     },
     {
       "path": "tests/unit/analyze/dedupe.test.ts",
@@ -1422,13 +1462,13 @@
     },
     {
       "path": "tests/unit/analyze/extract-llm-mock.test.ts",
-      "size": 12055,
+      "size": 12063,
       "language": "TypeScript",
       "lineCount": 382,
-      "hash": "b4f05da29e200d2b1e51aabb0399f77ae88b6662f8002dcaa97417a71a45d1c3",
+      "hash": "fe60316421cc1091f5375703b378d2b03d4aa16bfeeab5b678074767e407e98d",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772515270080
+      "lastModified": 1772764814279
     },
     {
       "path": "tests/unit/analyze/extract-llm.test.ts",
@@ -1438,7 +1478,7 @@
       "hash": "baae3a27d3fe5474834b70fdf1d05104d0cdd77dfae1305cabbbba6c6ad9739d",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772515281544
+      "lastModified": 1772682844147
     },
     {
       "path": "tests/unit/analyze/extract-text.test.ts",
@@ -1448,7 +1488,7 @@
       "hash": "71c7e2c9ef6f697b70684a801e23a937df0a9972b3ce6973035e436e1615a878",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772517379864
+      "lastModified": 1772682844148
     },
     {
       "path": "tests/unit/analyze/extract.test.ts",
@@ -1458,7 +1498,7 @@
       "hash": "97de0d4dc989516df17f5812adf9461d65ece67e7aff2c0810673545caaedac7",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772515768838
+      "lastModified": 1772682844148
     },
     {
       "path": "tests/unit/analyze/file-validation.test.ts",
@@ -1468,7 +1508,7 @@
       "hash": "687c0e31da2027d99d1acb56516f8907f0edc6a0c02a1fbdf94e84fb69d12c13",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772518359897
+      "lastModified": 1772682844148
     },
     {
       "path": "tests/unit/analyze/guided.test.ts",
@@ -1488,7 +1528,7 @@
       "hash": "f3a6e0f81f0cffbf1f53c8b7b12b409d808642d622cb1fd639170e1d5634a387",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772522168234
+      "lastModified": 1772682844148
     },
     {
       "path": "tests/unit/analyze/modify-reason.test.ts",
@@ -1498,7 +1538,7 @@
       "hash": "a0383c3455747673fb7dbeeb8b5feaa5af223ab3efa4b2a0d1231ef394a02dc2",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095993
+      "lastModified": 1772682844148
     },
     {
       "path": "tests/unit/analyze/propose.test.ts",
@@ -1528,7 +1568,7 @@
       "hash": "652d630694af3bddb75b00a6c27478a7a902823716ba2f1c29984d7619d537c3",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095999
+      "lastModified": 1772682844149
     },
     {
       "path": "tests/unit/analyze/reason-description.test.ts",
@@ -1558,7 +1598,7 @@
       "hash": "e401d649d0b0c23523b8896d4059f6f85869d111f08c02e17fae6655458293b9",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772436543752
+      "lastModified": 1772682844149
     },
     {
       "path": "tests/unit/analyze/reason-multi-description.test.ts",
@@ -1578,7 +1618,7 @@
       "hash": "608f763f1f3762fafc84e7ca889e52c3811d0db7d400624dacaf4fd62a6f3e3b",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772437160773
+      "lastModified": 1772682844149
     },
     {
       "path": "tests/unit/analyze/reconcile.test.ts",
@@ -1648,7 +1688,7 @@
       "hash": "5f4912061b018ca78492049ae3763b884c060ba5ec8d509d9adea63912202e91",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095988
+      "lastModified": 1772682844149
     },
     {
       "path": "tests/unit/cli/commands/chunked-review.test.ts",
@@ -1668,7 +1708,7 @@
       "hash": "1c57ef3040de43dac3a295ad66305d20c15a532d702b85ff9ba4bb5a422baaa4",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772522909282
+      "lastModified": 1772682844149
     },
     {
       "path": "tests/unit/cli/commands/fix.test.ts",
@@ -1688,7 +1728,7 @@
       "hash": "4e0e52dbbd74cddacba7819f6290f9e558921f0056e75dbbef903444d75e4403",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772523926799
+      "lastModified": 1772682844149
     },
     {
       "path": "tests/unit/cli/commands/loe-display.test.ts",
@@ -1698,7 +1738,7 @@
       "hash": "adf0b9bc0088b1e1008b12b2b92589b1a92c8289777e06a01805c2336e5c0b74",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772523961081
+      "lastModified": 1772682844150
     },
     {
       "path": "tests/unit/cli/commands/move.test.ts",
@@ -1718,7 +1758,7 @@
       "hash": "204352aaee23e0227e4f55d79a463239cd707507685e67e4fbe014d1d1d7d6c9",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095989
+      "lastModified": 1772682844150
     },
     {
       "path": "tests/unit/cli/commands/remove.test.ts",
@@ -1728,7 +1768,7 @@
       "hash": "e031bcd97f74e283525334b1567e532f0eeae3aac80518a01343eea42877e5f7",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772512681378
+      "lastModified": 1772682844150
     },
     {
       "path": "tests/unit/cli/commands/report.test.ts",
@@ -1742,13 +1782,13 @@
     },
     {
       "path": "tests/unit/cli/commands/smart-add-duplicates.test.ts",
-      "size": 9805,
+      "size": 12555,
       "language": "TypeScript",
-      "lineCount": 359,
-      "hash": "7c2f0e3cedc951cb4c15f8002e4d583aa0630c43bac0cd180895a7bfc202664d",
+      "lineCount": 465,
+      "hash": "8c821685c3fae3ab04fe5eca3f31dd20ce56a6c2a8b20d6268bf033382ab405b",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095982
+      "lastModified": 1772777310623
     },
     {
       "path": "tests/unit/cli/commands/smart-add-merge.test.ts",
@@ -1758,7 +1798,7 @@
       "hash": "d1909bbcba50543a0938f34d69b87f424df20a52e812d156adb5d4ad84ceea31",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095991
+      "lastModified": 1772682844150
     },
     {
       "path": "tests/unit/cli/commands/smart-add.test.ts",
@@ -1768,17 +1808,17 @@
       "hash": "7da92713e22c81b9f453a0c4c596113f4734ebf71780119550a6c3b6813ce514",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095984
+      "lastModified": 1772682844150
     },
     {
       "path": "tests/unit/cli/commands/status.test.ts",
-      "size": 35892,
+      "size": 41090,
       "language": "TypeScript",
-      "lineCount": 1185,
-      "hash": "cf5b235d3683ca54388447ad1647815129c6050def522ff7ce0863bf66b299e0",
+      "lineCount": 1355,
+      "hash": "88457fbbb56d4a237a68dc2734b3d28c9df42c699472c1748d7c9f4f0ea59cc5",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095986
+      "lastModified": 1772822052424
     },
     {
       "path": "tests/unit/cli/commands/sync.test.ts",
@@ -1818,7 +1858,7 @@
       "hash": "f37580a3e8258591e4681df8dfce6ea5452bd45da6a81920631b0c1401a4b239",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095989
+      "lastModified": 1772682844151
     },
     {
       "path": "tests/unit/cli/commands/validate-interactive.test.ts",
@@ -1828,7 +1868,7 @@
       "hash": "3cc8a4870dacfeec6688920fc4986cce47e9090bdae612d19becd5a34d6480e4",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095988
+      "lastModified": 1772682844151
     },
     {
       "path": "tests/unit/cli/commands/validate.test.ts",
@@ -1838,7 +1878,7 @@
       "hash": "0d036367ab590473fc6c3b7f0d158f478825a341cce0102d391b5f9ded39048d",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095987
+      "lastModified": 1772682844151
     },
     {
       "path": "tests/unit/cli/commands/verify.test.ts",
@@ -1868,7 +1908,7 @@
       "hash": "5cd0479871de4def316ddb7a585f7c8320a2463e81271b1ac53d972cef6c11f9",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095992
+      "lastModified": 1772682844151
     },
     {
       "path": "tests/unit/cli/mcp.test.ts",
@@ -1878,7 +1918,7 @@
       "hash": "aa5dd24037a367ec790883ddba2128ae3f10ec26a7e0101b29a97ab45cea0e5c",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095981
+      "lastModified": 1772682844151
     },
     {
       "path": "tests/unit/cli/output.test.ts",
@@ -1928,7 +1968,7 @@
       "hash": "e2a38e25a5a257eb315cf4c63b94cb802a8019fc52ea43e0648811453d013c54",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095977
+      "lastModified": 1772682844151
     },
     {
       "path": "tests/unit/core/epicless.test.ts",
@@ -1938,7 +1978,7 @@
       "hash": "eb846faeed78ce849dc5cd9f9e3f867a97590d871db51d82295f247593eb2d30",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095972
+      "lastModified": 1772682844151
     },
     {
       "path": "tests/unit/core/facets.test.ts",
@@ -1948,7 +1988,7 @@
       "hash": "ee49e95c649e079f733f731c6da3a012d6e77321127d9fed9a001af33de64ca9",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095975
+      "lastModified": 1772682844151
     },
     {
       "path": "tests/unit/core/feature-filtered-task.test.ts",
@@ -1978,7 +2018,7 @@
       "hash": "52f79e1eba0b0a237033792eeb90e0c91b6d97101e51b954dd1d02c71b9c3c07",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095979
+      "lastModified": 1772682844152
     },
     {
       "path": "tests/unit/core/keywords.test.ts",
@@ -2088,7 +2128,7 @@
       "hash": "283a7c424c1750423821829bb1216d30cb417ae28170d7de0343a3e7e169a991",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095978
+      "lastModified": 1772682844152
     },
     {
       "path": "tests/unit/core/remove-feature.test.ts",
@@ -2098,7 +2138,7 @@
       "hash": "4aa0807aef0c368c38ca6687d32df347abb54c042c8b98107c56f9e858929793",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095963
+      "lastModified": 1772682844152
     },
     {
       "path": "tests/unit/core/remove-task.test.ts",
@@ -2108,7 +2148,7 @@
       "hash": "a3d131d957b93ae2a6c24b7d0b18b013d4b782e3c6c1f30c2a361d9e182dc1d4",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095977
+      "lastModified": 1772682844152
     },
     {
       "path": "tests/unit/core/reorganize-executor.test.ts",
@@ -2118,7 +2158,7 @@
       "hash": "8f2c5dbd456bfb7962def1d408ef1dfd880c4d5e5709db451c68d80bfcf4c12c",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095978
+      "lastModified": 1772682844152
     },
     {
       "path": "tests/unit/core/reorganize.test.ts",
@@ -2128,7 +2168,7 @@
       "hash": "3b2442e216d1dafae77b9400f80852c6e15e9b39489a88d15c1b9dc44eb79a96",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095970
+      "lastModified": 1772682844152
     },
     {
       "path": "tests/unit/core/requirements-prioritization.test.ts",
@@ -2158,7 +2198,7 @@
       "hash": "8c5351c6948844d09b30bb1fe3af59d5137b3a3cdbec66558fc8a32bda443a9c",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095978
+      "lastModified": 1772682844153
     },
     {
       "path": "tests/unit/core/sync-engine.test.ts",
@@ -2168,7 +2208,7 @@
       "hash": "3deaeba13843f1117100feb6c3f0123f11fc4f4a4e25ea7dc531f901c52baa72",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095972
+      "lastModified": 1772682844153
     },
     {
       "path": "tests/unit/core/sync.test.ts",
@@ -2198,17 +2238,17 @@
       "hash": "9ffee607d07d03080c25368eecde24c831cb4e844951363491e2f3349d81374a",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095970
+      "lastModified": 1772682844153
     },
     {
       "path": "tests/unit/core/token-usage.test.ts",
-      "size": 48324,
+      "size": 48385,
       "language": "TypeScript",
-      "lineCount": 1515,
-      "hash": "3da294385f3aa99a669c2b500579d7cdfc41895beee42858f5e23d5b22a74825",
+      "lineCount": 1517,
+      "hash": "990c64aed1cba60da739601b5bb59d3b136ba4fea8f69d578025b89368389624",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772438463318
+      "lastModified": 1772764019834
     },
     {
       "path": "tests/unit/core/transitions.test.ts",
@@ -2258,7 +2298,7 @@
       "hash": "f436c4b5f96da11ed885499572d4385411da4b94db6395ba4f9a70d1f42a99ea",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095979
+      "lastModified": 1772682844153
     },
     {
       "path": "tests/unit/recommend/create-from-recommendations.test.ts",
@@ -2268,7 +2308,7 @@
       "hash": "6b11cc866fa42ce890d301d1fdc6bcf85b31416c44cdfc0f690313f41661f89f",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095980
+      "lastModified": 1772682844153
     },
     {
       "path": "tests/unit/schema/validate.test.ts",
@@ -2278,7 +2318,7 @@
       "hash": "5627dc77b872e05f8ebde12a273d60616547891b86068d41ca4e364f3accd31e",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772521539021
+      "lastModified": 1772682844154
     },
     {
       "path": "tests/unit/store/adapter-registry.test.ts",
@@ -2288,7 +2328,7 @@
       "hash": "8669c82b52726becd0e458b2de1851b751a54f9f4deeef9c27bf67506d0d8650",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432096002
+      "lastModified": 1772682844154
     },
     {
       "path": "tests/unit/store/file-adapter.test.ts",
@@ -2338,7 +2378,7 @@
       "hash": "ad3cbf45ea9a23755e23aebed1f6f93a28ac4432606ea3e106634ece9fa09452",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432096005
+      "lastModified": 1772682844154
     },
     {
       "path": "tests/unit/store/store-contract.test.ts",
@@ -2348,7 +2388,7 @@
       "hash": "dda8294ccddd9ca10cbb2fae958c59e0c5fed348e030bd2a3a3b99ed77c845e5",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432096005
+      "lastModified": 1772682844154
     },
     {
       "path": "tsconfig.json",
@@ -2368,18 +2408,18 @@
       "hash": "0fa4eb6e6369db50e4d2c058dd9760791949117b18a643658397c6401e5070b9",
       "role": "config",
       "category": "root",
-      "lastModified": 1772432096012
+      "lastModified": 1772682844154
     }
   ],
   "summary": {
-    "totalFiles": 237,
-    "totalLines": 84532,
+    "totalFiles": 241,
+    "totalLines": 85450,
     "byLanguage": {
       "JSON": 9,
       "Other": 4,
       "Markdown": 4,
       "Text": 1,
-      "TypeScript": 219
+      "TypeScript": 223
     },
     "byRole": {
       "other": 4,
@@ -2387,22 +2427,22 @@
       "asset": 2,
       "generated": 1,
       "config": 3,
-      "source": 106,
-      "test": 117
+      "source": 109,
+      "test": 118
     },
     "byCategory": {
       ".claude": 1,
       ".rex": 4,
       "root": 9,
-      "analyze": 16,
-      "cli": 35,
+      "analyze": 18,
+      "cli": 36,
       "core": 35,
       "src": 1,
       "recommend": 3,
       "schema": 4,
       "store": 11,
       "workflow": 1,
-      "tests": 117
+      "tests": 118
     }
   }
 }

@@ -4,6 +4,7 @@ import {
   addDirectoryProximityEdges,
   louvainPhase1,
   mergeSmallCommunities,
+  mergeSatelliteCommunities,
   splitLargeCommunities,
   splitByDirectory,
 } from "../../../src/analyzers/louvain.js";
@@ -1647,6 +1648,169 @@ describe("filename-based zone IDs replace numeric suffixes", () => {
     // Should NOT have zones with numeric suffixes like src-2, src-3
     for (const zone of result.zones) {
       expect(zone.id).not.toMatch(/^src-\d+$/);
+    }
+  });
+});
+
+// ── mergeSatelliteCommunities ────────────────────────────────────────────────
+
+describe("mergeSatelliteCommunities", () => {
+  it("absorbs a small high-coupling community into its most-connected neighbor", () => {
+    // Setup: 3 communities — large A (10 nodes), large B (10 nodes), satellite S (4 nodes)
+    // S has more external edges than internal edges → high coupling
+    const community = new Map<string, string>();
+    const graph: Map<string, Map<string, number>> = new Map();
+
+    // Large community A: 10 nodes tightly connected
+    for (let i = 0; i < 10; i++) {
+      community.set(`a${i}`, "A");
+      graph.set(`a${i}`, new Map());
+    }
+    for (let i = 0; i < 9; i++) {
+      graph.get(`a${i}`)!.set(`a${i + 1}`, 1);
+      graph.get(`a${i + 1}`)!.set(`a${i}`, 1);
+    }
+
+    // Large community B: 10 nodes tightly connected
+    for (let i = 0; i < 10; i++) {
+      community.set(`b${i}`, "B");
+      graph.set(`b${i}`, new Map());
+    }
+    for (let i = 0; i < 9; i++) {
+      graph.get(`b${i}`)!.set(`b${i + 1}`, 1);
+      graph.get(`b${i + 1}`)!.set(`b${i}`, 1);
+    }
+
+    // Satellite S: 4 nodes with 1 internal edge, 3 external edges to A
+    for (let i = 0; i < 4; i++) {
+      community.set(`s${i}`, "S");
+      if (!graph.has(`s${i}`)) graph.set(`s${i}`, new Map());
+    }
+    // 1 internal edge
+    graph.get("s0")!.set("s1", 1);
+    graph.get("s1")!.set("s0", 1);
+    // 3 cross-edges to A (high coupling)
+    graph.get("s0")!.set("a0", 1);
+    graph.get("a0")!.set("s0", 1);
+    graph.get("s1")!.set("a1", 1);
+    graph.get("a1")!.set("s1", 1);
+    graph.get("s2")!.set("a2", 1);
+    graph.get("a2")!.set("s2", 1);
+
+    const result = mergeSatelliteCommunities(community, graph);
+
+    // S should be absorbed into A (its most-connected neighbor)
+    for (let i = 0; i < 4; i++) {
+      expect(result.get(`s${i}`)).toBe("A");
+    }
+    // A and B should remain unchanged
+    for (let i = 0; i < 10; i++) {
+      expect(result.get(`a${i}`)).toBe("A");
+      expect(result.get(`b${i}`)).toBe("B");
+    }
+  });
+
+  it("preserves small communities with high cohesion", () => {
+    const community = new Map<string, string>();
+    const graph: Map<string, Map<string, number>> = new Map();
+
+    // Large community A
+    for (let i = 0; i < 10; i++) {
+      community.set(`a${i}`, "A");
+      graph.set(`a${i}`, new Map());
+    }
+    for (let i = 0; i < 9; i++) {
+      graph.get(`a${i}`)!.set(`a${i + 1}`, 1);
+      graph.get(`a${i + 1}`)!.set(`a${i}`, 1);
+    }
+
+    // Small community S: 4 nodes with 6 internal edges, 1 external edge
+    // Internal edges >> external → low coupling, should NOT be merged
+    for (let i = 0; i < 4; i++) {
+      community.set(`s${i}`, "S");
+      graph.set(`s${i}`, new Map());
+    }
+    // Fully connected internally (6 edges)
+    for (let i = 0; i < 4; i++) {
+      for (let j = i + 1; j < 4; j++) {
+        graph.get(`s${i}`)!.set(`s${j}`, 1);
+        graph.get(`s${j}`)!.set(`s${i}`, 1);
+      }
+    }
+    // 1 cross-edge to A
+    graph.get("s0")!.set("a0", 1);
+    graph.get("a0")!.set("s0", 1);
+
+    const result = mergeSatelliteCommunities(community, graph);
+
+    // S should remain separate (low coupling)
+    for (let i = 0; i < 4; i++) {
+      expect(result.get(`s${i}`)).toBe("S");
+    }
+  });
+
+  it("does not merge communities exceeding maxSize", () => {
+    const community = new Map<string, string>();
+    const graph: Map<string, Map<string, number>> = new Map();
+
+    // Large community A
+    for (let i = 0; i < 10; i++) {
+      community.set(`a${i}`, "A");
+      graph.set(`a${i}`, new Map());
+    }
+
+    // Community S: exactly at maxSize=5, with high coupling
+    for (let i = 0; i < 5; i++) {
+      community.set(`s${i}`, "S");
+      graph.set(`s${i}`, new Map());
+    }
+    // Only external edges, no internal
+    for (let i = 0; i < 5; i++) {
+      graph.get(`s${i}`)!.set(`a${i}`, 1);
+      graph.get(`a${i}`)!.set(`s${i}`, 1);
+    }
+
+    // maxSize=4 → S has 5 files, should NOT be merged
+    const result = mergeSatelliteCommunities(community, graph, 4);
+
+    for (let i = 0; i < 5; i++) {
+      expect(result.get(`s${i}`)).toBe("S");
+    }
+  });
+
+  it("chooses the most-connected neighbor when multiple neighbors exist", () => {
+    const community = new Map<string, string>();
+    const graph: Map<string, Map<string, number>> = new Map();
+
+    // Community A (10 nodes)
+    for (let i = 0; i < 10; i++) {
+      community.set(`a${i}`, "A");
+      graph.set(`a${i}`, new Map());
+    }
+
+    // Community B (10 nodes)
+    for (let i = 0; i < 10; i++) {
+      community.set(`b${i}`, "B");
+      graph.set(`b${i}`, new Map());
+    }
+
+    // Satellite S: 3 nodes, 2 edges to A, 1 edge to B
+    for (let i = 0; i < 3; i++) {
+      community.set(`s${i}`, "S");
+      graph.set(`s${i}`, new Map());
+    }
+    graph.get("s0")!.set("a0", 1);
+    graph.get("a0")!.set("s0", 1);
+    graph.get("s1")!.set("a1", 1);
+    graph.get("a1")!.set("s1", 1);
+    graph.get("s2")!.set("b0", 1);
+    graph.get("b0")!.set("s2", 1);
+
+    const result = mergeSatelliteCommunities(community, graph);
+
+    // S should merge into A (2 edges) not B (1 edge)
+    for (let i = 0; i < 3; i++) {
+      expect(result.get(`s${i}`)).toBe("A");
     }
   });
 });

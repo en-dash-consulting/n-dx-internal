@@ -596,6 +596,19 @@ LLM vendor settings (.n-dx.json — preferred for multi-vendor setup):
   llm.codex.api_endpoint   string    Codex API endpoint (optional; validated URL)
   llm.codex.model          string    Codex default model (optional)
 
+Feature toggles (.n-dx.json — managed via web UI or ndx config):
+  features.rex.showTokenBudget      boolean   Show token budget on task items (default: false)
+  features.rex.autoComplete         boolean   Auto-complete parents when children done (default: true)
+  features.rex.budgetEnforcement    boolean   Enforce token/cost budgets (default: false)
+  features.rex.notionSync           boolean   Enable Notion two-way sync (default: false)
+  features.sourcevision.callGraph   boolean   Enable call graph extraction (default: false)
+  features.sourcevision.enrichment  boolean   AI enrichment passes (default: true)
+  features.sourcevision.componentCatalog
+                                    boolean   React component catalog (default: true)
+  features.hench.autoRetry          boolean   Auto-retry on failure (default: true)
+  features.hench.guardRails         boolean   Security guard rails (default: true)
+  features.hench.adaptiveWorkflow   boolean   Adaptive workflow adjustment (default: false)
+
 Web dashboard settings (.n-dx.json):
   web.port                 number    Dashboard server port (default: 3117)
 
@@ -652,6 +665,8 @@ Examples:
                                                Set Claude model (llm namespace)
   n-dx config llm.codex.cli_path /usr/local/bin/codex
                                                Set Codex CLI path
+  n-dx config features.rex.showTokenBudget true
+                                               Enable token budget display on tasks
   n-dx config --test-connection                Test API key and/or CLI path
   n-dx config --json                           Show all settings as JSON
   n-dx config hench --json                     Show hench settings as JSON

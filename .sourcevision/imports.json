@@ -10,6 +10,15 @@
     },
     {
       "from": "cli.js",
+      "to": "claude-integration.js",
+      "type": "static",
+      "symbols": [
+        "setupClaudeIntegration",
+        "printClaudeSetupSummary"
+      ]
+    },
+    {
+      "from": "cli.js",
       "to": "config.js",
       "type": "static",
       "symbols": [
@@ -5031,6 +5040,15 @@
       ]
     },
     {
+      "from": "packages/rex/src/analyze/analyze-shared.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
       "from": "packages/rex/src/analyze/consolidation-guard.ts",
       "to": "packages/rex/src/analyze/propose.ts",
       "type": "type",
@@ -5165,6 +5183,30 @@
     },
     {
       "from": "packages/rex/src/analyze/extract.ts",
+      "to": "packages/rex/src/analyze/analyze-shared.ts",
+      "type": "static",
+      "symbols": [
+        "detectFileFormat",
+        "DEFAULT_MODEL",
+        "extractJson",
+        "repairTruncatedJson",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "PRD_SCHEMA",
+        "TASK_QUALITY_RULES",
+        "OUTPUT_INSTRUCTION"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/extract.ts",
+      "to": "packages/rex/src/analyze/analyze-shared.ts",
+      "type": "type",
+      "symbols": [
+        "FileFormat"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/extract.ts",
       "to": "packages/rex/src/analyze/file-validation.ts",
       "type": "static",
       "symbols": [
@@ -5178,36 +5220,19 @@
     },
     {
       "from": "packages/rex/src/analyze/extract.ts",
+      "to": "packages/rex/src/analyze/llm-bridge.ts",
+      "type": "static",
+      "symbols": [
+        "spawnClaude"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/extract.ts",
       "to": "packages/rex/src/analyze/propose.ts",
       "type": "type",
       "symbols": [
         "Proposal",
         "ProposalTask"
-      ]
-    },
-    {
-      "from": "packages/rex/src/analyze/extract.ts",
-      "to": "packages/rex/src/analyze/reason.ts",
-      "type": "static",
-      "symbols": [
-        "detectFileFormat",
-        "spawnClaude",
-        "DEFAULT_MODEL",
-        "extractJson",
-        "repairTruncatedJson",
-        "emptyAnalyzeTokenUsage",
-        "accumulateTokenUsage",
-        "PRD_SCHEMA",
-        "TASK_QUALITY_RULES",
-        "OUTPUT_INSTRUCTION"
-      ]
-    },
-    {
-      "from": "packages/rex/src/analyze/extract.ts",
-      "to": "packages/rex/src/analyze/reason.ts",
-      "type": "type",
-      "symbols": [
-        "FileFormat"
       ]
     },
     {
@@ -5221,7 +5246,7 @@
     },
     {
       "from": "packages/rex/src/analyze/file-validation.ts",
-      "to": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/analyze/analyze-shared.ts",
       "type": "type",
       "symbols": [
         "FileFormat"
@@ -5578,6 +5603,23 @@
       ]
     },
     {
+      "from": "packages/rex/src/analyze/llm-bridge.ts",
+      "to": "packages/rex/src/analyze/analyze-shared.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_MODEL",
+        "DEFAULT_CODEX_MODEL"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/llm-bridge.ts",
+      "to": "packages/rex/src/analyze/analyze-shared.ts",
+      "type": "type",
+      "symbols": [
+        "ClaudeResult"
+      ]
+    },
+    {
       "from": "packages/rex/src/analyze/modify-reason.ts",
       "to": "packages/rex/src/analyze/propose.ts",
       "type": "type",
@@ -5666,11 +5708,76 @@
     },
     {
       "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/analyze/analyze-shared.ts",
+      "type": "reexport",
+      "symbols": [
+        "DEFAULT_MODEL",
+        "DEFAULT_CODEX_MODEL",
+        "MAX_RETRIES",
+        "parseTokenUsage",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "detectFileFormat",
+        "extractJson",
+        "repairTruncatedJson",
+        "PRD_SCHEMA",
+        "TASK_QUALITY_RULES",
+        "OUTPUT_INSTRUCTION"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/analyze/analyze-shared.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_MODEL",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "extractJson",
+        "repairTruncatedJson",
+        "detectFileFormat",
+        "PRD_SCHEMA",
+        "TASK_QUALITY_RULES",
+        "OUTPUT_INSTRUCTION"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/analyze/analyze-shared.ts",
+      "type": "type",
+      "symbols": [
+        "ClaudeResult",
+        "FileFormat"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
       "to": "packages/rex/src/analyze/extract.ts",
       "type": "dynamic",
       "symbols": [
         "extractFromText",
         "extractFromMarkdown"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/analyze/llm-bridge.ts",
+      "type": "reexport",
+      "symbols": [
+        "setLLMConfig",
+        "setClaudeConfig",
+        "setClaudeClient",
+        "getAuthMode",
+        "getLLMVendor",
+        "spawnClaude"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/reason.ts",
+      "to": "packages/rex/src/analyze/llm-bridge.ts",
+      "type": "static",
+      "symbols": [
+        "spawnClaude"
       ]
     },
     {
@@ -5712,7 +5819,6 @@
       "type": "type",
       "symbols": [
         "PRDItem",
-        "TokenUsage",
         "AnalyzeTokenUsage"
       ]
     },
@@ -6044,6 +6150,15 @@
     },
     {
       "from": "packages/rex/src/cli/commands/analyze.ts",
+      "to": "packages/rex/src/cli/commands/token-format.ts",
+      "type": "static",
+      "symbols": [
+        "preflightBudgetCheck",
+        "formatBudgetWarnings"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/analyze.ts",
       "to": "packages/rex/src/cli/errors.ts",
       "type": "static",
       "symbols": [
@@ -6067,15 +6182,6 @@
       "type": "static",
       "symbols": [
         "parseIntSafe"
-      ]
-    },
-    {
-      "from": "packages/rex/src/cli/commands/analyze.ts",
-      "to": "packages/rex/src/core/token-usage.ts",
-      "type": "static",
-      "symbols": [
-        "preflightBudgetCheck",
-        "formatBudgetWarnings"
       ]
     },
     {
@@ -7215,6 +7321,15 @@
     },
     {
       "from": "packages/rex/src/cli/commands/status.ts",
+      "to": "packages/rex/src/cli/commands/token-format.ts",
+      "type": "static",
+      "symbols": [
+        "formatAggregateTokenUsage",
+        "formatBudgetWarnings"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/status.ts",
       "to": "packages/rex/src/cli/errors.ts",
       "type": "static",
       "symbols": [
@@ -7280,9 +7395,7 @@
       "type": "static",
       "symbols": [
         "aggregateTokenUsage",
-        "formatAggregateTokenUsage",
-        "checkBudget",
-        "formatBudgetWarnings"
+        "checkBudget"
       ]
     },
     {
@@ -7384,6 +7497,32 @@
       "symbols": [
         "SyncDirection",
         "SyncReport"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/token-format.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "static",
+      "symbols": [
+        "aggregateTokenUsage",
+        "checkBudget"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/token-format.ts",
+      "to": "packages/rex/src/core/token-usage.ts",
+      "type": "type",
+      "symbols": [
+        "AggregateTokenUsage",
+        "BudgetCheckResult"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/token-format.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
       ]
     },
     {
@@ -7500,6 +7639,15 @@
     },
     {
       "from": "packages/rex/src/cli/commands/usage.ts",
+      "to": "packages/rex/src/cli/commands/token-format.ts",
+      "type": "static",
+      "symbols": [
+        "formatAggregateTokenUsage",
+        "formatBudgetWarnings"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/usage.ts",
       "to": "packages/rex/src/cli/errors.ts",
       "type": "static",
       "symbols": [
@@ -7523,13 +7671,11 @@
       "type": "static",
       "symbols": [
         "aggregateTokenUsage",
-        "formatAggregateTokenUsage",
         "estimateCost",
         "collectTokenEvents",
         "groupByCommand",
         "groupByTimePeriod",
-        "checkBudget",
-        "formatBudgetWarnings"
+        "checkBudget"
       ]
     },
     {
@@ -9099,14 +9245,6 @@
       ]
     },
     {
-      "from": "packages/rex/src/core/token-usage.ts",
-      "to": "packages/rex/src/store/index.ts",
-      "type": "dynamic",
-      "symbols": [
-        "resolveStore"
-      ]
-    },
-    {
       "from": "packages/rex/src/core/transitions.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
@@ -10055,6 +10193,18 @@
       ]
     },
     {
+      "from": "packages/rex/src/schema/validate.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "VALID_STATUSES",
+        "VALID_LEVELS",
+        "VALID_PRIORITIES",
+        "VALID_REQUIREMENT_CATEGORIES",
+        "VALID_VALIDATION_TYPES"
+      ]
+    },
+    {
       "from": "packages/rex/src/store/adapter-registry.ts",
       "to": "packages/rex/src/core/canonical.ts",
       "type": "static",
@@ -10618,6 +10768,70 @@
     },
     {
       "from": "packages/rex/tests/integration/smart-add-duplicate-outcomes.test.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/smart-add-orphaned-parent.test.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/smart-add-orphaned-parent.test.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/smart-add-orphaned-parent.test.ts",
+      "to": "packages/rex/src/cli/commands/init.ts",
+      "type": "static",
+      "symbols": [
+        "cmdInit"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/smart-add-orphaned-parent.test.ts",
+      "to": "packages/rex/src/cli/commands/smart-add.ts",
+      "type": "static",
+      "symbols": [
+        "cmdSmartAdd"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/smart-add-orphaned-parent.test.ts",
+      "to": "packages/rex/src/cli/commands/validate.ts",
+      "type": "static",
+      "symbols": [
+        "cmdValidate"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/smart-add-orphaned-parent.test.ts",
+      "to": "packages/rex/src/core/structural.ts",
+      "type": "static",
+      "symbols": [
+        "validateStructure"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/smart-add-orphaned-parent.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/smart-add-orphaned-parent.test.ts",
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
@@ -11527,6 +11741,7 @@
         "formatTimestamp",
         "renderTree",
         "filterCompleted",
+        "filterDeleted",
         "formatStats"
       ]
     },
@@ -12488,6 +12703,15 @@
     },
     {
       "from": "packages/rex/tests/unit/core/token-usage.test.ts",
+      "to": "packages/rex/src/cli/commands/token-format.ts",
+      "type": "static",
+      "symbols": [
+        "formatAggregateTokenUsage",
+        "formatBudgetWarnings"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/token-usage.test.ts",
       "to": "packages/rex/src/core/token-usage.ts",
       "type": "static",
       "symbols": [
@@ -12495,7 +12719,6 @@
         "extractHenchTokenUsage",
         "extractSvTokenUsage",
         "aggregateTokenUsage",
-        "formatAggregateTokenUsage",
         "estimateCost",
         "extractRexTokenEvents",
         "extractHenchTokenEvents",
@@ -12504,8 +12727,7 @@
         "groupByCommand",
         "groupByTimePeriod",
         "periodKey",
-        "checkBudget",
-        "formatBudgetWarnings"
+        "checkBudget"
       ]
     },
     {
@@ -13536,7 +13758,7 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/enrich.ts",
-      "to": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/zone-hash.ts",
       "type": "static",
       "symbols": [
         "computeGlobalContentHash"
@@ -14113,6 +14335,7 @@
         "louvainPhase1",
         "mergeBidirectionalCoupling",
         "mergeSmallCommunities",
+        "mergeSatelliteCommunities",
         "capZoneCount",
         "splitLargeCommunities"
       ]
@@ -14134,6 +14357,22 @@
       "type": "type",
       "symbols": [
         "SubAnalysis"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/zone-hash.ts",
+      "type": "reexport",
+      "symbols": [
+        "computeGlobalContentHash"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/zone-hash.ts",
+      "type": "static",
+      "symbols": [
+        "computeGlobalContentHash"
       ]
     },
     {
@@ -15900,6 +16139,7 @@
         "addDirectoryProximityEdges",
         "louvainPhase1",
         "mergeSmallCommunities",
+        "mergeSatelliteCommunities",
         "splitLargeCommunities",
         "splitByDirectory"
       ]
@@ -17090,6 +17330,14 @@
     },
     {
       "from": "packages/web/src/server/start.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
+      "type": "static",
+      "symbols": [
+        "collectAllIds"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/start.ts",
       "to": "packages/web/src/server/routes-adaptive.ts",
       "type": "static",
       "symbols": [
@@ -17253,6 +17501,14 @@
     },
     {
       "from": "packages/web/src/server/start.ts",
+      "to": "packages/web/src/server/usage-cleanup-scheduler.ts",
+      "type": "type",
+      "symbols": [
+        "CollectAllIdsFn"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/start.ts",
       "to": "packages/web/src/server/websocket.ts",
       "type": "static",
       "symbols": [
@@ -17285,28 +17541,56 @@
       ]
     },
     {
-      "from": "packages/web/src/server/usage-cleanup-scheduler.ts",
-      "to": "packages/web/src/server/rex-gateway.ts",
-      "type": "static",
-      "symbols": [
-        "collectAllIds"
-      ]
-    },
-    {
-      "from": "packages/web/src/server/usage-cleanup-scheduler.ts",
-      "to": "packages/web/src/server/rex-gateway.ts",
-      "type": "type",
-      "symbols": [
-        "PRDDocument"
-      ]
-    },
-    {
       "from": "packages/web/src/server/websocket.ts",
       "to": "packages/web/src/server/ws-health-tracker.ts",
       "type": "type",
       "symbols": [
         "WsHealthTracker",
         "CleanupReason"
+      ]
+    },
+    {
+      "from": "packages/web/src/shared/index.ts",
+      "to": "packages/web/src/shared/data-files.ts",
+      "type": "reexport",
+      "symbols": [
+        "DATA_FILES",
+        "ALL_DATA_FILES",
+        "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "packages/web/src/shared/index.ts",
+      "to": "packages/web/src/shared/node-culler.ts",
+      "type": "reexport",
+      "symbols": [
+        "NodeCuller"
+      ]
+    },
+    {
+      "from": "packages/web/src/shared/index.ts",
+      "to": "packages/web/src/shared/node-culler.ts",
+      "type": "type",
+      "symbols": [
+        "NodeCullerOptions",
+        "NodeCullerState",
+        "VisibilityCallback"
+      ]
+    },
+    {
+      "from": "packages/web/src/shared/index.ts",
+      "to": "packages/web/src/shared/request-dedup.ts",
+      "type": "reexport",
+      "symbols": [
+        "createRequestDedup"
+      ]
+    },
+    {
+      "from": "packages/web/src/shared/index.ts",
+      "to": "packages/web/src/shared/request-dedup.ts",
+      "type": "type",
+      "symbols": [
+        "RequestDedup"
       ]
     },
     {
@@ -17400,7 +17684,7 @@
     },
     {
       "from": "packages/web/src/viewer/components/crash-recovery-banner.ts",
-      "to": "packages/web/src/viewer/performance/crash-detector.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "type",
       "symbols": [
         "SavedNavigationState"
@@ -17450,18 +17734,11 @@
     },
     {
       "from": "packages/web/src/viewer/components/degradation-banner.ts",
-      "to": "packages/web/src/viewer/performance/graceful-degradation.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "type",
       "symbols": [
+        "MemoryLevel",
         "DegradableFeature"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/components/degradation-banner.ts",
-      "to": "packages/web/src/viewer/performance/memory-monitor.ts",
-      "type": "type",
-      "symbols": [
-        "MemoryLevel"
       ]
     },
     {
@@ -17511,7 +17788,7 @@
     },
     {
       "from": "packages/web/src/viewer/components/memory-warning.ts",
-      "to": "packages/web/src/viewer/performance/memory-monitor.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "static",
       "symbols": [
         "formatBytes",
@@ -17520,7 +17797,7 @@
     },
     {
       "from": "packages/web/src/viewer/components/memory-warning.ts",
-      "to": "packages/web/src/viewer/performance/memory-monitor.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "type",
       "symbols": [
         "MemorySnapshot",
@@ -17622,19 +17899,43 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/execution-panel.ts",
-      "to": "packages/web/src/viewer/messaging/request-dedup.ts",
+      "to": "packages/web/src/viewer/messaging/index.ts",
       "type": "static",
       "symbols": [
-        "createRequestDedup"
+        "createFetchPipeline"
       ]
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/execution-panel.ts",
-      "to": "packages/web/src/viewer/performance/graceful-degradation.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "static",
       "symbols": [
         "isFeatureDisabled",
         "onDegradationChange"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/facet-filter.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/facet-filter.ts",
+      "type": "reexport",
+      "symbols": [
+        "FacetFilter"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/facet-filter.ts",
+      "type": "type",
+      "symbols": [
+        "FacetFilterProps"
       ]
     },
     {
@@ -17783,6 +18084,14 @@
       "type": "static",
       "symbols": [
         "useTreeEventDelegation"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/prd-tree.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-search.ts",
+      "type": "static",
+      "symbols": [
+        "highlightSearchText"
       ]
     },
     {
@@ -17981,6 +18290,14 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "NavigateTo"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/components/prd-tree/task-utilization.ts",
       "to": "packages/web/src/viewer/components/prd-tree/types.ts",
       "type": "type",
@@ -18016,6 +18333,15 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/components/prd-tree/tree-search.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItemData",
+        "ItemStatus"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
       "to": "packages/web/src/viewer/components/prd-tree/types.ts",
       "type": "type",
@@ -18033,6 +18359,14 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-search.ts",
+      "type": "static",
+      "symbols": [
+        "itemMatchesSearch"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
       "to": "packages/web/src/viewer/components/prd-tree/types.ts",
       "type": "type",
       "symbols": [
@@ -18042,17 +18376,10 @@
     },
     {
       "from": "packages/web/src/viewer/components/refresh-queue-status.ts",
-      "to": "packages/web/src/viewer/performance/memory-monitor.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "type",
       "symbols": [
-        "MemoryLevel"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/components/refresh-queue-status.ts",
-      "to": "packages/web/src/viewer/performance/refresh-throttle.ts",
-      "type": "type",
-      "symbols": [
+        "MemoryLevel",
         "RefreshQueueState"
       ]
     },
@@ -18103,6 +18430,14 @@
       "type": "static",
       "symbols": [
         "ConfigFooter"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/sidebar.ts",
+      "to": "packages/web/src/viewer/components/faq.ts",
+      "type": "static",
+      "symbols": [
+        "GlobalFAQ"
       ]
     },
     {
@@ -18268,7 +18603,7 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-app-data.ts",
-      "to": "packages/web/src/viewer/performance/graceful-degradation.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "static",
       "symbols": [
         "isFeatureDisabled",
@@ -18298,7 +18633,7 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
-      "to": "packages/web/src/viewer/performance/crash-detector.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "type",
       "symbols": [
         "CrashDetectionResult",
@@ -18311,6 +18646,25 @@
       "type": "type",
       "symbols": [
         "ViewId"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-delete-actions.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
+      "type": "static",
+      "symbols": [
+        "findItemById",
+        "collectSubtreeIds",
+        "removeItemById"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-delete-actions.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocumentData",
+        "PRDItemData"
       ]
     },
     {
@@ -18347,6 +18701,22 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/hooks/use-facet-state.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-search.ts",
+      "type": "type",
+      "symbols": [
+        "SearchFacets"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-facet-state.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "ItemStatus"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/hooks/use-file-edges.ts",
       "to": "packages/web/src/viewer/views/zone-types.ts",
       "type": "type",
@@ -18372,19 +18742,37 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-graceful-degradation.ts",
-      "to": "packages/web/src/viewer/performance/graceful-degradation.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "type",
       "symbols": [
+        "MemoryLevel",
         "DegradableFeature",
         "DegradationState"
       ]
     },
     {
-      "from": "packages/web/src/viewer/hooks/use-graceful-degradation.ts",
-      "to": "packages/web/src/viewer/performance/memory-monitor.ts",
+      "from": "packages/web/src/viewer/hooks/use-item-selection.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
+      "type": "static",
+      "symbols": [
+        "findItemById"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-item-selection.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
       "type": "type",
       "symbols": [
-        "MemoryLevel"
+        "PRDDocumentData",
+        "PRDItemData"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-item-selection.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "DetailItem"
       ]
     },
     {
@@ -18445,7 +18833,7 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-polling.ts",
-      "to": "packages/web/src/viewer/polling/polling-manager.ts",
+      "to": "packages/web/src/viewer/polling/index.ts",
       "type": "static",
       "symbols": [
         "registerPoller",
@@ -18489,9 +18877,7 @@
       "to": "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
       "type": "static",
       "symbols": [
-        "findItemById",
-        "collectSubtreeIds",
-        "removeItemById"
+        "findItemById"
       ]
     },
     {
@@ -18503,6 +18889,22 @@
         "PRDItemData",
         "TaskUsageSummary",
         "WeeklyBudgetResolution"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-prd-actions.ts",
+      "to": "packages/web/src/viewer/hooks/use-delete-actions.ts",
+      "type": "static",
+      "symbols": [
+        "useDeleteActions"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-prd-actions.ts",
+      "to": "packages/web/src/viewer/hooks/use-item-selection.ts",
+      "type": "static",
+      "symbols": [
+        "useItemSelection"
       ]
     },
     {
@@ -18550,18 +18952,10 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-prd-data.ts",
-      "to": "packages/web/src/viewer/messaging/call-rate-limiter.ts",
+      "to": "packages/web/src/viewer/messaging/index.ts",
       "type": "static",
       "symbols": [
-        "createCallRateLimiter"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/hooks/use-prd-data.ts",
-      "to": "packages/web/src/viewer/messaging/request-dedup.ts",
-      "type": "static",
-      "symbols": [
-        "createRequestDedup"
+        "createFetchPipeline"
       ]
     },
     {
@@ -18609,42 +19003,20 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-prd-websocket.ts",
-      "to": "packages/web/src/viewer/messaging/message-coalescer.ts",
+      "to": "packages/web/src/viewer/messaging/index.ts",
       "type": "static",
       "symbols": [
-        "createMessageCoalescer"
+        "createWSPipeline"
       ]
     },
     {
       "from": "packages/web/src/viewer/hooks/use-prd-websocket.ts",
-      "to": "packages/web/src/viewer/messaging/message-throttle.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "static",
       "symbols": [
-        "createMessageThrottle"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/hooks/use-prd-websocket.ts",
-      "to": "packages/web/src/viewer/performance/dom-update-gate.ts",
-      "type": "static",
-      "symbols": [
-        "createDomUpdateGate"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/hooks/use-prd-websocket.ts",
-      "to": "packages/web/src/viewer/performance/response-buffer-gate.ts",
-      "type": "static",
-      "symbols": [
+        "createUpdateBatcher",
+        "createDomUpdateGate",
         "createResponseBufferGate"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/hooks/use-prd-websocket.ts",
-      "to": "packages/web/src/viewer/performance/update-batcher.ts",
-      "type": "static",
-      "symbols": [
-        "createUpdateBatcher"
       ]
     },
     {
@@ -18657,23 +19029,15 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-project-status.ts",
-      "to": "packages/web/src/viewer/messaging/message-coalescer.ts",
+      "to": "packages/web/src/viewer/messaging/index.ts",
       "type": "static",
       "symbols": [
-        "createMessageCoalescer"
+        "createWSPipeline"
       ]
     },
     {
       "from": "packages/web/src/viewer/hooks/use-project-status.ts",
-      "to": "packages/web/src/viewer/messaging/message-throttle.ts",
-      "type": "static",
-      "symbols": [
-        "createMessageThrottle"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/hooks/use-project-status.ts",
-      "to": "packages/web/src/viewer/performance/graceful-degradation.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "static",
       "symbols": [
         "isFeatureDisabled",
@@ -18682,10 +19046,12 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
-      "to": "packages/web/src/viewer/performance/memory-monitor.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "type",
       "symbols": [
-        "MemoryLevel"
+        "MemoryLevel",
+        "RefreshQueueState",
+        "RefreshPriority"
       ]
     },
     {
@@ -18700,15 +19066,6 @@
         "enqueueRefresh",
         "getRecommendedInterval",
         "resetRefreshThrottle"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
-      "to": "packages/web/src/viewer/performance/refresh-throttle.ts",
-      "type": "type",
-      "symbols": [
-        "RefreshQueueState",
-        "RefreshPriority"
       ]
     },
     {
@@ -18765,7 +19122,7 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-tick.ts",
-      "to": "packages/web/src/viewer/polling/batched-tick-dispatcher.ts",
+      "to": "packages/web/src/viewer/polling/index.ts",
       "type": "static",
       "symbols": [
         "registerTickUpdater"
@@ -19026,11 +19383,139 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/messaging/fetch-pipeline.ts",
+      "to": "packages/web/src/shared/request-dedup.ts",
+      "type": "static",
+      "symbols": [
+        "createRequestDedup"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/fetch-pipeline.ts",
+      "to": "packages/web/src/shared/request-dedup.ts",
+      "type": "type",
+      "symbols": [
+        "RequestDedup"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/fetch-pipeline.ts",
+      "to": "packages/web/src/viewer/messaging/call-rate-limiter.ts",
+      "type": "static",
+      "symbols": [
+        "createCallRateLimiter"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/fetch-pipeline.ts",
+      "to": "packages/web/src/viewer/messaging/call-rate-limiter.ts",
+      "type": "type",
+      "symbols": [
+        "CallRateLimiter",
+        "CallRateLimiterConfig"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/index.ts",
+      "to": "packages/web/src/shared/request-dedup.ts",
+      "type": "reexport",
+      "symbols": [
+        "createRequestDedup",
+        "RequestDedup"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/index.ts",
+      "to": "packages/web/src/viewer/messaging/call-rate-limiter.ts",
+      "type": "reexport",
+      "symbols": [
+        "createCallRateLimiter",
+        "CallRateLimiter",
+        "CallRateLimiterConfig"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/index.ts",
+      "to": "packages/web/src/viewer/messaging/fetch-pipeline.ts",
+      "type": "reexport",
+      "symbols": [
+        "createFetchPipeline",
+        "FetchPipeline",
+        "FetchPipelineConfig"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/index.ts",
+      "to": "packages/web/src/viewer/messaging/message-coalescer.ts",
+      "type": "reexport",
+      "symbols": [
+        "createMessageCoalescer",
+        "MessageCoalescer",
+        "MessageCoalescerConfig",
+        "ParsedWSMessage",
+        "CoalescedBatch"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/index.ts",
+      "to": "packages/web/src/viewer/messaging/message-throttle.ts",
+      "type": "reexport",
+      "symbols": [
+        "createMessageThrottle",
+        "MessageThrottle",
+        "ThrottledHandlerConfig"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/index.ts",
+      "to": "packages/web/src/viewer/messaging/ws-pipeline.ts",
+      "type": "reexport",
+      "symbols": [
+        "createWSPipeline",
+        "WSPipeline",
+        "WSPipelineConfig"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/messaging/message-throttle.ts",
       "to": "packages/web/src/viewer/messaging/message-coalescer.ts",
       "type": "type",
       "symbols": [
         "ParsedWSMessage"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/ws-pipeline.ts",
+      "to": "packages/web/src/viewer/messaging/message-coalescer.ts",
+      "type": "static",
+      "symbols": [
+        "createMessageCoalescer"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/ws-pipeline.ts",
+      "to": "packages/web/src/viewer/messaging/message-coalescer.ts",
+      "type": "type",
+      "symbols": [
+        "MessageCoalescer",
+        "ParsedWSMessage",
+        "CoalescedBatch"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/ws-pipeline.ts",
+      "to": "packages/web/src/viewer/messaging/message-throttle.ts",
+      "type": "static",
+      "symbols": [
+        "createMessageThrottle"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/messaging/ws-pipeline.ts",
+      "to": "packages/web/src/viewer/messaging/message-throttle.ts",
+      "type": "type",
+      "symbols": [
+        "MessageThrottle"
       ]
     },
     {
@@ -19094,6 +19579,77 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/performance/crash-detector.ts",
+      "type": "reexport",
+      "symbols": [
+        "CrashDetectionResult",
+        "SavedNavigationState"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/performance/dom-update-gate.ts",
+      "type": "reexport",
+      "symbols": [
+        "createDomUpdateGate",
+        "DomUpdateGate",
+        "DomUpdateGateConfig"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/performance/graceful-degradation.ts",
+      "type": "reexport",
+      "symbols": [
+        "isFeatureDisabled",
+        "onDegradationChange",
+        "DegradableFeature",
+        "DegradationState",
+        "DegradationChangeHandler"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/performance/memory-monitor.ts",
+      "type": "reexport",
+      "symbols": [
+        "formatBytes",
+        "formatRatio",
+        "MemorySnapshot",
+        "MemoryLevel"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/performance/refresh-throttle.ts",
+      "type": "reexport",
+      "symbols": [
+        "RefreshQueueState",
+        "RefreshPriority"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/performance/response-buffer-gate.ts",
+      "type": "reexport",
+      "symbols": [
+        "createResponseBufferGate",
+        "ResponseBufferGate",
+        "ResponseBufferGateConfig"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/performance/update-batcher.ts",
+      "type": "reexport",
+      "symbols": [
+        "createUpdateBatcher",
+        "UpdateBatcher",
+        "UpdateBatcherConfig"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/performance/memory-monitor.ts",
       "to": "packages/web/src/viewer/polling/polling-state.ts",
       "type": "static",
@@ -19143,6 +19699,23 @@
       "type": "static",
       "symbols": [
         "onTick"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/polling/index.ts",
+      "to": "packages/web/src/viewer/polling/batched-tick-dispatcher.ts",
+      "type": "reexport",
+      "symbols": [
+        "registerTickUpdater"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/polling/index.ts",
+      "to": "packages/web/src/viewer/polling/polling-manager.ts",
+      "type": "reexport",
+      "symbols": [
+        "registerPoller",
+        "unregisterPoller"
       ]
     },
     {
@@ -19392,6 +19965,182 @@
       "symbols": [
         "FindingsList",
         "BarChart"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-hench.ts",
+      "to": "packages/web/src/viewer/views/hench-config.ts",
+      "type": "reexport",
+      "symbols": [
+        "HenchConfigView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-hench.ts",
+      "to": "packages/web/src/viewer/views/hench-runs.ts",
+      "type": "reexport",
+      "symbols": [
+        "HenchRunsView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-hench.ts",
+      "to": "packages/web/src/viewer/views/hench-templates.ts",
+      "type": "reexport",
+      "symbols": [
+        "HenchTemplatesView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-rex.ts",
+      "to": "packages/web/src/viewer/views/prd.ts",
+      "type": "reexport",
+      "symbols": [
+        "PRDView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-rex.ts",
+      "to": "packages/web/src/viewer/views/rex-dashboard.ts",
+      "type": "reexport",
+      "symbols": [
+        "RexDashboard"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-rex.ts",
+      "to": "packages/web/src/viewer/views/task-audit.ts",
+      "type": "reexport",
+      "symbols": [
+        "TaskAuditView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-rex.ts",
+      "to": "packages/web/src/viewer/views/token-usage.ts",
+      "type": "reexport",
+      "symbols": [
+        "TokenUsageView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-rex.ts",
+      "to": "packages/web/src/viewer/views/validation.ts",
+      "type": "reexport",
+      "symbols": [
+        "ValidationView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-rex.ts",
+      "to": "packages/web/src/viewer/views/workflow-optimization.ts",
+      "type": "reexport",
+      "symbols": [
+        "WorkflowOptimizationView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-settings.ts",
+      "to": "packages/web/src/viewer/views/feature-toggles.ts",
+      "type": "reexport",
+      "symbols": [
+        "FeatureTogglesView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-settings.ts",
+      "to": "packages/web/src/viewer/views/integration-config.ts",
+      "type": "reexport",
+      "symbols": [
+        "IntegrationConfigView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-settings.ts",
+      "to": "packages/web/src/viewer/views/notion-config.ts",
+      "type": "reexport",
+      "symbols": [
+        "NotionConfigView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-sourcevision.ts",
+      "to": "packages/web/src/viewer/views/analysis.ts",
+      "type": "reexport",
+      "symbols": [
+        "AnalysisView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-sourcevision.ts",
+      "to": "packages/web/src/viewer/views/architecture.ts",
+      "type": "reexport",
+      "symbols": [
+        "ArchitectureView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-sourcevision.ts",
+      "to": "packages/web/src/viewer/views/files.ts",
+      "type": "reexport",
+      "symbols": [
+        "FilesView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-sourcevision.ts",
+      "to": "packages/web/src/viewer/views/graph.ts",
+      "type": "reexport",
+      "symbols": [
+        "Graph"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-sourcevision.ts",
+      "to": "packages/web/src/viewer/views/overview.ts",
+      "type": "reexport",
+      "symbols": [
+        "Overview"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-sourcevision.ts",
+      "to": "packages/web/src/viewer/views/pr-markdown.ts",
+      "type": "reexport",
+      "symbols": [
+        "PRMarkdownView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-sourcevision.ts",
+      "to": "packages/web/src/viewer/views/problems.ts",
+      "type": "reexport",
+      "symbols": [
+        "ProblemsView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-sourcevision.ts",
+      "to": "packages/web/src/viewer/views/routes.ts",
+      "type": "reexport",
+      "symbols": [
+        "RoutesView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-sourcevision.ts",
+      "to": "packages/web/src/viewer/views/suggestions.ts",
+      "type": "reexport",
+      "symbols": [
+        "SuggestionsView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/domain-sourcevision.ts",
+      "to": "packages/web/src/viewer/views/zones.ts",
+      "type": "reexport",
+      "symbols": [
+        "ZonesView"
       ]
     },
     {
@@ -19718,6 +20467,14 @@
     },
     {
       "from": "packages/web/src/viewer/views/prd.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/facet-filter.ts",
+      "type": "static",
+      "symbols": [
+        "FacetFilter"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/prd.ts",
       "to": "packages/web/src/viewer/components/prd-tree/index.ts",
       "type": "static",
       "symbols": [
@@ -19747,6 +20504,31 @@
       "type": "static",
       "symbols": [
         "PruneConfirmation"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/prd.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-search.ts",
+      "type": "static",
+      "symbols": [
+        "searchTree",
+        "collectAllTags"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/prd.ts",
+      "to": "packages/web/src/viewer/hooks/use-facet-state.ts",
+      "type": "static",
+      "symbols": [
+        "useFacetState"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/prd.ts",
+      "to": "packages/web/src/viewer/hooks/use-feature-toggle.ts",
+      "type": "static",
+      "symbols": [
+        "useFeatureToggle"
       ]
     },
     {
@@ -20104,7 +20886,7 @@
     },
     {
       "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/performance/graceful-degradation.ts",
+      "to": "packages/web/src/viewer/performance/index.ts",
       "type": "type",
       "symbols": [
         "DegradableFeature"
@@ -20123,130 +20905,52 @@
     },
     {
       "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/analysis.ts",
+      "to": "packages/web/src/viewer/views/domain-hench.ts",
       "type": "static",
       "symbols": [
-        "AnalysisView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/architecture.ts",
-      "type": "static",
-      "symbols": [
-        "ArchitectureView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/feature-toggles.ts",
-      "type": "static",
-      "symbols": [
-        "FeatureTogglesView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/files.ts",
-      "type": "static",
-      "symbols": [
-        "FilesView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/graph.ts",
-      "type": "static",
-      "symbols": [
-        "Graph"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/hench-config.ts",
-      "type": "static",
-      "symbols": [
-        "HenchConfigView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/hench-runs.ts",
-      "type": "static",
-      "symbols": [
-        "HenchRunsView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/hench-templates.ts",
-      "type": "static",
-      "symbols": [
+        "HenchRunsView",
+        "HenchConfigView",
         "HenchTemplatesView"
       ]
     },
     {
       "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/integration-config.ts",
+      "to": "packages/web/src/viewer/views/domain-rex.ts",
       "type": "static",
       "symbols": [
-        "IntegrationConfigView"
+        "PRDView",
+        "RexDashboard",
+        "TokenUsageView",
+        "ValidationView",
+        "TaskAuditView",
+        "WorkflowOptimizationView"
       ]
     },
     {
       "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/notion-config.ts",
+      "to": "packages/web/src/viewer/views/domain-settings.ts",
       "type": "static",
       "symbols": [
-        "NotionConfigView"
+        "NotionConfigView",
+        "IntegrationConfigView",
+        "FeatureTogglesView"
       ]
     },
     {
       "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/overview.ts",
+      "to": "packages/web/src/viewer/views/domain-sourcevision.ts",
       "type": "static",
       "symbols": [
-        "Overview"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/pr-markdown.ts",
-      "type": "static",
-      "symbols": [
-        "PRMarkdownView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/prd.ts",
-      "type": "static",
-      "symbols": [
-        "PRDView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/problems.ts",
-      "type": "static",
-      "symbols": [
-        "ProblemsView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/rex-dashboard.ts",
-      "type": "static",
-      "symbols": [
-        "RexDashboard"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/routes.ts",
-      "type": "static",
-      "symbols": [
-        "RoutesView"
+        "Overview",
+        "Graph",
+        "ZonesView",
+        "FilesView",
+        "ArchitectureView",
+        "ProblemsView",
+        "SuggestionsView",
+        "PRMarkdownView",
+        "RoutesView",
+        "AnalysisView"
       ]
     },
     {
@@ -20255,54 +20959,6 @@
       "type": "static",
       "symbols": [
         "SOURCEVISION_TAB_IDS"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/suggestions.ts",
-      "type": "static",
-      "symbols": [
-        "SuggestionsView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/task-audit.ts",
-      "type": "static",
-      "symbols": [
-        "TaskAuditView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/token-usage.ts",
-      "type": "static",
-      "symbols": [
-        "TokenUsageView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/validation.ts",
-      "type": "static",
-      "symbols": [
-        "ValidationView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/workflow-optimization.ts",
-      "type": "static",
-      "symbols": [
-        "WorkflowOptimizationView"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/view-registry.ts",
-      "to": "packages/web/src/viewer/views/zones.ts",
-      "type": "static",
-      "symbols": [
-        "ZonesView"
       ]
     },
     {
@@ -20652,6 +21308,26 @@
       ]
     },
     {
+      "from": "packages/web/tests/integration/messaging-stack.test.ts",
+      "to": "packages/web/src/viewer/messaging/index.ts",
+      "type": "static",
+      "symbols": [
+        "createWSPipeline",
+        "createFetchPipeline"
+      ]
+    },
+    {
+      "from": "packages/web/tests/integration/messaging-stack.test.ts",
+      "to": "packages/web/src/viewer/messaging/index.ts",
+      "type": "type",
+      "symbols": [
+        "WSPipeline",
+        "FetchPipeline",
+        "CoalescedBatch",
+        "ParsedWSMessage"
+      ]
+    },
+    {
       "from": "packages/web/tests/integration/pr-markdown-refresh.test.ts",
       "to": "packages/web/src/server/routes-sourcevision.ts",
       "type": "static",
@@ -20685,6 +21361,14 @@
     },
     {
       "from": "packages/web/tests/integration/request-dedup.test.ts",
+      "to": "packages/web/src/shared/request-dedup.ts",
+      "type": "static",
+      "symbols": [
+        "createRequestDedup"
+      ]
+    },
+    {
+      "from": "packages/web/tests/integration/request-dedup.test.ts",
       "to": "packages/web/src/viewer/messaging/call-rate-limiter.ts",
       "type": "static",
       "symbols": [
@@ -20708,11 +21392,19 @@
       ]
     },
     {
-      "from": "packages/web/tests/integration/request-dedup.test.ts",
-      "to": "packages/web/src/viewer/messaging/request-dedup.ts",
+      "from": "packages/web/tests/integration/smart-add-dispatch.test.ts",
+      "to": "packages/web/src/server/routes-rex.ts",
       "type": "static",
       "symbols": [
-        "createRequestDedup"
+        "handleRexRoute"
+      ]
+    },
+    {
+      "from": "packages/web/tests/integration/smart-add-dispatch.test.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
       ]
     },
     {
@@ -21377,6 +22069,14 @@
     },
     {
       "from": "packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts",
+      "to": "packages/web/src/server/rex-gateway.ts",
+      "type": "static",
+      "symbols": [
+        "collectAllIds"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts",
       "to": "packages/web/src/server/usage-cleanup-scheduler.ts",
       "type": "static",
       "symbols": [
@@ -21394,7 +22094,8 @@
       "type": "type",
       "symbols": [
         "OrphanedEntry",
-        "CleanupResult"
+        "CleanupResult",
+        "CollectAllIdsFn"
       ]
     },
     {
@@ -21746,10 +22447,10 @@
     },
     {
       "from": "packages/web/tests/unit/viewer/execution-panel-dedup.test.ts",
-      "to": "packages/web/src/viewer/messaging/request-dedup.ts",
+      "to": "packages/web/src/viewer/messaging/fetch-pipeline.ts",
       "type": "static",
       "symbols": [
-        "createRequestDedup"
+        "createFetchPipeline"
       ]
     },
     {
@@ -21791,6 +22492,22 @@
       "type": "type",
       "symbols": [
         "ViewId"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/fetch-pipeline.test.ts",
+      "to": "packages/web/src/viewer/messaging/index.ts",
+      "type": "static",
+      "symbols": [
+        "createFetchPipeline"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/fetch-pipeline.test.ts",
+      "to": "packages/web/src/viewer/messaging/index.ts",
+      "type": "type",
+      "symbols": [
+        "FetchPipeline"
       ]
     },
     {
@@ -22155,8 +22872,16 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/multi-select.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItemData"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/node-culler.test.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/node-culler.ts",
+      "to": "packages/web/src/shared/node-culler.ts",
       "type": "static",
       "symbols": [
         "NodeCuller"
@@ -22164,7 +22889,7 @@
     },
     {
       "from": "packages/web/tests/unit/viewer/node-culler.test.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/node-culler.ts",
+      "to": "packages/web/src/shared/node-culler.ts",
       "type": "type",
       "symbols": [
         "VisibilityCallback"
@@ -22418,7 +23143,7 @@
     },
     {
       "from": "packages/web/tests/unit/viewer/request-dedup.test.ts",
-      "to": "packages/web/src/viewer/messaging/request-dedup.ts",
+      "to": "packages/web/src/shared/request-dedup.ts",
       "type": "static",
       "symbols": [
         "createRequestDedup"
@@ -22426,7 +23151,7 @@
     },
     {
       "from": "packages/web/tests/unit/viewer/request-dedup.test.ts",
-      "to": "packages/web/src/viewer/messaging/request-dedup.ts",
+      "to": "packages/web/src/shared/request-dedup.ts",
       "type": "type",
       "symbols": [
         "RequestDedup"
@@ -22794,6 +23519,33 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/tree-search.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-search.ts",
+      "type": "static",
+      "symbols": [
+        "searchTree",
+        "itemMatchesSearch",
+        "highlightSearchText",
+        "collectAllTags"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/tree-search.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/tree-search.ts",
+      "type": "type",
+      "symbols": [
+        "SearchFacets"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/tree-search.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/types.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItemData"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/tree-utils-deletion.test.ts",
       "to": "packages/web/src/viewer/components/prd-tree/tree-utils.ts",
       "type": "static",
@@ -22927,6 +23679,24 @@
       "type": "type",
       "symbols": [
         "FlatNode"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/ws-pipeline.test.ts",
+      "to": "packages/web/src/viewer/messaging/index.ts",
+      "type": "static",
+      "symbols": [
+        "createWSPipeline"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/ws-pipeline.test.ts",
+      "to": "packages/web/src/viewer/messaging/index.ts",
+      "type": "type",
+      "symbols": [
+        "WSPipeline",
+        "CoalescedBatch",
+        "ParsedWSMessage"
       ]
     },
     {
@@ -23085,7 +23855,7 @@
         "packages/hench/src/store/project-config.ts",
         "packages/hench/src/tools/rex.ts",
         "packages/hench/src/types/output.ts",
-        "packages/rex/src/analyze/reason.ts",
+        "packages/rex/src/analyze/llm-bridge.ts",
         "packages/rex/src/analyze/scanners.ts",
         "packages/rex/src/cli/commands/constants.ts",
         "packages/rex/src/cli/commands/recommend.ts",
@@ -23185,11 +23955,13 @@
       "package": "child_process",
       "importedBy": [
         "ci.js",
+        "claude-integration.js",
         "cli.js",
         "pr-check.js",
         "web.js"
       ],
       "symbols": [
+        "execSync",
         "spawn"
       ]
     },
@@ -23206,6 +23978,7 @@
       "package": "fs",
       "importedBy": [
         "ci.js",
+        "claude-integration.js",
         "cli.js",
         "pr-check.js",
         "refresh-artifacts.js",
@@ -23220,6 +23993,7 @@
         "readFileSync",
         "statSync",
         "unlink",
+        "unlinkSync",
         "writeFile",
         "writeFileSync"
       ]
@@ -23247,6 +24021,7 @@
       "package": "path",
       "importedBy": [
         "ci.js",
+        "claude-integration.js",
         "cli.js",
         "pr-check.js",
         "refresh-artifacts.js",
@@ -23299,6 +24074,7 @@
         "packages/web/src/viewer/components/prd-tree/bulk-actions.ts",
         "packages/web/src/viewer/components/prd-tree/delete-confirmation.ts",
         "packages/web/src/viewer/components/prd-tree/execution-panel.ts",
+        "packages/web/src/viewer/components/prd-tree/facet-filter.ts",
         "packages/web/src/viewer/components/prd-tree/inline-add-form.ts",
         "packages/web/src/viewer/components/prd-tree/inline-status-picker.ts",
         "packages/web/src/viewer/components/prd-tree/lazy-children.ts",
@@ -23314,6 +24090,7 @@
         "packages/web/src/viewer/components/prd-tree/status-filter.ts",
         "packages/web/src/viewer/components/prd-tree/task-detail.ts",
         "packages/web/src/viewer/components/prd-tree/tree-event-delegate.ts",
+        "packages/web/src/viewer/components/prd-tree/tree-search.ts",
         "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
         "packages/web/src/viewer/components/refresh-queue-status.ts",
         "packages/web/src/viewer/components/rex-task-link.ts",
@@ -23327,9 +24104,13 @@
         "packages/web/src/viewer/components/zone-slideout.ts",
         "packages/web/src/viewer/hooks/use-app-data.ts",
         "packages/web/src/viewer/hooks/use-crash-recovery.ts",
+        "packages/web/src/viewer/hooks/use-delete-actions.ts",
         "packages/web/src/viewer/hooks/use-dom-performance-monitor.ts",
+        "packages/web/src/viewer/hooks/use-facet-state.ts",
+        "packages/web/src/viewer/hooks/use-feature-toggle.ts",
         "packages/web/src/viewer/hooks/use-file-edges.ts",
         "packages/web/src/viewer/hooks/use-graceful-degradation.ts",
+        "packages/web/src/viewer/hooks/use-item-selection.ts",
         "packages/web/src/viewer/hooks/use-memory-monitor.ts",
         "packages/web/src/viewer/hooks/use-pan-zoom.ts",
         "packages/web/src/viewer/hooks/use-persistent-filter.ts",
@@ -23574,6 +24355,7 @@
       "package": "url",
       "importedBy": [
         "ci.js",
+        "claude-integration.js",
         "cli.js",
         "pr-check.js"
       ],
@@ -23686,6 +24468,7 @@
         "packages/rex/tests/integration/claude-config.test.ts",
         "packages/rex/tests/integration/project-config.test.ts",
         "packages/rex/tests/integration/smart-add-duplicate-outcomes.test.ts",
+        "packages/rex/tests/integration/smart-add-orphaned-parent.test.ts",
         "packages/rex/tests/integration/store-roundtrip.test.ts",
         "packages/rex/tests/unit/analyze/acknowledge.test.ts",
         "packages/rex/tests/unit/analyze/consolidation-guard.test.ts",
@@ -23841,11 +24624,14 @@
         "packages/sourcevision/vitest.config.ts",
         "packages/web/tests/integration/background-suspension-recovery.test.ts",
         "packages/web/tests/integration/memory-aware-polling-suspension.test.ts",
+        "packages/web/tests/integration/messaging-stack.test.ts",
         "packages/web/tests/integration/pr-markdown-refresh.test.ts",
         "packages/web/tests/integration/pr-markdown-tab-parity.test.ts",
         "packages/web/tests/integration/request-dedup.test.ts",
+        "packages/web/tests/integration/smart-add-dispatch.test.ts",
         "packages/web/tests/integration/token-usage-route-regression.test.ts",
         "packages/web/tests/unit/server/aggregation-cache.test.ts",
+        "packages/web/tests/unit/server/boundary-check.test.ts",
         "packages/web/tests/unit/server/data-loading-efficiency.test.ts",
         "packages/web/tests/unit/server/dev-reload.test.ts",
         "packages/web/tests/unit/server/incremental-task-usage.test.ts",
@@ -23903,6 +24689,7 @@
         "packages/web/tests/unit/viewer/execution-panel-dedup.test.ts",
         "packages/web/tests/unit/viewer/execution-panel-polling.test.ts",
         "packages/web/tests/unit/viewer/favicon.test.ts",
+        "packages/web/tests/unit/viewer/fetch-pipeline.test.ts",
         "packages/web/tests/unit/viewer/flow-data-builders.test.ts",
         "packages/web/tests/unit/viewer/flow-diagram.test.ts",
         "packages/web/tests/unit/viewer/graceful-degradation.test.ts",
@@ -23921,6 +24708,7 @@
         "packages/web/tests/unit/viewer/memory-warning.test.ts",
         "packages/web/tests/unit/viewer/message-coalescer.test.ts",
         "packages/web/tests/unit/viewer/message-throttle.test.ts",
+        "packages/web/tests/unit/viewer/multi-select.test.ts",
         "packages/web/tests/unit/viewer/node-culler.test.ts",
         "packages/web/tests/unit/viewer/node-culling-integration.test.ts",
         "packages/web/tests/unit/viewer/persistent-filter.test.ts",
@@ -23953,12 +24741,14 @@
         "packages/web/tests/unit/viewer/token-usage-nav.test.ts",
         "packages/web/tests/unit/viewer/tree-differ.test.ts",
         "packages/web/tests/unit/viewer/tree-event-delegate.test.ts",
+        "packages/web/tests/unit/viewer/tree-search.test.ts",
         "packages/web/tests/unit/viewer/tree-utils-deletion.test.ts",
         "packages/web/tests/unit/viewer/tree-view.test.ts",
         "packages/web/tests/unit/viewer/update-batcher.test.ts",
         "packages/web/tests/unit/viewer/usage-polling.test.ts",
         "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
         "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
+        "packages/web/tests/unit/viewer/ws-pipeline.test.ts",
         "packages/web/tests/unit/viewer/zone-drill-down.test.ts",
         "packages/web/tests/unit/viewer/zone-inline-subzones.test.ts",
         "packages/web/vitest.config.ts",
@@ -23969,6 +24759,7 @@
         "tests/e2e/cli-dev.test.js",
         "tests/e2e/cli-errors.test.js",
         "tests/e2e/cli-init.test.js",
+        "tests/e2e/cli-orchestration.test.js",
         "tests/e2e/cli-pr-check.test.js",
         "tests/e2e/cli-refresh.test.js",
         "tests/e2e/cli-start.test.js",
@@ -24013,42 +24804,10 @@
     }
   ],
   "summary": {
-    "totalEdges": 2481,
+    "totalEdges": 2564,
     "totalExternal": 18,
-    "circularCount": 5,
-    "circulars": [
-      {
-        "cycle": [
-          "packages/rex/src/analyze/reason.ts",
-          "packages/rex/src/analyze/extract.ts"
-        ]
-      },
-      {
-        "cycle": [
-          "packages/rex/src/analyze/reason.ts",
-          "packages/rex/src/analyze/extract.ts"
-        ]
-      },
-      {
-        "cycle": [
-          "packages/rex/src/analyze/reason.ts",
-          "packages/rex/src/analyze/extract.ts",
-          "packages/rex/src/analyze/file-validation.ts"
-        ]
-      },
-      {
-        "cycle": [
-          "packages/sourcevision/src/analyzers/enrich.ts",
-          "packages/sourcevision/src/analyzers/zones.ts"
-        ]
-      },
-      {
-        "cycle": [
-          "packages/sourcevision/src/analyzers/enrich.ts",
-          "packages/sourcevision/src/analyzers/zones.ts"
-        ]
-      }
-    ],
+    "circularCount": 0,
+    "circulars": [],
     "mostImported": [
       {
         "path": "packages/rex/src/core/tree.ts",
@@ -24060,11 +24819,11 @@
       },
       {
         "path": "packages/rex/src/store/index.ts",
-        "count": 30
+        "count": 31
       },
       {
         "path": "packages/rex/src/cli/commands/constants.ts",
-        "count": 28
+        "count": 29
       },
       {
         "path": "packages/rex/src/cli/output.ts",
@@ -24076,7 +24835,7 @@
       },
       {
         "path": "packages/rex/src/analyze/reason.ts",
-        "count": 24
+        "count": 23
       },
       {
         "path": "packages/web/src/viewer/components/logos.ts",

@@ -1,22 +1,37 @@
 {
   "id": "web-viewer/web/viewer/components-prd-tree",
   "name": "Web Viewer/web/viewer/components Prd Tree",
-  "description": "7 files, primarily TypeScript",
+  "description": "15 files, primarily TypeScript",
   "files": [
-    "packages/web/src/viewer/components/prd-tree/analyze-panel.ts",
-    "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
-    "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
-    "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
-    "packages/web/src/viewer/views/analysis.ts",
-    "packages/web/tests/unit/viewer/batch-import-panel.test.ts",
-    "packages/web/tests/unit/viewer/smart-add-input.test.ts"
+    "packages/web/src/viewer/components/crash-recovery-banner.ts",
+    "packages/web/src/viewer/components/degradation-banner.ts",
+    "packages/web/src/viewer/components/memory-warning.ts",
+    "packages/web/src/viewer/components/prd-tree/execution-panel.ts",
+    "packages/web/src/viewer/components/refresh-queue-status.ts",
+    "packages/web/src/viewer/hooks/use-prd-websocket.ts",
+    "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
+    "packages/web/src/viewer/performance/dom-update-gate.ts",
+    "packages/web/src/viewer/performance/index.ts",
+    "packages/web/src/viewer/performance/refresh-throttle.ts",
+    "packages/web/src/viewer/performance/update-batcher.ts",
+    "packages/web/tests/unit/viewer/crash-recovery-banner.test.ts",
+    "packages/web/tests/unit/viewer/dom-update-gate.test.ts",
+    "packages/web/tests/unit/viewer/refresh-throttle.test.ts",
+    "packages/web/tests/unit/viewer/update-batcher.test.ts"
   ],
   "entryPoints": [
-    "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
-    "packages/web/src/viewer/views/analysis.ts"
+    "packages/web/src/viewer/components/crash-recovery-banner.ts",
+    "packages/web/src/viewer/components/degradation-banner.ts",
+    "packages/web/src/viewer/components/memory-warning.ts",
+    "packages/web/src/viewer/components/prd-tree/execution-panel.ts",
+    "packages/web/src/viewer/components/refresh-queue-status.ts",
+    "packages/web/src/viewer/hooks/use-prd-websocket.ts",
+    "packages/web/src/viewer/hooks/use-refresh-throttle.ts",
+    "packages/web/src/viewer/performance/index.ts",
+    "packages/web/src/viewer/performance/refresh-throttle.ts"
   ],
-  "cohesion": 0.78,
-  "coupling": 0.22,
-  "fileCount": 7,
-  "lineCount": 3489
+  "cohesion": 0.54,
+  "coupling": 0.46,
+  "fileCount": 15,
+  "lineCount": 4297
 }

@@ -5,52 +5,65 @@
 <zone>
 
 Zone: Web Unit (`web-unit`)
-Files: 4, Cohesion: 1.00, Coupling: 0.00
-Risk: healthy (score: 0.00)
-Description: 4 files, primarily TypeScript
-Lines: 1030
+Files: 6, Cohesion: 0.25, Coupling: 0.75
+Risk: catastrophic (score: 0.75)
+Description: 5 files, primarily TypeScript
+Entry points: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts
+Lines: 1561
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/components/prd-tree/lazy-children.ts (TypeScript, 93 lines, source)
-packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts (TypeScript, 225 lines, source)
-packages/web/tests/unit/viewer/lazy-children.test.ts (TypeScript, 295 lines, test)
-packages/web/tests/unit/viewer/listener-lifecycle.test.ts (TypeScript, 417 lines, test)
+packages/web/src/server/websocket.ts (TypeScript, 370 lines, source)
+packages/web/src/server/ws-health-tracker.ts (TypeScript, 275 lines, source)
+packages/web/tests/unit/server/boundary-check.test.ts (TypeScript, 84 lines, test)
+packages/web/tests/unit/server/websocket.test.ts (TypeScript, 454 lines, test)
+packages/web/tests/unit/server/ws-health-integration.test.ts (TypeScript, 154 lines, test)
+packages/web/tests/unit/server/ws-health-tracker.test.ts (TypeScript, 224 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/tests/unit/viewer/lazy-children.test.ts → packages/web/src/viewer/components/prd-tree/lazy-children.ts {LazyChildren, UNMOUNT_DELAY_MS}
-  packages/web/tests/unit/viewer/listener-lifecycle.test.ts → packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts {ListenerLifecycleManager}
+  packages/web/src/server/websocket.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker, CleanupReason}
+  packages/web/tests/unit/server/websocket.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager, PING_INTERVAL_MS}
+  packages/web/tests/unit/server/ws-health-integration.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager}
+  packages/web/tests/unit/server/ws-health-integration.test.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
+  packages/web/tests/unit/server/ws-health-tracker.test.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
+
+Incoming (other zones → this zone):
+  ← web-viewer: packages/web/src/public.ts → packages/web/src/server/websocket.ts; packages/web/src/server/index.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-hench.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-rex.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/ws-health-tracker.ts
 
 </imports>
 
 <findings>
 
-[observation] [info] High cohesion (1) — files are tightly interconnected
+[observation] [warning] Low cohesion (0.25) — files are loosely related, consider splitting this zone
+[suggestion] [critical] Zone "Web Unit" (web-unit) has catastrophic risk (score: 0.75, cohesion: 0.25, coupling: 0.75) — requires immediate architectural intervention
 
 </findings>
 
 <insights>
 
-- High cohesion (1) — files are tightly interconnected
-- Co-locating the two component files with their dedicated tests in a single zone is a positive signal — changes to these components are easy to test in isolation.
-- The zone's scope is narrow and well-named internally (lazy-children, listener-lifecycle), which are distinct orthogonal concerns; verify they don't share mutable state that would warrant splitting them further.
-- Perfect cohesion with zero coupling means these components are consumed by the larger web-viewer zone without creating circular dependencies.
-- Coupling of 0 confirms these components are pure leaf nodes in the import graph — ideal for unit testing in isolation without mocking dependencies.
-- Two logically distinct concerns (lazy loading and listener cleanup) share a zone; if each grows significantly, consider splitting them into separate zones to maintain single-responsibility at the zone level.
-- lazy-children.ts and listener-lifecycle.ts have zero non-test inbound imports — no runtime file in the codebase imports these components. They are either dead code, consumed dynamically (e.g. via string-based dynamic import), or their consumer files were removed without cleaning up the implementations.
-- Both component files in this zone (lazy-children.ts, listener-lifecycle.ts) are imported only by their test files. No production code imports them. They are either unused dead code or the consuming file was deleted — the zone should be audited and the components removed if they serve no current consumer.
-- lazy-children.ts and listener-lifecycle.ts have zero production-code consumers across the full import graph. Retaining unimported implementations inflates zone file count, produces misleading test coverage signals (tests pass for code never executed in production), and adds maintenance burden with no runtime benefit. Both files should be deleted unless an imminent consumer is explicitly tracked.
-- Cohesion of 1.0 is achieved because each source file (lazy-children.ts, listener-lifecycle.ts) is imported exclusively by its own dedicated test file — the two source files have zero imports between them. Cohesion = 1.0 here is a test-symmetry artifact, not evidence of semantic relatedness; the files are co-located by test proximity rather than by shared concern or shared state.
-- The zone name includes 'lifecycle' which implies a general lifecycle management abstraction (mount, update, unmount), but listener-lifecycle.ts specifically handles event listener cleanup — a narrower concern. If the zone were to accept new files based on the broad 'lifecycle' name, unrelated lifecycle utilities could accumulate here without a naming violation.
-- The 'prd-tree/' path prefix in both source files suggests these were designed as part of a PRD tree component subsystem, but the PRD tree subsystem (which is active in production) has no import to either file — this implies the PRD tree was refactored to a different implementation strategy and these files represent an abandoned implementation path, not a future-use stub.
-- lazy-children.ts and listener-lifecycle.ts are confirmed dead code with no production consumers. The test suite passing for these files creates false coverage confidence — a green test for unreachable production code inflates perceived quality. Delete both source files and their tests, or track an explicit PRD task for the consumer that will import them.
-- Rename the zone to 'prd-tree-dead-code' or annotate it explicitly in zone metadata as 'pending-consumer' to prevent future developers from treating the existing implementation as a stable reference when writing a new consumer.
-- [call graph] 30 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- Low cohesion (0.25) — files are loosely related, consider splitting this zone
+- Cohesion (0.5) and coupling (0.5) are borderline — the 6 inbound imports from dashboard-mcp-server dominate this zone's coupling profile and suggest it should live inside that zone
+- Four test files for two source files indicates thorough test coverage of the real-time layer, including a boundary-check test for edge cases
+- The ws-health-integration test suggests there is meaningful stateful interaction between the WebSocket server and health tracker worth preserving as the zone grows
+- Coupling of 0.5 driven by 6 imports from dashboard-mcp-server suggests this cluster is a natural sub-module of that zone rather than an independent architectural boundary.
+- Four test files covering two source modules, including an integration test, reflects strong testing discipline for the real-time communication layer.
+- boundary-check.test.ts is a useful safety net for WebSocket edge cases; ensure it covers reconnection and graceful shutdown scenarios.
+- Unlike task-usage-tracking, websocket-realtime-layer has zero outgoing inter-zone imports despite being a functional service zone — it is a pure downstream consumer and forms a clean unidirectional dependency with dashboard-mcp-server
+- The contrast between websocket-realtime-layer (clean directional) and task-usage-tracking (cyclic) illustrates two distinct coupling anti-patterns that emerged from the same community detection pass
+- websocket-realtime-layer has 6 inbound imports from dashboard-mcp-server and 0 outgoing — it is a pure downstream leaf. This is architecturally clean; the only concern is whether the community detection boundary reflects a real architectural seam or is an artifact of graph partitioning.
+- boundary-check.test.ts is named for cross-zone boundary behavior rather than a specific unit, suggesting it may be testing interactions that span websocket.ts and server infrastructure owned by dashboard-mcp-server — if so, it is a misplaced integration test masquerading as a unit test
+- The zone has 4 test files but 0 outgoing inter-zone imports, meaning all 6 inbound imports from dashboard-mcp-server are one-directional — this pure-leaf status means the zone could be promoted to a sub-zone of dashboard-mcp-server with zero restructuring of production code, only test file moves
+- boundary-check.test.ts is co-located in the unit test directory but its name implies cross-boundary integration behavior — if it exercises interactions between websocket.ts and dashboard-mcp-server internals it belongs in an integration test directory to prevent false confidence in unit isolation
+- websocket-realtime-layer has cohesion 0.5 AND coupling 0.5 — it meets the dual fragility criterion (both below 0.6 and both non-trivial), making it the second highest-risk zone by the combined fragility metric alongside task-usage-tracking
+- ws-health-tracker.ts is a cross-cutting health/monitoring concern; co-locating it with the WebSocket transport implementation (websocket.ts) couples two orthogonal responsibilities in one zone — health tracking is conceptually closer to the metrics infrastructure in dashboard-mcp-server than to WebSocket I/O
+- websocket-realtime-layer has both cohesion 0.5 and coupling 0.5 — the dual fragility threshold described in the severity guide. ws-health-tracker.ts (monitoring concern) and websocket.ts (transport concern) are orthogonal responsibilities. Either absorb this zone into dashboard-mcp-server as a sub-zone (eliminating the 6 inbound import edges) or split ws-health-tracker.ts into the metrics infrastructure alongside concurrent-execution-metrics.ts.
+- ws-health-integration.test.ts is located in tests/unit/server/ but its name declares it as an integration test. This placement gives false unit-test confidence in CI: if it exercises cross-boundary behavior between websocket.ts and dashboard-mcp-server infrastructure, a unit test failure in isolation may not reproduce in the full integration run. Move it to tests/integration/server/.
+- [call graph] 76 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>

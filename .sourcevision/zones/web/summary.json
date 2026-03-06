@@ -1,7 +1,7 @@
 {
   "id": "web",
   "name": "Web",
-  "description": "14 files, primarily TypeScript, Markdown, Other",
+  "description": "16 files, primarily TypeScript, Markdown, Other",
   "files": [
     "packages/web/BROWSER_ERROR_CODE_5.md",
     "packages/web/MEMORY_PROFILE.md",
@@ -10,26 +10,28 @@
     "packages/web/build.js",
     "packages/web/dev.js",
     "packages/web/package.json",
-    "packages/web/src/viewer/components/prd-tree/node-culler.ts",
-    "packages/web/src/viewer/messaging/request-dedup.ts",
-    "packages/web/tests/e2e/.gitkeep",
-    "packages/web/tests/unit/viewer/execution-panel-dedup.test.ts",
-    "packages/web/tests/unit/viewer/node-culler.test.ts",
-    "packages/web/tests/unit/viewer/request-dedup.test.ts",
+    "packages/web/src/viewer/components/elapsed-time.ts",
+    "packages/web/src/viewer/components/prd-tree/lazy-children.ts",
+    "packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts",
+    "packages/web/src/viewer/hooks/use-tick.ts",
+    "packages/web/src/viewer/views/task-audit.ts",
+    "packages/web/tests/unit/viewer/lazy-children.test.ts",
+    "packages/web/tests/unit/viewer/listener-lifecycle.test.ts",
     "packages/web/tsconfig.json",
     "packages/web/vitest.config.ts"
   ],
   "entryPoints": [
-    "packages/web/src/viewer/messaging/request-dedup.ts"
+    "packages/web/src/viewer/components/elapsed-time.ts",
+    "packages/web/src/viewer/views/task-audit.ts"
   ],
-  "cohesion": 0.86,
-  "coupling": 0.14,
-  "fileCount": 15,
-  "lineCount": 2664,
+  "cohesion": 0.77,
+  "coupling": 0.23,
+  "fileCount": 16,
+  "lineCount": 3352,
   "riskMetrics": {
-    "cohesion": 0.86,
-    "coupling": 0.14,
-    "riskScore": 0.14,
+    "cohesion": 0.77,
+    "coupling": 0.23,
+    "riskScore": 0.22999999999999998,
     "riskLevel": "healthy",
     "failsThreshold": false
   }

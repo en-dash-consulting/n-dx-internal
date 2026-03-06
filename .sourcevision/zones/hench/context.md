@@ -8,7 +8,7 @@ Zone: Hench (`hench`)
 Files: 159, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
 Description: 157 files, primarily TypeScript, JSON, Other
-Lines: 38230
+Lines: 38234
 
 </zone>
 
@@ -145,7 +145,7 @@ packages/hench/tests/unit/process/exec.test.ts (TypeScript, 115 lines, test)
 packages/hench/tests/unit/process/lifecycle.test.ts (TypeScript, 511 lines, test)
 packages/hench/tests/unit/process/limiter.test.ts (TypeScript, 221 lines, test)
 packages/hench/tests/unit/process/memory-monitor.test.ts (TypeScript, 401 lines, test)
-packages/hench/tests/unit/process/memory-throttle.test.ts (TypeScript, 422 lines, test)
+packages/hench/tests/unit/process/memory-throttle.test.ts (TypeScript, 426 lines, test)
 packages/hench/tests/unit/process/pool.test.ts (TypeScript, 855 lines, test)
 packages/hench/tests/unit/process/process-memory-tracker.test.ts (TypeScript, 440 lines, test)
 packages/hench/tests/unit/queue/execution-queue.test.ts (TypeScript, 410 lines, test)
@@ -596,7 +596,6 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] Finding 48 (handleHenchRoute calling 59 unique functions) is a single heuristic signal with no corroborating LLM finding. The 'god function' label is not independently confirmed. Do not treat this as an actionable refactoring target without first auditing whether the 59 calls are to trivial one-line helpers versus substantive logic branches.
 [suggestion] [info] Zone "hench" has files across 31 directories — consider consolidating under a dedicated directory
 
 </findings>
@@ -604,26 +603,21 @@ Internal:
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- At 159 files with cohesion 1 and zero external coupling, the hench package is a well-bounded module — all internal subdomains (analysis, agent, process, store, tools) cluster together without leaking dependencies.
-- The analysis/ subdirectory (adaptive.ts, review.ts, spin.ts) suggests hench performs post-run self-assessment, which is architecturally sophisticated and worth keeping well-tested as agent behavior evolves.
-- Zero coupling here is notable: hench imports from rex via a gateway module (src/prd/rex-gateway.ts) which the import graph treats as internal — confirming the gateway pattern successfully hides cross-package boundaries from the community detection algorithm.
-- The gateway pattern (rex-gateway.ts) concentrating all rex imports is working as intended — the zone boundary remains clean despite hench depending on rex at runtime.
-- 159 files in a single zone with perfect cohesion suggests well-structured internal modularity; the CLI, store, process, and tools subdirectories likely form natural sub-zones worth monitoring as the package grows.
-- Hench.png and Hench-F.png are bundled in the package root — verify these assets are either excluded from the npm publish or intentionally included (e.g. for README display on npm).
-- Zone "autonomous-agent-engine" has files across 31 directories — consider consolidating under a dedicated directory
-- autonomous-agent-engine does not appear as a target in any cross-zone import — nothing in the web layer, dom, or message imports from hench. This confirms a strict unidirectional flow: hench consumes rex (via gateway), but no consumer zone depends on hench at the import level, keeping the agent engine safely decoupled from the dashboard frontend.
-- The gateway module that hides hench's rex dependency from zone detection creates an analysis blind spot: the cross-zone import table shows hench as fully isolated, but at runtime it carries a hard dependency on rex. If the gateway is ever bypassed (e.g., a developer adds a direct rex import in a leaf file), the zone analysis will not catch it — only a gateway-enforcement lint rule or dedicated integration tests for rex-gateway.ts would surface the violation.
-- The rex-gateway.ts abstraction successfully hides hench's runtime rex dependency from static zone analysis, which is the intended behavior. However, this creates a testing responsibility: the gateway's re-exported surface is the only cross-package contract that zone detection cannot validate. rex-gateway.ts should have integration tests that import and exercise each re-exported rex function against a real .rex/ fixture to ensure contract drift is caught before runtime.
-- At 159 files across 31 directories, the autonomous-agent-engine zone almost certainly includes test files alongside production source, inflating the apparent production surface area and making the zone appear larger and more complex than the actual runtime code footprint.
-- hench imports from llm-client and claude-client packages in addition to rex. If those packages share the same Louvain community as hench in the import graph, the gateway blind spot extends to all three upstream dependencies — the zone analysis shows hench as fully self-contained when it has at least three runtime cross-package dependencies.
-- The gateway analysis blind spot for rex-gateway.ts likely extends to llm-client and claude-client cross-package imports as well. If those packages cluster into the same community as hench, all three upstream runtime dependencies are invisible in zone-level analysis, making the true cross-package dependency surface unverifiable from zone metrics alone. Each cross-package dependency should have an explicit gateway file analogous to rex-gateway.ts.
-- spin.ts in src/agent/analysis/ has an ambiguous name relative to its siblings adaptive.ts and review.ts. 'Spin' is idiomatic in UI contexts (loading spinner) and colloquially means propaganda — neither meaning fits an agent analysis module. The name reveals nothing about the module's analytical role.
-- packages/hench/package-lock.json coexists with the monorepo's root pnpm-lock.yaml. A package-level npm lockfile in a pnpm workspace is silently ignored by pnpm but will cause npm install to create a nested node_modules/ if a contributor runs npm inside the hench directory, producing a ghost dependency tree that bypasses the workspace's deduplication and version pinning.
-- Hench-F.png coexists with Hench.png with no documentation of what the -F suffix means. The same pattern appears in packages/web/ (SourceVision-F.png alongside SourceVision.png). The convention is consistent across two packages but entirely undocumented — contributors must reverse-engineer usage to infer whether F means flat, full, favicon, or something else.
-- Rename packages/hench/src/agent/analysis/spin.ts to a name that describes its analytical function (e.g., speculate.ts, hypothesize.ts, or plan.ts). The current name is ambiguous in an agent analysis context and diverges from the descriptive naming of its siblings adaptive.ts and review.ts.
-- Delete packages/hench/package-lock.json. This npm lockfile is a stale artifact in a pnpm workspace — pnpm ignores it, but running npm install inside packages/hench/ will create a ghost node_modules/ that shadows the workspace's deduplication. The monorepo's pnpm-lock.yaml is the authoritative lockfile.
+- At 159 files with perfect cohesion and zero detected coupling to other zones, hench is a well-encapsulated domain — all cross-package imports are expected to flow through rex-gateway.ts per the gateway pattern
+- The agent/analysis/ subdirectory (adaptive.ts, review.ts, spin.ts) signals a multi-strategy analysis layer; ensure these strategies are tested independently to prevent regression when adding new analysis modes
+- Zero coupling despite being the execution layer that drives rex and llm-client suggests the gateway pattern is working correctly — verify rex-gateway.ts is the sole import boundary
+- 159 files with cohesion 1.0 and coupling 0.0 is the largest self-contained zone in the codebase — this is a strong signal that the gateway pattern is being enforced correctly.
+- The agent/analysis/ module trio (adaptive, review, spin) represents distinct reasoning strategies; documenting when each is invoked will help maintainers understand the agent's decision logic.
+- Hench images (Hench.png, Hench-F.png) and README.md colocated with source is consistent with the package-level documentation pattern used across the monorepo.
+- Zone "hench-agent-engine" has files across 31 directories — consider consolidating under a dedicated directory
+- Despite being the execution layer that drives rex, hench-agent-engine shows zero outgoing edges to any other zone in this graph — all cross-package calls are absorbed by the gateway pattern, making hench the strongest example of gateway enforcement in the codebase
+- hench-agent-engine achieves complete zone isolation (coupling 0) while being the highest-activity runtime zone — this is the strongest validation that the gateway pattern scales to large packages (159 files) without leaking import edges.
+- The agent/analysis/ trio (adaptive.ts, review.ts, spin.ts) is the highest-risk area for hidden inter-strategy coupling — if any two strategies share mutable state or call each other, the gateway pattern cannot protect against that internal cycle
+- hench-agent-engine spans 31 directories within a single detected zone. At 159 files this exceeds the practical review threshold for a single zone — sub-zones such as agent/analysis, prd, and store likely represent distinct bounded contexts that are invisible to the current zone graph.
+- The hench zone has 2838 internal calls and zero outgoing call graph edges — for the 'execution layer' that drives rex tasks, this means all external interactions are dynamically dispatched (LLM API calls, subprocess spawns) rather than statically traceable imports. This makes hench the only execution-tier zone that is invisible to static call graph analysis, which is architecturally correct but means call graph metrics alone cannot validate hench's external behavior.
+- hench is the only package with a gateway (rex-gateway.ts) but no equivalent pattern for the LLM client — llm-client calls in hench are presumably direct, not gatewayed. If hench ever needs a second LLM vendor or adds sourcevision as a dependency, the absence of an llm-client gateway will require a reactive rather than proactive refactor.
+- Add an llm-client-gateway.ts alongside rex-gateway.ts in hench to make the LLM client dependency surface explicit and auditable. Currently all llm-client imports in hench are scattered across leaf files, which violates the gateway convention already applied to the rex dependency.
 - Zone "hench" has files across 31 directories — consider consolidating under a dedicated directory
-- Finding 48 (handleHenchRoute calling 59 unique functions) is a single heuristic signal with no corroborating LLM finding. The 'god function' label is not independently confirmed. Do not treat this as an actionable refactoring target without first auditing whether the 59 calls are to trivial one-line helpers versus substantive logic branches.
 - [call graph] 2838 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>
@@ -631,25 +625,33 @@ Internal:
 <sub-crossings>
 
 Cross-dependencies between sub-zones:
-  hench/guard → hench/unit: 3
+  hench/guard → hench/tools: 1
+  hench/guard → hench/unit: 2
+  hench/tools → hench/guard: 1
   hench/tools → hench/unit: 5
-  hench/unit → hench/guard: 2
-  hench/unit → hench/queue: 4
-  hench/unit → hench/tools: 1
+  hench/unit → hench/guard: 1
+  hench/unit → hench/tools: 5
+  hench/unit → hench/unit-2: 4
+  hench/unit → hench/unit-agent: 5
+  hench/unit → hench/unit-cli: 3
+  hench/unit-2 → hench/unit: 1
+  hench/unit-agent → hench/unit: 2
+  hench/unit-cli → hench/unit: 4
 
 </sub-crossings>
 
 <sub-zones>
 
-This zone has 7 sub-zone(s):
+This zone has 8 sub-zone(s):
 
-- **Hench/guard** (`hench/guard`): 10 files, cohesion 0.9, coupling 0.1
-- **Hench/hench** (`hench/hench`): 7 files, cohesion 1, coupling 0
-- **Hench/queue** (`hench/queue`): 7 files, cohesion 0.88, coupling 0.13
+- **Hench/guard** (`hench/guard`): 10 files, cohesion 0.86, coupling 0.14
 - **Hench/store** (`hench/store`): 2 files, cohesion 1, coupling 0
-- **Hench/tools** (`hench/tools`): 3 files, cohesion 0.33, coupling 0.67
-- **Hench/unit** (`hench/unit`): 126 files, cohesion 0.97, coupling 0.03
+- **Hench/tools** (`hench/tools`): 12 files, cohesion 0.76, coupling 0.24
+- **Hench/unit** (`hench/unit`): 120 files, cohesion 0.95, coupling 0.05
   - Has 8 nested sub-zone(s)
+- **Hench/unit 2** (`hench/unit-2`): 3 files, cohesion 1, coupling 0
+- **Hench/unit Agent** (`hench/unit-agent`): 5 files, cohesion 0.44, coupling 0.56
+- **Hench/unit Cli** (`hench/unit-cli`): 3 files, cohesion 1, coupling 0
 - **Hench/web** (`hench/web`): 2 files, cohesion 1, coupling 0
 
 Detailed sub-zone context available in `zones/{sub-zone-id}/context.md`

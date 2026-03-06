@@ -5,9 +5,9 @@
 <zone>
 
 Zone: DOM Performance Monitoring (`dom-performance-monitoring`)
-Files: 4, Cohesion: 0.75, Coupling: 0.25
-Risk: healthy (score: 0.25)
-Description: Small, focused zone encapsulating a DOM performance monitor service and its React hook adapter, with a paired unit test.
+Files: 3, Cohesion: 0.67, Coupling: 0.33
+Risk: healthy (score: 0.33)
+Description: Encapsulates the DOM performance monitoring utility and its React hook abstraction for the viewer.
 Lines: 1691
 
 </zone>
@@ -15,7 +15,6 @@ Lines: 1691
 <files>
 
 packages/web/src/viewer/hooks/use-dom-performance-monitor.ts (TypeScript, 175 lines, source)
-packages/web/src/viewer/performance/.gitkeep (Other, 0 lines, other)
 packages/web/src/viewer/performance/dom-performance-monitor.ts (TypeScript, 505 lines, source)
 packages/web/tests/unit/viewer/dom-performance-monitor.test.ts (TypeScript, 1011 lines, test)
 
@@ -30,33 +29,41 @@ Internal:
   packages/web/tests/unit/viewer/dom-performance-monitor.test.ts → packages/web/src/viewer/performance/dom-performance-monitor.ts {DOMNodeSnapshot, RenderTiming, UpdateComparison, PerformanceSummary}
 
 Outgoing (this zone → other zones):
-  → web-dashboard-mcp-server: packages/web/src/viewer/performance/dom-performance-monitor.ts → packages/web/src/viewer/polling/polling-state.ts
+  → web-dashboard: packages/web/src/viewer/performance/dom-performance-monitor.ts → packages/web/src/viewer/polling/polling-state.ts
 
 </imports>
 
 <findings>
 
-[suggestion] [info] Align zone ID with implementation file naming: rename zone from 'dom-performance-monitoring' to 'dom-performance-monitor' (singular) to match dom-performance-monitor.ts and use-dom-performance-monitor.ts. The 'monitoring' suffix in the zone ID creates a search mismatch with every implementation file in the zone.
-[suggestion] [warning] The zone ID appears as 'dom' in the cross-zone import graph — the second confirmed instance of the same zone ID truncation bug already identified for viewer-message-flow-control. Both affected zones have active cross-zone import edges, meaning joins between imports.json and zone metadata silently drop their edges. This confirms the bug is systemic and must be fixed in sourcevision's import graph emission, not patched per-zone.
+[observation] [info] At 3 files, this zone sits at the minimum useful size; monitor whether it grows organically or should be folded into web-viewer.
+[observation] [info] Cohesion of 0.67 and coupling of 0.33 are healthy for a 3-file zone; no structural changes needed.
+[observation] [info] Zone has no declared entry point — if web-viewer imports this directly by path, consider formalizing a public.ts export to make the surface explicit.
+[relationship] [critical] Cross-zone import direction 'dom → web-viewer' conflicts with documented leaf-node status; verify whether dom-performance-monitoring imports anything from web-viewer or whether the arrow direction in the import table denotes 'exports to'. If dom does import from web-viewer, this is a circular dependency that must be resolved.
+[anti-pattern] [warning] Call graph reports coupling=0 while cross-zone import table records 1 outgoing import to web-viewer — metric disagreement between analysis passes produces unreliable zone health scores and must be resolved before coupling data can be trusted for this zone.
+[anti-pattern] [info] Zone contains only 2 production files; the overhead of maintaining a separate zone boundary (including the disputed cross-zone import) outweighs the structural benefit — merge into web-viewer unless additional files are actively planned.
+[suggestion] [warning] Add use-dom-performance-monitor.test.ts to cover the hook's lifecycle: verify the monitor is started on mount, stopped on unmount, and that ref changes trigger re-subscription — the utility has test coverage but the hook wrapper that most consumers interact with does not.
+[suggestion] [info] Rename zone ID from 'dom-performance-monitoring' to 'dom-performance-monitor' to match the noun form used in every filename in the zone — or rename the files to 'dom-performance-monitoring.ts' to match the zone ID; the current mismatch makes grep/navigation unreliable.
 
 </findings>
 
 <insights>
 
-- The 0.25 coupling to web-viewer reflects the hook's natural dependency on viewer-level utilities — this is expected for a hook that bridges a framework-agnostic service into React.
-- The clean separation between the monitor service (dom-performance-monitor.ts) and its React binding (use-dom-performance-monitor.ts) follows the hook-as-adapter pattern correctly.
-- With only 4 files and a .gitkeep placeholder in performance/, this zone may grow — consider whether additional performance monitors (memory, FPS) should live here or in the main viewer zone.
-- Service/hook separation is clean: the framework-agnostic monitor is testable independently, and the React hook is a thin adapter — this is good architectural layering for performance utilities.
-- The performance/.gitkeep suggests planned expansion; if more monitors are added, ensure they follow the same service+hook pairing pattern established here.
-- Coupling of 0.25 is entirely explained by the hook's single import into web-viewer — not a concern at this scale, but worth monitoring if more cross-zone dependencies are added.
-- dom-performance-monitoring is the only zone in the web package where a smaller utility zone depends on a larger application zone (dom → web-viewer) rather than the reverse — if the performance monitor ever needs to be reused outside the viewer context, this coupling direction will become a blocker and the hook should be inverted into a generic hook that accepts viewer primitives as arguments rather than importing them directly.
-- dom → web-viewer coupling direction is currently benign but creates reuse friction: the monitor hook is bound to the viewer zone. If monitor reuse across zones is needed, extract viewer-specific bindings into a thin adapter at the web-viewer boundary.
-- The performance/.gitkeep placeholder in a production source directory (src/viewer/performance/) — rather than a test fixture or build output directory — signals that the performance directory was created speculatively before additional monitors were implemented. Speculative directory structure in src/ accretes technical debt: future contributors may add files to performance/ without evaluating whether they belong in this zone or the main viewer zone, silently expanding the zone's scope.
-- packages/web/src/viewer/performance/.gitkeep exists in a production source directory with no accompanying implementation files beyond dom-performance-monitor.ts. Speculative empty directories in src/ create ambiguous ownership: new performance monitors added here will be absorbed into this zone without review of whether they should instead live in the main viewer zone or a new dedicated zone. Remove the .gitkeep and rely on the directory being created when a second monitor is actually implemented.
-- The cross-zone import graph identifies this zone as 'dom' (truncated from 'dom-performance-monitoring'), making this the second confirmed instance of the zone ID truncation pattern already identified for viewer-message-flow-control/'message'. Both mismatches abbreviate the zone ID to the first meaningful word segment, confirming this is a systemic algorithm defect in sourcevision's import graph ID resolution — not an isolated labeling choice.
-- The zone name 'dom-performance-monitoring' uses the plural 'monitoring' but every implementation file uses the singular: dom-performance-monitor.ts and use-dom-performance-monitor.ts. Searching the codebase for 'monitor' finds the implementation files but not the zone ID, and searching for 'monitoring' finds the zone ID but not the files — a bidirectional search mismatch for the most common lookup pattern.
-- Align zone ID with implementation file naming: rename zone from 'dom-performance-monitoring' to 'dom-performance-monitor' (singular) to match dom-performance-monitor.ts and use-dom-performance-monitor.ts. The 'monitoring' suffix in the zone ID creates a search mismatch with every implementation file in the zone.
-- The zone ID appears as 'dom' in the cross-zone import graph — the second confirmed instance of the same zone ID truncation bug already identified for viewer-message-flow-control. Both affected zones have active cross-zone import edges, meaning joins between imports.json and zone metadata silently drop their edges. This confirms the bug is systemic and must be fixed in sourcevision's import graph emission, not patched per-zone.
+- Small, focused zone with clean separation between the core utility (dom-performance-monitor.ts) and its React hook wrapper (use-dom-performance-monitor.ts) — a good pattern for testability.
+- The zone has no entry point and is consumed by web-viewer via a single import, suggesting it could reasonably be absorbed into the web-viewer zone unless it grows further.
+- Test co-location alongside both the utility and hook is good practice and contributes to the respectable cohesion score of 0.67.
+- Cohesion of 0.67 and coupling of 0.33 are healthy for a 3-file zone; no structural changes needed.
+- Zone has no declared entry point — if web-viewer imports this directly by path, consider formalizing a public.ts export to make the surface explicit.
+- At 3 files, this zone sits at the minimum useful size; monitor whether it grows organically or should be folded into web-viewer.
+- The cross-zone import table lists this zone as 'dom → web-viewer: 1 import', which — if the arrow denotes an import dependency (dom imports from web-viewer) — contradicts the existing insight describing this zone as a leaf consumed by web-viewer; if true, a mutual import exists that would make the zone non-leaf and introduce a hidden cycle.
+- Cross-zone import direction 'dom → web-viewer' conflicts with documented leaf-node status; verify whether dom-performance-monitoring imports anything from web-viewer or whether the arrow direction in the import table denotes 'exports to'. If dom does import from web-viewer, this is a circular dependency that must be resolved.
+- The call graph reports coupling: 0 for this zone while the cross-zone import table records 'dom → web-viewer: 1 import' — these two metrics directly contradict each other, indicating either a stale call graph snapshot or a zone-ID mismatch between the two analysis passes; this data inconsistency means the zone's true coupling cannot be determined from current tooling output alone.
+- With only 2 production files (utility + hook) and 1 test file, this zone is below the minimum viable size for independent lifecycle management; if no new files are planned, absorbing it into web-viewer is lower risk than maintaining a separate zone boundary that creates the ambiguous cross-zone import currently under dispute.
+- Call graph reports coupling=0 while cross-zone import table records 1 outgoing import to web-viewer — metric disagreement between analysis passes produces unreliable zone health scores and must be resolved before coupling data can be trusted for this zone.
+- Zone contains only 2 production files; the overhead of maintaining a separate zone boundary (including the disputed cross-zone import) outweighs the structural benefit — merge into web-viewer unless additional files are actively planned.
+- Zone ID uses 'monitoring' (-ing suffix / gerund) while the actual source files use 'monitor' (noun form: dom-performance-monitor.ts, use-dom-performance-monitor.ts) — the zone name and file names are grammatically inconsistent.
+- The single test file (dom-performance-monitor.test.ts) covers the core utility but there is no use-dom-performance-monitor.test.ts — the React hook wrapper has no direct unit test, leaving hook-specific behavior (mount/unmount lifecycle, ref wiring) untested.
+- Rename zone ID from 'dom-performance-monitoring' to 'dom-performance-monitor' to match the noun form used in every filename in the zone — or rename the files to 'dom-performance-monitoring.ts' to match the zone ID; the current mismatch makes grep/navigation unreliable.
+- Add use-dom-performance-monitor.test.ts to cover the hook's lifecycle: verify the monitor is started on mount, stopped on unmount, and that ref changes trigger re-subscription — the utility has test coverage but the hook wrapper that most consumers interact with does not.
 - [call graph] 248 internal calls, 1 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

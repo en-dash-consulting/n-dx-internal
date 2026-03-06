@@ -7,14 +7,14 @@
 Zone: Web Viewer/zone (`web-viewer/zone`)
 Files: 3, Cohesion: 0.80, Coupling: 0.20
 Description: 3 files, primarily CSS
-Lines: 1623
+Lines: 1637
 
 </zone>
 
 <files>
 
 packages/web/src/viewer/styles/validation.css (CSS, 784 lines, other)
-packages/web/src/viewer/styles/zone-map.css (CSS, 489 lines, other)
+packages/web/src/viewer/styles/zone-map.css (CSS, 503 lines, other)
 packages/web/src/viewer/styles/zone-slideout.css (CSS, 350 lines, other)
 
 </files>

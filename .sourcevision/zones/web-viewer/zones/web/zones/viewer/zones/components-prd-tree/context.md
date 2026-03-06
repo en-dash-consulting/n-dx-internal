@@ -5,39 +5,56 @@
 <zone>
 
 Zone: Web Viewer/web/viewer/components Prd Tree (`web-viewer/web/viewer/components-prd-tree`)
-Files: 7, Cohesion: 0.78, Coupling: 0.22
-Description: 7 files, primarily TypeScript
-Entry points: packages/web/src/viewer/components/prd-tree/smart-add-input.ts, packages/web/src/viewer/views/analysis.ts
-Lines: 3489
+Files: 15, Cohesion: 0.54, Coupling: 0.46
+Description: 15 files, primarily TypeScript
+Entry points: packages/web/src/viewer/components/crash-recovery-banner.ts, packages/web/src/viewer/components/degradation-banner.ts, packages/web/src/viewer/components/memory-warning.ts, packages/web/src/viewer/components/prd-tree/execution-panel.ts, packages/web/src/viewer/components/refresh-queue-status.ts, packages/web/src/viewer/hooks/use-prd-websocket.ts, packages/web/src/viewer/hooks/use-refresh-throttle.ts, packages/web/src/viewer/performance/index.ts, packages/web/src/viewer/performance/refresh-throttle.ts
+Lines: 4297
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/components/prd-tree/analyze-panel.ts (TypeScript, 382 lines, source)
-packages/web/src/viewer/components/prd-tree/batch-import-panel.ts (TypeScript, 626 lines, source)
-packages/web/src/viewer/components/prd-tree/proposal-editor.ts (TypeScript, 704 lines, source)
-packages/web/src/viewer/components/prd-tree/smart-add-input.ts (TypeScript, 630 lines, source)
-packages/web/src/viewer/views/analysis.ts (TypeScript, 157 lines, source)
-packages/web/tests/unit/viewer/batch-import-panel.test.ts (TypeScript, 372 lines, test)
-packages/web/tests/unit/viewer/smart-add-input.test.ts (TypeScript, 618 lines, test)
+packages/web/src/viewer/components/crash-recovery-banner.ts (TypeScript, 92 lines, source)
+packages/web/src/viewer/components/degradation-banner.ts (TypeScript, 100 lines, source)
+packages/web/src/viewer/components/memory-warning.ts (TypeScript, 83 lines, source)
+packages/web/src/viewer/components/prd-tree/execution-panel.ts (TypeScript, 406 lines, source)
+packages/web/src/viewer/components/refresh-queue-status.ts (TypeScript, 98 lines, source)
+packages/web/src/viewer/hooks/use-prd-websocket.ts (TypeScript, 157 lines, source)
+packages/web/src/viewer/hooks/use-refresh-throttle.ts (TypeScript, 108 lines, source)
+packages/web/src/viewer/performance/dom-update-gate.ts (TypeScript, 353 lines, source)
+packages/web/src/viewer/performance/index.ts (TypeScript, 64 lines, source)
+packages/web/src/viewer/performance/refresh-throttle.ts (TypeScript, 364 lines, source)
+packages/web/src/viewer/performance/update-batcher.ts (TypeScript, 188 lines, source)
+packages/web/tests/unit/viewer/crash-recovery-banner.test.ts (TypeScript, 274 lines, test)
+packages/web/tests/unit/viewer/dom-update-gate.test.ts (TypeScript, 942 lines, test)
+packages/web/tests/unit/viewer/refresh-throttle.test.ts (TypeScript, 531 lines, test)
+packages/web/tests/unit/viewer/update-batcher.test.ts (TypeScript, 537 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/src/viewer/components/prd-tree/analyze-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
-  packages/web/src/viewer/components/prd-tree/analyze-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
-  packages/web/src/viewer/components/prd-tree/batch-import-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
-  packages/web/src/viewer/components/prd-tree/batch-import-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
-  packages/web/src/viewer/components/prd-tree/smart-add-input.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
-  packages/web/src/viewer/components/prd-tree/smart-add-input.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
-  packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/analyze-panel.ts {AnalyzePanel}
-  packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanel}
-  packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts {SmartAddInput}
-  packages/web/tests/unit/viewer/batch-import-panel.test.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanel, BatchItemRow}
-  packages/web/tests/unit/viewer/batch-import-panel.test.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchItem}
-  packages/web/tests/unit/viewer/smart-add-input.test.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts {SmartAddInput}
+  packages/web/src/viewer/components/crash-recovery-banner.ts → packages/web/src/viewer/performance/index.ts {SavedNavigationState}
+  packages/web/src/viewer/components/degradation-banner.ts → packages/web/src/viewer/performance/index.ts {MemoryLevel, DegradableFeature}
+  packages/web/src/viewer/components/memory-warning.ts → packages/web/src/viewer/performance/index.ts {formatBytes, formatRatio}
+  packages/web/src/viewer/components/memory-warning.ts → packages/web/src/viewer/performance/index.ts {MemorySnapshot, MemoryLevel}
+  packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/performance/index.ts {isFeatureDisabled, onDegradationChange}
+  packages/web/src/viewer/components/refresh-queue-status.ts → packages/web/src/viewer/performance/index.ts {MemoryLevel, RefreshQueueState}
+  packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/performance/index.ts {createUpdateBatcher, createDomUpdateGate, createResponseBufferGate}
+  packages/web/src/viewer/hooks/use-refresh-throttle.ts → packages/web/src/viewer/performance/index.ts {MemoryLevel, RefreshQueueState, RefreshPriority}
+  packages/web/src/viewer/hooks/use-refresh-throttle.ts → packages/web/src/viewer/performance/refresh-throttle.ts {startRefreshThrottle, stopRefreshThrottle, onQueueChange, getQueueState, enqueueRefresh, getRecommendedInterval, resetRefreshThrottle}
+  packages/web/src/viewer/performance/dom-update-gate.ts → packages/web/src/viewer/performance/update-batcher.ts {UpdateBatcher}
+  packages/web/src/viewer/performance/index.ts → packages/web/src/viewer/performance/dom-update-gate.ts {createDomUpdateGate, DomUpdateGate, DomUpdateGateConfig}
+  packages/web/src/viewer/performance/index.ts → packages/web/src/viewer/performance/refresh-throttle.ts {RefreshQueueState, RefreshPriority}
+  packages/web/src/viewer/performance/index.ts → packages/web/src/viewer/performance/update-batcher.ts {createUpdateBatcher, UpdateBatcher, UpdateBatcherConfig}
+  packages/web/tests/unit/viewer/crash-recovery-banner.test.ts → packages/web/src/viewer/components/crash-recovery-banner.ts {CrashRecoveryBanner}
+  packages/web/tests/unit/viewer/dom-update-gate.test.ts → packages/web/src/viewer/performance/dom-update-gate.ts {createDomUpdateGate}
+  packages/web/tests/unit/viewer/dom-update-gate.test.ts → packages/web/src/viewer/performance/dom-update-gate.ts {DomUpdateGate}
+  packages/web/tests/unit/viewer/dom-update-gate.test.ts → packages/web/src/viewer/performance/update-batcher.ts {createUpdateBatcher}
+  packages/web/tests/unit/viewer/refresh-throttle.test.ts → packages/web/src/viewer/performance/refresh-throttle.ts {startRefreshThrottle, stopRefreshThrottle, enqueueRefresh, getQueueState, getRecommendedInterval, getThrottleLevel, onQueueChange, resetRefreshThrottle}
+  packages/web/tests/unit/viewer/refresh-throttle.test.ts → packages/web/src/viewer/performance/refresh-throttle.ts {RefreshQueueState}
+  packages/web/tests/unit/viewer/update-batcher.test.ts → packages/web/src/viewer/performance/update-batcher.ts {createUpdateBatcher}
+  packages/web/tests/unit/viewer/update-batcher.test.ts → packages/web/src/viewer/performance/update-batcher.ts {UpdateBatcher}
 
 </imports>
