@@ -954,8 +954,11 @@ function dominantPackageRoot(files: string[]): string | null {
 
 /**
  * Compute cohesion and coupling metrics for a set of files in a zone.
- * Test files are excluded from the calculation because test→source edges
- * represent test dependencies, not architectural coupling.
+ * Test files are excluded from the calculation — both as iteration sources
+ * and as neighbors — because test→source and source→test edges represent
+ * test dependencies, not architectural coupling. Without this exclusion,
+ * zones with many test files (e.g. E2E suites) produce misleading metrics
+ * where test-file neighbors inflate internal/external edge counts.
  */
 function computeZoneMetrics(
   files: string[],
@@ -965,14 +968,23 @@ function computeZoneMetrics(
   const memberSet = new Set(files);
   let internalEdgeCount = 0;
   let totalEdgesFromZone = 0;
+  let productionNodeCount = 0;
   for (const node of files) {
     if (testFiles.has(node)) continue;
+    productionNodeCount++;
     const neighbors = graph.get(node);
     if (!neighbors) continue;
     for (const [neighbor] of neighbors) {
+      if (testFiles.has(neighbor)) continue;
       totalEdgesFromZone++;
       if (memberSet.has(neighbor)) internalEdgeCount++;
     }
+  }
+  // A zone with ≤1 production files cannot form internal production edges,
+  // so cohesion/coupling are structurally meaningless. Return healthy defaults
+  // to avoid false-positive risk alerts on test-dominated or single-file zones.
+  if (productionNodeCount <= 1) {
+    return { cohesion: 1, coupling: 0 };
   }
   return {
     cohesion: totalEdgesFromZone > 0

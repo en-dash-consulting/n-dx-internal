@@ -18064,6 +18064,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-03-06T17:07:35.696Z",
+      "completedAt": "2026-03-06T17:07:35.696Z",
       "children": [
         {
           "id": "09c29ff9-de59-49d7-a1a7-66120c7cb933",
@@ -18124,9 +18126,7 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-03-06T17:07:35.696Z",
-      "completedAt": "2026-03-06T17:07:35.696Z"
+      ]
     },
     {
       "id": "8eb17701-e2db-46c7-bdf2-1f6104a71bc5",
@@ -18252,6 +18252,221 @@
               "source": "smart-add",
               "startedAt": "2026-03-06T16:41:37.907Z",
               "completedAt": "2026-03-06T16:45:34.536Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b8205144-f216-4461-8ae7-c8a0c66007fd",
+      "title": "Address observation issues (5 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Bidirectional coupling: \"dashboard-mcp-server\" ↔ \"web-package-shell\" (2+4 crossings) — consider extracting shared interface\n- The task-usage-tracking ↔ dashboard-mcp-server coupling cycle is the only inter-zone warning in this batch and should be resolved to preserve clean unidirectional data flow in the analytics subsystem.\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects\n- Bidirectional imports between this zone and dashboard-mcp-server (2 imports in each direction) create a coupling cycle; consider inverting the dependency or introducing an event/callback boundary.\n- Coupling of 0.5 driven by 6 imports from dashboard-mcp-server suggests this cluster is a natural sub-module of that zone rather than an independent architectural boundary.",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "30b2889a35bd",
+          "a412074fc50d",
+          "3a82920140f7",
+          "1055fc8a3d97",
+          "ace504630038"
+        ],
+        "category": "observation",
+        "severityDistribution": {
+          "warning": 5
+        },
+        "findingCount": 5
+      }
+    },
+    {
+      "id": "d2a70fe9-3e21-41a6-aca5-7ea4c47e1ac8",
+      "title": "Address anti-pattern issues (2 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- God function: main in packages/rex/src/cli/index.ts calls 48 unique functions — consider decomposing into smaller, focused functions\n- God function: usePRDActions in packages/web/src/viewer/hooks/use-prd-actions.ts calls 39 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "8e1afee1274d",
+          "19e5fd90db78"
+        ],
+        "category": "anti-pattern",
+        "severityDistribution": {
+          "warning": 2
+        },
+        "findingCount": 2
+      }
+    },
+    {
+      "id": "b9d03c36-c84b-4763-a043-e390fd3ecb4b",
+      "title": "Address suggestion issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Zone \"Schema Validation\" (packages-rex:schema-validation) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention",
+      "priority": "critical",
+      "source": "sourcevision",
+      "startedAt": "2026-03-06T17:29:29.566Z",
+      "recommendationMeta": {
+        "findingHashes": [
+          "6d076775b051"
+        ],
+        "category": "suggestion",
+        "severityDistribution": {
+          "critical": 1
+        },
+        "findingCount": 1
+      },
+      "completedAt": "2026-03-06T17:54:39.954Z"
+    },
+    {
+      "id": "e9641f3c-2913-4e47-a9e4-bb95ebe92291",
+      "title": "Rex UI Task Management Enhancement",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "7de88f8c-5bee-4b9e-9532-7f134c7244ed",
+          "title": "Smart Add Command Construction and Submission UX Fix",
+          "status": "pending",
+          "level": "feature",
+          "description": "Two related regressions in the Rex Dashboard Smart Add form: (1) the CLI command is being built incorrectly, appending stale or unrelated text from the UI (e.g. a previous task title) to the `add` subcommand arguments, causing a command-not-found failure; (2) the form auto-submits on every keystroke or Enter press rather than waiting for the user to finish composing their input.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "7185db68-f9b1-473a-982d-1d169dd5d880",
+              "title": "Fix Smart Add CLI command argument construction in Rex Dashboard",
+              "status": "pending",
+              "level": "task",
+              "description": "The Rex Dashboard Smart Add feature builds a shell command like `rex add --format=json <description>` before dispatching it to the CLI. A regression is causing the description argument to be concatenated with unrelated UI state (e.g. the current search query or last-focused task title), producing a malformed command such as `rex add --format=json limit Tag selection options in the rex task UI search area`. Trace the command-builder code path, identify the source of the stale string injection, and fix the argument assembly so only the user-entered description is forwarded.",
+              "acceptanceCriteria": [
+                "Submitting a Smart Add description dispatches exactly `rex add --format=json <user-description>` with no extra text appended",
+                "The error 'Command failed: … add --format=json <unrelated-text>' no longer appears in the dashboard for any input",
+                "Verified by submitting a short description while a different task or search term is visible on screen — the dispatched command contains only the typed description",
+                "Existing Smart Add integration test suite passes without modification"
+              ],
+              "priority": "critical",
+              "tags": [
+                "bug",
+                "smart-add",
+                "rex-ui",
+                "cli"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "ebb0e5f8-32e7-4494-a680-8b16ac5603e5",
+              "title": "Prevent Smart Add form auto-submission and require explicit user action",
+              "status": "pending",
+              "level": "task",
+              "description": "The Smart Add input form in the Rex Dashboard currently submits automatically — either on each keystroke (reactive binding) or on Enter key press — before the user has finished composing their description. This makes it impossible to type multi-word or multi-clause ideas without triggering a premature submission. The form should only submit when the user explicitly clicks the Submit button (or equivalent deliberate action). Debouncing alone is insufficient; the trigger must be user-initiated.",
+              "acceptanceCriteria": [
+                "Typing any text into the Smart Add input does not trigger proposal generation or CLI dispatch",
+                "Pressing Enter while focused in the Smart Add input does not submit the form",
+                "The form submits only when the user activates the designated Submit/Generate button",
+                "A user can type, pause, edit, and resume typing before submitting without any interim API calls or errors",
+                "Submission button is visually distinct and reachable via keyboard (Tab + Enter/Space)"
+              ],
+              "priority": "high",
+              "tags": [
+                "ux",
+                "smart-add",
+                "rex-ui",
+                "form"
+              ],
+              "source": "smart-add"
+            }
+          ],
+          "overrideMarker": {
+            "type": "duplicate_guard_override",
+            "reason": "semantic_title",
+            "reasonRef": "semantic_title:598d6fd3-86d0-42d2-8a41-1030963777ef",
+            "matchedItemId": "598d6fd3-86d0-42d2-8a41-1030963777ef",
+            "matchedItemTitle": "Smart Add Command Regression Fix",
+            "matchedItemLevel": "feature",
+            "matchedItemStatus": "completed",
+            "createdAt": "2026-03-06T17:26:10.279Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "d357994f-13c1-488f-b839-0c7b2c710903",
+      "title": "Rex UI Task Management Enhancement",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "4068a2f4-c73e-4e7a-b038-0c9d2ad52303",
+          "title": "Rex Task Search",
+          "status": "pending",
+          "level": "feature",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "6b7536e1-7c34-4906-be43-74e715c267dc",
+              "title": "Limit tag filter options in Rex task search to tags present in the current PRD",
+              "status": "pending",
+              "level": "task",
+              "description": "The tag facet selector in the Rex task search area currently shows an unbounded or static list of tag options. It should instead derive its options dynamically from the set of tags actually used across all tasks in the current PRD tree, so users only see relevant, actionable choices. Tags with zero matching tasks in the current view should be omitted or visually disabled.",
+              "acceptanceCriteria": [
+                "Tag options in the search facet are derived at runtime from tags present on tasks in the loaded PRD",
+                "Tags not present on any task in the current PRD do not appear as selectable options",
+                "Tag list updates if the PRD is refreshed or tasks are added/removed during the session",
+                "Selecting a tag filter correctly narrows the displayed task list to tasks carrying that tag",
+                "Empty-state messaging is shown when no tags exist in the current PRD"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "rex",
+                "search",
+                "ux"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d7e35684-e88e-4f57-a231-661a93b290b2",
+      "title": "Analyze pipeline improvements",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "35e5b979-bfe3-4025-8445-72711d8686be",
+          "title": "Hide completed items by default in status views",
+          "status": "pending",
+          "level": "feature",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "1cf7f490-d6e1-4232-bb90-c9fcbe06a6af",
+              "title": "Suppress deleted items from rex status CLI output by default",
+              "status": "pending",
+              "level": "task",
+              "description": "Deleted items clutter the rex status tree and provide no actionable signal to the user. The status command should omit items with a 'deleted' status from its default output, matching the existing behavior for completed items. A flag (e.g. --show-deleted or --all) should allow users to opt back in if needed.",
+              "acceptanceCriteria": [
+                "Running `rex status` omits all items whose status is 'deleted' from the printed tree",
+                "Omitted deleted items are not counted in completion totals shown in status output",
+                "A CLI flag (--show-deleted or --all) causes deleted items to appear in the output when passed",
+                "JSON output via --format=json respects the same filter by default and includes deleted items when the flag is present",
+                "Behavior is consistent with how completed items are hidden by default"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "rex",
+                "status"
+              ],
+              "source": "smart-add"
             }
           ]
         }

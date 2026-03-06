@@ -158,3 +158,13 @@
 {"timestamp":"2026-03-06T17:07:35.514Z","event":"status_changed","itemId":"aee318ff-ac6b-476c-8414-075f04c4e988","detail":"in_progress → completed"}
 {"timestamp":"2026-03-06T17:07:35.668Z","event":"auto_completed","itemId":"09c29ff9-de59-49d7-a1a7-66120c7cb933","detail":"Auto-completed feature: Zone Slideout Interaction Regression Fix (all children done)"}
 {"timestamp":"2026-03-06T17:07:35.753Z","event":"auto_completed","itemId":"37383cf7-8f86-47dd-a508-ddff174d5c3b","detail":"Auto-completed epic: SourceVision UI Import Graph Enhancement (all children done)"}
+{"timestamp":"2026-03-06T17:08:24.856Z","event":"status_updated","itemId":"aee318ff-ac6b-476c-8414-075f04c4e988","detail":"Status changed to completed by hench agent"}
+{"timestamp":"2026-03-06T17:08:24.887Z","event":"task_completed","itemId":"aee318ff-ac6b-476c-8414-075f04c4e988","detail":"## Summary\n\n**Task:** Improve info button visual affordance on zone nodes\n\n**Changes made:**\n\n### `packages/web/src/viewer/views/zones.ts`\n- Replaced the plain \"info\" text with `ⓘ` (Unicode circled information source) — a recognizable info icon\n- Changed button shape from rounded rectangle (26×18, rx:4) to circle (22×22, rx:11) — visually distinct from the ▴/▾ collapse chevrons\n- Added `<title>View zone details</title>` SVG element for native browser tooltip on hover\n\n### `packages/web/src/viewe"}
+{"timestamp":"2026-03-06T17:24:01.230Z","event":"item_added","itemId":"b8205144-f216-4461-8ae7-c8a0c66007fd","detail":"Added feature from recommendation: Address observation issues (5 findings)"}
+{"timestamp":"2026-03-06T17:24:01.231Z","event":"item_added","itemId":"d2a70fe9-3e21-41a6-aca5-7ea4c47e1ac8","detail":"Added feature from recommendation: Address anti-pattern issues (2 findings)"}
+{"timestamp":"2026-03-06T17:24:01.231Z","event":"item_added","itemId":"b9d03c36-c84b-4763-a043-e390fd3ecb4b","detail":"Added feature from recommendation: Address suggestion issues (1 findings)"}
+{"timestamp":"2026-03-06T17:26:10.742Z","event":"smart_add_accept","detail":"Added 4 items from smart add (1 duplicate override marker(s))"}
+{"timestamp":"2026-03-06T17:28:05.786Z","event":"smart_add_accept","detail":"Added 3 items from smart add"}
+{"timestamp":"2026-03-06T17:28:52.947Z","event":"smart_add_accept","detail":"Added 3 items from smart add"}
+{"timestamp":"2026-03-06T17:29:29.625Z","event":"status_updated","itemId":"b9d03c36-c84b-4763-a043-e390fd3ecb4b","detail":"Status changed to in_progress by hench agent"}
+{"timestamp":"2026-03-06T17:54:40.020Z","event":"status_changed","itemId":"b9d03c36-c84b-4763-a043-e390fd3ecb4b","detail":"in_progress → completed"}
