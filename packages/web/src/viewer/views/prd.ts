@@ -17,7 +17,7 @@
 
 import { h, Fragment } from "preact";
 import type { VNode } from "preact";
-import { useEffect } from "preact/hooks";
+import { useEffect, useCallback } from "preact/hooks";
 import { PRDTree, StatusFilter } from "../components/prd-tree/index.js";
 import { AddItemForm } from "../components/prd-tree/add-item-form.js";
 import { BulkActions } from "../components/prd-tree/bulk-actions.js";
@@ -92,6 +92,28 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
   useEffect(() => {
     actions.syncDetailContent();
   }, [actions.syncDetailContent]);
+
+  // ── Click-outside to clear bulk selection ─────────────────────
+  // Clicks outside the `.prd-tree` container and the `.rex-bulk-bar`
+  // deselect all items.
+  useEffect(() => {
+    if (actions.bulkSelectedIds.size === 0) return;
+
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.closest(".prd-tree") ||
+        target.closest(".rex-bulk-bar") ||
+        target.closest(".merge-preview")
+      ) {
+        return;
+      }
+      actions.clearBulkSelection();
+    };
+
+    document.addEventListener("click", handler, true);
+    return () => document.removeEventListener("click", handler, true);
+  }, [actions.bulkSelectedIds.size, actions.clearBulkSelection]);
 
   // ── Render ─────────────────────────────────────────────────────
 
@@ -194,7 +216,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
       onSelectItem: actions.handleSelectItem,
       selectedItemId: actions.selectedItemId,
       bulkSelectedIds: actions.bulkSelectedIds,
-      onToggleBulkSelect: actions.handleToggleBulkSelect,
+      onBulkSelect: actions.handleBulkSelect,
       onInlineAddSubmit: actions.handleInlineAddItem,
       highlightedItemId: highlightedTaskId,
       deepLinkExpandIds,

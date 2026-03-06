@@ -3111,25 +3111,17 @@
   border-color: var(--accent);
 }
 
-/* ── Bulk Selection Checkboxes ────────────────────────────────────── */
-
-.prd-bulk-checkbox-wrapper {
-  display: inline-flex;
-  align-items: center;
-  margin-right: 4px;
-  flex-shrink: 0;
-}
-
-.prd-bulk-checkbox {
-  width: 14px;
-  height: 14px;
-  margin: 0;
-  cursor: pointer;
-  accent-color: var(--accent);
-}
+/* ── Bulk Selection Highlight ─────────────────────────────────────── */
 
 .prd-node-bulk-selected {
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  outline-offset: -1px;
+  border-radius: 4px;
+}
+
+.prd-node-bulk-selected:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 /* ── Merge Preview Panel ─────────────────────────────────────────── */

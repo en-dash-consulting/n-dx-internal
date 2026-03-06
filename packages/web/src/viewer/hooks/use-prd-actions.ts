@@ -13,7 +13,7 @@
  * @see ../components/prd-tree/tree-utils.ts — removeItemById, collectSubtreeIds, findItemById
  */
 
-import { useState, useCallback, useMemo } from "preact/hooks";
+import { useState, useCallback, useMemo, useRef } from "preact/hooks";
 import type { VNode } from "preact";
 import { h } from "preact";
 import type { PRDDocumentData, PRDItemData } from "../components/prd-tree/types.js";
@@ -82,8 +82,14 @@ export interface PRDActionsState {
   handleItemUpdate: (id: string, updates: Partial<PRDItemData>) => Promise<void>;
   /** Select an item (opens detail panel). */
   handleSelectItem: (item: PRDItemData) => void;
-  /** Toggle bulk selection checkbox for an item. */
-  handleToggleBulkSelect: (item: PRDItemData) => void;
+  /**
+   * Multi-select handler for bulk operations.
+   * Ctrl/Cmd+click toggles individual items, Shift+click selects a
+   * contiguous range from the anchor, plain click selects only that item.
+   * `visibleIds` provides the flat ordering of currently visible nodes
+   * (needed for shift-range computation).
+   */
+  handleBulkSelect: (item: PRDItemData, modifiers: { ctrlKey: boolean; shiftKey: boolean }, visibleIds: string[]) => void;
   /** Clear all bulk-selected items. */
   clearBulkSelection: () => void;
   /** Navigate to an item by ID (from detail panel links). */
@@ -207,18 +213,49 @@ export function usePRDActions({
     [onSelectItem],
   );
 
-  // ── Bulk selection ───────────────────────────────────────────────
+  // ── Bulk selection (ctrl/shift multi-select) ─────────────────────
 
-  const handleToggleBulkSelect = useCallback(
-    (item: PRDItemData) => {
+  /** Anchor item ID for shift-click range selection. */
+  const bulkAnchorRef = useRef<string | null>(null);
+
+  const handleBulkSelect = useCallback(
+    (item: PRDItemData, modifiers: { ctrlKey: boolean; shiftKey: boolean }, visibleIds: string[]) => {
       setBulkSelectedIds((prev) => {
-        const next = new Set(prev);
-        if (next.has(item.id)) {
-          next.delete(item.id);
-        } else {
-          next.add(item.id);
+        if (modifiers.shiftKey && bulkAnchorRef.current) {
+          // Shift+click: select contiguous range from anchor to clicked item
+          const anchorIdx = visibleIds.indexOf(bulkAnchorRef.current);
+          const targetIdx = visibleIds.indexOf(item.id);
+          if (anchorIdx >= 0 && targetIdx >= 0) {
+            const start = Math.min(anchorIdx, targetIdx);
+            const end = Math.max(anchorIdx, targetIdx);
+            const rangeIds = visibleIds.slice(start, end + 1);
+            // Combine with existing selection when ctrl is also held
+            const next = modifiers.ctrlKey ? new Set(prev) : new Set<string>();
+            for (const id of rangeIds) next.add(id);
+            return next;
+          }
+          // Anchor not visible — fall through to single select
         }
-        return next;
+
+        if (modifiers.ctrlKey) {
+          // Ctrl/Cmd+click: toggle individual item
+          const next = new Set(prev);
+          if (next.has(item.id)) {
+            next.delete(item.id);
+          } else {
+            next.add(item.id);
+          }
+          bulkAnchorRef.current = item.id;
+          return next;
+        }
+
+        // Plain click: select only this item, deselect all others
+        bulkAnchorRef.current = item.id;
+        // If already the sole selection, deselect (toggle off)
+        if (prev.size === 1 && prev.has(item.id)) {
+          return new Set<string>();
+        }
+        return new Set([item.id]);
       });
     },
     [],
@@ -226,6 +263,7 @@ export function usePRDActions({
 
   const clearBulkSelection = useCallback(() => {
     setBulkSelectedIds(new Set());
+    bulkAnchorRef.current = null;
   }, []);
 
   // ── Navigation ───────────────────────────────────────────────────
@@ -532,7 +570,7 @@ export function usePRDActions({
     deletingItemId,
     handleItemUpdate,
     handleSelectItem,
-    handleToggleBulkSelect,
+    handleBulkSelect,
     clearBulkSelection,
     handleNavigateToItem,
     handleAddChild,

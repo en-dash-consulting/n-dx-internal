@@ -17821,22 +17821,24 @@
     {
       "id": "c8fbd011-06cb-48a1-9c6d-03a50c00b5a0",
       "title": "Rex UI Task Management Enhancement",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "0e4d20ed-72d6-49a0-9717-7a2e27c53766",
           "title": "Ctrl/Shift Multi-Select for Task Items",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Replace checkbox-based selection in the Rex tasks UI with keyboard-modifier multi-select (ctrl+click for toggle, shift+click for range selection), matching the interaction model familiar from file explorers and list UIs.",
           "source": "smart-add",
+          "startedAt": "2026-03-06T07:52:05.383Z",
+          "completedAt": "2026-03-06T07:52:05.383Z",
           "children": [
             {
               "id": "710ef0e2-8b4e-4bf0-bd3f-6261808131a2",
               "title": "Implement ctrl/shift multi-select interaction on Rex task list items",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Remove checkbox inputs from task list items and replace with pointer+keyboard modifier selection logic. Ctrl+click should toggle individual item selection; shift+click should extend the selection range from the last-clicked anchor item. The selected set should be tracked in component state and visually indicated via highlight styling rather than a checkbox. Deselect-all should occur on a plain click with no modifier.",
               "acceptanceCriteria": [
@@ -17854,7 +17856,9 @@
                 "rex",
                 "ux"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-06T07:45:16.322Z",
+              "completedAt": "2026-03-06T07:52:05.187Z"
             }
           ]
         },
@@ -17866,7 +17870,9 @@
           "startedAt": "2026-03-06T07:39:31.119Z",
           "completedAt": "2026-03-06T07:44:35.624Z"
         }
-      ]
+      ],
+      "startedAt": "2026-03-06T07:52:05.467Z",
+      "completedAt": "2026-03-06T07:52:05.467Z"
     },
     {
       "id": "4c081a10-9a55-48e7-a9de-68ca2f1de243",

@@ -2,8 +2,8 @@
  * PRD hierarchy tree view component.
  *
  * Renders a collapsible/expandable tree of epics → features → tasks → subtasks
- * with status indicators, progress bars, completion percentages, and optional
- * multi-select checkboxes for bulk operations (status update, merge).
+ * with status indicators, progress bars, completion percentages, and
+ * modifier-key multi-select for bulk operations (status update, merge).
  *
  * Uses virtual scrolling to render only items within the viewport plus a
  * configurable buffer zone. The tree is flattened into a linear array
@@ -12,7 +12,7 @@
  *
  * Event handling uses delegation: a single set of click / contextmenu / keydown
  * listeners on the `[role="tree"]` container replaces per-node handlers, reducing
- * total listener count from O(N × 6) to O(1) + O(N_checkboxes).
+ * total listener count from O(N × 6) to O(1).
  *
  * @see ./virtual-scroll.ts      — tree flattening and viewport computation
  * @see ./tree-event-delegate.ts  — delegated event handling hook
@@ -169,12 +169,11 @@ function TimestampSuffix({ item }: { item: PRDItemData }) {
 // ── Single tree node ────────────────────────────────────────────────
 //
 // NodeRow is a pure display component. It carries **no** event handlers of
-// its own for click / contextmenu / keydown — those are delegated to the
+// its own — all click / contextmenu / keydown events are delegated to the
 // tree container via useTreeEventDelegation (see tree-event-delegate.ts).
 //
-// The only per-node listener that remains is the checkbox `onChange`, which
-// must stay on the <input> itself so Preact's controlled-input model keeps
-// the visual checked state in sync.
+// Bulk selection is indicated via a highlighted row background (the
+// `prd-node-bulk-selected` CSS class) rather than a checkbox input.
 //
 // Each row adds `data-node-id` and (optionally) `data-has-children` data
 // attributes so the delegated handler can identify the target node and its
@@ -190,10 +189,8 @@ interface NodeRowProps {
   isExpanded: boolean;
   hasChildren: boolean;
   isSelected: boolean;
-  /** Whether the checkbox for bulk selection is checked. */
+  /** Whether this item is selected for bulk operations (highlighted row). */
   isBulkSelected?: boolean;
-  /** Called when the checkbox is toggled. Presence also enables the checkbox. */
-  onToggleBulkSelect?: (item: PRDItemData) => void;
   /** Whether to show the inline add child button. */
   canInlineAdd?: boolean;
   /** Whether the inline add form is currently open for this node. */
@@ -247,7 +244,7 @@ class NodeRow extends Component<NodeRowProps> {
   }
 
   render() {
-    const { item, taskUsage, weeklyBudget, showTokenBudget, depth, isExpanded, hasChildren, isSelected, isBulkSelected, onToggleBulkSelect, canInlineAdd, isInlineAddActive, isHighlighted, nodeRef, canDelete, isDeleting } = this.props;
+    const { item, taskUsage, weeklyBudget, showTokenBudget, depth, isExpanded, hasChildren, isSelected, isBulkSelected, canInlineAdd, isInlineAddActive, isHighlighted, nodeRef, canDelete, isDeleting } = this.props;
     const children = item.children ?? [];
     const stats = hasChildren ? computeBranchStats(children) : null;
     const ratio = stats ? completionRatio(stats) : 0;
@@ -261,15 +258,6 @@ class NodeRow extends Component<NodeRowProps> {
 
     const indent = depth * 24;
 
-    // Checkbox change is the only per-node listener. It must stay on the
-    // <input> for Preact's controlled-input diffing to work correctly.
-    const handleCheckboxChange = (e: Event) => {
-      e.stopPropagation();
-      if (onToggleBulkSelect) {
-        onToggleBulkSelect(item);
-      }
-    };
-
     return h(
       "div",
       {
@@ -280,22 +268,10 @@ class NodeRow extends Component<NodeRowProps> {
         ...(hasChildren ? { "data-has-children": "" } : {}),
         role: "treeitem",
         "aria-expanded": hasChildren ? String(isExpanded) : undefined,
-        "aria-selected": String(isSelected),
+        "aria-selected": String(isBulkSelected || isSelected),
         tabIndex: 0,
         ref: nodeRef,
       },
-      // Bulk selection checkbox
-      onToggleBulkSelect
-        ? h("span", { class: "prd-bulk-checkbox-wrapper" },
-            h("input", {
-              type: "checkbox",
-              class: "prd-bulk-checkbox",
-              checked: isBulkSelected,
-              onChange: handleCheckboxChange,
-              "aria-label": `Select ${item.title} for bulk action`,
-            }),
-          )
-        : null,
       // Chevron
       h(
         "span",
@@ -494,10 +470,15 @@ export interface PRDTreeProps {
   onSelectItem?: (item: PRDItemData) => void;
   /** Currently selected item ID (highlights the row). */
   selectedItemId?: string | null;
-  /** IDs of items selected for bulk operations (shows checkboxes). */
+  /** IDs of items selected for bulk operations (highlighted rows). */
   bulkSelectedIds?: Set<string>;
-  /** Called when a bulk-select checkbox is toggled. */
-  onToggleBulkSelect?: (item: PRDItemData) => void;
+  /**
+   * Multi-select callback for bulk operations. Receives the clicked item,
+   * keyboard modifier state, and the ordered list of currently visible
+   * item IDs so the consumer can implement ctrl-toggle, shift-range,
+   * and plain-click-single-select semantics.
+   */
+  onBulkSelect?: (item: PRDItemData, modifiers: { ctrlKey: boolean; shiftKey: boolean }, visibleIds: string[]) => void;
   /** Called when inline add form is submitted. */
   onInlineAddSubmit?: (data: InlineAddInput) => Promise<void>;
   /** ID of the item highlighted by a deep-link animation. */
@@ -538,7 +519,7 @@ function buildItemMap(items: PRDItemData[]): Map<string, PRDItemData> {
   return map;
 }
 
-export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onToggleBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds, onRemoveItem, onUpdateItem, deletingItemId, activeStatuses: externalStatuses, chunkSize }: PRDTreeProps) {
+export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds, onRemoveItem, onUpdateItem, deletingItemId, activeStatuses: externalStatuses, chunkSize }: PRDTreeProps) {
   // ── Flat item map for delegated event handlers ────────────────────
   const itemMap = useMemo(() => buildItemMap(doc.items), [doc.items]);
   const getItem = useCallback((id: string) => itemMap.get(id) ?? null, [itemMap]);
@@ -686,6 +667,18 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenB
     [statusPicker, onUpdateItem],
   );
 
+  // ── Bulk select wrapper (injects visible IDs) ────────────────────
+  // The tree owns the flat node list; the consumer needs it for
+  // shift-range computation but shouldn't have to compute it itself.
+  const handleBulkSelectWrapped = useCallback(
+    (item: PRDItemData, modifiers: { ctrlKey: boolean; shiftKey: boolean }) => {
+      if (!onBulkSelect) return;
+      const visibleIds = flatNodes.map((n) => n.item.id);
+      onBulkSelect(item, modifiers, visibleIds);
+    },
+    [onBulkSelect, flatNodes],
+  );
+
   // ── Delegated event handlers ──────────────────────────────────────
   // A single set of click / contextmenu / keydown listeners on the tree
   // container replaces the per-node handlers that were previously on every
@@ -694,6 +687,7 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenB
     getItem,
     onToggle: toggle,
     onSelectItem,
+    onBulkSelect: onBulkSelect ? handleBulkSelectWrapped : undefined,
     onInlineAdd: onInlineAddSubmit ? handleInlineAdd : undefined,
     onRemoveItem,
     onStatusClick: onUpdateItem ? handleStatusClick : undefined,
@@ -762,7 +756,6 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenB
             hasChildren,
             isSelected: selectedItemId === item.id,
             isBulkSelected: bulkSelectedIds?.has(item.id),
-            onToggleBulkSelect,
             canInlineAdd,
             isInlineAddActive,
             isHighlighted: isHL,
