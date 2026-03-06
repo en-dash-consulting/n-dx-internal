@@ -2,14 +2,15 @@
  * Pure search/filter functions for the PRD tree.
  *
  * Provides case-insensitive substring matching against item titles and
- * descriptions, returning both the set of matching item IDs and their
+ * descriptions, with optional tag and status facet filters that narrow
+ * results further. Returns both the set of matching item IDs and their
  * ancestor IDs (to preserve tree context in filtered views).
  *
  * @see ./prd-tree.ts — integrating component
  * @see ./virtual-scroll.ts — flattenVisibleTree respects search results
  */
 
-import type { PRDItemData } from "./types.js";
+import type { PRDItemData, ItemStatus } from "./types.js";
 import type { ComponentChild } from "preact";
 import { h } from "preact";
 
@@ -28,14 +29,48 @@ export interface TreeSearchResult {
   matchCount: number;
 }
 
+// ── Facet filter types ──────────────────────────────────────────────────────
+
+export interface SearchFacets {
+  /** Active tag facets — item must have ALL of these tags (AND logic). */
+  tags?: Set<string>;
+  /** Active status facets — item must match ONE of these statuses (OR within group). */
+  statuses?: Set<ItemStatus>;
+}
+
 // ── Core search ──────────────────────────────────────────────────────────────
 
 /**
- * Search the PRD tree for items matching a query string.
+ * Check if a single item passes the facet filters (ignoring text query).
+ * Tag facets use AND logic: item must have every selected tag.
+ * Status facets use OR logic: item status must be one of the selected statuses.
+ */
+function itemPassesFacets(item: PRDItemData, facets: SearchFacets): boolean {
+  // Status facet: OR logic — item's status must be in the set
+  if (facets.statuses && facets.statuses.size > 0) {
+    if (!facets.statuses.has(item.status)) return false;
+  }
+
+  // Tag facet: AND logic — item must have ALL selected tags
+  if (facets.tags && facets.tags.size > 0) {
+    const itemTags = item.tags ?? [];
+    for (const tag of facets.tags) {
+      if (!itemTags.includes(tag)) return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Search the PRD tree for items matching a query string and/or facet filters.
  *
  * Matching rules:
  * - Case-insensitive substring match against title and description
- * - Empty/blank query returns an empty result (caller shows full tree)
+ * - Tag facets narrow results to items having ALL selected tags (AND)
+ * - Status facets narrow results to items matching ANY selected status (OR)
+ * - Text query and facets combine with AND logic
+ * - Empty query with no facets returns an empty result (caller shows full tree)
  * - Ancestor nodes of matches are included in visibleIds/expandIds
  *
  * Complexity: O(N) where N = total tree nodes.
@@ -43,10 +78,16 @@ export interface TreeSearchResult {
 export function searchTree(
   items: PRDItemData[],
   query: string,
+  facets?: SearchFacets,
 ): TreeSearchResult {
   const trimmed = query.trim().toLowerCase();
+  const hasTextQuery = trimmed.length > 0;
+  const hasFacets = facets != null && (
+    (facets.tags != null && facets.tags.size > 0) ||
+    (facets.statuses != null && facets.statuses.size > 0)
+  );
 
-  if (!trimmed) {
+  if (!hasTextQuery && !hasFacets) {
     return {
       matchIds: new Set(),
       ancestorIds: new Set(),
@@ -64,11 +105,20 @@ export function searchTree(
     let anyMatch = false;
 
     for (const item of nodes) {
-      const titleMatch = item.title.toLowerCase().includes(trimmed);
-      const descMatch = item.description
-        ? item.description.toLowerCase().includes(trimmed)
-        : false;
-      const selfMatch = titleMatch || descMatch;
+      // Text matching (skip if no text query — facets-only mode)
+      let textMatch = true;
+      if (hasTextQuery) {
+        const titleMatch = item.title.toLowerCase().includes(trimmed);
+        const descMatch = item.description
+          ? item.description.toLowerCase().includes(trimmed)
+          : false;
+        textMatch = titleMatch || descMatch;
+      }
+
+      // Facet matching
+      const facetMatch = hasFacets ? itemPassesFacets(item, facets!) : true;
+
+      const selfMatch = textMatch && facetMatch;
 
       // Recurse into children first to detect descendant matches.
       const childAncestors = [...ancestors, item.id];
@@ -107,6 +157,28 @@ export function searchTree(
     expandIds,
     matchCount: matchIds.size,
   };
+}
+
+// ── Tag collection ──────────────────────────────────────────────────────────
+
+/**
+ * Collect all unique tags from the PRD tree, sorted alphabetically.
+ * Used to populate tag facet chips dynamically.
+ */
+export function collectAllTags(items: PRDItemData[]): string[] {
+  const tags = new Set<string>();
+  function walk(nodes: PRDItemData[]) {
+    for (const item of nodes) {
+      if (item.tags) {
+        for (const tag of item.tags) {
+          tags.add(tag);
+        }
+      }
+      if (item.children) walk(item.children);
+    }
+  }
+  walk(items);
+  return [...tags].sort();
 }
 
 /**

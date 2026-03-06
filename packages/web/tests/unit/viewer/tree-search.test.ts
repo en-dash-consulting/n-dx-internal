@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { searchTree, itemMatchesSearch, highlightSearchText } from "../../../src/viewer/components/prd-tree/tree-search.js";
+import { searchTree, itemMatchesSearch, highlightSearchText, collectAllTags } from "../../../src/viewer/components/prd-tree/tree-search.js";
 import type { PRDItemData } from "../../../src/viewer/components/prd-tree/types.js";
+import type { SearchFacets } from "../../../src/viewer/components/prd-tree/tree-search.js";
 
 function makeItem(
   overrides: Partial<PRDItemData> & { id: string; level: PRDItemData["level"]; status: PRDItemData["status"] },
@@ -213,5 +214,202 @@ describe("highlightSearchText", () => {
     expect(result).toHaveLength(1);
     expect((result[0] as any).type).toBe("mark");
     expect((result[0] as any).props.children).toBe("match");
+  });
+});
+
+// ── searchTree with facets ──────────────────────────────────────────────────
+
+describe("searchTree with facets", () => {
+  const tree: PRDItemData[] = [
+    makeItem({
+      id: "e1",
+      level: "epic",
+      status: "pending",
+      title: "Auth Epic",
+      tags: ["auth", "core"],
+      children: [
+        makeItem({
+          id: "t1",
+          level: "task",
+          status: "pending",
+          title: "Add login form",
+          tags: ["auth", "frontend"],
+        }),
+        makeItem({
+          id: "t2",
+          level: "task",
+          status: "completed",
+          title: "Validate tokens",
+          tags: ["auth", "backend"],
+        }),
+        makeItem({
+          id: "t3",
+          level: "task",
+          status: "blocked",
+          title: "Add OAuth",
+          tags: ["auth", "frontend"],
+        }),
+      ],
+    }),
+    makeItem({
+      id: "e2",
+      level: "epic",
+      status: "in_progress",
+      title: "Dashboard",
+      tags: ["ui"],
+      children: [
+        makeItem({
+          id: "t4",
+          level: "task",
+          status: "pending",
+          title: "Build layout",
+          tags: ["frontend"],
+        }),
+      ],
+    }),
+  ];
+
+  it("returns empty result when no query and no facets", () => {
+    const result = searchTree(tree, "");
+    expect(result.matchCount).toBe(0);
+  });
+
+  it("returns empty result when facets are empty sets", () => {
+    const facets: SearchFacets = { tags: new Set(), statuses: new Set() };
+    const result = searchTree(tree, "", facets);
+    expect(result.matchCount).toBe(0);
+  });
+
+  it("filters by tag facet alone (no text query)", () => {
+    const facets: SearchFacets = { tags: new Set(["backend"]) };
+    const result = searchTree(tree, "", facets);
+    expect(result.matchIds.has("t2")).toBe(true);
+    expect(result.matchCount).toBe(1);
+  });
+
+  it("filters by multiple tags with AND logic", () => {
+    const facets: SearchFacets = { tags: new Set(["auth", "frontend"]) };
+    const result = searchTree(tree, "", facets);
+    // t1 has auth+frontend, t3 has auth+frontend
+    expect(result.matchIds.has("t1")).toBe(true);
+    expect(result.matchIds.has("t3")).toBe(true);
+    // t2 has auth+backend (missing frontend) → excluded
+    expect(result.matchIds.has("t2")).toBe(false);
+    // t4 has frontend but not auth → excluded
+    expect(result.matchIds.has("t4")).toBe(false);
+    expect(result.matchCount).toBe(2);
+  });
+
+  it("filters by status facet alone (no text query)", () => {
+    const facets: SearchFacets = { statuses: new Set(["completed"] as const) };
+    const result = searchTree(tree, "", facets);
+    expect(result.matchIds.has("t2")).toBe(true);
+    expect(result.matchCount).toBe(1);
+  });
+
+  it("filters by multiple statuses with OR logic", () => {
+    const facets: SearchFacets = { statuses: new Set(["completed", "blocked"] as const) };
+    const result = searchTree(tree, "", facets);
+    expect(result.matchIds.has("t2")).toBe(true);
+    expect(result.matchIds.has("t3")).toBe(true);
+    expect(result.matchCount).toBe(2);
+  });
+
+  it("combines text query with tag facet (AND)", () => {
+    const facets: SearchFacets = { tags: new Set(["frontend"]) };
+    const result = searchTree(tree, "add", facets);
+    // "Add login form" has tag frontend → matches
+    expect(result.matchIds.has("t1")).toBe(true);
+    // "Add OAuth" has tag frontend → matches
+    expect(result.matchIds.has("t3")).toBe(true);
+    // "Build layout" has tag frontend but title doesn't match "add"
+    expect(result.matchIds.has("t4")).toBe(false);
+    expect(result.matchCount).toBe(2);
+  });
+
+  it("combines text query with status facet (AND)", () => {
+    const facets: SearchFacets = { statuses: new Set(["pending"] as const) };
+    const result = searchTree(tree, "add", facets);
+    // "Add login form" is pending → matches
+    expect(result.matchIds.has("t1")).toBe(true);
+    // "Add OAuth" is blocked, not pending → excluded
+    expect(result.matchIds.has("t3")).toBe(false);
+    expect(result.matchCount).toBe(1);
+  });
+
+  it("combines text query with both tag and status facets", () => {
+    const facets: SearchFacets = {
+      tags: new Set(["auth"]),
+      statuses: new Set(["pending"] as const),
+    };
+    const result = searchTree(tree, "add", facets);
+    // "Add login form" is pending + has auth tag + matches "add" → yes
+    expect(result.matchIds.has("t1")).toBe(true);
+    // "Add OAuth" has auth but is blocked → no
+    expect(result.matchIds.has("t3")).toBe(false);
+    expect(result.matchCount).toBe(1);
+  });
+
+  it("includes ancestors of facet matches", () => {
+    const facets: SearchFacets = { tags: new Set(["backend"]) };
+    const result = searchTree(tree, "", facets);
+    // t2 matches; e1 is ancestor
+    expect(result.ancestorIds.has("e1")).toBe(true);
+    expect(result.visibleIds.has("e1")).toBe(true);
+    expect(result.expandIds.has("e1")).toBe(true);
+  });
+
+  it("excludes items without matching tags", () => {
+    const facets: SearchFacets = { tags: new Set(["nonexistent"]) };
+    const result = searchTree(tree, "", facets);
+    expect(result.matchCount).toBe(0);
+  });
+});
+
+// ── collectAllTags ──────────────────────────────────────────────────────────
+
+describe("collectAllTags", () => {
+  it("returns empty array for tree with no tags", () => {
+    const tree: PRDItemData[] = [
+      makeItem({ id: "t1", level: "task", status: "pending", title: "No tags" }),
+    ];
+    expect(collectAllTags(tree)).toEqual([]);
+  });
+
+  it("collects tags from all levels", () => {
+    const tree: PRDItemData[] = [
+      makeItem({
+        id: "e1",
+        level: "epic",
+        status: "pending",
+        title: "Epic",
+        tags: ["core"],
+        children: [
+          makeItem({
+            id: "t1",
+            level: "task",
+            status: "pending",
+            title: "Task",
+            tags: ["frontend", "auth"],
+          }),
+        ],
+      }),
+    ];
+    expect(collectAllTags(tree)).toEqual(["auth", "core", "frontend"]);
+  });
+
+  it("deduplicates tags", () => {
+    const tree: PRDItemData[] = [
+      makeItem({ id: "t1", level: "task", status: "pending", title: "A", tags: ["web", "api"] }),
+      makeItem({ id: "t2", level: "task", status: "pending", title: "B", tags: ["web", "db"] }),
+    ];
+    expect(collectAllTags(tree)).toEqual(["api", "db", "web"]);
+  });
+
+  it("returns sorted alphabetically", () => {
+    const tree: PRDItemData[] = [
+      makeItem({ id: "t1", level: "task", status: "pending", title: "A", tags: ["zeta", "alpha", "mu"] }),
+    ];
+    expect(collectAllTags(tree)).toEqual(["alpha", "mu", "zeta"]);
   });
 });

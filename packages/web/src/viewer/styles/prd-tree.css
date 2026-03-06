@@ -5531,3 +5531,129 @@
 [data-theme="light"] .prd-node-search-match {
   background: rgba(255, 210, 0, 0.08);
 }
+
+/* ── Facet filter chips ─────────────────────────────────────────────── */
+
+.prd-facet-filter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+  margin-top: var(--space-1);
+}
+
+.prd-facet-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.prd-facet-label {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  min-width: 48px;
+}
+
+.prd-facet-chips {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.prd-facet-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  color: var(--text-dim);
+  font-size: var(--font-xs);
+  cursor: pointer;
+  transition: all 0.15s;
+  opacity: 0.6;
+}
+
+.prd-facet-chip:hover {
+  opacity: 0.9;
+  border-color: var(--text-dim);
+}
+
+.prd-facet-chip.active {
+  opacity: 1;
+  font-weight: var(--weight-medium);
+}
+
+/* Active status facet chips — reuse status color scheme */
+.prd-facet-chip.active.prd-status-completed {
+  background: color-mix(in srgb, var(--green) 15%, transparent);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.prd-facet-chip.active.prd-status-in-progress {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.prd-facet-chip.active.prd-status-pending {
+  background: var(--bg-hover);
+  border-color: var(--text-dim);
+  color: var(--text-dim);
+}
+
+.prd-facet-chip.active.prd-status-failing {
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.prd-facet-chip.active.prd-status-blocked {
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.prd-facet-chip.active.prd-status-deferred {
+  background: color-mix(in srgb, var(--orange) 15%, transparent);
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+/* Active tag facet chips — accent color */
+.prd-facet-tag.active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.prd-facet-chip-icon {
+  font-size: var(--font-xs);
+}
+
+.prd-facet-chip-label {
+  font-size: var(--font-xs);
+}
+
+.prd-facet-clear {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: var(--font-xs);
+  padding: 2px var(--space-2);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.prd-facet-clear:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}

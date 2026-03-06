@@ -34,7 +34,9 @@ import { usePRDActions } from "../hooks/use-prd-actions.js";
 import { usePRDDeepLink } from "../hooks/use-prd-deep-link.js";
 import { usePersistentFilter } from "../hooks/use-persistent-filter.js";
 import { useFeatureToggle } from "../hooks/use-feature-toggle.js";
-import { searchTree } from "../components/prd-tree/tree-search.js";
+import { searchTree, collectAllTags } from "../components/prd-tree/tree-search.js";
+import { FacetFilter } from "../components/prd-tree/facet-filter.js";
+import { useFacetState } from "../hooks/use-facet-state.js";
 
 export interface PRDViewProps {
   /** Pre-loaded PRD data. If not provided, fetches from /data/prd.json. */
@@ -85,9 +87,22 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Facet filters (tags + status, URL-persisted) ──────────────
+  const {
+    activeTags, activeSearchStatuses, searchFacets,
+    setActiveTags, setActiveSearchStatuses,
+    clearFacets, hasFacets,
+  } = useFacetState();
+
+  // Collect all unique tags from the PRD for facet chip rendering
+  const availableTags = useMemo(
+    () => data ? collectAllTags(data.items) : [],
+    [data],
+  );
+
   const searchResult = useMemo(
-    () => data ? searchTree(data.items, searchQuery) : null,
-    [data, searchQuery],
+    () => data ? searchTree(data.items, searchQuery, searchFacets) : null,
+    [data, searchQuery, searchFacets],
   );
 
   // Keyboard shortcut: Ctrl+F / Cmd+F to focus the search input
@@ -104,13 +119,14 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     return () => document.removeEventListener("keydown", handler);
   }, [data]);
 
-  // Clear search on Escape when input is focused
+  // Clear search and facets on Escape when input is focused
   const handleSearchKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === "Escape") {
       setSearchQuery("");
+      clearFacets();
       (e.target as HTMLInputElement).blur();
     }
-  }, []);
+  }, [clearFacets]);
 
   // ── Deep-link resolution ───────────────────────────────────────
   const { deepLinkError, setDeepLinkError, highlightedTaskId, deepLinkExpandIds } =
@@ -246,20 +262,29 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
           onInput: (e: Event) => setSearchQuery((e.target as HTMLInputElement).value),
           onKeyDown: handleSearchKeyDown,
         }),
-        searchQuery && searchResult
+        (searchQuery || hasFacets) && searchResult
           ? h("span", { class: "prd-search-count", "aria-live": "polite" },
               `${searchResult.matchCount} match${searchResult.matchCount !== 1 ? "es" : ""}`,
             )
           : null,
-        searchQuery
+        searchQuery || hasFacets
           ? h("button", {
               class: "prd-search-clear",
-              onClick: () => { setSearchQuery(""); searchInputRef.current?.focus(); },
-              "aria-label": "Clear search",
-              title: "Clear search",
+              onClick: () => { setSearchQuery(""); clearFacets(); searchInputRef.current?.focus(); },
+              "aria-label": "Clear search and facets",
+              title: "Clear search and facets",
             }, "\u00d7")
           : null,
       ),
+      // Facet filter chips (tags + statuses for search narrowing)
+      h(FacetFilter, {
+        availableTags,
+        activeTags,
+        activeStatuses: activeSearchStatuses,
+        onTagsChange: setActiveTags,
+        onStatusesChange: setActiveSearchStatuses,
+        onClearAll: clearFacets,
+      }),
       h(StatusFilter, { activeStatuses, onChange: setActiveStatuses }),
     ),
 

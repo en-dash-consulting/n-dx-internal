@@ -17985,17 +17985,19 @@
     {
       "id": "0f870e1b-65e4-4879-b157-95ca4afd36c1",
       "title": "Rex UI Task Management Enhancement",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "7834908d-fabe-4ecd-8784-058f7d0140f0",
           "title": "Rex Task Search",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Add search functionality to the Rex tasks web UI so users can quickly locate tasks, epics, and features by title, description, tags, or status without manually scanning the full PRD tree.",
           "source": "smart-add",
+          "startedAt": "2026-03-06T17:05:15.123Z",
+          "completedAt": "2026-03-06T17:05:15.123Z",
           "children": [
             {
               "id": "b9306df2-f2dd-4ec1-bf7a-3125f20436f7",
@@ -18026,7 +18028,7 @@
             {
               "id": "7084652c-0887-47fc-94b8-ab5e1536ea0b",
               "title": "Extend Rex task search with tag and status facets",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Augment the basic title/description search with filter chips for tags and status values. Users should be able to combine a text query with one or more tag or status facets to narrow results further. Facets should be populated dynamically from the current PRD data.",
               "acceptanceCriteria": [
@@ -18046,11 +18048,15 @@
                 "filters",
                 "ux"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-06T16:59:06.762Z",
+              "completedAt": "2026-03-06T17:05:14.927Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-03-06T17:05:15.210Z",
+      "completedAt": "2026-03-06T17:05:15.210Z"
     },
     {
       "id": "37383cf7-8f86-47dd-a508-ddff174d5c3b",
