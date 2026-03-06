@@ -4,10 +4,9 @@ import { computeStats } from "../../core/stats.js";
 import { verify } from "../../core/verify.js";
 import {
   aggregateTokenUsage,
-  formatAggregateTokenUsage,
   checkBudget,
-  formatBudgetWarnings,
 } from "../../core/token-usage.js";
+import { formatAggregateTokenUsage, formatBudgetWarnings } from "./token-format.js";
 import { isFullyCompleted } from "../../core/prune.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
 import { REX_DIR } from "./constants.js";

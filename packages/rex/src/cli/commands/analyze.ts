@@ -9,7 +9,7 @@ import { info, warn, result } from "../output.js";
 import {
   preflightBudgetCheck,
   formatBudgetWarnings,
-} from "../../core/token-usage.js";
+} from "./token-format.js";
 import {
   scanTests,
   scanDocs,
