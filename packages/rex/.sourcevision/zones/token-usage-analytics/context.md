@@ -7,7 +7,7 @@
 Zone: Token Usage Analytics (`token-usage-analytics`)
 Files: 4, Cohesion: 0.29, Coupling: 0.71
 Risk: catastrophic (score: 0.71)
-Description: Tracks and reports LLM token consumption, pairing the usage CLI command with its core calculation logic and regression tests.
+Description: Tracks and reports LLM token consumption via the `usage` CLI command, token-usage core module, and regression/unit tests.
 Entry points: src/cli/commands/usage.ts, src/core/token-usage.ts
 Lines: 2763
 
@@ -33,22 +33,28 @@ Internal:
   tests/unit/core/token-usage.test.ts → src/core/token-usage.ts {AggregateTokenUsage, TokenEvent, BudgetConfig}
 
 Outgoing (this zone → other zones):
-  → cli-interface-layer: src/cli/commands/usage.ts → src/cli/commands/constants.ts; src/cli/commands/usage.ts → src/cli/errors.ts; src/cli/commands/usage.ts → src/cli/output.ts
-  → persistence-sync-layer: src/cli/commands/usage.ts → src/store/index.ts; src/core/token-usage.ts → src/store/index.ts
-  → prd-analysis-engine: src/core/token-usage.ts → src/schema/index.ts; tests/unit/core/token-usage-regression.test.ts → src/schema/index.ts; tests/unit/core/token-usage.test.ts → src/schema/index.ts
+  → cli-infrastructure: src/cli/commands/usage.ts → src/cli/commands/constants.ts; src/cli/commands/usage.ts → src/cli/errors.ts; src/cli/commands/usage.ts → src/cli/output.ts
+  → prd-analyze-core: src/core/token-usage.ts → src/schema/index.ts; tests/unit/core/token-usage-regression.test.ts → src/schema/index.ts; tests/unit/core/token-usage.test.ts → src/schema/index.ts
+  → prd-storage-integrations: src/cli/commands/usage.ts → src/store/index.ts; src/core/token-usage.ts → src/store/index.ts
 
 Incoming (other zones → this zone):
-  ← cli-interface-layer: src/cli/index.ts → src/cli/commands/usage.ts
-  ← prd-analysis-engine: src/cli/commands/analyze.ts → src/core/token-usage.ts; src/cli/commands/status.ts → src/core/token-usage.ts; src/cli/commands/status.ts → src/core/token-usage.ts; tests/unit/cli/commands/usage.test.ts → src/cli/commands/usage.ts
+  ← cli-infrastructure: src/cli/index.ts → src/cli/commands/usage.ts
+  ← prd-analyze-core: src/cli/commands/analyze.ts → src/core/token-usage.ts; src/cli/commands/status.ts → src/core/token-usage.ts; src/cli/commands/status.ts → src/core/token-usage.ts; tests/unit/cli/commands/usage.test.ts → src/cli/commands/usage.ts
 
 </imports>
 
 <findings>
 
-[observation] [warning] High coupling (0.71) — 3 imports target "cli-interface-layer"
+[observation] [warning] High coupling (0.71) — 3 imports target "cli-infrastructure"
 [observation] [warning] Low cohesion (0.29) — files are loosely related, consider splitting this zone
-[suggestion] [info] Configure a minimum zone size floor of 8 files in the Louvain parameters to prevent micro-zone creation. Both 4-file zones (token-usage-analytics cohesion 0.29, fix-command-module cohesion 0.4) fall below the measurement reliability threshold for import-cohesion, generating misleading low-cohesion alerts for zones that are functionally self-contained (call-graph cohesion 0.92 and 0.9 respectively).
-[suggestion] [warning] token-usage-analytics has a regression test but no interface contract: 42 incoming callers are protected against previously-known bugs but not against future interface changes. Define an explicit TypeScript interface for token-usage inputs and outputs in a shared types file so that any breaking change becomes a compile error across all 42 callers rather than a runtime regression.
+[observation] [warning] Cohesion 0.29 and coupling 0.71 both breach warning thresholds simultaneously — this is the weakest zone in the batch and warrants architectural review.
+[observation] [warning] High coupling at small file count suggests the implementation reaches into many other zones; introduce a narrow interface or aggregate token data at a single collection point to reduce fan-out.
+[observation] [info] Regression tests are co-located with unit tests in the same zone, which is a positive signal that the token-usage logic has known edge cases being actively guarded.
+[relationship] [critical] token-usage.ts imports from cli-infrastructure (3 edges) — domain logic importing from the CLI presentation layer is a layering inversion; extract the needed CLI surface into a shared constant or inject it as a parameter to eliminate the upward dependency.
+[anti-pattern] [critical] preflightBudgetCheck uses a dynamic import to break a static circular dependency with the store module (line 820, explicit comment). Deferring a cycle to runtime rather than removing it leaves the dependency graph incorrect at the module-graph level and prevents tree-shaking. The function should be moved to a caller that already has a store reference, or the shared concept (config loading) extracted to a lower module.
+[anti-pattern] [warning] token-usage.ts embeds CLI display formatting functions (formatAggregateTokenUsage, formatBudgetWarnings) that produce terminal-oriented strings with emoji directly in the domain core file. This is not a CLI→domain import violation, but it IS a presentation/domain mixing violation: the domain module is now coupled to a specific output format, breaking reusability outside CLI contexts.
+[suggestion] [info] Add a per-file line count check to CI or lint config with a threshold around 400 lines. token-usage.ts at ~838 lines is the motivating case; the rule would also catch future accumulation in analytics.ts or other large utilities before they reach the same complexity ceiling.
+[suggestion] [warning] Move formatAggregateTokenUsage and formatBudgetWarnings from token-usage.ts into usage.ts (CLI command). token-usage.ts should expose raw data structures; the CLI command composes those structures with its own display logic. This is the concrete before/after refactor that resolves both the presentation/domain mixing and the web-reuse blockage in a single move.
 [suggestion] [critical] Zone "Token Usage Analytics" (token-usage-analytics) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention
 
 </findings>
@@ -56,19 +62,26 @@ Incoming (other zones → this zone):
 <insights>
 
 - Low cohesion (0.29) — files are loosely related, consider splitting this zone
-- High coupling (0.71) — 3 imports target "cli-interface-layer"
-- Low cohesion (0.29) and high coupling (0.71) suggest token-usage logic may have too many external dependencies for its small size — worth auditing what core and store modules it pulls in.
-- The presence of a dedicated regression test file indicates this feature has had correctness issues historically; keep this test file and expand it as usage calculation logic evolves.
-- If token-usage.ts is consumed broadly, it should be promoted into the core zone's public surface rather than sitting in an isolated low-cohesion cluster.
-- Cohesion of 0.29 with coupling of 0.71 is the weakest profile in the batch; the token-usage module likely imports heavily from core utilities and may be better absorbed into the PRD Domain Operations zone.
-- 42 incoming calls into a 4-file zone means each file in token-usage-analytics receives ~10.5 inbound calls on average — the highest fan-in density in the batch. This hidden utility role is not reflected in the zone boundary and should be made explicit.
-- token-usage-analytics has the highest inbound call density (42 incoming / 4 files = ~10.5 per file), indicating it acts as a hidden shared utility; promote it to an explicit public API surface or absorb it into the core zone with a stable export contract.
-- The import-cohesion (0.29) to call-graph cohesion (0.92) gap of 0.63 is the widest in the entire batch, indicating that token-usage-analytics imports many modules for type definitions and narrow utilities without making deep call chains into them. The Louvain import-proximity score severely overstates the coupling problem; the zone is functionally self-contained and the low cohesion score is a measurement artifact of its wide import surface, not a reflection of logical fragmentation.
-- 42 incoming call-graph edges into a 4-file zone (10.5 per file) combined with import-cohesion of 0.29 creates a dangerous asymmetry: callers are tightly bound to this zone's implementation while the zone itself appears loosely structured. Any interface change in token-usage.ts propagates to all 42 call sites with no stable contract acting as a buffer — promoting it to an explicit public API with a versioned interface would protect all 42 callers from internal refactoring churn.
-- token-usage-analytics and fix-command-module are both 4-file micro-zones with cohesion ≤ 0.4. Zones of ≤ 4 files are structurally incapable of achieving high import-cohesion because a small cluster lacks sufficient internal edges to compensate for any external import diversity. The low cohesion scores for both micro-zones are partially a measurement artifact of zone size, not evidence of logical fragmentation. A minimum zone size threshold (e.g. 8 files) in the Louvain configuration would prevent spurious micro-zone creation.
-- The regression test file (token-usage-regression.test.ts) signals historical correctness failures. Combined with 42 incoming call-graph edges and no stable public contract, any future fix to token calculation logic risks silently breaking all 42 callers. The regression test exists precisely to catch this, but its scope is limited to what was previously broken — not to future interface changes. A formal interface contract is the missing complement to the regression suite.
-- Configure a minimum zone size floor of 8 files in the Louvain parameters to prevent micro-zone creation. Both 4-file zones (token-usage-analytics cohesion 0.29, fix-command-module cohesion 0.4) fall below the measurement reliability threshold for import-cohesion, generating misleading low-cohesion alerts for zones that are functionally self-contained (call-graph cohesion 0.92 and 0.9 respectively).
-- token-usage-analytics has a regression test but no interface contract: 42 incoming callers are protected against previously-known bugs but not against future interface changes. Define an explicit TypeScript interface for token-usage inputs and outputs in a shared types file so that any breaking change becomes a compile error across all 42 callers rather than a runtime regression.
+- High coupling (0.71) — 3 imports target "cli-infrastructure"
+- Low cohesion (0.29) combined with high coupling (0.71) signals that this zone is poorly bounded — likely because token-usage logic has grown dependencies on many unrelated zones.
+- The zone is small (4 files) but its coupling score is the highest in this batch; this suggests token-usage.ts imports broadly across the codebase rather than using a narrow, stable interface.
+- Consider whether token tracking belongs as a thin utility consumed by core operations rather than a standalone zone with heavy external dependencies.
+- Cohesion 0.29 and coupling 0.71 both breach warning thresholds simultaneously — this is the weakest zone in the batch and warrants architectural review.
+- High coupling at small file count suggests the implementation reaches into many other zones; introduce a narrow interface or aggregate token data at a single collection point to reduce fan-out.
+- Regression tests are co-located with unit tests in the same zone, which is a positive signal that the token-usage logic has known edge cases being actively guarded.
+- The 3 imports from token-usage.ts INTO cli-infrastructure mean domain utility logic imports from the CLI presentation layer — this is a concrete layering violation (domain→presentation), not just a loose coupling score.
+- token-usage-analytics is the only zone in this batch where a domain core file (token-usage.ts) reaches upward into the CLI layer; all other core files in comparable zones import only from peer-domain or lower-layer zones.
+- token-usage.ts imports from cli-infrastructure (3 edges) — domain logic importing from the CLI presentation layer is a layering inversion; extract the needed CLI surface into a shared constant or inject it as a parameter to eliminate the upward dependency.
+- src/core/token-usage.ts has zero imports from cli-infrastructure: its only external imports are @n-dx/llm-client (PROJECT_DIRS) and ../schema/index.js. The previously noted layering inversion (domain→CLI) is a misattribution — the 3 cross-zone edges originate from src/cli/commands/usage.ts (a CLI command file inside the zone) importing cli-infrastructure constants and output helpers, which is expected CLI behavior.
+- preflightBudgetCheck (token-usage.ts:816) uses a dynamic import of ../store/index.js with an explicit comment 'Dynamic import to avoid circular dependency with store' — confirming a live runtime circular dependency that is deferred rather than resolved structurally.
+- formatAggregateTokenUsage and formatBudgetWarnings (token-usage.ts:579,793) are presentation functions producing emoji-decorated CLI strings (⚠ BUDGET EXCEEDED) embedded inside the domain core module rather than in the CLI command layer. This couples the core module to a specific display context and prevents reuse in non-terminal consumers such as the web dashboard without pulling in terminal-formatted strings.
+- token-usage.ts is 838 lines and combines six distinct responsibilities: data extraction from three sources, event normalization, command grouping, time-period bucketing, cost estimation, and CLI display formatting. This is the largest single-file utility in the batch by line count and violates single-responsibility at the file level.
+- preflightBudgetCheck uses a dynamic import to break a static circular dependency with the store module (line 820, explicit comment). Deferring a cycle to runtime rather than removing it leaves the dependency graph incorrect at the module-graph level and prevents tree-shaking. The function should be moved to a caller that already has a store reference, or the shared concept (config loading) extracted to a lower module.
+- token-usage.ts embeds CLI display formatting functions (formatAggregateTokenUsage, formatBudgetWarnings) that produce terminal-oriented strings with emoji directly in the domain core file. This is not a CLI→domain import violation, but it IS a presentation/domain mixing violation: the domain module is now coupled to a specific output format, breaking reusability outside CLI contexts.
+- src/cli/commands/usage.ts imports formatAggregateTokenUsage and formatBudgetWarnings directly from token-usage.ts, leaving the CLI command with no formatting agency — it cannot choose a different output format, suppress sections, or adapt for non-terminal contexts (CI output, JSON mode, web dashboard) without modifying the domain core. The command is structurally a pass-through that calls core formatting rather than a command that composes raw data with its own presentation logic.
+- token-usage.ts at ~838 lines is the largest single utility file in this batch by a significant margin. A per-file line count lint threshold (e.g., max 400 lines) would have flagged this file before it reached its current state and would prevent other core utilities from following the same growth pattern without a deliberate policy decision.
+- Move formatAggregateTokenUsage and formatBudgetWarnings from token-usage.ts into usage.ts (CLI command). token-usage.ts should expose raw data structures; the CLI command composes those structures with its own display logic. This is the concrete before/after refactor that resolves both the presentation/domain mixing and the web-reuse blockage in a single move.
+- Add a per-file line count check to CI or lint config with a threshold around 400 lines. token-usage.ts at ~838 lines is the motivating case; the rule would also catch future accumulation in analytics.ts or other large utilities before they reach the same complexity ceiling.
 - [call graph] 201 internal calls, 18 outgoing, 42 incoming (cohesion: 0.92, coupling: 0.08)
 
 </insights>

@@ -7,7 +7,7 @@
 Zone: Test Fixture Projects (`test-fixture-projects`)
 Files: 11, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Self-contained sample codebases (a Remix app and a small TypeScript project) used as ground-truth inputs for e2e and integration tests of the analysis pipeline.
+Description: Self-contained sample projects (a Remix app and a small TypeScript project) used as realistic inputs for end-to-end and integration tests of the analysis pipeline.
 Lines: 88
 
 </zone>
@@ -44,28 +44,32 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
+[observation] [info] Cohesion of 1.0 and coupling of 0.0 represent the ideal profile for a test-data zone; this isolation should be enforced by lint rules preventing any production file from importing fixture paths.
+[observation] [info] Having only two fixture projects limits coverage of edge cases such as barrel-heavy codebases or projects with no imports; expanding the fixture library would strengthen confidence in Louvain zone detection accuracy.
+[observation] [info] The Remix fixture includes nested route files (_auth.login.tsx, users.$id.tsx) which exercise route-detection.ts; verify the fixture remains up to date with Remix v2 file-system routing conventions to keep e2e tests meaningful.
 [suggestion] [info] Zone "test-fixture-projects" has files across 5 directories — consider consolidating under a dedicated directory
-[suggestion] [info] Fixture coverage gap: both existing fixtures (remix-app, small-ts-project) are TypeScript-only. Add a plain JavaScript fixture project to ensure inventory, import, and zone detection code paths are exercised against JS files without TypeScript-specific syntax, since the analyzers must support both.
-[suggestion] [info] The perfect isolation of this zone (cohesion 1.0, coupling 0.0) is an implicit convention with no enforcement. Document it as the explicit target state for all test zones in PACKAGE_GUIDELINES.md or an ADR so that accidental imports from/into fixture files trigger a documented rule violation rather than a silent metric regression.
+[suggestion] [info] The fixture zone's perfect isolation should be used as the measurable baseline in CI: if any future analysis run shows coupling > 0 for this zone, it is an unambiguous signal that a production file has gained a runtime dependency on fixture paths — a critical boundary violation detectable before any test failure occurs.
+[pattern] [info] This zone is the only zone in the package with both perfect cohesion and zero coupling — it serves as the cleanliness baseline against which other zones' test discipline can be measured.
+[relationship] [info] Import-graph isolation is confirmed, but runtime isolation (no production code referencing fixture paths via dynamic strings) has not been verified — a lint rule banning fixture path strings in src/ would close this gap.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Perfect cohesion (1.0) and zero coupling confirm these files are fully isolated from production code, which is the correct design for test fixtures
-- Two distinct fixture projects (remix-app and small-ts-project) provide coverage of different framework conventions — adding a plain JavaScript project would complete the framework diversity matrix
-- Fixture files have no entry points, meaning they are never imported by production code; any accidental import from a non-test file should be treated as a critical architecture violation
-- Zero coupling to any other zone is the ideal state for test fixtures — these files cannot accidentally influence production bundle size or introduce transitive dependencies.
-- The Remix app fixture covers nested route conventions (_auth layout, dynamic segments, index routes) which is well-suited for validating route-detection.ts accuracy across real-world patterns.
-- Fixture projects should be kept minimal and representative; monitor that they do not grow into large, hard-to-maintain synthetic codebases that drift from real-world usage patterns over time.
+- Perfect cohesion (1.0) and zero coupling confirm these fixtures are fully isolated from production code, which is exactly the right design — they should never import from the sourcevision source tree.
+- The fixture projects cover two important archetypes (a file-router Remix app and a plain TypeScript project); consider adding a third fixture representing a monorepo or a project with circular imports to stress-test edge cases in the zone-detection and import analyzers.
+- Fixture files should be treated as immutable test data — avoid modifying them during test runs and ensure they are excluded from the production build output.
+- Cohesion of 1.0 and coupling of 0.0 represent the ideal profile for a test-data zone; this isolation should be enforced by lint rules preventing any production file from importing fixture paths.
+- The Remix fixture includes nested route files (_auth.login.tsx, users.$id.tsx) which exercise route-detection.ts; verify the fixture remains up to date with Remix v2 file-system routing conventions to keep e2e tests meaningful.
+- Having only two fixture projects limits coverage of edge cases such as barrel-heavy codebases or projects with no imports; expanding the fixture library would strengthen confidence in Louvain zone detection accuracy.
 - Zone "test-fixture-projects" has files across 5 directories — consider consolidating under a dedicated directory
-- test-fixture-projects is the only zone in the entire package achieving the ideal dependency profile (cohesion 1.0, coupling 0.0) and serves as the reference target state for the other test zones.
-- Perfect isolation (cohesion 1.0, coupling 0.0) makes this zone the architectural gold standard within the package — the integration-validation-tests zone should be refactored toward this profile.
-- The two fixture projects (remix-app, small-ts-project) cover only TypeScript-specific patterns; there is no plain JavaScript fixture, no CommonJS fixture, and no alternative framework (Vue, Angular, Next.js) fixture — the route-detection and component analysis code may have untested edge cases for non-TypeScript or non-Remix projects despite appearing fully covered by cohesion metrics.
-- The perfect-isolation profile of this zone (cohesion 1.0, coupling 0.0) should be codified as the explicit architectural target for all test zones in a contribution guideline or ADR; currently it is an implicit emergent property with no documented enforcement mechanism, meaning future test additions could degrade it without anyone noticing.
-- Fixture coverage gap: both existing fixtures (remix-app, small-ts-project) are TypeScript-only. Add a plain JavaScript fixture project to ensure inventory, import, and zone detection code paths are exercised against JS files without TypeScript-specific syntax, since the analyzers must support both.
-- The perfect isolation of this zone (cohesion 1.0, coupling 0.0) is an implicit convention with no enforcement. Document it as the explicit target state for all test zones in PACKAGE_GUIDELINES.md or an ADR so that accidental imports from/into fixture files trigger a documented rule violation rather than a silent metric regression.
+- The perfect isolation of this zone (cohesion 1.0, coupling 0.0) stands in direct contrast to the schema-validation zone where production and test files co-exist — the two zones represent opposite ends of a test-organization spectrum within the same package, exposing an inconsistent test discipline policy.
+- No cross-zone import path reaches these fixtures from any production zone, which is correct, but the inverse — whether any production code path conditionally references fixture paths via string literals or require() — should be verified to confirm runtime isolation matches import-graph isolation.
+- This zone is the only zone in the package with both perfect cohesion and zero coupling — it serves as the cleanliness baseline against which other zones' test discipline can be measured.
+- Import-graph isolation is confirmed, but runtime isolation (no production code referencing fixture paths via dynamic strings) has not been verified — a lint rule banning fixture path strings in src/ would close this gap.
+- test-fixture-projects (cohesion: 1.0, coupling: 0.0) is the only zone whose health is guaranteed to remain stable regardless of refactoring elsewhere — its zero coupling means no external change can affect its metrics. This makes it the only reliable baseline for measuring whether overall package health is improving or degrading over time.
+- The fixture zone's perfect isolation should be used as the measurable baseline in CI: if any future analysis run shows coupling > 0 for this zone, it is an unambiguous signal that a production file has gained a runtime dependency on fixture paths — a critical boundary violation detectable before any test failure occurs.
 - [call graph] 5 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

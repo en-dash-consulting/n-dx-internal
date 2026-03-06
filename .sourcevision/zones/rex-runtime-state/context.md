@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Rex Runtime State (`rex-runtime-state`)
-Files: 7, Cohesion: 1.00, Coupling: 0.00
+Files: 8, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Persisted PRD state and execution metadata written and consumed by the rex package at runtime, not imported by any code.
-Lines: 22771
+Description: Runtime data directory storing the live PRD tree, execution logs, proposals, and project configuration that rex reads and writes during normal operation.
+Lines: 23184
 
 </zone>
 
@@ -17,9 +17,10 @@ Lines: 22771
 .rex/acknowledged-findings.json (JSON, 33 lines, other)
 .rex/archive.json (JSON, 840 lines, other)
 .rex/config.json (JSON, 6 lines, other)
-.rex/execution-log.jsonl (Other, 3861 lines, other)
+.rex/execution-log.1.jsonl (Other, 3899 lines, other)
+.rex/execution-log.jsonl (Other, 37 lines, other)
 .rex/pending-proposals.json (JSON, 818 lines, other)
-.rex/prd.json (JSON, 17195 lines, other)
+.rex/prd.json (JSON, 17533 lines, other)
 .rex/workflow.md (Markdown, 18 lines, docs)
 
 </files>
@@ -27,24 +28,18 @@ Lines: 22771
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[suggestion] [info] Add a schemaVersion field to .rex/prd.json and .rex/config.json so that tooling can detect and handle stale state directories when the rex data model evolves.
-[suggestion] [warning] Define and implement a maximum-entry or size-based rotation policy for .rex/execution-log.jsonl to prevent unbounded growth in long-running projects.
+[observation] [info] Data-only zone with no source imports; cohesion and coupling metrics are trivially perfect and should be interpreted as 'isolated data directory' rather than architectural quality signal.
+[observation] [info] Multiple execution log files (execution-log.jsonl, execution-log.1.jsonl) indicate rotation is active; confirm rotation limits are configured to avoid unbounded disk growth.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- These seven files are pure data artifacts (JSON, JSONL, Markdown) — they represent the live state of the PRD tree and agent execution log, not source code, so perfect cohesion with zero coupling is the expected and correct outcome.
-- The presence of both prd.json and archive.json suggests a two-tier lifecycle model where completed or removed items are moved to archive rather than deleted, which supports auditability.
-- execution-log.jsonl as a separate append-only log is a good pattern for agent run traceability distinct from the PRD tree structure itself.
-- Separating pending-proposals.json from prd.json cleanly decouples the proposal/review flow from the committed PRD state, reducing the risk of unreviewed items contaminating the canonical tree.
-- acknowledged-findings.json alongside pending-proposals.json indicates a two-step acceptance workflow for sourcevision findings, which is a healthy UX pattern for surfacing actionable analysis without forcing immediate commitment.
-- rex-runtime-state has zero inbound imports from any zone, including hench — the agent reads and writes these files through the rex library API (via rex-gateway.ts), not through direct file imports, confirming proper encapsulation of the data state behind the domain layer.
-- rex-runtime-state is a pure data-artifact zone with no code consumers at the zone-graph level; the hench agent accesses it exclusively through the rex API gateway, not through file-level imports — this is the correct encapsulation pattern.
-- The .rex/execution-log.jsonl append-only log has no documented size limit or rotation policy — in a long-running project with many agent runs this file could grow indefinitely, impacting tools that read the full log on every operation.
-- The seven state files use three distinct formats (JSON objects, JSONL, Markdown) with no schema version field visible in zone metadata — if the rex data model evolves there is no migration path indicator to detect stale state directories.
-- Define and implement a maximum-entry or size-based rotation policy for .rex/execution-log.jsonl to prevent unbounded growth in long-running projects.
-- Add a schemaVersion field to .rex/prd.json and .rex/config.json so that tooling can detect and handle stale state directories when the rex data model evolves.
+- These are data files, not source files — their grouping into a zone reflects that the import graph detected no cross-file imports, correctly giving cohesion 1.0 and coupling 0.0.
+- The presence of both execution-log.jsonl and execution-log.1.jsonl suggests a log rotation scheme; ensuring old logs are pruned or archived prevents unbounded growth in long-lived projects.
+- acknowledged-findings.json and pending-proposals.json represent transient workflow state; documenting their lifecycle (when they're safe to delete) would help onboarding.
+- Data-only zone with no source imports; cohesion and coupling metrics are trivially perfect and should be interpreted as 'isolated data directory' rather than architectural quality signal.
+- Multiple execution log files (execution-log.jsonl, execution-log.1.jsonl) indicate rotation is active; confirm rotation limits are configured to avoid unbounded disk growth.
 
 </insights>

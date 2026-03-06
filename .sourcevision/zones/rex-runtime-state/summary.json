@@ -1,11 +1,12 @@
 {
   "id": "rex-runtime-state",
   "name": "Rex Runtime State",
-  "description": "Persisted PRD state and execution metadata written and consumed by the rex package at runtime, not imported by any code.",
+  "description": "Runtime data directory storing the live PRD tree, execution logs, proposals, and project configuration that rex reads and writes during normal operation.",
   "files": [
     ".rex/acknowledged-findings.json",
     ".rex/archive.json",
     ".rex/config.json",
+    ".rex/execution-log.1.jsonl",
     ".rex/execution-log.jsonl",
     ".rex/pending-proposals.json",
     ".rex/prd.json",
@@ -14,8 +15,8 @@
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 7,
-  "lineCount": 22771,
+  "fileCount": 8,
+  "lineCount": 23184,
   "riskMetrics": {
     "cohesion": 1,
     "coupling": 0,

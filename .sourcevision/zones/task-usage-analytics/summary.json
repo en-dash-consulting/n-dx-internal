@@ -1,0 +1,26 @@
+{
+  "id": "task-usage-analytics",
+  "name": "Task Usage Analytics",
+  "description": "Server-side services for incrementally tracking per-task token/cost usage and scheduling cleanup of stale usage records.",
+  "files": [
+    "packages/web/src/server/incremental-task-usage.ts",
+    "packages/web/src/server/usage-cleanup-scheduler.ts",
+    "packages/web/tests/unit/server/incremental-task-usage.test.ts",
+    "packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/server/incremental-task-usage.ts",
+    "packages/web/src/server/usage-cleanup-scheduler.ts"
+  ],
+  "cohesion": 0.63,
+  "coupling": 0.38,
+  "fileCount": 4,
+  "lineCount": 1560,
+  "riskMetrics": {
+    "cohesion": 0.63,
+    "coupling": 0.38,
+    "riskScore": 0.375,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

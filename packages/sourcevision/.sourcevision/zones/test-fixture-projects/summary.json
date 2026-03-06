@@ -1,7 +1,7 @@
 {
   "id": "test-fixture-projects",
   "name": "Test Fixture Projects",
-  "description": "Self-contained sample codebases (a Remix app and a small TypeScript project) used as ground-truth inputs for e2e and integration tests of the analysis pipeline.",
+  "description": "Self-contained sample projects (a Remix app and a small TypeScript project) used as realistic inputs for end-to-end and integration tests of the analysis pipeline.",
   "files": [
     "tests/fixtures/remix-app/app/routes/_auth.login.tsx",
     "tests/fixtures/remix-app/app/routes/_auth.tsx",

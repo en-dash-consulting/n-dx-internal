@@ -518,7 +518,7 @@
         {
           "archetypeId": "entrypoint",
           "signalKind": "path",
-          "detail": "Root-level CI pipeline orchestration script — top-level entry point",
+          "detail": "Root-level CI pipeline entry point — orchestrates analysis and PRD health validation",
           "weight": 0.7
         }
       ]
@@ -553,14 +553,14 @@
     },
     {
       "path": "help.js",
-      "archetype": "entrypoint",
+      "archetype": "cli-command",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "entrypoint",
+          "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "Root-level help script, acts as an entry point for CLI help output",
+          "detail": "Root-level help display script for CLI usage",
           "weight": 0.7
         }
       ]
@@ -574,7 +574,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Adaptive analysis logic for the agent — business logic orchestration",
+          "detail": "Business logic module analyzing agent state to adapt behavior",
           "weight": 0.7
         }
       ]
@@ -588,7 +588,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Agent review analysis — domain analysis service",
+          "detail": "Agent run review/analysis logic",
           "weight": 0.7
         }
       ]
@@ -602,7 +602,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Spin/loop detection analysis — agent diagnostic service",
+          "detail": "Spin detection analysis for the agent loop",
           "weight": 0.7
         }
       ]
@@ -616,7 +616,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Stuck-state detection analysis — agent diagnostic service",
+          "detail": "Stuck-state detection logic for the agent",
           "weight": 0.7
         }
       ]
@@ -630,7 +630,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Summary generation for agent analysis — domain service",
+          "detail": "Summarization logic for agent analysis output",
           "weight": 0.7
         }
       ]
@@ -644,7 +644,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Workflow state analysis — agent orchestration service",
+          "detail": "Workflow analysis module for agent decision-making",
           "weight": 0.7
         }
       ]
@@ -658,7 +658,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Agent completion handling — core execution service",
+          "detail": "Agent completion handling and finalization logic",
           "weight": 0.7
         }
       ]
@@ -686,7 +686,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "CLI-specific agent event loop — lifecycle service",
+          "detail": "CLI-specific agent loop orchestration",
           "weight": 0.7
         }
       ]
@@ -700,7 +700,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Heartbeat/health-check management — lifecycle service",
+          "detail": "Heartbeat/keepalive logic for agent lifecycle",
           "weight": 0.7
         }
       ]
@@ -714,7 +714,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Main agent run loop — core lifecycle service",
+          "detail": "Core agent loop — main run orchestration",
           "weight": 0.7
         }
       ]
@@ -728,7 +728,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shared helpers used across lifecycle modules — utility",
+          "detail": "Shared helpers/utilities used across lifecycle modules",
           "weight": 0.7
         }
       ]
@@ -742,7 +742,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Display/formatting helpers for task output — utility",
+          "detail": "Display formatting utilities for task progress output",
           "weight": 0.7
         }
       ]
@@ -756,21 +756,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Token budget enforcement and management — service",
+          "detail": "Token budget management and enforcement logic",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/hench/src/agent/lifecycle/token-usage.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Token usage tracking/accounting helpers — utility",
+          "detail": "Token usage tracking and reporting service",
           "weight": 0.7
         }
       ]
@@ -784,21 +784,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Task brief generation for agent planning — service",
+          "detail": "Brief generation for task planning — builds agent task context",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/hench/src/agent/planning/prompt.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Prompt construction helpers — utility",
+          "detail": "Prompt construction for agent planning phase",
           "weight": 0.7
         }
       ]
@@ -812,7 +812,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Agent tool definitions and dispatch — service",
+          "detail": "Agent tool definitions and dispatch logic",
           "weight": 0.7
         }
       ]
@@ -970,7 +970,7 @@
         {
           "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "CLI help command handler",
+          "detail": "CLI help command implementation",
           "weight": 0.7
         }
       ]
@@ -1012,7 +1012,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Command guard enforcement — security service",
+          "detail": "Guard command filtering/validation logic",
           "weight": 0.7
         }
       ]
@@ -1026,7 +1026,7 @@
         {
           "archetypeId": "types",
           "signalKind": "path",
-          "detail": "Guard type/interface contracts — type definitions, no logic",
+          "detail": "Type contracts and interfaces for the guard layer",
           "weight": 0.7
         }
       ]
@@ -1054,7 +1054,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Path validation utilities for the guard system",
+          "detail": "Path validation and guard utility functions",
           "weight": 0.7
         }
       ]
@@ -1068,7 +1068,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Guard policy evaluation and enforcement — service",
+          "detail": "Guard policy enforcement logic",
           "weight": 0.7
         }
       ]
@@ -1082,7 +1082,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "PRD operations business logic — service layer",
+          "detail": "PRD operations — business logic for PRD manipulation",
           "weight": 0.7
         }
       ]
@@ -1096,7 +1096,7 @@
         {
           "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Explicitly named gateway — concentrates all rex cross-package imports and re-exports",
+          "detail": "Explicit gateway module per CLAUDE.md — concentrates all cross-package imports from rex, re-exports only",
           "weight": 0.7
         }
       ]
@@ -1110,7 +1110,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Metrics collection/tracking utility for concurrent execution",
+          "detail": "Metrics collection utility for concurrent process execution",
           "weight": 0.7
         }
       ]
@@ -1124,7 +1124,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shell execution wrapper utility",
+          "detail": "Shell command execution utility",
           "weight": 0.7
         }
       ]
@@ -1138,7 +1138,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Process execution utility",
+          "detail": "Process execution utility — low-level exec wrapper",
           "weight": 0.7
         }
       ]
@@ -1166,7 +1166,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Process lifecycle management — service",
+          "detail": "Process lifecycle management — start/stop/monitor orchestration",
           "weight": 0.7
         }
       ]
@@ -1180,21 +1180,21 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Rate/concurrency limiter for process management — shared infrastructure utility",
+          "detail": "Concurrency/rate limiter infrastructure module used across the process subsystem.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/hench/src/process/memory-monitor.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Monitors memory usage over time — stateful service with ongoing observation logic",
+          "detail": "Memory monitoring utility — observes and reports memory state.",
           "weight": 0.7
         }
       ]
@@ -1208,35 +1208,35 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Throttling logic based on memory pressure — infrastructure helper",
+          "detail": "Throttling logic based on memory pressure — shared infrastructure utility.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/hench/src/process/pool.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Process pool lifecycle management — orchestrates worker processes",
+          "detail": "Process pool management — reusable infrastructure with high fan-in potential.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/hench/src/process/process-memory-tracker.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Tracks per-process memory metrics — stateful data collection service",
+          "detail": "Tracks per-process memory usage — low-level infrastructure helper.",
           "weight": 0.7
         }
       ]
@@ -1264,7 +1264,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Manages task execution queue — core stateful queue service",
+          "detail": "Orchestrates task execution ordering — business logic coordination layer.",
           "weight": 0.7
         }
       ]
@@ -1278,7 +1278,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Formatting helpers for queue output — pure utility with no state",
+          "detail": "Queue display/formatting helper with no domain logic.",
           "weight": 0.7
         }
       ]
@@ -1306,7 +1306,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Schedules tasks by priority — stateful scheduling logic",
+          "detail": "Scheduling logic with domain behavior — determines task ordering.",
           "weight": 0.7
         }
       ]
@@ -1391,7 +1391,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shared glob pattern helpers — pure utility used across the package",
+          "detail": "Shared glob helper — pure infrastructure utility.",
           "weight": 0.7
         }
       ]
@@ -1577,7 +1577,7 @@
         {
           "archetypeId": "types",
           "signalKind": "path",
-          "detail": "Tool interface contracts and type definitions — no runtime logic",
+          "detail": "Type definitions and contracts for the tool system — no runtime logic.",
           "weight": 0.7
         }
       ]
@@ -1591,7 +1591,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Dispatches tool calls to implementations — central routing service",
+          "detail": "Routes incoming tool calls to implementations — orchestration logic.",
           "weight": 0.7
         }
       ]
@@ -1605,35 +1605,35 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shell execution wrapper — low-level infrastructure utility",
+          "detail": "Shell execution primitive used by multiple tool implementations.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/hench/src/tools/files.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "File system tool implementations — utility helpers for file operations",
+          "detail": "File operation tool implementations — domain logic for file access.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/hench/src/tools/git.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Git operation helpers — utility wrappers around git commands",
+          "detail": "Git operation tool implementations — domain logic wrapping git commands.",
           "weight": 0.7
         }
       ]
@@ -1661,7 +1661,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Rex tool integration — bridges hench tools to rex domain logic",
+          "detail": "Rex integration tool implementations — business logic for PRD/task operations.",
           "weight": 0.7
         }
       ]
@@ -1675,7 +1675,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shell command utilities — low-level shared helper",
+          "detail": "Shell utilities shared across tool implementations.",
           "weight": 0.7
         }
       ]
@@ -1689,7 +1689,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Runs test suites as part of agent tooling — orchestration service",
+          "detail": "Test execution service — domain logic for running and interpreting test results.",
           "weight": 0.7
         }
       ]
@@ -1731,7 +1731,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Validates task completion criteria — business logic service",
+          "detail": "Validates task completion criteria — domain logic with business rules.",
           "weight": 0.7
         }
       ]
@@ -1759,7 +1759,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "API-based LLM provider implementation — network client service",
+          "detail": "API-based LLM provider implementation — client/service logic.",
           "weight": 0.7
         }
       ]
@@ -1773,7 +1773,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Authentication helpers for LLM APIs — shared infrastructure utility",
+          "detail": "Authentication helper — credential resolution utility.",
           "weight": 0.7
         }
       ]
@@ -1787,7 +1787,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "CLI-based LLM provider — service wrapping Claude CLI invocation",
+          "detail": "CLI-based LLM provider implementation — service wrapping subprocess calls.",
           "weight": 0.7
         }
       ]
@@ -1801,7 +1801,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Codex CLI provider variant — service wrapping Codex CLI invocation",
+          "detail": "Codex-specific CLI provider — vendor service implementation.",
           "weight": 0.7
         }
       ]
@@ -1822,14 +1822,14 @@
     },
     {
       "path": "packages/llm-client/src/create-client.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Factory that instantiates the correct LLM client — service creation logic",
+          "detail": "Factory function for LLM client instances — infrastructure utility.",
           "weight": 0.7
         }
       ]
@@ -1843,7 +1843,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Process execution helpers used by CLI providers — low-level utility",
+          "detail": "Subprocess execution primitive shared across provider implementations.",
           "weight": 0.7
         }
       ]
@@ -1857,7 +1857,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Formats help/error text — pure formatting utility",
+          "detail": "Help text formatting helper — pure display utility.",
           "weight": 0.7
         }
       ]
@@ -1871,7 +1871,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "JSON parsing/serialization helpers — pure utility",
+          "detail": "JSON parsing/handling utilities — shared infrastructure helper.",
           "weight": 0.7
         }
       ]
@@ -1885,7 +1885,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Core LLM client implementation — primary API client service",
+          "detail": "Core LLM client — main service abstraction over providers.",
           "weight": 0.7
         }
       ]
@@ -1899,7 +1899,7 @@
         {
           "archetypeId": "config",
           "signalKind": "path",
-          "detail": "LLM configuration loading and defaults — configuration module",
+          "detail": "LLM configuration module — settings and defaults.",
           "weight": 0.7
         }
       ]
@@ -1913,7 +1913,7 @@
         {
           "archetypeId": "types",
           "signalKind": "path",
-          "detail": "Type definitions and interfaces for the LLM client — pure types",
+          "detail": "Type definitions for the LLM client package — no runtime logic.",
           "weight": 0.7
         }
       ]
@@ -1941,7 +1941,7 @@
         {
           "archetypeId": "config",
           "signalKind": "path",
-          "detail": "Project-level config reading for LLM settings — configuration module",
+          "detail": "Project-level configuration reading — settings module.",
           "weight": 0.7
         }
       ]
@@ -1955,7 +1955,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Resolves project directory paths — a pure utility with no domain logic",
+          "detail": "Provides project directory path resolution — shared infrastructure with high fan-in potential",
           "weight": 0.7
         }
       ]
@@ -1969,7 +1969,7 @@
         {
           "archetypeId": "types",
           "signalKind": "path",
-          "detail": "Defines the interface/contract for LLM providers — types and constants",
+          "detail": "Defines interfaces/types for the provider abstraction — no logic, pure type definitions",
           "weight": 0.7
         }
       ]
@@ -1983,7 +1983,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Registry that manages and looks up provider instances — service pattern",
+          "detail": "Manages registration and lookup of LLM providers — business logic orchestration",
           "weight": 0.7
         }
       ]
@@ -1997,7 +1997,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Manages lifecycle of a provider session — stateful service",
+          "detail": "Manages LLM provider session lifecycle — stateful service logic",
           "weight": 0.7
         }
       ]
@@ -2025,7 +2025,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Encapsulates suggestion generation logic — domain service",
+          "detail": "Suggestion generation logic — business logic orchestration",
           "weight": 0.7
         }
       ]
@@ -2039,7 +2039,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Tracks and aggregates token usage — domain service",
+          "detail": "Token usage tracking and analytics — data processing service logic",
           "weight": 0.7
         }
       ]
@@ -2067,21 +2067,35 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Handles acknowledgement step of the analyze pipeline — domain service",
+          "detail": "Handles acknowledgment/acceptance of analysis proposals — domain operation",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/rex/src/analyze/analyze-shared.ts",
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Shared utilities across the analyze module — cross-cutting infrastructure",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/rex/src/analyze/consolidation-guard.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Guards against over-consolidation during analysis — domain service with policy logic",
+          "detail": "Guard logic to prevent over-consolidation — reusable validation utility",
           "weight": 0.7
         }
       ]
@@ -2095,7 +2109,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Decomposes PRD items — domain service",
+          "detail": "Decomposes PRD items into subtasks — domain business logic",
           "weight": 0.7
         }
       ]
@@ -2109,7 +2123,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Pure deduplication logic — stateless utility",
+          "detail": "Deduplication logic — reusable pure utility",
           "weight": 0.7
         }
       ]
@@ -2123,7 +2137,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Computes diffs between PRD states — stateless utility",
+          "detail": "Diff computation between PRD states — reusable pure utility",
           "weight": 0.7
         }
       ]
@@ -2137,7 +2151,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Extracts structured items from LLM output — domain service",
+          "detail": "Extracts structured data from analysis output — domain operation",
           "weight": 0.7
         }
       ]
@@ -2151,7 +2165,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Validates input files before analysis — stateless utility",
+          "detail": "File validation helpers — reusable validation utility",
           "weight": 0.7
         }
       ]
@@ -2165,7 +2179,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Implements guided/interactive analysis flow — domain service",
+          "detail": "Orchestrates guided analysis flow — multi-step business logic",
           "weight": 0.7
         }
       ]
@@ -2186,14 +2200,14 @@
     },
     {
       "path": "packages/rex/src/analyze/modify-reason.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Builds or transforms modification reasons — utility helper",
+          "detail": "AI-assisted reasoning for modifications — domain business logic",
           "weight": 0.7
         }
       ]
@@ -2207,7 +2221,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Generates PRD proposals from analysis — domain service",
+          "detail": "Generates PRD proposals from analysis — core domain operation",
           "weight": 0.7
         }
       ]
@@ -2221,7 +2235,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Produces reasoning for PRD changes — domain service",
+          "detail": "Reasoning/inference logic for analysis — domain business logic",
           "weight": 0.7
         }
       ]
@@ -2235,21 +2249,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Reconciles proposed changes with existing PRD — domain service",
+          "detail": "Reconciles proposed changes with existing PRD — domain operation",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/rex/src/analyze/reshape-reason.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Reshapes/normalises reason structures — utility helper",
+          "detail": "Reshapes AI reasoning output — domain transformation logic",
           "weight": 0.7
         }
       ]
@@ -2263,7 +2277,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Scans project files to feed analysis — domain service",
+          "detail": "Scanner implementations for codebase analysis — domain service logic",
           "weight": 0.7
         }
       ]
@@ -2277,7 +2291,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Validates proposed modifications — stateless validation utility",
+          "detail": "Validates proposed modifications — reusable validation utility",
           "weight": 0.7
         }
       ]
@@ -2708,14 +2722,14 @@
     },
     {
       "path": "packages/rex/src/cli/help.ts",
-      "archetype": "utility",
+      "archetype": "types",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "types",
           "signalKind": "path",
-          "detail": "Generates CLI help text — pure utility, not a command itself",
+          "detail": "CLI help text constants and strings — no logic, pure content definitions",
           "weight": 0.7
         }
       ]
@@ -2743,7 +2757,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Defines and implements MCP tool handlers — service layer for MCP protocol",
+          "detail": "Defines and registers MCP tool handlers — service orchestration layer",
           "weight": 0.7
         }
       ]
@@ -2757,7 +2771,7 @@
         {
           "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "Entry point for the rex mcp CLI subcommand",
+          "detail": "MCP subcommand handler — CLI command implementation",
           "weight": 0.7
         }
       ]
@@ -2785,7 +2799,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Validates CLI input arguments — stateless utility",
+          "detail": "Input validation for CLI commands — reusable validation utility",
           "weight": 0.7
         }
       ]
@@ -3303,7 +3317,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Detects conflicts between recommendations — domain service",
+          "detail": "Detects conflicts between recommendations — domain business logic",
           "weight": 0.7
         }
       ]
@@ -3317,7 +3331,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Creates PRD items from recommendations — domain service",
+          "detail": "Creates PRD items from recommendation output — domain operation",
           "weight": 0.7
         }
       ]
@@ -3588,7 +3602,7 @@
         {
           "archetypeId": "config",
           "signalKind": "path",
-          "detail": "Defines the default workflow configuration/state",
+          "detail": "Default workflow configuration and settings",
           "weight": 0.7
         }
       ]
@@ -3602,7 +3616,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Runs archetype classification analysis — domain service",
+          "detail": "Archetype detection/classification analyzer — domain analysis service",
           "weight": 0.7
         }
       ]
@@ -3616,7 +3630,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Classifies files by branch/work context — domain service",
+          "detail": "Business logic orchestration for classifying PRD items by significance and breaking change status using heuristic rules.",
           "weight": 0.7
         }
       ]
@@ -3630,7 +3644,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Orchestrates git log parsing and PRD document diffing to collect branch work items — business logic, not pure utility.",
+          "detail": "Data collection service that reads and diffs PRD state across git branches to identify completed items.",
           "weight": 0.7
         }
       ]
@@ -3644,7 +3658,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Pure filtering and classification functions (classifyBranchPattern, isWithinBranchLifecycle, filterItemsByBranchScope) with no side effects.",
+          "detail": "Pure filtering functions with no I/O or side effects — filters work items by branch lifecycle timestamps.",
           "weight": 0.7
         }
       ]
@@ -3658,21 +3672,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Handles file-based persistence of branch work records (save/load to disk via schema validation).",
+          "detail": "Persistent storage layer for branch work records, handling Zod-validated JSON file reads and writes.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Generates structured findings from callgraph + classification data — a pure transformation module with no I/O.",
+          "detail": "Generates deterministic architectural findings (god functions, dead code, coupling) from call graph data.",
           "weight": 0.7
         }
       ]
@@ -3686,7 +3700,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "AST-based call graph analysis pipeline (extractFunctions, extractCalls, analyzeCallGraph) — core static analysis service.",
+          "detail": "TypeScript compiler API-based call graph analyzer that extracts function definitions and call relationships.",
           "weight": 0.7
         }
       ]
@@ -3700,13 +3714,27 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Orchestrates LLM-assisted file archetype classification with multi-pass logic and token tracking.",
+          "detail": "File classification engine that scores files against archetype definitions using weighted signal matching.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/sourcevision/src/analyzers/claude-client.ts",
+      "archetype": "gateway",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "gateway",
+          "signalKind": "path",
+          "detail": "LLM bridge that concentrates all cross-package imports from @n-dx/llm-client and re-exports them for internal consumers.",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/sourcevision/src/analyzers/completion-reader.ts",
       "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
@@ -3714,21 +3742,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Thin API client wrapping LLM calls with config, auth mode detection, and error types — a service boundary.",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/sourcevision/src/analyzers/completion-reader.ts",
-      "archetype": "utility",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "utility",
-          "signalKind": "path",
-          "detail": "Parses and computes completion stats, timelines, and inconsistencies from PRD data — pure transformation utilities.",
+          "detail": "Reads and aggregates rex PRD completion state, timestamps, and statistics from the filesystem.",
           "weight": 0.7
         }
       ]
@@ -3742,7 +3756,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Full React component and route analysis pipeline (extractComponentDefinitions, extractJsxUsages, analyzeComponents).",
+          "detail": "AST-based component and route analyzer that extracts React component definitions and usage graphs from JSX/TSX files.",
           "weight": 0.7
         }
       ]
@@ -3756,7 +3770,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Generates the CONTEXT.md output document from analysis artifacts — output generation service.",
+          "detail": "CONTEXT.md generator that produces a structured AI-readable codebase summary from analysis data.",
           "weight": 0.7
         }
       ]
@@ -3770,7 +3784,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Orchestrates batched LLM zone enrichment passes with retry logic, spinners, and token accumulation.",
+          "detail": "Batch AI enrichment processor with retry logic and prompt construction for zone analysis.",
           "weight": 0.7
         }
       ]
@@ -3784,7 +3798,7 @@
         {
           "archetypeId": "config",
           "signalKind": "path",
-          "detail": "Defines enrichment pass configurations, prompt constants, and concurrency limits used across enrich modules.",
+          "detail": "Configuration constants and helpers for AI enrichment passes — pass configs, thresholds, and prompt builders.",
           "weight": 0.7
         }
       ]
@@ -3798,7 +3812,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Pure LLM response parsing helpers (tryParseJSON, extractFindings, deduplicateFindings, enforceSeverityRules).",
+          "detail": "JSON parsing and finding extraction helpers for AI enrichment responses — pure parsing utilities.",
           "weight": 0.7
         }
       ]
@@ -3812,21 +3826,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Manages concurrent per-zone LLM enrichment with structure hash caching and zone-level token tracking.",
+          "detail": "Per-zone AI enrichment service handling incremental, parallelizable zone-level LLM calls.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/sourcevision/src/analyzers/enrich.ts",
-      "archetype": "service",
+      "archetype": "gateway",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Top-level enrichment orchestrator that coordinates batch vs. per-zone strategies and re-exports sub-module APIs.",
+          "detail": "Barrel re-export module that acts as a stable facade over enrich-config, enrich-batch, claude-client, and enrich-parsing sub-modules.",
           "weight": 0.7
         }
       ]
@@ -3840,7 +3854,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Parses and resolves import graphs across the codebase (extractImports, analyzeImports, circular detection).",
+          "detail": "Deterministic import graph analyzer using the TypeScript compiler API to extract import relationships.",
           "weight": 0.7
         }
       ]
@@ -3868,7 +3882,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Walks the filesystem to build the file inventory with language detection, role classification, and ignore filtering.",
+          "detail": "Deterministic file inventory analyzer that scans the filesystem to build a structured file catalog.",
           "weight": 0.7
         }
       ]
@@ -3882,7 +3896,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Generates the llms.txt output file from analysis artifacts — document generation service.",
+          "detail": "llms.txt generator that produces a structured Markdown codebase summary for LLM consumption.",
           "weight": 0.7
         }
       ]
@@ -3896,7 +3910,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Self-contained Louvain community detection algorithm implementation — pure graph algorithm with no I/O.",
+          "detail": "Louvain modularity optimization algorithm implementation for detecting architectural zones from import graphs.",
           "weight": 0.7
         }
       ]
@@ -3910,27 +3924,13 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Reads and writes the .sourcevision/manifest.json file with module status tracking.",
+          "detail": "Manifest management service handling read/write of analysis metadata with git integration.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/sourcevision/src/analyzers/next-steps.ts",
-      "archetype": "service",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "service",
-          "signalKind": "path",
-          "detail": "Derives prioritized next-step recommendations from zone findings and structural data.",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/sourcevision/src/analyzers/risk-scoring.ts",
       "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
@@ -3938,7 +3938,21 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Pure risk score computation and classification functions (computeRiskScore, assessZoneRisk) with no I/O.",
+          "detail": "Pure function that derives prioritized next steps from zone findings — no I/O, no side effects.",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/sourcevision/src/analyzers/risk-scoring.ts",
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "Architectural risk scoring service computing cohesion/coupling metrics and emitting deterministic findings.",
           "weight": 0.7
         }
       ]
@@ -3959,14 +3973,14 @@
     },
     {
       "path": "packages/sourcevision/src/analyzers/server-route-detection.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Detects server-side HTTP routes from source files using classification map lookups — pure analysis helper.",
+          "detail": "AST-based HTTP route detection service that identifies Express/Hono/Koa route handlers in source files.",
           "weight": 0.7
         }
       ]
@@ -3980,7 +3994,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Small set of pure token usage accumulation and formatting helpers shared across multiple analyzer modules.",
+          "detail": "Pure token usage accumulation and formatting utility functions — no I/O or side effects.",
           "weight": 0.7
         }
       ]
@@ -3994,7 +4008,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Aggregates multi-package workspace analysis: merges inventories, imports, zones, and writes combined output.",
+          "detail": "Workspace aggregation engine that merges pre-analyzed sub-repos into a unified .sourcevision/ output.",
           "weight": 0.7
         }
       ]
@@ -4008,7 +4022,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Computes cross-repo zone crossings from sub-analysis data — pure calculation with no orchestration.",
+          "detail": "Pure utility functions that resolve external npm imports into cross-repo ZoneCrossing entries during aggregation.",
           "weight": 0.7
         }
       ]
@@ -4022,7 +4036,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Detects and loads sub-analyses, promotes zones/crossings for workspace-level aggregation.",
+          "detail": "Workspace analyzer that detects and incorporates pre-analyzed sub-directories into the parent analysis.",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/sourcevision/src/analyzers/zone-hash.ts",
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Extracted hashing utility — pure function computing a global content hash from zone hashes, no side effects.",
           "weight": 0.7
         }
       ]
@@ -4036,7 +4064,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Generates per-zone context.md and summary.json output files and prunes stale zone folders.",
+          "detail": "Per-zone output emitter that writes zone-scoped context.md and summary.json files to .sourcevision/zones/.",
           "weight": 0.7
         }
       ]
@@ -4050,7 +4078,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Main zone detection pipeline: runs Louvain, merges communities, applies AI enrichment, computes hashes — the core zone analysis service.",
+          "detail": "Zone detection analyzer implementing Louvain community detection business logic",
           "weight": 0.7
         }
       ]
@@ -4243,14 +4271,14 @@
     },
     {
       "path": "packages/sourcevision/src/cli/help.ts",
-      "archetype": "cli-command",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "cli-command",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Renders formatted CLI help text for all sourcevision commands — a CLI presentation module.",
+          "detail": "CLI help text rendering helper, not a command handler itself",
           "weight": 0.7
         }
       ]
@@ -4278,7 +4306,7 @@
         {
           "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "CLI command handler for the `mcp` subcommand in the sourcevision CLI",
+          "detail": "CLI command handler for the mcp subcommand",
           "weight": 0.7
         }
       ]
@@ -4306,7 +4334,7 @@
         {
           "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "CLI command handler for the `serve` subcommand in the sourcevision CLI",
+          "detail": "CLI command handler for the serve subcommand",
           "weight": 0.7
         }
       ]
@@ -4334,7 +4362,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Service module that generates and exports PDF reports from analysis data",
+          "detail": "PDF report generation service orchestrating export logic",
           "weight": 0.7
         }
       ]
@@ -4348,7 +4376,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Template utility that produces PR markdown output from structured data",
+          "detail": "Template generator utility for PR markdown output",
           "weight": 0.7
         }
       ]
@@ -4447,7 +4475,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shared utility for merging data structures",
+          "detail": "Shared merge helper utilities",
           "weight": 0.7
         }
       ]
@@ -4461,7 +4489,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shared path manipulation utilities",
+          "detail": "Path manipulation utility functions",
           "weight": 0.7
         }
       ]
@@ -4475,7 +4503,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Canonical deterministic sorting utilities used across output generation",
+          "detail": "Canonical deterministic sorting utilities used across the package",
           "weight": 0.7
         }
       ]
@@ -4489,7 +4517,7 @@
         {
           "archetypeId": "config",
           "signalKind": "path",
-          "detail": "Build configuration/runner script for the web package",
+          "detail": "Build script configuration for the web package",
           "weight": 0.7
         }
       ]
@@ -4503,7 +4531,7 @@
         {
           "archetypeId": "config",
           "signalKind": "path",
-          "detail": "Dev server configuration/runner script for the web package",
+          "detail": "Dev server configuration and startup script",
           "weight": 0.7
         }
       ]
@@ -4531,7 +4559,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Serves the landing page HTML — server-side content delivery logic",
+          "detail": "Landing page data/logic service, not a JSX component",
           "weight": 0.7
         }
       ]
@@ -4566,28 +4594,28 @@
     },
     {
       "path": "packages/web/src/server/aggregation-cache.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Caching utility for aggregated data on the server",
+          "detail": "Caching layer service for aggregated data",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/web/src/server/concurrent-execution-metrics.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Tracks concurrent execution metrics — infrastructure utility with no routing logic",
+          "detail": "Metrics collection service tracking concurrent execution",
           "weight": 0.7
         }
       ]
@@ -4601,7 +4629,7 @@
         {
           "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Gateway module concentrating all cross-package imports from sourcevision per CLAUDE.md",
+          "detail": "Re-export gateway concentrating all sourcevision cross-package imports",
           "weight": 0.7
         }
       ]
@@ -4615,7 +4643,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Service that tracks and computes incremental task usage data",
+          "detail": "Service tracking incremental task token usage",
           "weight": 0.7
         }
       ]
@@ -4636,14 +4664,14 @@
     },
     {
       "path": "packages/web/src/server/mcp-deps.ts",
-      "archetype": "types",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "types",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Dependency types and constants for the MCP layer — no logic, just definitions",
+          "detail": "MCP dependency wiring/setup shared across server modules",
           "weight": 0.7
         }
       ]
@@ -4657,7 +4685,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Utility for port resolution and availability detection",
+          "detail": "Port resolution utility for the web server",
           "weight": 0.7
         }
       ]
@@ -4671,21 +4699,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Service that diagnoses and reports on PR markdown refresh state",
+          "detail": "Diagnostics service for PR markdown refresh operations",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/web/src/server/process-memory-tracker.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Utility that monitors and reports process memory usage",
+          "detail": "Service monitoring process memory usage over time",
           "weight": 0.7
         }
       ]
@@ -4699,7 +4727,7 @@
         {
           "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Gateway module concentrating all cross-package imports from rex per CLAUDE.md",
+          "detail": "Re-export gateway concentrating all rex cross-package imports",
           "weight": 0.7
         }
       ]
@@ -4951,7 +4979,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Service that builds and queries a search index over PRD/codebase data",
+          "detail": "Search index building and querying service",
           "weight": 0.7
         }
       ]
@@ -4965,7 +4993,7 @@
         {
           "archetypeId": "entrypoint",
           "signalKind": "path",
-          "detail": "Server startup entry point that wires together and launches the web server",
+          "detail": "Server startup entrypoint that initializes and wires all server components",
           "weight": 0.7
         }
       ]
@@ -4993,7 +5021,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Service that schedules and runs periodic usage data cleanup",
+          "detail": "Scheduled cleanup service for usage data",
           "weight": 0.7
         }
       ]
@@ -5007,21 +5035,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "WebSocket server setup and message handling logic",
+          "detail": "WebSocket connection management and event handling service",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/web/src/server/ws-health-tracker.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Utility that tracks WebSocket connection health metrics",
+          "detail": "Service tracking WebSocket connection health metrics",
           "weight": 0.7
         }
       ]
@@ -5035,7 +5063,49 @@
         {
           "archetypeId": "types",
           "signalKind": "path",
-          "detail": "Shared constants and type definitions for data file paths/names",
+          "detail": "Shared constants and type definitions for data file paths",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/shared/index.ts",
+      "archetype": "entrypoint",
+      "confidence": 0.8,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "entrypoint",
+          "signalKind": "filename",
+          "detail": "filename \"index.ts\" matches ^index\\.[tj]sx?$",
+          "weight": 0.8
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/shared/node-culler.ts",
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Utility for culling/filtering graph nodes",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/shared/request-dedup.ts",
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Request deduplication utility shared across server and viewer",
           "weight": 0.7
         }
       ]
@@ -5049,7 +5119,7 @@
         {
           "archetypeId": "entrypoint",
           "signalKind": "path",
-          "detail": "Viewer-side bootstrap that initializes the client application",
+          "detail": "Viewer application bootstrap and initialization entrypoint",
           "weight": 0.7
         }
       ]
@@ -5605,20 +5675,6 @@
       ]
     },
     {
-      "path": "packages/web/src/viewer/components/prd-tree/node-culler.ts",
-      "archetype": "component",
-      "confidence": 0.6,
-      "source": "algorithmic",
-      "evidence": [
-        {
-          "archetypeId": "component",
-          "signalKind": "directory",
-          "detail": "path contains \"/components/\"",
-          "weight": 0.6
-        }
-      ]
-    },
-    {
       "path": "packages/web/src/viewer/components/prd-tree/prd-tree.ts",
       "archetype": "component",
       "confidence": 0.6,
@@ -5986,7 +6042,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Physics simulation engine for graph layout — pure computational utility",
+          "detail": "Physics simulation helpers for graph layout — pure computational utilities",
           "weight": 0.7
         }
       ]
@@ -6000,7 +6056,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Graph rendering service orchestrating canvas/WebGL drawing logic",
+          "detail": "Orchestrates graph rendering pipeline — stateful service coordinating draw operations",
           "weight": 0.7
         }
       ]
@@ -6336,7 +6392,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Data loading service that fetches and prepares data for the viewer",
+          "detail": "Data loading/fetching coordination for the viewer",
           "weight": 0.7
         }
       ]
@@ -6364,8 +6420,36 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Rate-limiting utility for controlling viewer message call frequency",
+          "detail": "Rate limiting utility wrapping call frequency",
           "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/viewer/messaging/fetch-pipeline.ts",
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "Orchestrates HTTP fetch flow with queuing/retry logic",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/viewer/messaging/index.ts",
+      "archetype": "entrypoint",
+      "confidence": 0.8,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "entrypoint",
+          "signalKind": "filename",
+          "detail": "filename \"index.ts\" matches ^index\\.[tj]sx?$",
+          "weight": 0.8
         }
       ]
     },
@@ -6378,7 +6462,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Infrastructure utility for coalescing/merging messages",
+          "detail": "Coalesces duplicate/redundant messages — reusable infrastructure utility",
           "weight": 0.7
         }
       ]
@@ -6392,21 +6476,21 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Throttling infrastructure for message flow control",
+          "detail": "Throttles message dispatch — generic utility",
           "weight": 0.7
         }
       ]
     },
     {
-      "path": "packages/web/src/viewer/messaging/request-dedup.ts",
-      "archetype": "utility",
+      "path": "packages/web/src/viewer/messaging/ws-pipeline.ts",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Request deduplication infrastructure",
+          "detail": "WebSocket connection pipeline — stateful messaging service",
           "weight": 0.7
         }
       ]
@@ -6420,7 +6504,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Monitoring service that detects and reports crashes",
+          "detail": "Monitors for crashes and triggers recovery — runtime monitoring service",
           "weight": 0.7
         }
       ]
@@ -6434,7 +6518,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Service that monitors DOM performance metrics",
+          "detail": "Observes and reports DOM performance metrics — monitoring service",
           "weight": 0.7
         }
       ]
@@ -6448,22 +6532,36 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Infrastructure gate controlling DOM update flow",
+          "detail": "Gates DOM updates based on conditions — reusable infrastructure utility",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "packages/web/src/viewer/performance/graceful-degradation.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Service orchestrating graceful degradation behavior",
+          "detail": "Applies degradation strategies under load — shared utility",
           "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/viewer/performance/index.ts",
+      "archetype": "entrypoint",
+      "confidence": 0.8,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "entrypoint",
+          "signalKind": "filename",
+          "detail": "filename \"index.ts\" matches ^index\\.[tj]sx?$",
+          "weight": 0.8
         }
       ]
     },
@@ -6476,7 +6574,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Service that monitors memory usage",
+          "detail": "Tracks memory usage over time — runtime monitoring service",
           "weight": 0.7
         }
       ]
@@ -6490,7 +6588,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Throttling utility for refresh operations",
+          "detail": "Throttles refresh calls — utility wrapper",
           "weight": 0.7
         }
       ]
@@ -6504,7 +6602,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Infrastructure gate for buffering responses",
+          "detail": "Buffers and gates responses — infrastructure utility",
           "weight": 0.7
         }
       ]
@@ -6518,7 +6616,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Utility for batching updates together",
+          "detail": "Batches updates to reduce render churn — reusable utility",
           "weight": 0.7
         }
       ]
@@ -6532,8 +6630,22 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Utility that dispatches batched tick events",
+          "detail": "Dispatches batched polling ticks — utility infrastructure",
           "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/viewer/polling/index.ts",
+      "archetype": "entrypoint",
+      "confidence": 0.8,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "entrypoint",
+          "signalKind": "filename",
+          "detail": "filename \"index.ts\" matches ^index\\.[tj]sx?$",
+          "weight": 0.8
         }
       ]
     },
@@ -6546,7 +6658,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Service managing polling lifecycle and coordination",
+          "detail": "Manages polling lifecycle and coordination — stateful service",
           "weight": 0.7
         }
       ]
@@ -6560,7 +6672,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Utility handling polling restart logic",
+          "detail": "Handles polling restart logic — utility helper",
           "weight": 0.7
         }
       ]
@@ -6574,7 +6686,7 @@
         {
           "archetypeId": "store",
           "signalKind": "path",
-          "detail": "State management for polling — tracks and exposes polling state",
+          "detail": "Holds and manages polling state — state container with high fan-in",
           "weight": 0.7
         }
       ]
@@ -6588,7 +6700,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Utility detecting browser tab visibility changes",
+          "detail": "Detects and reacts to tab visibility changes — utility",
           "weight": 0.7
         }
       ]
@@ -6602,7 +6714,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Timer infrastructure for polling ticks",
+          "detail": "Tick interval timer — low-level utility",
           "weight": 0.7
         }
       ]
@@ -6616,7 +6728,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Gate controlling tick dispatch based on visibility",
+          "detail": "Gates ticks based on visibility — utility",
           "weight": 0.7
         }
       ]
@@ -6644,7 +6756,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Schema compatibility/adaptation layer",
+          "detail": "Schema compatibility/adaptation layer — not a schema definition itself",
           "weight": 0.7
         }
       ]
@@ -6735,6 +6847,62 @@
     },
     {
       "path": "packages/web/src/viewer/views/architecture.ts",
+      "archetype": "page",
+      "confidence": 0.7,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "page",
+          "signalKind": "directory",
+          "detail": "path contains \"/views/\"",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/viewer/views/domain-hench.ts",
+      "archetype": "page",
+      "confidence": 0.7,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "page",
+          "signalKind": "directory",
+          "detail": "path contains \"/views/\"",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/viewer/views/domain-rex.ts",
+      "archetype": "page",
+      "confidence": 0.7,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "page",
+          "signalKind": "directory",
+          "detail": "path contains \"/views/\"",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/viewer/views/domain-settings.ts",
+      "archetype": "page",
+      "confidence": 0.7,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "page",
+          "signalKind": "directory",
+          "detail": "path contains \"/views/\"",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/viewer/views/domain-sourcevision.ts",
       "archetype": "page",
       "confidence": 0.7,
       "source": "algorithmic",
@@ -7110,7 +7278,7 @@
         {
           "archetypeId": "types",
           "signalKind": "path",
-          "detail": "Color constants and definitions for visualization",
+          "detail": "Color constants and mappings — no logic, pure definitions",
           "weight": 0.7
         }
       ]
@@ -7124,7 +7292,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Flow computation utilities for visualization",
+          "detail": "Flow layout/visualization helpers — computational utility",
           "weight": 0.7
         }
       ]
@@ -7152,7 +7320,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Metrics computation helpers for visualization",
+          "detail": "Metrics computation for visualization — utility functions",
           "weight": 0.7
         }
       ]
@@ -7166,7 +7334,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Root-level CI/PR check script",
+          "detail": "CI/PR validation script — infrastructure utility run at project root",
           "weight": 0.7
         }
       ]
@@ -7180,7 +7348,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Root-level script for refreshing artifacts",
+          "detail": "Artifact refresh script — build/CI infrastructure utility",
           "weight": 0.7
         }
       ]
@@ -7194,7 +7362,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Root-level script for refreshing plan",
+          "detail": "Pure logic module that validates flags and builds an execution plan object — shared utility with no CLI wiring, no side effects, no I/O.",
           "weight": 0.7
         }
       ]
@@ -7208,47 +7376,47 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Root-level script for refresh validation",
+          "detail": "Provides snapshot/validate/rollback helpers for the refresh pipeline — stateless infrastructure utilities consumed by the orchestration layer.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "web.js",
-      "archetype": "entrypoint",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "entrypoint",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Server orchestration entry point (dashboard + MCP start/stop/status)",
+          "detail": "Server orchestration module that manages process lifecycle (start/stop/status), PID/port files, and daemon mode — business logic layer that coordinates the web server process, not a CLI command handler itself.",
           "weight": 0.7
         }
       ]
     }
   ],
   "summary": {
-    "totalClassified": 467,
+    "totalClassified": 479,
     "totalUnclassified": 0,
     "byArchetype": {
-      "entrypoint": 35,
+      "entrypoint": 37,
       "config": 8,
-      "service": 82,
-      "utility": 112,
       "cli-command": 49,
+      "service": 90,
+      "utility": 109,
       "types": 18,
-      "gateway": 3,
+      "gateway": 5,
       "schema": 12,
       "store": 20,
       "route-handler": 20,
-      "component": 61,
+      "component": 60,
       "hook": 23,
-      "page": 24
+      "page": 28
     },
     "bySource": {
-      "llm": 178,
-      "algorithmic": 289
+      "llm": 183,
+      "algorithmic": 296
     }
   }
 }

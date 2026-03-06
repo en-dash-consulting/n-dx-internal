@@ -1,69 +1,39 @@
 {
   "zones": [
     {
-      "id": "llm-cli-utilities",
-      "name": "LLM CLI & Config Utilities",
-      "description": "Supporting infrastructure for CLI interaction, authentication, project configuration, output formatting, and JSON handling consumed by the provider core.",
+      "id": "root",
+      "name": "Root",
+      "description": "4 files, primarily JSON, TypeScript",
       "files": [
-        "src/auth.ts",
-        "src/config.ts",
-        "src/exec.ts",
-        "src/help-format.ts",
-        "src/json.ts",
-        "src/output.ts",
-        "src/project-config.ts",
-        "src/project-dirs.ts",
-        "src/public.ts",
-        "src/suggest.ts",
-        "tests/unit/auth.test.ts",
-        "tests/unit/config.test.ts",
-        "tests/unit/exec.test.ts",
-        "tests/unit/help-format.test.ts",
-        "tests/unit/json.test.ts",
-        "tests/unit/output.test.ts",
-        "tests/unit/project-config.test.ts",
-        "tests/unit/public-api.test.ts",
-        "tests/unit/suggest.test.ts"
+        "package-lock.json",
+        "package.json",
+        "tsconfig.json",
+        "vitest.config.ts"
       ],
-      "entryPoints": [
-        "src/config.ts"
-      ],
-      "cohesion": 0.65,
-      "coupling": 0.35,
+      "entryPoints": [],
+      "cohesion": 1,
+      "coupling": 0,
       "insights": [
-        "Contains 40% of project files (19/47) — may be too broad, consider splitting",
-        "The 23 imports from this zone into llm-provider-core confirms this layer acts as a consumer/orchestrator above the core providers — the naming 'src-2' obscures this architectural role.",
-        "Config and project-dirs being co-located with exec and output utilities suggests this zone handles the full CLI surface: reading settings, resolving paths, and rendering results.",
-        "The help-format and output utilities suggest this zone owns the user-facing presentation layer, which is a clean separation from the transport/API concerns in the core zone.",
-        "Cohesion of 0.65 is healthy for a utilities zone; the single entry point (config.ts) provides a clean public surface despite the zone's breadth.",
-        "Auth logic co-located with general utilities rather than in a dedicated security module may make it harder to audit credential handling in isolation.",
-        "269 internal calls with 0 outgoing (by call graph) and only 4 incoming from core makes this zone nearly self-contained at the call level — the 23 import-level edges to core do not generate proportional call volume, implying they are mostly type or config imports rather than hot-path calls.",
-        "The single-entry-point surface (config.ts) combined with 19 files means the utilities zone has a wide internal surface but a narrow public contract — callers cannot easily reach internal helpers directly.",
-        "llm-cli-utilities exports a single entry point (config.ts) over 19 files, creating a well-controlled public surface that prevents callers from coupling to internal helpers — this is the correct pattern for a utility layer.",
-        "The 23 import edges from llm-cli-utilities into llm-provider-core are unmatched by any test coverage targeting utilities, meaning regressions in how utilities consume core providers would be silent.",
-        "The 269 internal calls with only 4 incoming calls from outside the zone means the utility layer is almost entirely self-serving — the single public entry point (config.ts) hides a densely tangled internal graph that would resist decomposition if the zone ever needs to be split.",
-        "Auth, config, project-dirs, and exec are four distinct concerns currently merged into one zone; each has a different change driver (security policy, user preferences, filesystem layout, subprocess behavior) — co-locating them creates a zone where any concern's change can accidentally break the others.",
-        "auth.ts handles credential management but lives in an undifferentiated utilities zone alongside exec, output, and json helpers — there is no isolation boundary preventing other utilities from importing auth internals, making credential-handling code invisible in security audits of the zone.",
-        "The zone contains 19 files spanning at least four distinct concerns (auth, config, CLI presentation, filesystem/exec) with 269 internal calls indicating deep internal entanglement. A zone this wide with this many internal edges will resist future splitting — the four concern groups should be separated before entanglement grows further.",
-        "help-format.ts is a pure UI presentation utility co-located with credential management (auth.ts) — these have orthogonal change drivers (visual formatting vs security policy) and orthogonal audit scopes, yet they share a zone with no sub-boundary separating them.",
-        "The zone name 'llm-cli-utilities' uses the llm- prefix, but all 19 files inside it (auth, config, exec, output, json, project-dirs) drop this prefix entirely — there is a systematic naming discontinuity between zone identity and file identity that would make a new contributor unsure which zone a new file belongs to.",
-        "Internal call-graph cohesion of 1.0 in a 19-file zone spanning 4 distinct concerns indicates false cohesion — the files are entangled by mutual imports rather than unified by a single concept. High call-graph cohesion in a wide zone is a warning sign of accidental coupling, not intentional design.",
-        "Separate help-format.ts and output.ts (presentation concerns) from auth.ts and exec.ts (security and subprocess concerns) with at minimum a directory-level boundary within the zone. Mixing UI formatting and credential handling in an undifferentiated file set means a security audit of auth.ts must also consider whether output.ts inadvertently logs credentials.",
-        "Establish a file-naming prefix or directory grouping convention that maps visibly to the zone name — e.g. group files under src/config/, src/auth/, src/cli/ subdirectories. The current flat structure with a zone name that does not appear in any filename makes zone membership invisible to contributors and tooling.",
-        "[call graph] 269 internal calls, 0 outgoing, 4 incoming (cohesion: 1, coupling: 0)"
+        "High cohesion (1) — files are tightly interconnected",
+        "Standard package scaffolding — no source files present, as expected for a configuration-only root.",
+        "Vitest config co-located here confirms test tooling is package-local rather than inherited from monorepo root.",
+        "No entry points in this zone is correct; configuration files are consumed by tooling, not imported.",
+        "Cohesion of 1.0 with zero coupling confirms this zone is a clean, isolated configuration boundary with no cross-zone leakage.",
+        "Zero imports flowing into or out of this zone from any other zone confirms it is a true configuration boundary — tooling reads it, source never imports it.",
+        "package-root has no runtime edges to any other zone; it is a pure configuration leaf consumed only by external tooling (tsc, vitest). This is the ideal state for a config zone."
       ],
       "riskMetrics": {
-        "cohesion": 0.65,
-        "coupling": 0.35,
-        "riskScore": 0.35,
+        "cohesion": 1,
+        "coupling": 0,
+        "riskScore": 0,
         "riskLevel": "healthy",
         "failsThreshold": false
       }
     },
     {
-      "id": "llm-provider-core",
-      "name": "LLM Provider Core",
-      "description": "Vendor-neutral LLM abstraction layer defining provider interfaces, client factory, session management, and token usage tracking.",
+      "id": "src",
+      "name": "Src",
+      "description": "13 files, primarily TypeScript",
       "files": [
         "src/api-provider.ts",
         "src/cli-provider.ts",
@@ -126,9 +96,71 @@
       }
     },
     {
-      "id": "llm-provider-tests",
-      "name": "LLM Provider Unit Tests",
-      "description": "Comprehensive unit test suite covering all public provider types, client factory, registry, session lifecycle, and token usage.",
+      "id": "src-2",
+      "name": "Src 2",
+      "description": "19 files, primarily TypeScript",
+      "files": [
+        "src/auth.ts",
+        "src/config.ts",
+        "src/exec.ts",
+        "src/help-format.ts",
+        "src/json.ts",
+        "src/output.ts",
+        "src/project-config.ts",
+        "src/project-dirs.ts",
+        "src/public.ts",
+        "src/suggest.ts",
+        "tests/unit/auth.test.ts",
+        "tests/unit/config.test.ts",
+        "tests/unit/exec.test.ts",
+        "tests/unit/help-format.test.ts",
+        "tests/unit/json.test.ts",
+        "tests/unit/output.test.ts",
+        "tests/unit/project-config.test.ts",
+        "tests/unit/public-api.test.ts",
+        "tests/unit/suggest.test.ts"
+      ],
+      "entryPoints": [
+        "src/config.ts"
+      ],
+      "cohesion": 0.65,
+      "coupling": 0.35,
+      "insights": [
+        "Contains 42% of project files (19/45) — may be too broad, consider splitting",
+        "Generic zone name \"Src 2\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
+        "Contains 40% of project files (19/47) — may be too broad, consider splitting",
+        "The 23 imports from this zone into llm-provider-core confirms this layer acts as a consumer/orchestrator above the core providers — the naming 'src-2' obscures this architectural role.",
+        "Config and project-dirs being co-located with exec and output utilities suggests this zone handles the full CLI surface: reading settings, resolving paths, and rendering results.",
+        "The help-format and output utilities suggest this zone owns the user-facing presentation layer, which is a clean separation from the transport/API concerns in the core zone.",
+        "Cohesion of 0.65 is healthy for a utilities zone; the single entry point (config.ts) provides a clean public surface despite the zone's breadth.",
+        "Auth logic co-located with general utilities rather than in a dedicated security module may make it harder to audit credential handling in isolation.",
+        "269 internal calls with 0 outgoing (by call graph) and only 4 incoming from core makes this zone nearly self-contained at the call level — the 23 import-level edges to core do not generate proportional call volume, implying they are mostly type or config imports rather than hot-path calls.",
+        "The single-entry-point surface (config.ts) combined with 19 files means the utilities zone has a wide internal surface but a narrow public contract — callers cannot easily reach internal helpers directly.",
+        "llm-cli-utilities exports a single entry point (config.ts) over 19 files, creating a well-controlled public surface that prevents callers from coupling to internal helpers — this is the correct pattern for a utility layer.",
+        "The 23 import edges from llm-cli-utilities into llm-provider-core are unmatched by any test coverage targeting utilities, meaning regressions in how utilities consume core providers would be silent.",
+        "The 269 internal calls with only 4 incoming calls from outside the zone means the utility layer is almost entirely self-serving — the single public entry point (config.ts) hides a densely tangled internal graph that would resist decomposition if the zone ever needs to be split.",
+        "Auth, config, project-dirs, and exec are four distinct concerns currently merged into one zone; each has a different change driver (security policy, user preferences, filesystem layout, subprocess behavior) — co-locating them creates a zone where any concern's change can accidentally break the others.",
+        "auth.ts handles credential management but lives in an undifferentiated utilities zone alongside exec, output, and json helpers — there is no isolation boundary preventing other utilities from importing auth internals, making credential-handling code invisible in security audits of the zone.",
+        "The zone contains 19 files spanning at least four distinct concerns (auth, config, CLI presentation, filesystem/exec) with 269 internal calls indicating deep internal entanglement. A zone this wide with this many internal edges will resist future splitting — the four concern groups should be separated before entanglement grows further.",
+        "help-format.ts is a pure UI presentation utility co-located with credential management (auth.ts) — these have orthogonal change drivers (visual formatting vs security policy) and orthogonal audit scopes, yet they share a zone with no sub-boundary separating them.",
+        "The zone name 'llm-cli-utilities' uses the llm- prefix, but all 19 files inside it (auth, config, exec, output, json, project-dirs) drop this prefix entirely — there is a systematic naming discontinuity between zone identity and file identity that would make a new contributor unsure which zone a new file belongs to.",
+        "Internal call-graph cohesion of 1.0 in a 19-file zone spanning 4 distinct concerns indicates false cohesion — the files are entangled by mutual imports rather than unified by a single concept. High call-graph cohesion in a wide zone is a warning sign of accidental coupling, not intentional design.",
+        "Separate help-format.ts and output.ts (presentation concerns) from auth.ts and exec.ts (security and subprocess concerns) with at minimum a directory-level boundary within the zone. Mixing UI formatting and credential handling in an undifferentiated file set means a security audit of auth.ts must also consider whether output.ts inadvertently logs credentials.",
+        "Establish a file-naming prefix or directory grouping convention that maps visibly to the zone name — e.g. group files under src/config/, src/auth/, src/cli/ subdirectories. The current flat structure with a zone name that does not appear in any filename makes zone membership invisible to contributors and tooling.",
+        "[call graph] 269 internal calls, 0 outgoing, 4 incoming (cohesion: 1, coupling: 0)"
+      ],
+      "riskMetrics": {
+        "cohesion": 0.65,
+        "coupling": 0.35,
+        "riskScore": 0.35,
+        "riskLevel": "healthy",
+        "failsThreshold": false
+      }
+    },
+    {
+      "id": "unit",
+      "name": "Unit",
+      "description": "9 files, primarily TypeScript",
       "files": [
         "tests/unit/api-provider.test.ts",
         "tests/unit/cli-provider.test.ts",
@@ -167,351 +199,319 @@
         "riskLevel": "healthy",
         "failsThreshold": false
       }
-    },
-    {
-      "id": "package-root",
-      "name": "Package Root Configuration",
-      "description": "Top-level build and dependency configuration for the llm-client package.",
-      "files": [
-        "package-lock.json",
-        "package.json",
-        "tsconfig.json",
-        "vitest.config.ts"
-      ],
-      "entryPoints": [],
-      "cohesion": 1,
-      "coupling": 0,
-      "insights": [
-        "High cohesion (1) — files are tightly interconnected",
-        "Standard package scaffolding — no source files present, as expected for a configuration-only root.",
-        "Vitest config co-located here confirms test tooling is package-local rather than inherited from monorepo root.",
-        "No entry points in this zone is correct; configuration files are consumed by tooling, not imported.",
-        "Cohesion of 1.0 with zero coupling confirms this zone is a clean, isolated configuration boundary with no cross-zone leakage.",
-        "Zero imports flowing into or out of this zone from any other zone confirms it is a true configuration boundary — tooling reads it, source never imports it.",
-        "package-root has no runtime edges to any other zone; it is a pure configuration leaf consumed only by external tooling (tsc, vitest). This is the ideal state for a config zone."
-      ],
-      "riskMetrics": {
-        "cohesion": 1,
-        "coupling": 0,
-        "riskScore": 0,
-        "riskLevel": "healthy",
-        "failsThreshold": false
-      }
     }
   ],
   "crossings": [
     {
-      "from": "src/auth.ts",
-      "to": "src/types.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/auth.ts",
-      "to": "src/types.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/config.ts",
-      "to": "src/types.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/api-provider.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/api-provider.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/cli-provider.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/cli-provider.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/codex-cli-provider.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/codex-cli-provider.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/create-client.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/create-client.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/llm-client.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/llm-client.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/llm-config.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/llm-types.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/provider-interface.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/provider-registry.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/provider-registry.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/provider-session.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/token-usage.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/types.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "src/public.ts",
-      "to": "src/types.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
-      "from": "tests/unit/auth.test.ts",
-      "to": "src/types.ts",
-      "fromZone": "llm-cli-utilities",
-      "toZone": "llm-provider-core"
-    },
-    {
       "from": "src/api-provider.ts",
       "to": "src/config.ts",
-      "fromZone": "llm-provider-core",
-      "toZone": "llm-cli-utilities"
+      "fromZone": "src",
+      "toZone": "src-2"
     },
     {
       "from": "src/cli-provider.ts",
       "to": "src/config.ts",
-      "fromZone": "llm-provider-core",
-      "toZone": "llm-cli-utilities"
+      "fromZone": "src",
+      "toZone": "src-2"
     },
     {
       "from": "src/create-client.ts",
       "to": "src/config.ts",
-      "fromZone": "llm-provider-core",
-      "toZone": "llm-cli-utilities"
+      "fromZone": "src",
+      "toZone": "src-2"
+    },
+    {
+      "from": "src/auth.ts",
+      "to": "src/types.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/auth.ts",
+      "to": "src/types.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/config.ts",
+      "to": "src/types.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/api-provider.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/api-provider.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/cli-provider.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/cli-provider.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/codex-cli-provider.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/codex-cli-provider.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/create-client.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/create-client.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/llm-client.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/llm-client.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/llm-config.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/llm-types.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/provider-interface.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/provider-registry.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/provider-registry.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/provider-session.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/token-usage.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/types.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "src/public.ts",
+      "to": "src/types.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
+    },
+    {
+      "from": "tests/unit/auth.test.ts",
+      "to": "src/types.ts",
+      "fromZone": "src-2",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/api-provider.test.ts",
       "to": "src/api-provider.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/api-provider.test.ts",
       "to": "src/provider-interface.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/api-provider.test.ts",
       "to": "src/types.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/cli-provider.test.ts",
       "to": "src/cli-provider.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/cli-provider.test.ts",
       "to": "src/provider-interface.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/cli-provider.test.ts",
       "to": "src/types.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/create-client.test.ts",
       "to": "src/create-client.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/create-client.test.ts",
       "to": "src/types.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/create-client.test.ts",
       "to": "src/types.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/llm-client.test.ts",
       "to": "src/llm-client.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-interface.test.ts",
       "to": "src/provider-interface.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-interface.test.ts",
       "to": "src/types.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-registry.test.ts",
       "to": "src/llm-types.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-registry.test.ts",
       "to": "src/provider-interface.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-registry.test.ts",
       "to": "src/provider-registry.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-registry.test.ts",
       "to": "src/provider-registry.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-registry.test.ts",
       "to": "src/types.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-session.test.ts",
       "to": "src/llm-types.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-session.test.ts",
       "to": "src/provider-interface.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-session.test.ts",
       "to": "src/provider-registry.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-session.test.ts",
       "to": "src/provider-registry.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-session.test.ts",
       "to": "src/provider-session.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/provider-session.test.ts",
       "to": "src/types.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/token-usage.test.ts",
       "to": "src/token-usage.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     },
     {
       "from": "tests/unit/types.test.ts",
       "to": "src/types.ts",
-      "fromZone": "llm-provider-tests",
-      "toZone": "llm-provider-core"
+      "fromZone": "unit",
+      "toZone": "src"
     }
   ],
-  "unzoned": [
-    "tests/e2e/.gitkeep",
-    "tests/integration/.gitkeep"
-  ],
+  "unzoned": [],
   "insights": [
+    "Bidirectional coupling: \"src\" ↔ \"src-2\" (3+23 crossings) — consider extracting shared interface",
     "Bidirectional coupling: \"llm-cli-utilities\" ↔ \"llm-provider-core\" (23+3 crossings) — consider extracting shared interface",
     "The three-zone dependency chain (llm-provider-tests → llm-provider-core ← llm-cli-utilities) forms a clean DAG with one exception: the 3 reverse imports from core into utilities break the layering model and should be investigated.",
     "The package follows a clear provider-abstraction pattern with registry, interface, and session concepts — this is a well-structured vendor-neutral client foundation.",
@@ -537,41 +537,55 @@
     "False cohesion risk: llm-cli-utilities reports call-graph cohesion of 1.0 but spans four unrelated concerns — this score reflects internal entanglement, not intentional design unity. Cohesion metrics should be interpreted alongside concern count; a single-concern zone at 1.0 is healthy, a four-concern zone at 1.0 indicates accidental coupling that will resist future decomposition.",
     "Document the one-to-one test-to-module mapping convention used in llm-provider-tests in a PACKAGE_GUIDELINES.md or test/README.md entry — this implicit convention is enforced only by social norms and will silently erode as the package grows. Codifying it prevents new contributors from breaking the mapping during refactors.",
     "The 3 reverse imports (llm-provider-core → llm-cli-utilities) combined with zero utility test coverage and implicit session↔auth coupling form a compounding risk cluster: a single change to auth.ts or a utility config shape can silently break provider construction with no test signal at any layer. Treat these three issues as a single fix unit: extract shared types, add a utility test zone, and add a session-auth integration test simultaneously.",
-    "[call graph] 88 calls: \"llm-provider-tests\" → \"llm-provider-core\""
+    "Findings 0, 4, 6, 8, and 11 are four independent observations of the same structural defect framed at increasing abstraction levels (zone metric → topology → architectural cause → compounding risk). They are not additive problems — they are the same problem described five times. A single intervention (a zero-dependency shared types zone) resolves all five simultaneously.",
+    "The test zone (llm-provider-tests) serves an unintentional diagnostic function: because it mirrors the intended clean architecture rather than the actual architecture, its existence makes the layering violation visible. This diagnostic property is worth preserving deliberately as the package grows.",
+    "The package exhibits a split-identity pattern: its public surface and configuration are clean and well-bounded (findings 2, 7), while its internal layering has a structural defect (findings 4, 6, 8). This means external consumers are well-protected but internal maintainers face hidden coupling.",
+    "tests/unit/ contains files from 3 zones (src, src-2, unit) — consider grouping into subdirectories to clarify architectural boundaries",
+    "The compounding risk cluster (finding 11, now critical) should be resolved as a single sequential work unit: step 1 — introduce a new zero-dependency zone containing only shared provider config shapes and token structs, update llm-provider-core and llm-cli-utilities to import downward from it, eliminating the 3 reverse edges; step 2 — add a test zone for llm-cli-utilities with at minimum one test per exported utility to close the coverage gap identified in finding 5; step 3 — add one integration-level test asserting that a constructed session contains a valid auth token, making the session–auth coupling in finding 11 regression-protected. Steps must be done in this order: the types extraction in step 1 defines the stable interface that steps 2 and 3 test against.",
+    "Findings 0, 4, 6, 8, and 11 converge on one root cause: no zero-dependency base types zone exists, so llm-provider-core imports upward into llm-cli-utilities to access shared config and token shapes. This single missing layer is the origin of all three compounding risks in finding 11. It should be tracked as one work unit, not five separate issues.",
+    "Findings 3 and 9 are complementary and do not contradict each other. Finding 3 (four zones is appropriate granularity) operates at the inter-zone level; finding 9 (HTTP and subprocess strategies are co-located without sub-boundary) operates at the intra-zone level. Both are correct simultaneously. Finding 3 does not imply that all intra-zone organization is optimal.",
+    "[call graph] 88 calls: \"unit\" → \"src\""
   ],
   "findings": [
     {
       "type": "observation",
       "pass": 0,
       "scope": "global",
-      "text": "Bidirectional coupling: \"llm-cli-utilities\" ↔ \"llm-provider-core\" (23+3 crossings) — consider extracting shared interface",
+      "text": "Bidirectional coupling: \"src\" ↔ \"src-2\" (3+23 crossings) — consider extracting shared interface",
       "severity": "warning"
     },
     {
       "type": "observation",
       "pass": 0,
-      "scope": "llm-cli-utilities",
-      "text": "Contains 40% of project files (19/47) — may be too broad, consider splitting",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "llm-provider-core",
-      "text": "12 entry points — wide API surface, consider consolidating exports",
-      "severity": "warning"
-    },
-    {
-      "type": "observation",
-      "pass": 0,
-      "scope": "llm-provider-tests",
+      "scope": "root",
       "text": "High cohesion (1) — files are tightly interconnected",
       "severity": "info"
     },
     {
       "type": "observation",
       "pass": 0,
-      "scope": "package-root",
+      "scope": "src",
+      "text": "12 entry points — wide API surface, consider consolidating exports",
+      "severity": "warning"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "src-2",
+      "text": "Contains 42% of project files (19/45) — may be too broad, consider splitting",
+      "severity": "warning"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "src-2",
+      "text": "Generic zone name \"Src 2\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
+      "severity": "warning"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "unit",
       "text": "High cohesion (1) — files are tightly interconnected",
       "severity": "info"
     },
@@ -579,7 +593,7 @@
       "type": "suggestion",
       "pass": 0,
       "scope": "global",
-      "text": "tests/unit/ contains files from 3 zones (llm-cli-utilities, llm-provider-core, llm-provider-tests) — consider grouping into subdirectories to clarify architectural boundaries",
+      "text": "tests/unit/ contains files from 3 zones (src, src-2, unit) — consider grouping into subdirectories to clarify architectural boundaries",
       "severity": "info"
     },
     {
@@ -622,7 +636,7 @@
       "pass": 2,
       "scope": "global",
       "text": "No zone imports from package-root at runtime — configuration is consumed by external tooling only. This clean boundary means config changes cannot introduce runtime regressions in source zones.",
-      "severity": "info"
+      "severity": "critical"
     },
     {
       "type": "anti-pattern",
@@ -653,42 +667,29 @@
       "severity": "warning"
     },
     {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "llm-cli-utilities",
-      "text": "Establish a file-naming prefix or directory grouping convention that maps visibly to the zone name — e.g. group files under src/config/, src/auth/, src/cli/ subdirectories. The current flat structure with a zone name that does not appear in any filename makes zone membership invisible to contributors and tooling.",
+      "type": "pattern",
+      "pass": 5,
+      "scope": "global",
+      "text": "Findings 0, 4, 6, 8, and 11 converge on one root cause: no zero-dependency base types zone exists, so llm-provider-core imports upward into llm-cli-utilities to access shared config and token shapes. This single missing layer is the origin of all three compounding risks in finding 11. It should be tracked as one work unit, not five separate issues.",
+      "severity": "critical"
+    },
+    {
+      "type": "pattern",
+      "pass": 5,
+      "scope": "global",
+      "text": "Findings 3 and 9 are complementary and do not contradict each other. Finding 3 (four zones is appropriate granularity) operates at the inter-zone level; finding 9 (HTTP and subprocess strategies are co-located without sub-boundary) operates at the intra-zone level. Both are correct simultaneously. Finding 3 does not imply that all intra-zone organization is optimal.",
       "severity": "info"
     },
     {
       "type": "suggestion",
-      "pass": 4,
-      "scope": "llm-cli-utilities",
-      "text": "Separate help-format.ts and output.ts (presentation concerns) from auth.ts and exec.ts (security and subprocess concerns) with at minimum a directory-level boundary within the zone. Mixing UI formatting and credential handling in an undifferentiated file set means a security audit of auth.ts must also consider whether output.ts inadvertently logs credentials.",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "llm-provider-core",
-      "text": "Audit llm-types.ts to determine whether it holds provider-scoped or package-wide types. If it contains types shared with llm-cli-utilities (project dir shapes, token structs, provider config interfaces), move those types to a new zero-dependency types module — this is likely the direct cause of the 3 reverse imports and fixing the placement fixes the cycle structurally.",
-      "severity": "warning"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "llm-provider-core",
-      "text": "Rename codex-cli-provider.ts to follow the transport-first naming pattern used by api-provider and cli-provider — e.g. codex-provider.ts or openai-cli-provider.ts depending on whether the file abstraction is vendor or transport. Mixing both in the filename breaks the zone's naming convention and will compound as more vendors are added.",
-      "severity": "info"
-    },
-    {
-      "type": "suggestion",
-      "pass": 4,
-      "scope": "llm-provider-tests",
-      "text": "Add an integration test file (e.g. tests/integration/session-auth.test.ts) that exercises provider-session.ts with real or mock auth context from llm-cli-utilities — this would be the first test to span the provider-core/cli-utilities boundary and would catch regressions introduced by the 3 reverse import edges.",
-      "severity": "warning"
+      "pass": 5,
+      "scope": "global",
+      "text": "The compounding risk cluster (finding 11, now critical) should be resolved as a single sequential work unit: step 1 — introduce a new zero-dependency zone containing only shared provider config shapes and token structs, update llm-provider-core and llm-cli-utilities to import downward from it, eliminating the 3 reverse edges; step 2 — add a test zone for llm-cli-utilities with at minimum one test per exported utility to close the coverage gap identified in finding 5; step 3 — add one integration-level test asserting that a constructed session contains a valid auth token, making the session–auth coupling in finding 11 regression-protected. Steps must be done in this order: the types extraction in step 1 defines the stable interface that steps 2 and 3 test against.",
+      "severity": "critical"
     }
   ],
   "enrichmentPass": 4,
+  "metaEvaluationCount": 1,
   "structureHash": "b67064233d99c70c",
   "zoneContentHashes": {
     "root": "ba8bddb6ce77ae93",

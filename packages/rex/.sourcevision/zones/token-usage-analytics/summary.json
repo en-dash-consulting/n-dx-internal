@@ -1,7 +1,7 @@
 {
   "id": "token-usage-analytics",
   "name": "Token Usage Analytics",
-  "description": "Tracks and reports LLM token consumption, pairing the usage CLI command with its core calculation logic and regression tests.",
+  "description": "Tracks and reports LLM token consumption via the `usage` CLI command, token-usage core module, and regression/unit tests.",
   "files": [
     "src/cli/commands/usage.ts",
     "src/core/token-usage.ts",

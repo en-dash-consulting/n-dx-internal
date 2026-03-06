@@ -7,40 +7,42 @@
 
 Project: sourcevision
 Git: main @ 63d150a
-Files: 140, Lines: 45167
-Languages: TypeScript(127) JSON(7) Markdown(3) Other(3)
-Zones: 8, Described: 8
-Import edges: 347, External packages: 7
-Circulars: 2
+Files: 141, Lines: 45234
+Languages: TypeScript(128) JSON(7) Markdown(3) Other(3)
+Zones: 9, Described: 9
+Import edges: 349, External packages: 7
 
 </architecture>
 
 <zones>
 
-[analysis-pipeline] Analysis Pipeline Core (39 files, coh=0.67 coup=0.33)
-  Orchestrates the multi-phase codebase analysis pipeline including enrichment, context generation, zone detection output, and LLM integration.
-  files: src/analyzers/archetypes.ts [types], src/analyzers/callgraph-findings.ts [utility], src/analyzers/classify.ts [service], src/analyzers/claude-client.ts [service], src/analyzers/completion-reader.ts [utility], src/analyzers/context.ts [utility], src/analyzers/enrich-batch.ts [utility], src/analyzers/enrich-config.ts [config], src/analyzers/enrich-parsing.ts [utility], src/analyzers/enrich-per-zone.ts [utility] +29
-[claude-config] Claude Code Configuration (2 files, coh=1.00 coup=0.00)
-  Stores Claude Code editor settings and local overrides for the development environment.
+[analysis-engine] Analysis Engine (39 files, coh=0.67 coup=0.33)
+  Core multi-phase analysis pipeline responsible for enriching inventory, resolving imports, detecting zones, and producing AI-consumable output artifacts.
+  files: src/analyzers/archetypes.ts [types], src/analyzers/callgraph-findings.ts [service], src/analyzers/classify.ts [service], src/analyzers/claude-client.ts [service], src/analyzers/completion-reader.ts [service], src/analyzers/context.ts [service], src/analyzers/enrich-batch.ts [service], src/analyzers/enrich-config.ts [config], src/analyzers/enrich-parsing.ts [utility], src/analyzers/enrich-per-zone.ts [service] +29
+[branch-work-analytics] Branch Work Analytics (28 files, coh=0.57 coup=0.43)
+  Branch-scoped work tracking, risk scoring, workspace aggregation, schema definitions, MCP server, and PR markdown generation — the data layer and workspace-level analytics surface.
+  files: src/analyzers/branch-work-classifier.ts [service], src/analyzers/branch-work-filter.ts [utility], src/analyzers/branch-work-store.ts [store], src/analyzers/risk-scoring.ts [service], src/analyzers/workspace-aggregate.ts [service], src/cli/commands/workspace.ts [cli-command], src/cli/mcp.ts [service], src/generators/pr-markdown-template.ts [utility], src/public.ts [entrypoint], src/schema/data-files.ts [schema] +18
+[claude-ide-config] Claude IDE Config (2 files, coh=1.00 coup=0.00)
+  Local Claude Code IDE settings and permission overrides for the project.
   files: .claude/settings.json, .claude/settings.local.json
-[cli-interface] CLI Interface & Command Layer (26 files, coh=0.71 coup=0.29)
-  Implements all user-facing CLI commands, output formatting, error handling, and manifest management for the sourcevision tool.
-  files: src/analyzers/branch-work-collector.ts [service], src/analyzers/manifest.ts [utility], src/cli/commands/constants.ts [types], src/cli/commands/export-pdf.ts [cli-command], src/cli/commands/git-credential-helper.ts [cli-command], src/cli/commands/init.ts [cli-command], src/cli/commands/pr-markdown.ts [cli-command], src/cli/commands/prd-epic-resolver.ts [cli-command], src/cli/commands/reset.ts [cli-command], src/cli/commands/validate.ts [cli-command] +16
-[core-algorithms] Core Algorithms & Schema (33 files, coh=0.56 coup=0.44)
-  Houses the foundational algorithmic components — Louvain community detection, zone computation, branch classification, risk scoring, and the canonical schema definitions.
-  files: src/analyzers/branch-work-classifier.ts [utility], src/analyzers/branch-work-filter.ts [utility], src/analyzers/branch-work-store.ts [store], src/analyzers/louvain.ts [utility], src/analyzers/risk-scoring.ts [utility], src/analyzers/workspace-aggregate.ts [utility], src/analyzers/zones.ts [service], src/cli/commands/workspace.ts [cli-command], src/cli/mcp.ts [cli-command], src/generators/pr-markdown-template.ts [utility] +23
-[integration-validation-tests] Integration & Validation Tests (5 files, coh=0.43 coup=0.57)
-  Cross-cutting test zone grouping schema validation logic with e2e CLI tests and integration pipeline tests that exercise the full analysis workflow end-to-end.
-  files: src/schema/validate.ts [schema], tests/e2e/cli-analyze.test.ts, tests/e2e/cli-serve.test.ts, tests/integration/pipeline.test.ts, tests/unit/schema/validate.test.ts
-[static-analyzer-services] Static Analyzer Services (11 files, coh=0.54 coup=0.46)
-  Individual analyzer service implementations (callgraph, imports, inventory, components, route detection) and their path utilities, co-located with corresponding unit tests.
-  files: src/analyzers/callgraph.ts [utility], src/analyzers/components.ts [utility], src/analyzers/imports.ts [utility], src/analyzers/index.ts [entrypoint], src/analyzers/inventory.ts [utility], src/analyzers/route-detection.ts [route-handler], src/util/paths.ts [utility], tests/unit/analyzers/callgraph.test.ts, tests/unit/analyzers/components.test.ts, tests/unit/analyzers/imports.test.ts +1
-[test-fixture-projects] Test Fixture Projects (11 files, coh=1.00 coup=0.00)
-  Self-contained sample codebases (a Remix app and a small TypeScript project) used as ground-truth inputs for e2e and integration tests of the analysis pipeline.
-  files: tests/fixtures/remix-app/app/routes/_auth.login.tsx, tests/fixtures/remix-app/app/routes/_auth.tsx, tests/fixtures/remix-app/app/routes/_index.tsx, tests/fixtures/remix-app/app/routes/users.$id.tsx, tests/fixtures/small-ts-project/src/config.ts, tests/fixtures/small-ts-project/src/index.ts, tests/fixtures/small-ts-project/src/models/user.ts, tests/fixtures/small-ts-project/src/services/email-service.ts, tests/fixtures/small-ts-project/src/services/user-service.ts, tests/fixtures/small-ts-project/src/utils/format.ts +1
-[workspace-root] Workspace Root & Documentation (10 files, coh=1.00 coup=0.00)
-  Top-level monorepo scaffolding including documentation, build configuration, and workspace metadata.
+[cli-infrastructure] CLI Infrastructure (26 files, coh=0.71 coup=0.29)
+  CLI command implementations, manifest management, output formatting, error handling, and project constants that form the user-facing interface layer of sourcevision.
+  files: src/analyzers/branch-work-collector.ts [service], src/analyzers/manifest.ts [service], src/cli/commands/constants.ts [types], src/cli/commands/export-pdf.ts [cli-command], src/cli/commands/git-credential-helper.ts [cli-command], src/cli/commands/init.ts [cli-command], src/cli/commands/pr-markdown.ts [cli-command], src/cli/commands/prd-epic-resolver.ts [cli-command], src/cli/commands/reset.ts [cli-command], src/cli/commands/validate.ts [cli-command] +16
+[file-analysis-pipeline] File Analysis Pipeline (11 files, coh=0.54 coup=0.46)
+  Houses the individual analyzer modules (callgraph, components, imports, inventory, route detection) that each handle one phase of codebase introspection.
+  files: src/analyzers/callgraph.ts [service], src/analyzers/components.ts [service], src/analyzers/imports.ts [service], src/analyzers/index.ts [entrypoint], src/analyzers/inventory.ts [service], src/analyzers/route-detection.ts [route-handler], src/util/paths.ts [utility], tests/unit/analyzers/callgraph.test.ts, tests/unit/analyzers/components.test.ts, tests/unit/analyzers/imports.test.ts +1
+[project-root] Project Root (10 files, coh=1.00 coup=0.00)
+  Root-level documentation, workspace configuration, and build tooling that anchor the monorepo.
   files: ARCHITECTURE.md, README.md, SourceVision-F.png, SourceVision.png, WORKSPACE_DESIGN.md, package-lock.json, package.json, tsconfig.json, tsconfig.tsbuildinfo, vitest.config.ts
+[schema-validation] Schema Validation (5 files, coh=0.43 coup=0.57)
+  Groups the schema validation module with the end-to-end and integration test suite, reflecting that validation logic is the primary invariant exercised across the full analysis pipeline.
+  files: src/schema/validate.ts [schema], tests/e2e/cli-analyze.test.ts, tests/e2e/cli-serve.test.ts, tests/integration/pipeline.test.ts, tests/unit/schema/validate.test.ts
+[test-fixture-projects] Test Fixture Projects (11 files, coh=1.00 coup=0.00)
+  Self-contained sample projects (a Remix app and a small TypeScript project) used as realistic inputs for end-to-end and integration tests of the analysis pipeline.
+  files: tests/fixtures/remix-app/app/routes/_auth.login.tsx, tests/fixtures/remix-app/app/routes/_auth.tsx, tests/fixtures/remix-app/app/routes/_index.tsx, tests/fixtures/remix-app/app/routes/users.$id.tsx, tests/fixtures/small-ts-project/src/config.ts, tests/fixtures/small-ts-project/src/index.ts, tests/fixtures/small-ts-project/src/models/user.ts, tests/fixtures/small-ts-project/src/services/email-service.ts, tests/fixtures/small-ts-project/src/services/user-service.ts, tests/fixtures/small-ts-project/src/utils/format.ts +1
+[zone-detection-engine] Zone Detection Engine (6 files, coh=0.43 coup=0.57)
+  Encapsulates the Louvain community-detection algorithm, zone hashing for stable IDs, and the zones orchestrator that turns import graphs into labelled architectural zones.
+  files: src/analyzers/louvain.ts [utility], src/analyzers/zone-hash.ts [utility], src/analyzers/zones.ts [service], tests/unit/analyzers/zone-detection.test.ts, tests/unit/analyzers/zone-size-policy.test.ts, tests/unit/analyzers/zone-subdivision.test.ts
 [unzoned] 3 files: tests/fixtures/remix-app/app/root.tsx, tests/fixtures/remix-app/tsconfig.json, tests/fixtures/small-ts-project/tsconfig.json
 
 Detailed zone context: .sourcevision/zones/{id}/context.md
@@ -56,76 +58,78 @@ Most imported:
   src/cli/errors.ts ← src/cli/commands/analyze.ts, src/cli/commands/export-pdf.ts, src/cli/commands/git-credential-helper.ts, src/cli/commands/pr-markdown.ts, src/cli/commands/validate.ts +6
   src/schema/data-files.ts ← src/analyzers/workspace-aggregate.ts, src/analyzers/workspace.ts, src/cli/commands/analyze-phases.ts, src/cli/commands/analyze.ts, src/cli/commands/export-pdf.ts +5
   src/analyzers/enrich-parsing.ts ← src/analyzers/enrich-batch.ts, src/analyzers/enrich-per-zone.ts, src/analyzers/enrich.ts, src/analyzers/enrich.ts, src/analyzers/enrich.ts +5
-  src/analyzers/zones.ts ← src/analyzers/enrich.ts, src/analyzers/index.ts, src/analyzers/index.ts, src/cli/commands/analyze-phases.ts, tests/integration/pipeline.test.ts +5
   src/util/paths.ts ← src/analyzers/callgraph.ts, src/analyzers/components.ts, src/analyzers/imports.ts, src/analyzers/inventory.ts, src/analyzers/route-detection.ts +4
+  src/analyzers/zones.ts ← src/analyzers/index.ts, src/analyzers/index.ts, src/cli/commands/analyze-phases.ts, tests/integration/pipeline.test.ts, tests/unit/analyzers/enrich-content-skip.test.ts +4
   src/analyzers/inventory.ts ← src/analyzers/index.ts, src/cli/commands/analyze-phases.ts, src/cli/commands/analyze-phases.ts, tests/integration/pipeline.test.ts, tests/unit/analyzers/callgraph.test.ts +6
   src/analyzers/token-usage.ts ← src/analyzers/classify.ts, src/analyzers/enrich-batch.ts, src/analyzers/enrich-per-zone.ts, src/analyzers/enrich.ts, src/analyzers/index.ts +2
-
-Circular chains:
-  src/analyzers/enrich.ts → src/analyzers/zones.ts
-  src/analyzers/enrich.ts → src/analyzers/zones.ts
 
 </imports>
 
 <findings>
 
-[warning] 16 entry points — wide API surface, consider consolidating exports [analysis-pipeline]
-[warning] 2 circular dependency chains detected — see imports.json for details
-[warning] Bidirectional coupling: "analysis-pipeline" ↔ "core-algorithms" (8+37 crossings) — consider extracting shared interface
-[warning] Two of the five source zones (analyzers and analyzers-2) have significant bidirectional imports totaling 22 cross-imports, making them the dominant coupling hotspot in the package; resolving this by consolidating or drawing an explicit interface boundary would raise the average cohesion score meaningfully.
-[warning] With 16 entry points, the 'analyzers' zone has a large public surface; a dedicated public.ts barrel (following the project's package convention) would make intentional exports explicit and prevent accidental API surface growth.
-[warning] High coupling (0.57) — 3 imports target "static-analyzer-services" [integration-validation-tests]
-[warning] Add an src/analyzers/public.ts barrel as the single declared export surface for this zone, mirroring the package-level public.ts convention already used across all five packages; this caps the 16 entry points at a defined gate and makes undeclared cross-zone imports visible as convention violations. [analysis-pipeline]
-[warning] Before: analysis-pipeline and core-algorithms import directly from cli/output.ts and cli/errors.ts. After: create src/shared/output.ts and src/shared/errors.ts containing the exported symbols; cli/output.ts and cli/errors.ts re-export from src/shared/; upstream zones import from src/shared/ — CLI remains a leaf consumer with zero inbound production imports and the 17 upward dependency edges become legitimate downward imports. [cli-interface]
-[critical] core-algorithms has the worst cohesion/coupling ratio in the package (0.56 cohesion, 0.44 coupling) — it is the highest-fragility zone by metric and should be the primary stabilization target; all other refactoring work risks increasing this zone's instability further until its boundary is fixed. [core-algorithms]
-[warning] No zone serves as a dedicated shared test infrastructure zone ('test-utils'). This single structural gap is the common root cause of two separately-flagged violations: production zones importing from test zones to access shared helpers, and src/schema/validate.ts being assigned to a test zone by community detection. Adding a src/test-utils/ source directory with its own zone would resolve both without touching any production runtime behavior.
-[warning] The gateway pattern (one gateway file per upstream package, re-export only) is applied at cross-package boundaries but has no intra-package equivalent for the analysis-pipeline ↔ core-algorithms interface; applying the same pattern internally — a src/analyzers/pipeline-contract.ts that re-exports only the types and functions crossing this specific boundary — would make the 45-import coupling surface explicit, auditable, and bounded in exactly the same way the project already manages cross-package coupling.
-[warning] The production-layer zones (static-analyzer-services: 0.46, analyzers: 0.33, unit: varying) are more coupled than the CLI leaf layer (0.29) — the coupling gradient is inverted from the expected pattern where foundation layers have lower coupling than consumer layers. This inversion is a systemic signal that the foundation/domain zones are over-importing from each other rather than depending on a shared abstraction layer below them.
-[warning] analyzers-2 has a 15:7 import asymmetry with analysis-pipeline and participates in a three-way cycle (unit→analyzers→analyzers-2→unit via 2 return imports); consolidating analyzers-2 into analysis-pipeline would eliminate this cycle and reduce coupling [analyzers-2]
-[critical] Production code in two zones imports from the e2e test zone; shared test helpers should be moved to a non-test package (e.g., src/test-utils/) to eliminate production→test dependencies
-[critical] Source zones importing from test zones (analyzers → e2e: 2, unit → e2e: 2) combined with the confirmed circular dependency count (2) strongly suggests these cross-boundary edges are the circular dependency chains — fixing them resolves both the layering violation and the circularity in one change.
-... +11 more
+[warning] 16 entry points — wide API surface, consider consolidating exports [analysis-engine]
+[warning] Bidirectional imports with analyzers-2 (15 in, 7 out) suggest a forced algorithmic split — these zones likely represent a single logical subsystem and should be reviewed for consolidation. [analysis-engine]
+[warning] Bidirectional coupling: "analysis-engine" ↔ "branch-work-analytics" (6+27 crossings) — consider extracting shared interface
+[warning] Both package-lock.json and pnpm conventions coexist at the root; confirm only one lockfile is actively maintained to avoid dependency resolution drift. [project-root]
+[warning] High coupling (0.57) — 3 imports target "file-analysis-pipeline" [schema-validation]
+[warning] High coupling (0.57) — 10 imports target "analysis-engine" [zone-detection-engine]
+[warning] Audit archetypes.ts import count across zones — if it is imported by 2+ zones it is already a de-facto cross-cutting hub and should be extracted to the shared-types foundation alongside v1.ts [analysis-engine]
+[warning] Flag this zone as high-fragility: cohesion 0.57 + coupling 0.43 is the worst combined score in the package — any PR touching files in this zone has elevated risk of cascading breakage and should require additional review [branch-work-analytics]
+[warning] Move src/cli/commands/workspace.ts to cli-infrastructure alongside all other CLI command files — its presence in analytics is the root cause of back-imports from analytics into CLI and is responsible for the bidirectional coupling pair [branch-work-analytics]
+[warning] Establish a file-naming convention rule: files using the 'branch-work-' prefix must live in the branch-work-analytics zone — enforcing prefix-to-zone affinity as a lint rule would catch future misplacements (like branch-work-collector.ts in cli-infrastructure) at PR time rather than during architecture review
+[warning] No production zone achieves the target health quadrant (cohesion > 0.6, coupling < 0.4). The only zone in this quadrant is test-fixture-projects, which is test data with trivial isolation guarantees. Before undertaking broad refactoring, explicitly identify which single zone is the closest candidate for reaching the target quadrant and use it as a proof-of-concept to establish a positive internal template — currently all refactoring decisions are made without a reference example of what healthy looks like in this codebase.
+[warning] The implicit rule 'production zones co-locate unit tests but not integration or e2e tests' is followed in two of three production zones but is unwritten. Document this as an explicit zone membership policy and add a lint or zone-validation check that fails if an integration or e2e test file is placed inside a production zone. This single rule would have caught the schema-validation contamination automatically.
+[critical] The package currently has no zone that acts as a shared foundation (zero production coupling, stable API). The three cross-cutting files (src/schema/v1.ts, src/schema/index.ts, src/analyzers/zones.ts) imported by 3–4 zones each should be extracted into an explicit schema-foundation zone before any other decoupling work begins. Every other refactor — breaking bidirectional cycles, inverting CLI dependencies, fixing test boundaries — will leave residual coupling through these three files until they have a stable zero-coupling home.
+[warning] The two zones exceeding 25 files (analysis-engine: 39, branch-work-analytics: 28) should each be formally split — large zones accumulate files passively because reviewers default to the nearest matching zone; setting a soft file-count ceiling (e.g. 20 files) per zone and requiring justification to exceed it would prevent re-accumulation after a refactor
+[warning] Cohesion of 0.57 reflects a zone that bundles schema primitives, analytics features, and protocol surface together; splitting schema types into their own zone would raise cohesion and simplify downstream imports. [branch-work-analytics]
+... +21 more
 
 </findings>
 
 <next-steps>
 
-[high] This is the only zone in the package that is fragile by both metrics simultaneo…
-  files: src/schema/validate.ts, tests/e2e/cli-analyze.test.ts, tests/e2e/cli-serve.test.ts
-  category: fix
-[high] core-algorithms has the worst cohesion/coupling ratio in the package (0.56 cohe…
+[high] branch-work-analytics → e2e: 2 imports cross the production/test boundary in th…
   files: src/analyzers/branch-work-classifier.ts, src/analyzers/branch-work-filter.ts, src/analyzers/branch-work-store.ts
   category: fix
-[high] Production code in two zones imports from the e2e test zone… (+5 related)
+[high] analysis-engine → branch-work-analytics has 6 outbound imports in addition to t…
+  files: src/analyzers/archetypes.ts, src/analyzers/callgraph-findings.ts, src/analyzers/classify.ts
   category: fix
-[high] Circular dependency: core-algorithms and e2e zone mutually import from each oth…
+[high] analysis-engine imports 12 symbols from cli-infrastructure (analyzers → cli: 12…
+  files: src/analyzers/branch-work-collector.ts, src/analyzers/manifest.ts, src/cli/commands/constants.ts
   category: fix
-[medium] High coupling (0.57) — 3 imports target "static-analyzer-services"
+[high] The package currently has no zone that acts as a shared foundation (zero produc…
+  category: fix
+[medium] validate.ts cohesion is obscured by co-membership with mult… (+1 related)
+  files: src/schema/validate.ts, tests/e2e/cli-analyze.test.ts, tests/e2e/cli-serve.test.ts
+  category: extract
+[medium] The 15-in / 7-out import ratio with the analysis-engine zon… (+1 related)
+  files: src/analyzers/callgraph.ts, src/analyzers/components.ts, src/analyzers/imports.ts
+  category: extract
+[medium] schema-validation aggregates validate.ts with 4 test files at three different a…
   files: src/schema/validate.ts, tests/e2e/cli-analyze.test.ts, tests/e2e/cli-serve.test.ts
   category: refactor
-[medium] The src/analyzers/ directory contains files from four disti… (+2 related)
+[medium] zone-hash.ts is classified 'utility' but accessed directly as an entrypoint by …
+  files: src/analyzers/louvain.ts, src/analyzers/zone-hash.ts, src/analyzers/zones.ts
   category: refactor
-[medium] Cohesion 0.54 / coupling 0.46 puts this zone one misplaced file away from the f…
+[medium] Codify the implicit convention surfaced by this zone: production zones may co-l…
+  files: src/schema/validate.ts, tests/e2e/cli-analyze.test.ts, tests/e2e/cli-serve.test.ts
+  category: refactor
+[medium] schema-validation is the only zone with both high coupling (0.57) AND low cohes…
+  files: src/schema/validate.ts, tests/e2e/cli-analyze.test.ts, tests/e2e/cli-serve.test.ts
+  category: refactor
+[medium] High coupling (0.57) — 3 imports target "file-analysis-pipeline"
+  files: src/schema/validate.ts, tests/e2e/cli-analyze.test.ts, tests/e2e/cli-serve.test.ts
+  category: refactor
+[medium] High coupling (0.57) — 10 imports target "analysis-engine"
+  files: src/analyzers/louvain.ts, src/analyzers/zone-hash.ts, src/analyzers/zones.ts
+  category: refactor
+[medium] God function: registerMcpTools in src/cli/mcp.ts calls 36 unique functions — co…
+  category: refactor
+[medium] route-detection.ts carries the 'route-handler' archetype but performs passive s…
   files: src/analyzers/callgraph.ts, src/analyzers/components.ts, src/analyzers/imports.ts
   category: refactor
-[medium] Add an src/analyzers/public.ts barrel as the single declared export surface for…
-  files: src/analyzers/archetypes.ts, src/analyzers/callgraph-findings.ts, src/analyzers/classify.ts
-  category: refactor
-[medium] 16 entry points — wide API surface, consider consolidating exports
-  files: src/analyzers/archetypes.ts, src/analyzers/callgraph-findings.ts, src/analyzers/classify.ts
-  category: refactor
-[medium] Before: analysis-pipeline and core-algorithms import directly from cli/output.t…
-  files: src/analyzers/branch-work-collector.ts, src/analyzers/manifest.ts, src/cli/commands/constants.ts
-  category: refactor
-[medium] analyzers-2 has a 15:7 import asymmetry with analysis-pipeline and participates…
-  category: extract
-[medium] cli-interface functions as a shared output-formatting hub (88 total inbound cal…
-  category: extract
-[medium] No zone serves as a dedicated shared test infrastructure zone ('test-utils'). T…
-  category: refactor
-[medium] The gateway pattern (one gateway file per upstream package, re-export only) is …
-  category: refactor
-[medium] The production-layer zones (static-analyzer-services: 0.46, analyzers: 0.33, un…
+[medium] Zone cohesion (0.54) and coupling (0.46) are both near the 0.5 threshold; any n…
+  files: src/analyzers/callgraph.ts, src/analyzers/components.ts, src/analyzers/imports.ts
   category: refactor
 
 </next-steps>

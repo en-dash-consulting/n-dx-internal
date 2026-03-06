@@ -1,0 +1,28 @@
+{
+  "id": "packages-sourcevision:zone-detection-engine",
+  "name": "Zone Detection Engine",
+  "description": "Encapsulates the Louvain community-detection algorithm, zone hashing for stable IDs, and the zones orchestrator that turns import graphs into labelled architectural zones.",
+  "files": [
+    "packages/sourcevision/src/analyzers/louvain.ts",
+    "packages/sourcevision/src/analyzers/zone-hash.ts",
+    "packages/sourcevision/src/analyzers/zones.ts",
+    "packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts",
+    "packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts",
+    "packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts"
+  ],
+  "entryPoints": [
+    "packages/sourcevision/src/analyzers/zone-hash.ts",
+    "packages/sourcevision/src/analyzers/zones.ts"
+  ],
+  "cohesion": 0.43,
+  "coupling": 0.57,
+  "fileCount": 6,
+  "lineCount": 5460,
+  "riskMetrics": {
+    "cohesion": 0.43,
+    "coupling": 0.57,
+    "riskScore": 0.5700000000000001,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "id": "web-viewer/web-2",
+  "name": "Web Viewer/web 2",
+  "description": "4 files, primarily CSS",
+  "files": [
+    "packages/web/src/viewer/styles/prd-tree.css",
+    "packages/web/src/viewer/styles/refresh-queue.css",
+    "packages/web/src/viewer/styles/responsive.css",
+    "packages/web/src/viewer/styles/rex-dashboard.css"
+  ],
+  "entryPoints": [],
+  "cohesion": 0.75,
+  "coupling": 0.25,
+  "fileCount": 4,
+  "lineCount": 6893
+}

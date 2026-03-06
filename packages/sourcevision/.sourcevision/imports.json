@@ -545,7 +545,7 @@
     },
     {
       "from": "src/analyzers/enrich.ts",
-      "to": "src/analyzers/zones.ts",
+      "to": "src/analyzers/zone-hash.ts",
       "type": "static",
       "symbols": [
         "computeGlobalContentHash"
@@ -1143,6 +1143,22 @@
       "type": "type",
       "symbols": [
         "SubAnalysis"
+      ]
+    },
+    {
+      "from": "src/analyzers/zones.ts",
+      "to": "src/analyzers/zone-hash.ts",
+      "type": "reexport",
+      "symbols": [
+        "computeGlobalContentHash"
+      ]
+    },
+    {
+      "from": "src/analyzers/zones.ts",
+      "to": "src/analyzers/zone-hash.ts",
+      "type": "static",
+      "symbols": [
+        "computeGlobalContentHash"
       ]
     },
     {
@@ -3596,23 +3612,10 @@
     }
   ],
   "summary": {
-    "totalEdges": 347,
+    "totalEdges": 349,
     "totalExternal": 7,
-    "circularCount": 2,
-    "circulars": [
-      {
-        "cycle": [
-          "src/analyzers/enrich.ts",
-          "src/analyzers/zones.ts"
-        ]
-      },
-      {
-        "cycle": [
-          "src/analyzers/enrich.ts",
-          "src/analyzers/zones.ts"
-        ]
-      }
-    ],
+    "circularCount": 0,
+    "circulars": [],
     "mostImported": [
       {
         "path": "src/cli/output.ts",
@@ -3639,12 +3642,12 @@
         "count": 9
       },
       {
-        "path": "src/analyzers/zones.ts",
+        "path": "src/util/paths.ts",
         "count": 9
       },
       {
-        "path": "src/util/paths.ts",
-        "count": 9
+        "path": "src/analyzers/zones.ts",
+        "count": 8
       },
       {
         "path": "src/analyzers/inventory.ts",
@@ -3695,6 +3698,6 @@
         "count": 4
       }
     ],
-    "avgImportsPerFile": 3.24
+    "avgImportsPerFile": 3.26
   }
 }

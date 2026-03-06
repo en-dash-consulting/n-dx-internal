@@ -1,6 +1,15 @@
 {
   "edges": [
     {
+      "from": "src/analyze/analyze-shared.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "TokenUsage",
+        "AnalyzeTokenUsage"
+      ]
+    },
+    {
       "from": "src/analyze/consolidation-guard.ts",
       "to": "src/analyze/propose.ts",
       "type": "type",
@@ -135,6 +144,30 @@
     },
     {
       "from": "src/analyze/extract.ts",
+      "to": "src/analyze/analyze-shared.ts",
+      "type": "static",
+      "symbols": [
+        "detectFileFormat",
+        "DEFAULT_MODEL",
+        "extractJson",
+        "repairTruncatedJson",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "PRD_SCHEMA",
+        "TASK_QUALITY_RULES",
+        "OUTPUT_INSTRUCTION"
+      ]
+    },
+    {
+      "from": "src/analyze/extract.ts",
+      "to": "src/analyze/analyze-shared.ts",
+      "type": "type",
+      "symbols": [
+        "FileFormat"
+      ]
+    },
+    {
+      "from": "src/analyze/extract.ts",
       "to": "src/analyze/file-validation.ts",
       "type": "static",
       "symbols": [
@@ -160,24 +193,7 @@
       "to": "src/analyze/reason.ts",
       "type": "static",
       "symbols": [
-        "detectFileFormat",
-        "spawnClaude",
-        "DEFAULT_MODEL",
-        "extractJson",
-        "repairTruncatedJson",
-        "emptyAnalyzeTokenUsage",
-        "accumulateTokenUsage",
-        "PRD_SCHEMA",
-        "TASK_QUALITY_RULES",
-        "OUTPUT_INSTRUCTION"
-      ]
-    },
-    {
-      "from": "src/analyze/extract.ts",
-      "to": "src/analyze/reason.ts",
-      "type": "type",
-      "symbols": [
-        "FileFormat"
+        "spawnClaude"
       ]
     },
     {
@@ -191,7 +207,7 @@
     },
     {
       "from": "src/analyze/file-validation.ts",
-      "to": "src/analyze/reason.ts",
+      "to": "src/analyze/analyze-shared.ts",
       "type": "type",
       "symbols": [
         "FileFormat"
@@ -636,6 +652,51 @@
     },
     {
       "from": "src/analyze/reason.ts",
+      "to": "src/analyze/analyze-shared.ts",
+      "type": "reexport",
+      "symbols": [
+        "DEFAULT_MODEL",
+        "DEFAULT_CODEX_MODEL",
+        "MAX_RETRIES",
+        "parseTokenUsage",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "detectFileFormat",
+        "extractJson",
+        "repairTruncatedJson",
+        "PRD_SCHEMA",
+        "TASK_QUALITY_RULES",
+        "OUTPUT_INSTRUCTION"
+      ]
+    },
+    {
+      "from": "src/analyze/reason.ts",
+      "to": "src/analyze/analyze-shared.ts",
+      "type": "static",
+      "symbols": [
+        "DEFAULT_MODEL",
+        "DEFAULT_CODEX_MODEL",
+        "emptyAnalyzeTokenUsage",
+        "accumulateTokenUsage",
+        "extractJson",
+        "repairTruncatedJson",
+        "detectFileFormat",
+        "PRD_SCHEMA",
+        "TASK_QUALITY_RULES",
+        "OUTPUT_INSTRUCTION"
+      ]
+    },
+    {
+      "from": "src/analyze/reason.ts",
+      "to": "src/analyze/analyze-shared.ts",
+      "type": "type",
+      "symbols": [
+        "ClaudeResult",
+        "FileFormat"
+      ]
+    },
+    {
+      "from": "src/analyze/reason.ts",
       "to": "src/analyze/extract.ts",
       "type": "dynamic",
       "symbols": [
@@ -682,7 +743,6 @@
       "type": "type",
       "symbols": [
         "PRDItem",
-        "TokenUsage",
         "AnalyzeTokenUsage"
       ]
     },
@@ -8176,27 +8236,14 @@
     }
   ],
   "summary": {
-    "totalEdges": 864,
+    "totalEdges": 869,
     "totalExternal": 5,
-    "circularCount": 3,
+    "circularCount": 1,
     "circulars": [
       {
         "cycle": [
           "src/analyze/reason.ts",
           "src/analyze/extract.ts"
-        ]
-      },
-      {
-        "cycle": [
-          "src/analyze/reason.ts",
-          "src/analyze/extract.ts"
-        ]
-      },
-      {
-        "cycle": [
-          "src/analyze/reason.ts",
-          "src/analyze/extract.ts",
-          "src/analyze/file-validation.ts"
         ]
       }
     ],
@@ -8282,6 +8329,6 @@
         "count": 6
       }
     ],
-    "avgImportsPerFile": 4.34
+    "avgImportsPerFile": 4.35
   }
 }

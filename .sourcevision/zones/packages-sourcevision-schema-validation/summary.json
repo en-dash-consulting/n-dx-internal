@@ -1,0 +1,26 @@
+{
+  "id": "packages-sourcevision:schema-validation",
+  "name": "Schema Validation",
+  "description": "Groups the schema validation module with the end-to-end and integration test suite, reflecting that validation logic is the primary invariant exercised across the full analysis pipeline.",
+  "files": [
+    "packages/sourcevision/src/schema/validate.ts",
+    "packages/sourcevision/tests/e2e/cli-analyze.test.ts",
+    "packages/sourcevision/tests/e2e/cli-serve.test.ts",
+    "packages/sourcevision/tests/integration/pipeline.test.ts",
+    "packages/sourcevision/tests/unit/schema/validate.test.ts"
+  ],
+  "entryPoints": [
+    "packages/sourcevision/src/schema/validate.ts"
+  ],
+  "cohesion": 0.43,
+  "coupling": 0.57,
+  "fileCount": 5,
+  "lineCount": 1723,
+  "riskMetrics": {
+    "cohesion": 0.43,
+    "coupling": 0.57,
+    "riskScore": 0.5700000000000001,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

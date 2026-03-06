@@ -7,121 +7,124 @@
 
 Project: n-dx
 Git: feature/integrate-codex @ 21786d2
-Files: 1009, Lines: 338865
-Languages: TypeScript(847) CSS(44) JSON(30) Markdown(30) JavaScript(29)
-Zones: 35, Described: 35
-Import edges: 2481, External packages: 18
-Circulars: 5
+Files: 1022, Lines: 341387
+Languages: TypeScript(863) CSS(44) Markdown(32) JSON(30) JavaScript(30)
+Zones: 36, Described: 36
+Import edges: 2517, External packages: 18
+Circulars: 1
 
 </architecture>
 
 <zones>
 
-[architecture-decision-docs] Architecture Decision Docs (14 files, coh=1.00 coup=0.00)
-  A collection of design documents, architectural analyses, and memory-system explorations that record decisions and rationale for the n-dx toolkit.
-  files: docs/2026-03-03-refresh-orchestration-memory-analysis.md, docs/level-refactor-and-steward-plan.md, docs/level-system-reference.md, docs/memory-architecture.md, docs/memory-improvements.md, docs/memory-os-behavior.md, docs/memory-risks-and-flaws.md, docs/prd-steward-vision.md, docs/process-lifecycle-audit.md, docs/resource-allocation-catalog.md +4
-[autonomous-agent-engine] Autonomous Agent Engine (159 files, coh=1.00 coup=0.00)
-  The complete hench package implementing the autonomous agent loop — task selection, LLM orchestration, tool dispatch, safety guards, and run persistence.
+[cli-e2e-tests] CLI E2E Tests (14 files, coh=1.00 coup=0.00)
+  End-to-end test suite validating the full CLI orchestration layer, covering init, config, delegation, dev server, error handling, and architecture policy enforcement.
+  files: tests/e2e/architecture-policy.test.js, tests/e2e/cli-ci.test.js, tests/e2e/cli-config.test.js, tests/e2e/cli-delegation.test.js, tests/e2e/cli-dev.test.js, tests/e2e/cli-errors.test.js, tests/e2e/cli-init.test.js, tests/e2e/cli-orchestration.test.js, tests/e2e/cli-pr-check.test.js, tests/e2e/cli-refresh.test.js +4
+[dom-performance-monitoring] DOM Performance Monitoring (3 files, coh=0.75 coup=0.25)
+  Encapsulates the DOM performance monitor service and its React hook adapter for tracking viewer rendering metrics.
+  files: packages/web/src/viewer/hooks/use-dom-performance-monitor.ts [hook], packages/web/src/viewer/performance/dom-performance-monitor.ts [service], packages/web/tests/unit/viewer/dom-performance-monitor.test.ts
+[hench-agent] Hench Agent (159 files, coh=1.00 coup=0.00)
+  Complete autonomous agent package responsible for picking rex tasks, building briefs, running LLM tool-use loops, and recording run history.
   files: packages/hench/Hench-F.png, packages/hench/Hench.png, packages/hench/README.md, packages/hench/package-lock.json, packages/hench/package.json, packages/hench/src/agent/analysis/adaptive.ts [service], packages/hench/src/agent/analysis/review.ts [service], packages/hench/src/agent/analysis/spin.ts [service], packages/hench/src/agent/analysis/stuck.ts [service], packages/hench/src/agent/analysis/summary.ts [service] +149
-[cli-e2e-test-suite] CLI End-to-End Test Suite (13 files, coh=1.00 coup=0.00)
-  Root-level end-to-end tests that validate the full CLI surface — init, delegation, config, CI pipeline, dev mode, error handling, PR checks, and architecture policy.
-  files: tests/e2e/architecture-policy.test.js, tests/e2e/cli-ci.test.js, tests/e2e/cli-config.test.js, tests/e2e/cli-delegation.test.js, tests/e2e/cli-dev.test.js, tests/e2e/cli-errors.test.js, tests/e2e/cli-init.test.js, tests/e2e/cli-pr-check.test.js, tests/e2e/cli-refresh.test.js, tests/e2e/cli-start.test.js +3
-[dom-performance-monitoring] DOM Performance Monitoring (4 files, coh=0.75 coup=0.25)
-  Small, focused zone encapsulating a DOM performance monitor service and its React hook adapter, with a paired unit test.
-  files: packages/web/src/viewer/hooks/use-dom-performance-monitor.ts [hook], packages/web/src/viewer/performance/.gitkeep, packages/web/src/viewer/performance/dom-performance-monitor.ts [service], packages/web/tests/unit/viewer/dom-performance-monitor.test.ts
-[landing-page] Landing Page (3 files, coh=1.00 coup=0.00)
-  Self-contained static landing page consisting of an HTML entry point, scoped stylesheet, and minimal TypeScript initialization logic.
-  files: packages/web/src/landing/index.html, packages/web/src/landing/landing.css, packages/web/src/landing/landing.ts [service]
-[packages-llm-client:llm-cli-utilities] LLM CLI & Config Utilities (19 files, coh=0.65 coup=0.35)
-  Supporting infrastructure for CLI interaction, authentication, project configuration, output formatting, and JSON handling consumed by the provider core.
-  files: packages/llm-client/src/auth.ts [utility], packages/llm-client/src/config.ts [config], packages/llm-client/src/exec.ts [utility], packages/llm-client/src/help-format.ts [utility], packages/llm-client/src/json.ts [utility], packages/llm-client/src/output.ts [utility], packages/llm-client/src/project-config.ts [config], packages/llm-client/src/project-dirs.ts [utility], packages/llm-client/src/public.ts [entrypoint], packages/llm-client/src/suggest.ts [service] +9
-[packages-llm-client:llm-provider-core] LLM Provider Core (13 files, coh=0.60 coup=0.40)
-  Vendor-neutral LLM abstraction layer defining provider interfaces, client factory, session management, and token usage tracking.
-  files: packages/llm-client/src/api-provider.ts [service], packages/llm-client/src/cli-provider.ts [service], packages/llm-client/src/codex-cli-provider.ts [service], packages/llm-client/src/create-client.ts [service], packages/llm-client/src/llm-client.ts [service], packages/llm-client/src/llm-config.ts [config], packages/llm-client/src/llm-types.ts [types], packages/llm-client/src/provider-interface.ts [types], packages/llm-client/src/provider-registry.ts [service], packages/llm-client/src/provider-session.ts [service] +3
-[packages-llm-client:llm-provider-tests] LLM Provider Unit Tests (9 files, coh=1.00 coup=0.00)
-  Comprehensive unit test suite covering all public provider types, client factory, registry, session lifecycle, and token usage.
-  files: packages/llm-client/tests/unit/api-provider.test.ts, packages/llm-client/tests/unit/cli-provider.test.ts, packages/llm-client/tests/unit/create-client.test.ts, packages/llm-client/tests/unit/llm-client.test.ts, packages/llm-client/tests/unit/provider-interface.test.ts, packages/llm-client/tests/unit/provider-registry.test.ts, packages/llm-client/tests/unit/provider-session.test.ts, packages/llm-client/tests/unit/token-usage.test.ts, packages/llm-client/tests/unit/types.test.ts
-[packages-llm-client:package-root] Package Root Configuration (4 files, coh=1.00 coup=0.00)
-  Top-level build and dependency configuration for the llm-client package.
-  files: packages/llm-client/package-lock.json, packages/llm-client/package.json, packages/llm-client/tsconfig.json, packages/llm-client/vitest.config.ts
-[packages-rex:cli-e2e-test-suite] CLI End-to-End Test Suite (16 files, coh=0.29 coup=0.71)
-  End-to-end integration tests that exercise the full CLI surface — init, analyze, import, prune, sync, recommend, and adapter flows — alongside the schema validation module.
-  files: packages/rex/src/schema/validate.ts [schema], packages/rex/tests/e2e/cli-adapter.test.ts, packages/rex/tests/e2e/cli-analyze.test.ts, packages/rex/tests/e2e/cli-import.test.ts, packages/rex/tests/e2e/cli-init.test.ts, packages/rex/tests/e2e/cli-prune.test.ts, packages/rex/tests/e2e/cli-quiet.test.ts, packages/rex/tests/e2e/cli-recommend.test.ts, packages/rex/tests/e2e/cli-smart-add.test.ts, packages/rex/tests/e2e/cli-sync.test.ts +6
-[packages-rex:cli-interface-layer] CLI Interface Layer (38 files, coh=0.51 coup=0.49)
-  Implements the interactive and programmatic CLI surface of Rex including chunked review workflows, MCP server bootstrapping, output formatting, project configuration access, and miscellaneous management commands.
-  files: packages/rex/src/analyze/reshape-reason.ts [utility], packages/rex/src/cli/commands/adapter.ts [cli-command], packages/rex/src/cli/commands/chunked-review-state.ts [cli-command], packages/rex/src/cli/commands/chunked-review.ts [cli-command], packages/rex/src/cli/commands/constants.ts [types], packages/rex/src/cli/commands/init.ts [cli-command], packages/rex/src/cli/commands/move.ts [cli-command], packages/rex/src/cli/commands/prune.ts [cli-command], packages/rex/src/cli/commands/remove.ts [cli-command], packages/rex/src/cli/commands/reorganize.ts [cli-command] +28
-[packages-rex:fix-command-module] Fix Command Module (4 files, coh=0.40 coup=0.60)
-  Encapsulates the PRD fix command, pairing the CLI entry point with its core logic and unit tests in a tight four-file cluster.
-  files: packages/rex/src/cli/commands/fix.ts [cli-command], packages/rex/src/core/fix.ts [utility], packages/rex/tests/unit/cli/commands/fix.test.ts, packages/rex/tests/unit/core/fix.test.ts
-[packages-rex:monorepo-root] Monorepo Root (9 files, coh=1.00 coup=0.00)
-  Top-level project scaffolding including documentation, branding assets, shared TypeScript and Vitest configuration, and the root package manifest.
-  files: packages/rex/README.md, packages/rex/Rex-F.png, packages/rex/Rex.png, packages/rex/context.md, packages/rex/llms.txt, packages/rex/package-lock.json, packages/rex/package.json, packages/rex/tsconfig.json, packages/rex/vitest.config.ts
-[packages-rex:persistence-sync-layer] Persistence & Sync Layer (23 files, coh=0.60 coup=0.40)
-  Manages all PRD persistence through a pluggable adapter registry, file-based storage, and integration schemas for external systems like Jira and Notion.
-  files: packages/rex/src/cli/commands/sync.ts [cli-command], packages/rex/src/core/canonical.ts [utility], packages/rex/src/store/adapter-registry.ts [store], packages/rex/src/store/contracts.ts [store], packages/rex/src/store/file-adapter.ts [store], packages/rex/src/store/index.ts [entrypoint], packages/rex/src/store/integration-schema.ts [store], packages/rex/src/store/integration-schemas/index.ts [entrypoint], packages/rex/src/store/integration-schemas/jira.ts [store], packages/rex/src/store/integration-schemas/notion.ts [store] +13
-[packages-rex:prd-analysis-engine] PRD Analysis Engine (71 files, coh=0.52 coup=0.48)
-  The central Rex analysis subsystem encompassing PRD schema definitions, decomposition, deduplication, validation, guided analysis, and the majority of CLI command implementations.
-  files: packages/rex/src/analyze/consolidation-guard.ts [service], packages/rex/src/analyze/decompose.ts [service], packages/rex/src/analyze/dedupe.ts [utility], packages/rex/src/analyze/diff.ts [utility], packages/rex/src/analyze/file-validation.ts [utility], packages/rex/src/analyze/guided.ts [service], packages/rex/src/analyze/index.ts [entrypoint], packages/rex/src/analyze/modify-reason.ts [utility], packages/rex/src/analyze/propose.ts [service], packages/rex/src/analyze/reason.ts [service] +61
-[packages-rex:prd-domain-operations] PRD Domain Operations (47 files, coh=0.51 coup=0.49)
-  The primary domain layer containing all PRD tree manipulation, lifecycle, health, analytics, and reorganization logic that underpins the rest of the system.
-  files: packages/rex/src/cli/commands/health.ts [cli-command], packages/rex/src/core/analytics.ts [utility], packages/rex/src/core/code-coverage.ts [utility], packages/rex/src/core/dag.ts [utility], packages/rex/src/core/delete.ts [utility], packages/rex/src/core/facets.ts [utility], packages/rex/src/core/health.ts [utility], packages/rex/src/core/keywords.ts [utility], packages/rex/src/core/merge.ts [utility], packages/rex/src/core/move.ts [utility] +37
-[packages-rex:recommendation-pipeline] Recommendation Pipeline (19 files, coh=0.48 coup=0.52)
-  Handles the full lifecycle of LLM-generated proposals: extracting structured suggestions from AI output, acknowledging them, reconciling with existing PRD state, and converting accepted recommendations into PRD items.
-  files: packages/rex/src/analyze/acknowledge.ts [service], packages/rex/src/analyze/extract.ts [service], packages/rex/src/analyze/reconcile.ts [service], packages/rex/src/analyze/scanners.ts [service], packages/rex/src/cli/commands/recommend.ts [cli-command], packages/rex/src/recommend/conflict-detection.ts [service], packages/rex/src/recommend/create-from-recommendations.ts [service], packages/rex/src/recommend/types.ts [types], packages/rex/tests/unit/analyze/acknowledge.test.ts, packages/rex/tests/unit/analyze/extract-llm-mock.test.ts +9
-[packages-rex:rex-project-state] Rex Project State (4 files, coh=1.00 coup=0.00)
-  Runtime data directory holding the live PRD tree, execution log, project config, and workflow state for the Rex tool.
-  files: packages/rex/.rex/config.json, packages/rex/.rex/execution-log.jsonl, packages/rex/.rex/prd.json, packages/rex/.rex/workflow.md
-[packages-rex:token-usage-analytics] Token Usage Analytics (4 files, coh=0.29 coup=0.71)
-  Tracks and reports LLM token consumption, pairing the usage CLI command with its core calculation logic and regression tests.
-  files: packages/rex/src/cli/commands/usage.ts [cli-command], packages/rex/src/core/token-usage.ts [utility], packages/rex/tests/unit/core/token-usage-regression.test.ts, packages/rex/tests/unit/core/token-usage.test.ts
-[packages-sourcevision:analysis-pipeline] Analysis Pipeline Core (39 files, coh=0.67 coup=0.33)
-  Orchestrates the multi-phase codebase analysis pipeline including enrichment, context generation, zone detection output, and LLM integration.
-  files: packages/sourcevision/src/analyzers/archetypes.ts [service], packages/sourcevision/src/analyzers/callgraph-findings.ts [utility], packages/sourcevision/src/analyzers/classify.ts [service], packages/sourcevision/src/analyzers/claude-client.ts [service], packages/sourcevision/src/analyzers/completion-reader.ts [utility], packages/sourcevision/src/analyzers/context.ts [service], packages/sourcevision/src/analyzers/enrich-batch.ts [service], packages/sourcevision/src/analyzers/enrich-config.ts [config], packages/sourcevision/src/analyzers/enrich-parsing.ts [utility], packages/sourcevision/src/analyzers/enrich-per-zone.ts [service] +29
-[packages-sourcevision:claude-config] Claude Code Configuration (2 files, coh=1.00 coup=0.00)
-  Stores Claude Code editor settings and local overrides for the development environment.
-  files: packages/sourcevision/.claude/settings.json, packages/sourcevision/.claude/settings.local.json
-[packages-sourcevision:cli-interface] CLI Interface & Command Layer (26 files, coh=0.71 coup=0.29)
-  Implements all user-facing CLI commands, output formatting, error handling, and manifest management for the sourcevision tool.
-  files: packages/sourcevision/src/analyzers/branch-work-collector.ts [service], packages/sourcevision/src/analyzers/manifest.ts [service], packages/sourcevision/src/cli/commands/constants.ts [types], packages/sourcevision/src/cli/commands/export-pdf.ts [cli-command], packages/sourcevision/src/cli/commands/git-credential-helper.ts [cli-command], packages/sourcevision/src/cli/commands/init.ts [cli-command], packages/sourcevision/src/cli/commands/pr-markdown.ts [cli-command], packages/sourcevision/src/cli/commands/prd-epic-resolver.ts [cli-command], packages/sourcevision/src/cli/commands/reset.ts [cli-command], packages/sourcevision/src/cli/commands/validate.ts [cli-command] +16
-[packages-sourcevision:core-algorithms] Core Algorithms & Schema (33 files, coh=0.56 coup=0.44)
-  Houses the foundational algorithmic components — Louvain community detection, zone computation, branch classification, risk scoring, and the canonical schema definitions.
-  files: packages/sourcevision/src/analyzers/branch-work-classifier.ts [service], packages/sourcevision/src/analyzers/branch-work-filter.ts [utility], packages/sourcevision/src/analyzers/branch-work-store.ts [service], packages/sourcevision/src/analyzers/louvain.ts [utility], packages/sourcevision/src/analyzers/risk-scoring.ts [utility], packages/sourcevision/src/analyzers/workspace-aggregate.ts [service], packages/sourcevision/src/analyzers/zones.ts [service], packages/sourcevision/src/cli/commands/workspace.ts [cli-command], packages/sourcevision/src/cli/mcp.ts [cli-command], packages/sourcevision/src/generators/pr-markdown-template.ts [utility] +23
-[packages-sourcevision:integration-validation-tests] Integration & Validation Tests (5 files, coh=0.43 coup=0.57)
-  Cross-cutting test zone grouping schema validation logic with e2e CLI tests and integration pipeline tests that exercise the full analysis workflow end-to-end.
-  files: packages/sourcevision/src/schema/validate.ts [schema], packages/sourcevision/tests/e2e/cli-analyze.test.ts, packages/sourcevision/tests/e2e/cli-serve.test.ts, packages/sourcevision/tests/integration/pipeline.test.ts, packages/sourcevision/tests/unit/schema/validate.test.ts
-[packages-sourcevision:static-analyzer-services] Static Analyzer Services (11 files, coh=0.54 coup=0.46)
-  Individual analyzer service implementations (callgraph, imports, inventory, components, route detection) and their path utilities, co-located with corresponding unit tests.
-  files: packages/sourcevision/src/analyzers/callgraph.ts [service], packages/sourcevision/src/analyzers/components.ts [service], packages/sourcevision/src/analyzers/imports.ts [service], packages/sourcevision/src/analyzers/index.ts [entrypoint], packages/sourcevision/src/analyzers/inventory.ts [service], packages/sourcevision/src/analyzers/route-detection.ts [route-handler], packages/sourcevision/src/util/paths.ts [utility], packages/sourcevision/tests/unit/analyzers/callgraph.test.ts, packages/sourcevision/tests/unit/analyzers/components.test.ts, packages/sourcevision/tests/unit/analyzers/imports.test.ts +1
-[packages-sourcevision:test-fixture-projects] Test Fixture Projects (11 files, coh=1.00 coup=0.00)
-  Self-contained sample codebases (a Remix app and a small TypeScript project) used as ground-truth inputs for e2e and integration tests of the analysis pipeline.
-  files: packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.login.tsx, packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.tsx, packages/sourcevision/tests/fixtures/remix-app/app/routes/_index.tsx, packages/sourcevision/tests/fixtures/remix-app/app/routes/users.$id.tsx, packages/sourcevision/tests/fixtures/small-ts-project/src/config.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/index.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/models/user.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/services/email-service.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts +1
-[packages-sourcevision:workspace-root] Workspace Root & Documentation (10 files, coh=1.00 coup=0.00)
-  Top-level monorepo scaffolding including documentation, build configuration, and workspace metadata.
-  files: packages/sourcevision/ARCHITECTURE.md, packages/sourcevision/README.md, packages/sourcevision/SourceVision-F.png, packages/sourcevision/SourceVision.png, packages/sourcevision/WORKSPACE_DESIGN.md, packages/sourcevision/package-lock.json, packages/sourcevision/package.json, packages/sourcevision/tsconfig.json, packages/sourcevision/tsconfig.tsbuildinfo, packages/sourcevision/vitest.config.ts
-[prd-tree-lifecycle] PRD Tree Lifecycle (4 files, coh=1.00 coup=0.00)
-  Focused unit test zone covering the lazy-children and listener-lifecycle components that manage dynamic loading and event subscription within the PRD tree viewer.
-  files: packages/web/src/viewer/components/prd-tree/lazy-children.ts [component], packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts [component], packages/web/tests/unit/viewer/lazy-children.test.ts, packages/web/tests/unit/viewer/listener-lifecycle.test.ts
-[project-orchestration-root] Project Orchestration Root (27 files, coh=1.00 coup=0.00)
-  Top-level project scaffolding, orchestration entry points, and cross-cutting configuration files that wire all packages together.
+[monorepo-root] Monorepo Root (27 files, coh=1.00 coup=0.00)
+  Top-level orchestration layer containing CI scripts, unified CLI entry points, and monorepo configuration that coordinates all packages without importing their libraries.
   files: .gitignore, .npmrc, CLAUDE.md, CODEX.md, PACKAGE_GUIDELINES.md, README.md, bitbucket-pipelines.yml, ci.js [entrypoint], cli.js [entrypoint], config.js [config] +17
-[rex-runtime-state] Rex Runtime State (7 files, coh=1.00 coup=0.00)
-  Persisted PRD state and execution metadata written and consumed by the rex package at runtime, not imported by any code.
-  files: .rex/acknowledged-findings.json, .rex/archive.json, .rex/config.json, .rex/execution-log.jsonl, .rex/pending-proposals.json, .rex/prd.json, .rex/workflow.md
-[viewer-call-rate-limiter] Viewer Call Rate Limiter (4 files, coh=0.67 coup=0.33)
-  Implements request deduplication and call-rate limiting for the viewer messaging pipeline.
-  files: packages/web/src/viewer/messaging/call-rate-limiter.ts [utility], packages/web/tests/integration/.gitkeep, packages/web/tests/integration/request-dedup.test.ts, packages/web/tests/unit/viewer/call-rate-limiter.test.ts
-[viewer-message-flow-control] Viewer Message Flow Control (5 files, coh=0.45 coup=0.55)
-  Provides message coalescing and throttling utilities that regulate the frequency and batching of viewer-to-server message delivery.
-  files: packages/web/src/viewer/messaging/.gitkeep, packages/web/src/viewer/messaging/message-coalescer.ts [utility], packages/web/src/viewer/messaging/message-throttle.ts [utility], packages/web/tests/unit/viewer/message-coalescer.test.ts, packages/web/tests/unit/viewer/message-throttle.test.ts
-[viewer-static-assets] Viewer Static Assets (4 files, coh=1.00 coup=0.00)
-  Static asset zone for the viewer entry point, including the HTML shell, dark/light mode logo images, and a polling directory placeholder.
-  files: packages/web/src/viewer/darkmode_logo.png, packages/web/src/viewer/index.html, packages/web/src/viewer/lightmode_logo.png, packages/web/src/viewer/polling/.gitkeep
-[web-dashboard-mcp-server] Web Dashboard & MCP Server (329 files, coh=0.99 coup=0.01)
-  The primary web package zone containing the full-stack dashboard application, MCP HTTP server infrastructure, viewer components, schema definitions, and all supporting services.
-  files: packages/web/src/cli/index.ts [entrypoint], packages/web/src/public.ts [entrypoint], packages/web/src/schema/v1.ts [schema], packages/web/src/server/aggregation-cache.ts [utility], packages/web/src/server/concurrent-execution-metrics.ts [utility], packages/web/src/server/domain-gateway.ts [gateway], packages/web/src/server/incremental-task-usage.ts [service], packages/web/src/server/index.ts [entrypoint], packages/web/src/server/mcp-deps.ts [types], packages/web/src/server/port.ts [utility] +319
-[web-package-scaffolding] Web Package Scaffolding (15 files, coh=0.86 coup=0.14)
-  Build configuration, package metadata, and a small set of viewer utility modules that sit outside the main web-viewer community, including the request-deduplication entry point.
-  files: packages/web/BROWSER_ERROR_CODE_5.md, packages/web/MEMORY_PROFILE.md, packages/web/SourceVision-F.png, packages/web/SourceVision.png, packages/web/build.js [config], packages/web/dev.js [config], packages/web/package.json, packages/web/src/viewer/components/prd-tree/node-culler.ts [component], packages/web/src/viewer/messaging/request-dedup.ts [utility], packages/web/tests/e2e/.gitkeep +5
+[packages-llm-client:root] Root (4 files, coh=1.00 coup=0.00)
+  4 files, primarily JSON, TypeScript
+  files: packages/llm-client/package-lock.json, packages/llm-client/package.json, packages/llm-client/tsconfig.json, packages/llm-client/vitest.config.ts
+[packages-llm-client:src] Src (13 files, coh=0.60 coup=0.40)
+  13 files, primarily TypeScript
+  files: packages/llm-client/src/api-provider.ts [service], packages/llm-client/src/cli-provider.ts [service], packages/llm-client/src/codex-cli-provider.ts [service], packages/llm-client/src/create-client.ts [utility], packages/llm-client/src/llm-client.ts [service], packages/llm-client/src/llm-config.ts [config], packages/llm-client/src/llm-types.ts [types], packages/llm-client/src/provider-interface.ts [types], packages/llm-client/src/provider-registry.ts [service], packages/llm-client/src/provider-session.ts [service] +3
+[packages-llm-client:src-2] Src 2 (19 files, coh=0.65 coup=0.35)
+  19 files, primarily TypeScript
+  files: packages/llm-client/src/auth.ts [utility], packages/llm-client/src/config.ts [config], packages/llm-client/src/exec.ts [utility], packages/llm-client/src/help-format.ts [utility], packages/llm-client/src/json.ts [utility], packages/llm-client/src/output.ts [utility], packages/llm-client/src/project-config.ts [config], packages/llm-client/src/project-dirs.ts [utility], packages/llm-client/src/public.ts [entrypoint], packages/llm-client/src/suggest.ts [service] +9
+[packages-llm-client:unit] Unit (9 files, coh=1.00 coup=0.00)
+  9 files, primarily TypeScript
+  files: packages/llm-client/tests/unit/api-provider.test.ts, packages/llm-client/tests/unit/cli-provider.test.ts, packages/llm-client/tests/unit/create-client.test.ts, packages/llm-client/tests/unit/llm-client.test.ts, packages/llm-client/tests/unit/provider-interface.test.ts, packages/llm-client/tests/unit/provider-registry.test.ts, packages/llm-client/tests/unit/provider-session.test.ts, packages/llm-client/tests/unit/token-usage.test.ts, packages/llm-client/tests/unit/types.test.ts
+[packages-rex:analyze-recommend] Analyze Recommend (14 files, coh=0.50 coup=0.50)
+  Handles the recommendation subsystem: conflict detection, proposal creation from recommendations, and the acknowledge/reconcile pipeline that integrates proposals into the PRD.
+  files: packages/rex/src/analyze/acknowledge.ts [service], packages/rex/src/analyze/reconcile.ts [service], packages/rex/src/analyze/scanners.ts [service], packages/rex/src/cli/commands/recommend.ts [cli-command], packages/rex/src/recommend/conflict-detection.ts [service], packages/rex/src/recommend/create-from-recommendations.ts [service], packages/rex/src/recommend/types.ts [types], packages/rex/tests/unit/analyze/acknowledge.test.ts, packages/rex/tests/unit/analyze/propose.test.ts, packages/rex/tests/unit/analyze/reconcile.test.ts +4
+[packages-rex:cli-infrastructure] CLI Infrastructure (38 files, coh=0.51 coup=0.49)
+  All CLI command handlers, output formatting, error handling, MCP server wiring, project configuration store, and runtime reshape utilities that constitute rex's user-facing interface layer.
+  files: packages/rex/src/analyze/reshape-reason.ts [service], packages/rex/src/cli/commands/adapter.ts [cli-command], packages/rex/src/cli/commands/chunked-review-state.ts [cli-command], packages/rex/src/cli/commands/chunked-review.ts [cli-command], packages/rex/src/cli/commands/constants.ts [types], packages/rex/src/cli/commands/init.ts [cli-command], packages/rex/src/cli/commands/move.ts [cli-command], packages/rex/src/cli/commands/prune.ts [cli-command], packages/rex/src/cli/commands/remove.ts [cli-command], packages/rex/src/cli/commands/reorganize.ts [cli-command] +28
+[packages-rex:package-root] Package Root (9 files, coh=1.00 coup=0.00)
+  Top-level package scaffolding including documentation, images, dependency manifests, and TypeScript/Vitest configuration.
+  files: packages/rex/README.md, packages/rex/Rex-F.png, packages/rex/Rex.png, packages/rex/context.md, packages/rex/llms.txt, packages/rex/package-lock.json, packages/rex/package.json, packages/rex/tsconfig.json, packages/rex/vitest.config.ts
+[packages-rex:prd-analyze-core] PRD Analyze Core (70 files, coh=0.55 coup=0.45)
+  The heart of rex's analyze pipeline: LLM-driven decomposition, extraction, proposal generation, deduplication, diffing, and schema definitions that underpin all PRD item lifecycle operations.
+  files: packages/rex/src/analyze/analyze-shared.ts [utility], packages/rex/src/analyze/consolidation-guard.ts [utility], packages/rex/src/analyze/decompose.ts [service], packages/rex/src/analyze/dedupe.ts [utility], packages/rex/src/analyze/diff.ts [utility], packages/rex/src/analyze/extract.ts [service], packages/rex/src/analyze/file-validation.ts [utility], packages/rex/src/analyze/guided.ts [service], packages/rex/src/analyze/index.ts [entrypoint], packages/rex/src/analyze/modify-reason.ts [service] +60
+[packages-rex:prd-core-operations] PRD Core Operations (47 files, coh=0.51 coup=0.49)
+  The primary business logic layer for all PRD lifecycle operations: tree traversal, DAG management, reorganization, timestamps, merge, sync, health, and public API surface.
+  files: packages/rex/src/cli/commands/health.ts [cli-command], packages/rex/src/core/analytics.ts [utility], packages/rex/src/core/code-coverage.ts [utility], packages/rex/src/core/dag.ts [utility], packages/rex/src/core/delete.ts [utility], packages/rex/src/core/facets.ts [utility], packages/rex/src/core/health.ts [utility], packages/rex/src/core/keywords.ts [utility], packages/rex/src/core/merge.ts [utility], packages/rex/src/core/move.ts [utility] +37
+[packages-rex:prd-fix-command] PRD Fix Command (4 files, coh=0.40 coup=0.60)
+  Implements the `fix` CLI command and its underlying core logic for repairing PRD integrity issues.
+  files: packages/rex/src/cli/commands/fix.ts [cli-command], packages/rex/src/core/fix.ts [utility], packages/rex/tests/unit/cli/commands/fix.test.ts, packages/rex/tests/unit/core/fix.test.ts
+[packages-rex:prd-storage-integrations] PRD Storage & Integrations (23 files, coh=0.60 coup=0.40)
+  Persistence layer for the PRD: file adapter, adapter registry, integration schemas (Jira, Notion), sync contracts, and the canonical serialization utility.
+  files: packages/rex/src/cli/commands/sync.ts [cli-command], packages/rex/src/core/canonical.ts [utility], packages/rex/src/store/adapter-registry.ts [store], packages/rex/src/store/contracts.ts [store], packages/rex/src/store/file-adapter.ts [store], packages/rex/src/store/index.ts [entrypoint], packages/rex/src/store/integration-schema.ts [store], packages/rex/src/store/integration-schemas/index.ts [entrypoint], packages/rex/src/store/integration-schemas/jira.ts [store], packages/rex/src/store/integration-schemas/notion.ts [store] +13
+[packages-rex:rex-runtime-state] Rex Runtime State (4 files, coh=1.00 coup=0.00)
+  Persistent runtime state directory holding PRD data, configuration, execution logs, and workflow tracking for the rex tool.
+  files: packages/rex/.rex/config.json, packages/rex/.rex/execution-log.jsonl, packages/rex/.rex/prd.json, packages/rex/.rex/workflow.md
+[packages-rex:schema-validation] Schema Validation (16 files, coh=0.29 coup=0.71)
+  Houses the PRD schema validation module alongside the full e2e CLI test suite that exercises it and the broader command surface.
+  files: packages/rex/src/schema/validate.ts [schema], packages/rex/tests/e2e/cli-adapter.test.ts, packages/rex/tests/e2e/cli-analyze.test.ts, packages/rex/tests/e2e/cli-import.test.ts, packages/rex/tests/e2e/cli-init.test.ts, packages/rex/tests/e2e/cli-prune.test.ts, packages/rex/tests/e2e/cli-quiet.test.ts, packages/rex/tests/e2e/cli-recommend.test.ts, packages/rex/tests/e2e/cli-smart-add.test.ts, packages/rex/tests/e2e/cli-sync.test.ts +6
+[packages-rex:task-selection] Task Selection (7 files, coh=0.41 coup=0.59)
+  Implements next-task scoring, filtering, and requirements-prioritization logic alongside the `next` CLI command and its unit test suite.
+  files: packages/rex/src/cli/commands/next.ts [cli-command], packages/rex/src/core/next-task.ts [utility], packages/rex/tests/unit/core/feature-filtered-task.test.ts, packages/rex/tests/unit/core/next-task-matching.test.ts, packages/rex/tests/unit/core/next-task-scoring.test.ts, packages/rex/tests/unit/core/next-task.test.ts, packages/rex/tests/unit/core/requirements-prioritization.test.ts
+[packages-rex:token-usage-analytics] Token Usage Analytics (4 files, coh=0.29 coup=0.71)
+  Tracks and reports LLM token consumption via the `usage` CLI command, token-usage core module, and regression/unit tests.
+  files: packages/rex/src/cli/commands/usage.ts [cli-command], packages/rex/src/core/token-usage.ts [utility], packages/rex/tests/unit/core/token-usage-regression.test.ts, packages/rex/tests/unit/core/token-usage.test.ts
+[packages-sourcevision:analysis-engine] Analysis Engine (39 files, coh=0.67 coup=0.33)
+  Core multi-phase analysis pipeline responsible for enriching inventory, resolving imports, detecting zones, and producing AI-consumable output artifacts.
+  files: packages/sourcevision/src/analyzers/archetypes.ts [service], packages/sourcevision/src/analyzers/callgraph-findings.ts [service], packages/sourcevision/src/analyzers/classify.ts [service], packages/sourcevision/src/analyzers/claude-client.ts [gateway], packages/sourcevision/src/analyzers/completion-reader.ts [service], packages/sourcevision/src/analyzers/context.ts [service], packages/sourcevision/src/analyzers/enrich-batch.ts [service], packages/sourcevision/src/analyzers/enrich-config.ts [config], packages/sourcevision/src/analyzers/enrich-parsing.ts [utility], packages/sourcevision/src/analyzers/enrich-per-zone.ts [service] +29
+[packages-sourcevision:branch-work-analytics] Branch Work Analytics (28 files, coh=0.57 coup=0.43)
+  Branch-scoped work tracking, risk scoring, workspace aggregation, schema definitions, MCP server, and PR markdown generation — the data layer and workspace-level analytics surface.
+  files: packages/sourcevision/src/analyzers/branch-work-classifier.ts [service], packages/sourcevision/src/analyzers/branch-work-filter.ts [utility], packages/sourcevision/src/analyzers/branch-work-store.ts [service], packages/sourcevision/src/analyzers/risk-scoring.ts [service], packages/sourcevision/src/analyzers/workspace-aggregate.ts [service], packages/sourcevision/src/cli/commands/workspace.ts [cli-command], packages/sourcevision/src/cli/mcp.ts [cli-command], packages/sourcevision/src/generators/pr-markdown-template.ts [utility], packages/sourcevision/src/public.ts [entrypoint], packages/sourcevision/src/schema/data-files.ts [schema] +18
+[packages-sourcevision:claude-ide-config] Claude IDE Config (2 files, coh=1.00 coup=0.00)
+  Local Claude Code IDE settings and permission overrides for the project.
+  files: packages/sourcevision/.claude/settings.json, packages/sourcevision/.claude/settings.local.json
+[packages-sourcevision:cli-infrastructure] CLI Infrastructure (26 files, coh=0.71 coup=0.29)
+  CLI command implementations, manifest management, output formatting, error handling, and project constants that form the user-facing interface layer of sourcevision.
+  files: packages/sourcevision/src/analyzers/branch-work-collector.ts [service], packages/sourcevision/src/analyzers/manifest.ts [service], packages/sourcevision/src/cli/commands/constants.ts [types], packages/sourcevision/src/cli/commands/export-pdf.ts [cli-command], packages/sourcevision/src/cli/commands/git-credential-helper.ts [cli-command], packages/sourcevision/src/cli/commands/init.ts [cli-command], packages/sourcevision/src/cli/commands/pr-markdown.ts [cli-command], packages/sourcevision/src/cli/commands/prd-epic-resolver.ts [cli-command], packages/sourcevision/src/cli/commands/reset.ts [cli-command], packages/sourcevision/src/cli/commands/validate.ts [cli-command] +16
+[packages-sourcevision:file-analysis-pipeline] File Analysis Pipeline (11 files, coh=0.54 coup=0.46)
+  Houses the individual analyzer modules (callgraph, components, imports, inventory, route detection) that each handle one phase of codebase introspection.
+  files: packages/sourcevision/src/analyzers/callgraph.ts [service], packages/sourcevision/src/analyzers/components.ts [service], packages/sourcevision/src/analyzers/imports.ts [service], packages/sourcevision/src/analyzers/index.ts [entrypoint], packages/sourcevision/src/analyzers/inventory.ts [service], packages/sourcevision/src/analyzers/route-detection.ts [route-handler], packages/sourcevision/src/util/paths.ts [utility], packages/sourcevision/tests/unit/analyzers/callgraph.test.ts, packages/sourcevision/tests/unit/analyzers/components.test.ts, packages/sourcevision/tests/unit/analyzers/imports.test.ts +1
+[packages-sourcevision:project-root] Project Root (10 files, coh=1.00 coup=0.00)
+  Root-level documentation, workspace configuration, and build tooling that anchor the monorepo.
+  files: packages/sourcevision/ARCHITECTURE.md, packages/sourcevision/README.md, packages/sourcevision/SourceVision-F.png, packages/sourcevision/SourceVision.png, packages/sourcevision/WORKSPACE_DESIGN.md, packages/sourcevision/package-lock.json, packages/sourcevision/package.json, packages/sourcevision/tsconfig.json, packages/sourcevision/tsconfig.tsbuildinfo, packages/sourcevision/vitest.config.ts
+[packages-sourcevision:schema-validation] Schema Validation (5 files, coh=0.43 coup=0.57)
+  Groups the schema validation module with the end-to-end and integration test suite, reflecting that validation logic is the primary invariant exercised across the full analysis pipeline.
+  files: packages/sourcevision/src/schema/validate.ts [schema], packages/sourcevision/tests/e2e/cli-analyze.test.ts, packages/sourcevision/tests/e2e/cli-serve.test.ts, packages/sourcevision/tests/integration/pipeline.test.ts, packages/sourcevision/tests/unit/schema/validate.test.ts
+[packages-sourcevision:test-fixture-projects] Test Fixture Projects (11 files, coh=1.00 coup=0.00)
+  Self-contained sample projects (a Remix app and a small TypeScript project) used as realistic inputs for end-to-end and integration tests of the analysis pipeline.
+  files: packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.login.tsx, packages/sourcevision/tests/fixtures/remix-app/app/routes/_auth.tsx, packages/sourcevision/tests/fixtures/remix-app/app/routes/_index.tsx, packages/sourcevision/tests/fixtures/remix-app/app/routes/users.$id.tsx, packages/sourcevision/tests/fixtures/small-ts-project/src/config.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/index.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/models/user.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/services/email-service.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/services/user-service.ts, packages/sourcevision/tests/fixtures/small-ts-project/src/utils/format.ts +1
+[packages-sourcevision:zone-detection-engine] Zone Detection Engine (6 files, coh=0.43 coup=0.57)
+  Encapsulates the Louvain community-detection algorithm, zone hashing for stable IDs, and the zones orchestrator that turns import graphs into labelled architectural zones.
+  files: packages/sourcevision/src/analyzers/louvain.ts [utility], packages/sourcevision/src/analyzers/zone-hash.ts [utility], packages/sourcevision/src/analyzers/zones.ts [service], packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts, packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts, packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts
+[prd-analysis-input-panels] PRD Analysis Input Panels (7 files, coh=0.78 coup=0.22)
+  Interactive UI panel components for PRD analysis workflows: triggering analysis runs, batch-importing proposals, editing proposal content, and adding tasks via smart input.
+  files: packages/web/src/viewer/components/prd-tree/analyze-panel.ts [component], packages/web/src/viewer/components/prd-tree/batch-import-panel.ts [component], packages/web/src/viewer/components/prd-tree/proposal-editor.ts [component], packages/web/src/viewer/components/prd-tree/smart-add-input.ts [component], packages/web/src/viewer/views/analysis.ts [page], packages/web/tests/unit/viewer/batch-import-panel.test.ts, packages/web/tests/unit/viewer/smart-add-input.test.ts
+[project-documentation] Project Documentation (16 files, coh=1.00 coup=0.00)
+  Architecture decision records, memory-system analysis documents, and vision/roadmap markdown files that capture the project's design rationale and future direction.
+  files: docs/2026-03-03-refresh-orchestration-memory-analysis.md, docs/level-refactor-and-steward-plan.md, docs/level-system-reference.md, docs/memory-architecture.md, docs/memory-improvements.md, docs/memory-os-behavior.md, docs/memory-risks-and-flaws.md, docs/prd-steward-vision.md, docs/process-lifecycle-audit.md, docs/resource-allocation-catalog.md +6
+[rex-runtime-state] Rex Runtime State (8 files, coh=1.00 coup=0.00)
+  Runtime data directory storing the live PRD tree, execution logs, proposals, and project configuration that rex reads and writes during normal operation.
+  files: .rex/acknowledged-findings.json, .rex/archive.json, .rex/config.json, .rex/execution-log.1.jsonl, .rex/execution-log.jsonl, .rex/pending-proposals.json, .rex/prd.json, .rex/workflow.md
+[task-usage-analytics] Task Usage Analytics (4 files, coh=0.63 coup=0.38)
+  Server-side services for incrementally tracking per-task token/cost usage and scheduling cleanup of stale usage records.
+  files: packages/web/src/server/incremental-task-usage.ts [service], packages/web/src/server/usage-cleanup-scheduler.ts [service], packages/web/tests/unit/server/incremental-task-usage.test.ts, packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts
+[viewer-static-shell] Viewer Static Shell (3 files, coh=1.00 coup=0.00)
+  The HTML entry point and static logo assets for the viewer application, forming the bare shell that the bundler populates at build time.
+  files: packages/web/src/viewer/darkmode_logo.png, packages/web/src/viewer/index.html, packages/web/src/viewer/lightmode_logo.png
+[web-dashboard-application] Web Dashboard Application (338 files, coh=0.98 coup=0.02)
+  The core web package implementing the unified dashboard with server infrastructure, viewer components, REST/MCP endpoints, and CLI entry points.
+  files: packages/web/src/cli/index.ts [entrypoint], packages/web/src/landing/index.html, packages/web/src/landing/landing.css, packages/web/src/landing/landing.ts [service], packages/web/src/public.ts [entrypoint], packages/web/src/schema/v1.ts [schema], packages/web/src/server/aggregation-cache.ts [service], packages/web/src/server/concurrent-execution-metrics.ts [service], packages/web/src/server/domain-gateway.ts [gateway], packages/web/src/server/index.ts [entrypoint] +328
+[web-package-root] Web Package Root (16 files, coh=0.79 coup=0.21)
+  Web package configuration, build scripts, and standalone viewer components (elapsed-time, task-audit) that don't belong to the main viewer or server sub-zones.
+  files: packages/web/BROWSER_ERROR_CODE_5.md, packages/web/MEMORY_PROFILE.md, packages/web/SourceVision-F.png, packages/web/SourceVision.png, packages/web/build.js [config], packages/web/dev.js [config], packages/web/package.json, packages/web/src/viewer/components/elapsed-time.ts [component], packages/web/src/viewer/components/prd-tree/lazy-children.ts [component], packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts [component] +6
+[websocket-health-infrastructure] WebSocket Health Infrastructure (6 files, coh=0.50 coup=0.50)
+  WebSocket server implementation and connection health tracking services, keeping real-time transport concerns isolated from the broader HTTP server layer.
+  files: packages/web/src/server/websocket.ts [service], packages/web/src/server/ws-health-tracker.ts [service], packages/web/tests/unit/server/boundary-check.test.ts, packages/web/tests/unit/server/websocket.test.ts, packages/web/tests/unit/server/ws-health-integration.test.ts, packages/web/tests/unit/server/ws-health-tracker.test.ts
 [unzoned] 1 files: .hench/config.json
 
 Detailed zone context: .sourcevision/zones/{id}/context.md
@@ -132,20 +135,18 @@ Detailed zone context: .sourcevision/zones/{id}/context.md
 
 Most imported:
   packages/rex/src/core/tree.ts ← packages/rex/src/analyze/diff.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/reshape-reason.ts, packages/rex/src/cli/commands/add.ts +45
-  packages/rex/src/schema/index.ts ← packages/rex/src/analyze/consolidation-guard.ts, packages/rex/src/analyze/consolidation-guard.ts, packages/rex/src/analyze/decompose.ts, packages/rex/src/analyze/decompose.ts, packages/rex/src/analyze/diff.ts +149
+  packages/rex/src/schema/index.ts ← packages/rex/src/analyze/analyze-shared.ts, packages/rex/src/analyze/consolidation-guard.ts, packages/rex/src/analyze/consolidation-guard.ts, packages/rex/src/analyze/decompose.ts, packages/rex/src/analyze/decompose.ts +150
   packages/rex/src/store/index.ts ← packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/fix.ts, packages/rex/src/cli/commands/health.ts, packages/rex/src/cli/commands/init.ts +29
   packages/rex/src/cli/commands/constants.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/fix.ts, packages/rex/src/cli/commands/health.ts +23
   packages/rex/src/cli/output.ts ← packages/rex/src/analyze/guided.ts, packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/chunked-review.ts +22
   packages/rex/src/cli/errors.ts ← packages/rex/src/cli/commands/adapter.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/move.ts, packages/rex/src/cli/commands/prune.ts +21
-  packages/rex/src/analyze/reason.ts ← packages/rex/src/analyze/consolidation-guard.ts, packages/rex/src/analyze/decompose.ts, packages/rex/src/analyze/decompose.ts, packages/rex/src/analyze/extract.ts, packages/rex/src/analyze/extract.ts +27
+  packages/rex/src/analyze/reason.ts ← packages/rex/src/analyze/consolidation-guard.ts, packages/rex/src/analyze/decompose.ts, packages/rex/src/analyze/decompose.ts, packages/rex/src/analyze/extract.ts, packages/rex/src/analyze/guided.ts +25
   packages/web/src/viewer/components/logos.ts ← packages/web/src/viewer/components/sidebar.ts, packages/web/src/viewer/views/analysis.ts, packages/web/src/viewer/views/architecture.ts, packages/web/src/viewer/views/feature-toggles.ts, packages/web/src/viewer/views/files.ts +18
   packages/hench/src/store/config.ts ← packages/hench/src/cli/commands/config.ts, packages/hench/src/cli/commands/task-lookup.ts, packages/hench/src/cli/commands/template.ts, packages/hench/src/store/index.ts, packages/hench/tests/integration/codex-token-accounting.test.ts +15
   packages/web/src/viewer/polling/tab-visibility.ts ← packages/web/src/viewer/bootstrap.ts, packages/web/src/viewer/hooks/use-tab-visibility.ts, packages/web/src/viewer/hooks/use-tab-visibility.ts, packages/web/src/viewer/performance/dom-update-gate.ts, packages/web/src/viewer/performance/dom-update-gate.ts +20
 
 Circular chains:
   packages/rex/src/analyze/reason.ts → packages/rex/src/analyze/extract.ts
-  packages/rex/src/analyze/reason.ts → packages/rex/src/analyze/extract.ts
-  packages/rex/src/analyze/reason.ts → packages/rex/src/analyze/extract.ts → packages/rex/src/analyze/file-validation.ts
 
 </imports>
 
@@ -278,22 +279,22 @@ Server routes: 106 endpoints in 14 handler(s)
 
 <findings>
 
-[warning] 5 circular dependency chains detected — see imports.json for details
-[warning] The message zone's low cohesion (0.45) combined with being the most-imported zone in the web layer suggests it has grown into a catch-all communication module; splitting it into typed message definitions and transport utilities would improve cohesion and make the import graph more precise.
+[warning] 1 circular dependency chain detected — see imports.json for details
+[warning] Bidirectional coupling: "web-dashboard-application" ↔ "web-package-root" (2+4 crossings) — consider extracting shared interface
 [warning] Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects
-[warning] Verify that packages/hench/src/public.ts exists and exports the complete public API surface — if it is missing, hench is the only package breaking the public.ts convention stated in CLAUDE.md, creating an undocumented exception in the five-package pattern. [autonomous-agent-engine]
-[warning] Add zone coupling and cohesion threshold assertions to ci.js — for example, fail CI if any non-asset zone's coupling exceeds 0.25 or cohesion drops below 0.5 — so architectural degradation is caught automatically rather than requiring manual analysis runs.
-[warning] Adopt a policy of excluding .gitkeep files from zone membership in the sourcevision inventory phase. These files provide no semantic signal and distort cohesion/coupling scores most severely in small, low-cohesion zones — exactly the zones where accurate metrics matter most for architectural decision-making.
-[warning] Establish and document an explicit zone naming convention distinguishing source zones from test zones: zones containing production source files should never carry a '-tests' suffix regardless of whether they also contain test files. The single violation ('prd-tree-lifecycle' containing 2 production components) is low-cost to fix now but will compound as contributors use the zone name as a template for future lifecycle component zones.
-[warning] The 'web' zone (15 files, cohesion 0.86) is the second-lowest cohesion zone among actively-imported zones in the web layer and receives imports from both web-viewer and web-integration simultaneously — the same dual-consumer blast-radius risk profile as the message zone. Unlike message, it has received no explicit review or documentation of what belongs there. Define and document the web zone's content contract before it accumulates heterogeneous content that degrades its cohesion further.
-[warning] The import graph alias 'message' and zone metadata ID 'viewer-message-flow-control' refer to the same zone but use different identifiers. Any cross-source analysis (health dashboards, import attribution, lint rules) that joins these two data sources by ID will silently produce incorrect results. This is a data integrity defect: assign a single canonical ID and regenerate all output files consistently.
-[critical] sourcevision emits abbreviated zone IDs in imports.json that do not match canonical zone IDs in zone metadata for at least two zones (dom-performance-monitoring → 'dom', viewer-message-flow-control → 'message'). Both follow the same first-word-segment truncation pattern, confirming a systemic defect. Any automated pipeline joining these two data sources by zone ID silently drops all import edges for both affected zones. Fix by enforcing that sourcevision uses the identical canonical zone ID string in every output file (zones.json, imports.json, CONTEXT.md, per-zone summary files).
-[warning] 2 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): packages-rex:cli-e2e-test-suite, packages-rex:token-usage-analytics — mandatory refactoring recommended before further development
-[warning] Consolidate node-culler.ts and request-dedup.ts into a formal packages/web/src/shared/ directory with an index.ts barrel — this removes algorithmic zone fragility, makes the shared surface explicit, and prevents future utilities from being scattered across viewer subdirectories. [web-package-scaffolding]
-[warning] The entire codebase has coupling > 0 only in the web messaging stack (3 zones); all other zones are at coupling 0 — this concentration means the messaging layer is the single point of architectural debt and deserves priority refactoring attention before it accretes further consumers
-[warning] The web layer exhibits a hub-and-spoke topology with web-viewer (329 files) as the hub: it imports from message, web-integration, and web-package-scaffolding while being imported by dom. All other zones are spokes or isolated. This concentration of import edges in one zone is a scaling risk — as web-viewer grows, its import surface grows proportionally with no natural decomposition boundary.
-[warning] web-viewer bypasses web-integration for 4 of its 6 message-zone imports, importing message directly rather than through the integration layer. This partial bypass means web-integration is not enforcing a stable interface over message for web-viewer, leaving web-viewer exposed to message internals directly.
-... +21 more
+[warning] The single confirmed circular dependency in imports.json has survived four enrichment passes without zone-level attribution. Given web-dashboard-application's 338-file interior is opaque to zone-level cross-import analysis, run a targeted imports.json traversal to either locate the specific file pair forming the cycle or confirm it no longer exists. An unverified circular dependency is a build-correctness risk that should not remain in an ambiguous state indefinitely.
+[warning] The spawn-not-import boundary at the orchestration tier is enforced by a single e2e test. Add a lint-level or CI-level static check (e.g. import-graph assertion in architecture-policy.test.js) that verifies cli.js, web.js, and ci.js contain zero static imports from hench, rex, or sourcevision packages — making the boundary machine-checkable without relying on test execution alone.
+[warning] 2 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): packages-rex:schema-validation, packages-rex:token-usage-analytics — mandatory refactoring recommended before further development
+[warning] Add an eslint no-restricted-imports rule scoped to the hench package that disallows direct imports from 'rex' everywhere except src/prd/rex-gateway.ts. This enforces the gateway invariant mechanically rather than relying on convention. [hench-agent]
+[warning] Coupling metric (0.02) is statistically unreliable at 338 files — the denominator dominates. Replace per-zone coupling percentage with raw cross-zone import counts in any dashboard or alerting that targets this zone to avoid false confidence in its isolation. [web-dashboard-application]
+[warning] Four enrichment passes have identified the need for a server/viewer split but no partition has been formally proposed. Create a migration doc that names the two target zones (e.g. web-server-layer, web-viewer-layer), lists which directories map to each, and identifies shared utilities that would stay in the parent — converting the open insight into a trackable task. [web-dashboard-application]
+[warning] The misassigned components (elapsed-time.ts, task-audit.ts) inflate web-package-root's coupling score to 0.21 and simultaneously underreport web-viewer's coupling surface. Correct the zone classification for both files to web-viewer to restore metric accuracy for both zones simultaneously. [web-package-root]
+[warning] Bidirectional imports between web and web-viewer (web → web-viewer: 4, web-viewer → web: 2) may indicate a soft circular dependency; audit whether the components in web's root could be moved into web-viewer to eliminate the back-edge. [web-package-root]
+[warning] Cohesion of 0.5 is at the low boundary — if the WebSocket transport and health tracker diverge in responsibilities over time, splitting them into separate zones would improve clarity. [websocket-health-infrastructure]
+[warning] The e2e suite covers CLI orchestration but has no counterpart suite for the HTTP/MCP surface exposed by the web package — this is a coverage gap for the server transport layer that grows in importance as the HTTP MCP transport becomes the recommended integration path [cli-e2e-tests]
+[warning] Hub-and-spoke architecture confirmed: task-usage-analytics, websocket-health-infrastructure, and prd-analysis-input-panels all couple exclusively to this zone and have zero cross-imports with each other. This makes web-dashboard-application a single point of failure for all three satellite concerns — consider whether a stable internal interface contract (explicit re-export surface) would reduce breakage risk as the zone grows. [web-dashboard-application]
+[warning] The 6 files omitted from the zone listing cannot be audited for the zero-coupling invariant that gives this suite its architectural value. Confirm the unlisted files do not import from application source to preserve the black-box guarantee. [cli-e2e-tests]
+... +14 more
 
 </findings>
 
@@ -301,39 +302,45 @@ Server routes: 106 endpoints in 14 handler(s)
 
 [high] Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files —…
   category: refactor
-[high] Zone "CLI End-to-End Test Suite" (packages-rex:cli-e2e-test-suite) has catastro…
+[high] Zone "Schema Validation" (packages-rex:schema-validation) has catastrophic risk…
   files: packages/rex/src/schema/validate.ts, packages/rex/tests/e2e/cli-adapter.test.ts, packages/rex/tests/e2e/cli-analyze.test.ts
   category: fix
 [high] Zone "Token Usage Analytics" (packages-rex:token-usage-analytics) has catastrop…
   files: packages/rex/src/cli/commands/usage.ts, packages/rex/src/core/token-usage.ts, packages/rex/tests/unit/core/token-usage-regression.test.ts
   category: fix
-[high] sourcevision emits abbreviated zone IDs in imports.json tha… (+3 related)
-  category: fix
-[high] The message zone has no formal public interface file (e.g., types.ts or protoco…
+[high] Server and client source trees (server/ and viewer/) are merged into a single 3…
+  files: packages/web/src/cli/index.ts, packages/web/src/landing/index.html, packages/web/src/landing/landing.css
   category: fix
 [medium] 2 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): …
   category: refactor
-[medium] FRAGILE ZONE: viewer-message-flow-control has both the lowest cohesion (0.45) a…
-  files: packages/web/src/viewer/messaging/.gitkeep, packages/web/src/viewer/messaging/message-coalescer.ts, packages/web/src/viewer/messaging/message-throttle.ts
+[medium] boundary-check.test.ts is likely a misplaced file: its name implies cross-zone …
+  files: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts, packages/web/tests/unit/server/boundary-check.test.ts
   category: refactor
-[medium] Three-way naming conflict: source files use 'message-' prefix, zone ID is 'view…
-  files: packages/web/src/viewer/messaging/.gitkeep, packages/web/src/viewer/messaging/message-coalescer.ts, packages/web/src/viewer/messaging/message-throttle.ts
+[medium] God function: GraphRenderer.constructor in packages/web/src/viewer/graph/render…
   category: refactor
-[medium] Both messaging zones contain .gitkeep placeholder files tha… (+3 related)
+[medium] Zone satisfies both fragile-zone conditions simultaneously (cohesion 0.5, coupl…
+  files: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts, packages/web/tests/unit/server/boundary-check.test.ts
   category: refactor
-[medium] The zone ID appears as 'dom' in the cross-zone import graph — the second confir…
-  files: packages/web/src/viewer/hooks/use-dom-performance-monitor.ts, packages/web/src/viewer/performance/.gitkeep, packages/web/src/viewer/performance/dom-performance-monitor.ts
+[medium] Cohesion of 0.5 is at the low boundary — if the WebSocket transport and health …
+  files: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts, packages/web/tests/unit/server/boundary-check.test.ts
   category: refactor
-[medium] Consolidate node-culler.ts and request-dedup.ts into a formal packages/web/src/…
+[medium] dom-performance-monitor.ts is a framework-agnostic service embedded inside pack…
+  files: packages/web/src/viewer/hooks/use-dom-performance-monitor.ts, packages/web/src/viewer/performance/dom-performance-monitor.ts, packages/web/tests/unit/viewer/dom-performance-monitor.test.ts
+  category: refactor
+[medium] proposal-editor.ts has no corresponding test file while all other interactive c…
+  files: packages/web/src/viewer/components/prd-tree/analyze-panel.ts, packages/web/src/viewer/components/prd-tree/batch-import-panel.ts, packages/web/src/viewer/components/prd-tree/proposal-editor.ts
+  category: refactor
+[medium] src/viewer/components/elapsed-time.ts and src/viewer/components/task-audit.ts a…
   files: packages/web/BROWSER_ERROR_CODE_5.md, packages/web/MEMORY_PROFILE.md, packages/web/SourceVision-F.png
   category: refactor
-[medium] The entire codebase has coupling > 0 only in the web messag… (+3 related)
-  category: extract
-[medium] web-integration's name implies it is an adapter between web-viewer and the lowe…
+[medium] The misassigned components (elapsed-time.ts, task-audit.ts) inflate web-package…
+  files: packages/web/BROWSER_ERROR_CODE_5.md, packages/web/MEMORY_PROFILE.md, packages/web/SourceVision-F.png
   category: refactor
-[medium] web-viewer has no internal gateway consolidating its cross-zone imports, unlike…
+[medium] Bidirectional imports between web and web-viewer (web → web-viewer: 4, web-view…
+  files: packages/web/BROWSER_ERROR_CODE_5.md, packages/web/MEMORY_PROFILE.md, packages/web/SourceVision-F.png
   category: refactor
-[medium] web-integration acts as an implicit middleware hub: it imports from both messag…
-  category: extract
+[medium] At 338 files, this zone is 48× larger than the next-largest zone (prd-analysis-…
+  files: packages/web/src/cli/index.ts, packages/web/src/landing/index.html, packages/web/src/landing/landing.css
+  category: refactor
 
 </next-steps>
