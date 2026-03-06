@@ -17315,458 +17315,6 @@
       ]
     },
     {
-      "id": "2619bd1f-1c65-4a1f-af96-16a84294e3b6",
-      "title": "Address observation issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- 5 circular dependency chains detected — see imports.json for details\n- The message zone's low cohesion (0.45) combined with being the most-imported zone in the web layer suggests it has grown into a catch-all communication module; splitting it into typed message definitions and transport utilities would improve cohesion and make the import graph more precise.\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-03-05T04:50:57.123Z",
-      "completedAt": "2026-03-05T05:02:40.864Z",
-      "children": [
-        {
-          "id": "6731fd26-e5a3-4e43-89f2-f42b7fd7c19a",
-          "title": "Break rex analyze circular dependency (reason.ts ↔ extract.ts)",
-          "status": "completed",
-          "level": "task",
-          "description": "reason.ts dynamically imports extract.ts (lines 1224, 2050, 2061), and extract.ts statically imports utilities from reason.ts (detectFileFormat, spawnClaude, extractJson, etc.). file-validation.ts also imports FileFormat type from reason.ts. Extract shared utilities (detectFileFormat, extractJson, repairTruncatedJson, emptyAnalyzeTokenUsage, accumulateTokenUsage, PRD_SCHEMA, TASK_QUALITY_RULES, OUTPUT_INSTRUCTION, FileFormat type) into a new shared module that both reason.ts and extract.ts can import from without creating a cycle.",
-          "acceptanceCriteria": [
-            "No circular dependency between reason.ts, extract.ts, and file-validation.ts",
-            "All existing tests pass",
-            "No changes to public API"
-          ],
-          "priority": "high",
-          "startedAt": "2026-03-05T05:02:38.016Z",
-          "completedAt": "2026-03-05T05:02:38.016Z"
-        },
-        {
-          "id": "2b20ad08-82b9-4275-acee-69c06b9b13a7",
-          "title": "Break sourcevision circular dependency (enrich.ts ↔ zones.ts)",
-          "status": "completed",
-          "level": "task",
-          "description": "enrich.ts imports computeGlobalContentHash from zones.ts, while zones.ts imports enrichZonesWithAI and enrichZonesPerZone from enrich.ts. Move computeGlobalContentHash to a shared utility module or pass it as a dependency to break the cycle.",
-          "acceptanceCriteria": [
-            "No circular dependency between enrich.ts and zones.ts",
-            "All existing tests pass",
-            "No changes to public API"
-          ],
-          "priority": "high",
-          "startedAt": "2026-03-05T05:02:39.443Z",
-          "completedAt": "2026-03-05T05:02:39.443Z"
-        },
-        {
-          "id": "5a11ecb9-002e-4e3d-a165-3658d8f9dc49",
-          "title": "Document message zone architecture and rex schema fan-in hotspot",
-          "status": "completed",
-          "level": "task",
-          "description": "Two observation findings that don't require code restructuring: (1) Viewer Message Flow Control zone has low cohesion (0.45) because message-coalescer and message-throttle are independent utilities - add a module doc explaining they're a messaging-primitives library. (2) rex/schema/index.ts has 42 importers (fan-in hotspot) - this is expected for a schema barrel; add a doc comment warning about change impact.",
-          "acceptanceCriteria": [
-            "Message zone has documentation explaining its architecture",
-            "Rex schema barrel has doc comment about high fan-in and change impact"
-          ],
-          "priority": "medium",
-          "startedAt": "2026-03-05T05:02:40.715Z",
-          "completedAt": "2026-03-05T05:02:40.715Z"
-        }
-      ],
-      "recommendationMeta": {
-        "findingHashes": [
-          "2360c21c19db",
-          "6ae74c1e1509",
-          "3a82920140f7"
-        ],
-        "category": "observation",
-        "severityDistribution": {
-          "warning": 3
-        },
-        "findingCount": 3
-      }
-    },
-    {
-      "id": "6a024d8b-7dfc-4707-8149-c8eb6fd41cbf",
-      "title": "Address suggestion issues (18 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Verify that packages/hench/src/public.ts exists and exports the complete public API surface — if it is missing, hench is the only package breaking the public.ts convention stated in CLAUDE.md, creating an undocumented exception in the five-package pattern.\n- Add zone coupling and cohesion threshold assertions to ci.js — for example, fail CI if any non-asset zone's coupling exceeds 0.25 or cohesion drops below 0.5 — so architectural degradation is caught automatically rather than requiring manual analysis runs.\n- Adopt a policy of excluding .gitkeep files from zone membership in the sourcevision inventory phase. These files provide no semantic signal and distort cohesion/coupling scores most severely in small, low-cohesion zones — exactly the zones where accurate metrics matter most for architectural decision-making.\n- Establish and document an explicit zone naming convention distinguishing source zones from test zones: zones containing production source files should never carry a '-tests' suffix regardless of whether they also contain test files. The single violation ('prd-tree-lifecycle-tests' containing 2 production components) is low-cost to fix now but will compound as contributors use the zone name as a template for future lifecycle component zones.\n- The 'web' zone (15 files, cohesion 0.86) is the second-lowest cohesion zone among actively-imported zones in the web layer and receives imports from both web-viewer and web-integration simultaneously — the same dual-consumer blast-radius risk profile as the message zone. Unlike message, it has received no explicit review or documentation of what belongs there. Define and document the web zone's content contract before it accumulates heterogeneous content that degrades its cohesion further.\n- The import graph alias 'message' and zone metadata ID 'viewer-message-flow-control' refer to the same zone but use different identifiers. Any cross-source analysis (health dashboards, import attribution, lint rules) that joins these two data sources by ID will silently produce incorrect results. This is a data integrity defect: assign a single canonical ID and regenerate all output files consistently.\n- sourcevision emits abbreviated zone IDs in imports.json that do not match canonical zone IDs in zone metadata for at least two zones (dom-performance-monitoring → 'dom', viewer-message-flow-control → 'message'). Both follow the same first-word-segment truncation pattern, confirming a systemic defect. Any automated pipeline joining these two data sources by zone ID silently drops all import edges for both affected zones. Fix by enforcing that sourcevision uses the identical canonical zone ID string in every output file (zones.json, imports.json, CONTEXT.md, per-zone summary files).\n- 2 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): packages-rex:cli-e2e-test-suite, packages-rex:token-usage-analytics — mandatory refactoring recommended before further development\n- Consolidate node-culler.ts and request-dedup.ts into a formal packages/web/src/shared/ directory with an index.ts barrel — this removes algorithmic zone fragility, makes the shared surface explicit, and prevents future utilities from being scattered across viewer subdirectories.\n- 'cli-dev.test.js' covers a command not listed in CLAUDE.md. Verify whether 'ndx dev' is a real, documented command or a removed/renamed one. If removed, delete the test to avoid false CI confidence; if undocumented, add it to CLAUDE.md.\n- The zone ID appears as 'dom' in the cross-zone import graph — the second confirmed instance of the same zone ID truncation bug already identified for viewer-message-flow-control. Both affected zones have active cross-zone import edges, meaning joins between imports.json and zone metadata silently drop their edges. This confirms the bug is systemic and must be fixed in sourcevision's import graph emission, not patched per-zone.\n- Rename zone to 'prd-tree-lifecycle' to eliminate the false '-tests' suffix signal. The current name implies a test-only zone but it contains production components; the mislabeling will cause contributor confusion and may break tooling that distinguishes source zones from test zones by name suffix. Every other '-tests'-suffixed zone in the codebase contains only test files.\n- Add integration tests for the orchestration scripts that verify the correct CLI commands are constructed and invoked — child-process delegation logic is currently untested and regressions would be invisible to the per-package test suites.\n- Define and implement a maximum-entry or size-based rotation policy for .rex/execution-log.jsonl to prevent unbounded growth in long-running projects.\n- FRAGILE ZONE: viewer-message-flow-control has both the lowest cohesion (0.45) and coupling approaching the warning threshold (0.55) simultaneously. This combination — structurally weak internally, heavily consumed externally — makes it the single highest-risk zone for cascading breakage. Prioritize splitting or stabilizing this zone before adding new consumers.\n- Three-way naming conflict: source files use 'message-' prefix, zone ID is 'viewer-message-flow-control', import graph alias is 'message'. Establish a single canonical name (recommend 'messaging-primitives') and propagate it to all three: filenames, zone ID in zones.json, and the import graph key in imports.json.\n- Zone \"CLI End-to-End Test Suite\" (packages-rex:cli-e2e-test-suite) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention\n- Zone \"Token Usage Analytics\" (packages-rex:token-usage-analytics) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-03-05T04:40:48.395Z",
-      "completedAt": "2026-03-05T04:50:54.678Z",
-      "children": [
-        {
-          "id": "a72ad64b-5685-4fb8-9203-140a1af337ef",
-          "title": "Fix zone ID truncation in zoneContentHashes",
-          "status": "completed",
-          "level": "task",
-          "description": "Remap zoneContentHashes keys after AI enrichment renames zone IDs. Currently the keys use pre-enrichment IDs (e.g. \"dom\", \"message\") while zone.id values use post-enrichment IDs (e.g. \"dom-performance-monitoring\", \"viewer-message-flow-control\"). This causes silent data join failures.",
-          "priority": "critical",
-          "startedAt": "2026-03-05T04:49:56.147Z",
-          "completedAt": "2026-03-05T04:49:56.147Z"
-        },
-        {
-          "id": "f4acd7c0-fff5-436b-bfec-f6f0cb5d566c",
-          "title": "Add CI zone health threshold assertions",
-          "status": "completed",
-          "level": "task",
-          "description": "Add a new CI step to ci.js that reads zones.json and fails if any non-asset zone exceeds coupling 0.25 or drops below cohesion 0.5. Report violating zones in the CI output.",
-          "priority": "high",
-          "startedAt": "2026-03-05T04:49:57.912Z",
-          "completedAt": "2026-03-05T04:49:57.912Z"
-        },
-        {
-          "id": "97789d26-e35e-4e34-9522-e377ded1c3c7",
-          "title": "Document ndx dev command in CLAUDE.md",
-          "status": "completed",
-          "level": "task",
-          "description": "The ndx dev command exists in cli.js but is not listed in CLAUDE.md. Add it to the orchestration commands section.",
-          "priority": "medium",
-          "startedAt": "2026-03-05T04:49:59.302Z",
-          "completedAt": "2026-03-05T04:49:59.302Z"
-        },
-        {
-          "id": "15d4efdc-7b69-4f15-9a57-bd3ce75b914f",
-          "title": "Consolidate shared utilities into packages/web/src/shared/",
-          "status": "completed",
-          "level": "task",
-          "description": "Move node-culler.ts and request-dedup.ts into packages/web/src/shared/ with an index.ts barrel export. The directory already exists with data-files.ts.",
-          "priority": "medium",
-          "startedAt": "2026-03-05T05:34:38.734Z",
-          "completedAt": "2026-03-05T05:37:48.718Z"
-        },
-        {
-          "id": "be99cf02-d39f-46d0-9ce1-c7c1599e6ac7",
-          "title": "Implement execution log rotation for .rex/execution-log.jsonl",
-          "status": "completed",
-          "level": "task",
-          "description": "Add max-entry or size-based rotation to prevent unbounded growth. When the log exceeds the threshold, rotate to execution-log.1.jsonl and start fresh.",
-          "priority": "medium",
-          "startedAt": "2026-03-05T04:50:00.402Z",
-          "completedAt": "2026-03-05T04:50:00.402Z"
-        },
-        {
-          "id": "5f3f3249-72f8-4433-a7d3-d05db96c2da9",
-          "title": "Add orchestration script integration tests",
-          "status": "completed",
-          "level": "task",
-          "description": "Add tests that verify cli.js constructs and invokes correct CLI commands for each orchestration path. Child-process delegation is currently untested.",
-          "priority": "medium",
-          "startedAt": "2026-03-05T05:22:21.681Z",
-          "completedAt": "2026-03-05T05:34:10.245Z"
-        },
-        {
-          "id": "2ac170c5-b201-4cee-9046-3772087c22a3",
-          "title": "Zone naming conventions and renaming",
-          "status": "completed",
-          "level": "task",
-          "description": "Document zone naming convention (source vs test zones). Rename prd-tree-lifecycle-tests to prd-tree-lifecycle. Document web zone content contract. These are output-quality improvements that will be addressed by re-running analysis after the zone ID fix.",
-          "priority": "low",
-          "startedAt": "2026-03-05T05:41:52.894Z",
-          "completedAt": "2026-03-05T05:48:46.765Z"
-        }
-      ],
-      "recommendationMeta": {
-        "findingHashes": [
-          "8ab4af067f6e",
-          "71902dbd1287",
-          "af767876794e",
-          "bb48f0a5b996",
-          "8836ec9ee46c",
-          "3b6510764710",
-          "47896778a9b6",
-          "75ca015bfa67",
-          "0a3570d9a6a2",
-          "00c6e0c3c33b",
-          "75598fb0b6cb",
-          "75113b8bb983",
-          "8aac80b8f1e5",
-          "4b3e6b45afbb",
-          "1285628fd32a",
-          "b1bd5dd50c8b",
-          "521dcf780ec2",
-          "f26bf9612d39"
-        ],
-        "category": "suggestion",
-        "severityDistribution": {
-          "warning": 15,
-          "critical": 3
-        },
-        "findingCount": 18
-      }
-    },
-    {
-      "id": "00d195c1-d984-4708-9cfb-37eee5475122",
-      "title": "Address pattern issues (2 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- The entire codebase has coupling > 0 only in the web messaging stack (3 zones); all other zones are at coupling 0 — this concentration means the messaging layer is the single point of architectural debt and deserves priority refactoring attention before it accretes further consumers\n- The web layer exhibits a hub-and-spoke topology with web-viewer (329 files) as the hub: it imports from message, web-integration, and web-package-scaffolding while being imported by dom. All other zones are spokes or isolated. This concentration of import edges in one zone is a scaling risk — as web-viewer grows, its import surface grows proportionally with no natural decomposition boundary.",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-03-05T05:03:33.614Z",
-      "completedAt": "2026-03-05T05:12:39.923Z",
-      "recommendationMeta": {
-        "findingHashes": [
-          "cac60522219f",
-          "1c780f664d3a"
-        ],
-        "category": "pattern",
-        "severityDistribution": {
-          "warning": 2
-        },
-        "findingCount": 2
-      }
-    },
-    {
-      "id": "251fbe0a-8b4f-4cb0-a22a-326bf24e64f4",
-      "title": "Address relationship issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- web-viewer bypasses web-integration for 4 of its 6 message-zone imports, importing message directly rather than through the integration layer. This partial bypass means web-integration is not enforcing a stable interface over message for web-viewer, leaving web-viewer exposed to message internals directly.\n- web-viewer simultaneously imports from web, web-integration, viewer-call-rate-limiter, and viewer-message-flow-control — it is the hub of all non-zero coupling in the web layer; if web-viewer grows further, these four inbound dependency paths will become increasingly difficult to untangle\n- web-integration acts as an implicit middleware hub: it imports from both message and web while being imported by web-viewer. This three-way relay role is not documented and risks becoming a catch-all as the codebase grows. Define a clear responsibility boundary for this zone.",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-03-05T05:13:25.945Z",
-      "completedAt": "2026-03-05T05:18:59.365Z",
-      "recommendationMeta": {
-        "findingHashes": [
-          "fbd735535482",
-          "2db342a0007b",
-          "94c4e49b1e3c"
-        ],
-        "category": "relationship",
-        "severityDistribution": {
-          "warning": 3
-        },
-        "findingCount": 3
-      }
-    },
-    {
-      "id": "b290a87e-ff66-48d7-8890-0929f14200bb",
-      "title": "Address anti-pattern issues (10 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Both messaging zones contain .gitkeep placeholder files that are counted as zone members. Since these zones are the lowest-cohesion zones in the codebase and the primary architectural risk surface, metric distortion from non-functional files is highest-impact here. All .gitkeep files should be excluded from zone membership calculations in the sourcevision inventory phase to ensure health scores reflect only meaningful source and test files.\n- Five circular dependency chains are reported in imports.json but no zone insight identifies their location. If any cycle crosses zone boundaries (e.g., web-viewer ↔ web-integration or web-integration ↔ message), it would represent an architectural violation of the strict partial order observed in the zone graph. These cycles must be localized and classified before the 'no circular dependencies among analyzed zones' conclusion can be treated as a full guarantee.\n- The composed messaging stack (viewer-message-flow-control → viewer-call-rate-limiter → web-viewer) has no integration or e2e test that validates the full composition under real conditions. Each zone has unit tests, but composed behavior — including that viewer-call-rate-limiter correctly throttles viewer-message-flow-control primitives and that web-viewer does not bypass the rate-limiter — is never asserted. A single integration test that instantiates all three layers together would close this gap.\n- The gateway pattern is applied inconsistently: hench and web-server enforce explicit gateway modules for all cross-package imports, but the intra-web layer (web-viewer consuming message, web, web-integration) has no equivalent gateway discipline. The pattern's benefits are present at tier boundaries but absent at zone boundaries within the web package, creating a two-tier enforcement gap.\n- The server/client boundary within packages/web (src/server/ vs src/viewer/) has no machine-enforced import restriction. The gateway pattern prevents cross-package imports, but an accidental import from src/viewer/ into src/server/ (or vice versa) would not be caught by any existing lint, build, or zone-coupling check. This boundary should be enforced via eslint-plugin-import boundaries or TypeScript project references to match the rigor applied to cross-package imports.\n- Zone ID 'viewer-message-flow-control' in zone metadata does not match the ID 'message' used in the cross-zone import graph. Any tooling that joins these two data sources by zone ID will silently produce incorrect attribution. This should be treated as a data integrity defect in sourcevision output generation, requiring a single canonical ID to be used consistently across all output files (zones.json, imports.json, CONTEXT.md).\n- God function: handleHenchRoute in packages/web/src/server/routes-hench.ts calls 59 unique functions — consider decomposing into smaller, focused functions\n- The message zone has no formal public interface file (e.g., types.ts or protocol.ts) that declares the contract between its 5 files and its 6 consumers. Its low cohesion (0.45) combined with high inbound traffic means consumers are importing individual implementation files rather than a stable surface, making the zone brittle to internal reorganization.\n- web-integration's name implies it is an adapter between web-viewer and the lower infrastructure zones (message, web), but web-viewer imports message and web directly rather than through web-integration. web-integration is therefore a parallel consumer, not a facade — its architectural role is misleading and contributors may add redundant integration logic to both web-integration and web-viewer independently.\n- web-viewer has no internal gateway consolidating its cross-zone imports, unlike hench (rex-gateway.ts) and web server (rex-gateway.ts, domain-gateway.ts). With 4+ cross-zone import paths, scattered call-site imports mean any upstream API change (message, web-integration, web) requires a grep across 329 files to find all affected sites rather than a single gateway edit.",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-03-05T04:31:13.435Z",
-      "completedAt": "2026-03-05T04:39:54.230Z",
-      "children": [
-        {
-          "id": "342a7e98-76cc-4c61-acf2-32d6b9748cac",
-          "title": "Exclude .gitkeep files from sourcevision inventory",
-          "status": "completed",
-          "level": "task",
-          "description": "Add .gitkeep to skip patterns in sourcevision inventory analyzer so placeholder files don't distort zone membership and cohesion metrics.",
-          "priority": "high",
-          "startedAt": "2026-03-05T04:33:13.410Z",
-          "completedAt": "2026-03-05T04:33:13.410Z"
-        },
-        {
-          "id": "8add52d5-0c88-4859-8f63-c9ea472d3ab1",
-          "title": "Decompose handleHenchRoute god function",
-          "status": "completed",
-          "level": "task",
-          "description": "Break handleHenchRoute (59 unique function calls) into focused sub-handlers organized by resource type (runs, memory, metrics, throttle, templates, config, execute).",
-          "priority": "high",
-          "startedAt": "2026-03-05T04:36:53.500Z",
-          "completedAt": "2026-03-05T04:36:53.500Z"
-        },
-        {
-          "id": "23af2432-c9f8-4085-a476-d3650be5f6dc",
-          "title": "Create messaging zone public interface barrel",
-          "status": "completed",
-          "level": "task",
-          "description": "Add an index.ts barrel file for packages/web/src/viewer/messaging/ that declares the public API. Update consumers to import from the barrel instead of individual implementation files.",
-          "priority": "high",
-          "startedAt": "2026-03-05T04:33:49.389Z",
-          "completedAt": "2026-03-05T04:33:49.389Z"
-        },
-        {
-          "id": "f7e84772-d792-4aa0-9bf3-7dd811dbffbf",
-          "title": "Create web-viewer cross-zone gateway modules",
-          "status": "completed",
-          "level": "task",
-          "description": "Create gateway modules for web-viewer's cross-zone imports (messaging, performance, polling) following the same pattern as hench/rex-gateway.ts and web-server gateways. Consolidate scattered cross-zone imports.",
-          "priority": "high",
-          "startedAt": "2026-03-05T04:36:54.899Z",
-          "completedAt": "2026-03-05T04:36:54.899Z"
-        },
-        {
-          "id": "d14990e3-a788-4238-90e2-39dacb098046",
-          "title": "Add server/client boundary enforcement via ESLint",
-          "status": "completed",
-          "level": "task",
-          "description": "Add ESLint import boundary rules or TypeScript project references to prevent accidental imports between packages/web/src/server/ and packages/web/src/viewer/.",
-          "priority": "medium",
-          "startedAt": "2026-03-05T04:38:41.724Z",
-          "completedAt": "2026-03-05T04:38:41.724Z"
-        },
-        {
-          "id": "1bc10996-2e98-4dc7-91fa-6cac2afa6e73",
-          "title": "Localize and classify circular dependency chains",
-          "status": "completed",
-          "level": "task",
-          "description": "Analyze the 5 circular dependency chains in imports.json, determine which zones they belong to, and classify whether any cross zone boundaries. Document findings and fix any that violate the strict partial order.",
-          "priority": "medium",
-          "startedAt": "2026-03-05T04:39:24.958Z",
-          "completedAt": "2026-03-05T04:39:24.958Z"
-        },
-        {
-          "id": "2c30b5b9-ec41-44d8-a06b-b5c25d7b4823",
-          "title": "Add messaging stack integration test",
-          "status": "completed",
-          "level": "task",
-          "description": "Write an integration test validating the composed messaging stack (message-flow-control → call-rate-limiter → web-viewer) under real conditions, verifying rate limiting and throttling work end-to-end.",
-          "priority": "medium",
-          "startedAt": "2026-03-05T05:19:15.482Z",
-          "completedAt": "2026-03-05T05:21:55.257Z"
-        },
-        {
-          "id": "962e64af-c978-45ea-b327-63923d4e7a35",
-          "title": "Document web-integration zone architectural role",
-          "status": "completed",
-          "level": "task",
-          "description": "Clarify that web-integration is a parallel consumer, not a facade. Either refactor to make it a true facade or document its actual role to prevent confusion.",
-          "priority": "low",
-          "startedAt": "2026-03-05T05:38:04.727Z",
-          "completedAt": "2026-03-05T05:41:20.138Z"
-        }
-      ],
-      "recommendationMeta": {
-        "findingHashes": [
-          "dbef4a5c90f6",
-          "c836cca79cfe",
-          "599ea0d132a1",
-          "d1e2f6b9e6f6",
-          "8815f6c005b2",
-          "afcb485989bf",
-          "3b75ffdb4d83",
-          "2c2e4990f55c",
-          "ed0961464fbb",
-          "c124bd40b4d8"
-        ],
-        "category": "anti-pattern",
-        "severityDistribution": {
-          "warning": 6,
-          "critical": 4
-        },
-        "findingCount": 10
-      }
-    },
-    {
-      "id": "7054370f-4ddb-45ab-85ab-dea1a6619a49",
-      "title": "Address observation issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- 1 circular dependency chain detected — see imports.json for details\n- Bidirectional coupling: \"web\" ↔ \"web-viewer\" (4+2 crossings) — consider extracting shared interface\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-03-06T02:34:16.610Z",
-      "completedAt": "2026-03-06T02:42:01.776Z",
-      "recommendationMeta": {
-        "findingHashes": [
-          "ddc831d1e606",
-          "a44643cd460f",
-          "3a82920140f7"
-        ],
-        "category": "observation",
-        "severityDistribution": {
-          "warning": 3
-        },
-        "findingCount": 3
-      }
-    },
-    {
-      "id": "4a2d6294-75e0-42f5-b445-9228184d75ad",
-      "title": "Address suggestion issues (3 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- 2 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): packages-rex:e2e, packages-rex:usage — mandatory refactoring recommended before further development\n- Zone \"E2e\" (packages-rex:e2e) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention\n- Zone \"Usage\" (packages-rex:usage) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-03-06T02:24:11.572Z",
-      "completedAt": "2026-03-06T02:28:55.168Z",
-      "recommendationMeta": {
-        "findingHashes": [
-          "256d4731c00f",
-          "29fb7fc49bb2",
-          "00675d0a2e67"
-        ],
-        "category": "suggestion",
-        "severityDistribution": {
-          "warning": 1,
-          "critical": 2
-        },
-        "findingCount": 3
-      }
-    },
-    {
-      "id": "7be29eae-a985-49f8-badc-6a5bf257db36",
-      "title": "Address pattern issues (2 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Findings 0 and 11 are independently generated by different analysis methods and both identify the same unresolved circular dependency as a real structural issue. The specific actionable gap is file-pair localization: neither finding names the exact files forming the cycle. Run a targeted traversal of imports.json filtering for cycle edges where both endpoints fall within the web-viewer zone (338-file interior) to identify the specific pair before attempting a fix. Until localized, the build-correctness risk flagged in finding 11 cannot be resolved.\n- Findings 1, web-server zone finding 0, and global finding 5 converge on one root cause: the web package zone structure was grown incrementally without a consistent model. The three concrete symptoms are bidirectional coupling between web-dashboard-application and web-package-root (2+4 crossings), a 4-file web-server satellite with 0.63 cohesion and 0.38 coupling that imports bidirectionally with web-viewer (2+2 crossings), and zone names that mix 'web-viewer', 'panel', 'dom', 'logo' prefixes within a single package. These are three manifestations of the same structural deficit, not three independent problems. Addressing the naming convention (finding 5) and the satellite merge (web-server finding 0) would simultaneously improve the coupling metric tracked in finding 1.",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-03-06T02:42:51.435Z",
-      "completedAt": "2026-03-06T02:51:57.861Z",
-      "recommendationMeta": {
-        "findingHashes": [
-          "e80b467903a5",
-          "46aaae60589f"
-        ],
-        "category": "pattern",
-        "severityDistribution": {
-          "warning": 2
-        },
-        "findingCount": 2
-      }
-    },
-    {
-      "id": "a4aa9e56-ba46-4e97-8fb1-7d7bf404da88",
-      "title": "Address anti-pattern issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- God function: GraphRenderer.constructor in packages/web/src/viewer/graph/renderer.ts calls 49 unique functions — consider decomposing into smaller, focused functions",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-03-06T02:29:26.369Z",
-      "completedAt": "2026-03-06T02:33:34.964Z",
-      "recommendationMeta": {
-        "findingHashes": [
-          "75e0bd6b432f"
-        ],
-        "category": "anti-pattern",
-        "severityDistribution": {
-          "warning": 1
-        },
-        "findingCount": 1
-      }
-    },
-    {
-      "id": "8b518f76-029b-42af-b9bd-7eadb183c008",
-      "title": "Fix cross-level matching in smart-add duplicate merge",
-      "status": "completed",
-      "level": "task",
-      "description": "The smart-add duplicate detection (`matchProposalNodeToPRD` in `smart-add-duplicates.ts`) walks the entire PRD tree and scores every item against each proposal node with no level filtering. A proposed epic can match an existing task, a proposed feature can match an existing epic, etc. This causes two failure modes:\n\n1. **Crash + partial state** — A proposed epic matches an existing task/feature. The merge target ID is used as `epicId` in `acceptProposals`. When it tries to add a new feature under this \"epic\" (actually a task), `insertChild` rejects the hierarchy mismatch (`tree.ts:65`), `addItem` throws (`file-adapter.ts:50`), and the loop aborts mid-way. Items added before the crash are already persisted → partial, broken PRD.\n\n2. **Silent structural corruption** — A proposed feature matches an existing epic. The merge target ID becomes `featureId`. New tasks are added with `featureId` = an epic ID. Since `LEVEL_HIERARCHY.task` allows parent `[\"feature\", \"epic\"]`, `insertChild` succeeds — but tasks become direct children of the epic, orphaned from any feature grouping.\n\n**Fix required (3 parts):**\n\n1. **Primary: Add level filtering to `matchProposalNodeToPRD`** (`smart-add-duplicates.ts:288-323`) — only match epic↔epic, feature↔feature, task↔task. Add a guard in `scoreNodeAgainstItem` or in the caller's loop: skip items whose `level` doesn't match `node.kind`.\n\n2. **Secondary: Validate merge targets in `acceptProposals`** (`smart-add.ts:~791-880`) — before using a merge target ID as a parent, verify the existing item has the expected level. If not, fall back to creating a new item instead of silently using the wrong parent.\n\n3. **Optional: Batch mutations for atomicity** — currently each `store.addItem()` individually loads/saves the document. If any add fails mid-loop, previously persisted items stay → inconsistent partial state. Consider collecting all mutations and saving once at the end.\n\n**Key files:**\n- `packages/rex/src/cli/commands/smart-add-duplicates.ts` — `matchProposalNodeToPRD` (lines 288-323), `scoreNodeAgainstItem` (lines 213-250)\n- `packages/rex/src/cli/commands/smart-add.ts` — `acceptProposals` (lines ~787-883), `applyDuplicateProposalMerges` (lines 458-533)\n- `packages/rex/src/store/file-adapter.ts` — `addItem` (lines 45-56)\n- `packages/rex/src/core/tree.ts` — `insertChild` (lines 50-78)",
-      "acceptanceCriteria": [
-        "matchProposalNodeToPRD only matches nodes against PRD items of the same level (epic↔epic, feature↔feature, task↔task)",
-        "acceptProposals validates merge target level before using it as a parent, falls back to creation on mismatch",
-        "Existing integration test (smart-add-duplicate-outcomes.test.ts) continues to pass",
-        "New test: cross-level match is rejected (e.g. proposed epic with same title as existing task does NOT produce a duplicate match)",
-        "New test: merge with level-matched duplicates correctly merges fields and adds non-duplicate children under the right parent"
-      ],
-      "priority": "high",
-      "tags": [
-        "bug",
-        "rex",
-        "smart-add",
-        "merge"
-      ],
-      "source": "manual",
-      "startedAt": "2026-03-06T06:04:33.772Z",
-      "completedAt": "2026-03-06T06:09:55.004Z"
-    },
-    {
       "id": "4909cee2-05f2-47b8-a9dd-a9e7006532e0",
       "title": "Web UI Design and User Experience Enhancement",
       "status": "completed",
@@ -18258,74 +17806,6 @@
       ]
     },
     {
-      "id": "b8205144-f216-4461-8ae7-c8a0c66007fd",
-      "title": "Address observation issues (5 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Bidirectional coupling: \"dashboard-mcp-server\" ↔ \"web-package-shell\" (2+4 crossings) — consider extracting shared interface\n- The task-usage-tracking ↔ dashboard-mcp-server coupling cycle is the only inter-zone warning in this batch and should be resolved to preserve clean unidirectional data flow in the analytics subsystem.\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects\n- Bidirectional imports between this zone and dashboard-mcp-server (2 imports in each direction) create a coupling cycle; consider inverting the dependency or introducing an event/callback boundary.\n- Coupling of 0.5 driven by 6 imports from dashboard-mcp-server suggests this cluster is a natural sub-module of that zone rather than an independent architectural boundary.",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-03-06T18:22:07.771Z",
-      "completedAt": "2026-03-06T18:27:04.517Z",
-      "recommendationMeta": {
-        "findingHashes": [
-          "30b2889a35bd",
-          "a412074fc50d",
-          "3a82920140f7",
-          "1055fc8a3d97",
-          "ace504630038"
-        ],
-        "category": "observation",
-        "severityDistribution": {
-          "warning": 5
-        },
-        "findingCount": 5
-      }
-    },
-    {
-      "id": "d2a70fe9-3e21-41a6-aca5-7ea4c47e1ac8",
-      "title": "Address anti-pattern issues (2 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- God function: main in packages/rex/src/cli/index.ts calls 48 unique functions — consider decomposing into smaller, focused functions\n- God function: usePRDActions in packages/web/src/viewer/hooks/use-prd-actions.ts calls 39 unique functions — consider decomposing into smaller, focused functions",
-      "priority": "high",
-      "source": "sourcevision",
-      "startedAt": "2026-03-06T18:14:50.750Z",
-      "completedAt": "2026-03-06T18:21:32.613Z",
-      "recommendationMeta": {
-        "findingHashes": [
-          "8e1afee1274d",
-          "19e5fd90db78"
-        ],
-        "category": "anti-pattern",
-        "severityDistribution": {
-          "warning": 2
-        },
-        "findingCount": 2
-      }
-    },
-    {
-      "id": "b9d03c36-c84b-4763-a043-e390fd3ecb4b",
-      "title": "Address suggestion issues (1 findings)",
-      "status": "completed",
-      "level": "feature",
-      "description": "- Zone \"Schema Validation\" (packages-rex:schema-validation) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention",
-      "priority": "critical",
-      "source": "sourcevision",
-      "startedAt": "2026-03-06T17:29:29.566Z",
-      "completedAt": "2026-03-06T17:54:39.954Z",
-      "recommendationMeta": {
-        "findingHashes": [
-          "6d076775b051"
-        ],
-        "category": "suggestion",
-        "severityDistribution": {
-          "critical": 1
-        },
-        "findingCount": 1
-      }
-    },
-    {
       "id": "e9641f3c-2913-4e47-a9e4-bb95ebe92291",
       "title": "Rex UI Task Management Enhancement",
       "status": "completed",
@@ -18492,6 +17972,552 @@
               "source": "smart-add",
               "startedAt": "2026-03-06T18:31:09.396Z",
               "completedAt": "2026-03-06T18:39:02.245Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bcd3ec61-7d2f-40b7-96dd-80f864fe3c13",
+      "title": "SourceVision Findings Remediation",
+      "status": "completed",
+      "level": "epic",
+      "description": "Umbrella epic for completed sourcevision analysis findings — observations, suggestions, patterns, anti-patterns, and manual fixes identified across multiple analysis runs.",
+      "priority": "high",
+      "source": "manual",
+      "startedAt": "2026-03-06T23:18:28.105Z",
+      "completedAt": "2026-03-06T23:18:28.105Z",
+      "children": [
+        {
+          "id": "2619bd1f-1c65-4a1f-af96-16a84294e3b6",
+          "title": "Address observation issues (3 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- 5 circular dependency chains detected — see imports.json for details\n- The message zone's low cohesion (0.45) combined with being the most-imported zone in the web layer suggests it has grown into a catch-all communication module; splitting it into typed message definitions and transport utilities would improve cohesion and make the import graph more precise.\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-03-05T04:50:57.123Z",
+          "completedAt": "2026-03-05T05:02:40.864Z",
+          "children": [
+            {
+              "id": "6731fd26-e5a3-4e43-89f2-f42b7fd7c19a",
+              "title": "Break rex analyze circular dependency (reason.ts ↔ extract.ts)",
+              "status": "completed",
+              "level": "task",
+              "description": "reason.ts dynamically imports extract.ts (lines 1224, 2050, 2061), and extract.ts statically imports utilities from reason.ts (detectFileFormat, spawnClaude, extractJson, etc.). file-validation.ts also imports FileFormat type from reason.ts. Extract shared utilities (detectFileFormat, extractJson, repairTruncatedJson, emptyAnalyzeTokenUsage, accumulateTokenUsage, PRD_SCHEMA, TASK_QUALITY_RULES, OUTPUT_INSTRUCTION, FileFormat type) into a new shared module that both reason.ts and extract.ts can import from without creating a cycle.",
+              "acceptanceCriteria": [
+                "No circular dependency between reason.ts, extract.ts, and file-validation.ts",
+                "All existing tests pass",
+                "No changes to public API"
+              ],
+              "priority": "high",
+              "startedAt": "2026-03-05T05:02:38.016Z",
+              "completedAt": "2026-03-05T05:02:38.016Z"
+            },
+            {
+              "id": "2b20ad08-82b9-4275-acee-69c06b9b13a7",
+              "title": "Break sourcevision circular dependency (enrich.ts ↔ zones.ts)",
+              "status": "completed",
+              "level": "task",
+              "description": "enrich.ts imports computeGlobalContentHash from zones.ts, while zones.ts imports enrichZonesWithAI and enrichZonesPerZone from enrich.ts. Move computeGlobalContentHash to a shared utility module or pass it as a dependency to break the cycle.",
+              "acceptanceCriteria": [
+                "No circular dependency between enrich.ts and zones.ts",
+                "All existing tests pass",
+                "No changes to public API"
+              ],
+              "priority": "high",
+              "startedAt": "2026-03-05T05:02:39.443Z",
+              "completedAt": "2026-03-05T05:02:39.443Z"
+            },
+            {
+              "id": "5a11ecb9-002e-4e3d-a165-3658d8f9dc49",
+              "title": "Document message zone architecture and rex schema fan-in hotspot",
+              "status": "completed",
+              "level": "task",
+              "description": "Two observation findings that don't require code restructuring: (1) Viewer Message Flow Control zone has low cohesion (0.45) because message-coalescer and message-throttle are independent utilities - add a module doc explaining they're a messaging-primitives library. (2) rex/schema/index.ts has 42 importers (fan-in hotspot) - this is expected for a schema barrel; add a doc comment warning about change impact.",
+              "acceptanceCriteria": [
+                "Message zone has documentation explaining its architecture",
+                "Rex schema barrel has doc comment about high fan-in and change impact"
+              ],
+              "priority": "medium",
+              "startedAt": "2026-03-05T05:02:40.715Z",
+              "completedAt": "2026-03-05T05:02:40.715Z"
+            }
+          ],
+          "recommendationMeta": {
+            "findingHashes": [
+              "2360c21c19db",
+              "6ae74c1e1509",
+              "3a82920140f7"
+            ],
+            "category": "observation",
+            "severityDistribution": {
+              "warning": 3
+            },
+            "findingCount": 3
+          }
+        },
+        {
+          "id": "6a024d8b-7dfc-4707-8149-c8eb6fd41cbf",
+          "title": "Address suggestion issues (18 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- Verify that packages/hench/src/public.ts exists and exports the complete public API surface — if it is missing, hench is the only package breaking the public.ts convention stated in CLAUDE.md, creating an undocumented exception in the five-package pattern.\n- Add zone coupling and cohesion threshold assertions to ci.js — for example, fail CI if any non-asset zone's coupling exceeds 0.25 or cohesion drops below 0.5 — so architectural degradation is caught automatically rather than requiring manual analysis runs.\n- Adopt a policy of excluding .gitkeep files from zone membership in the sourcevision inventory phase. These files provide no semantic signal and distort cohesion/coupling scores most severely in small, low-cohesion zones — exactly the zones where accurate metrics matter most for architectural decision-making.\n- Establish and document an explicit zone naming convention distinguishing source zones from test zones: zones containing production source files should never carry a '-tests' suffix regardless of whether they also contain test files. The single violation ('prd-tree-lifecycle-tests' containing 2 production components) is low-cost to fix now but will compound as contributors use the zone name as a template for future lifecycle component zones.\n- The 'web' zone (15 files, cohesion 0.86) is the second-lowest cohesion zone among actively-imported zones in the web layer and receives imports from both web-viewer and web-integration simultaneously — the same dual-consumer blast-radius risk profile as the message zone. Unlike message, it has received no explicit review or documentation of what belongs there. Define and document the web zone's content contract before it accumulates heterogeneous content that degrades its cohesion further.\n- The import graph alias 'message' and zone metadata ID 'viewer-message-flow-control' refer to the same zone but use different identifiers. Any cross-source analysis (health dashboards, import attribution, lint rules) that joins these two data sources by ID will silently produce incorrect results. This is a data integrity defect: assign a single canonical ID and regenerate all output files consistently.\n- sourcevision emits abbreviated zone IDs in imports.json that do not match canonical zone IDs in zone metadata for at least two zones (dom-performance-monitoring → 'dom', viewer-message-flow-control → 'message'). Both follow the same first-word-segment truncation pattern, confirming a systemic defect. Any automated pipeline joining these two data sources by zone ID silently drops all import edges for both affected zones. Fix by enforcing that sourcevision uses the identical canonical zone ID string in every output file (zones.json, imports.json, CONTEXT.md, per-zone summary files).\n- 2 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): packages-rex:cli-e2e-test-suite, packages-rex:token-usage-analytics — mandatory refactoring recommended before further development\n- Consolidate node-culler.ts and request-dedup.ts into a formal packages/web/src/shared/ directory with an index.ts barrel — this removes algorithmic zone fragility, makes the shared surface explicit, and prevents future utilities from being scattered across viewer subdirectories.\n- 'cli-dev.test.js' covers a command not listed in CLAUDE.md. Verify whether 'ndx dev' is a real, documented command or a removed/renamed one. If removed, delete the test to avoid false CI confidence; if undocumented, add it to CLAUDE.md.\n- The zone ID appears as 'dom' in the cross-zone import graph — the second confirmed instance of the same zone ID truncation bug already identified for viewer-message-flow-control. Both affected zones have active cross-zone import edges, meaning joins between imports.json and zone metadata silently drop their edges. This confirms the bug is systemic and must be fixed in sourcevision's import graph emission, not patched per-zone.\n- Rename zone to 'prd-tree-lifecycle' to eliminate the false '-tests' suffix signal. The current name implies a test-only zone but it contains production components; the mislabeling will cause contributor confusion and may break tooling that distinguishes source zones from test zones by name suffix. Every other '-tests'-suffixed zone in the codebase contains only test files.\n- Add integration tests for the orchestration scripts that verify the correct CLI commands are constructed and invoked — child-process delegation logic is currently untested and regressions would be invisible to the per-package test suites.\n- Define and implement a maximum-entry or size-based rotation policy for .rex/execution-log.jsonl to prevent unbounded growth in long-running projects.\n- FRAGILE ZONE: viewer-message-flow-control has both the lowest cohesion (0.45) and coupling approaching the warning threshold (0.55) simultaneously. This combination — structurally weak internally, heavily consumed externally — makes it the single highest-risk zone for cascading breakage. Prioritize splitting or stabilizing this zone before adding new consumers.\n- Three-way naming conflict: source files use 'message-' prefix, zone ID is 'viewer-message-flow-control', import graph alias is 'message'. Establish a single canonical name (recommend 'messaging-primitives') and propagate it to all three: filenames, zone ID in zones.json, and the import graph key in imports.json.\n- Zone \"CLI End-to-End Test Suite\" (packages-rex:cli-e2e-test-suite) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention\n- Zone \"Token Usage Analytics\" (packages-rex:token-usage-analytics) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention",
+          "priority": "critical",
+          "source": "sourcevision",
+          "startedAt": "2026-03-05T04:40:48.395Z",
+          "completedAt": "2026-03-05T04:50:54.678Z",
+          "children": [
+            {
+              "id": "a72ad64b-5685-4fb8-9203-140a1af337ef",
+              "title": "Fix zone ID truncation in zoneContentHashes",
+              "status": "completed",
+              "level": "task",
+              "description": "Remap zoneContentHashes keys after AI enrichment renames zone IDs. Currently the keys use pre-enrichment IDs (e.g. \"dom\", \"message\") while zone.id values use post-enrichment IDs (e.g. \"dom-performance-monitoring\", \"viewer-message-flow-control\"). This causes silent data join failures.",
+              "priority": "critical",
+              "startedAt": "2026-03-05T04:49:56.147Z",
+              "completedAt": "2026-03-05T04:49:56.147Z"
+            },
+            {
+              "id": "f4acd7c0-fff5-436b-bfec-f6f0cb5d566c",
+              "title": "Add CI zone health threshold assertions",
+              "status": "completed",
+              "level": "task",
+              "description": "Add a new CI step to ci.js that reads zones.json and fails if any non-asset zone exceeds coupling 0.25 or drops below cohesion 0.5. Report violating zones in the CI output.",
+              "priority": "high",
+              "startedAt": "2026-03-05T04:49:57.912Z",
+              "completedAt": "2026-03-05T04:49:57.912Z"
+            },
+            {
+              "id": "97789d26-e35e-4e34-9522-e377ded1c3c7",
+              "title": "Document ndx dev command in CLAUDE.md",
+              "status": "completed",
+              "level": "task",
+              "description": "The ndx dev command exists in cli.js but is not listed in CLAUDE.md. Add it to the orchestration commands section.",
+              "priority": "medium",
+              "startedAt": "2026-03-05T04:49:59.302Z",
+              "completedAt": "2026-03-05T04:49:59.302Z"
+            },
+            {
+              "id": "15d4efdc-7b69-4f15-9a57-bd3ce75b914f",
+              "title": "Consolidate shared utilities into packages/web/src/shared/",
+              "status": "completed",
+              "level": "task",
+              "description": "Move node-culler.ts and request-dedup.ts into packages/web/src/shared/ with an index.ts barrel export. The directory already exists with data-files.ts.",
+              "priority": "medium",
+              "startedAt": "2026-03-05T05:34:38.734Z",
+              "completedAt": "2026-03-05T05:37:48.718Z"
+            },
+            {
+              "id": "be99cf02-d39f-46d0-9ce1-c7c1599e6ac7",
+              "title": "Implement execution log rotation for .rex/execution-log.jsonl",
+              "status": "completed",
+              "level": "task",
+              "description": "Add max-entry or size-based rotation to prevent unbounded growth. When the log exceeds the threshold, rotate to execution-log.1.jsonl and start fresh.",
+              "priority": "medium",
+              "startedAt": "2026-03-05T04:50:00.402Z",
+              "completedAt": "2026-03-05T04:50:00.402Z"
+            },
+            {
+              "id": "5f3f3249-72f8-4433-a7d3-d05db96c2da9",
+              "title": "Add orchestration script integration tests",
+              "status": "completed",
+              "level": "task",
+              "description": "Add tests that verify cli.js constructs and invokes correct CLI commands for each orchestration path. Child-process delegation is currently untested.",
+              "priority": "medium",
+              "startedAt": "2026-03-05T05:22:21.681Z",
+              "completedAt": "2026-03-05T05:34:10.245Z"
+            },
+            {
+              "id": "2ac170c5-b201-4cee-9046-3772087c22a3",
+              "title": "Zone naming conventions and renaming",
+              "status": "completed",
+              "level": "task",
+              "description": "Document zone naming convention (source vs test zones). Rename prd-tree-lifecycle-tests to prd-tree-lifecycle. Document web zone content contract. These are output-quality improvements that will be addressed by re-running analysis after the zone ID fix.",
+              "priority": "low",
+              "startedAt": "2026-03-05T05:41:52.894Z",
+              "completedAt": "2026-03-05T05:48:46.765Z"
+            }
+          ],
+          "recommendationMeta": {
+            "findingHashes": [
+              "8ab4af067f6e",
+              "71902dbd1287",
+              "af767876794e",
+              "bb48f0a5b996",
+              "8836ec9ee46c",
+              "3b6510764710",
+              "47896778a9b6",
+              "75ca015bfa67",
+              "0a3570d9a6a2",
+              "00c6e0c3c33b",
+              "75598fb0b6cb",
+              "75113b8bb983",
+              "8aac80b8f1e5",
+              "4b3e6b45afbb",
+              "1285628fd32a",
+              "b1bd5dd50c8b",
+              "521dcf780ec2",
+              "f26bf9612d39"
+            ],
+            "category": "suggestion",
+            "severityDistribution": {
+              "warning": 15,
+              "critical": 3
+            },
+            "findingCount": 18
+          }
+        },
+        {
+          "id": "00d195c1-d984-4708-9cfb-37eee5475122",
+          "title": "Address pattern issues (2 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- The entire codebase has coupling > 0 only in the web messaging stack (3 zones); all other zones are at coupling 0 — this concentration means the messaging layer is the single point of architectural debt and deserves priority refactoring attention before it accretes further consumers\n- The web layer exhibits a hub-and-spoke topology with web-viewer (329 files) as the hub: it imports from message, web-integration, and web-package-scaffolding while being imported by dom. All other zones are spokes or isolated. This concentration of import edges in one zone is a scaling risk — as web-viewer grows, its import surface grows proportionally with no natural decomposition boundary.",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-03-05T05:03:33.614Z",
+          "completedAt": "2026-03-05T05:12:39.923Z",
+          "recommendationMeta": {
+            "findingHashes": [
+              "cac60522219f",
+              "1c780f664d3a"
+            ],
+            "category": "pattern",
+            "severityDistribution": {
+              "warning": 2
+            },
+            "findingCount": 2
+          }
+        },
+        {
+          "id": "251fbe0a-8b4f-4cb0-a22a-326bf24e64f4",
+          "title": "Address relationship issues (3 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- web-viewer bypasses web-integration for 4 of its 6 message-zone imports, importing message directly rather than through the integration layer. This partial bypass means web-integration is not enforcing a stable interface over message for web-viewer, leaving web-viewer exposed to message internals directly.\n- web-viewer simultaneously imports from web, web-integration, viewer-call-rate-limiter, and viewer-message-flow-control — it is the hub of all non-zero coupling in the web layer; if web-viewer grows further, these four inbound dependency paths will become increasingly difficult to untangle\n- web-integration acts as an implicit middleware hub: it imports from both message and web while being imported by web-viewer. This three-way relay role is not documented and risks becoming a catch-all as the codebase grows. Define a clear responsibility boundary for this zone.",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-03-05T05:13:25.945Z",
+          "completedAt": "2026-03-05T05:18:59.365Z",
+          "recommendationMeta": {
+            "findingHashes": [
+              "fbd735535482",
+              "2db342a0007b",
+              "94c4e49b1e3c"
+            ],
+            "category": "relationship",
+            "severityDistribution": {
+              "warning": 3
+            },
+            "findingCount": 3
+          }
+        },
+        {
+          "id": "b290a87e-ff66-48d7-8890-0929f14200bb",
+          "title": "Address anti-pattern issues (10 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- Both messaging zones contain .gitkeep placeholder files that are counted as zone members. Since these zones are the lowest-cohesion zones in the codebase and the primary architectural risk surface, metric distortion from non-functional files is highest-impact here. All .gitkeep files should be excluded from zone membership calculations in the sourcevision inventory phase to ensure health scores reflect only meaningful source and test files.\n- Five circular dependency chains are reported in imports.json but no zone insight identifies their location. If any cycle crosses zone boundaries (e.g., web-viewer ↔ web-integration or web-integration ↔ message), it would represent an architectural violation of the strict partial order observed in the zone graph. These cycles must be localized and classified before the 'no circular dependencies among analyzed zones' conclusion can be treated as a full guarantee.\n- The composed messaging stack (viewer-message-flow-control → viewer-call-rate-limiter → web-viewer) has no integration or e2e test that validates the full composition under real conditions. Each zone has unit tests, but composed behavior — including that viewer-call-rate-limiter correctly throttles viewer-message-flow-control primitives and that web-viewer does not bypass the rate-limiter — is never asserted. A single integration test that instantiates all three layers together would close this gap.\n- The gateway pattern is applied inconsistently: hench and web-server enforce explicit gateway modules for all cross-package imports, but the intra-web layer (web-viewer consuming message, web, web-integration) has no equivalent gateway discipline. The pattern's benefits are present at tier boundaries but absent at zone boundaries within the web package, creating a two-tier enforcement gap.\n- The server/client boundary within packages/web (src/server/ vs src/viewer/) has no machine-enforced import restriction. The gateway pattern prevents cross-package imports, but an accidental import from src/viewer/ into src/server/ (or vice versa) would not be caught by any existing lint, build, or zone-coupling check. This boundary should be enforced via eslint-plugin-import boundaries or TypeScript project references to match the rigor applied to cross-package imports.\n- Zone ID 'viewer-message-flow-control' in zone metadata does not match the ID 'message' used in the cross-zone import graph. Any tooling that joins these two data sources by zone ID will silently produce incorrect attribution. This should be treated as a data integrity defect in sourcevision output generation, requiring a single canonical ID to be used consistently across all output files (zones.json, imports.json, CONTEXT.md).\n- God function: handleHenchRoute in packages/web/src/server/routes-hench.ts calls 59 unique functions — consider decomposing into smaller, focused functions\n- The message zone has no formal public interface file (e.g., types.ts or protocol.ts) that declares the contract between its 5 files and its 6 consumers. Its low cohesion (0.45) combined with high inbound traffic means consumers are importing individual implementation files rather than a stable surface, making the zone brittle to internal reorganization.\n- web-integration's name implies it is an adapter between web-viewer and the lower infrastructure zones (message, web), but web-viewer imports message and web directly rather than through web-integration. web-integration is therefore a parallel consumer, not a facade — its architectural role is misleading and contributors may add redundant integration logic to both web-integration and web-viewer independently.\n- web-viewer has no internal gateway consolidating its cross-zone imports, unlike hench (rex-gateway.ts) and web server (rex-gateway.ts, domain-gateway.ts). With 4+ cross-zone import paths, scattered call-site imports mean any upstream API change (message, web-integration, web) requires a grep across 329 files to find all affected sites rather than a single gateway edit.",
+          "priority": "critical",
+          "source": "sourcevision",
+          "startedAt": "2026-03-05T04:31:13.435Z",
+          "completedAt": "2026-03-05T04:39:54.230Z",
+          "children": [
+            {
+              "id": "342a7e98-76cc-4c61-acf2-32d6b9748cac",
+              "title": "Exclude .gitkeep files from sourcevision inventory",
+              "status": "completed",
+              "level": "task",
+              "description": "Add .gitkeep to skip patterns in sourcevision inventory analyzer so placeholder files don't distort zone membership and cohesion metrics.",
+              "priority": "high",
+              "startedAt": "2026-03-05T04:33:13.410Z",
+              "completedAt": "2026-03-05T04:33:13.410Z"
+            },
+            {
+              "id": "8add52d5-0c88-4859-8f63-c9ea472d3ab1",
+              "title": "Decompose handleHenchRoute god function",
+              "status": "completed",
+              "level": "task",
+              "description": "Break handleHenchRoute (59 unique function calls) into focused sub-handlers organized by resource type (runs, memory, metrics, throttle, templates, config, execute).",
+              "priority": "high",
+              "startedAt": "2026-03-05T04:36:53.500Z",
+              "completedAt": "2026-03-05T04:36:53.500Z"
+            },
+            {
+              "id": "23af2432-c9f8-4085-a476-d3650be5f6dc",
+              "title": "Create messaging zone public interface barrel",
+              "status": "completed",
+              "level": "task",
+              "description": "Add an index.ts barrel file for packages/web/src/viewer/messaging/ that declares the public API. Update consumers to import from the barrel instead of individual implementation files.",
+              "priority": "high",
+              "startedAt": "2026-03-05T04:33:49.389Z",
+              "completedAt": "2026-03-05T04:33:49.389Z"
+            },
+            {
+              "id": "f7e84772-d792-4aa0-9bf3-7dd811dbffbf",
+              "title": "Create web-viewer cross-zone gateway modules",
+              "status": "completed",
+              "level": "task",
+              "description": "Create gateway modules for web-viewer's cross-zone imports (messaging, performance, polling) following the same pattern as hench/rex-gateway.ts and web-server gateways. Consolidate scattered cross-zone imports.",
+              "priority": "high",
+              "startedAt": "2026-03-05T04:36:54.899Z",
+              "completedAt": "2026-03-05T04:36:54.899Z"
+            },
+            {
+              "id": "d14990e3-a788-4238-90e2-39dacb098046",
+              "title": "Add server/client boundary enforcement via ESLint",
+              "status": "completed",
+              "level": "task",
+              "description": "Add ESLint import boundary rules or TypeScript project references to prevent accidental imports between packages/web/src/server/ and packages/web/src/viewer/.",
+              "priority": "medium",
+              "startedAt": "2026-03-05T04:38:41.724Z",
+              "completedAt": "2026-03-05T04:38:41.724Z"
+            },
+            {
+              "id": "1bc10996-2e98-4dc7-91fa-6cac2afa6e73",
+              "title": "Localize and classify circular dependency chains",
+              "status": "completed",
+              "level": "task",
+              "description": "Analyze the 5 circular dependency chains in imports.json, determine which zones they belong to, and classify whether any cross zone boundaries. Document findings and fix any that violate the strict partial order.",
+              "priority": "medium",
+              "startedAt": "2026-03-05T04:39:24.958Z",
+              "completedAt": "2026-03-05T04:39:24.958Z"
+            },
+            {
+              "id": "2c30b5b9-ec41-44d8-a06b-b5c25d7b4823",
+              "title": "Add messaging stack integration test",
+              "status": "completed",
+              "level": "task",
+              "description": "Write an integration test validating the composed messaging stack (message-flow-control → call-rate-limiter → web-viewer) under real conditions, verifying rate limiting and throttling work end-to-end.",
+              "priority": "medium",
+              "startedAt": "2026-03-05T05:19:15.482Z",
+              "completedAt": "2026-03-05T05:21:55.257Z"
+            },
+            {
+              "id": "962e64af-c978-45ea-b327-63923d4e7a35",
+              "title": "Document web-integration zone architectural role",
+              "status": "completed",
+              "level": "task",
+              "description": "Clarify that web-integration is a parallel consumer, not a facade. Either refactor to make it a true facade or document its actual role to prevent confusion.",
+              "priority": "low",
+              "startedAt": "2026-03-05T05:38:04.727Z",
+              "completedAt": "2026-03-05T05:41:20.138Z"
+            }
+          ],
+          "recommendationMeta": {
+            "findingHashes": [
+              "dbef4a5c90f6",
+              "c836cca79cfe",
+              "599ea0d132a1",
+              "d1e2f6b9e6f6",
+              "8815f6c005b2",
+              "afcb485989bf",
+              "3b75ffdb4d83",
+              "2c2e4990f55c",
+              "ed0961464fbb",
+              "c124bd40b4d8"
+            ],
+            "category": "anti-pattern",
+            "severityDistribution": {
+              "warning": 6,
+              "critical": 4
+            },
+            "findingCount": 10
+          }
+        },
+        {
+          "id": "7054370f-4ddb-45ab-85ab-dea1a6619a49",
+          "title": "Address observation issues (3 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- 1 circular dependency chain detected — see imports.json for details\n- Bidirectional coupling: \"web\" ↔ \"web-viewer\" (4+2 crossings) — consider extracting shared interface\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-03-06T02:34:16.610Z",
+          "completedAt": "2026-03-06T02:42:01.776Z",
+          "recommendationMeta": {
+            "findingHashes": [
+              "ddc831d1e606",
+              "a44643cd460f",
+              "3a82920140f7"
+            ],
+            "category": "observation",
+            "severityDistribution": {
+              "warning": 3
+            },
+            "findingCount": 3
+          }
+        },
+        {
+          "id": "4a2d6294-75e0-42f5-b445-9228184d75ad",
+          "title": "Address suggestion issues (3 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- 2 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): packages-rex:e2e, packages-rex:usage — mandatory refactoring recommended before further development\n- Zone \"E2e\" (packages-rex:e2e) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention\n- Zone \"Usage\" (packages-rex:usage) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention",
+          "priority": "critical",
+          "source": "sourcevision",
+          "startedAt": "2026-03-06T02:24:11.572Z",
+          "completedAt": "2026-03-06T02:28:55.168Z",
+          "recommendationMeta": {
+            "findingHashes": [
+              "256d4731c00f",
+              "29fb7fc49bb2",
+              "00675d0a2e67"
+            ],
+            "category": "suggestion",
+            "severityDistribution": {
+              "warning": 1,
+              "critical": 2
+            },
+            "findingCount": 3
+          }
+        },
+        {
+          "id": "7be29eae-a985-49f8-badc-6a5bf257db36",
+          "title": "Address pattern issues (2 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- Findings 0 and 11 are independently generated by different analysis methods and both identify the same unresolved circular dependency as a real structural issue. The specific actionable gap is file-pair localization: neither finding names the exact files forming the cycle. Run a targeted traversal of imports.json filtering for cycle edges where both endpoints fall within the web-viewer zone (338-file interior) to identify the specific pair before attempting a fix. Until localized, the build-correctness risk flagged in finding 11 cannot be resolved.\n- Findings 1, web-server zone finding 0, and global finding 5 converge on one root cause: the web package zone structure was grown incrementally without a consistent model. The three concrete symptoms are bidirectional coupling between web-dashboard-application and web-package-root (2+4 crossings), a 4-file web-server satellite with 0.63 cohesion and 0.38 coupling that imports bidirectionally with web-viewer (2+2 crossings), and zone names that mix 'web-viewer', 'panel', 'dom', 'logo' prefixes within a single package. These are three manifestations of the same structural deficit, not three independent problems. Addressing the naming convention (finding 5) and the satellite merge (web-server finding 0) would simultaneously improve the coupling metric tracked in finding 1.",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-03-06T02:42:51.435Z",
+          "completedAt": "2026-03-06T02:51:57.861Z",
+          "recommendationMeta": {
+            "findingHashes": [
+              "e80b467903a5",
+              "46aaae60589f"
+            ],
+            "category": "pattern",
+            "severityDistribution": {
+              "warning": 2
+            },
+            "findingCount": 2
+          }
+        },
+        {
+          "id": "a4aa9e56-ba46-4e97-8fb1-7d7bf404da88",
+          "title": "Address anti-pattern issues (1 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- God function: GraphRenderer.constructor in packages/web/src/viewer/graph/renderer.ts calls 49 unique functions — consider decomposing into smaller, focused functions",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-03-06T02:29:26.369Z",
+          "completedAt": "2026-03-06T02:33:34.964Z",
+          "recommendationMeta": {
+            "findingHashes": [
+              "75e0bd6b432f"
+            ],
+            "category": "anti-pattern",
+            "severityDistribution": {
+              "warning": 1
+            },
+            "findingCount": 1
+          }
+        },
+        {
+          "id": "b8205144-f216-4461-8ae7-c8a0c66007fd",
+          "title": "Address observation issues (5 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- Bidirectional coupling: \"dashboard-mcp-server\" ↔ \"web-package-shell\" (2+4 crossings) — consider extracting shared interface\n- The task-usage-tracking ↔ dashboard-mcp-server coupling cycle is the only inter-zone warning in this batch and should be resolved to preserve clean unidirectional data flow in the analytics subsystem.\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects\n- Bidirectional imports between this zone and dashboard-mcp-server (2 imports in each direction) create a coupling cycle; consider inverting the dependency or introducing an event/callback boundary.\n- Coupling of 0.5 driven by 6 imports from dashboard-mcp-server suggests this cluster is a natural sub-module of that zone rather than an independent architectural boundary.",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-03-06T18:22:07.771Z",
+          "completedAt": "2026-03-06T18:27:04.517Z",
+          "recommendationMeta": {
+            "findingHashes": [
+              "30b2889a35bd",
+              "a412074fc50d",
+              "3a82920140f7",
+              "1055fc8a3d97",
+              "ace504630038"
+            ],
+            "category": "observation",
+            "severityDistribution": {
+              "warning": 5
+            },
+            "findingCount": 5
+          }
+        },
+        {
+          "id": "d2a70fe9-3e21-41a6-aca5-7ea4c47e1ac8",
+          "title": "Address anti-pattern issues (2 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- God function: main in packages/rex/src/cli/index.ts calls 48 unique functions — consider decomposing into smaller, focused functions\n- God function: usePRDActions in packages/web/src/viewer/hooks/use-prd-actions.ts calls 39 unique functions — consider decomposing into smaller, focused functions",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-03-06T18:14:50.750Z",
+          "completedAt": "2026-03-06T18:21:32.613Z",
+          "recommendationMeta": {
+            "findingHashes": [
+              "8e1afee1274d",
+              "19e5fd90db78"
+            ],
+            "category": "anti-pattern",
+            "severityDistribution": {
+              "warning": 2
+            },
+            "findingCount": 2
+          }
+        },
+        {
+          "id": "b9d03c36-c84b-4763-a043-e390fd3ecb4b",
+          "title": "Address suggestion issues (1 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- Zone \"Schema Validation\" (packages-rex:schema-validation) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention",
+          "priority": "critical",
+          "source": "sourcevision",
+          "startedAt": "2026-03-06T17:29:29.566Z",
+          "completedAt": "2026-03-06T17:54:39.954Z",
+          "recommendationMeta": {
+            "findingHashes": [
+              "6d076775b051"
+            ],
+            "category": "suggestion",
+            "severityDistribution": {
+              "critical": 1
+            },
+            "findingCount": 1
+          }
+        },
+        {
+          "id": "5e436133-6154-4bcd-868c-aba338560e3d",
+          "title": "Smart-add duplicate detection fixes",
+          "status": "completed",
+          "level": "feature",
+          "description": "Fixes for cross-level matching bugs in smart-add duplicate merge logic.",
+          "priority": "high",
+          "source": "manual",
+          "startedAt": "2026-03-06T23:18:27.911Z",
+          "completedAt": "2026-03-06T23:18:27.911Z",
+          "children": [
+            {
+              "id": "8b518f76-029b-42af-b9bd-7eadb183c008",
+              "title": "Fix cross-level matching in smart-add duplicate merge",
+              "status": "completed",
+              "level": "task",
+              "description": "The smart-add duplicate detection (`matchProposalNodeToPRD` in `smart-add-duplicates.ts`) walks the entire PRD tree and scores every item against each proposal node with no level filtering. A proposed epic can match an existing task, a proposed feature can match an existing epic, etc. This causes two failure modes:\n\n1. **Crash + partial state** — A proposed epic matches an existing task/feature. The merge target ID is used as `epicId` in `acceptProposals`. When it tries to add a new feature under this \"epic\" (actually a task), `insertChild` rejects the hierarchy mismatch (`tree.ts:65`), `addItem` throws (`file-adapter.ts:50`), and the loop aborts mid-way. Items added before the crash are already persisted → partial, broken PRD.\n\n2. **Silent structural corruption** — A proposed feature matches an existing epic. The merge target ID becomes `featureId`. New tasks are added with `featureId` = an epic ID. Since `LEVEL_HIERARCHY.task` allows parent `[\"feature\", \"epic\"]`, `insertChild` succeeds — but tasks become direct children of the epic, orphaned from any feature grouping.\n\n**Fix required (3 parts):**\n\n1. **Primary: Add level filtering to `matchProposalNodeToPRD`** (`smart-add-duplicates.ts:288-323`) — only match epic↔epic, feature↔feature, task↔task. Add a guard in `scoreNodeAgainstItem` or in the caller's loop: skip items whose `level` doesn't match `node.kind`.\n\n2. **Secondary: Validate merge targets in `acceptProposals`** (`smart-add.ts:~791-880`) — before using a merge target ID as a parent, verify the existing item has the expected level. If not, fall back to creating a new item instead of silently using the wrong parent.\n\n3. **Optional: Batch mutations for atomicity** — currently each `store.addItem()` individually loads/saves the document. If any add fails mid-loop, previously persisted items stay → inconsistent partial state. Consider collecting all mutations and saving once at the end.\n\n**Key files:**\n- `packages/rex/src/cli/commands/smart-add-duplicates.ts` — `matchProposalNodeToPRD` (lines 288-323), `scoreNodeAgainstItem` (lines 213-250)\n- `packages/rex/src/cli/commands/smart-add.ts` — `acceptProposals` (lines ~787-883), `applyDuplicateProposalMerges` (lines 458-533)\n- `packages/rex/src/store/file-adapter.ts` — `addItem` (lines 45-56)\n- `packages/rex/src/core/tree.ts` — `insertChild` (lines 50-78)",
+              "acceptanceCriteria": [
+                "matchProposalNodeToPRD only matches nodes against PRD items of the same level (epic↔epic, feature↔feature, task↔task)",
+                "acceptProposals validates merge target level before using it as a parent, falls back to creation on mismatch",
+                "Existing integration test (smart-add-duplicate-outcomes.test.ts) continues to pass",
+                "New test: cross-level match is rejected (e.g. proposed epic with same title as existing task does NOT produce a duplicate match)",
+                "New test: merge with level-matched duplicates correctly merges fields and adds non-duplicate children under the right parent"
+              ],
+              "priority": "high",
+              "tags": [
+                "bug",
+                "rex",
+                "smart-add",
+                "merge"
+              ],
+              "source": "manual",
+              "startedAt": "2026-03-06T06:04:33.772Z",
+              "completedAt": "2026-03-06T06:09:55.004Z"
             }
           ]
         }
