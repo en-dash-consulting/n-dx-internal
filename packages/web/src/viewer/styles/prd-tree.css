@@ -666,14 +666,22 @@
   border-radius: 3px;
 }
 
-.prd-usage-chip {
+/* Token usage badge — always visible when non-zero, neutral chip style */
+.prd-token-badge {
   font-size: var(--font-sm);
-  color: var(--brand-teal);
-  background: color-mix(in srgb, var(--brand-teal) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--brand-teal) 35%, transparent);
+  color: var(--text-dim);
+  background: color-mix(in srgb, var(--text-dim) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-dim) 20%, transparent);
   border-radius: 999px;
   padding: 1px var(--space-1-5);
   white-space: nowrap;
+}
+
+/* Accented variant when budget info is shown */
+.prd-token-badge--budget {
+  color: var(--brand-teal);
+  background: color-mix(in srgb, var(--brand-teal) 10%, transparent);
+  border-color: color-mix(in srgb, var(--brand-teal) 35%, transparent);
 }
 
 /* Timestamp */

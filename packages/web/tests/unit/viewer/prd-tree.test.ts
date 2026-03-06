@@ -162,7 +162,7 @@ describe("PRDTree", () => {
     expect(root.textContent).toContain("1.2k tokens | 2%");
   });
 
-  it("renders missing-budget fallback label and reason on usage chips", () => {
+  it("renders missing-budget fallback label and reason on token badges", () => {
     const root = renderToDiv(h(PRDTree, {
       document: sampleDoc,
       defaultExpandDepth: 3,
@@ -172,11 +172,11 @@ describe("PRDTree", () => {
       },
     }));
     expect(root.textContent).toContain("1.2k tokens | No budget");
-    const chip = root.querySelector(".prd-usage-chip");
-    expect(chip?.getAttribute("data-utilization-reason")).toBe("missing_budget");
+    const badge = root.querySelector(".prd-token-badge");
+    expect(badge?.getAttribute("data-utilization-reason")).toBe("missing_budget");
   });
 
-  it("hides budget info on usage chips when showTokenBudget is false", () => {
+  it("hides budget info on token badges when showTokenBudget is false", () => {
     const root = renderToDiv(h(PRDTree, {
       document: sampleDoc,
       defaultExpandDepth: 3,
@@ -191,13 +191,46 @@ describe("PRDTree", () => {
     // Budget percentage should NOT appear
     expect(root.textContent).not.toContain("| 2%");
     // No utilization-reason data attribute
-    const chip = root.querySelector(".prd-usage-chip");
-    expect(chip?.getAttribute("data-utilization-reason")).toBeNull();
+    const badge = root.querySelector(".prd-token-badge");
+    expect(badge?.getAttribute("data-utilization-reason")).toBeNull();
   });
 
-  it("renders explicit zero usage for tasks without associated runs", () => {
+  it("hides token badge for tasks with zero usage", () => {
     const root = renderToDiv(h(PRDTree, { document: sampleDoc, defaultExpandDepth: 3 }));
-    expect(root.textContent).toContain("0 tokens");
+    // Zero-usage tasks should show no badge at all
+    expect(root.textContent).not.toContain("0 tokens");
+    const badges = root.querySelectorAll(".prd-token-badge");
+    expect(badges.length).toBe(0);
+  });
+
+  it("shows token badge when showTokenBudget is false and usage is non-zero", () => {
+    const root = renderToDiv(h(PRDTree, {
+      document: sampleDoc,
+      defaultExpandDepth: 3,
+      showTokenBudget: false,
+      taskUsageById: {
+        "task-2": { totalTokens: 5000, runCount: 1 },
+      },
+    }));
+    const badge = root.querySelector(".prd-token-badge");
+    expect(badge).not.toBeNull();
+    expect(badge?.textContent).toBe("5.0k tokens");
+  });
+
+  it("shows token badge when showTokenBudget is true and usage is non-zero", () => {
+    const root = renderToDiv(h(PRDTree, {
+      document: sampleDoc,
+      defaultExpandDepth: 3,
+      showTokenBudget: true,
+      weeklyBudget: { budget: 100_000, source: "vendor_default" },
+      taskUsageById: {
+        "task-2": { totalTokens: 5000, runCount: 1 },
+      },
+    }));
+    const badge = root.querySelector(".prd-token-badge");
+    expect(badge).not.toBeNull();
+    expect(badge?.textContent).toContain("5.0k tokens");
+    expect(badge?.classList.contains("prd-token-badge--budget")).toBe(true);
   });
 
   it("renders tree role for accessibility", () => {

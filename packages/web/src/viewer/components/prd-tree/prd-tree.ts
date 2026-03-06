@@ -330,12 +330,12 @@ class NodeRow extends Component<NodeRowProps> {
       item.tags && item.tags.length > 0
         ? h(TagList, { tags: item.tags })
         : null,
-      // Aggregated task token usage
-      isWorkItem(item.level)
+      // Aggregated task token usage — badge only renders for non-zero usage
+      isWorkItem(item.level) && usage.totalTokens > 0
         ? h(
             "span",
             {
-              class: "prd-usage-chip",
+              class: `prd-token-badge${showTokenBudget ? " prd-token-badge--budget" : ""}`,
               ...(showTokenBudget ? { "data-utilization-reason": utilization.reason } : {}),
               title: showTokenBudget
                 ? `${usage.runCount} associated run${usage.runCount === 1 ? "" : "s"} | ${utilization.label} weekly utilization`

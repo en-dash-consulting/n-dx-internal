@@ -10325,7 +10325,7 @@
             {
               "id": "499fa24f-b0bd-4627-8099-f1c5c5233df4",
               "title": "Render non-zero token usage as a compact badge on task line items",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "On every Rex task line item, display a small token usage badge (e.g. '1.2k tokens') when the task has accumulated non-zero usage. The badge must appear regardless of the `showTokenBudget` toggle — it is always visible when there is usage to show. Use a neutral chip style distinct from status badges. Zero-usage tasks show no badge.",
               "acceptanceCriteria": [
@@ -10341,7 +10341,9 @@
                 "ui",
                 "token-usage"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-06T07:18:15.478Z",
+              "completedAt": "2026-03-06T07:20:33.855Z"
             },
             {
               "id": "e95e1878-7f00-4f9d-880f-fb830bb59ce2",
