@@ -1,19 +1,22 @@
 /**
  * PRD CRUD action hooks — item update, add, delete, merge, and prune.
  *
- * Encapsulates all mutation handlers extracted from PRDView. Each
- * handler follows the optimistic update pattern:
+ * Composes focused sub-hooks for selection and deletion, adding
+ * mutation handlers (update, add, execute) and detail panel sync.
+ *
+ * Each handler follows the optimistic update pattern:
  *
  * 1. Apply the change locally for instant UI feedback
  * 2. Send the request to the server
  * 3. Reconcile with authoritative server state
  * 4. On failure, revert by re-fetching from server
  *
+ * @see ./use-item-selection.ts — selection, bulk select, navigation
+ * @see ./use-delete-actions.ts — optimistic delete, modal, detail panel remove
  * @see ../components/prd-tree/tree-differ.ts — applyItemUpdate (structural sharing)
- * @see ../components/prd-tree/tree-utils.ts — removeItemById, collectSubtreeIds, findItemById
  */
 
-import { useState, useCallback, useMemo, useRef } from "preact/hooks";
+import { useState, useCallback } from "preact/hooks";
 import type { VNode } from "preact";
 import { h } from "preact";
 import type { PRDDocumentData, PRDItemData } from "../components/prd-tree/types.js";
@@ -22,8 +25,10 @@ import type { AddItemInput } from "../components/prd-tree/add-item-form.js";
 import type { InlineAddInput } from "../components/prd-tree/inline-add-form.js";
 import type { DetailItem, NavigateTo } from "../types.js";
 import { TaskDetail } from "../components/prd-tree/task-detail.js";
-import { findItemById, collectSubtreeIds, removeItemById } from "../components/prd-tree/tree-utils.js";
+import { findItemById } from "../components/prd-tree/tree-utils.js";
 import { applyItemUpdate } from "../components/prd-tree/tree-differ.js";
+import { useItemSelection } from "./use-item-selection.js";
+import { useDeleteActions } from "./use-delete-actions.js";
 
 /** Active tab in the command bar. */
 export type CommandTab = null | "add" | "merge" | "prune";
@@ -120,6 +125,10 @@ export interface PRDActionsState {
 
 /**
  * Hook providing all PRD CRUD action handlers and related UI state.
+ *
+ * Composes {@link useItemSelection} for selection/navigation and
+ * {@link useDeleteActions} for optimistic deletion, then adds
+ * mutation handlers and detail panel synchronization.
  */
 export function usePRDActions({
   data,
@@ -134,23 +143,43 @@ export function usePRDActions({
   showTokenBudget,
   navigateTo,
 }: PRDActionsDeps): PRDActionsState {
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CommandTab>(null);
   const [addParentId, setAddParentId] = useState<string | null>(null);
-  const [bulkSelectedIds, setBulkSelectedIds] = useState<Set<string>>(new Set());
-  const [deleteTarget, setDeleteTarget] = useState<PRDItemData | null>(null);
-  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
-  // Resolve selected items for merge preview
-  const selectedItems = useMemo(() => {
-    if (!data || bulkSelectedIds.size === 0) return [];
-    const items: PRDItemData[] = [];
-    for (const id of bulkSelectedIds) {
-      const item = findItemById(data.items, id);
-      if (item) items.push(item);
-    }
-    return items;
-  }, [data, bulkSelectedIds]);
+  // ── Selection (delegated to sub-hook) ─────────────────────────────
+
+  const {
+    selectedItemId,
+    setSelectedItemId,
+    bulkSelectedIds,
+    setBulkSelectedIds,
+    selectedItems,
+    handleSelectItem,
+    handleBulkSelect,
+    clearBulkSelection,
+    handleNavigateToItem,
+  } = useItemSelection({ data, onSelectItem });
+
+  // ── Deletion (delegated to sub-hook) ──────────────────────────────
+
+  const {
+    deleteTarget,
+    setDeleteTarget,
+    deletingItemId,
+    handleRemoveItemFromTree,
+    handleConfirmDelete,
+    handleRemoveFromDetail,
+  } = useDeleteActions({
+    data,
+    setData,
+    fetchPRDData,
+    fetchTaskUsage,
+    showToast,
+    selectedItemId,
+    setSelectedItemId,
+    setBulkSelectedIds,
+    onDetailContent,
+  });
 
   // ── Item update (optimistic + reconcile) ─────────────────────────
 
@@ -181,100 +210,6 @@ export function usePRDActions({
       }
     },
     [setData, fetchPRDData, fetchTaskUsage],
-  );
-
-  // ── Item selection ───────────────────────────────────────────────
-
-  const handleSelectItem = useCallback(
-    (item: PRDItemData) => {
-      setSelectedItemId(item.id);
-      history.replaceState(
-        { view: "prd", file: null, zone: null, runId: null, taskId: item.id },
-        "",
-        `/prd/${item.id}`,
-      );
-      if (onSelectItem) {
-        onSelectItem({
-          type: "prd",
-          title: item.title,
-          id: item.id,
-          level: item.level,
-          status: item.status,
-          description: item.description,
-          acceptanceCriteria: item.acceptanceCriteria,
-          priority: item.priority,
-          tags: item.tags,
-          blockedBy: item.blockedBy,
-          startedAt: item.startedAt,
-          completedAt: item.completedAt,
-        });
-      }
-    },
-    [onSelectItem],
-  );
-
-  // ── Bulk selection (ctrl/shift multi-select) ─────────────────────
-
-  /** Anchor item ID for shift-click range selection. */
-  const bulkAnchorRef = useRef<string | null>(null);
-
-  const handleBulkSelect = useCallback(
-    (item: PRDItemData, modifiers: { ctrlKey: boolean; shiftKey: boolean }, visibleIds: string[]) => {
-      setBulkSelectedIds((prev) => {
-        if (modifiers.shiftKey && bulkAnchorRef.current) {
-          // Shift+click: select contiguous range from anchor to clicked item
-          const anchorIdx = visibleIds.indexOf(bulkAnchorRef.current);
-          const targetIdx = visibleIds.indexOf(item.id);
-          if (anchorIdx >= 0 && targetIdx >= 0) {
-            const start = Math.min(anchorIdx, targetIdx);
-            const end = Math.max(anchorIdx, targetIdx);
-            const rangeIds = visibleIds.slice(start, end + 1);
-            // Combine with existing selection when ctrl is also held
-            const next = modifiers.ctrlKey ? new Set(prev) : new Set<string>();
-            for (const id of rangeIds) next.add(id);
-            return next;
-          }
-          // Anchor not visible — fall through to single select
-        }
-
-        if (modifiers.ctrlKey) {
-          // Ctrl/Cmd+click: toggle individual item
-          const next = new Set(prev);
-          if (next.has(item.id)) {
-            next.delete(item.id);
-          } else {
-            next.add(item.id);
-          }
-          bulkAnchorRef.current = item.id;
-          return next;
-        }
-
-        // Plain click: select only this item, deselect all others
-        bulkAnchorRef.current = item.id;
-        // If already the sole selection, deselect (toggle off)
-        if (prev.size === 1 && prev.has(item.id)) {
-          return new Set<string>();
-        }
-        return new Set([item.id]);
-      });
-    },
-    [],
-  );
-
-  const clearBulkSelection = useCallback(() => {
-    setBulkSelectedIds(new Set());
-    bulkAnchorRef.current = null;
-  }, []);
-
-  // ── Navigation ───────────────────────────────────────────────────
-
-  const handleNavigateToItem = useCallback(
-    (id: string) => {
-      if (!data) return;
-      const item = findItemById(data.items, id);
-      if (item) handleSelectItem(item);
-    },
-    [data, handleSelectItem],
   );
 
   // ── Add child (from detail panel) ────────────────────────────────
@@ -316,105 +251,6 @@ export function usePRDActions({
       showToast(`Hench execution started for task`);
     },
     [showToast],
-  );
-
-  // ── Remove item (optimistic delete) ──────────────────────────────
-
-  const handleRemoveItem = useCallback(
-    async (id: string) => {
-      const targetItem = data ? findItemById(data.items, id) : null;
-      const affectedIds = targetItem ? collectSubtreeIds(targetItem) : new Set([id]);
-
-      setDeletingItemId(id);
-
-      // Optimistic removal
-      setData((prev) => {
-        if (!prev) return prev;
-        return { ...prev, items: removeItemById(prev.items, id) };
-      });
-
-      // Clean up bulk selection for deleted items
-      setBulkSelectedIds((prev) => {
-        if (prev.size === 0) return prev;
-        let changed = false;
-        const next = new Set(prev);
-        for (const affectedId of affectedIds) {
-          if (next.has(affectedId)) {
-            next.delete(affectedId);
-            changed = true;
-          }
-        }
-        return changed ? next : prev;
-      });
-
-      // Deselect if the selected item is being deleted
-      if (selectedItemId && affectedIds.has(selectedItemId)) {
-        setSelectedItemId(null);
-        if (onDetailContent) onDetailContent(null);
-        history.replaceState(
-          { view: "prd", file: null, zone: null, runId: null, taskId: null },
-          "",
-          "/prd",
-        );
-      }
-
-      try {
-        const res = await fetch(`/api/rex/items/${id}`, { method: "DELETE" });
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({ error: "Delete failed" }));
-          throw new Error(errBody.error || `HTTP ${res.status}`);
-        }
-        const result = await res.json();
-        showToast(`Deleted ${result.level}: ${result.title}`);
-        await fetchPRDData();
-        await fetchTaskUsage();
-      } catch (err) {
-        await fetchPRDData();
-        throw err;
-      } finally {
-        setDeletingItemId(null);
-      }
-    },
-    [data, selectedItemId, onDetailContent, setData, fetchPRDData, fetchTaskUsage, showToast],
-  );
-
-  // ── Remove from tree (opens modal) ───────────────────────────────
-
-  const handleRemoveItemFromTree = useCallback(
-    (item: PRDItemData) => {
-      setDeleteTarget(item);
-    },
-    [],
-  );
-
-  // ── Confirm delete (modal callback) ──────────────────────────────
-
-  const handleConfirmDelete = useCallback(
-    async (id: string) => {
-      try {
-        await handleRemoveItem(id);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Delete failed";
-        showToast(`Failed to delete item: ${msg}`, "error", 4000);
-      }
-      setDeleteTarget(null);
-    },
-    [handleRemoveItem, showToast],
-  );
-
-  // ── Remove from detail panel ─────────────────────────────────────
-
-  const handleRemoveFromDetail = useCallback(
-    async (id: string) => {
-      try {
-        await handleRemoveItem(id);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Delete failed";
-        showToast(`Failed to delete item: ${msg}`, "error", 4000);
-        throw err; // Re-throw so TaskDetail can reset its confirming state
-      }
-    },
-    [handleRemoveItem, showToast],
   );
 
   // ── Add item (command bar form) ──────────────────────────────────
@@ -473,7 +309,7 @@ export function usePRDActions({
     showToast("Items merged successfully");
     fetchPRDData();
     fetchTaskUsage();
-  }, [fetchPRDData, fetchTaskUsage, showToast]);
+  }, [setBulkSelectedIds, fetchPRDData, fetchTaskUsage, showToast]);
 
   const handlePruneComplete = useCallback(() => {
     setActiveTab(null);
