@@ -7,15 +7,15 @@
 Zone: Web Viewer/web Viewer (`web-viewer/web-viewer`)
 Files: 4, Cohesion: 0.75, Coupling: 0.25
 Description: 4 files, primarily CSS
-Lines: 1150
+Lines: 1193
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/styles/index.css (CSS, 42 lines, other)
-packages/web/src/viewer/styles/integration-config.css (CSS, 526 lines, other)
-packages/web/src/viewer/styles/layout.css (CSS, 467 lines, other)
-packages/web/src/viewer/styles/memory-warning.css (CSS, 115 lines, other)
+packages/web/src/viewer/styles/notion-config.css (CSS, 770 lines, other)
+packages/web/src/viewer/styles/overview.css (CSS, 219 lines, other)
+packages/web/src/viewer/styles/polling-suspension.css (CSS, 104 lines, other)
+packages/web/src/viewer/styles/pr-markdown.css (CSS, 100 lines, other)
 
 </files>

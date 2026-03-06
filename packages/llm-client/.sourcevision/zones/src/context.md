@@ -108,6 +108,7 @@ Incoming (other zones → this zone):
 - provider-session.ts implies stateful session management at the transport layer, but auth credentials live in auth.ts in llm-cli-utilities with no visible contract between the two — session construction likely requires auth context, making the session↔auth coupling implicit and untraceable across zone boundaries.
 - Rename codex-cli-provider.ts to follow the transport-first naming pattern used by api-provider and cli-provider — e.g. codex-provider.ts or openai-cli-provider.ts depending on whether the file abstraction is vendor or transport. Mixing both in the filename breaks the zone's naming convention and will compound as more vendors are added.
 - Audit llm-types.ts to determine whether it holds provider-scoped or package-wide types. If it contains types shared with llm-cli-utilities (project dir shapes, token structs, provider config interfaces), move those types to a new zero-dependency types module — this is likely the direct cause of the 3 reverse imports and fixing the placement fixes the cycle structurally.
+- The 12 entry-point warning (src/0) is a heuristic threshold crossing but has no corroborating LLM finding. With a public.ts convention confirmed in global finding 2, the wide surface may be intentional delegation. Do not treat this as critical without additional evidence.
 - [call graph] 55 internal calls, 4 outgoing, 88 incoming (cohesion: 0.93, coupling: 0.07)
 
 </insights>

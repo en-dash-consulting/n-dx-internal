@@ -85,6 +85,7 @@
         "provider-session.ts implies stateful session management at the transport layer, but auth credentials live in auth.ts in llm-cli-utilities with no visible contract between the two — session construction likely requires auth context, making the session↔auth coupling implicit and untraceable across zone boundaries.",
         "Rename codex-cli-provider.ts to follow the transport-first naming pattern used by api-provider and cli-provider — e.g. codex-provider.ts or openai-cli-provider.ts depending on whether the file abstraction is vendor or transport. Mixing both in the filename breaks the zone's naming convention and will compound as more vendors are added.",
         "Audit llm-types.ts to determine whether it holds provider-scoped or package-wide types. If it contains types shared with llm-cli-utilities (project dir shapes, token structs, provider config interfaces), move those types to a new zero-dependency types module — this is likely the direct cause of the 3 reverse imports and fixing the placement fixes the cycle structurally.",
+        "The 12 entry-point warning (src/0) is a heuristic threshold crossing but has no corroborating LLM finding. With a public.ts convention confirmed in global finding 2, the wide surface may be intentional delegation. Do not treat this as critical without additional evidence.",
         "[call graph] 55 internal calls, 4 outgoing, 88 incoming (cohesion: 0.93, coupling: 0.07)"
       ],
       "riskMetrics": {
@@ -147,6 +148,8 @@
         "Internal call-graph cohesion of 1.0 in a 19-file zone spanning 4 distinct concerns indicates false cohesion — the files are entangled by mutual imports rather than unified by a single concept. High call-graph cohesion in a wide zone is a warning sign of accidental coupling, not intentional design.",
         "Separate help-format.ts and output.ts (presentation concerns) from auth.ts and exec.ts (security and subprocess concerns) with at minimum a directory-level boundary within the zone. Mixing UI formatting and credential handling in an undifferentiated file set means a security audit of auth.ts must also consider whether output.ts inadvertently logs credentials.",
         "Establish a file-naming prefix or directory grouping convention that maps visibly to the zone name — e.g. group files under src/config/, src/auth/, src/cli/ subdirectories. The current flat structure with a zone name that does not appear in any filename makes zone membership invisible to contributors and tooling.",
+        "The combination of 42% file concentration, generic name, and being the destination of 23 upward import crossings makes this zone the highest-priority candidate for renaming and internal boundary documentation — not splitting, since global finding 3 confirms four zones is appropriate granularity.",
+        "Manually assign a domain-specific name to this zone (e.g. 'llm-cli-utilities') in the sourcevision configuration. The automated enrichment failure combined with the zone's size means every consumer reading the architecture map gets no signal about what this zone does. A name is zero-cost and eliminates the ambiguity that compounds the architectural risks in global findings 8 and 11.",
         "[call graph] 269 internal calls, 0 outgoing, 4 incoming (cohesion: 1, coupling: 0)"
       ],
       "riskMetrics": {
@@ -544,6 +547,14 @@
     "The compounding risk cluster (finding 11, now critical) should be resolved as a single sequential work unit: step 1 — introduce a new zero-dependency zone containing only shared provider config shapes and token structs, update llm-provider-core and llm-cli-utilities to import downward from it, eliminating the 3 reverse edges; step 2 — add a test zone for llm-cli-utilities with at minimum one test per exported utility to close the coverage gap identified in finding 5; step 3 — add one integration-level test asserting that a constructed session contains a valid auth token, making the session–auth coupling in finding 11 regression-protected. Steps must be done in this order: the types extraction in step 1 defines the stable interface that steps 2 and 3 test against.",
     "Findings 0, 4, 6, 8, and 11 converge on one root cause: no zero-dependency base types zone exists, so llm-provider-core imports upward into llm-cli-utilities to access shared config and token shapes. This single missing layer is the origin of all three compounding risks in finding 11. It should be tracked as one work unit, not five separate issues.",
     "Findings 3 and 9 are complementary and do not contradict each other. Finding 3 (four zones is appropriate granularity) operates at the inter-zone level; finding 9 (HTTP and subprocess strategies are co-located without sub-boundary) operates at the intra-zone level. Both are correct simultaneously. Finding 3 does not imply that all intra-zone organization is optimal.",
+    "Root cause unification: findings 0, 4, 6, 8, 11, and 12 all trace to a single missing architectural layer — a zero-dependency shared types zone. Every other issue (reverse imports, untested utilities, session-auth coupling) is a symptom. Treating these as five separate problems will produce five incomplete fixes; treating them as one produces one complete fix.",
+    "Severity mislabeling in finding 7: a finding explicitly described as a 'clean boundary' and 'cannot introduce runtime regressions' was tagged critical. This is a documentation error in the analysis pipeline, not an architectural problem. The finding content is correct and positive; only the severity tag was wrong.",
+    "The contradiction between src-2/0 (zone may be too broad at 42% of files) and global/3 (four zones is appropriate granularity) is apparent, not real — they operate at different levels of abstraction. Finding 3 evaluates inter-zone count; src-2/0 evaluates intra-zone file concentration. Both are simultaneously correct. This mirrors the resolved relationship between findings 3 and 9 documented in finding 13.",
+    "The three compounding risks in finding 11 (now critical) form a dependency chain, not three independent risks: the reverse imports exist because shared types are absent; the missing utility tests mean the reverse imports are undetected; the session-auth coupling is undetected for the same reason. Fixing only the reverse imports without adding tests leaves the detection gap intact and the risk will recur.",
+    "Test zone distribution (global finding 1: tests/unit files span 3 zones) is a navigability issue, not an architectural one. Test files coupling to implementation internals is expected. The actionable signal is that utility-layer tests are absent entirely, not that test files are spread across zones.",
+    "The sequential work unit in finding 14 has an implicit prerequisite: before introducing the new shared types zone, identify the exact set of types currently forcing the 3 reverse imports from llm-provider-core into llm-cli-utilities. These are the provider config shapes and token structs named in finding 8. Cataloguing them first ensures the new zone contains exactly what eliminates the cycle and nothing more, preventing the new zone from becoming a general-purpose dumping ground that recreates the problem at one layer down.",
+    "Findings 7 (critical, positive boundary) and 2 (info, positive entry-point pattern) share the same underlying characteristic — both describe architectural properties that are working correctly and should be preserved. Neither warrants any action. They should be treated as invariants to protect during the types-extraction refactor described in finding 14, not as issues to address.",
+    "The automated enrichment failure on the src-2 zone name (src-2/1) is a process signal: the zone's internal coherence is low enough that the LLM could not identify a clear domain label from its file contents. This is independent corroboration that the zone's boundary is fuzzy, reinforcing src-2/0's size warning without requiring a split — it is sufficient to assign a name manually and add a zone-level README documenting the intended scope.",
     "[call graph] 88 calls: \"unit\" → \"src\""
   ],
   "findings": [
@@ -629,7 +640,7 @@
       "pass": 2,
       "scope": "global",
       "text": "The three source zones form a layered architecture (utilities → core ← tests) that is one refactor away from being a clean strict DAG — only 3 import edges need to be redirected or extracted into a shared types module to achieve full unidirectionality.",
-      "severity": "warning"
+      "severity": "critical"
     },
     {
       "type": "relationship",
@@ -681,15 +692,43 @@
       "severity": "info"
     },
     {
+      "type": "pattern",
+      "pass": 5,
+      "scope": "global",
+      "text": "Findings 7 (critical, positive boundary) and 2 (info, positive entry-point pattern) share the same underlying characteristic — both describe architectural properties that are working correctly and should be preserved. Neither warrants any action. They should be treated as invariants to protect during the types-extraction refactor described in finding 14, not as issues to address.",
+      "severity": "info"
+    },
+    {
+      "type": "pattern",
+      "pass": 5,
+      "scope": "global",
+      "text": "The automated enrichment failure on the src-2 zone name (src-2/1) is a process signal: the zone's internal coherence is low enough that the LLM could not identify a clear domain label from its file contents. This is independent corroboration that the zone's boundary is fuzzy, reinforcing src-2/0's size warning without requiring a split — it is sufficient to assign a name manually and add a zone-level README documenting the intended scope.",
+      "severity": "warning"
+    },
+    {
       "type": "suggestion",
       "pass": 5,
       "scope": "global",
       "text": "The compounding risk cluster (finding 11, now critical) should be resolved as a single sequential work unit: step 1 — introduce a new zero-dependency zone containing only shared provider config shapes and token structs, update llm-provider-core and llm-cli-utilities to import downward from it, eliminating the 3 reverse edges; step 2 — add a test zone for llm-cli-utilities with at minimum one test per exported utility to close the coverage gap identified in finding 5; step 3 — add one integration-level test asserting that a constructed session contains a valid auth token, making the session–auth coupling in finding 11 regression-protected. Steps must be done in this order: the types extraction in step 1 defines the stable interface that steps 2 and 3 test against.",
       "severity": "critical"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "The sequential work unit in finding 14 has an implicit prerequisite: before introducing the new shared types zone, identify the exact set of types currently forcing the 3 reverse imports from llm-provider-core into llm-cli-utilities. These are the provider config shapes and token structs named in finding 8. Cataloguing them first ensures the new zone contains exactly what eliminates the cycle and nothing more, preventing the new zone from becoming a general-purpose dumping ground that recreates the problem at one layer down.",
+      "severity": "critical"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "src-2",
+      "text": "Manually assign a domain-specific name to this zone (e.g. 'llm-cli-utilities') in the sourcevision configuration. The automated enrichment failure combined with the zone's size means every consumer reading the architecture map gets no signal about what this zone does. A name is zero-cost and eliminates the ambiguity that compounds the architectural risks in global findings 8 and 11.",
+      "severity": "warning"
     }
   ],
   "enrichmentPass": 4,
-  "metaEvaluationCount": 1,
+  "metaEvaluationCount": 2,
   "structureHash": "b67064233d99c70c",
   "zoneContentHashes": {
     "root": "ba8bddb6ce77ae93",

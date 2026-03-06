@@ -1,0 +1,39 @@
+{
+  "id": "unit",
+  "name": "Unit",
+  "description": "14 files, primarily TypeScript",
+  "files": [
+    "src/analyze/acknowledge.ts",
+    "src/analyze/reconcile.ts",
+    "src/analyze/scanners.ts",
+    "src/cli/commands/recommend.ts",
+    "src/recommend/conflict-detection.ts",
+    "src/recommend/create-from-recommendations.ts",
+    "src/recommend/types.ts",
+    "tests/unit/analyze/acknowledge.test.ts",
+    "tests/unit/analyze/propose.test.ts",
+    "tests/unit/analyze/reconcile.test.ts",
+    "tests/unit/analyze/scanners-acknowledge.test.ts",
+    "tests/unit/analyze/scanners.test.ts",
+    "tests/unit/cli/commands/recommend.test.ts",
+    "tests/unit/recommend/conflict-detection.test.ts"
+  ],
+  "entryPoints": [
+    "src/analyze/acknowledge.ts",
+    "src/analyze/reconcile.ts",
+    "src/analyze/scanners.ts",
+    "src/cli/commands/recommend.ts",
+    "src/recommend/create-from-recommendations.ts"
+  ],
+  "cohesion": 0.5,
+  "coupling": 0.5,
+  "fileCount": 14,
+  "lineCount": 5758,
+  "riskMetrics": {
+    "cohesion": 0.5,
+    "coupling": 0.5,
+    "riskScore": 0.5,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

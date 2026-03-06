@@ -9,8 +9,8 @@
     "packages/web/src/viewer/styles/hench-templates.css"
   ],
   "entryPoints": [],
-  "cohesion": 0.86,
-  "coupling": 0.14,
+  "cohesion": 0.75,
+  "coupling": 0.25,
   "fileCount": 4,
   "lineCount": 3028
 }

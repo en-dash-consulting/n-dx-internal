@@ -7,15 +7,15 @@
 Zone: Web Viewer/web 4 (`web-viewer/web-4`)
 Files: 4, Cohesion: 0.75, Coupling: 0.25
 Description: 4 files, primarily CSS
-Lines: 1088
+Lines: 1159
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/styles/routes.css (CSS, 39 lines, other)
-packages/web/src/viewer/styles/search-overlay.css (CSS, 336 lines, other)
-packages/web/src/viewer/styles/tables.css (CSS, 74 lines, other)
-packages/web/src/viewer/styles/task-audit.css (CSS, 639 lines, other)
+packages/web/src/viewer/styles/task-link.css (CSS, 185 lines, other)
+packages/web/src/viewer/styles/token-usage.css (CSS, 487 lines, other)
+packages/web/src/viewer/styles/tokens.css (CSS, 112 lines, other)
+packages/web/src/viewer/styles/utils.css (CSS, 375 lines, other)
 
 </files>

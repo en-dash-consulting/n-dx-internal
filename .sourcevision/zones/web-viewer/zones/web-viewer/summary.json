@@ -3,14 +3,14 @@
   "name": "Web Viewer/web Viewer",
   "description": "4 files, primarily CSS",
   "files": [
-    "packages/web/src/viewer/styles/index.css",
-    "packages/web/src/viewer/styles/integration-config.css",
-    "packages/web/src/viewer/styles/layout.css",
-    "packages/web/src/viewer/styles/memory-warning.css"
+    "packages/web/src/viewer/styles/notion-config.css",
+    "packages/web/src/viewer/styles/overview.css",
+    "packages/web/src/viewer/styles/polling-suspension.css",
+    "packages/web/src/viewer/styles/pr-markdown.css"
   ],
   "entryPoints": [],
   "cohesion": 0.75,
   "coupling": 0.25,
   "fileCount": 4,
-  "lineCount": 1150
+  "lineCount": 1193
 }

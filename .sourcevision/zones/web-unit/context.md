@@ -5,52 +5,55 @@
 <zone>
 
 Zone: Web Unit (`web-unit`)
-Files: 4, Cohesion: 1.00, Coupling: 0.00
-Risk: healthy (score: 0.00)
-Description: 4 files, primarily TypeScript
-Lines: 1030
+Files: 6, Cohesion: 0.50, Coupling: 0.50
+Risk: healthy (score: 0.50)
+Description: 5 files, primarily TypeScript
+Entry points: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts
+Lines: 1561
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/components/prd-tree/lazy-children.ts (TypeScript, 93 lines, source)
-packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts (TypeScript, 225 lines, source)
-packages/web/tests/unit/viewer/lazy-children.test.ts (TypeScript, 295 lines, test)
-packages/web/tests/unit/viewer/listener-lifecycle.test.ts (TypeScript, 417 lines, test)
+packages/web/src/server/websocket.ts (TypeScript, 370 lines, source)
+packages/web/src/server/ws-health-tracker.ts (TypeScript, 275 lines, source)
+packages/web/tests/unit/server/boundary-check.test.ts (TypeScript, 84 lines, test)
+packages/web/tests/unit/server/websocket.test.ts (TypeScript, 454 lines, test)
+packages/web/tests/unit/server/ws-health-integration.test.ts (TypeScript, 154 lines, test)
+packages/web/tests/unit/server/ws-health-tracker.test.ts (TypeScript, 224 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/tests/unit/viewer/lazy-children.test.ts → packages/web/src/viewer/components/prd-tree/lazy-children.ts {LazyChildren, UNMOUNT_DELAY_MS}
-  packages/web/tests/unit/viewer/listener-lifecycle.test.ts → packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts {ListenerLifecycleManager}
+  packages/web/src/server/websocket.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker, CleanupReason}
+  packages/web/tests/unit/server/websocket.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager, PING_INTERVAL_MS}
+  packages/web/tests/unit/server/ws-health-integration.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager}
+  packages/web/tests/unit/server/ws-health-integration.test.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
+  packages/web/tests/unit/server/ws-health-tracker.test.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
+
+Incoming (other zones → this zone):
+  ← web-viewer: packages/web/src/public.ts → packages/web/src/server/websocket.ts; packages/web/src/server/index.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-hench.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-rex.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/ws-health-tracker.ts
 
 </imports>
 
-<findings>
-
-[observation] [info] High cohesion (1) — files are tightly interconnected
-
-</findings>
-
 <insights>
 
-- High cohesion (1) — files are tightly interconnected
-- Co-locating the two component files with their dedicated tests in a single zone is a positive signal — changes to these components are easy to test in isolation.
-- The zone's scope is narrow and well-named internally (lazy-children, listener-lifecycle), which are distinct orthogonal concerns; verify they don't share mutable state that would warrant splitting them further.
-- Perfect cohesion with zero coupling means these components are consumed by the larger web-viewer zone without creating circular dependencies.
-- Coupling of 0 confirms these components are pure leaf nodes in the import graph — ideal for unit testing in isolation without mocking dependencies.
-- Two logically distinct concerns (lazy loading and listener cleanup) share a zone; if each grows significantly, consider splitting them into separate zones to maintain single-responsibility at the zone level.
-- lazy-children.ts and listener-lifecycle.ts have zero non-test inbound imports — no runtime file in the codebase imports these components. They are either dead code, consumed dynamically (e.g. via string-based dynamic import), or their consumer files were removed without cleaning up the implementations.
-- Both component files in this zone (lazy-children.ts, listener-lifecycle.ts) are imported only by their test files. No production code imports them. They are either unused dead code or the consuming file was deleted — the zone should be audited and the components removed if they serve no current consumer.
-- lazy-children.ts and listener-lifecycle.ts have zero production-code consumers across the full import graph. Retaining unimported implementations inflates zone file count, produces misleading test coverage signals (tests pass for code never executed in production), and adds maintenance burden with no runtime benefit. Both files should be deleted unless an imminent consumer is explicitly tracked.
-- Cohesion of 1.0 is achieved because each source file (lazy-children.ts, listener-lifecycle.ts) is imported exclusively by its own dedicated test file — the two source files have zero imports between them. Cohesion = 1.0 here is a test-symmetry artifact, not evidence of semantic relatedness; the files are co-located by test proximity rather than by shared concern or shared state.
-- The zone name includes 'lifecycle' which implies a general lifecycle management abstraction (mount, update, unmount), but listener-lifecycle.ts specifically handles event listener cleanup — a narrower concern. If the zone were to accept new files based on the broad 'lifecycle' name, unrelated lifecycle utilities could accumulate here without a naming violation.
-- The 'prd-tree/' path prefix in both source files suggests these were designed as part of a PRD tree component subsystem, but the PRD tree subsystem (which is active in production) has no import to either file — this implies the PRD tree was refactored to a different implementation strategy and these files represent an abandoned implementation path, not a future-use stub.
-- lazy-children.ts and listener-lifecycle.ts are confirmed dead code with no production consumers. The test suite passing for these files creates false coverage confidence — a green test for unreachable production code inflates perceived quality. Delete both source files and their tests, or track an explicit PRD task for the consumer that will import them.
-- Rename the zone to 'prd-tree-dead-code' or annotate it explicitly in zone metadata as 'pending-consumer' to prevent future developers from treating the existing implementation as a stable reference when writing a new consumer.
-- [call graph] 30 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- Cohesion of 0.5 is borderline — websocket.ts and ws-health-tracker.ts are related but serve distinct concerns (transport vs. health monitoring) and could eventually split
+- The boundary-check test file suggests edge-case coverage for connection limits or threshold behavior, indicating active reliability engineering in this layer
+- High coupling (0.5) relative to zone size (6 files) signals that these services are tightly consumed by the main dashboard zone and should not be refactored in isolation
+- Cohesion of 0.5 is at the low boundary — if the WebSocket transport and health tracker diverge in responsibilities over time, splitting them into separate zones would improve clarity.
+- Four test files for two source files indicates thorough coverage of the real-time transport layer, which is a reliability-sensitive component.
+- Coupling of 0.5 with 6 imports from web-dashboard-application means changes here can ripple broadly; a stable interface contract (e.g., an explicit export surface) would reduce breakage risk.
+- No lateral imports to task-usage-analytics or prd-analysis-input-panels despite all three being wired into the same hub — the real-time transport layer correctly avoids depending on analytics or UI panel concerns
+- Spoke isolation is intact: the WebSocket layer does not import from other satellite zones. Given its high coupling (0.5) to web-dashboard-application, any future extraction of the WebSocket interface should target the hub boundary, not lateral zone relationships.
+- boundary-check.test.ts does not follow the naming convention of the other three test files (which are named after their subject: websocket.test.ts, ws-health-tracker.test.ts, ws-health-integration.test.ts) — its generic name suggests it may be testing cross-zone contracts or package-level boundaries rather than WebSocket-specific behavior
+- boundary-check.test.ts is likely a misplaced file: its name implies cross-zone or package-boundary testing rather than WebSocket infrastructure behavior. If it imports from zones outside websocket-health-infrastructure, it belongs in an integration or e2e test directory, not collocated with the WebSocket unit tests.
+- This is the only zone in the entire codebase that simultaneously satisfies the fragile-zone risk profile defined in the severity guide: cohesion ≤ 0.63 (actual: 0.5) AND coupling ≥ 0.38 (actual: 0.5). Every other zone with high coupling also has high cohesion, and every other low-cohesion zone has low coupling. This zone is uniquely fragile by both measures at once.
+- The zone name 'websocket-health-infrastructure' inverts the actual importance of its members: websocket.ts is the core real-time transport (primary concern), while ws-health-tracker.ts is a monitoring layer built on top of it (secondary concern). The name emphasizes the secondary concern and obscures the primary one, making the zone harder to discover and reason about.
+- Zone satisfies both fragile-zone conditions simultaneously (cohesion 0.5, coupling 0.5) — the only such zone in the codebase. Treat as a warning-priority refactor target: either split websocket.ts (transport) from ws-health-tracker.ts (monitoring) into separate zones, or document an explicit stability contract for the combined surface to prevent further cohesion degradation.
+- Rename zone from 'websocket-health-infrastructure' to 'websocket-transport' or 'realtime-transport-layer' to reflect that the WebSocket transport is the primary concern and health tracking is a secondary overlay. Current name causes the zone to be mis-scoped in any zone-listing context.
+- [call graph] 76 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>

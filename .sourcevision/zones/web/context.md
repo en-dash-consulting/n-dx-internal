@@ -5,11 +5,11 @@
 <zone>
 
 Zone: Web (`web`)
-Files: 15, Cohesion: 0.86, Coupling: 0.14
-Risk: healthy (score: 0.14)
-Description: 14 files, primarily TypeScript, Markdown, Other
-Entry points: packages/web/src/viewer/messaging/request-dedup.ts
-Lines: 2664
+Files: 16, Cohesion: 0.79, Coupling: 0.21
+Risk: healthy (score: 0.21)
+Description: 16 files, primarily TypeScript, Markdown, Other
+Entry points: packages/web/src/viewer/components/elapsed-time.ts, packages/web/src/viewer/views/task-audit.ts
+Lines: 3352
 
 </zone>
 
@@ -22,12 +22,13 @@ packages/web/SourceVision.png (Other, 0 lines, asset)
 packages/web/build.js (JavaScript, 225 lines, source)
 packages/web/dev.js (JavaScript, 114 lines, source)
 packages/web/package.json (JSON, 50 lines, config)
-packages/web/src/viewer/components/prd-tree/node-culler.ts (TypeScript, 172 lines, source)
-packages/web/src/viewer/messaging/request-dedup.ts (TypeScript, 84 lines, source)
-packages/web/tests/e2e/.gitkeep (Other, 0 lines, test)
-packages/web/tests/unit/viewer/execution-panel-dedup.test.ts (TypeScript, 279 lines, test)
-packages/web/tests/unit/viewer/node-culler.test.ts (TypeScript, 350 lines, test)
-packages/web/tests/unit/viewer/request-dedup.test.ts (TypeScript, 235 lines, test)
+packages/web/src/viewer/components/elapsed-time.ts (TypeScript, 51 lines, source)
+packages/web/src/viewer/components/prd-tree/lazy-children.ts (TypeScript, 93 lines, source)
+packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts (TypeScript, 225 lines, source)
+packages/web/src/viewer/hooks/use-tick.ts (TypeScript, 90 lines, source)
+packages/web/src/viewer/views/task-audit.ts (TypeScript, 637 lines, source)
+packages/web/tests/unit/viewer/lazy-children.test.ts (TypeScript, 295 lines, test)
+packages/web/tests/unit/viewer/listener-lifecycle.test.ts (TypeScript, 417 lines, test)
 packages/web/tsconfig.json (JSON, 11 lines, config)
 packages/web/vitest.config.ts (TypeScript, 33 lines, config)
 
@@ -36,47 +37,41 @@ packages/web/vitest.config.ts (TypeScript, 33 lines, config)
 <imports>
 
 Internal:
-  packages/web/tests/unit/viewer/execution-panel-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
-  packages/web/tests/unit/viewer/node-culler.test.ts → packages/web/src/viewer/components/prd-tree/node-culler.ts {NodeCuller}
-  packages/web/tests/unit/viewer/node-culler.test.ts → packages/web/src/viewer/components/prd-tree/node-culler.ts {VisibilityCallback}
-  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
-  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {RequestDedup}
+  packages/web/src/viewer/components/elapsed-time.ts → packages/web/src/viewer/hooks/use-tick.ts {useTick}
+  packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/elapsed-time.ts {ElapsedTime}
+  packages/web/tests/unit/viewer/lazy-children.test.ts → packages/web/src/viewer/components/prd-tree/lazy-children.ts {LazyChildren, UNMOUNT_DELAY_MS}
+  packages/web/tests/unit/viewer/listener-lifecycle.test.ts → packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts {ListenerLifecycleManager}
+
+Outgoing (this zone → other zones):
+  → web-viewer: packages/web/src/viewer/hooks/use-tick.ts → packages/web/src/viewer/polling/index.ts; packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/logos.ts; packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/rex-task-link.ts; packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/types.ts
 
 Incoming (other zones → this zone):
-  ← web-integration: packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts
-  ← web-viewer: packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/messaging/request-dedup.ts; packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/request-dedup.ts
+  ← web-viewer: packages/web/src/viewer/components/active-tasks-panel.ts → packages/web/src/viewer/components/elapsed-time.ts; packages/web/src/viewer/views/domain-rex.ts → packages/web/src/viewer/views/task-audit.ts
 
 </imports>
 
 <findings>
 
-[observation] [info] High cohesion (0.86) — files are tightly interconnected
-[suggestion] [info] Zone "web" has files across 5 directories — consider consolidating under a dedicated directory
+[suggestion] [info] Zone "web" has files across 6 directories — consider consolidating under a dedicated directory
+[pattern] [warning] Findings 1, web-server zone finding 0, and global finding 5 converge on one root cause: the web package zone structure was grown incrementally without a consistent model. The three concrete symptoms are bidirectional coupling between web-dashboard-application and web-package-root (2+4 crossings), a 4-file web-server satellite with 0.63 cohesion and 0.38 coupling that imports bidirectionally with web-viewer (2+2 crossings), and zone names that mix 'web-viewer', 'panel', 'dom', 'logo' prefixes within a single package. These are three manifestations of the same structural deficit, not three independent problems. Addressing the naming convention (finding 5) and the satellite merge (web-server finding 0) would simultaneously improve the coupling metric tracked in finding 1.
 
 </findings>
 
 <insights>
 
-- High cohesion (0.86) — files are tightly interconnected
-- The presence of BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md alongside source files indicates active performance debugging artifacts that should be moved to docs/ or .gitignored once the investigations are resolved.
-- request-dedup.ts being the zone's sole entry point signals it is the primary integration surface consumed by web-viewer and web-integration — any interface changes here will ripple to both downstream zones.
-- Cohesion of 0.86 reflects a slight mix of concerns (package config files + runtime viewer utilities) that community detection grouped together due to weak import linkage; this is benign but worth watching if the zone grows.
-- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md appear to be debugging artifacts committed to the repo — consider moving them to docs/ with an ADR-style header or removing them once the issues are resolved.
-- node-culler.ts being classified as a component while living outside the viewer zone suggests it may belong architecturally in web-viewer; confirm its import graph is consistent with that placement.
-- build.js and dev.js are classified as config, correctly separating build tooling from runtime source — this is a clean pattern that keeps esbuild/Vite configuration out of the viewer zone.
-- Zone "web-viewer-infrastructure" has files across 5 directories — consider consolidating under a dedicated directory
-- web-viewer-infrastructure is the only zone in this analysis batch with non-zero coupling (0.14), making it the sole structural bridge between the isolated upper tiers and the coupled web presentation layer. Its position as the entry-point zone for request-dedup.ts means it sits at the exact seam where the inert shell meets the live import graph.
-- The 0.14 coupling value for a 15-file zone implies approximately two outbound import edges to other zones — consistent with request-dedup.ts being consumed by both web-viewer and web-integration, making this zone a de facto shared utility layer that currently lacks the formal gateway treatment applied to rex and sourcevision cross-package dependencies.
-- web-viewer-infrastructure's request-dedup.ts is consumed by both web-viewer and web-integration but is not formalized as a gateway module. A breaking change to its interface propagates simultaneously to two consumers with no architectural enforcement preventing direct imports from bypassing it. Applying the same gateway pattern used for rex and sourcevision (single re-export file, no logic) would make this shared contract explicit and auditable.
-- node-culler.ts is classified as a component and lives in web-viewer-infrastructure, but it does not appear as a source or target in any cross-zone import edge. Either it has no active consumer (potential dead code), or it is consumed by web-viewer through an intra-package import that should appear as a cross-zone edge but does not — indicating a gap in the import graph for this file.
-- The zone co-locates build lifecycle artifacts (build.js, dev.js — classified as config) with runtime viewer utilities (request-dedup.ts, node-culler.ts). These have different change cadences and different deployment blast radius: a build config change should not require a runtime risk assessment, and vice versa.
-- node-culler.ts (a runtime component) has no cross-zone import edges either inbound or outbound, yet it lives alongside actively-consumed utilities. It is either dead code or its consumer relationship is missing from the import graph. Verify active consumers exist before the next refactor to avoid maintaining unused code.
-- build.js and dev.js (build tooling) are co-located in the same zone as request-dedup.ts and node-culler.ts (runtime utilities). Build tooling and runtime code should be separate zones so that infrastructure changes and feature changes can be assessed independently.
-- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md use UPPER_SNAKE_CASE naming while every other documentation file in the repository uses kebab-case.md. This naming divergence signals ad-hoc debugging notes that were never normalized — UPPER_SNAKE_CASE is conventionally reserved for environment variables and constants, not documentation files.
-- request-dedup.ts resides at packages/web/src/viewer/messaging/ but is attributed to the web-viewer-infrastructure zone rather than a messaging-specific zone. Its filesystem location implies membership in the messaging subsystem, but its zone attribution places it alongside build infrastructure (build.js, dev.js) — making both the messaging subsystem inventory and the infrastructure zone inventory simultaneously inaccurate.
-- Rename BROWSER_ERROR_CODE_5.md → browser-error-code-5.md and MEMORY_PROFILE.md → memory-profile.md, then move both to docs/. UPPER_SNAKE_CASE .md files create a visual inconsistency implying special-purpose files and will confuse contributors scanning the directory.
-- request-dedup.ts is located in packages/web/src/viewer/messaging/ but attributed to web-viewer-infrastructure by community detection. Its placement beside build.js and dev.js is architecturally misleading. Move it to the messaging zone or create an explicit barrel export in the messaging directory that the infrastructure zone re-exports, making the boundary between runtime messaging and build infrastructure explicit.
-- Zone "web" has files across 5 directories — consider consolidating under a dedicated directory
-- [call graph] 131 internal calls, 0 outgoing, 10 incoming (cohesion: 1, coupling: 0)
+- With entry points at elapsed-time.ts and task-audit.ts, this zone contains components that are imported by web-viewer, creating a subtle inward-dependency: web-viewer → web means the root zone is both a config layer and a leaf component provider, which mixes two concerns.
+- Cohesion of 0.79 reflects the heterogeneous membership (build scripts, package.json, PNG assets, and TS components) — consider whether the TS components would be better co-located inside src/viewer/ to fully separate build config from runtime code.
+- The web zone exports into web-viewer (2 imports), while web-viewer also imports back into web — this bidirectional relationship (web ↔ web-viewer) warrants review to confirm it isn't a soft circular dependency at the module level.
+- Zone "web-package-root" has files across 6 directories — consider consolidating under a dedicated directory
+- Bidirectional imports between web and web-viewer (web → web-viewer: 4, web-viewer → web: 2) may indicate a soft circular dependency; audit whether the components in web's root could be moved into web-viewer to eliminate the back-edge.
+- Mixing build configuration files (build.js, dev.js, package.json) with runtime TypeScript components (elapsed-time.ts, task-audit.ts) in the same zone reduces cohesion; relocating the TS components into src/viewer/ would sharpen the boundary.
+- PNG asset files (SourceVision-F.png, SourceVision.png) and markdown docs (BROWSER_ERROR_CODE_5.md, MEMORY_PROFILE.md) grouped with source files is a natural artifact of flat package roots — no action needed, but worth noting when interpreting cohesion scores.
+- elapsed-time.ts and task-audit.ts are TypeScript components living under src/viewer/components/ but assigned to web-package-root rather than web-viewer. This misassignment means changes to these components will not be captured by web-viewer's coupling metrics, creating a blind spot in architectural analysis.
+- src/viewer/components/elapsed-time.ts and src/viewer/components/task-audit.ts are physically inside the viewer source tree but zone-classified under web-package-root. This misplacement causes their coupling contributions to be attributed to the root zone rather than web-viewer, silently underreporting web-viewer's true coupling surface.
+- A package-root zone should ideally have coupling ≈ 0 (it contains build config, not imported production modules). web-package-root's coupling of 0.21 is entirely attributable to the two misassigned viewer components (elapsed-time.ts, task-audit.ts) — meaning the root's coupling score measures component import activity, not build-config import activity. The metric is not meaningful for its stated scope.
+- The misassigned components (elapsed-time.ts, task-audit.ts) inflate web-package-root's coupling score to 0.21 and simultaneously underreport web-viewer's coupling surface. Correct the zone classification for both files to web-viewer to restore metric accuracy for both zones simultaneously.
+- Zone "web" has files across 6 directories — consider consolidating under a dedicated directory
+- Findings 1, web-server zone finding 0, and global finding 5 converge on one root cause: the web package zone structure was grown incrementally without a consistent model. The three concrete symptoms are bidirectional coupling between web-dashboard-application and web-package-root (2+4 crossings), a 4-file web-server satellite with 0.63 cohesion and 0.38 coupling that imports bidirectionally with web-viewer (2+2 crossings), and zone names that mix 'web-viewer', 'panel', 'dom', 'logo' prefixes within a single package. These are three manifestations of the same structural deficit, not three independent problems. Addressing the naming convention (finding 5) and the satellite merge (web-server finding 0) would simultaneously improve the coupling metric tracked in finding 1.
+- [call graph] 59 internal calls, 1 outgoing, 0 incoming (cohesion: 0.98, coupling: 0.02)
 
 </insights>

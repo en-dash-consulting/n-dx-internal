@@ -8,7 +8,7 @@ Zone: Hench/unit (`hench/unit`)
 Files: 126, Cohesion: 0.97, Coupling: 0.03
 Description: 126 files, primarily TypeScript
 Entry points: packages/hench/src/process/index.ts, packages/hench/src/schema/v1.ts, packages/hench/src/tools/dispatch.ts, packages/hench/src/tools/files.ts, packages/hench/src/tools/git.ts, packages/hench/src/tools/shell.ts
-Lines: 30938
+Lines: 30942
 
 </zone>
 
@@ -122,7 +122,7 @@ packages/hench/tests/unit/process/exec.test.ts (TypeScript, 115 lines, test)
 packages/hench/tests/unit/process/lifecycle.test.ts (TypeScript, 511 lines, test)
 packages/hench/tests/unit/process/limiter.test.ts (TypeScript, 221 lines, test)
 packages/hench/tests/unit/process/memory-monitor.test.ts (TypeScript, 401 lines, test)
-packages/hench/tests/unit/process/memory-throttle.test.ts (TypeScript, 422 lines, test)
+packages/hench/tests/unit/process/memory-throttle.test.ts (TypeScript, 426 lines, test)
 packages/hench/tests/unit/process/pool.test.ts (TypeScript, 855 lines, test)
 packages/hench/tests/unit/process/process-memory-tracker.test.ts (TypeScript, 440 lines, test)
 packages/hench/tests/unit/schema/templates.test.ts (TypeScript, 64 lines, test)

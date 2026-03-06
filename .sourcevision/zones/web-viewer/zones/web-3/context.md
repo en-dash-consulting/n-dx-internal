@@ -7,15 +7,15 @@
 Zone: Web Viewer/web 3 (`web-viewer/web-3`)
 Files: 4, Cohesion: 0.75, Coupling: 0.25
 Description: 4 files, primarily CSS
-Lines: 6893
+Lines: 1088
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/styles/prd-tree.css (CSS, 5104 lines, other)
-packages/web/src/viewer/styles/refresh-queue.css (CSS, 105 lines, other)
-packages/web/src/viewer/styles/responsive.css (CSS, 300 lines, other)
-packages/web/src/viewer/styles/rex-dashboard.css (CSS, 1384 lines, other)
+packages/web/src/viewer/styles/routes.css (CSS, 39 lines, other)
+packages/web/src/viewer/styles/search-overlay.css (CSS, 336 lines, other)
+packages/web/src/viewer/styles/tables.css (CSS, 74 lines, other)
+packages/web/src/viewer/styles/task-audit.css (CSS, 639 lines, other)
 
 </files>

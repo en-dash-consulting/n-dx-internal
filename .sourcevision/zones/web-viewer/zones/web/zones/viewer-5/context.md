@@ -7,15 +7,15 @@
 Zone: Web Viewer/web/viewer 5 (`web-viewer/web/viewer-5`)
 Files: 4, Cohesion: 0.86, Coupling: 0.14
 Description: 4 files, primarily CSS
-Lines: 3028
+Lines: 1150
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/styles/graph.css (CSS, 356 lines, other)
-packages/web/src/viewer/styles/hench-config.css (CSS, 589 lines, other)
-packages/web/src/viewer/styles/hench-runs.css (CSS, 1701 lines, other)
-packages/web/src/viewer/styles/hench-templates.css (CSS, 382 lines, other)
+packages/web/src/viewer/styles/index.css (CSS, 42 lines, other)
+packages/web/src/viewer/styles/integration-config.css (CSS, 526 lines, other)
+packages/web/src/viewer/styles/layout.css (CSS, 467 lines, other)
+packages/web/src/viewer/styles/memory-warning.css (CSS, 115 lines, other)
 
 </files>

@@ -5,7 +5,7 @@
 <zone>
 
 Zone: Web Viewer/web/hench (`web-viewer/web/hench`)
-Files: 4, Cohesion: 0.86, Coupling: 0.14
+Files: 4, Cohesion: 0.75, Coupling: 0.25
 Description: 4 files, primarily CSS
 Lines: 3028
 

@@ -7,15 +7,15 @@
 Zone: Web Viewer/web 2 (`web-viewer/web-2`)
 Files: 4, Cohesion: 0.75, Coupling: 0.25
 Description: 4 files, primarily CSS
-Lines: 1193
+Lines: 6893
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/styles/notion-config.css (CSS, 770 lines, other)
-packages/web/src/viewer/styles/overview.css (CSS, 219 lines, other)
-packages/web/src/viewer/styles/polling-suspension.css (CSS, 104 lines, other)
-packages/web/src/viewer/styles/pr-markdown.css (CSS, 100 lines, other)
+packages/web/src/viewer/styles/prd-tree.css (CSS, 5104 lines, other)
+packages/web/src/viewer/styles/refresh-queue.css (CSS, 105 lines, other)
+packages/web/src/viewer/styles/responsive.css (CSS, 300 lines, other)
+packages/web/src/viewer/styles/rex-dashboard.css (CSS, 1384 lines, other)
 
 </files>

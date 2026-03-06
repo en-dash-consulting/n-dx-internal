@@ -511,14 +511,14 @@
   "files": [
     {
       "path": "src/analyze/acknowledge.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Business logic for accepting/acknowledging PRD proposals",
+          "detail": "Shared store I/O and hash computation for acknowledged findings — used by scanners and other analyze modules.",
           "weight": 0.7
         }
       ]
@@ -532,21 +532,21 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shared helpers and common logic across analyze modules",
+          "detail": "Shared constants, token-usage helpers, JSON extraction utilities, and prompt constants extracted to break circular dependencies between analyze modules.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyze/consolidation-guard.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Guard logic that validates/prevents inappropriate consolidation",
+          "detail": "Business logic orchestration: detects over-granular proposals and triggers a secondary LLM consolidation pass.",
           "weight": 0.7
         }
       ]
@@ -560,7 +560,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Business logic for decomposing PRD items",
+          "detail": "Business logic orchestration: LoE-threshold-driven recursive LLM decomposition of oversized proposal tasks.",
           "weight": 0.7
         }
       ]
@@ -574,7 +574,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Deduplication helper with no external orchestration",
+          "detail": "Shared deduplication engine using multi-signal similarity scoring (bigrams, word overlap, action-verb normalization) — high fan-in across analyze modules.",
           "weight": 0.7
         }
       ]
@@ -588,7 +588,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Diff computation helper used by multiple analyze modules",
+          "detail": "Pure formatting helper that produces a diff view comparing proposals against the existing PRD tree.",
           "weight": 0.7
         }
       ]
@@ -602,7 +602,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Extraction logic applying business rules to derive structured data",
+          "detail": "Multi-stage requirements extraction pipeline: parses documents into hierarchical PRD proposals with optional LLM disambiguation.",
           "weight": 0.7
         }
       ]
@@ -616,7 +616,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "File validation helper consumed by the analyze pipeline",
+          "detail": "File validation utilities — extension checks, magic byte detection, size limits, and format-specific content warnings.",
           "weight": 0.7
         }
       ]
@@ -630,7 +630,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Guided analysis orchestration — drives multi-step analyze flow",
+          "detail": "Orchestrates an interactive LLM-driven clarification loop (readline + LLM rounds) before proposal generation.",
           "weight": 0.7
         }
       ]
@@ -651,14 +651,14 @@
     },
     {
       "path": "src/analyze/modify-reason.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Helper that transforms or annotates reason objects",
+          "detail": "LLM-powered modification pipeline: takes existing proposals and a natural-language request, returns revised proposals.",
           "weight": 0.7
         }
       ]
@@ -672,7 +672,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Core proposal generation — central analyze business logic",
+          "detail": "Builds typed Proposal structures from ScanResults, applying deduplication and priority ranking.",
           "weight": 0.7
         }
       ]
@@ -686,27 +686,13 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Reason generation and analysis — business logic with LLM interaction",
+          "detail": "Core LLM reasoning service: spawnClaude, readProjectContext, parseProposalResponse, and quality validation. Re-exports analyze-shared for backward compatibility.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyze/reconcile.ts",
-      "archetype": "service",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "service",
-          "signalKind": "path",
-          "detail": "Reconciliation logic that merges/resolves conflicting proposals",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "src/analyze/reshape-reason.ts",
       "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
@@ -714,7 +700,21 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Pure transformation helper for reason data structures",
+          "detail": "Pure helper that reconciles scan results against existing PRD items using fuzzy similarity to classify new vs already-tracked proposals.",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "src/analyze/reshape-reason.ts",
+      "archetype": "service",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "service",
+          "signalKind": "path",
+          "detail": "LLM-powered reasoning for PRD reshape proposals: builds prompts from current PRD state and returns typed ReshapeProposal arrays.",
           "weight": 0.7
         }
       ]
@@ -728,7 +728,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Scanner implementations that collect input for the analyze pipeline",
+          "detail": "Scans project files (tests, docs, sourcevision output, package.json) and aggregates ScanResults for downstream proposal generation.",
           "weight": 0.7
         }
       ]
@@ -742,7 +742,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Validation helper ensuring modifications meet constraints",
+          "detail": "Pure validation helpers for natural-language modification requests — no I/O, fully testable.",
           "weight": 0.7
         }
       ]
@@ -1173,14 +1173,14 @@
     },
     {
       "path": "src/cli/help.ts",
-      "archetype": "types",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "types",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Help text constants and string definitions for CLI output",
+          "detail": "CLI help content definitions and formatting — shared across all rex commands.",
           "weight": 0.7
         }
       ]
@@ -1208,21 +1208,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "MCP tool definitions and handler registrations",
+          "detail": "MCP tool handler implementations — each function executes one MCP tool's business logic against the PRD store.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/cli/mcp.ts",
-      "archetype": "cli-command",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "cli-command",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "MCP CLI subcommand implementation",
+          "detail": "Constructs and configures the Rex MCP server, registers all tools with Zod schemas, wires transport.",
           "weight": 0.7
         }
       ]
@@ -1250,7 +1250,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Input validation utilities for CLI argument handling",
+          "detail": "Shared CLI input validation helpers (level, parent ID, status, priority) with consistent CLIError messages.",
           "weight": 0.7
         }
       ]
@@ -1768,7 +1768,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Conflict detection logic used by the recommend pipeline",
+          "detail": "Pure conflict detection logic for recommendation batches — detects duplicates against existing PRD items and intra-batch conflicts.",
           "weight": 0.7
         }
       ]
@@ -1782,7 +1782,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Creates PRD items from sourcevision recommendations — orchestration logic",
+          "detail": "Orchestrates atomic PRD item creation from accepted recommendations with validation, DAG integrity checks, and conflict detection.",
           "weight": 0.7
         }
       ]
@@ -2053,7 +2053,7 @@
         {
           "archetypeId": "config",
           "signalKind": "path",
-          "detail": "Default workflow configuration and settings",
+          "detail": "Exports a single DEFAULT_WORKFLOW constant string — the default agent workflow instructions.",
           "weight": 0.7
         }
       ]
@@ -2063,11 +2063,11 @@
     "totalClassified": 107,
     "totalUnclassified": 0,
     "byArchetype": {
-      "service": 10,
       "utility": 47,
+      "service": 12,
       "entrypoint": 6,
-      "cli-command": 28,
-      "types": 3,
+      "cli-command": 27,
+      "types": 2,
       "schema": 3,
       "store": 9,
       "config": 1
