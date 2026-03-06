@@ -981,6 +981,20 @@ async function replayCachedIfRequested(
   }
   const cached = await loadPending(dir);
   if (!cached || cached.proposals.length === 0) return false;
+
+  // Staleness detection: compare current PRD hash with cached hash
+  if (cached.prdHash) {
+    const rexDir = join(dir, REX_DIR);
+    const store = await resolveStore(rexDir);
+    const doc = await store.loadDocument();
+    const currentHash = hashPRD(doc.items);
+    if (currentHash !== cached.prdHash) {
+      warn("PRD has changed since proposals were generated");
+      await clearPending(dir);
+      return false;
+    }
+  }
+
   info(`Accepting ${cached.proposals.length} cached proposal(s)...`);
   const added = await acceptProposals(dir, cached.proposals, { parentId: cached.parentId });
   result(`Added ${added} items to PRD.`);
