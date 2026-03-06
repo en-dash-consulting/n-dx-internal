@@ -164,7 +164,7 @@ const COMMAND_REGISTRY = [
     name: "config",
     category: "Orchestration",
     summary: "View and edit settings across all packages",
-    keywords: ["settings", "configuration", "preferences", "edit", "view"],
+    keywords: ["settings", "configuration", "preferences", "edit", "view", "feature", "toggle"],
     related: [],
   },
   // ── Tool delegation commands ──
