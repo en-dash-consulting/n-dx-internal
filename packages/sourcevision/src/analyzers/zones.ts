@@ -45,6 +45,7 @@ import {
   louvainPhase1,
   mergeBidirectionalCoupling,
   mergeSmallCommunities,
+  mergeSatelliteCommunities,
   capZoneCount,
   splitLargeCommunities,
 } from "./louvain.js";
@@ -1606,6 +1607,7 @@ export function runZonePipeline(options: ZonePipelineOptions): ZonePipelineResul
   let community = louvainPhase1(graph);
   community = mergeBidirectionalCoupling(community, graph);
   community = mergeSmallCommunities(community, graph);
+  community = mergeSatelliteCommunities(community, graph);
   community = capZoneCount(community, graph, scaledMaxZones);
 
   // ── Split oversized communities ──
