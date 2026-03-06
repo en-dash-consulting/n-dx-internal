@@ -10348,7 +10348,7 @@
             {
               "id": "e95e1878-7f00-4f9d-880f-fb830bb59ce2",
               "title": "Improve hench run association and token burn display in task detail panel",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "In the Rex task detail side panel, surface the associated hench run(s) more prominently: show the run ID or summary, execution time, and per-run token burn. When multiple runs exist, list them in reverse chronological order with individual burn totals. Deep-link each run entry to the Hench Runs view. This gives users direct visibility into how much of a task's token cost came from each execution.",
               "acceptanceCriteria": [
@@ -10366,7 +10366,9 @@
                 "ui",
                 "token-usage"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-06T07:29:01.539Z",
+              "completedAt": "2026-03-06T07:33:37.048Z"
             }
           ]
         },
@@ -17867,22 +17869,24 @@
     {
       "id": "4c081a10-9a55-48e7-a9de-68ca2f1de243",
       "title": "Duplicate-aware Proposal Override for rex add",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "8e04e63b-854c-4e25-9689-3a261ed2d20d",
           "title": "Orphaned Parent Cleanup After Smart-Add Merge",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "When the smart-add merge path is applied, the proposed parent epic container can be written to the PRD before the merge target is resolved, leaving it as an empty or childless node. This feature covers the fix and regression coverage.",
           "source": "smart-add",
+          "startedAt": "2026-03-06T07:38:57.447Z",
+          "completedAt": "2026-03-06T07:38:57.447Z",
           "children": [
             {
               "id": "556276b8-b57e-434e-a98a-b3033e2c7bc2",
               "title": "Fix orphaned epic creation in smart-add merge path",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Trace the merge execution path in the smart-add pipeline to identify where the proposed parent epic is instantiated before merge resolution completes. The bug produces an empty or single-child epic that is structurally disconnected after the merge target absorbs the child item. The fix should defer or suppress parent creation when a merge is confirmed, or clean up any empty containers after the merge operation settles. Verify the fix against both cross-level and same-level merge scenarios.",
               "acceptanceCriteria": [
@@ -17897,12 +17901,14 @@
                 "smart-add",
                 "merge"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-06T07:21:18.308Z",
+              "completedAt": "2026-03-06T07:28:38.629Z"
             },
             {
               "id": "3adce9c5-d919-465c-affb-1c09b1ee5c16",
               "title": "Add regression tests for orphaned parent scenarios in smart-add merge",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add unit and integration tests that reproduce the orphaned-epic condition before the fix and confirm it stays resolved. Tests should cover: (1) merge into an existing item where the proposed parent is new, (2) cross-level merge where the parent already exists, and (3) merge followed by `rex validate` asserting a clean PRD.",
               "acceptanceCriteria": [
@@ -17919,6 +17925,8 @@
                 "regression"
               ],
               "source": "smart-add",
+              "startedAt": "2026-03-06T07:34:24.672Z",
+              "completedAt": "2026-03-06T07:38:57.251Z",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "content_overlap",
@@ -17932,7 +17940,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-03-06T07:38:57.537Z",
+      "completedAt": "2026-03-06T07:38:57.537Z"
     }
   ]
 }
