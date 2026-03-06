@@ -17,7 +17,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const ROOT = join(import.meta.dirname, "../..");
@@ -30,9 +30,6 @@ const ALLOWED = new Set([
   "packages/llm-client/src/cli-provider.ts",
   "packages/llm-client/src/codex-cli-provider.ts",
   "packages/hench/src/agent/lifecycle/cli-loop.ts",
-  // Legacy compatibility bridge (re-exports from llm-client; kept until removal)
-  "packages/claude-client/src/exec.ts",
-  "packages/claude-client/src/cli-provider.ts",
   // Orchestration layer — spawns CLIs directly (no library imports)
   "cli.js",
   "ci.js",
@@ -80,6 +77,27 @@ function walk(dir, files = []) {
 }
 
 describe("architecture policy: process execution", () => {
+  it("ALLOWED list contains no stale entries (all files exist on disk)", () => {
+    const stale = [];
+    for (const rel of ALLOWED) {
+      const full = join(ROOT, rel);
+      if (!existsSync(full)) {
+        stale.push(rel);
+      }
+    }
+
+    if (stale.length > 0) {
+      const msg = [
+        "ALLOWED list contains files that no longer exist on disk.",
+        "Remove stale entries or update paths after renames/moves:",
+        "",
+        ...stale.map((s) => `  - ${s}`),
+      ].join("\n");
+
+      expect.fail(msg);
+    }
+  });
+
   it("no direct child_process imports outside allowed files", () => {
     const files = walk(ROOT);
     const violations = [];
@@ -90,7 +108,7 @@ describe("architecture policy: process execution", () => {
       // Skip allowed files
       if (ALLOWED.has(rel)) continue;
       // Skip test files
-      if (/\.test\.(ts|js|mjs)$/.test(rel) || /[\/\\]tests?[\/\\]/.test(rel)) continue;
+      if (/\.test\.(ts|js|mjs)$/.test(rel) || /(?:^|[\/\\])tests?[\/\\]/.test(rel)) continue;
 
       const content = readFileSync(file, "utf-8");
 
