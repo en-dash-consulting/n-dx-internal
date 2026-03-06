@@ -31,7 +31,7 @@ import {
   OUTPUT_INSTRUCTION,
 } from "./analyze-shared.js";
 import type { FileFormat } from "./analyze-shared.js";
-import { spawnClaude } from "./reason.js";
+import { spawnClaude } from "./llm-bridge.js";
 import {
   validateFileInput,
   validateMarkdownContent,
