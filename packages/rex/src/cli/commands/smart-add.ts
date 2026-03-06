@@ -22,6 +22,7 @@ import type { Proposal, QualityIssue } from "../../analyze/index.js";
 import { CHILD_LEVEL, PRIORITY_ORDER } from "../../schema/index.js";
 import type { PRDItem, ItemLevel, DuplicateOverrideMarker } from "../../schema/index.js";
 import { loadClaudeConfig, loadLLMConfig } from "../../store/project-config.js";
+import { hashPRD } from "../../core/pending-cache.js";
 import {
   matchProposalNodesToPRD,
   attachDuplicateReasonsToProposals,
@@ -1205,7 +1206,7 @@ async function runInteractiveSmartAddApproval(params: {
           info("");
 
           currentDuplicateMatches = matchProposalNodesToPRD(currentProposals, existing);
-          await maybeCacheSmartAddProposals(dir, currentProposals, parentId);
+          await maybeCacheSmartAddProposals(dir, currentProposals, parentId, hashPRD(existing));
         } else {
           adjSpinner.stop("LLM returned no proposals. Original proposals unchanged.");
         }
@@ -1325,7 +1326,7 @@ async function runInteractiveSmartAddApproval(params: {
 
     const rejected = currentProposals.filter((_, i) => !decision.approved.includes(i));
     if (rejected.length > 0 && !usedMergeDecision) {
-      await savePending(dir, rejected, parentId);
+      await savePending(dir, rejected, parentId, hashPRD(existing));
       info(`${rejected.length} proposal(s) saved. Run \`rex add --accept\` to accept later.`);
     } else if (rejected.length > 0 && usedMergeDecision) {
       info(`${rejected.length} unselected proposal(s) were cancelled and not written.`);
@@ -1359,7 +1360,7 @@ async function finalizeSmartAdd(params: {
     model,
   } = params;
 
-  await maybeCacheSmartAddProposals(dir, proposals, parentId);
+  await maybeCacheSmartAddProposals(dir, proposals, parentId, hashPRD(existing));
 
   if (accept) {
     if (hasDuplicateMatches(duplicateMatches)) {
