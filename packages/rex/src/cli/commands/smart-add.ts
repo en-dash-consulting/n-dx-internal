@@ -762,6 +762,21 @@ export function formatQualityWarnings(issues: QualityIssue[]): string {
   return lines.join("\n");
 }
 
+/**
+ * Validate that a merge target exists and has the expected level.
+ * Returns the merge target ID if valid, or undefined to fall back to creation.
+ */
+async function validateMergeTarget(
+  store: Awaited<ReturnType<typeof resolveStore>>,
+  mergeTargetId: string | undefined,
+  expectedLevel: ItemLevel,
+): Promise<string | undefined> {
+  if (!mergeTargetId) return undefined;
+  const item = await store.getItem(mergeTargetId);
+  if (!item || item.level !== expectedLevel) return undefined;
+  return mergeTargetId;
+}
+
 async function acceptProposals(
   dir: string,
   proposals: Proposal[],
@@ -788,7 +803,9 @@ async function acceptProposals(
     const p = proposals[pIdx];
     if (!parentId) {
       // No parent — create a new top-level epic (or reuse existing via existingId)
-      const epicMergeTarget = mergeTargetsByNodeKey?.[`p${pIdx}:epic`];
+      const epicMergeTarget = await validateMergeTarget(
+        store, mergeTargetsByNodeKey?.[`p${pIdx}:epic`], "epic",
+      );
       let epicId = epicMergeTarget ?? randomUUID();
       const epicMarker = overrideMarkersByNodeKey?.[`p${pIdx}:epic`];
 
@@ -824,7 +841,9 @@ async function acceptProposals(
       for (let fIdx = 0; fIdx < p.features.length; fIdx++) {
         const f = p.features[fIdx];
         const featureKey = `p${pIdx}:feature:${fIdx}`;
-        const featureMergeTarget = mergeTargetsByNodeKey?.[featureKey];
+        const featureMergeTarget = await validateMergeTarget(
+          store, mergeTargetsByNodeKey?.[featureKey], "feature",
+        );
         let featureId = featureMergeTarget ?? randomUUID();
         const featureMarker = overrideMarkersByNodeKey?.[`p${pIdx}:feature:${fIdx}`];
 
@@ -862,7 +881,10 @@ async function acceptProposals(
         for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
           const t = f.tasks[tIdx];
           const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
-          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMergeTarget = await validateMergeTarget(
+            store, mergeTargetsByNodeKey?.[taskKey], "task",
+          );
+          if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
@@ -887,7 +909,9 @@ async function acceptProposals(
       for (let fIdx = 0; fIdx < p.features.length; fIdx++) {
         const f = p.features[fIdx];
         const featureKey = `p${pIdx}:feature:${fIdx}`;
-        const featureMergeTarget = mergeTargetsByNodeKey?.[featureKey];
+        const featureMergeTarget = await validateMergeTarget(
+          store, mergeTargetsByNodeKey?.[featureKey], "feature",
+        );
         const featureId = featureMergeTarget ?? randomUUID();
         const featureMarker = overrideMarkersByNodeKey?.[`p${pIdx}:feature:${fIdx}`];
         if (!featureMergeTarget) {
@@ -909,7 +933,10 @@ async function acceptProposals(
         for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
           const t = f.tasks[tIdx];
           const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
-          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMergeTarget = await validateMergeTarget(
+            store, mergeTargetsByNodeKey?.[taskKey], "task",
+          );
+          if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
@@ -937,7 +964,10 @@ async function acceptProposals(
         for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
           const t = f.tasks[tIdx];
           const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
-          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMergeTarget = await validateMergeTarget(
+            store, mergeTargetsByNodeKey?.[taskKey], "task",
+          );
+          if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
@@ -964,7 +994,10 @@ async function acceptProposals(
         for (let tIdx = 0; tIdx < f.tasks.length; tIdx++) {
           const t = f.tasks[tIdx];
           const taskKey = `p${pIdx}:task:${fIdx}:${tIdx}`;
-          if (mergeTargetsByNodeKey?.[taskKey]) continue;
+          const taskMergeTarget = await validateMergeTarget(
+            store, mergeTargetsByNodeKey?.[taskKey], "subtask",
+          );
+          if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
           await store.addItem(
             {
