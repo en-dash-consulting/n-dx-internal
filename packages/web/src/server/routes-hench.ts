@@ -440,17 +440,20 @@ function routeRuns(rc: RouteContext): boolean | null {
 
     let limit = 0;
     let offset = 0;
+    let filterTaskId: string | null = null;
     if (rc.qIdx !== -1) {
       const params = new URLSearchParams(rc.fullPath.slice(rc.qIdx));
       const limitStr = params.get("limit");
       const offsetStr = params.get("offset");
+      const taskIdStr = params.get("taskId");
       if (limitStr) limit = Math.max(0, parseInt(limitStr, 10) || 0);
       if (offsetStr) offset = Math.max(0, parseInt(offsetStr, 10) || 0);
+      if (taskIdStr) filterTaskId = taskIdStr;
     }
 
     jsonFiles.sort((a, b) => b.localeCompare(a));
 
-    const filesToLoad = (limit > 0 || offset > 0)
+    const filesToLoad = (!filterTaskId && (limit > 0 || offset > 0))
       ? jsonFiles.slice(offset, limit > 0 ? offset + limit : undefined)
       : jsonFiles;
 
@@ -459,12 +462,20 @@ function routeRuns(rc: RouteContext): boolean | null {
       const id = file.replace(/\.json$/, "");
       const run = loadRunFile(rc.runsDir, id);
       if (run && run.id && run.startedAt) {
+        // When filtering by taskId, skip non-matching runs before building summary
+        if (filterTaskId && run.taskId !== filterTaskId) continue;
         summaries.push(toRunSummary(run));
       }
     }
 
     summaries.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
-    jsonResponse(rc.res, 200, { runs: summaries, total });
+
+    // Apply limit/offset after taskId filtering (when both are present)
+    const paginatedSummaries = filterTaskId && (limit > 0 || offset > 0)
+      ? summaries.slice(offset, limit > 0 ? offset + limit : undefined)
+      : summaries;
+
+    jsonResponse(rc.res, 200, { runs: paginatedSummaries, total: filterTaskId ? summaries.length : total });
     return true;
   }
 

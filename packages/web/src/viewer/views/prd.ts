@@ -74,6 +74,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     onSelectItem, onDetailContent,
     taskUsageById, weeklyBudget,
     showTokenBudget,
+    navigateTo,
   });
 
   // ── Status filter (persists across view switches) ────────────

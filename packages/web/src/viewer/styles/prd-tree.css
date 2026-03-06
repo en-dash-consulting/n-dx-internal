@@ -779,6 +779,80 @@
   color: var(--text-dim);
 }
 
+/* Hench runs list in task detail */
+.task-runs-section {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-2);
+}
+
+.task-runs-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.task-run-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+  padding: var(--space-1-5) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.task-run-entry.clickable {
+  cursor: pointer;
+}
+
+.task-run-entry.clickable:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.task-run-entry.clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.task-run-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+}
+
+.task-run-status {
+  font-size: var(--font-sm);
+  line-height: 1;
+}
+
+.task-run-time {
+  font-size: var(--font-sm);
+  color: var(--text-dim);
+  margin-left: auto;
+}
+
+.task-run-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding-left: calc(var(--font-sm) + var(--space-1-5));
+}
+
+.task-run-chip {
+  font-size: var(--font-xs);
+  color: var(--text-dim);
+  background: var(--bg-inset);
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-sm);
+}
+
+.task-run-chip-tokens {
+  color: var(--brand-teal);
+  font-weight: var(--weight-medium);
+}
+
 /* Status selector buttons */
 .task-status-selector {
   display: flex;

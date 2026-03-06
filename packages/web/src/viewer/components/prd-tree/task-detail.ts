@@ -9,6 +9,7 @@
 import { h, Fragment } from "preact";
 import { useState, useCallback, useEffect, useRef } from "preact/hooks";
 import type { PRDItemData, ItemStatus, Priority, ItemLevel, RequirementData, RequirementCategory, RequirementValidationType, TaskUsageSummary, WeeklyBudgetResolution } from "./types.js";
+import type { NavigateTo } from "../../types.js";
 import { formatTimestamp } from "./compute.js";
 import { findItemById } from "./tree-utils.js";
 import { CopyLinkButton } from "../copy-link-button.js";
@@ -39,6 +40,8 @@ export interface TaskDetailProps {
   onAddChild?: (data: { title: string; parentId: string; level: ItemLevel; description?: string; priority?: string }) => Promise<void>;
   /** Called to remove/delete the current item and all its descendants. */
   onRemove?: (id: string) => Promise<void>;
+  /** Navigation callback for deep-linking to other views (e.g. hench-runs). */
+  navigateTo?: NavigateTo;
 }
 
 // ── Constants ────────────────────────────────────────────────────────
@@ -1037,9 +1040,164 @@ function ExecuteTaskButton({
   );
 }
 
+// ── Hench Runs list ──────────────────────────────────────────────────
+
+/** Summary of a hench run, matching the server's RunSummary shape. */
+interface RunEntry {
+  id: string;
+  status: string;
+  startedAt: string;
+  finishedAt?: string;
+  turns: number;
+  tokenUsage: {
+    input: number;
+    output: number;
+    cacheCreationInput?: number;
+    cacheReadInput?: number;
+  };
+}
+
+function runTotalTokens(r: RunEntry): number {
+  return (r.tokenUsage.input ?? 0)
+    + (r.tokenUsage.output ?? 0)
+    + (r.tokenUsage.cacheCreationInput ?? 0)
+    + (r.tokenUsage.cacheReadInput ?? 0);
+}
+
+function fmtDuration(start: string, end?: string): string {
+  if (!end) return "running\u2026";
+  const ms = new Date(end).getTime() - new Date(start).getTime();
+  if (ms < 0) return "\u2014";
+  const secs = Math.floor(ms / 1000);
+  if (secs < 60) return `${secs}s`;
+  const mins = Math.floor(secs / 60);
+  const remainSecs = secs % 60;
+  if (mins < 60) return `${mins}m ${remainSecs}s`;
+  const hours = Math.floor(mins / 60);
+  const remainMins = mins % 60;
+  return `${hours}h ${remainMins}m`;
+}
+
+function fmtRelativeTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+  if (diffHours < 1) {
+    const mins = Math.floor(diffMs / (1000 * 60));
+    return mins <= 0 ? "just now" : `${mins}m ago`;
+  }
+  if (diffHours < 24) return `${Math.floor(diffHours)}h ago`;
+  if (diffHours < 168) {
+    return new Date(iso).toLocaleDateString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
+  }
+  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+const RUN_STATUS_ICONS: Record<string, { icon: string; color: string }> = {
+  completed: { icon: "\u25cf", color: "var(--green)" },
+  failed: { icon: "\u2715", color: "var(--red)" },
+  error: { icon: "\u2715", color: "var(--red)" },
+  running: { icon: "\u25d0", color: "var(--accent)" },
+  in_progress: { icon: "\u25d0", color: "var(--accent)" },
+};
+
+function getRunStatusConfig(status: string) {
+  return RUN_STATUS_ICONS[status] ?? { icon: "\u25cb", color: "var(--text-dim)" };
+}
+
+/** Fetches and displays hench runs associated with a task. */
+function HenchRunsList({
+  taskId,
+  navigateTo,
+}: {
+  taskId: string;
+  navigateTo?: NavigateTo;
+}) {
+  const [runs, setRuns] = useState<RunEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(false);
+
+    fetch(`/api/hench/runs?taskId=${encodeURIComponent(taskId)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("fetch failed");
+        return res.json();
+      })
+      .then((json) => {
+        if (!cancelled) {
+          setRuns(json.runs ?? []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [taskId]);
+
+  // Don't render the section at all while loading on first mount, or if no runs
+  if (loading) return null;
+  if (error) return null;
+  if (runs.length === 0) return null;
+
+  return h(
+    "div",
+    { class: "task-section task-runs-section" },
+    h("div", { class: "task-section-label" }, `Hench Runs (${runs.length})`),
+    h(
+      "div",
+      { class: "task-runs-list" },
+      runs.map((run) => {
+        const st = getRunStatusConfig(run.status);
+        const tokens = runTotalTokens(run);
+
+        return h(
+          "div",
+          {
+            key: run.id,
+            class: `task-run-entry${navigateTo ? " clickable" : ""}`,
+            onClick: navigateTo
+              ? () => navigateTo("hench-runs", { runId: run.id })
+              : undefined,
+            role: navigateTo ? "button" : undefined,
+            tabIndex: navigateTo ? 0 : undefined,
+            onKeyDown: navigateTo
+              ? (e: KeyboardEvent) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigateTo("hench-runs", { runId: run.id });
+                  }
+                }
+              : undefined,
+            title: navigateTo ? "View run details" : undefined,
+          },
+          // Status icon + timestamp
+          h("div", { class: "task-run-header" },
+            h("span", { class: "task-run-status", style: `color: ${st.color}` }, st.icon),
+            h("span", { class: "task-run-time" }, fmtRelativeTime(run.startedAt)),
+          ),
+          // Metadata chips: duration, turns, tokens
+          h("div", { class: "task-run-meta" },
+            h("span", { class: "task-run-chip" }, fmtDuration(run.startedAt, run.finishedAt)),
+            h("span", { class: "task-run-chip" }, `${run.turns} turns`),
+            h("span", { class: "task-run-chip task-run-chip-tokens" }, formatTokenCount(tokens) + " tokens"),
+          ),
+        );
+      }),
+    ),
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────
 
-export function TaskDetail({ item, taskUsage, weeklyBudget, showTokenBudget, allItems, onUpdate, onNavigateToItem, onExecuteTask, onPrdChanged, onAddChild, onRemove }: TaskDetailProps) {
+export function TaskDetail({ item, taskUsage, weeklyBudget, showTokenBudget, allItems, onUpdate, onNavigateToItem, onExecuteTask, onPrdChanged, onAddChild, onRemove, navigateTo }: TaskDetailProps) {
   const [saving, setSaving] = useState(false);
   const [pendingFailStatus, setPendingFailStatus] = useState(false);
   const [failureReason, setFailureReason] = useState("");
@@ -1226,6 +1384,11 @@ export function TaskDetail({ item, taskUsage, weeklyBudget, showTokenBudget, all
             `${usageSummary.runCount} associated run${usageSummary.runCount === 1 ? "" : "s"}${showTokenBudget ? ` | reason: ${utilization.reason}` : ""}`,
           ),
         )
+      : null,
+
+    // Associated hench runs (tasks/subtasks only)
+    isWorkItem(item.level)
+      ? h(HenchRunsList, { taskId: item.id, navigateTo })
       : null,
 
     // Failure reason

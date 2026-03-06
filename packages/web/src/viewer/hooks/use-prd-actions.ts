@@ -50,6 +50,8 @@ export interface PRDActionsDeps {
   weeklyBudget: WeeklyBudgetResolution | null;
   /** Whether to show token budget UI (budget bar, percentage, limit label). */
   showTokenBudget?: boolean;
+  /** Navigation callback for deep-linking to other views (e.g. hench-runs). */
+  navigateTo?: NavigateTo;
 }
 
 export interface PRDActionsState {
@@ -124,6 +126,7 @@ export function usePRDActions({
   taskUsageById,
   weeklyBudget,
   showTokenBudget,
+  navigateTo,
 }: PRDActionsDeps): PRDActionsState {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CommandTab>(null);
@@ -477,6 +480,7 @@ export function usePRDActions({
         },
         onAddChild: handleAddChild,
         onRemove: handleRemoveFromDetail,
+        navigateTo,
       }),
     );
   }, [
@@ -493,6 +497,7 @@ export function usePRDActions({
     fetchTaskUsage,
     handleAddChild,
     handleRemoveFromDetail,
+    navigateTo,
   ]);
 
   return {
