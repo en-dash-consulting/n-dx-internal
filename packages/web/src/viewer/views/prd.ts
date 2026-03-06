@@ -33,6 +33,7 @@ import { usePRDWebSocket } from "../hooks/use-prd-websocket.js";
 import { usePRDActions } from "../hooks/use-prd-actions.js";
 import { usePRDDeepLink } from "../hooks/use-prd-deep-link.js";
 import { usePersistentFilter } from "../hooks/use-persistent-filter.js";
+import { useFeatureToggle } from "../hooks/use-feature-toggle.js";
 
 export interface PRDViewProps {
   /** Pre-loaded PRD data. If not provided, fetches from /data/prd.json. */
@@ -59,6 +60,9 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     fetchPRDData, fetchTaskUsage,
   } = usePRDData(prdData);
 
+  // ── Feature toggles ────────────────────────────────────────────
+  const showTokenBudget = useFeatureToggle("rex.showTokenBudget", false);
+
   // ── WebSocket real-time updates ────────────────────────────────
   usePRDWebSocket({ setData, fetchPRDData, fetchTaskUsage });
 
@@ -69,6 +73,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     showToast,
     onSelectItem, onDetailContent,
     taskUsageById, weeklyBudget,
+    showTokenBudget,
   });
 
   // ── Status filter (persists across view switches) ────────────
@@ -183,6 +188,7 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
       document: data,
       taskUsageById,
       weeklyBudget,
+      showTokenBudget,
       defaultExpandDepth: 2,
       onSelectItem: actions.handleSelectItem,
       selectedItemId: actions.selectedItemId,

@@ -23,6 +23,8 @@ export interface TaskDetailProps {
   taskUsage?: TaskUsageSummary;
   /** Shared resolved weekly budget used for deterministic utilization display. */
   weeklyBudget?: WeeklyBudgetResolution | null;
+  /** Whether to show token budget UI (budget bar, percentage, limit label). */
+  showTokenBudget?: boolean;
   /** All items in the document, for resolving dependency references. */
   allItems: PRDItemData[];
   /** Called when an item is updated via the API. */
@@ -1037,7 +1039,7 @@ function ExecuteTaskButton({
 
 // ── Main component ───────────────────────────────────────────────────
 
-export function TaskDetail({ item, taskUsage, weeklyBudget, allItems, onUpdate, onNavigateToItem, onExecuteTask, onPrdChanged, onAddChild, onRemove }: TaskDetailProps) {
+export function TaskDetail({ item, taskUsage, weeklyBudget, showTokenBudget, allItems, onUpdate, onNavigateToItem, onExecuteTask, onPrdChanged, onAddChild, onRemove }: TaskDetailProps) {
   const [saving, setSaving] = useState(false);
   const [pendingFailStatus, setPendingFailStatus] = useState(false);
   const [failureReason, setFailureReason] = useState("");
@@ -1209,16 +1211,19 @@ export function TaskDetail({ item, taskUsage, weeklyBudget, allItems, onUpdate, 
             h("span", { class: "label" }, "Total Tokens"),
             h("span", { class: "task-usage-value" }, `${formatTokenCount(usageSummary.totalTokens)} tokens`),
           ),
-          h("div", { class: "task-usage-row" },
-            h("span", { class: "label" }, "Weekly Utilization"),
-            h(
-              "span",
-              { class: "task-usage-value", "data-utilization-reason": utilization.reason },
-              utilization.label,
-            ),
-          ),
-          h("div", { class: "task-usage-hint", "data-utilization-reason": utilization.reason },
-            `${usageSummary.runCount} associated run${usageSummary.runCount === 1 ? "" : "s"} | reason: ${utilization.reason}`,
+          // Budget-specific fields: weekly utilization percentage and budget reason
+          showTokenBudget
+            ? h("div", { class: "task-usage-row" },
+                h("span", { class: "label" }, "Weekly Utilization"),
+                h(
+                  "span",
+                  { class: "task-usage-value", "data-utilization-reason": utilization.reason },
+                  utilization.label,
+                ),
+              )
+            : null,
+          h("div", { class: "task-usage-hint", "data-utilization-reason": showTokenBudget ? utilization.reason : undefined },
+            `${usageSummary.runCount} associated run${usageSummary.runCount === 1 ? "" : "s"}${showTokenBudget ? ` | reason: ${utilization.reason}` : ""}`,
           ),
         )
       : null,

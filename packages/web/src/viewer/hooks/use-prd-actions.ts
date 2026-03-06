@@ -48,6 +48,8 @@ export interface PRDActionsDeps {
   taskUsageById: Record<string, TaskUsageSummary>;
   /** Resolved weekly budget. */
   weeklyBudget: WeeklyBudgetResolution | null;
+  /** Whether to show token budget UI (budget bar, percentage, limit label). */
+  showTokenBudget?: boolean;
 }
 
 export interface PRDActionsState {
@@ -121,6 +123,7 @@ export function usePRDActions({
   onDetailContent,
   taskUsageById,
   weeklyBudget,
+  showTokenBudget,
 }: PRDActionsDeps): PRDActionsState {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CommandTab>(null);
@@ -463,6 +466,7 @@ export function usePRDActions({
         item,
         taskUsage: taskUsageById[item.id],
         weeklyBudget,
+        showTokenBudget: showTokenBudget ?? false,
         allItems: data.items,
         onUpdate: handleItemUpdate,
         onNavigateToItem: handleNavigateToItem,
@@ -480,6 +484,7 @@ export function usePRDActions({
     selectedItemId,
     taskUsageById,
     weeklyBudget,
+    showTokenBudget,
     onDetailContent,
     handleItemUpdate,
     handleNavigateToItem,

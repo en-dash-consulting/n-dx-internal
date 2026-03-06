@@ -184,6 +184,8 @@ interface NodeRowProps {
   item: PRDItemData;
   taskUsage?: TaskUsageSummary;
   weeklyBudget?: WeeklyBudgetResolution | null;
+  /** Whether to show token budget UI (budget percentage in usage chip). */
+  showTokenBudget?: boolean;
   depth: number;
   isExpanded: boolean;
   hasChildren: boolean;
@@ -236,6 +238,7 @@ class NodeRow extends Component<NodeRowProps> {
     if (p.hasChildren !== nextProps.hasChildren) return true;
     if (p.canInlineAdd !== nextProps.canInlineAdd) return true;
     if (p.canDelete !== nextProps.canDelete) return true;
+    if (p.showTokenBudget !== nextProps.showTokenBudget) return true;
     // taskUsage is an object — reference check (new object ⇒ re-render)
     if (p.taskUsage !== nextProps.taskUsage) return true;
     if (p.weeklyBudget !== nextProps.weeklyBudget) return true;
@@ -244,7 +247,7 @@ class NodeRow extends Component<NodeRowProps> {
   }
 
   render() {
-    const { item, taskUsage, weeklyBudget, depth, isExpanded, hasChildren, isSelected, isBulkSelected, onToggleBulkSelect, canInlineAdd, isInlineAddActive, isHighlighted, nodeRef, canDelete, isDeleting } = this.props;
+    const { item, taskUsage, weeklyBudget, showTokenBudget, depth, isExpanded, hasChildren, isSelected, isBulkSelected, onToggleBulkSelect, canInlineAdd, isInlineAddActive, isHighlighted, nodeRef, canDelete, isDeleting } = this.props;
     const children = item.children ?? [];
     const stats = hasChildren ? computeBranchStats(children) : null;
     const ratio = stats ? completionRatio(stats) : 0;
@@ -333,10 +336,14 @@ class NodeRow extends Component<NodeRowProps> {
             "span",
             {
               class: "prd-usage-chip",
-              "data-utilization-reason": utilization.reason,
-              title: `${usage.runCount} associated run${usage.runCount === 1 ? "" : "s"} | ${utilization.label} weekly utilization`,
+              ...(showTokenBudget ? { "data-utilization-reason": utilization.reason } : {}),
+              title: showTokenBudget
+                ? `${usage.runCount} associated run${usage.runCount === 1 ? "" : "s"} | ${utilization.label} weekly utilization`
+                : `${usage.runCount} associated run${usage.runCount === 1 ? "" : "s"}`,
             },
-            `${formatTokenCount(usage.totalTokens)} tokens | ${utilization.label}`,
+            showTokenBudget
+              ? `${formatTokenCount(usage.totalTokens)} tokens | ${utilization.label}`
+              : `${formatTokenCount(usage.totalTokens)} tokens`,
           )
         : null,
       // Timestamp
@@ -479,6 +486,8 @@ export interface PRDTreeProps {
   taskUsageById?: Record<string, TaskUsageSummary>;
   /** Shared resolved weekly budget used for deterministic utilization display. */
   weeklyBudget?: WeeklyBudgetResolution | null;
+  /** Whether to show token budget UI (budget percentage in usage chip). */
+  showTokenBudget?: boolean;
   /** How many levels to expand by default (0 = all collapsed). */
   defaultExpandDepth?: number;
   /** Called when an item is clicked for detail view. */
@@ -529,7 +538,7 @@ function buildItemMap(items: PRDItemData[]): Map<string, PRDItemData> {
   return map;
 }
 
-export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onToggleBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds, onRemoveItem, onUpdateItem, deletingItemId, activeStatuses: externalStatuses, chunkSize }: PRDTreeProps) {
+export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onToggleBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds, onRemoveItem, onUpdateItem, deletingItemId, activeStatuses: externalStatuses, chunkSize }: PRDTreeProps) {
   // ── Flat item map for delegated event handlers ────────────────────
   const itemMap = useMemo(() => buildItemMap(doc.items), [doc.items]);
   const getItem = useCallback((id: string) => itemMap.get(id) ?? null, [itemMap]);
@@ -747,6 +756,7 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, defaultExp
             item,
             taskUsage: taskUsageById?.[item.id],
             weeklyBudget,
+            showTokenBudget,
             depth,
             isExpanded,
             hasChildren,

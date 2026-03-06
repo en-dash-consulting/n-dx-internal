@@ -10281,7 +10281,7 @@
             {
               "id": "49bbec5f-c725-4bfa-8c3c-755a6aabe30f",
               "title": "Add 'showTokenBudget' feature toggle with default-off configuration",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Introduce a new feature toggle key (e.g. `showTokenBudget`) in the n-dx feature toggle system. It must default to false so token budget UI is hidden out-of-the-box. The toggle should be accessible via `ndx config` and the existing feature toggle configuration section in the web UI. Document the toggle in CLI help.",
               "acceptanceCriteria": [
@@ -10296,12 +10296,14 @@
                 "config",
                 "feature-toggle"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-06T07:05:35.932Z",
+              "completedAt": "2026-03-06T07:10:48.503Z"
             },
             {
               "id": "5f605950-00bc-41c0-800a-f62f381a82a8",
               "title": "Conditionally hide token budget in task line items and detail panel based on toggle",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "In the Rex task list and detail side panel, gate all token-budget-specific UI (budget bar, budget percentage chip, budget limit label) behind the `showTokenBudget` feature toggle. When the toggle is off these elements must not render at all — not just hidden via CSS. Token usage counts (already present) are unaffected.",
               "acceptanceCriteria": [
@@ -10316,7 +10318,9 @@
                 "ui",
                 "feature-toggle"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-06T07:11:20.390Z",
+              "completedAt": "2026-03-06T07:17:13.302Z"
             },
             {
               "id": "499fa24f-b0bd-4627-8099-f1c5c5233df4",
@@ -17896,9 +17900,8 @@
             {
               "id": "3adce9c5-d919-465c-affb-1c09b1ee5c16",
               "title": "Add regression tests for orphaned parent scenarios in smart-add merge",
-              "level": "task",
               "status": "pending",
-              "source": "smart-add",
+              "level": "task",
               "description": "Add unit and integration tests that reproduce the orphaned-epic condition before the fix and confirm it stays resolved. Tests should cover: (1) merge into an existing item where the proposed parent is new, (2) cross-level merge where the parent already exists, and (3) merge followed by `rex validate` asserting a clean PRD.",
               "acceptanceCriteria": [
                 "A test reproducing the orphaned-epic bug exists and fails on the pre-fix code path",
@@ -17913,6 +17916,7 @@
                 "merge",
                 "regression"
               ],
+              "source": "smart-add",
               "overrideMarker": {
                 "type": "duplicate_guard_override",
                 "reason": "content_overlap",

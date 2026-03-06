@@ -154,6 +154,7 @@ describe("PRDTree", () => {
       document: sampleDoc,
       defaultExpandDepth: 3,
       weeklyBudget: { budget: 50_000, source: "vendor_default" },
+      showTokenBudget: true,
       taskUsageById: {
         "task-2": { totalTokens: 1234, runCount: 2 },
       },
@@ -165,6 +166,7 @@ describe("PRDTree", () => {
     const root = renderToDiv(h(PRDTree, {
       document: sampleDoc,
       defaultExpandDepth: 3,
+      showTokenBudget: true,
       taskUsageById: {
         "task-2": { totalTokens: 1234, runCount: 2 },
       },
@@ -172,6 +174,25 @@ describe("PRDTree", () => {
     expect(root.textContent).toContain("1.2k tokens | No budget");
     const chip = root.querySelector(".prd-usage-chip");
     expect(chip?.getAttribute("data-utilization-reason")).toBe("missing_budget");
+  });
+
+  it("hides budget info on usage chips when showTokenBudget is false", () => {
+    const root = renderToDiv(h(PRDTree, {
+      document: sampleDoc,
+      defaultExpandDepth: 3,
+      showTokenBudget: false,
+      weeklyBudget: { budget: 50_000, source: "vendor_default" },
+      taskUsageById: {
+        "task-2": { totalTokens: 1234, runCount: 2 },
+      },
+    }));
+    // Token count still visible
+    expect(root.textContent).toContain("1.2k tokens");
+    // Budget percentage should NOT appear
+    expect(root.textContent).not.toContain("| 2%");
+    // No utilization-reason data attribute
+    const chip = root.querySelector(".prd-usage-chip");
+    expect(chip?.getAttribute("data-utilization-reason")).toBeNull();
   });
 
   it("renders explicit zero usage for tasks without associated runs", () => {
