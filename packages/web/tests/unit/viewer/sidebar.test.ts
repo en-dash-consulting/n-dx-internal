@@ -117,12 +117,14 @@ describe("Sidebar", () => {
       expect(stored).toBe("REX");
     });
 
-    it("restores expanded section from localStorage", () => {
+    it("expands the section owning the active view regardless of localStorage", () => {
       localStorage.setItem("sidebar-expanded-section", "REX");
       renderSidebar({ view: "overview" as const });
       const headers = root.querySelectorAll<HTMLElement>(".nav-section-header");
-      expect(headers[1].getAttribute("aria-expanded")).toBe("true");
-      expect(headers[0].getAttribute("aria-expanded")).toBe("false");
+      // SOURCEVISION (index 0) owns "overview", so it should be expanded even
+      // though localStorage had "REX" — the active view always wins on load.
+      expect(headers[0].getAttribute("aria-expanded")).toBe("true");
+      expect(headers[1].getAttribute("aria-expanded")).toBe("false");
     });
 
     it("saves empty string when collapsing all sections", async () => {
@@ -260,6 +262,23 @@ describe("Sidebar", () => {
       const headers = root.querySelectorAll<HTMLElement>(".nav-section-header");
       // HENCH section (index 2) should be expanded
       expect(headers[2].getAttribute("aria-expanded")).toBe("true");
+    });
+
+    it("deep-linking to a rex view expands rex section even with stale localStorage", () => {
+      // Simulate a previous session that left SOURCEVISION expanded
+      localStorage.setItem("sidebar-expanded-section", "SOURCEVISION");
+      renderSidebar({ view: "prd" as const });
+      const headers = root.querySelectorAll<HTMLElement>(".nav-section-header");
+      // REX section (index 1) must be expanded so the active "prd" item is visible
+      expect(headers[1].getAttribute("aria-expanded")).toBe("true");
+      expect(headers[0].getAttribute("aria-expanded")).toBe("false");
+    });
+
+    it("active nav item is highlighted on initial render", () => {
+      renderSidebar({ view: "prd" as const });
+      const activeItems = root.querySelectorAll(".nav-item.active");
+      expect(activeItems.length).toBe(1);
+      expect(activeItems[0].textContent).toContain("Tasks");
     });
 
   });

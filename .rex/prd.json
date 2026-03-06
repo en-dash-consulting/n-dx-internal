@@ -17789,7 +17789,7 @@
         {
           "id": "1b9353a7-41d8-4f55-947c-1aedaadc5932",
           "title": "Sidebar Active State on Initial Load",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Ensure the sidebar navigation correctly reflects the active page when the app first loads, including direct URL access and page refresh scenarios.",
           "source": "smart-add",
@@ -17797,7 +17797,7 @@
             {
               "id": "5a83f70a-b30d-4251-8168-5e8d939f9b1d",
               "title": "Sync sidebar active state with current route on initial page load",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "When the web UI loads or is refreshed, the sidebar should immediately highlight the nav item corresponding to the current URL hash or route, rather than defaulting to no selection or the wrong item. This involves reading the initial route from the URL at mount time and applying the active state before the first render.",
               "acceptanceCriteria": [
@@ -17812,9 +17812,13 @@
                 "navigation",
                 "ux"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-06T07:52:49.267Z",
+              "completedAt": "2026-03-06T07:54:44.278Z"
             }
-          ]
+          ],
+          "startedAt": "2026-03-06T07:54:44.479Z",
+          "completedAt": "2026-03-06T07:54:44.479Z"
         }
       ]
     },
@@ -17824,6 +17828,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-03-06T07:52:05.467Z",
+      "completedAt": "2026-03-06T07:52:05.467Z",
       "children": [
         {
           "id": "0e4d20ed-72d6-49a0-9717-7a2e27c53766",
@@ -17870,9 +17876,7 @@
           "startedAt": "2026-03-06T07:39:31.119Z",
           "completedAt": "2026-03-06T07:44:35.624Z"
         }
-      ],
-      "startedAt": "2026-03-06T07:52:05.467Z",
-      "completedAt": "2026-03-06T07:52:05.467Z"
+      ]
     },
     {
       "id": "4c081a10-9a55-48e7-a9de-68ca2f1de243",

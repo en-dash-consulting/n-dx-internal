@@ -86,17 +86,8 @@ function sectionForView(view: ViewId): string {
   return SECTIONS[0].label;
 }
 
-/** Read persisted expanded section, falling back to the section owning the active view */
+/** Expand the section that owns the active view so the highlighted item is always visible on load */
 function getInitialExpanded(view: ViewId): string {
-  // Token Usage now lives at top-level, so initial render must always surface
-  // its own section even when a different section was previously persisted.
-  if (view === "token-usage") return sectionForView(view);
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored && SECTIONS.some((s) => s.label === stored)) return stored;
-  } catch {
-    // localStorage may be unavailable
-  }
   return sectionForView(view);
 }
 
