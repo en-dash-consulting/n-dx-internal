@@ -83,10 +83,7 @@ export function FacetFilter({
     [activeStatuses, onStatusesChange],
   );
 
-  // Don't render anything if there are no tags to show
-  if (availableTags.length === 0 && !hasActiveFacets) {
-    return null;
-  }
+  // Always render — we show status facets and an empty-state message for tags
 
   return h(
     "div",
@@ -120,12 +117,12 @@ export function FacetFilter({
     ),
 
     // ── Tag facets ───────────────────────────────────────────────────
-    availableTags.length > 0
-      ? h(
-          "div",
-          { class: "prd-facet-row" },
-          h("span", { class: "prd-facet-label" }, "Tags:"),
-          h(
+    h(
+      "div",
+      { class: "prd-facet-row" },
+      h("span", { class: "prd-facet-label" }, "Tags:"),
+      availableTags.length > 0
+        ? h(
             "div",
             { class: "prd-facet-chips", role: "toolbar", "aria-label": "Tag facets" },
             availableTags.map((tag) => {
@@ -144,9 +141,9 @@ export function FacetFilter({
                 h("span", { class: "prd-facet-chip-label" }, tag),
               );
             }),
-          ),
-        )
-      : null,
+          )
+        : h("span", { class: "prd-facet-empty" }, "No tags in current PRD"),
+    ),
 
     // ── Clear all facets button ──────────────────────────────────────
     hasActiveFacets

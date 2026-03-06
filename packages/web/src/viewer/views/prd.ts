@@ -100,6 +100,19 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
     [data],
   );
 
+  // Prune stale active tags that no longer exist in the PRD
+  useEffect(() => {
+    if (activeTags.size === 0) return;
+    const tagSet = new Set(availableTags);
+    const pruned = new Set<string>();
+    for (const tag of activeTags) {
+      if (tagSet.has(tag)) pruned.add(tag);
+    }
+    if (pruned.size !== activeTags.size) {
+      setActiveTags(pruned);
+    }
+  }, [availableTags, activeTags, setActiveTags]);
+
   const searchResult = useMemo(
     () => data ? searchTree(data.items, searchQuery, searchFacets) : null,
     [data, searchQuery, searchFacets],

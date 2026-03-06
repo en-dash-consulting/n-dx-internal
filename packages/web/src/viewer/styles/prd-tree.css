@@ -5669,3 +5669,10 @@
   color: var(--text);
   border-color: var(--text-dim);
 }
+
+.prd-facet-empty {
+  font-size: var(--font-xs);
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 2px 0;
+}
