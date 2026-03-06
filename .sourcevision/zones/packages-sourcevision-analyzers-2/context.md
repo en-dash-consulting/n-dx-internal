@@ -5,8 +5,8 @@
 <zone>
 
 Zone: Analyzers 2 (`packages-sourcevision:analyzers-2`)
-Files: 11, Cohesion: 0.54, Coupling: 0.46
-Risk: healthy (score: 0.46)
+Files: 11, Cohesion: 0.48, Coupling: 0.52
+Risk: healthy (score: 0.52)
 Description: 11 files, primarily TypeScript
 Entry points: packages/sourcevision/src/analyzers/callgraph.ts, packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/imports.ts, packages/sourcevision/src/analyzers/inventory.ts, packages/sourcevision/src/util/paths.ts
 Lines: 5963
@@ -72,6 +72,8 @@ Incoming (other zones → this zone):
 
 <insights>
 
+- High coupling (0.52) — 15 imports target "analyzers"
+- Generic zone name "Analyzers 2" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 - Generic zone name "Analyzers 2" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 - The analyzers/index.ts entrypoint re-exports all analyzer modules, making this the public API surface for the analysis pipeline — keep it lean and avoid adding logic there.
 - paths.ts sits in util/ but was pulled into this community because every analyzer imports it; consider whether it belongs in a shared foundation layer to reduce coupling.

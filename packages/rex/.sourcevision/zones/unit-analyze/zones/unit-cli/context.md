@@ -5,71 +5,49 @@
 <zone>
 
 Zone: Unit Analyze/unit Cli (`unit-analyze/unit-cli`)
-Files: 18, Cohesion: 0.55, Coupling: 0.45
-Description: 18 files, primarily TypeScript
-Entry points: src/analyze/diff.ts, src/cli/commands/add.ts, src/cli/commands/status.ts, src/cli/validate-input.ts, src/core/cascade-reset.ts, src/core/notion-map.ts, src/core/transitions.ts, src/schema/index.ts, src/schema/levels.ts, src/schema/v1.ts
-Lines: 8979
+Files: 11, Cohesion: 0.63, Coupling: 0.38
+Description: 11 files, primarily TypeScript
+Entry points: src/cli/commands/validate.ts, src/core/structural.ts
+Lines: 4935
 
 </zone>
 
 <files>
 
-src/analyze/diff.ts (TypeScript, 172 lines, source)
-src/cli/commands/add.ts (TypeScript, 150 lines, source)
-src/cli/commands/status.ts (TypeScript, 496 lines, source)
-src/cli/validate-input.ts (TypeScript, 146 lines, source)
-src/core/cascade-reset.ts (TypeScript, 60 lines, source)
-src/core/notion-map.ts (TypeScript, 762 lines, source)
-src/core/transitions.ts (TypeScript, 94 lines, source)
-src/schema/index.ts (TypeScript, 79 lines, source)
-src/schema/levels.ts (TypeScript, 183 lines, source)
-src/schema/v1.ts (TypeScript, 400 lines, source)
-tests/unit/analyze/diff.test.ts (TypeScript, 314 lines, test)
-tests/unit/cli/commands/status.test.ts (TypeScript, 1185 lines, test)
-tests/unit/cli/commands/usage.test.ts (TypeScript, 696 lines, test)
-tests/unit/cli/commands/verify.test.ts (TypeScript, 184 lines, test)
-tests/unit/cli/validate-input.test.ts (TypeScript, 252 lines, test)
-tests/unit/core/notion-map.test.ts (TypeScript, 1634 lines, test)
-tests/unit/core/transitions.test.ts (TypeScript, 148 lines, test)
-tests/unit/recommend/create-from-recommendations.test.ts (TypeScript, 2024 lines, test)
+src/cli/commands/validate-interactive.ts (TypeScript, 344 lines, source)
+src/cli/commands/validate.ts (TypeScript, 266 lines, source)
+src/core/epic-correlation.ts (TypeScript, 279 lines, source)
+src/core/structural.ts (TypeScript, 377 lines, source)
+tests/integration/smart-add-orphaned-parent.test.ts (TypeScript, 330 lines, test)
+tests/unit/cli/commands/validate-epicless.test.ts (TypeScript, 280 lines, test)
+tests/unit/cli/commands/validate-interactive.test.ts (TypeScript, 856 lines, test)
+tests/unit/cli/commands/validate.test.ts (TypeScript, 594 lines, test)
+tests/unit/core/epic-correlation.test.ts (TypeScript, 531 lines, test)
+tests/unit/core/epicless.test.ts (TypeScript, 196 lines, test)
+tests/unit/core/structural.test.ts (TypeScript, 882 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  src/analyze/diff.ts → src/schema/index.ts {PRDItem}
-  src/cli/commands/add.ts → src/core/cascade-reset.ts {cascadeParentReset}
-  src/cli/commands/add.ts → src/schema/index.ts {LEVEL_HIERARCHY, CHILD_LEVEL, isItemLevel}
-  src/cli/commands/add.ts → src/schema/index.ts {PRDItem, ItemLevel, ItemStatus, Priority}
-  src/cli/commands/status.ts → src/schema/index.ts {isRootLevel}
-  src/cli/commands/status.ts → src/schema/index.ts {PRDItem, ItemStatus}
-  src/cli/validate-input.ts → src/schema/index.ts {LEVEL_HIERARCHY, VALID_LEVELS, isItemLevel, getLevelLabel}
-  src/cli/validate-input.ts → src/schema/index.ts {ItemLevel}
-  src/core/cascade-reset.ts → src/schema/index.ts {PRDItem, ItemStatus}
-  src/core/notion-map.ts → src/schema/index.ts {SCHEMA_VERSION, isRootLevel}
-  src/core/notion-map.ts → src/schema/index.ts {ItemLevel, ItemStatus, PRDItem, PRDDocument, Priority}
-  src/core/transitions.ts → src/schema/index.ts {ItemStatus}
-  src/schema/index.ts → src/schema/levels.ts {isRootLevel, isWorkItem, isContainerLevel, isLeafLevel, isValidLevel, getLevelLabel, getLevelPlural, getLevelEmoji, getLevelDisplayMap, getChildLevel, getParentLevels, getAllLevels, getWorkItemLevels, getContainerLevels, formatLevelSummary, setLevelDisplay, resetLevelDisplay}
-  src/schema/index.ts → src/schema/levels.ts {LevelDisplay}
-  src/schema/index.ts → src/schema/v1.ts {SCHEMA_VERSION, LEVEL_HIERARCHY, PRIORITY_ORDER, VALID_LEVELS, VALID_STATUSES, VALID_PRIORITIES, VALID_REQUIREMENT_CATEGORIES, VALID_VALIDATION_TYPES, CHILD_LEVEL, LOE_DEFAULTS, isPriority, isItemLevel, isItemStatus, isRequirementCategory, isValidationType, DEFAULT_CONFIG}
-  src/schema/index.ts → src/schema/v1.ts {ItemLevel, ItemStatus, Priority, RequirementCategory, RequirementValidationType, Requirement, DuplicateOverrideMarker, MergedProposalRecord, PRDItem, PRDDocument, RexConfig, FacetDefinition, BudgetThresholds, LoEConfig, LogEntry, TokenUsage, AnalyzeTokenUsage}
-  src/schema/levels.ts → src/schema/v1.ts {LEVEL_HIERARCHY, CHILD_LEVEL}
-  src/schema/levels.ts → src/schema/v1.ts {ItemLevel}
-  tests/unit/analyze/diff.test.ts → src/analyze/diff.ts {formatDiff}
-  tests/unit/analyze/diff.test.ts → src/schema/v1.ts {PRDItem}
-  tests/unit/cli/commands/status.test.ts → src/cli/commands/status.ts {cmdStatus, renderProgressBar, formatTimestamp, renderTree, filterCompleted, formatStats}
-  tests/unit/cli/commands/status.test.ts → src/cli/commands/status.ts {CoverageMap}
-  tests/unit/cli/commands/status.test.ts → src/schema/index.ts {PRDDocument, PRDItem}
-  tests/unit/cli/commands/usage.test.ts → src/schema/index.ts {PRDDocument, RexConfig}
-  tests/unit/cli/commands/verify.test.ts → src/schema/index.ts {PRDDocument}
-  tests/unit/cli/commands/verify.test.ts → src/schema/v1.ts {RexConfig}
-  tests/unit/cli/validate-input.test.ts → src/cli/validate-input.ts {parseIntSafe, validateLevel, requireParent, validateFormat, requireUpdates}
-  tests/unit/core/notion-map.test.ts → src/core/notion-map.ts {mapItemToNotion, mapNotionToItem, mapDocumentToNotion, mapNotionToDocument, resolveParentPage, resolveStatusFromNotion, validateDatabaseSchema, buildStatusGroupMap, NOTION_LEVEL_CONFIG, STATUS_OPTIONS, PRIORITY_OPTIONS, DATABASE_SCHEMA}
-  tests/unit/core/notion-map.test.ts → src/core/notion-map.ts {NotionStatusGroup}
-  tests/unit/core/notion-map.test.ts → src/schema/index.ts {PRDItem, PRDDocument}
-  tests/unit/core/transitions.test.ts → src/core/transitions.ts {validateTransition, allowedTargets}
-  tests/unit/core/transitions.test.ts → src/schema/index.ts {ItemStatus}
-  tests/unit/recommend/create-from-recommendations.test.ts → src/schema/index.ts {PRDDocument, PRDItem}
+  src/cli/commands/validate-interactive.ts → src/core/epic-correlation.ts {correlateEpiclessFeatures, formatScore}
+  src/cli/commands/validate-interactive.ts → src/core/epic-correlation.ts {CorrelationResult}
+  src/cli/commands/validate-interactive.ts → src/core/structural.ts {EpiclessFeature}
+  src/cli/commands/validate.ts → src/cli/commands/validate-interactive.ts {resolveEpiclessFeatures, applyEpiclessResolutions}
+  src/cli/commands/validate.ts → src/cli/commands/validate-interactive.ts {PromptFn}
+  src/cli/commands/validate.ts → src/core/structural.ts {validateStructure, findEpiclessFeatures}
+  src/core/epic-correlation.ts → src/core/structural.ts {EpiclessFeature}
+  tests/integration/smart-add-orphaned-parent.test.ts → src/cli/commands/validate.ts {cmdValidate}
+  tests/integration/smart-add-orphaned-parent.test.ts → src/core/structural.ts {validateStructure}
+  tests/unit/cli/commands/validate-epicless.test.ts → src/cli/commands/validate.ts {cmdValidate}
+  tests/unit/cli/commands/validate-interactive.test.ts → src/cli/commands/validate-interactive.ts {resolveEpiclessFeatures, applyEpiclessResolutions}
+  tests/unit/cli/commands/validate-interactive.test.ts → src/cli/commands/validate-interactive.ts {EpiclessResolution, PromptFn}
+  tests/unit/cli/commands/validate-interactive.test.ts → src/core/structural.ts {EpiclessFeature}
+  tests/unit/cli/commands/validate.test.ts → src/cli/commands/validate.ts {cmdValidate}
+  tests/unit/core/epic-correlation.test.ts → src/core/epic-correlation.ts {computeTagOverlap, computeCorrelationSignals, computeCombinedScore, rankEpicsForFeature, correlateEpiclessFeatures, formatScore}
+  tests/unit/core/epic-correlation.test.ts → src/core/structural.ts {EpiclessFeature}
+  tests/unit/core/epicless.test.ts → src/core/structural.ts {findEpiclessFeatures}
+  tests/unit/core/structural.test.ts → src/core/structural.ts {validateStructure}
 
 </imports>

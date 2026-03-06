@@ -42,14 +42,14 @@
     "packages/sourcevision/src/schema/v1.ts",
     "packages/sourcevision/tests/unit/analyzers/zones-helpers.ts"
   ],
-  "cohesion": 0.57,
-  "coupling": 0.43,
+  "cohesion": 0.43,
+  "coupling": 0.57,
   "fileCount": 28,
   "lineCount": 11364,
   "riskMetrics": {
-    "cohesion": 0.57,
-    "coupling": 0.43,
-    "riskScore": 0.43000000000000005,
+    "cohesion": 0.43,
+    "coupling": 0.57,
+    "riskScore": 0.5700000000000001,
     "riskLevel": "healthy",
     "failsThreshold": false
   }

@@ -6702,6 +6702,7 @@
         "formatTimestamp",
         "renderTree",
         "filterCompleted",
+        "filterDeleted",
         "formatStats"
       ]
     },

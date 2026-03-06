@@ -31,14 +31,14 @@
     "src/token-usage.ts",
     "src/types.ts"
   ],
-  "cohesion": 0.6,
-  "coupling": 0.4,
+  "cohesion": 0.77,
+  "coupling": 0.23,
   "fileCount": 13,
   "lineCount": 1925,
   "riskMetrics": {
-    "cohesion": 0.6,
-    "coupling": 0.4,
-    "riskScore": 0.4,
+    "cohesion": 0.77,
+    "coupling": 0.23,
+    "riskScore": 0.22999999999999998,
     "riskLevel": "healthy",
     "failsThreshold": false
   }

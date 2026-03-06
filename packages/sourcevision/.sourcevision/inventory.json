@@ -422,13 +422,13 @@
     },
     {
       "path": "src/analyzers/zones.ts",
-      "size": 62816,
+      "size": 63476,
       "language": "TypeScript",
-      "lineCount": 1795,
-      "hash": "301cd187ca96591d6edd4ee3b7ae669f76e02459dd6165b14e2ff4a9272baede",
+      "lineCount": 1807,
+      "hash": "ea7a0299b06bb2a598650a07ec298fa2b76683d8e291ab34d5c510c3f51a50ab",
       "role": "source",
       "category": "analyzers",
-      "lastModified": 1772765488983
+      "lastModified": 1772819456214
     },
     {
       "path": "src/cli/commands/analyze-phases.ts",
@@ -1395,10 +1395,10 @@
       "size": 83851,
       "language": "Other",
       "lineCount": 1,
-      "hash": "570b46fd7b50e4f4185e6a856b905f6b1395daeed828367cdfc3157bee439e1d",
+      "hash": "af7da1660c632928bebea0ddec7d95c64d1ba7ef1486565eabcb2dac5ed0df14",
       "role": "config",
       "category": "root",
-      "lastModified": 1772776041640
+      "lastModified": 1772819460438
     },
     {
       "path": "vitest.config.ts",
@@ -1413,7 +1413,7 @@
   ],
   "summary": {
     "totalFiles": 141,
-    "totalLines": 45512,
+    "totalLines": 45524,
     "byLanguage": {
       "JSON": 7,
       "Markdown": 3,

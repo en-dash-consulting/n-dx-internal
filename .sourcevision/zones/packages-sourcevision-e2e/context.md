@@ -5,8 +5,8 @@
 <zone>
 
 Zone: E2e (`packages-sourcevision:e2e`)
-Files: 5, Cohesion: 0.43, Coupling: 0.57
-Risk: healthy (score: 0.57)
+Files: 5, Cohesion: 1.00, Coupling: 0.00
+Risk: healthy (score: 0.00)
 Description: 4 files, primarily TypeScript
 Entry points: packages/sourcevision/src/schema/validate.ts
 Lines: 1723
@@ -43,6 +43,7 @@ Incoming (other zones → this zone):
 
 <insights>
 
+- High cohesion (1) — files are tightly interconnected
 - High coupling (0.57) — 3 imports target "analyzers-2"
 - High coupling (0.57) — 3 imports target "file-analysis-pipeline"
 - src/schema/validate.ts is the sole production file in this community; its clustering with e2e and integration tests suggests it is almost exclusively exercised at system boundaries rather than unit-tested in isolation — add dedicated unit tests for edge cases.
@@ -61,6 +62,8 @@ Incoming (other zones → this zone):
 - The zone name 'schema-validation' accurately describes the production file (validate.ts) but is simultaneously an accurate description of what the co-located tests do. This naming coincidence means the zone name provides no signal about whether a given file is production or test code, further obscuring the boundary.
 - schema-validation is the only zone with both high coupling (0.57) AND low cohesion (0.43) AND mixed-abstraction-level test membership simultaneously. This triple combination makes it the highest-risk zone in the four visible here — not because any single metric is catastrophically bad, but because all three risk indicators co-occur. Prioritize decomposing this zone above the others.
 - Codify the implicit convention surfaced by this zone: production zones may co-locate unit tests (as file-analysis-pipeline and zone-detection-engine do) but must not contain integration or e2e tests. Adding a lint or zone-membership rule enforcing this boundary would prevent schema-validation's pattern from recurring in new zones.
+- Coupling to 'analyzers-2' reflects intra-domain edges within the Louvain-fragmented analyzers cluster, not a structural dependency risk
+- Zone finding 0 (warning: coupling 0.57 to 'analyzers-2') is contradicted by global finding 10. E2e tests coupling to what is semantically one analyzers domain is expected; the warning severity is not justified. The coupling flag measures intra-domain edges that Louvain partitioned into separate zone identifiers, not genuine cross-concern dependencies.
 - [call graph] 87 internal calls, 10 outgoing, 11 incoming (cohesion: 0.9, coupling: 0.1)
 
 </insights>

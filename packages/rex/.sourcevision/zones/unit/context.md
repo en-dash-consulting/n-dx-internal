@@ -5,17 +5,18 @@
 <zone>
 
 Zone: Unit (`unit`)
-Files: 14, Cohesion: 0.50, Coupling: 0.50
-Risk: healthy (score: 0.50)
-Description: 14 files, primarily TypeScript
-Entry points: src/analyze/acknowledge.ts, src/analyze/reconcile.ts, src/analyze/scanners.ts, src/cli/commands/recommend.ts, src/recommend/create-from-recommendations.ts
-Lines: 5758
+Files: 19, Cohesion: 0.33, Coupling: 0.67
+Risk: critical (score: 0.67)
+Description: 19 files, primarily TypeScript
+Entry points: src/analyze/acknowledge.ts, src/analyze/extract.ts, src/analyze/reconcile.ts, src/analyze/scanners.ts, src/cli/commands/recommend.ts, src/recommend/create-from-recommendations.ts
+Lines: 9440
 
 </zone>
 
 <files>
 
 src/analyze/acknowledge.ts (TypeScript, 85 lines, source)
+src/analyze/extract.ts (TypeScript, 1688 lines, source)
 src/analyze/reconcile.ts (TypeScript, 124 lines, source)
 src/analyze/scanners.ts (TypeScript, 958 lines, source)
 src/cli/commands/recommend.ts (TypeScript, 453 lines, source)
@@ -23,6 +24,10 @@ src/recommend/conflict-detection.ts (TypeScript, 344 lines, source)
 src/recommend/create-from-recommendations.ts (TypeScript, 369 lines, source)
 src/recommend/types.ts (TypeScript, 63 lines, source)
 tests/unit/analyze/acknowledge.test.ts (TypeScript, 112 lines, test)
+tests/unit/analyze/extract-llm-mock.test.ts (TypeScript, 382 lines, test)
+tests/unit/analyze/extract-llm.test.ts (TypeScript, 264 lines, test)
+tests/unit/analyze/extract-text.test.ts (TypeScript, 778 lines, test)
+tests/unit/analyze/extract.test.ts (TypeScript, 570 lines, test)
 tests/unit/analyze/propose.test.ts (TypeScript, 355 lines, test)
 tests/unit/analyze/reconcile.test.ts (TypeScript, 168 lines, test)
 tests/unit/analyze/scanners-acknowledge.test.ts (TypeScript, 101 lines, test)
@@ -47,6 +52,11 @@ Internal:
   src/recommend/create-from-recommendations.ts → src/recommend/conflict-detection.ts {ConflictReport}
   src/recommend/create-from-recommendations.ts → src/recommend/types.ts {EnrichedRecommendation, RecommendationMeta, ConflictStrategy}
   tests/unit/analyze/acknowledge.test.ts → src/analyze/acknowledge.ts {computeFindingHash, loadAcknowledged, saveAcknowledged, acknowledgeFinding, isAcknowledged}
+  tests/unit/analyze/extract-llm-mock.test.ts → src/analyze/extract.ts {maybeDisambiguate, extractFromText}
+  tests/unit/analyze/extract-llm.test.ts → src/analyze/extract.ts {isAmbiguousStructure, maybeDisambiguate, extractFromText, extractFromMarkdown}
+  tests/unit/analyze/extract-llm.test.ts → src/analyze/extract.ts {ExtractionResult}
+  tests/unit/analyze/extract-text.test.ts → src/analyze/extract.ts {extractFromText, classifyHeadingLevels, isAllCapsHeader, isRequirementSentence, extractRequirementSentences, parseNumberedSection, extractPriorityTag}
+  tests/unit/analyze/extract.test.ts → src/analyze/extract.ts {extractFromMarkdown, extractFromText, classifyHeadingLevels}
   tests/unit/analyze/propose.test.ts → src/analyze/scanners.ts {ScanResult}
   tests/unit/analyze/reconcile.test.ts → src/analyze/reconcile.ts {reconcile}
   tests/unit/analyze/reconcile.test.ts → src/analyze/scanners.ts {ScanResult}
@@ -61,38 +71,47 @@ Outgoing (this zone → other zones):
   → cli: src/cli/commands/recommend.ts → src/cli/commands/constants.ts; src/cli/commands/recommend.ts → src/cli/output.ts
   → core: src/analyze/reconcile.ts → src/core/tree.ts; src/recommend/conflict-detection.ts → src/core/tree.ts; src/recommend/create-from-recommendations.ts → src/core/dag.ts; src/recommend/create-from-recommendations.ts → src/core/tree.ts
   → store: src/cli/commands/recommend.ts → src/store/index.ts; src/recommend/create-from-recommendations.ts → src/store/contracts.ts
-  → unit-analyze: src/analyze/reconcile.ts → src/analyze/dedupe.ts; src/analyze/reconcile.ts → src/schema/index.ts; src/analyze/scanners.ts → src/schema/index.ts; src/cli/commands/recommend.ts → src/schema/index.ts; src/recommend/conflict-detection.ts → src/analyze/dedupe.ts; src/recommend/conflict-detection.ts → src/schema/index.ts; src/recommend/create-from-recommendations.ts → src/schema/index.ts; src/recommend/create-from-recommendations.ts → src/schema/index.ts; src/recommend/types.ts → src/schema/index.ts; tests/unit/analyze/propose.test.ts → src/analyze/propose.ts; tests/unit/analyze/reconcile.test.ts → src/schema/index.ts; tests/unit/cli/commands/recommend.test.ts → src/schema/index.ts; tests/unit/recommend/conflict-detection.test.ts → src/schema/index.ts
+  → unit-analyze: src/analyze/extract.ts → src/analyze/analyze-shared.ts; src/analyze/extract.ts → src/analyze/analyze-shared.ts; src/analyze/extract.ts → src/analyze/file-validation.ts; src/analyze/extract.ts → src/analyze/llm-bridge.ts; src/analyze/extract.ts → src/analyze/propose.ts; src/analyze/extract.ts → src/schema/index.ts; src/analyze/reconcile.ts → src/analyze/dedupe.ts; src/analyze/reconcile.ts → src/schema/index.ts; src/analyze/scanners.ts → src/schema/index.ts; src/cli/commands/recommend.ts → src/schema/index.ts; src/recommend/conflict-detection.ts → src/analyze/dedupe.ts; src/recommend/conflict-detection.ts → src/schema/index.ts; src/recommend/create-from-recommendations.ts → src/schema/index.ts; src/recommend/create-from-recommendations.ts → src/schema/index.ts; src/recommend/types.ts → src/schema/index.ts; tests/unit/analyze/extract-llm-mock.test.ts → src/analyze/propose.ts; tests/unit/analyze/extract-llm.test.ts → src/analyze/propose.ts; tests/unit/analyze/extract-text.test.ts → src/analyze/propose.ts; tests/unit/analyze/extract.test.ts → src/analyze/propose.ts; tests/unit/analyze/propose.test.ts → src/analyze/propose.ts; tests/unit/analyze/reconcile.test.ts → src/schema/index.ts; tests/unit/cli/commands/recommend.test.ts → src/schema/index.ts; tests/unit/recommend/conflict-detection.test.ts → src/schema/index.ts
 
 Incoming (other zones → this zone):
   ← cli: src/cli/index.ts → src/cli/commands/recommend.ts
-  ← core: src/public.ts → src/analyze/acknowledge.ts; src/public.ts → src/analyze/acknowledge.ts; src/public.ts → src/recommend/create-from-recommendations.ts; src/public.ts → src/recommend/create-from-recommendations.ts
-  ← unit-analyze: src/analyze/dedupe.ts → src/analyze/scanners.ts; src/analyze/index.ts → src/analyze/reconcile.ts; src/analyze/index.ts → src/analyze/reconcile.ts; src/analyze/index.ts → src/analyze/scanners.ts; src/analyze/index.ts → src/analyze/scanners.ts; src/analyze/propose.ts → src/analyze/scanners.ts; src/analyze/reason.ts → src/analyze/scanners.ts; tests/unit/analyze/dedupe.test.ts → src/analyze/scanners.ts; tests/unit/recommend/create-from-recommendations.test.ts → src/recommend/create-from-recommendations.ts
+  ← core: src/public.ts → src/analyze/acknowledge.ts; src/public.ts → src/analyze/acknowledge.ts; src/public.ts → src/analyze/extract.ts; src/public.ts → src/analyze/extract.ts; src/public.ts → src/recommend/create-from-recommendations.ts; src/public.ts → src/recommend/create-from-recommendations.ts
+  ← unit-analyze: src/analyze/dedupe.ts → src/analyze/scanners.ts; src/analyze/index.ts → src/analyze/extract.ts; src/analyze/index.ts → src/analyze/extract.ts; src/analyze/index.ts → src/analyze/reconcile.ts; src/analyze/index.ts → src/analyze/reconcile.ts; src/analyze/index.ts → src/analyze/scanners.ts; src/analyze/index.ts → src/analyze/scanners.ts; src/analyze/propose.ts → src/analyze/scanners.ts; src/analyze/reason.ts → src/analyze/extract.ts; src/analyze/reason.ts → src/analyze/scanners.ts; tests/unit/analyze/dedupe.test.ts → src/analyze/scanners.ts; tests/unit/recommend/create-from-recommendations.test.ts → src/recommend/create-from-recommendations.ts
 
 </imports>
 
 <findings>
 
+[observation] [warning] High coupling (0.67) — 23 imports target "unit-analyze"
+[observation] [warning] Low cohesion (0.33) — files are loosely related, consider splitting this zone
 [suggestion] [info] Zone "unit" has files across 6 directories — consider consolidating under a dedicated directory
+[suggestion] [warning] Zone "Unit" (unit) has critical risk (score: 0.67, cohesion: 0.33, coupling: 0.67) — requires refactoring before new feature development
 
 </findings>
 
 <insights>
 
-- The mixed presence of production source files (acknowledge.ts, reconcile.ts, scanners.ts, recommend/*) alongside their unit tests reflects a tight feedback loop — keep this pairing intentional and resist splitting them apart.
-- The recommend CLI command (recommend.ts) is colocated here rather than in the broader CLI zone, suggesting it's tightly coupled to the recommendation domain logic rather than general CLI infrastructure.
-- Cohesion of 0.5 with coupling of 0.5 indicates this zone bridges two concerns (recommendation generation and PRD acknowledgement); consider whether these warrant separate zones as the feature grows.
-- Zone "analyze-recommend" has files across 6 directories — consider consolidating under a dedicated directory
-- Cohesion (0.5) and coupling (0.5) are balanced but moderate — the zone spans recommendation creation and PRD reconciliation, which are related but distinct responsibilities.
-- 9 imports from unit-analyze confirm this zone depends heavily on the core analyze machinery; the direction is correct (recommend depends on analyze, not vice versa).
-- The near-balanced bidirectional import ratio with prd-analyze-core (13 outbound : 9 inbound, ratio ≈ 1.4:1) is significantly more balanced than the cli↔prd-analyze-core ratio (54:30 ≈ 1.8:1), suggesting analyze-recommend wraps prd-analyze-core output rather than sharing primitives with it — a healthier relationship pattern.
-- analyze-recommend ↔ prd-analyze-core is the most balanced bidirectional pair in the graph; the near-equal import exchange (13 vs 9) indicates a cooperative wrapper relationship rather than a dependency inversion — this is the healthiest cross-zone coupling in the package.
-- The 9 reverse imports from prd-analyze-core back into this zone (unit-analyze→unit: 9) mean the core analyze pipeline takes a runtime dependency on the recommendation layer — the dependency arrow points against the expected hierarchy where recommendations consume analyze output, not the other way around.
-- If 'unit' in cross-zone imports maps to analyze-recommend, then prd-analyze-core and analyze-recommend form a mutual dependency pair that cannot be compiled or tested independently, eliminating the value of splitting them into separate zones.
-- prd-analyze-core imports 9 symbols back into analyze-recommend (unit-analyze→unit: 9): the core analyze pipeline depends on a higher-level recommendation wrapper. This inverts the intended flow (recommend wraps analyze) and means neither zone can be loaded without the other, collapsing their boundary at runtime.
-- src/cli/commands/recommend.ts carries a cli-command archetype but resides in the analyze-recommend domain zone rather than cli-infrastructure. Every other CLI command file is in cli-infrastructure; this single outlier breaks the convention that CLI dispatch files belong to the CLI zone. The inconsistency makes it unclear whether CLI commands are owned by their domain zone or by the CLI infrastructure zone — a policy that should be explicit and uniform.
-- analyze-recommend is the only zone whose name contains a verb ('recommend'). All other zone names are noun phrases describing a domain or structural role. Verb-named zones describe actions rather than ownership boundaries, making them harder to reason about as encapsulation units and harder to map to directory structures.
-- src/cli/commands/recommend.ts (archetype: cli-command) is the only CLI command file outside cli-infrastructure. Either move it to cli-infrastructure to match the convention that CLI dispatch lives in one zone, or document explicitly that CLI commands are colocated with their domain zone — whichever policy is chosen should be applied uniformly across all command files.
+- Low cohesion (0.33) — files are loosely related, consider splitting this zone
+- High coupling (0.67) — 23 imports target "unit-analyze"
+- High coupling (0.67) — 23 imports target "prd-analysis-core"
+- High coupling (0.53) — 23 imports target "prd-analysis-core"
+- At cohesion 0.47 and coupling 0.53, this zone sits at the boundary — files here straddle recommendation logic and general analysis utilities, which explains the moderate scores.
+- The 23 imports from unit-analyze and 12 exports back to unit-analyze suggest this zone is tightly paired with the core analysis pipeline and may benefit from merging or clearer interface contracts.
+- The recommend/types.ts file should be the stable contract point between this zone and its consumers; verify it doesn't leak implementation details from scanners.ts or conflict-detection.ts.
+- Cohesion at 0.47 is at the warning threshold — the mix of CLI command (recommend.ts), domain service (create-from-recommendations.ts), and utility files (conflict-detection.ts) suggests this zone blends layers that could be separated.
+- Bidirectional imports with unit-analyze (12 outbound, 23 inbound) indicate shared state or shared types that haven't been cleanly factored into a neutral boundary module.
+- Zone "recommendation-scanning" has files across 6 directories — consider consolidating under a dedicated directory
+- Imports from both prd-analysis-core (23 inbound) and core/prd-tree-lifecycle (6 inbound) while exporting back to both (12+4) — this zone is caught between two hubs rather than sitting at a clean layer boundary.
+- The zone receives more imports than it sends outbound to prd-tree-lifecycle (4 out vs 6 in), suggesting prd-tree-lifecycle treats recommendation logic as a downstream consumer of tree operations rather than a peer service.
+- recommendation-scanning participates in bidirectional coupling with both prd-analysis-core AND prd-tree-lifecycle simultaneously, making it a bridge zone rather than a leaf — changes in either hub ripple through it.
+- Four files (acknowledge.ts, extract.ts, reconcile.ts, scanners.ts) live in src/analyze/ but are assigned to recommendation-scanning — they share a directory with prd-analysis-core files, creating a directory-level boundary violation where zone membership cannot be inferred from file location alone.
+- acknowledge.ts, extract.ts, reconcile.ts, and scanners.ts reside in src/analyze/ alongside prd-analysis-core files but belong to a different zone — zone boundaries are invisible at the filesystem level, making them impossible to enforce via directory-based lint rules.
+- src/analyze/scanners.ts and src/analyze/extract.ts make direct LLM calls (spawnClaude) while also being consumed by prd-analysis-core — LLM I/O is scattered across two zones in the same directory, preventing either zone from being tested in isolation.
+- recommendation-scanning is the only zone where BOTH cohesion (0.47) and coupling (0.53) simultaneously cross the warning threshold in opposite directions — insufficient cohesion combined with excess coupling is the definition of a fragile zone, making this the highest-priority zone-level refactoring target ahead of prd-analysis-core.
+- The verb-gerund naming pattern ('recommendation-scanning') is inconsistent with the noun-phrase pattern used by all other zones ('prd-analysis-core', 'cli-mcp-interface', 'prd-tree-lifecycle', 'prd-storage-adapters') — rename to 'recommendation-engine' or 'analyze-recommendations' to align with zone naming conventions.
+- recommendation-scanning is the only zone with both cohesion below 0.5 and coupling above 0.5 simultaneously — it is the most fragile zone by definition. Prioritize splitting it before prd-analysis-core refactoring, as its bridging role between two hubs amplifies any change in either.
+- Zone name uses verb-gerund pattern ('recommendation-scanning') while all peer zones use noun phrases. Rename to 'recommendation-engine' for consistency.
 - Zone "unit" has files across 6 directories — consider consolidating under a dedicated directory
-- [call graph] 328 internal calls, 62 outgoing, 1 incoming (cohesion: 0.84, coupling: 0.16)
+- [call graph] 663 internal calls, 72 outgoing, 4 incoming (cohesion: 0.9, coupling: 0.1)
 
 </insights>

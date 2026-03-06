@@ -68,6 +68,10 @@ Internal:
 [observation] [info] No declared entry points despite containing executable scripts (ci.js, cli.js, web.js) — sourcevision may need path hints to correctly classify these as entry points.
 [observation] [info] Zero coupling to any other zone is the intended design for an orchestration layer — this is healthy and should be preserved.
 [observation] [info] claude-integration.js classified as a service at root level suggests it may contain reusable logic that could migrate into a dedicated package if complexity grows.
+[relationship] [warning] Orchestration layer's zero-coupling guarantee is enforced structurally but not contractually — CLI argument interfaces between cli.js and domain package CLIs are untyped; adding schema validation or contract tests would make the spawn boundary explicit.
+[anti-pattern] [warning] CLI argument interfaces between orchestration scripts and domain package CLIs are untyped; any CLI signature change in rex, hench, or sourcevision is a silent breaking change with no compile-time or schema-level safety net — add contract tests or a shared CLI-args schema to make this boundary explicit
+[suggestion] [info] Add a .sourcevision/hints file or zone archetype annotations to explicitly classify the 4 entry-point scripts vs the 23 config/doc files in this zone — the current single-zone grouping obscures the entry-point surface for tooling and documentation generators.
+[suggestion] [info] Rename claude-integration.js to a role-based name (e.g. ai-integration.js or llm-hooks.js) to match the action/role naming convention of all other orchestration scripts and avoid leaking the Claude vendor name at the layer that is supposed to be vendor-neutral.
 
 </findings>
 
@@ -80,6 +84,15 @@ Internal:
 - Zero coupling to any other zone is the intended design for an orchestration layer — this is healthy and should be preserved.
 - claude-integration.js classified as a service at root level suggests it may contain reusable logic that could migrate into a dedicated package if complexity grows.
 - No declared entry points despite containing executable scripts (ci.js, cli.js, web.js) — sourcevision may need path hints to correctly classify these as entry points.
+- Zero inter-zone coupling means orchestration scripts can only communicate with domain packages via process spawn — this is the correct pattern but means no type-safe contract exists between orchestration and domain layers; any CLI API change is a silent breaking change unless covered by E2E tests
+- Orchestration layer's zero-coupling guarantee is enforced structurally but not contractually — CLI argument interfaces between cli.js and domain package CLIs are untyped; adding schema validation or contract tests would make the spawn boundary explicit.
+- The spawn boundary between cli.js and domain package CLIs is the only untyped contract in an otherwise well-typed monorepo — a schema or integration test layer at this boundary would surface CLI API regressions before they reach users
+- claude-integration.js classified as a service at root level has zero coupling to other zones yet provides AI integration — if it grows, it should be promoted to a dedicated package rather than staying in the orchestration layer
+- CLI argument interfaces between orchestration scripts and domain package CLIs are untyped; any CLI signature change in rex, hench, or sourcevision is a silent breaking change with no compile-time or schema-level safety net — add contract tests or a shared CLI-args schema to make this boundary explicit
+- claude-integration.js uses a vendor-specific name ('claude') while the codebase uses @n-dx/llm-client for vendor neutrality — the name leaks an implementation detail at the orchestration boundary that the llm-client abstraction was designed to hide
+- The four executable entry scripts (ci.js, cli.js, web.js, config.js) all follow action/role naming (what they do or configure), while claude-integration.js follows a vendor+noun pattern — this single file breaks the naming convention of every other root-level script
+- Rename claude-integration.js to a role-based name (e.g. ai-integration.js or llm-hooks.js) to match the action/role naming convention of all other orchestration scripts and avoid leaking the Claude vendor name at the layer that is supposed to be vendor-neutral.
+- Add a .sourcevision/hints file or zone archetype annotations to explicitly classify the 4 entry-point scripts vs the 23 config/doc files in this zone — the current single-zone grouping obscures the entry-point surface for tooling and documentation generators.
 - [call graph] 418 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

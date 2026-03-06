@@ -518,7 +518,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Handles acknowledgment of analysis proposals — business logic orchestration within the analyze pipeline.",
+          "detail": "Handles acknowledgment logic as part of the analysis pipeline — business logic orchestration.",
           "weight": 0.7
         }
       ]
@@ -532,7 +532,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shared utilities and helpers used across multiple analyze modules — high fan-in support module.",
+          "detail": "Shared infrastructure and helpers used across the analyze pipeline.",
           "weight": 0.7
         }
       ]
@@ -546,7 +546,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Guard logic to prevent invalid consolidations — a utility check used within the analyze pipeline.",
+          "detail": "Guard/validation logic to prevent invalid consolidation — pure utility with no orchestration.",
           "weight": 0.7
         }
       ]
@@ -560,7 +560,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Decomposes PRD items during analysis — business logic transformation step.",
+          "detail": "Decomposes PRD items as a discrete analysis step — business logic service.",
           "weight": 0.7
         }
       ]
@@ -574,7 +574,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Deduplication logic — a focused utility function used by the analyze pipeline.",
+          "detail": "Deduplication helper — stateless utility function.",
           "weight": 0.7
         }
       ]
@@ -588,21 +588,21 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Computes diffs between PRD states — stateless utility logic.",
+          "detail": "Diffing helper — stateless utility computing differences between structures.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyze/extract.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Extracts structured data from LLM output or source — data-processing business logic.",
+          "detail": "Extraction helper — stateless utility for pulling data from structures.",
           "weight": 0.7
         }
       ]
@@ -616,7 +616,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Validates file inputs before analysis — reusable validation helper.",
+          "detail": "File validation logic — stateless utility for validating input files.",
           "weight": 0.7
         }
       ]
@@ -630,7 +630,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Orchestrates guided/interactive analysis flow — business logic with multiple steps.",
+          "detail": "Guided analysis orchestration — coordinates multiple steps as a service layer module.",
           "weight": 0.7
         }
       ]
@@ -658,21 +658,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Bridges the analyze pipeline to the LLM client — API client / integration layer.",
+          "detail": "Bridges analysis pipeline to the LLM API — acts as an API client/service.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyze/modify-reason.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Transforms or annotates modification reasons — focused utility used in the analyze pipeline.",
+          "detail": "Handles modify-reason phase of the analysis pipeline — discrete business logic step.",
           "weight": 0.7
         }
       ]
@@ -686,7 +686,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Generates PRD proposals from analysis results — core business logic orchestration.",
+          "detail": "Generates PRD proposals — core analysis service with orchestration logic.",
           "weight": 0.7
         }
       ]
@@ -700,7 +700,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Produces structured reasoning for proposed changes — LLM-driven logic step.",
+          "detail": "Reasoning phase of the analysis pipeline — business logic service.",
           "weight": 0.7
         }
       ]
@@ -714,27 +714,13 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Reconciles incoming proposals with the existing PRD — business logic orchestration.",
+          "detail": "Reconciles proposed changes against existing PRD — business logic orchestration.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyze/reshape-reason.ts",
-      "archetype": "utility",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "utility",
-          "signalKind": "path",
-          "detail": "Reshapes or normalizes reason objects — utility transformation used within analyze.",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "src/analyze/scanners.ts",
       "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
@@ -742,7 +728,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Scans project files and structures during analysis — data-gathering service layer.",
+          "detail": "Reshape-reason phase of the analysis pipeline — discrete business logic step.",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "src/analyze/scanners.ts",
+      "archetype": "utility",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "utility",
+          "signalKind": "path",
+          "detail": "Scanning utilities — stateless helpers for traversing/scanning project files.",
           "weight": 0.7
         }
       ]
@@ -756,7 +756,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Validates proposed modifications before applying — reusable validation helper.",
+          "detail": "Validates proposed modifications — stateless validation utility.",
           "weight": 0.7
         }
       ]
@@ -1201,14 +1201,14 @@
     },
     {
       "path": "src/cli/help.ts",
-      "archetype": "utility",
+      "archetype": "cli-command",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "Generates or stores CLI help text — shared utility for CLI commands.",
+          "detail": "CLI help text output — a CLI command implementation.",
           "weight": 0.7
         }
       ]
@@ -1229,14 +1229,14 @@
     },
     {
       "path": "src/cli/mcp-tools.ts",
-      "archetype": "route-handler",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "route-handler",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Defines MCP tool handler implementations — analogous to HTTP route handlers but for MCP protocol.",
+          "detail": "Defines and registers MCP tool handlers — service-layer wiring for the MCP server.",
           "weight": 0.7
         }
       ]
@@ -1250,7 +1250,7 @@
         {
           "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "CLI entry point for the `rex mcp` subcommand.",
+          "detail": "MCP subcommand handler — CLI command entry point for starting the MCP server.",
           "weight": 0.7
         }
       ]
@@ -1278,7 +1278,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Validates CLI input arguments — shared validation utility for CLI commands.",
+          "detail": "Input validation for CLI arguments — stateless utility used at the command boundary.",
           "weight": 0.7
         }
       ]
@@ -1789,14 +1789,14 @@
     },
     {
       "path": "src/recommend/conflict-detection.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Detects conflicts among recommendations — focused utility logic used by the recommend pipeline.",
+          "detail": "Detects conflicts in recommendations — business logic service.",
           "weight": 0.7
         }
       ]
@@ -1810,7 +1810,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Creates PRD items from sourcevision recommendations — business logic orchestration.",
+          "detail": "Creates PRD items from recommendations — orchestration service.",
           "weight": 0.7
         }
       ]
@@ -2081,7 +2081,7 @@
         {
           "archetypeId": "config",
           "signalKind": "path",
-          "detail": "Defines the default workflow configuration/state for rex projects.",
+          "detail": "Default workflow configuration/state — configuration module with no runtime logic.",
           "weight": 0.7
         }
       ]
@@ -2091,12 +2091,11 @@
     "totalClassified": 109,
     "totalUnclassified": 0,
     "byArchetype": {
-      "service": 10,
-      "utility": 48,
+      "service": 12,
+      "utility": 46,
       "entrypoint": 6,
-      "cli-command": 29,
+      "cli-command": 30,
       "types": 2,
-      "route-handler": 1,
       "schema": 3,
       "store": 9,
       "config": 1

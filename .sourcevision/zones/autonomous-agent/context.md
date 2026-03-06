@@ -600,6 +600,10 @@ Internal:
 [observation] [info] Agent analysis files (adaptive.ts, review.ts, spin.ts) represent domain-specific loop heuristics — documenting their interaction order would help contributors understand the agent's decision pipeline.
 [observation] [info] Perfect cohesion (1.0) and zero external coupling confirm the rex-gateway pattern is working as intended for this package.
 [suggestion] [info] Zone "autonomous-agent" has files across 31 directories — consider consolidating under a dedicated directory
+[suggestion] [info] Align the zone ID with the package name: rename 'autonomous-agent' to 'hench' (or 'hench-core') so that sourcevision zone health reports are directly mappable to package ownership, CLI commands (rex, hench, sourcevision), and directory paths without a mental translation step.
+[suggestion] [warning] Run intra-package call-graph analysis on hench to detect any emerging circular call patterns between its internal subdirectories (agent/, prd/, tools/) before they compound — the rex circular call pattern (239+100 calls) was only found via call-graph analysis, not zone metrics, and hench's 2838 internal calls make it the most likely next site for a hidden cycle.
+[relationship] [warning] Hench is the only execution-layer package importing from a domain package (rex via gateway); if rex's public API changes, hench's gateway is the single choke-point — this is good design, but the gateway has no explicit version-lock or compatibility test to catch breaking changes early.
+[anti-pattern] [warning] rex-gateway.ts in hench re-exports 8 functions from rex with no version-lock or compatibility smoke test; breaking changes to rex's public API will only surface at runtime inside an agent loop, making them expensive to diagnose — add a gateway compatibility test
 
 </findings>
 
@@ -613,6 +617,14 @@ Internal:
 - 159 files in a single zone suggests the internal structure is dense; sourcevision may benefit from per-subdirectory zone hints to surface finer-grained architectural boundaries within hench.
 - Agent analysis files (adaptive.ts, review.ts, spin.ts) represent domain-specific loop heuristics — documenting their interaction order would help contributors understand the agent's decision pipeline.
 - Zone "autonomous-agent" has files across 31 directories — consider consolidating under a dedicated directory
+- Perfect zone-level isolation (coupling: 0) masks that hench's rex-gateway.ts performs 8 cross-package re-exports — zone metrics measure file-graph coupling, not runtime dependency depth; hench is architecturally isolated at the zone level but is the heaviest consumer of rex's public API at the module level
+- Hench is the only execution-layer package importing from a domain package (rex via gateway); if rex's public API changes, hench's gateway is the single choke-point — this is good design, but the gateway has no explicit version-lock or compatibility test to catch breaking changes early.
+- hench's rex-gateway.ts concentrates all cross-package imports but has no associated compatibility test — a single test that imports and exercises each re-exported symbol would catch rex public API breaks before they propagate into agent runtime failures
+- rex-gateway.ts in hench re-exports 8 functions from rex with no version-lock or compatibility smoke test; breaking changes to rex's public API will only surface at runtime inside an agent loop, making them expensive to diagnose — add a gateway compatibility test
+- Zone ID 'autonomous-agent' is the only zone in the monorepo where the zone name does not match or derive from the package directory name ('hench') — all other package-level zones use the package name or a structural subname (e.g. web-viewer, web-server); this mismatch means zone health reports cannot be cross-referenced with package-level CLI commands without a lookup table
+- The 2838 internal call count is the highest in the monorepo by a significant margin; combined with zero external coupling this means all complexity accumulates internally with no external release valve — if internal circular dependencies develop within hench (analogous to the rex prd-analysis-core ↔ cli-mcp-interface pattern), they will be entirely invisible to zone-level coupling metrics and will only surface via intra-package call-graph analysis
+- Align the zone ID with the package name: rename 'autonomous-agent' to 'hench' (or 'hench-core') so that sourcevision zone health reports are directly mappable to package ownership, CLI commands (rex, hench, sourcevision), and directory paths without a mental translation step.
+- Run intra-package call-graph analysis on hench to detect any emerging circular call patterns between its internal subdirectories (agent/, prd/, tools/) before they compound — the rex circular call pattern (239+100 calls) was only found via call-graph analysis, not zone metrics, and hench's 2838 internal calls make it the most likely next site for a hidden cycle.
 - [call graph] 2838 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

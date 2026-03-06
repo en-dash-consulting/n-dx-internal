@@ -1,9 +1,10 @@
 {
   "id": "unit",
   "name": "Unit",
-  "description": "14 files, primarily TypeScript",
+  "description": "19 files, primarily TypeScript",
   "files": [
     "src/analyze/acknowledge.ts",
+    "src/analyze/extract.ts",
     "src/analyze/reconcile.ts",
     "src/analyze/scanners.ts",
     "src/cli/commands/recommend.ts",
@@ -11,6 +12,10 @@
     "src/recommend/create-from-recommendations.ts",
     "src/recommend/types.ts",
     "tests/unit/analyze/acknowledge.test.ts",
+    "tests/unit/analyze/extract-llm-mock.test.ts",
+    "tests/unit/analyze/extract-llm.test.ts",
+    "tests/unit/analyze/extract-text.test.ts",
+    "tests/unit/analyze/extract.test.ts",
     "tests/unit/analyze/propose.test.ts",
     "tests/unit/analyze/reconcile.test.ts",
     "tests/unit/analyze/scanners-acknowledge.test.ts",
@@ -20,20 +25,21 @@
   ],
   "entryPoints": [
     "src/analyze/acknowledge.ts",
+    "src/analyze/extract.ts",
     "src/analyze/reconcile.ts",
     "src/analyze/scanners.ts",
     "src/cli/commands/recommend.ts",
     "src/recommend/create-from-recommendations.ts"
   ],
-  "cohesion": 0.5,
-  "coupling": 0.5,
-  "fileCount": 14,
-  "lineCount": 5758,
+  "cohesion": 0.33,
+  "coupling": 0.67,
+  "fileCount": 19,
+  "lineCount": 9440,
   "riskMetrics": {
-    "cohesion": 0.5,
-    "coupling": 0.5,
-    "riskScore": 0.5,
-    "riskLevel": "healthy",
-    "failsThreshold": false
+    "cohesion": 0.33,
+    "coupling": 0.67,
+    "riskScore": 0.6699999999999999,
+    "riskLevel": "critical",
+    "failsThreshold": true
   }
 }

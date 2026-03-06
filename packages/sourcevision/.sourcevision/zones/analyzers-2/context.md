@@ -5,8 +5,8 @@
 <zone>
 
 Zone: Analyzers 2 (`analyzers-2`)
-Files: 11, Cohesion: 0.54, Coupling: 0.46
-Risk: healthy (score: 0.46)
+Files: 11, Cohesion: 0.48, Coupling: 0.52
+Risk: healthy (score: 0.52)
 Description: 11 files, primarily TypeScript
 Entry points: src/analyzers/callgraph.ts, src/analyzers/components.ts, src/analyzers/imports.ts, src/analyzers/inventory.ts, src/util/paths.ts
 Lines: 5963
@@ -73,11 +73,14 @@ Incoming (other zones → this zone):
 <findings>
 
 [observation] [warning] Generic zone name "Analyzers 2" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
+[observation] [warning] High coupling (0.52) — 15 imports target "analyzers"
 
 </findings>
 
 <insights>
 
+- High coupling (0.52) — 15 imports target "analyzers"
+- Generic zone name "Analyzers 2" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 - Generic zone name "Analyzers 2" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 - The analyzers/index.ts entrypoint re-exports all analyzer modules, making this the public API surface for the analysis pipeline — keep it lean and avoid adding logic there.
 - paths.ts sits in util/ but was pulled into this community because every analyzer imports it; consider whether it belongs in a shared foundation layer to reduce coupling.

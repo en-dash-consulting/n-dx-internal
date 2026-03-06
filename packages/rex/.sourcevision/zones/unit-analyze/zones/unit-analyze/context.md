@@ -5,30 +5,27 @@
 <zone>
 
 Zone: Unit Analyze/unit Analyze (`unit-analyze/unit-analyze`)
-Files: 5, Cohesion: 0.40, Coupling: 0.60
-Description: 5 files, primarily TypeScript
-Entry points: src/analyze/extract.ts
-Lines: 3682
+Files: 4, Cohesion: 0.22, Coupling: 0.78
+Description: 4 files, primarily TypeScript
+Entry points: src/analyze/dedupe.ts, src/cli/commands/smart-add-duplicates.ts
+Lines: 1577
 
 </zone>
 
 <files>
 
-src/analyze/extract.ts (TypeScript, 1688 lines, source)
-tests/unit/analyze/extract-llm-mock.test.ts (TypeScript, 382 lines, test)
-tests/unit/analyze/extract-llm.test.ts (TypeScript, 264 lines, test)
-tests/unit/analyze/extract-text.test.ts (TypeScript, 778 lines, test)
-tests/unit/analyze/extract.test.ts (TypeScript, 570 lines, test)
+src/analyze/dedupe.ts (TypeScript, 373 lines, source)
+src/cli/commands/smart-add-duplicates.ts (TypeScript, 335 lines, source)
+tests/unit/analyze/dedupe.test.ts (TypeScript, 404 lines, test)
+tests/unit/cli/commands/smart-add-duplicates.test.ts (TypeScript, 465 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  tests/unit/analyze/extract-llm-mock.test.ts → src/analyze/extract.ts {maybeDisambiguate, extractFromText}
-  tests/unit/analyze/extract-llm.test.ts → src/analyze/extract.ts {isAmbiguousStructure, maybeDisambiguate, extractFromText, extractFromMarkdown}
-  tests/unit/analyze/extract-llm.test.ts → src/analyze/extract.ts {ExtractionResult}
-  tests/unit/analyze/extract-text.test.ts → src/analyze/extract.ts {extractFromText, classifyHeadingLevels, isAllCapsHeader, isRequirementSentence, extractRequirementSentences, parseNumberedSection, extractPriorityTag}
-  tests/unit/analyze/extract.test.ts → src/analyze/extract.ts {extractFromMarkdown, extractFromText, classifyHeadingLevels}
+  src/cli/commands/smart-add-duplicates.ts → src/analyze/dedupe.ts {similarity}
+  tests/unit/analyze/dedupe.test.ts → src/analyze/dedupe.ts {similarity, deduplicateScanResults}
+  tests/unit/cli/commands/smart-add-duplicates.test.ts → src/cli/commands/smart-add-duplicates.ts {buildDuplicateOverrideMarker, buildDuplicateOverrideMarkerIndex, buildDuplicateReasonMetadata, attachDuplicateReasonsToProposals, matchProposalNodeToPRD, matchProposalNodesToPRD}
 
 </imports>

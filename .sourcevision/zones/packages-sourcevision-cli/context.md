@@ -5,8 +5,8 @@
 <zone>
 
 Zone: Cli (`packages-sourcevision:cli`)
-Files: 26, Cohesion: 0.71, Coupling: 0.29
-Risk: healthy (score: 0.29)
+Files: 26, Cohesion: 0.67, Coupling: 0.33
+Risk: healthy (score: 0.33)
 Description: 26 files, primarily TypeScript
 Entry points: packages/sourcevision/src/analyzers/manifest.ts, packages/sourcevision/src/cli/commands/init.ts, packages/sourcevision/src/cli/commands/pr-markdown.ts, packages/sourcevision/src/cli/errors.ts, packages/sourcevision/src/cli/output.ts, packages/sourcevision/src/constants.ts
 Lines: 4165

@@ -38,14 +38,14 @@
     "packages/sourcevision/src/cli/output.ts",
     "packages/sourcevision/src/constants.ts"
   ],
-  "cohesion": 0.71,
-  "coupling": 0.29,
+  "cohesion": 0.67,
+  "coupling": 0.33,
   "fileCount": 26,
   "lineCount": 4165,
   "riskMetrics": {
-    "cohesion": 0.71,
-    "coupling": 0.29,
-    "riskScore": 0.29000000000000004,
+    "cohesion": 0.67,
+    "coupling": 0.33,
+    "riskScore": 0.32999999999999996,
     "riskLevel": "healthy",
     "failsThreshold": false
   }

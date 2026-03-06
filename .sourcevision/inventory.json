@@ -82,13 +82,13 @@
     },
     {
       "path": ".rex/execution-log.jsonl",
-      "size": 51576,
+      "size": 52699,
       "language": "Other",
-      "lineCount": 203,
-      "hash": "73842ef341d2cd83fb699072403487b4820f7c5b6b42f0c9537a4d0028257aba",
+      "lineCount": 207,
+      "hash": "0795f4b472c2f7761eea48f65ffb75f54b9a90ba30cee4d3d3235867ad2e8cf3",
       "role": "other",
       "category": ".rex",
-      "lastModified": 1772822375551
+      "lastModified": 1772833185019
     },
     {
       "path": ".rex/pending-proposals.json",
@@ -102,13 +102,13 @@
     },
     {
       "path": ".rex/prd.json",
-      "size": 934656,
+      "size": 934763,
       "language": "JSON",
-      "lineCount": 18500,
-      "hash": "ce9b2162786bf5a118bb3f7396d7197b27de3d241acffc2a0d29c119c7f16d9a",
+      "lineCount": 18501,
+      "hash": "41f7df687d1545cd02231a8fc6fe9837c972f38a2de025148a9c7e5e38025ea0",
       "role": "other",
       "category": ".rex",
-      "lastModified": 1772822375519
+      "lastModified": 1772833184950
     },
     {
       "path": ".rex/workflow.md",
@@ -7012,13 +7012,13 @@
     },
     {
       "path": "packages/web/src/viewer/components/prd-tree/facet-filter.ts",
-      "size": 6127,
+      "size": 11946,
       "language": "TypeScript",
-      "lineCount": 162,
-      "hash": "7d16e79ad6b693833f9bab38c1e1a0e1fc7ff6baa78c0409caea5dc6e1ab7c3e",
+      "lineCount": 306,
+      "hash": "9ba98422620d0f8853ba8541c1755cfbc70de70d4bfa1c19f577083ae009557d",
       "role": "source",
       "category": "web",
-      "lastModified": 1772821763487
+      "lastModified": 1772833100701
     },
     {
       "path": "packages/web/src/viewer/components/prd-tree/index.ts",
@@ -8222,13 +8222,13 @@
     },
     {
       "path": "packages/web/src/viewer/styles/prd-tree.css",
-      "size": 122508,
+      "size": 124399,
       "language": "CSS",
-      "lineCount": 5678,
-      "hash": "b3698bf772786c63be5323b1e3e69b6e06209f11fb11fe57caa7cc2a505436ff",
+      "lineCount": 5783,
+      "hash": "09260387a0047cf9a5dc7b88c9f22ec684582cb3ffaf8aaa4c2e65a154f3714a",
       "role": "other",
       "category": "web",
-      "lastModified": 1772821793875
+      "lastModified": 1772833118004
     },
     {
       "path": "packages/web/src/viewer/styles/refresh-queue.css",
@@ -10353,7 +10353,7 @@
   ],
   "summary": {
     "totalFiles": 1035,
-    "totalLines": 347213,
+    "totalLines": 347467,
     "byLanguage": {
       "YAML": 3,
       "Other": 17,

@@ -39,6 +39,7 @@ docs/zone-naming-conventions.md (Markdown, 60 lines, docs)
 [observation] [info] Concentration of memory-related docs (4+ files) suggests the memory subsystem design has iterated heavily; a single authoritative reference doc would help new contributors.
 [observation] [info] Date-prefixed file naming is used inconsistently — most docs are topic-named while at least one uses a date prefix, making chronological vs. thematic navigation ambiguous.
 [observation] [info] Zero coupling to source zones is correct — documentation should never be imported by production code.
+[suggestion] [info] Introduce docs/memory/, docs/prd/, and docs/levels/ subdirectories to group the 16 flat files by concern — this would make the documentation zone internally navigable and would allow future docs to be added to the correct group without ambiguity.
 
 </findings>
 
@@ -51,5 +52,7 @@ docs/zone-naming-conventions.md (Markdown, 60 lines, docs)
 - Date-prefixed file naming is used inconsistently — most docs are topic-named while at least one uses a date prefix, making chronological vs. thematic navigation ambiguous.
 - Concentration of memory-related docs (4+ files) suggests the memory subsystem design has iterated heavily; a single authoritative reference doc would help new contributors.
 - Zero coupling to source zones is correct — documentation should never be imported by production code.
+- The docs/ directory contains files spanning at least three distinct concerns: memory architecture (4+ files), PRD stewardship vision (prd-steward-vision.md), and level system design (level-refactor-and-steward-plan.md, level-system-reference.md) — without subdirectory grouping, the flat list does not signal which documents are authoritative references vs exploratory design notes
+- Introduce docs/memory/, docs/prd/, and docs/levels/ subdirectories to group the 16 flat files by concern — this would make the documentation zone internally navigable and would allow future docs to be added to the correct group without ambiguity.
 
 </insights>

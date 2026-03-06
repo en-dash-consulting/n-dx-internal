@@ -26,6 +26,9 @@ packages/web/src/viewer/lightmode_logo.png (Other, 0 lines, asset)
 [observation] [info] Maintaining separate lightmode and darkmode PNG files requires manual synchronization on any branding update; SVG with CSS variables would eliminate this duplication.
 [observation] [info] Zero coupling and perfect cohesion confirm this is a pure static asset zone with no runtime logic — ideal for independent caching and CDN delivery.
 [observation] [info] index.html is the root shell for the viewer SPA; changes to build output filenames must be reflected here to avoid broken asset references in production.
+[relationship] [warning] viewer-static-assets has zero import-graph coupling but carries hidden deployment coupling to web-dashboard via build manifest filenames; this contract is not enforced by TypeScript and breaks silently if build output names change.
+[anti-pattern] [warning] No shared design-token layer exists between viewer-static-assets and web-landing despite both being presentation zones in the same package; brand drift between landing page and viewer is undetectable at build time
+[suggestion] [info] Rename the zone to 'viewer-entry-assets' or split 'index.html' into its own 'viewer-shell' zone — 'static-assets' implies immutable binary files, but index.html is a deployment artifact with build-time coupling to hashed filenames; the name obscures this coupling from zone health reviewers.
 
 </findings>
 
@@ -38,5 +41,12 @@ packages/web/src/viewer/lightmode_logo.png (Other, 0 lines, asset)
 - Zero coupling and perfect cohesion confirm this is a pure static asset zone with no runtime logic — ideal for independent caching and CDN delivery.
 - Maintaining separate lightmode and darkmode PNG files requires manual synchronization on any branding update; SVG with CSS variables would eliminate this duplication.
 - index.html is the root shell for the viewer SPA; changes to build output filenames must be reflected here to avoid broken asset references in production.
+- Build-time coupling between viewer-static-assets and web-dashboard exists via the build manifest (index.html script/link tags reference hashed filenames) — this coupling is invisible to the import graph but creates a deployment-time contract that must be maintained manually
+- viewer-static-assets has zero import-graph coupling but carries hidden deployment coupling to web-dashboard via build manifest filenames; this contract is not enforced by TypeScript and breaks silently if build output names change.
+- viewer-static-assets and web-landing are co-resident in the same package but share no CSS variables, design tokens, or brand asset layer — any global brand update (color, logo, typography) requires manual synchronization across two independently deployed zones with no compile-time enforcement
+- No shared design-token layer exists between viewer-static-assets and web-landing despite both being presentation zones in the same package; brand drift between landing page and viewer is undetectable at build time
+- 'index.html' in viewer-static-assets is an application shell file (references build-output scripts and stylesheets) rather than a static asset — naming the zone 'viewer-static-assets' misclassifies the HTML entrypoint, which carries deployment-time coupling to the build manifest, as equivalent to the logo PNGs which are truly static
+- The two logo files (darkmode_logo.png, lightmode_logo.png) follow a consistent '{theme}_logo.png' naming pattern, but 'index.html' breaks the pattern — the zone contains files of three distinct types (binary asset, binary asset, application shell) that serve fundamentally different purposes grouped under a single zone label
+- Rename the zone to 'viewer-entry-assets' or split 'index.html' into its own 'viewer-shell' zone — 'static-assets' implies immutable binary files, but index.html is a deployment artifact with build-time coupling to hashed filenames; the name obscures this coupling from zone health reviewers.
 
 </insights>

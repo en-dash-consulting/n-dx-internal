@@ -5,8 +5,8 @@
 <zone>
 
 Zone: Src (`src`)
-Files: 13, Cohesion: 0.60, Coupling: 0.40
-Risk: healthy (score: 0.40)
+Files: 13, Cohesion: 0.77, Coupling: 0.23
+Risk: healthy (score: 0.23)
 Description: 13 files, primarily TypeScript
 Entry points: src/api-provider.ts, src/cli-provider.ts, src/codex-cli-provider.ts, src/create-client.ts, src/llm-client.ts, src/llm-config.ts, src/llm-types.ts, src/provider-interface.ts, src/provider-registry.ts, src/provider-session.ts, src/token-usage.ts, src/types.ts
 Lines: 1925
@@ -84,6 +84,7 @@ Incoming (other zones → this zone):
 <findings>
 
 [observation] [warning] 12 entry points — wide API surface, consider consolidating exports
+[observation] [warning] Findings src/0 (12 entry points, automated heuristic) and global/2 (single public entry point pattern, LLM pass 1) contradict each other. The automated heuristic counts files in the src zone that have incoming import edges from other zones; if 12 such files exist, the src/public.ts single-entry-point convention is not being honored at the zone boundary level. Audit which of the 12 src zone files are imported directly by src-2 zone files and determine whether those imports should be consolidated to route through a single gateway or public.ts re-export.
 
 </findings>
 
@@ -109,6 +110,8 @@ Incoming (other zones → this zone):
 - Rename codex-cli-provider.ts to follow the transport-first naming pattern used by api-provider and cli-provider — e.g. codex-provider.ts or openai-cli-provider.ts depending on whether the file abstraction is vendor or transport. Mixing both in the filename breaks the zone's naming convention and will compound as more vendors are added.
 - Audit llm-types.ts to determine whether it holds provider-scoped or package-wide types. If it contains types shared with llm-cli-utilities (project dir shapes, token structs, provider config interfaces), move those types to a new zero-dependency types module — this is likely the direct cause of the 3 reverse imports and fixing the placement fixes the cycle structurally.
 - The 12 entry-point warning (src/0) is a heuristic threshold crossing but has no corroborating LLM finding. With a public.ts convention confirmed in global finding 2, the wide surface may be intentional delegation. Do not treat this as critical without additional evidence.
+- The 12 entry points from automated heuristic analysis (src/0) and the 'single public entry point' claim from LLM pass 1 (global/2) are in direct tension. Both cannot be simultaneously true at the intra-package zone level — either the src zone has one file imported from outside (supporting global/2) or twelve (supporting src/0). This discrepancy has not been reconciled in any subsequent pass.
+- Findings src/0 (12 entry points, automated heuristic) and global/2 (single public entry point pattern, LLM pass 1) contradict each other. The automated heuristic counts files in the src zone that have incoming import edges from other zones; if 12 such files exist, the src/public.ts single-entry-point convention is not being honored at the zone boundary level. Audit which of the 12 src zone files are imported directly by src-2 zone files and determine whether those imports should be consolidated to route through a single gateway or public.ts re-export.
 - [call graph] 55 internal calls, 4 outgoing, 88 incoming (cohesion: 0.93, coupling: 0.07)
 
 </insights>

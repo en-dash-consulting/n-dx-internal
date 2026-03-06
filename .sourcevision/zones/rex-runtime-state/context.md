@@ -8,7 +8,7 @@ Zone: Rex Runtime State (`rex-runtime-state`)
 Files: 8, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
 Description: Persistent runtime data for the rex PRD tracker: project config, the live PRD tree, execution logs, pending proposals, and workflow state.
-Lines: 24317
+Lines: 24322
 
 </zone>
 
@@ -18,9 +18,9 @@ Lines: 24317
 .rex/archive.json (JSON, 840 lines, other)
 .rex/config.json (JSON, 6 lines, other)
 .rex/execution-log.1.jsonl (Other, 3899 lines, other)
-.rex/execution-log.jsonl (Other, 203 lines, other)
+.rex/execution-log.jsonl (Other, 207 lines, other)
 .rex/pending-proposals.json (JSON, 818 lines, other)
-.rex/prd.json (JSON, 18500 lines, other)
+.rex/prd.json (JSON, 18501 lines, other)
 .rex/workflow.md (Markdown, 18 lines, docs)
 
 </files>
@@ -28,9 +28,8 @@ Lines: 24317
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] Zone contains only data files with zero coupling — correct isolation for mutable runtime state that tools read and write directly.
-[observation] [info] execution-log rotation (log.1.jsonl) is implicit; a documented retention policy would prevent unbounded log growth in long-running projects.
-[observation] [info] workflow.md duplicates some state already encoded in prd.json; keeping these in sync manually is a potential consistency risk as the PRD evolves.
+[pattern] [warning] The runtime-state zone is a shared mutable sink readable by both rex and hench packages without creating import-graph coupling — this is an intentional design but concurrent write safety is implicit; documenting the write-access protocol would prevent future race conditions.
+[suggestion] [warning] Document the execution log rotation policy (max file size, max file count, rotation trigger) in .rex/config.json or a companion README to prevent unbounded log accumulation and clarify when execution-log.1.jsonl vs execution-log.jsonl is the authoritative current log.
 
 </findings>
 
@@ -43,5 +42,10 @@ Lines: 24317
 - Zone contains only data files with zero coupling — correct isolation for mutable runtime state that tools read and write directly.
 - workflow.md duplicates some state already encoded in prd.json; keeping these in sync manually is a potential consistency risk as the PRD evolves.
 - execution-log rotation (log.1.jsonl) is implicit; a documented retention policy would prevent unbounded log growth in long-running projects.
+- As a zero-coupling data zone, rex-runtime-state is the only zone that can be safely accessed by multiple packages simultaneously without import-graph entanglement — this makes it the correct location for cross-package shared state, but concurrent write safety depends entirely on file-locking conventions that are not visible in the zone structure
+- The runtime-state zone is a shared mutable sink readable by both rex and hench packages without creating import-graph coupling — this is an intentional design but concurrent write safety is implicit; documenting the write-access protocol would prevent future race conditions.
+- The execution log rotation suffix (.1.jsonl) uses a numeric scheme with no documented upper bound or rotation trigger — common rotation schemes use either timestamps (execution-log.2026-03-06.jsonl) or fixed-count slots; the current scheme implies append-only accumulation until manual intervention
+- The zone ID 'rex-runtime-state' is the only zone ID in the monorepo that incorporates a package name prefix ('rex-') as part of a compound descriptor rather than using just the package name or just the structural role — every other zone uses either a pure role name or a pure package name
+- Document the execution log rotation policy (max file size, max file count, rotation trigger) in .rex/config.json or a companion README to prevent unbounded log accumulation and clarify when execution-log.1.jsonl vs execution-log.jsonl is the authoritative current log.
 
 </insights>

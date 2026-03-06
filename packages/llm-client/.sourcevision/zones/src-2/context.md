@@ -5,8 +5,8 @@
 <zone>
 
 Zone: Src 2 (`src-2`)
-Files: 19, Cohesion: 0.65, Coupling: 0.35
-Risk: healthy (score: 0.35)
+Files: 19, Cohesion: 0.56, Coupling: 0.44
+Risk: healthy (score: 0.44)
 Description: 19 files, primarily TypeScript
 Entry points: src/config.ts
 Lines: 4425
@@ -79,6 +79,7 @@ Incoming (other zones → this zone):
 
 [observation] [warning] Contains 42% of project files (19/45) — may be too broad, consider splitting
 [observation] [warning] Generic zone name "Src 2" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
+[suggestion] [warning] Add a short ZONE.md at the src-2 zone root documenting: (1) the domain name chosen to replace 'Src 2', (2) which file categories belong here vs the src zone, and (3) the boundary rule distinguishing them. This is the zero-cost mitigation for findings src-2/1 and global/16 and prevents misclassification by future contributors.
 [suggestion] [warning] Manually assign a domain-specific name to this zone (e.g. 'llm-cli-utilities') in the sourcevision configuration. The automated enrichment failure combined with the zone's size means every consumer reading the architecture map gets no signal about what this zone does. A name is zero-cost and eliminates the ambiguity that compounds the architectural risks in global findings 8 and 11.
 
 </findings>
@@ -109,6 +110,8 @@ Incoming (other zones → this zone):
 - The combination of 42% file concentration, generic name, and being the destination of 23 upward import crossings makes this zone the highest-priority candidate for renaming and internal boundary documentation — not splitting, since global finding 3 confirms four zones is appropriate granularity.
 - Manually assign a domain-specific name to this zone (e.g. 'llm-cli-utilities') in the sourcevision configuration. The automated enrichment failure combined with the zone's size means every consumer reading the architecture map gets no signal about what this zone does. A name is zero-cost and eliminates the ambiguity that compounds the architectural risks in global findings 8 and 11.
 - File archetype classification reveals 6 distinct archetypes within this zone (service, utility, config, types, store, entrypoint). A zone spanning all six archetypes is functionally heterogeneous by definition — this is independent corroboration of the automated enrichment failure and the size warning. The proposed name 'llm-cli-utilities' (src-2/2) accurately describes the utility/config subset but understates the zone's true scope, which also contains provider services and shared type files.
+- Zone name ambiguity and enrichment failure are independently confirmed by two separate mechanisms (size heuristic and LLM domain-label attempt), making the naming gap more certain than either signal alone. A manual name paired with a short zone README is the minimum viable fix — it costs nothing and eliminates the ambiguity that compounds every downstream risk in this zone.
+- Add a short ZONE.md at the src-2 zone root documenting: (1) the domain name chosen to replace 'Src 2', (2) which file categories belong here vs the src zone, and (3) the boundary rule distinguishing them. This is the zero-cost mitigation for findings src-2/1 and global/16 and prevents misclassification by future contributors.
 - [call graph] 269 internal calls, 0 outgoing, 4 incoming (cohesion: 1, coupling: 0)
 
 </insights>

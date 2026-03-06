@@ -5,8 +5,8 @@
 <zone>
 
 Zone: Unit Cli (`unit-cli`)
-Files: 4, Cohesion: 0.40, Coupling: 0.60
-Risk: healthy (score: 0.60)
+Files: 4, Cohesion: 0.25, Coupling: 0.75
+Risk: catastrophic (score: 0.75)
 Description: 4 files, primarily TypeScript
 Entry points: src/cli/commands/fix.ts
 Lines: 1230
@@ -43,28 +43,28 @@ Incoming (other zones → this zone):
 
 <findings>
 
-[observation] [warning] High coupling (0.6) — 3 imports target "unit-analyze"
+[observation] [warning] High coupling (0.75) — 3 imports target "unit-analyze"
+[observation] [warning] Low cohesion (0.25) — files are loosely related, consider splitting this zone
+[suggestion] [critical] Zone "Unit Cli" (unit-cli) has catastrophic risk (score: 0.75, cohesion: 0.25, coupling: 0.75) — requires immediate architectural intervention
 
 </findings>
 
 <insights>
 
-- High coupling (0.6) — 3 imports target "unit-analyze"
-- High coupling (0.6) — 3 imports target "prd-analyze-core"
-- Zone is minimal (4 files) and tightly scoped to a single command — good separation of CLI dispatch from core repair logic.
-- Cohesion sits exactly at the warning threshold; consider whether fix.ts core logic belongs in the larger core zone rather than isolated here.
-- The test files mirror the production split (cli vs core), suggesting the fix operation has meaningful complexity worth preserving as a unit.
-- Cohesion (0.4) and coupling (0.6) are both at the boundary thresholds; monitor if this zone grows, as low cohesion at small size often signals a split that should be consolidated.
-- Production source is split across two layers (cli/commands and core) in the same zone — the zone correctly captures a full vertical slice of one feature.
-- The 0.6 coupling score is inflated by zone size (4 files): in small zones, a few imports dominate the metric — the absolute import count (3) indicates narrow, focused dependency on prd-analyze-core, not broad fan-out.
-- prd-fix-command → prd-analyze-core coupling is strictly unidirectional (fix reads analyze output to repair PRD items); no reverse edge exists, making this one of the cleanest consumer relationships in the batch.
-- Unidirectional coupling to prd-analyze-core (fix consumes analyze output, never the reverse) — this is a well-defined downstream consumer with a clean, stable interface boundary.
-- src/core/fix.ts imports exclusively from ../schema/index.js and ./tree.js — both are foundational lower-layer modules. It has zero imports from cli, store, analyze, or any peer-domain module. This is the only core file in the batch with a fully clean downward-only dependency chain, making the previously suggested merge into prd-core-operations risky: absorption into a zone with known upward dependencies would likely contaminate fix.ts's clean boundary.
-- The CLI command file (src/cli/commands/fix.ts) contains ~100 lines of output formatting logic (outputResult, buildSummary, kindIcon, kindLabel) that could be extracted to a shared formatter, but these are self-contained within the zone and do not create cross-zone coupling — this is an internal cohesion observation, not an architectural violation.
-- fix.ts (CLI layer) correctly keeps output formatting functions (outputResult, buildSummary, kindIcon, kindLabel) inside the CLI command file rather than in the core module — this is the architecturally correct pattern, contrasting directly with token-usage-analytics where formatters were embedded in core. The divergence between these two zones' approaches to the same problem is undocumented; new contributors will follow whichever example they encounter first, with no signal about which is correct.
-- kindIcon and kindLabel are domain-to-display mappings for item kinds (epic, feature, task, subtask) — the same kind vocabulary appears wherever tree items are rendered in other command files. These helpers are private to fix.ts with no reuse path, meaning equivalent mappings will be silently duplicated in other command files as new kinds are added.
-- kindIcon/kindLabel in fix.ts map item kinds to display symbols — identical mappings are needed wherever tree items are rendered. Extract to output.ts or a shared kinds-display.ts to prevent silent duplication across command files as new item kinds are added.
-- Document that the correct pattern is to keep output formatting in the CLI command file (as fix.ts does), not in the core module. This policy diverges from token-usage-analytics and should be made explicit to prevent new code following the wrong precedent.
+- Low cohesion (0.25) — files are loosely related, consider splitting this zone
+- High coupling (0.75) — 3 imports target "unit-analyze"
+- High coupling (0.75) — 3 imports target "prd-analysis-core"
+- High coupling (0.6) — 3 imports target "prd-analysis-core"
+- Production files src/cli/commands/fix.ts and src/core/fix.ts are tightly paired — the test files mirror this structure, making the zone naturally cohesive despite mixing production and test content.
+- At the boundary of warning thresholds (cohesion: 0.4, coupling: 0.6), verify that src/core/fix.ts does not reach broadly into unrelated domain modules.
+- Being a 4-file zone suggests fix is a focused, self-contained command — a good sign for long-term maintainability.
+- Coupling at 0.6 sits at the warning threshold; confirm src/core/fix.ts imports are limited to the immediate domain and do not pull in broad tree or sync utilities.
+- Zone contains both production source files and unit tests — the name reflects production purpose per the '-tests' suffix convention, which is correct.
+- fix-command does not appear as a source in the cross-zone import table, confirming it is a pure consumer with no dependents — the zone is a leaf node in the dependency graph, which is the ideal topology for a command module.
+- fix-command is a dependency-graph leaf: zero outbound cross-zone exports, imports only from prd-analysis-core. This is the correct topology for a command implementation and should be the reference pattern for other command zones.
+- fix-command and task-selection both have coupling scores near the 0.6 warning threshold partly because unit test files that import the module under test mechanically contribute to coupling. As these command zones grow more test coverage their coupling scores will drift past the threshold without any production-code change — the threshold will generate false alarms for well-tested command modules.
+- Zone name 'fix-command' uses verb-object pattern while 'task-selection' uses noun-phrase pattern — the two leaf command zones have inconsistent naming conventions. Standardize: either both use verb-object ('fix-command', 'next-command') or both use noun-phrase ('issue-fix', 'task-selection').
+- Near-threshold coupling (0.6) in a 4-file zone will likely cross the warning boundary when additional test cases are added, since unit test imports count toward coupling. Consider excluding intra-zone test→production imports from coupling calculations to keep metrics meaningful for small, well-tested command zones.
 - [call graph] 136 internal calls, 15 outgoing, 1 incoming (cohesion: 0.9, coupling: 0.1)
 
 </insights>

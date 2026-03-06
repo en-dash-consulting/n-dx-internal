@@ -26,6 +26,7 @@ packages/web/src/landing/landing.ts (TypeScript, 315 lines, source)
 [observation] [info] No shared style or token layer exists between web-landing and web-dashboard; ensure any brand or color changes are kept in sync manually.
 [observation] [info] Three files (HTML, CSS, TS) represent a minimal footprint; the landing page is easy to maintain and deploy independently.
 [observation] [info] Zero coupling and perfect cohesion indicate this zone is architecturally clean and fully self-contained.
+[suggestion] [info] landing.ts is an untested TypeScript entrypoint — add at least one unit or smoke test to ensure the module loads without errors and exports the expected interface; the absence of tests is an implicit convention gap compared to all other TypeScript entrypoints in the package.
 
 </findings>
 
@@ -38,6 +39,9 @@ packages/web/src/landing/landing.ts (TypeScript, 315 lines, source)
 - Zero coupling and perfect cohesion indicate this zone is architecturally clean and fully self-contained.
 - Three files (HTML, CSS, TS) represent a minimal footprint; the landing page is easy to maintain and deploy independently.
 - No shared style or token layer exists between web-landing and web-dashboard; ensure any brand or color changes are kept in sync manually.
+- No test files appear in the web-landing zone inventory — unlike task-usage-tracking which co-locates tests, the landing page has zero unit test coverage visible in the zone graph, making behavioral regressions undetectable by the test suite
+- The landing.ts entrypoint has no type-imports or test coverage in the zone, meaning it is the only TypeScript entrypoint in the web package with no associated test file
+- landing.ts is an untested TypeScript entrypoint — add at least one unit or smoke test to ensure the module loads without errors and exports the expected interface; the absence of tests is an implicit convention gap compared to all other TypeScript entrypoints in the package.
 - [call graph] 10 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

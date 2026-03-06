@@ -512,13 +512,13 @@
     },
     {
       "path": "src/cli/commands/status.ts",
-      "size": 16212,
+      "size": 17010,
       "language": "TypeScript",
-      "lineCount": 495,
-      "hash": "413e51522d456ac6a58128b204715fed97492b0d38e96ab486e8c3f5aaa6e0b0",
+      "lineCount": 518,
+      "hash": "a6752ed066e666763012ee93b3c26612bfc05b938ce262fdaf5b1e9f9a24a739",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772764010029
+      "lastModified": 1772822013470
     },
     {
       "path": "src/cli/commands/sync.ts",
@@ -602,23 +602,23 @@
     },
     {
       "path": "src/cli/help.ts",
-      "size": 28279,
+      "size": 28333,
       "language": "TypeScript",
-      "lineCount": 615,
-      "hash": "dd1a07ff6675d0ddcd47a61944ebd9574c1ae0f2db8208f8a15086a3bb2ba395",
+      "lineCount": 616,
+      "hash": "3beef9040dc2c6db494d25049c3c518f1c6a6c79dc6370cfd6973138cf8f3118",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772682844140
+      "lastModified": 1772822004448
     },
     {
       "path": "src/cli/index.ts",
-      "size": 14324,
+      "size": 14680,
       "language": "TypeScript",
-      "lineCount": 415,
-      "hash": "31bd51739c1ac9c6a390580f8e05bbce9daf2a30c07519be4a7b4a22f2e21dc3",
+      "lineCount": 469,
+      "hash": "33393a0d2d0a2f284d2b14a0618d0bdf272813e0603d6f9f69343f8008f770d2",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772682844140
+      "lastModified": 1772821079505
     },
     {
       "path": "src/cli/mcp-tools.ts",
@@ -1812,13 +1812,13 @@
     },
     {
       "path": "tests/unit/cli/commands/status.test.ts",
-      "size": 35892,
+      "size": 41090,
       "language": "TypeScript",
-      "lineCount": 1185,
-      "hash": "cf5b235d3683ca54388447ad1647815129c6050def522ff7ce0863bf66b299e0",
+      "lineCount": 1355,
+      "hash": "88457fbbb56d4a237a68dc2734b3d28c9df42c699472c1748d7c9f4f0ea59cc5",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772682844150
+      "lastModified": 1772822052424
     },
     {
       "path": "tests/unit/cli/commands/sync.test.ts",
@@ -2413,7 +2413,7 @@
   ],
   "summary": {
     "totalFiles": 241,
-    "totalLines": 85202,
+    "totalLines": 85450,
     "byLanguage": {
       "JSON": 9,
       "Other": 4,

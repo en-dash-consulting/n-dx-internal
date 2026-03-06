@@ -5,8 +5,8 @@
 <zone>
 
 Zone: Analyzers 3 (`packages-sourcevision:analyzers-3`)
-Files: 6, Cohesion: 0.43, Coupling: 0.57
-Risk: healthy (score: 0.57)
+Files: 6, Cohesion: 0.31, Coupling: 0.69
+Risk: critical (score: 0.69)
 Description: 6 files, primarily TypeScript
 Entry points: packages/sourcevision/src/analyzers/zone-hash.ts, packages/sourcevision/src/analyzers/zones.ts
 Lines: 5740
@@ -48,8 +48,17 @@ Incoming (other zones → this zone):
 
 </imports>
 
+<findings>
+
+[suggestion] [warning] Zone "Analyzers 3" (packages-sourcevision:analyzers-3) has critical risk (score: 0.69, cohesion: 0.31, coupling: 0.69) — requires refactoring before new feature development
+
+</findings>
+
 <insights>
 
+- Low cohesion (0.31) — files are loosely related, consider splitting this zone
+- High coupling (0.69) — 10 imports target "analyzers"
+- Generic zone name "Analyzers 3" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 - High coupling (0.57) — 10 imports target "analyzers"
 - Generic zone name "Analyzers 3" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 - High coupling (0.57) — 10 imports target "analysis-engine"
@@ -70,6 +79,8 @@ Incoming (other zones → this zone):
 - zone-detection-engine's cohesion score (0.43) is misleadingly low given its architecturally clean profile (strictly unidirectional imports, single algorithmic responsibility). Document explicitly that this zone's cohesion is suppressed by co-membership with its own unit tests, not by coupling debt — otherwise automated health reports will incorrectly flag it as a refactoring candidate alongside the genuinely fragile schema-validation zone.
 - Establish a documented naming convention for zone IDs: both 'analysis-engine' and 'zone-detection-engine' use an '-engine' suffix but other zones do not. Standardizing on a pattern (e.g., noun-phrase describing primary responsibility, no suffix) would make the zone map self-describing without requiring zone-level documentation to interpret names.
 - The high coupling metric (0.57) with 10 imports targeting 'analyzers' is likely an artifact of artificial zone fragmentation — these files share a parent directory with the main analyzers zone and were separated by the clustering algorithm, not by architectural intent.
+- Coupling to 'analyzers' is an artifact of Louvain over-partitioning; these files belong to the same semantic domain as analyzers and analyzers-2
+- Zone finding 1 (warning: coupling 0.57 to 'analyzers') is a false positive. Global finding 10 identifies this as intra-domain noise caused by Louvain splitting one semantic zone into three. The 10 cross-zone imports are edges within a single coherent analyzers domain, not genuine cross-concern dependencies. Treat as info-only.
 - [call graph] 237 internal calls, 583 outgoing, 50 incoming (cohesion: 0.29, coupling: 0.71)
 
 </insights>

@@ -145,9 +145,11 @@
         "src/analyzers/inventory.ts",
         "src/util/paths.ts"
       ],
-      "cohesion": 0.54,
-      "coupling": 0.46,
+      "cohesion": 0.48,
+      "coupling": 0.52,
       "insights": [
+        "High coupling (0.52) — 15 imports target \"analyzers\"",
+        "Generic zone name \"Analyzers 2\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
         "Generic zone name \"Analyzers 2\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
         "The analyzers/index.ts entrypoint re-exports all analyzer modules, making this the public API surface for the analysis pipeline — keep it lean and avoid adding logic there.",
         "paths.ts sits in util/ but was pulled into this community because every analyzer imports it; consider whether it belongs in a shared foundation layer to reduce coupling.",
@@ -168,9 +170,9 @@
         "[call graph] 384 internal calls, 7 outgoing, 34 incoming (cohesion: 0.98, coupling: 0.02)"
       ],
       "riskMetrics": {
-        "cohesion": 0.54,
-        "coupling": 0.46,
-        "riskScore": 0.45999999999999996,
+        "cohesion": 0.48,
+        "coupling": 0.52,
+        "riskScore": 0.52,
         "riskLevel": "healthy",
         "failsThreshold": false
       }
@@ -191,9 +193,12 @@
         "src/analyzers/zone-hash.ts",
         "src/analyzers/zones.ts"
       ],
-      "cohesion": 0.43,
-      "coupling": 0.57,
+      "cohesion": 0.31,
+      "coupling": 0.69,
       "insights": [
+        "Low cohesion (0.31) — files are loosely related, consider splitting this zone",
+        "High coupling (0.69) — 10 imports target \"analyzers\"",
+        "Generic zone name \"Analyzers 3\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
         "High coupling (0.57) — 10 imports target \"analyzers\"",
         "Generic zone name \"Analyzers 3\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
         "High coupling (0.57) — 10 imports target \"analysis-engine\"",
@@ -214,14 +219,16 @@
         "zone-detection-engine's cohesion score (0.43) is misleadingly low given its architecturally clean profile (strictly unidirectional imports, single algorithmic responsibility). Document explicitly that this zone's cohesion is suppressed by co-membership with its own unit tests, not by coupling debt — otherwise automated health reports will incorrectly flag it as a refactoring candidate alongside the genuinely fragile schema-validation zone.",
         "Establish a documented naming convention for zone IDs: both 'analysis-engine' and 'zone-detection-engine' use an '-engine' suffix but other zones do not. Standardizing on a pattern (e.g., noun-phrase describing primary responsibility, no suffix) would make the zone map self-describing without requiring zone-level documentation to interpret names.",
         "The high coupling metric (0.57) with 10 imports targeting 'analyzers' is likely an artifact of artificial zone fragmentation — these files share a parent directory with the main analyzers zone and were separated by the clustering algorithm, not by architectural intent.",
+        "Coupling to 'analyzers' is an artifact of Louvain over-partitioning; these files belong to the same semantic domain as analyzers and analyzers-2",
+        "Zone finding 1 (warning: coupling 0.57 to 'analyzers') is a false positive. Global finding 10 identifies this as intra-domain noise caused by Louvain splitting one semantic zone into three. The 10 cross-zone imports are edges within a single coherent analyzers domain, not genuine cross-concern dependencies. Treat as info-only.",
         "[call graph] 237 internal calls, 583 outgoing, 50 incoming (cohesion: 0.29, coupling: 0.71)"
       ],
       "riskMetrics": {
-        "cohesion": 0.43,
-        "coupling": 0.57,
-        "riskScore": 0.5700000000000001,
-        "riskLevel": "healthy",
-        "failsThreshold": false
+        "cohesion": 0.31,
+        "coupling": 0.69,
+        "riskScore": 0.69,
+        "riskLevel": "critical",
+        "failsThreshold": true
       }
     },
     {
@@ -264,8 +271,8 @@
         "src/cli/output.ts",
         "src/constants.ts"
       ],
-      "cohesion": 0.71,
-      "coupling": 0.29,
+      "cohesion": 0.67,
+      "coupling": 0.33,
       "insights": [
         "The 12 imports from analysis-engine into this zone confirm the correct dependency direction — CLI depends on domain logic, not the reverse.",
         "The 8 imports back into branch-work-analytics create a mild cycle between cli-infrastructure and branch-work-analytics; auditing which CLI commands depend on schema types versus analytics would clarify whether those imports belong in this zone or should be mediated through a shared foundation.",
@@ -289,9 +296,9 @@
         "[call graph] 362 internal calls, 5 outgoing, 88 incoming (cohesion: 0.99, coupling: 0.01)"
       ],
       "riskMetrics": {
-        "cohesion": 0.71,
-        "coupling": 0.29,
-        "riskScore": 0.29000000000000004,
+        "cohesion": 0.67,
+        "coupling": 0.33,
+        "riskScore": 0.32999999999999996,
         "riskLevel": "healthy",
         "failsThreshold": false
       }
@@ -310,9 +317,10 @@
       "entryPoints": [
         "src/schema/validate.ts"
       ],
-      "cohesion": 0.43,
-      "coupling": 0.57,
+      "cohesion": 1,
+      "coupling": 0,
       "insights": [
+        "High cohesion (1) — files are tightly interconnected",
         "High coupling (0.57) — 3 imports target \"analyzers-2\"",
         "High coupling (0.57) — 3 imports target \"file-analysis-pipeline\"",
         "src/schema/validate.ts is the sole production file in this community; its clustering with e2e and integration tests suggests it is almost exclusively exercised at system boundaries rather than unit-tested in isolation — add dedicated unit tests for edge cases.",
@@ -331,12 +339,14 @@
         "The zone name 'schema-validation' accurately describes the production file (validate.ts) but is simultaneously an accurate description of what the co-located tests do. This naming coincidence means the zone name provides no signal about whether a given file is production or test code, further obscuring the boundary.",
         "schema-validation is the only zone with both high coupling (0.57) AND low cohesion (0.43) AND mixed-abstraction-level test membership simultaneously. This triple combination makes it the highest-risk zone in the four visible here — not because any single metric is catastrophically bad, but because all three risk indicators co-occur. Prioritize decomposing this zone above the others.",
         "Codify the implicit convention surfaced by this zone: production zones may co-locate unit tests (as file-analysis-pipeline and zone-detection-engine do) but must not contain integration or e2e tests. Adding a lint or zone-membership rule enforcing this boundary would prevent schema-validation's pattern from recurring in new zones.",
+        "Coupling to 'analyzers-2' reflects intra-domain edges within the Louvain-fragmented analyzers cluster, not a structural dependency risk",
+        "Zone finding 0 (warning: coupling 0.57 to 'analyzers-2') is contradicted by global finding 10. E2e tests coupling to what is semantically one analyzers domain is expected; the warning severity is not justified. The coupling flag measures intra-domain edges that Louvain partitioned into separate zone identifiers, not genuine cross-concern dependencies.",
         "[call graph] 87 internal calls, 10 outgoing, 11 incoming (cohesion: 0.9, coupling: 0.1)"
       ],
       "riskMetrics": {
-        "cohesion": 0.43,
-        "coupling": 0.57,
-        "riskScore": 0.5700000000000001,
+        "cohesion": 1,
+        "coupling": 0,
+        "riskScore": 0,
         "riskLevel": "healthy",
         "failsThreshold": false
       }
@@ -466,9 +476,10 @@
         "src/schema/v1.ts",
         "tests/unit/analyzers/zones-helpers.ts"
       ],
-      "cohesion": 0.57,
-      "coupling": 0.43,
+      "cohesion": 0.43,
+      "coupling": 0.57,
       "insights": [
+        "High coupling (0.57) — 27 imports target \"analyzers\"",
         "The schema files (v1.ts, data-files.ts) are foundational types used across the whole package but are grouped here alongside feature-specific analytics; extracting schema into its own zone would reduce coupling pressure on consumers.",
         "The MCP server (cli/mcp.ts) being here alongside domain analytics rather than in the CLI zone blurs the boundary between protocol surface and business logic — consider co-locating MCP with other CLI entry points.",
         "The single test helper file (tests/unit/analyzers/zones-helpers.ts) does not justify a '-tests' label; the zone is correctly named after its production purpose.",
@@ -490,9 +501,9 @@
         "[call graph] 1315 internal calls, 268 outgoing, 575 incoming (cohesion: 0.83, coupling: 0.17)"
       ],
       "riskMetrics": {
-        "cohesion": 0.57,
-        "coupling": 0.43,
-        "riskScore": 0.43000000000000005,
+        "cohesion": 0.43,
+        "coupling": 0.57,
+        "riskScore": 0.5700000000000001,
         "riskLevel": "healthy",
         "failsThreshold": false
       }
@@ -1292,6 +1303,13 @@
     "The two dead-export candidates (detectBranchLifecycle in src/analyzers/branch-work-filter.ts, resolveWorkedEpicTitlesForRange in src/cli/commands/prd-epic-resolver.ts) should be verified for dynamic or string-based invocations before removal, since the static call-graph scan cannot detect those patterns. If confirmed unused after that check, both can be deleted outright to narrow the public API surface.",
     "Louvain over-partitioning of src/analyzers/ produced three zones (analyzers, analyzers-2, analyzers-3) where one semantic zone exists. The absence of meaningful enrichment names for analyzers-2 and analyzers-3, combined with the high inter-zone coupling from analyzers-3 back to analyzers (10 crossings, coupling 0.57), are artifacts of this fragmentation. Coupling warnings for analyzers-3 and e2e that cite 'analyzers-2' as a target should be weighted accordingly — they measure intra-domain edges, not genuine cross-concern dependencies.",
     "Global finding 11 (heuristic) and cli zone finding 1 (LLM analysis) independently identify registerMcpTools in src/cli/mcp.ts as a god function with 36 outgoing calls. The corroboration across two independent analysis methods confirms this is a real structural issue. The prescribed remedy — in-file decomposition into named sub-registrar functions grouped by capability domain — is bounded and does not require a file split or public API change.",
+    "Louvain over-partitioning of src/analyzers/ is the systemic root cause behind a cluster of findings that are weaker than their individual severity labels suggest: the generic zone names for analyzers-2 and analyzers-3, the coupling warnings for analyzers-3 and e2e, and the bidirectional coupling observation between analyzers and unit. All coupling figures crossing these artificial sub-zone boundaries should be treated as intra-domain noise until the analyzer files are reorganized into semantic subdirectories.",
+    "The registerMcpTools god function (src/cli/mcp.ts, 36 outgoing calls) is the single highest-confidence actionable finding in the entire set. It is the only finding corroborated by two independent methods (static call-graph count in global finding 11, LLM structural analysis in cli zone finding 1 and global finding 9), and the prescribed remedy — in-file decomposition into named sub-registrar functions grouped by capability domain — is bounded, low-risk, and requires no public API change.",
+    "The two potentially unused exports (detectBranchLifecycle in src/analyzers/branch-work-filter.ts, resolveWorkedEpicTitlesForRange in src/cli/commands/prd-epic-resolver.ts) each appear in only one finding with no corroborating second source. Neither warrants escalation. Dynamic/string-based invocation verification is the correct next step before any removal.",
+    "Analyzers-3 zone finding 1 (warning severity) directly contradicts global finding 10 (info severity). Global finding 10 is correct: the 10 crossings from analyzers-3 to analyzers are intra-domain edges produced by Louvain over-partitioning, not a real architectural coupling risk. The coupling warning for analyzers-3 overstates the risk and should be treated as informational.",
+    "E2e zone finding 0 (warning severity) contradicts global finding 10. Test files that exercise analyzer functionality will naturally import from the analyzers domain; coupling to 'analyzers-2' is an artifact of the algorithm-induced zone split, not a structural anti-pattern. Warning severity is not justified.",
+    "The highest-leverage single action across all 25 findings is organizing src/analyzers/ into semantic subdirectories (e.g. src/analyzers/zones/, src/analyzers/imports/, src/analyzers/components/). This resolves the Louvain over-partitioning root cause, eliminates the false-positive coupling warnings for analyzers-3 and e2e, provides meaningful zone names without manual enrichment, and is consistent with global finding 5. No API surface changes are required.",
+    "The bidirectional coupling between 'analyzers' and 'unit' (global finding 0: 6+27 crossings) is asymmetric in a meaningful way: the 27 crossings in the unit→analyzers direction are expected test-to-implementation imports and should not be counted as architectural risk. Only the 6 crossings in the analyzers→unit direction (production code importing from test/unit code) would represent a genuine layering violation worth investigating.",
     "[call graph] 570 calls: \"analyzers-3\" → \"unit\"",
     "[call graph] 187 calls: \"unit\" → \"analyzers\"",
     "[call graph] 73 calls: \"analyzers\" → \"cli\"",
@@ -1323,6 +1341,13 @@
     {
       "type": "observation",
       "pass": 0,
+      "scope": "analyzers-2",
+      "text": "High coupling (0.52) — 15 imports target \"analyzers\"",
+      "severity": "warning"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
       "scope": "analyzers-3",
       "text": "Generic zone name \"Analyzers 3\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
       "severity": "warning"
@@ -1331,15 +1356,22 @@
       "type": "observation",
       "pass": 0,
       "scope": "analyzers-3",
-      "text": "High coupling (0.57) — 10 imports target \"analyzers\"",
+      "text": "High coupling (0.69) — 10 imports target \"analyzers\"",
+      "severity": "warning"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "analyzers-3",
+      "text": "Low cohesion (0.31) — files are loosely related, consider splitting this zone",
       "severity": "warning"
     },
     {
       "type": "observation",
       "pass": 0,
       "scope": "e2e",
-      "text": "High coupling (0.57) — 3 imports target \"analyzers-2\"",
-      "severity": "warning"
+      "text": "High cohesion (1) — files are tightly interconnected",
+      "severity": "info"
     },
     {
       "type": "observation",
@@ -1371,13 +1403,6 @@
     },
     {
       "type": "observation",
-      "pass": 5,
-      "scope": "global",
-      "text": "The two dead-export candidates (detectBranchLifecycle in src/analyzers/branch-work-filter.ts, resolveWorkedEpicTitlesForRange in src/cli/commands/prd-epic-resolver.ts) should be verified for dynamic or string-based invocations before removal, since the static call-graph scan cannot detect those patterns. If confirmed unused after that check, both can be deleted outright to narrow the public API surface.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
       "pass": 0,
       "scope": "global",
       "text": "Fan-in hotspot: src/cli/output.ts receives calls from 13 files (high fan-in expected for this module type) — high-impact module, changes may have wide ripple effects",
@@ -1395,6 +1420,13 @@
       "scope": "root",
       "text": "High cohesion (1) — files are tightly interconnected",
       "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 0,
+      "scope": "unit",
+      "text": "High coupling (0.57) — 27 imports target \"analyzers\"",
+      "severity": "warning"
     },
     {
       "type": "suggestion",
@@ -1429,6 +1461,27 @@
       "pass": 0,
       "scope": "global",
       "text": "src/analyzers/ contains files from 5 zones (analyzers, analyzers-2, analyzers-3, cli, unit) — consider grouping into subdirectories to clarify architectural boundaries",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Analyzers-3 zone finding 1 (warning severity) directly contradicts global finding 10 (info severity). Global finding 10 is correct: the 10 crossings from analyzers-3 to analyzers are intra-domain edges produced by Louvain over-partitioning, not a real architectural coupling risk. The coupling warning for analyzers-3 overstates the risk and should be treated as informational.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "E2e zone finding 0 (warning severity) contradicts global finding 10. Test files that exercise analyzer functionality will naturally import from the analyzers domain; coupling to 'analyzers-2' is an artifact of the algorithm-induced zone split, not a structural anti-pattern. Warning severity is not justified.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "The highest-leverage single action across all 25 findings is organizing src/analyzers/ into semantic subdirectories (e.g. src/analyzers/zones/, src/analyzers/imports/, src/analyzers/components/). This resolves the Louvain over-partitioning root cause, eliminates the false-positive coupling warnings for analyzers-3 and e2e, provides meaningful zone names without manual enrichment, and is consistent with global finding 5. No API surface changes are required.",
       "severity": "info"
     },
     {
@@ -1474,15 +1527,22 @@
     {
       "type": "pattern",
       "pass": 5,
-      "scope": "global",
-      "text": "Global finding 11 (heuristic) and cli zone finding 1 (LLM analysis) independently identify registerMcpTools in src/cli/mcp.ts as a god function with 36 outgoing calls. The corroboration across two independent analysis methods confirms this is a real structural issue. The prescribed remedy — in-file decomposition into named sub-registrar functions grouped by capability domain — is bounded and does not require a file split or public API change.",
-      "severity": "warning"
+      "scope": "analyzers-3",
+      "text": "Zone finding 1 (warning: coupling 0.57 to 'analyzers') is a false positive. Global finding 10 identifies this as intra-domain noise caused by Louvain splitting one semantic zone into three. The 10 cross-zone imports are edges within a single coherent analyzers domain, not genuine cross-concern dependencies. Treat as info-only.",
+      "severity": "info"
+    },
+    {
+      "type": "pattern",
+      "pass": 5,
+      "scope": "e2e",
+      "text": "Zone finding 0 (warning: coupling 0.57 to 'analyzers-2') is contradicted by global finding 10. E2e tests coupling to what is semantically one analyzers domain is expected; the warning severity is not justified. The coupling flag measures intra-domain edges that Louvain partitioned into separate zone identifiers, not genuine cross-concern dependencies.",
+      "severity": "info"
     },
     {
       "type": "pattern",
       "pass": 5,
       "scope": "global",
-      "text": "Louvain over-partitioning of src/analyzers/ produced three zones (analyzers, analyzers-2, analyzers-3) where one semantic zone exists. The absence of meaningful enrichment names for analyzers-2 and analyzers-3, combined with the high inter-zone coupling from analyzers-3 back to analyzers (10 crossings, coupling 0.57), are artifacts of this fragmentation. Coupling warnings for analyzers-3 and e2e that cite 'analyzers-2' as a target should be weighted accordingly — they measure intra-domain edges, not genuine cross-concern dependencies.",
+      "text": "The bidirectional coupling between 'analyzers' and 'unit' (global finding 0: 6+27 crossings) is asymmetric in a meaningful way: the 27 crossings in the unit→analyzers direction are expected test-to-implementation imports and should not be counted as architectural risk. Only the 6 crossings in the analyzers→unit direction (production code importing from test/unit code) would represent a genuine layering violation worth investigating.",
       "severity": "info"
     },
     {
@@ -1494,19 +1554,26 @@
       "related": [
         "src/cli/mcp.ts"
       ]
+    },
+    {
+      "type": "suggestion",
+      "pass": 0,
+      "scope": "analyzers-3",
+      "text": "Zone \"Analyzers 3\" (analyzers-3) has critical risk (score: 0.69, cohesion: 0.31, coupling: 0.69) — requires refactoring before new feature development",
+      "severity": "warning"
     }
   ],
   "enrichmentPass": 4,
-  "metaEvaluationCount": 2,
+  "metaEvaluationCount": 3,
   "structureHash": "f32b1cbf85e49a7a",
   "zoneContentHashes": {
     ".claude": "ae7d308f88d1a243",
-    "root": "b03d945caa0c97f9",
+    "root": "5cbd7968b64da867",
     "analyzers": "bb2f8d8d99e95c6c",
     "unit": "a95427ff997d10e8",
     "cli": "1bc4f08e5790b91e",
     "analyzers-2": "da36c8f03ebb11ae",
-    "analyzers-3": "1e6f4fb51d04e031",
+    "analyzers-3": "44ba7e11801a8ad5",
     "e2e": "bd9d20f7751dde8b",
     "fixtures": "365918b33dddecc2"
   }

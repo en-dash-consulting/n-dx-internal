@@ -8,7 +8,7 @@ Zone: Web Viewer/web 3/web Viewer/web (`web-viewer/web-3/web-viewer/web`)
 Files: 40, Cohesion: 0.82, Coupling: 0.18
 Description: 40 files, primarily TypeScript
 Entry points: packages/web/src/viewer/components/prd-tree/compute.ts, packages/web/src/viewer/components/prd-tree/levels.ts, packages/web/src/viewer/components/prd-tree/prd-tree.ts, packages/web/src/viewer/components/prd-tree/smart-add-input.ts, packages/web/src/viewer/components/prd-tree/tree-differ.ts, packages/web/src/viewer/components/prd-tree/types.ts, packages/web/src/viewer/views/prd.ts
-Lines: 12834
+Lines: 12978
 
 </zone>
 
@@ -18,7 +18,7 @@ packages/web/src/viewer/components/prd-tree/add-item-form.ts (TypeScript, 325 li
 packages/web/src/viewer/components/prd-tree/bulk-actions.ts (TypeScript, 136 lines, source)
 packages/web/src/viewer/components/prd-tree/compute.ts (TypeScript, 140 lines, source)
 packages/web/src/viewer/components/prd-tree/delete-confirmation.ts (TypeScript, 151 lines, source)
-packages/web/src/viewer/components/prd-tree/facet-filter.ts (TypeScript, 162 lines, source)
+packages/web/src/viewer/components/prd-tree/facet-filter.ts (TypeScript, 306 lines, source)
 packages/web/src/viewer/components/prd-tree/index.ts (TypeScript, 22 lines, source)
 packages/web/src/viewer/components/prd-tree/inline-add-form.ts (TypeScript, 241 lines, source)
 packages/web/src/viewer/components/prd-tree/inline-status-picker.ts (TypeScript, 136 lines, source)

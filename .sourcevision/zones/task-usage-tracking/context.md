@@ -44,6 +44,10 @@ Incoming (other zones → this zone):
 [observation] [info] Cohesion of 0.5 is acceptable but indicates the two services share limited internal structure; a shared UsageRecord type or store would raise cohesion.
 [observation] [info] Tests are included in this zone alongside production code, confirming the zone name should reflect production purpose (task-usage-tracking) rather than a test suffix.
 [observation] [warning] The cleanup scheduler imports back into web-viewer (per cross-zone import graph), creating a dependency inversion — the scheduler should depend on an interface, not the viewer zone.
+[pattern] [warning] Absence of an index/facade module means task-usage-tracking has no encapsulated public surface; consumers couple directly to internal service files, weakening the zone boundary.
+[anti-pattern] [critical] usage-cleanup-scheduler.ts depends on web-viewer (the UI application layer) from within a background service zone — scheduler lifecycle should be driven by an interface or event emitter, not a direct import of the viewer module, to prevent initialization-order coupling in tests and production startup
+[suggestion] [warning] Neither source file in this zone exports through a shared index — introduce a thin 'index.ts' barrel that re-exports the public surfaces of both services, giving the zone an explicit boundary and preventing consumers from coupling to internal file paths.
+[suggestion] [info] Rename 'incremental-task-usage.ts' to 'task-usage-recorder.ts' to align with the zone name and match the noun-verb pattern of 'usage-cleanup-scheduler.ts' — consistent file naming within a zone reduces cognitive overhead when the zone has no facade index module.
 
 </findings>
 
@@ -55,6 +59,14 @@ Incoming (other zones → this zone):
 - Cohesion of 0.5 is acceptable but indicates the two services share limited internal structure; a shared UsageRecord type or store would raise cohesion.
 - The cleanup scheduler imports back into web-viewer (per cross-zone import graph), creating a dependency inversion — the scheduler should depend on an interface, not the viewer zone.
 - Tests are included in this zone alongside production code, confirming the zone name should reflect production purpose (task-usage-tracking) rather than a test suffix.
+- Both source files in this zone are independently loaded entrypoints with no shared facade — callers must know the internal split between recording and cleanup, leaking implementation detail across the zone boundary
+- Absence of an index/facade module means task-usage-tracking has no encapsulated public surface; consumers couple directly to internal service files, weakening the zone boundary.
+- The cleanup scheduler importing from web-viewer couples the service's module initialization to the UI layer — this means the scheduler cannot be loaded or tested in isolation without pulling in viewer dependencies, degrading unit test fidelity
+- usage-cleanup-scheduler.ts depends on web-viewer (the UI application layer) from within a background service zone — scheduler lifecycle should be driven by an interface or event emitter, not a direct import of the viewer module, to prevent initialization-order coupling in tests and production startup
+- The zone name 'task-usage-tracking' does not share a naming prefix or suffix with either of its source files ('incremental-task-usage.ts', 'usage-cleanup-scheduler.ts') — the zone is described by a semantic label derived from intent rather than from file names, creating a discovery mismatch when navigating from file to zone
+- 'incremental-task-usage.ts' uses noun-verb ordering while 'usage-cleanup-scheduler.ts' uses noun-verb ordering with a different root noun ('usage' vs 'task-usage') — the two files in the same zone use inconsistent primary noun, making the zone's subject ambiguous at a glance
+- Rename 'incremental-task-usage.ts' to 'task-usage-recorder.ts' to align with the zone name and match the noun-verb pattern of 'usage-cleanup-scheduler.ts' — consistent file naming within a zone reduces cognitive overhead when the zone has no facade index module.
+- Neither source file in this zone exports through a shared index — introduce a thin 'index.ts' barrel that re-exports the public surfaces of both services, giving the zone an explicit boundary and preventing consumers from coupling to internal file paths.
 - [call graph] 100 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>

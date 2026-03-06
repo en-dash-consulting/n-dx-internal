@@ -22,14 +22,14 @@
     "packages/sourcevision/src/analyzers/inventory.ts",
     "packages/sourcevision/src/util/paths.ts"
   ],
-  "cohesion": 0.54,
-  "coupling": 0.46,
+  "cohesion": 0.48,
+  "coupling": 0.52,
   "fileCount": 11,
   "lineCount": 5963,
   "riskMetrics": {
-    "cohesion": 0.54,
-    "coupling": 0.46,
-    "riskScore": 0.45999999999999996,
+    "cohesion": 0.48,
+    "coupling": 0.52,
+    "riskScore": 0.52,
     "riskLevel": "healthy",
     "failsThreshold": false
   }

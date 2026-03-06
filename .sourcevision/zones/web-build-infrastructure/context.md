@@ -53,9 +53,14 @@ Incoming (other zones → this zone):
 <findings>
 
 [suggestion] [info] Zone "web-build-infrastructure" has files across 6 directories — consider consolidating under a dedicated directory
+[suggestion] [info] Correct the archetype classification of build.js and dev.js from 'config' to 'entrypoint' or 'script' — misclassifying executable build runners as config files causes the zone's entry-point count to be understated and may suppress relevant findings in entry-point-aware analysis passes.
+[suggestion] [warning] Split the web-build-infrastructure zone into two groups: (1) build tooling (build.js, dev.js, package.json, images, markdown) and (2) reusable UI components (elapsed-time.ts, task-audit.ts) — these two groups have different change drivers, different consumers, and different lifecycle concerns that should not share a zone boundary.
 [observation] [info] BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md in the web package root are debugging artifacts that should either be moved to docs/ or removed to keep the package root clean.
 [observation] [warning] Bidirectional imports between web and web-viewer (web→web-viewer: 4, web-viewer→web: 2) create a soft cycle risk; extracting shared primitives into a dedicated shared zone would eliminate this.
 [observation] [info] elapsed-time.ts and task-audit.ts are entry points but live in a build-infrastructure zone — if they are reusable UI primitives, they belong in web-viewer or a dedicated components zone.
+[pattern] [warning] Build scripts (build.js, dev.js) in this zone operate at the package boundary but are grouped with UI components (elapsed-time.ts, task-audit.ts) — splitting into a pure build-config group and a reusable-components group would clarify which files are tooling versus production API surface.
+[anti-pattern] [info] BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md are debugging artifacts committed to the web package root with no clear retention policy — they pollute the package root and should be moved to docs/ or removed
+[anti-pattern] [warning] elapsed-time.ts and task-audit.ts are reusable UI components but are grouped with build scripts and package assets in the web-build-infrastructure zone — they should be moved to the web-viewer zone or a dedicated components zone to collocate them with their consumers and avoid accidental coupling to build tooling
 
 </findings>
 
@@ -68,6 +73,16 @@ Incoming (other zones → this zone):
 - Bidirectional imports between web and web-viewer (web→web-viewer: 4, web-viewer→web: 2) create a soft cycle risk; extracting shared primitives into a dedicated shared zone would eliminate this.
 - elapsed-time.ts and task-audit.ts are entry points but live in a build-infrastructure zone — if they are reusable UI primitives, they belong in web-viewer or a dedicated components zone.
 - BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md in the web package root are debugging artifacts that should either be moved to docs/ or removed to keep the package root clean.
+- File-cohesion (0.77) and call-graph cohesion (0.98) diverge significantly for this zone — the gap is caused by non-code files (images, markdown, build scripts) pulling down the file-graph metric while actual TypeScript modules remain tightly coupled; this suggests zone cohesion metrics should weight source files differently from assets
+- Build scripts (build.js, dev.js) in this zone operate at the package boundary but are grouped with UI components (elapsed-time.ts, task-audit.ts) — splitting into a pure build-config group and a reusable-components group would clarify which files are tooling versus production API surface.
+- elapsed-time.ts and task-audit.ts are classified as entry points (imported by other zones) but reside in a build-infrastructure zone alongside build.js, dev.js, and package assets — the UI component lifecycle and the build tooling lifecycle are distinct concerns with different change drivers
+- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md in the web package root are debugging artifacts whose presence will grow if not given an explicit home — a docs/debugging/ or docs/profiling/ directory would prevent root-level accumulation
+- elapsed-time.ts and task-audit.ts are reusable UI components but are grouped with build scripts and package assets in the web-build-infrastructure zone — they should be moved to the web-viewer zone or a dedicated components zone to collocate them with their consumers and avoid accidental coupling to build tooling
+- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md are debugging artifacts committed to the web package root with no clear retention policy — they pollute the package root and should be moved to docs/ or removed
+- build.js and dev.js are classified with the 'config' archetype but are executable build runner scripts — config archetype typically applies to static configuration files (package.json, tsconfig.json); using it for imperative scripts conflates two distinct file roles and may cause sourcevision to misreport the zone's entry-point surface
+- The zone name 'web-build-infrastructure' uses a three-word compound that implies a structural concern (infrastructure) rather than the mixed tooling+component reality — 'web-package-root' or splitting into 'web-build-tools' and 'web-shared-components' would better reflect the two distinct concerns currently grouped here
+- Correct the archetype classification of build.js and dev.js from 'config' to 'entrypoint' or 'script' — misclassifying executable build runners as config files causes the zone's entry-point count to be understated and may suppress relevant findings in entry-point-aware analysis passes.
+- Split the web-build-infrastructure zone into two groups: (1) build tooling (build.js, dev.js, package.json, images, markdown) and (2) reusable UI components (elapsed-time.ts, task-audit.ts) — these two groups have different change drivers, different consumers, and different lifecycle concerns that should not share a zone boundary.
 - [call graph] 59 internal calls, 1 outgoing, 0 incoming (cohesion: 0.98, coupling: 0.02)
 
 </insights>

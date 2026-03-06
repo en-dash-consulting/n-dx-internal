@@ -518,21 +518,21 @@
         {
           "archetypeId": "types",
           "signalKind": "path",
-          "detail": "Defines archetype type definitions and constants used across the analysis system",
+          "detail": "Defines BUILTIN_ARCHETYPES constant array — pure data/type definitions with no logic, serves as a stable vocabulary for the classification engine.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyzers/branch-work-classifier.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Business logic for classifying branch work items",
+          "detail": "Pure functions for classifying branch work significance — no I/O, no side effects, shared classification logic.",
           "weight": 0.7
         }
       ]
@@ -546,7 +546,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Orchestrates collection of branch work data",
+          "detail": "Orchestrates multi-step data collection: reads PRD from disk, diffs git history, builds enriched work items — I/O-heavy service logic.",
           "weight": 0.7
         }
       ]
@@ -560,21 +560,21 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Filtering helper for branch work items, no stateful logic",
+          "detail": "Pure filtering functions for branch-scoped work items — stateless helpers with no I/O.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyzers/branch-work-store.ts",
-      "archetype": "store",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "store",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Stateful store managing branch work data with expected high fan-in",
+          "detail": "Persistent JSON storage with Zod validation for branch work records — manages read/write lifecycle for a specific data entity.",
           "weight": 0.7
         }
       ]
@@ -588,7 +588,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Produces findings/analysis results from callgraph data",
+          "detail": "Generates architectural findings from call graph data — analysis/business logic producing structured output from structured input.",
           "weight": 0.7
         }
       ]
@@ -602,7 +602,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Core callgraph construction and analysis logic",
+          "detail": "TypeScript AST-based call graph analyzer — complex analysis pipeline producing CallGraph data structures.",
           "weight": 0.7
         }
       ]
@@ -616,7 +616,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Classification business logic orchestrating archetype detection",
+          "detail": "File classification engine — multi-signal scoring logic with optional AI calls, orchestrates archetype matching.",
           "weight": 0.7
         }
       ]
@@ -630,21 +630,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "API client wrapping Claude LLM calls for analysis",
+          "detail": "LLM bridge module — wraps @n-dx/llm-client with module-level state, config resolution, and vendor detection; API client service layer.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyzers/completion-reader.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Parses/reads LLM completion responses, stateless helper",
+          "detail": "Reads and aggregates PRD completion metadata from disk with graceful degradation — data extraction service.",
           "weight": 0.7
         }
       ]
@@ -658,7 +658,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "React component catalog analysis and extraction",
+          "detail": "AST-based component and route analyzer — single-pass JSX/TSX analysis producing structured component catalog data.",
           "weight": 0.7
         }
       ]
@@ -672,7 +672,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Generates CONTEXT.md output — business logic orchestration",
+          "detail": "CONTEXT.md generator — orchestrates multiple analysis inputs into a structured output document.",
           "weight": 0.7
         }
       ]
@@ -686,7 +686,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Batch processing orchestration for zone enrichment",
+          "detail": "Batch AI enrichment with retry logic and prompt construction — orchestration service for LLM calls.",
           "weight": 0.7
         }
       ]
@@ -700,7 +700,7 @@
         {
           "archetypeId": "config",
           "signalKind": "path",
-          "detail": "Configuration and settings for the enrichment pipeline",
+          "detail": "Configuration constants and helpers for AI enrichment passes — pass configs, thresholds, and tuning parameters.",
           "weight": 0.7
         }
       ]
@@ -714,7 +714,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Stateless parsing helpers for enrichment LLM responses",
+          "detail": "JSON parsing and finding extraction from LLM responses — stateless parsing helpers.",
           "weight": 0.7
         }
       ]
@@ -728,21 +728,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Per-zone enrichment logic, business orchestration",
+          "detail": "Per-zone AI enrichment orchestration — manages incremental, parallelizable enrichment with cache invalidation.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyzers/enrich.ts",
-      "archetype": "service",
+      "archetype": "entrypoint",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "entrypoint",
           "signalKind": "path",
-          "detail": "Top-level enrichment pipeline orchestrator",
+          "detail": "Barrel re-export module that aggregates and re-exports from enrich-config, claude-client, enrich-batch, and enrich-per-zone — serves as the stable public surface for the enrichment subsystem.",
           "weight": 0.7
         }
       ]
@@ -756,7 +756,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Import graph construction and analysis",
+          "detail": "TypeScript AST-based import graph analyzer — produces ImportEdge data structures from source files.",
           "weight": 0.7
         }
       ]
@@ -784,7 +784,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "File inventory scanning and metadata extraction",
+          "detail": "File inventory analyzer — walks the filesystem, computes hashes, and builds structured FileEntry records.",
           "weight": 0.7
         }
       ]
@@ -798,7 +798,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Generates llms.txt output artifact from analysis data",
+          "detail": "llms.txt generator — transforms analysis data into a structured Markdown document for LLM consumption.",
           "weight": 0.7
         }
       ]
@@ -812,7 +812,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Louvain community detection algorithm implementation, pure computation",
+          "detail": "Louvain community detection algorithm implementation — pure graph algorithm with no I/O, high fan-in from zone analysis.",
           "weight": 0.7
         }
       ]
@@ -826,35 +826,35 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Manifest file generation and update logic",
+          "detail": "Manifest read/write management with git integration — stateful persistence service for analysis metadata.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyzers/next-steps.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Generates next-steps recommendations from analysis state",
+          "detail": "Pure derivation of prioritized next steps from zone findings — stateless transformation logic.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyzers/risk-scoring.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Risk scoring analysis over the codebase graph",
+          "detail": "Pure architectural risk scoring computations — deterministic metrics with no I/O or side effects.",
           "weight": 0.7
         }
       ]
@@ -875,14 +875,14 @@
     },
     {
       "path": "src/analyzers/server-route-detection.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Detects server-side routes from file structure and patterns",
+          "detail": "AST-based HTTP route detection heuristics — stateless pattern matching helpers used by other analyzers.",
           "weight": 0.7
         }
       ]
@@ -896,7 +896,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Tracks and aggregates token usage counts, stateless helper",
+          "detail": "Small pure utility functions for accumulating token usage counters — stateless helpers with high fan-in.",
           "weight": 0.7
         }
       ]
@@ -910,21 +910,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Aggregates workspace analysis results across packages",
+          "detail": "Workspace aggregation engine — merges pre-analyzed repos into unified output, reads/writes multiple JSON files.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyzers/workspace-crossings.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Analyzes cross-zone/cross-package dependency crossings",
+          "detail": "Cross-repo crossing computation — resolves external imports to workspace members, pure transformation logic.",
           "weight": 0.7
         }
       ]
@@ -938,7 +938,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Workspace-level analysis orchestration",
+          "detail": "Workspace detection and sub-directory analysis orchestration — filesystem traversal producing SubAnalysis structures.",
           "weight": 0.7
         }
       ]
@@ -952,7 +952,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Hashing utility for zone identity/change detection",
+          "detail": "Single hashing utility extracted to break circular deps — pure crypto helper with no I/O.",
           "weight": 0.7
         }
       ]
@@ -966,7 +966,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Orchestrates zone output generation — builds context.md and summary.json files per zone, coordinates data transformation and I/O",
+          "detail": "Orchestrates zone output generation — builds context markdown, summary JSON, and emits files to disk. Pure business logic with no CLI or UI concerns.",
           "weight": 0.7
         }
       ]
@@ -980,7 +980,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Core zone detection service implementing Louvain community detection algorithm with business logic for cohesion/coupling analysis",
+          "detail": "Core zone analysis engine implementing Louvain community detection and zone metric computation. Substantial business logic, not a schema or utility.",
           "weight": 0.7
         }
       ]
@@ -1180,7 +1180,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shared utility providing CLI help content definitions and formatting helpers used across command handlers",
+          "detail": "Provides help text content and formatting for CLI commands. High fan-in potential (called by multiple command handlers), no side effects beyond console output.",
           "weight": 0.7
         }
       ]
@@ -1208,7 +1208,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "MCP server implementation — creates and registers all MCP tools/resources, exposes codebase analysis data via protocol",
+          "detail": "Creates and configures the MCP server, registers all tools and resources, and manages data loading/caching. Substantial service logic, not a thin CLI command handler.",
           "weight": 0.7
         }
       ]
@@ -1236,7 +1236,7 @@
         {
           "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "CLI command handler for 'sourcevision serve' that delegates to the web package",
+          "detail": "Thin CLI command handler that delegates `sourcevision serve` to the web package via process spawn. Pure command dispatch with no domain logic.",
           "weight": 0.7
         }
       ]
@@ -1264,21 +1264,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "PDF report generation service — orchestrates rendering of analysis data into structured PDF sections",
+          "detail": "PDF report generation service — transforms analysis data into a structured PDF document. Contains substantial rendering and layout logic.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/generators/pr-markdown-template.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Pure utility functions for transforming BranchWorkRecord into PR markdown — no I/O, no side effects, high reuse potential",
+          "detail": "Transforms BranchWorkRecord data into PR markdown. Pure functions with clear input/output transformation logic — a content generation service.",
           "weight": 0.7
         }
       ]
@@ -1377,7 +1377,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shared utility for merging chunked inventory/imports data with deduplication and circular detection",
+          "detail": "Shared utility functions for merging inventory and import chunks. High fan-in expected, pure data transformation helpers.",
           "weight": 0.7
         }
       ]
@@ -1391,7 +1391,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Minimal path normalization utility (single toPosix function)",
+          "detail": "Single-function path normalization utility (toPosix). Minimal shared helper.",
           "weight": 0.7
         }
       ]
@@ -1405,7 +1405,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Canonical sorting utilities for deterministic output across all schema types — high fan-in utility module",
+          "detail": "Canonical sorting utilities for all schema types. Explicitly noted as high fan-in in project memory; pure deterministic sort functions used across the codebase.",
           "weight": 0.7
         }
       ]
@@ -1416,11 +1416,10 @@
     "totalUnclassified": 0,
     "byArchetype": {
       "types": 3,
-      "service": 25,
-      "utility": 13,
-      "store": 1,
+      "utility": 16,
+      "service": 22,
       "config": 1,
-      "entrypoint": 4,
+      "entrypoint": 5,
       "route-handler": 1,
       "cli-command": 11,
       "schema": 3

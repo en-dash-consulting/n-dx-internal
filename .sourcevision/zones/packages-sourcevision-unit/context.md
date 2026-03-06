@@ -5,8 +5,8 @@
 <zone>
 
 Zone: Unit (`packages-sourcevision:unit`)
-Files: 28, Cohesion: 0.57, Coupling: 0.43
-Risk: healthy (score: 0.43)
+Files: 28, Cohesion: 0.43, Coupling: 0.57
+Risk: healthy (score: 0.57)
 Description: 28 files, primarily TypeScript
 Entry points: packages/sourcevision/src/analyzers/branch-work-classifier.ts, packages/sourcevision/src/analyzers/risk-scoring.ts, packages/sourcevision/src/cli/commands/workspace.ts, packages/sourcevision/src/cli/mcp.ts, packages/sourcevision/src/generators/pr-markdown-template.ts, packages/sourcevision/src/schema/data-files.ts, packages/sourcevision/src/schema/v1.ts, packages/sourcevision/tests/unit/analyzers/zones-helpers.ts
 Lines: 11364
@@ -104,6 +104,7 @@ Incoming (other zones → this zone):
 
 <insights>
 
+- High coupling (0.57) — 27 imports target "analyzers"
 - The schema files (v1.ts, data-files.ts) are foundational types used across the whole package but are grouped here alongside feature-specific analytics; extracting schema into its own zone would reduce coupling pressure on consumers.
 - The MCP server (cli/mcp.ts) being here alongside domain analytics rather than in the CLI zone blurs the boundary between protocol surface and business logic — consider co-locating MCP with other CLI entry points.
 - The single test helper file (tests/unit/analyzers/zones-helpers.ts) does not justify a '-tests' label; the zone is correctly named after its production purpose.

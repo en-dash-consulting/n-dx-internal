@@ -9,7 +9,7 @@ Files: 351, Cohesion: 0.98, Coupling: 0.02
 Risk: healthy (score: 0.02)
 Description: The primary web application zone encompassing the full-stack dashboard: HTTP/MCP server, React viewer components, data aggregation, gateways, and CLI entrypoint.
 Entry points: packages/web/src/server/rex-gateway.ts, packages/web/src/viewer/components/logos.ts, packages/web/src/viewer/components/rex-task-link.ts, packages/web/src/viewer/polling/index.ts, packages/web/src/viewer/polling/polling-state.ts, packages/web/src/viewer/types.ts
-Lines: 115519
+Lines: 115768
 
 </zone>
 
@@ -82,7 +82,7 @@ packages/web/src/viewer/components/prd-tree/bulk-actions.ts (TypeScript, 136 lin
 packages/web/src/viewer/components/prd-tree/compute.ts (TypeScript, 140 lines, source)
 packages/web/src/viewer/components/prd-tree/delete-confirmation.ts (TypeScript, 151 lines, source)
 packages/web/src/viewer/components/prd-tree/execution-panel.ts (TypeScript, 406 lines, source)
-packages/web/src/viewer/components/prd-tree/facet-filter.ts (TypeScript, 162 lines, source)
+packages/web/src/viewer/components/prd-tree/facet-filter.ts (TypeScript, 306 lines, source)
 packages/web/src/viewer/components/prd-tree/index.ts (TypeScript, 22 lines, source)
 packages/web/src/viewer/components/prd-tree/inline-add-form.ts (TypeScript, 241 lines, source)
 packages/web/src/viewer/components/prd-tree/inline-status-picker.ts (TypeScript, 136 lines, source)
@@ -195,7 +195,7 @@ packages/web/src/viewer/styles/notion-config.css (CSS, 770 lines, other)
 packages/web/src/viewer/styles/overview.css (CSS, 219 lines, other)
 packages/web/src/viewer/styles/polling-suspension.css (CSS, 104 lines, other)
 packages/web/src/viewer/styles/pr-markdown.css (CSS, 100 lines, other)
-packages/web/src/viewer/styles/prd-tree.css (CSS, 5678 lines, other)
+packages/web/src/viewer/styles/prd-tree.css (CSS, 5783 lines, other)
 packages/web/src/viewer/styles/refresh-queue.css (CSS, 105 lines, other)
 packages/web/src/viewer/styles/responsive.css (CSS, 314 lines, other)
 packages/web/src/viewer/styles/rex-dashboard.css (CSS, 1384 lines, other)
@@ -1128,7 +1128,7 @@ Internal:
   packages/web/tests/unit/viewer/zone-inline-subzones.test.ts → packages/web/src/viewer/views/zones.ts {convertSubZones}
 
 Outgoing (this zone → other zones):
-  → packages-rex:prd-analysis-core: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
+  → packages-rex:unit-analyze: packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts; packages/web/tests/unit/server/type-consistency.test.ts → packages/rex/src/schema/v1.ts
   → task-usage-tracking: packages/web/src/server/routes-hench.ts → packages/web/src/server/incremental-task-usage.ts; packages/web/src/server/start.ts → packages/web/src/server/usage-cleanup-scheduler.ts; packages/web/src/server/start.ts → packages/web/src/server/usage-cleanup-scheduler.ts
   → web-build-infrastructure: packages/web/src/viewer/components/active-tasks-panel.ts → packages/web/src/viewer/components/elapsed-time.ts; packages/web/src/viewer/views/domain-rex.ts → packages/web/src/viewer/views/task-audit.ts
   → websocket-infrastructure: packages/web/src/public.ts → packages/web/src/server/websocket.ts; packages/web/src/server/index.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-hench.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-rex.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/ws-health-tracker.ts
@@ -1144,10 +1144,10 @@ Incoming (other zones → this zone):
 
 [observation] [info] Contains 57% of project files (351/612) — subdivided into 7 sub-zones
 [observation] [info] High cohesion (0.98) — files are tightly interconnected
-[observation] [info] 351 files in a single zone is a significant surface area; as the codebase grows, consider whether server infrastructure and viewer UI warrant explicit sub-zone boundaries.
-[observation] [info] Gateway files (rex-gateway.ts, domain-gateway.ts, mcp-deps.ts) are co-located in the zone, making the cross-package dependency surface explicit and auditable.
-[observation] [info] Zone cohesion is excellent (0.98) with near-zero external coupling (0.02), indicating a well-bounded module with minimal leakage.
 [suggestion] [info] Zone "web-dashboard" has files across 21 directories — consider consolidating under a dedicated directory
+[suggestion] [info] Sub-zone call graph breakdowns are not surfaced at the top-level zone report — add per-sub-zone outgoing call counts so that the server and viewer halves can be individually assessed for coupling rather than relying on the aggregated 23-outgoing figure.
+[pattern] [info] Call graph ratio (6495 internal : 23 outgoing) confirms web-dashboard is a near-terminal hub — outgoing calls are exclusively routed through gateway files, validating the gateway pattern at the call level.
+[anti-pattern] [warning] Absence of a dedicated test-support or shared-fixtures zone forces web-viewer tests to import from the low-cohesion web-unit zone (6 imports); introducing a scoped test-support module would break this dependency and allow web-unit to be dissolved or tightened
 
 </findings>
 
@@ -1162,6 +1162,14 @@ Incoming (other zones → this zone):
 - 351 files in a single zone is a significant surface area; as the codebase grows, consider whether server infrastructure and viewer UI warrant explicit sub-zone boundaries.
 - Gateway files (rex-gateway.ts, domain-gateway.ts, mcp-deps.ts) are co-located in the zone, making the cross-package dependency surface explicit and auditable.
 - Zone "web-dashboard" has files across 21 directories — consider consolidating under a dedicated directory
+- Internal-to-external call ratio of 282:1 (6495 internal vs 23 outgoing) confirms this zone is architecturally self-contained — a positive signal that the gateway pattern is containing cross-package leakage effectively
+- With 23 outgoing calls and only 2 incoming, web-dashboard is a near-terminal node in the call graph; changes to its public interface have minimal downstream blast radius outside the zone
+- Call graph ratio (6495 internal : 23 outgoing) confirms web-dashboard is a near-terminal hub — outgoing calls are exclusively routed through gateway files, validating the gateway pattern at the call level.
+- web-viewer emits 6 imports into web-unit (the lowest-cohesion zone at 0.25) — this is a missing test-support abstraction: viewer tests are pulling scattered utilities from across the web-unit zone rather than a dedicated shared test-fixtures module, compounding web-unit's structural fragility with every new viewer test added
+- Absence of a dedicated test-support or shared-fixtures zone forces web-viewer tests to import from the low-cohesion web-unit zone (6 imports); introducing a scoped test-support module would break this dependency and allow web-unit to be dissolved or tightened
+- With 6495 internal calls and only 2 incoming from outside, web-dashboard is a near-terminal sink in the call graph — its public API surface is minimal, meaning the 23 outgoing calls represent the entire external dependency footprint of the largest zone in the codebase
+- The 23 outgoing calls from web-dashboard are not attributable to either the server sub-zone or the viewer sub-zone without sub-zone call graph data — the aggregated zone metric obscures which internal concern is responsible for external coupling, making targeted refactoring guesswork
+- Sub-zone call graph breakdowns are not surfaced at the top-level zone report — add per-sub-zone outgoing call counts so that the server and viewer halves can be individually assessed for coupling rather than relying on the aggregated 23-outgoing figure.
 - [call graph] 6495 internal calls, 23 outgoing, 2 incoming (cohesion: 1, coupling: 0)
 
 </insights>

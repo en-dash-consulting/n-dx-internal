@@ -5,8 +5,8 @@
 <zone>
 
 Zone: Cli (`cli`)
-Files: 26, Cohesion: 0.71, Coupling: 0.29
-Risk: healthy (score: 0.29)
+Files: 26, Cohesion: 0.67, Coupling: 0.33
+Risk: healthy (score: 0.33)
 Description: 26 files, primarily TypeScript
 Entry points: src/analyzers/manifest.ts, src/cli/commands/init.ts, src/cli/commands/pr-markdown.ts, src/cli/errors.ts, src/cli/output.ts, src/constants.ts
 Lines: 4165

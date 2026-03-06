@@ -2227,7 +2227,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "computeZoneMetrics",
-      "line": 960,
+      "line": 963,
       "column": 0,
       "qualifiedName": "computeZoneMetrics",
       "isExported": false
@@ -2235,7 +2235,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "computeEntryPoints",
-      "line": 988,
+      "line": 1000,
       "column": 0,
       "qualifiedName": "computeEntryPoints",
       "isExported": false
@@ -2243,7 +2243,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "buildZonesFromCommunities",
-      "line": 1013,
+      "line": 1025,
       "column": 0,
       "qualifiedName": "buildZonesFromCommunities",
       "isExported": false
@@ -2251,7 +2251,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "collectUnzonedFiles",
-      "line": 1118,
+      "line": 1130,
       "column": 0,
       "qualifiedName": "collectUnzonedFiles",
       "isExported": false
@@ -2259,7 +2259,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "computeContentHashes",
-      "line": 1142,
+      "line": 1154,
       "column": 0,
       "qualifiedName": "computeContentHashes",
       "isExported": false
@@ -2267,7 +2267,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "remapContentHashKeys",
-      "line": 1167,
+      "line": 1179,
       "column": 0,
       "qualifiedName": "remapContentHashKeys",
       "isExported": false
@@ -2275,7 +2275,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "applyEnrichment",
-      "line": 1213,
+      "line": 1225,
       "column": 0,
       "qualifiedName": "applyEnrichment",
       "isExported": false
@@ -2283,7 +2283,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "buildCrossings",
-      "line": 1319,
+      "line": 1331,
       "column": 0,
       "qualifiedName": "buildCrossings",
       "isExported": false
@@ -2291,7 +2291,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "mergeZoneInsights",
-      "line": 1346,
+      "line": 1358,
       "column": 0,
       "qualifiedName": "mergeZoneInsights",
       "isExported": false
@@ -2299,7 +2299,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "mergeGlobalInsights",
-      "line": 1389,
+      "line": 1401,
       "column": 0,
       "qualifiedName": "mergeGlobalInsights",
       "isExported": false
@@ -2307,7 +2307,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "assembleFindings",
-      "line": 1425,
+      "line": 1437,
       "column": 0,
       "qualifiedName": "assembleFindings",
       "isExported": false
@@ -2315,7 +2315,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "isContentStale",
-      "line": 1472,
+      "line": 1484,
       "column": 2,
       "qualifiedName": "isContentStale",
       "isExported": false
@@ -2323,7 +2323,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "backPopulateInsights",
-      "line": 1509,
+      "line": 1521,
       "column": 0,
       "qualifiedName": "backPopulateInsights",
       "isExported": false
@@ -2331,7 +2331,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "runZonePipeline",
-      "line": 1557,
+      "line": 1569,
       "column": 0,
       "qualifiedName": "runZonePipeline",
       "isExported": true
@@ -2339,7 +2339,7 @@
     {
       "file": "src/analyzers/zones.ts",
       "name": "analyzeZones",
-      "line": 1643,
+      "line": 1655,
       "column": 0,
       "qualifiedName": "analyzeZones",
       "isExported": true
@@ -26470,7 +26470,7 @@
       "calleeFile": "src/analyzers/workspace.ts",
       "callee": "getSubAnalyzedPrefixes",
       "type": "direct",
-      "line": 1672,
+      "line": 1684,
       "column": 30
     },
     {
@@ -26479,7 +26479,7 @@
       "calleeFile": null,
       "callee": "imports.edges.filter",
       "type": "property-chain",
-      "line": 1674,
+      "line": 1686,
       "column": 6
     },
     {
@@ -26488,7 +26488,7 @@
       "calleeFile": "src/analyzers/workspace.ts",
       "callee": "isSubAnalyzedFile",
       "type": "direct",
-      "line": 1676,
+      "line": 1688,
       "column": 11
     },
     {
@@ -26497,7 +26497,7 @@
       "calleeFile": "src/analyzers/workspace.ts",
       "callee": "isSubAnalyzedFile",
       "type": "direct",
-      "line": 1677,
+      "line": 1689,
       "column": 11
     },
     {
@@ -26506,7 +26506,7 @@
       "calleeFile": null,
       "callee": "inventory.files.filter",
       "type": "property-chain",
-      "line": 1681,
+      "line": 1693,
       "column": 21
     },
     {
@@ -26515,7 +26515,7 @@
       "calleeFile": null,
       "callee": "map",
       "type": "method",
-      "line": 1681,
+      "line": 1693,
       "column": 21
     },
     {
@@ -26524,7 +26524,7 @@
       "calleeFile": "src/analyzers/workspace.ts",
       "callee": "isSubAnalyzedFile",
       "type": "direct",
-      "line": 1682,
+      "line": 1694,
       "column": 18
     },
     {
@@ -26533,7 +26533,7 @@
       "calleeFile": null,
       "callee": "testFiles.add",
       "type": "method",
-      "line": 1688,
+      "line": 1700,
       "column": 27
     },
     {
@@ -26542,7 +26542,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "runZonePipeline",
       "type": "direct",
-      "line": 1692,
+      "line": 1704,
       "column": 19
     },
     {
@@ -26551,7 +26551,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "computeStructureHash",
       "type": "direct",
-      "line": 1703,
+      "line": 1715,
       "column": 24
     },
     {
@@ -26560,7 +26560,7 @@
       "calleeFile": null,
       "callee": "options.onReset",
       "type": "method",
-      "line": 1708,
+      "line": 1720,
       "column": 4
     },
     {
@@ -26569,7 +26569,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "computeContentHashes",
       "type": "direct",
-      "line": 1713,
+      "line": 1725,
       "column": 4
     },
     {
@@ -26578,7 +26578,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "applyEnrichment",
       "type": "direct",
-      "line": 1716,
+      "line": 1728,
       "column": 29
     },
     {
@@ -26587,7 +26587,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "remapContentHashKeys",
       "type": "direct",
-      "line": 1727,
+      "line": 1739,
       "column": 32
     },
     {
@@ -26596,7 +26596,7 @@
       "calleeFile": null,
       "callee": "promotedZones.push",
       "type": "method",
-      "line": 1735,
+      "line": 1747,
       "column": 4
     },
     {
@@ -26605,7 +26605,7 @@
       "calleeFile": "src/analyzers/workspace.ts",
       "callee": "promoteZones",
       "type": "direct",
-      "line": 1735,
+      "line": 1747,
       "column": 26
     },
     {
@@ -26614,7 +26614,7 @@
       "calleeFile": null,
       "callee": "promotedCrossings.push",
       "type": "method",
-      "line": 1736,
+      "line": 1748,
       "column": 4
     },
     {
@@ -26623,7 +26623,7 @@
       "calleeFile": "src/analyzers/workspace.ts",
       "callee": "promoteCrossings",
       "type": "direct",
-      "line": 1736,
+      "line": 1748,
       "column": 30
     },
     {
@@ -26632,7 +26632,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "buildCrossings",
       "type": "direct",
-      "line": 1741,
+      "line": 1753,
       "column": 20
     },
     {
@@ -26641,7 +26641,7 @@
       "calleeFile": null,
       "callee": "inventory.files.filter",
       "type": "property-chain",
-      "line": 1744,
+      "line": 1756,
       "column": 24
     },
     {
@@ -26650,7 +26650,7 @@
       "calleeFile": "src/analyzers/workspace.ts",
       "callee": "isSubAnalyzedFile",
       "type": "direct",
-      "line": 1745,
+      "line": 1757,
       "column": 12
     },
     {
@@ -26659,7 +26659,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "generateStructuralInsights",
       "type": "direct",
-      "line": 1747,
+      "line": 1759,
       "column": 21
     },
     {
@@ -26668,7 +26668,7 @@
       "calleeFile": null,
       "callee": "crossings.filter",
       "type": "method",
-      "line": 1749,
+      "line": 1761,
       "column": 4
     },
     {
@@ -26677,7 +26677,7 @@
       "calleeFile": null,
       "callee": "c.fromZone.includes",
       "type": "property-chain",
-      "line": 1749,
+      "line": 1761,
       "column": 29
     },
     {
@@ -26686,7 +26686,7 @@
       "calleeFile": null,
       "callee": "c.toZone.includes",
       "type": "property-chain",
-      "line": 1749,
+      "line": 1761,
       "column": 58
     },
     {
@@ -26695,7 +26695,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "mergeZoneInsights",
       "type": "direct",
-      "line": 1757,
+      "line": 1769,
       "column": 2
     },
     {
@@ -26704,7 +26704,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "mergeGlobalInsights",
       "type": "direct",
-      "line": 1758,
+      "line": 1770,
       "column": 28
     },
     {
@@ -26713,7 +26713,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "assembleFindings",
       "type": "direct",
-      "line": 1763,
+      "line": 1775,
       "column": 22
     },
     {
@@ -26722,7 +26722,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "backPopulateInsights",
       "type": "direct",
-      "line": 1769,
+      "line": 1781,
       "column": 2
     },
     {
@@ -26731,7 +26731,7 @@
       "calleeFile": "src/util/sort.ts",
       "callee": "sortZonesData",
       "type": "direct",
-      "line": 1780,
+      "line": 1792,
       "column": 11
     },
     {
@@ -26740,7 +26740,7 @@
       "calleeFile": null,
       "callee": "preFileToZone.set",
       "type": "method",
-      "line": 1236,
+      "line": 1248,
       "column": 31
     },
     {
@@ -26749,7 +26749,7 @@
       "calleeFile": null,
       "callee": "preFileToZone.get",
       "type": "method",
-      "line": 1240,
+      "line": 1252,
       "column": 17
     },
     {
@@ -26758,7 +26758,7 @@
       "calleeFile": null,
       "callee": "preFileToZone.get",
       "type": "method",
-      "line": 1241,
+      "line": 1253,
       "column": 17
     },
     {
@@ -26767,7 +26767,7 @@
       "calleeFile": null,
       "callee": "preCrossings.push",
       "type": "method",
-      "line": 1243,
+      "line": 1255,
       "column": 8
     },
     {
@@ -26776,7 +26776,7 @@
       "calleeFile": "src/analyzers/enrich.ts",
       "callee": "enrichZonesPerZone",
       "type": "direct",
-      "line": 1253,
+      "line": 1265,
       "column": 27
     },
     {
@@ -26785,7 +26785,7 @@
       "calleeFile": "src/analyzers/enrich.ts",
       "callee": "enrichZonesWithAI",
       "type": "direct",
-      "line": 1263,
+      "line": 1275,
       "column": 27
     },
     {
@@ -26794,7 +26794,7 @@
       "calleeFile": null,
       "callee": "expandedZones.map",
       "type": "method",
-      "line": 1280,
+      "line": 1292,
       "column": 17
     },
     {
@@ -26803,7 +26803,7 @@
       "calleeFile": null,
       "callee": "prevZones.find",
       "type": "method",
-      "line": 1281,
+      "line": 1293,
       "column": 19
     },
     {
@@ -26812,7 +26812,7 @@
       "calleeFile": null,
       "callee": "p.files.some",
       "type": "property-chain",
-      "line": 1283,
+      "line": 1295,
       "column": 32
     },
     {
@@ -26821,7 +26821,7 @@
       "calleeFile": null,
       "callee": "zone.files.includes",
       "type": "property-chain",
-      "line": 1283,
+      "line": 1295,
       "column": 52
     },
     {
@@ -26830,7 +26830,7 @@
       "calleeFile": null,
       "callee": "fastUsedIds.has",
       "type": "method",
-      "line": 1294,
+      "line": 1306,
       "column": 10
     },
     {
@@ -26839,7 +26839,7 @@
       "calleeFile": null,
       "callee": "fastUsedIds.has",
       "type": "method",
-      "line": 1296,
+      "line": 1308,
       "column": 15
     },
     {
@@ -26848,7 +26848,7 @@
       "calleeFile": null,
       "callee": "fastUsedIds.add",
       "type": "method",
-      "line": 1299,
+      "line": 1311,
       "column": 6
     },
     {
@@ -26857,7 +26857,7 @@
       "calleeFile": null,
       "callee": "structural.zoneInsights.get",
       "type": "property-chain",
-      "line": 1438,
+      "line": 1450,
       "column": 27
     },
     {
@@ -26866,7 +26866,7 @@
       "calleeFile": null,
       "callee": "structuralFindings.push",
       "type": "method",
-      "line": 1440,
+      "line": 1452,
       "column": 6
     },
     {
@@ -26875,7 +26875,7 @@
       "calleeFile": null,
       "callee": "text.includes",
       "type": "method",
-      "line": 1445,
+      "line": 1457,
       "column": 18
     },
     {
@@ -26884,7 +26884,7 @@
       "calleeFile": null,
       "callee": "text.includes",
       "type": "method",
-      "line": 1445,
+      "line": 1457,
       "column": 51
     },
     {
@@ -26893,7 +26893,7 @@
       "calleeFile": null,
       "callee": "text.includes",
       "type": "method",
-      "line": 1447,
+      "line": 1459,
       "column": 12
     },
     {
@@ -26902,7 +26902,7 @@
       "calleeFile": null,
       "callee": "text.includes",
       "type": "method",
-      "line": 1449,
+      "line": 1461,
       "column": 14
     },
     {
@@ -26911,7 +26911,7 @@
       "calleeFile": null,
       "callee": "text.includes",
       "type": "method",
-      "line": 1451,
+      "line": 1463,
       "column": 16
     },
     {
@@ -26920,7 +26920,7 @@
       "calleeFile": null,
       "callee": "structuralFindings.push",
       "type": "method",
-      "line": 1459,
+      "line": 1471,
       "column": 4
     },
     {
@@ -26929,7 +26929,7 @@
       "calleeFile": null,
       "callee": "text.includes",
       "type": "method",
-      "line": 1464,
+      "line": 1476,
       "column": 16
     },
     {
@@ -26938,7 +26938,7 @@
       "calleeFile": null,
       "callee": "text.includes",
       "type": "method",
-      "line": 1464,
+      "line": 1476,
       "column": 45
     },
     {
@@ -26947,7 +26947,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "isContentStale",
       "type": "direct",
-      "line": 1487,
+      "line": 1499,
       "column": 25
     },
     {
@@ -26956,7 +26956,7 @@
       "calleeFile": null,
       "callee": "prevAiFindings.push",
       "type": "method",
-      "line": 1488,
+      "line": 1500,
       "column": 8
     },
     {
@@ -26965,7 +26965,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "isContentStale",
       "type": "direct",
-      "line": 1493,
+      "line": 1505,
       "column": 25
     },
     {
@@ -26974,7 +26974,7 @@
       "calleeFile": null,
       "callee": "prevAiFindings.push",
       "type": "method",
-      "line": 1494,
+      "line": 1506,
       "column": 8
     },
     {
@@ -26983,7 +26983,7 @@
       "calleeFile": "src/analyzers/enrich-parsing.ts",
       "callee": "enforceSeverityRules",
       "type": "direct",
-      "line": 1499,
+      "line": 1511,
       "column": 9
     },
     {
@@ -26992,7 +26992,7 @@
       "calleeFile": "src/analyzers/enrich-parsing.ts",
       "callee": "deduplicateFindings",
       "type": "direct",
-      "line": 1499,
+      "line": 1511,
       "column": 30
     },
     {
@@ -27190,7 +27190,7 @@
       "calleeFile": null,
       "callee": "zoneInsightSets.set",
       "type": "method",
-      "line": 1516,
+      "line": 1528,
       "column": 4
     },
     {
@@ -27199,7 +27199,7 @@
       "calleeFile": null,
       "callee": "globalInsightSet.has",
       "type": "method",
-      "line": 1522,
+      "line": 1534,
       "column": 11
     },
     {
@@ -27208,7 +27208,7 @@
       "calleeFile": null,
       "callee": "allGlobalInsights.push",
       "type": "method",
-      "line": 1523,
+      "line": 1535,
       "column": 8
     },
     {
@@ -27217,7 +27217,7 @@
       "calleeFile": null,
       "callee": "globalInsightSet.add",
       "type": "method",
-      "line": 1524,
+      "line": 1536,
       "column": 8
     },
     {
@@ -27226,7 +27226,7 @@
       "calleeFile": null,
       "callee": "zoneInsightSets.get",
       "type": "method",
-      "line": 1527,
+      "line": 1539,
       "column": 23
     },
     {
@@ -27235,7 +27235,7 @@
       "calleeFile": null,
       "callee": "existing.has",
       "type": "method",
-      "line": 1528,
+      "line": 1540,
       "column": 23
     },
     {
@@ -27244,7 +27244,7 @@
       "calleeFile": null,
       "callee": "finalZones.find",
       "type": "method",
-      "line": 1529,
+      "line": 1541,
       "column": 21
     },
     {
@@ -27253,7 +27253,7 @@
       "calleeFile": null,
       "callee": "zone.insights.push",
       "type": "property-chain",
-      "line": 1532,
+      "line": 1544,
       "column": 10
     },
     {
@@ -27262,7 +27262,7 @@
       "calleeFile": null,
       "callee": "existing.add",
       "type": "method",
-      "line": 1533,
+      "line": 1545,
       "column": 10
     },
     {
@@ -27271,7 +27271,7 @@
       "calleeFile": null,
       "callee": "fileToZone.set",
       "type": "method",
-      "line": 1326,
+      "line": 1338,
       "column": 35
     },
     {
@@ -27280,7 +27280,7 @@
       "calleeFile": null,
       "callee": "fileToZone.get",
       "type": "method",
-      "line": 1331,
+      "line": 1343,
       "column": 21
     },
     {
@@ -27289,7 +27289,7 @@
       "calleeFile": null,
       "callee": "fileToZone.get",
       "type": "method",
-      "line": 1332,
+      "line": 1344,
       "column": 19
     },
     {
@@ -27298,7 +27298,7 @@
       "calleeFile": null,
       "callee": "crossings.push",
       "type": "method",
-      "line": 1334,
+      "line": 1346,
       "column": 6
     },
     {
@@ -27307,7 +27307,7 @@
       "calleeFile": null,
       "callee": "communityMembers.get",
       "type": "method",
-      "line": 1025,
+      "line": 1037,
       "column": 15
     },
     {
@@ -27316,7 +27316,7 @@
       "calleeFile": null,
       "callee": "communityMembers.set",
       "type": "method",
-      "line": 1028,
+      "line": 1040,
       "column": 6
     },
     {
@@ -27325,7 +27325,7 @@
       "calleeFile": null,
       "callee": "list.push",
       "type": "method",
-      "line": 1030,
+      "line": 1042,
       "column": 4
     },
     {
@@ -27334,7 +27334,7 @@
       "calleeFile": null,
       "callee": "map",
       "type": "method",
-      "line": 1037,
+      "line": 1049,
       "column": 28
     },
     {
@@ -27343,7 +27343,7 @@
       "calleeFile": null,
       "callee": "sort",
       "type": "method",
-      "line": 1037,
+      "line": 1049,
       "column": 28
     },
     {
@@ -27352,7 +27352,7 @@
       "calleeFile": null,
       "callee": "communityMembers.entries",
       "type": "method",
-      "line": 1037,
+      "line": 1049,
       "column": 32
     },
     {
@@ -27361,7 +27361,7 @@
       "calleeFile": null,
       "callee": "members.sort",
       "type": "method",
-      "line": 1038,
+      "line": 1050,
       "column": 37
     },
     {
@@ -27370,7 +27370,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "deriveZoneId",
       "type": "direct",
-      "line": 1042,
+      "line": 1054,
       "column": 13
     },
     {
@@ -27379,7 +27379,7 @@
       "calleeFile": null,
       "callee": "usedIds.has",
       "type": "method",
-      "line": 1043,
+      "line": 1055,
       "column": 8
     },
     {
@@ -27388,7 +27388,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "disambiguateZoneId",
       "type": "direct",
-      "line": 1044,
+      "line": 1056,
       "column": 28
     },
     {
@@ -27397,7 +27397,7 @@
       "calleeFile": null,
       "callee": "usedIds.has",
       "type": "method",
-      "line": 1045,
+      "line": 1057,
       "column": 35
     },
     {
@@ -27406,7 +27406,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "deriveZoneIdFromFilenames",
       "type": "direct",
-      "line": 1049,
+      "line": 1061,
       "column": 27
     },
     {
@@ -27415,7 +27415,7 @@
       "calleeFile": null,
       "callee": "usedIds.has",
       "type": "method",
-      "line": 1050,
+      "line": 1062,
       "column": 27
     },
     {
@@ -27424,7 +27424,7 @@
       "calleeFile": null,
       "callee": "filenameBasedZoneIds.add",
       "type": "method",
-      "line": 1052,
+      "line": 1064,
       "column": 10
     },
     {
@@ -27433,7 +27433,7 @@
       "calleeFile": null,
       "callee": "zones.find",
       "type": "method",
-      "line": 1057,
+      "line": 1069,
       "column": 27
     },
     {
@@ -27442,7 +27442,7 @@
       "calleeFile": null,
       "callee": "existing.files.push",
       "type": "property-chain",
-      "line": 1059,
+      "line": 1071,
       "column": 12
     },
     {
@@ -27451,7 +27451,7 @@
       "calleeFile": null,
       "callee": "existing.files.sort",
       "type": "property-chain",
-      "line": 1060,
+      "line": 1072,
       "column": 12
     },
     {
@@ -27460,7 +27460,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "describeZone",
       "type": "direct",
-      "line": 1061,
+      "line": 1073,
       "column": 35
     },
     {
@@ -27469,7 +27469,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "computeEntryPoints",
       "type": "direct",
-      "line": 1063,
+      "line": 1075,
       "column": 35
     },
     {
@@ -27478,7 +27478,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "computeZoneMetrics",
       "type": "direct",
-      "line": 1064,
+      "line": 1076,
       "column": 28
     },
     {
@@ -27487,7 +27487,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "subdivideZone",
       "type": "direct",
-      "line": 1069,
+      "line": 1081,
       "column": 29
     },
     {
@@ -27496,7 +27496,7 @@
       "calleeFile": null,
       "callee": "usedIds.has",
       "type": "method",
-      "line": 1077,
+      "line": 1089,
       "column": 17
     },
     {
@@ -27505,7 +27505,7 @@
       "calleeFile": null,
       "callee": "usedIds.add",
       "type": "method",
-      "line": 1082,
+      "line": 1094,
       "column": 4
     },
     {
@@ -27514,7 +27514,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "computeEntryPoints",
       "type": "direct",
-      "line": 1090,
+      "line": 1102,
       "column": 24
     },
     {
@@ -27523,7 +27523,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "computeZoneMetrics",
       "type": "direct",
-      "line": 1091,
+      "line": 1103,
       "column": 35
     },
     {
@@ -27532,7 +27532,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "deriveZoneName",
       "type": "direct",
-      "line": 1095,
+      "line": 1107,
       "column": 12
     },
     {
@@ -27541,7 +27541,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "describeZone",
       "type": "direct",
-      "line": 1096,
+      "line": 1108,
       "column": 19
     },
     {
@@ -27550,7 +27550,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "subdivideZone",
       "type": "direct",
-      "line": 1104,
+      "line": 1116,
       "column": 21
     },
     {
@@ -27559,7 +27559,7 @@
       "calleeFile": null,
       "callee": "zones.push",
       "type": "method",
-      "line": 1109,
+      "line": 1121,
       "column": 4
     },
     {
@@ -27568,7 +27568,7 @@
       "calleeFile": null,
       "callee": "zonedFiles.add",
       "type": "method",
-      "line": 1125,
+      "line": 1137,
       "column": 32
     },
     {
@@ -27577,7 +27577,7 @@
       "calleeFile": null,
       "callee": "zonedFiles.has",
       "type": "method",
-      "line": 1130,
+      "line": 1142,
       "column": 7
     },
     {
@@ -27586,7 +27586,7 @@
       "calleeFile": "src/analyzers/workspace.ts",
       "callee": "isSubAnalyzedFile",
       "type": "direct",
-      "line": 1131,
+      "line": 1143,
       "column": 7
     },
     {
@@ -27595,7 +27595,7 @@
       "calleeFile": null,
       "callee": "unzoned.push",
       "type": "method",
-      "line": 1133,
+      "line": 1145,
       "column": 6
     },
     {
@@ -27604,7 +27604,7 @@
       "calleeFile": null,
       "callee": "fileHashes.set",
       "type": "method",
-      "line": 1148,
+      "line": 1160,
       "column": 4
     },
     {
@@ -27613,7 +27613,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "computeZoneContentHash",
       "type": "direct",
-      "line": 1152,
+      "line": 1164,
       "column": 33
     },
     {
@@ -27622,7 +27622,7 @@
       "calleeFile": "src/analyzers/zone-hash.ts",
       "callee": "computeGlobalContentHash",
       "type": "direct",
-      "line": 1154,
+      "line": 1166,
       "column": 28
     },
     {
@@ -27631,7 +27631,7 @@
       "calleeFile": null,
       "callee": "memberSet.has",
       "type": "method",
-      "line": 994,
+      "line": 1006,
       "column": 8
     },
     {
@@ -27640,7 +27640,7 @@
       "calleeFile": null,
       "callee": "memberSet.has",
       "type": "method",
-      "line": 994,
+      "line": 1006,
       "column": 35
     },
     {
@@ -27649,7 +27649,7 @@
       "calleeFile": null,
       "callee": "entryPoints.includes",
       "type": "method",
-      "line": 995,
+      "line": 1007,
       "column": 11
     },
     {
@@ -27658,7 +27658,7 @@
       "calleeFile": null,
       "callee": "entryPoints.push",
       "type": "method",
-      "line": 996,
+      "line": 1008,
       "column": 8
     },
     {
@@ -27820,7 +27820,7 @@
       "calleeFile": null,
       "callee": "testFiles.has",
       "type": "method",
-      "line": 969,
+      "line": 973,
       "column": 8
     },
     {
@@ -27829,8 +27829,17 @@
       "calleeFile": null,
       "callee": "graph.get",
       "type": "method",
-      "line": 970,
+      "line": 975,
       "column": 22
+    },
+    {
+      "callerFile": "src/analyzers/zones.ts",
+      "caller": "computeZoneMetrics",
+      "calleeFile": null,
+      "callee": "testFiles.has",
+      "type": "method",
+      "line": 978,
+      "column": 10
     },
     {
       "callerFile": "src/analyzers/zones.ts",
@@ -27838,7 +27847,7 @@
       "calleeFile": null,
       "callee": "memberSet.has",
       "type": "method",
-      "line": 974,
+      "line": 980,
       "column": 10
     },
     {
@@ -27847,7 +27856,7 @@
       "calleeFile": null,
       "callee": "Math.round",
       "type": "method",
-      "line": 979,
+      "line": 991,
       "column": 8
     },
     {
@@ -27856,7 +27865,7 @@
       "calleeFile": null,
       "callee": "Math.round",
       "type": "method",
-      "line": 981,
+      "line": 993,
       "column": 8
     },
     {
@@ -29062,7 +29071,7 @@
       "calleeFile": "src/analyzers/zone-hash.ts",
       "callee": "computeGlobalContentHash",
       "type": "direct",
-      "line": 1475,
+      "line": 1487,
       "column": 25
     },
     {
@@ -29215,7 +29224,7 @@
       "calleeFile": null,
       "callee": "validPrevious.insights.slice",
       "type": "property-chain",
-      "line": 1409,
+      "line": 1421,
       "column": 19
     },
     {
@@ -29323,7 +29332,7 @@
       "calleeFile": null,
       "callee": "structural.zoneInsights.get",
       "type": "property-chain",
-      "line": 1353,
+      "line": 1365,
       "column": 30
     },
     {
@@ -29332,7 +29341,7 @@
       "calleeFile": null,
       "callee": "aiZoneInsights.get",
       "type": "method",
-      "line": 1354,
+      "line": 1366,
       "column": 25
     },
     {
@@ -29341,7 +29350,7 @@
       "calleeFile": null,
       "callee": "validPrevious.zones.find",
       "type": "property-chain",
-      "line": 1358,
+      "line": 1370,
       "column": 23
     },
     {
@@ -29350,7 +29359,7 @@
       "calleeFile": null,
       "callee": "p.files.some",
       "type": "property-chain",
-      "line": 1361,
+      "line": 1373,
       "column": 33
     },
     {
@@ -29359,7 +29368,7 @@
       "calleeFile": null,
       "callee": "zone.files.includes",
       "type": "property-chain",
-      "line": 1361,
+      "line": 1373,
       "column": 53
     },
     {
@@ -29368,7 +29377,7 @@
       "calleeFile": null,
       "callee": "prevZone.insights.slice",
       "type": "property-chain",
-      "line": 1376,
+      "line": 1388,
       "column": 17
     },
     {
@@ -29377,7 +29386,7 @@
       "calleeFile": null,
       "callee": "Math.min",
       "type": "method",
-      "line": 1176,
+      "line": 1188,
       "column": 16
     },
     {
@@ -29386,7 +29395,7 @@
       "calleeFile": null,
       "callee": "idMap.set",
       "type": "method",
-      "line": 1183,
+      "line": 1195,
       "column": 4
     },
     {
@@ -29395,7 +29404,7 @@
       "calleeFile": null,
       "callee": "Object.entries",
       "type": "method",
-      "line": 1189,
+      "line": 1201,
       "column": 28
     },
     {
@@ -29404,7 +29413,7 @@
       "calleeFile": null,
       "callee": "idMap.get",
       "type": "method",
-      "line": 1190,
+      "line": 1202,
       "column": 19
     },
     {
@@ -29413,7 +29422,7 @@
       "calleeFile": "src/analyzers/louvain.ts",
       "callee": "buildUndirectedGraph",
       "type": "direct",
-      "line": 1571,
+      "line": 1583,
       "column": 16
     },
     {
@@ -29422,7 +29431,7 @@
       "calleeFile": null,
       "callee": "graph.keys",
       "type": "method",
-      "line": 1578,
+      "line": 1590,
       "column": 35
     },
     {
@@ -29431,7 +29440,7 @@
       "calleeFile": null,
       "callee": "scopeFiles.filter",
       "type": "method",
-      "line": 1579,
+      "line": 1591,
       "column": 25
     },
     {
@@ -29440,7 +29449,7 @@
       "calleeFile": null,
       "callee": "importGraphNodes.has",
       "type": "method",
-      "line": 1579,
+      "line": 1591,
       "column": 49
     },
     {
@@ -29449,7 +29458,7 @@
       "calleeFile": null,
       "callee": "f.lastIndexOf",
       "type": "method",
-      "line": 1583,
+      "line": 1595,
       "column": 22
     },
     {
@@ -29458,7 +29467,7 @@
       "calleeFile": null,
       "callee": "f.slice",
       "type": "method",
-      "line": 1584,
+      "line": 1596,
       "column": 41
     },
     {
@@ -29467,7 +29476,7 @@
       "calleeFile": null,
       "callee": "nonImportDirCounts.set",
       "type": "method",
-      "line": 1585,
+      "line": 1597,
       "column": 4
     },
     {
@@ -29476,7 +29485,7 @@
       "calleeFile": null,
       "callee": "nonImportDirCounts.get",
       "type": "method",
-      "line": 1585,
+      "line": 1597,
       "column": 33
     },
     {
@@ -29485,7 +29494,7 @@
       "calleeFile": null,
       "callee": "nonImportFiles.filter",
       "type": "method",
-      "line": 1587,
+      "line": 1599,
       "column": 36
     },
     {
@@ -29494,7 +29503,7 @@
       "calleeFile": null,
       "callee": "f.lastIndexOf",
       "type": "method",
-      "line": 1588,
+      "line": 1600,
       "column": 22
     },
     {
@@ -29503,7 +29512,7 @@
       "calleeFile": null,
       "callee": "f.slice",
       "type": "method",
-      "line": 1589,
+      "line": 1601,
       "column": 41
     },
     {
@@ -29512,7 +29521,7 @@
       "calleeFile": null,
       "callee": "nonImportDirCounts.get",
       "type": "method",
-      "line": 1590,
+      "line": 1602,
       "column": 12
     },
     {
@@ -29521,7 +29530,7 @@
       "calleeFile": "src/analyzers/louvain.ts",
       "callee": "addDirectoryProximityEdges",
       "type": "direct",
-      "line": 1592,
+      "line": 1604,
       "column": 2
     },
     {
@@ -29530,7 +29539,7 @@
       "calleeFile": null,
       "callee": "Math.max",
       "type": "method",
-      "line": 1600,
+      "line": 1612,
       "column": 24
     },
     {
@@ -29539,7 +29548,7 @@
       "calleeFile": null,
       "callee": "Math.floor",
       "type": "method",
-      "line": 1600,
+      "line": 1612,
       "column": 36
     },
     {
@@ -29548,7 +29557,7 @@
       "calleeFile": null,
       "callee": "Math.max",
       "type": "method",
-      "line": 1601,
+      "line": 1613,
       "column": 17
     },
     {
@@ -29557,7 +29566,7 @@
       "calleeFile": null,
       "callee": "Math.min",
       "type": "method",
-      "line": 1601,
+      "line": 1613,
       "column": 29
     },
     {
@@ -29566,7 +29575,7 @@
       "calleeFile": null,
       "callee": "Math.max",
       "type": "method",
-      "line": 1602,
+      "line": 1614,
       "column": 22
     },
     {
@@ -29575,7 +29584,7 @@
       "calleeFile": null,
       "callee": "Math.ceil",
       "type": "method",
-      "line": 1602,
+      "line": 1614,
       "column": 34
     },
     {
@@ -29584,7 +29593,7 @@
       "calleeFile": null,
       "callee": "Math.ceil",
       "type": "method",
-      "line": 1603,
+      "line": 1615,
       "column": 42
     },
     {
@@ -29593,7 +29602,7 @@
       "calleeFile": null,
       "callee": "Math.min",
       "type": "method",
-      "line": 1604,
+      "line": 1616,
       "column": 25
     },
     {
@@ -29602,7 +29611,7 @@
       "calleeFile": null,
       "callee": "Math.max",
       "type": "method",
-      "line": 1604,
+      "line": 1616,
       "column": 44
     },
     {
@@ -29611,7 +29620,7 @@
       "calleeFile": "src/analyzers/louvain.ts",
       "callee": "louvainPhase1",
       "type": "direct",
-      "line": 1607,
+      "line": 1619,
       "column": 18
     },
     {
@@ -29620,7 +29629,7 @@
       "calleeFile": "src/analyzers/louvain.ts",
       "callee": "mergeBidirectionalCoupling",
       "type": "direct",
-      "line": 1608,
+      "line": 1620,
       "column": 14
     },
     {
@@ -29629,7 +29638,7 @@
       "calleeFile": "src/analyzers/louvain.ts",
       "callee": "mergeSmallCommunities",
       "type": "direct",
-      "line": 1609,
+      "line": 1621,
       "column": 14
     },
     {
@@ -29638,7 +29647,7 @@
       "calleeFile": "src/analyzers/louvain.ts",
       "callee": "mergeSatelliteCommunities",
       "type": "direct",
-      "line": 1610,
+      "line": 1622,
       "column": 14
     },
     {
@@ -29647,7 +29656,7 @@
       "calleeFile": "src/analyzers/louvain.ts",
       "callee": "capZoneCount",
       "type": "direct",
-      "line": 1611,
+      "line": 1623,
       "column": 14
     },
     {
@@ -29656,7 +29665,7 @@
       "calleeFile": "src/analyzers/louvain.ts",
       "callee": "splitLargeCommunities",
       "type": "direct",
-      "line": 1614,
+      "line": 1626,
       "column": 14
     },
     {
@@ -29665,7 +29674,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "mergeSameIdCommunities",
       "type": "direct",
-      "line": 1616,
+      "line": 1628,
       "column": 2
     },
     {
@@ -29674,7 +29683,7 @@
       "calleeFile": "src/analyzers/louvain.ts",
       "callee": "capZoneCount",
       "type": "direct",
-      "line": 1617,
+      "line": 1629,
       "column": 14
     },
     {
@@ -29683,7 +29692,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "buildZonesFromCommunities",
       "type": "direct",
-      "line": 1620,
+      "line": 1632,
       "column": 42
     },
     {
@@ -29692,7 +29701,7 @@
       "calleeFile": null,
       "callee": "zonedFiles.add",
       "type": "method",
-      "line": 1628,
+      "line": 1640,
       "column": 32
     },
     {
@@ -29701,7 +29710,7 @@
       "calleeFile": null,
       "callee": "scopeFiles.filter",
       "type": "method",
-      "line": 1630,
+      "line": 1642,
       "column": 25
     },
     {
@@ -29710,7 +29719,7 @@
       "calleeFile": null,
       "callee": "zonedFiles.has",
       "type": "method",
-      "line": 1630,
+      "line": 1642,
       "column": 49
     },
     {
@@ -29719,7 +29728,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "assignByProximity",
       "type": "direct",
-      "line": 1631,
+      "line": 1643,
       "column": 55
     },
     {
@@ -29728,7 +29737,7 @@
       "calleeFile": "src/analyzers/zones.ts",
       "callee": "buildCrossings",
       "type": "direct",
-      "line": 1636,
+      "line": 1648,
       "column": 20
     },
     {
@@ -157966,7 +157975,7 @@
   ],
   "summary": {
     "totalFunctions": 556,
-    "totalCalls": 17057,
+    "totalCalls": 17058,
     "filesWithCalls": 116,
     "mostCalled": [
       {

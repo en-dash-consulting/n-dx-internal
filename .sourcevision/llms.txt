@@ -6,11 +6,11 @@
 ## Project Overview
 
 - **Files**: 1035
-- **Lines of code**: 347,213
+- **Lines of code**: 347,467
 - **Languages**: TypeScript (875), CSS (44), Markdown (32), JavaScript (31), JSON (30)
 - **Zones**: 35 (35 with descriptions)
 - **Git**: feature/integrate-codex @ 21786d2
-- **Analyzed**: 2026-03-06T18:50:14.926Z
+- **Analyzed**: 2026-03-06T22:09:41.995Z
 
 ## Architecture Zones
 
@@ -59,7 +59,7 @@ Root-level entry points and configuration that coordinate the three-package pipe
 13 files, primarily TypeScript
 
 - Files: 13
-- Cohesion: 0.60, Coupling: 0.40
+- Cohesion: 0.77, Coupling: 0.23
 - Entry points: packages/llm-client/src/api-provider.ts, packages/llm-client/src/cli-provider.ts, packages/llm-client/src/codex-cli-provider.ts, packages/llm-client/src/create-client.ts, packages/llm-client/src/llm-client.ts (+7 more)
 - Detail: `.sourcevision/zones/packages-llm-client-src/context.md`
 
@@ -68,7 +68,7 @@ Root-level entry points and configuration that coordinate the three-package pipe
 19 files, primarily TypeScript
 
 - Files: 19
-- Cohesion: 0.65, Coupling: 0.35
+- Cohesion: 0.56, Coupling: 0.44
 - Entry points: packages/llm-client/src/config.ts
 - Detail: `.sourcevision/zones/packages-llm-client-src-2/context.md`
 
@@ -80,93 +80,93 @@ Root-level entry points and configuration that coordinate the three-package pipe
 - Cohesion: 1.00, Coupling: 0.00
 - Detail: `.sourcevision/zones/packages-llm-client-unit/context.md`
 
-### CLI & MCP Interface (`packages-rex:cli-mcp-interface`)
+### .rex (`packages-rex:.rex`)
 
-User-facing CLI infrastructure: command routing, chunked review workflow, MCP server integration, output formatting, token usage tracking, and error handling.
+4 files, primarily JSON, Other, Markdown
+
+- Files: 4
+- Cohesion: 1.00, Coupling: 0.00
+- Detail: `.sourcevision/zones/packages-rex-.rex/context.md`
+
+### Cli (`packages-rex:cli`)
+
+40 files, primarily TypeScript
 
 - Files: 40
 - Cohesion: 0.47, Coupling: 0.53
 - Entry points: packages/rex/src/analyze/reshape-reason.ts, packages/rex/src/cli/commands/chunked-review.ts, packages/rex/src/cli/commands/constants.ts, packages/rex/src/cli/commands/init.ts, packages/rex/src/cli/commands/token-format.ts (+8 more)
-- Detail: `.sourcevision/zones/packages-rex-cli-mcp-interface/context.md`
+- Detail: `.sourcevision/zones/packages-rex-cli/context.md`
 
-### Fix Command Pipeline (`packages-rex:fix-command`)
+### Core (`packages-rex:core`)
 
-The fix CLI command and its underlying core repair logic, co-located with their unit tests.
-
-- Files: 4
-- Cohesion: 0.25, Coupling: 0.75
-- Entry points: packages/rex/src/cli/commands/fix.ts
-- Detail: `.sourcevision/zones/packages-rex-fix-command/context.md`
-
-### PRD Analysis Core (`packages-rex:prd-analysis-core`)
-
-The central domain hub: PRD schema definitions, the full analysis pipeline (decompose, dedupe, diff, validate), core structural transitions, and the primary CLI commands for analyzing, adding, and managing PRD items.
-
-- Files: 69
-- Cohesion: 0.50, Coupling: 0.50
-- Entry points: packages/rex/src/analyze/analyze-shared.ts, packages/rex/src/analyze/consolidation-guard.ts, packages/rex/src/analyze/decompose.ts, packages/rex/src/analyze/dedupe.ts, packages/rex/src/analyze/file-validation.ts (+20 more)
-- Detail: `.sourcevision/zones/packages-rex-prd-analysis-core/context.md`
-
-### PRD Storage & Sync Adapters (`packages-rex:prd-storage-adapters`)
-
-Persistence layer providing pluggable storage adapters, sync contracts, integration schemas for Jira and Notion, and the sync CLI command.
-
-- Files: 23
-- Cohesion: 0.50, Coupling: 0.50
-- Entry points: packages/rex/src/cli/commands/sync.ts, packages/rex/src/core/canonical.ts, packages/rex/src/store/adapter-registry.ts, packages/rex/src/store/contracts.ts, packages/rex/src/store/index.ts (+4 more)
-- Detail: `.sourcevision/zones/packages-rex-prd-storage-adapters/context.md`
-
-### PRD Tree Lifecycle (`packages-rex:prd-tree-lifecycle`)
-
-Core domain operations for mutating, traversing, and maintaining the PRD tree: moves, removals, merges, parent completion, health checks, reorganization, and sync engine.
+48 files, primarily TypeScript
 
 - Files: 48
 - Cohesion: 0.46, Coupling: 0.54
 - Entry points: packages/rex/src/cli/commands/health.ts, packages/rex/src/cli/commands/reorganize.ts, packages/rex/src/core/dag.ts, packages/rex/src/core/delete.ts, packages/rex/src/core/facets.ts (+19 more)
-- Detail: `.sourcevision/zones/packages-rex-prd-tree-lifecycle/context.md`
+- Detail: `.sourcevision/zones/packages-rex-core/context.md`
 
-### Project Root Configuration (`packages-rex:project-root-config`)
+### E2e (`packages-rex:e2e`)
 
-Top-level project scaffolding including documentation, AI-readable context files, and build/test configuration shared across the monorepo.
-
-- Files: 9
-- Cohesion: 1.00, Coupling: 0.00
-- Detail: `.sourcevision/zones/packages-rex-project-root-config/context.md`
-
-### Recommendation Scanning (`packages-rex:recommendation-scanning`)
-
-Implements the recommendation pipeline: scanning projects for PRD candidates, extracting and reconciling proposals, detecting conflicts, and creating items from accepted recommendations.
-
-- Files: 19
-- Cohesion: 0.33, Coupling: 0.67
-- Entry points: packages/rex/src/analyze/acknowledge.ts, packages/rex/src/analyze/extract.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/scanners.ts, packages/rex/src/cli/commands/recommend.ts (+1 more)
-- Detail: `.sourcevision/zones/packages-rex-recommendation-scanning/context.md`
-
-### Rex Project State (`packages-rex:rex-project-state`)
-
-Runtime data directory holding the live PRD, execution log, workflow state, and project configuration for a rex-managed project.
-
-- Files: 4
-- Cohesion: 1.00, Coupling: 0.00
-- Detail: `.sourcevision/zones/packages-rex-rex-project-state/context.md`
-
-### Schema Validation (`packages-rex:schema-validation`)
-
-PRD schema validation logic and the end-to-end CLI tests that exercise the full command surface against real file system operations.
+16 files, primarily TypeScript, JSON, Other
 
 - Files: 16
 - Cohesion: 1.00, Coupling: 0.00
 - Entry points: packages/rex/src/schema/validate.ts
-- Detail: `.sourcevision/zones/packages-rex-schema-validation/context.md`
+- Detail: `.sourcevision/zones/packages-rex-e2e/context.md`
 
-### Task Selection & Scoring (`packages-rex:task-selection`)
+### Root (`packages-rex:root`)
 
-The next-task selection algorithm including scoring, feature filtering, requirements prioritization, and the CLI command that exposes it.
+9 files, primarily JSON, Markdown, Other
+
+- Files: 9
+- Cohesion: 1.00, Coupling: 0.00
+- Detail: `.sourcevision/zones/packages-rex-root/context.md`
+
+### Store (`packages-rex:store`)
+
+23 files, primarily TypeScript
+
+- Files: 23
+- Cohesion: 0.50, Coupling: 0.50
+- Entry points: packages/rex/src/cli/commands/sync.ts, packages/rex/src/core/canonical.ts, packages/rex/src/store/adapter-registry.ts, packages/rex/src/store/contracts.ts, packages/rex/src/store/index.ts (+4 more)
+- Detail: `.sourcevision/zones/packages-rex-store/context.md`
+
+### Unit (`packages-rex:unit`)
+
+19 files, primarily TypeScript
+
+- Files: 19
+- Cohesion: 0.33, Coupling: 0.67
+- Entry points: packages/rex/src/analyze/acknowledge.ts, packages/rex/src/analyze/extract.ts, packages/rex/src/analyze/reconcile.ts, packages/rex/src/analyze/scanners.ts, packages/rex/src/cli/commands/recommend.ts (+1 more)
+- Detail: `.sourcevision/zones/packages-rex-unit/context.md`
+
+### Unit Analyze (`packages-rex:unit-analyze`)
+
+69 files, primarily TypeScript
+
+- Files: 69
+- Cohesion: 0.50, Coupling: 0.50
+- Entry points: packages/rex/src/analyze/analyze-shared.ts, packages/rex/src/analyze/consolidation-guard.ts, packages/rex/src/analyze/decompose.ts, packages/rex/src/analyze/dedupe.ts, packages/rex/src/analyze/file-validation.ts (+20 more)
+- Detail: `.sourcevision/zones/packages-rex-unit-analyze/context.md`
+
+### Unit Cli (`packages-rex:unit-cli`)
+
+4 files, primarily TypeScript
+
+- Files: 4
+- Cohesion: 0.25, Coupling: 0.75
+- Entry points: packages/rex/src/cli/commands/fix.ts
+- Detail: `.sourcevision/zones/packages-rex-unit-cli/context.md`
+
+### Unit Core (`packages-rex:unit-core`)
+
+7 files, primarily TypeScript
 
 - Files: 7
 - Cohesion: 0.17, Coupling: 0.83
 - Entry points: packages/rex/src/cli/commands/next.ts, packages/rex/src/core/next-task.ts
-- Detail: `.sourcevision/zones/packages-rex-task-selection/context.md`
+- Detail: `.sourcevision/zones/packages-rex-unit-core/context.md`
 
 ### .claude (`packages-sourcevision:.claude`)
 
@@ -190,7 +190,7 @@ The next-task selection algorithm including scoring, feature filtering, requirem
 11 files, primarily TypeScript
 
 - Files: 11
-- Cohesion: 0.54, Coupling: 0.46
+- Cohesion: 0.48, Coupling: 0.52
 - Entry points: packages/sourcevision/src/analyzers/callgraph.ts, packages/sourcevision/src/analyzers/components.ts, packages/sourcevision/src/analyzers/imports.ts, packages/sourcevision/src/analyzers/inventory.ts, packages/sourcevision/src/util/paths.ts
 - Detail: `.sourcevision/zones/packages-sourcevision-analyzers-2/context.md`
 
@@ -199,7 +199,7 @@ The next-task selection algorithm including scoring, feature filtering, requirem
 6 files, primarily TypeScript
 
 - Files: 6
-- Cohesion: 0.43, Coupling: 0.57
+- Cohesion: 0.31, Coupling: 0.69
 - Entry points: packages/sourcevision/src/analyzers/zone-hash.ts, packages/sourcevision/src/analyzers/zones.ts
 - Detail: `.sourcevision/zones/packages-sourcevision-analyzers-3/context.md`
 
@@ -208,7 +208,7 @@ The next-task selection algorithm including scoring, feature filtering, requirem
 26 files, primarily TypeScript
 
 - Files: 26
-- Cohesion: 0.71, Coupling: 0.29
+- Cohesion: 0.67, Coupling: 0.33
 - Entry points: packages/sourcevision/src/analyzers/manifest.ts, packages/sourcevision/src/cli/commands/init.ts, packages/sourcevision/src/cli/commands/pr-markdown.ts, packages/sourcevision/src/cli/errors.ts, packages/sourcevision/src/cli/output.ts (+1 more)
 - Detail: `.sourcevision/zones/packages-sourcevision-cli/context.md`
 
@@ -217,7 +217,7 @@ The next-task selection algorithm including scoring, feature filtering, requirem
 4 files, primarily TypeScript
 
 - Files: 5
-- Cohesion: 0.43, Coupling: 0.57
+- Cohesion: 1.00, Coupling: 0.00
 - Entry points: packages/sourcevision/src/schema/validate.ts
 - Detail: `.sourcevision/zones/packages-sourcevision-e2e/context.md`
 
@@ -242,7 +242,7 @@ The next-task selection algorithm including scoring, feature filtering, requirem
 28 files, primarily TypeScript
 
 - Files: 28
-- Cohesion: 0.57, Coupling: 0.43
+- Cohesion: 0.43, Coupling: 0.57
 - Entry points: packages/sourcevision/src/analyzers/branch-work-classifier.ts, packages/sourcevision/src/analyzers/risk-scoring.ts, packages/sourcevision/src/cli/commands/workspace.ts, packages/sourcevision/src/cli/mcp.ts, packages/sourcevision/src/generators/pr-markdown-template.ts (+3 more)
 - Detail: `.sourcevision/zones/packages-sourcevision-unit/context.md`
 
@@ -528,11 +528,33 @@ POST    /api/hench/workflow/suggestions/:id
 
 ### Anti-patterns
 
-- God function: cmdAnalyze in packages/rex/src/cli/commands/analyze.ts calls 44 unique functions — consider decomposing into smaller, focused functions [warning]
-- God function: runConfig in config.js calls 36 unique functions — consider decomposing into smaller, focused functions [warning]
+- rex-gateway.ts in hench re-exports 8 functions from rex with no version-lock or compatibility smoke test; breaking changes to rex's public API will only surface at runtime inside an agent loop, making them expensive to diagnose — add a gateway compatibility test [warning] (autonomous-agent)
+- Call graph reports coupling=0 while cross-zone import table records 1 outgoing import to web-viewer — metric disagreement between analysis passes produces unreliable zone health scores and must be resolved before coupling data can be trusted for this zone. [warning] (dom-performance-monitoring)
+- Zone contains only 2 production files; the overhead of maintaining a separate zone boundary (including the disputed cross-zone import) outweighs the structural benefit — merge into web-viewer unless additional files are actively planned. [info] (dom-performance-monitoring)
+- MCP HTTP transport (the recommended integration path) has no E2E test coverage; the suite tests CLI process boundaries but not the HTTP session lifecycle, leaving the primary MCP surface unvalidated at the process boundary level. [warning] (e2e-tests)
+- No shared E2E fixture or helper module detected across 14 test files; duplicated process-spawn and environment setup logic increases maintenance burden and risks inconsistent test environments between files — extract common setup into a shared e2e-helpers module. [warning] (e2e-tests)
+- architecture-policy.test.js encodes zone IDs and tier boundaries statically; zone renames or structural changes will not automatically invalidate the policy assertions, creating a category of silent false-passes — tie policy checks to the live zone graph output rather than hardcoded identifiers. [warning] (e2e-tests)
+- CLI argument interfaces between orchestration scripts and domain package CLIs are untyped; any CLI signature change in rex, hench, or sourcevision is a silent breaking change with no compile-time or schema-level safety net — add contract tests or a shared CLI-args schema to make this boundary explicit [warning] (monorepo-orchestration)
+- usage-cleanup-scheduler.ts depends on web-viewer (the UI application layer) from within a background service zone — scheduler lifecycle should be driven by an interface or event emitter, not a direct import of the viewer module, to prevent initialization-order coupling in tests and production startup [critical] (task-usage-tracking)
+- No shared design-token layer exists between viewer-static-assets and web-landing despite both being presentation zones in the same package; brand drift between landing page and viewer is undetectable at build time [warning] (viewer-static-assets)
+- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md are debugging artifacts committed to the web package root with no clear retention policy — they pollute the package root and should be moved to docs/ or removed [info] (web-build-infrastructure)
+- ... and 5 more
+
+### Patterns
+
+- E2E suite has zero source-level coupling but a hidden build-time dependency on all packages; CI must enforce a build step before e2e execution. This should be documented or enforced via a pre-test script to prevent silent false-negatives when a package fails to compile. [warning] (e2e-tests)
+- The runtime-state zone is a shared mutable sink readable by both rex and hench packages without creating import-graph coupling — this is an intentional design but concurrent write safety is implicit; documenting the write-access protocol would prevent future race conditions. [warning] (rex-runtime-state)
+- Absence of an index/facade module means task-usage-tracking has no encapsulated public surface; consumers couple directly to internal service files, weakening the zone boundary. [warning] (task-usage-tracking)
+- Build scripts (build.js, dev.js) in this zone operate at the package boundary but are grouped with UI components (elapsed-time.ts, task-audit.ts) — splitting into a pure build-config group and a reusable-components group would clarify which files are tooling versus production API surface. [warning] (web-build-infrastructure)
+- Call graph ratio (6495 internal : 23 outgoing) confirms web-dashboard is a near-terminal hub — outgoing calls are exclusively routed through gateway files, validating the gateway pattern at the call level. [info] (web-dashboard)
 
 ### Relationships
 
+- Hench is the only execution-layer package importing from a domain package (rex via gateway); if rex's public API changes, hench's gateway is the single choke-point — this is good design, but the gateway has no explicit version-lock or compatibility test to catch breaking changes early. [warning] (autonomous-agent)
+- Cross-zone import direction 'dom → web-viewer' conflicts with documented leaf-node status; verify whether dom-performance-monitoring imports anything from web-viewer or whether the arrow direction in the import table denotes 'exports to'. If dom does import from web-viewer, this is a circular dependency that must be resolved. [critical] (dom-performance-monitoring)
+- Orchestration layer's zero-coupling guarantee is enforced structurally but not contractually — CLI argument interfaces between cli.js and domain package CLIs are untyped; adding schema validation or contract tests would make the spawn boundary explicit. [warning] (monorepo-orchestration)
+- viewer-static-assets has zero import-graph coupling but carries hidden deployment coupling to web-dashboard via build manifest filenames; this contract is not enforced by TypeScript and breaks silently if build output names change. [warning] (viewer-static-assets)
+- boundary-check.test.ts appears to test zone-boundary contracts rather than websocket internals; relocating it to an integration test zone would remove the external coupling that degrades this zone's cohesion score. [warning] (websocket-infrastructure)
 - Tightly coupled modules: packages/web/src/server/routes-rex.ts and packages/web/src/server/types.ts — 142 cross-file calls (unidirectional). Consider extracting shared interface or merging [info]
 
 ### Observations
@@ -547,21 +569,21 @@ POST    /api/hench/workflow/suggestions/:id
 - architecture-policy.test.js should be reviewed periodically to ensure it encodes current tier boundaries; policy tests that are not updated alongside architectural changes become stale and misleading. [info] (e2e-tests)
 - Bidirectional coupling: "task-usage-tracking" ↔ "web-dashboard" (1+3 crossings) — consider extracting shared interface [warning]
 - Bidirectional coupling: "web-build-infrastructure" ↔ "web-dashboard" (4+2 crossings) — consider extracting shared interface [warning]
-- ... and 49 more
+- ... and 34 more
 
 ### Suggestions
 
 - Zone "autonomous-agent" has files across 31 directories — consider consolidating under a dedicated directory [info] (autonomous-agent)
+- Align the zone ID with the package name: rename 'autonomous-agent' to 'hench' (or 'hench-core') so that sourcevision zone health reports are directly mappable to package ownership, CLI commands (rex, hench, sourcevision), and directory paths without a mental translation step. [info] (autonomous-agent)
+- Run intra-package call-graph analysis on hench to detect any emerging circular call patterns between its internal subdirectories (agent/, prd/, tools/) before they compound — the rex circular call pattern (239+100 calls) was only found via call-graph analysis, not zone metrics, and hench's 2838 internal calls make it the most likely next site for a hidden cycle. [warning] (autonomous-agent)
 - packages/web/tests/unit/viewer/ contains files from 4 zones (autonomous-agent, dom-performance-monitoring, web-build-infrastructure, web-dashboard) — consider grouping into subdirectories to clarify architectural boundaries [info]
-- Hub function: walkTree in packages/rex/src/core/tree.ts is called from 29 files (high fan-in expected for this module type) — changes here have wide impact, consider if responsibilities can be narrowed [info]
-- 3 potentially unused exports in packages/web/src/viewer/polling/polling-restart.ts have no incoming calls: isPollingRestartStarted, isCoordinatorSuspended, resetPollingRestart [info]
-- 2 potentially unused exports in packages/web/src/viewer/loader.ts have no incoming calls: loadModule, loadFromServer [info]
-- Potentially unused export: simpleGlobMatch in packages/hench/src/shared/glob.ts has no incoming calls — verify if still needed [info]
-- Potentially unused export: detectBranchLifecycle in packages/sourcevision/src/analyzers/branch-work-filter.ts has no incoming calls — verify if still needed [info]
-- Potentially unused export: resolveWorkedEpicTitlesForRange in packages/sourcevision/src/cli/commands/prd-epic-resolver.ts has no incoming calls — verify if still needed [info]
-- Potentially unused export: getAggregationCacheInstance in packages/web/src/server/routes-token-usage.ts has no incoming calls — verify if still needed [info]
-- Potentially unused export: useNodeListeners in packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts has no incoming calls — verify if still needed [info]
-- ... and 7 more
+- Add a dependency-cruiser or similar import-boundary rule to CI that enforces the gateway pattern: any cross-package import that does not pass through the designated gateway module should fail the build. This converts a trust-based convention into a machine-enforced constraint. [warning]
+- Add a zone-type tag ('test' | 'production' | 'config' | 'data') to zone metadata and apply type-appropriate cohesion/coupling thresholds in health scoring — applying production-code thresholds to test zones (web-unit, e2e) and data zones (rex-runtime-state) produces category errors that make zone comparison reports misleading. [info]
+- All micro-zones (< 5 production files) in the web package lack facade index modules, meaning their zone boundaries exist only in the zone detection metadata and are invisible to the TypeScript compiler — mandate an 'index.ts' barrel for every zone with 2+ production files to make zone membership compiler-visible and reduce the risk of zone boundaries eroding silently. [warning]
+- Audit all zone IDs against their contained filenames for grammatical form consistency (noun vs gerund vs adjective) — dom-performance-monitoring/dom-performance-monitor is the only detected mismatch but the same inconsistency could exist in other zones if zone IDs were assigned without reference to the actual filenames. [info]
+- Establish a documented testing convention for the utility+hook pattern: every hook wrapper (use-*.ts) should have a corresponding hook test file alongside the utility test — currently dom-performance-monitoring applies the production pattern but not the test pattern, and without a written convention future hooks will follow the same incomplete template. [warning]
+- Establish a zone naming convention and document it in PACKAGE_GUIDELINES.md: either all zones use their package directory name as a prefix (hench-core, rex-core, sourcevision-core) or all use pure role descriptors — the current mix of package-name zones and role-descriptor zones makes it impossible to infer zone ownership from the zone ID alone. [info]
+- ... and 36 more
 
 ## Next Steps
 
@@ -569,17 +591,26 @@ Prioritized work items derived from analysis:
 
 ### High Priority
 
-1. **4 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): …**
+1. **5 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): …**
 
 1. **Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files —…**
 
-1. **Zone "Task Selection & Scoring" (packages-rex:task-selection) has catastrophic …**
+1. **Zone "Unit Core" (packages-rex:unit-core) has catastrophic risk (score: 0.83, c…**
    Files: `packages/rex/src/cli/commands/next.ts`, `packages/rex/src/core/next-task.ts`, `packages/rex/tests/unit/core/feature-filtered-task.test.ts`
 
-1. **Zone "Fix Command Pipeline" (packages-rex:fix-command) has catastrophic risk (s…**
+1. **Zone "WebSocket Infrastructure" (websocket-infrastructure) has catastrophic ris…**
+   Files: `packages/web/src/server/websocket.ts`, `packages/web/src/server/ws-health-tracker.ts`, `packages/web/tests/unit/server/boundary-check.test.ts`
+
+1. **Zone "Unit Cli" (packages-rex:unit-cli) has catastrophic risk (score: 0.75, coh…**
    Files: `packages/rex/src/cli/commands/fix.ts`, `packages/rex/src/core/fix.ts`, `packages/rex/tests/unit/cli/commands/fix.test.ts`
 
-1. **Zone "WebSocket Infrastructure" (websocket-infrastructure) has catastrophic ris…**
+1. **2 production files (websocket.ts, ws-health-tracker.ts) do not justify an indep…**
+   Files: `packages/web/src/server/websocket.ts`, `packages/web/src/server/ws-health-tracker.ts`, `packages/web/tests/unit/server/boundary-check.test.ts`
+
+1. **boundary-check.test.ts appears to test zone-boundary contracts rather than webs…**
+   Files: `packages/web/src/server/websocket.ts`, `packages/web/src/server/ws-health-tracker.ts`, `packages/web/tests/unit/server/boundary-check.test.ts`
+
+1. **websocket-infrastructure breaches both cohesion (<0.5) and coupling (>0.5) thre…**
    Files: `packages/web/src/server/websocket.ts`, `packages/web/src/server/ws-health-tracker.ts`, `packages/web/tests/unit/server/boundary-check.test.ts`
 
 1. **Low cohesion (0.25) — files are loosely related, consider splitting this zone**
@@ -588,35 +619,43 @@ Prioritized work items derived from analysis:
 1. **Cohesion of 0.25 and coupling of 0.75 indicate significant structural fragmenta…**
    Files: `packages/web/src/server/websocket.ts`, `packages/web/src/server/ws-health-tracker.ts`, `packages/web/tests/unit/server/boundary-check.test.ts`
 
-1. **Only 2 of 6 files are production source; the test-to-source ratio inflates coup…**
-   Files: `packages/web/src/server/websocket.ts`, `packages/web/src/server/ws-health-tracker.ts`, `packages/web/tests/unit/server/boundary-check.test.ts`
-
-1. **Zone "Recommendation Scanning" (packages-rex:recommendation-scanning) has criti…**
-   Files: `packages/rex/src/analyze/acknowledge.ts`, `packages/rex/src/analyze/extract.ts`, `packages/rex/src/analyze/reconcile.ts`
-
 ### Medium Priority
 
 1. **God function: cmdAnalyze in packages/rex/src/cli/commands/a… (+1 related)**
 
+1. **Absence of an index/facade module means task-usage-tracking has no encapsulated…**
+   Files: `packages/web/src/server/incremental-task-usage.ts`, `packages/web/src/server/usage-cleanup-scheduler.ts`, `packages/web/tests/unit/server/incremental-task-usage.test.ts`
+
+1. **Neither source file in this zone exports through a shared index — introduce a t…**
+   Files: `packages/web/src/server/incremental-task-usage.ts`, `packages/web/src/server/usage-cleanup-scheduler.ts`, `packages/web/tests/unit/server/incremental-task-usage.test.ts`
+
 1. **The cleanup scheduler imports back into web-viewer (per cross-zone import graph…**
    Files: `packages/web/src/server/incremental-task-usage.ts`, `packages/web/src/server/usage-cleanup-scheduler.ts`, `packages/web/tests/unit/server/incremental-task-usage.test.ts`
+
+1. **Call graph reports coupling=0 while cross-zone import table records 1 outgoing …**
+   Files: `packages/web/src/viewer/hooks/use-dom-performance-monitor.ts`, `packages/web/src/viewer/performance/dom-performance-monitor.ts`, `packages/web/tests/unit/viewer/dom-performance-monitor.test.ts`
+
+1. **Add use-dom-performance-monitor.test.ts to cover the hook's lifecycle: verify t…**
+   Files: `packages/web/src/viewer/hooks/use-dom-performance-monitor.ts`, `packages/web/src/viewer/performance/dom-performance-monitor.ts`, `packages/web/tests/unit/viewer/dom-performance-monitor.test.ts`
+
+1. **elapsed-time.ts and task-audit.ts are reusable UI components but are grouped wi…**
+   Files: `packages/web/BROWSER_ERROR_CODE_5.md`, `packages/web/MEMORY_PROFILE.md`, `packages/web/SourceVision-F.png`
+
+1. **Build scripts (build.js, dev.js) in this zone operate at the package boundary b…**
+   Files: `packages/web/BROWSER_ERROR_CODE_5.md`, `packages/web/MEMORY_PROFILE.md`, `packages/web/SourceVision-F.png`
+
+1. **Split the web-build-infrastructure zone into two groups: (1) build tooling (bui…**
+   Files: `packages/web/BROWSER_ERROR_CODE_5.md`, `packages/web/MEMORY_PROFILE.md`, `packages/web/SourceVision-F.png`
 
 1. **Bidirectional imports between web and web-viewer (web→web-viewer: 4, web-viewer…**
    Files: `packages/web/BROWSER_ERROR_CODE_5.md`, `packages/web/MEMORY_PROFILE.md`, `packages/web/SourceVision-F.png`
 
-1. **Bidirectional coupling: "task-usage-tracking" ↔ "web-dashboard" (1+3 crossings)…**
-
-1. **Bidirectional coupling: "web-build-infrastructure" ↔ "web-dashboard" (4+2 cross…**
-
-1. **The mutual import relationship between web-viewer and web-server warrants monit…**
-
-1. **The web-unit zone's low cohesion (0.25) combined with high coupling (0.75) stan…**
-
-1. **web-unit has cohesion 0.25 (below the 0.4 warning threshold) and receives impor…**
-
 ### Low Priority
 
 1. **Hub function: walkTree in packages/rex/src/core/tree.ts is called from 29 files…**
+
+1. **Rename 'ws-health-integration.test.ts' to reflect its actual test scope, or rel…**
+   Files: `packages/web/src/server/websocket.ts`, `packages/web/src/server/ws-health-tracker.ts`, `packages/web/tests/unit/server/boundary-check.test.ts`
 
 1. **3 potentially unused exports in packages/web/src/viewer/polling/polling-restart…**
 
@@ -632,11 +671,8 @@ Prioritized work items derived from analysis:
 
 1. **Potentially unused export: useNodeListeners in packages/web/src/viewer/componen…**
 
-1. **Zone "web-build-infrastructure" has files across 6 directories — consider conso…**
-   Files: `packages/web/BROWSER_ERROR_CODE_5.md`, `packages/web/MEMORY_PROFILE.md`, `packages/web/SourceVision-F.png`
-
-1. **Zone "web-dashboard" has files across 21 directories — consider consolidating u…**
-   Files: `packages/web/src/cli/index.ts`, `packages/web/src/public.ts`, `packages/web/src/schema/v1.ts`
+1. **Rename 'incremental-task-usage.ts' to 'task-usage-recorder.ts' to align with th…**
+   Files: `packages/web/src/server/incremental-task-usage.ts`, `packages/web/src/server/usage-cleanup-scheduler.ts`, `packages/web/tests/unit/server/incremental-task-usage.test.ts`
 
 ## File Inventory
 
@@ -700,10 +736,10 @@ Prioritized work items derived from analysis:
 | `packages/hench/src/agent/lifecycle/shared.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/agent/lifecycle/task-display.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/agent/lifecycle/token-budget.ts` | source | service | autonomous-agent |
-| `packages/hench/src/agent/lifecycle/token-usage.ts` | source | service | autonomous-agent |
+| `packages/hench/src/agent/lifecycle/token-usage.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/agent/planning/brief.ts` | source | service | autonomous-agent |
-| `packages/hench/src/agent/planning/prompt.ts` | source | service | autonomous-agent |
-| `packages/hench/src/agent/tools.ts` | source | service | autonomous-agent |
+| `packages/hench/src/agent/planning/prompt.ts` | source | utility | autonomous-agent |
+| `packages/hench/src/agent/tools.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/cli/commands/config.ts` | source | cli-command | autonomous-agent |
 | `packages/hench/src/cli/commands/constants.ts` | source | types | autonomous-agent |
 | `packages/hench/src/cli/commands/init.ts` | source | cli-command | autonomous-agent |
@@ -719,11 +755,11 @@ Prioritized work items derived from analysis:
 | `packages/hench/src/guard/commands.ts` | source | service | autonomous-agent |
 | `packages/hench/src/guard/contracts.ts` | source | types | autonomous-agent |
 | `packages/hench/src/guard/index.ts` | source | entrypoint | autonomous-agent |
-| `packages/hench/src/guard/paths.ts` | source | service | autonomous-agent |
+| `packages/hench/src/guard/paths.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/guard/policy.ts` | source | service | autonomous-agent |
 | `packages/hench/src/prd/ops.ts` | source | service | autonomous-agent |
 | `packages/hench/src/prd/rex-gateway.ts` | source | gateway | autonomous-agent |
-| `packages/hench/src/process/concurrent-execution-metrics.ts` | source | service | autonomous-agent |
+| `packages/hench/src/process/concurrent-execution-metrics.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/process/exec-shell.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/process/exec.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/process/index.ts` | source | entrypoint | autonomous-agent |
@@ -732,7 +768,7 @@ Prioritized work items derived from analysis:
 | `packages/hench/src/process/memory-monitor.ts` | source | service | autonomous-agent |
 | `packages/hench/src/process/memory-throttle.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/process/pool.ts` | source | service | autonomous-agent |
-| `packages/hench/src/process/process-memory-tracker.ts` | source | utility | autonomous-agent |
+| `packages/hench/src/process/process-memory-tracker.ts` | source | service | autonomous-agent |
 | `packages/hench/src/public.ts` | source | entrypoint | autonomous-agent |
 | `packages/hench/src/queue/execution-queue.ts` | source | service | autonomous-agent |
 | `packages/hench/src/queue/format.ts` | source | utility | autonomous-agent |
@@ -757,11 +793,11 @@ Prioritized work items derived from analysis:
 | `packages/hench/src/tools/contracts.ts` | source | types | autonomous-agent |
 | `packages/hench/src/tools/dispatch.ts` | source | service | autonomous-agent |
 | `packages/hench/src/tools/exec-shell.ts` | source | utility | autonomous-agent |
-| `packages/hench/src/tools/files.ts` | source | service | autonomous-agent |
-| `packages/hench/src/tools/git.ts` | source | service | autonomous-agent |
+| `packages/hench/src/tools/files.ts` | source | utility | autonomous-agent |
+| `packages/hench/src/tools/git.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/tools/index.ts` | source | entrypoint | autonomous-agent |
 | `packages/hench/src/tools/rex.ts` | source | service | autonomous-agent |
-| `packages/hench/src/tools/shell.ts` | source | service | autonomous-agent |
+| `packages/hench/src/tools/shell.ts` | source | utility | autonomous-agent |
 | `packages/hench/src/tools/test-runner.ts` | source | service | autonomous-agent |
 | `packages/hench/src/types/index.ts` | source | entrypoint | autonomous-agent |
 | `packages/hench/src/types/output.ts` | source | utility | autonomous-agent |
@@ -845,7 +881,7 @@ Prioritized work items derived from analysis:
 | `packages/llm-client/src/cli-provider.ts` | source | service | packages-llm-client:src |
 | `packages/llm-client/src/codex-cli-provider.ts` | source | service | packages-llm-client:src |
 | `packages/llm-client/src/config.ts` | source | config | packages-llm-client:src-2 |
-| `packages/llm-client/src/create-client.ts` | source | utility | packages-llm-client:src |
+| `packages/llm-client/src/create-client.ts` | source | service | packages-llm-client:src |
 | `packages/llm-client/src/exec.ts` | source | utility | packages-llm-client:src-2 |
 | `packages/llm-client/src/help-format.ts` | source | utility | packages-llm-client:src-2 |
 | `packages/llm-client/src/json.ts` | source | utility | packages-llm-client:src-2 |
@@ -853,14 +889,14 @@ Prioritized work items derived from analysis:
 | `packages/llm-client/src/llm-config.ts` | source | config | packages-llm-client:src |
 | `packages/llm-client/src/llm-types.ts` | source | types | packages-llm-client:src |
 | `packages/llm-client/src/output.ts` | source | utility | packages-llm-client:src-2 |
-| `packages/llm-client/src/project-config.ts` | source | config | packages-llm-client:src-2 |
+| `packages/llm-client/src/project-config.ts` | source | utility | packages-llm-client:src-2 |
 | `packages/llm-client/src/project-dirs.ts` | source | utility | packages-llm-client:src-2 |
 | `packages/llm-client/src/provider-interface.ts` | source | types | packages-llm-client:src |
 | `packages/llm-client/src/provider-registry.ts` | source | service | packages-llm-client:src |
 | `packages/llm-client/src/provider-session.ts` | source | service | packages-llm-client:src |
 | `packages/llm-client/src/public.ts` | source | entrypoint | packages-llm-client:src-2 |
 | `packages/llm-client/src/suggest.ts` | source | service | packages-llm-client:src-2 |
-| `packages/llm-client/src/token-usage.ts` | source | service | packages-llm-client:src |
+| `packages/llm-client/src/token-usage.ts` | source | utility | packages-llm-client:src |
 | `packages/llm-client/src/types.ts` | source | types | packages-llm-client:src |
 | `packages/llm-client/tests/unit/api-provider.test.ts` | test |  | packages-llm-client:unit |
 | `packages/llm-client/tests/unit/auth.test.ts` | test |  | packages-llm-client:src-2 |
@@ -883,246 +919,246 @@ Prioritized work items derived from analysis:
 | `packages/llm-client/tests/unit/types.test.ts` | test |  | packages-llm-client:unit |
 | `packages/llm-client/tsconfig.json` | config |  | packages-llm-client:root |
 | `packages/llm-client/vitest.config.ts` | config |  | packages-llm-client:root |
-| `packages/rex/.rex/config.json` | other |  | packages-rex:rex-project-state |
-| `packages/rex/.rex/execution-log.jsonl` | other |  | packages-rex:rex-project-state |
-| `packages/rex/.rex/prd.json` | other |  | packages-rex:rex-project-state |
-| `packages/rex/.rex/workflow.md` | docs |  | packages-rex:rex-project-state |
-| `packages/rex/README.md` | docs |  | packages-rex:project-root-config |
-| `packages/rex/Rex-F.png` | asset |  | packages-rex:project-root-config |
-| `packages/rex/Rex.png` | asset |  | packages-rex:project-root-config |
-| `packages/rex/context.md` | docs |  | packages-rex:project-root-config |
-| `packages/rex/llms.txt` | docs |  | packages-rex:project-root-config |
-| `packages/rex/package-lock.json` | generated |  | packages-rex:project-root-config |
-| `packages/rex/package.json` | config |  | packages-rex:project-root-config |
-| `packages/rex/src/analyze/acknowledge.ts` | source | service | packages-rex:recommendation-scanning |
-| `packages/rex/src/analyze/analyze-shared.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/consolidation-guard.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/decompose.ts` | source | service | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/dedupe.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/diff.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/extract.ts` | source | service | packages-rex:recommendation-scanning |
-| `packages/rex/src/analyze/file-validation.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/guided.ts` | source | service | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/index.ts` | source | entrypoint | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/llm-bridge.ts` | source | service | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/modify-reason.ts` | source | service | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/propose.ts` | source | service | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/reason.ts` | source | service | packages-rex:prd-analysis-core |
-| `packages/rex/src/analyze/reconcile.ts` | source | service | packages-rex:recommendation-scanning |
-| `packages/rex/src/analyze/reshape-reason.ts` | source | utility | packages-rex:cli-mcp-interface |
-| `packages/rex/src/analyze/scanners.ts` | source | service | packages-rex:recommendation-scanning |
-| `packages/rex/src/analyze/validate-modification.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/cli/commands/adapter.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/add.ts` | source | cli-command | packages-rex:prd-analysis-core |
-| `packages/rex/src/cli/commands/analyze.ts` | source | cli-command | packages-rex:prd-analysis-core |
-| `packages/rex/src/cli/commands/chunked-review-state.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/chunked-review.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/constants.ts` | source | types | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/decomposition-review.ts` | source | cli-command | packages-rex:prd-analysis-core |
-| `packages/rex/src/cli/commands/fix.ts` | source | cli-command | packages-rex:fix-command |
-| `packages/rex/src/cli/commands/format-loe.ts` | source | cli-command | packages-rex:prd-analysis-core |
-| `packages/rex/src/cli/commands/health.ts` | source | cli-command | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/cli/commands/init.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/move.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/next.ts` | source | cli-command | packages-rex:task-selection |
-| `packages/rex/src/cli/commands/prune.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/recommend.ts` | source | cli-command | packages-rex:recommendation-scanning |
-| `packages/rex/src/cli/commands/remove.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/reorganize.ts` | source | cli-command | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/cli/commands/report.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/reshape.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/smart-add-duplicates.ts` | source | cli-command | packages-rex:prd-analysis-core |
-| `packages/rex/src/cli/commands/smart-add.ts` | source | cli-command | packages-rex:prd-analysis-core |
-| `packages/rex/src/cli/commands/status.ts` | source | cli-command | packages-rex:prd-analysis-core |
-| `packages/rex/src/cli/commands/sync.ts` | source | cli-command | packages-rex:prd-storage-adapters |
-| `packages/rex/src/cli/commands/token-format.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/update.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/usage.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/commands/validate-interactive.ts` | source | cli-command | packages-rex:prd-analysis-core |
-| `packages/rex/src/cli/commands/validate.ts` | source | cli-command | packages-rex:prd-analysis-core |
-| `packages/rex/src/cli/commands/verify.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/errors.ts` | source | utility | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/help.ts` | source | utility | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/index.ts` | source | entrypoint | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/mcp-tools.ts` | source | service | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/mcp.ts` | source | cli-command | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/output.ts` | source | utility | packages-rex:cli-mcp-interface |
-| `packages/rex/src/cli/validate-input.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/core/analytics.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/canonical.ts` | source | utility | packages-rex:prd-storage-adapters |
-| `packages/rex/src/core/cascade-reset.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/core/code-coverage.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/dag.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/delete.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/epic-correlation.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/core/facets.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/fix.ts` | source | utility | packages-rex:fix-command |
-| `packages/rex/src/core/health.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/keywords.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/merge.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/move.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/next-task.ts` | source | utility | packages-rex:task-selection |
-| `packages/rex/src/core/notion-map.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/core/parent-completion.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/parent-reset.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/prune.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/remove-epic.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/remove-feature.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/remove-task.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/reorganize-executor.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/reorganize.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/requirements.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/reshape.ts` | source | utility | packages-rex:cli-mcp-interface |
-| `packages/rex/src/core/scope-creep.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/stats.ts` | source | utility | packages-rex:cli-mcp-interface |
-| `packages/rex/src/core/structural.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/core/sync-engine.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/sync.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/timestamps.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/token-usage.ts` | source | utility | packages-rex:cli-mcp-interface |
-| `packages/rex/src/core/transitions.ts` | source | utility | packages-rex:prd-analysis-core |
-| `packages/rex/src/core/tree.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/core/verify.ts` | source | utility | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/public.ts` | source | entrypoint | packages-rex:prd-tree-lifecycle |
-| `packages/rex/src/recommend/conflict-detection.ts` | source | service | packages-rex:recommendation-scanning |
-| `packages/rex/src/recommend/create-from-recommendations.ts` | source | service | packages-rex:recommendation-scanning |
-| `packages/rex/src/recommend/types.ts` | source | types | packages-rex:recommendation-scanning |
-| `packages/rex/src/schema/index.ts` | source | entrypoint | packages-rex:prd-analysis-core |
-| `packages/rex/src/schema/levels.ts` | source | schema | packages-rex:prd-analysis-core |
-| `packages/rex/src/schema/v1.ts` | source | schema | packages-rex:prd-analysis-core |
-| `packages/rex/src/schema/validate.ts` | source | schema | packages-rex:schema-validation |
-| `packages/rex/src/store/adapter-registry.ts` | source | store | packages-rex:prd-storage-adapters |
-| `packages/rex/src/store/contracts.ts` | source | store | packages-rex:prd-storage-adapters |
-| `packages/rex/src/store/file-adapter.ts` | source | store | packages-rex:prd-storage-adapters |
-| `packages/rex/src/store/index.ts` | source | entrypoint | packages-rex:prd-storage-adapters |
-| `packages/rex/src/store/integration-schema.ts` | source | store | packages-rex:prd-storage-adapters |
-| `packages/rex/src/store/integration-schemas/index.ts` | source | entrypoint | packages-rex:prd-storage-adapters |
-| `packages/rex/src/store/integration-schemas/jira.ts` | source | store | packages-rex:prd-storage-adapters |
-| `packages/rex/src/store/integration-schemas/notion.ts` | source | store | packages-rex:prd-storage-adapters |
-| `packages/rex/src/store/notion-adapter.ts` | source | store | packages-rex:prd-storage-adapters |
-| `packages/rex/src/store/notion-client.ts` | source | store | packages-rex:prd-storage-adapters |
-| `packages/rex/src/store/project-config.ts` | source | store | packages-rex:prd-analysis-core |
-| `packages/rex/src/workflow/default.ts` | source | config | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/e2e/cli-adapter.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/cli-analyze.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/cli-import.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/cli-init.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/cli-prune.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/cli-quiet.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/cli-recommend.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/cli-smart-add.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/cli-sync.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/cli-workflow.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/fixtures/sample-prd/.rex/config.json` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/fixtures/sample-prd/.rex/execution-log.jsonl` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/fixtures/sample-prd/.rex/prd.json` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/e2e/fixtures/sample-prd/.rex/workflow.md` | test |  | packages-rex:schema-validation |
+| `packages/rex/.rex/config.json` | other |  | packages-rex:.rex |
+| `packages/rex/.rex/execution-log.jsonl` | other |  | packages-rex:.rex |
+| `packages/rex/.rex/prd.json` | other |  | packages-rex:.rex |
+| `packages/rex/.rex/workflow.md` | docs |  | packages-rex:.rex |
+| `packages/rex/README.md` | docs |  | packages-rex:root |
+| `packages/rex/Rex-F.png` | asset |  | packages-rex:root |
+| `packages/rex/Rex.png` | asset |  | packages-rex:root |
+| `packages/rex/context.md` | docs |  | packages-rex:root |
+| `packages/rex/llms.txt` | docs |  | packages-rex:root |
+| `packages/rex/package-lock.json` | generated |  | packages-rex:root |
+| `packages/rex/package.json` | config |  | packages-rex:root |
+| `packages/rex/src/analyze/acknowledge.ts` | source | service | packages-rex:unit |
+| `packages/rex/src/analyze/analyze-shared.ts` | source | types | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/consolidation-guard.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/decompose.ts` | source | service | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/dedupe.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/diff.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/extract.ts` | source | service | packages-rex:unit |
+| `packages/rex/src/analyze/file-validation.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/guided.ts` | source | service | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/index.ts` | source | entrypoint | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/llm-bridge.ts` | source | service | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/modify-reason.ts` | source | service | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/propose.ts` | source | service | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/reason.ts` | source | service | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/reconcile.ts` | source | service | packages-rex:unit |
+| `packages/rex/src/analyze/reshape-reason.ts` | source | service | packages-rex:cli |
+| `packages/rex/src/analyze/scanners.ts` | source | service | packages-rex:unit |
+| `packages/rex/src/analyze/validate-modification.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/cli/commands/adapter.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/add.ts` | source | cli-command | packages-rex:unit-analyze |
+| `packages/rex/src/cli/commands/analyze.ts` | source | cli-command | packages-rex:unit-analyze |
+| `packages/rex/src/cli/commands/chunked-review-state.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/chunked-review.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/constants.ts` | source | types | packages-rex:cli |
+| `packages/rex/src/cli/commands/decomposition-review.ts` | source | cli-command | packages-rex:unit-analyze |
+| `packages/rex/src/cli/commands/fix.ts` | source | cli-command | packages-rex:unit-cli |
+| `packages/rex/src/cli/commands/format-loe.ts` | source | cli-command | packages-rex:unit-analyze |
+| `packages/rex/src/cli/commands/health.ts` | source | cli-command | packages-rex:core |
+| `packages/rex/src/cli/commands/init.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/move.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/next.ts` | source | cli-command | packages-rex:unit-core |
+| `packages/rex/src/cli/commands/prune.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/recommend.ts` | source | cli-command | packages-rex:unit |
+| `packages/rex/src/cli/commands/remove.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/reorganize.ts` | source | cli-command | packages-rex:core |
+| `packages/rex/src/cli/commands/report.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/reshape.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/smart-add-duplicates.ts` | source | cli-command | packages-rex:unit-analyze |
+| `packages/rex/src/cli/commands/smart-add.ts` | source | cli-command | packages-rex:unit-analyze |
+| `packages/rex/src/cli/commands/status.ts` | source | cli-command | packages-rex:unit-analyze |
+| `packages/rex/src/cli/commands/sync.ts` | source | cli-command | packages-rex:store |
+| `packages/rex/src/cli/commands/token-format.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/update.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/usage.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/commands/validate-interactive.ts` | source | cli-command | packages-rex:unit-analyze |
+| `packages/rex/src/cli/commands/validate.ts` | source | cli-command | packages-rex:unit-analyze |
+| `packages/rex/src/cli/commands/verify.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/errors.ts` | source | utility | packages-rex:cli |
+| `packages/rex/src/cli/help.ts` | source | utility | packages-rex:cli |
+| `packages/rex/src/cli/index.ts` | source | entrypoint | packages-rex:cli |
+| `packages/rex/src/cli/mcp-tools.ts` | source | service | packages-rex:cli |
+| `packages/rex/src/cli/mcp.ts` | source | cli-command | packages-rex:cli |
+| `packages/rex/src/cli/output.ts` | source | utility | packages-rex:cli |
+| `packages/rex/src/cli/validate-input.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/core/analytics.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/canonical.ts` | source | utility | packages-rex:store |
+| `packages/rex/src/core/cascade-reset.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/core/code-coverage.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/dag.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/delete.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/epic-correlation.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/core/facets.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/fix.ts` | source | utility | packages-rex:unit-cli |
+| `packages/rex/src/core/health.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/keywords.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/merge.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/move.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/next-task.ts` | source | utility | packages-rex:unit-core |
+| `packages/rex/src/core/notion-map.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/core/parent-completion.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/parent-reset.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/prune.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/remove-epic.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/remove-feature.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/remove-task.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/reorganize-executor.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/reorganize.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/requirements.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/reshape.ts` | source | utility | packages-rex:cli |
+| `packages/rex/src/core/scope-creep.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/stats.ts` | source | utility | packages-rex:cli |
+| `packages/rex/src/core/structural.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/core/sync-engine.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/sync.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/timestamps.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/token-usage.ts` | source | utility | packages-rex:cli |
+| `packages/rex/src/core/transitions.ts` | source | utility | packages-rex:unit-analyze |
+| `packages/rex/src/core/tree.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/core/verify.ts` | source | utility | packages-rex:core |
+| `packages/rex/src/public.ts` | source | entrypoint | packages-rex:core |
+| `packages/rex/src/recommend/conflict-detection.ts` | source | utility | packages-rex:unit |
+| `packages/rex/src/recommend/create-from-recommendations.ts` | source | service | packages-rex:unit |
+| `packages/rex/src/recommend/types.ts` | source | types | packages-rex:unit |
+| `packages/rex/src/schema/index.ts` | source | entrypoint | packages-rex:unit-analyze |
+| `packages/rex/src/schema/levels.ts` | source | schema | packages-rex:unit-analyze |
+| `packages/rex/src/schema/v1.ts` | source | schema | packages-rex:unit-analyze |
+| `packages/rex/src/schema/validate.ts` | source | schema | packages-rex:e2e |
+| `packages/rex/src/store/adapter-registry.ts` | source | store | packages-rex:store |
+| `packages/rex/src/store/contracts.ts` | source | store | packages-rex:store |
+| `packages/rex/src/store/file-adapter.ts` | source | store | packages-rex:store |
+| `packages/rex/src/store/index.ts` | source | entrypoint | packages-rex:store |
+| `packages/rex/src/store/integration-schema.ts` | source | store | packages-rex:store |
+| `packages/rex/src/store/integration-schemas/index.ts` | source | entrypoint | packages-rex:store |
+| `packages/rex/src/store/integration-schemas/jira.ts` | source | store | packages-rex:store |
+| `packages/rex/src/store/integration-schemas/notion.ts` | source | store | packages-rex:store |
+| `packages/rex/src/store/notion-adapter.ts` | source | store | packages-rex:store |
+| `packages/rex/src/store/notion-client.ts` | source | store | packages-rex:store |
+| `packages/rex/src/store/project-config.ts` | source | store | packages-rex:unit-analyze |
+| `packages/rex/src/workflow/default.ts` | source | types | packages-rex:cli |
+| `packages/rex/tests/e2e/cli-adapter.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/cli-analyze.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/cli-import.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/cli-init.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/cli-prune.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/cli-quiet.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/cli-recommend.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/cli-smart-add.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/cli-sync.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/cli-workflow.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/fixtures/sample-prd/.rex/config.json` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/fixtures/sample-prd/.rex/execution-log.jsonl` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/fixtures/sample-prd/.rex/prd.json` | test |  | packages-rex:e2e |
+| `packages/rex/tests/e2e/fixtures/sample-prd/.rex/workflow.md` | test |  | packages-rex:e2e |
 | `packages/rex/tests/fixtures/token-usage-regression.json` | test |  |  |
-| `packages/rex/tests/integration/claude-config.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/integration/project-config.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tests/integration/smart-add-duplicate-outcomes.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/integration/smart-add-orphaned-parent.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/integration/store-roundtrip.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tests/unit/analyze/acknowledge.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/analyze/consolidation-guard.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/decompose.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/dedupe.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/diff.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/extract-llm-mock.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/analyze/extract-llm.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/analyze/extract-text.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/analyze/extract.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/analyze/file-validation.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/guided.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/loe-proposal-schema.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/modify-reason.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/propose.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/analyze/reason-assessment.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/reason-batch.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/reason-description.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/reason-granularity.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/reason-ideas.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/reason-multi-description.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/reason.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/reconcile.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/analyze/scanners-acknowledge.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/analyze/scanners.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/analyze/token-tracking.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/analyze/validate-modification.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/add.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/commands/analyze-guided.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/chunked-review.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/commands/decomposition-review.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/fix.test.ts` | test |  | packages-rex:fix-command |
-| `packages/rex/tests/unit/cli/commands/format-loe.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/loe-display.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/commands/move.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/commands/recommend.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/cli/commands/remove.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/commands/report.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/commands/smart-add-duplicates.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/smart-add-merge.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/commands/smart-add.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/status.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/sync.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tests/unit/cli/commands/update.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/commands/usage.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/validate-epicless.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/validate-interactive.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/validate.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/commands/verify.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/cli/errors.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/help.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/mcp.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/output.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/cli/validate-input.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/core/canonical.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tests/unit/core/dag.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/epic-correlation.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/core/epicless.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/core/facets.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/feature-filtered-task.test.ts` | test |  | packages-rex:task-selection |
-| `packages/rex/tests/unit/core/fix.test.ts` | test |  | packages-rex:fix-command |
-| `packages/rex/tests/unit/core/health.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/keywords.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/merge.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/move.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/next-task-matching.test.ts` | test |  | packages-rex:task-selection |
-| `packages/rex/tests/unit/core/next-task-scoring.test.ts` | test |  | packages-rex:task-selection |
-| `packages/rex/tests/unit/core/next-task.test.ts` | test |  | packages-rex:task-selection |
-| `packages/rex/tests/unit/core/notion-map.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/core/parent-completion.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/parent-reset.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/prune.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/remove-epic.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/remove-feature.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/remove-task.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/reorganize-executor.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/reorganize.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/requirements-prioritization.test.ts` | test |  | packages-rex:task-selection |
-| `packages/rex/tests/unit/core/requirements.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/structural.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/core/sync-engine.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/sync.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/timestamps.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/token-usage-regression.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/core/token-usage.test.ts` | test |  | packages-rex:cli-mcp-interface |
-| `packages/rex/tests/unit/core/transitions.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/core/tree-hardened.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/tree.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/core/verify.test.ts` | test |  | packages-rex:prd-tree-lifecycle |
-| `packages/rex/tests/unit/recommend/conflict-detection.test.ts` | test |  | packages-rex:recommendation-scanning |
-| `packages/rex/tests/unit/recommend/create-from-recommendations.test.ts` | test |  | packages-rex:prd-analysis-core |
-| `packages/rex/tests/unit/schema/validate.test.ts` | test |  | packages-rex:schema-validation |
-| `packages/rex/tests/unit/store/adapter-registry.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tests/unit/store/file-adapter.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tests/unit/store/integration-schema.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tests/unit/store/notion-adapter.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tests/unit/store/notion-client.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tests/unit/store/resolve-store.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tests/unit/store/store-contract.test.ts` | test |  | packages-rex:prd-storage-adapters |
-| `packages/rex/tsconfig.json` | config |  | packages-rex:project-root-config |
-| `packages/rex/vitest.config.ts` | config |  | packages-rex:project-root-config |
+| `packages/rex/tests/integration/claude-config.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/integration/project-config.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tests/integration/smart-add-duplicate-outcomes.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/integration/smart-add-orphaned-parent.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/integration/store-roundtrip.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tests/unit/analyze/acknowledge.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/analyze/consolidation-guard.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/decompose.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/dedupe.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/diff.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/extract-llm-mock.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/analyze/extract-llm.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/analyze/extract-text.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/analyze/extract.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/analyze/file-validation.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/guided.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/loe-proposal-schema.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/modify-reason.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/propose.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/analyze/reason-assessment.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/reason-batch.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/reason-description.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/reason-granularity.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/reason-ideas.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/reason-multi-description.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/reason.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/reconcile.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/analyze/scanners-acknowledge.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/analyze/scanners.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/analyze/token-tracking.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/analyze/validate-modification.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/add.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/commands/analyze-guided.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/chunked-review.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/commands/decomposition-review.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/fix.test.ts` | test |  | packages-rex:unit-cli |
+| `packages/rex/tests/unit/cli/commands/format-loe.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/loe-display.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/commands/move.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/commands/recommend.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/cli/commands/remove.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/commands/report.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/commands/smart-add-duplicates.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/smart-add-merge.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/commands/smart-add.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/status.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/sync.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tests/unit/cli/commands/update.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/commands/usage.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/validate-epicless.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/validate-interactive.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/validate.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/commands/verify.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/cli/errors.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/help.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/mcp.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/output.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/cli/validate-input.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/core/canonical.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tests/unit/core/dag.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/epic-correlation.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/core/epicless.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/core/facets.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/feature-filtered-task.test.ts` | test |  | packages-rex:unit-core |
+| `packages/rex/tests/unit/core/fix.test.ts` | test |  | packages-rex:unit-cli |
+| `packages/rex/tests/unit/core/health.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/keywords.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/merge.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/move.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/next-task-matching.test.ts` | test |  | packages-rex:unit-core |
+| `packages/rex/tests/unit/core/next-task-scoring.test.ts` | test |  | packages-rex:unit-core |
+| `packages/rex/tests/unit/core/next-task.test.ts` | test |  | packages-rex:unit-core |
+| `packages/rex/tests/unit/core/notion-map.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/core/parent-completion.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/parent-reset.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/prune.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/remove-epic.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/remove-feature.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/remove-task.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/reorganize-executor.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/reorganize.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/requirements-prioritization.test.ts` | test |  | packages-rex:unit-core |
+| `packages/rex/tests/unit/core/requirements.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/structural.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/core/sync-engine.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/sync.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/timestamps.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/token-usage-regression.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/core/token-usage.test.ts` | test |  | packages-rex:cli |
+| `packages/rex/tests/unit/core/transitions.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/core/tree-hardened.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/tree.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/core/verify.test.ts` | test |  | packages-rex:core |
+| `packages/rex/tests/unit/recommend/conflict-detection.test.ts` | test |  | packages-rex:unit |
+| `packages/rex/tests/unit/recommend/create-from-recommendations.test.ts` | test |  | packages-rex:unit-analyze |
+| `packages/rex/tests/unit/schema/validate.test.ts` | test |  | packages-rex:e2e |
+| `packages/rex/tests/unit/store/adapter-registry.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tests/unit/store/file-adapter.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tests/unit/store/integration-schema.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tests/unit/store/notion-adapter.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tests/unit/store/notion-client.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tests/unit/store/resolve-store.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tests/unit/store/store-contract.test.ts` | test |  | packages-rex:store |
+| `packages/rex/tsconfig.json` | config |  | packages-rex:root |
+| `packages/rex/vitest.config.ts` | config |  | packages-rex:root |
 | `packages/sourcevision/ARCHITECTURE.md` | docs |  | packages-sourcevision:root |
 | `packages/sourcevision/README.md` | docs |  | packages-sourcevision:root |
 | `packages/sourcevision/SourceVision-F.png` | asset |  | packages-sourcevision:root |
@@ -1130,34 +1166,34 @@ Prioritized work items derived from analysis:
 | `packages/sourcevision/WORKSPACE_DESIGN.md` | docs |  | packages-sourcevision:root |
 | `packages/sourcevision/package-lock.json` | generated |  | packages-sourcevision:root |
 | `packages/sourcevision/package.json` | config |  | packages-sourcevision:root |
-| `packages/sourcevision/src/analyzers/archetypes.ts` | source | types | packages-sourcevision:analyzers |
-| `packages/sourcevision/src/analyzers/branch-work-classifier.ts` | source | service | packages-sourcevision:unit |
+| `packages/sourcevision/src/analyzers/archetypes.ts` | source | config | packages-sourcevision:analyzers |
+| `packages/sourcevision/src/analyzers/branch-work-classifier.ts` | source | utility | packages-sourcevision:unit |
 | `packages/sourcevision/src/analyzers/branch-work-collector.ts` | source | service | packages-sourcevision:cli |
 | `packages/sourcevision/src/analyzers/branch-work-filter.ts` | source | utility | packages-sourcevision:unit |
-| `packages/sourcevision/src/analyzers/branch-work-store.ts` | source | store | packages-sourcevision:unit |
+| `packages/sourcevision/src/analyzers/branch-work-store.ts` | source | service | packages-sourcevision:unit |
 | `packages/sourcevision/src/analyzers/callgraph-findings.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/callgraph.ts` | source | service | packages-sourcevision:analyzers-2 |
 | `packages/sourcevision/src/analyzers/classify.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/claude-client.ts` | source | service | packages-sourcevision:analyzers |
-| `packages/sourcevision/src/analyzers/completion-reader.ts` | source | utility | packages-sourcevision:analyzers |
+| `packages/sourcevision/src/analyzers/completion-reader.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/components.ts` | source | service | packages-sourcevision:analyzers-2 |
 | `packages/sourcevision/src/analyzers/context.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/enrich-batch.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/enrich-config.ts` | source | config | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/enrich-parsing.ts` | source | utility | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/enrich-per-zone.ts` | source | service | packages-sourcevision:analyzers |
-| `packages/sourcevision/src/analyzers/enrich.ts` | source | service | packages-sourcevision:analyzers |
+| `packages/sourcevision/src/analyzers/enrich.ts` | source | gateway | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/imports.ts` | source | service | packages-sourcevision:analyzers-2 |
 | `packages/sourcevision/src/analyzers/index.ts` | source | entrypoint | packages-sourcevision:analyzers-2 |
 | `packages/sourcevision/src/analyzers/inventory.ts` | source | service | packages-sourcevision:analyzers-2 |
 | `packages/sourcevision/src/analyzers/llms-txt.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/louvain.ts` | source | utility | packages-sourcevision:analyzers-3 |
 | `packages/sourcevision/src/analyzers/manifest.ts` | source | service | packages-sourcevision:cli |
-| `packages/sourcevision/src/analyzers/next-steps.ts` | source | service | packages-sourcevision:analyzers |
-| `packages/sourcevision/src/analyzers/risk-scoring.ts` | source | service | packages-sourcevision:unit |
+| `packages/sourcevision/src/analyzers/next-steps.ts` | source | utility | packages-sourcevision:analyzers |
+| `packages/sourcevision/src/analyzers/risk-scoring.ts` | source | utility | packages-sourcevision:unit |
 | `packages/sourcevision/src/analyzers/route-detection.ts` | source | route-handler | packages-sourcevision:analyzers-2 |
 | `packages/sourcevision/src/analyzers/server-route-detection.ts` | source | service | packages-sourcevision:analyzers |
-| `packages/sourcevision/src/analyzers/token-usage.ts` | source | service | packages-sourcevision:analyzers |
+| `packages/sourcevision/src/analyzers/token-usage.ts` | source | utility | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/workspace-aggregate.ts` | source | service | packages-sourcevision:unit |
 | `packages/sourcevision/src/analyzers/workspace-crossings.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/workspace.ts` | source | service | packages-sourcevision:analyzers |
@@ -1176,14 +1212,14 @@ Prioritized work items derived from analysis:
 | `packages/sourcevision/src/cli/commands/validate.ts` | source | cli-command | packages-sourcevision:cli |
 | `packages/sourcevision/src/cli/commands/workspace.ts` | source | cli-command | packages-sourcevision:unit |
 | `packages/sourcevision/src/cli/errors.ts` | source | utility | packages-sourcevision:cli |
-| `packages/sourcevision/src/cli/help.ts` | source | utility | packages-sourcevision:cli |
+| `packages/sourcevision/src/cli/help.ts` | source | types | packages-sourcevision:cli |
 | `packages/sourcevision/src/cli/index.ts` | source | entrypoint | packages-sourcevision:cli |
-| `packages/sourcevision/src/cli/mcp.ts` | source | service | packages-sourcevision:unit |
+| `packages/sourcevision/src/cli/mcp.ts` | source | cli-command | packages-sourcevision:unit |
 | `packages/sourcevision/src/cli/output.ts` | source | utility | packages-sourcevision:cli |
 | `packages/sourcevision/src/cli/serve.ts` | source | cli-command | packages-sourcevision:cli |
 | `packages/sourcevision/src/constants.ts` | source | types | packages-sourcevision:cli |
 | `packages/sourcevision/src/export/pdf-report.ts` | source | service | packages-sourcevision:analyzers |
-| `packages/sourcevision/src/generators/pr-markdown-template.ts` | source | service | packages-sourcevision:unit |
+| `packages/sourcevision/src/generators/pr-markdown-template.ts` | source | utility | packages-sourcevision:unit |
 | `packages/sourcevision/src/public.ts` | source | entrypoint | packages-sourcevision:unit |
 | `packages/sourcevision/src/schema/data-files.ts` | source | schema | packages-sourcevision:unit |
 | `packages/sourcevision/src/schema/index.ts` | source | entrypoint | packages-sourcevision:analyzers |
@@ -1279,9 +1315,9 @@ Prioritized work items derived from analysis:
 | `packages/web/src/server/domain-gateway.ts` | source | gateway | web-dashboard |
 | `packages/web/src/server/incremental-task-usage.ts` | source | service | task-usage-tracking |
 | `packages/web/src/server/index.ts` | source | entrypoint | web-dashboard |
-| `packages/web/src/server/mcp-deps.ts` | source | gateway | web-dashboard |
+| `packages/web/src/server/mcp-deps.ts` | source | utility | web-dashboard |
 | `packages/web/src/server/port.ts` | source | utility | web-dashboard |
-| `packages/web/src/server/pr-markdown-refresh-diagnostics.ts` | source | utility | web-dashboard |
+| `packages/web/src/server/pr-markdown-refresh-diagnostics.ts` | source | service | web-dashboard |
 | `packages/web/src/server/process-memory-tracker.ts` | source | service | web-dashboard |
 | `packages/web/src/server/rex-gateway.ts` | source | gateway | web-dashboard |
 | `packages/web/src/server/routes-adaptive.ts` | source | route-handler | web-dashboard |
@@ -1302,10 +1338,10 @@ Prioritized work items derived from analysis:
 | `packages/web/src/server/routes-validation.ts` | source | route-handler | web-dashboard |
 | `packages/web/src/server/routes-workflow.ts` | source | route-handler | web-dashboard |
 | `packages/web/src/server/search-index.ts` | source | service | web-dashboard |
-| `packages/web/src/server/start.ts` | source | service | web-dashboard |
+| `packages/web/src/server/start.ts` | source | entrypoint | web-dashboard |
 | `packages/web/src/server/types.ts` | source | types | web-dashboard |
 | `packages/web/src/server/usage-cleanup-scheduler.ts` | source | service | task-usage-tracking |
-| `packages/web/src/server/websocket.ts` | source | service | websocket-infrastructure |
+| `packages/web/src/server/websocket.ts` | source | middleware | websocket-infrastructure |
 | `packages/web/src/server/ws-health-tracker.ts` | source | service | websocket-infrastructure |
 | `packages/web/src/shared/data-files.ts` | source | types | web-dashboard |
 | `packages/web/src/shared/index.ts` | source | entrypoint | web-dashboard |
@@ -1412,11 +1448,11 @@ Prioritized work items derived from analysis:
 | `packages/web/src/viewer/loader.ts` | source | service | web-dashboard |
 | `packages/web/src/viewer/main.ts` | source | entrypoint | web-dashboard |
 | `packages/web/src/viewer/messaging/call-rate-limiter.ts` | source | utility | web-dashboard |
-| `packages/web/src/viewer/messaging/fetch-pipeline.ts` | source | utility | web-dashboard |
+| `packages/web/src/viewer/messaging/fetch-pipeline.ts` | source | service | web-dashboard |
 | `packages/web/src/viewer/messaging/index.ts` | source | entrypoint | web-dashboard |
 | `packages/web/src/viewer/messaging/message-coalescer.ts` | source | utility | web-dashboard |
 | `packages/web/src/viewer/messaging/message-throttle.ts` | source | utility | web-dashboard |
-| `packages/web/src/viewer/messaging/ws-pipeline.ts` | source | utility | web-dashboard |
+| `packages/web/src/viewer/messaging/ws-pipeline.ts` | source | service | web-dashboard |
 | `packages/web/src/viewer/performance/crash-detector.ts` | source | utility | web-dashboard |
 | `packages/web/src/viewer/performance/dom-performance-monitor.ts` | source | utility | dom-performance-monitoring |
 | `packages/web/src/viewer/performance/dom-update-gate.ts` | source | utility | web-dashboard |
@@ -1514,7 +1550,7 @@ Prioritized work items derived from analysis:
 | `packages/web/src/viewer/views/workflow-optimization.ts` | source | page | web-dashboard |
 | `packages/web/src/viewer/views/zone-types.ts` | source | page | web-dashboard |
 | `packages/web/src/viewer/views/zones.ts` | source | page | web-dashboard |
-| `packages/web/src/viewer/visualization/colors.ts` | source | utility | web-dashboard |
+| `packages/web/src/viewer/visualization/colors.ts` | source | types | web-dashboard |
 | `packages/web/src/viewer/visualization/flow.ts` | source | utility | web-dashboard |
 | `packages/web/src/viewer/visualization/index.ts` | source | entrypoint | web-dashboard |
 | `packages/web/src/viewer/visualization/metrics.ts` | source | utility | web-dashboard |
