@@ -26,7 +26,25 @@ import {
   type CollectAllIdsFn,
 } from "../../../src/server/usage-cleanup-scheduler.js";
 import { IncrementalTaskUsageAggregator } from "../../../src/server/incremental-task-usage.js";
-import { collectAllIds } from "../../../src/server/rex-gateway.js";
+
+/**
+ * Test-local implementation of collectAllIds.
+ *
+ * Extracts IDs from a flat array of PRD items (with optional nested children).
+ * This avoids importing from rex-gateway in a unit test, which would create a
+ * bidirectional coupling between the task-usage-tracking and web-dashboard zones.
+ */
+function collectAllIds(items: unknown[]): Set<string> {
+  const ids = new Set<string>();
+  const queue = [...items];
+  while (queue.length > 0) {
+    const item = queue.pop() as Record<string, unknown> | undefined;
+    if (!item || typeof item !== "object") continue;
+    if (typeof item.id === "string") ids.add(item.id);
+    if (Array.isArray(item.children)) queue.push(...item.children);
+  }
+  return ids;
+}
 
 describe("UsageCleanupScheduler", () => {
   let tmpDir: string;
