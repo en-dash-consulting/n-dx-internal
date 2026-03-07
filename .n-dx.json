@@ -25,7 +25,12 @@
         "packages/web/src/viewer/route-state.ts": "web-dashboard",
         "packages/web/src/viewer/hooks/use-tick.ts": "web-dashboard",
         "packages/web/tests/unit/viewer/route-state.test.ts": "web-dashboard",
-        "packages/web/tests/unit/viewer/token-usage-nav.test.ts": "web-dashboard"
+        "packages/web/tests/unit/viewer/token-usage-nav.test.ts": "web-dashboard",
+        "packages/web/tests/unit/viewer/graph-interaction.test.ts": "web-dashboard",
+        "packages/web/tests/unit/viewer/graph-zoom.test.ts": "web-dashboard",
+        "tests/check-gateway-test.mjs": "monorepo-root",
+        "tests/check-gateway-regex.mjs": "monorepo-root",
+        "tests/cli-contract.test.mjs": "monorepo-root"
       }
     },
     "riskJustifications": [

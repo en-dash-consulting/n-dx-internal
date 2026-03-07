@@ -19,11 +19,28 @@
  * ```
  *
  * By concentrating all hench→rex runtime imports here, we ensure:
- * - The cross-package surface is **explicit** (8 re-exports, not 14
- *   scattered imports).
+ * - The cross-package surface is **explicit** (re-exports, not scattered
+ *   imports).
  * - The DAG stays **acyclic** — rex never imports from hench.
  * - Future changes to rex's public API need only be updated in this
  *   single file.
+ *
+ * ## Migration safety
+ *
+ * This gateway is the sole cross-zone coupling surface for ~160 hench
+ * files. To mitigate blast radius from rex API changes:
+ *
+ * 1. **Contract test** — `tests/unit/prd/rex-gateway.test.ts` verifies
+ *    every re-export exists and is callable, catching API drift at test
+ *    time rather than in production agent loops.
+ *
+ * 2. **Domain-aligned sections** — re-exports are grouped by concern
+ *    (store, tree, task-selection, validation, etc.). If rex ever splits
+ *    into sub-packages, each section can be migrated independently.
+ *
+ * 3. **Narrow consumer surface** — only 3 files import from this
+ *    gateway (cli/commands/run.ts, agent/planning/brief.ts,
+ *    tools/rex.ts). Each imports only the subset it needs.
  *
  * **Type-only** imports (`import type { PRDStore, … } from "rex"`)
  * are deliberately excluded — they are erased at compile time and
@@ -32,6 +49,7 @@
  *
  * @module hench/prd/rex-gateway
  * @see packages/web/src/server/domain-gateway.ts — web's equivalent gateway
+ * @see packages/hench/tests/unit/prd/rex-gateway.test.ts — contract test
  */
 
 // ---- Store factory ----------------------------------------------------------

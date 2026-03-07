@@ -19048,11 +19048,12 @@
     {
       "id": "0debcab8-0b82-4b67-99ef-0a4bcfc81032",
       "title": "Address pattern issues (5 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- crash-recovery has only 1 incoming call-graph edge despite 3 cross-zone import edges from web-viewer. The zone is consumed by a single caller at runtime, making it a de facto singleton utility. This strengthens the case for absorbing it into web-dashboard as an internal sub-module rather than maintaining a separate zone boundary.\n- Generated artifact HENCH_CALLGRAPH_FINDINGS.md is committed but has no CI regeneration-and-diff guard; it can silently go stale after hench source changes\n- A single gateway file (src/prd/rex-gateway.ts) is the only cross-zone coupling surface for 160 files; gateway API breakage has maximum blast radius within hench — no incremental migration path exists if the rex API changes.\n- Orchestration-to-domain boundary is enforced at runtime only (subprocess spawning); a mismatched CLI argument or removed subcommand will produce a silent runtime failure with no compile-time safety net.\n- Zone conflates web-package unit tests with monorepo-root contract scripts; splitting into separate zones aligned to their physical location would improve discoverability and ownership clarity",
       "priority": "high",
       "source": "sourcevision",
+      "startedAt": "2026-03-07T02:33:46.980Z",
       "recommendationMeta": {
         "findingHashes": [
           "5180d6350395",
@@ -19066,7 +19067,8 @@
           "warning": 5
         },
         "findingCount": 5
-      }
+      },
+      "completedAt": "2026-03-07T02:39:29.935Z"
     },
     {
       "id": "7db09c37-23c0-4d64-90ed-bc90ee3c595d",
@@ -19098,6 +19100,63 @@
         },
         "findingCount": 11
       }
+    },
+    {
+      "id": "eece7e94-0268-4fe4-b046-59d4db803173",
+      "title": "Repository Governance and Community Standards",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "0a31d148-55c3-4c5b-9754-8cbe88fd0226",
+          "title": "Code of Conduct",
+          "status": "pending",
+          "level": "feature",
+          "description": "Establish a code of conduct document for the repository to set community and contributor expectations.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "8cf40be7-6f18-4e6e-8c9c-10f2c9330342",
+              "title": "Add CODE_OF_CONDUCT.md placeholder to repository root",
+              "status": "pending",
+              "level": "task",
+              "description": "Create a CODE_OF_CONDUCT.md file at the repository root with placeholder content that the user will replace with their own. Include a minimal stub structure (title, sections) so the file is valid and discoverable by GitHub and contributors, and reference it from the README.",
+              "acceptanceCriteria": [
+                "CODE_OF_CONDUCT.md exists at the repository root",
+                "File contains clearly marked placeholder content indicating it will be replaced",
+                "README.md links to CODE_OF_CONDUCT.md in a Contributing or Community section",
+                "File is tracked in git and included in the next commit"
+              ],
+              "priority": "low",
+              "tags": [
+                "docs",
+                "community"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "7bdd57f8-88b4-44b9-b9a5-026b0180fd80",
+              "title": "Wire CODE_OF_CONDUCT.md into package metadata and CI validation",
+              "status": "pending",
+              "level": "task",
+              "description": "Ensure the code of conduct is referenced in package.json or repository metadata where applicable, and add a CI check that verifies the file exists and is non-empty so it cannot be accidentally deleted.",
+              "acceptanceCriteria": [
+                "At least one package.json or root metadata field references the code of conduct (e.g. 'funding', 'bugs', or a custom field in the monorepo root)",
+                "CI pipeline (ci.js or GitHub Actions) includes a step that fails if CODE_OF_CONDUCT.md is missing or empty",
+                "CI step is documented in the pipeline comments"
+              ],
+              "priority": "low",
+              "tags": [
+                "docs",
+                "ci",
+                "community"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
