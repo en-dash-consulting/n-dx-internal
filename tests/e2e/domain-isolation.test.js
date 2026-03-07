@@ -226,6 +226,56 @@ describe("architecture policy: domain layer isolation", () => {
   });
 });
 
+describe("architecture policy: orchestration tier boundary", () => {
+  /**
+   * Orchestration-tier files (cli.js, ci.js, web.js, and root-level service
+   * files) must not import domain or execution packages as libraries. They
+   * should spawn CLIs or use filesystem coordination instead.
+   *
+   * claude-integration.js is a root-level service file that participates
+   * in the orchestration tier — it must follow the same rules.
+   */
+  const ORCHESTRATION_FILES = [
+    "cli.js",
+    "ci.js",
+    "web.js",
+    "config.js",
+    "pr-check.js",
+    "claude-integration.js",
+  ];
+
+  const DOMAIN_PACKAGES = ["rex", "sourcevision", "hench", "@n-dx/web"];
+
+  for (const file of ORCHESTRATION_FILES) {
+    it(`${file} must not have runtime imports from domain/execution packages`, () => {
+      const fullPath = join(ROOT, file);
+      if (!existsSync(fullPath)) return; // skip if file was removed
+
+      const content = readFileSync(fullPath, "utf-8");
+      const violations = [];
+
+      for (const pkg of DOMAIN_PACKAGES) {
+        if (hasRuntimeImportFrom(content, pkg)) {
+          violations.push(pkg);
+        }
+      }
+
+      if (violations.length > 0) {
+        expect.fail(
+          [
+            `Orchestration-tier file ${file} has runtime imports from domain packages.`,
+            "Orchestration files must spawn CLIs or coordinate via filesystem — no library imports.",
+            "",
+            `Imports from: ${violations.join(", ")}`,
+            "",
+            "Move the import into the relevant package or use child_process.spawn instead.",
+          ].join("\n"),
+        );
+      }
+    });
+  }
+});
+
 /**
  * Gateway rules loaded from the shared gateway-rules.json.
  *

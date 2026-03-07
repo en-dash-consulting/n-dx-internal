@@ -8,9 +8,30 @@
  * field), so we count edges rather than summing a weight.
  */
 
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 
-const cg = JSON.parse(readFileSync(".sourcevision/callgraph.json", "utf-8"));
+const CALLGRAPH_PATH = ".sourcevision/callgraph.json";
+
+if (!existsSync(CALLGRAPH_PATH)) {
+  console.error(
+    `ERROR: ${CALLGRAPH_PATH} not found.\n` +
+    `Run 'ndx plan .' or 'sourcevision analyze .' first to generate analysis artifacts.`,
+  );
+  process.exit(1);
+}
+
+let cg;
+try {
+  cg = JSON.parse(readFileSync(CALLGRAPH_PATH, "utf-8"));
+} catch (err) {
+  console.error(`ERROR: Failed to parse ${CALLGRAPH_PATH}: ${err.message}`);
+  process.exit(1);
+}
+
+if (!cg.edges || !Array.isArray(cg.edges)) {
+  console.error(`ERROR: ${CALLGRAPH_PATH} is missing or has an invalid 'edges' array.`);
+  process.exit(1);
+}
 
 // Filter to hench src files only — both caller and callee must be in hench/src/
 const henchEdges = cg.edges.filter(

@@ -18942,6 +18942,118 @@
         },
         "findingCount": 13
       }
+    },
+    {
+      "id": "491e1097-3e0a-4900-8cf3-fa36c42cafae",
+      "title": "Address observation issues (10 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- High coupling (0.71) — 3 imports target \"web-dashboard\"\n- Cohesion of 0.29 is below the warning threshold — the two files in this zone (hook and detector) are more coupled to web-dashboard than to each other, suggesting a zone boundary mismatch.\n- Coupling of 0.71 exceeds the warning threshold; the crash recovery subsystem has high external dependency, which reduces its reusability and increases change risk.\n- use-crash-recovery.ts lacks a unit test; given that crash recovery is a reliability-critical code path, this gap should be addressed.\n- Bidirectional coupling: \"web-dashboard\" ↔ \"web-package-scaffold\" (3+9 crossings) — consider extracting shared interface\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects\n- 9 entry points — wide API surface, consider consolidating exports\n- Bidirectional imports with both 'crash' and 'panel' zones create implicit circular dependencies at the zone level; these relationships should be reviewed to ensure directional ownership is clear.\n- analyze-panel.ts and proposal-editor.ts lack unit tests while the simpler smart-add-input and batch-import-panel components are tested — the more complex components should be prioritized for test coverage.\n- Viewer UI files are co-classified with build scripts due to shared import edges; zone pinning for elapsed-time.ts, route-state.ts, task-audit.ts, use-tick.ts, lazy-children.ts, and listener-lifecycle.ts is recommended to correct classification.",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "09ff2877c8a6",
+          "567cfe71b026",
+          "dde73163705d",
+          "e71b5db306a7",
+          "ee7001d9b32e",
+          "3a82920140f7",
+          "606920a99dff",
+          "d8d653a9da73",
+          "81833025b647",
+          "059050287ff4"
+        ],
+        "category": "observation",
+        "severityDistribution": {
+          "warning": 10
+        },
+        "findingCount": 10
+      }
+    },
+    {
+      "id": "d2bae4a2-90d4-4f6b-b76b-0c10c75da78f",
+      "title": "Address suggestion issues (9 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Add a pnpm verify script (or Makefile target) that runs all three verification-tier mechanisms in sequence: vitest e2e, check-gateway-regex.mjs, check-gateway-test.mjs, and test-zone-consistency.mjs — removes the current requirement for contributors to manually discover and run four separate commands\n- Add an intra-package layer-direction check to architecture-policy.test.js that parses import paths within each package and asserts domain files do not import from cli/ subdirectories — directly guards the existing packages-rex circular sub-zone violation and prevents recurrence\n- Create a single gateway-rules.json (or equivalent) at the monorepo root that both check-gateway-regex.mjs and architecture-policy.test.js consume as the authoritative source of gateway file paths and allowed import patterns — eliminates silent divergence between two enforcement mechanisms\n- packages/hench/package-lock.json should not exist in a pnpm workspace. It can cause dependency resolution conflicts if npm is run inside the package. Verify it is not committed to source control or add it to .gitignore, and document that pnpm is the sole package manager for this monorepo.\n- Add a dedicated intra-package layering test (e.g., in architecture-policy.test.js) that asserts domain-layer files do not import from CLI-layer files within the same package — this would catch the existing packages-rex:unit-analyze→cli violation and prevent recurrence\n- Zone \"Crash Recovery\" (crash-recovery) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention\n- The fix for the useState misuse in analyze-panel.ts requires two coordinated edits: (1) add useEffect to the import on line 9: `import { useState, useCallback, useEffect } from 'preact/hooks'`, and (2) replace line 74 with `useEffect(() => { loadPending(); }, [])`. Both changes must land together — changing line 74 without updating the import will fail the TypeScript build.\n- Add a self-test or snapshot fixture to check-gateway-regex.mjs and check-gateway-test.mjs that validates the regex patterns catch known-bad imports — untested validators provide false confidence\n- Bind the gateway check scripts to gateway file paths via a shared config constant rather than hardcoded regex strings, so renaming a gateway file breaks the check explicitly rather than silently",
+      "priority": "critical",
+      "source": "sourcevision",
+      "startedAt": "2026-03-07T02:00:42.471Z",
+      "completedAt": "2026-03-07T02:07:23.769Z",
+      "recommendationMeta": {
+        "findingHashes": [
+          "1cf705c81f12",
+          "57fed4cecaa2",
+          "92460785ab13",
+          "7e1408ad7f5b",
+          "5da393036ae4",
+          "66ab47514bd0",
+          "e96afa4c201e",
+          "9b62d0bee5a7",
+          "738207b076b2"
+        ],
+        "category": "suggestion",
+        "severityDistribution": {
+          "warning": 6,
+          "critical": 3
+        },
+        "findingCount": 9
+      }
+    },
+    {
+      "id": "0debcab8-0b82-4b67-99ef-0a4bcfc81032",
+      "title": "Address pattern issues (5 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- crash-recovery has only 1 incoming call-graph edge despite 3 cross-zone import edges from web-viewer. The zone is consumed by a single caller at runtime, making it a de facto singleton utility. This strengthens the case for absorbing it into web-dashboard as an internal sub-module rather than maintaining a separate zone boundary.\n- Generated artifact HENCH_CALLGRAPH_FINDINGS.md is committed but has no CI regeneration-and-diff guard; it can silently go stale after hench source changes\n- A single gateway file (src/prd/rex-gateway.ts) is the only cross-zone coupling surface for 160 files; gateway API breakage has maximum blast radius within hench — no incremental migration path exists if the rex API changes.\n- Orchestration-to-domain boundary is enforced at runtime only (subprocess spawning); a mismatched CLI argument or removed subcommand will produce a silent runtime failure with no compile-time safety net.\n- Zone conflates web-package unit tests with monorepo-root contract scripts; splitting into separate zones aligned to their physical location would improve discoverability and ownership clarity",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "5180d6350395",
+          "05bc846df47d",
+          "ad5574e1f4e8",
+          "0b662b5811dd",
+          "7fe50817143d"
+        ],
+        "category": "pattern",
+        "severityDistribution": {
+          "warning": 5
+        },
+        "findingCount": 5
+      }
+    },
+    {
+      "id": "7db09c37-23c0-4d64-90ed-bc90ee3c595d",
+      "title": "Address anti-pattern issues (11 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- E2E tests that spawn CLI subprocesses share no documented workspace isolation strategy; if tests run concurrently and both write to .rex/prd.json or .sourcevision/, results are non-deterministic. No test uses a dedicated temp directory per test file.\n- `_testHelpers` is exported through the production module surface of crash-detector.ts, bundling internal implementation details (storage keys, private functions) into the public API. Test-only exports should use a separate test-support file or conditional barrel to avoid polluting the production interface.\n- hench-callgraph-analysis.mjs produces HENCH_CALLGRAPH_FINDINGS.md but has no fail-fast guard that detects missing or stale input artifacts; silent success on a cold checkout produces a misleading (empty or stale) report with no error signal.\n- The rex-gateway is imported directly by scattered consumer files across 160 files with no internal hench interface layer. When the rex gateway API changes, every call site must be updated individually with no intermediate abstraction to narrow the scope of change. An internal adapter or facade within hench that wraps the gateway would contain the blast radius.\n- The orchestration tier's architectural boundary (no direct package imports) is enforced solely by developer convention — no ESLint rule, TypeScript path mapping, or CI check prevents a direct `import` from cli.js into a domain package. A single accidental import would collapse the tier silently.\n- claude-integration.js is a service file at the monorepo root that bypasses the gateway pattern entirely. Any cross-package imports it makes are invisible to gateway audits and import-graph coupling scores, creating an unmonitored coupling surface outside all four tiers of the dependency hierarchy.\n- Proposal, ProposalFeature, and ProposalTask types are defined locally in analyze-panel.ts rather than imported from a shared rex schema or gateway. The local copy will silently diverge from the API response shape if the server-side PRD proposal format changes.\n- `useState(() => { loadPending(); })` in analyze-panel.ts misuses the useState initializer to trigger an async network call. This is not the intended use of the initializer (which sets initial synchronous state) and bypasses the standard effect lifecycle, making cleanup and double-invocation behavior undefined.\n- Web viewer unit tests (graph-interaction.test.ts, graph-zoom.test.ts) are excluded from packages/web per-package test coverage because they reside outside the package boundary in this zone; per-package coverage reports for the web package silently undercount viewer UI test coverage.\n- Zone contains files from two physically distinct roots (packages/web/tests/unit/viewer/ and tests/) with unrelated purposes; zone name 'viewer-gateway-tests' implies viewer scope only, actively misleading contributors about the gateway scripts' monorepo-wide scope. Should be split into two zones aligned to physical location and concern.\n- God function: <module> in packages/web/src/landing/landing.ts calls 42 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-03-07T02:08:13.639Z",
+      "recommendationMeta": {
+        "findingHashes": [
+          "375e34ebbccf",
+          "4354f3832b88",
+          "21f7bfb45d77",
+          "c66129ecc1b4",
+          "881dacd12b3e",
+          "036aeaef617d",
+          "1f4a7b39f1be",
+          "8ed94dfe014a",
+          "13fd061901e7",
+          "5ad15ee433e3",
+          "bb80537c389b"
+        ],
+        "category": "anti-pattern",
+        "severityDistribution": {
+          "warning": 11
+        },
+        "findingCount": 11
+      },
+      "completedAt": "2026-03-07T02:16:05.730Z"
     }
   ]
 }
