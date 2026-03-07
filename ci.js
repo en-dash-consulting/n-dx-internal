@@ -8,6 +8,7 @@
  *   1. sourcevision analyze --fast  (codebase analysis, no AI enrichment)
  *   2. sourcevision validate        (schema checks on analysis output)
  *   3. zone health check            (cohesion/coupling threshold assertions)
+ *   3a. zone ID consistency         (zones.json ↔ zone output directories)
  *   3b. gateway import boundary     (cross-package imports must use gateways)
  *   4. rex validate --format=json   (PRD health checks)
  *   5. rex status --format=json     (completion stats)
@@ -143,6 +144,31 @@ export async function runCI(dir, flags, { run, tools }) {
     if (!isJSON) {
       for (const v of zoneHealth.violations) {
         info(`    ✗ ${v.id}: cohesion=${v.cohesion.toFixed(2)}, coupling=${v.coupling.toFixed(2)}`);
+      }
+    }
+  }
+
+  // ── Step 3a: zone ID consistency ─────────────────────────────────────────
+  info("── zone ID consistency ──");
+  const zoneConsistency = checkZoneIdConsistency(dir);
+  if (!zoneConsistency.ok) allOk = false;
+
+  steps.push({
+    name: "zone-id-consistency",
+    ok: zoneConsistency.ok,
+    detail: zoneConsistency.ok
+      ? `${zoneConsistency.checked} zone IDs consistent across zones.json and zone output directories`
+      : `${zoneConsistency.mismatches.length} zone ID inconsistency(ies) found`,
+    ...(zoneConsistency.mismatches.length > 0 ? { mismatches: zoneConsistency.mismatches } : {}),
+  });
+
+  if (zoneConsistency.ok) {
+    info(`  ✓ zone ID consistency (${zoneConsistency.checked} zones checked)`);
+  } else {
+    info(`  ✗ zone ID consistency`);
+    if (!isJSON) {
+      for (const m of zoneConsistency.mismatches) {
+        info(`    ✗ ${m}`);
       }
     }
   }
@@ -390,6 +416,92 @@ function checkZoneHealth(dir) {
     ok: violations.length === 0,
     checked,
     violations,
+  };
+}
+
+// ── Zone ID consistency ─────────────────────────────────────────────────────
+
+/**
+ * Convert a zone ID to the directory name used by zone-output.ts.
+ *
+ * Zone IDs may contain ":" (sub-analysis separator) which gets replaced
+ * with "-" in directory names because ":" is invalid on Windows.
+ * For nested zones with "/" separators, only the last segment is used.
+ */
+function zoneIdToDirName(id) {
+  const segment = id.includes("/") ? id.split("/").pop() : id;
+  return segment.replace(/:/g, "-");
+}
+
+/**
+ * Check that zone IDs in zones.json are consistent with the zone output
+ * directories in .sourcevision/zones/.
+ *
+ * Detects:
+ *   - Top-level zones in zones.json that have no corresponding output directory
+ *   - Output directories that correspond to no zone in zones.json
+ *
+ * Only checks top-level zones (sub-zones live inside their parent's directory).
+ */
+function checkZoneIdConsistency(dir) {
+  const zonesJsonPath = join(dir, ".sourcevision", "zones.json");
+  const zonesDir = join(dir, ".sourcevision", "zones");
+
+  if (!existsSync(zonesJsonPath) || !existsSync(zonesDir)) {
+    return { ok: true, checked: 0, mismatches: [] };
+  }
+
+  let zonesData;
+  try {
+    zonesData = JSON.parse(readFileSync(zonesJsonPath, "utf-8"));
+  } catch {
+    return { ok: true, checked: 0, mismatches: [] };
+  }
+
+  const topLevelZones = zonesData.zones ?? [];
+  const mismatches = [];
+
+  // Build set of expected directory names from zones.json (top-level only)
+  const expectedDirs = new Map();
+  for (const zone of topLevelZones) {
+    const dirName = zoneIdToDirName(zone.id);
+    expectedDirs.set(dirName, zone.id);
+  }
+
+  // Build set of actual directories
+  let actualDirs;
+  try {
+    actualDirs = new Set(
+      readdirSync(zonesDir, { withFileTypes: true })
+        .filter((e) => e.isDirectory())
+        .map((e) => e.name),
+    );
+  } catch {
+    return { ok: true, checked: 0, mismatches: [] };
+  }
+
+  // Check for zones.json entries missing from directories
+  for (const [dirName, zoneId] of expectedDirs) {
+    if (!actualDirs.has(dirName)) {
+      mismatches.push(
+        `zone "${zoneId}" (expected dir "${dirName}") exists in zones.json but has no output directory`,
+      );
+    }
+  }
+
+  // Check for orphan directories not in zones.json
+  for (const dirName of actualDirs) {
+    if (!expectedDirs.has(dirName)) {
+      mismatches.push(
+        `directory "${dirName}" exists in .sourcevision/zones/ but has no matching zone in zones.json`,
+      );
+    }
+  }
+
+  return {
+    ok: mismatches.length === 0,
+    checked: expectedDirs.size,
+    mismatches,
   };
 }
 
