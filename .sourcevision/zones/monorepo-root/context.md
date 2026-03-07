@@ -71,6 +71,8 @@ Internal:
 [pattern] [warning] Orchestration-to-domain boundary is enforced at runtime only (subprocess spawning); a mismatched CLI argument or removed subcommand will produce a silent runtime failure with no compile-time safety net.
 [anti-pattern] [warning] The orchestration tier's architectural boundary (no direct package imports) is enforced solely by developer convention — no ESLint rule, TypeScript path mapping, or CI check prevents a direct `import` from cli.js into a domain package. A single accidental import would collapse the tier silently.
 [anti-pattern] [warning] claude-integration.js is a service file at the monorepo root that bypasses the gateway pattern entirely. Any cross-package imports it makes are invisible to gateway audits and import-graph coupling scores, creating an unmonitored coupling surface outside all four tiers of the dependency hierarchy.
+[suggestion] [info] CODEX.md and CLAUDE.md at the root serve parallel AI-context roles with no documented ownership split. Add a header to each file declaring which AI system it targets and a cross-reference to the other, or consolidate into a single AI-context document with sections per consumer.
+[suggestion] [info] claude-integration.js does not follow the action-verb naming convention of other root scripts (cli.js, web.js, ci.js, config.js). Rename to reflect its action (e.g., claude-proxy.js) or migrate it into a named package to eliminate the naming inconsistency and close the gateway audit gap simultaneously.
 
 </findings>
 
@@ -89,6 +91,11 @@ Internal:
 - The orchestration scripts (cli.js, web.js, ci.js) enforce the four-tier boundary through subprocess spawning rather than module boundaries, meaning any accidental `require()` or `import` added to these files would silently collapse the tier boundary with no lint, type, or test feedback at the point of introduction.
 - claude-integration.js is a service file at the monorepo root that bypasses the gateway pattern entirely. Any cross-package imports it makes are invisible to gateway audits and import-graph coupling scores, creating an unmonitored coupling surface outside all four tiers of the dependency hierarchy.
 - The orchestration tier's architectural boundary (no direct package imports) is enforced solely by developer convention — no ESLint rule, TypeScript path mapping, or CI check prevents a direct `import` from cli.js into a domain package. A single accidental import would collapse the tier silently.
+- CODEX.md exists alongside CLAUDE.md at the root with no documented convention for which file is authoritative for which AI consumer — the split creates two competing AI context documents with no cross-reference or ownership rule.
+- claude-integration.js uses a noun-compound suffix ('integration') while all other root scripts use action verbs (cli, web, ci, config) — the naming inconsistency makes its role harder to discover by convention alone.
+- The root-level scripts (cli.js, web.js, ci.js, config.js) have no file-level JSDoc or module header describing their role in the four-tier hierarchy; a new contributor reading the file list cannot distinguish orchestration entry points from utility scripts without reading the CLAUDE.md.
+- CODEX.md and CLAUDE.md at the root serve parallel AI-context roles with no documented ownership split. Add a header to each file declaring which AI system it targets and a cross-reference to the other, or consolidate into a single AI-context document with sections per consumer.
+- claude-integration.js does not follow the action-verb naming convention of other root scripts (cli.js, web.js, ci.js, config.js). Rename to reflect its action (e.g., claude-proxy.js) or migrate it into a named package to eliminate the naming inconsistency and close the gateway audit gap simultaneously.
 - [call graph] 444 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

@@ -5,12 +5,12 @@
 
 ## Project Overview
 
-- **Files**: 1047
+- **Files**: 1046
 - **Lines of code**: 349,340
 - **Languages**: TypeScript (879), CSS (44), JavaScript (39), Markdown (31), JSON (30)
 - **Zones**: 36 (36 with descriptions)
 - **Git**: feature/integrate-codex @ 21786d2
-- **Analyzed**: 2026-03-07T01:37:02.853Z
+- **Analyzed**: 2026-03-07T01:54:24.391Z
 
 ## Architecture Zones
 
@@ -541,14 +541,14 @@ POST    /api/hench/workflow/suggestions/:id
 - E2E tests that spawn CLI subprocesses share no documented workspace isolation strategy; if tests run concurrently and both write to .rex/prd.json or .sourcevision/, results are non-deterministic. No test uses a dedicated temp directory per test file. [warning] (cli-e2e-tests)
 - `_testHelpers` is exported through the production module surface of crash-detector.ts, bundling internal implementation details (storage keys, private functions) into the public API. Test-only exports should use a separate test-support file or conditional barrel to avoid polluting the production interface. [warning] (crash-recovery)
 - hench-callgraph-analysis.mjs produces HENCH_CALLGRAPH_FINDINGS.md but has no fail-fast guard that detects missing or stale input artifacts; silent success on a cold checkout produces a misleading (empty or stale) report with no error signal. [warning] (dev-analysis-scripts)
-- Gateway enforcement logic is split across two mechanisms (Vitest runner in cli-e2e-tests, standalone .mjs in viewer-gateway-tests) with no shared rule definition. If the regex patterns or gateway file lists diverge, one mechanism will pass while the other fails, producing inconsistent enforcement depending on which check runs. A single authoritative gateway rule source (e.g., a shared config file) consumed by both mechanisms would prevent silent divergence. [warning]
-- Test files are distributed across two physical roots (monorepo tests/ and packages/*/tests/) with no documented convention for which root to use. The algorithmic zone detector groups files by import proximity, not physical intent, so misplaced test files silently land in wrong zones. New contributors have no signal about where to add new test files. [info]
-- The crash zone (3 files, cohesion 0.29) has the lowest cohesion score in the codebase. At least one file in this zone is algorithmically near-unrelated to the others. A file-level audit is needed to determine if a misclassified file should be pinned to web-viewer or another zone before treating crash-recovery as a coherent architectural unit. [warning]
-- The verification tier (viewer-gateway-tests, dev-analysis-scripts, cli-e2e-tests) has no orchestrating command that runs all architectural checks in sequence. A developer validating a structural change must discover and run three separate mechanisms manually; the gap means partial validation is the norm rather than the exception. [warning]
-- packages-rex:unit-analyze calls packages-rex:cli 239 times — domain code calling into the CLI layer inverts the expected CLI→domain dependency direction. This is a concrete layering violation (not just a circular import): CLI argument parsing and output formatting are leaking into domain semantics. Extracting a shared internal module that both layers can import would eliminate the cycle without violating the layering contract. [critical]
-- tick-timer is a small primitive zone with 27 incoming call-graph edges — the widest blast radius of any zone in the web package. It has no abstraction layer between itself and its 27 dependents. A breaking API change in tick-timer propagates simultaneously to all consumers with no intermediate facade to narrow the impact scope. [warning]
-- God function: <module> in packages/web/src/landing/landing.ts calls 42 unique functions — consider decomposing into smaller, focused functions [warning]
-- ... and 9 more
+- The rex-gateway is imported directly by scattered consumer files across 160 files with no internal hench interface layer. When the rex gateway API changes, every call site must be updated individually with no intermediate abstraction to narrow the scope of change. An internal adapter or facade within hench that wraps the gateway would contain the blast radius. [warning] (hench-agent)
+- The orchestration tier's architectural boundary (no direct package imports) is enforced solely by developer convention — no ESLint rule, TypeScript path mapping, or CI check prevents a direct `import` from cli.js into a domain package. A single accidental import would collapse the tier silently. [warning] (monorepo-root)
+- claude-integration.js is a service file at the monorepo root that bypasses the gateway pattern entirely. Any cross-package imports it makes are invisible to gateway audits and import-graph coupling scores, creating an unmonitored coupling surface outside all four tiers of the dependency hierarchy. [warning] (monorepo-root)
+- Proposal, ProposalFeature, and ProposalTask types are defined locally in analyze-panel.ts rather than imported from a shared rex schema or gateway. The local copy will silently diverge from the API response shape if the server-side PRD proposal format changes. [warning] (prd-analysis-panels)
+- `useState(() => { loadPending(); })` in analyze-panel.ts misuses the useState initializer to trigger an async network call. This is not the intended use of the initializer (which sets initial synchronous state) and bypasses the standard effect lifecycle, making cleanup and double-invocation behavior undefined. [warning] (prd-analysis-panels)
+- Web viewer unit tests (graph-interaction.test.ts, graph-zoom.test.ts) are excluded from packages/web per-package test coverage because they reside outside the package boundary in this zone; per-package coverage reports for the web package silently undercount viewer UI test coverage. [warning] (viewer-gateway-tests)
+- Zone contains files from two physically distinct roots (packages/web/tests/unit/viewer/ and tests/) with unrelated purposes; zone name 'viewer-gateway-tests' implies viewer scope only, actively misleading contributors about the gateway scripts' monorepo-wide scope. Should be split into two zones aligned to physical location and concern. [warning] (viewer-gateway-tests)
+- ... and 2 more
 
 ### Patterns
 
@@ -568,7 +568,6 @@ POST    /api/hench/workflow/suggestions/:id
 
 - Architectural rules documented here are enforced by tests in two separate zones with no automated link between them; the documentation and its enforcement tests can diverge without detection. [info] (architecture-docs)
 - crash-recovery's 0 outgoing call-graph edges vs 3 outbound import edges to web-dashboard indicates the coupling is type-import-only. The zone's effective runtime isolation is much higher than its cohesion/coupling scores suggest — the metric overstates the structural risk. [info] (crash-recovery)
-- Schema drift between prd.json and the rex deserializer is undetectable by import-graph analysis; only rex's own runtime validation guards against a mismatch, making this a latent data-contract risk. [warning] (prd-state)
 - tick-timer has zero coupling to web-dashboard at the call level (1 outgoing edge, none to web-dashboard) while web-dashboard has 4 inbound import edges from it — the dependency flows strictly upward from primitive to consumer, confirming a clean unidirectional layering that the zone-level bidirectional label obscures. [info] (tick-timer)
 - Tightly coupled modules: packages/web/src/server/routes-rex.ts and packages/web/src/server/types.ts — 142 cross-file calls (unidirectional). Consider extracting shared interface or merging [info]
 
@@ -584,21 +583,21 @@ POST    /api/hench/workflow/suggestions/:id
 - architecture-policy.test.js and the gateway check scripts in viewer-gateway-tests both validate gateway rules — consider consolidating gateway policy assertions into one canonical location to avoid drift. [info] (cli-e2e-tests)
 - High coupling (0.71) — 3 imports target "web-dashboard" [warning] (crash-recovery)
 - Cohesion of 0.29 is below the warning threshold — the two files in this zone (hook and detector) are more coupled to web-dashboard than to each other, suggesting a zone boundary mismatch. [warning] (crash-recovery)
-- ... and 41 more
+- ... and 38 more
 
 ### Suggestions
 
 - packages/web/src/viewer/hooks/ contains files from 3 zones (crash-recovery, web-dashboard, web-package-scaffold) — consider grouping into subdirectories to clarify architectural boundaries [info]
+- Add a binary asset management convention to PACKAGE_GUIDELINES.md covering: (1) where package logos/icons should live relative to the package root, (2) whether they must be excluded from npm publish via 'files' or .npmignore, and (3) whether the '-F' suffix for icon variants is an official convention. Both hench and web currently bundle PNG assets without documented intent. [info]
+- Add a pnpm verify script (or Makefile target) that runs all three verification-tier mechanisms in sequence: vitest e2e, check-gateway-regex.mjs, check-gateway-test.mjs, and test-zone-consistency.mjs — removes the current requirement for contributors to manually discover and run four separate commands [warning]
+- Add an intra-package layer-direction check to architecture-policy.test.js that parses import paths within each package and asserts domain files do not import from cli/ subdirectories — directly guards the existing packages-rex circular sub-zone violation and prevents recurrence [critical]
+- Create a single gateway-rules.json (or equivalent) at the monorepo root that both check-gateway-regex.mjs and architecture-policy.test.js consume as the authoritative source of gateway file paths and allowed import patterns — eliminates silent divergence between two enforcement mechanisms [warning]
+- Cross-zone test files (files that import from two or more production zones) should be placed in a dedicated tests/cross-zone/ or tests/integration/ directory rather than either zone's unit test folder. elapsed-time-memoization.test.ts is currently misclassified into tick-timer by the zone algorithm because its closest import is tick-timer.ts, despite also covering web-dashboard's elapsed-time.ts. A documented convention for cross-zone tests would prevent future misclassification. [info]
+- Document the no-direct-peer-import invariant for web satellite zones (crash-recovery, tick-timer, prd-analysis-panels must not import from each other — only from web-viewer). Add a gateway policy rule enforcing this in the existing gateway check scripts. Currently the constraint exists empirically but has no enforcement mechanism, making it invisible to contributors adding new cross-zone imports. [info]
+- PACKAGE_GUIDELINES.md documents what gateways must do (re-export only, one per upstream package) but not where they must live. Hench places its gateway at src/prd/rex-gateway.ts; web places gateways at src/server/{rex,domain}-gateway.ts. Add a 'Gateway file placement' rule specifying the canonical directory and naming pattern to prevent future gateways from being created in ad-hoc locations. [info]
+- Zone ID naming is inconsistent across the codebase: small/infrastructure zones use plain names (crash, panel, tests, scripts, e2e) while larger or web-specific zones use hyphenated compounds (web-viewer, hench-agent, web-server). Document a zone naming convention in sourcevision configuration or PACKAGE_GUIDELINES.md so that auto-detected zones and manually pinned zones follow a predictable scheme. [info]
 - Hub function: walkTree in packages/rex/src/core/tree.ts is called from 29 files (high fan-in expected for this module type) — changes here have wide impact, consider if responsibilities can be narrowed [info]
-- 3 potentially unused exports in packages/web/src/viewer/polling/polling-restart.ts have no incoming calls: isPollingRestartStarted, isCoordinatorSuspended, resetPollingRestart [info]
-- 2 potentially unused exports in packages/web/src/viewer/loader.ts have no incoming calls: loadModule, loadFromServer [info]
-- Potentially unused export: simpleGlobMatch in packages/hench/src/shared/glob.ts has no incoming calls — verify if still needed [info]
-- Potentially unused export: detectBranchLifecycle in packages/sourcevision/src/analyzers/branch-work-filter.ts has no incoming calls — verify if still needed [info]
-- Potentially unused export: resolveWorkedEpicTitlesForRange in packages/sourcevision/src/cli/commands/prd-epic-resolver.ts has no incoming calls — verify if still needed [info]
-- Zone "hench-agent" has files across 32 directories — consider consolidating under a dedicated directory [info] (hench-agent)
-- Zone "web-dashboard" has files across 22 directories — consider consolidating under a dedicated directory [info] (web-dashboard)
-- Zone "web-package-scaffold" has files across 6 directories — consider consolidating under a dedicated directory [info] (web-package-scaffold)
-- ... and 5 more
+- ... and 32 more
 
 ## Next Steps
 
@@ -629,17 +628,23 @@ Prioritized work items derived from analysis:
 1. **use-crash-recovery.ts lacks a unit test; given that crash recovery is a reliabi…**
    Files: `packages/web/src/viewer/hooks/use-crash-recovery.ts`, `packages/web/src/viewer/performance/crash-detector.ts`, `packages/web/tests/unit/viewer/crash-detector.test.ts`
 
-1. **packages-rex:unit-analyze calls packages-rex:cli 239 times — domain code callin…**
+1. **Add an intra-package layer-direction check to architecture-policy.test.js that …**
+
+1. **Add a dedicated intra-package layering test (e.g., in architecture-policy.test.…**
+   Files: `tests/e2e/architecture-policy.test.js`, `tests/e2e/cli-arg-contracts.test.js`, `tests/e2e/cli-ci.test.js`
 
 ### Medium Priority
-
-1. **Gateway enforcement logic is split across two mechanisms (V… (+4 related)**
 
 1. **Proposal, ProposalFeature, and ProposalTask types are defin… (+1 related)**
    Files: `packages/web/src/viewer/components/prd-tree/analyze-panel.ts`, `packages/web/src/viewer/components/prd-tree/batch-import-panel.ts`, `packages/web/src/viewer/components/prd-tree/proposal-editor.ts`
 
+1. **God function: <module> in packages/web/src/landing/landing.ts calls 42 unique f…**
+
 1. **Viewer UI files are co-classified with build scripts due to shared import edges…**
    Files: `packages/web/SourceVision-F.png`, `packages/web/SourceVision.png`, `packages/web/build.js`
+
+1. **The fix for the useState misuse in analyze-panel.ts requires two coordinated ed…**
+   Files: `packages/web/src/viewer/components/prd-tree/analyze-panel.ts`, `packages/web/src/viewer/components/prd-tree/batch-import-panel.ts`, `packages/web/src/viewer/components/prd-tree/proposal-editor.ts`
 
 1. **analyze-panel.ts and proposal-editor.ts lack unit tests while the simpler smart…**
    Files: `packages/web/src/viewer/components/prd-tree/analyze-panel.ts`, `packages/web/src/viewer/components/prd-tree/batch-import-panel.ts`, `packages/web/src/viewer/components/prd-tree/proposal-editor.ts`
@@ -659,9 +664,6 @@ Prioritized work items derived from analysis:
 1. **E2E tests that spawn CLI subprocesses share no documented workspace isolation s…**
    Files: `tests/e2e/architecture-policy.test.js`, `tests/e2e/cli-arg-contracts.test.js`, `tests/e2e/cli-ci.test.js`
 
-1. **hench-callgraph-analysis.mjs produces HENCH_CALLGRAPH_FINDINGS.md but has no fa…**
-   Files: `scripts/HENCH_CALLGRAPH_FINDINGS.md`, `scripts/hench-callgraph-analysis.mjs`, `scripts/test-zone-consistency.mjs`
-
 ### Low Priority
 
 1. **Hub function: walkTree in packages/rex/src/core/tree.ts is called from 29 files…**
@@ -671,6 +673,9 @@ Prioritized work items derived from analysis:
 
 1. **Zone "Unit Cli" (packages-rex:unit-cli) has catastrophic risk (score: 0.75, coh…**
    Files: `packages/rex/src/cli/commands/fix.ts`, `packages/rex/src/core/fix.ts`, `packages/rex/tests/unit/cli/commands/fix.test.ts`
+
+1. **Rename the zone to 'crash-detection' to reflect its foundational implementation…**
+   Files: `packages/web/src/viewer/hooks/use-crash-recovery.ts`, `packages/web/src/viewer/performance/crash-detector.ts`, `packages/web/tests/unit/viewer/crash-detector.test.ts`
 
 1. **Zone "Analyzers 3" (packages-sourcevision:analyzers-3) has critical risk (score…**
    Files: `packages/sourcevision/src/analyzers/louvain.ts`, `packages/sourcevision/src/analyzers/zone-hash.ts`, `packages/sourcevision/src/analyzers/zones.ts`
@@ -686,8 +691,6 @@ Prioritized work items derived from analysis:
 
 1. **Potentially unused export: detectBranchLifecycle in packages/sourcevision/src/a…**
 
-1. **Potentially unused export: resolveWorkedEpicTitlesForRange in packages/sourcevi…**
-
 ## File Inventory
 
 | Path | Role | Archetype | Zone |
@@ -695,7 +698,6 @@ Prioritized work items derived from analysis:
 | `.github/workflows/ci.yml` | build |  |  |
 | `.gitignore` | config |  | monorepo-root |
 | `.hench/config.json` | other |  |  |
-| `.hench/locks/48712.lock` | other |  |  |
 | `.npmrc` | config |  | monorepo-root |
 | `.rex/acknowledged-findings.json` | other |  | prd-state |
 | `.rex/archive.json` | other |  | prd-state |

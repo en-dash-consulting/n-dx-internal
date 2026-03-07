@@ -34,7 +34,10 @@
         "Docs zone is fully isolated — no tooling enforces consistency between design docs and actual implementation, so decisions documented here may drift from code over time.",
         "Level-system and steward-plan docs indicate planned structural evolution; these should be linked from the PRD so hench can track implementation progress.",
         "The gateway rules and four-tier hierarchy documented here are enforced by tests in separate zones (cli-e2e-tests via architecture-policy.test.js, viewer-gateway-tests via check-gateway-*.mjs) with no automated cross-reference — documentation and enforcement can drift independently without any tooling raising an alert.",
-        "Architectural rules documented here are enforced by tests in two separate zones with no automated link between them; the documentation and its enforcement tests can diverge without detection."
+        "Architectural rules documented here are enforced by tests in two separate zones with no automated link between them; the documentation and its enforcement tests can diverge without detection.",
+        "docs/2026-03-03-refresh-orchestration-memory-analysis.md uses an ISO-date prefix not found in any other documentation filename — this creates two incompatible naming conventions within the same directory (date-prefixed vs descriptive-only), making sort-by-name misleading for readers expecting related documents to cluster together.",
+        "The 16-file docs directory has no index, table of contents, or README.md to orient a reader — discovery depends entirely on filename parsing, which is undermined by the mixed naming convention.",
+        "The docs/ directory mixes date-prefixed filenames (2026-03-03-refresh-orchestration-memory-analysis.md) with descriptive-only names (memory-architecture.md, level-system-reference.md). Standardize to one convention and add a docs/README.md index linking each file with a one-line description to make the directory navigable without reading all filenames."
       ],
       "riskMetrics": {
         "cohesion": 1,
@@ -84,6 +87,10 @@
         "The 18-file e2e suite spawns real CLI subprocesses that read and write shared directories (.sourcevision/, .rex/, .hench/); no documented test-isolation strategy (e.g., per-test temp directories) means parallel test execution could produce non-deterministic failures through shared artifact state",
         "cli-e2e-tests is the only zone that exercises cli.js, web.js, and ci.js — but those entry points delegate to spawned subprocesses that must have been built beforehand; the suite has no pre-test build guard, so a stale dist/ silently tests an older version of the code",
         "E2E tests that spawn CLI subprocesses share no documented workspace isolation strategy; if tests run concurrently and both write to .rex/prd.json or .sourcevision/, results are non-deterministic. No test uses a dedicated temp directory per test file.",
+        "The 18 E2E test files cover orthogonal CLI surface areas (init, config, ci, delegation, errors, plan, serve, sync, usage, work, dev) with no declared test ordering or dependency chain — if cli-init.test.js fails the subsequent tests likely also fail but the runner reports 17 independent failures instead of one root cause, obscuring diagnosis",
+        "The packages-rex:unit-analyze ↔ packages-rex:cli circular sub-zone dependency (239+100 calls) is an intra-package layering violation that is invisible to all three verification-tier zones: cli-e2e-tests tests orchestration behavior, gateway scripts test cross-package boundaries, neither detects intra-package layer inversion — the most concrete structural violation in the codebase has zero automated guard",
+        "Add a dedicated intra-package layering test (e.g., in architecture-policy.test.js) that asserts domain-layer files do not import from CLI-layer files within the same package — this would catch the existing packages-rex:unit-analyze→cli violation and prevent recurrence",
+        "Document test execution order dependencies (e.g., cli-init must pass before cli-plan is meaningful) so CI failure output points to root cause rather than cascading failures across 17 independent test files",
         "[call graph] 404 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
       ],
       "riskMetrics": {
@@ -124,6 +131,8 @@
         "crash-detector.ts exports a `_testHelpers` object containing private constants and internal functions via the module's public API surface (line 299). This leaks implementation details into the production bundle and creates an undocumented testing contract that consumers must know to avoid.",
         "Both crash-detector.ts and tick-timer.ts independently implement the same module-level singleton pattern (mutable module vars + a `reset*()` escape hatch for tests). The convergent design is undocumented — a third such module added without awareness of this convention may omit the reset function, breaking test isolation.",
         "`_testHelpers` is exported through the production module surface of crash-detector.ts, bundling internal implementation details (storage keys, private functions) into the public API. Test-only exports should use a separate test-support file or conditional barrel to avoid polluting the production interface.",
+        "Zone name 'crash-recovery' is derived from the consumer hook (use-crash-recovery.ts) rather than the core logic module (crash-detector.ts). The zone is named after its application-layer consumer, not its infrastructure implementation — contrary to the typical convention of naming a zone after its primary artifact.",
+        "Rename the zone to 'crash-detection' to reflect its foundational implementation (crash-detector.ts) rather than its hook consumer (use-crash-recovery.ts), which would then be absorbed into web-viewer where it is consumed. Zone names derived from consumer hooks rather than implementation modules invert the normal naming convention.",
         "[call graph] 51 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)"
       ],
       "riskMetrics": {
@@ -160,6 +169,10 @@
         "hench-callgraph-analysis.mjs reads hench source or output artifacts at runtime but has no declared dependency on a build step — running it on a cold checkout or after hench source changes without rebuilding produces silently stale output rather than a clear failure",
         "The three scripts in this zone have no shared entry point or runner; there is no documented command that executes all three in sequence, making it easy to forget to run one after a change that invalidates its output",
         "hench-callgraph-analysis.mjs produces HENCH_CALLGRAPH_FINDINGS.md but has no fail-fast guard that detects missing or stale input artifacts; silent success on a cold checkout produces a misleading (empty or stale) report with no error signal.",
+        "scripts/hench-callgraph-analysis.mjs produces findings that significantly overlap with what sourcevision zone call-graph analysis already surfaces (cross-zone call counts, coupling metrics); documenting which tool is authoritative for call-graph findings would prevent contributors from consulting stale manual output instead of live sourcevision data",
+        "test-zone-consistency.mjs validates zone ID stability but has no counterpart validating that zone names (title-case) are consistent with zone IDs (kebab-case) — the naming convention in MEMORY.md is undocumented and unenforced in any script",
+        "Document whether hench-callgraph-analysis.mjs is the authoritative call-graph source or supplementary to sourcevision zone metrics — currently both produce overlapping data with no clear ownership boundary",
+        "Extend test-zone-consistency.mjs (or add a sibling script) to validate zone name ↔ zone ID casing convention (title-case name, kebab-case ID) — the convention exists in docs but no automated check enforces it",
         "[call graph] 6 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
       ],
       "riskMetrics": {
@@ -1949,6 +1962,10 @@
         "The rex-gateway module (src/prd/rex-gateway.ts) is the sole coupling surface for 160 files, but there is no sub-zone boundary between the agent loop code and the analytical sub-system (agent/analysis/). If the analytical sub-system grows its own cross-package imports, they will route through the same single gateway file, making it impossible to audit which part of hench is the actual consumer of each re-export.",
         "Hench has no internal interface layer between its agent orchestration and its rex-gateway consumer code — the gateway is imported directly by whatever file needs it, meaning gateway API changes require tracking usages scattered across 160 files with no intermediate abstraction to constrain the blast radius.",
         "The rex-gateway is imported directly by scattered consumer files across 160 files with no internal hench interface layer. When the rex gateway API changes, every call site must be updated individually with no intermediate abstraction to narrow the scope of change. An internal adapter or facade within hench that wraps the gateway would contain the blast radius.",
+        "packages/hench/package-lock.json is anomalous in a pnpm workspace — pnpm manages dependencies through a single root lockfile (pnpm-lock.yaml) and per-package lock files should not exist. A stale or divergent package-lock.json in hench could cause npm-vs-pnpm dependency resolution conflicts if a developer accidentally runs npm install inside the package directory.",
+        "PNG binary assets (Hench.png, Hench-F.png) are stored directly in the hench package root with no documented convention for binary asset management — their presence in the package bundle is unintentional unless explicitly excluded in .npmignore or package.json 'files' field.",
+        "packages/hench/package-lock.json should not exist in a pnpm workspace. It can cause dependency resolution conflicts if npm is run inside the package. Verify it is not committed to source control or add it to .gitignore, and document that pnpm is the sole package manager for this monorepo.",
+        "Hench.png and Hench-F.png in the hench package root have no documented role in the package contract. If they are README assets only, reference them via absolute URL or move to a docs/assets/ directory and add a 'files' field to package.json to exclude them from published bundles. The web package has the same pattern (SourceVision.png, SourceVision-F.png) — a single monorepo-level asset convention would cover both.",
         "[call graph] 2711 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
       ],
       "riskMetrics": {
@@ -2009,6 +2026,11 @@
         "The orchestration scripts (cli.js, web.js, ci.js) enforce the four-tier boundary through subprocess spawning rather than module boundaries, meaning any accidental `require()` or `import` added to these files would silently collapse the tier boundary with no lint, type, or test feedback at the point of introduction.",
         "claude-integration.js is a service file at the monorepo root that bypasses the gateway pattern entirely. Any cross-package imports it makes are invisible to gateway audits and import-graph coupling scores, creating an unmonitored coupling surface outside all four tiers of the dependency hierarchy.",
         "The orchestration tier's architectural boundary (no direct package imports) is enforced solely by developer convention — no ESLint rule, TypeScript path mapping, or CI check prevents a direct `import` from cli.js into a domain package. A single accidental import would collapse the tier silently.",
+        "CODEX.md exists alongside CLAUDE.md at the root with no documented convention for which file is authoritative for which AI consumer — the split creates two competing AI context documents with no cross-reference or ownership rule.",
+        "claude-integration.js uses a noun-compound suffix ('integration') while all other root scripts use action verbs (cli, web, ci, config) — the naming inconsistency makes its role harder to discover by convention alone.",
+        "The root-level scripts (cli.js, web.js, ci.js, config.js) have no file-level JSDoc or module header describing their role in the four-tier hierarchy; a new contributor reading the file list cannot distinguish orchestration entry points from utility scripts without reading the CLAUDE.md.",
+        "CODEX.md and CLAUDE.md at the root serve parallel AI-context roles with no documented ownership split. Add a header to each file declaring which AI system it targets and a cross-reference to the other, or consolidate into a single AI-context document with sections per consumer.",
+        "claude-integration.js does not follow the action-verb naming convention of other root scripts (cli.js, web.js, ci.js, config.js). Rename to reflect its action (e.g., claude-proxy.js) or migrate it into a named package to eliminate the naming inconsistency and close the gateway audit gap simultaneously.",
         "[call graph] 444 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
       ],
       "riskMetrics": {
@@ -4279,6 +4301,10 @@
         "analyze-panel.ts directly encodes the Proposal/ProposalFeature/ProposalTask type hierarchy as local interfaces rather than importing them from a shared schema or rex-gateway. If the server-side response shape changes, this component's local types will silently drift from the API.",
         "`useState(() => { loadPending(); })` in analyze-panel.ts misuses the useState initializer to trigger an async network call. This is not the intended use of the initializer (which sets initial synchronous state) and bypasses the standard effect lifecycle, making cleanup and double-invocation behavior undefined.",
         "Proposal, ProposalFeature, and ProposalTask types are defined locally in analyze-panel.ts rather than imported from a shared rex schema or gateway. The local copy will silently diverge from the API response shape if the server-side PRD proposal format changes.",
+        "useEffect is entirely absent from analyze-panel.ts's import list — the file imports useState and useCallback but never useEffect. The useState(() => { loadPending(); }) misuse on line 74 is therefore a consequence of a missing import, not a style preference. Fixing it requires two coordinated changes: add useEffect to the import on line 9 and replace line 74 with useEffect(() => { loadPending(); }, []).",
+        "Naming inconsistency within the zone: analyze-panel.ts and batch-import-panel.ts follow a *-panel.ts suffix matching the zone's 'prd-analysis-panels' identity, but proposal-editor.ts and smart-add-input.ts do not follow this pattern — two different component-naming conventions coexist in the same 7-file zone.",
+        "The fix for the useState misuse in analyze-panel.ts requires two coordinated edits: (1) add useEffect to the import on line 9: `import { useState, useCallback, useEffect } from 'preact/hooks'`, and (2) replace line 74 with `useEffect(() => { loadPending(); }, [])`. Both changes must land together — changing line 74 without updating the import will fail the TypeScript build.",
+        "proposal-editor.ts and smart-add-input.ts do not follow the *-panel.ts naming convention used by analyze-panel.ts and batch-import-panel.ts. Renaming to proposal-editor-panel.ts and smart-add-input-panel.ts (or adopting a consistent *-component.ts suffix across all four) would unify the naming scheme within the zone.",
         "[call graph] 170 internal calls, 3 outgoing, 0 incoming (cohesion: 0.98, coupling: 0.02)"
       ],
       "riskMetrics": {
@@ -4317,7 +4343,9 @@
         "No static link exists between the .rex data files and the rex source code that deserializes them — schema evolution in prd.json is invisible to the import graph and will surface only as runtime parse errors, not build failures.",
         "Schema drift between prd.json and the rex deserializer is undetectable by import-graph analysis; only rex's own runtime validation guards against a mismatch, making this a latent data-contract risk.",
         "No schema version field is observable in the prd-state file set, meaning a silent schema migration between rex releases cannot be detected by any tooling — the deserializer and the on-disk JSON can diverge across upgrades with no version mismatch error at parse time.",
-        "prd.json lacks a schema version field, making backward-incompatible schema changes in the rex deserializer undetectable until a runtime parse failure occurs. Adding a top-level `schemaVersion` field and validating it on load would surface mismatches immediately."
+        "prd.json lacks a schema version field, making backward-incompatible schema changes in the rex deserializer undetectable until a runtime parse failure occurs. Adding a top-level `schemaVersion` field and validating it on load would surface mismatches immediately.",
+        "The rotation filename convention inserts the sequence number before the extension (execution-log.1.jsonl) rather than appending it as a suffix (execution-log.jsonl.1) — this is the inverse of the POSIX log rotation convention and will cause lexicographic sort to place execution-log.1.jsonl before execution-log.jsonl, reversing chronological order in any directory listing.",
+        "Execution log rotation uses execution-log.1.jsonl (number before extension) rather than execution-log.jsonl.1 (number after extension). The current scheme sorts rotated files before the active log in lexicographic order, making chronological navigation non-obvious. Document the chosen convention explicitly or align with the POSIX suffix-numbering standard."
       ],
       "riskMetrics": {
         "cohesion": 1,
@@ -4352,6 +4380,8 @@
         "tick-timer's 27:1 incoming-to-outgoing call ratio makes it the highest fan-in utility in the web package. Any change to its interface propagates to 27 call sites — it warrants a stable, explicitly versioned API contract and should never import from its consumers.",
         "tick-timer has zero coupling to web-dashboard at the call level (1 outgoing edge, none to web-dashboard) while web-dashboard has 4 inbound import edges from it — the dependency flows strictly upward from primitive to consumer, confirming a clean unidirectional layering that the zone-level bidirectional label obscures.",
         "tick-timer.ts and crash-detector.ts both implement zero-framework singleton services with module-level mutable state and a `reset*()` function for test isolation. This is an emergent shared pattern without a documented abstraction — if more singleton browser services are added, a shared `BrowserSingleton` lifecycle protocol would reduce the risk of omitting the reset contract.",
+        "elapsed-time-memoization.test.ts covers both tick-timer primitives (imports onTick, resetTickTimer from tick-timer.ts) AND ElapsedTime component behavior (from web-dashboard's elapsed-time.ts) in a single file. The 'memoization' suffix obscures which modules are actually under test — this is a multi-subject test file named for an implementation detail rather than either of its subjects.",
+        "Split elapsed-time-memoization.test.ts into two focused test files: elapsed-time.test.ts (covering ElapsedTime component and formatElapsed, colocated with elapsed-time.ts in web-dashboard) and move tick-specific memoization cases into tick-timer.test.ts. The current file spans two production zones (tick-timer and web-dashboard) and names itself after an implementation detail, making zone-level coverage attribution ambiguous.",
         "[call graph] 123 internal calls, 1 outgoing, 27 incoming (cohesion: 0.99, coupling: 0.01)"
       ],
       "riskMetrics": {
@@ -4387,6 +4417,8 @@
         "Call graph shows 0 outgoing and 1 incoming — the service is a pure leaf with a single consumer. Combined with the gateway pattern (task-usage.ts as the sole re-export surface), this zone is the most architecturally clean small zone in the batch: single entry point, single consumer, no transitive dependencies.",
         "usage-analytics-service has the cleanest architecture profile of any zone in this batch: one gateway, one consumer, zero transitive outbound calls. It is a textbook example of the gateway pattern applied correctly at zone granularity.",
         "`task-usage.ts` re-exports an OOP class (`IncrementalTaskUsageAggregator`) alongside purely functional exports from `usage-cleanup-scheduler.ts`. This asymmetric API surface — one class-based, one function-based — requires consumers to understand two different consumption models through the same gateway, reducing the gateway's value as a uniform abstraction.",
+        "The gateway file task-usage.ts uses the phrase 'task-usage-tracking zone' in its module-level JSDoc — a third distinct label for the same concept alongside the file name ('task-usage') and the zone name ('usage-analytics-service'). Three names for one 5-file zone creates unnecessary cognitive indirection when navigating between the source file, the zone map, and the gateway's own self-description.",
+        "Align the three names for this zone's concept: update the task-usage.ts JSDoc to say '@module web/server/usage-analytics' (matching the zone identity) and consider renaming the file to usage-analytics.ts so that the gateway file name, zone name, and module path share a common root. Currently 'task-usage', 'usage-analytics-service', and 'task-usage-tracking zone' are three disconnected identifiers for the same 5-file unit.",
         "[call graph] 100 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)"
       ],
       "riskMetrics": {
@@ -4425,6 +4457,10 @@
         "Web viewer unit tests (graph-interaction, graph-zoom) nested here are invisible to per-package test coverage metrics — coverage tools scoped to packages/web/tests/ will miss them entirely",
         "Zone contains files from two physically distinct roots (packages/web/tests/unit/viewer/ and tests/) with unrelated purposes; zone name 'viewer-gateway-tests' implies viewer scope only, actively misleading contributors about the gateway scripts' monorepo-wide scope. Should be split into two zones aligned to physical location and concern.",
         "Web viewer unit tests (graph-interaction.test.ts, graph-zoom.test.ts) are excluded from packages/web per-package test coverage because they reside outside the package boundary in this zone; per-package coverage reports for the web package silently undercount viewer UI test coverage.",
+        "The regex patterns inside check-gateway-regex.mjs and check-gateway-test.mjs are themselves untested — if a pattern contains a bug it will silently pass on real violations with no self-validation layer",
+        "The two gateway check scripts have no declared dependency on the packages they validate; if a gateway file is renamed (e.g., rex-gateway.ts → rex-adapter.ts), the regex silently stops matching and violations go undetected without any failure signal",
+        "Add a self-test or snapshot fixture to check-gateway-regex.mjs and check-gateway-test.mjs that validates the regex patterns catch known-bad imports — untested validators provide false confidence",
+        "Bind the gateway check scripts to gateway file paths via a shared config constant rather than hardcoded regex strings, so renaming a gateway file breaks the check explicitly rather than silently",
         "[call graph] 132 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)"
       ],
       "riskMetrics": {
@@ -6973,6 +7009,8 @@
       ],
       "insights": [
         "High cohesion (0.98) — files are tightly interconnected",
+        "Contains 57% of project files (354/623) — subdivided into 8 sub-zones",
+        "9 entry points — wide API surface, consider consolidating exports",
         "Contains 57% of project files (354/624) — subdivided into 8 sub-zones",
         "9 entry points — wide API surface, consider consolidating exports",
         "At 354 files with cohesion 0.98 and coupling 0.02, this zone is architecturally monolithic; consider whether the server-side infrastructure (aggregation-cache, concurrent-execution-metrics) and the viewer UI components belong in separate zones as the package grows.",
@@ -6987,6 +7025,8 @@
         "web-viewer is the de facto internal API surface for the web-dashboard zone cluster: crash, panel, and web-unit all route through web-viewer rather than importing directly from web-dashboard. This hub-within-hub topology is architecturally sound but undocumented.",
         "At a 6504:55 internal-to-outgoing call ratio, web-dashboard's outbound import edges are almost entirely type-only. Runtime coupling to the rest of the monorepo is effectively zero, which validates the gateway pattern at the call level, not just the import level.",
         "The three satellite micro-zones (crash-recovery: 3 files, tick-timer: 3 files, prd-analysis-panels: 7 files) each generate their own zone context.md and summary.json files, creating 6 zone metadata files for 13 source files. The maintenance overhead of zone metadata is disproportionate to the code mass — absorbing them as documented sub-modules of web-dashboard would reduce administrative surface without sacrificing discoverability.",
+        "The 8 algorithmic sub-zones are only discoverable via sourcevision analysis output — no README files, directory-level index comments, or physical subdirectory groupings in the source tree document their boundaries. A contributor navigating the 354-file zone by directory alone has no signal that 8 distinct sub-zone boundaries exist within it.",
+        "Add a ARCHITECTURE.md or inline README to packages/web/src/ documenting the 8 sub-zones detected algorithmically (names, directories, and ownership). Without this, sub-zone membership is only discoverable by running sourcevision — contributors modifying the zone have no static reference for which files belong to which conceptual cluster.",
         "[call graph] 6504 internal calls, 55 outgoing, 5 incoming (cohesion: 0.99, coupling: 0.01)"
       ],
       "riskMetrics": {
@@ -7035,6 +7075,8 @@
         "Zone coupling metric (0.33) is an artifact of viewer UI files co-classified with build infrastructure; it does not reflect true architectural coupling in the build layer and should not be acted on until zone pinning is applied.",
         "After zone pinning removes the 6 misclassified viewer files, the remaining zone will contain only build infrastructure files (build.js, dev.js, package.json, tsconfig.json) — approximately 4-5 files. A zone this small risks being re-absorbed into an adjacent zone by the next community-detection pass unless it is explicitly pinned or merged intentionally.",
         "Post-pinning, web-package-scaffold will shrink to ~4 build-infrastructure files. Without an explicit zone pin or documented rationale, the next sourcevision analyze run may dissolve this zone and re-classify its files into an adjacent zone, undoing the corrective pinning work.",
+        "The zone name 'web-package-scaffold' uses the word 'scaffold' which implies temporary or structural-only content, but build.js and dev.js are permanent operational entry points. Post-pinning correction, the zone will contain only permanent build infrastructure — the name will actively mislead future readers about the zone's permanence.",
+        "After the planned zone-pinning correction removes the six misclassified viewer files, rename 'web-package-scaffold' to 'web-build-infrastructure' or 'web-build-scripts' to accurately describe the permanent build entry points (build.js, dev.js) that will remain. 'Scaffold' implies temporary or generative content, not stable operational tooling.",
         "[call graph] 66 internal calls, 1 outgoing, 5 incoming (cohesion: 0.99, coupling: 0.01)"
       ],
       "riskMetrics": {
@@ -13896,8 +13938,7 @@
   ],
   "unzoned": [
     ".github/workflows/ci.yml",
-    ".hench/config.json",
-    ".hench/locks/48712.lock"
+    ".hench/config.json"
   ],
   "insights": [
     "Bidirectional coupling: \"web-dashboard\" ↔ \"web-package-scaffold\" (3+9 crossings) — consider extracting shared interface",
@@ -13965,6 +14006,23 @@
     "Gateway enforcement logic is split across two mechanisms (Vitest runner in cli-e2e-tests, standalone .mjs in viewer-gateway-tests) with no shared rule definition. If the regex patterns or gateway file lists diverge, one mechanism will pass while the other fails, producing inconsistent enforcement depending on which check runs. A single authoritative gateway rule source (e.g., a shared config file) consumed by both mechanisms would prevent silent divergence.",
     "The verification tier (viewer-gateway-tests, dev-analysis-scripts, cli-e2e-tests) has no orchestrating command that runs all architectural checks in sequence. A developer validating a structural change must discover and run three separate mechanisms manually; the gap means partial validation is the norm rather than the exception.",
     "Test files are distributed across two physical roots (monorepo tests/ and packages/*/tests/) with no documented convention for which root to use. The algorithmic zone detector groups files by import proximity, not physical intent, so misplaced test files silently land in wrong zones. New contributors have no signal about where to add new test files.",
+    "Binary assets (PNG files) appear in both the hench-agent zone (Hench.png, Hench-F.png) and web-package-scaffold zone (SourceVision.png, SourceVision-F.png) with no monorepo-wide convention for where package assets live, whether they are excluded from npm publish, or whether they should be referenced via URL rather than bundled. A single assets/ convention documented in PACKAGE_GUIDELINES.md would cover both packages.",
+    "Zone IDs use inconsistent compound conventions: some use plain names ('crash', 'panel', 'tests', 'scripts', 'e2e') while others use hyphenated compound names ('web-viewer', 'web-server', 'web-unit', 'hench-agent'). The plain-name zones are all either very small or infrastructure-only, but the naming rule distinguishing when to use a compound name vs a plain name is undocumented — future zones added by sourcevision's community detection will follow neither convention consistently.",
+    "The gateway naming convention differs in path structure between hench (src/prd/rex-gateway.ts — path reflects the consumer sub-domain) and web (src/server/rex-gateway.ts, src/server/domain-gateway.ts — path reflects the server layer). PACKAGE_GUIDELINES.md documents the gateway pattern's rules but not the canonical file placement convention, leaving future gateway authors to infer the correct path from examples.",
+    "The '-F.png' suffix on Hench-F.png and SourceVision-F.png across both packages implies a 'filled' or 'flat' icon variant, but the suffix convention is not documented anywhere. A reader encountering these files for the first time cannot determine the distinction between the plain and -F variants without prior context.",
+    "The three satellite zones (crash-recovery, tick-timer, prd-analysis-panels) all import into web-viewer with zero direct imports between each other. This strict fan-out topology — satellite → hub, never satellite → satellite — is an implicit no-direct-peer-import invariant that is currently unenforced and undocumented. A future contributor importing crash-recovery utilities from prd-analysis-panels would silently violate it.",
+    "elapsed-time-memoization.test.ts spans two production zones (tick-timer and web-dashboard/elapsed-time.ts) in a single test file, making it the only cross-zone test in the codebase. Its zone classification (under tick-timer by import proximity) means ElapsedTime component coverage is attributed to the wrong zone in any zone-level test coverage report.",
+    "The packages-rex:unit-analyze → packages-rex:cli intra-package circular dependency (239+100 calls) is the only 'must fix' structural issue in the codebase and is unguarded by any zone in the verification tier — gateway scripts cover only cross-package boundaries, cli-e2e-tests covers only orchestration behavior, and dev-analysis-scripts covers only hench. A targeted architecture-policy assertion for intra-package layer direction is missing.",
+    "All three verification-tier zones (viewer-gateway-tests, dev-analysis-scripts, cli-e2e-tests) validate different architectural layers (cross-package boundaries, output artifact freshness, orchestration behavior) but share no common rule registry. A contributor adding a new gateway file must independently update check-gateway-regex.mjs, check-gateway-test.mjs, and potentially architecture-policy.test.js with no single source of truth to keep them aligned.",
+    "The verification tier's self-validation gap creates a meta-risk: the mechanisms that enforce architecture are themselves unverified. check-gateway-*.mjs regex patterns, test-zone-consistency.mjs zone ID assertions, and architecture-policy.test.js structural checks are all trust-on-first-write with no regression protection against the checks themselves being silently broken by a future refactor.",
+    "Add a binary asset management convention to PACKAGE_GUIDELINES.md covering: (1) where package logos/icons should live relative to the package root, (2) whether they must be excluded from npm publish via 'files' or .npmignore, and (3) whether the '-F' suffix for icon variants is an official convention. Both hench and web currently bundle PNG assets without documented intent.",
+    "PACKAGE_GUIDELINES.md documents what gateways must do (re-export only, one per upstream package) but not where they must live. Hench places its gateway at src/prd/rex-gateway.ts; web places gateways at src/server/{rex,domain}-gateway.ts. Add a 'Gateway file placement' rule specifying the canonical directory and naming pattern to prevent future gateways from being created in ad-hoc locations.",
+    "Zone ID naming is inconsistent across the codebase: small/infrastructure zones use plain names (crash, panel, tests, scripts, e2e) while larger or web-specific zones use hyphenated compounds (web-viewer, hench-agent, web-server). Document a zone naming convention in sourcevision configuration or PACKAGE_GUIDELINES.md so that auto-detected zones and manually pinned zones follow a predictable scheme.",
+    "Document the no-direct-peer-import invariant for web satellite zones (crash-recovery, tick-timer, prd-analysis-panels must not import from each other — only from web-viewer). Add a gateway policy rule enforcing this in the existing gateway check scripts. Currently the constraint exists empirically but has no enforcement mechanism, making it invisible to contributors adding new cross-zone imports.",
+    "Cross-zone test files (files that import from two or more production zones) should be placed in a dedicated tests/cross-zone/ or tests/integration/ directory rather than either zone's unit test folder. elapsed-time-memoization.test.ts is currently misclassified into tick-timer by the zone algorithm because its closest import is tick-timer.ts, despite also covering web-dashboard's elapsed-time.ts. A documented convention for cross-zone tests would prevent future misclassification.",
+    "Create a single gateway-rules.json (or equivalent) at the monorepo root that both check-gateway-regex.mjs and architecture-policy.test.js consume as the authoritative source of gateway file paths and allowed import patterns — eliminates silent divergence between two enforcement mechanisms",
+    "Add an intra-package layer-direction check to architecture-policy.test.js that parses import paths within each package and asserts domain files do not import from cli/ subdirectories — directly guards the existing packages-rex circular sub-zone violation and prevents recurrence",
+    "Add a pnpm verify script (or Makefile target) that runs all three verification-tier mechanisms in sequence: vitest e2e, check-gateway-regex.mjs, check-gateway-test.mjs, and test-zone-consistency.mjs — removes the current requirement for contributors to manually discover and run four separate commands",
     "[call graph] 570 calls: \"packages-sourcevision:analyzers-3\" → \"packages-sourcevision:unit\"",
     "[call graph] 239 calls: \"packages-rex:unit-analyze\" → \"packages-rex:cli\"",
     "[call graph] 187 calls: \"packages-sourcevision:unit\" → \"packages-sourcevision:analyzers\"",
@@ -14176,27 +14234,6 @@
     },
     {
       "type": "observation",
-      "pass": 1,
-      "scope": "prd-state",
-      "text": "Runtime state files are cleanly isolated with no coupling to source packages, correctly modeling a data-only boundary.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "prd-state",
-      "text": "Two execution log files indicate rotation is occurring; confirm the rotation ceiling and archival path are configured consistently with the documented policy.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
-      "pass": 1,
-      "scope": "prd-state",
-      "text": "archive.json and pending-proposals.json together encode the proposal lifecycle — this dual-file pattern keeps the live PRD clean while preserving pending work.",
-      "severity": "info"
-    },
-    {
-      "type": "observation",
       "pass": 0,
       "scope": "tick-timer",
       "text": "High cohesion (1) — files are tightly interconnected",
@@ -14255,7 +14292,7 @@
       "type": "observation",
       "pass": 0,
       "scope": "web-dashboard",
-      "text": "Contains 57% of project files (354/624) — subdivided into 8 sub-zones",
+      "text": "Contains 57% of project files (354/623) — subdivided into 8 sub-zones",
       "severity": "info"
     },
     {
@@ -14291,6 +14328,62 @@
       "pass": 0,
       "scope": "global",
       "text": "packages/web/src/viewer/hooks/ contains files from 3 zones (crash-recovery, web-dashboard, web-package-scaffold) — consider grouping into subdirectories to clarify architectural boundaries",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "Add a binary asset management convention to PACKAGE_GUIDELINES.md covering: (1) where package logos/icons should live relative to the package root, (2) whether they must be excluded from npm publish via 'files' or .npmignore, and (3) whether the '-F' suffix for icon variants is an official convention. Both hench and web currently bundle PNG assets without documented intent.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "Add a pnpm verify script (or Makefile target) that runs all three verification-tier mechanisms in sequence: vitest e2e, check-gateway-regex.mjs, check-gateway-test.mjs, and test-zone-consistency.mjs — removes the current requirement for contributors to manually discover and run four separate commands",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "Add an intra-package layer-direction check to architecture-policy.test.js that parses import paths within each package and asserts domain files do not import from cli/ subdirectories — directly guards the existing packages-rex circular sub-zone violation and prevents recurrence",
+      "severity": "critical"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "Create a single gateway-rules.json (or equivalent) at the monorepo root that both check-gateway-regex.mjs and architecture-policy.test.js consume as the authoritative source of gateway file paths and allowed import patterns — eliminates silent divergence between two enforcement mechanisms",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "Cross-zone test files (files that import from two or more production zones) should be placed in a dedicated tests/cross-zone/ or tests/integration/ directory rather than either zone's unit test folder. elapsed-time-memoization.test.ts is currently misclassified into tick-timer by the zone algorithm because its closest import is tick-timer.ts, despite also covering web-dashboard's elapsed-time.ts. A documented convention for cross-zone tests would prevent future misclassification.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "Document the no-direct-peer-import invariant for web satellite zones (crash-recovery, tick-timer, prd-analysis-panels must not import from each other — only from web-viewer). Add a gateway policy rule enforcing this in the existing gateway check scripts. Currently the constraint exists empirically but has no enforcement mechanism, making it invisible to contributors adding new cross-zone imports.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "PACKAGE_GUIDELINES.md documents what gateways must do (re-export only, one per upstream package) but not where they must live. Hench places its gateway at src/prd/rex-gateway.ts; web places gateways at src/server/{rex,domain}-gateway.ts. Add a 'Gateway file placement' rule specifying the canonical directory and naming pattern to prevent future gateways from being created in ad-hoc locations.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "global",
+      "text": "Zone ID naming is inconsistent across the codebase: small/infrastructure zones use plain names (crash, panel, tests, scripts, e2e) while larger or web-specific zones use hyphenated compounds (web-viewer, hench-agent, web-server). Document a zone naming convention in sourcevision configuration or PACKAGE_GUIDELINES.md so that auto-detected zones and manually pinned zones follow a predictable scheme.",
       "severity": "info"
     },
     {
@@ -14365,6 +14458,20 @@
     },
     {
       "type": "suggestion",
+      "pass": 4,
+      "scope": "hench-agent",
+      "text": "Hench.png and Hench-F.png in the hench package root have no documented role in the package contract. If they are README assets only, reference them via absolute URL or move to a docs/assets/ directory and add a 'files' field to package.json to exclude them from published bundles. The web package has the same pattern (SourceVision.png, SourceVision-F.png) — a single monorepo-level asset convention would cover both.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "hench-agent",
+      "text": "packages/hench/package-lock.json should not exist in a pnpm workspace. It can cause dependency resolution conflicts if npm is run inside the package. Verify it is not committed to source control or add it to .gitignore, and document that pnpm is the sole package manager for this monorepo.",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
       "pass": 0,
       "scope": "web-dashboard",
       "text": "Zone \"web-dashboard\" has files across 22 directories — consider consolidating under a dedicated directory",
@@ -14372,9 +14479,23 @@
     },
     {
       "type": "suggestion",
+      "pass": 4,
+      "scope": "web-dashboard",
+      "text": "Add a ARCHITECTURE.md or inline README to packages/web/src/ documenting the 8 sub-zones detected algorithmically (names, directories, and ownership). Without this, sub-zone membership is only discoverable by running sourcevision — contributors modifying the zone have no static reference for which files belong to which conceptual cluster.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
       "pass": 0,
       "scope": "web-package-scaffold",
       "text": "Zone \"web-package-scaffold\" has files across 6 directories — consider consolidating under a dedicated directory",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "web-package-scaffold",
+      "text": "After the planned zone-pinning correction removes the six misclassified viewer files, rename 'web-package-scaffold' to 'web-build-infrastructure' or 'web-build-scripts' to accurately describe the permanent build entry points (build.js, dev.js) that will remain. 'Scaffold' implies temporary or generative content, not stable operational tooling.",
       "severity": "info"
     },
     {
@@ -14520,13 +14641,6 @@
     {
       "type": "relationship",
       "pass": 2,
-      "scope": "prd-state",
-      "text": "Schema drift between prd.json and the rex deserializer is undetectable by import-graph analysis; only rex's own runtime validation guards against a mismatch, making this a latent data-contract risk.",
-      "severity": "warning"
-    },
-    {
-      "type": "relationship",
-      "pass": 2,
       "scope": "tick-timer",
       "text": "tick-timer has zero coupling to web-dashboard at the call level (1 outgoing edge, none to web-dashboard) while web-dashboard has 4 inbound import edges from it — the dependency flows strictly upward from primitive to consumer, confirming a clean unidirectional layering that the zone-level bidirectional label obscures.",
       "severity": "info"
@@ -14551,58 +14665,6 @@
       "scope": "dev-analysis-scripts",
       "text": "hench-callgraph-analysis.mjs produces HENCH_CALLGRAPH_FINDINGS.md but has no fail-fast guard that detects missing or stale input artifacts; silent success on a cold checkout produces a misleading (empty or stale) report with no error signal.",
       "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "Gateway enforcement logic is split across two mechanisms (Vitest runner in cli-e2e-tests, standalone .mjs in viewer-gateway-tests) with no shared rule definition. If the regex patterns or gateway file lists diverge, one mechanism will pass while the other fails, producing inconsistent enforcement depending on which check runs. A single authoritative gateway rule source (e.g., a shared config file) consumed by both mechanisms would prevent silent divergence.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "Test files are distributed across two physical roots (monorepo tests/ and packages/*/tests/) with no documented convention for which root to use. The algorithmic zone detector groups files by import proximity, not physical intent, so misplaced test files silently land in wrong zones. New contributors have no signal about where to add new test files.",
-      "severity": "info"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "The crash zone (3 files, cohesion 0.29) has the lowest cohesion score in the codebase. At least one file in this zone is algorithmically near-unrelated to the others. A file-level audit is needed to determine if a misclassified file should be pinned to web-viewer or another zone before treating crash-recovery as a coherent architectural unit.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "The verification tier (viewer-gateway-tests, dev-analysis-scripts, cli-e2e-tests) has no orchestrating command that runs all architectural checks in sequence. A developer validating a structural change must discover and run three separate mechanisms manually; the gap means partial validation is the norm rather than the exception.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "packages-rex:unit-analyze calls packages-rex:cli 239 times — domain code calling into the CLI layer inverts the expected CLI→domain dependency direction. This is a concrete layering violation (not just a circular import): CLI argument parsing and output formatting are leaking into domain semantics. Extracting a shared internal module that both layers can import would eliminate the cycle without violating the layering contract.",
-      "severity": "critical"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
-      "scope": "global",
-      "text": "tick-timer is a small primitive zone with 27 incoming call-graph edges — the widest blast radius of any zone in the web package. It has no abstraction layer between itself and its 27 dependents. A breaking API change in tick-timer propagates simultaneously to all consumers with no intermediate facade to narrow the impact scope.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 0,
-      "scope": "global",
-      "text": "God function: <module> in packages/web/src/landing/landing.ts calls 42 unique functions — consider decomposing into smaller, focused functions",
-      "severity": "warning",
-      "related": [
-        "packages/web/src/landing/landing.ts"
-      ]
     },
     {
       "type": "anti-pattern",
@@ -14642,13 +14704,6 @@
     {
       "type": "anti-pattern",
       "pass": 3,
-      "scope": "prd-state",
-      "text": "prd.json lacks a schema version field, making backward-incompatible schema changes in the rex deserializer undetectable until a runtime parse failure occurs. Adding a top-level `schemaVersion` field and validating it on load would surface mismatches immediately.",
-      "severity": "warning"
-    },
-    {
-      "type": "anti-pattern",
-      "pass": 3,
       "scope": "viewer-gateway-tests",
       "text": "Web viewer unit tests (graph-interaction.test.ts, graph-zoom.test.ts) are excluded from packages/web per-package test coverage because they reside outside the package boundary in this zone; per-package coverage reports for the web package silently undercount viewer UI test coverage.",
       "severity": "warning"
@@ -14666,6 +14721,128 @@
       "scope": "web-package-scaffold",
       "text": "Post-pinning, web-package-scaffold will shrink to ~4 build-infrastructure files. Without an explicit zone pin or documented rationale, the next sourcevision analyze run may dissolve this zone and re-classify its files into an adjacent zone, undoing the corrective pinning work.",
       "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "architecture-docs",
+      "text": "The docs/ directory mixes date-prefixed filenames (2026-03-03-refresh-orchestration-memory-analysis.md) with descriptive-only names (memory-architecture.md, level-system-reference.md). Standardize to one convention and add a docs/README.md index linking each file with a one-line description to make the directory navigable without reading all filenames.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "cli-e2e-tests",
+      "text": "Add a dedicated intra-package layering test (e.g., in architecture-policy.test.js) that asserts domain-layer files do not import from CLI-layer files within the same package — this would catch the existing packages-rex:unit-analyze→cli violation and prevent recurrence",
+      "severity": "critical"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "cli-e2e-tests",
+      "text": "Document test execution order dependencies (e.g., cli-init must pass before cli-plan is meaningful) so CI failure output points to root cause rather than cascading failures across 17 independent test files",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "crash-recovery",
+      "text": "Rename the zone to 'crash-detection' to reflect its foundational implementation (crash-detector.ts) rather than its hook consumer (use-crash-recovery.ts), which would then be absorbed into web-viewer where it is consumed. Zone names derived from consumer hooks rather than implementation modules invert the normal naming convention.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 0,
+      "scope": "crash-recovery",
+      "text": "Zone \"Crash Recovery\" (crash-recovery) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention",
+      "severity": "critical"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "dev-analysis-scripts",
+      "text": "Document whether hench-callgraph-analysis.mjs is the authoritative call-graph source or supplementary to sourcevision zone metrics — currently both produce overlapping data with no clear ownership boundary",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "dev-analysis-scripts",
+      "text": "Extend test-zone-consistency.mjs (or add a sibling script) to validate zone name ↔ zone ID casing convention (title-case name, kebab-case ID) — the convention exists in docs but no automated check enforces it",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "monorepo-root",
+      "text": "CODEX.md and CLAUDE.md at the root serve parallel AI-context roles with no documented ownership split. Add a header to each file declaring which AI system it targets and a cross-reference to the other, or consolidate into a single AI-context document with sections per consumer.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "monorepo-root",
+      "text": "claude-integration.js does not follow the action-verb naming convention of other root scripts (cli.js, web.js, ci.js, config.js). Rename to reflect its action (e.g., claude-proxy.js) or migrate it into a named package to eliminate the naming inconsistency and close the gateway audit gap simultaneously.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "prd-analysis-panels",
+      "text": "The fix for the useState misuse in analyze-panel.ts requires two coordinated edits: (1) add useEffect to the import on line 9: `import { useState, useCallback, useEffect } from 'preact/hooks'`, and (2) replace line 74 with `useEffect(() => { loadPending(); }, [])`. Both changes must land together — changing line 74 without updating the import will fail the TypeScript build.",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "prd-analysis-panels",
+      "text": "proposal-editor.ts and smart-add-input.ts do not follow the *-panel.ts naming convention used by analyze-panel.ts and batch-import-panel.ts. Renaming to proposal-editor-panel.ts and smart-add-input-panel.ts (or adopting a consistent *-component.ts suffix across all four) would unify the naming scheme within the zone.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "prd-state",
+      "text": "Execution log rotation uses execution-log.1.jsonl (number before extension) rather than execution-log.jsonl.1 (number after extension). The current scheme sorts rotated files before the active log in lexicographic order, making chronological navigation non-obvious. Document the chosen convention explicitly or align with the POSIX suffix-numbering standard.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "tick-timer",
+      "text": "Split elapsed-time-memoization.test.ts into two focused test files: elapsed-time.test.ts (covering ElapsedTime component and formatElapsed, colocated with elapsed-time.ts in web-dashboard) and move tick-specific memoization cases into tick-timer.test.ts. The current file spans two production zones (tick-timer and web-dashboard) and names itself after an implementation detail, making zone-level coverage attribution ambiguous.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "usage-analytics-service",
+      "text": "Align the three names for this zone's concept: update the task-usage.ts JSDoc to say '@module web/server/usage-analytics' (matching the zone identity) and consider renaming the file to usage-analytics.ts so that the gateway file name, zone name, and module path share a common root. Currently 'task-usage', 'usage-analytics-service', and 'task-usage-tracking zone' are three disconnected identifiers for the same 5-file unit.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "viewer-gateway-tests",
+      "text": "Add a self-test or snapshot fixture to check-gateway-regex.mjs and check-gateway-test.mjs that validates the regex patterns catch known-bad imports — untested validators provide false confidence",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 4,
+      "scope": "viewer-gateway-tests",
+      "text": "Bind the gateway check scripts to gateway file paths via a shared config constant rather than hardcoded regex strings, so renaming a gateway file breaks the check explicitly rather than silently",
+      "severity": "warning"
+    },
+    {
+      "type": "anti-pattern",
+      "pass": 0,
+      "scope": "global",
+      "text": "God function: <module> in packages/web/src/landing/landing.ts calls 42 unique functions — consider decomposing into smaller, focused functions",
+      "severity": "warning",
+      "related": [
+        "packages/web/src/landing/landing.ts"
+      ]
     },
     {
       "type": "relationship",
@@ -14695,13 +14872,6 @@
     {
       "type": "suggestion",
       "pass": 0,
-      "scope": "crash-recovery",
-      "text": "Zone \"Crash Recovery\" (crash-recovery) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention",
-      "severity": "critical"
-    },
-    {
-      "type": "suggestion",
-      "pass": 0,
       "scope": "packages-sourcevision:analyzers-3",
       "text": "Zone \"Analyzers 3\" (packages-sourcevision:analyzers-3) has critical risk (score: 0.69, cohesion: 0.31, coupling: 0.69) — justified: Core zone analysis engine (Louvain algorithm, zone detection, zone hashing) with 3 test files. High coupling is expected: these files import inventory types, import graph types, and shared utilities that are fundamental to the analysis pipeline. The files are tightly cohesive in purpose — splitting them would create artificial boundaries in the zone detection pipeline.",
       "severity": "info"
@@ -14714,12 +14884,12 @@
       "severity": "info"
     }
   ],
-  "enrichmentPass": 3,
+  "enrichmentPass": 4,
   "metaEvaluationCount": 14,
   "structureHash": "c2f5eb5ba25bbe26",
   "zoneContentHashes": {
     "monorepo-root": "4144593c587dda9e",
-    "prd-state": "7fccfe054776246e",
+    "prd-state": "e2421f0f8d23abae",
     "architecture-docs": "8bb7e6c5f03173fa",
     "hench-agent": "7927e47b5480c4b2",
     "web-package-scaffold": "9214c38b826aea4b",

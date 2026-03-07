@@ -43,6 +43,7 @@ Incoming (other zones → this zone):
 [observation] [info] tick-timer.ts achieves perfect cohesion (1.0) and zero coupling (0.0), making it a textbook example of a well-isolated utility primitive.
 [pattern] [info] tick-timer's 27:1 incoming-to-outgoing call ratio makes it the highest fan-in utility in the web package. Any change to its interface propagates to 27 call sites — it warrants a stable, explicitly versioned API contract and should never import from its consumers.
 [relationship] [info] tick-timer has zero coupling to web-dashboard at the call level (1 outgoing edge, none to web-dashboard) while web-dashboard has 4 inbound import edges from it — the dependency flows strictly upward from primitive to consumer, confirming a clean unidirectional layering that the zone-level bidirectional label obscures.
+[suggestion] [info] Split elapsed-time-memoization.test.ts into two focused test files: elapsed-time.test.ts (covering ElapsedTime component and formatElapsed, colocated with elapsed-time.ts in web-dashboard) and move tick-specific memoization cases into tick-timer.test.ts. The current file spans two production zones (tick-timer and web-dashboard) and names itself after an implementation detail, making zone-level coverage attribution ambiguous.
 
 </findings>
 
@@ -58,6 +59,8 @@ Incoming (other zones → this zone):
 - tick-timer's 27:1 incoming-to-outgoing call ratio makes it the highest fan-in utility in the web package. Any change to its interface propagates to 27 call sites — it warrants a stable, explicitly versioned API contract and should never import from its consumers.
 - tick-timer has zero coupling to web-dashboard at the call level (1 outgoing edge, none to web-dashboard) while web-dashboard has 4 inbound import edges from it — the dependency flows strictly upward from primitive to consumer, confirming a clean unidirectional layering that the zone-level bidirectional label obscures.
 - tick-timer.ts and crash-detector.ts both implement zero-framework singleton services with module-level mutable state and a `reset*()` function for test isolation. This is an emergent shared pattern without a documented abstraction — if more singleton browser services are added, a shared `BrowserSingleton` lifecycle protocol would reduce the risk of omitting the reset contract.
+- elapsed-time-memoization.test.ts covers both tick-timer primitives (imports onTick, resetTickTimer from tick-timer.ts) AND ElapsedTime component behavior (from web-dashboard's elapsed-time.ts) in a single file. The 'memoization' suffix obscures which modules are actually under test — this is a multi-subject test file named for an implementation detail rather than either of its subjects.
+- Split elapsed-time-memoization.test.ts into two focused test files: elapsed-time.test.ts (covering ElapsedTime component and formatElapsed, colocated with elapsed-time.ts in web-dashboard) and move tick-specific memoization cases into tick-timer.test.ts. The current file spans two production zones (tick-timer and web-dashboard) and names itself after an implementation detail, making zone-level coverage attribution ambiguous.
 - [call graph] 123 internal calls, 1 outgoing, 27 incoming (cohesion: 0.99, coupling: 0.01)
 
 </insights>

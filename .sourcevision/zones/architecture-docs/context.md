@@ -40,6 +40,7 @@ docs/zone-naming-conventions.md (Markdown, 60 lines, docs)
 [observation] [info] Level-system and steward-plan docs indicate planned structural evolution; these should be linked from the PRD so hench can track implementation progress.
 [observation] [info] Memory subsystem has at least five dedicated docs; consider consolidating into a stable reference document to reduce reader navigation overhead.
 [relationship] [info] Architectural rules documented here are enforced by tests in two separate zones with no automated link between them; the documentation and its enforcement tests can diverge without detection.
+[suggestion] [info] The docs/ directory mixes date-prefixed filenames (2026-03-03-refresh-orchestration-memory-analysis.md) with descriptive-only names (memory-architecture.md, level-system-reference.md). Standardize to one convention and add a docs/README.md index linking each file with a one-line description to make the directory navigable without reading all filenames.
 
 </findings>
 
@@ -54,5 +55,8 @@ docs/zone-naming-conventions.md (Markdown, 60 lines, docs)
 - Level-system and steward-plan docs indicate planned structural evolution; these should be linked from the PRD so hench can track implementation progress.
 - The gateway rules and four-tier hierarchy documented here are enforced by tests in separate zones (cli-e2e-tests via architecture-policy.test.js, viewer-gateway-tests via check-gateway-*.mjs) with no automated cross-reference — documentation and enforcement can drift independently without any tooling raising an alert.
 - Architectural rules documented here are enforced by tests in two separate zones with no automated link between them; the documentation and its enforcement tests can diverge without detection.
+- docs/2026-03-03-refresh-orchestration-memory-analysis.md uses an ISO-date prefix not found in any other documentation filename — this creates two incompatible naming conventions within the same directory (date-prefixed vs descriptive-only), making sort-by-name misleading for readers expecting related documents to cluster together.
+- The 16-file docs directory has no index, table of contents, or README.md to orient a reader — discovery depends entirely on filename parsing, which is undermined by the mixed naming convention.
+- The docs/ directory mixes date-prefixed filenames (2026-03-03-refresh-orchestration-memory-analysis.md) with descriptive-only names (memory-architecture.md, level-system-reference.md). Standardize to one convention and add a docs/README.md index linking each file with a one-line description to make the directory navigable without reading all filenames.
 
 </insights>

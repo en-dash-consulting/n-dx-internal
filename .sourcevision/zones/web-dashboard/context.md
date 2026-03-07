@@ -1133,12 +1133,13 @@ Incoming (other zones → this zone):
 <findings>
 
 [observation] [warning] 9 entry points — wide API surface, consider consolidating exports
-[observation] [info] Contains 57% of project files (354/624) — subdivided into 8 sub-zones
+[observation] [info] Contains 57% of project files (354/623) — subdivided into 8 sub-zones
 [observation] [info] High cohesion (0.98) — files are tightly interconnected
 [observation] [warning] Bidirectional imports with both 'crash' and 'panel' zones create implicit circular dependencies at the zone level; these relationships should be reviewed to ensure directional ownership is clear.
 [observation] [info] Extremely high cohesion (0.98) and near-zero coupling (0.02) for a 354-file zone signals that satellite zones like 'crash' and 'panel' may have been split out by the graph algorithm but are semantically part of this zone.
 [observation] [info] The zone spans both server-side services (aggregation-cache, task-usage) and client-side viewer components — documenting this boundary explicitly would help future contributors understand the dual-layer architecture.
 [suggestion] [info] Zone "web-dashboard" has files across 22 directories — consider consolidating under a dedicated directory
+[suggestion] [info] Add a ARCHITECTURE.md or inline README to packages/web/src/ documenting the 8 sub-zones detected algorithmically (names, directories, and ownership). Without this, sub-zone membership is only discoverable by running sourcevision — contributors modifying the zone have no static reference for which files belong to which conceptual cluster.
 [pattern] [info] At a 6504:55 internal-to-outgoing call ratio, web-dashboard's outbound import edges are almost entirely type-only. Runtime coupling to the rest of the monorepo is effectively zero, which validates the gateway pattern at the call level, not just the import level.
 [pattern] [info] web-viewer is the de facto internal API surface for the web-dashboard zone cluster: crash, panel, and web-unit all route through web-viewer rather than importing directly from web-dashboard. This hub-within-hub topology is architecturally sound but undocumented.
 
@@ -1147,6 +1148,8 @@ Incoming (other zones → this zone):
 <insights>
 
 - High cohesion (0.98) — files are tightly interconnected
+- Contains 57% of project files (354/623) — subdivided into 8 sub-zones
+- 9 entry points — wide API surface, consider consolidating exports
 - Contains 57% of project files (354/624) — subdivided into 8 sub-zones
 - 9 entry points — wide API surface, consider consolidating exports
 - At 354 files with cohesion 0.98 and coupling 0.02, this zone is architecturally monolithic; consider whether the server-side infrastructure (aggregation-cache, concurrent-execution-metrics) and the viewer UI components belong in separate zones as the package grows.
@@ -1161,6 +1164,8 @@ Incoming (other zones → this zone):
 - web-viewer is the de facto internal API surface for the web-dashboard zone cluster: crash, panel, and web-unit all route through web-viewer rather than importing directly from web-dashboard. This hub-within-hub topology is architecturally sound but undocumented.
 - At a 6504:55 internal-to-outgoing call ratio, web-dashboard's outbound import edges are almost entirely type-only. Runtime coupling to the rest of the monorepo is effectively zero, which validates the gateway pattern at the call level, not just the import level.
 - The three satellite micro-zones (crash-recovery: 3 files, tick-timer: 3 files, prd-analysis-panels: 7 files) each generate their own zone context.md and summary.json files, creating 6 zone metadata files for 13 source files. The maintenance overhead of zone metadata is disproportionate to the code mass — absorbing them as documented sub-modules of web-dashboard would reduce administrative surface without sacrificing discoverability.
+- The 8 algorithmic sub-zones are only discoverable via sourcevision analysis output — no README files, directory-level index comments, or physical subdirectory groupings in the source tree document their boundaries. A contributor navigating the 354-file zone by directory alone has no signal that 8 distinct sub-zone boundaries exist within it.
+- Add a ARCHITECTURE.md or inline README to packages/web/src/ documenting the 8 sub-zones detected algorithmically (names, directories, and ownership). Without this, sub-zone membership is only discoverable by running sourcevision — contributors modifying the zone have no static reference for which files belong to which conceptual cluster.
 - [call graph] 6504 internal calls, 55 outgoing, 5 incoming (cohesion: 0.99, coupling: 0.01)
 
 </insights>

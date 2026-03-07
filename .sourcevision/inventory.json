@@ -31,16 +31,6 @@
       "lastModified": 1772682844021
     },
     {
-      "path": ".hench/locks/48712.lock",
-      "size": 61,
-      "language": "Other",
-      "lineCount": 4,
-      "hash": "21878001c3b2653f7abb07e0f13b00c77e2c80808e9d9b1a62b1c4808d6793ff",
-      "role": "other",
-      "category": ".hench",
-      "lastModified": 1772840250663
-    },
-    {
       "path": ".npmrc",
       "size": 60,
       "language": "Other",
@@ -92,13 +82,13 @@
     },
     {
       "path": ".rex/execution-log.jsonl",
-      "size": 78885,
+      "size": 79534,
       "language": "Other",
-      "lineCount": 322,
-      "hash": "37b25ea0e830426b6f1ab3b16e5a805a700dfd01e43115ce8c6d08278c57ccb9",
+      "lineCount": 325,
+      "hash": "2140074b107c5be224a296ffb9dc78aff8f94f878ceae43939d06f5e7676f933",
       "role": "other",
       "category": ".rex",
-      "lastModified": 1772846497905
+      "lastModified": 1772847735756
     },
     {
       "path": ".rex/pending-proposals.json",
@@ -112,13 +102,13 @@
     },
     {
       "path": ".rex/prd.json",
-      "size": 968676,
+      "size": 968727,
       "language": "JSON",
-      "lineCount": 18946,
-      "hash": "c465c0fbc0104033fb8bb2b2a3eccc46bd500a1f982e8ba0ace40e4072832d0e",
+      "lineCount": 18947,
+      "hash": "b31b0e5e58178c3d6237d71b3bdecfe071c6f50a0f2d26a7650ff669661535d7",
       "role": "other",
       "category": ".rex",
-      "lastModified": 1772846497904
+      "lastModified": 1772847735689
     },
     {
       "path": ".rex/workflow.md",
@@ -10472,11 +10462,11 @@
     }
   ],
   "summary": {
-    "totalFiles": 1047,
+    "totalFiles": 1046,
     "totalLines": 349340,
     "byLanguage": {
       "YAML": 3,
-      "Other": 18,
+      "Other": 17,
       "JSON": 30,
       "Markdown": 31,
       "JavaScript": 39,
@@ -10488,7 +10478,7 @@
     "byRole": {
       "build": 3,
       "config": 20,
-      "other": 59,
+      "other": 58,
       "docs": 31,
       "source": 489,
       "asset": 11,
@@ -10498,7 +10488,7 @@
     "byCategory": {
       ".github": 1,
       "root": 23,
-      ".hench": 2,
+      ".hench": 1,
       ".rex": 8,
       "docs": 16,
       "hench": 158,

@@ -50,6 +50,7 @@ Incoming (other zones → this zone):
 <findings>
 
 [suggestion] [info] Zone "web-package-scaffold" has files across 6 directories — consider consolidating under a dedicated directory
+[suggestion] [info] After the planned zone-pinning correction removes the six misclassified viewer files, rename 'web-package-scaffold' to 'web-build-infrastructure' or 'web-build-scripts' to accurately describe the permanent build entry points (build.js, dev.js) that will remain. 'Scaffold' implies temporary or generative content, not stable operational tooling.
 [observation] [info] Bidirectional imports between this zone and web-viewer (9 outbound, 3 inbound) are the root cause of the mixed classification — resolving the pinning will clarify the dependency direction.
 [observation] [info] Build entry points (build.js, dev.js) are correctly identified as build infrastructure; these should remain in this zone after viewer files are re-pinned.
 [observation] [warning] Viewer UI files are co-classified with build scripts due to shared import edges; zone pinning for elapsed-time.ts, route-state.ts, task-audit.ts, use-tick.ts, lazy-children.ts, and listener-lifecycle.ts is recommended to correct classification.
@@ -71,6 +72,8 @@ Incoming (other zones → this zone):
 - Zone coupling metric (0.33) is an artifact of viewer UI files co-classified with build infrastructure; it does not reflect true architectural coupling in the build layer and should not be acted on until zone pinning is applied.
 - After zone pinning removes the 6 misclassified viewer files, the remaining zone will contain only build infrastructure files (build.js, dev.js, package.json, tsconfig.json) — approximately 4-5 files. A zone this small risks being re-absorbed into an adjacent zone by the next community-detection pass unless it is explicitly pinned or merged intentionally.
 - Post-pinning, web-package-scaffold will shrink to ~4 build-infrastructure files. Without an explicit zone pin or documented rationale, the next sourcevision analyze run may dissolve this zone and re-classify its files into an adjacent zone, undoing the corrective pinning work.
+- The zone name 'web-package-scaffold' uses the word 'scaffold' which implies temporary or structural-only content, but build.js and dev.js are permanent operational entry points. Post-pinning correction, the zone will contain only permanent build infrastructure — the name will actively mislead future readers about the zone's permanence.
+- After the planned zone-pinning correction removes the six misclassified viewer files, rename 'web-package-scaffold' to 'web-build-infrastructure' or 'web-build-scripts' to accurately describe the permanent build entry points (build.js, dev.js) that will remain. 'Scaffold' implies temporary or generative content, not stable operational tooling.
 - [call graph] 66 internal calls, 1 outgoing, 5 incoming (cohesion: 0.99, coupling: 0.01)
 
 </insights>

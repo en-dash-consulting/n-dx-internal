@@ -2,7 +2,7 @@
 
 **Branch:** `feature/sv-fixes-0306`
 **Base:** `main`
-**Completed items:** 23
+**Completed items:** 24
 
 ## ⚠️ Breaking Changes
 
@@ -85,6 +85,7 @@
   - Existing tests continue to pass
 - Fix usage-cleanup-scheduler web-viewer coupling
 - Move elapsed-time.ts and task-audit.ts to viewer zone
+- Absorb websocket zone into web-dashboard
 - Tie architecture policy test to live zone graph
 
 **Address relationship issues (5 findings)**

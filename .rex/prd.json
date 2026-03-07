@@ -19054,6 +19054,7 @@
       "priority": "high",
       "source": "sourcevision",
       "startedAt": "2026-03-07T02:33:46.980Z",
+      "completedAt": "2026-03-07T02:39:29.935Z",
       "recommendationMeta": {
         "findingHashes": [
           "5180d6350395",
@@ -19067,8 +19068,7 @@
           "warning": 5
         },
         "findingCount": 5
-      },
-      "completedAt": "2026-03-07T02:39:29.935Z"
+      }
     },
     {
       "id": "7db09c37-23c0-4d64-90ed-bc90ee3c595d",
@@ -19104,22 +19104,26 @@
     {
       "id": "eece7e94-0268-4fe4-b046-59d4db803173",
       "title": "Repository Governance and Community Standards",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-03-07T02:42:10.134Z",
+      "completedAt": "2026-03-07T02:42:10.134Z",
       "children": [
         {
           "id": "0a31d148-55c3-4c5b-9754-8cbe88fd0226",
           "title": "Code of Conduct",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Establish a code of conduct document for the repository to set community and contributor expectations.",
           "source": "smart-add",
+          "startedAt": "2026-03-07T02:42:10.041Z",
+          "completedAt": "2026-03-07T02:42:10.041Z",
           "children": [
             {
               "id": "8cf40be7-6f18-4e6e-8c9c-10f2c9330342",
               "title": "Add CODE_OF_CONDUCT.md placeholder to repository root",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create a CODE_OF_CONDUCT.md file at the repository root with placeholder content that the user will replace with their own. Include a minimal stub structure (title, sections) so the file is valid and discoverable by GitHub and contributors, and reference it from the README.",
               "acceptanceCriteria": [
@@ -19133,12 +19137,14 @@
                 "docs",
                 "community"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-07T02:40:24.054Z",
+              "completedAt": "2026-03-07T02:41:06.601Z"
             },
             {
               "id": "7bdd57f8-88b4-44b9-b9a5-026b0180fd80",
               "title": "Wire CODE_OF_CONDUCT.md into package metadata and CI validation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Ensure the code of conduct is referenced in package.json or repository metadata where applicable, and add a CI check that verifies the file exists and is non-empty so it cannot be accidentally deleted.",
               "acceptanceCriteria": [
@@ -19152,7 +19158,9 @@
                 "ci",
                 "community"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-07T02:41:13.185Z",
+              "completedAt": "2026-03-07T02:42:09.839Z"
             }
           ]
         }

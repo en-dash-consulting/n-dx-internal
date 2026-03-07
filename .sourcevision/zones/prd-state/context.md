@@ -8,7 +8,7 @@ Zone: PRD Runtime State (`prd-state`)
 Files: 8, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
 Description: Rex runtime data directory containing the live PRD, execution logs, workflow records, and acknowledged findings that persist across agent runs.
-Lines: 24882
+Lines: 24886
 
 </zone>
 
@@ -18,9 +18,9 @@ Lines: 24882
 .rex/archive.json (JSON, 840 lines, other)
 .rex/config.json (JSON, 6 lines, other)
 .rex/execution-log.1.jsonl (Other, 3899 lines, other)
-.rex/execution-log.jsonl (Other, 322 lines, other)
+.rex/execution-log.jsonl (Other, 325 lines, other)
 .rex/pending-proposals.json (JSON, 818 lines, other)
-.rex/prd.json (JSON, 18946 lines, other)
+.rex/prd.json (JSON, 18947 lines, other)
 .rex/workflow.md (Markdown, 18 lines, docs)
 
 </files>
@@ -28,11 +28,7 @@ Lines: 24882
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] Runtime state files are cleanly isolated with no coupling to source packages, correctly modeling a data-only boundary.
-[observation] [info] Two execution log files indicate rotation is occurring; confirm the rotation ceiling and archival path are configured consistently with the documented policy.
-[observation] [info] archive.json and pending-proposals.json together encode the proposal lifecycle — this dual-file pattern keeps the live PRD clean while preserving pending work.
-[relationship] [warning] Schema drift between prd.json and the rex deserializer is undetectable by import-graph analysis; only rex's own runtime validation guards against a mismatch, making this a latent data-contract risk.
-[anti-pattern] [warning] prd.json lacks a schema version field, making backward-incompatible schema changes in the rex deserializer undetectable until a runtime parse failure occurs. Adding a top-level `schemaVersion` field and validating it on load would surface mismatches immediately.
+[suggestion] [info] Execution log rotation uses execution-log.1.jsonl (number before extension) rather than execution-log.jsonl.1 (number after extension). The current scheme sorts rotated files before the active log in lexicographic order, making chronological navigation non-obvious. Document the chosen convention explicitly or align with the POSIX suffix-numbering standard.
 
 </findings>
 
@@ -49,5 +45,7 @@ Lines: 24882
 - Schema drift between prd.json and the rex deserializer is undetectable by import-graph analysis; only rex's own runtime validation guards against a mismatch, making this a latent data-contract risk.
 - No schema version field is observable in the prd-state file set, meaning a silent schema migration between rex releases cannot be detected by any tooling — the deserializer and the on-disk JSON can diverge across upgrades with no version mismatch error at parse time.
 - prd.json lacks a schema version field, making backward-incompatible schema changes in the rex deserializer undetectable until a runtime parse failure occurs. Adding a top-level `schemaVersion` field and validating it on load would surface mismatches immediately.
+- The rotation filename convention inserts the sequence number before the extension (execution-log.1.jsonl) rather than appending it as a suffix (execution-log.jsonl.1) — this is the inverse of the POSIX log rotation convention and will cause lexicographic sort to place execution-log.1.jsonl before execution-log.jsonl, reversing chronological order in any directory listing.
+- Execution log rotation uses execution-log.1.jsonl (number before extension) rather than execution-log.jsonl.1 (number after extension). The current scheme sorts rotated files before the active log in lexicographic order, making chronological navigation non-obvious. Document the chosen convention explicitly or align with the POSIX suffix-numbering standard.
 
 </insights>

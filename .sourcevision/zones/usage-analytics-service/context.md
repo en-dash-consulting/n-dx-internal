@@ -44,6 +44,7 @@ Incoming (other zones → this zone):
 [observation] [info] Cohesion of 0.75 is healthy for a 5-file zone with one gateway, two services, and two tests; no structural concerns at this size.
 [observation] [info] task-usage.ts is correctly identified as a gateway entrypoint, centralizing cross-module access to the usage subsystem — consistent with the project's gateway pattern.
 [pattern] [info] usage-analytics-service has the cleanest architecture profile of any zone in this batch: one gateway, one consumer, zero transitive outbound calls. It is a textbook example of the gateway pattern applied correctly at zone granularity.
+[suggestion] [info] Align the three names for this zone's concept: update the task-usage.ts JSDoc to say '@module web/server/usage-analytics' (matching the zone identity) and consider renaming the file to usage-analytics.ts so that the gateway file name, zone name, and module path share a common root. Currently 'task-usage', 'usage-analytics-service', and 'task-usage-tracking zone' are three disconnected identifiers for the same 5-file unit.
 
 </findings>
 
@@ -57,6 +58,8 @@ Incoming (other zones → this zone):
 - Call graph shows 0 outgoing and 1 incoming — the service is a pure leaf with a single consumer. Combined with the gateway pattern (task-usage.ts as the sole re-export surface), this zone is the most architecturally clean small zone in the batch: single entry point, single consumer, no transitive dependencies.
 - usage-analytics-service has the cleanest architecture profile of any zone in this batch: one gateway, one consumer, zero transitive outbound calls. It is a textbook example of the gateway pattern applied correctly at zone granularity.
 - `task-usage.ts` re-exports an OOP class (`IncrementalTaskUsageAggregator`) alongside purely functional exports from `usage-cleanup-scheduler.ts`. This asymmetric API surface — one class-based, one function-based — requires consumers to understand two different consumption models through the same gateway, reducing the gateway's value as a uniform abstraction.
+- The gateway file task-usage.ts uses the phrase 'task-usage-tracking zone' in its module-level JSDoc — a third distinct label for the same concept alongside the file name ('task-usage') and the zone name ('usage-analytics-service'). Three names for one 5-file zone creates unnecessary cognitive indirection when navigating between the source file, the zone map, and the gateway's own self-description.
+- Align the three names for this zone's concept: update the task-usage.ts JSDoc to say '@module web/server/usage-analytics' (matching the zone identity) and consider renaming the file to usage-analytics.ts so that the gateway file name, zone name, and module path share a common root. Currently 'task-usage', 'usage-analytics-service', and 'task-usage-tracking zone' are three disconnected identifiers for the same 5-file unit.
 - [call graph] 100 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>

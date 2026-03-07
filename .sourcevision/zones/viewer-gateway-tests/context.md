@@ -30,6 +30,8 @@ tests/check-gateway-test.mjs (JavaScript, 1 lines, test)
 [pattern] [warning] Zone conflates web-package unit tests with monorepo-root contract scripts; splitting into separate zones aligned to their physical location would improve discoverability and ownership clarity
 [anti-pattern] [warning] Web viewer unit tests (graph-interaction.test.ts, graph-zoom.test.ts) are excluded from packages/web per-package test coverage because they reside outside the package boundary in this zone; per-package coverage reports for the web package silently undercount viewer UI test coverage.
 [anti-pattern] [warning] Zone contains files from two physically distinct roots (packages/web/tests/unit/viewer/ and tests/) with unrelated purposes; zone name 'viewer-gateway-tests' implies viewer scope only, actively misleading contributors about the gateway scripts' monorepo-wide scope. Should be split into two zones aligned to physical location and concern.
+[suggestion] [warning] Add a self-test or snapshot fixture to check-gateway-regex.mjs and check-gateway-test.mjs that validates the regex patterns catch known-bad imports — untested validators provide false confidence
+[suggestion] [warning] Bind the gateway check scripts to gateway file paths via a shared config constant rather than hardcoded regex strings, so renaming a gateway file breaks the check explicitly rather than silently
 
 </findings>
 
@@ -49,6 +51,10 @@ tests/check-gateway-test.mjs (JavaScript, 1 lines, test)
 - Web viewer unit tests (graph-interaction, graph-zoom) nested here are invisible to per-package test coverage metrics — coverage tools scoped to packages/web/tests/ will miss them entirely
 - Zone contains files from two physically distinct roots (packages/web/tests/unit/viewer/ and tests/) with unrelated purposes; zone name 'viewer-gateway-tests' implies viewer scope only, actively misleading contributors about the gateway scripts' monorepo-wide scope. Should be split into two zones aligned to physical location and concern.
 - Web viewer unit tests (graph-interaction.test.ts, graph-zoom.test.ts) are excluded from packages/web per-package test coverage because they reside outside the package boundary in this zone; per-package coverage reports for the web package silently undercount viewer UI test coverage.
+- The regex patterns inside check-gateway-regex.mjs and check-gateway-test.mjs are themselves untested — if a pattern contains a bug it will silently pass on real violations with no self-validation layer
+- The two gateway check scripts have no declared dependency on the packages they validate; if a gateway file is renamed (e.g., rex-gateway.ts → rex-adapter.ts), the regex silently stops matching and violations go undetected without any failure signal
+- Add a self-test or snapshot fixture to check-gateway-regex.mjs and check-gateway-test.mjs that validates the regex patterns catch known-bad imports — untested validators provide false confidence
+- Bind the gateway check scripts to gateway file paths via a shared config constant rather than hardcoded regex strings, so renaming a gateway file breaks the check explicitly rather than silently
 - [call graph] 132 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

@@ -28,6 +28,8 @@ scripts/test-zone-consistency.mjs (JavaScript, 0 lines, build)
 [observation] [info] test-zone-consistency.mjs duplicates some concern with the e2e zone's architecture-policy tests; clarifying which file owns the canonical zone-consistency assertion would reduce overlap.
 [pattern] [warning] Generated artifact HENCH_CALLGRAPH_FINDINGS.md is committed but has no CI regeneration-and-diff guard; it can silently go stale after hench source changes
 [anti-pattern] [warning] hench-callgraph-analysis.mjs produces HENCH_CALLGRAPH_FINDINGS.md but has no fail-fast guard that detects missing or stale input artifacts; silent success on a cold checkout produces a misleading (empty or stale) report with no error signal.
+[suggestion] [info] Document whether hench-callgraph-analysis.mjs is the authoritative call-graph source or supplementary to sourcevision zone metrics — currently both produce overlapping data with no clear ownership boundary
+[suggestion] [info] Extend test-zone-consistency.mjs (or add a sibling script) to validate zone name ↔ zone ID casing convention (title-case name, kebab-case ID) — the convention exists in docs but no automated check enforces it
 
 </findings>
 
@@ -46,6 +48,10 @@ scripts/test-zone-consistency.mjs (JavaScript, 0 lines, build)
 - hench-callgraph-analysis.mjs reads hench source or output artifacts at runtime but has no declared dependency on a build step — running it on a cold checkout or after hench source changes without rebuilding produces silently stale output rather than a clear failure
 - The three scripts in this zone have no shared entry point or runner; there is no documented command that executes all three in sequence, making it easy to forget to run one after a change that invalidates its output
 - hench-callgraph-analysis.mjs produces HENCH_CALLGRAPH_FINDINGS.md but has no fail-fast guard that detects missing or stale input artifacts; silent success on a cold checkout produces a misleading (empty or stale) report with no error signal.
+- scripts/hench-callgraph-analysis.mjs produces findings that significantly overlap with what sourcevision zone call-graph analysis already surfaces (cross-zone call counts, coupling metrics); documenting which tool is authoritative for call-graph findings would prevent contributors from consulting stale manual output instead of live sourcevision data
+- test-zone-consistency.mjs validates zone ID stability but has no counterpart validating that zone names (title-case) are consistent with zone IDs (kebab-case) — the naming convention in MEMORY.md is undocumented and unenforced in any script
+- Document whether hench-callgraph-analysis.mjs is the authoritative call-graph source or supplementary to sourcevision zone metrics — currently both produce overlapping data with no clear ownership boundary
+- Extend test-zone-consistency.mjs (or add a sibling script) to validate zone name ↔ zone ID casing convention (title-case name, kebab-case ID) — the convention exists in docs but no automated check enforces it
 - [call graph] 6 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

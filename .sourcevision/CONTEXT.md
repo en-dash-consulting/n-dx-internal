@@ -7,7 +7,7 @@
 
 Project: n-dx
 Git: feature/integrate-codex @ 21786d2
-Files: 1047, Lines: 349340
+Files: 1046, Lines: 349340
 Languages: TypeScript(879) CSS(44) JavaScript(39) Markdown(31) JSON(30)
 Zones: 36, Described: 36
 Import edges: 2579, External packages: 18
@@ -124,7 +124,7 @@ Import edges: 2579, External packages: 18
 [web-package-scaffold] Web Package Scaffold (13 files, coh=0.67 coup=0.33)
   Web package build infrastructure and a set of viewer UI components that the import graph placed here rather than in the main web-viewer zone.
   files: packages/web/SourceVision-F.png, packages/web/SourceVision.png, packages/web/build.js [entrypoint], packages/web/dev.js [entrypoint], packages/web/package.json, packages/web/src/viewer/components/elapsed-time.ts [component], packages/web/src/viewer/hooks/use-tick.ts [hook], packages/web/src/viewer/route-state.ts [route-handler], packages/web/src/viewer/views/task-audit.ts [page], packages/web/tests/unit/viewer/route-state.test.ts +3
-[unzoned] 3 files: .github/workflows/ci.yml, .hench/config.json, .hench/locks/48712.lock
+[unzoned] 2 files: .github/workflows/ci.yml, .hench/config.json
 
 Detailed zone context: .sourcevision/zones/{id}/context.md
 
@@ -283,14 +283,14 @@ Server routes: 106 endpoints in 14 handler(s)
 [warning] Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects
 [warning] 9 entry points — wide API surface, consider consolidating exports [web-dashboard]
 [warning] Bidirectional imports with both 'crash' and 'panel' zones create implicit circular dependencies at the zone level; these relationships should be reviewed to ensure directional ownership is clear. [web-dashboard]
+[warning] Add a pnpm verify script (or Makefile target) that runs all three verification-tier mechanisms in sequence: vitest e2e, check-gateway-regex.mjs, check-gateway-test.mjs, and test-zone-consistency.mjs — removes the current requirement for contributors to manually discover and run four separate commands
+[critical] Add an intra-package layer-direction check to architecture-policy.test.js that parses import paths within each package and asserts domain files do not import from cli/ subdirectories — directly guards the existing packages-rex circular sub-zone violation and prevents recurrence
+[warning] Create a single gateway-rules.json (or equivalent) at the monorepo root that both check-gateway-regex.mjs and architecture-policy.test.js consume as the authoritative source of gateway file paths and allowed import patterns — eliminates silent divergence between two enforcement mechanisms
+[warning] packages/hench/package-lock.json should not exist in a pnpm workspace. It can cause dependency resolution conflicts if npm is run inside the package. Verify it is not committed to source control or add it to .gitignore, and document that pnpm is the sole package manager for this monorepo. [hench-agent]
 [warning] analyze-panel.ts and proposal-editor.ts lack unit tests while the simpler smart-add-input and batch-import-panel components are tested — the more complex components should be prioritized for test coverage. [prd-analysis-panels]
 [warning] Viewer UI files are co-classified with build scripts due to shared import edges; zone pinning for elapsed-time.ts, route-state.ts, task-audit.ts, use-tick.ts, lazy-children.ts, and listener-lifecycle.ts is recommended to correct classification. [web-package-scaffold]
 [warning] crash-recovery has only 1 incoming call-graph edge despite 3 cross-zone import edges from web-viewer. The zone is consumed by a single caller at runtime, making it a de facto singleton utility. This strengthens the case for absorbing it into web-dashboard as an internal sub-module rather than maintaining a separate zone boundary. [crash-recovery]
-[warning] Generated artifact HENCH_CALLGRAPH_FINDINGS.md is committed but has no CI regeneration-and-diff guard; it can silently go stale after hench source changes [dev-analysis-scripts]
-[warning] A single gateway file (src/prd/rex-gateway.ts) is the only cross-zone coupling surface for 160 files; gateway API breakage has maximum blast radius within hench — no incremental migration path exists if the rex API changes. [hench-agent]
-[warning] Orchestration-to-domain boundary is enforced at runtime only (subprocess spawning); a mismatched CLI argument or removed subcommand will produce a silent runtime failure with no compile-time safety net. [monorepo-root]
-[warning] Zone conflates web-package unit tests with monorepo-root contract scripts; splitting into separate zones aligned to their physical location would improve discoverability and ownership clarity [viewer-gateway-tests]
-... +19 more
+... +20 more
 
 </findings>
 
@@ -319,24 +319,24 @@ Server routes: 106 endpoints in 14 handler(s)
 [high] use-crash-recovery.ts lacks a unit test; given that crash recovery is a reliabi…
   files: packages/web/src/viewer/hooks/use-crash-recovery.ts, packages/web/src/viewer/performance/crash-detector.ts, packages/web/tests/unit/viewer/crash-detector.test.ts
   category: refactor
-[high] packages-rex:unit-analyze calls packages-rex:cli 239 times — domain code callin…
+[high] Add an intra-package layer-direction check to architecture-policy.test.js that …
   category: fix
-[medium] Gateway enforcement logic is split across two mechanisms (V… (+4 related)
-  category: refactor
+[high] Add a dedicated intra-package layering test (e.g., in architecture-policy.test.…
+  files: tests/e2e/architecture-policy.test.js, tests/e2e/cli-arg-contracts.test.js, tests/e2e/cli-ci.test.js
+  category: fix
 [medium] Proposal, ProposalFeature, and ProposalTask types are defin… (+1 related)
   files: packages/web/src/viewer/components/prd-tree/analyze-panel.ts, packages/web/src/viewer/components/prd-tree/batch-import-panel.ts, packages/web/src/viewer/components/prd-tree/proposal-editor.ts
+  category: refactor
+[medium] God function: <module> in packages/web/src/landing/landing.ts calls 42 unique f…
   category: refactor
 [medium] Viewer UI files are co-classified with build scripts due to shared import edges…
   files: packages/web/SourceVision-F.png, packages/web/SourceVision.png, packages/web/build.js
   category: refactor
-[medium] analyze-panel.ts and proposal-editor.ts lack unit tests while the simpler smart…
+[medium] The fix for the useState misuse in analyze-panel.ts requires two coordinated ed…
   files: packages/web/src/viewer/components/prd-tree/analyze-panel.ts, packages/web/src/viewer/components/prd-tree/batch-import-panel.ts, packages/web/src/viewer/components/prd-tree/proposal-editor.ts
   category: refactor
-[medium] 9 entry points — wide API surface, consider consolidating exports
-  files: packages/web/src/cli/index.ts, packages/web/src/landing/index.html, packages/web/src/landing/landing.css
-  category: refactor
-[medium] Bidirectional imports with both 'crash' and 'panel' zones create implicit circu…
-  files: packages/web/src/cli/index.ts, packages/web/src/landing/index.html, packages/web/src/landing/landing.css
+[medium] analyze-panel.ts and proposal-editor.ts lack unit tests while the simpler smart…
+  files: packages/web/src/viewer/components/prd-tree/analyze-panel.ts, packages/web/src/viewer/components/prd-tree/batch-import-panel.ts, packages/web/src/viewer/components/prd-tree/proposal-editor.ts
   category: refactor
 
 </next-steps>

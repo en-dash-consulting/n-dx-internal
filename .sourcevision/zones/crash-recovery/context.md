@@ -45,6 +45,7 @@ Incoming (other zones → this zone):
 [pattern] [warning] crash-recovery has only 1 incoming call-graph edge despite 3 cross-zone import edges from web-viewer. The zone is consumed by a single caller at runtime, making it a de facto singleton utility. This strengthens the case for absorbing it into web-dashboard as an internal sub-module rather than maintaining a separate zone boundary.
 [relationship] [info] crash-recovery's 0 outgoing call-graph edges vs 3 outbound import edges to web-dashboard indicates the coupling is type-import-only. The zone's effective runtime isolation is much higher than its cohesion/coupling scores suggest — the metric overstates the structural risk.
 [anti-pattern] [warning] `_testHelpers` is exported through the production module surface of crash-detector.ts, bundling internal implementation details (storage keys, private functions) into the public API. Test-only exports should use a separate test-support file or conditional barrel to avoid polluting the production interface.
+[suggestion] [info] Rename the zone to 'crash-detection' to reflect its foundational implementation (crash-detector.ts) rather than its hook consumer (use-crash-recovery.ts), which would then be absorbed into web-viewer where it is consumed. Zone names derived from consumer hooks rather than implementation modules invert the normal naming convention.
 [suggestion] [critical] Zone "Crash Recovery" (crash-recovery) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention
 
 </findings>
@@ -65,6 +66,8 @@ Incoming (other zones → this zone):
 - crash-detector.ts exports a `_testHelpers` object containing private constants and internal functions via the module's public API surface (line 299). This leaks implementation details into the production bundle and creates an undocumented testing contract that consumers must know to avoid.
 - Both crash-detector.ts and tick-timer.ts independently implement the same module-level singleton pattern (mutable module vars + a `reset*()` escape hatch for tests). The convergent design is undocumented — a third such module added without awareness of this convention may omit the reset function, breaking test isolation.
 - `_testHelpers` is exported through the production module surface of crash-detector.ts, bundling internal implementation details (storage keys, private functions) into the public API. Test-only exports should use a separate test-support file or conditional barrel to avoid polluting the production interface.
+- Zone name 'crash-recovery' is derived from the consumer hook (use-crash-recovery.ts) rather than the core logic module (crash-detector.ts). The zone is named after its application-layer consumer, not its infrastructure implementation — contrary to the typical convention of naming a zone after its primary artifact.
+- Rename the zone to 'crash-detection' to reflect its foundational implementation (crash-detector.ts) rather than its hook consumer (use-crash-recovery.ts), which would then be absorbed into web-viewer where it is consumed. Zone names derived from consumer hooks rather than implementation modules invert the normal naming convention.
 - [call graph] 51 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>

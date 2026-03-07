@@ -53,6 +53,8 @@ Internal:
 [observation] [info] The suite covers all major CLI surface areas (ci, config, delegation, dev, errors, init, plan, serve, sync, usage, work) providing strong regression coverage for the orchestration layer.
 [observation] [info] architecture-policy.test.js and the gateway check scripts in viewer-gateway-tests both validate gateway rules — consider consolidating gateway policy assertions into one canonical location to avoid drift.
 [anti-pattern] [warning] E2E tests that spawn CLI subprocesses share no documented workspace isolation strategy; if tests run concurrently and both write to .rex/prd.json or .sourcevision/, results are non-deterministic. No test uses a dedicated temp directory per test file.
+[suggestion] [critical] Add a dedicated intra-package layering test (e.g., in architecture-policy.test.js) that asserts domain-layer files do not import from CLI-layer files within the same package — this would catch the existing packages-rex:unit-analyze→cli violation and prevent recurrence
+[suggestion] [info] Document test execution order dependencies (e.g., cli-init must pass before cli-plan is meaningful) so CI failure output points to root cause rather than cascading failures across 17 independent test files
 
 </findings>
 
@@ -70,6 +72,10 @@ Internal:
 - The 18-file e2e suite spawns real CLI subprocesses that read and write shared directories (.sourcevision/, .rex/, .hench/); no documented test-isolation strategy (e.g., per-test temp directories) means parallel test execution could produce non-deterministic failures through shared artifact state
 - cli-e2e-tests is the only zone that exercises cli.js, web.js, and ci.js — but those entry points delegate to spawned subprocesses that must have been built beforehand; the suite has no pre-test build guard, so a stale dist/ silently tests an older version of the code
 - E2E tests that spawn CLI subprocesses share no documented workspace isolation strategy; if tests run concurrently and both write to .rex/prd.json or .sourcevision/, results are non-deterministic. No test uses a dedicated temp directory per test file.
+- The 18 E2E test files cover orthogonal CLI surface areas (init, config, ci, delegation, errors, plan, serve, sync, usage, work, dev) with no declared test ordering or dependency chain — if cli-init.test.js fails the subsequent tests likely also fail but the runner reports 17 independent failures instead of one root cause, obscuring diagnosis
+- The packages-rex:unit-analyze ↔ packages-rex:cli circular sub-zone dependency (239+100 calls) is an intra-package layering violation that is invisible to all three verification-tier zones: cli-e2e-tests tests orchestration behavior, gateway scripts test cross-package boundaries, neither detects intra-package layer inversion — the most concrete structural violation in the codebase has zero automated guard
+- Add a dedicated intra-package layering test (e.g., in architecture-policy.test.js) that asserts domain-layer files do not import from CLI-layer files within the same package — this would catch the existing packages-rex:unit-analyze→cli violation and prevent recurrence
+- Document test execution order dependencies (e.g., cli-init must pass before cli-plan is meaningful) so CI failure output points to root cause rather than cascading failures across 17 independent test files
 - [call graph] 404 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>
