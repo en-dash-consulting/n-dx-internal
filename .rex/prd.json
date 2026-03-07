@@ -19175,6 +19175,7 @@
       "priority": "high",
       "source": "sourcevision",
       "startedAt": "2026-03-07T02:59:35.729Z",
+      "completedAt": "2026-03-07T03:05:42.450Z",
       "recommendationMeta": {
         "findingHashes": [
           "35a457cec161",
@@ -19191,8 +19192,7 @@
           "warning": 8
         },
         "findingCount": 8
-      },
-      "completedAt": "2026-03-07T03:05:42.450Z"
+      }
     },
     {
       "id": "9e743ee1-0767-44cb-bea7-4c7e20a48945",
@@ -19214,6 +19214,73 @@
         },
         "findingCount": 1
       }
+    },
+    {
+      "id": "dc7e920d-da53-49b3-b5c6-65086e60754b",
+      "title": "Address observation issues (9 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- High coupling (0.71) — 3 imports target \"web-dashboard\"\n- Low cohesion (0.29) — files are loosely related, consider splitting this zone\n- The mutual three-import dependency between crash-recovery and web-dashboard creates a cycle at the zone level; restructure so crash-detector.ts is a pure utility imported by the viewer, with no reverse dependency from crash-recovery back into the dashboard.\n- Zone cohesion of 0.29 and coupling of 0.71 indicates the crash-recovery files are more tightly connected to external zones than to each other; consider whether crash-detector.ts and use-crash-recovery.ts belong in separate zones (utility vs. hook) or should be merged into the web-dashboard zone they depend on.\n- This zone conflates two unrelated concerns: web-viewer graph interaction tests and monorepo dev-analysis scripts. It is an algorithmic artifact, not a real architectural unit.\n- Bidirectional coupling: \"web-build-tooling\" ↔ \"web-dashboard\" (9+3 crossings) — consider extracting shared interface\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects\n- tests/check-gateway-regex.mjs and tests/check-gateway-test.mjs are developer-utility scripts unrelated to the landing page; they should be re-homed to the developer-utilities zone to keep this zone semantically coherent.\n- Five viewer UI files (elapsed-time.ts, use-tick.ts, lazy-children.ts, listener-lifecycle.ts, task-audit.ts) are grouped with build infrastructure by the import graph but belong architecturally in the web-viewer zone per developer hints — setting explicit zone pins for these files would correct the misclassification.",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "09ff2877c8a6",
+          "35bb9a25fdac",
+          "cd1bf96738de",
+          "4d09f085f8cb",
+          "a47cc3bc13ac",
+          "510c28fd97a6",
+          "3a82920140f7",
+          "1d1e9b4c134c",
+          "ffe7349f42ef"
+        ],
+        "category": "observation",
+        "severityDistribution": {
+          "warning": 9
+        },
+        "findingCount": 9
+      }
+    },
+    {
+      "id": "4172340d-e3a3-4795-b441-96e0a68cdab3",
+      "title": "Address anti-pattern issues (1 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- God function: cmdReorganize in packages/rex/src/cli/commands/reorganize.ts calls 38 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "7dd8c8bf5af1"
+        ],
+        "category": "anti-pattern",
+        "severityDistribution": {
+          "warning": 1
+        },
+        "findingCount": 1
+      }
+    },
+    {
+      "id": "0ef1785a-19c8-47ad-86e0-e7e385663165",
+      "title": "Address suggestion issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- Zone \"Crash Recovery\" (crash-recovery) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention",
+      "priority": "critical",
+      "source": "sourcevision",
+      "startedAt": "2026-03-07T03:15:43.155Z",
+      "recommendationMeta": {
+        "findingHashes": [
+          "66ab47514bd0"
+        ],
+        "category": "suggestion",
+        "severityDistribution": {
+          "critical": 1
+        },
+        "findingCount": 1
+      },
+      "completedAt": "2026-03-07T03:18:36.592Z"
     }
   ]
 }

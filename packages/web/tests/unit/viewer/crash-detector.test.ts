@@ -28,7 +28,7 @@ import {
   CRASH_LOOP_WINDOW_MS,
   CRASH_LOOP_THRESHOLD,
   MAX_CRASH_HISTORY,
-} from "../../../src/viewer/performance/crash-detector-test-support.js";
+} from "../../helpers/crash-detector-test-support.js";
 
 describe("crash-detector", () => {
   beforeEach(() => {

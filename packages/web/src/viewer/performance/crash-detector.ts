@@ -293,5 +293,5 @@ export function resetCrashDetector(): void {
   }
 }
 
-// Test-only constants and helpers are in crash-detector-test-support.ts
+// Test-only constants and helpers are in tests/helpers/crash-detector-test-support.ts
 // to keep the production API surface clean.
