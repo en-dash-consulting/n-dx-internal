@@ -9,7 +9,7 @@ Files: 69, Cohesion: 0.50, Coupling: 0.50
 Risk: healthy (score: 0.50)
 Description: 69 files, primarily TypeScript
 Entry points: packages/rex/src/analyze/analyze-shared.ts, packages/rex/src/analyze/consolidation-guard.ts, packages/rex/src/analyze/decompose.ts, packages/rex/src/analyze/dedupe.ts, packages/rex/src/analyze/file-validation.ts, packages/rex/src/analyze/index.ts, packages/rex/src/analyze/llm-bridge.ts, packages/rex/src/analyze/propose.ts, packages/rex/src/analyze/reason.ts, packages/rex/src/analyze/validate-modification.ts, packages/rex/src/cli/commands/add.ts, packages/rex/src/cli/commands/analyze.ts, packages/rex/src/cli/commands/format-loe.ts, packages/rex/src/cli/commands/smart-add-duplicates.ts, packages/rex/src/cli/commands/smart-add.ts, packages/rex/src/cli/commands/status.ts, packages/rex/src/cli/commands/validate.ts, packages/rex/src/core/cascade-reset.ts, packages/rex/src/core/notion-map.ts, packages/rex/src/core/structural.ts, packages/rex/src/core/transitions.ts, packages/rex/src/schema/index.ts, packages/rex/src/schema/levels.ts, packages/rex/src/schema/v1.ts, packages/rex/src/store/project-config.ts
-Lines: 31326
+Lines: 31370
 
 </zone>
 
@@ -29,7 +29,7 @@ packages/rex/src/analyze/propose.ts (TypeScript, 360 lines, source)
 packages/rex/src/analyze/reason.ts (TypeScript, 1765 lines, source)
 packages/rex/src/analyze/validate-modification.ts (TypeScript, 218 lines, source)
 packages/rex/src/cli/commands/add.ts (TypeScript, 150 lines, source)
-packages/rex/src/cli/commands/analyze.ts (TypeScript, 739 lines, source)
+packages/rex/src/cli/commands/analyze.ts (TypeScript, 783 lines, source)
 packages/rex/src/cli/commands/decomposition-review.ts (TypeScript, 323 lines, source)
 packages/rex/src/cli/commands/format-loe.ts (TypeScript, 45 lines, source)
 packages/rex/src/cli/commands/smart-add-duplicates.ts (TypeScript, 335 lines, source)
@@ -332,7 +332,7 @@ Incoming (other zones → this zone):
 - consolidation-guard.ts and smart-add-duplicates.ts are runtime defensive guards against data shape violations. Tightening the schema types in src/schema/v1.ts (narrower union types, branded IDs, non-optional fields) would move these checks to compile time and eliminate the need for the runtime guards entirely.
 - 25 entry points with no public.ts means the public API surface grows by default with every new file. Add a src/public.ts barrel that explicitly controls what is exported, matching the pattern used by other packages in this monorepo.
 - Zone "unit-analyze" has files across 12 directories — consider consolidating under a dedicated directory
-- [call graph] 2473 internal calls, 298 outgoing, 223 incoming (cohesion: 0.89, coupling: 0.11)
+- [call graph] 2486 internal calls, 298 outgoing, 223 incoming (cohesion: 0.89, coupling: 0.11)
 
 </insights>
 

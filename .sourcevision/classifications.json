@@ -511,14 +511,14 @@
   "files": [
     {
       "path": "ci.js",
-      "archetype": "entrypoint",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "entrypoint",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Top-level CI pipeline orchestration script — entry file that coordinates analysis and PRD health validation.",
+          "detail": "Top-level CI pipeline script that orchestrates subprocesses (sourcevision, rex) and validates project health — a utility/infrastructure runner, not a CLI command handler or entrypoint with re-exports.",
           "weight": 0.7
         }
       ]
@@ -3994,7 +3994,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Pure risk scoring and classification functions for zones — deterministic calculations, no I/O",
+          "detail": "Pure computation module — calculates architectural risk scores and emits findings from cohesion/coupling metrics. No IO, no commands, shared across analyzers.",
           "weight": 0.7
         }
       ]
@@ -4120,7 +4120,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Main zone detection pipeline (Louvain + AI enrichment) — core analysis service",
+          "detail": "Core analysis service implementing Louvain community detection, zone metric computation, and structural insight generation — business logic orchestration, not a simple utility.",
           "weight": 0.7
         }
       ]
@@ -4552,31 +4552,15 @@
     },
     {
       "path": "packages/web/build.js",
-      "archetype": "config",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "config",
-          "signalKind": "path",
-          "detail": "Build script configuration for the web package",
-          "weight": 0.7
-        }
-      ]
+      "archetype": "entrypoint",
+      "confidence": 1,
+      "source": "user-override"
     },
     {
       "path": "packages/web/dev.js",
-      "archetype": "config",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "config",
-          "signalKind": "path",
-          "detail": "Dev server script — build/tooling configuration",
-          "weight": 0.7
-        }
-      ]
+      "archetype": "entrypoint",
+      "confidence": 1,
+      "source": "user-override"
     },
     {
       "path": "packages/web/src/cli/index.ts",
@@ -5035,7 +5019,21 @@
         {
           "archetypeId": "entrypoint",
           "signalKind": "path",
-          "detail": "Server startup entry point — orchestrates initialization",
+          "detail": "Server entry point that wires HTTP server, all routes, WebSocket, watchers, and graceful shutdown — the top-level composition root for the web server.",
+          "weight": 0.7
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/server/task-usage.ts",
+      "archetype": "gateway",
+      "confidence": 0.7,
+      "source": "llm",
+      "evidence": [
+        {
+          "archetypeId": "gateway",
+          "signalKind": "path",
+          "detail": "Explicitly described as a 'public facade' that re-exports two internal modules (incremental-task-usage and usage-cleanup-scheduler) with no logic of its own.",
           "weight": 0.7
         }
       ]
@@ -5070,28 +5068,14 @@
     },
     {
       "path": "packages/web/src/server/websocket.ts",
-      "archetype": "middleware",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "middleware",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "WebSocket connection handling — request/response lifecycle middleware",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
-      "path": "packages/web/src/server/ws-health-tracker.ts",
-      "archetype": "service",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "service",
-          "signalKind": "path",
-          "detail": "Tracks WebSocket connection health — stateful monitoring service",
+          "detail": "Standalone WebSocket protocol implementation (RFC 6455) providing connection management, broadcasting, health tracking, and keepalive — a reusable infrastructure utility.",
           "weight": 0.7
         }
       ]
@@ -6100,6 +6084,20 @@
           "signalKind": "directory",
           "detail": "path contains \"/components/\"",
           "weight": 0.6
+        }
+      ]
+    },
+    {
+      "path": "packages/web/src/viewer/graph/index.ts",
+      "archetype": "entrypoint",
+      "confidence": 0.8,
+      "source": "algorithmic",
+      "evidence": [
+        {
+          "archetypeId": "entrypoint",
+          "signalKind": "filename",
+          "detail": "filename \"index.ts\" matches ^index\\.[tj]sx?$",
+          "weight": 0.8
         }
       ]
     },
@@ -7523,27 +7521,27 @@
     }
   ],
   "summary": {
-    "totalClassified": 488,
+    "totalClassified": 489,
     "totalUnclassified": 0,
     "byArchetype": {
-      "entrypoint": 38,
-      "service": 85,
-      "config": 7,
+      "utility": 116,
+      "service": 84,
+      "entrypoint": 40,
+      "config": 5,
       "cli-command": 50,
-      "utility": 114,
       "types": 20,
-      "gateway": 4,
+      "gateway": 5,
       "schema": 12,
       "store": 20,
       "route-handler": 20,
-      "middleware": 1,
       "component": 62,
       "hook": 27,
       "page": 28
     },
     "bySource": {
-      "llm": 185,
-      "algorithmic": 303
+      "llm": 183,
+      "algorithmic": 304,
+      "user-override": 2
     }
   }
 }

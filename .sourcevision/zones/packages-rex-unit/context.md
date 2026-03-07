@@ -82,7 +82,7 @@ Incoming (other zones → this zone):
 
 <findings>
 
-[suggestion] [warning] Zone "Unit" (packages-rex:unit) has critical risk (score: 0.67, cohesion: 0.33, coupling: 0.67) — requires refactoring before new feature development
+[suggestion] [info] Zone "Unit" (packages-rex:unit) has critical risk (score: 0.67, cohesion: 0.33, coupling: 0.67) — justified: Large cross-cutting zone spanning analyze/ and recommend/ subsystems (19 files). High coupling reflects shared dependencies on store, types, and LLM client. The analyze and recommend features are functionally related (recommendations feed into analysis proposals). Splitting would not improve cohesion — the Louvain algorithm correctly identified these as a community.
 
 </findings>
 

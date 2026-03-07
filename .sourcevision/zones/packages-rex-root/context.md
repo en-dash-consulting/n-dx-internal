@@ -8,13 +8,13 @@ Zone: Root (`packages-rex:root`)
 Files: 9, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
 Description: 9 files, primarily JSON, Markdown, Other
-Lines: 3156
+Lines: 3180
 
 </zone>
 
 <files>
 
-packages/rex/README.md (Markdown, 285 lines, docs)
+packages/rex/README.md (Markdown, 309 lines, docs)
 packages/rex/Rex-F.png (Other, 0 lines, asset)
 packages/rex/Rex.png (Other, 0 lines, asset)
 packages/rex/context.md (Markdown, 99 lines, docs)

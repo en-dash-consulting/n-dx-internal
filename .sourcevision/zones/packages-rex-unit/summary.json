@@ -40,6 +40,7 @@
     "coupling": 0.67,
     "riskScore": 0.6699999999999999,
     "riskLevel": "critical",
-    "failsThreshold": true
+    "failsThreshold": true,
+    "riskJustification": "Large cross-cutting zone spanning analyze/ and recommend/ subsystems (19 files). High coupling reflects shared dependencies on store, types, and LLM client. The analyze and recommend features are functionally related (recommendations feed into analysis proposals). Splitting would not improve cohesion — the Louvain algorithm correctly identified these as a community."
   }
 }

@@ -1,0 +1,33 @@
+{
+  "id": "hench/unit/agent/agent",
+  "name": "Hench/unit/agent/agent",
+  "description": "16 files, primarily TypeScript",
+  "files": [
+    "packages/hench/src/agent/analysis/spin.ts",
+    "packages/hench/src/agent/lifecycle/cli-loop.ts",
+    "packages/hench/src/agent/lifecycle/heartbeat.ts",
+    "packages/hench/src/agent/lifecycle/loop.ts",
+    "packages/hench/src/agent/lifecycle/shared.ts",
+    "packages/hench/src/agent/lifecycle/token-budget.ts",
+    "packages/hench/src/store/project-config.ts",
+    "packages/hench/tests/unit/agent/api-auth.test.ts",
+    "packages/hench/tests/unit/agent/cli-retry.test.ts",
+    "packages/hench/tests/unit/agent/codex-normalization.test.ts",
+    "packages/hench/tests/unit/agent/heartbeat.test.ts",
+    "packages/hench/tests/unit/agent/shared-lifecycle.test.ts",
+    "packages/hench/tests/unit/agent/spin-detection.test.ts",
+    "packages/hench/tests/unit/agent/token-budget.test.ts",
+    "packages/hench/tests/unit/agent/token-tracking.test.ts",
+    "packages/hench/tests/unit/store/claude-config.test.ts"
+  ],
+  "entryPoints": [
+    "packages/hench/src/agent/lifecycle/cli-loop.ts",
+    "packages/hench/src/agent/lifecycle/loop.ts",
+    "packages/hench/src/agent/lifecycle/token-budget.ts",
+    "packages/hench/src/store/project-config.ts"
+  ],
+  "cohesion": 0.56,
+  "coupling": 0.44,
+  "fileCount": 16,
+  "lineCount": 3920
+}

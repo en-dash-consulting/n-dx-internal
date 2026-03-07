@@ -20,6 +20,7 @@
     "coupling": 0.75,
     "riskScore": 0.75,
     "riskLevel": "catastrophic",
-    "failsThreshold": true
+    "failsThreshold": true,
+    "riskJustification": "Test-dominated zone (2 test files for 2 source files). The fix CLI command and core fix logic form a natural pair. High coupling is driven by test imports of store, validation, and type modules. Structurally sound — the zone boundary correctly groups the feature's implementation and tests."
   }
 }

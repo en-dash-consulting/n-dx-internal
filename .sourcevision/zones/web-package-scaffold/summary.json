@@ -1,0 +1,36 @@
+{
+  "id": "web-package-scaffold",
+  "name": "Web Package Scaffold",
+  "description": "Web package build infrastructure and a set of viewer UI components that the import graph placed here rather than in the main web-viewer zone.",
+  "files": [
+    "packages/web/SourceVision-F.png",
+    "packages/web/SourceVision.png",
+    "packages/web/build.js",
+    "packages/web/dev.js",
+    "packages/web/package.json",
+    "packages/web/src/viewer/components/elapsed-time.ts",
+    "packages/web/src/viewer/hooks/use-tick.ts",
+    "packages/web/src/viewer/route-state.ts",
+    "packages/web/src/viewer/views/task-audit.ts",
+    "packages/web/tests/unit/viewer/route-state.test.ts",
+    "packages/web/tests/unit/viewer/token-usage-nav.test.ts",
+    "packages/web/tsconfig.json",
+    "packages/web/vitest.config.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/components/elapsed-time.ts",
+    "packages/web/src/viewer/route-state.ts",
+    "packages/web/src/viewer/views/task-audit.ts"
+  ],
+  "cohesion": 0.67,
+  "coupling": 0.33,
+  "fileCount": 13,
+  "lineCount": 1485,
+  "riskMetrics": {
+    "cohesion": 0.67,
+    "coupling": 0.33,
+    "riskScore": 0.32999999999999996,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

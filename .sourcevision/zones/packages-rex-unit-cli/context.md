@@ -43,7 +43,7 @@ Incoming (other zones → this zone):
 
 <findings>
 
-[suggestion] [critical] Zone "Unit Cli" (packages-rex:unit-cli) has catastrophic risk (score: 0.75, cohesion: 0.25, coupling: 0.75) — requires immediate architectural intervention
+[suggestion] [info] Zone "Unit Cli" (packages-rex:unit-cli) has catastrophic risk (score: 0.75, cohesion: 0.25, coupling: 0.75) — justified: Test-dominated zone (2 test files for 2 source files). The fix CLI command and core fix logic form a natural pair. High coupling is driven by test imports of store, validation, and type modules. Structurally sound — the zone boundary correctly groups the feature's implementation and tests.
 
 </findings>
 

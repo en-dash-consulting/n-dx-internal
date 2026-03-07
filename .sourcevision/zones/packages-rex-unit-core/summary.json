@@ -24,6 +24,7 @@
     "coupling": 0.83,
     "riskScore": 0.83,
     "riskLevel": "catastrophic",
-    "failsThreshold": true
+    "failsThreshold": true,
+    "riskJustification": "Test-dominated zone (5 test files for 2 source files). High coupling is inherent: test files import store, types, and fixtures from across rex. The CLI command + core next-task logic are cohesive; the apparent low cohesion is an artifact of test files having many external imports. No refactoring would reduce coupling without splitting tests from source."
   }
 }

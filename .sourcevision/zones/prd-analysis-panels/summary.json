@@ -1,0 +1,29 @@
+{
+  "id": "prd-analysis-panels",
+  "name": "PRD Analysis Panels",
+  "description": "Groups the interactive PRD editing UI components — analysis panel, batch import, proposal editor, and smart-add input — along with the analysis view that composes them.",
+  "files": [
+    "packages/web/src/viewer/components/prd-tree/analyze-panel.ts",
+    "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
+    "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
+    "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+    "packages/web/src/viewer/views/analysis.ts",
+    "packages/web/tests/unit/viewer/batch-import-panel.test.ts",
+    "packages/web/tests/unit/viewer/smart-add-input.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+    "packages/web/src/viewer/views/analysis.ts"
+  ],
+  "cohesion": 0.75,
+  "coupling": 0.25,
+  "fileCount": 7,
+  "lineCount": 3450,
+  "riskMetrics": {
+    "cohesion": 0.75,
+    "coupling": 0.25,
+    "riskScore": 0.25,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

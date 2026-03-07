@@ -49,7 +49,7 @@ Incoming (other zones → this zone):
 
 <findings>
 
-[suggestion] [critical] Zone "Unit Core" (packages-rex:unit-core) has catastrophic risk (score: 0.83, cohesion: 0.17, coupling: 0.83) — requires immediate architectural intervention
+[suggestion] [info] Zone "Unit Core" (packages-rex:unit-core) has catastrophic risk (score: 0.83, cohesion: 0.17, coupling: 0.83) — justified: Test-dominated zone (5 test files for 2 source files). High coupling is inherent: test files import store, types, and fixtures from across rex. The CLI command + core next-task logic are cohesive; the apparent low cohesion is an artifact of test files having many external imports. No refactoring would reduce coupling without splitting tests from source.
 
 </findings>
 

@@ -5,24 +5,19 @@
 <zone>
 
 Zone: Web Viewer/polling (`web-viewer/polling`)
-Files: 10, Cohesion: 0.53, Coupling: 0.47
-Description: 10 files, primarily TypeScript
-Entry points: packages/web/src/viewer/hooks/use-polling-suspension.ts, packages/web/src/viewer/polling/batched-tick-dispatcher.ts, packages/web/src/viewer/polling/polling-restart.ts, packages/web/src/viewer/polling/polling-state.ts, packages/web/src/viewer/polling/tick-timer.ts
-Lines: 3293
+Files: 5, Cohesion: 0.40, Coupling: 0.60
+Description: 5 files, primarily TypeScript
+Entry points: packages/web/src/viewer/hooks/use-polling-suspension.ts, packages/web/src/viewer/polling/polling-restart.ts, packages/web/src/viewer/polling/polling-state.ts
+Lines: 1455
 
 </zone>
 
 <files>
 
 packages/web/src/viewer/hooks/use-polling-suspension.ts (TypeScript, 61 lines, source)
-packages/web/src/viewer/polling/batched-tick-dispatcher.ts (TypeScript, 240 lines, source)
 packages/web/src/viewer/polling/polling-restart.ts (TypeScript, 143 lines, source)
 packages/web/src/viewer/polling/polling-state.ts (TypeScript, 398 lines, source)
-packages/web/src/viewer/polling/tick-timer.ts (TypeScript, 205 lines, source)
-packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts (TypeScript, 655 lines, test)
-packages/web/tests/unit/viewer/elapsed-time-memoization.test.ts (TypeScript, 282 lines, test)
 packages/web/tests/unit/viewer/polling-state.test.ts (TypeScript, 725 lines, test)
-packages/web/tests/unit/viewer/tick-timer.test.ts (TypeScript, 456 lines, test)
 packages/web/tests/unit/viewer/use-polling-suspension.test.ts (TypeScript, 128 lines, test)
 
 </files>
@@ -32,16 +27,9 @@ packages/web/tests/unit/viewer/use-polling-suspension.test.ts (TypeScript, 128 l
 Internal:
   packages/web/src/viewer/hooks/use-polling-suspension.ts → packages/web/src/viewer/polling/polling-state.ts {onPollingStateChange, getPollingState}
   packages/web/src/viewer/hooks/use-polling-suspension.ts → packages/web/src/viewer/polling/polling-state.ts {PollingStateSnapshot}
-  packages/web/src/viewer/polling/batched-tick-dispatcher.ts → packages/web/src/viewer/polling/tick-timer.ts {onTick}
   packages/web/src/viewer/polling/polling-restart.ts → packages/web/src/viewer/polling/polling-state.ts {suspendAllSources, resumeAllSources, isGlobalSuspended, getGeneration, isGenerationCurrent}
-  packages/web/src/viewer/polling/tick-timer.ts → packages/web/src/viewer/polling/polling-state.ts {registerPollingSource}
-  packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts → packages/web/src/viewer/polling/batched-tick-dispatcher.ts {registerTickUpdater, getBatchedTickDispatcherState, flushBatchedTicks, resetBatchedTickDispatcher}
-  packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts → packages/web/src/viewer/polling/tick-timer.ts {resetTickTimer}
-  packages/web/tests/unit/viewer/elapsed-time-memoization.test.ts → packages/web/src/viewer/polling/tick-timer.ts {onTick, resetTickTimer}
   packages/web/tests/unit/viewer/polling-state.test.ts → packages/web/src/viewer/polling/polling-state.ts {registerPollingSource, unregisterPollingSource, suspendAllSources, resumeAllSources, disposeAllSources, isGlobalSuspended, getGeneration, isSourceRegistered, getSourceInfo, getPollingState, onPollingStateChange, getSourceCount, isGenerationCurrent, resetPollingState}
   packages/web/tests/unit/viewer/polling-state.test.ts → packages/web/src/viewer/polling/polling-state.ts {PollingSourceCallbacks, PollingSourceStatus}
-  packages/web/tests/unit/viewer/tick-timer.test.ts → packages/web/src/viewer/polling/tick-timer.ts {onTick, getTickTimerState, resetTickTimer, suspendTickTimer, resumeTickTimer}
-  packages/web/tests/unit/viewer/tick-timer.test.ts → packages/web/src/viewer/polling/tick-timer.ts {TickListener}
   packages/web/tests/unit/viewer/use-polling-suspension.test.ts → packages/web/src/viewer/hooks/use-polling-suspension.ts {usePollingSuspension}
   packages/web/tests/unit/viewer/use-polling-suspension.test.ts → packages/web/src/viewer/polling/polling-state.ts {registerPollingSource, suspendAllSources, resumeAllSources, resetPollingState}
   packages/web/tests/unit/viewer/use-polling-suspension.test.ts → packages/web/src/viewer/polling/polling-state.ts {PollingSourceCallbacks}

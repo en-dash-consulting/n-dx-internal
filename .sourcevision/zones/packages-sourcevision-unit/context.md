@@ -9,7 +9,7 @@ Files: 28, Cohesion: 0.43, Coupling: 0.57
 Risk: healthy (score: 0.57)
 Description: 28 files, primarily TypeScript
 Entry points: packages/sourcevision/src/analyzers/branch-work-classifier.ts, packages/sourcevision/src/analyzers/risk-scoring.ts, packages/sourcevision/src/cli/commands/workspace.ts, packages/sourcevision/src/cli/mcp.ts, packages/sourcevision/src/generators/pr-markdown-template.ts, packages/sourcevision/src/schema/data-files.ts, packages/sourcevision/src/schema/v1.ts, packages/sourcevision/tests/unit/analyzers/zones-helpers.ts
-Lines: 11364
+Lines: 11513
 
 </zone>
 
@@ -18,14 +18,14 @@ Lines: 11364
 packages/sourcevision/src/analyzers/branch-work-classifier.ts (TypeScript, 241 lines, source)
 packages/sourcevision/src/analyzers/branch-work-filter.ts (TypeScript, 377 lines, source)
 packages/sourcevision/src/analyzers/branch-work-store.ts (TypeScript, 146 lines, source)
-packages/sourcevision/src/analyzers/risk-scoring.ts (TypeScript, 202 lines, source)
+packages/sourcevision/src/analyzers/risk-scoring.ts (TypeScript, 250 lines, source)
 packages/sourcevision/src/analyzers/workspace-aggregate.ts (TypeScript, 501 lines, source)
 packages/sourcevision/src/cli/commands/workspace.ts (TypeScript, 193 lines, source)
 packages/sourcevision/src/cli/mcp.ts (TypeScript, 555 lines, source)
 packages/sourcevision/src/generators/pr-markdown-template.ts (TypeScript, 344 lines, source)
 packages/sourcevision/src/public.ts (TypeScript, 112 lines, source)
 packages/sourcevision/src/schema/data-files.ts (TypeScript, 13 lines, source)
-packages/sourcevision/src/schema/v1.ts (TypeScript, 591 lines, source)
+packages/sourcevision/src/schema/v1.ts (TypeScript, 608 lines, source)
 packages/sourcevision/tests/unit/analyzers/branch-work-classifier.test.ts (TypeScript, 379 lines, test)
 packages/sourcevision/tests/unit/analyzers/branch-work-filter.test.ts (TypeScript, 441 lines, test)
 packages/sourcevision/tests/unit/analyzers/branch-work-store.test.ts (TypeScript, 343 lines, test)
@@ -33,7 +33,7 @@ packages/sourcevision/tests/unit/analyzers/callgraph-findings.test.ts (TypeScrip
 packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts (TypeScript, 194 lines, test)
 packages/sourcevision/tests/unit/analyzers/enrich-content-skip.test.ts (TypeScript, 348 lines, test)
 packages/sourcevision/tests/unit/analyzers/next-steps.test.ts (TypeScript, 650 lines, test)
-packages/sourcevision/tests/unit/analyzers/risk-scoring.test.ts (TypeScript, 227 lines, test)
+packages/sourcevision/tests/unit/analyzers/risk-scoring.test.ts (TypeScript, 311 lines, test)
 packages/sourcevision/tests/unit/analyzers/workspace-aggregate.test.ts (TypeScript, 702 lines, test)
 packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts (TypeScript, 862 lines, test)
 packages/sourcevision/tests/unit/analyzers/zone-insights.test.ts (TypeScript, 880 lines, test)
@@ -52,7 +52,7 @@ Internal:
   packages/sourcevision/src/analyzers/branch-work-classifier.ts → packages/sourcevision/src/schema/v1.ts {BranchWorkRecordItem, BranchWorkEpicSummary, ChangeSignificance}
   packages/sourcevision/src/analyzers/branch-work-filter.ts → packages/sourcevision/src/schema/v1.ts {BranchWorkRecordItem}
   packages/sourcevision/src/analyzers/branch-work-store.ts → packages/sourcevision/src/schema/v1.ts {BranchWorkRecord}
-  packages/sourcevision/src/analyzers/risk-scoring.ts → packages/sourcevision/src/schema/v1.ts {ZoneRiskMetrics}
+  packages/sourcevision/src/analyzers/risk-scoring.ts → packages/sourcevision/src/schema/v1.ts {ZoneRiskMetrics, RiskJustificationEntry}
   packages/sourcevision/src/analyzers/workspace-aggregate.ts → packages/sourcevision/src/schema/data-files.ts {DATA_FILES, SUPPLEMENTARY_FILES}
   packages/sourcevision/src/analyzers/workspace-aggregate.ts → packages/sourcevision/src/schema/v1.ts {SCHEMA_VERSION}
   packages/sourcevision/src/cli/commands/workspace.ts → packages/sourcevision/src/analyzers/workspace-aggregate.ts {loadWorkspaceConfig, saveWorkspaceConfig, resolveMembers, writeWorkspaceOutput, getWorkspaceStatus}
@@ -95,7 +95,7 @@ Outgoing (this zone → other zones):
   → packages-sourcevision:e2e: packages/sourcevision/src/analyzers/branch-work-store.ts → packages/sourcevision/src/schema/validate.ts; packages/sourcevision/src/analyzers/branch-work-store.ts → packages/sourcevision/src/schema/validate.ts; packages/sourcevision/tests/unit/analyzers/branch-work-store.test.ts → packages/sourcevision/src/schema/validate.ts; packages/sourcevision/tests/unit/analyzers/branch-work-store.test.ts → packages/sourcevision/src/schema/validate.ts
 
 Incoming (other zones → this zone):
-  ← packages-sourcevision:analyzers: packages/sourcevision/src/analyzers/workspace.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/analyzers/workspace.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/analyze-phases.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/analyze-phases.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/risk-scoring.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/risk-scoring.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/schema/index.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/schema/index.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/tests/unit/analyzers/token-usage.test.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/tests/unit/analyzers/token-usage.test.ts → packages/sourcevision/src/schema/v1.ts
+  ← packages-sourcevision:analyzers: packages/sourcevision/src/analyzers/workspace.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/analyzers/workspace.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/analyze-phases.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/analyze-phases.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/risk-scoring.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/analyzers/risk-scoring.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/analyze.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/schema/index.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/schema/index.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/tests/unit/analyzers/token-usage.test.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/tests/unit/analyzers/token-usage.test.ts → packages/sourcevision/src/schema/v1.ts
   ← packages-sourcevision:analyzers-3: packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts → packages/sourcevision/tests/unit/analyzers/zones-helpers.ts; packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts → packages/sourcevision/tests/unit/analyzers/zones-helpers.ts; packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts → packages/sourcevision/tests/unit/analyzers/zones-helpers.ts; packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts → packages/sourcevision/tests/unit/analyzers/zones-helpers.ts; packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts → packages/sourcevision/tests/unit/analyzers/zones-helpers.ts; packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts → packages/sourcevision/tests/unit/analyzers/zones-helpers.ts
   ← packages-sourcevision:cli: packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/export-pdf.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/init.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/cli/commands/init.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/cli/commands/pr-markdown.ts → packages/sourcevision/src/analyzers/branch-work-classifier.ts; packages/sourcevision/src/cli/commands/pr-markdown.ts → packages/sourcevision/src/analyzers/branch-work-classifier.ts; packages/sourcevision/src/cli/commands/pr-markdown.ts → packages/sourcevision/src/generators/pr-markdown-template.ts; packages/sourcevision/src/cli/commands/pr-markdown.ts → packages/sourcevision/src/generators/pr-markdown-template.ts; packages/sourcevision/src/cli/commands/pr-markdown.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/cli/commands/pr-markdown.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/cli/commands/validate.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/commands/validate.ts → packages/sourcevision/src/schema/data-files.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/commands/workspace.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/commands/workspace.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/mcp.ts; packages/sourcevision/src/cli/index.ts → packages/sourcevision/src/cli/mcp.ts
   ← packages-sourcevision:e2e: packages/sourcevision/src/schema/validate.ts → packages/sourcevision/src/schema/v1.ts; packages/sourcevision/src/schema/validate.ts → packages/sourcevision/src/schema/v1.ts
@@ -123,6 +123,6 @@ Incoming (other zones → this zone):
 - Move pr-markdown-template.ts to cli-infrastructure alongside pr-markdown.ts — co-locating template with command removes one coupling edge between analytics and CLI without any behavioral change
 - Flag this zone as high-fragility: cohesion 0.57 + coupling 0.43 is the worst combined score in the package — any PR touching files in this zone has elevated risk of cascading breakage and should require additional review
 - Zone "unit" has files across 11 directories — consider consolidating under a dedicated directory
-- [call graph] 1315 internal calls, 268 outgoing, 575 incoming (cohesion: 0.83, coupling: 0.17)
+- [call graph] 1337 internal calls, 268 outgoing, 575 incoming (cohesion: 0.83, coupling: 0.17)
 
 </insights>

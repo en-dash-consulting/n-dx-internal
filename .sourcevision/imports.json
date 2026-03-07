@@ -3393,6 +3393,14 @@
       ]
     },
     {
+      "from": "packages/hench/tests/unit/prd/rex-gateway.test.ts",
+      "to": "packages/hench/src/prd/rex-gateway.ts",
+      "type": "static",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
       "from": "packages/hench/tests/unit/process/concurrent-execution-metrics.test.ts",
       "to": "packages/hench/src/process/concurrent-execution-metrics.ts",
       "type": "static",
@@ -14053,7 +14061,8 @@
       "to": "packages/sourcevision/src/schema/v1.ts",
       "type": "type",
       "symbols": [
-        "ZoneRiskMetrics"
+        "ZoneRiskMetrics",
+        "RiskJustificationEntry"
       ]
     },
     {
@@ -14680,6 +14689,14 @@
       "symbols": [
         "DATA_FILES",
         "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "RiskJustificationEntry"
       ]
     },
     {
@@ -16155,6 +16172,7 @@
         "deriveZoneIdFromFilenames",
         "analyzeZones",
         "assignByProximity",
+        "applyZonePins",
         "SUBDIVISION_THRESHOLD"
       ]
     },
@@ -16875,14 +16893,6 @@
     },
     {
       "from": "packages/web/src/server/routes-hench.ts",
-      "to": "packages/web/src/server/incremental-task-usage.ts",
-      "type": "static",
-      "symbols": [
-        "IncrementalTaskUsageAggregator"
-      ]
-    },
-    {
-      "from": "packages/web/src/server/routes-hench.ts",
       "to": "packages/web/src/server/process-memory-tracker.ts",
       "type": "static",
       "symbols": [
@@ -16911,6 +16921,14 @@
       "type": "static",
       "symbols": [
         "clearStatusCache"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-hench.ts",
+      "to": "packages/web/src/server/task-usage.ts",
+      "type": "static",
+      "symbols": [
+        "IncrementalTaskUsageAggregator"
       ]
     },
     {
@@ -17484,6 +17502,22 @@
     },
     {
       "from": "packages/web/src/server/start.ts",
+      "to": "packages/web/src/server/task-usage.ts",
+      "type": "static",
+      "symbols": [
+        "startUsageCleanupScheduler"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/start.ts",
+      "to": "packages/web/src/server/task-usage.ts",
+      "type": "type",
+      "symbols": [
+        "CollectAllIdsFn"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/start.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "type",
       "symbols": [
@@ -17493,33 +17527,10 @@
     },
     {
       "from": "packages/web/src/server/start.ts",
-      "to": "packages/web/src/server/usage-cleanup-scheduler.ts",
-      "type": "static",
-      "symbols": [
-        "startUsageCleanupScheduler"
-      ]
-    },
-    {
-      "from": "packages/web/src/server/start.ts",
-      "to": "packages/web/src/server/usage-cleanup-scheduler.ts",
-      "type": "type",
-      "symbols": [
-        "CollectAllIdsFn"
-      ]
-    },
-    {
-      "from": "packages/web/src/server/start.ts",
       "to": "packages/web/src/server/websocket.ts",
       "type": "static",
       "symbols": [
-        "createWebSocketManager"
-      ]
-    },
-    {
-      "from": "packages/web/src/server/start.ts",
-      "to": "packages/web/src/server/ws-health-tracker.ts",
-      "type": "static",
-      "symbols": [
+        "createWebSocketManager",
         "WsHealthTracker"
       ]
     },
@@ -17532,21 +17543,39 @@
       ]
     },
     {
-      "from": "packages/web/src/server/usage-cleanup-scheduler.ts",
+      "from": "packages/web/src/server/task-usage.ts",
       "to": "packages/web/src/server/incremental-task-usage.ts",
-      "type": "type",
+      "type": "reexport",
       "symbols": [
         "IncrementalTaskUsageAggregator",
         "TaskUsageAccumulator"
       ]
     },
     {
-      "from": "packages/web/src/server/websocket.ts",
-      "to": "packages/web/src/server/ws-health-tracker.ts",
+      "from": "packages/web/src/server/task-usage.ts",
+      "to": "packages/web/src/server/usage-cleanup-scheduler.ts",
+      "type": "reexport",
+      "symbols": [
+        "startUsageCleanupScheduler",
+        "runCleanupCycle",
+        "identifyOrphanedEntries",
+        "loadCleanupConfig",
+        "writeCleanupLog",
+        "DEFAULT_CLEANUP_INTERVAL_MS",
+        "CollectAllIdsFn",
+        "CleanupResult",
+        "CleanupConfig",
+        "CleanupLogEntry",
+        "OrphanedEntry"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/usage-cleanup-scheduler.ts",
+      "to": "packages/web/src/server/incremental-task-usage.ts",
       "type": "type",
       "symbols": [
-        "WsHealthTracker",
-        "CleanupReason"
+        "IncrementalTaskUsageAggregator",
+        "TaskUsageAccumulator"
       ]
     },
     {
@@ -17936,6 +17965,41 @@
       "type": "type",
       "symbols": [
         "FacetFilterProps"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/lazy-children.ts",
+      "type": "reexport",
+      "symbols": [
+        "LazyChildren",
+        "UNMOUNT_DELAY_MS"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/lazy-children.ts",
+      "type": "type",
+      "symbols": [
+        "LazyChildrenProps"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts",
+      "type": "reexport",
+      "symbols": [
+        "ListenerLifecycleManager",
+        "useNodeListeners"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts",
+      "type": "type",
+      "symbols": [
+        "ListenerRecord",
+        "ListenerLifecycleState"
       ]
     },
     {
@@ -18558,6 +18622,38 @@
       "type": "static",
       "symbols": [
         "meterClass"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/graph/index.ts",
+      "to": "packages/web/src/viewer/graph/physics.ts",
+      "type": "reexport",
+      "symbols": [
+        "computeForceParams",
+        "hashPosition",
+        "initZoneClusteredPositions",
+        "computeZoneCentroids",
+        "applyZoneCentroidRepulsion",
+        "buildQuadTree",
+        "bhRepulsion",
+        "tick",
+        "PhysicsNode",
+        "PhysicsLink",
+        "QTNode",
+        "SimState",
+        "TickCallbacks"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/graph/index.ts",
+      "to": "packages/web/src/viewer/graph/renderer.ts",
+      "type": "reexport",
+      "symbols": [
+        "GraphRenderer",
+        "GraphNode",
+        "GraphLink",
+        "ZoneInfo",
+        "GraphRendererOptions"
       ]
     },
     {
@@ -19585,6 +19681,39 @@
       "symbols": [
         "CrashDetectionResult",
         "SavedNavigationState"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/performance/dom-performance-monitor.ts",
+      "type": "reexport",
+      "symbols": [
+        "countDOMNodes",
+        "readHeapUsage",
+        "formatDuration",
+        "formatNodeCount",
+        "formatDelta",
+        "recordRender",
+        "recordUpdate",
+        "measureOperation",
+        "takeDOMSnapshot",
+        "computeSummary",
+        "onDOMSnapshot",
+        "setObservedContainer",
+        "startDOMPerformanceMonitor",
+        "stopDOMPerformanceMonitor",
+        "getLatestDOMSnapshot",
+        "getDOMSnapshotHistory",
+        "getRenderTimings",
+        "getUpdateComparisons",
+        "getObservedContainer",
+        "resetDOMPerformanceMonitor",
+        "DOMNodeSnapshot",
+        "RenderTiming",
+        "UpdateComparison",
+        "PerformanceSummary",
+        "DOMPerformanceConfig",
+        "DOMSnapshotHandler"
       ]
     },
     {
@@ -21416,6 +21545,15 @@
       ]
     },
     {
+      "from": "packages/web/tests/integration/ws-health-integration.test.ts",
+      "to": "packages/web/src/server/websocket.ts",
+      "type": "static",
+      "symbols": [
+        "createWebSocketManager",
+        "WsHealthTracker"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/server/aggregation-cache.test.ts",
       "to": "packages/web/src/server/aggregation-cache.ts",
       "type": "static",
@@ -22069,14 +22207,6 @@
     },
     {
       "from": "packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts",
-      "to": "packages/web/src/server/rex-gateway.ts",
-      "type": "static",
-      "symbols": [
-        "collectAllIds"
-      ]
-    },
-    {
-      "from": "packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts",
       "to": "packages/web/src/server/usage-cleanup-scheduler.ts",
       "type": "static",
       "symbols": [
@@ -22108,24 +22238,8 @@
       ]
     },
     {
-      "from": "packages/web/tests/unit/server/ws-health-integration.test.ts",
-      "to": "packages/web/src/server/websocket.ts",
-      "type": "static",
-      "symbols": [
-        "createWebSocketManager"
-      ]
-    },
-    {
-      "from": "packages/web/tests/unit/server/ws-health-integration.test.ts",
-      "to": "packages/web/src/server/ws-health-tracker.ts",
-      "type": "static",
-      "symbols": [
-        "WsHealthTracker"
-      ]
-    },
-    {
       "from": "packages/web/tests/unit/server/ws-health-tracker.test.ts",
-      "to": "packages/web/src/server/ws-health-tracker.ts",
+      "to": "packages/web/src/server/websocket.ts",
       "type": "static",
       "symbols": [
         "WsHealthTracker"
@@ -23626,6 +23740,35 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/use-dom-performance-monitor.test.ts",
+      "to": "packages/web/src/viewer/hooks/use-dom-performance-monitor.ts",
+      "type": "static",
+      "symbols": [
+        "useDOMPerformanceMonitor"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/use-dom-performance-monitor.test.ts",
+      "to": "packages/web/src/viewer/hooks/use-dom-performance-monitor.ts",
+      "type": "type",
+      "symbols": [
+        "UseDOMPerformanceMonitorResult"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/use-dom-performance-monitor.test.ts",
+      "to": "packages/web/src/viewer/performance/dom-performance-monitor.ts",
+      "type": "static",
+      "symbols": [
+        "resetDOMPerformanceMonitor",
+        "getLatestDOMSnapshot",
+        "getObservedContainer",
+        "getRenderTimings",
+        "getUpdateComparisons",
+        "getDOMSnapshotHistory"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
       "to": "packages/web/src/viewer/hooks/use-polling-suspension.ts",
       "type": "static",
@@ -23755,6 +23898,56 @@
       "type": "static",
       "symbols": [
         "convertSubZones"
+      ]
+    },
+    {
+      "from": "tests/e2e/cli-arg-contracts.test.js",
+      "to": "tests/e2e/e2e-helpers.js",
+      "type": "static",
+      "symbols": [
+        "run"
+      ]
+    },
+    {
+      "from": "tests/e2e/cli-ci.test.js",
+      "to": "tests/e2e/e2e-helpers.js",
+      "type": "static",
+      "symbols": [
+        "runBase",
+        "runResultBase",
+        "createTmpDir",
+        "removeTmpDir",
+        "setupRexDir",
+        "setupSourcevisionDir"
+      ]
+    },
+    {
+      "from": "tests/e2e/cli-delegation.test.js",
+      "to": "tests/e2e/e2e-helpers.js",
+      "type": "static",
+      "symbols": [
+        "run",
+        "runFail"
+      ]
+    },
+    {
+      "from": "tests/e2e/cli-dev.test.js",
+      "to": "tests/e2e/e2e-helpers.js",
+      "type": "static",
+      "symbols": [
+        "run",
+        "runResult",
+        "createTmpDir",
+        "removeTmpDir"
+      ]
+    },
+    {
+      "from": "tests/e2e/cli-errors.test.js",
+      "to": "tests/e2e/e2e-helpers.js",
+      "type": "static",
+      "symbols": [
+        "run",
+        "runFail"
       ]
     },
     {
@@ -23983,6 +24176,7 @@
         "pr-check.js",
         "refresh-artifacts.js",
         "refresh-validate.js",
+        "scripts/hench-callgraph-analysis.mjs",
         "web.js"
       ],
       "symbols": [
@@ -23991,6 +24185,7 @@
         "mkdirSync",
         "readFile",
         "readFileSync",
+        "readdirSync",
         "statSync",
         "unlink",
         "unlinkSync",
@@ -24031,6 +24226,7 @@
       "symbols": [
         "dirname",
         "join",
+        "relative",
         "resolve"
       ]
     },
@@ -24187,6 +24383,7 @@
         "packages/web/tests/unit/viewer/token-usage-nav.test.ts",
         "packages/web/tests/unit/viewer/tree-event-delegate.test.ts",
         "packages/web/tests/unit/viewer/tree-view.test.ts",
+        "packages/web/tests/unit/viewer/use-dom-performance-monitor.test.ts",
         "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
         "packages/web/tests/unit/viewer/zone-drill-down.test.ts"
       ],
@@ -24405,6 +24602,7 @@
         "packages/hench/tests/unit/guard/guard-integration.test.ts",
         "packages/hench/tests/unit/guard/paths.test.ts",
         "packages/hench/tests/unit/guard/policy.test.ts",
+        "packages/hench/tests/unit/prd/rex-gateway.test.ts",
         "packages/hench/tests/unit/process/concurrent-execution-metrics.test.ts",
         "packages/hench/tests/unit/process/exec.test.ts",
         "packages/hench/tests/unit/process/lifecycle.test.ts",
@@ -24623,6 +24821,8 @@
         "packages/sourcevision/tests/unit/util/sort.test.ts",
         "packages/sourcevision/vitest.config.ts",
         "packages/web/tests/integration/background-suspension-recovery.test.ts",
+        "packages/web/tests/integration/boundary-check.test.ts",
+        "packages/web/tests/integration/build-output-contract.test.ts",
         "packages/web/tests/integration/memory-aware-polling-suspension.test.ts",
         "packages/web/tests/integration/messaging-stack.test.ts",
         "packages/web/tests/integration/pr-markdown-refresh.test.ts",
@@ -24630,8 +24830,8 @@
         "packages/web/tests/integration/request-dedup.test.ts",
         "packages/web/tests/integration/smart-add-dispatch.test.ts",
         "packages/web/tests/integration/token-usage-route-regression.test.ts",
+        "packages/web/tests/integration/ws-health-integration.test.ts",
         "packages/web/tests/unit/server/aggregation-cache.test.ts",
-        "packages/web/tests/unit/server/boundary-check.test.ts",
         "packages/web/tests/unit/server/data-loading-efficiency.test.ts",
         "packages/web/tests/unit/server/dev-reload.test.ts",
         "packages/web/tests/unit/server/incremental-task-usage.test.ts",
@@ -24668,7 +24868,6 @@
         "packages/web/tests/unit/server/type-consistency.test.ts",
         "packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts",
         "packages/web/tests/unit/server/websocket.test.ts",
-        "packages/web/tests/unit/server/ws-health-integration.test.ts",
         "packages/web/tests/unit/server/ws-health-tracker.test.ts",
         "packages/web/tests/unit/viewer/accessibility.test.ts",
         "packages/web/tests/unit/viewer/add-item-form.test.ts",
@@ -24746,6 +24945,7 @@
         "packages/web/tests/unit/viewer/tree-view.test.ts",
         "packages/web/tests/unit/viewer/update-batcher.test.ts",
         "packages/web/tests/unit/viewer/usage-polling.test.ts",
+        "packages/web/tests/unit/viewer/use-dom-performance-monitor.test.ts",
         "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
         "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
         "packages/web/tests/unit/viewer/ws-pipeline.test.ts",
@@ -24753,6 +24953,7 @@
         "packages/web/tests/unit/viewer/zone-inline-subzones.test.ts",
         "packages/web/vitest.config.ts",
         "tests/e2e/architecture-policy.test.js",
+        "tests/e2e/cli-arg-contracts.test.js",
         "tests/e2e/cli-ci.test.js",
         "tests/e2e/cli-config.test.js",
         "tests/e2e/cli-delegation.test.js",
@@ -24762,6 +24963,7 @@
         "tests/e2e/cli-orchestration.test.js",
         "tests/e2e/cli-pr-check.test.js",
         "tests/e2e/cli-refresh.test.js",
+        "tests/e2e/cli-spawn-boundary.test.js",
         "tests/e2e/cli-start.test.js",
         "tests/e2e/cli-tool-resolution.test.js",
         "tests/e2e/cli-web.test.js",
@@ -24804,7 +25006,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 2564,
+    "totalEdges": 2579,
     "totalExternal": 18,
     "circularCount": 0,
     "circulars": [],
@@ -24890,6 +25092,6 @@
         "count": 11
       }
     ],
-    "avgImportsPerFile": 3.41
+    "avgImportsPerFile": 3.39
   }
 }

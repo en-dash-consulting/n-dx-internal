@@ -1,0 +1,24 @@
+{
+  "id": "tick-timer",
+  "name": "Tick Timer",
+  "description": "Isolates the polling tick-timer utility and its tests, including a related elapsed-time memoization test that exercises timing behavior at the polling layer boundary.",
+  "files": [
+    "packages/web/src/viewer/polling/tick-timer.ts",
+    "packages/web/tests/unit/viewer/elapsed-time-memoization.test.ts",
+    "packages/web/tests/unit/viewer/tick-timer.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/polling/tick-timer.ts"
+  ],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 3,
+  "lineCount": 943,
+  "riskMetrics": {
+    "cohesion": 1,
+    "coupling": 0,
+    "riskScore": 0,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

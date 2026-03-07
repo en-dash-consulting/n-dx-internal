@@ -1,0 +1,24 @@
+{
+  "id": "hench/unit/agent-analysis",
+  "name": "Hench/unit/agent Analysis",
+  "description": "8 files, primarily TypeScript",
+  "files": [
+    "packages/hench/src/agent/analysis/review.ts",
+    "packages/hench/src/agent/analysis/stuck.ts",
+    "packages/hench/src/agent/index.ts",
+    "packages/hench/src/agent/lifecycle/token-usage.ts",
+    "packages/hench/tests/unit/agent/review.test.ts",
+    "packages/hench/tests/unit/agent/stuck.test.ts",
+    "packages/hench/tests/unit/agent/token-usage-regression.test.ts",
+    "packages/hench/tests/unit/agent/token-usage.test.ts"
+  ],
+  "entryPoints": [
+    "packages/hench/src/agent/analysis/review.ts",
+    "packages/hench/src/agent/analysis/stuck.ts",
+    "packages/hench/src/agent/lifecycle/token-usage.ts"
+  ],
+  "cohesion": 0.3,
+  "coupling": 0.7,
+  "fileCount": 8,
+  "lineCount": 1487
+}

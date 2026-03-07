@@ -9,7 +9,7 @@ Files: 6, Cohesion: 0.31, Coupling: 0.69
 Risk: critical (score: 0.69)
 Description: 6 files, primarily TypeScript
 Entry points: packages/sourcevision/src/analyzers/zone-hash.ts, packages/sourcevision/src/analyzers/zones.ts
-Lines: 5740
+Lines: 5855
 
 </zone>
 
@@ -17,8 +17,8 @@ Lines: 5740
 
 packages/sourcevision/src/analyzers/louvain.ts (TypeScript, 804 lines, source)
 packages/sourcevision/src/analyzers/zone-hash.ts (TypeScript, 26 lines, source)
-packages/sourcevision/src/analyzers/zones.ts (TypeScript, 1807 lines, source)
-packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts (TypeScript, 1816 lines, test)
+packages/sourcevision/src/analyzers/zones.ts (TypeScript, 1876 lines, source)
+packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts (TypeScript, 1862 lines, test)
 packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts (TypeScript, 302 lines, test)
 packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts (TypeScript, 985 lines, test)
 
@@ -31,7 +31,7 @@ Internal:
   packages/sourcevision/src/analyzers/zones.ts → packages/sourcevision/src/analyzers/zone-hash.ts {computeGlobalContentHash}
   packages/sourcevision/src/analyzers/zones.ts → packages/sourcevision/src/analyzers/zone-hash.ts {computeGlobalContentHash}
   packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts → packages/sourcevision/src/analyzers/louvain.ts {buildUndirectedGraph, addDirectoryProximityEdges, louvainPhase1, mergeSmallCommunities, mergeSatelliteCommunities, splitLargeCommunities, splitByDirectory}
-  packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts → packages/sourcevision/src/analyzers/zones.ts {deriveZoneId, deriveZoneName, disambiguateZoneId, deriveZoneIdFromFilenames, analyzeZones, assignByProximity, SUBDIVISION_THRESHOLD}
+  packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts → packages/sourcevision/src/analyzers/zones.ts {deriveZoneId, deriveZoneName, disambiguateZoneId, deriveZoneIdFromFilenames, analyzeZones, assignByProximity, applyZonePins, SUBDIVISION_THRESHOLD}
   packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts → packages/sourcevision/src/analyzers/louvain.ts {buildUndirectedGraph, splitLargeCommunities, louvainPhase1, mergeSmallCommunities, capZoneCount}
   packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts → packages/sourcevision/src/analyzers/zones.ts {analyzeZones}
   packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts → packages/sourcevision/src/analyzers/zones.ts {analyzeZones, computeStructureHash, computeZoneContentHash, computeGlobalContentHash, subdivideZone, runZonePipeline, SUBDIVISION_THRESHOLD, MAX_SUBDIVISION_DEPTH}
@@ -50,7 +50,7 @@ Incoming (other zones → this zone):
 
 <findings>
 
-[suggestion] [warning] Zone "Analyzers 3" (packages-sourcevision:analyzers-3) has critical risk (score: 0.69, cohesion: 0.31, coupling: 0.69) — requires refactoring before new feature development
+[suggestion] [info] Zone "Analyzers 3" (packages-sourcevision:analyzers-3) has critical risk (score: 0.69, cohesion: 0.31, coupling: 0.69) — justified: Core zone analysis engine (Louvain algorithm, zone detection, zone hashing) with 3 test files. High coupling is expected: these files import inventory types, import graph types, and shared utilities that are fundamental to the analysis pipeline. The files are tightly cohesive in purpose — splitting them would create artificial boundaries in the zone detection pipeline.
 
 </findings>
 
@@ -81,6 +81,6 @@ Incoming (other zones → this zone):
 - The high coupling metric (0.57) with 10 imports targeting 'analyzers' is likely an artifact of artificial zone fragmentation — these files share a parent directory with the main analyzers zone and were separated by the clustering algorithm, not by architectural intent.
 - Coupling to 'analyzers' is an artifact of Louvain over-partitioning; these files belong to the same semantic domain as analyzers and analyzers-2
 - Zone finding 1 (warning: coupling 0.57 to 'analyzers') is a false positive. Global finding 10 identifies this as intra-domain noise caused by Louvain splitting one semantic zone into three. The 10 cross-zone imports are edges within a single coherent analyzers domain, not genuine cross-concern dependencies. Treat as info-only.
-- [call graph] 237 internal calls, 583 outgoing, 50 incoming (cohesion: 0.29, coupling: 0.71)
+- [call graph] 243 internal calls, 583 outgoing, 50 incoming (cohesion: 0.29, coupling: 0.71)
 
 </insights>

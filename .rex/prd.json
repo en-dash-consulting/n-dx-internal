@@ -18595,7 +18595,7 @@
         {
           "id": "d66020ad-acb7-4ceb-a785-26ebee6a8913",
           "title": "Add barrel index.ts for web micro-zones and dom-performance-monitoring zone",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Add index.ts barrel exports for web micro-zones with 2+ production files that lack them. Specifically add dom-performance-monitor exports to the performance/index.ts barrel. Covers findings about micro-zone barrels and zone boundary visibility.",
           "acceptanceCriteria": [
@@ -18603,19 +18603,23 @@
             "All micro-zones with 2+ production files have index.ts barrels",
             "No circular imports introduced"
           ],
-          "priority": "medium"
+          "priority": "medium",
+          "startedAt": "2026-03-07T01:10:15.842Z",
+          "completedAt": "2026-03-07T01:12:28.265Z"
         },
         {
           "id": "37c6e809-baad-44af-8e38-293d0c6089fe",
           "title": "Document execution log rotation policy",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Document the execution log rotation policy (max file size, max file count, rotation trigger) in .rex/config.json schema or a companion README. Clarify when execution-log.1.jsonl vs execution-log.jsonl is authoritative.",
           "acceptanceCriteria": [
             "Log rotation policy is documented with max size, max count, and trigger",
             "Documentation clarifies which log file is the current/authoritative one"
           ],
-          "priority": "medium"
+          "priority": "medium",
+          "startedAt": "2026-03-07T01:12:58.246Z",
+          "completedAt": "2026-03-07T01:13:52.561Z"
         },
         {
           "id": "71a5969e-be82-4b38-95c6-f101ebb5c84f",
@@ -18635,7 +18639,7 @@
         {
           "id": "e69233dd-81d0-48da-a498-c5123a36240b",
           "title": "Hench call-graph analysis and analysis pass reconciliation",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Run intra-package call-graph analysis on hench to detect circular call patterns between agent/, prd/, tools/. Reconcile analysis passes that report contradictory coupling values for the dom zone. Add CI step asserting zone IDs are consistent across both passes.",
           "acceptanceCriteria": [
@@ -18643,7 +18647,9 @@
             "Zone ID consistency check added to CI pipeline",
             "Any circular patterns identified are documented with remediation plan"
           ],
-          "priority": "medium"
+          "priority": "medium",
+          "startedAt": "2026-03-07T01:14:16.922Z",
+          "completedAt": "2026-03-07T01:20:48.076Z"
         }
       ],
       "recommendationMeta": {
@@ -18885,7 +18891,7 @@
         {
           "id": "7ebfc2ad-2694-4288-8f31-bc8e874ee49d",
           "title": "Absorb websocket zone into web-dashboard",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "websocket.ts and ws-health-tracker.ts don't justify an independent zone. Absorb into web-dashboard to eliminate structural noise from test-inflated coupling metric.",
           "acceptanceCriteria": [
@@ -18893,7 +18899,9 @@
             "No standalone websocket zone in analysis output",
             "Build and tests pass"
           ],
-          "priority": "low"
+          "priority": "low",
+          "startedAt": "2026-03-07T01:21:37.810Z",
+          "completedAt": "2026-03-07T01:41:04.600Z"
         },
         {
           "id": "26a806b2-1b3a-4487-aea9-b791962ad924",

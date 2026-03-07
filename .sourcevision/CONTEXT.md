@@ -7,27 +7,33 @@
 
 Project: n-dx
 Git: feature/integrate-codex @ 21786d2
-Files: 1035, Lines: 347467
-Languages: TypeScript(875) CSS(44) Markdown(32) JavaScript(31) JSON(30)
-Zones: 35, Described: 35
-Import edges: 2564, External packages: 18
+Files: 1047, Lines: 349340
+Languages: TypeScript(879) CSS(44) JavaScript(39) Markdown(31) JSON(30)
+Zones: 36, Described: 36
+Import edges: 2579, External packages: 18
 
 </architecture>
 
 <zones>
 
-[autonomous-agent] Autonomous Agent (159 files, coh=1.00 coup=0.00)
-  The hench package: autonomous task execution via agent loops, tool dispatch, brief generation, and run recording against the rex PRD.
-  files: packages/hench/Hench-F.png, packages/hench/Hench.png, packages/hench/README.md, packages/hench/package-lock.json, packages/hench/package.json, packages/hench/src/agent/analysis/adaptive.ts [service], packages/hench/src/agent/analysis/review.ts [service], packages/hench/src/agent/analysis/spin.ts [service], packages/hench/src/agent/analysis/stuck.ts [service], packages/hench/src/agent/analysis/summary.ts [service] +149
-[dom-performance-monitoring] DOM Performance Monitoring (3 files, coh=0.67 coup=0.33)
-  Encapsulates the DOM performance monitoring utility and its React hook abstraction for the viewer.
-  files: packages/web/src/viewer/hooks/use-dom-performance-monitor.ts [hook], packages/web/src/viewer/performance/dom-performance-monitor.ts [utility], packages/web/tests/unit/viewer/dom-performance-monitor.test.ts
-[e2e-tests] End-to-End Test Suite (14 files, coh=1.00 coup=0.00)
-  Comprehensive CLI and architecture E2E tests covering orchestration, delegation, error handling, config, and web server behavior.
-  files: tests/e2e/architecture-policy.test.js, tests/e2e/cli-ci.test.js, tests/e2e/cli-config.test.js, tests/e2e/cli-delegation.test.js, tests/e2e/cli-dev.test.js, tests/e2e/cli-errors.test.js, tests/e2e/cli-init.test.js, tests/e2e/cli-orchestration.test.js, tests/e2e/cli-pr-check.test.js, tests/e2e/cli-refresh.test.js +4
-[monorepo-orchestration] Monorepo Orchestration (27 files, coh=1.00 coup=0.00)
-  Root-level entry points and configuration that coordinate the three-package pipeline (sourcevision → rex → hench) without importing from any package directly.
-  files: .gitignore, .npmrc, CLAUDE.md, CODEX.md, PACKAGE_GUIDELINES.md, README.md, ci.js [entrypoint], claude-integration.js [service], cli.js [entrypoint], config.js [config] +17
+[architecture-docs] Architecture Docs (16 files, coh=1.00 coup=0.00)
+  Design documents covering memory architecture, PRD stewardship, system evolution plans, and architectural reference material for the n-dx toolkit.
+  files: docs/2026-03-03-refresh-orchestration-memory-analysis.md, docs/level-refactor-and-steward-plan.md, docs/level-system-reference.md, docs/memory-architecture.md, docs/memory-improvements.md, docs/memory-os-behavior.md, docs/memory-risks-and-flaws.md, docs/prd-steward-vision.md, docs/process-lifecycle-audit.md, docs/resource-allocation-catalog.md +6
+[cli-e2e-tests] CLI End-to-End Tests (18 files, coh=1.00 coup=0.00)
+  Comprehensive end-to-end test suite validating all CLI commands, delegation paths, error handling, and architectural policy across the full monorepo.
+  files: tests/e2e/architecture-policy.test.js, tests/e2e/cli-arg-contracts.test.js, tests/e2e/cli-ci.test.js, tests/e2e/cli-config.test.js, tests/e2e/cli-delegation.test.js, tests/e2e/cli-dev.test.js, tests/e2e/cli-errors.test.js, tests/e2e/cli-init.test.js, tests/e2e/cli-orchestration.test.js, tests/e2e/cli-pr-check.test.js +8
+[crash-recovery] Crash Recovery (3 files, coh=0.29 coup=0.71)
+  Contains the crash detection utility and its companion recovery hook, forming the reliability layer that monitors viewer performance and initiates recovery on fatal errors.
+  files: packages/web/src/viewer/hooks/use-crash-recovery.ts [hook], packages/web/src/viewer/performance/crash-detector.ts [utility], packages/web/tests/unit/viewer/crash-detector.test.ts
+[dev-analysis-scripts] Developer Analysis Scripts (3 files, coh=1.00 coup=0.00)
+  One-off developer tooling scripts for call-graph analysis and zone consistency validation, not part of the production build pipeline.
+  files: scripts/HENCH_CALLGRAPH_FINDINGS.md, scripts/hench-callgraph-analysis.mjs, scripts/test-zone-consistency.mjs
+[hench-agent] Hench Agent (160 files, coh=1.00 coup=0.00)
+  The autonomous agent package responsible for selecting PRD tasks, running multi-turn tool-use loops against the LLM, and recording structured run history.
+  files: packages/hench/Hench-F.png, packages/hench/Hench.png, packages/hench/README.md, packages/hench/package-lock.json, packages/hench/package.json, packages/hench/src/agent/analysis/adaptive.ts [service], packages/hench/src/agent/analysis/review.ts [service], packages/hench/src/agent/analysis/spin.ts [service], packages/hench/src/agent/analysis/stuck.ts [service], packages/hench/src/agent/analysis/summary.ts [service] +150
+[monorepo-root] Monorepo Root (27 files, coh=1.00 coup=0.00)
+  Repository-level configuration, orchestration entry points, and project documentation co-located at the workspace root.
+  files: .gitignore, .npmrc, CLAUDE.md, CODEX.md, PACKAGE_GUIDELINES.md, README.md, ci.js [utility], claude-integration.js [service], cli.js [entrypoint], config.js [config] +17
 [packages-llm-client:root] Root (4 files, coh=1.00 coup=0.00)
   4 files, primarily JSON, TypeScript
   files: packages/llm-client/package-lock.json, packages/llm-client/package.json, packages/llm-client/tsconfig.json, packages/llm-client/vitest.config.ts
@@ -97,31 +103,28 @@ Import edges: 2564, External packages: 18
 [packages-sourcevision:unit] Unit (28 files, coh=0.43 coup=0.57)
   28 files, primarily TypeScript
   files: packages/sourcevision/src/analyzers/branch-work-classifier.ts [utility], packages/sourcevision/src/analyzers/branch-work-filter.ts [utility], packages/sourcevision/src/analyzers/branch-work-store.ts [service], packages/sourcevision/src/analyzers/risk-scoring.ts [utility], packages/sourcevision/src/analyzers/workspace-aggregate.ts [service], packages/sourcevision/src/cli/commands/workspace.ts [cli-command], packages/sourcevision/src/cli/mcp.ts [cli-command], packages/sourcevision/src/generators/pr-markdown-template.ts [utility], packages/sourcevision/src/public.ts [entrypoint], packages/sourcevision/src/schema/data-files.ts [schema] +18
-[project-documentation] Project Documentation (16 files, coh=1.00 coup=0.00)
-  Architecture decision records, design analyses, and long-form reference documentation for the n-dx system and its memory/PRD subsystems.
-  files: docs/2026-03-03-refresh-orchestration-memory-analysis.md, docs/level-refactor-and-steward-plan.md, docs/level-system-reference.md, docs/memory-architecture.md, docs/memory-improvements.md, docs/memory-os-behavior.md, docs/memory-risks-and-flaws.md, docs/prd-steward-vision.md, docs/process-lifecycle-audit.md, docs/resource-allocation-catalog.md +6
-[rex-runtime-state] Rex Runtime State (8 files, coh=1.00 coup=0.00)
-  Persistent runtime data for the rex PRD tracker: project config, the live PRD tree, execution logs, pending proposals, and workflow state.
+[prd-analysis-panels] PRD Analysis Panels (7 files, coh=0.75 coup=0.25)
+  Groups the interactive PRD editing UI components — analysis panel, batch import, proposal editor, and smart-add input — along with the analysis view that composes them.
+  files: packages/web/src/viewer/components/prd-tree/analyze-panel.ts [component], packages/web/src/viewer/components/prd-tree/batch-import-panel.ts [component], packages/web/src/viewer/components/prd-tree/proposal-editor.ts [component], packages/web/src/viewer/components/prd-tree/smart-add-input.ts [component], packages/web/src/viewer/views/analysis.ts [page], packages/web/tests/unit/viewer/batch-import-panel.test.ts, packages/web/tests/unit/viewer/smart-add-input.test.ts
+[prd-state] PRD Runtime State (8 files, coh=1.00 coup=0.00)
+  Rex runtime data directory containing the live PRD, execution logs, workflow records, and acknowledged findings that persist across agent runs.
   files: .rex/acknowledged-findings.json, .rex/archive.json, .rex/config.json, .rex/execution-log.1.jsonl, .rex/execution-log.jsonl, .rex/pending-proposals.json, .rex/prd.json, .rex/workflow.md
-[task-usage-tracking] Task Usage Tracking (4 files, coh=0.50 coup=0.50)
-  Server-side services for recording and cleaning up per-task token/usage metrics incrementally over time.
-  files: packages/web/src/server/incremental-task-usage.ts [service], packages/web/src/server/usage-cleanup-scheduler.ts [service], packages/web/tests/unit/server/incremental-task-usage.test.ts, packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts
-[viewer-static-assets] Viewer Static Assets (3 files, coh=1.00 coup=0.00)
-  Raw static assets (light/dark logo PNGs and the viewer's root HTML shell) that are bundled directly into the dashboard viewer at build time.
-  files: packages/web/src/viewer/darkmode_logo.png, packages/web/src/viewer/index.html, packages/web/src/viewer/lightmode_logo.png
-[web-build-infrastructure] Web Build Infrastructure (16 files, coh=0.77 coup=0.23)
-  Build tooling, package metadata, and shared viewer components (elapsed-time, task-audit) that sit outside the main web-viewer bundle.
-  files: packages/web/BROWSER_ERROR_CODE_5.md, packages/web/MEMORY_PROFILE.md, packages/web/SourceVision-F.png, packages/web/SourceVision.png, packages/web/build.js [config], packages/web/dev.js [config], packages/web/package.json, packages/web/src/viewer/components/elapsed-time.ts [component], packages/web/src/viewer/components/prd-tree/lazy-children.ts [component], packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts [component] +6
-[web-dashboard] Web Dashboard (351 files, coh=0.98 coup=0.02)
-  The primary web application zone encompassing the full-stack dashboard: HTTP/MCP server, React viewer components, data aggregation, gateways, and CLI entrypoint.
-  files: packages/web/src/cli/index.ts [entrypoint], packages/web/src/public.ts [entrypoint], packages/web/src/schema/v1.ts [schema], packages/web/src/server/aggregation-cache.ts [service], packages/web/src/server/concurrent-execution-metrics.ts [service], packages/web/src/server/domain-gateway.ts [gateway], packages/web/src/server/index.ts [entrypoint], packages/web/src/server/mcp-deps.ts [utility], packages/web/src/server/port.ts [utility], packages/web/src/server/pr-markdown-refresh-diagnostics.ts [service] +341
-[web-landing] Web Landing Page (3 files, coh=1.00 coup=0.00)
-  Self-contained static landing page (HTML + CSS + TypeScript entrypoint) served before the main dashboard application loads.
-  files: packages/web/src/landing/index.html, packages/web/src/landing/landing.css, packages/web/src/landing/landing.ts [entrypoint]
-[websocket-infrastructure] WebSocket Infrastructure (6 files, coh=0.25 coup=0.75)
-  WebSocket server implementation and connection health tracking for real-time push updates from the server to the dashboard viewer.
-  files: packages/web/src/server/websocket.ts [middleware], packages/web/src/server/ws-health-tracker.ts [service], packages/web/tests/unit/server/boundary-check.test.ts, packages/web/tests/unit/server/websocket.test.ts, packages/web/tests/unit/server/ws-health-integration.test.ts, packages/web/tests/unit/server/ws-health-tracker.test.ts
-[unzoned] 2 files: .github/workflows/ci.yml, .hench/config.json
+[tick-timer] Tick Timer (3 files, coh=1.00 coup=0.00)
+  Isolates the polling tick-timer utility and its tests, including a related elapsed-time memoization test that exercises timing behavior at the polling layer boundary.
+  files: packages/web/src/viewer/polling/tick-timer.ts [utility], packages/web/tests/unit/viewer/elapsed-time-memoization.test.ts, packages/web/tests/unit/viewer/tick-timer.test.ts
+[usage-analytics-service] Usage Analytics Service (5 files, coh=0.75 coup=0.25)
+  Encapsulates task-level token usage tracking, incremental accumulation, and scheduled cleanup for the web server's analytics subsystem.
+  files: packages/web/src/server/incremental-task-usage.ts [service], packages/web/src/server/task-usage.ts [gateway], packages/web/src/server/usage-cleanup-scheduler.ts [service], packages/web/tests/unit/server/incremental-task-usage.test.ts, packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts
+[viewer-gateway-tests] Viewer & Gateway Contract Tests (4 files, coh=1.00 coup=0.00)
+  Isolated unit and contract tests for web viewer interactions and cross-package gateway boundary enforcement.
+  files: packages/web/tests/unit/viewer/graph-interaction.test.ts, packages/web/tests/unit/viewer/graph-zoom.test.ts, tests/check-gateway-regex.mjs, tests/check-gateway-test.mjs
+[web-dashboard] Web Dashboard (354 files, coh=0.98 coup=0.02)
+  The primary web application zone containing the full viewer UI, server infrastructure, MCP endpoints, CLI entrypoint, and schema — the largest and most cohesive zone in the web package.
+  files: packages/web/src/cli/index.ts [entrypoint], packages/web/src/landing/index.html, packages/web/src/landing/landing.css, packages/web/src/landing/landing.ts [entrypoint], packages/web/src/public.ts [entrypoint], packages/web/src/schema/v1.ts [schema], packages/web/src/server/aggregation-cache.ts [service], packages/web/src/server/concurrent-execution-metrics.ts [service], packages/web/src/server/domain-gateway.ts [gateway], packages/web/src/server/index.ts [entrypoint] +344
+[web-package-scaffold] Web Package Scaffold (13 files, coh=0.67 coup=0.33)
+  Web package build infrastructure and a set of viewer UI components that the import graph placed here rather than in the main web-viewer zone.
+  files: packages/web/SourceVision-F.png, packages/web/SourceVision.png, packages/web/build.js [entrypoint], packages/web/dev.js [entrypoint], packages/web/package.json, packages/web/src/viewer/components/elapsed-time.ts [component], packages/web/src/viewer/hooks/use-tick.ts [hook], packages/web/src/viewer/route-state.ts [route-handler], packages/web/src/viewer/views/task-audit.ts [page], packages/web/tests/unit/viewer/route-state.test.ts +3
+[unzoned] 3 files: .github/workflows/ci.yml, .hench/config.json, .hench/locks/48712.lock
 
 Detailed zone context: .sourcevision/zones/{id}/context.md
 
@@ -272,69 +275,68 @@ Server routes: 106 endpoints in 14 handler(s)
 
 <findings>
 
-[warning] Bidirectional coupling: "task-usage-tracking" ↔ "web-dashboard" (1+3 crossings) — consider extracting shared interface
-[warning] Bidirectional coupling: "web-build-infrastructure" ↔ "web-dashboard" (4+2 crossings) — consider extracting shared interface
+[warning] High coupling (0.71) — 3 imports target "web-dashboard" [crash-recovery]
+[warning] Cohesion of 0.29 is below the warning threshold — the two files in this zone (hook and detector) are more coupled to web-dashboard than to each other, suggesting a zone boundary mismatch. [crash-recovery]
+[warning] Coupling of 0.71 exceeds the warning threshold; the crash recovery subsystem has high external dependency, which reduces its reusability and increases change risk. [crash-recovery]
+[warning] use-crash-recovery.ts lacks a unit test; given that crash recovery is a reliability-critical code path, this gap should be addressed. [crash-recovery]
+[warning] Bidirectional coupling: "web-dashboard" ↔ "web-package-scaffold" (3+9 crossings) — consider extracting shared interface
 [warning] Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects
-[warning] Low cohesion (0.25) — files are loosely related, consider splitting this zone [websocket-infrastructure]
-[warning] Cohesion of 0.25 and coupling of 0.75 indicate significant structural fragmentation — likely caused by test files importing broadly from the rest of the web package. [websocket-infrastructure]
-[warning] Only 2 of 6 files are production source; the test-to-source ratio inflates coupling scores and suggests the zone boundary is defined by test co-location rather than domain cohesion. [websocket-infrastructure]
-[warning] Run intra-package call-graph analysis on hench to detect any emerging circular call patterns between its internal subdirectories (agent/, prd/, tools/) before they compound — the rex circular call pattern (239+100 calls) was only found via call-graph analysis, not zone metrics, and hench's 2838 internal calls make it the most likely next site for a hidden cycle. [autonomous-agent]
-[warning] Add a dependency-cruiser or similar import-boundary rule to CI that enforces the gateway pattern: any cross-package import that does not pass through the designated gateway module should fail the build. This converts a trust-based convention into a machine-enforced constraint.
-[warning] All micro-zones (< 5 production files) in the web package lack facade index modules, meaning their zone boundaries exist only in the zone detection metadata and are invisible to the TypeScript compiler — mandate an 'index.ts' barrel for every zone with 2+ production files to make zone membership compiler-visible and reduce the risk of zone boundaries eroding silently.
-[warning] Establish a documented testing convention for the utility+hook pattern: every hook wrapper (use-*.ts) should have a corresponding hook test file alongside the utility test — currently dom-performance-monitoring applies the production pattern but not the test pattern, and without a written convention future hooks will follow the same incomplete template.
-[warning] Introduce a project-wide lint rule enforcing that files in 'src/server/' cannot import from 'src/viewer/' — the two known violations (task-usage-tracking, websocket boundary-check) both evade detection because the no-upward-import convention is undocumented and unenforced; a lint rule would surface new violations at PR time rather than zone-enrichment time.
-[warning] Reconcile the two analysis passes (call-graph and cross-zone import table) that report contradictory coupling values for the dom zone — add a CI step that asserts zone IDs are consistent across both passes and flags any zone that appears in one pass but not the other, before this class of metric disagreement spreads to other zones.
-[warning] 5 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): packages-rex:unit-core, packages-rex:unit-cli, websocket-infrastructure, packages-sourcevision:analyzers-3, packages-rex:unit — mandatory refactoring recommended before further development
-[warning] Split the web-build-infrastructure zone into two groups: (1) build tooling (build.js, dev.js, package.json, images, markdown) and (2) reusable UI components (elapsed-time.ts, task-audit.ts) — these two groups have different change drivers, different consumers, and different lifecycle concerns that should not share a zone boundary. [web-build-infrastructure]
-[warning] The cleanup scheduler imports back into web-viewer (per cross-zone import graph), creating a dependency inversion — the scheduler should depend on an interface, not the viewer zone. [task-usage-tracking]
-... +32 more
+[warning] 9 entry points — wide API surface, consider consolidating exports [web-dashboard]
+[warning] Bidirectional imports with both 'crash' and 'panel' zones create implicit circular dependencies at the zone level; these relationships should be reviewed to ensure directional ownership is clear. [web-dashboard]
+[warning] analyze-panel.ts and proposal-editor.ts lack unit tests while the simpler smart-add-input and batch-import-panel components are tested — the more complex components should be prioritized for test coverage. [prd-analysis-panels]
+[warning] Viewer UI files are co-classified with build scripts due to shared import edges; zone pinning for elapsed-time.ts, route-state.ts, task-audit.ts, use-tick.ts, lazy-children.ts, and listener-lifecycle.ts is recommended to correct classification. [web-package-scaffold]
+[warning] crash-recovery has only 1 incoming call-graph edge despite 3 cross-zone import edges from web-viewer. The zone is consumed by a single caller at runtime, making it a de facto singleton utility. This strengthens the case for absorbing it into web-dashboard as an internal sub-module rather than maintaining a separate zone boundary. [crash-recovery]
+[warning] Generated artifact HENCH_CALLGRAPH_FINDINGS.md is committed but has no CI regeneration-and-diff guard; it can silently go stale after hench source changes [dev-analysis-scripts]
+[warning] A single gateway file (src/prd/rex-gateway.ts) is the only cross-zone coupling surface for 160 files; gateway API breakage has maximum blast radius within hench — no incremental migration path exists if the rex API changes. [hench-agent]
+[warning] Orchestration-to-domain boundary is enforced at runtime only (subprocess spawning); a mismatched CLI argument or removed subcommand will produce a silent runtime failure with no compile-time safety net. [monorepo-root]
+[warning] Zone conflates web-package unit tests with monorepo-root contract scripts; splitting into separate zones aligned to their physical location would improve discoverability and ownership clarity [viewer-gateway-tests]
+... +19 more
 
 </findings>
 
 <next-steps>
 
-[high] 5 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): …
-  category: refactor
 [high] Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files —…
   category: refactor
-[high] Zone "Unit Core" (packages-rex:unit-core) has catastrophic risk (score: 0.83, c…
-  files: packages/rex/src/cli/commands/next.ts, packages/rex/src/core/next-task.ts, packages/rex/tests/unit/core/feature-filtered-task.test.ts
+[high] Zone "Crash Recovery" (crash-recovery) has catastrophic risk (score: 0.71, cohe…
+  files: packages/web/src/viewer/hooks/use-crash-recovery.ts, packages/web/src/viewer/performance/crash-detector.ts, packages/web/tests/unit/viewer/crash-detector.test.ts
   category: fix
-[high] Zone "WebSocket Infrastructure" (websocket-infrastructure) has catastrophic ris…
-  files: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts, packages/web/tests/unit/server/boundary-check.test.ts
-  category: fix
-[high] Zone "Unit Cli" (packages-rex:unit-cli) has catastrophic risk (score: 0.75, coh…
-  files: packages/rex/src/cli/commands/fix.ts, packages/rex/src/core/fix.ts, packages/rex/tests/unit/cli/commands/fix.test.ts
-  category: fix
-[high] 2 production files (websocket.ts, ws-health-tracker.ts) do not justify an indep…
-  files: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts, packages/web/tests/unit/server/boundary-check.test.ts
+[high] `_testHelpers` is exported through the production module surface of crash-detec…
+  files: packages/web/src/viewer/hooks/use-crash-recovery.ts, packages/web/src/viewer/performance/crash-detector.ts, packages/web/tests/unit/viewer/crash-detector.test.ts
   category: refactor
-[high] boundary-check.test.ts appears to test zone-boundary contracts rather than webs…
-  files: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts, packages/web/tests/unit/server/boundary-check.test.ts
+[high] crash-recovery has only 1 incoming call-graph edge despite 3 cross-zone import …
+  files: packages/web/src/viewer/hooks/use-crash-recovery.ts, packages/web/src/viewer/performance/crash-detector.ts, packages/web/tests/unit/viewer/crash-detector.test.ts
   category: extract
-[high] websocket-infrastructure breaches both cohesion (<0.5) and coupling (>0.5) thre…
-  files: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts, packages/web/tests/unit/server/boundary-check.test.ts
+[high] High coupling (0.71) — 3 imports target "web-dashboard"
+  files: packages/web/src/viewer/hooks/use-crash-recovery.ts, packages/web/src/viewer/performance/crash-detector.ts, packages/web/tests/unit/viewer/crash-detector.test.ts
   category: refactor
-[high] Low cohesion (0.25) — files are loosely related, consider splitting this zone
-  files: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts, packages/web/tests/unit/server/boundary-check.test.ts
+[high] Cohesion of 0.29 is below the warning threshold — the two files in this zone (h…
+  files: packages/web/src/viewer/hooks/use-crash-recovery.ts, packages/web/src/viewer/performance/crash-detector.ts, packages/web/tests/unit/viewer/crash-detector.test.ts
   category: refactor
-[high] Cohesion of 0.25 and coupling of 0.75 indicate significant structural fragmenta…
-  files: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts, packages/web/tests/unit/server/boundary-check.test.ts
+[high] Coupling of 0.71 exceeds the warning threshold; the crash recovery subsystem ha…
+  files: packages/web/src/viewer/hooks/use-crash-recovery.ts, packages/web/src/viewer/performance/crash-detector.ts, packages/web/tests/unit/viewer/crash-detector.test.ts
   category: refactor
-[high] Only 2 of 6 files are production source; the test-to-source ratio inflates coup…
-  files: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts, packages/web/tests/unit/server/boundary-check.test.ts
+[high] use-crash-recovery.ts lacks a unit test; given that crash recovery is a reliabi…
+  files: packages/web/src/viewer/hooks/use-crash-recovery.ts, packages/web/src/viewer/performance/crash-detector.ts, packages/web/tests/unit/viewer/crash-detector.test.ts
   category: refactor
-[high] Zone "Analyzers 3" (packages-sourcevision:analyzers-3) has critical risk (score…
-  files: packages/sourcevision/src/analyzers/louvain.ts, packages/sourcevision/src/analyzers/zone-hash.ts, packages/sourcevision/src/analyzers/zones.ts
-  category: refactor
-[high] Zone "Unit" (packages-rex:unit) has critical risk (score: 0.67, cohesion: 0.33,…
-  files: packages/rex/src/analyze/acknowledge.ts, packages/rex/src/analyze/extract.ts, packages/rex/src/analyze/reconcile.ts
-  category: refactor
-[high] usage-cleanup-scheduler.ts depends on web-viewer (the UI application layer) fro…
-  files: packages/web/src/server/incremental-task-usage.ts, packages/web/src/server/usage-cleanup-scheduler.ts, packages/web/tests/unit/server/incremental-task-usage.test.ts
+[high] packages-rex:unit-analyze calls packages-rex:cli 239 times — domain code callin…
   category: fix
-[high] Cross-zone import direction 'dom → web-viewer' conflicts with documented leaf-n…
-  files: packages/web/src/viewer/hooks/use-dom-performance-monitor.ts, packages/web/src/viewer/performance/dom-performance-monitor.ts, packages/web/tests/unit/viewer/dom-performance-monitor.test.ts
-  category: fix
+[medium] Gateway enforcement logic is split across two mechanisms (V… (+4 related)
+  category: refactor
+[medium] Proposal, ProposalFeature, and ProposalTask types are defin… (+1 related)
+  files: packages/web/src/viewer/components/prd-tree/analyze-panel.ts, packages/web/src/viewer/components/prd-tree/batch-import-panel.ts, packages/web/src/viewer/components/prd-tree/proposal-editor.ts
+  category: refactor
+[medium] Viewer UI files are co-classified with build scripts due to shared import edges…
+  files: packages/web/SourceVision-F.png, packages/web/SourceVision.png, packages/web/build.js
+  category: refactor
+[medium] analyze-panel.ts and proposal-editor.ts lack unit tests while the simpler smart…
+  files: packages/web/src/viewer/components/prd-tree/analyze-panel.ts, packages/web/src/viewer/components/prd-tree/batch-import-panel.ts, packages/web/src/viewer/components/prd-tree/proposal-editor.ts
+  category: refactor
+[medium] 9 entry points — wide API surface, consider consolidating exports
+  files: packages/web/src/cli/index.ts, packages/web/src/landing/index.html, packages/web/src/landing/landing.css
+  category: refactor
+[medium] Bidirectional imports with both 'crash' and 'panel' zones create implicit circu…
+  files: packages/web/src/cli/index.ts, packages/web/src/landing/index.html, packages/web/src/landing/landing.css
+  category: refactor
 
 </next-steps>
