@@ -264,10 +264,14 @@ export async function runZonesPhase(ctx: AnalyzeContext, extraArgs: string[]): P
     const svZoneOverrides = await loadProjectOverrides(ctx.svDir, "sourcevision");
     const zonesConfig = (svZoneOverrides as Record<string, unknown>).zones as Record<string, unknown> | undefined;
     const zonePins = (zonesConfig?.pins ?? {}) as Record<string, string>;
+    const pinCount = Object.keys(zonePins).length;
+    if (pinCount > 0) {
+      info(`  Applying ${pinCount} zone pin(s) from .n-dx.json`);
+    }
 
     let zonesResult = await analyzeZones(inventory, importsData, {
       enrich, previousZones, perZone, subAnalyses, fileArchetypes, onReset, hints,
-      zonePins: Object.keys(zonePins).length > 0 ? zonePins : undefined,
+      zonePins: pinCount > 0 ? zonePins : undefined,
     });
     let zones = zonesResult.zones;
     if (zonesResult.tokenUsage) {

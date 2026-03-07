@@ -1809,6 +1809,14 @@ export async function analyzeZones(
     zoneContentHashes, expandedZones, finalZones,
   );
 
+  // ── Apply zone pins (post-enrichment) ──
+  // Zone pins reference enriched IDs (e.g. "web-dashboard"), so they must run
+  // after enrichment gives zones their final names — not during the pipeline
+  // where zones still have algorithmic IDs.
+  const pinnedFinalZones = options?.zonePins && Object.keys(options.zonePins).length > 0
+    ? applyZonePins(finalZones, options.zonePins)
+    : finalZones;
+
   // ── Promote zones from sub-analyses ──
   const promotedZones: Zone[] = [];
   const promotedCrossings: ZoneCrossing[] = [];
@@ -1816,7 +1824,7 @@ export async function analyzeZones(
     promotedZones.push(...promoteZones(sub));
     promotedCrossings.push(...promoteCrossings(sub));
   }
-  const allZones = [...finalZones, ...promotedZones];
+  const allZones = [...pinnedFinalZones, ...promotedZones];
 
   // ── Build final crossings ──
   const crossings = buildCrossings(allZones, imports, promotedCrossings);
@@ -1826,7 +1834,7 @@ export async function analyzeZones(
     (f) => !isSubAnalyzedFile(f.path, subAnalyzedPrefixes)
   ).length;
   const structural = generateStructuralInsights(
-    finalZones,
+    pinnedFinalZones,
     crossings.filter((c) => !c.fromZone.includes(":") && !c.toZone.includes(":")),
     imports,
     rootFileCount,
@@ -1835,19 +1843,19 @@ export async function analyzeZones(
   );
 
   // ── Merge insights ──
-  mergeZoneInsights(finalZones, structural, aiZoneInsights, validPrevious);
+  mergeZoneInsights(pinnedFinalZones, structural, aiZoneInsights, validPrevious);
   const allGlobalInsights = mergeGlobalInsights(
     structural, aiGlobalInsights, validPrevious
   );
 
   // ── Assemble findings ──
   const allFindings = assembleFindings(
-    finalZones, structural, aiFindings, metaUpdatedFindings,
+    pinnedFinalZones, structural, aiFindings, metaUpdatedFindings,
     validPrevious, previousZones, remappedContentHashes, globalContentHash
   );
 
   // ── Back-populate findings into insights for backward compatibility ──
-  backPopulateInsights(finalZones, allFindings, allGlobalInsights);
+  backPopulateInsights(pinnedFinalZones, allFindings, allGlobalInsights);
 
   // ── Build result ──
   const prevMetaCount = previousZones?.metaEvaluationCount ?? 0;
