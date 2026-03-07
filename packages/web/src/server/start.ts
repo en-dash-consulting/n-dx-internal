@@ -14,7 +14,7 @@ import { handleSourcevisionRoute } from "./routes-sourcevision.js";
 import { handleTokenUsageRoute } from "./routes-token-usage.js";
 import { handleValidationRoute } from "./routes-validation.js";
 import { handleHenchRoute, startHeartbeatMonitor, startConcurrencyMonitor, startMemoryMonitor, shutdownActiveExecutions, getAggregator } from "./routes-hench.js";
-import { startUsageCleanupScheduler, type CollectAllIdsFn } from "./usage-cleanup-scheduler.js";
+import { startUsageCleanupScheduler, type CollectAllIdsFn } from "./task-usage.js";
 import { collectAllIds } from "./rex-gateway.js";
 import { handleWorkflowRoute } from "./routes-workflow.js";
 import { handleAdaptiveRoute } from "./routes-adaptive.js";

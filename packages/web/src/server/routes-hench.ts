@@ -45,7 +45,7 @@ import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./types.js";
 import type { WebSocketBroadcaster } from "./websocket.js";
 import { clearStatusCache } from "./routes-status.js";
-import { IncrementalTaskUsageAggregator } from "./incremental-task-usage.js";
+import { IncrementalTaskUsageAggregator } from "./task-usage.js";
 import { collectAllIds } from "./rex-gateway.js";
 import type { PRDDocument } from "./rex-gateway.js";
 import { ProcessMemoryTracker } from "./process-memory-tracker.js";

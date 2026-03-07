@@ -18526,11 +18526,13 @@
     {
       "id": "931eabce-d252-4b60-9023-da5c8c0371a8",
       "title": "Address observation issues (8 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Bidirectional coupling: \"task-usage-tracking\" ↔ \"web-dashboard\" (1+3 crossings) — consider extracting shared interface\n- Bidirectional coupling: \"web-build-infrastructure\" ↔ \"web-dashboard\" (4+2 crossings) — consider extracting shared interface\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects\n- Low cohesion (0.25) — files are loosely related, consider splitting this zone\n- Cohesion of 0.25 and coupling of 0.75 indicate significant structural fragmentation — likely caused by test files importing broadly from the rest of the web package.\n- Only 2 of 6 files are production source; the test-to-source ratio inflates coupling scores and suggests the zone boundary is defined by test co-location rather than domain cohesion.\n- The cleanup scheduler imports back into web-viewer (per cross-zone import graph), creating a dependency inversion — the scheduler should depend on an interface, not the viewer zone.\n- Bidirectional imports between web and web-viewer (web→web-viewer: 4, web-viewer→web: 2) create a soft cycle risk; extracting shared primitives into a dedicated shared zone would eliminate this.",
       "priority": "high",
       "source": "sourcevision",
+      "startedAt": "2026-03-07T00:37:55.245Z",
+      "completedAt": "2026-03-07T00:49:35.754Z",
       "recommendationMeta": {
         "findingHashes": [
           "86237ba90ad7",
@@ -18618,7 +18620,7 @@
         {
           "id": "71a5969e-be82-4b38-95c6-f101ebb5c84f",
           "title": "Address high-risk zone metrics (5 zones exceeding thresholds)",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "Address the 5 zones exceeding architectural risk thresholds: packages-rex:unit-core (0.83 risk), packages-rex:unit-cli (0.75 risk), websocket-infrastructure (0.75 risk), packages-sourcevision:analyzers-3 (0.69 risk), packages-rex:unit (0.67 risk). Dissolve websocket-infrastructure by absorbing into web-dashboard. Split web-build-infrastructure into build tooling and UI components. Investigate and refactor rex zones for better cohesion/coupling.",
           "acceptanceCriteria": [
@@ -18626,7 +18628,9 @@
             "web-build-infrastructure split into build tooling and UI components",
             "All 5 high-risk zones show improved metrics or have documented justification for current structure"
           ],
-          "priority": "high"
+          "priority": "high",
+          "startedAt": "2026-03-07T00:22:40.106Z",
+          "completedAt": "2026-03-07T00:36:49.298Z"
         },
         {
           "id": "e69233dd-81d0-48da-a498-c5123a36240b",
@@ -18673,11 +18677,12 @@
     {
       "id": "bb55952e-1fb1-41bf-9875-d6daf3a5b288",
       "title": "Address pattern issues (4 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- E2E suite has zero source-level coupling but a hidden build-time dependency on all packages; CI must enforce a build step before e2e execution. This should be documented or enforced via a pre-test script to prevent silent false-negatives when a package fails to compile.\n- The runtime-state zone is a shared mutable sink readable by both rex and hench packages without creating import-graph coupling — this is an intentional design but concurrent write safety is implicit; documenting the write-access protocol would prevent future race conditions.\n- Absence of an index/facade module means task-usage-tracking has no encapsulated public surface; consumers couple directly to internal service files, weakening the zone boundary.\n- Build scripts (build.js, dev.js) in this zone operate at the package boundary but are grouped with UI components (elapsed-time.ts, task-audit.ts) — splitting into a pure build-config group and a reusable-components group would clarify which files are tooling versus production API surface.",
       "priority": "high",
       "source": "sourcevision",
+      "startedAt": "2026-03-07T00:50:08.593Z",
       "recommendationMeta": {
         "findingHashes": [
           "122af3d5b4b0",
@@ -18690,7 +18695,8 @@
           "warning": 4
         },
         "findingCount": 4
-      }
+      },
+      "completedAt": "2026-03-07T00:56:25.870Z"
     },
     {
       "id": "b2140cd8-dd60-4fed-ba39-74c0eb3f5d59",

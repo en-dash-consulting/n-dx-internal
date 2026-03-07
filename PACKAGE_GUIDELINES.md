@@ -236,6 +236,8 @@ Satellite zones that survive the merge (because they have strong internal cohesi
 | Monorepo-root e2e tests | Plain `.js` (no build step) | `tests/e2e/cli-smoke.js` |
 | Package-internal tests | `.ts` (compiled with package) | `packages/rex/tests/unit/core/tree.test.ts` |
 
+**Why root e2e tests use `.js`:** These tests spawn compiled `dist/` binaries as child processes — they have zero source-level imports from any package. Plain JS avoids requiring a compile step for the tests themselves. However, they have a hidden **build-time dependency** on all packages: if any package fails to compile, e2e tests silently produce false-negatives. The `tests/e2e/verify-build.js` globalSetup script (wired into `vitest.config.js`) enforces this by failing fast if required `dist/` artifacts are missing.
+
 ## Dependency Hierarchy
 
 ```
@@ -255,3 +257,27 @@ Satellite zones that survive the merge (because they have strong internal cohesi
 - Domain packages never import each other.
 - Orchestration scripts spawn CLIs via `execFile`; they never import packages directly.
 - The web package is an exception: it sits at coordination level, importing domain packages through its gateway for MCP servers, and reading domain data from the filesystem for everything else.
+
+## `.rex/` Write-Access Protocol
+
+The `.rex/` directory is a **shared mutable data zone** — readable by rex, hench, and web without creating import-graph coupling. This is an intentional design: packages share state via filesystem rather than runtime imports. However, concurrent write safety depends on the following protocol.
+
+### Write ownership
+
+| File | Owner (writer) | Readers | Write pattern |
+|---|---|---|---|
+| `prd.json` | **rex** (FileStore) | hench, web | Atomic read-modify-write via `saveDocument()` |
+| `config.json` | **rex** (FileStore) | hench, web | Written at init; updated via `rex config` |
+| `execution-log.jsonl` | **rex** (FileStore) | web | Append-only via `appendLog()` |
+| `workflow.md` | **rex** (FileStore) | web | Overwritten on status transitions |
+| `pending-proposals.json` | **rex** (analyze) | web | Overwritten on each `rex analyze` run |
+| `acknowledged-findings.json` | **rex** (analyze) | — | Overwritten on acknowledge |
+| `archive.json` | **rex** (prune) | — | Overwritten on prune |
+
+### Rules
+
+1. **Single writer per file** — only the owning package writes to each file. Hench and web read `.rex/` files but never write to them; they modify PRD state by invoking rex APIs (CLI or library).
+2. **No file locking** — the current design assumes sequential access (one `ndx work` process at a time). The hench concurrency limiter enforces this at the process level.
+3. **Append-only logs** — `execution-log.jsonl` uses `appendFile()`, which is atomic for small writes on local filesystems. Rotation is numeric-suffix-based (`.1.jsonl`).
+4. **Graceful degradation** — readers (web, hench) treat missing or malformed `.rex/` files as non-fatal. The web cleanup scheduler skips its cycle if `prd.json` is unavailable.
+5. **Never write from the agent** — the hench agent prompt explicitly forbids direct modification of `.rex/` files. All PRD mutations go through rex's store layer.
