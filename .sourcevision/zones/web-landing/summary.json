@@ -1,17 +1,19 @@
 {
   "id": "web-landing",
   "name": "Web Landing Page",
-  "description": "Self-contained static landing page (HTML + CSS + TypeScript entrypoint) served before the main dashboard application loads.",
+  "description": "Static landing page assets (HTML, CSS, TypeScript entry) alongside gateway-regex validation scripts that guard cross-package import conventions.",
   "files": [
     "packages/web/src/landing/index.html",
     "packages/web/src/landing/landing.css",
-    "packages/web/src/landing/landing.ts"
+    "packages/web/src/landing/landing.ts",
+    "tests/check-gateway-regex.mjs",
+    "tests/check-gateway-test.mjs"
   ],
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 3,
-  "lineCount": 1941,
+  "fileCount": 5,
+  "lineCount": 1978,
   "riskMetrics": {
     "cohesion": 1,
     "coupling": 0,

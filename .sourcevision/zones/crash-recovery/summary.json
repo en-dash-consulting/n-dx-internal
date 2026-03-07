@@ -1,11 +1,13 @@
 {
   "id": "crash-recovery",
   "name": "Crash Recovery",
-  "description": "Contains the crash detection utility and its companion recovery hook, forming the reliability layer that monitors viewer performance and initiates recovery on fatal errors.",
+  "description": "Crash detection heuristics and the React hook that surfaces recovery state to the viewer UI.",
   "files": [
     "packages/web/src/viewer/hooks/use-crash-recovery.ts",
     "packages/web/src/viewer/performance/crash-detector.ts",
-    "packages/web/tests/unit/viewer/crash-detector.test.ts"
+    "packages/web/tests/helpers/crash-detector-test-support.ts",
+    "packages/web/tests/unit/viewer/crash-detector.test.ts",
+    "packages/web/tests/unit/viewer/use-crash-recovery.test.ts"
   ],
   "entryPoints": [
     "packages/web/src/viewer/hooks/use-crash-recovery.ts",
@@ -13,8 +15,8 @@
   ],
   "cohesion": 0.29,
   "coupling": 0.71,
-  "fileCount": 3,
-  "lineCount": 727,
+  "fileCount": 5,
+  "lineCount": 994,
   "riskMetrics": {
     "cohesion": 0.29,
     "coupling": 0.71,

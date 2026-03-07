@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Web Landing Page (`web-landing`)
-Files: 3, Cohesion: 1.00, Coupling: 0.00
+Files: 5, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Self-contained static landing page (HTML + CSS + TypeScript entrypoint) served before the main dashboard application loads.
-Lines: 1941
+Description: Static landing page assets (HTML, CSS, TypeScript entry) alongside gateway-regex validation scripts that guard cross-package import conventions.
+Lines: 1978
 
 </zone>
 
@@ -16,32 +16,39 @@ Lines: 1941
 
 packages/web/src/landing/index.html (HTML, 309 lines, other)
 packages/web/src/landing/landing.css (CSS, 1317 lines, other)
-packages/web/src/landing/landing.ts (TypeScript, 315 lines, source)
+packages/web/src/landing/landing.ts (TypeScript, 351 lines, source)
+tests/check-gateway-regex.mjs (JavaScript, 0 lines, test)
+tests/check-gateway-test.mjs (JavaScript, 1 lines, test)
 
 </files>
 
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] No shared style or token layer exists between web-landing and web-dashboard; ensure any brand or color changes are kept in sync manually.
-[observation] [info] Three files (HTML, CSS, TS) represent a minimal footprint; the landing page is easy to maintain and deploy independently.
-[observation] [info] Zero coupling and perfect cohesion indicate this zone is architecturally clean and fully self-contained.
-[suggestion] [info] landing.ts is an untested TypeScript entrypoint — add at least one unit or smoke test to ensure the module loads without errors and exports the expected interface; the absence of tests is an implicit convention gap compared to all other TypeScript entrypoints in the package.
+[observation] [info] Zero coupling with any other zone means the landing page can be developed or replaced without risk of cascading changes.
+[observation] [info] check-gateway-regex.mjs and check-gateway-test.mjs are governance/CI scripts co-located with landing page assets purely by graph isolation — they would be better placed in a dev-tooling or scripts zone.
+[observation] [info] landing.ts classified as a service rather than an entrypoint may indicate the file has mixed responsibilities (bootstrapping + logic); confirm it delegates to imported modules rather than doing work inline.
+[pattern] [warning] Perfectly isolated files (no imports in or out) always achieve cohesion: 1 by definition regardless of semantic relatedness. web-landing's perfect cohesion score is a metric artifact caused by the two governance scripts, not evidence of a genuinely cohesive zone.
+[anti-pattern] [info] landing.ts archetype is [service] rather than [entrypoint]. If this file bootstraps the landing page (as its name and role suggest), the misclassification causes it to be excluded from entrypoint-based analysis, dead-code detection, and bundle entry audits that rely on the archetype field to identify root modules.
+[suggestion] [info] check-gateway-regex.mjs and check-gateway-test.mjs share the 'gateway' name prefix with production gateway modules, polluting filename-based gateway surface audits. Rename them to check-gateway-compliance-*.mjs or move them under a scripts/ directory to distinguish governance tooling from the modules they govern.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Perfect cohesion (1.0) and zero coupling make this zone fully isolated — it could be extracted into a standalone static bundle without touching the rest of the app
-- The single TypeScript entrypoint suggests minimal interactivity; if the landing page grows in complexity, consider a shared design-token layer with the main viewer
-- No cross-zone imports mean changes here carry zero risk of regressions elsewhere
-- Zero coupling and perfect cohesion indicate this zone is architecturally clean and fully self-contained.
-- Three files (HTML, CSS, TS) represent a minimal footprint; the landing page is easy to maintain and deploy independently.
-- No shared style or token layer exists between web-landing and web-dashboard; ensure any brand or color changes are kept in sync manually.
-- No test files appear in the web-landing zone inventory — unlike task-usage-tracking which co-locates tests, the landing page has zero unit test coverage visible in the zone graph, making behavioral regressions undetectable by the test suite
-- The landing.ts entrypoint has no type-imports or test coverage in the zone, meaning it is the only TypeScript entrypoint in the web package with no associated test file
-- landing.ts is an untested TypeScript entrypoint — add at least one unit or smoke test to ensure the module loads without errors and exports the expected interface; the absence of tests is an implicit convention gap compared to all other TypeScript entrypoints in the package.
-- [call graph] 10 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- The two check-gateway-*.mjs scripts are structurally unrelated to the landing page but share the tests/ directory — they likely clustered here due to no other imports connecting them elsewhere.
+- Perfect cohesion and zero coupling confirm this zone is completely isolated; the landing page has no runtime dependency on the rest of the web package.
+- The gateway validation scripts enforce architectural rules at the file level; they belong conceptually closer to CI/dev tooling than to the landing page.
+- check-gateway-regex.mjs and check-gateway-test.mjs are governance/CI scripts co-located with landing page assets purely by graph isolation — they would be better placed in a dev-tooling or scripts zone.
+- Zero coupling with any other zone means the landing page can be developed or replaced without risk of cascading changes.
+- landing.ts classified as a service rather than an entrypoint may indicate the file has mixed responsibilities (bootstrapping + logic); confirm it delegates to imported modules rather than doing work inline.
+- The two check-gateway-*.mjs scripts inflate web-landing's file count by 40% (2 of 5 files are structurally unrelated), which skews zone-level health metrics: cohesion appears perfect (1.0) partly because isolated files with no imports trivially form a complete subgraph with each other.
+- Perfectly isolated files (no imports in or out) always achieve cohesion: 1 by definition regardless of semantic relatedness. web-landing's perfect cohesion score is a metric artifact caused by the two governance scripts, not evidence of a genuinely cohesive zone.
+- landing.ts is classified as [service] rather than [entrypoint]; if it is the bootstrap entry for the landing page, the misclassification hides it from entrypoint-based analysis and means automated tools will not include it in entrypoint coverage or dead-code detection passes.
+- landing.ts archetype is [service] rather than [entrypoint]. If this file bootstraps the landing page (as its name and role suggest), the misclassification causes it to be excluded from entrypoint-based analysis, dead-code detection, and bundle entry audits that rely on the archetype field to identify root modules.
+- The two check-gateway validation scripts (check-gateway-regex.mjs, check-gateway-test.mjs) share a 'gateway' name prefix with the gateway source files they validate (rex-gateway.ts, domain-gateway.ts). A filename-based grep for 'gateway' files will return both validators and the cross-package gateways they test, making automated gateway surface audits unreliable unless the file type (.mjs vs .ts) is used as a secondary filter.
+- check-gateway-regex.mjs and check-gateway-test.mjs share the 'gateway' name prefix with production gateway modules, polluting filename-based gateway surface audits. Rename them to check-gateway-compliance-*.mjs or move them under a scripts/ directory to distinguish governance tooling from the modules they govern.
+- [call graph] 17 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

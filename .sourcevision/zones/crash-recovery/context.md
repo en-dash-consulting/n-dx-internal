@@ -5,19 +5,21 @@
 <zone>
 
 Zone: Crash Recovery (`crash-recovery`)
-Files: 3, Cohesion: 0.29, Coupling: 0.71
+Files: 5, Cohesion: 0.29, Coupling: 0.71
 Risk: catastrophic (score: 0.71)
-Description: Contains the crash detection utility and its companion recovery hook, forming the reliability layer that monitors viewer performance and initiates recovery on fatal errors.
+Description: Crash detection heuristics and the React hook that surfaces recovery state to the viewer UI.
 Entry points: packages/web/src/viewer/hooks/use-crash-recovery.ts, packages/web/src/viewer/performance/crash-detector.ts
-Lines: 727
+Lines: 994
 
 </zone>
 
 <files>
 
 packages/web/src/viewer/hooks/use-crash-recovery.ts (TypeScript, 134 lines, source)
-packages/web/src/viewer/performance/crash-detector.ts (TypeScript, 316 lines, source)
-packages/web/tests/unit/viewer/crash-detector.test.ts (TypeScript, 277 lines, test)
+packages/web/src/viewer/performance/crash-detector.ts (TypeScript, 297 lines, source)
+packages/web/tests/helpers/crash-detector-test-support.ts (TypeScript, 20 lines, test)
+packages/web/tests/unit/viewer/crash-detector.test.ts (TypeScript, 275 lines, test)
+packages/web/tests/unit/viewer/use-crash-recovery.test.ts (TypeScript, 268 lines, test)
 
 </files>
 
@@ -25,8 +27,12 @@ packages/web/tests/unit/viewer/crash-detector.test.ts (TypeScript, 277 lines, te
 
 Internal:
   packages/web/src/viewer/hooks/use-crash-recovery.ts → packages/web/src/viewer/performance/crash-detector.ts {detectCrash, saveNavigationState, clearSavedNavigationState, markRecoveryShown, wasRecoveryShown, resetCrashDetector}
-  packages/web/tests/unit/viewer/crash-detector.test.ts → packages/web/src/viewer/performance/crash-detector.ts {detectCrash, saveNavigationState, clearSavedNavigationState, markRecoveryShown, wasRecoveryShown, getDetectionResult, clearCrashHistory, resetCrashDetector, _testHelpers}
+  packages/web/tests/unit/viewer/crash-detector.test.ts → packages/web/src/viewer/performance/crash-detector.ts {detectCrash, saveNavigationState, clearSavedNavigationState, markRecoveryShown, wasRecoveryShown, getDetectionResult, clearCrashHistory, resetCrashDetector}
   packages/web/tests/unit/viewer/crash-detector.test.ts → packages/web/src/viewer/performance/crash-detector.ts {CrashDetectionResult, SavedNavigationState}
+  packages/web/tests/unit/viewer/crash-detector.test.ts → packages/web/tests/helpers/crash-detector-test-support.ts {HEARTBEAT_KEY, NAV_STATE_KEY, CRASH_HISTORY_KEY, RECOVERY_SHOWN_KEY, CRASH_LOOP_WINDOW_MS, CRASH_LOOP_THRESHOLD, MAX_CRASH_HISTORY}
+  packages/web/tests/unit/viewer/use-crash-recovery.test.ts → packages/web/src/viewer/hooks/use-crash-recovery.ts {useCrashRecovery}
+  packages/web/tests/unit/viewer/use-crash-recovery.test.ts → packages/web/src/viewer/hooks/use-crash-recovery.ts {UseCrashRecoveryResult}
+  packages/web/tests/unit/viewer/use-crash-recovery.test.ts → packages/web/src/viewer/performance/crash-detector.ts {CrashDetectionResult, SavedNavigationState}
 
 Outgoing (this zone → other zones):
   → web-dashboard: packages/web/src/viewer/hooks/use-crash-recovery.ts → packages/web/src/viewer/performance/index.ts; packages/web/src/viewer/hooks/use-crash-recovery.ts → packages/web/src/viewer/types.ts; packages/web/src/viewer/performance/crash-detector.ts → packages/web/src/viewer/types.ts
@@ -39,35 +45,34 @@ Incoming (other zones → this zone):
 <findings>
 
 [observation] [warning] High coupling (0.71) — 3 imports target "web-dashboard"
-[observation] [warning] Cohesion of 0.29 is below the warning threshold — the two files in this zone (hook and detector) are more coupled to web-dashboard than to each other, suggesting a zone boundary mismatch.
-[observation] [warning] Coupling of 0.71 exceeds the warning threshold; the crash recovery subsystem has high external dependency, which reduces its reusability and increases change risk.
-[observation] [warning] use-crash-recovery.ts lacks a unit test; given that crash recovery is a reliability-critical code path, this gap should be addressed.
-[pattern] [warning] crash-recovery has only 1 incoming call-graph edge despite 3 cross-zone import edges from web-viewer. The zone is consumed by a single caller at runtime, making it a de facto singleton utility. This strengthens the case for absorbing it into web-dashboard as an internal sub-module rather than maintaining a separate zone boundary.
-[relationship] [info] crash-recovery's 0 outgoing call-graph edges vs 3 outbound import edges to web-dashboard indicates the coupling is type-import-only. The zone's effective runtime isolation is much higher than its cohesion/coupling scores suggest — the metric overstates the structural risk.
-[anti-pattern] [warning] `_testHelpers` is exported through the production module surface of crash-detector.ts, bundling internal implementation details (storage keys, private functions) into the public API. Test-only exports should use a separate test-support file or conditional barrel to avoid polluting the production interface.
-[suggestion] [info] Rename the zone to 'crash-detection' to reflect its foundational implementation (crash-detector.ts) rather than its hook consumer (use-crash-recovery.ts), which would then be absorbed into web-viewer where it is consumed. Zone names derived from consumer hooks rather than implementation modules invert the normal naming convention.
+[observation] [warning] Low cohesion (0.29) — files are loosely related, consider splitting this zone
+[observation] [info] Cohesion of 0.29 is well below the 0.4 threshold — this zone does not represent a naturally cohesive cluster and is likely an artifact of the community detection splitting a small feature across a boundary.
+[observation] [warning] Coupling of 0.71 exceeds the 0.6 warning threshold; the zone's files depend heavily on the web-dashboard zone, suggesting these files are architecturally interior to the dashboard rather than a peer zone.
+[observation] [info] The test support helper (crash-detector-test-support.ts) is correctly in tests/helpers/ rather than src/, keeping test scaffolding out of production paths.
+[pattern] [warning] Zone coupling of 0.71 combined with zero outgoing call-graph edges indicates the cross-zone imports are likely type-only (`import type`) rather than runtime calls. Verify whether eliminating type imports would reduce zone coupling to near-zero and allow dissolving the artificial zone boundary.
+[anti-pattern] [warning] Post-dissolution, the crash detection/recovery feature cluster has no sub-zone pin inside web-dashboard to preserve its semantic boundary. Without a pin, tooling cannot distinguish crash-recovery code from unrelated dashboard code, and the feature is at risk of gradual entanglement with MCP server or polling infrastructure in future edits.
+[anti-pattern] [warning] Zone metrics are stale: crash-recovery has been dissolved into web-dashboard (git log confirms, summary.json and context.md deleted), but the zone still appears in the current analysis batch. Treating these coupling and cohesion scores as active architectural signals will produce incorrect remediation recommendations.
 [suggestion] [critical] Zone "Crash Recovery" (crash-recovery) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention
 
 </findings>
 
 <insights>
 
+- Low cohesion (0.29) — files are loosely related, consider splitting this zone
 - High coupling (0.71) — 3 imports target "web-dashboard"
-- Low cohesion (0.29) and high coupling (0.71) suggest the crash detector and recovery hook are tightly coupled to their callers in web-dashboard rather than forming a self-contained module — consider whether these two files should be absorbed into the web-dashboard zone.
-- The bidirectional import relationship with web-dashboard (3 imports each way) creates a zone-level cycle; use-crash-recovery.ts likely depends on viewer state, while the detector is consumed by the viewer — a one-directional dependency would be cleaner.
-- Only crash-detector.ts has a test; use-crash-recovery.ts is untested despite being the hook consumed by the viewer.
-- Cohesion of 0.29 is below the warning threshold — the two files in this zone (hook and detector) are more coupled to web-dashboard than to each other, suggesting a zone boundary mismatch.
-- Coupling of 0.71 exceeds the warning threshold; the crash recovery subsystem has high external dependency, which reduces its reusability and increases change risk.
-- use-crash-recovery.ts lacks a unit test; given that crash recovery is a reliability-critical code path, this gap should be addressed.
-- Call graph shows 0 outgoing calls despite 3 cross-zone import edges to web-dashboard — the imports are type-only (interfaces, enums) rather than runtime function calls. This means the zone has no runtime coupling to web-dashboard, only compile-time coupling, which is significantly less risky than the import-graph coupling score implies.
-- crash-recovery's 0 outgoing call-graph edges vs 3 outbound import edges to web-dashboard indicates the coupling is type-import-only. The zone's effective runtime isolation is much higher than its cohesion/coupling scores suggest — the metric overstates the structural risk.
-- crash-recovery has only 1 incoming call-graph edge despite 3 cross-zone import edges from web-viewer. The zone is consumed by a single caller at runtime, making it a de facto singleton utility. This strengthens the case for absorbing it into web-dashboard as an internal sub-module rather than maintaining a separate zone boundary.
-- crash-detector.ts installs a `beforeunload` event listener as a module-level side effect at runtime (not in a function call), meaning the listener is registered the moment the module is first imported. This side effect is invisible to callers and complicates hot-reload, SSR, and test isolation — `resetCrashDetector()` exists to compensate but the coupling is implicit.
-- crash-detector.ts exports a `_testHelpers` object containing private constants and internal functions via the module's public API surface (line 299). This leaks implementation details into the production bundle and creates an undocumented testing contract that consumers must know to avoid.
-- Both crash-detector.ts and tick-timer.ts independently implement the same module-level singleton pattern (mutable module vars + a `reset*()` escape hatch for tests). The convergent design is undocumented — a third such module added without awareness of this convention may omit the reset function, breaking test isolation.
-- `_testHelpers` is exported through the production module surface of crash-detector.ts, bundling internal implementation details (storage keys, private functions) into the public API. Test-only exports should use a separate test-support file or conditional barrel to avoid polluting the production interface.
-- Zone name 'crash-recovery' is derived from the consumer hook (use-crash-recovery.ts) rather than the core logic module (crash-detector.ts). The zone is named after its application-layer consumer, not its infrastructure implementation — contrary to the typical convention of naming a zone after its primary artifact.
-- Rename the zone to 'crash-detection' to reflect its foundational implementation (crash-detector.ts) rather than its hook consumer (use-crash-recovery.ts), which would then be absorbed into web-viewer where it is consumed. Zone names derived from consumer hooks rather than implementation modules invert the normal naming convention.
-- [call graph] 51 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
+- Cohesion of 0.29 and coupling of 0.71 indicate this zone's two production files (crash-detector.ts and use-crash-recovery.ts) are more tightly bound to the surrounding web-dashboard zone than to each other — a sign they may belong inside that zone rather than as a separate cluster.
+- The bidirectional import relationship with web-dashboard (3 imports each direction) creates a circular zone dependency that the gateway module pattern is designed to prevent; audit whether these cross-zone calls can be collapsed.
+- Separating crash detection (service) from crash recovery (hook) at the zone level makes the boundary appear weaker than it is — together they form one cohesive feature that should be co-located in the dashboard zone.
+- Cohesion of 0.29 is well below the 0.4 threshold — this zone does not represent a naturally cohesive cluster and is likely an artifact of the community detection splitting a small feature across a boundary.
+- Coupling of 0.71 exceeds the 0.6 warning threshold; the zone's files depend heavily on the web-dashboard zone, suggesting these files are architecturally interior to the dashboard rather than a peer zone.
+- The test support helper (crash-detector-test-support.ts) is correctly in tests/helpers/ rather than src/, keeping test scaffolding out of production paths.
+- Call graph metrics (cohesion: 1, coupling: 0, 0 outgoing calls) contradict zone-level import metrics (cohesion: 0.29, coupling: 0.71) — the 81 internal calls with zero outgoing calls strongly suggests the zone-level coupling is driven by import declarations (likely type imports) rather than runtime function calls, making the 'critical' bidirectional dependency less severe in practice than the import graph implies.
+- Zone coupling of 0.71 combined with zero outgoing call-graph edges indicates the cross-zone imports are likely type-only (`import type`) rather than runtime calls. Verify whether eliminating type imports would reduce zone coupling to near-zero and allow dissolving the artificial zone boundary.
+- Zone has been dissolved into web-dashboard per git history (commit: 'Fix crash-recovery zone catastrophic risk by dissolving into web-dashboard') and its summary.json/context.md have been deleted — all metrics in this zone record are now historical and describe a boundary that no longer exists in the working tree.
+- Post-dissolution, crash detection and recovery logic has no zone-level governance boundary within web-dashboard; a sub-zone configuration pin for the crash-recovery feature cluster would preserve the semantic boundary while eliminating the problematic top-level zone, preventing the feature from silently diffusing into unrelated dashboard code.
+- The 81 internal call-graph calls from crash-recovery become internal web-dashboard calls after dissolution, which increases the hub zone's internal call density and improves its earned cohesion score — dissolution is architecturally additive for web-dashboard, not just subtractive for crash-recovery.
+- Zone metrics are stale: crash-recovery has been dissolved into web-dashboard (git log confirms, summary.json and context.md deleted), but the zone still appears in the current analysis batch. Treating these coupling and cohesion scores as active architectural signals will produce incorrect remediation recommendations.
+- Post-dissolution, the crash detection/recovery feature cluster has no sub-zone pin inside web-dashboard to preserve its semantic boundary. Without a pin, tooling cannot distinguish crash-recovery code from unrelated dashboard code, and the feature is at risk of gradual entanglement with MCP server or polling infrastructure in future edits.
+- [call graph] 81 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>

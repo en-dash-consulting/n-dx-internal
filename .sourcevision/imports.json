@@ -1357,14 +1357,6 @@
       ]
     },
     {
-      "from": "packages/hench/src/prd/ops.ts",
-      "to": "packages/hench/src/prd/rex-gateway.ts",
-      "type": "reexport",
-      "symbols": [
-        "*"
-      ]
-    },
-    {
       "from": "packages/hench/src/process/exec-shell.ts",
       "to": "packages/hench/src/tools/exec-shell.ts",
       "type": "reexport",
@@ -6922,7 +6914,8 @@
       "to": "packages/rex/src/core/reorganize.ts",
       "type": "type",
       "symbols": [
-        "ReorganizationProposal"
+        "ReorganizationProposal",
+        "ReorganizationPlan"
       ]
     },
     {
@@ -6943,10 +6936,26 @@
     },
     {
       "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
       "to": "packages/rex/src/store/index.ts",
       "type": "static",
       "symbols": [
         "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/reorganize.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
       ]
     },
     {
@@ -9410,6 +9419,17 @@
         "JsonValidationResult",
         "YamlValidationResult",
         "FileValidationErrorCode"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/analyze/propose.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "ProposalEpic",
+        "ProposalFeature",
+        "ProposalTask"
       ]
     },
     {
@@ -17953,6 +17973,22 @@
     },
     {
       "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
+      "type": "reexport",
+      "symbols": [
+        "BatchImportPanel"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
+      "type": "type",
+      "symbols": [
+        "BatchImportPanelProps"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
       "to": "packages/web/src/viewer/components/prd-tree/facet-filter.ts",
       "type": "reexport",
       "symbols": [
@@ -18016,6 +18052,39 @@
       "type": "type",
       "symbols": [
         "PRDTreeProps"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
+      "type": "reexport",
+      "symbols": [
+        "ProposalEditor"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
+      "type": "type",
+      "symbols": [
+        "RawProposal",
+        "ProposalEditorProps"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+      "type": "reexport",
+      "symbols": [
+        "SmartAddInput"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/prd-tree/index.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+      "type": "type",
+      "symbols": [
+        "SmartAddInputProps"
       ]
     },
     {
@@ -18912,7 +18981,7 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-polling-suspension.ts",
-      "to": "packages/web/src/viewer/polling/polling-state.ts",
+      "to": "packages/web/src/viewer/polling/index.ts",
       "type": "static",
       "symbols": [
         "onPollingStateChange",
@@ -18921,7 +18990,7 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-polling-suspension.ts",
-      "to": "packages/web/src/viewer/polling/polling-state.ts",
+      "to": "packages/web/src/viewer/polling/index.ts",
       "type": "type",
       "symbols": [
         "PollingStateSnapshot"
@@ -19624,7 +19693,7 @@
     },
     {
       "from": "packages/web/src/viewer/performance/dom-performance-monitor.ts",
-      "to": "packages/web/src/viewer/polling/polling-state.ts",
+      "to": "packages/web/src/viewer/polling/index.ts",
       "type": "static",
       "symbols": [
         "registerPollingSource"
@@ -19780,7 +19849,7 @@
     },
     {
       "from": "packages/web/src/viewer/performance/memory-monitor.ts",
-      "to": "packages/web/src/viewer/polling/polling-state.ts",
+      "to": "packages/web/src/viewer/polling/index.ts",
       "type": "static",
       "symbols": [
         "registerPollingSource"
@@ -19845,6 +19914,21 @@
       "symbols": [
         "registerPoller",
         "unregisterPoller"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/polling/index.ts",
+      "to": "packages/web/src/viewer/polling/polling-state.ts",
+      "type": "reexport",
+      "symbols": [
+        "registerPollingSource",
+        "onPollingStateChange",
+        "getPollingState",
+        "resetPollingState",
+        "PollingSourceCallbacks",
+        "PollingSourceConfig",
+        "PollingStateSnapshot",
+        "PollingStateChangeHandler"
       ]
     },
     {
@@ -20039,18 +20123,11 @@
     },
     {
       "from": "packages/web/src/viewer/views/analysis.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/batch-import-panel.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/index.ts",
       "type": "static",
       "symbols": [
+        "SmartAddInput",
         "BatchImportPanel"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/analysis.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
-      "type": "static",
-      "symbols": [
-        "SmartAddInput"
       ]
     },
     {
@@ -20776,18 +20853,18 @@
     },
     {
       "from": "packages/web/src/viewer/views/rex-dashboard.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/reorganize-panel.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/index.ts",
       "type": "static",
       "symbols": [
-        "ReorganizePanel"
+        "SmartAddInput"
       ]
     },
     {
       "from": "packages/web/src/viewer/views/rex-dashboard.ts",
-      "to": "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/reorganize-panel.ts",
       "type": "static",
       "symbols": [
-        "SmartAddInput"
+        "ReorganizePanel"
       ]
     },
     {
@@ -22303,6 +22380,14 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/analyze-panel.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/analyze-panel.ts",
+      "type": "static",
+      "symbols": [
+        "AnalyzePanel"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/bar-chart.test.ts",
       "to": "packages/web/src/viewer/components/data-display/mini-charts.ts",
       "type": "static",
@@ -22391,8 +22476,7 @@
         "wasRecoveryShown",
         "getDetectionResult",
         "clearCrashHistory",
-        "resetCrashDetector",
-        "_testHelpers"
+        "resetCrashDetector"
       ]
     },
     {
@@ -22402,6 +22486,20 @@
       "symbols": [
         "CrashDetectionResult",
         "SavedNavigationState"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/crash-detector.test.ts",
+      "to": "packages/web/tests/helpers/crash-detector-test-support.ts",
+      "type": "static",
+      "symbols": [
+        "HEARTBEAT_KEY",
+        "NAV_STATE_KEY",
+        "CRASH_HISTORY_KEY",
+        "RECOVERY_SHOWN_KEY",
+        "CRASH_LOOP_WINDOW_MS",
+        "CRASH_LOOP_THRESHOLD",
+        "MAX_CRASH_HISTORY"
       ]
     },
     {
@@ -23200,6 +23298,22 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/proposal-editor.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
+      "type": "static",
+      "symbols": [
+        "ProposalEditor"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/proposal-editor.test.ts",
+      "to": "packages/web/src/viewer/components/prd-tree/proposal-editor.ts",
+      "type": "type",
+      "symbols": [
+        "RawProposal"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/prune-diff-tree.test.ts",
       "to": "packages/web/src/viewer/components/prd-tree/prune-diff-tree.ts",
       "type": "static",
@@ -23740,6 +23854,31 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/use-crash-recovery.test.ts",
+      "to": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
+      "type": "static",
+      "symbols": [
+        "useCrashRecovery"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/use-crash-recovery.test.ts",
+      "to": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
+      "type": "type",
+      "symbols": [
+        "UseCrashRecoveryResult"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/use-crash-recovery.test.ts",
+      "to": "packages/web/src/viewer/performance/crash-detector.ts",
+      "type": "type",
+      "symbols": [
+        "CrashDetectionResult",
+        "SavedNavigationState"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/use-dom-performance-monitor.test.ts",
       "to": "packages/web/src/viewer/hooks/use-dom-performance-monitor.ts",
       "type": "static",
@@ -24151,9 +24290,11 @@
         "claude-integration.js",
         "cli.js",
         "pr-check.js",
+        "tests/e2e/cli-contract.test.mjs",
         "web.js"
       ],
       "symbols": [
+        "execFileSync",
         "execSync",
         "spawn"
       ]
@@ -24177,6 +24318,7 @@
         "refresh-artifacts.js",
         "refresh-validate.js",
         "scripts/hench-callgraph-analysis.mjs",
+        "tests/e2e/cli-contract.test.mjs",
         "web.js"
       ],
       "symbols": [
@@ -24221,6 +24363,7 @@
         "pr-check.js",
         "refresh-artifacts.js",
         "refresh-validate.js",
+        "tests/e2e/cli-contract.test.mjs",
         "web.js"
       ],
       "symbols": [
@@ -24352,6 +24495,7 @@
         "packages/web/tests/integration/pr-markdown-refresh.test.ts",
         "packages/web/tests/unit/viewer/accessibility.test.ts",
         "packages/web/tests/unit/viewer/add-item-form.test.ts",
+        "packages/web/tests/unit/viewer/analyze-panel.test.ts",
         "packages/web/tests/unit/viewer/bar-chart.test.ts",
         "packages/web/tests/unit/viewer/batch-import-panel.test.ts",
         "packages/web/tests/unit/viewer/collapsible-section.test.ts",
@@ -24371,6 +24515,7 @@
         "packages/web/tests/unit/viewer/prd-tree.test.ts",
         "packages/web/tests/unit/viewer/progressive-loader.test.ts",
         "packages/web/tests/unit/viewer/progressive-loading-integration.test.ts",
+        "packages/web/tests/unit/viewer/proposal-editor.test.ts",
         "packages/web/tests/unit/viewer/prune-diff-tree.test.ts",
         "packages/web/tests/unit/viewer/search-overlay.test.ts",
         "packages/web/tests/unit/viewer/sidebar.test.ts",
@@ -24383,6 +24528,7 @@
         "packages/web/tests/unit/viewer/token-usage-nav.test.ts",
         "packages/web/tests/unit/viewer/tree-event-delegate.test.ts",
         "packages/web/tests/unit/viewer/tree-view.test.ts",
+        "packages/web/tests/unit/viewer/use-crash-recovery.test.ts",
         "packages/web/tests/unit/viewer/use-dom-performance-monitor.test.ts",
         "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
         "packages/web/tests/unit/viewer/zone-drill-down.test.ts"
@@ -24436,7 +24582,8 @@
         "packages/hench/tests/unit/cli/commands/run-epic.test.ts",
         "packages/web/src/server/rex-gateway.ts",
         "packages/web/src/server/routes-integrations.ts",
-        "packages/web/src/server/routes-notion.ts"
+        "packages/web/src/server/routes-notion.ts",
+        "packages/web/src/viewer/components/prd-tree/analyze-panel.ts"
       ],
       "symbols": [
         "*",
@@ -24458,6 +24605,9 @@
         "PRIORITY_ORDER",
         "Priority",
         "PriorityDistribution",
+        "Proposal",
+        "ProposalFeature",
+        "ProposalTask",
         "ReorganizationPlan",
         "ReorganizationProposal",
         "Requirement",
@@ -24554,7 +24704,8 @@
         "ci.js",
         "claude-integration.js",
         "cli.js",
-        "pr-check.js"
+        "pr-check.js",
+        "tests/e2e/cli-contract.test.mjs"
       ],
       "symbols": [
         "fileURLToPath"
@@ -24871,6 +25022,7 @@
         "packages/web/tests/unit/server/ws-health-tracker.test.ts",
         "packages/web/tests/unit/viewer/accessibility.test.ts",
         "packages/web/tests/unit/viewer/add-item-form.test.ts",
+        "packages/web/tests/unit/viewer/analyze-panel.test.ts",
         "packages/web/tests/unit/viewer/bar-chart.test.ts",
         "packages/web/tests/unit/viewer/batch-import-panel.test.ts",
         "packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts",
@@ -24919,6 +25071,7 @@
         "packages/web/tests/unit/viewer/prd-tree.test.ts",
         "packages/web/tests/unit/viewer/progressive-loader.test.ts",
         "packages/web/tests/unit/viewer/progressive-loading-integration.test.ts",
+        "packages/web/tests/unit/viewer/proposal-editor.test.ts",
         "packages/web/tests/unit/viewer/prune-diff-tree.test.ts",
         "packages/web/tests/unit/viewer/refresh-throttle.test.ts",
         "packages/web/tests/unit/viewer/request-dedup.test.ts",
@@ -24945,6 +25098,7 @@
         "packages/web/tests/unit/viewer/tree-view.test.ts",
         "packages/web/tests/unit/viewer/update-batcher.test.ts",
         "packages/web/tests/unit/viewer/usage-polling.test.ts",
+        "packages/web/tests/unit/viewer/use-crash-recovery.test.ts",
         "packages/web/tests/unit/viewer/use-dom-performance-monitor.test.ts",
         "packages/web/tests/unit/viewer/use-polling-suspension.test.ts",
         "packages/web/tests/unit/viewer/virtual-scroll.test.ts",
@@ -25006,7 +25160,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 2579,
+    "totalEdges": 2594,
     "totalExternal": 18,
     "circularCount": 0,
     "circulars": [],
@@ -25092,6 +25246,6 @@
         "count": 11
       }
     ],
-    "avgImportsPerFile": 3.39
+    "avgImportsPerFile": 3.4
   }
 }

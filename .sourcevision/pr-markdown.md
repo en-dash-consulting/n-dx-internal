@@ -2,7 +2,11 @@
 
 **Branch:** `feature/sv-fixes-0306`
 **Base:** `main`
-**Completed items:** 24
+**Completed items:** 40
+
+| Epic | Completed |
+|------|-----------|
+| Repository Governance and Community Standards | 3 |
 
 ## ⚠️ Breaking Changes
 
@@ -31,6 +35,12 @@
   - Contract test validates rex, hench, sourcevision CLI signatures
   - Test breaks when CLI args change without updating contract
   - Covers at least the top-level commands
+- **Address pattern issues (5 findings)**
+  - crash-recovery has only 1 incoming call-graph edge despite 3 cross-zone import edges from web-viewer. The zone is consumed by a single caller at runtime, making it a de facto singleton utility. This strengthens the case for absorbing it into web-dashboard as an internal sub-module rather than maintaining a separate zone boundary.
+- Generated artifact HENCH_CALLGRAPH_FINDINGS.md is committed but has no CI regeneration-and-diff guard; it can silently go stale after hench source changes
+- A single gateway file (src/prd/rex-gateway.ts) is the only cross-zone coupling surface for 160 files; gateway API breakage has maximum blast radius within hench — no incremental migration path exists if the rex API changes.
+- Orchestration-to-domain boundary is enforced at runtime only (subprocess spawning); a mismatched CLI argument or removed subcommand will produce a silent runtime failure with no compile-time safety net.
+- Zone conflates web-package unit tests with monorepo-root contract scripts; splitting into separate zones aligned to their physical location would improve discoverability and ownership clarity
 
 ## Major Changes
 
@@ -52,8 +62,30 @@
 - Zone "Unit Cli" (packages-rex:unit-cli) has catastrophic risk (score: 0.75, cohesion: 0.25, coupling: 0.75) — requires immediate architectural intervention
 - Zone "Analyzers 3" (packages-sourcevision:analyzers-3) has critical risk (score: 0.69, cohesion: 0.31, coupling: 0.69) — requires refactoring before new feature development
 - Zone "Unit" (packages-rex:unit) has critical risk (score: 0.67, cohesion: 0.33, coupling: 0.67) — requires refactoring before new feature development
+- **Address suggestion issues (9 findings)** [critical]
+  - Add a pnpm verify script (or Makefile target) that runs all three verification-tier mechanisms in sequence: vitest e2e, check-gateway-regex.mjs, check-gateway-test.mjs, and test-zone-consistency.mjs — removes the current requirement for contributors to manually discover and run four separate commands
+- Add an intra-package layer-direction check to architecture-policy.test.js that parses import paths within each package and asserts domain files do not import from cli/ subdirectories — directly guards the existing packages-rex circular sub-zone violation and prevents recurrence
+- Create a single gateway-rules.json (or equivalent) at the monorepo root that both check-gateway-regex.mjs and architecture-policy.test.js consume as the authoritative source of gateway file paths and allowed import patterns — eliminates silent divergence between two enforcement mechanisms
+- packages/hench/package-lock.json should not exist in a pnpm workspace. It can cause dependency resolution conflicts if npm is run inside the package. Verify it is not committed to source control or add it to .gitignore, and document that pnpm is the sole package manager for this monorepo.
+- Add a dedicated intra-package layering test (e.g., in architecture-policy.test.js) that asserts domain-layer files do not import from CLI-layer files within the same package — this would catch the existing packages-rex:unit-analyze→cli violation and prevent recurrence
+- Zone "Crash Recovery" (crash-recovery) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention
+- The fix for the useState misuse in analyze-panel.ts requires two coordinated edits: (1) add useEffect to the import on line 9: `import { useState, useCallback, useEffect } from 'preact/hooks'`, and (2) replace line 74 with `useEffect(() => { loadPending(); }, [])`. Both changes must land together — changing line 74 without updating the import will fail the TypeScript build.
+- Add a self-test or snapshot fixture to check-gateway-regex.mjs and check-gateway-test.mjs that validates the regex patterns catch known-bad imports — untested validators provide false confidence
+- Bind the gateway check scripts to gateway file paths via a shared config constant rather than hardcoded regex strings, so renaming a gateway file breaks the check explicitly rather than silently
+- **Repository Governance and Community Standards**
+- **Address suggestion issues (1 findings)** [critical]
+  - Zone "Crash Recovery" (crash-recovery) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention
 
 ## Completed Work
+
+### Repository Governance and Community Standards
+
+**Code of Conduct**
+- Add CODE_OF_CONDUCT.md placeholder to repository root
+- Wire CODE_OF_CONDUCT.md into package metadata and CI validation
+
+- Code of Conduct *(feature)*
+  Establish a code of conduct document for the repository to set community and contributor expectations.
 
 ### (Ungrouped)
 
@@ -87,6 +119,15 @@
 - Move elapsed-time.ts and task-audit.ts to viewer zone
 - Absorb websocket zone into web-dashboard
 - Tie architecture policy test to live zone graph
+
+**Address observation issues (10 findings)**
+- Pin crash-recovery and web-package-scaffold UI files to correct zones
+  Add zone pins in .n-dx.json for: crash-detector.ts, use-crash-recovery.ts, crash-recovery-banner.ts, crash-detector-test-support.ts, crash-detector.test.ts → web-dashboard; route-state.ts, use-tick.ts, lazy-children.ts, listener-lifecycle.ts → web-dashboard. This resolves findings 1-3, 5, 8, 10.
+- Add unit test for use-crash-recovery.ts hook
+  Write unit tests for the useCrashRecovery Preact hook covering: initial detection, state saving on view changes, dismiss/restore actions, disabled mode, and crash loop detection. Finding 4.
+- Add unit tests for analyze-panel.ts and proposal-editor.ts
+  Write unit tests for the two complex PRD analysis UI components. Finding 9.
+- Document fan-in hotspot and review web-dashboard entry points
 
 **Address relationship issues (5 findings)**
 - Verify dom→web-viewer cross-zone import direction is not circular
@@ -155,6 +196,25 @@
 - 2 production files (websocket.ts, ws-health-tracker.ts) do not justify an independent zone boundary; absorbing them into web-dashboard would eliminate the structural noise introduced by the test-inflated coupling metric
 - God function: cmdAnalyze in packages/rex/src/cli/commands/analyze.ts calls 44 unique functions — consider decomposing into smaller, focused functions
 - God function: runConfig in config.js calls 36 unique functions — consider decomposing into smaller, focused functions
+- 🔶 **Address suggestion issues (9 findings)** *(feature)*
+  - Add a pnpm verify script (or Makefile target) that runs all three verification-tier mechanisms in sequence: vitest e2e, check-gateway-regex.mjs, check-gateway-test.mjs, and test-zone-consistency.mjs — removes the current requirement for contributors to manually discover and run four separate commands
+- Add an intra-package layer-direction check to architecture-policy.test.js that parses import paths within each package and asserts domain files do not import from cli/ subdirectories — directly guards the existing packages-rex circular sub-zone violation and prevents recurrence
+- Create a single gateway-rules.json (or equivalent) at the monorepo root that both check-gateway-regex.mjs and architecture-policy.test.js consume as the authoritative source of gateway file paths and allowed import patterns — eliminates silent divergence between two enforcement mechanisms
+- packages/hench/package-lock.json should not exist in a pnpm workspace. It can cause dependency resolution conflicts if npm is run inside the package. Verify it is not committed to source control or add it to .gitignore, and document that pnpm is the sole package manager for this monorepo.
+- Add a dedicated intra-package layering test (e.g., in architecture-policy.test.js) that asserts domain-layer files do not import from CLI-layer files within the same package — this would catch the existing packages-rex:unit-analyze→cli violation and prevent recurrence
+- Zone "Crash Recovery" (crash-recovery) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention
+- The fix for the useState misuse in analyze-panel.ts requires two coordinated edits: (1) add useEffect to the import on line 9: `import { useState, useCallback, useEffect } from 'preact/hooks'`, and (2) replace line 74 with `useEffect(() => { loadPending(); }, [])`. Both changes must land together — changing line 74 without updating the import will fail the TypeScript build.
+- Add a self-test or snapshot fixture to check-gateway-regex.mjs and check-gateway-test.mjs that validates the regex patterns catch known-bad imports — untested validators provide false confidence
+- Bind the gateway check scripts to gateway file paths via a shared config constant rather than hardcoded regex strings, so renaming a gateway file breaks the check explicitly rather than silently
+- ⚠️ **Address pattern issues (5 findings)** *(feature)*
+  - crash-recovery has only 1 incoming call-graph edge despite 3 cross-zone import edges from web-viewer. The zone is consumed by a single caller at runtime, making it a de facto singleton utility. This strengthens the case for absorbing it into web-dashboard as an internal sub-module rather than maintaining a separate zone boundary.
+- Generated artifact HENCH_CALLGRAPH_FINDINGS.md is committed but has no CI regeneration-and-diff guard; it can silently go stale after hench source changes
+- A single gateway file (src/prd/rex-gateway.ts) is the only cross-zone coupling surface for 160 files; gateway API breakage has maximum blast radius within hench — no incremental migration path exists if the rex API changes.
+- Orchestration-to-domain boundary is enforced at runtime only (subprocess spawning); a mismatched CLI argument or removed subcommand will produce a silent runtime failure with no compile-time safety net.
+- Zone conflates web-package unit tests with monorepo-root contract scripts; splitting into separate zones aligned to their physical location would improve discoverability and ownership clarity
+- 🔶 **Repository Governance and Community Standards** *(epic)*
+- 🔶 **Address suggestion issues (1 findings)** *(feature)*
+  - Zone "Crash Recovery" (crash-recovery) has catastrophic risk (score: 0.71, cohesion: 0.29, coupling: 0.71) — requires immediate architectural intervention
 - Address observation issues (8 findings) *(feature)*
   - Bidirectional coupling: "task-usage-tracking" ↔ "web-dashboard" (1+3 crossings) — consider extracting shared interface
 - Bidirectional coupling: "web-build-infrastructure" ↔ "web-dashboard" (4+2 crossings) — consider extracting shared interface
@@ -169,4 +229,40 @@
 - The runtime-state zone is a shared mutable sink readable by both rex and hench packages without creating import-graph coupling — this is an intentional design but concurrent write safety is implicit; documenting the write-access protocol would prevent future race conditions.
 - Absence of an index/facade module means task-usage-tracking has no encapsulated public surface; consumers couple directly to internal service files, weakening the zone boundary.
 - Build scripts (build.js, dev.js) in this zone operate at the package boundary but are grouped with UI components (elapsed-time.ts, task-audit.ts) — splitting into a pure build-config group and a reusable-components group would clarify which files are tooling versus production API surface.
+- Address observation issues (10 findings) *(feature)*
+  - High coupling (0.71) — 3 imports target "web-dashboard"
+- Cohesion of 0.29 is below the warning threshold — the two files in this zone (hook and detector) are more coupled to web-dashboard than to each other, suggesting a zone boundary mismatch.
+- Coupling of 0.71 exceeds the warning threshold; the crash recovery subsystem has high external dependency, which reduces its reusability and increases change risk.
+- use-crash-recovery.ts lacks a unit test; given that crash recovery is a reliability-critical code path, this gap should be addressed.
+- Bidirectional coupling: "web-dashboard" ↔ "web-package-scaffold" (3+9 crossings) — consider extracting shared interface
+- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects
+- 9 entry points — wide API surface, consider consolidating exports
+- Bidirectional imports with both 'crash' and 'panel' zones create implicit circular dependencies at the zone level; these relationships should be reviewed to ensure directional ownership is clear.
+- analyze-panel.ts and proposal-editor.ts lack unit tests while the simpler smart-add-input and batch-import-panel components are tested — the more complex components should be prioritized for test coverage.
+- Viewer UI files are co-classified with build scripts due to shared import edges; zone pinning for elapsed-time.ts, route-state.ts, task-audit.ts, use-tick.ts, lazy-children.ts, and listener-lifecycle.ts is recommended to correct classification.
+- Address anti-pattern issues (11 findings) *(feature)*
+  - E2E tests that spawn CLI subprocesses share no documented workspace isolation strategy; if tests run concurrently and both write to .rex/prd.json or .sourcevision/, results are non-deterministic. No test uses a dedicated temp directory per test file.
+- `_testHelpers` is exported through the production module surface of crash-detector.ts, bundling internal implementation details (storage keys, private functions) into the public API. Test-only exports should use a separate test-support file or conditional barrel to avoid polluting the production interface.
+- hench-callgraph-analysis.mjs produces HENCH_CALLGRAPH_FINDINGS.md but has no fail-fast guard that detects missing or stale input artifacts; silent success on a cold checkout produces a misleading (empty or stale) report with no error signal.
+- The rex-gateway is imported directly by scattered consumer files across 160 files with no internal hench interface layer. When the rex gateway API changes, every call site must be updated individually with no intermediate abstraction to narrow the scope of change. An internal adapter or facade within hench that wraps the gateway would contain the blast radius.
+- The orchestration tier's architectural boundary (no direct package imports) is enforced solely by developer convention — no ESLint rule, TypeScript path mapping, or CI check prevents a direct `import` from cli.js into a domain package. A single accidental import would collapse the tier silently.
+- claude-integration.js is a service file at the monorepo root that bypasses the gateway pattern entirely. Any cross-package imports it makes are invisible to gateway audits and import-graph coupling scores, creating an unmonitored coupling surface outside all four tiers of the dependency hierarchy.
+- Proposal, ProposalFeature, and ProposalTask types are defined locally in analyze-panel.ts rather than imported from a shared rex schema or gateway. The local copy will silently diverge from the API response shape if the server-side PRD proposal format changes.
+- `useState(() => { loadPending(); })` in analyze-panel.ts misuses the useState initializer to trigger an async network call. This is not the intended use of the initializer (which sets initial synchronous state) and bypasses the standard effect lifecycle, making cleanup and double-invocation behavior undefined.
+- Web viewer unit tests (graph-interaction.test.ts, graph-zoom.test.ts) are excluded from packages/web per-package test coverage because they reside outside the package boundary in this zone; per-package coverage reports for the web package silently undercount viewer UI test coverage.
+- Zone contains files from two physically distinct roots (packages/web/tests/unit/viewer/ and tests/) with unrelated purposes; zone name 'viewer-gateway-tests' implies viewer scope only, actively misleading contributors about the gateway scripts' monorepo-wide scope. Should be split into two zones aligned to physical location and concern.
+- God function: <module> in packages/web/src/landing/landing.ts calls 42 unique functions — consider decomposing into smaller, focused functions
+- Address observation issues (8 findings) *(feature)*
+  - cli-contract.test.mjs living alongside non-test .mjs scripts rather than in tests/e2e/ may cause it to be excluded from standard test runner discovery if glob patterns only target tests/e2e/.
+- Bidirectional coupling: "web-build-tooling" ↔ "web-dashboard" (10+4 crossings) — consider extracting shared interface
+- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects
+- High coupling (0.56) — 1 imports target "web-dashboard"
+- Cohesion of 0.44 is below the recommended 0.5 threshold; the three components (smart-add-input, proposal-editor, batch-import-panel) may have been grouped algorithmically by shared test imports rather than by meaningful domain affinity.
+- Coupling of 0.56 approaches the high-coupling threshold; auditing which viewer internals these components import could reveal opportunities to depend on stable public APIs instead.
+- Bidirectional import coupling between web and web-viewer (10 web→web-viewer, 4 web-viewer→web) is the primary cause of the 0.42 coupling score; the web-viewer→web direction should be audited to ensure viewer code is not importing build infrastructure.
+- Cohesion of 0.58 is below the ideal threshold because viewer UI components (elapsed-time.ts, use-tick.ts, route-state.ts, task-audit.ts) are co-classified with build scripts — reclassifying them into web-viewer would restore cohesion for both zones.
+- Address anti-pattern issues (1 findings) *(feature)*
+  - God function: agentLoop in packages/hench/src/agent/lifecycle/loop.ts calls 38 unique functions — consider decomposing into smaller, focused functions
+- Address anti-pattern issues (1 findings) *(feature)*
+  - God function: cmdReorganize in packages/rex/src/cli/commands/reorganize.ts calls 38 unique functions — consider decomposing into smaller, focused functions
 

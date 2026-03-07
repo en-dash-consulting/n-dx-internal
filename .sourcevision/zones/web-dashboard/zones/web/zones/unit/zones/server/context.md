@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Web Viewer/web/unit/server (`web-viewer/web/unit/server`)
-Files: 66, Cohesion: 0.92, Coupling: 0.08
-Description: 66 files, primarily TypeScript
-Entry points: packages/web/src/server/routes-mcp.ts, packages/web/src/server/routes-sourcevision.ts, packages/web/src/server/types.ts, packages/web/src/viewer/views/graph.ts
-Lines: 27004
+Files: 52, Cohesion: 0.96, Coupling: 0.04
+Description: 52 files, primarily TypeScript
+Entry points: packages/web/src/server/routes-hench.ts, packages/web/src/server/routes-mcp.ts, packages/web/src/server/routes-rex.ts, packages/web/src/server/types.ts
+Lines: 21488
 
 </zone>
 
@@ -21,12 +21,10 @@ packages/web/src/server/domain-gateway.ts (TypeScript, 19 lines, source)
 packages/web/src/server/index.ts (TypeScript, 40 lines, source)
 packages/web/src/server/mcp-deps.ts (TypeScript, 6 lines, source)
 packages/web/src/server/port.ts (TypeScript, 195 lines, source)
-packages/web/src/server/pr-markdown-refresh-diagnostics.ts (TypeScript, 591 lines, source)
 packages/web/src/server/process-memory-tracker.ts (TypeScript, 307 lines, source)
 packages/web/src/server/rex-gateway.ts (TypeScript, 89 lines, source)
 packages/web/src/server/routes-adaptive.ts (TypeScript, 873 lines, source)
 packages/web/src/server/routes-config.ts (TypeScript, 309 lines, source)
-packages/web/src/server/routes-data.ts (TypeScript, 147 lines, source)
 packages/web/src/server/routes-features.ts (TypeScript, 302 lines, source)
 packages/web/src/server/routes-hench.ts (TypeScript, 2508 lines, source)
 packages/web/src/server/routes-integrations.ts (TypeScript, 377 lines, source)
@@ -35,7 +33,6 @@ packages/web/src/server/routes-notion.ts (TypeScript, 843 lines, source)
 packages/web/src/server/routes-project.ts (TypeScript, 192 lines, source)
 packages/web/src/server/routes-rex.ts (TypeScript, 3076 lines, source)
 packages/web/src/server/routes-search.ts (TypeScript, 102 lines, source)
-packages/web/src/server/routes-sourcevision.ts (TypeScript, 523 lines, source)
 packages/web/src/server/routes-static.ts (TypeScript, 203 lines, source)
 packages/web/src/server/routes-status.ts (TypeScript, 284 lines, source)
 packages/web/src/server/routes-validation.ts (TypeScript, 508 lines, source)
@@ -43,18 +40,11 @@ packages/web/src/server/routes-workflow.ts (TypeScript, 660 lines, source)
 packages/web/src/server/search-index.ts (TypeScript, 452 lines, source)
 packages/web/src/server/start.ts (TypeScript, 684 lines, source)
 packages/web/src/server/types.ts (TypeScript, 62 lines, source)
-packages/web/src/viewer/graph/index.ts (TypeScript, 35 lines, source)
-packages/web/src/viewer/graph/physics.ts (TypeScript, 443 lines, source)
-packages/web/src/viewer/graph/renderer.ts (TypeScript, 1636 lines, source)
-packages/web/src/viewer/views/graph.ts (TypeScript, 388 lines, source)
 packages/web/tests/integration/smart-add-dispatch.test.ts (TypeScript, 274 lines, test)
-packages/web/tests/unit/server/data-loading-efficiency.test.ts (TypeScript, 357 lines, test)
 packages/web/tests/unit/server/dev-reload.test.ts (TypeScript, 118 lines, test)
 packages/web/tests/unit/server/port.test.ts (TypeScript, 304 lines, test)
-packages/web/tests/unit/server/pr-markdown-refresh-diagnostics.test.ts (TypeScript, 195 lines, test)
 packages/web/tests/unit/server/routes-adaptive.test.ts (TypeScript, 446 lines, test)
 packages/web/tests/unit/server/routes-config.test.ts (TypeScript, 234 lines, test)
-packages/web/tests/unit/server/routes-data.test.ts (TypeScript, 124 lines, test)
 packages/web/tests/unit/server/routes-hench-audit.test.ts (TypeScript, 249 lines, test)
 packages/web/tests/unit/server/routes-hench-concurrency.test.ts (TypeScript, 254 lines, test)
 packages/web/tests/unit/server/routes-hench-config.test.ts (TypeScript, 305 lines, test)
@@ -70,16 +60,12 @@ packages/web/tests/unit/server/routes-project.test.ts (TypeScript, 249 lines, te
 packages/web/tests/unit/server/routes-requirements.test.ts (TypeScript, 333 lines, test)
 packages/web/tests/unit/server/routes-rex.test.ts (TypeScript, 969 lines, test)
 packages/web/tests/unit/server/routes-search.test.ts (TypeScript, 277 lines, test)
-packages/web/tests/unit/server/routes-sourcevision.test.ts (TypeScript, 369 lines, test)
 packages/web/tests/unit/server/routes-status.test.ts (TypeScript, 394 lines, test)
 packages/web/tests/unit/server/routes-validation.test.ts (TypeScript, 416 lines, test)
 packages/web/tests/unit/server/routes-workflow.test.ts (TypeScript, 356 lines, test)
-packages/web/tests/unit/server/scope.test.ts (TypeScript, 263 lines, test)
 packages/web/tests/unit/server/search-index.test.ts (TypeScript, 552 lines, test)
 packages/web/tests/unit/server/shutdown-handler.test.ts (TypeScript, 506 lines, test)
 packages/web/tests/unit/server/type-consistency.test.ts (TypeScript, 236 lines, test)
-packages/web/tests/unit/viewer/graph-destroy.test.ts (TypeScript, 132 lines, test)
-packages/web/tests/unit/viewer/graph-layout.test.ts (TypeScript, 313 lines, test)
 
 </files>
 
@@ -104,8 +90,6 @@ Internal:
   packages/web/src/server/routes-adaptive.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-config.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
   packages/web/src/server/routes-config.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/src/server/routes-data.ts → packages/web/src/server/types.ts {jsonResponse}
-  packages/web/src/server/routes-data.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-features.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse, readBody}
   packages/web/src/server/routes-features.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-hench.ts → packages/web/src/server/concurrent-execution-metrics.ts {ConcurrentExecutionMetrics}
@@ -132,9 +116,6 @@ Internal:
   packages/web/src/server/routes-search.ts → packages/web/src/server/search-index.ts {SearchIndex}
   packages/web/src/server/routes-search.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse}
   packages/web/src/server/routes-search.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/src/server/routes-sourcevision.ts → packages/web/src/server/pr-markdown-refresh-diagnostics.ts {classifyPRMarkdownRefreshFailureCode}
-  packages/web/src/server/routes-sourcevision.ts → packages/web/src/server/types.ts {jsonResponse, errorResponse}
-  packages/web/src/server/routes-sourcevision.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-static.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/src/server/routes-status.ts → packages/web/src/server/rex-gateway.ts {computeStats, collectCompletedIds, findNextTask}
   packages/web/src/server/routes-status.ts → packages/web/src/server/rex-gateway.ts {PRDDocument, TreeStats}
@@ -152,7 +133,6 @@ Internal:
   packages/web/src/server/start.ts → packages/web/src/server/rex-gateway.ts {collectAllIds}
   packages/web/src/server/start.ts → packages/web/src/server/routes-adaptive.ts {handleAdaptiveRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-config.ts {handleConfigRoute}
-  packages/web/src/server/start.ts → packages/web/src/server/routes-data.ts {createDataWatcher, handleDataRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-features.ts {handleFeaturesRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-hench.ts {handleHenchRoute, startHeartbeatMonitor, startConcurrencyMonitor, startMemoryMonitor, shutdownActiveExecutions, getAggregator}
   packages/web/src/server/start.ts → packages/web/src/server/routes-integrations.ts {handleIntegrationRoute}
@@ -161,35 +141,21 @@ Internal:
   packages/web/src/server/start.ts → packages/web/src/server/routes-project.ts {handleProjectRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-rex.ts {handleRexRoute, shutdownRexExecution}
   packages/web/src/server/start.ts → packages/web/src/server/routes-search.ts {handleSearchRoute}
-  packages/web/src/server/start.ts → packages/web/src/server/routes-sourcevision.ts {handleSourcevisionRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-static.ts {resolveStaticAssets, handleStaticRoute, isProjectInitialized}
   packages/web/src/server/start.ts → packages/web/src/server/routes-status.ts {handleStatusRoute, clearStatusCache}
   packages/web/src/server/start.ts → packages/web/src/server/routes-validation.ts {handleValidationRoute}
   packages/web/src/server/start.ts → packages/web/src/server/routes-workflow.ts {handleWorkflowRoute}
   packages/web/src/server/start.ts → packages/web/src/server/types.ts {ServerContext, ViewerScope}
-  packages/web/src/viewer/graph/index.ts → packages/web/src/viewer/graph/physics.ts {computeForceParams, hashPosition, initZoneClusteredPositions, computeZoneCentroids, applyZoneCentroidRepulsion, buildQuadTree, bhRepulsion, tick, PhysicsNode, PhysicsLink, QTNode, SimState, TickCallbacks}
-  packages/web/src/viewer/graph/index.ts → packages/web/src/viewer/graph/renderer.ts {GraphRenderer, GraphNode, GraphLink, ZoneInfo, GraphRendererOptions}
-  packages/web/src/viewer/graph/renderer.ts → packages/web/src/viewer/graph/physics.ts {initZoneClusteredPositions, tick}
-  packages/web/src/viewer/graph/renderer.ts → packages/web/src/viewer/graph/physics.ts {SimState, TickCallbacks}
-  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/graph/renderer.ts {GraphRenderer}
-  packages/web/src/viewer/views/graph.ts → packages/web/src/viewer/graph/renderer.ts {GraphNode, GraphLink, ZoneInfo}
   packages/web/tests/integration/smart-add-dispatch.test.ts → packages/web/src/server/routes-rex.ts {handleRexRoute}
   packages/web/tests/integration/smart-add-dispatch.test.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/tests/unit/server/data-loading-efficiency.test.ts → packages/web/src/server/routes-data.ts {createDataWatcher, handleDataRoute}
-  packages/web/tests/unit/server/data-loading-efficiency.test.ts → packages/web/src/server/routes-hench.ts {handleHenchRoute}
-  packages/web/tests/unit/server/data-loading-efficiency.test.ts → packages/web/src/server/routes-sourcevision.ts {handleSourcevisionRoute}
-  packages/web/tests/unit/server/data-loading-efficiency.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/dev-reload.test.ts → packages/web/src/server/routes-static.ts {resolveStaticAssets, handleStaticRoute}
   packages/web/tests/unit/server/dev-reload.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/port.test.ts → packages/web/src/server/port.ts {checkPort, checkPortWithRetry, findAvailablePort, DEFAULT_PORT, PORT_RANGE_START, PORT_RANGE_END}
   packages/web/tests/unit/server/port.test.ts → packages/web/src/server/start.ts {PORT_FILE}
-  packages/web/tests/unit/server/pr-markdown-refresh-diagnostics.test.ts → packages/web/src/server/pr-markdown-refresh-diagnostics.ts {buildPRMarkdownRefreshFailure, classifyPRMarkdownRefreshFailureCode, classifyPRMarkdownRefreshPreflightCode, GIT_CREDENTIAL_HELPER_COMMAND, getPRMarkdownRefreshRemediationHints, resolvePRMarkdownRefreshPreflightErrorContract, resolvePRMarkdownRefreshGuidance, shouldUsePRMarkdownFallback, shouldUsePRMarkdownFallbackForCode, validatePRMarkdownRefreshPreflightErrorContract}
   packages/web/tests/unit/server/routes-adaptive.test.ts → packages/web/src/server/routes-adaptive.ts {handleAdaptiveRoute}
   packages/web/tests/unit/server/routes-adaptive.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-config.test.ts → packages/web/src/server/routes-config.ts {handleConfigRoute, clearConfigCaches}
   packages/web/tests/unit/server/routes-config.test.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/tests/unit/server/routes-data.test.ts → packages/web/src/server/routes-data.ts {createDataWatcher, handleDataRoute}
-  packages/web/tests/unit/server/routes-data.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-hench-audit.test.ts → packages/web/src/server/routes-hench.ts {handleHenchRoute}
   packages/web/tests/unit/server/routes-hench-audit.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-hench-concurrency.test.ts → packages/web/src/server/routes-hench.ts {handleHenchRoute}
@@ -220,27 +186,16 @@ Internal:
   packages/web/tests/unit/server/routes-rex.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-search.test.ts → packages/web/src/server/routes-search.ts {handleSearchRoute, clearSearchIndexCache}
   packages/web/tests/unit/server/routes-search.test.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/tests/unit/server/routes-sourcevision.test.ts → packages/web/src/server/routes-sourcevision.ts {handleSourcevisionRoute}
-  packages/web/tests/unit/server/routes-sourcevision.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-status.test.ts → packages/web/src/server/routes-status.ts {handleStatusRoute, clearStatusCache}
   packages/web/tests/unit/server/routes-status.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-validation.test.ts → packages/web/src/server/routes-validation.ts {handleValidationRoute}
   packages/web/tests/unit/server/routes-validation.test.ts → packages/web/src/server/types.ts {ServerContext}
   packages/web/tests/unit/server/routes-workflow.test.ts → packages/web/src/server/routes-workflow.ts {handleWorkflowRoute}
   packages/web/tests/unit/server/routes-workflow.test.ts → packages/web/src/server/types.ts {ServerContext}
-  packages/web/tests/unit/server/scope.test.ts → packages/web/src/server/routes-hench.ts {handleHenchRoute}
-  packages/web/tests/unit/server/scope.test.ts → packages/web/src/server/routes-rex.ts {handleRexRoute}
-  packages/web/tests/unit/server/scope.test.ts → packages/web/src/server/routes-sourcevision.ts {handleSourcevisionRoute}
-  packages/web/tests/unit/server/scope.test.ts → packages/web/src/server/types.ts {jsonResponse}
-  packages/web/tests/unit/server/scope.test.ts → packages/web/src/server/types.ts {ServerContext, ViewerScope}
   packages/web/tests/unit/server/search-index.test.ts → packages/web/src/server/search-index.ts {SearchIndex, parseQuery}
   packages/web/tests/unit/server/shutdown-handler.test.ts → packages/web/src/server/routes-hench.ts {shutdownActiveExecutions}
   packages/web/tests/unit/server/shutdown-handler.test.ts → packages/web/src/server/routes-rex.ts {shutdownRexExecution}
   packages/web/tests/unit/server/shutdown-handler.test.ts → packages/web/src/server/start.ts {registerShutdownHandlers, DEFAULT_SHUTDOWN_TIMEOUT_MS}
   packages/web/tests/unit/server/type-consistency.test.ts → packages/web/src/server/rex-gateway.ts {GATEWAY_PRIORITY_ORDER, GATEWAY_LEVEL_HIERARCHY, GATEWAY_VALID_LEVELS, GATEWAY_VALID_STATUSES, GATEWAY_VALID_PRIORITIES, GATEWAY_VALID_REQ_CATEGORIES, GATEWAY_VALID_VALIDATION_TYPES, GATEWAY_CHILD_LEVEL, gatewayIsPriority, gatewayIsItemLevel, gatewayIsReqCategory, gatewayIsValidationType}
-  packages/web/tests/unit/viewer/graph-destroy.test.ts → packages/web/src/viewer/graph/physics.ts {tick}
-  packages/web/tests/unit/viewer/graph-destroy.test.ts → packages/web/src/viewer/graph/physics.ts {SimState, TickCallbacks}
-  packages/web/tests/unit/viewer/graph-layout.test.ts → packages/web/src/viewer/graph/physics.ts {computeForceParams, hashPosition, initZoneClusteredPositions, computeZoneCentroids, applyZoneCentroidRepulsion, tick}
-  packages/web/tests/unit/viewer/graph-layout.test.ts → packages/web/src/viewer/graph/physics.ts {PhysicsNode, PhysicsLink, SimState, TickCallbacks}
 
 </imports>

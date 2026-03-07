@@ -8,13 +8,12 @@ Zone: Root (`packages-llm-client:root`)
 Files: 4, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
 Description: 4 files, primarily JSON, TypeScript
-Lines: 1970
+Lines: 51
 
 </zone>
 
 <files>
 
-packages/llm-client/package-lock.json (JSON, 1919 lines, generated)
 packages/llm-client/package.json (JSON, 32 lines, config)
 packages/llm-client/tsconfig.json (JSON, 8 lines, config)
 packages/llm-client/vitest.config.ts (TypeScript, 11 lines, config)

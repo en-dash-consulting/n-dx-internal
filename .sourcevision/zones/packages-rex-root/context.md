@@ -8,7 +8,7 @@ Zone: Root (`packages-rex:root`)
 Files: 9, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
 Description: 9 files, primarily JSON, Markdown, Other
-Lines: 3180
+Lines: 535
 
 </zone>
 
@@ -19,7 +19,6 @@ packages/rex/Rex-F.png (Other, 0 lines, asset)
 packages/rex/Rex.png (Other, 0 lines, asset)
 packages/rex/context.md (Markdown, 99 lines, docs)
 packages/rex/llms.txt (Text, 62 lines, docs)
-packages/rex/package-lock.json (JSON, 2645 lines, generated)
 packages/rex/package.json (JSON, 38 lines, config)
 packages/rex/tsconfig.json (JSON, 8 lines, config)
 packages/rex/vitest.config.ts (TypeScript, 19 lines, config)

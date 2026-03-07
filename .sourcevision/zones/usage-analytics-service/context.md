@@ -7,7 +7,7 @@
 Zone: Usage Analytics Service (`usage-analytics-service`)
 Files: 5, Cohesion: 0.75, Coupling: 0.25
 Risk: healthy (score: 0.25)
-Description: Encapsulates task-level token usage tracking, incremental accumulation, and scheduled cleanup for the web server's analytics subsystem.
+Description: Server-side task usage tracking: incremental accumulation, aggregation, and scheduled cleanup of per-task token/cost metrics.
 Entry points: packages/web/src/server/task-usage.ts
 Lines: 1633
 
@@ -41,25 +41,33 @@ Incoming (other zones → this zone):
 
 <findings>
 
-[observation] [info] Cohesion of 0.75 is healthy for a 5-file zone with one gateway, two services, and two tests; no structural concerns at this size.
-[observation] [info] task-usage.ts is correctly identified as a gateway entrypoint, centralizing cross-module access to the usage subsystem — consistent with the project's gateway pattern.
-[pattern] [info] usage-analytics-service has the cleanest architecture profile of any zone in this batch: one gateway, one consumer, zero transitive outbound calls. It is a textbook example of the gateway pattern applied correctly at zone granularity.
-[suggestion] [info] Align the three names for this zone's concept: update the task-usage.ts JSDoc to say '@module web/server/usage-analytics' (matching the zone identity) and consider renaming the file to usage-analytics.ts so that the gateway file name, zone name, and module path share a common root. Currently 'task-usage', 'usage-analytics-service', and 'task-usage-tracking zone' are three disconnected identifiers for the same 5-file unit.
+[observation] [info] At 5 files this zone is small but cohesive (0.75); if analytics grows (e.g. cost breakdowns, per-model tracking), it has a clear home and won't scatter across the larger dashboard zone.
+[observation] [info] The gateway pattern is correctly applied: task-usage.ts re-exports the public API while incremental-task-usage.ts and usage-cleanup-scheduler.ts remain internal — this prevents callers from bypassing the stable interface.
+[observation] [info] usage-cleanup-scheduler.ts suggests background work is happening inside the web process; verify this is intentional and not better placed in a dedicated worker or cron mechanism.
+[relationship] [info] The unidirectional coupling from web-dashboard into usage-analytics-service (not the reverse) confirms correct dependency direction for a consumed service. This is the only zone in the web package batch with both correct directionality and a gateway enforcing the public interface.
+[anti-pattern] [info] task-usage.ts uses the [gateway] archetype to denote an intra-zone public interface, but the project's gateway pattern (CLAUDE.md) defines gateways specifically as cross-package import aggregation points. Overloading the archetype for both roles makes it impossible to enumerate cross-package gateways by archetype alone without false positives.
+[suggestion] [info] The CollectAllIdsFn injection in usage-cleanup-scheduler.ts is documented as a zone-cycle workaround, not a generic pattern (see line 157-160 comment). Document this explicitly at the call site in the server startup code so the architectural context survives refactoring — otherwise a future cleanup may remove the injection without realizing it would reintroduce a zone cycle.
+[suggestion] [info] usage-cleanup-scheduler.ts writes audit output to .hench/usage-cleanup.jsonl, coupling the web server's data output path to hench's directory layout. The path should be configurable via the server context (ctx.henchDir or similar) rather than hardcoded, consistent with how rexDir is already injected.
 
 </findings>
 
 <insights>
 
-- The gateway pattern is correctly applied here: task-usage.ts is the single re-export surface for the usage subsystem, keeping the analytics API explicit and auditable.
-- Both service files have paired unit tests in the same zone, demonstrating good test colocation for this service cluster.
-- At only 5 files, this zone is appropriately small; if usage analytics expands (e.g. per-session or per-model breakdowns), a dedicated subdirectory would prevent it from scattering across web-dashboard.
-- task-usage.ts is correctly identified as a gateway entrypoint, centralizing cross-module access to the usage subsystem — consistent with the project's gateway pattern.
-- Cohesion of 0.75 is healthy for a 5-file zone with one gateway, two services, and two tests; no structural concerns at this size.
-- Call graph shows 0 outgoing and 1 incoming — the service is a pure leaf with a single consumer. Combined with the gateway pattern (task-usage.ts as the sole re-export surface), this zone is the most architecturally clean small zone in the batch: single entry point, single consumer, no transitive dependencies.
-- usage-analytics-service has the cleanest architecture profile of any zone in this batch: one gateway, one consumer, zero transitive outbound calls. It is a textbook example of the gateway pattern applied correctly at zone granularity.
-- `task-usage.ts` re-exports an OOP class (`IncrementalTaskUsageAggregator`) alongside purely functional exports from `usage-cleanup-scheduler.ts`. This asymmetric API surface — one class-based, one function-based — requires consumers to understand two different consumption models through the same gateway, reducing the gateway's value as a uniform abstraction.
-- The gateway file task-usage.ts uses the phrase 'task-usage-tracking zone' in its module-level JSDoc — a third distinct label for the same concept alongside the file name ('task-usage') and the zone name ('usage-analytics-service'). Three names for one 5-file zone creates unnecessary cognitive indirection when navigating between the source file, the zone map, and the gateway's own self-description.
-- Align the three names for this zone's concept: update the task-usage.ts JSDoc to say '@module web/server/usage-analytics' (matching the zone identity) and consider renaming the file to usage-analytics.ts so that the gateway file name, zone name, and module path share a common root. Currently 'task-usage', 'usage-analytics-service', and 'task-usage-tracking zone' are three disconnected identifiers for the same 5-file unit.
+- task-usage.ts acts as the public gateway for this cluster, keeping the incremental accumulator and cleanup scheduler as internal implementation details — a clean layering pattern.
+- Tests are co-located with the source files they cover, giving this small zone a complete, self-contained test surface.
+- Coupling of 0.25 reflects the expected dependency from the main dashboard zone into this service; the relationship is one-directional and appropriate.
+- The gateway pattern is correctly applied: task-usage.ts re-exports the public API while incremental-task-usage.ts and usage-cleanup-scheduler.ts remain internal — this prevents callers from bypassing the stable interface.
+- At 5 files this zone is small but cohesive (0.75); if analytics grows (e.g. cost breakdowns, per-model tracking), it has a clear home and won't scatter across the larger dashboard zone.
+- usage-cleanup-scheduler.ts suggests background work is happening inside the web process; verify this is intentional and not better placed in a dedicated worker or cron mechanism.
+- Call graph (100 internal calls, 0 outgoing, cohesion: 1) diverges from zone-level metrics (cohesion: 0.75, coupling: 0.25) — at the call level this zone is perfectly self-contained; the 0.25 coupling is import-declaration coupling not call coupling, confirming the gateway (task-usage.ts) absorbs all cross-zone surface into a single controlled point.
+- This zone exemplifies a 'satellite zone' pattern: small (5 files), perfectly self-contained at call level, single unidirectional import surface into the central hub (web-dashboard). Contrasts with crash-recovery's 'trapped zone' pattern where files belong structurally inside the larger zone but were artificially separated by community detection.
+- The unidirectional coupling from web-dashboard into usage-analytics-service (not the reverse) confirms correct dependency direction for a consumed service. This is the only zone in the web package batch with both correct directionality and a gateway enforcing the public interface.
+- task-usage.ts is classified as [gateway] — the same archetype used for cross-package gateways (rex-gateway.ts, domain-gateway.ts). Using [gateway] for an intra-zone public interface conflates two structurally different roles: cross-package import isolation and intra-zone API exposure. This makes the gateway archetype unreliable as a navigation signal when auditing cross-package dependency surfaces.
+- task-usage.ts uses the [gateway] archetype to denote an intra-zone public interface, but the project's gateway pattern (CLAUDE.md) defines gateways specifically as cross-package import aggregation points. Overloading the archetype for both roles makes it impossible to enumerate cross-package gateways by archetype alone without false positives.
+- usage-cleanup-scheduler.ts injects CollectAllIdsFn via parameter rather than importing from rex-gateway.ts, and the source comment explicitly attributes this to preventing a bidirectional zone dependency between web-server and web-viewer — not to testability. The injection is an architectural workaround tied to the current zone topology. If the zone boundary is resolved by other means, the indirection can be simplified back to a direct import.
+- usage-cleanup-scheduler.ts writes its audit log to .hench/usage-cleanup.jsonl (line 291), placing web-server-generated data inside the hench domain directory. This couples the web server's output path to the hench directory convention without going through a hench gateway, creating an undeclared write-side dependency on hench's directory layout that is invisible to import-graph analysis.
+- The CollectAllIdsFn injection in usage-cleanup-scheduler.ts is documented as a zone-cycle workaround, not a generic pattern (see line 157-160 comment). Document this explicitly at the call site in the server startup code so the architectural context survives refactoring — otherwise a future cleanup may remove the injection without realizing it would reintroduce a zone cycle.
+- usage-cleanup-scheduler.ts writes audit output to .hench/usage-cleanup.jsonl, coupling the web server's data output path to hench's directory layout. The path should be configurable via the server context (ctx.henchDir or similar) rather than hardcoded, consistent with how rexDir is already injected.
 - [call graph] 100 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>

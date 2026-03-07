@@ -1,7 +1,7 @@
 {
   "id": "usage-analytics-service",
   "name": "Usage Analytics Service",
-  "description": "Encapsulates task-level token usage tracking, incremental accumulation, and scheduled cleanup for the web server's analytics subsystem.",
+  "description": "Server-side task usage tracking: incremental accumulation, aggregation, and scheduled cleanup of per-task token/cost metrics.",
   "files": [
     "packages/web/src/server/incremental-task-usage.ts",
     "packages/web/src/server/task-usage.ts",

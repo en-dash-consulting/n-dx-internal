@@ -8,7 +8,7 @@ Zone: Root (`packages-sourcevision:root`)
 Files: 10, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
 Description: 10 files, primarily Markdown, Other, JSON
-Lines: 3809
+Lines: 989
 
 </zone>
 
@@ -19,7 +19,6 @@ packages/sourcevision/README.md (Markdown, 136 lines, docs)
 packages/sourcevision/SourceVision-F.png (Other, 0 lines, asset)
 packages/sourcevision/SourceVision.png (Other, 0 lines, asset)
 packages/sourcevision/WORKSPACE_DESIGN.md (Markdown, 327 lines, docs)
-packages/sourcevision/package-lock.json (JSON, 2820 lines, generated)
 packages/sourcevision/package.json (JSON, 41 lines, config)
 packages/sourcevision/tsconfig.json (JSON, 9 lines, config)
 packages/sourcevision/vitest.config.ts (TypeScript, 20 lines, config)

@@ -518,7 +518,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Top-level CI pipeline script that orchestrates subprocesses (sourcevision, rex) and validates project health — a utility/infrastructure runner, not a CLI command handler or entrypoint with re-exports.",
+          "detail": "Top-level CI pipeline script that orchestrates subprocesses; not a CLI command handler but a standalone infrastructure/build utility",
           "weight": 0.7
         }
       ]
@@ -728,7 +728,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Core agent loop — central service orchestrating the tool-use execution loop.",
+          "detail": "Implements the main agent turn loop — orchestrates API calls, tool dispatch, token tracking, and run lifecycle. It is business logic orchestration with no HTTP routing, no UI, and no data modeling.",
           "weight": 0.7
         }
       ]
@@ -1088,20 +1088,6 @@
       ]
     },
     {
-      "path": "packages/hench/src/prd/ops.ts",
-      "archetype": "service",
-      "confidence": 0.7,
-      "source": "llm",
-      "evidence": [
-        {
-          "archetypeId": "service",
-          "signalKind": "path",
-          "detail": "PRD operations — service layer functions for reading/writing PRD state.",
-          "weight": 0.7
-        }
-      ]
-    },
-    {
       "path": "packages/hench/src/prd/rex-gateway.ts",
       "archetype": "gateway",
       "confidence": 0.7,
@@ -1110,7 +1096,7 @@
         {
           "archetypeId": "gateway",
           "signalKind": "path",
-          "detail": "Explicit gateway per CLAUDE.md — concentrates all cross-package imports from rex into a single re-export module.",
+          "detail": "Explicitly documented as a centralized gateway concentrating all hench→rex cross-package runtime imports as re-exports",
           "weight": 0.7
         }
       ]
@@ -4578,14 +4564,14 @@
     },
     {
       "path": "packages/web/src/landing/landing.ts",
-      "archetype": "entrypoint",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "entrypoint",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Landing module entry point for the web frontend bundle",
+          "detail": "Vanilla JS module implementing landing page interactions (theme toggle, animations, terminal demo) — business logic orchestration with no framework",
           "weight": 0.7
         }
       ]
@@ -6621,14 +6607,14 @@
     },
     {
       "path": "packages/web/src/viewer/performance/crash-detector.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Detects crash conditions and triggers recovery — infrastructure utility.",
+          "detail": "Standalone module implementing crash detection and recovery logic — manages sessionStorage state, tracks crash history, and exposes a public API for detection and navigation state persistence. No framework dependencies, pure business logic orchestration.",
           "weight": 0.7
         }
       ]
@@ -6642,7 +6628,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Monitors DOM rendering performance metrics — infrastructure utility.",
+          "detail": "Standalone zero-dependency DOM performance monitoring module — shared infrastructure consumed by a separate Preact hook",
           "weight": 0.7
         }
       ]
@@ -6698,7 +6684,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Monitors heap memory usage and triggers callbacks — infrastructure utility.",
+          "detail": "Standalone zero-dependency memory monitoring module — shared infrastructure consumed by a separate Preact hook",
           "weight": 0.7
         }
       ]
@@ -6859,17 +6845,9 @@
     },
     {
       "path": "packages/web/src/viewer/route-state.ts",
-      "archetype": "route-handler",
-      "confidence": 0.8,
-      "source": "algorithmic",
-      "evidence": [
-        {
-          "archetypeId": "route-handler",
-          "signalKind": "filename",
-          "detail": "filename \"route-state.ts\" matches ^routes?[-.]",
-          "weight": 0.8
-        }
-      ]
+      "archetype": "store",
+      "confidence": 1,
+      "source": "user-override"
     },
     {
       "path": "packages/web/src/viewer/schema-compat.ts",
@@ -7521,27 +7499,27 @@
     }
   ],
   "summary": {
-    "totalClassified": 489,
+    "totalClassified": 488,
     "totalUnclassified": 0,
     "byArchetype": {
-      "utility": 116,
-      "service": 84,
-      "entrypoint": 40,
+      "utility": 115,
+      "service": 85,
+      "entrypoint": 39,
       "config": 5,
       "cli-command": 50,
       "types": 20,
       "gateway": 5,
       "schema": 12,
-      "store": 20,
-      "route-handler": 20,
+      "store": 21,
+      "route-handler": 19,
       "component": 62,
       "hook": 27,
       "page": 28
     },
     "bySource": {
-      "llm": 183,
-      "algorithmic": 304,
-      "user-override": 2
+      "llm": 182,
+      "algorithmic": 303,
+      "user-override": 3
     }
   }
 }

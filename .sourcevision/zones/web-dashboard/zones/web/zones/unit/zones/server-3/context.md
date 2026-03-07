@@ -5,27 +5,25 @@
 <zone>
 
 Zone: Web Viewer/web/unit/server 3 (`web-viewer/web/unit/server-3`)
-Files: 4, Cohesion: 1.00, Coupling: 0.00
-Description: 4 files, primarily TypeScript
-Entry points: packages/web/src/server/websocket.ts
-Lines: 1482
+Files: 3, Cohesion: 1.00, Coupling: 0.00
+Description: 3 files, primarily TypeScript
+Entry points: packages/web/src/server/routes-data.ts
+Lines: 628
 
 </zone>
 
 <files>
 
-packages/web/src/server/websocket.ts (TypeScript, 651 lines, source)
-packages/web/tests/integration/ws-health-integration.test.ts (TypeScript, 153 lines, test)
-packages/web/tests/unit/server/websocket.test.ts (TypeScript, 454 lines, test)
-packages/web/tests/unit/server/ws-health-tracker.test.ts (TypeScript, 224 lines, test)
+packages/web/src/server/routes-data.ts (TypeScript, 147 lines, source)
+packages/web/tests/unit/server/data-loading-efficiency.test.ts (TypeScript, 357 lines, test)
+packages/web/tests/unit/server/routes-data.test.ts (TypeScript, 124 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/tests/integration/ws-health-integration.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager, WsHealthTracker}
-  packages/web/tests/unit/server/websocket.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager, PING_INTERVAL_MS}
-  packages/web/tests/unit/server/ws-health-tracker.test.ts → packages/web/src/server/websocket.ts {WsHealthTracker}
+  packages/web/tests/unit/server/data-loading-efficiency.test.ts → packages/web/src/server/routes-data.ts {createDataWatcher, handleDataRoute}
+  packages/web/tests/unit/server/routes-data.test.ts → packages/web/src/server/routes-data.ts {createDataWatcher, handleDataRoute}
 
 </imports>

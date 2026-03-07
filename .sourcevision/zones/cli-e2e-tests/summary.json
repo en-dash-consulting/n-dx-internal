@@ -1,12 +1,13 @@
 {
   "id": "cli-e2e-tests",
-  "name": "CLI End-to-End Tests",
-  "description": "Comprehensive end-to-end test suite validating all CLI commands, delegation paths, error handling, and architectural policy across the full monorepo.",
+  "name": "CLI E2E Tests",
+  "description": "End-to-end test suite for the n-dx CLI orchestration layer, covering argument contracts, delegation, spawn boundaries, and architectural policy enforcement.",
   "files": [
     "tests/e2e/architecture-policy.test.js",
     "tests/e2e/cli-arg-contracts.test.js",
     "tests/e2e/cli-ci.test.js",
     "tests/e2e/cli-config.test.js",
+    "tests/e2e/cli-contract.test.mjs",
     "tests/e2e/cli-delegation.test.js",
     "tests/e2e/cli-dev.test.js",
     "tests/e2e/cli-errors.test.js",
@@ -25,8 +26,8 @@
   "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 18,
-  "lineCount": 4940,
+  "fileCount": 19,
+  "lineCount": 5210,
   "riskMetrics": {
     "cohesion": 1,
     "coupling": 0,
