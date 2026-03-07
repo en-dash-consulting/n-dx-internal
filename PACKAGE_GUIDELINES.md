@@ -167,6 +167,36 @@ tests/
 
 All test files use `*.test.ts` suffix. Tests are co-located with the code they test by directory structure (e.g., `tests/unit/core/tree.test.ts` tests `src/core/tree.ts`).
 
+### Utility + Hook testing convention
+
+When a feature is implemented as a standalone utility module with a framework hook wrapper (the "utility + hook" pattern), **both layers must have dedicated tests**:
+
+| Layer | File pattern | Test focus |
+|---|---|---|
+| Utility | `<feature>.test.ts` | Pure logic: data structures, ring buffers, computations, module lifecycle (start/stop/reset). No framework dependency. |
+| Hook | `use-<feature>.test.ts` | Framework integration: mount starts the service, unmount cleans up, prop/ref changes trigger re-subscription, wrapped callbacks delegate correctly. |
+
+**Why two files:**
+- The utility test runs without jsdom — faster, simpler assertions, easier to debug.
+- The hook test validates the Preact lifecycle contract (effect scheduling, ref timing, state updates) which is orthogonal to the utility logic.
+- Keeping them separate prevents a failing framework test from masking a utility regression (and vice versa).
+
+**Hook test conventions (Preact + vitest):**
+- Use `// @vitest-environment jsdom` at the top of the file.
+- Import `act` from `preact/test-utils` to flush deferred effects.
+- With `vi.useFakeTimers()`, wrap render calls in `act(() => { render(...); vi.advanceTimersByTime(0); })` to flush Preact's deferred `useEffect` scheduling.
+- Test module-level state (e.g., `getLatestDOMSnapshot()`) for lifecycle verification — this avoids brittleness from Preact's async state update batching.
+- Use baseline-relative assertions for snapshot counts (`const baseline = getHistory().length; ... expect(getHistory().length).toBeGreaterThan(baseline)`) rather than exact counts, since Preact's effect re-run on ref attachment can produce an extra startup cycle.
+
+**Current instances:**
+
+| Feature | Utility test | Hook test |
+|---|---|---|
+| DOM performance monitoring | `dom-performance-monitor.test.ts` | `use-dom-performance-monitor.test.ts` |
+| Polling suspension | `polling-state.test.ts` | `use-polling-suspension.test.ts` |
+
+**Rule:** Every new `use-*.ts` hook wrapper must have a corresponding `use-*.test.ts` alongside the utility's test file. PRs that add a hook without a hook test are incomplete.
+
 ## Zone Structure
 
 SourceVision zones are auto-detected by Louvain community detection. These conventions guide naming and structural expectations.
