@@ -523,6 +523,62 @@ describe("architecture policy: gateway enforcement", () => {
   }
 
   /**
+   * Data-layer contract: no source file may import from .rex/, .sourcevision/,
+   * or .hench/ directories. These are data directories containing JSON state
+   * files — they must be accessed via filesystem I/O, not module imports.
+   *
+   * This test complements the CI check in ci.js (checkDataLayerContract) to
+   * provide redundant enforcement.
+   */
+  describe("data-layer contract", () => {
+    const DATA_DIRS = [".rex", ".sourcevision", ".hench"];
+    const allPackageSrc = [
+      ...walk(join(ROOT, "packages/rex/src")),
+      ...walk(join(ROOT, "packages/sourcevision/src")),
+      ...walk(join(ROOT, "packages/hench/src")),
+      ...walk(join(ROOT, "packages/web/src")),
+      ...walk(join(ROOT, "packages/llm-client/src")),
+    ];
+
+    for (const dataDir of DATA_DIRS) {
+      it(`no source file imports from ${dataDir}/`, () => {
+        const escaped = dataDir.replace(".", "\\.");
+        const pattern = new RegExp(
+          `(?:from\\s+["'][^"']*\\/${escaped}\\/|from\\s+["']${escaped}\\/|require\\(["'][^"']*\\/${escaped}\\/|require\\(["']${escaped}\\/)`,
+        );
+
+        const violations = [];
+
+        for (const file of allPackageSrc) {
+          const rel = relative(ROOT, file).replace(/\\/g, "/");
+          const content = readFileSync(file, "utf-8");
+          const lines = content.split("\n");
+
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (/^\s*(?:\/\/|\*)/.test(line)) continue;
+            if (pattern.test(line)) {
+              violations.push(`${rel}:${i + 1}`);
+            }
+          }
+        }
+
+        if (violations.length > 0) {
+          expect.fail(
+            [
+              `Source files must not import from ${dataDir}/ — it is a data directory.`,
+              `Use filesystem I/O (readFileSync/writeFileSync) to access ${dataDir}/ contents.`,
+              "",
+              "Violations:",
+              ...violations.map((v) => `  - ${v}`),
+            ].join("\n"),
+          );
+        }
+      });
+    }
+  });
+
+  /**
    * Hench must not import from sourcevision at runtime.
    * Hench only has a gateway for rex — sourcevision should not be imported at all.
    */

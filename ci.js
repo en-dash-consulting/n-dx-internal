@@ -255,6 +255,35 @@ export async function runCI(dir, flags, { run, tools }) {
     }
   }
 
+  // ── Step 3d: data-layer contract ────────────────────────────────────────
+  // Enforces that no source file imports from the .rex/ data directory at
+  // runtime. The .rex/ directory is a data layer (JSON state files read/written
+  // via CLI or filesystem I/O) — direct module imports would create a fragile
+  // coupling between source code and on-disk state layout.
+  info("── data-layer contract ──");
+  const dataLayerResult = checkDataLayerContract(dir);
+  if (!dataLayerResult.ok) allOk = false;
+
+  steps.push({
+    name: "data-layer-contract",
+    ok: dataLayerResult.ok,
+    detail: dataLayerResult.ok
+      ? `${dataLayerResult.checked} files checked, no imports from data directories`
+      : `${dataLayerResult.violations.length} file(s) import from data directories`,
+    ...(dataLayerResult.violations.length > 0 ? { violations: dataLayerResult.violations } : {}),
+  });
+
+  if (dataLayerResult.ok) {
+    info(`  ✓ data-layer contract (${dataLayerResult.checked} files checked)`);
+  } else {
+    info(`  ✗ data-layer contract`);
+    if (!isJSON) {
+      for (const v of dataLayerResult.violations) {
+        info(`    ✗ ${v.file}:${v.line} — ${v.message}`);
+      }
+    }
+  }
+
   // ── Step 4: rex validate ────────────────────────────────────────────────
   info("── rex validate ──");
   const rexValidate = await runCapture(tools.rex, ["validate", "--format=json", dir]);
@@ -898,6 +927,112 @@ function checkArchitecturePolicy(dir) {
 
         if (childProcessPattern.test(content)) {
           violations.push(rel);
+        }
+      }
+    }
+  }
+
+  walkSrc(dir);
+
+  return {
+    ok: violations.length === 0,
+    checked,
+    violations,
+  };
+}
+
+// ── Data-layer contract ───────────────────────────────────────────────────────
+
+/**
+ * Data directories that must never be imported as modules.
+ * These directories contain JSON state files managed via CLI or filesystem I/O.
+ * Direct module imports (import/require) would create fragile coupling between
+ * source code and on-disk state layout.
+ */
+const DATA_DIRECTORIES = [".rex", ".sourcevision", ".hench"];
+
+/**
+ * Check that no source files contain import/require paths resolving into
+ * data directories (.rex/, .sourcevision/, .hench/).
+ *
+ * These directories are data layers — their contents are JSON state files
+ * read/written via CLI or filesystem I/O. Module imports would create a
+ * fragile coupling that bypasses the proper abstraction layers.
+ *
+ * This check complements the convention documented in CLAUDE.md and makes
+ * the contract machine-enforceable.
+ *
+ * @param {string} dir  Project root directory
+ * @returns {{ ok: boolean, checked: number, violations: Array<{ file: string, line: number, message: string }> }}
+ */
+function checkDataLayerContract(dir) {
+  const violations = [];
+  let checked = 0;
+
+  const skipDirs = new Set(["node_modules", "dist", ".git", ".hench", ".rex", ".sourcevision"]);
+
+  // Match import/require paths that resolve into data directories.
+  // Catches patterns like:
+  //   import x from ".rex/prd.json"
+  //   import x from "../.rex/config.json"
+  //   require("./.rex/prd.json")
+  //   from "../../.hench/config.json"
+  // Does NOT match filesystem reads (readFileSync, fs.readFile, etc.)
+  const dataImportPatterns = DATA_DIRECTORIES.map((d) => {
+    const escaped = d.replace(".", "\\.");
+    return new RegExp(
+      `(?:from\\s+["'][^"']*\\/${escaped}\\/|from\\s+["']${escaped}\\/|require\\(["'][^"']*\\/${escaped}\\/|require\\(["']${escaped}\\/)`,
+    );
+  });
+
+  function walkSrc(d) {
+    let entries;
+    try {
+      entries = readdirSync(d);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (skipDirs.has(entry)) continue;
+      const full = join(d, entry);
+      let st;
+      try {
+        st = statSync(full);
+      } catch {
+        continue;
+      }
+      if (st.isDirectory()) {
+        walkSrc(full);
+      } else if (/\.(ts|js|mjs)$/.test(entry) && !entry.endsWith(".d.ts")) {
+        const rel = relative(dir, full).replace(/\\/g, "/");
+
+        // Skip test files — they may legitimately reference data directories in fixtures
+        if (/\.test\.(ts|js|mjs)$/.test(rel) || /(?:^|[/\\])tests?[/\\]/.test(rel)) continue;
+
+        checked++;
+
+        let content;
+        try {
+          content = readFileSync(full, "utf-8");
+        } catch {
+          continue;
+        }
+
+        const lines = content.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          // Skip comment lines
+          if (/^\s*(?:\/\/|\*)/.test(line)) continue;
+
+          for (let p = 0; p < dataImportPatterns.length; p++) {
+            if (dataImportPatterns[p].test(line)) {
+              violations.push({
+                file: rel,
+                line: i + 1,
+                message: `module import resolves into ${DATA_DIRECTORIES[p]}/ — use filesystem I/O (readFileSync/writeFileSync) instead of import/require`,
+              });
+            }
+          }
         }
       }
     }

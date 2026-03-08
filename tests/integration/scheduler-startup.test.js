@@ -145,6 +145,57 @@ describe("scheduler startup integration", () => {
       }
     });
 
+    it("exercises full registerUsageScheduler → rex collectAllIds integration path", async () => {
+      // This test verifies the complete wiring from registerUsageScheduler
+      // (the facade used by the web server at startup) through to the rex
+      // collectAllIds function. It ensures the scheduler correctly identifies
+      // orphaned entries when wired through the registration facade.
+      const prdItems = [
+        { id: "epic-1", title: "Epic", level: "epic", status: "pending", children: [
+          { id: "task-1", title: "Active task", level: "task", status: "in_progress" },
+        ]},
+      ];
+      const { tmpDir, rexDir } = makeTmpProject(prdItems);
+
+      const pruned = [];
+      const aggregator = {
+        getTaskUsage: async () => ({
+          "task-1": { totalTokens: 100, runCount: 1 },
+          "orphan-task": { totalTokens: 500, runCount: 3 },
+        }),
+        pruneStaleEntries: vi.fn((ids) => pruned.push(...ids)),
+        reset: vi.fn(),
+      };
+
+      const broadcastCalls = [];
+
+      try {
+        const handle = registerUsageScheduler({
+          ctx: { rexDir, projectDir: tmpDir },
+          getAggregator: () => aggregator,
+          broadcast: (data) => broadcastCalls.push(data),
+          collectAllIds,
+          overrideIntervalMs: 50,
+        });
+
+        activeTimers.push(handle);
+
+        // Wait for at least one cleanup cycle
+        await new Promise((resolve) => setTimeout(resolve, 150));
+
+        clearInterval(handle);
+
+        // The facade should have wired collectAllIds through, detecting the orphan
+        expect(broadcastCalls.length).toBeGreaterThanOrEqual(1);
+        const cleanupMsg = broadcastCalls.find((m) => m.type === "hench:usage-cleanup");
+        expect(cleanupMsg).toBeDefined();
+        expect(cleanupMsg.totalOrphaned).toBe(1);
+        expect(cleanupMsg.orphanedEntries[0].taskId).toBe("orphan-task");
+      } finally {
+        rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
     it("passes broadcast function through to cleanup cycle", async () => {
       const prdItems = [
         { id: "task-1", title: "Active task", level: "task", status: "pending" },
