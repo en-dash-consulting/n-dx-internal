@@ -2,7 +2,7 @@
 
 **Branch:** `feature/sv-fixes-0306`
 **Base:** `main`
-**Completed items:** 43
+**Completed items:** 45
 
 | Epic | Completed |
 |------|-----------|
@@ -283,6 +283,13 @@
 - Five viewer UI files (elapsed-time.ts, use-tick.ts, lazy-children.ts, listener-lifecycle.ts, task-audit.ts) are grouped with build infrastructure by the import graph but belong architecturally in the web-viewer zone per developer hints — setting explicit zone pins for these files would correct the misclassification.
 - Address anti-pattern issues (1 findings) *(feature)*
   - God function: cmdReorganize in packages/rex/src/cli/commands/reorganize.ts calls 38 unique functions — consider decomposing into smaller, focused functions
+- Address observation issues (4 findings) *(feature)*
+  - Bidirectional coupling: "web" ↔ "web-viewer" (10+7 crossings) — consider extracting shared interface
+- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects
+- High coupling (0.71) — 3 imports target "web-viewer"
+- Low cohesion (0.29) — files are loosely related, consider splitting this zone
+- Address pattern issues (1 findings) *(feature)*
+  - Perfectly isolated files (no imports in or out) always achieve cohesion: 1 by definition regardless of semantic relatedness. web-landing's perfect cohesion score is a metric artifact caused by the two governance scripts, not evidence of a genuinely cohesive zone.
 - Address anti-pattern issues (1 findings) *(feature)*
   - God function: cliLoop in packages/hench/src/agent/lifecycle/cli-loop.ts calls 36 unique functions — consider decomposing into smaller, focused functions
 

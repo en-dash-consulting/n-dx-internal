@@ -118,6 +118,8 @@
         "chunked-review-state.ts is a one-off stateful workflow implementation with no shared contract. Extract a WorkflowStep or StatefulCommand interface to prevent this pattern from being re-implemented ad-hoc in future multi-step commands.",
         "Zone \"cli\" has files across 9 directories — consider consolidating under a dedicated directory",
         "The bidirectional coupling between cli and unit-analyze (58 outbound + 35 inbound = 93 crossings, finding global-0) is corroborated by cmdAnalyze calling 44 unique functions (finding global-12) and the CLI-boundary pattern analysis (finding global-11). The concrete fix is contained to two files: (1) decompose src/cli/commands/analyze.ts so that cmdAnalyze delegates to focused sub-handlers rather than calling 44 functions directly, and (2) audit src/cli/commands/ for files that import unit-analyze internals directly and route those calls through the existing gateway pattern. No file splits are required — this is import discipline and delegation, not decomposition.",
+        "The concrete action to resolve the cli↔unit-analyze bidirectional coupling (58+35 crossings, global-0) is: audit src/cli/commands/ for any file that imports from unit-analyze internals without routing through an explicit gateway, then consolidate those imports into a single cli-side gateway module mirroring the existing hench/src/prd/rex-gateway.ts pattern. The only call-site confirmed to require this treatment is src/cli/commands/analyze.ts (44 outgoing calls to unit-analyze, global-12). No file splits are required.",
+        "The bidirectional cli↔unit-analyze coupling is corroborated by four independent findings: global-0 (58+35 crossings), cli[3] and cli[4] (LLM analysis identifying analyze.ts as the locus), and global-12 (cmdAnalyze 44 outgoing calls). This convergence elevates confidence: the problem is real, narrow, and fixable without file splits.",
         "[call graph] 1552 internal calls, 202 outgoing, 351 incoming (cohesion: 0.88, coupling: 0.12)"
       ],
       "riskMetrics": {
@@ -456,6 +458,7 @@
         "Zone name uses verb-gerund pattern ('recommendation-scanning') while all peer zones use noun phrases. Rename to 'recommendation-engine' for consistency.",
         "Zone \"unit\" has files across 6 directories — consider consolidating under a dedicated directory",
         "This zone contains unit test files. Coupling to unit-analyze is expected test-to-implementation imports, not a structural defect. Risk metrics derived from test-to-production coupling are false positives under the constraint that test-to-implementation coupling is correct by design.",
+        "All metric-derived risk findings are false positives. unit is a test zone; coupling to unit-analyze is intentional test-to-implementation dependency. Zone risk thresholds do not apply.",
         "[call graph] 663 internal calls, 72 outgoing, 4 incoming (cohesion: 0.9, coupling: 0.1)"
       ],
       "riskMetrics": {
@@ -1416,6 +1419,7 @@
         "Zone name 'fix-command' uses verb-object pattern while 'task-selection' uses noun-phrase pattern — the two leaf command zones have inconsistent naming conventions. Standardize: either both use verb-object ('fix-command', 'next-command') or both use noun-phrase ('issue-fix', 'task-selection').",
         "Near-threshold coupling (0.6) in a 4-file zone will likely cross the warning boundary when additional test cases are added, since unit test imports count toward coupling. Consider excluding intra-zone test→production imports from coupling calculations to keep metrics meaningful for small, well-tested command zones.",
         "This is a test zone for CLI unit tests. The catastrophic risk score (0.75) is entirely attributable to test files importing CLI and domain implementation — the expected and correct pattern for unit tests. No architectural intervention is warranted.",
+        "All three findings are false positives. unit-cli is a test zone; coupling score 0.75 reflects test-to-implementation imports by design. No architectural intervention is warranted.",
         "[call graph] 136 internal calls, 15 outgoing, 1 incoming (cohesion: 0.9, coupling: 0.1)"
       ],
       "riskMetrics": {
@@ -1459,6 +1463,7 @@
         "task-selection and fix-command are both dependency-graph leaves with no downstream consumers — these two zones define the correct command-module pattern (consume, never export to other zones) and their structure should guide future command additions.",
         "Five unit test files for a single production file (next-task.ts) gives strong coverage but also means the test:production file ratio is 5:1. As more scoring scenarios are added, consider whether requirements-prioritization.test.ts and feature-filtered-task.test.ts warrant splitting next-task.ts into focused sub-modules (scorer.ts, filter.ts) to make the zone's production structure match its test structure.",
         "This is a test zone for core unit tests. The catastrophic risk score (0.83) reflects test files importing core implementation modules. This coupling is structurally correct and should not drive refactoring decisions.",
+        "All three findings are false positives. unit-core is a test zone; coupling score 0.83 reflects test-to-implementation imports by design. No architectural intervention is warranted.",
         "[call graph] 444 internal calls, 24 outgoing, 4 incoming (cohesion: 0.95, coupling: 0.05)"
       ],
       "riskMetrics": {
@@ -3946,6 +3951,21 @@
     "The e2e zone (cohesion 1, coupling 0) and the .rex zone (cohesion 1, coupling 0) represent the healthiest structural units in the codebase. Their self-contained topology confirms that full decoupling is achievable within this project's conventions and should be the target model for refactoring the CLI zone.",
     "Zone risk metrics are computed uniformly across test and production zones, causing test-to-implementation coupling to register as structural risk. Three zones — unit, unit-cli, unit-core — carry inflated or false-positive risk scores solely because their test files import the modules they test. Any automated risk threshold that fires on these zones should be suppressed or filtered when zone membership is predominantly test files.",
     "Four independent findings (global-0, global-8, global-11, global-12) converge on the CLI-to-domain coupling as the sole high-confidence structural problem in production code. The actionable surface is narrow: src/cli/commands/analyze.ts (cmdAnalyze, 44 outgoing calls) and any cli-zone files that import unit-analyze internals without going through an explicit gateway. Addressing these two points eliminates the bidirectional coupling and resolves the god-function metric simultaneously.",
+    "All three zones flagged as exceeding architectural risk thresholds (unit, unit-cli, unit-core) are test zones. Their coupling to unit-analyze is test-to-subject coupling, expected and correct by design. Risk threshold logic must filter zones where the majority of files are test files before emitting warnings or criticals.",
+    "The production structural problem is bounded and well-evidenced: four independent findings (global-0, global-8, zone cli/3, global-12) converge on src/cli/commands/analyze.ts as the single call-site driving the cli↔unit-analyze bidirectional coupling. The fix is import discipline via the existing gateway pattern — no file decomposition is warranted.",
+    "src/schema/index.ts accumulating 22 importers (global-4) is consistent with a foundational type-hub role in a layered architecture. High fan-in at the schema layer is a positive signal of reuse, not a structural risk.",
+    "The e2e and .rex zones achieving cohesion=1 coupling=0 (global-3) demonstrate that the gateway pattern already embedded in this project reliably eliminates cross-zone drift. They are the correct target model for the cli zone refactor.",
+    "Across all 35 findings, zero problems are identified in the store, core, or unit-analyze zones themselves. Structural issues are entirely an artifact of (a) test zone metric inflation and (b) one CLI command file with unmediated upstream imports.",
+    "global-11 (src/cli/commands/prune.ts → src/cli/output.ts, 60 cross-file calls, unidirectional) is a single heuristic finding with no corroborating evidence. Unidirectional high-call-count to a dedicated output module is consistent with a well-factored caller/renderer split. There is no evidence of tangled responsibilities and no basis for a structural concern at this time.",
+    "Zone risk findings for unit-cli (critical, score 0.75), unit-core (critical, score 0.83), and unit (warning, score 0.67) directly contradict global finding global-9, which correctly identifies these as false positives caused by test-to-implementation coupling. The zone-level severity ratings are incorrect; global-9 is correct. Automated risk thresholds should be gated on zone composition (test-file ratio) before firing.",
+    "The zone risk scoring algorithm is not test-aware. Zones with a majority of test files (unit, unit-cli, unit-core) receive inflated coupling and cohesion scores because unit-test-to-implementation imports are counted as structural coupling. This produces false-positive critical and warning ratings. Risk thresholds should gate on test-file ratio before emitting zone-level risk findings.",
+    "Exactly one high-confidence structural problem exists in production code: the bidirectional cli↔unit-analyze coupling centered on src/cli/commands/analyze.ts. It is corroborated by four independent findings from two separate analysis passes (heuristic and LLM). Every other warning-level finding in this report is either a false positive (test zones), a single-source heuristic with no corroboration, or an expected pattern (unidirectional caller/renderer coupling).",
+    "The e2e zone (cohesion 1, coupling 0) and .rex zone (cohesion 1, coupling 0) are the structural health targets for this codebase. Full decoupling has already been demonstrated within this project's conventions and should guide refactoring goals for the cli zone.",
+    "Wide API surface warnings (unit-analyze 25 entry points, core 24 entry points, cli 13 entry points) are single-source heuristic observations with no corroborating coupling or quality evidence. They are informational signals requiring no action unless combined with evidence of instability or change amplification.",
+    "Global finding 9 (warning: three zones exceed architectural risk thresholds, mandatory refactoring recommended before further development) directly contradicts global finding 7 (info: risk scores for unit, unit-cli, unit-core are false positives caused by test-to-implementation coupling). Global finding 7, corroborated by the constraint in IMPORTANT CONSTRAINTS prohibiting escalation of test-to-implementation coupling, is correct. Global finding 9 should be suppressed for all three named zones; its mandatory refactoring recommendation is unwarranted.",
+    "Global finding 13 (warning: src/cli/commands/prune.ts → src/cli/output.ts are tightly coupled, 60 cross-file calls, 'consider extracting shared interface or merging') is contradicted by global finding 4 (info: unidirectional high-call-count to a dedicated output module is consistent with a well-factored caller/renderer split, no evidence of tangled responsibilities). Global finding 4 is correct: unidirectional dependency from a command handler to a dedicated renderer is a clean architectural pattern. Global finding 13 carries no corroborating evidence and its severity should be info, not warning.",
+    "The analysis pipeline should suppress zone-level risk findings (coupling threshold, cohesion threshold, risk score) when the zone's file membership is predominantly test files. The current three false-positive critical/warning zone ratings (unit, unit-cli, unit-core) stem entirely from this gap. A test-file ratio check (e.g. suppress if >50% of zone files match *.test.ts or tests/ path prefix) before emitting zone risk findings would eliminate recurring false positives in future passes without losing signal on production zones.",
+    "The sole production-code refactoring with multi-source corroboration is: create src/cli/commands/analyze-gateway.ts consolidating all outgoing calls from cmdAnalyze (src/cli/commands/analyze.ts, 44 outgoing calls to unit-analyze) into a single re-export gateway following the established hench/src/prd/rex-gateway.ts pattern. Additionally audit src/cli/commands/ for any other files importing unit-analyze internals directly and route those through the same gateway. This resolves the bidirectional cli↔unit-analyze coupling (58+35 crossings) and the cmdAnalyze god-function metric simultaneously, with no file splits required.",
     "[call graph] 239 calls: \"unit-analyze\" → \"cli\"",
     "[call graph] 100 calls: \"cli\" → \"unit-analyze\"",
     "[call graph] 62 calls: \"cli\" → \"core\"",
@@ -4021,6 +4041,13 @@
       "pass": 5,
       "scope": "global",
       "text": "The e2e zone (cohesion 1, coupling 0) and the .rex zone (cohesion 1, coupling 0) represent the healthiest structural units in the codebase. Their self-contained topology confirms that full decoupling is achievable within this project's conventions and should be the target model for refactoring the CLI zone.",
+      "severity": "info"
+    },
+    {
+      "type": "observation",
+      "pass": 5,
+      "scope": "global",
+      "text": "global-11 (src/cli/commands/prune.ts → src/cli/output.ts, 60 cross-file calls, unidirectional) is a single heuristic finding with no corroborating evidence. Unidirectional high-call-count to a dedicated output module is consistent with a well-factored caller/renderer split. There is no evidence of tangled responsibilities and no basis for a structural concern at this time.",
       "severity": "info"
     },
     {
@@ -4115,10 +4142,45 @@
     },
     {
       "type": "suggestion",
+      "pass": 5,
+      "scope": "cli",
+      "text": "The concrete action to resolve the cli↔unit-analyze bidirectional coupling (58+35 crossings, global-0) is: audit src/cli/commands/ for any file that imports from unit-analyze internals without routing through an explicit gateway, then consolidate those imports into a single cli-side gateway module mirroring the existing hench/src/prd/rex-gateway.ts pattern. The only call-site confirmed to require this treatment is src/cli/commands/analyze.ts (44 outgoing calls to unit-analyze, global-12). No file splits are required.",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
       "pass": 0,
       "scope": "global",
       "text": "src/analyze/ contains files from 3 zones (cli, unit, unit-analyze) — consider grouping into subdirectories to clarify architectural boundaries",
       "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Global finding 13 (warning: src/cli/commands/prune.ts → src/cli/output.ts are tightly coupled, 60 cross-file calls, 'consider extracting shared interface or merging') is contradicted by global finding 4 (info: unidirectional high-call-count to a dedicated output module is consistent with a well-factored caller/renderer split, no evidence of tangled responsibilities). Global finding 4 is correct: unidirectional dependency from a command handler to a dedicated renderer is a clean architectural pattern. Global finding 13 carries no corroborating evidence and its severity should be info, not warning.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Global finding 9 (warning: three zones exceed architectural risk thresholds, mandatory refactoring recommended before further development) directly contradicts global finding 7 (info: risk scores for unit, unit-cli, unit-core are false positives caused by test-to-implementation coupling). Global finding 7, corroborated by the constraint in IMPORTANT CONSTRAINTS prohibiting escalation of test-to-implementation coupling, is correct. Global finding 9 should be suppressed for all three named zones; its mandatory refactoring recommendation is unwarranted.",
+      "severity": "warning"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "The analysis pipeline should suppress zone-level risk findings (coupling threshold, cohesion threshold, risk score) when the zone's file membership is predominantly test files. The current three false-positive critical/warning zone ratings (unit, unit-cli, unit-core) stem entirely from this gap. A test-file ratio check (e.g. suppress if >50% of zone files match *.test.ts or tests/ path prefix) before emitting zone risk findings would eliminate recurring false positives in future passes without losing signal on production zones.",
+      "severity": "info"
+    },
+    {
+      "type": "suggestion",
+      "pass": 5,
+      "scope": "global",
+      "text": "Zone risk findings for unit-cli (critical, score 0.75), unit-core (critical, score 0.83), and unit (warning, score 0.67) directly contradict global finding global-9, which correctly identifies these as false positives caused by test-to-implementation coupling. The zone-level severity ratings are incorrect; global-9 is correct. Automated risk thresholds should be gated on zone composition (test-file ratio) before firing.",
+      "severity": "warning"
     },
     {
       "type": "suggestion",
@@ -4184,6 +4246,13 @@
       "type": "pattern",
       "pass": 5,
       "scope": "global",
+      "text": "The sole production-code refactoring with multi-source corroboration is: create src/cli/commands/analyze-gateway.ts consolidating all outgoing calls from cmdAnalyze (src/cli/commands/analyze.ts, 44 outgoing calls to unit-analyze) into a single re-export gateway following the established hench/src/prd/rex-gateway.ts pattern. Additionally audit src/cli/commands/ for any other files importing unit-analyze internals directly and route those through the same gateway. This resolves the bidirectional cli↔unit-analyze coupling (58+35 crossings) and the cmdAnalyze god-function metric simultaneously, with no file splits required.",
+      "severity": "warning"
+    },
+    {
+      "type": "pattern",
+      "pass": 5,
+      "scope": "global",
       "text": "Zone risk metrics are computed uniformly across test and production zones, causing test-to-implementation coupling to register as structural risk. Three zones — unit, unit-cli, unit-core — carry inflated or false-positive risk scores solely because their test files import the modules they test. Any automated risk threshold that fires on these zones should be suppressed or filtered when zone membership is predominantly test files.",
       "severity": "info"
     },
@@ -4224,7 +4293,7 @@
     }
   ],
   "enrichmentPass": 4,
-  "metaEvaluationCount": 3,
+  "metaEvaluationCount": 5,
   "structureHash": "114cfbd242d8402b",
   "zoneContentHashes": {
     ".rex": "30cd2299ea28339e",

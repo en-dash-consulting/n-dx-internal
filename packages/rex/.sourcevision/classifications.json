@@ -518,7 +518,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Handles acknowledging/confirming analysis results — business logic orchestration within the analyze pipeline.",
+          "detail": "Manages the acknowledged-findings store: load, save, hash, and lookup operations with persistent state.",
           "weight": 0.7
         }
       ]
@@ -532,21 +532,21 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Shared helpers and infrastructure used across the analyze module.",
+          "detail": "Shared constants, helpers, and types (DEFAULT_MODEL, PRD_SCHEMA, extractJson, etc.) consumed across the analyze pipeline.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyze/consolidation-guard.ts",
-      "archetype": "utility",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "utility",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Guard logic that validates or prevents invalid consolidation — a focused utility helper.",
+          "detail": "LLM-driven service that checks proposal task counts and applies a consolidation pass via spawnClaude.",
           "weight": 0.7
         }
       ]
@@ -560,7 +560,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Decomposition logic for analysis items — domain business logic.",
+          "detail": "LLM-driven service that decomposes over-large tasks into sub-tasks via spawnClaude.",
           "weight": 0.7
         }
       ]
@@ -574,7 +574,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Deduplication helper — a pure, reusable utility function.",
+          "detail": "Pure deduplication helpers (similarity scoring, deduplicateScanResults) with high fan-in across the codebase.",
           "weight": 0.7
         }
       ]
@@ -588,7 +588,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Diff computation between analysis states — a focused utility.",
+          "detail": "Utility that formats diffs between proposals and the existing PRD tree.",
           "weight": 0.7
         }
       ]
@@ -602,7 +602,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Extraction logic — a reusable helper used across the analyze pipeline.",
+          "detail": "Large extraction utility (markdown, text, file) with high fan-in; shared infrastructure for parsing input into proposals.",
           "weight": 0.7
         }
       ]
@@ -616,7 +616,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "File validation helper — pure validation logic with no orchestration.",
+          "detail": "Stateless file validation helpers (validateFileInput, detectMagicBytes, etc.) consumed by extract and exported publicly.",
           "weight": 0.7
         }
       ]
@@ -630,7 +630,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Orchestrates guided analysis flow — high-level business logic coordination.",
+          "detail": "Orchestrates a guided spec generation flow: clarify questions and generateSpecFromContext via LLM calls.",
           "weight": 0.7
         }
       ]
@@ -651,14 +651,14 @@
     },
     {
       "path": "src/analyze/llm-bridge.ts",
-      "archetype": "gateway",
+      "archetype": "service",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "gateway",
+          "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Bridge to the LLM client — concentrates cross-package LLM imports into a single interface, matching the gateway pattern.",
+          "detail": "Adapter/bridge that configures and exposes spawnClaude and vendor-switching helpers to the rest of the analyze layer.",
           "weight": 0.7
         }
       ]
@@ -672,7 +672,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Modification reasoning logic — domain business logic for the analyze pipeline.",
+          "detail": "LLM-driven service that applies user modification instructions to an existing proposal set via spawnClaude.",
           "weight": 0.7
         }
       ]
@@ -686,21 +686,21 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Proposal generation — orchestrates domain logic to produce PRD proposals.",
+          "detail": "Builds structured Proposal trees from raw ScanResults; central service in the proposal pipeline.",
           "weight": 0.7
         }
       ]
     },
     {
       "path": "src/analyze/reason.ts",
-      "archetype": "service",
+      "archetype": "utility",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Core reasoning logic for analysis — domain business logic.",
+          "detail": "Core reasoning engine and re-export hub for the analyze layer; very high fan-in, re-exports from analyze-shared and llm-bridge alongside its own logic.",
           "weight": 0.7
         }
       ]
@@ -714,7 +714,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Reconciliation of analysis results — domain business logic.",
+          "detail": "Reconciles new ScanResults against the existing PRD tree using similarity matching to find update candidates.",
           "weight": 0.7
         }
       ]
@@ -728,7 +728,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Reshape reasoning logic — domain business logic for transforming analysis output.",
+          "detail": "LLM-driven service that generates reshape proposals (prune/reorganize) for the PRD tree.",
           "weight": 0.7
         }
       ]
@@ -742,7 +742,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Scanner implementations that read the project — service-layer data gathering.",
+          "detail": "Project scanners (scanTests, scanDocs, scanSourceVision, scanPackageJson) that produce ScanResults from filesystem artifacts.",
           "weight": 0.7
         }
       ]
@@ -756,7 +756,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Validation helper for modifications — pure validation logic.",
+          "detail": "Pure validation and classification helpers for modification requests, no LLM calls, consumed by modify-reason and CLI.",
           "weight": 0.7
         }
       ]
@@ -1208,7 +1208,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "CLI help text and formatting — a utility used by CLI commands.",
+          "detail": "Generates and prints CLI help text; stateless utility consumed only by the CLI index and tests.",
           "weight": 0.7
         }
       ]
@@ -1229,14 +1229,14 @@
     },
     {
       "path": "src/cli/mcp-tools.ts",
-      "archetype": "service",
+      "archetype": "route-handler",
       "confidence": 0.7,
       "source": "llm",
       "evidence": [
         {
-          "archetypeId": "service",
+          "archetypeId": "route-handler",
           "signalKind": "path",
-          "detail": "MCP tool definitions and handler wiring — service-layer tool dispatch.",
+          "detail": "Contains all MCP tool handler functions (handleGetPrdStatus, handleAddItem, etc.) dispatched by the MCP server.",
           "weight": 0.7
         }
       ]
@@ -1250,7 +1250,7 @@
         {
           "archetypeId": "cli-command",
           "signalKind": "path",
-          "detail": "MCP subcommand handler — a CLI command implementation.",
+          "detail": "Sets up and starts the MCP server (createRexMcpServer, startMcpServer); CLI command entry point for the mcp subcommand.",
           "weight": 0.7
         }
       ]
@@ -1278,7 +1278,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "CLI input validation helper — pure validation utility.",
+          "detail": "CLI input validation helpers (parseIntSafe, validateLevel, requireParent, etc.) shared across CLI commands.",
           "weight": 0.7
         }
       ]
@@ -1796,7 +1796,7 @@
         {
           "archetypeId": "utility",
           "signalKind": "path",
-          "detail": "Conflict detection logic for recommendations — a focused, reusable utility.",
+          "detail": "Pure conflict and duplicate detection logic for recommendations, using similarity scoring and tree walking.",
           "weight": 0.7
         }
       ]
@@ -1810,7 +1810,7 @@
         {
           "archetypeId": "service",
           "signalKind": "path",
-          "detail": "Creates PRD items from recommendations — domain business logic orchestration.",
+          "detail": "Orchestrates creation of PRD items from enriched recommendations, handling conflict resolution and DAG validation.",
           "weight": 0.7
         }
       ]
@@ -2081,7 +2081,7 @@
         {
           "archetypeId": "config",
           "signalKind": "path",
-          "detail": "Default workflow configuration/settings module.",
+          "detail": "Exports a single DEFAULT_WORKFLOW constant used during init; purely declarative configuration data.",
           "weight": 0.7
         }
       ]
@@ -2094,9 +2094,9 @@
       "service": 11,
       "utility": 47,
       "entrypoint": 6,
-      "gateway": 1,
       "cli-command": 29,
       "types": 2,
+      "route-handler": 1,
       "schema": 3,
       "store": 9,
       "config": 1

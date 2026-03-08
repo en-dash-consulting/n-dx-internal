@@ -7,7 +7,7 @@
 
 Project: n-dx
 Git: feature/integrate-codex @ 21786d2
-Files: 1048, Lines: 341930
+Files: 1047, Lines: 342064
 Languages: TypeScript(882) CSS(44) JavaScript(40) Markdown(31) JSON(27)
 Zones: 34, Described: 34
 Import edges: 2593, External packages: 18
@@ -27,7 +27,7 @@ Import edges: 2593, External packages: 18
   files: tests/e2e/architecture-policy.test.js, tests/e2e/cli-arg-contracts.test.js, tests/e2e/cli-ci.test.js, tests/e2e/cli-config.test.js, tests/e2e/cli-contract.test.mjs, tests/e2e/cli-delegation.test.js, tests/e2e/cli-dev.test.js, tests/e2e/cli-errors.test.js, tests/e2e/cli-init.test.js, tests/e2e/cli-orchestration.test.js +9
 [hench] Hench (157 files, coh=1.00 coup=0.00)
   156 files, primarily TypeScript, Other, JSON
-  files: packages/hench/Hench-F.png, packages/hench/Hench.png, packages/hench/README.md, packages/hench/package.json, packages/hench/src/agent/analysis/adaptive.ts [utility], packages/hench/src/agent/analysis/review.ts [service], packages/hench/src/agent/analysis/spin.ts [utility], packages/hench/src/agent/analysis/stuck.ts [utility], packages/hench/src/agent/analysis/summary.ts [utility], packages/hench/src/agent/analysis/workflow.ts [utility] +147
+  files: packages/hench/Hench-F.png, packages/hench/Hench.png, packages/hench/README.md, packages/hench/package.json, packages/hench/src/agent/analysis/adaptive.ts [service], packages/hench/src/agent/analysis/review.ts [service], packages/hench/src/agent/analysis/spin.ts [service], packages/hench/src/agent/analysis/stuck.ts [service], packages/hench/src/agent/analysis/summary.ts [service], packages/hench/src/agent/analysis/workflow.ts [service] +147
 [logo] Logo (3 files, coh=1.00 coup=0.00)
   3 files, primarily Other, HTML
   files: packages/web/src/viewer/darkmode_logo.png, packages/web/src/viewer/index.html, packages/web/src/viewer/lightmode_logo.png
@@ -63,10 +63,10 @@ Import edges: 2593, External packages: 18
   files: packages/rex/src/cli/commands/sync.ts [cli-command], packages/rex/src/core/canonical.ts [utility], packages/rex/src/store/adapter-registry.ts [store], packages/rex/src/store/contracts.ts [store], packages/rex/src/store/file-adapter.ts [store], packages/rex/src/store/index.ts [entrypoint], packages/rex/src/store/integration-schema.ts [store], packages/rex/src/store/integration-schemas/index.ts [entrypoint], packages/rex/src/store/integration-schemas/jira.ts [store], packages/rex/src/store/integration-schemas/notion.ts [store] +13
 [packages-rex:unit] Unit (19 files, coh=0.33 coup=0.67)
   19 files, primarily TypeScript
-  files: packages/rex/src/analyze/acknowledge.ts [service], packages/rex/src/analyze/extract.ts [service], packages/rex/src/analyze/reconcile.ts [service], packages/rex/src/analyze/scanners.ts [utility], packages/rex/src/cli/commands/recommend.ts [cli-command], packages/rex/src/recommend/conflict-detection.ts [utility], packages/rex/src/recommend/create-from-recommendations.ts [service], packages/rex/src/recommend/types.ts [types], packages/rex/tests/unit/analyze/acknowledge.test.ts, packages/rex/tests/unit/analyze/extract-llm-mock.test.ts +9
+  files: packages/rex/src/analyze/acknowledge.ts [service], packages/rex/src/analyze/extract.ts [utility], packages/rex/src/analyze/reconcile.ts [service], packages/rex/src/analyze/scanners.ts [utility], packages/rex/src/cli/commands/recommend.ts [cli-command], packages/rex/src/recommend/conflict-detection.ts [utility], packages/rex/src/recommend/create-from-recommendations.ts [service], packages/rex/src/recommend/types.ts [types], packages/rex/tests/unit/analyze/acknowledge.test.ts, packages/rex/tests/unit/analyze/extract-llm-mock.test.ts +9
 [packages-rex:unit-analyze] Unit Analyze (69 files, coh=0.50 coup=0.50)
   69 files, primarily TypeScript
-  files: packages/rex/src/analyze/analyze-shared.ts [utility], packages/rex/src/analyze/consolidation-guard.ts [utility], packages/rex/src/analyze/decompose.ts [service], packages/rex/src/analyze/dedupe.ts [utility], packages/rex/src/analyze/diff.ts [utility], packages/rex/src/analyze/file-validation.ts [utility], packages/rex/src/analyze/guided.ts [service], packages/rex/src/analyze/index.ts [entrypoint], packages/rex/src/analyze/llm-bridge.ts [gateway], packages/rex/src/analyze/modify-reason.ts [utility] +59
+  files: packages/rex/src/analyze/analyze-shared.ts [utility], packages/rex/src/analyze/consolidation-guard.ts [utility], packages/rex/src/analyze/decompose.ts [service], packages/rex/src/analyze/dedupe.ts [utility], packages/rex/src/analyze/diff.ts [utility], packages/rex/src/analyze/file-validation.ts [utility], packages/rex/src/analyze/guided.ts [service], packages/rex/src/analyze/index.ts [entrypoint], packages/rex/src/analyze/llm-bridge.ts [service], packages/rex/src/analyze/modify-reason.ts [utility] +59
 [packages-rex:unit-cli] Unit Cli (4 files, coh=0.25 coup=0.75)
   4 files, primarily TypeScript
   files: packages/rex/src/cli/commands/fix.ts [cli-command], packages/rex/src/core/fix.ts [utility], packages/rex/tests/unit/cli/commands/fix.test.ts, packages/rex/tests/unit/core/fix.test.ts
@@ -78,7 +78,7 @@ Import edges: 2593, External packages: 18
   files: packages/sourcevision/.claude/settings.json, packages/sourcevision/.claude/settings.local.json
 [packages-sourcevision:analyzers] Analyzers (39 files, coh=0.67 coup=0.33)
   39 files, primarily TypeScript
-  files: packages/sourcevision/src/analyzers/archetypes.ts [types], packages/sourcevision/src/analyzers/callgraph-findings.ts [service], packages/sourcevision/src/analyzers/classify.ts [service], packages/sourcevision/src/analyzers/claude-client.ts [gateway], packages/sourcevision/src/analyzers/completion-reader.ts [utility], packages/sourcevision/src/analyzers/context.ts [service], packages/sourcevision/src/analyzers/enrich-batch.ts [service], packages/sourcevision/src/analyzers/enrich-config.ts [config], packages/sourcevision/src/analyzers/enrich-parsing.ts [utility], packages/sourcevision/src/analyzers/enrich-per-zone.ts [service] +29
+  files: packages/sourcevision/src/analyzers/archetypes.ts [types], packages/sourcevision/src/analyzers/callgraph-findings.ts [service], packages/sourcevision/src/analyzers/classify.ts [service], packages/sourcevision/src/analyzers/claude-client.ts [service], packages/sourcevision/src/analyzers/completion-reader.ts [service], packages/sourcevision/src/analyzers/context.ts [service], packages/sourcevision/src/analyzers/enrich-batch.ts [service], packages/sourcevision/src/analyzers/enrich-config.ts [config], packages/sourcevision/src/analyzers/enrich-parsing.ts [utility], packages/sourcevision/src/analyzers/enrich-per-zone.ts [service] +29
 [packages-sourcevision:analyzers-2] Analyzers 2 (11 files, coh=0.48 coup=0.52)
   11 files, primarily TypeScript
   files: packages/sourcevision/src/analyzers/callgraph.ts [service], packages/sourcevision/src/analyzers/components.ts [service], packages/sourcevision/src/analyzers/imports.ts [service], packages/sourcevision/src/analyzers/index.ts [entrypoint], packages/sourcevision/src/analyzers/inventory.ts [service], packages/sourcevision/src/analyzers/route-detection.ts [route-handler], packages/sourcevision/src/util/paths.ts [utility], packages/sourcevision/tests/unit/analyzers/callgraph.test.ts, packages/sourcevision/tests/unit/analyzers/components.test.ts, packages/sourcevision/tests/unit/analyzers/imports.test.ts +1
@@ -99,7 +99,7 @@ Import edges: 2593, External packages: 18
   files: packages/sourcevision/ARCHITECTURE.md, packages/sourcevision/README.md, packages/sourcevision/SourceVision-F.png, packages/sourcevision/SourceVision.png, packages/sourcevision/WORKSPACE_DESIGN.md, packages/sourcevision/package-lock.json, packages/sourcevision/package.json, packages/sourcevision/tsconfig.json, packages/sourcevision/tsconfig.tsbuildinfo, packages/sourcevision/vitest.config.ts
 [packages-sourcevision:unit] Unit (28 files, coh=0.42 coup=0.58)
   28 files, primarily TypeScript
-  files: packages/sourcevision/src/analyzers/branch-work-classifier.ts [service], packages/sourcevision/src/analyzers/branch-work-filter.ts [utility], packages/sourcevision/src/analyzers/branch-work-store.ts [store], packages/sourcevision/src/analyzers/risk-scoring.ts [service], packages/sourcevision/src/analyzers/workspace-aggregate.ts [service], packages/sourcevision/src/cli/commands/workspace.ts [cli-command], packages/sourcevision/src/cli/mcp.ts [cli-command], packages/sourcevision/src/generators/pr-markdown-template.ts [utility], packages/sourcevision/src/public.ts [entrypoint], packages/sourcevision/src/schema/data-files.ts [schema] +18
+  files: packages/sourcevision/src/analyzers/branch-work-classifier.ts [service], packages/sourcevision/src/analyzers/branch-work-filter.ts [utility], packages/sourcevision/src/analyzers/branch-work-store.ts [service], packages/sourcevision/src/analyzers/risk-scoring.ts [service], packages/sourcevision/src/analyzers/workspace-aggregate.ts [service], packages/sourcevision/src/cli/commands/workspace.ts [cli-command], packages/sourcevision/src/cli/mcp.ts [cli-command], packages/sourcevision/src/generators/pr-markdown-template.ts [utility], packages/sourcevision/src/public.ts [entrypoint], packages/sourcevision/src/schema/data-files.ts [schema] +18
 [root] Root (29 files, coh=1.00 coup=0.00)
   29 files, primarily JavaScript, Markdown, Other
   files: .gitignore, .npmrc, CLAUDE.md, CODEX.md, CODE_OF_CONDUCT.md, PACKAGE_GUIDELINES.md, README.md, ci.js [entrypoint], claude-integration.js [service], cli.js [entrypoint] +19
@@ -114,11 +114,11 @@ Import edges: 2593, External packages: 18
   files: packages/web/src/landing/index.html, packages/web/src/landing/landing.css, packages/web/src/landing/landing.ts [entrypoint]
 [web-server] Web Server (5 files, coh=0.75 coup=0.25)
   5 files, primarily TypeScript
-  files: packages/web/src/server/incremental-task-usage.ts [service], packages/web/src/server/task-usage.ts [service], packages/web/src/server/usage-cleanup-scheduler.ts [service], packages/web/tests/unit/server/incremental-task-usage.test.ts, packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts
+  files: packages/web/src/server/incremental-task-usage.ts [service], packages/web/src/server/task-usage.ts [entrypoint], packages/web/src/server/usage-cleanup-scheduler.ts [service], packages/web/tests/unit/server/incremental-task-usage.test.ts, packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts
 [web-viewer] Web Viewer (374 files, coh=0.98 coup=0.02)
   357 files, primarily TypeScript, CSS
-  files: packages/web/src/cli/index.ts [entrypoint], packages/web/src/public.ts [entrypoint], packages/web/src/schema/v1.ts [schema], packages/web/src/server/aggregation-cache.ts [service], packages/web/src/server/concurrent-execution-metrics.ts [service], packages/web/src/server/domain-gateway.ts [gateway], packages/web/src/server/index.ts [entrypoint], packages/web/src/server/mcp-deps.ts [config], packages/web/src/server/port.ts [utility], packages/web/src/server/pr-markdown-refresh-diagnostics.ts [service] +364
-[unzoned] 3 files: .github/workflows/ci.yml, .hench/config.json, .hench/locks/406.lock
+  files: packages/web/src/cli/index.ts [entrypoint], packages/web/src/public.ts [entrypoint], packages/web/src/schema/v1.ts [schema], packages/web/src/server/aggregation-cache.ts [service], packages/web/src/server/concurrent-execution-metrics.ts [service], packages/web/src/server/domain-gateway.ts [gateway], packages/web/src/server/index.ts [entrypoint], packages/web/src/server/mcp-deps.ts [gateway], packages/web/src/server/port.ts [utility], packages/web/src/server/pr-markdown-refresh-diagnostics.ts [types] +364
+[unzoned] 2 files: .github/workflows/ci.yml, .hench/config.json
 
 Detailed zone context: .sourcevision/zones/{id}/context.md
 
@@ -270,14 +270,7 @@ Server routes: 106 endpoints in 14 handler(s)
 <findings>
 
 [warning] Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects
-[warning] Finding 12 (cmdRecommend, 36 unique outgoing calls) is corroborated by both an automated call-graph heuristic and independent LLM cross-analysis in finding 3 — the only finding with dual-signal confirmation. This makes warning severity well-founded. At 36 calls the metric is approximately 1.8x a typical detection threshold and does not yet meet the 2x bar for concrete decomposition prescriptions; however, if the outgoing-call count grows past ~40 as the recommend command gains features, extraction of orchestration logic into a dedicated service layer within packages/rex/src/cli/commands/ becomes concretely justified.
-[warning] The 142 cross-file call count between packages/web/src/server/routes-rex.ts and packages/web/src/server/types.ts (finding 14) is unusually high even for a route-to-types dependency. Combined with the god-function finding for cmdRecommend (finding 13, 36 unique calls), both signals point to the rex CLI and web server layers accumulating complexity without extraction. These are independent files in different packages but share a root cause: command handlers and route handlers are each absorbing orchestration logic that could be pushed into dedicated service or use-case modules. This is a warning-level pattern when the two findings are read together.
-[warning] cmdRecommend (finding 14, 36 unique outgoing calls, approximately 1.8x detection threshold) and routes-rex.ts/types.ts coupling (finding 15, 142 cross-file calls) share a root cause confirmed by LLM cross-analysis (finding 4): both packages/rex/src/cli/commands/recommend.ts and packages/web/src/server/routes-rex.ts are absorbing orchestration logic that belongs in dedicated service or use-case modules. Neither metric currently exceeds 2x its detection threshold, so concrete file decomposition is not prescribed. New features added to either file should be directed into named service modules within their respective package src/ directories (e.g. packages/rex/src/cli/commands/ for rex, packages/web/src/server/ for web) to prevent threshold breach and avoid a future critical finding.
-[warning] Finding 4 (mcp-deps.ts @deprecated vs public.ts canonical gateway claim) and finding 2 (architecture-policy.test.js vs check-*.mjs enforcement divergence) both represent the same class of problem: two authoritative sources for the same constraint drifting out of sync. The actionable fix for finding 4 is: open packages/web/src/server/mcp-deps.ts, confirm whether any file outside the gateway pattern still imports from it, then either remove the @deprecated annotation and update public.ts commentary, or add an eslint no-restricted-imports rule pointing to packages/web/src/server/rex-gateway.ts and packages/web/src/server/domain-gateway.ts as the only permitted cross-package import paths. The actionable fix for finding 2 is: add a single test in tests/e2e/ that imports both scripts/check-circular.mjs and packages/sourcevision/src/tests/unit/architecture-policy.test.ts constraints and asserts they do not overlap on the same import pair.
-[warning] Resolve architecture-policy constraint drift (finding 7, second case): add a single test in the sourcevision e2e suite that imports the constraint sets from both packages/sourcevision/src/tests/unit/architecture-policy.test.ts and scripts/check-circular.mjs and asserts they do not define overlapping rules for the same import pair with different outcomes. This prevents the two enforcement paths from silently diverging as new cross-package imports are added.
-[warning] Resolve architecture-policy constraint drift (global finding 9) by adding one test file at packages/sourcevision/tests/e2e/architecture-constraints-sync.test.ts that imports the rule sets from both scripts/check-circular.mjs and packages/sourcevision/src/tests/unit/architecture-policy.test.ts and asserts: (a) no import pair is governed by rules in both files with different outcomes, and (b) any pair governed by only one file is explicitly documented as intentional. This test fails fast when either enforcement path gains a rule the other does not mirror, making drift immediately visible in CI.
-[warning] Resolve mcp-deps.ts @deprecated drift (finding 7, first case): open packages/web/src/server/mcp-deps.ts, enumerate its exports, then grep the web package src/ tree for any import of those symbols outside packages/web/src/server/rex-gateway.ts and packages/web/src/server/domain-gateway.ts. If no external callers remain, delete mcp-deps.ts entirely. If callers remain, add an eslint no-restricted-imports rule pointing to rex-gateway.ts and domain-gateway.ts as the only permitted cross-package import paths and emit an error on direct mcp-deps.ts imports. Do not leave the @deprecated annotation as the sole enforcement mechanism.
-[warning] Resolve mcp-deps.ts @deprecated drift (global finding 10) with the following concrete steps: open packages/web/src/server/mcp-deps.ts and list its exported symbols; run grep -r 'mcp-deps' packages/web/src/ excluding rex-gateway.ts and domain-gateway.ts; if the result is empty, delete mcp-deps.ts entirely and remove any re-export references; if callers remain, add an ESLint no-restricted-imports rule in packages/web/.eslintrc.* that errors on direct imports from ./mcp-deps and points to rex-gateway.ts or domain-gateway.ts as the replacement. The @deprecated annotation alone provides no enforcement and will silently accumulate violations.
+[warning] mcp-deps.ts deletion is unblocked: static analysis confirms zero runtime import callers in packages/web/src. Concrete steps: (1) delete packages/web/src/server/mcp-deps.ts, (2) update the @see JSDoc comment in packages/web/src/public.ts (lines 36–44) and packages/web/src/viewer/components/prd-tree/types.ts (line 13) to reference rex-gateway.ts and domain-gateway.ts instead, (3) add a no-restricted-imports ESLint rule in packages/web/.eslintrc.* that errors on any future direct import of mcp-deps. This closes global findings 3, 4, and 5 together.
 [warning] God function: cmdRecommend in packages/rex/src/cli/commands/recommend.ts calls 36 unique functions — consider decomposing into smaller, focused functions
 
 </findings>
@@ -288,17 +281,7 @@ Server routes: 106 endpoints in 14 handler(s)
   category: refactor
 [medium] God function: cmdRecommend in packages/rex/src/cli/commands/recommend.ts calls …
   category: refactor
-[medium] Finding 12 (cmdRecommend, 36 unique outgoing calls) is corr… (+2 related)
-  category: extract
-[medium] Finding 4 (mcp-deps.ts @deprecated vs public.ts canonical gateway claim) and fi…
-  category: refactor
-[medium] Resolve architecture-policy constraint drift (finding 7, second case): add a si…
-  category: refactor
-[medium] Resolve architecture-policy constraint drift (global finding 9) by adding one t…
-  category: refactor
-[medium] Resolve mcp-deps.ts @deprecated drift (finding 7, first case): open packages/we…
-  category: refactor
-[medium] Resolve mcp-deps.ts @deprecated drift (global finding 10) with the following co…
+[medium] mcp-deps.ts deletion is unblocked: static analysis confirms zero runtime import…
   category: refactor
 
 </next-steps>

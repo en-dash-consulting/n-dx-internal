@@ -9,16 +9,16 @@ Files: 6, Cohesion: 0.31, Coupling: 0.69
 Risk: critical (score: 0.69)
 Description: 6 files, primarily TypeScript
 Entry points: src/analyzers/zone-hash.ts, src/analyzers/zones.ts
-Lines: 5863
+Lines: 5912
 
 </zone>
 
 <files>
 
-src/analyzers/louvain.ts (TypeScript, 804 lines, source)
+src/analyzers/louvain.ts (TypeScript, 808 lines, source)
 src/analyzers/zone-hash.ts (TypeScript, 26 lines, source)
-src/analyzers/zones.ts (TypeScript, 1884 lines, source)
-tests/unit/analyzers/zone-detection.test.ts (TypeScript, 1862 lines, test)
+src/analyzers/zones.ts (TypeScript, 1912 lines, source)
+tests/unit/analyzers/zone-detection.test.ts (TypeScript, 1879 lines, test)
 tests/unit/analyzers/zone-size-policy.test.ts (TypeScript, 302 lines, test)
 tests/unit/analyzers/zone-subdivision.test.ts (TypeScript, 985 lines, test)
 
@@ -53,7 +53,6 @@ Incoming (other zones → this zone):
 [observation] [warning] Generic zone name "Analyzers 3" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
 [observation] [warning] High coupling (0.69) — 10 imports target "analyzers"
 [observation] [warning] Low cohesion (0.31) — files are loosely related, consider splitting this zone
-[pattern] [info] Zone finding 4 (critical risk, score 0.69) is overstated. Three independent sources — zone finding 3 (LLM), global finding 5 (LLM), and global finding 10 (heuristic cross-check) — identify the coupling and low-cohesion scores as Louvain over-partitioning artifacts. The constraint against escalating single-heuristic findings applies in reverse: three sources of corroboration for a false-positive justify downgrading from critical to info. No file-level refactoring is warranted; subdirectory organization of src/analyzers/ addresses the root cause.
 [suggestion] [warning] Zone "Analyzers 3" (analyzers-3) has critical risk (score: 0.69, cohesion: 0.31, coupling: 0.69) — requires refactoring before new feature development
 
 </findings>
@@ -87,6 +86,7 @@ Incoming (other zones → this zone):
 - Zone finding 1 (warning: coupling 0.57 to 'analyzers') is a false positive. Global finding 10 identifies this as intra-domain noise caused by Louvain splitting one semantic zone into three. The 10 cross-zone imports are edges within a single coherent analyzers domain, not genuine cross-concern dependencies. Treat as info-only.
 - All three metric-based warnings (coupling, low cohesion, critical risk score) are Louvain artifacts with no independent corroboration. The LLM pass (finding 3) and global findings 5 and 10 each independently confirm this.
 - Zone finding 4 (critical risk, score 0.69) is overstated. Three independent sources — zone finding 3 (LLM), global finding 5 (LLM), and global finding 10 (heuristic cross-check) — identify the coupling and low-cohesion scores as Louvain over-partitioning artifacts. The constraint against escalating single-heuristic findings applies in reverse: three sources of corroboration for a false-positive justify downgrading from critical to info. No file-level refactoring is warranted; subdirectory organization of src/analyzers/ addresses the root cause.
-- [call graph] 244 internal calls, 583 outgoing, 50 incoming (cohesion: 0.3, coupling: 0.7)
+- All four zone-level findings (generic name, high coupling 0.69, low cohesion 0.31, composite risk score 0.69) share a single root cause: Louvain over-partitioning of src/analyzers/ into artificial sub-zones. No independent heuristic or LLM finding corroborates genuine code-quality risk within this zone's 6 files in isolation. The 'critical risk' label is an artifact of Louvain-inflated coupling inputs, not a reflection of actual architectural debt.
+- [call graph] 245 internal calls, 587 outgoing, 52 incoming (cohesion: 0.29, coupling: 0.71)
 
 </insights>

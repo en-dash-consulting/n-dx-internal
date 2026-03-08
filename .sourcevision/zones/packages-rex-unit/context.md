@@ -110,6 +110,7 @@ Incoming (other zones → this zone):
 - Zone name uses verb-gerund pattern ('recommendation-scanning') while all peer zones use noun phrases. Rename to 'recommendation-engine' for consistency.
 - Zone "unit" has files across 6 directories — consider consolidating under a dedicated directory
 - This zone contains unit test files. Coupling to unit-analyze is expected test-to-implementation imports, not a structural defect. Risk metrics derived from test-to-production coupling are false positives under the constraint that test-to-implementation coupling is correct by design.
+- All metric-derived risk findings are false positives. unit is a test zone; coupling to unit-analyze is intentional test-to-implementation dependency. Zone risk thresholds do not apply.
 - [call graph] 663 internal calls, 72 outgoing, 4 incoming (cohesion: 0.9, coupling: 0.1)
 
 </insights>

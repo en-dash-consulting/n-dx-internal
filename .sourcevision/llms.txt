@@ -5,12 +5,12 @@
 
 ## Project Overview
 
-- **Files**: 1048
-- **Lines of code**: 341,930
+- **Files**: 1047
+- **Lines of code**: 342,064
 - **Languages**: TypeScript (882), CSS (44), JavaScript (40), Markdown (31), JSON (27)
 - **Zones**: 34 (34 with descriptions)
 - **Git**: feature/integrate-codex @ 21786d2
-- **Analyzed**: 2026-03-07T17:49:13.206Z
+- **Analyzed**: 2026-03-07T19:05:19.239Z
 
 ## Architecture Zones
 
@@ -523,11 +523,8 @@ POST    /api/hench/workflow/suggestions/:id
 
 ### Patterns
 
-- Finding 12 (cmdRecommend, 36 unique outgoing calls) is corroborated by both an automated call-graph heuristic and independent LLM cross-analysis in finding 3 — the only finding with dual-signal confirmation. This makes warning severity well-founded. At 36 calls the metric is approximately 1.8x a typical detection threshold and does not yet meet the 2x bar for concrete decomposition prescriptions; however, if the outgoing-call count grows past ~40 as the recommend command gains features, extraction of orchestration logic into a dedicated service layer within packages/rex/src/cli/commands/ becomes concretely justified. [warning]
-- Five dead-export candidates span packages/web/src/viewer/polling/polling-restart.ts (3 exports), packages/web/src/viewer/loader.ts (2 exports), packages/hench/src/shared/glob.ts, packages/sourcevision/src/analyzers/branch-work-filter.ts, and packages/sourcevision/src/cli/commands/prd-epic-resolver.ts. Before removing any, verify they are not referenced via dynamic import, re-exported through a barrel not captured by the call-graph scan, or used exclusively in test files (which static dead-export scans may not traverse). Audit in this order: search for string-based dynamic imports first, then remove confirmed dead exports package by package. [info]
-- Global finding 1 (packages/rex/src/schema/index.ts, 22-caller fan-in, warning severity) is a confirmed false positive explicitly contradicted by global finding 7. Barrel exports named index.ts or public.ts are the project's documented Public API convention; accumulating callers is the intended outcome, not a risk. Severity is correctly info. The automated heuristic should exclude files matching these name patterns to prevent recurrence in subsequent analysis passes. [info]
-- The 142 cross-file call count between packages/web/src/server/routes-rex.ts and packages/web/src/server/types.ts (finding 14) is unusually high even for a route-to-types dependency. Combined with the god-function finding for cmdRecommend (finding 13, 36 unique calls), both signals point to the rex CLI and web server layers accumulating complexity without extraction. These are independent files in different packages but share a root cause: command handlers and route handlers are each absorbing orchestration logic that could be pushed into dedicated service or use-case modules. This is a warning-level pattern when the two findings are read together. [warning]
-- cmdRecommend (finding 14, 36 unique outgoing calls, approximately 1.8x detection threshold) and routes-rex.ts/types.ts coupling (finding 15, 142 cross-file calls) share a root cause confirmed by LLM cross-analysis (finding 4): both packages/rex/src/cli/commands/recommend.ts and packages/web/src/server/routes-rex.ts are absorbing orchestration logic that belongs in dedicated service or use-case modules. Neither metric currently exceeds 2x its detection threshold, so concrete file decomposition is not prescribed. New features added to either file should be directed into named service modules within their respective package src/ directories (e.g. packages/rex/src/cli/commands/ for rex, packages/web/src/server/ for web) to prevent threshold breach and avoid a future critical finding. [warning]
+- Dead-export cluster (global findings 9–13) spans 3 packages with no cross-package pattern linking them — each is an isolated orphan. The hench case (simpleGlobMatch in shared/glob.ts) is a confirmed duplicate with a clear deletion path. The two sourcevision cases (detectBranchLifecycle, resolveWorkedEpicTitlesForRange) and two web cases (loader.ts, polling-restart.ts) are single-heuristic signals that require manual verification of dynamic or external callers before removal. Adding a project-wide dead-export scan (knip or ts-prune) to the root CI pipeline would catch this class of issue automatically on every commit. [info]
+- simpleGlobMatch duplicate in hench: packages/hench/src/shared/glob.ts exports simpleGlobMatch (global finding 11) but packages/hench/src/tools/files.ts imports simpleGlobMatch directly from ../guard/paths.js, and guard/index.ts re-exports it from the same source. The shared/glob.ts copy has no callers — it is a stale duplicate superseded during a guard-module refactor. Delete packages/hench/src/shared/glob.ts entirely; no call sites need updating. [info]
 
 ### Relationships
 
@@ -552,14 +549,14 @@ POST    /api/hench/workflow/suggestions/:id
 - Zone "hench" has files across 32 directories — consider consolidating under a dedicated directory [info] (hench)
 - Zone "logo" was identified from filename patterns, not directory structure — consider creating packages/web/src/viewer/logo/ and moving related files there [info] (logo)
 - Zone "web-viewer" has files across 22 directories — consider consolidating under a dedicated directory [info] (web-viewer)
-- Dead-export audit sequence for findings 9–13: (1) grep all packages for string-based dynamic imports referencing polling-restart.ts, loader.ts, glob.ts, branch-work-filter.ts, and prd-epic-resolver.ts by filename; (2) search barrel and re-export files in each package for the specific symbol names (isPollingRestartStarted, isCoordinatorSuspended, resetPollingRestart, loadModule, loadFromServer, simpleGlobMatch, detectBranchLifecycle, resolveWorkedEpicTitlesForRange); (3) check test files for direct usage of each symbol. Audit in ascending risk order: packages/hench/src/shared/glob.ts (single symbol, isolated package) → packages/sourcevision/src/analyzers/branch-work-filter.ts and prd-epic-resolver.ts → packages/web/src/viewer/loader.ts → packages/web/src/viewer/polling/polling-restart.ts. Only remove after all three checks confirm no usage. [info]
-- Finding 1 (warning: packages/rex/src/schema/index.ts, 22-caller fan-in hotspot) is a false positive directly contradicted by finding 4 (info). The 22-caller count is a success indicator for the project's documented Public API convention — barrel exports are architecturally intended to accumulate callers. Finding 1's severity should be info, not warning. Automated fan-in heuristics should exclude files named index.ts or public.ts to avoid this class of false positive. [info]
-- Finding 4 (mcp-deps.ts @deprecated vs public.ts canonical gateway claim) and finding 2 (architecture-policy.test.js vs check-*.mjs enforcement divergence) both represent the same class of problem: two authoritative sources for the same constraint drifting out of sync. The actionable fix for finding 4 is: open packages/web/src/server/mcp-deps.ts, confirm whether any file outside the gateway pattern still imports from it, then either remove the @deprecated annotation and update public.ts commentary, or add an eslint no-restricted-imports rule pointing to packages/web/src/server/rex-gateway.ts and packages/web/src/server/domain-gateway.ts as the only permitted cross-package import paths. The actionable fix for finding 2 is: add a single test in tests/e2e/ that imports both scripts/check-circular.mjs and packages/sourcevision/src/tests/unit/architecture-policy.test.ts constraints and asserts they do not overlap on the same import pair. [warning]
-- Resolve architecture-policy constraint drift (finding 7, second case): add a single test in the sourcevision e2e suite that imports the constraint sets from both packages/sourcevision/src/tests/unit/architecture-policy.test.ts and scripts/check-circular.mjs and asserts they do not define overlapping rules for the same import pair with different outcomes. This prevents the two enforcement paths from silently diverging as new cross-package imports are added. [warning]
-- Resolve architecture-policy constraint drift (global finding 9) by adding one test file at packages/sourcevision/tests/e2e/architecture-constraints-sync.test.ts that imports the rule sets from both scripts/check-circular.mjs and packages/sourcevision/src/tests/unit/architecture-policy.test.ts and asserts: (a) no import pair is governed by rules in both files with different outcomes, and (b) any pair governed by only one file is explicitly documented as intentional. This test fails fast when either enforcement path gains a rule the other does not mirror, making drift immediately visible in CI. [warning]
-- Resolve mcp-deps.ts @deprecated drift (finding 7, first case): open packages/web/src/server/mcp-deps.ts, enumerate its exports, then grep the web package src/ tree for any import of those symbols outside packages/web/src/server/rex-gateway.ts and packages/web/src/server/domain-gateway.ts. If no external callers remain, delete mcp-deps.ts entirely. If callers remain, add an eslint no-restricted-imports rule pointing to rex-gateway.ts and domain-gateway.ts as the only permitted cross-package import paths and emit an error on direct mcp-deps.ts imports. Do not leave the @deprecated annotation as the sole enforcement mechanism. [warning]
-- Resolve mcp-deps.ts @deprecated drift (global finding 10) with the following concrete steps: open packages/web/src/server/mcp-deps.ts and list its exported symbols; run grep -r 'mcp-deps' packages/web/src/ excluding rex-gateway.ts and domain-gateway.ts; if the result is empty, delete mcp-deps.ts entirely and remove any re-export references; if callers remain, add an ESLint no-restricted-imports rule in packages/web/.eslintrc.* that errors on direct imports from ./mcp-deps and points to rex-gateway.ts or domain-gateway.ts as the replacement. The @deprecated annotation alone provides no enforcement and will silently accumulate violations. [warning]
-- ... and 11 more
+- mcp-deps.ts deletion is unblocked: static analysis confirms zero runtime import callers in packages/web/src. Concrete steps: (1) delete packages/web/src/server/mcp-deps.ts, (2) update the @see JSDoc comment in packages/web/src/public.ts (lines 36–44) and packages/web/src/viewer/components/prd-tree/types.ts (line 13) to reference rex-gateway.ts and domain-gateway.ts instead, (3) add a no-restricted-imports ESLint rule in packages/web/.eslintrc.* that errors on any future direct import of mcp-deps. This closes global findings 3, 4, and 5 together. [warning]
+- Hub function: walkTree in packages/rex/src/core/tree.ts is called from 29 files (high fan-in expected for this module type) — changes here have wide impact, consider if responsibilities can be narrowed [info]
+- 3 potentially unused exports in packages/web/src/viewer/polling/polling-restart.ts have no incoming calls: isPollingRestartStarted, isCoordinatorSuspended, resetPollingRestart [info]
+- 2 potentially unused exports in packages/web/src/viewer/loader.ts have no incoming calls: loadModule, loadFromServer [info]
+- Potentially unused export: simpleGlobMatch in packages/hench/src/shared/glob.ts has no incoming calls — verify if still needed [info]
+- Potentially unused export: detectBranchLifecycle in packages/sourcevision/src/analyzers/branch-work-filter.ts has no incoming calls — verify if still needed [info]
+- Potentially unused export: resolveWorkedEpicTitlesForRange in packages/sourcevision/src/cli/commands/prd-epic-resolver.ts has no incoming calls — verify if still needed [info]
+- ... and 4 more
 
 ## Next Steps
 
@@ -573,17 +570,7 @@ Prioritized work items derived from analysis:
 
 1. **God function: cmdRecommend in packages/rex/src/cli/commands/recommend.ts calls …**
 
-1. **Finding 12 (cmdRecommend, 36 unique outgoing calls) is corr… (+2 related)**
-
-1. **Finding 4 (mcp-deps.ts @deprecated vs public.ts canonical gateway claim) and fi…**
-
-1. **Resolve architecture-policy constraint drift (finding 7, second case): add a si…**
-
-1. **Resolve architecture-policy constraint drift (global finding 9) by adding one t…**
-
-1. **Resolve mcp-deps.ts @deprecated drift (finding 7, first case): open packages/we…**
-
-1. **Resolve mcp-deps.ts @deprecated drift (global finding 10) with the following co…**
+1. **mcp-deps.ts deletion is unblocked: static analysis confirms zero runtime import…**
 
 ### Low Priority
 
@@ -618,7 +605,6 @@ Prioritized work items derived from analysis:
 | `.github/workflows/ci.yml` | build |  |  |
 | `.gitignore` | config |  | root |
 | `.hench/config.json` | other |  |  |
-| `.hench/locks/406.lock` | other |  |  |
 | `.npmrc` | config |  | root |
 | `.rex/acknowledged-findings.json` | other |  | .rex |
 | `.rex/archive.json` | other |  | .rex |
@@ -654,25 +640,25 @@ Prioritized work items derived from analysis:
 | `docs/web-zone-architecture.md` | docs |  | docs |
 | `docs/zone-naming-conventions.md` | docs |  | docs |
 | `gateway-rules.json` | other |  | root |
-| `help.js` | source | utility | root |
+| `help.js` | source | cli-command | root |
 | `n-dx.png` | asset |  | root |
 | `package.json` | config |  | root |
 | `packages/hench/Hench-F.png` | asset |  | hench |
 | `packages/hench/Hench.png` | asset |  | hench |
 | `packages/hench/README.md` | docs |  | hench |
 | `packages/hench/package.json` | config |  | hench |
-| `packages/hench/src/agent/analysis/adaptive.ts` | source | utility | hench |
+| `packages/hench/src/agent/analysis/adaptive.ts` | source | service | hench |
 | `packages/hench/src/agent/analysis/review.ts` | source | service | hench |
-| `packages/hench/src/agent/analysis/spin.ts` | source | utility | hench |
-| `packages/hench/src/agent/analysis/stuck.ts` | source | utility | hench |
-| `packages/hench/src/agent/analysis/summary.ts` | source | utility | hench |
-| `packages/hench/src/agent/analysis/workflow.ts` | source | utility | hench |
-| `packages/hench/src/agent/completion.ts` | source | utility | hench |
+| `packages/hench/src/agent/analysis/spin.ts` | source | service | hench |
+| `packages/hench/src/agent/analysis/stuck.ts` | source | service | hench |
+| `packages/hench/src/agent/analysis/summary.ts` | source | service | hench |
+| `packages/hench/src/agent/analysis/workflow.ts` | source | service | hench |
+| `packages/hench/src/agent/completion.ts` | source | service | hench |
 | `packages/hench/src/agent/index.ts` | source | entrypoint | hench |
 | `packages/hench/src/agent/lifecycle/cli-loop.ts` | source | service | hench |
 | `packages/hench/src/agent/lifecycle/heartbeat.ts` | source | utility | hench |
 | `packages/hench/src/agent/lifecycle/loop.ts` | source | service | hench |
-| `packages/hench/src/agent/lifecycle/shared.ts` | source | utility | hench |
+| `packages/hench/src/agent/lifecycle/shared.ts` | source | types | hench |
 | `packages/hench/src/agent/lifecycle/task-display.ts` | source | utility | hench |
 | `packages/hench/src/agent/lifecycle/token-budget.ts` | source | utility | hench |
 | `packages/hench/src/agent/lifecycle/token-usage.ts` | source | utility | hench |
@@ -688,20 +674,20 @@ Prioritized work items derived from analysis:
 | `packages/hench/src/cli/commands/task-lookup.ts` | source | cli-command | hench |
 | `packages/hench/src/cli/commands/template.ts` | source | cli-command | hench |
 | `packages/hench/src/cli/errors.ts` | source | utility | hench |
-| `packages/hench/src/cli/help.ts` | source | utility | hench |
+| `packages/hench/src/cli/help.ts` | source | cli-command | hench |
 | `packages/hench/src/cli/index.ts` | source | entrypoint | hench |
 | `packages/hench/src/cli/output.ts` | source | utility | hench |
 | `packages/hench/src/guard/commands.ts` | source | utility | hench |
 | `packages/hench/src/guard/contracts.ts` | source | types | hench |
 | `packages/hench/src/guard/index.ts` | source | entrypoint | hench |
 | `packages/hench/src/guard/paths.ts` | source | utility | hench |
-| `packages/hench/src/guard/policy.ts` | source | service | hench |
+| `packages/hench/src/guard/policy.ts` | source | utility | hench |
 | `packages/hench/src/prd/rex-gateway.ts` | source | gateway | hench |
 | `packages/hench/src/process/concurrent-execution-metrics.ts` | source | utility | hench |
 | `packages/hench/src/process/exec-shell.ts` | source | utility | hench |
 | `packages/hench/src/process/exec.ts` | source | utility | hench |
 | `packages/hench/src/process/index.ts` | source | entrypoint | hench |
-| `packages/hench/src/process/lifecycle.ts` | source | service | hench |
+| `packages/hench/src/process/lifecycle.ts` | source | utility | hench |
 | `packages/hench/src/process/limiter.ts` | source | utility | hench |
 | `packages/hench/src/process/memory-monitor.ts` | source | utility | hench |
 | `packages/hench/src/process/memory-throttle.ts` | source | utility | hench |
@@ -730,12 +716,12 @@ Prioritized work items derived from analysis:
 | `packages/hench/src/store/templates.ts` | source | store | hench |
 | `packages/hench/src/tools/contracts.ts` | source | types | hench |
 | `packages/hench/src/tools/dispatch.ts` | source | service | hench |
-| `packages/hench/src/tools/exec-shell.ts` | source | utility | hench |
+| `packages/hench/src/tools/exec-shell.ts` | source | service | hench |
 | `packages/hench/src/tools/files.ts` | source | service | hench |
 | `packages/hench/src/tools/git.ts` | source | service | hench |
 | `packages/hench/src/tools/index.ts` | source | entrypoint | hench |
-| `packages/hench/src/tools/rex.ts` | source | service | hench |
-| `packages/hench/src/tools/shell.ts` | source | utility | hench |
+| `packages/hench/src/tools/rex.ts` | source | gateway | hench |
+| `packages/hench/src/tools/shell.ts` | source | service | hench |
 | `packages/hench/src/tools/test-runner.ts` | source | service | hench |
 | `packages/hench/src/types/index.ts` | source | entrypoint | hench |
 | `packages/hench/src/types/output.ts` | source | utility | hench |
@@ -834,7 +820,7 @@ Prioritized work items derived from analysis:
 | `packages/llm-client/src/provider-session.ts` | source | service | packages-llm-client:src |
 | `packages/llm-client/src/public.ts` | source | entrypoint | packages-llm-client:src-2 |
 | `packages/llm-client/src/suggest.ts` | source | service | packages-llm-client:src-2 |
-| `packages/llm-client/src/token-usage.ts` | source | service | packages-llm-client:src |
+| `packages/llm-client/src/token-usage.ts` | source | utility | packages-llm-client:src |
 | `packages/llm-client/src/types.ts` | source | types | packages-llm-client:src |
 | `packages/llm-client/tests/unit/api-provider.test.ts` | test |  | packages-llm-client:unit |
 | `packages/llm-client/tests/unit/auth.test.ts` | test |  | packages-llm-client:src-2 |
@@ -873,14 +859,14 @@ Prioritized work items derived from analysis:
 | `packages/rex/src/analyze/decompose.ts` | source | service | packages-rex:unit-analyze |
 | `packages/rex/src/analyze/dedupe.ts` | source | utility | packages-rex:unit-analyze |
 | `packages/rex/src/analyze/diff.ts` | source | utility | packages-rex:unit-analyze |
-| `packages/rex/src/analyze/extract.ts` | source | service | packages-rex:unit |
+| `packages/rex/src/analyze/extract.ts` | source | utility | packages-rex:unit |
 | `packages/rex/src/analyze/file-validation.ts` | source | utility | packages-rex:unit-analyze |
 | `packages/rex/src/analyze/guided.ts` | source | service | packages-rex:unit-analyze |
 | `packages/rex/src/analyze/index.ts` | source | entrypoint | packages-rex:unit-analyze |
-| `packages/rex/src/analyze/llm-bridge.ts` | source | gateway | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/llm-bridge.ts` | source | service | packages-rex:unit-analyze |
 | `packages/rex/src/analyze/modify-reason.ts` | source | utility | packages-rex:unit-analyze |
 | `packages/rex/src/analyze/propose.ts` | source | service | packages-rex:unit-analyze |
-| `packages/rex/src/analyze/reason.ts` | source | service | packages-rex:unit-analyze |
+| `packages/rex/src/analyze/reason.ts` | source | utility | packages-rex:unit-analyze |
 | `packages/rex/src/analyze/reconcile.ts` | source | service | packages-rex:unit |
 | `packages/rex/src/analyze/reshape-reason.ts` | source | utility | packages-rex:cli |
 | `packages/rex/src/analyze/scanners.ts` | source | utility | packages-rex:unit |
@@ -915,9 +901,9 @@ Prioritized work items derived from analysis:
 | `packages/rex/src/cli/commands/validate.ts` | source | cli-command | packages-rex:unit-analyze |
 | `packages/rex/src/cli/commands/verify.ts` | source | cli-command | packages-rex:cli |
 | `packages/rex/src/cli/errors.ts` | source | utility | packages-rex:cli |
-| `packages/rex/src/cli/help.ts` | source | types | packages-rex:cli |
+| `packages/rex/src/cli/help.ts` | source | cli-command | packages-rex:cli |
 | `packages/rex/src/cli/index.ts` | source | entrypoint | packages-rex:cli |
-| `packages/rex/src/cli/mcp-tools.ts` | source | route-handler | packages-rex:cli |
+| `packages/rex/src/cli/mcp-tools.ts` | source | service | packages-rex:cli |
 | `packages/rex/src/cli/mcp.ts` | source | cli-command | packages-rex:cli |
 | `packages/rex/src/cli/output.ts` | source | utility | packages-rex:cli |
 | `packages/rex/src/cli/validate-input.ts` | source | utility | packages-rex:unit-analyze |
@@ -1106,12 +1092,12 @@ Prioritized work items derived from analysis:
 | `packages/sourcevision/src/analyzers/branch-work-classifier.ts` | source | service | packages-sourcevision:unit |
 | `packages/sourcevision/src/analyzers/branch-work-collector.ts` | source | service | packages-sourcevision:cli |
 | `packages/sourcevision/src/analyzers/branch-work-filter.ts` | source | utility | packages-sourcevision:unit |
-| `packages/sourcevision/src/analyzers/branch-work-store.ts` | source | store | packages-sourcevision:unit |
+| `packages/sourcevision/src/analyzers/branch-work-store.ts` | source | service | packages-sourcevision:unit |
 | `packages/sourcevision/src/analyzers/callgraph-findings.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/callgraph.ts` | source | service | packages-sourcevision:analyzers-2 |
 | `packages/sourcevision/src/analyzers/classify.ts` | source | service | packages-sourcevision:analyzers |
-| `packages/sourcevision/src/analyzers/claude-client.ts` | source | gateway | packages-sourcevision:analyzers |
-| `packages/sourcevision/src/analyzers/completion-reader.ts` | source | utility | packages-sourcevision:analyzers |
+| `packages/sourcevision/src/analyzers/claude-client.ts` | source | service | packages-sourcevision:analyzers |
+| `packages/sourcevision/src/analyzers/completion-reader.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/components.ts` | source | service | packages-sourcevision:analyzers-2 |
 | `packages/sourcevision/src/analyzers/context.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/enrich-batch.ts` | source | service | packages-sourcevision:analyzers |
@@ -1128,8 +1114,8 @@ Prioritized work items derived from analysis:
 | `packages/sourcevision/src/analyzers/next-steps.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/risk-scoring.ts` | source | service | packages-sourcevision:unit |
 | `packages/sourcevision/src/analyzers/route-detection.ts` | source | route-handler | packages-sourcevision:analyzers-2 |
-| `packages/sourcevision/src/analyzers/server-route-detection.ts` | source | utility | packages-sourcevision:analyzers |
-| `packages/sourcevision/src/analyzers/token-usage.ts` | source | service | packages-sourcevision:analyzers |
+| `packages/sourcevision/src/analyzers/server-route-detection.ts` | source | service | packages-sourcevision:analyzers |
+| `packages/sourcevision/src/analyzers/token-usage.ts` | source | utility | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/workspace-aggregate.ts` | source | service | packages-sourcevision:unit |
 | `packages/sourcevision/src/analyzers/workspace-crossings.ts` | source | service | packages-sourcevision:analyzers |
 | `packages/sourcevision/src/analyzers/workspace.ts` | source | service | packages-sourcevision:analyzers |
@@ -1249,9 +1235,9 @@ Prioritized work items derived from analysis:
 | `packages/web/src/server/domain-gateway.ts` | source | gateway | web-viewer |
 | `packages/web/src/server/incremental-task-usage.ts` | source | service | web-server |
 | `packages/web/src/server/index.ts` | source | entrypoint | web-viewer |
-| `packages/web/src/server/mcp-deps.ts` | source | config | web-viewer |
+| `packages/web/src/server/mcp-deps.ts` | source | gateway | web-viewer |
 | `packages/web/src/server/port.ts` | source | utility | web-viewer |
-| `packages/web/src/server/pr-markdown-refresh-diagnostics.ts` | source | service | web-viewer |
+| `packages/web/src/server/pr-markdown-refresh-diagnostics.ts` | source | types | web-viewer |
 | `packages/web/src/server/process-memory-tracker.ts` | source | service | web-viewer |
 | `packages/web/src/server/rex-gateway.ts` | source | gateway | web-viewer |
 | `packages/web/src/server/routes-adaptive.ts` | source | route-handler | web-viewer |
@@ -1272,11 +1258,11 @@ Prioritized work items derived from analysis:
 | `packages/web/src/server/routes-validation.ts` | source | route-handler | web-viewer |
 | `packages/web/src/server/routes-workflow.ts` | source | route-handler | web-viewer |
 | `packages/web/src/server/search-index.ts` | source | service | web-viewer |
-| `packages/web/src/server/start.ts` | source | service | web-viewer |
-| `packages/web/src/server/task-usage.ts` | source | service | web-server |
+| `packages/web/src/server/start.ts` | source | entrypoint | web-viewer |
+| `packages/web/src/server/task-usage.ts` | source | entrypoint | web-server |
 | `packages/web/src/server/types.ts` | source | types | web-viewer |
 | `packages/web/src/server/usage-cleanup-scheduler.ts` | source | service | web-server |
-| `packages/web/src/server/websocket.ts` | source | middleware | web-viewer |
+| `packages/web/src/server/websocket.ts` | source | service | web-viewer |
 | `packages/web/src/shared/data-files.ts` | source | types | web-viewer |
 | `packages/web/src/shared/index.ts` | source | entrypoint | web-viewer |
 | `packages/web/src/shared/node-culler.ts` | source | utility | web-viewer |
@@ -1350,7 +1336,7 @@ Prioritized work items derived from analysis:
 | `packages/web/src/viewer/darkmode_logo.png` | asset |  | logo |
 | `packages/web/src/viewer/graph/index.ts` | source | entrypoint | web-viewer |
 | `packages/web/src/viewer/graph/physics.ts` | source | utility | web-viewer |
-| `packages/web/src/viewer/graph/renderer.ts` | source | utility | web-viewer |
+| `packages/web/src/viewer/graph/renderer.ts` | source | service | web-viewer |
 | `packages/web/src/viewer/hooks/use-app-data.ts` | source | hook | web-viewer |
 | `packages/web/src/viewer/hooks/use-crash-recovery.ts` | source | hook | web-viewer |
 | `packages/web/src/viewer/hooks/use-delete-actions.ts` | source | hook | web-viewer |
@@ -1383,17 +1369,17 @@ Prioritized work items derived from analysis:
 | `packages/web/src/viewer/loader.ts` | source | service | web-viewer |
 | `packages/web/src/viewer/main.ts` | source | entrypoint | web-viewer |
 | `packages/web/src/viewer/messaging/call-rate-limiter.ts` | source | utility | web-viewer |
-| `packages/web/src/viewer/messaging/fetch-pipeline.ts` | source | service | web-viewer |
+| `packages/web/src/viewer/messaging/fetch-pipeline.ts` | source | utility | web-viewer |
 | `packages/web/src/viewer/messaging/index.ts` | source | entrypoint | web-viewer |
 | `packages/web/src/viewer/messaging/message-coalescer.ts` | source | utility | web-viewer |
 | `packages/web/src/viewer/messaging/message-throttle.ts` | source | utility | web-viewer |
-| `packages/web/src/viewer/messaging/ws-pipeline.ts` | source | service | web-viewer |
-| `packages/web/src/viewer/performance/crash-detector.ts` | source | service | web-viewer |
-| `packages/web/src/viewer/performance/dom-performance-monitor.ts` | source | service | web-viewer |
+| `packages/web/src/viewer/messaging/ws-pipeline.ts` | source | utility | web-viewer |
+| `packages/web/src/viewer/performance/crash-detector.ts` | source | utility | web-viewer |
+| `packages/web/src/viewer/performance/dom-performance-monitor.ts` | source | utility | web-viewer |
 | `packages/web/src/viewer/performance/dom-update-gate.ts` | source | utility | web-viewer |
-| `packages/web/src/viewer/performance/graceful-degradation.ts` | source | service | web-viewer |
+| `packages/web/src/viewer/performance/graceful-degradation.ts` | source | utility | web-viewer |
 | `packages/web/src/viewer/performance/index.ts` | source | entrypoint | web-viewer |
-| `packages/web/src/viewer/performance/memory-monitor.ts` | source | service | web-viewer |
+| `packages/web/src/viewer/performance/memory-monitor.ts` | source | utility | web-viewer |
 | `packages/web/src/viewer/performance/refresh-throttle.ts` | source | utility | web-viewer |
 | `packages/web/src/viewer/performance/response-buffer-gate.ts` | source | utility | web-viewer |
 | `packages/web/src/viewer/performance/update-batcher.ts` | source | utility | web-viewer |
@@ -1488,7 +1474,7 @@ Prioritized work items derived from analysis:
 | `packages/web/src/viewer/visualization/colors.ts` | source | types | web-viewer |
 | `packages/web/src/viewer/visualization/flow.ts` | source | utility | web-viewer |
 | `packages/web/src/viewer/visualization/index.ts` | source | entrypoint | web-viewer |
-| `packages/web/src/viewer/visualization/metrics.ts` | source | types | web-viewer |
+| `packages/web/src/viewer/visualization/metrics.ts` | source | utility | web-viewer |
 | `packages/web/tests/helpers/crash-detector-test-support.ts` | test |  | web-viewer |
 | `packages/web/tests/integration/background-suspension-recovery.test.ts` | test |  | web-viewer |
 | `packages/web/tests/integration/boundary-check.test.ts` | test |  | web-viewer |
@@ -1662,7 +1648,7 @@ Prioritized work items derived from analysis:
 | `tests/unit/refresh-validate.test.js` | test |  | root |
 | `tsconfig.base.json` | config |  | root |
 | `vitest.config.js` | config |  | root |
-| `web.js` | source | service | root |
+| `web.js` | source | entrypoint | root |
 
 ## Tooling
 

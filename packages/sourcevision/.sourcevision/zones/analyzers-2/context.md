@@ -101,6 +101,7 @@ Incoming (other zones → this zone):
 - Zone name 'Analyzers 2' and the parallel 'Analyzers 3' zone indicate Louvain over-partitioned the src/analyzers/ directory into artificial sub-clusters. No coherent independent theme was found during enrichment, confirming these are fragmentation artifacts rather than genuine semantic boundaries.
 - Coupling metric inflated by Louvain over-partitioning; not a genuine cross-concern dependency.
 - Zone finding 1 (coupling warning 0.52, 15 imports to analyzers) is a Louvain partitioning artifact corroborated by global finding 10. The 15 crossings are intra-domain edges within one coherent analyzers domain that the algorithm split across zone boundaries. No refactoring of coupling is warranted; the actionable fix is structural (subdirectory organization of src/analyzers/).
+- Zone finding 1 (high coupling 0.52, warning) is directly contradicted by zone finding 2 (LLM analysis confirming Louvain artifact). The warning severity was unwarranted; the 15 crossings are intra-domain edges within a semantically unified analyzers domain that the algorithm split. No coupling refactoring is warranted.
 - [call graph] 384 internal calls, 7 outgoing, 34 incoming (cohesion: 0.98, coupling: 0.02)
 
 </insights>

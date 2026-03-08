@@ -1204,7 +1204,7 @@ Outgoing (this zone → other zones):
 
 <findings>
 
-[observation] [info] Contains 60% of project files (374/628) — subdivided into 6 sub-zones
+[observation] [info] Contains 60% of project files (374/627) — subdivided into 6 sub-zones
 [observation] [info] High cohesion (0.98) — files are tightly interconnected
 [suggestion] [info] Zone "web-viewer" has files across 22 directories — consider consolidating under a dedicated directory
 
@@ -1213,6 +1213,7 @@ Outgoing (this zone → other zones):
 <insights>
 
 - High cohesion (0.98) — files are tightly interconnected
+- Contains 60% of project files (374/627) — subdivided into 6 sub-zones
 - Contains 60% of project files (374/628) — subdivided into 6 sub-zones
 - Exemplary cohesion (0.98) across 374 files confirms the Louvain algorithm correctly unified all viewer UI, server logic, and MCP endpoint code into a single architectural boundary.
 - The three imports flowing into web-server create a deliberate seam — task-usage services are lightly separated, which is appropriate given they have independent test coverage.

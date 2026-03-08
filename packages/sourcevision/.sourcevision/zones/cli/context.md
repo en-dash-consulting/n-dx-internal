@@ -109,6 +109,7 @@ Incoming (other zones → this zone):
 
 [suggestion] [info] Zone "cli" has files across 7 directories — consider consolidating under a dedicated directory
 [suggestion] [warning] registerMcpTools in src/cli/mcp.ts (36 outgoing calls) should be decomposed into focused sub-registrar functions grouped by capability domain (e.g. registration of analysis tools, status tools, and workflow tools as separate named functions called in sequence). This is an in-file decomposition of the single oversized function — not a file split — which reduces call-graph fan-out and isolates the impact of future tool additions without changing the module's public API.
+[suggestion] [warning] registerMcpTools in src/cli/mcp.ts is the highest-priority actionable finding in this package, corroborated independently by automated fan-out analysis (36 outgoing calls, global finding 11) and LLM analysis (cli finding 1). Decompose into three sequential named sub-registrar functions within the same file — one per capability domain (analysis tools, status/reporting tools, workflow tools) — called in sequence from registerMcpTools. This is an in-file decomposition only; no file split is required or warranted at this threshold.
 
 </findings>
 
@@ -133,6 +134,7 @@ Incoming (other zones → this zone):
 - Zone "cli" has files across 7 directories — consider consolidating under a dedicated directory
 - registerMcpTools in src/cli/mcp.ts (36 outgoing calls) should be decomposed into focused sub-registrar functions grouped by capability domain (e.g. registration of analysis tools, status tools, and workflow tools as separate named functions called in sequence). This is an in-file decomposition of the single oversized function — not a file split — which reduces call-graph fan-out and isolates the impact of future tool additions without changing the module's public API.
 - Zone-level cohesion (0.71) and coupling (0.29) metrics are healthy in aggregate, but mask a within-zone file-level anti-pattern: registerMcpTools in src/cli/mcp.ts. Zone-aggregate metrics and file-level code quality are orthogonal — a zone can satisfy health thresholds while containing individual problematic functions.
+- registerMcpTools in src/cli/mcp.ts is the highest-priority actionable finding in this package, corroborated independently by automated fan-out analysis (36 outgoing calls, global finding 11) and LLM analysis (cli finding 1). Decompose into three sequential named sub-registrar functions within the same file — one per capability domain (analysis tools, status/reporting tools, workflow tools) — called in sequence from registerMcpTools. This is an in-file decomposition only; no file split is required or warranted at this threshold.
 - [call graph] 362 internal calls, 5 outgoing, 89 incoming (cohesion: 0.99, coupling: 0.01)
 
 </insights>

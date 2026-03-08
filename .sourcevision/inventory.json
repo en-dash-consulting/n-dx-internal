@@ -31,16 +31,6 @@
       "lastModified": 1772682844021
     },
     {
-      "path": ".hench/locks/406.lock",
-      "size": 59,
-      "language": "Other",
-      "lineCount": 4,
-      "hash": "bb18899753fe122baba1f6981e8ac78a366051729b854c427a8fb0fd8b2d5411",
-      "role": "other",
-      "category": ".hench",
-      "lastModified": 1772904075082
-    },
-    {
       "path": ".npmrc",
       "size": 60,
       "language": "Other",
@@ -92,13 +82,13 @@
     },
     {
       "path": ".rex/execution-log.jsonl",
-      "size": 99836,
+      "size": 102504,
       "language": "Other",
-      "lineCount": 409,
-      "hash": "33ad3aa52dd5606a7fb0edb92aa7503a48ec5c7767562306403f07efe1e8c339",
+      "lineCount": 419,
+      "hash": "f9763050ce14d21b45c7d0fae99aedbdd0624aea8aced57ddd17d1972cb67540",
       "role": "other",
       "category": ".rex",
-      "lastModified": 1772904637577
+      "lastModified": 1772909357729
     },
     {
       "path": ".rex/pending-proposals.json",
@@ -112,13 +102,13 @@
     },
     {
       "path": ".rex/prd.json",
-      "size": 996892,
+      "size": 999584,
       "language": "JSON",
-      "lineCount": 19377,
-      "hash": "02b2127e94db324dd31a34f71aa99023f8e2838ea510a71a126edf00de3b4e7a",
+      "lineCount": 19437,
+      "hash": "9a718b272263282708a4f9bb1f1941cd8e4805479ab864bd73a5e814870881a7",
       "role": "other",
       "category": ".rex",
-      "lastModified": 1772904637577
+      "lastModified": 1772909357728
     },
     {
       "path": ".rex/workflow.md",
@@ -5082,13 +5072,13 @@
     },
     {
       "path": "packages/sourcevision/src/analyzers/louvain.ts",
-      "size": 26946,
+      "size": 27162,
       "language": "TypeScript",
-      "lineCount": 804,
-      "hash": "43bc9930051d782bba068660bdb5a2693b06fb08f211f2c5116e85f239fc4419",
+      "lineCount": 808,
+      "hash": "580b1b433ce077b14e05ccb9585b2fd88ab0a4aa84240f7ae815ccd3d6bbbc80",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1772840104107
+      "lastModified": 1772906106119
     },
     {
       "path": "packages/sourcevision/src/analyzers/manifest.ts",
@@ -5202,13 +5192,13 @@
     },
     {
       "path": "packages/sourcevision/src/analyzers/zones.ts",
-      "size": 66436,
+      "size": 68131,
       "language": "TypeScript",
-      "lineCount": 1884,
-      "hash": "6ed77b8a5c24ceda7027c4c86aab2079f1245bee9bdccabdf1c74f2977bc4edf",
+      "lineCount": 1912,
+      "hash": "b5f76fa79184efc2ef87a7fb46a4b15f1f9961c205e4d376b18a2a5d9ff4d0fd",
       "role": "source",
       "category": "sourcevision",
-      "lastModified": 1772855330655
+      "lastModified": 1772906247572
     },
     {
       "path": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
@@ -5932,13 +5922,13 @@
     },
     {
       "path": "packages/sourcevision/tests/unit/analyzers/zone-detection.test.ts",
-      "size": 71745,
+      "size": 72421,
       "language": "TypeScript",
-      "lineCount": 1862,
-      "hash": "f8d3bc067b5f846058b37acc9f00a049a36de7981122a2e0d931c5030cf38257",
+      "lineCount": 1879,
+      "hash": "2c9a2ce7a57e16aa0c686250a756096a94ed6df8d3cb35e9ec82a0a4693fd254",
       "role": "test",
       "category": "sourcevision",
-      "lastModified": 1772845730383
+      "lastModified": 1772906151752
     },
     {
       "path": "packages/sourcevision/tests/unit/analyzers/zone-enrichment.test.ts",
@@ -5952,13 +5942,13 @@
     },
     {
       "path": "packages/sourcevision/tests/unit/analyzers/zone-insights.test.ts",
-      "size": 35470,
+      "size": 36599,
       "language": "TypeScript",
-      "lineCount": 880,
-      "hash": "2845ec99b9eaf205459f3dcb1fc5de1a3331a9bf1e01bdd70b10ffd201e53386",
+      "lineCount": 899,
+      "hash": "c37ac3bdaf5adda450129d92b2eef12a9de597245adeccde98d4f75951310a41",
       "role": "test",
       "category": "sourcevision",
-      "lastModified": 1772682844172
+      "lastModified": 1772906137905
     },
     {
       "path": "packages/sourcevision/tests/unit/analyzers/zone-output.test.ts",
@@ -10482,11 +10472,11 @@
     }
   ],
   "summary": {
-    "totalFiles": 1048,
-    "totalLines": 341930,
+    "totalFiles": 1047,
+    "totalLines": 342064,
     "byLanguage": {
       "YAML": 3,
-      "Other": 18,
+      "Other": 17,
       "JSON": 27,
       "Markdown": 31,
       "JavaScript": 40,
@@ -10498,7 +10488,7 @@
     "byRole": {
       "build": 5,
       "config": 20,
-      "other": 60,
+      "other": 59,
       "docs": 31,
       "source": 488,
       "asset": 11,
@@ -10508,7 +10498,7 @@
     "byCategory": {
       ".github": 1,
       "root": 25,
-      ".hench": 2,
+      ".hench": 1,
       ".rex": 8,
       "docs": 16,
       "hench": 156,

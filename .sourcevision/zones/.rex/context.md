@@ -8,7 +8,7 @@ Zone: .rex (`.rex`)
 Files: 8, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
 Description: 8 files, primarily JSON, Other, Markdown
-Lines: 25400
+Lines: 25470
 
 </zone>
 
@@ -18,9 +18,9 @@ Lines: 25400
 .rex/archive.json (JSON, 840 lines, other)
 .rex/config.json (JSON, 6 lines, other)
 .rex/execution-log.1.jsonl (Other, 3899 lines, other)
-.rex/execution-log.jsonl (Other, 409 lines, other)
+.rex/execution-log.jsonl (Other, 419 lines, other)
 .rex/pending-proposals.json (JSON, 818 lines, other)
-.rex/prd.json (JSON, 19377 lines, other)
+.rex/prd.json (JSON, 19437 lines, other)
 .rex/workflow.md (Markdown, 18 lines, docs)
 
 </files>

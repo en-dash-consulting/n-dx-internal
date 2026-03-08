@@ -19375,6 +19375,63 @@
         },
         "findingCount": 1
       }
+    },
+    {
+      "id": "e25387fb-b60e-4055-9c30-76ca15f05e02",
+      "title": "Address observation issues (1 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "3a82920140f7"
+        ],
+        "category": "observation",
+        "severityDistribution": {
+          "warning": 1
+        },
+        "findingCount": 1
+      }
+    },
+    {
+      "id": "a391ed1b-fc38-41a1-bd85-b0c5d3e8a014",
+      "title": "Address pattern issues (1 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Redundancy cluster with highest recurrence: mcp-deps.ts @deprecated drift appears in global findings 9 (partial), 12, and 13 plus an indirect reference in finding 4 — four independent mentions, the most of any single issue. Concrete resolution steps from finding 13: run grep -r 'mcp-deps' packages/web/src/ excluding packages/web/src/server/rex-gateway.ts and packages/web/src/server/domain-gateway.ts; if the result is empty, delete packages/web/src/server/mcp-deps.ts entirely and remove any barrel re-exports referencing it; if callers remain, add a no-restricted-imports ESLint rule in packages/web/.eslintrc.* that errors on direct mcp-deps imports and names rex-gateway.ts and domain-gateway.ts as replacements. Completing this step closes findings 9, 12, and 13 simultaneously.",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "4fb517c551e0"
+        ],
+        "category": "pattern",
+        "severityDistribution": {
+          "warning": 1
+        },
+        "findingCount": 1
+      }
+    },
+    {
+      "id": "436ac6c9-4bf1-4faf-b715-e30a0aee5cbf",
+      "title": "Address anti-pattern issues (1 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- God function: cmdRecommend in packages/rex/src/cli/commands/recommend.ts calls 36 unique functions — consider decomposing into smaller, focused functions",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "2ddd730b6413"
+        ],
+        "category": "anti-pattern",
+        "severityDistribution": {
+          "warning": 1
+        },
+        "findingCount": 1
+      }
     }
   ]
 }

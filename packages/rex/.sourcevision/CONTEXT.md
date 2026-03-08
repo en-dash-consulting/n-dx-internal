@@ -38,7 +38,7 @@ Import edges: 890, External packages: 5
   files: src/analyze/acknowledge.ts [service], src/analyze/extract.ts [utility], src/analyze/reconcile.ts [service], src/analyze/scanners.ts [service], src/cli/commands/recommend.ts [cli-command], src/recommend/conflict-detection.ts [utility], src/recommend/create-from-recommendations.ts [service], src/recommend/types.ts [types], tests/unit/analyze/acknowledge.test.ts, tests/unit/analyze/extract-llm-mock.test.ts +9
 [unit-analyze] Unit Analyze (69 files, coh=0.50 coup=0.50)
   69 files, primarily TypeScript
-  files: src/analyze/analyze-shared.ts [utility], src/analyze/consolidation-guard.ts [utility], src/analyze/decompose.ts [service], src/analyze/dedupe.ts [utility], src/analyze/diff.ts [utility], src/analyze/file-validation.ts [utility], src/analyze/guided.ts [service], src/analyze/index.ts [entrypoint], src/analyze/llm-bridge.ts [gateway], src/analyze/modify-reason.ts [service] +59
+  files: src/analyze/analyze-shared.ts [utility], src/analyze/consolidation-guard.ts [service], src/analyze/decompose.ts [service], src/analyze/dedupe.ts [utility], src/analyze/diff.ts [utility], src/analyze/file-validation.ts [utility], src/analyze/guided.ts [service], src/analyze/index.ts [entrypoint], src/analyze/llm-bridge.ts [service], src/analyze/modify-reason.ts [service] +59
 [unit-cli] Unit Cli (4 files, coh=0.25 coup=0.75)
   4 files, primarily TypeScript
   files: src/cli/commands/fix.ts [cli-command], src/core/fix.ts [utility], tests/unit/cli/commands/fix.test.ts, tests/unit/core/fix.test.ts
@@ -84,7 +84,7 @@ Most imported:
 [warning] High coupling (0.83) — 7 imports target "unit-analyze" [unit-core]
 [warning] Low cohesion (0.17) — files are loosely related, consider splitting this zone [unit-core]
 [warning] The bidirectional coupling between cli and unit-analyze (58 outbound + 35 inbound = 93 crossings, finding global-0) is corroborated by cmdAnalyze calling 44 unique functions (finding global-12) and the CLI-boundary pattern analysis (finding global-11). The concrete fix is contained to two files: (1) decompose src/cli/commands/analyze.ts so that cmdAnalyze delegates to focused sub-handlers rather than calling 44 functions directly, and (2) audit src/cli/commands/ for files that import unit-analyze internals directly and route those calls through the existing gateway pattern. No file splits are required — this is import discipline and delegation, not decomposition. [cli]
-... +6 more
+... +10 more
 
 </findings>
 
@@ -130,7 +130,7 @@ Most imported:
 [medium] The bidirectional coupling between cli and unit-analyze (58 outbound + 35 inbou…
   files: src/analyze/reshape-reason.ts, src/cli/commands/adapter.ts, src/cli/commands/chunked-review-state.ts
   category: refactor
-[medium] 13 entry points — wide API surface, consider consolidating exports
+[medium] The concrete action to resolve the cli↔unit-analyze bidirectional coupling (58+…
   files: src/analyze/reshape-reason.ts, src/cli/commands/adapter.ts, src/cli/commands/chunked-review-state.ts
   category: refactor
 

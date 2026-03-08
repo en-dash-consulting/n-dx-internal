@@ -9,7 +9,7 @@ Files: 28, Cohesion: 0.42, Coupling: 0.58
 Risk: healthy (score: 0.58)
 Description: 28 files, primarily TypeScript
 Entry points: src/analyzers/branch-work-classifier.ts, src/analyzers/risk-scoring.ts, src/cli/commands/workspace.ts, src/cli/mcp.ts, src/generators/pr-markdown-template.ts, src/schema/data-files.ts, src/schema/v1.ts, tests/unit/analyzers/zones-helpers.ts
-Lines: 11513
+Lines: 11532
 
 </zone>
 
@@ -36,7 +36,7 @@ tests/unit/analyzers/next-steps.test.ts (TypeScript, 650 lines, test)
 tests/unit/analyzers/risk-scoring.test.ts (TypeScript, 311 lines, test)
 tests/unit/analyzers/workspace-aggregate.test.ts (TypeScript, 702 lines, test)
 tests/unit/analyzers/zone-enrichment.test.ts (TypeScript, 862 lines, test)
-tests/unit/analyzers/zone-insights.test.ts (TypeScript, 880 lines, test)
+tests/unit/analyzers/zone-insights.test.ts (TypeScript, 899 lines, test)
 tests/unit/analyzers/zones-helpers.ts (TypeScript, 67 lines, test)
 tests/unit/cli/mcp.test.ts (TypeScript, 230 lines, test)
 tests/unit/cli/workspace.test.ts (TypeScript, 59 lines, test)
@@ -106,7 +106,6 @@ Incoming (other zones → this zone):
 
 [observation] [warning] High coupling (0.58) — 27 imports target "analyzers"
 [suggestion] [info] Zone "unit" has files across 11 directories — consider consolidating under a dedicated directory
-[pattern] [info] Zone finding 0 (coupling warning 0.57, 27 imports to analyzers) should be treated as info: per global finding 11, the 27 crossings are unit-test files importing their implementations under test — structurally correct by design. Only the reverse direction (analyzers production code importing from unit-scope modules) would constitute a real layering violation.
 
 </findings>
 
@@ -134,6 +133,6 @@ Incoming (other zones → this zone):
 - Zone "unit" has files across 11 directories — consider consolidating under a dedicated directory
 - The coupling metric (0.57) is dominated by test-to-implementation imports, which are expected by design and carry no architectural risk.
 - Zone finding 0 (coupling warning 0.57, 27 imports to analyzers) should be treated as info: per global finding 11, the 27 crossings are unit-test files importing their implementations under test — structurally correct by design. Only the reverse direction (analyzers production code importing from unit-scope modules) would constitute a real layering violation.
-- [call graph] 1337 internal calls, 268 outgoing, 575 incoming (cohesion: 0.83, coupling: 0.17)
+- [call graph] 1339 internal calls, 270 outgoing, 579 incoming (cohesion: 0.83, coupling: 0.17)
 
 </insights>

@@ -7,7 +7,7 @@
 
 Project: sourcevision
 Git: main @ 63d150a
-Files: 141, Lines: 45833
+Files: 141, Lines: 45901
 Languages: TypeScript(128) JSON(7) Markdown(3) Other(3)
 Zones: 9, Described: 9
 Import edges: 350, External packages: 7
@@ -42,7 +42,7 @@ Import edges: 350, External packages: 7
   files: ARCHITECTURE.md, README.md, SourceVision-F.png, SourceVision.png, WORKSPACE_DESIGN.md, package-lock.json, package.json, tsconfig.json, tsconfig.tsbuildinfo, vitest.config.ts
 [unit] Unit (28 files, coh=0.42 coup=0.58)
   28 files, primarily TypeScript
-  files: src/analyzers/branch-work-classifier.ts [utility], src/analyzers/branch-work-filter.ts [utility], src/analyzers/branch-work-store.ts [service], src/analyzers/risk-scoring.ts [service], src/analyzers/workspace-aggregate.ts [service], src/cli/commands/workspace.ts [cli-command], src/cli/mcp.ts [service], src/generators/pr-markdown-template.ts [service], src/public.ts [entrypoint], src/schema/data-files.ts [schema] +18
+  files: src/analyzers/branch-work-classifier.ts [utility], src/analyzers/branch-work-filter.ts [utility], src/analyzers/branch-work-store.ts [service], src/analyzers/risk-scoring.ts [utility], src/analyzers/workspace-aggregate.ts [service], src/cli/commands/workspace.ts [cli-command], src/cli/mcp.ts [service], src/generators/pr-markdown-template.ts [utility], src/public.ts [entrypoint], src/schema/data-files.ts [schema] +18
 [unzoned] 3 files: tests/fixtures/remix-app/app/root.tsx, tests/fixtures/remix-app/tsconfig.json, tests/fixtures/small-ts-project/tsconfig.json
 
 Detailed zone context: .sourcevision/zones/{id}/context.md
@@ -76,8 +76,8 @@ Most imported:
 [warning] Bidirectional coupling: "analyzers" ↔ "unit" (7+27 crossings) — consider extracting shared interface
 [warning] High coupling (0.58) — 27 imports target "analyzers" [unit]
 [warning] registerMcpTools in src/cli/mcp.ts (36 outgoing calls) should be decomposed into focused sub-registrar functions grouped by capability domain (e.g. registration of analysis tools, status tools, and workflow tools as separate named functions called in sequence). This is an in-file decomposition of the single oversized function — not a file split — which reduces call-graph fan-out and isolates the impact of future tool additions without changing the module's public API. [cli]
-[warning] Organizing src/analyzers/ into semantic subdirectories (e.g. src/analyzers/zones/, src/analyzers/imports/, src/analyzers/components/) is corroborated by three independent sources: global finding 7 (LLM highest-leverage suggestion), global finding 4 (heuristic: 5 zones share src/analyzers/), and the two generic-name warnings for analyzers-2 and analyzers-3. This single structural change collapses three artificial zones into one coherent domain, eliminates the false-positive coupling and low-cohesion warnings, enables meaningful zone naming without manual enrichment, and removes the need for the contradictions documented in global findings 5 and 6. No API surface changes are required — only directory layout and import path updates.
-[warning] The 6 crossings in the analyzers→unit direction (the minority direction in global finding 0) are the only surviving potential layering violation after removing Louvain artifacts. If any of these 6 imports in src/analyzers/ production files target test utilities, unit-only types, or test fixtures, the shared types should be extracted to a neutral location (e.g. src/types/ or src/shared/) accessible to both layers without creating a prod→test dependency. These 6 specific edges should be audited before any refactoring of the analyzers domain.
+[warning] registerMcpTools in src/cli/mcp.ts is the highest-priority actionable finding in this package, corroborated independently by automated fan-out analysis (36 outgoing calls, global finding 11) and LLM analysis (cli finding 1). Decompose into three sequential named sub-registrar functions within the same file — one per capability domain (analysis tools, status/reporting tools, workflow tools) — called in sequence from registerMcpTools. This is an in-file decomposition only; no file split is required or warranted at this threshold. [cli]
+[warning] Recommended execution sequence for all actionable findings: (1) Verify and remove dead exports detectBranchLifecycle and resolveWorkedEpicTitlesForRange if confirmed unused. (2) Audit the 6 specific production→test import edges (global finding 5) and extract any shared declarations to src/types/ or src/shared/ if needed. (3) Decompose registerMcpTools in src/cli/mcp.ts into focused sub-registrar functions. (4) Apply subdirectory grouping within src/analyzers/ to collapse the three artificial Louvain zones into one coherent domain zone. Steps 1–3 are independent and can proceed in parallel; step 4 depends on step 2 being clean.
 [warning] God function: registerMcpTools in src/cli/mcp.ts calls 36 unique functions — consider decomposing into smaller, focused functions
 [warning] Zone "Analyzers 3" (analyzers-3) has critical risk (score: 0.69, cohesion: 0.31, coupling: 0.69) — requires refactoring before new feature development [analyzers-3]
 
@@ -106,16 +106,19 @@ Most imported:
 [medium] High coupling (0.52) — 15 imports target "analyzers"
   files: src/analyzers/callgraph.ts, src/analyzers/components.ts, src/analyzers/imports.ts
   category: refactor
-[medium] The 6 crossings in the analyzers→unit direction (the minori… (+1 related)
+[medium] God function: registerMcpTools in src/cli/mcp.ts calls 36 unique functions — co…
   category: refactor
 [medium] registerMcpTools in src/cli/mcp.ts (36 outgoing calls) should be decomposed int…
+  files: src/analyzers/branch-work-collector.ts, src/analyzers/manifest.ts, src/cli/commands/constants.ts
+  category: refactor
+[medium] registerMcpTools in src/cli/mcp.ts is the highest-priority actionable finding i…
   files: src/analyzers/branch-work-collector.ts, src/analyzers/manifest.ts, src/cli/commands/constants.ts
   category: refactor
 [medium] 16 entry points — wide API surface, consider consolidating exports
   files: src/analyzers/archetypes.ts, src/analyzers/callgraph-findings.ts, src/analyzers/classify.ts
   category: refactor
-[medium] Organizing src/analyzers/ into semantic subdirectories (e.g. src/analyzers/zone…
-  category: extract
+[medium] Recommended execution sequence for all actionable findings: (1) Verify and remo…
+  category: refactor
 [medium] Bidirectional coupling: "analyzers" ↔ "unit" (7+27 crossings) — consider extrac…
   category: refactor
 

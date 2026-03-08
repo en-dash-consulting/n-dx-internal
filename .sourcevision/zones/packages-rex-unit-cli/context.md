@@ -64,6 +64,7 @@ Incoming (other zones → this zone):
 - Zone name 'fix-command' uses verb-object pattern while 'task-selection' uses noun-phrase pattern — the two leaf command zones have inconsistent naming conventions. Standardize: either both use verb-object ('fix-command', 'next-command') or both use noun-phrase ('issue-fix', 'task-selection').
 - Near-threshold coupling (0.6) in a 4-file zone will likely cross the warning boundary when additional test cases are added, since unit test imports count toward coupling. Consider excluding intra-zone test→production imports from coupling calculations to keep metrics meaningful for small, well-tested command zones.
 - This is a test zone for CLI unit tests. The catastrophic risk score (0.75) is entirely attributable to test files importing CLI and domain implementation — the expected and correct pattern for unit tests. No architectural intervention is warranted.
+- All three findings are false positives. unit-cli is a test zone; coupling score 0.75 reflects test-to-implementation imports by design. No architectural intervention is warranted.
 - [call graph] 136 internal calls, 15 outgoing, 1 incoming (cohesion: 0.9, coupling: 0.1)
 
 </insights>
