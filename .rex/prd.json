@@ -19379,11 +19379,12 @@
     {
       "id": "e25387fb-b60e-4055-9c30-76ca15f05e02",
       "title": "Address observation issues (1 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 22 files — high-impact module, changes may have wide ripple effects",
       "priority": "high",
       "source": "sourcevision",
+      "startedAt": "2026-03-08T01:32:10.448Z",
       "recommendationMeta": {
         "findingHashes": [
           "3a82920140f7"
@@ -19393,7 +19394,8 @@
           "warning": 1
         },
         "findingCount": 1
-      }
+      },
+      "completedAt": "2026-03-08T01:35:45.114Z"
     },
     {
       "id": "a391ed1b-fc38-41a1-bd85-b0c5d3e8a014",
@@ -19417,16 +19419,37 @@
     {
       "id": "436ac6c9-4bf1-4faf-b715-e30a0aee5cbf",
       "title": "Address anti-pattern issues (1 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- God function: cmdRecommend in packages/rex/src/cli/commands/recommend.ts calls 36 unique functions — consider decomposing into smaller, focused functions",
       "priority": "high",
       "source": "sourcevision",
+      "startedAt": "2026-03-08T01:28:02.825Z",
+      "completedAt": "2026-03-08T01:31:57.648Z",
       "recommendationMeta": {
         "findingHashes": [
           "2ddd730b6413"
         ],
         "category": "anti-pattern",
+        "severityDistribution": {
+          "warning": 1
+        },
+        "findingCount": 1
+      }
+    },
+    {
+      "id": "603cdd22-0d5a-45bc-b79f-d04f44194a2e",
+      "title": "Address suggestion issues (1 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- mcp-deps.ts deletion is unblocked: static analysis confirms zero runtime import callers in packages/web/src. Concrete steps: (1) delete packages/web/src/server/mcp-deps.ts, (2) update the @see JSDoc comment in packages/web/src/public.ts (lines 36–44) and packages/web/src/viewer/components/prd-tree/types.ts (line 13) to reference rex-gateway.ts and domain-gateway.ts instead, (3) add a no-restricted-imports ESLint rule in packages/web/.eslintrc.* that errors on any future direct import of mcp-deps. This closes global findings 3, 4, and 5 together.",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "595c70dc1265"
+        ],
+        "category": "suggestion",
         "severityDistribution": {
           "warning": 1
         },
