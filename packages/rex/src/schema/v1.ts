@@ -28,6 +28,16 @@
  * @module rex/schema/v1
  */
 
+/**
+ * The schema version string embedded in every PRD document.
+ *
+ * This constant is the contract between rex and all `.rex/prd.json`
+ * consumers: hench (reader/writer via rex-gateway), web server (reader
+ * via MCP and REST), and CI (validator). When the schema changes
+ * incompatibly, bump the major version to trigger `isCompatibleSchema()`
+ * failures at every read boundary, preventing silent data corruption
+ * across the three-tier hierarchy (domain → execution → orchestration).
+ */
 export const SCHEMA_VERSION = "rex/v1";
 
 /**

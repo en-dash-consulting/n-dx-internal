@@ -5,6 +5,7 @@ import { validateDocument, validateConfig, validateLogEntry } from "../schema/va
 import { toCanonicalJSON } from "../core/canonical.js";
 import { findItem, insertChild, updateInTree, removeFromTree } from "../core/tree.js";
 import { loadProjectOverrides, mergeWithOverrides } from "./project-config.js";
+import { atomicWriteJSON } from "./atomic-write.js";
 import type { PRDStore, StoreCapabilities } from "./contracts.js";
 
 export class FileStore implements PRDStore {
@@ -33,7 +34,7 @@ export class FileStore implements PRDStore {
     if (!result.ok) {
       throw new Error(`Invalid document: ${result.errors.message}`);
     }
-    await writeFile(this.path("prd.json"), toCanonicalJSON(doc), "utf-8");
+    await atomicWriteJSON(this.path("prd.json"), doc, toCanonicalJSON);
   }
 
   async getItem(id: string): Promise<PRDItem | null> {

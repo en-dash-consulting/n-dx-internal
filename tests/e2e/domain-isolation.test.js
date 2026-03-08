@@ -153,6 +153,19 @@ describe("gateway-rules.json validation", () => {
   });
 });
 
+/**
+ * Domain-tier isolation policy.
+ *
+ * Rex and sourcevision sit at the domain layer and may import only from
+ * @n-dx/llm-client (foundation). They are not listed in gateway-rules.json
+ * because they have no cross-package runtime imports that require a gateway.
+ * Foundation-tier imports are intentionally ungated — @n-dx/llm-client is the
+ * shared bottom of the hierarchy, designed for direct use by all tiers.
+ *
+ * The tests below enforce domain isolation more strictly than the gateway
+ * pattern: they block all imports from sibling domain or upper-layer packages,
+ * not just un-gated ones.
+ */
 describe("architecture policy: domain layer isolation", () => {
   it("rex must not import from sourcevision, hench, or @n-dx/web", () => {
     const forbidden = ["sourcevision", "hench", "@n-dx/web"];
