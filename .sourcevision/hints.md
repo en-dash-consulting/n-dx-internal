@@ -57,3 +57,19 @@ not remote infrastructure. `report.ts` is a read-only status display command.
 
 `constants.ts` is a foundation-level shared module with 7-zone fan-out — it
 belongs in rex-runtime-data, not in any feature-specific zone.
+
+## Hench store files
+
+`packages/hench/src/store/suggestions.ts` and its test belong in the hench-agent
+zone alongside the rest of the hench store layer (config.ts, runs.ts, json.ts,
+etc.). They should NOT be grouped with web package files — the import graph
+places them in a residual zone due to weak connectivity, but their domain purpose
+is clearly hench agent infrastructure.
+
+## Task usage analytics coupling
+
+The bidirectional zone crossing between task-usage-analytics and web-dashboard is
+dependency-injection based, not a true circular dependency. The cleanup scheduler
+receives `collectAllIds` as a callback parameter rather than importing it directly
+from rex-gateway. The shared-types.ts file serves as a zone-neutral type anchor.
+This is intentional architecture.

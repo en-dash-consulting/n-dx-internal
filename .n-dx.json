@@ -66,7 +66,10 @@
         "packages/web/src/server/domain-gateway.ts": "web-viewer",
         "packages/web/src/server/routes-mcp.ts": "web-viewer",
         "packages/web/tests/unit/server/domain-gateway.test.ts": "web-viewer",
-        "packages/web/tests/unit/server/routes-mcp.test.ts": "web-viewer"
+        "packages/web/tests/unit/server/routes-mcp.test.ts": "web-viewer",
+
+        "packages/hench/src/store/suggestions.ts": "hench-agent",
+        "packages/hench/tests/unit/store/suggestions.test.ts": "hench-agent"
       }
     },
     "riskJustifications": [
@@ -89,7 +92,7 @@
       {
         "zone": "global",
         "file": "packages/rex/src/schema/index.ts",
-        "reason": "Schema barrel file with high fan-in (22+ importers) is by design. It serves as the single public surface for rex's type definitions and domain constants. The docblock explicitly documents the stability contract: adding exports is safe, renaming/removing requires updating all consumers. Splitting the barrel would scatter the public API without reducing coupling."
+        "reason": "Schema barrel file with high fan-in (24 importers) is by design. It serves as the single public surface for rex's type definitions and domain constants. The docblock explicitly documents the stability contract: adding exports is safe, renaming/removing requires updating all consumers. Splitting the barrel would scatter the public API without reducing coupling."
       },
       {
         "zone": "mcp-route-layer",
@@ -126,6 +129,19 @@
       {
         "zone": "packages-rex:rex-status-mcp-cli",
         "reason": "Read-only CLI commands (status, health, usage, report) and MCP tool definitions. After absorbing report.ts and pinning constants.ts to rex-runtime-data, the zone focuses on query/display operations. Remaining coupling reflects legitimate dependencies on core stats, health checks, and token usage modules."
+      },
+      {
+        "zone": "global",
+        "scope": "task-usage-analytics↔web-dashboard",
+        "reason": "Bidirectional coupling is architectural, not circular. web-dashboard (start.ts, routes-hench.ts) imports from task-usage.ts facade; usage-cleanup-scheduler.ts receives its only dashboard dependency (collectAllIds) via dependency injection callback, not direct import. The shared-types.ts file acts as a zone-neutral type anchor. Data flows strictly one-way at runtime: web-dashboard → task-usage-analytics → prd-io. No refactoring would reduce zone crossings without breaking the DI pattern."
+      },
+      {
+        "zone": "web-build-infrastructure",
+        "reason": "After pinning hench store files (suggestions.ts) to hench-agent and viewer components to web-viewer, this zone contracts to its true purpose: web package root-level build and config files (build.js, dev.js, package.json, tsconfig.json, vitest.config.ts, landing page assets). Low cohesion is inherent — build/config files do not import each other. The zone is a structural grouping, not a domain unit."
+      },
+      {
+        "zone": "web-dashboard",
+        "reason": "11 entry points reflect the zone's dual role as both server infrastructure and viewer application. Server entry points (prd-io.ts, rex-gateway.ts, types.ts) serve route handlers; viewer entry points (logos.ts, rex-task-link.ts, sidebar.ts, polling/index.ts, polling-state.ts, performance/index.ts, viewer/types.ts, usage/constants.ts) serve the SPA component tree. Each serves a distinct consumer. Consolidation would require artificial barrel modules that add indirection without reducing the API surface."
       }
     ]
   }
