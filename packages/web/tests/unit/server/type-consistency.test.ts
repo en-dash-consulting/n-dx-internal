@@ -57,7 +57,11 @@ import {
   isItemLevel as gatewayIsItemLevel,
   isRequirementCategory as gatewayIsReqCategory,
   isValidationType as gatewayIsValidationType,
+  resolveStore as gatewayResolveStore,
 } from "../../../src/server/rex-gateway.js";
+
+// Canonical store exports from Rex
+import { resolveStore as canonicalResolveStore } from "../../../../rex/src/store/index.js";
 
 describe("Gateway re-exports are identical to canonical", () => {
   /**
@@ -112,6 +116,10 @@ describe("Gateway re-exports are identical to canonical", () => {
 
   it("isValidationType is same reference", () => {
     expect(gatewayIsValidationType).toBe(canonicalIsValidationType);
+  });
+
+  it("resolveStore is same reference", () => {
+    expect(gatewayResolveStore).toBe(canonicalResolveStore);
   });
 });
 

@@ -42,6 +42,7 @@ import { randomUUID } from "node:crypto";
 import { exec as foundationExec, spawnManaged, killWithFallback, type ManagedChild } from "@n-dx/llm-client";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./types.js";
+import { loadPRDSync, savePRDSync } from "./prd-io.js";
 import type { WebSocketBroadcaster } from "./websocket.js";
 
 import {
@@ -159,19 +160,12 @@ function findNextTask(items: PRDItem[], completedIds: Set<string>): PRDItem | nu
 
 /** Load and parse prd.json. Returns null if not found. */
 function loadPRD(ctx: ServerContext): PRDDocument | null {
-  const prdPath = join(ctx.rexDir, "prd.json");
-  if (!existsSync(prdPath)) return null;
-  try {
-    return JSON.parse(readFileSync(prdPath, "utf-8")) as PRDDocument;
-  } catch {
-    return null;
-  }
+  return loadPRDSync(ctx.rexDir);
 }
 
 /** Save prd.json. */
 function savePRD(ctx: ServerContext, doc: PRDDocument): void {
-  const prdPath = join(ctx.rexDir, "prd.json");
-  writeFileSync(prdPath, JSON.stringify(doc, null, 2) + "\n");
+  savePRDSync(ctx.rexDir, doc);
 }
 
 // EpicStats, PriorityDistribution, RequirementsSummary types and functions

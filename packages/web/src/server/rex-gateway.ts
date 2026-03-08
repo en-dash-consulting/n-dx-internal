@@ -19,6 +19,10 @@
 // ---- Rex MCP server factory -------------------------------------------------
 export { createRexMcpServer } from "rex";
 
+// ---- Rex store (PRD persistence) --------------------------------------------
+export { resolveStore } from "rex";
+export type { PRDStore } from "rex";
+
 // ---- Rex domain types & constants -------------------------------------------
 export type { Priority, ItemLevel, ItemStatus } from "rex";
 export type { RequirementCategory, RequirementValidationType } from "rex";

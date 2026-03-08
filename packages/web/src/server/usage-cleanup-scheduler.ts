@@ -33,6 +33,7 @@
 import { readFileSync, appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import type { IncrementalTaskUsageAggregator, TaskUsageAccumulator } from "./incremental-task-usage.js";
+import { loadPRDSync } from "./prd-io.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -170,15 +171,9 @@ function loadValidTaskIds(
   rexDir: string,
   collectAllIds: CollectAllIdsFn,
 ): Set<string> | null {
-  const prdPath = join(rexDir, "prd.json");
-  if (!existsSync(prdPath)) return null;
-  try {
-    const doc = JSON.parse(readFileSync(prdPath, "utf-8")) as PRDShape;
-    if (!Array.isArray(doc.items)) return null;
-    return collectAllIds(doc.items);
-  } catch {
-    return null;
-  }
+  const doc = loadPRDSync(rexDir) as PRDShape | null;
+  if (!doc || !Array.isArray(doc.items)) return null;
+  return collectAllIds(doc.items);
 }
 
 // ---------------------------------------------------------------------------

@@ -15,7 +15,6 @@ packages/
   sourcevision/    # analysis engine
   rex/             # PRD + task tracker
   hench/           # autonomous agent
-  claude-client/   # compatibility bridge to llm-client
   llm-client/      # vendor-neutral LLM foundation (claude adapter + future vendors)
   web/             # dashboard + MCP HTTP server
 ci.js              # CI pipeline (analysis + PRD health validation)
@@ -30,6 +29,7 @@ Four-tier dependency hierarchy (each layer imports only from the layer below):
 
 ```
   Orchestration   cli.js, web.js, ci.js        (spawns CLIs, no library imports)
+                  config.js                     (spawn-exempt — see note below)
        ↓
   Execution       hench                         (agent loops, tool dispatch)
        ↓
@@ -39,6 +39,8 @@ Four-tier dependency hierarchy (each layer imports only from the layer below):
 ```
 
 Zero circular dependencies. The web package sits alongside orchestration — it imports all domain packages to serve the unified dashboard.
+
+> **Spawn-exempt exception:** `config.js` directly reads/writes package config files (`.rex/config.json`, `.hench/config.json`, `.sourcevision/manifest.json`, `.n-dx.json`) rather than delegating to spawned CLIs. This is intentional — config operations require cross-package reads, atomic merges, and validation logic that cannot be expressed as a single CLI spawn. It is the only orchestration-tier script that breaks the spawn-only rule.
 
 ### Gateway modules
 
