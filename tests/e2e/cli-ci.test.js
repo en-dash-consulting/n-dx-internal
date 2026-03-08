@@ -27,6 +27,8 @@ function runResult(args) {
 async function setupProject(dir) {
   await setupSourcevisionDir(dir);
   await setupRexDir(dir, { project: "test-ci-project" });
+  // CI step 0 checks community files — provide CODE_OF_CONDUCT.md
+  await writeFile(join(dir, "CODE_OF_CONDUCT.md"), "# Code of Conduct\nBe kind.\n");
 }
 
 describe("n-dx ci", () => {

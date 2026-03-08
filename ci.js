@@ -6,6 +6,7 @@
  *
  * Steps:
  *   0. community files check        (CODE_OF_CONDUCT.md exists and is non-empty)
+ *   0a. architecture docs freshness (docs/architecture/ staleness check)
  *   1. sourcevision analyze --fast  (codebase analysis, no AI enrichment)
  *   2. sourcevision validate        (schema checks on analysis output)
  *   3. zone health check            (cohesion/coupling threshold assertions)
@@ -17,7 +18,7 @@
  * Exits 0 if all steps pass, 1 otherwise.
  */
 
-import { spawn } from "child_process";
+import { spawn, spawnSync } from "child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { dirname, join, resolve, relative } from "path";
 import { fileURLToPath } from "url";
@@ -107,6 +108,33 @@ export async function runCI(dir, flags, { run, tools }) {
     if (!isJSON) {
       for (const m of communityResult.missing) {
         info(`    ✗ ${m}`);
+      }
+    }
+  }
+
+  // ── Step 0a: architecture docs freshness ────────────────────────────────
+  // Detects docs/architecture/ files that haven't been updated since the
+  // source-of-truth files they document (CLAUDE.md, gateway-rules.json)
+  // were last changed. Warns-only — does not fail the pipeline.
+  info("── architecture docs freshness ──");
+  const archDocsResult = checkArchitectureDocsFreshness(dir);
+
+  steps.push({
+    name: "architecture-docs-freshness",
+    ok: true, // warn-only, never fails the pipeline
+    detail: archDocsResult.stale.length === 0
+      ? `${archDocsResult.checked} architecture doc(s) up to date`
+      : `${archDocsResult.stale.length} architecture doc(s) may be stale`,
+    ...(archDocsResult.stale.length > 0 ? { stale: archDocsResult.stale } : {}),
+  });
+
+  if (archDocsResult.stale.length === 0) {
+    info(`  ✓ architecture docs freshness (${archDocsResult.checked} checked)`);
+  } else {
+    info(`  ⚠ architecture docs freshness`);
+    if (!isJSON) {
+      for (const s of archDocsResult.stale) {
+        info(`    ⚠ ${s}`);
       }
     }
   }
@@ -1045,4 +1073,101 @@ function checkDataLayerContract(dir) {
     checked,
     violations,
   };
+}
+
+// ── Architecture docs freshness ──────────────────────────────────────────────
+
+/**
+ * Source-of-truth files whose changes should trigger architecture doc review.
+ * If any of these files were committed more recently than an architecture doc,
+ * the doc is flagged as potentially stale.
+ */
+const ARCHITECTURE_SOURCE_FILES = ["CLAUDE.md", "gateway-rules.json", "PACKAGE_GUIDELINES.md"];
+
+/**
+ * Get the Unix timestamp of the most recent git commit that touched a file.
+ * Returns 0 if the file is untracked or git is unavailable.
+ *
+ * @param {string} filePath  Absolute path to the file
+ * @param {string} cwd       Working directory for git commands
+ * @returns {number}         Unix timestamp (seconds since epoch), or 0
+ */
+function gitLastCommitTime(filePath, cwd) {
+  try {
+    const result = spawnSync("git", ["log", "-1", "--format=%ct", "--", filePath], {
+      cwd,
+      encoding: "utf-8",
+      timeout: 5000,
+    });
+    if (result.status === 0 && result.stdout.trim()) {
+      return parseInt(result.stdout.trim(), 10) || 0;
+    }
+  } catch {
+    // git not available or not a git repo — skip
+  }
+  return 0;
+}
+
+/**
+ * Check whether docs/architecture/ files are stale relative to the
+ * source-of-truth files they document.
+ *
+ * Uses git commit timestamps: if a source-of-truth file (CLAUDE.md,
+ * gateway-rules.json, PACKAGE_GUIDELINES.md) was committed more recently
+ * than an architecture doc, the doc is flagged as potentially stale.
+ *
+ * This is a heuristic — not all source-of-truth changes invalidate every
+ * architecture doc — but it provides an automated signal that was previously
+ * missing entirely.
+ *
+ * @param {string} dir  Project root directory
+ * @returns {{ checked: number, stale: string[] }}
+ */
+function checkArchitectureDocsFreshness(dir) {
+  const archDir = join(dir, "docs", "architecture");
+  const stale = [];
+
+  if (!existsSync(archDir)) {
+    return { checked: 0, stale: [] };
+  }
+
+  // Find the most recent commit time among source-of-truth files
+  let latestSourceTime = 0;
+  let latestSourceFile = "";
+  for (const srcFile of ARCHITECTURE_SOURCE_FILES) {
+    const srcPath = join(dir, srcFile);
+    if (!existsSync(srcPath)) continue;
+    const t = gitLastCommitTime(srcPath, dir);
+    if (t > latestSourceTime) {
+      latestSourceTime = t;
+      latestSourceFile = srcFile;
+    }
+  }
+
+  // If no source files have git history (e.g. fresh clone, no git), skip
+  if (latestSourceTime === 0) {
+    return { checked: 0, stale: [] };
+  }
+
+  // Check each architecture doc
+  let archFiles;
+  try {
+    archFiles = readdirSync(archDir).filter((f) => f.endsWith(".md"));
+  } catch {
+    return { checked: 0, stale: [] };
+  }
+
+  let checked = 0;
+  for (const file of archFiles) {
+    const archPath = join(archDir, file);
+    const archTime = gitLastCommitTime(archPath, dir);
+    if (archTime === 0) continue; // untracked or no history
+    checked++;
+
+    if (archTime < latestSourceTime) {
+      stale.push(`${file} (last updated before ${latestSourceFile})`);
+    }
+  }
+
+  return { checked, stale };
 }
