@@ -2,23 +2,27 @@ import { join } from "node:path";
 import { resolveStore } from "../../store/index.js";
 import { computeStats } from "../../core/stats.js";
 import { verify } from "../../core/verify.js";
-import {
-  aggregateTokenUsage,
-  checkBudget,
-} from "../../core/token-usage.js";
-import { formatAggregateTokenUsage, formatBudgetWarnings } from "./token-format.js";
 import { isFullyCompleted } from "../../core/prune.js";
-import { CLIError, BudgetExceededError } from "../errors.js";
+import { CLIError } from "../errors.js";
 import { REX_DIR } from "./constants.js";
-import { info, warn, result, isQuiet } from "../output.js";
-import type { PRDItem, ItemStatus } from "../../schema/index.js";
+import { result, isQuiet } from "../output.js";
+import type { PRDItem } from "../../schema/index.js";
 import { isRootLevel } from "../../schema/index.js";
 import type { TreeStats } from "../../core/stats.js";
 import type { VerifyResult } from "../../core/verify.js";
 import type { TokenUsageFilter } from "../../core/token-usage.js";
-import { validateStructure } from "../../core/structural.js";
 import { groupByFacet, getFacetValue } from "../../core/facets.js";
 import { walkTree } from "../../core/tree.js";
+import {
+  buildCoverageMap,
+  renderJsonOutput,
+  renderStaleReport,
+  renderTreeView,
+  renderCoverageSummary,
+  renderTokenUsageSection,
+  renderAutoCompletableHints,
+  renderStaleWarnings,
+} from "./status-sections.js";
 
 const VALID_FORMATS = ["json", "tree"] as const;
 
@@ -38,24 +42,6 @@ const DEFAULT_BAR_WIDTH = 20;
 
 /** Per-task coverage stats, keyed by item ID. */
 export type CoverageMap = Map<string, { covered: number; total: number }>;
-interface OverrideMarkerSummaryItem {
-  id: string;
-  title: string;
-  level: PRDItem["level"];
-  status: PRDItem["status"];
-  reason: string;
-  reasonRef: string;
-  matchedItemId: string;
-  matchedItemStatus: PRDItem["status"];
-  createdAt: string;
-}
-
-interface OverrideMarkerSummary {
-  totalItems: number;
-  overrideCreated: number;
-  normalOrMerged: number;
-  items: OverrideMarkerSummaryItem[];
-}
 
 /** Render a progress bar string from a completion ratio. */
 export function renderProgressBar(
@@ -123,41 +109,6 @@ function overrideSuffix(item: PRDItem): string {
   return ` [override: ${item.overrideMarker.reason}]`;
 }
 
-function summarizeOverrideMarkers(items: PRDItem[]): OverrideMarkerSummary {
-  const summary: OverrideMarkerSummary = {
-    totalItems: 0,
-    overrideCreated: 0,
-    normalOrMerged: 0,
-    items: [],
-  };
-
-  const visit = (nodes: PRDItem[]): void => {
-    for (const item of nodes) {
-      summary.totalItems++;
-      if (item.overrideMarker) {
-        summary.overrideCreated++;
-        summary.items.push({
-          id: item.id,
-          title: item.title,
-          level: item.level,
-          status: item.status,
-          reason: item.overrideMarker.reason,
-          reasonRef: item.overrideMarker.reasonRef,
-          matchedItemId: item.overrideMarker.matchedItemId,
-          matchedItemStatus: item.overrideMarker.matchedItemStatus,
-          createdAt: item.overrideMarker.createdAt,
-        });
-      }
-      if (item.children && item.children.length > 0) {
-        visit(item.children);
-      }
-    }
-  };
-
-  visit(items);
-  summary.normalOrMerged = summary.totalItems - summary.overrideCreated;
-  return summary;
-}
 
 /**
  * Filter out fully-completed subtrees from items for display.
@@ -264,23 +215,6 @@ export function formatStats(
   return `${parts.join(", ")} — ${pct}% complete (${stats.completed}/${stats.total})${suffix}`;
 }
 
-/** Build a CoverageMap from verify results. */
-function buildCoverageMap(verifyResult: VerifyResult): CoverageMap {
-  const map: CoverageMap = new Map();
-  for (const task of verifyResult.tasks) {
-    map.set(task.id, {
-      covered: task.coveredCriteria,
-      total: task.totalCriteria,
-    });
-  }
-  return map;
-}
-
-/** Format a coverage summary line. */
-function formatCoverageSummary(verifyResult: VerifyResult): string {
-  const { coveredCriteria, totalCriteria, totalTasks } = verifyResult.summary;
-  return `${coveredCriteria}/${totalCriteria} criteria covered across ${totalTasks} task(s)`;
-}
 
 /** Render items grouped by a facet key. */
 function renderGroupedByFacet(items: PRDItem[], facetKey: string): string[] {
@@ -315,21 +249,6 @@ function renderGroupedByFacet(items: PRDItem[], facetKey: string): string[] {
   }
 
   return lines;
-}
-
-/** Find stale items (in_progress > 48h). */
-function findStaleItems(items: PRDItem[], now: Date = new Date()): PRDItem[] {
-  const stale: PRDItem[] = [];
-  const threshold = 48 * 60 * 60 * 1000; // 48h in ms
-  for (const { item } of walkTree(items)) {
-    if (item.status === "in_progress" && item.startedAt) {
-      const started = new Date(item.startedAt).getTime();
-      if (!isNaN(started) && now.getTime() - started > threshold) {
-        stale.push(item);
-      }
-    }
-  }
-  return stale;
 }
 
 export async function cmdStatus(
@@ -370,21 +289,14 @@ export async function cmdStatus(
   if (flags.until) tokenFilter.until = flags.until;
 
   if (format === "json") {
-    const jsonItems = showAll ? doc.items : filterDeleted(doc.items);
-    const output: Record<string, unknown> = { ...doc, items: jsonItems };
-    output.overrideMarkers = summarizeOverrideMarkers(jsonItems);
-    if (verifyResult) {
-      output.coverage = {
-        tasks: verifyResult.tasks,
-        summary: verifyResult.summary,
-      };
-    }
-    if (showTokens) {
-      const logEntries = await store.readLog();
-      const tokenUsage = await aggregateTokenUsage(logEntries, dir, tokenFilter);
-      output.tokenUsage = tokenUsage;
-    }
-    result(JSON.stringify(output, null, 2));
+    await renderJsonOutput(doc, {
+      showAll,
+      showTokens,
+      verifyResult,
+      store,
+      dir,
+      tokenFilter,
+    });
     return;
   }
 
@@ -399,18 +311,7 @@ export async function cmdStatus(
 
   // --stale: show only stale items
   if (showStaleOnly) {
-    const staleItems = findStaleItems(doc.items);
-    if (staleItems.length === 0) {
-      result("No stale items (in_progress > 48h).");
-      return;
-    }
-    result(`Stale items (in_progress > 48h): ${staleItems.length}`);
-    result("");
-    for (const item of staleItems) {
-      const icon = STATUS_ICONS[item.status] ?? "?";
-      const ts = item.startedAt ? ` (started ${formatTimestamp(item.startedAt)})` : "";
-      result(`  ${icon} ${item.title}${ts}`);
-    }
+    renderStaleReport(doc.items);
     return;
   }
 
@@ -431,88 +332,15 @@ export async function cmdStatus(
     return;
   }
 
-  const displayItems = showAll ? doc.items : filterDeleted(filterCompleted(doc.items));
-  const stats = computeStats(doc.items);
-  const hidingCompleted = !showAll && (stats.completed > 0 || stats.deleted > 0);
-
   const coverageMap = verifyResult ? buildCoverageMap(verifyResult) : undefined;
-  for (const line of renderTree(displayItems, 0, coverageMap)) {
-    result(line);
-  }
+  renderTreeView(doc.items, { showAll, coverageMap });
 
-  info("");
-  info(formatStats(stats, { hidingCompleted }));
+  renderCoverageSummary(verifyResult);
 
-  // Coverage summary
-  if (verifyResult && verifyResult.summary.totalCriteria > 0) {
-    info("");
-    info(`Test coverage: ${formatCoverageSummary(verifyResult)}`);
-  }
-
-  // Token usage summary
   if (showTokens) {
-    const logEntries = await store.readLog();
-    const tokenUsage = await aggregateTokenUsage(logEntries, dir, tokenFilter);
-    info("");
-    for (const line of formatAggregateTokenUsage(tokenUsage)) {
-      info(line);
-    }
-    if (tokenFilter.since || tokenFilter.until) {
-      const parts: string[] = [];
-      if (tokenFilter.since) parts.push(`since ${tokenFilter.since}`);
-      if (tokenFilter.until) parts.push(`until ${tokenFilter.until}`);
-      info(`  (filtered: ${parts.join(", ")})`);
-    }
-
-    // Budget warnings (gracefully skip if config is unavailable)
-    try {
-      const config = await store.loadConfig();
-      if (config.budget) {
-        const budgetResult = checkBudget(tokenUsage, config.budget);
-        const budgetLines = formatBudgetWarnings(budgetResult);
-        if (budgetLines.length > 0) {
-          warn("");
-          for (const line of budgetLines) {
-            warn(line);
-          }
-        }
-      }
-    } catch {
-      // Config unavailable — skip budget check
-    }
+    await renderTokenUsageSection(store, dir, tokenFilter);
   }
 
-  // Auto-completion hints: parents whose children are ALL completed/deferred
-  const autoCompletable: Array<{ id: string; title: string }> = [];
-  const TERMINAL: Set<ItemStatus> = new Set(["completed", "deferred"]);
-  for (const { item } of walkTree(doc.items)) {
-    if (
-      item.children && item.children.length > 0 &&
-      (item.status === "pending" || item.status === "in_progress") &&
-      item.children.every((c) => TERMINAL.has(c.status))
-    ) {
-      autoCompletable.push({ id: item.id, title: item.title });
-    }
-  }
-  if (autoCompletable.length > 0) {
-    info("");
-    info("Auto-completable:");
-    for (const ac of autoCompletable) {
-      info(`  ● ${ac.title} — all children done, can be marked completed`);
-    }
-  }
-
-  // Stale item warnings
-  const staleItems = findStaleItems(doc.items);
-  if (staleItems.length > 0) {
-    warn("");
-    warn(`Stale items (in_progress > 48h): ${staleItems.length}`);
-    for (const item of staleItems.slice(0, 5)) {
-      const ts = item.startedAt ? ` (started ${formatTimestamp(item.startedAt)})` : "";
-      warn(`  ⚠ ${item.title}${ts}`);
-    }
-    if (staleItems.length > 5) {
-      warn(`  ... and ${staleItems.length - 5} more (use --stale to see all)`);
-    }
-  }
+  renderAutoCompletableHints(doc.items);
+  renderStaleWarnings(doc.items);
 }
