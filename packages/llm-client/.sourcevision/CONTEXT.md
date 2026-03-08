@@ -21,7 +21,7 @@ Import edges: 114, External packages: 2
   files: package-lock.json, package.json, tsconfig.json, vitest.config.ts
 [src] Src (13 files, coh=0.77 coup=0.23)
   13 files, primarily TypeScript
-  files: src/api-provider.ts [service], src/cli-provider.ts [service], src/codex-cli-provider.ts [service], src/create-client.ts [utility], src/llm-client.ts [utility], src/llm-config.ts [config], src/llm-types.ts [types], src/provider-interface.ts [types], src/provider-registry.ts [service], src/provider-session.ts [service] +3
+  files: src/api-provider.ts [service], src/cli-provider.ts [service], src/codex-cli-provider.ts [service], src/create-client.ts [service], src/llm-client.ts [service], src/llm-config.ts [config], src/llm-types.ts [types], src/provider-interface.ts [types], src/provider-registry.ts [store], src/provider-session.ts [service] +3
 [src-2] Src 2 (19 files, coh=0.56 coup=0.44)
   19 files, primarily TypeScript
   files: src/auth.ts [utility], src/config.ts [config], src/exec.ts [utility], src/help-format.ts [utility], src/json.ts [utility], src/output.ts [utility], src/project-config.ts [utility], src/project-dirs.ts [types], src/public.ts [entrypoint], src/suggest.ts [utility] +9
@@ -101,7 +101,7 @@ Most imported:
 [medium] Findings src/0 (12 entry points, automated heuristic) and global/2 (single publ…
   files: src/api-provider.ts, src/cli-provider.ts, src/codex-cli-provider.ts
   category: refactor
-[medium] Finding global/6 describes a near-clean layered architectur… (+6 related)
+[medium] Finding global/6 describes a near-clean layered architectur… (+5 related)
   category: extract
 [medium] HTTP and subprocess provider strategies (api-provider vs cl… (+1 related)
   category: refactor

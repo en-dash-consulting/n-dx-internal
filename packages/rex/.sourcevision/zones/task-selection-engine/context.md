@@ -7,7 +7,7 @@
 Zone: Task Selection Engine (`task-selection-engine`)
 Files: 7, Cohesion: 0.17, Coupling: 0.83
 Risk: catastrophic (score: 0.83)
-Description: The next-task selection logic: scoring, filtering, prioritization, and the CLI command that surfaces it.
+Description: Implements the next-task selection algorithm including scoring, priority weighting, feature filtering, and requirements prioritization, exposed via the 'next' CLI command.
 Entry points: src/cli/commands/next.ts, src/core/next-task.ts
 Lines: 2456
 
@@ -36,27 +36,30 @@ Internal:
   tests/unit/core/requirements-prioritization.test.ts → src/core/next-task.ts {findNextTask, findActionableTasks, collectCompletedIds, requirementsScore}
 
 Outgoing (this zone → other zones):
-  → mutation-commands: src/cli/commands/next.ts → src/cli/output.ts
-  → prd-operations-core: src/core/next-task.ts → src/core/keywords.ts; src/core/next-task.ts → src/core/requirements.ts; src/core/next-task.ts → src/schema/index.ts; src/core/next-task.ts → src/schema/index.ts; tests/unit/core/feature-filtered-task.test.ts → src/schema/index.ts; tests/unit/core/next-task-matching.test.ts → src/schema/index.ts; tests/unit/core/next-task-scoring.test.ts → src/schema/index.ts; tests/unit/core/next-task.test.ts → src/schema/index.ts; tests/unit/core/requirements-prioritization.test.ts → src/schema/index.ts
-  → remote-integration: src/cli/commands/next.ts → src/store/index.ts; src/core/next-task.ts → src/core/tree.ts; src/core/next-task.ts → src/core/tree.ts
-  → rex-status-mcp-cli: src/cli/commands/next.ts → src/cli/commands/constants.ts
+  → prd-cli-operations: src/cli/commands/next.ts → src/cli/output.ts
+  → prd-domain-operations: src/core/next-task.ts → src/core/keywords.ts; src/core/next-task.ts → src/core/requirements.ts
+  → prd-schema-foundation: src/core/next-task.ts → src/core/tree.ts; src/core/next-task.ts → src/core/tree.ts; src/core/next-task.ts → src/schema/index.ts; src/core/next-task.ts → src/schema/index.ts; tests/unit/core/feature-filtered-task.test.ts → src/schema/index.ts; tests/unit/core/next-task-matching.test.ts → src/schema/index.ts; tests/unit/core/next-task-scoring.test.ts → src/schema/index.ts; tests/unit/core/next-task.test.ts → src/schema/index.ts; tests/unit/core/requirements-prioritization.test.ts → src/schema/index.ts
+  → remote-sync-adapters: src/cli/commands/next.ts → src/store/index.ts
+  → rex-mcp-service-layer: src/cli/commands/next.ts → src/cli/commands/constants.ts
 
 Incoming (other zones → this zone):
-  ← mutation-commands: src/cli/index.ts → src/cli/commands/next.ts
-  ← prd-operations-core: src/public.ts → src/core/next-task.ts; src/public.ts → src/core/next-task.ts
-  ← rex-status-mcp-cli: src/cli/mcp-tools.ts → src/core/next-task.ts
+  ← prd-cli-operations: src/cli/index.ts → src/cli/commands/next.ts
+  ← prd-domain-operations: src/public.ts → src/core/next-task.ts; src/public.ts → src/core/next-task.ts
+  ← rex-mcp-service-layer: src/cli/mcp-tools.ts → src/core/next-task.ts
 
 </imports>
 
 <findings>
 
-[observation] [warning] High coupling (0.83) — 9 imports target "prd-operations-core"
+[observation] [warning] High coupling (0.83) — 9 imports target "prd-schema-foundation"
 [observation] [warning] Low cohesion (0.17) — files are loosely related, consider splitting this zone
-[observation] [warning] Cohesion 0.17 with coupling 0.83 is the worst ratio in this batch; most edges exit the zone because tests import from core and unit, inflating coupling — this is a test-colocation artifact rather than a production design problem.
-[observation] [info] Five dedicated test files for next-task scoring, matching, filtering, and requirements-prioritization represent thorough algorithmic coverage — this is the kind of critical path code that warrants exactly this level of testing.
-[observation] [info] requirements-prioritization.test.ts lives in this zone rather than with the requirements.ts source (in core); verify the test is testing next-task behavior specifically, not leaking scope from the requirements module.
-[pattern] [info] task-selection-engine → prd-operations-core is a clean unidirectional dependency (9 imports, 0 return): this zone correctly acts as a pure consumer of the domain hub with no upward coupling, representing the healthiest structural pattern in the package
-[suggestion] [info] The 2.5:1 test-to-production file ratio (5 test files, 2 production files) in task-selection-engine means zone membership is dominated by test clustering — as the scoring algorithm grows, production files added here will initially reduce measured cohesion before enough files accumulate to re-stabilize; track zone cohesion trend across the next 3 analysis runs rather than treating the current 0.17 as a fixed baseline
+[observation] [warning] Cohesion of 0.17 is critically low for an algorithmic zone; the scoring subsystem (next-task-scoring, next-task-matching, requirements-prioritization) likely forms a separable cluster from the CLI dispatch that should be extracted as its own zone.
+[observation] [warning] Coupling of 0.83 reflects that task selection is a consumer of nearly every other domain layer; consider defining a stable input interface (e.g. a TaskSelectionContext type) to decouple the algorithm from direct store and schema imports.
+[observation] [info] Five granular test files targeting distinct scoring dimensions (matching, scoring, filtering, prioritization) demonstrate good test decomposition and serve as living documentation of the selection algorithm's contract.
+[pattern] [info] Test files constitute 71% (5/7) of this zone's file count, artificially suppressing the cohesion metric to 0.17 — excluding test files from cohesion computation would yield a more accurate signal for the production core.
+[anti-pattern] [warning] src/core/next-task.ts (594 lines) implements five independently testable scoring dimensions in a single file, confirmed by five dedicated unit test files each targeting a distinct scoring concern. The monolithic implementation file against a decomposed test suite is an anti-pattern — the test decomposition should guide a matching module decomposition (e.g. next-task-scoring.ts, next-task-matching.ts) to make each concern independently navigable and modifiable.
+[suggestion] [info] Rename to 'prd-task-selection' or 'rex-task-selection' to align with the package-domain-noun convention used by sibling zones. 'task-selection-engine' is the only zone using a 'what-it-does' metaphor rather than a 'what-domain-it-belongs-to' identifier.
+[suggestion] [warning] task-selection-engine combines the package's lowest cohesion (0.17) with its highest coupling (0.83), making it the only zone that is simultaneously fragile to internal restructuring and external upstream changes. This dual fragility warrants treating it as higher priority than any single-metric violation — it should be addressed before prd-domain-operations despite that zone's larger file count.
 [suggestion] [critical] Zone "Task Selection Engine" (task-selection-engine) has catastrophic risk (score: 0.83, cohesion: 0.17, coupling: 0.83) — requires immediate architectural intervention
 
 </findings>
@@ -64,18 +67,22 @@ Incoming (other zones → this zone):
 <insights>
 
 - Low cohesion (0.17) — files are loosely related, consider splitting this zone
-- High coupling (0.83) — 9 imports target "prd-operations-core"
-- The five test files in this zone (next-task, matching, scoring, feature-filtered, requirements-prioritization) show this is a well-tested algorithm — the scoring and filtering logic is clearly valued
-- Cohesion 0.17 is very low, driven by test files importing from production modules across zone boundaries rather than from each other
-- next-task.ts is the algorithmic heart of the agent loop — its scoring and matching logic directly determines autonomous task sequencing quality
-- Cohesion 0.17 with coupling 0.83 is the worst ratio in this batch; most edges exit the zone because tests import from core and unit, inflating coupling — this is a test-colocation artifact rather than a production design problem.
-- Five dedicated test files for next-task scoring, matching, filtering, and requirements-prioritization represent thorough algorithmic coverage — this is the kind of critical path code that warrants exactly this level of testing.
-- requirements-prioritization.test.ts lives in this zone rather than with the requirements.ts source (in core); verify the test is testing next-task behavior specifically, not leaking scope from the requirements module.
-- The 9-import one-directional dependency on prd-operations-core with zero return imports is the only strictly layered consumer relationship in this zone batch — it is the reference pattern the other zones should aspire to
-- task-selection-engine → prd-operations-core is a clean unidirectional dependency (9 imports, 0 return): this zone correctly acts as a pure consumer of the domain hub with no upward coupling, representing the healthiest structural pattern in the package
-- task-selection-engine contains 5 test files and 2 production files — a 2.5:1 test-to-production ratio means the zone boundary was effectively drawn around a test cluster rather than a production feature, making the zone harder to navigate as production files grow and blurring the semantic meaning of zone membership
-- next-task.ts (core) and next.ts (CLI) follow the core/CLI parallel naming convention but with asymmetric names — next-task.ts vs next.ts — unlike the fix/fix pair which uses identical names; establishing a consistent rule (either always match or always disambiguate) would make the convention predictable
-- The 2.5:1 test-to-production file ratio (5 test files, 2 production files) in task-selection-engine means zone membership is dominated by test clustering — as the scoring algorithm grows, production files added here will initially reduce measured cohesion before enough files accumulate to re-stabilize; track zone cohesion trend across the next 3 analysis runs rather than treating the current 0.17 as a fixed baseline
+- High coupling (0.83) — 9 imports target "prd-schema-foundation"
+- Five unit test files covering scoring, matching, filtering, and requirements prioritization indicate strong test coverage for the selection algorithm — a model for other algorithmic zones.
+- Cohesion of 0.17 is the lowest in this batch; the CLI entry point and multiple orthogonal scoring concerns are grouped together, masking which scoring dimension is authoritative.
+- The 9 imports from 'unit' (Prd Schema Foundation) tie task selection tightly to the data model — any schema change to task fields will ripple directly into scoring logic.
+- Cohesion of 0.17 is critically low for an algorithmic zone; the scoring subsystem (next-task-scoring, next-task-matching, requirements-prioritization) likely forms a separable cluster from the CLI dispatch that should be extracted as its own zone.
+- Five granular test files targeting distinct scoring dimensions (matching, scoring, filtering, prioritization) demonstrate good test decomposition and serve as living documentation of the selection algorithm's contract.
+- Coupling of 0.83 reflects that task selection is a consumer of nearly every other domain layer; consider defining a stable input interface (e.g. a TaskSelectionContext type) to decouple the algorithm from direct store and schema imports.
+- 5 of 7 files in this zone are unit tests — the cohesion score of 0.17 is partly an artifact of test-heavy composition; the two production files (next-task.ts, next.ts) are tightly coupled and would score much higher if cohesion were computed on production files only.
+- The zone functions as a test-dominated satellite: a minimal two-file production core surrounded by five granular test files. This structure is healthy for coverage but misleads zone-health dashboards that count test files equally.
+- Test files constitute 71% (5/7) of this zone's file count, artificially suppressing the cohesion metric to 0.17 — excluding test files from cohesion computation would yield a more accurate signal for the production core.
+- src/core/next-task.ts is a 594-line monolith that implements at least five distinct scoring dimensions (sibling completion ratio, blocker unblocking value, keyword matching, priority scoring, requirements prioritization) in a single file — the five dedicated test files reveal the algorithm's internal complexity but that complexity is invisible at the module level.
+- src/core/next-task.ts (594 lines) implements five independently testable scoring dimensions in a single file, confirmed by five dedicated unit test files each targeting a distinct scoring concern. The monolithic implementation file against a decomposed test suite is an anti-pattern — the test decomposition should guide a matching module decomposition (e.g. next-task-scoring.ts, next-task-matching.ts) to make each concern independently navigable and modifiable.
+- task-selection-engine has the worst combined risk profile in the package: lowest cohesion (0.17) AND highest coupling (0.83) simultaneously. Individual metric violations have been flagged elsewhere, but the combination means that both internal restructuring (low cohesion makes file boundaries unclear) and external changes (high coupling means upstream changes propagate in) are simultaneously high-risk — the zone is fragile in two independent failure modes at once.
+- Zone name 'task-selection-engine' uses a different grammatical pattern (noun-participle-noun) than all other zones in the package, which use either 'prd-noun-noun', 'rex-noun-noun', or 'noun-noun-noun' patterns. The naming inconsistency makes it the hardest zone to locate by name-pattern inference.
+- task-selection-engine combines the package's lowest cohesion (0.17) with its highest coupling (0.83), making it the only zone that is simultaneously fragile to internal restructuring and external upstream changes. This dual fragility warrants treating it as higher priority than any single-metric violation — it should be addressed before prd-domain-operations despite that zone's larger file count.
+- Rename to 'prd-task-selection' or 'rex-task-selection' to align with the package-domain-noun convention used by sibling zones. 'task-selection-engine' is the only zone using a 'what-it-does' metaphor rather than a 'what-domain-it-belongs-to' identifier.
 - [call graph] 444 internal calls, 24 outgoing, 4 incoming (cohesion: 0.95, coupling: 0.05)
 
 </insights>

@@ -422,13 +422,13 @@
     },
     {
       "path": "src/analyzers/zones.ts",
-      "size": 68131,
+      "size": 68676,
       "language": "TypeScript",
-      "lineCount": 1912,
-      "hash": "b5f76fa79184efc2ef87a7fb46a4b15f1f9961c205e4d376b18a2a5d9ff4d0fd",
+      "lineCount": 1927,
+      "hash": "a6afb3380c1983572bda43ab97ce0663997f3cb1f0f852c51c48e22bf35aff3f",
       "role": "source",
       "category": "analyzers",
-      "lastModified": 1772906247572
+      "lastModified": 1772955265752
     },
     {
       "path": "src/cli/commands/analyze-phases.ts",
@@ -572,13 +572,13 @@
     },
     {
       "path": "src/cli/mcp.ts",
-      "size": 18122,
+      "size": 18962,
       "language": "TypeScript",
-      "lineCount": 555,
-      "hash": "acab72a77a395122aebc77470245a6d1c08ba73437701470ce3aeed3bf3605ed",
+      "lineCount": 574,
+      "hash": "8f59a04072cf99d0ac9dc557147840a0559d990ec25c3a30df9501d206fdf3d7",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772840104108
+      "lastModified": 1772953701380
     },
     {
       "path": "src/cli/output.ts",
@@ -1151,6 +1151,16 @@
       "lastModified": 1772432095815
     },
     {
+      "path": "tests/unit/analyzers/zone-cross-package.test.ts",
+      "size": 7088,
+      "language": "TypeScript",
+      "lineCount": 201,
+      "hash": "32fdcf9af95565dbe637617bb74d53983ecbbba0e4dfbc1bd67f1d10d9ba1899",
+      "role": "test",
+      "category": "tests",
+      "lastModified": 1772955327150
+    },
+    {
       "path": "tests/unit/analyzers/zone-detection.test.ts",
       "size": 72421,
       "language": "TypeScript",
@@ -1392,13 +1402,13 @@
     },
     {
       "path": "tsconfig.tsbuildinfo",
-      "size": 83855,
+      "size": 83859,
       "language": "Other",
       "lineCount": 1,
-      "hash": "b71a11efa3678bbfdc97fec0d468f7459ed1d5888f36e21bf57337cf178e18f3",
+      "hash": "7a460ac30a42ada1b7cd5eac317f3f9cadfb6de2a5e60f52f6c44cbde8b38bcc",
       "role": "config",
       "category": "root",
-      "lastModified": 1772933252914
+      "lastModified": 1772955330784
     },
     {
       "path": "vitest.config.ts",
@@ -1412,13 +1422,13 @@
     }
   ],
   "summary": {
-    "totalFiles": 141,
-    "totalLines": 45901,
+    "totalFiles": 142,
+    "totalLines": 46136,
     "byLanguage": {
       "JSON": 7,
       "Markdown": 3,
       "Other": 3,
-      "TypeScript": 128
+      "TypeScript": 129
     },
     "byRole": {
       "other": 2,
@@ -1427,7 +1437,7 @@
       "generated": 1,
       "config": 4,
       "source": 62,
-      "test": 67
+      "test": 68
     },
     "byCategory": {
       ".claude": 2,
@@ -1439,7 +1449,7 @@
       "generators": 1,
       "schema": 4,
       "util": 3,
-      "tests": 67
+      "tests": 68
     }
   }
 }

@@ -1130,6 +1130,15 @@
     },
     {
       "from": "src/analyzers/zones.ts",
+      "to": "src/analyzers/workspace-crossings.ts",
+      "type": "static",
+      "symbols": [
+        "buildPackageMap",
+        "computeCrossRepoCrossings"
+      ]
+    },
+    {
+      "from": "src/analyzers/zones.ts",
       "to": "src/analyzers/workspace.ts",
       "type": "static",
       "symbols": [
@@ -2927,6 +2936,55 @@
       ]
     },
     {
+      "from": "tests/unit/analyzers/zone-cross-package.test.ts",
+      "to": "src/analyzers/workspace-crossings.ts",
+      "type": "dynamic",
+      "symbols": [
+        "buildPackageMap"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-cross-package.test.ts",
+      "to": "src/analyzers/workspace.ts",
+      "type": "type",
+      "symbols": [
+        "SubAnalysis"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-cross-package.test.ts",
+      "to": "src/analyzers/zones.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeZones"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-cross-package.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ZoneCrossing",
+        "Zones",
+        "Imports",
+        "ExternalImport",
+        "Manifest"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-cross-package.test.ts",
+      "to": "tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeFileEntry",
+        "makeInventory",
+        "makeEdge",
+        "makeImports",
+        "makeZone"
+      ]
+    },
+    {
       "from": "tests/unit/analyzers/zone-detection.test.ts",
       "to": "src/analyzers/louvain.ts",
       "type": "static",
@@ -3578,6 +3636,7 @@
         "tests/unit/analyzers/workspace-aggregate.test.ts",
         "tests/unit/analyzers/workspace-crossings.test.ts",
         "tests/unit/analyzers/workspace.test.ts",
+        "tests/unit/analyzers/zone-cross-package.test.ts",
         "tests/unit/analyzers/zone-detection.test.ts",
         "tests/unit/analyzers/zone-enrichment.test.ts",
         "tests/unit/analyzers/zone-insights.test.ts",
@@ -3624,7 +3683,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 350,
+    "totalEdges": 356,
     "totalExternal": 7,
     "circularCount": 0,
     "circulars": [],
@@ -3654,12 +3713,12 @@
         "count": 9
       },
       {
-        "path": "src/util/paths.ts",
+        "path": "src/analyzers/zones.ts",
         "count": 9
       },
       {
-        "path": "src/analyzers/zones.ts",
-        "count": 8
+        "path": "src/util/paths.ts",
+        "count": 9
       },
       {
         "path": "src/analyzers/inventory.ts",
@@ -3671,6 +3730,10 @@
       },
       {
         "path": "src/cli/commands/constants.ts",
+        "count": 7
+      },
+      {
+        "path": "tests/unit/analyzers/zones-helpers.ts",
         "count": 7
       },
       {
@@ -3694,10 +3757,6 @@
         "count": 6
       },
       {
-        "path": "tests/unit/analyzers/zones-helpers.ts",
-        "count": 6
-      },
-      {
         "path": "src/analyzers/workspace.ts",
         "count": 5
       },
@@ -3710,6 +3769,6 @@
         "count": 4
       }
     ],
-    "avgImportsPerFile": 3.27
+    "avgImportsPerFile": 3.3
   }
 }

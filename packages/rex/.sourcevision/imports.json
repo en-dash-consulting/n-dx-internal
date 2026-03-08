@@ -2316,9 +2316,10 @@
     },
     {
       "from": "src/cli/commands/status-sections.ts",
-      "to": "src/cli/commands/status.ts",
+      "to": "src/cli/commands/status-shared.ts",
       "type": "static",
       "symbols": [
+        "STATUS_ICONS",
         "renderTree",
         "filterCompleted",
         "filterDeleted",
@@ -2328,7 +2329,7 @@
     },
     {
       "from": "src/cli/commands/status-sections.ts",
-      "to": "src/cli/commands/status.ts",
+      "to": "src/cli/commands/status-shared.ts",
       "type": "type",
       "symbols": [
         "CoverageMap"
@@ -2412,6 +2413,46 @@
       ]
     },
     {
+      "from": "src/cli/commands/status-shared.ts",
+      "to": "src/core/prune.ts",
+      "type": "static",
+      "symbols": [
+        "isFullyCompleted"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status-shared.ts",
+      "to": "src/core/stats.ts",
+      "type": "static",
+      "symbols": [
+        "computeStats"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status-shared.ts",
+      "to": "src/core/stats.ts",
+      "type": "type",
+      "symbols": [
+        "TreeStats"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status-shared.ts",
+      "to": "src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "isRootLevel"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status-shared.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
       "from": "src/cli/commands/status.ts",
       "to": "src/cli/commands/constants.ts",
       "type": "static",
@@ -2432,6 +2473,28 @@
         "renderTokenUsageSection",
         "renderAutoCompletableHints",
         "renderStaleWarnings"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status.ts",
+      "to": "src/cli/commands/status-shared.ts",
+      "type": "reexport",
+      "symbols": [
+        "STATUS_ICONS",
+        "renderProgressBar",
+        "formatTimestamp",
+        "filterCompleted",
+        "filterDeleted",
+        "renderTree",
+        "formatStats"
+      ]
+    },
+    {
+      "from": "src/cli/commands/status.ts",
+      "to": "src/cli/commands/status-shared.ts",
+      "type": "type",
+      "symbols": [
+        "CoverageMap"
       ]
     },
     {
@@ -2462,26 +2525,10 @@
     },
     {
       "from": "src/cli/commands/status.ts",
-      "to": "src/core/prune.ts",
-      "type": "static",
-      "symbols": [
-        "isFullyCompleted"
-      ]
-    },
-    {
-      "from": "src/cli/commands/status.ts",
       "to": "src/core/stats.ts",
       "type": "static",
       "symbols": [
         "computeStats"
-      ]
-    },
-    {
-      "from": "src/cli/commands/status.ts",
-      "to": "src/core/stats.ts",
-      "type": "type",
-      "symbols": [
-        "TreeStats"
       ]
     },
     {
@@ -2514,14 +2561,6 @@
       "type": "type",
       "symbols": [
         "VerifyResult"
-      ]
-    },
-    {
-      "from": "src/cli/commands/status.ts",
-      "to": "src/schema/index.ts",
-      "type": "static",
-      "symbols": [
-        "isRootLevel"
       ]
     },
     {
@@ -3837,35 +3876,6 @@
         "PRDItem",
         "Priority",
         "Requirement"
-      ]
-    },
-    {
-      "from": "src/core/notion-map.ts",
-      "to": "src/core/tree.ts",
-      "type": "static",
-      "symbols": [
-        "walkTree"
-      ]
-    },
-    {
-      "from": "src/core/notion-map.ts",
-      "to": "src/schema/index.ts",
-      "type": "static",
-      "symbols": [
-        "SCHEMA_VERSION",
-        "isRootLevel"
-      ]
-    },
-    {
-      "from": "src/core/notion-map.ts",
-      "to": "src/schema/index.ts",
-      "type": "type",
-      "symbols": [
-        "ItemLevel",
-        "ItemStatus",
-        "PRDItem",
-        "PRDDocument",
-        "Priority"
       ]
     },
     {
@@ -5672,27 +5682,6 @@
     },
     {
       "from": "src/store/notion-adapter.ts",
-      "to": "src/core/notion-map.ts",
-      "type": "static",
-      "symbols": [
-        "mapItemToNotion",
-        "mapNotionToItem",
-        "mapNotionToDocument",
-        "resolveParentPage",
-        "buildStatusGroupMap",
-        "validateDatabaseSchema"
-      ]
-    },
-    {
-      "from": "src/store/notion-adapter.ts",
-      "to": "src/core/notion-map.ts",
-      "type": "type",
-      "symbols": [
-        "NotionStatusGroup"
-      ]
-    },
-    {
-      "from": "src/store/notion-adapter.ts",
       "to": "src/core/sync.ts",
       "type": "static",
       "symbols": [
@@ -5754,11 +5743,61 @@
     },
     {
       "from": "src/store/notion-adapter.ts",
+      "to": "src/store/notion-map.ts",
+      "type": "static",
+      "symbols": [
+        "mapItemToNotion",
+        "mapNotionToItem",
+        "mapNotionToDocument",
+        "resolveParentPage",
+        "buildStatusGroupMap",
+        "validateDatabaseSchema"
+      ]
+    },
+    {
+      "from": "src/store/notion-adapter.ts",
+      "to": "src/store/notion-map.ts",
+      "type": "type",
+      "symbols": [
+        "NotionStatusGroup"
+      ]
+    },
+    {
+      "from": "src/store/notion-adapter.ts",
       "to": "src/store/project-config.ts",
       "type": "static",
       "symbols": [
         "loadProjectOverrides",
         "mergeWithOverrides"
+      ]
+    },
+    {
+      "from": "src/store/notion-map.ts",
+      "to": "src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "src/store/notion-map.ts",
+      "to": "src/schema/index.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION",
+        "isRootLevel"
+      ]
+    },
+    {
+      "from": "src/store/notion-map.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "ItemLevel",
+        "ItemStatus",
+        "PRDItem",
+        "PRDDocument",
+        "Priority"
       ]
     },
     {
@@ -7450,7 +7489,16 @@
     },
     {
       "from": "tests/unit/core/notion-map.test.ts",
-      "to": "src/core/notion-map.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem",
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "tests/unit/core/notion-map.test.ts",
+      "to": "src/store/notion-map.ts",
       "type": "static",
       "symbols": [
         "mapItemToNotion",
@@ -7469,19 +7517,10 @@
     },
     {
       "from": "tests/unit/core/notion-map.test.ts",
-      "to": "src/core/notion-map.ts",
+      "to": "src/store/notion-map.ts",
       "type": "type",
       "symbols": [
         "NotionStatusGroup"
-      ]
-    },
-    {
-      "from": "tests/unit/core/notion-map.test.ts",
-      "to": "src/schema/index.ts",
-      "type": "type",
-      "symbols": [
-        "PRDItem",
-        "PRDDocument"
       ]
     },
     {
@@ -8572,17 +8611,10 @@
     }
   ],
   "summary": {
-    "totalEdges": 906,
+    "totalEdges": 910,
     "totalExternal": 5,
-    "circularCount": 1,
-    "circulars": [
-      {
-        "cycle": [
-          "src/cli/commands/status-sections.ts",
-          "src/cli/commands/status.ts"
-        ]
-      }
-    ],
+    "circularCount": 0,
+    "circulars": [],
     "mostImported": [
       {
         "path": "src/core/tree.ts",
@@ -8617,6 +8649,10 @@
         "count": 16
       },
       {
+        "path": "src/core/stats.ts",
+        "count": 9
+      },
+      {
         "path": "src/store/project-config.ts",
         "count": 9
       },
@@ -8626,10 +8662,6 @@
       },
       {
         "path": "src/core/next-task.ts",
-        "count": 8
-      },
-      {
-        "path": "src/core/stats.ts",
         "count": 8
       },
       {

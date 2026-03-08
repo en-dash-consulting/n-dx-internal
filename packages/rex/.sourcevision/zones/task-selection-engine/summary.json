@@ -1,7 +1,7 @@
 {
   "id": "task-selection-engine",
   "name": "Task Selection Engine",
-  "description": "The next-task selection logic: scoring, filtering, prioritization, and the CLI command that surfaces it.",
+  "description": "Implements the next-task selection algorithm including scoring, priority weighting, feature filtering, and requirements prioritization, exposed via the 'next' CLI command.",
   "files": [
     "src/cli/commands/next.ts",
     "src/core/next-task.ts",

@@ -432,13 +432,13 @@
     },
     {
       "path": "src/cli/commands/prune.ts",
-      "size": 20094,
+      "size": 20736,
       "language": "TypeScript",
-      "lineCount": 613,
-      "hash": "830a642dc48f5a3e511249a872d38daaeed6b4896449648e1eb8442d3026e0e4",
+      "lineCount": 632,
+      "hash": "58869730d7771a7efc55beac96e17923b3d441047ccde10535275b3cee10a698",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772682844137
+      "lastModified": 1772953801036
     },
     {
       "path": "src/cli/commands/recommend.ts",
@@ -482,13 +482,13 @@
     },
     {
       "path": "src/cli/commands/reshape.ts",
-      "size": 6460,
+      "size": 6866,
       "language": "TypeScript",
-      "lineCount": 215,
-      "hash": "96f10a60b94d91aee60984f8a4a0f1f79967c65a5aba67d235fd9863d9540cb6",
+      "lineCount": 228,
+      "hash": "06ba0faa0cf3cd43db59900a18f72dfddd2d81dea896b866fc196dd00a31b941",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772682844138
+      "lastModified": 1772953825254
     },
     {
       "path": "src/cli/commands/smart-add-duplicates.ts",
@@ -512,23 +512,33 @@
     },
     {
       "path": "src/cli/commands/status-sections.ts",
-      "size": 8844,
+      "size": 8633,
       "language": "TypeScript",
-      "lineCount": 278,
-      "hash": "c935e0cb12794fe20e6ff47a47a6f4efd8fd9cb29187765f3d92b3041c8f1ac2",
+      "lineCount": 268,
+      "hash": "c7daebb6b2e25c82119b87b9f6b1a6251b095fa214b3e162ada755f872e65cf0",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772948128298
+      "lastModified": 1772954374790
+    },
+    {
+      "path": "src/cli/commands/status-shared.ts",
+      "size": 7742,
+      "language": "TypeScript",
+      "lineCount": 217,
+      "hash": "85b8b8843fb69c94c7026b9e4ef648729ee12cd464ac65b0e1b3975113f71350",
+      "role": "source",
+      "category": "cli",
+      "lastModified": 1772954337832
     },
     {
       "path": "src/cli/commands/status.ts",
-      "size": 10943,
+      "size": 5016,
       "language": "TypeScript",
-      "lineCount": 346,
-      "hash": "3aede156cc65877e7bd26ae4e6c9aa4b7ee8b880aa9ece27b66fffd4b5fa5339",
+      "lineCount": 165,
+      "hash": "5f36b62b27c699b82270d212072c793fecb137f5d0469b84618fd046c129fdf3",
       "role": "source",
       "category": "cli",
-      "lastModified": 1772948105004
+      "lastModified": 1772954378089
     },
     {
       "path": "src/cli/commands/sync.ts",
@@ -809,16 +819,6 @@
       "role": "source",
       "category": "core",
       "lastModified": 1772682844141
-    },
-    {
-      "path": "src/core/notion-map.ts",
-      "size": 25022,
-      "language": "TypeScript",
-      "lineCount": 762,
-      "hash": "e0f8dd7e9e6f192091eb038ce5a0bfda9ff3c545094db56151afaf1ed9d4dcdc",
-      "role": "source",
-      "category": "core",
-      "lastModified": 1772682844142
     },
     {
       "path": "src/core/parent-completion.ts",
@@ -1192,13 +1192,13 @@
     },
     {
       "path": "src/store/notion-adapter.ts",
-      "size": 10632,
+      "size": 10621,
       "language": "TypeScript",
       "lineCount": 310,
-      "hash": "93d86ed6d38828bde101a135f60ee7e972928e1712396d186aa186aaa0279546",
+      "hash": "53dae9dc20aeb68c4081dba83e8889eecf7048bc6386e4056d9d953a6ebccb62",
       "role": "source",
       "category": "store",
-      "lastModified": 1772682844146
+      "lastModified": 1772952538232
     },
     {
       "path": "src/store/notion-client.ts",
@@ -1209,6 +1209,16 @@
       "role": "source",
       "category": "store",
       "lastModified": 1772432096047
+    },
+    {
+      "path": "src/store/notion-map.ts",
+      "size": 25028,
+      "language": "TypeScript",
+      "lineCount": 762,
+      "hash": "9ad60f8a1d4368792f4ca378ac0cc869059ccb168a7c6652ab4b50ba95653fb8",
+      "role": "source",
+      "category": "store",
+      "lastModified": 1772952535699
     },
     {
       "path": "src/store/project-config.ts",
@@ -2102,13 +2112,13 @@
     },
     {
       "path": "tests/unit/core/notion-map.test.ts",
-      "size": 55764,
+      "size": 55766,
       "language": "TypeScript",
       "lineCount": 1634,
-      "hash": "e62d20c991c30c5dd3c6ece7abfea4d590bc0b9371419717a1996ddbe182659a",
+      "hash": "c238d03be1120a233ec992d26a031c9ec377a06bb26a16066bba99f17ba453eb",
       "role": "test",
       "category": "tests",
-      "lastModified": 1772432095974
+      "lastModified": 1772952544967
     },
     {
       "path": "tests/unit/core/parent-completion.test.ts",
@@ -2452,14 +2462,14 @@
     }
   ],
   "summary": {
-    "totalFiles": 245,
-    "totalLines": 86113,
+    "totalFiles": 246,
+    "totalLines": 86171,
     "byLanguage": {
       "JSON": 9,
       "Other": 4,
       "Markdown": 4,
       "Text": 1,
-      "TypeScript": 227
+      "TypeScript": 228
     },
     "byRole": {
       "other": 4,
@@ -2467,7 +2477,7 @@
       "asset": 2,
       "generated": 1,
       "config": 3,
-      "source": 111,
+      "source": 112,
       "test": 120
     },
     "byCategory": {
@@ -2475,12 +2485,12 @@
       ".rex": 4,
       "root": 9,
       "analyze": 18,
-      "cli": 37,
-      "core": 35,
+      "cli": 38,
+      "core": 34,
       "src": 1,
       "recommend": 3,
       "schema": 4,
-      "store": 12,
+      "store": 13,
       "workflow": 1,
       "tests": 120
     }

@@ -2,7 +2,7 @@
 
 **Branch:** `feature/sv-fixes-0306`
 **Base:** `main`
-**Completed items:** 65
+**Completed items:** 72
 
 | Epic | Completed |
 |------|-----------|
@@ -237,12 +237,16 @@
 **Address suggestion issues (21 findings)**
 - 🔶 **Gateway re-export-only and orchestration spawn-only static enforcement**
   Add AST-level checks: (a) gateway files contain only re-export declarations, no logic (b) orchestration-tier scripts have no library imports. Addresses findings 1, 6, 9.
+- Web zone reclassification: misplaced viewer files and web-dashboard dissolution
+  Reclassify elapsed-time.ts, use-tick.ts, route-state.ts, task-audit.ts to web-viewer zone. Dissolve web-dashboard micro-zone into web-viewer. Addresses findings 8, 13.
 - Create shared-types.ts and register-scheduler.ts neutral modules
   Create shared-types.ts in web package to break task-usage-analytics ↔ web-dashboard cycles. Create register-scheduler.ts in usage cleanup zone to make scheduler wiring explicit. Addresses findings 3, 11.
 - Test coverage: landing.ts smoke test and task-usage.ts unit tests
   Add smoke test for landing.ts (zero coverage zone). Add unit tests for task-usage.ts public API. Addresses findings 10, 12.
 - Rex zone refactoring: 8 high-risk zones
   Address 8 rex zones exceeding risk thresholds: notion-integration, data-persistence-validation, task-selection-engine, prd-fix-command, remote-integration, integration-schemas, mutation-commands, rex-status-mcp-cli. Addresses findings 7, 14-21.
+- Cross-package integration test infrastructure and scheduler integration test
+- Include llm-client in monorepo zone analysis
 
 - 🔶 **Address suggestion issues (17 findings)** *(feature)*
   - Run intra-package call-graph analysis on hench to detect any emerging circular call patterns between its internal subdirectories (agent/, prd/, tools/) before they compound — the rex circular call pattern (239+100 calls) was only found via call-graph analysis, not zone metrics, and hench's 2838 internal calls make it the most likely next site for a hidden cycle.
@@ -451,4 +455,34 @@
 - monorepo-maintenance-scripts enforces gateway discipline for hench and web but has no equivalent check for the rex or sourcevision packages, leaving those gateways unguarded by static script validation.
 - The orchestration zone has no import edges to any other zone, meaning integration contract violations (e.g. changed CLI flags or output formats in rex/sourcevision/hench) will only manifest at runtime, not at build or typecheck time — consider adding a contract-test layer in e2e that validates CLI I/O contracts across package boundaries.
 - Rex-runtime-state is a shared mutable filesystem interface consumed by rex (writer), hench (reader/writer via rex-gateway), and web-server (reader via MCP) — this hidden fan-in dependency is invisible to import-graph tooling and creates a schema coupling risk across three tiers of the hierarchy.
+- Address observation issues (9 findings) *(feature)*
+  - 1 circular dependency chain detected — see imports.json for details
+- Bidirectional coupling: "mcp-route-layer" ↔ "web-dashboard" (3+2 crossings) — consider extracting shared interface
+- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 24 files — high-impact module, changes may have wide ripple effects
+- High coupling (0.6) — 3 imports target "web-dashboard"
+- Coupling of 0.6 is at the warning boundary; however, this is structurally necessary because routes-mcp.ts must bind to both the rex-gateway (runtime) and shared server types, making it the correct place for cross-package wiring.
+- Low cohesion (0.33) — files are loosely related, consider splitting this zone
+- Cohesion 0.33 and coupling 0.67 are warning-level; the root cause is viewer UI files misclassified into this zone rather than web-viewer — correcting zone hints or file placement will resolve both metrics.
+- 10 entry points — wide API surface, consider consolidating exports
+- One import flows from this zone back into web-dashboard, which inverts the expected dependency direction; verify that the imported symbol belongs in a shared types or constants module rather than in the consumer zone.
+- Address pattern issues (2 findings) *(feature)*
+  - Documentation zone is safely decoupled from all source zones; however, machine-parsed docs (prompt templates, config schemas) would be invisible to the import graph and should instead live in the relevant source package with explicit exports.
+- Missing unit test for task-usage.ts entry point: 2 of 3 source files have tests but the public-facing entry point does not. If task-usage.ts contains non-trivial aggregation or routing logic, this is a coverage gap that should be closed.
+- Address relationship issues (3 findings) *(feature)*
+  - Rex-runtime-data is decoupled from all source zones at the import-graph level, meaning static analysis tools (linters, bundlers, treeshakers) cannot detect or enforce its integrity contracts — data schema validation must be enforced at runtime (e.g., zod or JSON schema) rather than at type-check time.
+- The single reverse import (task-usage-analytics → web-dashboard) combined with 3 imports in the opposite direction creates a micro-cycle between these two zones. Extracting the shared symbol to a dedicated types file would break the cycle and make both zones strict DAG nodes.
+- Zone 'web-dashboard' (3 files: tick-timer utility) has a name collision with the conceptual 'web dashboard' application represented by web-viewer (367 files); renaming to 'viewer-polling-timer' or absorbing into web-viewer would eliminate the ambiguity
+- Address anti-pattern issues (12 findings) *(feature)*
+  - The analysis/ failure-recovery quadrant (adaptive, review, spin, stuck) has no shared interface or abstract contract — each state is a concrete module called directly by the agent loop. This makes the loop a fan-in point coupled to all four implementations; adding a new recovery state requires modifying the loop rather than registering a new implementation, violating the open-closed principle at the one layer where extensibility matters most.
+- landing.ts has no dedicated build target visible in zone metadata; if it shares the viewer's tsconfig or esbuild config, landing page code may be bundled into the viewer artifact, and viewer code changes could silently break the landing page compilation
+- Recorded zone insight incorrectly states rex-gateway.ts is hosted in mcp-route-layer when it is actually in web-dashboard; the integration seam zone (mcp-route-layer) should own both gateways it bridges — moving rex-gateway.ts here would make the dual-package import surface auditable from a single zone
+- Authoritative design documents (prd-steward-vision.md) and time-stamped analysis snapshots (2026-03-03-refresh-*.md) are structural peers in a flat docs/ directory with no convention distinguishing them — readers cannot determine whether a given file represents current policy or a historical artifact, creating silent authority ambiguity that grows as the doc count increases.
+- Architecture policy enforcement is deferred to e2e tests only; no build-time import-graph check (e.g. dependency-cruiser, eslint-plugin-import) enforces the spawn-only rule during typecheck or unit-test CI steps, leaving a window where cross-layer imports can land undetected if e2e is skipped.
+- archive.json grows without bound — unlike execution-log.jsonl which uses file rotation, dismissed PRD items have no retention policy or size cap. Long-running projects with repeated rex analyze cycles will accumulate all-time dismissed items, creating latent parse-time and disk-usage risk with no automated remediation path.
+- task-usage.ts (zone entry point) has no unit test while both supporting files do; entry-point logic (aggregation, data routing) should be the first surface tested, not the last — add a unit test for task-usage.ts before the zone's public API surface grows
+- Four viewer UI files (elapsed-time.ts, use-tick.ts, route-state.ts, task-audit.ts) are zone-members of web-build-infrastructure despite being functionally unrelated to build tooling. Any zone-scoped policy applied here — linting rules, ownership, CI gates — would silently govern UI code under a build-infrastructure label, producing incorrect policy application with no visible error signal.
+- Zone contains 3 viewer files that the project zone hints explicitly place in web-viewer; the micro-zone contradicts the zone hint policy rather than refining it — dissolving this zone by merging into web-viewer eliminates the fragmentation and aligns the zone map with stated intent
+- rex-gateway.ts is classified inside web-dashboard while its structurally equivalent peer domain-gateway.ts is classified inside mcp-route-layer; gateways should be co-located in the zone that owns the integration boundary (mcp-route-layer) to make the full cross-package import surface auditable in one place
+- God function: registerMcpTools in packages/sourcevision/src/cli/mcp.ts calls 36 unique functions — consider decomposing into smaller, focused functions
+- God function: <module> in scripts/hench-callgraph-analysis.mjs calls 33 unique functions — consider decomposing into smaller, focused functions
 
