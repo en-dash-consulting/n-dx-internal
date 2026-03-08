@@ -40,6 +40,12 @@ import { loadClaudeConfig, loadLLMConfig } from "../../store/project-config.js";
 import { formatTaskLoE, formatTaskLoERationale } from "./format-loe.js";
 
 const PENDING_FILE = "pending-proposals.json";
+/**
+ * Sentinel file written before acceptance starts and removed after completion.
+ * If this file exists on load, the previous accept was interrupted mid-write,
+ * indicating the pending-proposals and PRD may be in an inconsistent state.
+ */
+const ACCEPT_SENTINEL = ".accepting";
 const UNKNOWN_PROVIDER_METADATA = "unknown";
 
 function normalizeProviderMetadata(value: string | undefined): string | undefined {
@@ -159,6 +165,37 @@ async function clearPending(dir: string): Promise<void> {
   }
 }
 
+/** Write sentinel file indicating an accept is in progress. */
+async function writeSentinel(dir: string): Promise<void> {
+  const { writeFile } = await import("node:fs/promises");
+  await writeFile(
+    join(dir, REX_DIR, ACCEPT_SENTINEL),
+    JSON.stringify({ startedAt: new Date().toISOString(), pid: process.pid }),
+  );
+}
+
+/** Remove sentinel file after successful accept. */
+async function clearSentinel(dir: string): Promise<void> {
+  try {
+    await unlink(join(dir, REX_DIR, ACCEPT_SENTINEL));
+  } catch {
+    // Already gone
+  }
+}
+
+/**
+ * Check for stale accept sentinel indicating a crashed accept.
+ * Returns true if a sentinel was found (caller should warn).
+ */
+async function checkSentinel(dir: string): Promise<boolean> {
+  try {
+    await access(join(dir, REX_DIR, ACCEPT_SENTINEL));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function acceptProposals(
   dir: string,
   proposals: Proposal[],
@@ -171,8 +208,24 @@ async function acceptProposals(
     );
   }
 
+  // Check for stale sentinel from a crashed previous accept
+  if (await checkSentinel(dir)) {
+    warn(
+      "Detected incomplete previous accept (stale sentinel file).\n" +
+      "The PRD may contain partially-added proposals. Review with 'rex status'\n" +
+      "before continuing. Clearing stale sentinel and pending proposals.",
+    );
+    await clearSentinel(dir);
+    await clearPending(dir);
+    return;
+  }
+
   const rexDir = join(dir, REX_DIR);
   const store = await resolveStore(rexDir);
+
+  // Write sentinel before starting — if we crash between here and
+  // clearSentinel(), the next run will detect the inconsistency.
+  await writeSentinel(dir);
 
   let addedCount = 0;
 
@@ -240,6 +293,7 @@ async function acceptProposals(
   });
 
   await clearPending(dir);
+  await clearSentinel(dir);
 
   // Show formatted summary when batch record is available, else simple message
   if (batchRecord) {

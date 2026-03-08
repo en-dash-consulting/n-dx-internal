@@ -53,3 +53,16 @@ export type { ServerContext, RouteHandler, ViewerScope } from "./server/types.js
 export type { WebSocketBroadcaster } from "./server/websocket.js";
 export { checkPort, checkPortWithRetry, findAvailablePort } from "./server/port.js";
 export type { PortCheckResult, PortAllocationResult, PortRetryOptions } from "./server/port.js";
+
+// Cross-zone shared types — stable contract for types used by multiple
+// server zones (task-usage-analytics, web-dashboard, cleanup scheduling).
+// This explicit re-export makes the contract visible in the public API
+// rather than requiring consumers to reach into zone-internal files.
+export type {
+  TaskUsageAccumulator,
+  CollectAllIdsFn,
+  OrphanedEntry,
+  CleanupResult,
+  CleanupLogEntry,
+  CleanupConfig,
+} from "./server/shared-types.js";

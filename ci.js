@@ -166,7 +166,8 @@ export async function runCI(dir, flags, { run, tools }) {
   });
 
   if (zoneHealth.ok) {
-    info(`  ✓ zone health (${zoneHealth.checked} zones checked)`);
+    const phantomNote = zoneHealth.phantomSkipped > 0 ? `, ${zoneHealth.phantomSkipped} phantom zone(s) excluded` : "";
+    info(`  ✓ zone health (${zoneHealth.checked} zones checked${phantomNote})`);
   } else {
     info(`  ✗ zone health`);
     if (!isJSON) {
@@ -222,6 +223,34 @@ export async function runCI(dir, flags, { run, tools }) {
     if (!isJSON) {
       for (const v of gatewayResult.violations) {
         info(`    ✗ ${v.file}:${v.line} — ${v.message}`);
+      }
+    }
+  }
+
+  // ── Step 3c: architecture policy (redundant enforcement) ───────────────
+  // Enforces the four-tier hierarchy's child_process restriction directly
+  // in CI, providing a redundant check alongside architecture-policy.test.js.
+  // If the test file is skipped or broken, this CI step still catches violations.
+  info("── architecture policy ──");
+  const archResult = checkArchitecturePolicy(dir);
+  if (!archResult.ok) allOk = false;
+
+  steps.push({
+    name: "architecture-policy",
+    ok: archResult.ok,
+    detail: archResult.ok
+      ? `${archResult.checked} files checked, no unauthorized child_process imports`
+      : `${archResult.violations.length} unauthorized child_process import(s) found`,
+    ...(archResult.violations.length > 0 ? { violations: archResult.violations } : {}),
+  });
+
+  if (archResult.ok) {
+    info(`  ✓ architecture policy (${archResult.checked} files checked)`);
+  } else {
+    info(`  ✗ architecture policy`);
+    if (!isJSON) {
+      for (const v of archResult.violations) {
+        info(`    ✗ ${v}`);
       }
     }
   }
@@ -423,25 +452,51 @@ const MAX_COUPLING = 0.25;
 const EXEMPT_ROLES = new Set(["asset", "config", "other"]);
 
 /**
+ * Detect phantom zones — community-detection artifacts that group files
+ * from multiple packages into a single zone. These have no architectural
+ * meaning and their coupling scores (often very high) pollute aggregate
+ * health metrics with false signals.
+ *
+ * A zone is phantom if its files span more than one top-level package
+ * directory (e.g. files from both packages/hench/ and packages/web/).
+ */
+function isPhantomZone(zone) {
+  if (!zone.files || zone.files.length === 0) return false;
+  const packages = new Set();
+  for (const f of zone.files) {
+    // Extract top-level package: "packages/web/src/..." → "packages/web"
+    const match = f.match(/^(packages\/[^/]+)\//);
+    if (match) {
+      packages.add(match[1]);
+    }
+  }
+  return packages.size > 1;
+}
+
+/**
  * Check zone health by reading zones.json and asserting cohesion/coupling
  * thresholds. Returns violations for non-asset zones that exceed thresholds.
+ *
+ * Phantom zones (community-detection artifacts spanning multiple packages)
+ * are excluded from health checks to prevent false-positive violations.
  */
 function checkZoneHealth(dir) {
   const zonesPath = join(dir, ".sourcevision", "zones.json");
   if (!existsSync(zonesPath)) {
-    return { ok: true, checked: 0, violations: [] };
+    return { ok: true, checked: 0, violations: [], phantomSkipped: 0 };
   }
 
   let zonesData;
   try {
     zonesData = JSON.parse(readFileSync(zonesPath, "utf-8"));
   } catch {
-    return { ok: true, checked: 0, violations: [] };
+    return { ok: true, checked: 0, violations: [], phantomSkipped: 0 };
   }
 
   const zones = zonesData.zones ?? [];
   const violations = [];
   let checked = 0;
+  let phantomSkipped = 0;
 
   function walkZones(zoneList) {
     for (const zone of zoneList) {
@@ -453,6 +508,14 @@ function checkZoneHealth(dir) {
         const ext = f.split(".").pop()?.toLowerCase();
         return EXEMPT_ROLES.has(ext) || f.endsWith(".json") || f.endsWith(".md") || f.endsWith(".png") || f.endsWith(".svg");
       })) continue;
+
+      // Skip phantom zones — community-detection artifacts that span
+      // multiple packages. Their high coupling scores are false signals
+      // from file misclassification, not real architectural problems.
+      if (isPhantomZone(zone)) {
+        phantomSkipped++;
+        continue;
+      }
 
       checked++;
 
@@ -482,6 +545,7 @@ function checkZoneHealth(dir) {
     ok: violations.length === 0,
     checked,
     violations,
+    phantomSkipped,
   };
 }
 
@@ -736,6 +800,110 @@ function checkGatewayImports(dir) {
       }
     }
   }
+
+  return {
+    ok: violations.length === 0,
+    checked,
+    violations,
+  };
+}
+
+// ── Architecture policy (redundant enforcement) ──────────────────────────────
+
+/**
+ * Files allowed to import from node:child_process directly.
+ * Mirrors architecture-policy.test.js ALLOWED set for redundant enforcement.
+ *
+ * This list is intentionally maintained separately from the test file to
+ * provide independent verification — if either list drifts, the stricter
+ * one catches the violation.
+ */
+const CHILD_PROCESS_ALLOWED = new Set([
+  // Foundation abstraction
+  "packages/llm-client/src/exec.ts",
+  // CLI streaming providers
+  "packages/llm-client/src/cli-provider.ts",
+  "packages/llm-client/src/codex-cli-provider.ts",
+  "packages/hench/src/agent/lifecycle/cli-loop.ts",
+  // Orchestration layer
+  "cli.js",
+  "ci.js",
+  "web.js",
+  "config.js",
+  "pr-check.js",
+  // Development scripts
+  "packages/web/dev.js",
+  // System monitoring
+  "packages/hench/src/process/memory-monitor.ts",
+  // Git operations
+  "packages/sourcevision/src/analyzers/branch-work-collector.ts",
+  "packages/sourcevision/src/analyzers/branch-work-filter.ts",
+  "packages/sourcevision/src/cli/commands/git-credential-helper.ts",
+  "packages/sourcevision/src/cli/commands/prd-epic-resolver.ts",
+  // Web server routes
+  "packages/web/src/server/routes-hench.ts",
+  "packages/web/src/server/routes-sourcevision.ts",
+  // Claude Code integration
+  "claude-integration.js",
+]);
+
+/**
+ * Check that no source files import from node:child_process outside the
+ * allowed list. This is a redundant enforcement of the four-tier hierarchy's
+ * process execution policy, complementing architecture-policy.test.js.
+ *
+ * If the test file is ever skipped, broken, or omitted from a CI run,
+ * this check still catches violations.
+ */
+function checkArchitecturePolicy(dir) {
+  const violations = [];
+  let checked = 0;
+
+  const skipDirs = new Set(["node_modules", "dist", ".git", ".hench", ".rex", ".sourcevision"]);
+  const childProcessPattern = /(?:from\s+["'](?:node:)?child_process["']|require\(["'](?:node:)?child_process["']\))/;
+
+  function walkSrc(d) {
+    let entries;
+    try {
+      entries = readdirSync(d);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (skipDirs.has(entry)) continue;
+      const full = join(d, entry);
+      let st;
+      try {
+        st = statSync(full);
+      } catch {
+        continue;
+      }
+      if (st.isDirectory()) {
+        walkSrc(full);
+      } else if (/\.(ts|js|mjs)$/.test(entry) && !entry.endsWith(".d.ts")) {
+        const rel = relative(dir, full).replace(/\\/g, "/");
+
+        // Skip allowed files and test files
+        if (CHILD_PROCESS_ALLOWED.has(rel)) continue;
+        if (/\.test\.(ts|js|mjs)$/.test(rel) || /(?:^|[/\\])tests?[/\\]/.test(rel)) continue;
+
+        checked++;
+
+        let content;
+        try {
+          content = readFileSync(full, "utf-8");
+        } catch {
+          continue;
+        }
+
+        if (childProcessPattern.test(content)) {
+          violations.push(rel);
+        }
+      }
+    }
+  }
+
+  walkSrc(dir);
 
   return {
     ok: violations.length === 0,
