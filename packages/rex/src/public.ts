@@ -86,6 +86,8 @@ export type {
 } from "./schema/v1.js";
 export {
   SCHEMA_VERSION,
+  isCompatibleSchema,
+  assertSchemaVersion,
   PRIORITY_ORDER,
   LEVEL_HIERARCHY,
   VALID_LEVELS,

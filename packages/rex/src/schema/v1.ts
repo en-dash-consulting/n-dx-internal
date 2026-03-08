@@ -30,6 +30,42 @@
 
 export const SCHEMA_VERSION = "rex/v1";
 
+/**
+ * Check if a schema version string is compatible with the current version.
+ *
+ * Compatibility rules:
+ * - Exact match always passes.
+ * - Same major version (prefix before `/`) is considered compatible
+ *   (e.g. "rex/v1" is compatible with "rex/v1.1" — forward-compatible).
+ * - Different prefix or missing version fails.
+ *
+ * This is a lightweight check that does NOT require Zod. Use it in
+ * hot paths (e.g. web server reads) where full validation is too expensive.
+ */
+export function isCompatibleSchema(version: string | undefined): boolean {
+  if (!version) return false;
+  if (version === SCHEMA_VERSION) return true;
+  // Allow forward-compatible minor versions (e.g. "rex/v1.1" matches "rex/v1")
+  return version.startsWith(SCHEMA_VERSION + ".");
+}
+
+/**
+ * Assert that a document's schema field is compatible with the current version.
+ * Throws a descriptive error if the schema is missing or incompatible.
+ *
+ * Use this at read boundaries (store loads, API handlers) to catch
+ * version drift early rather than letting it surface as cryptic type errors.
+ */
+export function assertSchemaVersion(doc: { schema?: string }): void {
+  if (!isCompatibleSchema(doc.schema)) {
+    throw new Error(
+      `Incompatible PRD schema: found "${doc.schema ?? "(missing)"}",` +
+      ` expected "${SCHEMA_VERSION}". ` +
+      `Run "rex validate" to check and migrate your PRD.`,
+    );
+  }
+}
+
 export type ItemLevel = "epic" | "feature" | "task" | "subtask";
 
 export type ItemStatus = "pending" | "in_progress" | "completed" | "failing" | "deferred" | "blocked" | "deleted";

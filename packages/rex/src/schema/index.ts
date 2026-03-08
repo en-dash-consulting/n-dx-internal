@@ -20,6 +20,8 @@
 
 export {
   SCHEMA_VERSION,
+  isCompatibleSchema,
+  assertSchemaVersion,
   LEVEL_HIERARCHY,
   PRIORITY_ORDER,
   VALID_LEVELS,

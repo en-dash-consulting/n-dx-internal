@@ -21,6 +21,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { PRDDocument } from "./rex-gateway.js";
+import { SCHEMA_VERSION, isCompatibleSchema } from "./rex-gateway.js";
 
 /**
  * Check whether prd.json exists in the given rex directory.
@@ -31,12 +32,24 @@ export function prdExists(rexDir: string): boolean {
 
 /**
  * Load and parse prd.json synchronously. Returns null if not found or unparseable.
+ *
+ * Validates the schema version before returning. If the version is incompatible,
+ * logs a warning and returns null to prevent silent data corruption from
+ * operating on a document whose structure may have changed.
  */
 export function loadPRDSync(rexDir: string): PRDDocument | null {
   const prdPath = join(rexDir, "prd.json");
   if (!existsSync(prdPath)) return null;
   try {
-    return JSON.parse(readFileSync(prdPath, "utf-8")) as PRDDocument;
+    const doc = JSON.parse(readFileSync(prdPath, "utf-8")) as PRDDocument;
+    if (!isCompatibleSchema(doc.schema)) {
+      console.warn(
+        `[prd-io] Incompatible PRD schema: found "${doc.schema ?? "(missing)"}",` +
+        ` expected "${SCHEMA_VERSION}". Run "rex validate" to check your PRD.`,
+      );
+      return null;
+    }
+    return doc;
   } catch {
     return null;
   }

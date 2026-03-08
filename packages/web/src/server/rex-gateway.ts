@@ -23,6 +23,9 @@ export { createRexMcpServer } from "rex";
 export { resolveStore } from "rex";
 export type { PRDStore } from "rex";
 
+// ---- Rex schema version contract --------------------------------------------
+export { SCHEMA_VERSION, isCompatibleSchema, assertSchemaVersion } from "rex";
+
 // ---- Rex domain types & constants -------------------------------------------
 export type { Priority, ItemLevel, ItemStatus } from "rex";
 export type { RequirementCategory, RequirementValidationType } from "rex";
