@@ -59,7 +59,9 @@
         "packages/rex/src/cli/commands/sync.ts": "mutation-commands",
         "packages/rex/tests/unit/cli/commands/sync.test.ts": "mutation-commands",
 
-        "packages/rex/src/cli/commands/constants.ts": "rex-runtime-data"
+        "packages/rex/src/cli/commands/constants.ts": "rex-runtime-data",
+
+        "packages/web/src/server/rex-gateway.ts": "mcp-route-layer"
       }
     },
     "riskJustifications": [

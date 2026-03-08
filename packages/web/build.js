@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const watchMode = process.argv.includes("--watch");
+const viewerOnly = process.argv.includes("--viewer-only");
+const landingOnly = process.argv.includes("--landing-only");
 
 const jsEntryPoint = resolve(__dirname, "src/viewer/main.ts");
 const cssEntryPoint = resolve(__dirname, "src/viewer/styles/index.css");
@@ -108,8 +110,7 @@ const landingJsOptions = {
   target: "es2022",
 };
 
-async function buildProduction() {
-  // Build dashboard viewer
+async function buildViewer() {
   const jsResult = await esbuild.build({
     ...commonJsOptions,
     write: false,
@@ -121,8 +122,9 @@ async function buildProduction() {
 
   buildHtml(jsCode, cssCode);
   console.log("Built viewer: dist/viewer/index.html");
+}
 
-  // Build landing page
+async function buildLanding() {
   const landingJsResult = await esbuild.build({
     ...landingJsOptions,
     write: false,
@@ -134,6 +136,17 @@ async function buildProduction() {
 
   buildLandingHtml(landingJsCode, landingCssCode);
   console.log("Built landing: dist/landing/index.html");
+}
+
+async function buildProduction() {
+  if (landingOnly) {
+    await buildLanding();
+  } else if (viewerOnly) {
+    await buildViewer();
+  } else {
+    await buildViewer();
+    await buildLanding();
+  }
 }
 
 async function buildWatch() {

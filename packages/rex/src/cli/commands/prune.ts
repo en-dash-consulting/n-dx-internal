@@ -15,6 +15,13 @@ import { getLevelEmoji, formatLevelSummary as formatLevels } from "../../schema/
 const ARCHIVE_FILE = "archive.json";
 
 /**
+ * Maximum number of archive batches to retain.
+ * Older batches are discarded when this limit is exceeded,
+ * preventing unbounded growth of archive.json over time.
+ */
+const MAX_ARCHIVE_BATCHES = 100;
+
+/**
  * Archive structure written to `.rex/archive.json`.
  *
  * Each prune run appends a batch to the archive's `batches` array,
@@ -42,6 +49,17 @@ async function loadArchive(archivePath: string): Promise<PruneArchive> {
   } catch {
     return { schema: "rex/archive/v1", batches: [] };
   }
+}
+
+/**
+ * Trim archive to retain only the most recent batches.
+ * Prevents unbounded growth of archive.json in long-running projects.
+ */
+function trimArchive(archive: PruneArchive, maxBatches: number = MAX_ARCHIVE_BATCHES): number {
+  if (archive.batches.length <= maxBatches) return 0;
+  const excess = archive.batches.length - maxBatches;
+  archive.batches = archive.batches.slice(excess);
+  return excess;
 }
 
 /**
@@ -261,6 +279,7 @@ export async function cmdPrune(
     items: pruneResult.pruned,
     count: pruneResult.prunedCount,
   });
+  trimArchive(archive);
   await writeFile(archivePath, toCanonicalJSON(archive), "utf-8");
 
   // Persist the pruned document
