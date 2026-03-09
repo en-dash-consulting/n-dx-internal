@@ -1,16 +1,6 @@
 {
   "files": [
     {
-      "path": "package-lock.json",
-      "size": 63846,
-      "language": "JSON",
-      "lineCount": 1919,
-      "hash": "8994119612c8a5abb87e2fc4b21d3c8af69b8cc157ef22314314fb9f46062da8",
-      "role": "generated",
-      "category": "root",
-      "lastModified": 1772682844116
-    },
-    {
       "path": "package.json",
       "size": 640,
       "language": "JSON",
@@ -48,7 +38,7 @@
       "hash": "20da55260a0a2756a699e0dbf033f38c1dfb5d4f37c224216e6c7c2668dd0f2b",
       "role": "source",
       "category": "src",
-      "lastModified": 1772682844116
+      "lastModified": 1773020406087
     },
     {
       "path": "src/codex-cli-provider.ts",
@@ -88,7 +78,7 @@
       "hash": "dd583c8f090d06dc1149344883766d05044eabbb637f3934d2e0e666df3aa9fa",
       "role": "source",
       "category": "src",
-      "lastModified": 1772682844117
+      "lastModified": 1773020406087
     },
     {
       "path": "src/help-format.ts",
@@ -452,20 +442,19 @@
     }
   ],
   "summary": {
-    "totalFiles": 45,
-    "totalLines": 9980,
+    "totalFiles": 44,
+    "totalLines": 8061,
     "byLanguage": {
-      "JSON": 3,
+      "JSON": 2,
       "TypeScript": 42
     },
     "byRole": {
-      "generated": 1,
       "config": 3,
       "source": 22,
       "test": 19
     },
     "byCategory": {
-      "root": 4,
+      "root": 3,
       "src": 22,
       "tests": 19
     }

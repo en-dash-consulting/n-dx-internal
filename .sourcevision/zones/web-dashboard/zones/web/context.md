@@ -8,7 +8,7 @@ Zone: Web Viewer/web (`web-viewer/web`)
 Files: 279, Cohesion: 0.96, Coupling: 0.04
 Description: 279 files, primarily TypeScript
 Entry points: packages/web/src/schema/v1.ts, packages/web/src/server/prd-io.ts, packages/web/src/server/rex-gateway.ts, packages/web/src/server/types.ts, packages/web/src/viewer/components/logos.ts, packages/web/src/viewer/components/sidebar.ts, packages/web/src/viewer/hooks/use-polling.ts, packages/web/src/viewer/performance/index.ts, packages/web/src/viewer/polling/index.ts, packages/web/src/viewer/polling/polling-state.ts, packages/web/src/viewer/types.ts, packages/web/src/viewer/utils.ts, packages/web/src/viewer/visualization/index.ts
-Lines: 87316
+Lines: 87319
 
 </zone>
 
@@ -24,7 +24,7 @@ packages/web/src/server/port.ts (TypeScript, 195 lines, source)
 packages/web/src/server/pr-markdown-refresh-diagnostics.ts (TypeScript, 591 lines, source)
 packages/web/src/server/prd-io.ts (TypeScript, 71 lines, source)
 packages/web/src/server/process-memory-tracker.ts (TypeScript, 307 lines, source)
-packages/web/src/server/rex-gateway.ts (TypeScript, 88 lines, source)
+packages/web/src/server/rex-gateway.ts (TypeScript, 91 lines, source)
 packages/web/src/server/routes-adaptive.ts (TypeScript, 873 lines, source)
 packages/web/src/server/routes-config.ts (TypeScript, 309 lines, source)
 packages/web/src/server/routes-data.ts (TypeScript, 147 lines, source)

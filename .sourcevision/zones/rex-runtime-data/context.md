@@ -6,9 +6,9 @@
 
 Zone: Rex Runtime Data (`rex-runtime-data`)
 Files: 6, Cohesion: 0.00, Coupling: 0.00
-Risk: at-risk (score: 0.50)
-Description: Runtime state files written and read by the rex CLI, including the PRD tree, configuration, execution logs, and workflow state — none of which are source modules.
-Lines: 25519
+Risk: healthy (score: 0.50)
+Description: Runtime state directory holding the live PRD tree, execution logs, workflow state, and adapter configuration consumed by the rex CLI and MCP server.
+Lines: 25618
 
 </zone>
 
@@ -17,8 +17,8 @@ Lines: 25519
 .rex/archive.json (JSON, 840 lines, other)
 .rex/config.json (JSON, 6 lines, other)
 .rex/execution-log.1.jsonl (Other, 3899 lines, other)
-.rex/execution-log.jsonl (Other, 590 lines, other)
-.rex/prd.json (JSON, 20166 lines, other)
+.rex/execution-log.jsonl (Other, 613 lines, other)
+.rex/prd.json (JSON, 20242 lines, other)
 .rex/workflow.md (Markdown, 18 lines, docs)
 
 </files>
@@ -26,31 +26,23 @@ Lines: 25519
 <findings>
 
 [observation] [info] Isolated files — no import edges between 6 files, cohesion is unmeasurable (reported as 0)
-[observation] [info] Two execution log files (.rex/execution-log.jsonl and .rex/execution-log.1.jsonl) indicate log rotation is active — verify the rotation cap is enforced to prevent unbounded disk growth in long-running projects.
-[observation] [info] Zero cohesion and coupling are expected and correct for a data-only zone containing JSON and Markdown state files with no import relationships.
-[observation] [info] archive.json is documented as safe to delete, but its presence in this zone alongside the live prd.json may confuse tooling that treats all .rex/ files as authoritative state — consider a dedicated .rex/archive/ subdirectory.
-[relationship] [warning] rex-runtime-data acts as a shared-state bus between hench-agent, web-viewer, and monorepo-root via disk I/O rather than module imports. This file-based coupling is structurally invisible to Louvain zone detection and creates real concurrency hazards (documented in CLAUDE.md) that no import-graph metric can surface.
-[anti-pattern] [critical] prd.json is written by hench-agent (task status updates), monorepo-root (plan operations), and web MCP handlers without any file-level write coordinator. CLAUDE.md documents 'data corruption risk' for concurrent plan+work writes but provides no code-level mitigation — an advisory lock file or write-queue module is entirely absent. This is a missing abstraction layer for a shared mutable resource with multiple concurrent writers.
-[suggestion] [info] archive.json stores batches as a JSON array that is fully rewritten on each prune (max 100 batches). As prune frequency increases, this full-rewrite pattern produces write amplification proportional to archive size. Consider an append-only .jsonl format with periodic compaction, consistent with the execution-log files in the same directory, and rename to archive.jsonl for extension consistency.
-[suggestion] [info] Zone "Rex Runtime Data" (rex-runtime-data) has at-risk risk (score: 0.50, cohesion: 0.00, coupling: 0.00) — approaching architectural risk thresholds
+[observation] [info] Two execution log files suggest log rotation is active; CLAUDE.md notes archive.json is capped at 100 batches, but execution log rotation policy is not documented.
+[observation] [info] Zero cohesion is expected for a runtime data directory — these files are written by different subsystems and never import each other.
+[observation] [info] prd.json and archive.json are both mutation targets for rex commands; concurrent writes from plan + work remain a documented risk requiring process-level coordination.
+[anti-pattern] [warning] Execution log rotation policy is undocumented. CLAUDE.md documents that archive.json is capped at 100 batches, but execution-log.jsonl has no stated bound. Without a documented policy, operators have no signal for when to intervene and automated tooling cannot enforce limits.
 
 </findings>
 
 <insights>
 
 - Isolated files — no import edges between 6 files, cohesion is unmeasurable (reported as 0)
-- These are pure data artifacts, not source code — Louvain correctly isolated them with zero cohesion and coupling since they have no import edges
-- The presence of execution-log.1.jsonl alongside execution-log.jsonl suggests a rotation scheme; ensure archival logic caps file count to prevent unbounded growth
-- workflow.md and prd.json serve as the primary human-readable and machine-readable views of PRD state — keeping them co-located is correct for atomic consistency during reads
-- Zero cohesion and coupling are expected and correct for a data-only zone containing JSON and Markdown state files with no import relationships.
-- Two execution log files (.rex/execution-log.jsonl and .rex/execution-log.1.jsonl) indicate log rotation is active — verify the rotation cap is enforced to prevent unbounded disk growth in long-running projects.
-- archive.json is documented as safe to delete, but its presence in this zone alongside the live prd.json may confuse tooling that treats all .rex/ files as authoritative state — consider a dedicated .rex/archive/ subdirectory.
-- rex-runtime-data is consumed by hench-agent and web-viewer at runtime via file I/O, not imports — this read/write coupling is invisible to the zone graph and represents a hidden coordination contract between zones
-- The concurrency hazards documented in CLAUDE.md (plan + work both writing prd.json) are an inter-zone contract violation that zone metrics cannot detect; they require separate runtime guardrails
-- rex-runtime-data acts as a shared-state bus between hench-agent, web-viewer, and monorepo-root via disk I/O rather than module imports. This file-based coupling is structurally invisible to Louvain zone detection and creates real concurrency hazards (documented in CLAUDE.md) that no import-graph metric can surface.
-- No write-coordination abstraction exists between the multiple zones (hench-agent, monorepo-root, web-viewer via MCP) that write to prd.json — the concurrency hazard documented in CLAUDE.md is unmitigated at the code level; no advisory lock, write queue, or optimistic concurrency token guards against interleaved writes
-- prd.json is written by hench-agent (task status updates), monorepo-root (plan operations), and web MCP handlers without any file-level write coordinator. CLAUDE.md documents 'data corruption risk' for concurrent plan+work writes but provides no code-level mitigation — an advisory lock file or write-queue module is entirely absent. This is a missing abstraction layer for a shared mutable resource with multiple concurrent writers.
-- execution-log.jsonl files use the semantically correct .jsonl extension for line-delimited JSON while archive.json uses plain .json despite storing an array of batches — the extension inconsistency within the same directory implies different serialization strategies and can mislead tooling that infers format from extension
-- archive.json stores batches as a JSON array that is fully rewritten on each prune (max 100 batches). As prune frequency increases, this full-rewrite pattern produces write amplification proportional to archive size. Consider an append-only .jsonl format with periodic compaction, consistent with the execution-log files in the same directory, and rename to archive.jsonl for extension consistency.
+- These are data files, not source files — zero cohesion and zero coupling are expected and correct; no action needed on those metrics.
+- The execution log files (execution-log.jsonl, execution-log.1.jsonl) are append-only audit trails; ensure log rotation policy is documented so they don't grow unbounded in long-lived projects.
+- archive.json coexists with prd.json here; both are write targets for rex commands, so concurrent writes (e.g. ndx plan + ndx work) remain a documented data-corruption risk.
+- Zero cohesion is expected for a runtime data directory — these files are written by different subsystems and never import each other.
+- Two execution log files suggest log rotation is active; CLAUDE.md notes archive.json is capped at 100 batches, but execution log rotation policy is not documented.
+- prd.json and archive.json are both mutation targets for rex commands; concurrent writes from plan + work remain a documented risk requiring process-level coordination.
+- Two execution-log files (execution-log.jsonl, execution-log.1.jsonl) indicate log rotation is active, but no rotation policy (max size, max count, retention window) is documented in CLAUDE.md or any .rex config. Unbounded growth is a latent operational risk in long-lived projects.
+- Execution log rotation policy is undocumented. CLAUDE.md documents that archive.json is capped at 100 batches, but execution-log.jsonl has no stated bound. Without a documented policy, operators have no signal for when to intervene and automated tooling cannot enforce limits.
 
 </insights>

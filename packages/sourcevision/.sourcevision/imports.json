@@ -255,6 +255,14 @@
       ]
     },
     {
+      "from": "src/analyzers/convergence.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone"
+      ]
+    },
+    {
       "from": "src/analyzers/enrich-batch.ts",
       "to": "src/analyzers/claude-client.ts",
       "type": "static",
@@ -815,6 +823,17 @@
       ]
     },
     {
+      "from": "src/analyzers/move-recommendations.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ImportEdge",
+        "ZoneCrossing",
+        "MoveFileFinding"
+      ]
+    },
+    {
       "from": "src/analyzers/next-steps.ts",
       "to": "src/schema/index.ts",
       "type": "type",
@@ -1130,6 +1149,23 @@
     },
     {
       "from": "src/analyzers/zones.ts",
+      "to": "src/analyzers/move-recommendations.ts",
+      "type": "static",
+      "symbols": [
+        "detectPinDivergence",
+        "detectImportNeighborMoves"
+      ]
+    },
+    {
+      "from": "src/analyzers/zones.ts",
+      "to": "src/analyzers/move-recommendations.ts",
+      "type": "type",
+      "symbols": [
+        "MoveContext"
+      ]
+    },
+    {
+      "from": "src/analyzers/zones.ts",
       "to": "src/analyzers/workspace-crossings.ts",
       "type": "static",
       "symbols": [
@@ -1229,6 +1265,26 @@
       "type": "static",
       "symbols": [
         "analyzeComponents"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze-phases.ts",
+      "to": "src/analyzers/convergence.ts",
+      "type": "static",
+      "symbols": [
+        "createSnapshot",
+        "computeDeltas",
+        "loadLatestReport",
+        "saveReport",
+        "formatDeltaReport"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze-phases.ts",
+      "to": "src/analyzers/convergence.ts",
+      "type": "type",
+      "symbols": [
+        "ConvergenceReport"
       ]
     },
     {
@@ -1380,6 +1436,14 @@
       "type": "static",
       "symbols": [
         "assessAllZoneRisks"
+      ]
+    },
+    {
+      "from": "src/cli/commands/analyze.ts",
+      "to": "src/analyzers/risk-scoring.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneType"
       ]
     },
     {
@@ -2572,6 +2636,33 @@
       ]
     },
     {
+      "from": "tests/unit/analyzers/convergence.test.ts",
+      "to": "src/analyzers/convergence.ts",
+      "type": "static",
+      "symbols": [
+        "createSnapshot",
+        "computeDeltas"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/convergence.test.ts",
+      "to": "src/analyzers/convergence.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneMetricSnapshot",
+        "ConvergenceReport",
+        "DeltaReport"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/convergence.test.ts",
+      "to": "tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeZone"
+      ]
+    },
+    {
       "from": "tests/unit/analyzers/dedup-findings.test.ts",
       "to": "src/analyzers/enrich-parsing.ts",
       "type": "static",
@@ -2759,6 +2850,33 @@
         "writeManifest",
         "updateManifestModule",
         "updateManifestError"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/move-recommendations.test.ts",
+      "to": "src/analyzers/move-recommendations.ts",
+      "type": "static",
+      "symbols": [
+        "detectPinDivergence",
+        "detectImportNeighborMoves"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/move-recommendations.test.ts",
+      "to": "src/analyzers/move-recommendations.ts",
+      "type": "type",
+      "symbols": [
+        "MoveContext"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/move-recommendations.test.ts",
+      "to": "tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeZone",
+        "makeEdge",
+        "makeImports"
       ]
     },
     {
@@ -3212,6 +3330,25 @@
       ]
     },
     {
+      "from": "tests/unit/analyzers/zone-type-thresholds.test.ts",
+      "to": "src/analyzers/risk-scoring.ts",
+      "type": "static",
+      "symbols": [
+        "classifyRiskLevel",
+        "assessZoneRisk",
+        "assessAllZoneRisks",
+        "ZONE_TYPE_THRESHOLDS"
+      ]
+    },
+    {
+      "from": "tests/unit/analyzers/zone-type-thresholds.test.ts",
+      "to": "tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeZone"
+      ]
+    },
+    {
       "from": "tests/unit/analyzers/zones-helpers.ts",
       "to": "src/schema/index.ts",
       "type": "type",
@@ -3623,6 +3760,7 @@
         "tests/unit/analyzers/classify.test.ts",
         "tests/unit/analyzers/completion-reader.test.ts",
         "tests/unit/analyzers/components.test.ts",
+        "tests/unit/analyzers/convergence.test.ts",
         "tests/unit/analyzers/dedup-findings.test.ts",
         "tests/unit/analyzers/enrich-content-skip.test.ts",
         "tests/unit/analyzers/enrich-per-zone.test.ts",
@@ -3630,6 +3768,7 @@
         "tests/unit/analyzers/imports.test.ts",
         "tests/unit/analyzers/inventory.test.ts",
         "tests/unit/analyzers/manifest.test.ts",
+        "tests/unit/analyzers/move-recommendations.test.ts",
         "tests/unit/analyzers/next-steps.test.ts",
         "tests/unit/analyzers/risk-scoring.test.ts",
         "tests/unit/analyzers/token-usage.test.ts",
@@ -3643,6 +3782,7 @@
         "tests/unit/analyzers/zone-output.test.ts",
         "tests/unit/analyzers/zone-size-policy.test.ts",
         "tests/unit/analyzers/zone-subdivision.test.ts",
+        "tests/unit/analyzers/zone-type-thresholds.test.ts",
         "tests/unit/cli/analyze.test.ts",
         "tests/unit/cli/errors.test.ts",
         "tests/unit/cli/export-pdf.test.ts",
@@ -3683,7 +3823,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 356,
+    "totalEdges": 371,
     "totalExternal": 7,
     "circularCount": 0,
     "circulars": [],
@@ -3709,6 +3849,10 @@
         "count": 10
       },
       {
+        "path": "tests/unit/analyzers/zones-helpers.ts",
+        "count": 10
+      },
+      {
         "path": "src/analyzers/enrich-parsing.ts",
         "count": 9
       },
@@ -3730,10 +3874,6 @@
       },
       {
         "path": "src/cli/commands/constants.ts",
-        "count": 7
-      },
-      {
-        "path": "tests/unit/analyzers/zones-helpers.ts",
         "count": 7
       },
       {
@@ -3769,6 +3909,6 @@
         "count": 4
       }
     ],
-    "avgImportsPerFile": 3.3
+    "avgImportsPerFile": 3.28
   }
 }

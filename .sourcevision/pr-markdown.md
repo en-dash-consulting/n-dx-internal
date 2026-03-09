@@ -2,11 +2,12 @@
 
 **Branch:** `feature/sv-fixes-0306`
 **Base:** `main`
-**Completed items:** 79
+**Completed items:** 86
 
 | Epic | Completed |
 |------|-----------|
 | Repository Governance and Community Standards | 3 |
+| MCP over HTTP transport | 3 |
 
 ## ⚠️ Breaking Changes
 
@@ -187,8 +188,31 @@
 - Zone "Unit" (packages-rex:unit) has critical risk (score: 0.69, cohesion: 0.31, coupling: 0.69) — requires refactoring before new feature development
 - Zone "Core" (packages-rex:core) has critical risk (score: 0.64, cohesion: 0.36, coupling: 0.64) — requires refactoring before new feature development
 - Zone "Store" (packages-rex:store) has critical risk (score: 0.61, cohesion: 0.39, coupling: 0.61) — requires refactoring before new feature development
+- **MCP over HTTP transport**
 
 ## Completed Work
+
+### MCP over HTTP transport
+
+**rex_edit_item MCP tool**
+- Implement rex_edit_item tool handler and schema
+  Add an edit_item tool to the rex MCP server that accepts a target item ID and a partial patch of editable fields (title, description, acceptanceCriteria, priority, tags, loe, loeRationale, loeConfidence). The handler should validate the patch against the PRD schema, apply it via the existing PRDStore mutation API, and return the updated item. Wire the new tool into the MCP tool registry alongside the existing rex tools.
+  - edit_item tool is listed in the rex MCP tool manifest returned by list-tools
+  - Calling edit_item with a valid item ID and partial patch updates exactly the specified fields and leaves all other fields unchanged
+  - Calling edit_item with an unknown item ID returns a structured MCP error response (not a server crash)
+  - Calling edit_item with an invalid field value (e.g. unrecognized priority string) returns a descriptive validation error
+  - The updated item is persisted to prd.json and visible in a subsequent rex_status call
+  - Unit tests cover field merging, unknown ID, and invalid value cases
+- Expose edit_item through rex-gateway and add MCP integration test
+  Re-export the new edit_item capability through the web rex-gateway.ts so the HTTP MCP server can reach it without bypassing the gateway pattern. Add an integration test that calls the edit_item endpoint over HTTP transport, verifies the 200 response shape, and confirms the change is reflected in a follow-up rex_status call.
+  - rex-gateway.ts re-exports the edit_item function; no direct imports of rex internals exist outside the gateway
+  - domain-isolation.test.js passes without modification (gateway re-export-only rule still holds)
+  - Integration test POSTs an edit_item call to the HTTP MCP endpoint and asserts the response contains the updated item fields
+  - Integration test asserts a follow-up rex_status call reflects the edited values
+  - CI pipeline passes with the new test included
+
+- rex_edit_item MCP tool *(feature)*
+  Expose a dedicated edit_item action on the rex MCP server so AI agents and Claude Code can modify PRD item content (title, description, acceptance criteria, priority, tags, LoE fields) in a single structured call — distinct from rex_update which handles status/lifecycle transitions.
 
 ### Repository Governance and Community Standards
 
@@ -458,6 +482,7 @@
 - Zone "Unit" (packages-rex:unit) has critical risk (score: 0.69, cohesion: 0.31, coupling: 0.69) — requires refactoring before new feature development
 - Zone "Core" (packages-rex:core) has critical risk (score: 0.64, cohesion: 0.36, coupling: 0.64) — requires refactoring before new feature development
 - Zone "Store" (packages-rex:store) has critical risk (score: 0.61, cohesion: 0.39, coupling: 0.61) — requires refactoring before new feature development
+- 🔶 **MCP over HTTP transport** *(epic)*
 - Address observation issues (8 findings) *(feature)*
   - Bidirectional coupling: "task-usage-tracking" ↔ "web-dashboard" (1+3 crossings) — consider extracting shared interface
 - Bidirectional coupling: "web-build-infrastructure" ↔ "web-dashboard" (4+2 crossings) — consider extracting shared interface
@@ -598,6 +623,21 @@
   - docs/architecture/ files are referenced from CLAUDE.md but have no automated freshness check. If architectural decisions change (e.g. the four-tier hierarchy evolves or gateway rules shift), these documents will silently become stale without any tooling signal.
 - The co-location of packages/hench/src/store/suggestions.ts with web package files in this zone creates a false import-graph edge between the hench and web tiers. Any zone-coupling metric that includes this zone will over-report cross-tier coupling until suggestions.ts is reassigned to hench-agent.
 - The single usage→web-dashboard import is the only dependency that flows against the expected data-consumer direction (viewer should pull from analytics, not the reverse); verify this import is not a hidden circular initialization dependency
+- Address observation issues (5 findings) *(feature)*
+  - Bidirectional coupling: "hench-agent-2" ↔ "web-dashboard" (4+3 crossings) — consider extracting shared interface
+- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 24 files — high-impact module, changes may have wide ripple effects
+- High coupling (0.67) — 4 imports target "web-dashboard"
+- Low cohesion (0.33) — files are loosely related, consider splitting this zone
+- 11 entry points — wide API surface, consider consolidating exports
+- Address pattern issues (4 findings) *(feature)*
+  - architecture-policy.test.js acts as a global zone guardian from within the cli-e2e-tests zone, creating an implicit dependency on the correctness of every other zone's import structure. If a new tier boundary rule is added to CLAUDE.md but not to this test, the rule is documentation-only with no enforcement path.
+- The cross-package-integration-tests zone has no coupling to production code, but it implicitly monitors every zone's import graph. As new zones or packages are added, this zone must be actively extended — currently there is no automated mechanism to detect when a new cross-package import path is created without a corresponding contract test.
+- The residual 17-file zone merges files from three distinct semantic domains into one zone with misleading metrics (cohesion 0.33, coupling 0.67) — the coupling score is a detection artifact that will resolve once zone hints reclassify the files to their correct zones.
+- web-dashboard and hench are the two largest production zones (388 vs 155 files) and both connect upstream to rex via dedicated gateway files. This creates a fan-in topology where rex is the central domain — if rex's public API changes, two independent gateways must be updated simultaneously, which is a coordination risk as the codebase scales.
+- Address relationship issues (3 findings) *(feature)*
+  - cli-e2e-tests and cross-package-integration-tests together provide full-spectrum architectural coverage: integration tests guard the import graph (static structure), e2e tests guard the CLI interface (dynamic behavior). A gap exists for in-process behavioral tests of gateway return values — currently no zone validates that gateway re-exports return correctly typed data at runtime.
+- monorepo-root has zero import edges to all other zones (spawn-only pattern), making its cross-zone contracts invisible to static analysis — interface drift between CLI spawns and downstream package commands cannot be caught by import-graph tooling alone.
+- rex-runtime-state is a multi-writer shared-state zone with no import-graph visibility — four zones write to it under documented but unenforced exclusion rules, creating hidden coupling that static analysis cannot detect or warn about.
 - Address anti-pattern issues (8 findings) *(feature)*
   - There is no parity assertion between gateway re-export count and tested import paths. When a new function is added to rex-gateway.ts or domain-gateway.ts, the cross-package contract test is not automatically required to cover it — the enforcement zone can fall arbitrarily behind the gateway surface area with no visible signal.
 - The residual 17-file zone groups files from packages/hench/ and packages/web/ under a single zone ID — cross-package zone membership means adding zone-level hints or health thresholds for 'hench-agent' will unintentionally affect web package files, and vice versa.

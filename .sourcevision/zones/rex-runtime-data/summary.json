@@ -1,7 +1,7 @@
 {
   "id": "rex-runtime-data",
   "name": "Rex Runtime Data",
-  "description": "Runtime state files written and read by the rex CLI, including the PRD tree, configuration, execution logs, and workflow state — none of which are source modules.",
+  "description": "Runtime state directory holding the live PRD tree, execution logs, workflow state, and adapter configuration consumed by the rex CLI and MCP server.",
   "files": [
     ".rex/archive.json",
     ".rex/config.json",
@@ -14,12 +14,12 @@
   "cohesion": 0,
   "coupling": 0,
   "fileCount": 6,
-  "lineCount": 25519,
+  "lineCount": 25618,
   "riskMetrics": {
     "cohesion": 0,
     "coupling": 0,
     "riskScore": 0.5,
-    "riskLevel": "at-risk",
+    "riskLevel": "healthy",
     "failsThreshold": false
   }
 }

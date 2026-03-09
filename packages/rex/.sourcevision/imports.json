@@ -3483,7 +3483,8 @@
         "handleGetCapabilities",
         "handleReorganize",
         "handleHealth",
-        "handleFacets"
+        "handleFacets",
+        "handleEditItem"
       ]
     },
     {
@@ -3876,6 +3877,14 @@
         "PRDItem",
         "Priority",
         "Requirement"
+      ]
+    },
+    {
+      "from": "src/core/override-escalation.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
       ]
     },
     {
@@ -4531,6 +4540,14 @@
     },
     {
       "from": "src/public.ts",
+      "to": "src/cli/mcp-tools.ts",
+      "type": "reexport",
+      "symbols": [
+        "handleEditItem"
+      ]
+    },
+    {
+      "from": "src/public.ts",
       "to": "src/cli/mcp.ts",
       "type": "reexport",
       "symbols": [
@@ -5017,6 +5034,7 @@
         "ItemLevel",
         "ItemStatus",
         "Priority",
+        "ResolutionType",
         "RexConfig",
         "RequirementCategory",
         "RequirementValidationType",
@@ -5273,6 +5291,7 @@
         "ItemLevel",
         "ItemStatus",
         "Priority",
+        "ResolutionType",
         "RequirementCategory",
         "RequirementValidationType",
         "Requirement",
@@ -7104,6 +7123,48 @@
       ]
     },
     {
+      "from": "tests/unit/cli/edit-item.test.ts",
+      "to": "src/cli/mcp-tools.ts",
+      "type": "static",
+      "symbols": [
+        "handleEditItem"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/edit-item.test.ts",
+      "to": "src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/edit-item.test.ts",
+      "to": "src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/edit-item.test.ts",
+      "to": "src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "tests/unit/cli/edit-item.test.ts",
+      "to": "src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore",
+        "ensureRexDir"
+      ]
+    },
+    {
       "from": "tests/unit/cli/errors.test.ts",
       "to": "src/cli/errors.ts",
       "type": "static",
@@ -7521,6 +7582,30 @@
       "type": "type",
       "symbols": [
         "NotionStatusGroup"
+      ]
+    },
+    {
+      "from": "tests/unit/core/override-escalation.test.ts",
+      "to": "src/core/override-escalation.ts",
+      "type": "static",
+      "symbols": [
+        "detectOverrideAccumulation"
+      ]
+    },
+    {
+      "from": "tests/unit/core/override-escalation.test.ts",
+      "to": "src/core/override-escalation.ts",
+      "type": "type",
+      "symbols": [
+        "OverrideEscalationResult"
+      ]
+    },
+    {
+      "from": "tests/unit/core/override-escalation.test.ts",
+      "to": "src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
       ]
     },
     {
@@ -8529,6 +8614,7 @@
         "tests/unit/cli/commands/validate-interactive.test.ts",
         "tests/unit/cli/commands/validate.test.ts",
         "tests/unit/cli/commands/verify.test.ts",
+        "tests/unit/cli/edit-item.test.ts",
         "tests/unit/cli/errors.test.ts",
         "tests/unit/cli/help.test.ts",
         "tests/unit/cli/mcp.test.ts",
@@ -8549,6 +8635,7 @@
         "tests/unit/core/next-task-scoring.test.ts",
         "tests/unit/core/next-task.test.ts",
         "tests/unit/core/notion-map.test.ts",
+        "tests/unit/core/override-escalation.test.ts",
         "tests/unit/core/parent-completion.test.ts",
         "tests/unit/core/parent-reset.test.ts",
         "tests/unit/core/prune.test.ts",
@@ -8611,7 +8698,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 910,
+    "totalEdges": 920,
     "totalExternal": 5,
     "circularCount": 0,
     "circulars": [],
@@ -8626,7 +8713,7 @@
       },
       {
         "path": "src/store/index.ts",
-        "count": 31
+        "count": 32
       },
       {
         "path": "src/cli/commands/constants.ts",
@@ -8646,7 +8733,7 @@
       },
       {
         "path": "src/core/canonical.ts",
-        "count": 16
+        "count": 17
       },
       {
         "path": "src/core/stats.ts",
@@ -8662,6 +8749,10 @@
       },
       {
         "path": "src/core/next-task.ts",
+        "count": 8
+      },
+      {
+        "path": "src/schema/v1.ts",
         "count": 8
       },
       {
@@ -8685,10 +8776,6 @@
         "count": 7
       },
       {
-        "path": "src/schema/v1.ts",
-        "count": 7
-      },
-      {
         "path": "src/analyze/reshape-reason.ts",
         "count": 6
       },
@@ -8697,6 +8784,6 @@
         "count": 6
       }
     ],
-    "avgImportsPerFile": 4.38
+    "avgImportsPerFile": 4.36
   }
 }

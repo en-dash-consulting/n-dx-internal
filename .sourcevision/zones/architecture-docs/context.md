@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Architecture Docs (`architecture-docs`)
-Files: 19, Cohesion: 0.00, Coupling: 0.00
-Risk: at-risk (score: 0.50)
-Description: Project documentation covering architecture decisions, analysis reports, and operational guides — entirely static Markdown with no import graph edges.
-Lines: 4338
+Files: 20, Cohesion: 0.00, Coupling: 0.00
+Risk: healthy (score: 0.50)
+Description: Project-level architectural documentation, decision records, audit reports, and design analysis consumed by developers and AI tooling.
+Lines: 6160
 
 </zone>
 
@@ -30,37 +30,44 @@ docs/process/level-refactor-and-steward-plan.md (Markdown, 407 lines, docs)
 docs/process/memory-improvements.md (Markdown, 275 lines, docs)
 docs/process/memory-os-behavior.md (Markdown, 216 lines, docs)
 docs/process/rex-smart-add-duplicate-detection.md (Markdown, 416 lines, docs)
-packages/web/src/viewer/darkmode_logo.png (Other, 0 lines, asset)
-packages/web/src/viewer/index.html (HTML, 21 lines, other)
-packages/web/src/viewer/lightmode_logo.png (Other, 0 lines, asset)
+packages/hench/src/store/suggestions.ts (TypeScript, 98 lines, source)
+packages/hench/tests/unit/store/suggestions.test.ts (TypeScript, 119 lines, test)
+packages/web/src/landing/index.html (HTML, 309 lines, other)
+packages/web/src/landing/landing.css (CSS, 1317 lines, other)
 
 </files>
 
+<imports>
+
+Internal:
+  packages/hench/tests/unit/store/suggestions.test.ts → packages/hench/src/store/suggestions.ts {loadSuggestionHistory, saveSuggestionHistory, recordDecision, getDecisionStats}
+  packages/hench/tests/unit/store/suggestions.test.ts → packages/hench/src/store/suggestions.ts {SuggestionHistory, SuggestionRecord}
+
+</imports>
+
 <findings>
 
-[observation] [info] Isolated files — no import edges between 19 files, cohesion is unmeasurable (reported as 0)
-[observation] [info] The breadth of analysis docs (signal handling, memory risks, resource allocation, process lifecycle) reflects thorough architectural auditing; ensure each report links to the PRD item or commit that resolved the finding to close the feedback loop.
-[observation] [info] Zero cohesion and coupling are expected and correct for a documentation-only zone — no structural action needed.
-[observation] [info] docs/decisions/ (ADRs) and docs/architecture/ together form a two-tier documentation system — confirming that new architectural decisions are recorded here before implementation would prevent undocumented drift.
-[pattern] [info] Documentation-to-code semantic dependency: architecture-docs governs gateway rules and tier boundaries that are enforced in hench-agent (rex-gateway.ts) and web-viewer (domain-gateway.ts), but this relationship is invisible to the import graph. Drift between docs and implementation can only be caught by the CI freshness check, not by zone health metrics.
-[suggestion] [info] Add a standardized 'Resolution' section to each docs/analysis/ audit document linking to the PRD item ID or commit SHA that addressed the finding. Without this link, resolved findings are indistinguishable from open ones in future analysis passes, causing repeat triage effort.
-[suggestion] [info] Zone "Architecture Docs" (architecture-docs) has at-risk risk (score: 0.50, cohesion: 0.00, coupling: 0.00) — approaching architectural risk thresholds
+[observation] [info] Isolated files — no import edges between 20 files, cohesion is unmeasurable (reported as 0)
+[observation] [info] CLAUDE.md includes an explicit sync notice requiring CODEX.md to mirror several sections; a lint rule or CI check enforcing this sync would prevent drift.
+[observation] [info] Zero coupling is correct — documentation is consumed by humans and AI context loaders, not imported at runtime.
+[observation] [info] docs/analysis/ contains several audit documents (process-lifecycle, signal-handling, viewer-audit); these should be revisited after major refactors to avoid stale guidance.
+[suggestion] [info] Zone "architecture-docs" has files across 6 directories — consider consolidating under a dedicated directory
+[anti-pattern] [warning] CLAUDE.md contains an explicit sync notice requiring CODEX.md to mirror several sections, but no automated check enforces this invariant. In a monorepo with multiple active contributors, documentation drift between CLAUDE.md and CODEX.md is likely to go undetected. A CI lint step comparing the two files' mirrored sections would make this a hard failure rather than a manual audit responsibility.
 
 </findings>
 
 <insights>
 
-- Isolated files — no import edges between 19 files, cohesion is unmeasurable (reported as 0)
-- 19 documentation files with zero cohesion and coupling is expected — these are reference artifacts consumed by humans and AI context loaders, not imported by source modules
-- The docs/analysis/ subdirectory contains audit reports (signal-handling, memory risks, viewer audit) that suggest a recurring architectural review practice — valuable for onboarding
-- docs/architecture/ files describe memory architecture and level systems; keeping these current when the corresponding code changes requires discipline — a CI freshness check (like the one already added for architecture docs) helps enforce this
-- Zero cohesion and coupling are expected and correct for a documentation-only zone — no structural action needed.
-- The breadth of analysis docs (signal handling, memory risks, resource allocation, process lifecycle) reflects thorough architectural auditing; ensure each report links to the PRD item or commit that resolved the finding to close the feedback loop.
-- docs/decisions/ (ADRs) and docs/architecture/ together form a two-tier documentation system — confirming that new architectural decisions are recorded here before implementation would prevent undocumented drift.
-- architecture-docs zone has no import relationship with any other zone, but its content directly governs the rules enforced in hench-agent and web-viewer — a semantic dependency that is invisible to the call graph
-- Documentation-to-code semantic dependency: architecture-docs governs gateway rules and tier boundaries that are enforced in hench-agent (rex-gateway.ts) and web-viewer (domain-gateway.ts), but this relationship is invisible to the import graph. Drift between docs and implementation can only be caught by the CI freshness check, not by zone health metrics.
-- ENFORCEMENT.md at the monorepo root follows the standard GitHub CoC enforcement file convention but its co-location with CLAUDE.md and CODEX.md risks confusion with architectural enforcement documents; its scope (community conduct vs architecture) is not stated in the filename
-- Architecture analysis docs under docs/analysis/ capture findings but contain no structured 'Resolution' field linking each finding to the PRD item or commit that addressed it — resolved findings may be re-raised in future analysis passes without a closed-loop reference
-- Add a standardized 'Resolution' section to each docs/analysis/ audit document linking to the PRD item ID or commit SHA that addressed the finding. Without this link, resolved findings are indistinguishable from open ones in future analysis passes, causing repeat triage effort.
+- Isolated files — no import edges between 20 files, cohesion is unmeasurable (reported as 0)
+- Zero cohesion and zero coupling are expected — documentation files do not import each other and are consumed externally by humans and LLMs, not by the runtime.
+- The docs/analysis/ subdirectory contains deep process-lifecycle and memory-architecture audits, indicating a mature documentation culture; these artifacts should be kept current as the codebase evolves.
+- Having 20 documentation files at project level is healthy for a multi-package monorepo; ensure docs/architecture/ entries stay synchronized with CLAUDE.md's architecture section per the sync notice at the top of that file.
+- Zero coupling is correct — documentation is consumed by humans and AI context loaders, not imported at runtime.
+- docs/analysis/ contains several audit documents (process-lifecycle, signal-handling, viewer-audit); these should be revisited after major refactors to avoid stale guidance.
+- CLAUDE.md includes an explicit sync notice requiring CODEX.md to mirror several sections; a lint rule or CI check enforcing this sync would prevent drift.
+- Zone "architecture-docs" has files across 6 directories — consider consolidating under a dedicated directory
+- Docs span 6 subdirectories (docs/analysis/, docs/architecture/, docs/decisions/, docs/guides/, docs/reference/, docs/tooling/) with no CI check enforcing that CLAUDE.md's architecture section stays in sync with docs/architecture/ entries, despite the explicit sync notice at the top of CLAUDE.md. Drift is undetectable until a human audit.
+- CLAUDE.md contains an explicit sync notice requiring CODEX.md to mirror several sections, but no automated check enforces this invariant. In a monorepo with multiple active contributors, documentation drift between CLAUDE.md and CODEX.md is likely to go undetected. A CI lint step comparing the two files' mirrored sections would make this a hard failure rather than a manual audit responsibility.
+- [call graph] 14 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

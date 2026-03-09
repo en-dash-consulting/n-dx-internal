@@ -5,10 +5,10 @@
 <zone>
 
 Zone: Hench Agent (`hench-agent`)
-Files: 157, Cohesion: 1.00, Coupling: 0.00
+Files: 155, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: The autonomous agent package responsible for task selection, brief generation, LLM tool-use loops, run recording, and all supporting store and analysis infrastructure.
-Lines: 35723
+Description: Autonomous agent execution engine that picks PRD tasks, builds briefs, drives Claude in a tool-use loop, and records run history.
+Lines: 35506
 
 </zone>
 
@@ -84,7 +84,6 @@ packages/hench/src/store/run-change-detector.ts (TypeScript, 237 lines, source)
 packages/hench/src/store/run-retention-scheduler.ts (TypeScript, 206 lines, source)
 packages/hench/src/store/run-retention.ts (TypeScript, 477 lines, source)
 packages/hench/src/store/runs.ts (TypeScript, 97 lines, source)
-packages/hench/src/store/suggestions.ts (TypeScript, 98 lines, source)
 packages/hench/src/store/templates.ts (TypeScript, 153 lines, source)
 packages/hench/src/tools/contracts.ts (TypeScript, 73 lines, source)
 packages/hench/src/tools/dispatch.ts (TypeScript, 262 lines, source)
@@ -160,7 +159,6 @@ packages/hench/tests/unit/store/run-change-detector.test.ts (TypeScript, 383 lin
 packages/hench/tests/unit/store/run-compressed-reads.test.ts (TypeScript, 148 lines, test)
 packages/hench/tests/unit/store/run-retention-scheduler.test.ts (TypeScript, 260 lines, test)
 packages/hench/tests/unit/store/run-retention.test.ts (TypeScript, 571 lines, test)
-packages/hench/tests/unit/store/suggestions.test.ts (TypeScript, 119 lines, test)
 packages/hench/tests/unit/store/templates.test.ts (TypeScript, 356 lines, test)
 packages/hench/tests/unit/tools/completion-validation.test.ts (TypeScript, 305 lines, test)
 packages/hench/tests/unit/tools/dispatch-memory.test.ts (TypeScript, 146 lines, test)
@@ -581,8 +579,6 @@ Internal:
   packages/hench/tests/unit/store/run-retention-scheduler.test.ts → packages/hench/src/store/run-retention-scheduler.ts {runRetentionCycle, startRetentionScheduler, loadRetentionIntervalMs, DEFAULT_RETENTION_INTERVAL_MS}
   packages/hench/tests/unit/store/run-retention.test.ts → packages/hench/src/store/run-retention.ts {enforceRetentionPolicy, identifyRetainableRuns, identifyWarningRuns, extractUsageStats, loadRetentionConfig, DEFAULT_RETENTION_CONFIG}
   packages/hench/tests/unit/store/run-retention.test.ts → packages/hench/src/store/run-retention.ts {RetentionConfig, RetentionResult, PreservedUsageStats}
-  packages/hench/tests/unit/store/suggestions.test.ts → packages/hench/src/store/suggestions.ts {loadSuggestionHistory, saveSuggestionHistory, recordDecision, getDecisionStats}
-  packages/hench/tests/unit/store/suggestions.test.ts → packages/hench/src/store/suggestions.ts {SuggestionHistory, SuggestionRecord}
   packages/hench/tests/unit/store/templates.test.ts → packages/hench/src/schema/templates.ts {BUILT_IN_TEMPLATES}
   packages/hench/tests/unit/store/templates.test.ts → packages/hench/src/schema/templates.ts {WorkflowTemplate}
   packages/hench/tests/unit/store/templates.test.ts → packages/hench/src/schema/v1.ts {DEFAULT_HENCH_CONFIG}
@@ -607,42 +603,33 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] At 155 files, hench is the largest single-zone package; periodically verify that the rex-gateway re-exports only what hench actually uses, pruning stale re-exports to keep the dependency surface minimal.
-[observation] [info] Cohesion of 1.0 with zero external coupling is exemplary for an execution-tier package — the rex-gateway pattern successfully contains all cross-package imports at a single auditable boundary.
-[observation] [info] The agent/analysis/ layer (adaptive, review, spin) represents hench's quality-control loop over its own outputs — this self-evaluation pattern is architecturally sound and worth documenting explicitly in the package README.
+[observation] [info] Cohesion of 1.0 across 155 files with zero external coupling is architecturally excellent — the gateway pattern is working as intended.
+[observation] [info] With 155 files, internal zone fragmentation risk is real; periodic review of agent/analysis vs store vs prd submodule boundaries will prevent future cohesion decay.
+[observation] [info] rex-gateway.ts is the sole cross-package import surface; any new rex dependency must route through it, keeping the domain-isolation contract enforced by tests.
 [suggestion] [info] Zone "hench-agent" has files across 31 directories — consider consolidating under a dedicated directory
-[suggestion] [info] Add a zone hint explicitly assigning packages/web/src/landing/index.html to web-dashboard. HTML asset files have no import edges and Louvain cannot place them by import affinity, making their zone assignment non-deterministic across analysis runs and polluting cohesion metrics of whichever residual zone they land in.
-[suggestion] [warning] Verify that packages/hench/src/store/suggestions.ts has active consumers inside the hench package. Its presence in a low-cohesion residual zone may indicate it is imported by fewer modules than expected for a store-layer file. If consumer count is zero or one, consider merging it into an adjacent store file to strengthen the internal connectivity that keeps it within the hench-agent zone boundary.
-[pattern] [info] The cross-package residual zone (cohesion 0.33, coupling 0.67) containing both packages/hench/src/store/suggestions.ts and packages/web/ files is a zone detection artifact with the highest coupling score in the batch. Coupling 0.67 does not represent real architectural coupling — it is an artifact of Louvain grouping unrelated files. Zone health metrics for this entry are unreliable until decomposition is applied.
-[pattern] [info] hench-agent → rex boundary follows the gateway pattern (rex-gateway.ts), creating a single auditable import edge between execution and domain tiers. This is the only directed production import crossing from execution tier downward in the entire zone graph.
-[anti-pattern] [info] The rex-gateway.ts re-exports 8 functions but no automated check verifies that all 8 are actually consumed by hench. Stale re-exports silently widen the declared dependency surface. domain-isolation.test.js enforces 're-export only' but not 'export only what is used', leaving gateway minimality unenforced.
-[anti-pattern] [warning] Two distinct Louvain communities are both assigned the zone ID 'hench-agent': the 155-file main zone (cohesion 1.0, coupling 0.0) and the 14-file cross-package residual (cohesion 0.33, coupling 0.67). Duplicate zone IDs make health metrics ambiguous — tooling that aggregates or thresholds by ID silently blends metrics from two structurally incompatible groups. The residual zone requires a distinct ID before its metrics can be acted upon.
+[suggestion] [info] Add a gateway surface test that verifies every symbol re-exported from rex-gateway.ts is consumed by at least one hench source file. This closes the coverage gap in domain-isolation.test.js: currently it enforces 'no direct imports' but not 'no dead re-exports', allowing gateway surface to grow stale without detection.
+[pattern] [info] Star topology via rex-gateway.ts is the reference pattern for safe cross-package coupling — one explicit choke point vs the web-viewer hub's many-to-many crossing imports.
+[anti-pattern] [warning] No intra-zone submodule boundary enforcement exists between agent/analysis/, store/, and prd/ subdirectories. The domain-isolation test only enforces cross-package gateway discipline; intra-package layering violations (e.g. agent importing directly from prd/ internals) are undetected. A zone-internal layer test or directory-level import lint rule would catch coupling decay before it affects cohesion scores.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- 155 files with cohesion 1.0 and coupling 0.0 confirms hench is a well-encapsulated execution-tier package with no runtime dependencies on peer packages except through its explicit rex-gateway
-- The src/agent/analysis/ subdirectory (adaptive.ts, review.ts, spin.ts) alongside src/prd/rex-gateway.ts indicates a clean separation between agent intelligence and PRD access — good domain boundary discipline
-- The store layer (suggestions.ts and others) should remain inside this zone; per developer hints, suggestions.ts was previously misclassified into a cross-package residual zone
-- Cohesion of 1.0 with zero external coupling is exemplary for an execution-tier package — the rex-gateway pattern successfully contains all cross-package imports at a single auditable boundary.
-- At 155 files, hench is the largest single-zone package; periodically verify that the rex-gateway re-exports only what hench actually uses, pruning stale re-exports to keep the dependency surface minimal.
-- The agent/analysis/ layer (adaptive, review, spin) represents hench's quality-control loop over its own outputs — this self-evaluation pattern is architecturally sound and worth documenting explicitly in the package README.
+- Perfect cohesion (1.0) and zero coupling across 155 files is an exceptional result — the hench package is fully self-contained with no leakage to sibling packages outside its gateway.
+- The single rex-gateway.ts re-exports 8 functions and is the only cross-package surface; this gateway discipline keeps the dependency graph auditable and the package independently testable.
+- 155 files with zero external coupling suggests the package has good internal modularity; verify that the agent/analysis/, store/, and prd/ subdirectories each have clear ownership boundaries to prevent internal coupling from growing silently.
+- Cohesion of 1.0 across 155 files with zero external coupling is architecturally excellent — the gateway pattern is working as intended.
+- rex-gateway.ts is the sole cross-package import surface; any new rex dependency must route through it, keeping the domain-isolation contract enforced by tests.
+- With 155 files, internal zone fragmentation risk is real; periodic review of agent/analysis vs store vs prd submodule boundaries will prevent future cohesion decay.
 - Zone "hench-agent" has files across 31 directories — consider consolidating under a dedicated directory
-- The main hench-agent zone (155 files, cohesion 1.0) and the cross-package residual zone (14 files, cohesion 0.33, coupling 0.67) together reveal a zone detection split artifact: the high coupling (0.67) in the residual zone is caused by web package files pulling against hench store files, not by any real architectural relationship between them
-- hench-agent's rex-gateway.ts is the only directed import edge from hench-agent toward any domain-tier zone — all other inter-zone relationships flow in the opposite direction (web-viewer consuming web-server which wraps rex and sourcevision)
-- The residual zone's coupling 0.67 is the highest coupling score in the entire batch — a reliable heuristic signal that this zone boundary is algorithmically incorrect rather than architecturally intentional
-- hench-agent → rex boundary follows the gateway pattern (rex-gateway.ts), creating a single auditable import edge between execution and domain tiers. This is the only directed production import crossing from execution tier downward in the entire zone graph.
-- The cross-package residual zone (cohesion 0.33, coupling 0.67) containing both packages/hench/src/store/suggestions.ts and packages/web/ files is a zone detection artifact with the highest coupling score in the batch. Coupling 0.67 does not represent real architectural coupling — it is an artifact of Louvain grouping unrelated files. Zone health metrics for this entry are unreliable until decomposition is applied.
-- Two zones share the ID 'hench-agent' (155-file main zone and 14-file cross-package residual) — duplicate zone IDs cause any zone-lookup-by-ID to return unpredictable results and render per-zone health thresholds unreliable since both entries match the same key
-- Two distinct Louvain communities are both assigned the zone ID 'hench-agent': the 155-file main zone (cohesion 1.0, coupling 0.0) and the 14-file cross-package residual (cohesion 0.33, coupling 0.67). Duplicate zone IDs make health metrics ambiguous — tooling that aggregates or thresholds by ID silently blends metrics from two structurally incompatible groups. The residual zone requires a distinct ID before its metrics can be acted upon.
-- The rex-gateway.ts re-exports 8 functions but no automated check verifies that all 8 are actually consumed by hench. Stale re-exports silently widen the declared dependency surface. domain-isolation.test.js enforces 're-export only' but not 'export only what is used', leaving gateway minimality unenforced.
-- The 14-file cross-package residual zone includes packages/web/src/landing/index.html — an HTML asset file with no import edges that Louvain cannot place by import affinity; its zone assignment will be non-deterministic across analysis runs
-- suggestions.ts appearing in a residual zone with low cohesion implies its import connectivity to the rest of hench store layer is weaker than expected; if it is imported by fewer hench modules than other store files it may be partially orphaned or undercoupled relative to its declared domain purpose
-- Add a zone hint explicitly assigning packages/web/src/landing/index.html to web-dashboard. HTML asset files have no import edges and Louvain cannot place them by import affinity, making their zone assignment non-deterministic across analysis runs and polluting cohesion metrics of whichever residual zone they land in.
-- Verify that packages/hench/src/store/suggestions.ts has active consumers inside the hench package. Its presence in a low-cohesion residual zone may indicate it is imported by fewer modules than expected for a store-layer file. If consumer count is zero or one, consider merging it into an adjacent store file to strengthen the internal connectivity that keeps it within the hench-agent zone boundary.
-- [call graph] 2723 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- The single-gateway topology creates a deliberate star pattern for cross-package dependencies: all 155 files connect outward through one choke point, which is the inverse of the web-viewer hub pattern and represents the healthier design.
+- Star topology via rex-gateway.ts is the reference pattern for safe cross-package coupling — one explicit choke point vs the web-viewer hub's many-to-many crossing imports.
+- The zone's 155 files span agent/analysis, store, and prd subdirectories with no intra-zone boundary enforcement. While zero external coupling is excellent, there is no test or lint rule preventing agent/analysis from importing directly from prd/ or store/ in ways that violate internal ownership — internal coupling can grow silently until a full re-analysis surfaces it.
+- No intra-zone submodule boundary enforcement exists between agent/analysis/, store/, and prd/ subdirectories. The domain-isolation test only enforces cross-package gateway discipline; intra-package layering violations (e.g. agent importing directly from prd/ internals) are undetected. A zone-internal layer test or directory-level import lint rule would catch coupling decay before it affects cohesion scores.
+- rex-gateway.ts re-exports 8 rex functions, but there is no test verifying that every re-exported function is actually consumed by at least one hench file. domain-isolation.test.js covers the 'no direct imports outside gateway' direction but not the 'no unused re-exports' direction. Unused gateway entries accumulate silently as hench evolves and decouples from specific rex APIs, becoming dead-code debt invisible to standard tooling.
+- Add a gateway surface test that verifies every symbol re-exported from rex-gateway.ts is consumed by at least one hench source file. This closes the coverage gap in domain-isolation.test.js: currently it enforces 'no direct imports' but not 'no dead re-exports', allowing gateway surface to grow stale without detection.
+- [call graph] 2709 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>
 

@@ -8656,7 +8656,8 @@
         "handleGetCapabilities",
         "handleReorganize",
         "handleHealth",
-        "handleFacets"
+        "handleFacets",
+        "handleEditItem"
       ]
     },
     {
@@ -9049,6 +9050,14 @@
         "PRDItem",
         "Priority",
         "Requirement"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/override-escalation.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
       ]
     },
     {
@@ -9704,6 +9713,14 @@
     },
     {
       "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/cli/mcp-tools.ts",
+      "type": "reexport",
+      "symbols": [
+        "handleEditItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
       "to": "packages/rex/src/cli/mcp.ts",
       "type": "reexport",
       "symbols": [
@@ -10190,6 +10207,7 @@
         "ItemLevel",
         "ItemStatus",
         "Priority",
+        "ResolutionType",
         "RexConfig",
         "RequirementCategory",
         "RequirementValidationType",
@@ -10446,6 +10464,7 @@
         "ItemLevel",
         "ItemStatus",
         "Priority",
+        "ResolutionType",
         "RequirementCategory",
         "RequirementValidationType",
         "Requirement",
@@ -12277,6 +12296,48 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/cli/edit-item.test.ts",
+      "to": "packages/rex/src/cli/mcp-tools.ts",
+      "type": "static",
+      "symbols": [
+        "handleEditItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/edit-item.test.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/edit-item.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "static",
+      "symbols": [
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/edit-item.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/edit-item.test.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "FileStore",
+        "ensureRexDir"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/cli/errors.test.ts",
       "to": "packages/rex/src/cli/errors.ts",
       "type": "static",
@@ -12694,6 +12755,30 @@
       "type": "type",
       "symbols": [
         "NotionStatusGroup"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/override-escalation.test.ts",
+      "to": "packages/rex/src/core/override-escalation.ts",
+      "type": "static",
+      "symbols": [
+        "detectOverrideAccumulation"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/override-escalation.test.ts",
+      "to": "packages/rex/src/core/override-escalation.ts",
+      "type": "type",
+      "symbols": [
+        "OverrideEscalationResult"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/override-escalation.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
       ]
     },
     {
@@ -13821,6 +13906,14 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/analyzers/convergence.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/analyzers/enrich-batch.ts",
       "to": "packages/sourcevision/src/analyzers/claude-client.ts",
       "type": "static",
@@ -14381,6 +14474,17 @@
       ]
     },
     {
+      "from": "packages/sourcevision/src/analyzers/move-recommendations.ts",
+      "to": "packages/sourcevision/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "Zone",
+        "ImportEdge",
+        "ZoneCrossing",
+        "MoveFileFinding"
+      ]
+    },
+    {
       "from": "packages/sourcevision/src/analyzers/next-steps.ts",
       "to": "packages/sourcevision/src/schema/index.ts",
       "type": "type",
@@ -14696,6 +14800,23 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/move-recommendations.ts",
+      "type": "static",
+      "symbols": [
+        "detectPinDivergence",
+        "detectImportNeighborMoves"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
+      "to": "packages/sourcevision/src/analyzers/move-recommendations.ts",
+      "type": "type",
+      "symbols": [
+        "MoveContext"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/zones.ts",
       "to": "packages/sourcevision/src/analyzers/workspace-crossings.ts",
       "type": "static",
       "symbols": [
@@ -14795,6 +14916,26 @@
       "type": "static",
       "symbols": [
         "analyzeComponents"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/convergence.ts",
+      "type": "static",
+      "symbols": [
+        "createSnapshot",
+        "computeDeltas",
+        "loadLatestReport",
+        "saveReport",
+        "formatDeltaReport"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/convergence.ts",
+      "type": "type",
+      "symbols": [
+        "ConvergenceReport"
       ]
     },
     {
@@ -14946,6 +15087,14 @@
       "type": "static",
       "symbols": [
         "assessAllZoneRisks"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "to": "packages/sourcevision/src/analyzers/risk-scoring.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneType"
       ]
     },
     {
@@ -16138,6 +16287,33 @@
       ]
     },
     {
+      "from": "packages/sourcevision/tests/unit/analyzers/convergence.test.ts",
+      "to": "packages/sourcevision/src/analyzers/convergence.ts",
+      "type": "static",
+      "symbols": [
+        "createSnapshot",
+        "computeDeltas"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/convergence.test.ts",
+      "to": "packages/sourcevision/src/analyzers/convergence.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneMetricSnapshot",
+        "ConvergenceReport",
+        "DeltaReport"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/convergence.test.ts",
+      "to": "packages/sourcevision/tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeZone"
+      ]
+    },
+    {
       "from": "packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts",
       "to": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
       "type": "static",
@@ -16325,6 +16501,33 @@
         "writeManifest",
         "updateManifestModule",
         "updateManifestError"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/move-recommendations.test.ts",
+      "to": "packages/sourcevision/src/analyzers/move-recommendations.ts",
+      "type": "static",
+      "symbols": [
+        "detectPinDivergence",
+        "detectImportNeighborMoves"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/move-recommendations.test.ts",
+      "to": "packages/sourcevision/src/analyzers/move-recommendations.ts",
+      "type": "type",
+      "symbols": [
+        "MoveContext"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/move-recommendations.test.ts",
+      "to": "packages/sourcevision/tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
+        "makeZone",
+        "makeEdge",
+        "makeImports"
       ]
     },
     {
@@ -16774,6 +16977,25 @@
         "makeInventory",
         "makeEdge",
         "makeImports",
+        "makeZone"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zone-type-thresholds.test.ts",
+      "to": "packages/sourcevision/src/analyzers/risk-scoring.ts",
+      "type": "static",
+      "symbols": [
+        "classifyRiskLevel",
+        "assessZoneRisk",
+        "assessAllZoneRisks",
+        "ZONE_TYPE_THRESHOLDS"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/zone-type-thresholds.test.ts",
+      "to": "packages/sourcevision/tests/unit/analyzers/zones-helpers.ts",
+      "type": "static",
+      "symbols": [
         "makeZone"
       ]
     },
@@ -25590,6 +25812,7 @@
         "ProposalTask",
         "Requirement",
         "ReshapeProposal",
+        "ResolutionType",
         "SCHEMA_VERSION",
         "TreeEntry",
         "TreeStats",
@@ -25618,6 +25841,7 @@
         "findItem",
         "findNextTask",
         "formatRequirementsValidation",
+        "handleEditItem",
         "insertChild",
         "isCompatibleSchema",
         "isItemLevel",
@@ -25829,6 +26053,7 @@
         "packages/rex/tests/unit/cli/commands/validate-interactive.test.ts",
         "packages/rex/tests/unit/cli/commands/validate.test.ts",
         "packages/rex/tests/unit/cli/commands/verify.test.ts",
+        "packages/rex/tests/unit/cli/edit-item.test.ts",
         "packages/rex/tests/unit/cli/errors.test.ts",
         "packages/rex/tests/unit/cli/help.test.ts",
         "packages/rex/tests/unit/cli/mcp.test.ts",
@@ -25849,6 +26074,7 @@
         "packages/rex/tests/unit/core/next-task-scoring.test.ts",
         "packages/rex/tests/unit/core/next-task.test.ts",
         "packages/rex/tests/unit/core/notion-map.test.ts",
+        "packages/rex/tests/unit/core/override-escalation.test.ts",
         "packages/rex/tests/unit/core/parent-completion.test.ts",
         "packages/rex/tests/unit/core/parent-reset.test.ts",
         "packages/rex/tests/unit/core/prune.test.ts",
@@ -25899,6 +26125,7 @@
         "packages/sourcevision/tests/unit/analyzers/classify.test.ts",
         "packages/sourcevision/tests/unit/analyzers/completion-reader.test.ts",
         "packages/sourcevision/tests/unit/analyzers/components.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/convergence.test.ts",
         "packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts",
         "packages/sourcevision/tests/unit/analyzers/enrich-content-skip.test.ts",
         "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
@@ -25906,6 +26133,7 @@
         "packages/sourcevision/tests/unit/analyzers/imports.test.ts",
         "packages/sourcevision/tests/unit/analyzers/inventory.test.ts",
         "packages/sourcevision/tests/unit/analyzers/manifest.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/move-recommendations.test.ts",
         "packages/sourcevision/tests/unit/analyzers/next-steps.test.ts",
         "packages/sourcevision/tests/unit/analyzers/risk-scoring.test.ts",
         "packages/sourcevision/tests/unit/analyzers/token-usage.test.ts",
@@ -25919,6 +26147,7 @@
         "packages/sourcevision/tests/unit/analyzers/zone-output.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zone-size-policy.test.ts",
         "packages/sourcevision/tests/unit/analyzers/zone-subdivision.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/zone-type-thresholds.test.ts",
         "packages/sourcevision/tests/unit/cli/analyze.test.ts",
         "packages/sourcevision/tests/unit/cli/errors.test.ts",
         "packages/sourcevision/tests/unit/cli/export-pdf.test.ts",
@@ -26136,7 +26365,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 2704,
+    "totalEdges": 2729,
     "totalExternal": 18,
     "circularCount": 0,
     "circulars": [],
@@ -26151,7 +26380,7 @@
       },
       {
         "path": "packages/rex/src/store/index.ts",
-        "count": 31
+        "count": 32
       },
       {
         "path": "packages/rex/src/cli/commands/constants.ts",
@@ -26186,12 +26415,12 @@
         "count": 19
       },
       {
-        "path": "packages/web/src/server/rex-gateway.ts",
+        "path": "packages/rex/src/core/canonical.ts",
         "count": 17
       },
       {
-        "path": "packages/rex/src/core/canonical.ts",
-        "count": 16
+        "path": "packages/web/src/server/rex-gateway.ts",
+        "count": 17
       },
       {
         "path": "packages/sourcevision/src/cli/output.ts",

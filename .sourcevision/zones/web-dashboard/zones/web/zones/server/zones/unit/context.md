@@ -8,7 +8,7 @@ Zone: Web Viewer/web/server/unit (`web-viewer/web/server/unit`)
 Files: 64, Cohesion: 0.96, Coupling: 0.04
 Description: 64 files, primarily TypeScript
 Entry points: packages/web/src/server/prd-io.ts, packages/web/src/server/rex-gateway.ts, packages/web/src/server/routes-hench.ts, packages/web/src/server/routes-rex/index.ts, packages/web/src/server/types.ts
-Lines: 23306
+Lines: 23309
 
 </zone>
 
@@ -21,7 +21,7 @@ packages/web/src/server/index.ts (TypeScript, 40 lines, source)
 packages/web/src/server/port.ts (TypeScript, 195 lines, source)
 packages/web/src/server/prd-io.ts (TypeScript, 71 lines, source)
 packages/web/src/server/process-memory-tracker.ts (TypeScript, 307 lines, source)
-packages/web/src/server/rex-gateway.ts (TypeScript, 88 lines, source)
+packages/web/src/server/rex-gateway.ts (TypeScript, 91 lines, source)
 packages/web/src/server/routes-adaptive.ts (TypeScript, 873 lines, source)
 packages/web/src/server/routes-config.ts (TypeScript, 309 lines, source)
 packages/web/src/server/routes-data.ts (TypeScript, 147 lines, source)

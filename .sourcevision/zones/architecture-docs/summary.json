@@ -1,7 +1,7 @@
 {
   "id": "architecture-docs",
   "name": "Architecture Docs",
-  "description": "Project documentation covering architecture decisions, analysis reports, and operational guides — entirely static Markdown with no import graph edges.",
+  "description": "Project-level architectural documentation, decision records, audit reports, and design analysis consumed by developers and AI tooling.",
   "files": [
     "docs/analysis/2026-03-03-refresh-orchestration-memory-analysis.md",
     "docs/analysis/memory-risks-and-flaws.md",
@@ -19,20 +19,21 @@
     "docs/process/memory-improvements.md",
     "docs/process/memory-os-behavior.md",
     "docs/process/rex-smart-add-duplicate-detection.md",
-    "packages/web/src/viewer/darkmode_logo.png",
-    "packages/web/src/viewer/index.html",
-    "packages/web/src/viewer/lightmode_logo.png"
+    "packages/hench/src/store/suggestions.ts",
+    "packages/hench/tests/unit/store/suggestions.test.ts",
+    "packages/web/src/landing/index.html",
+    "packages/web/src/landing/landing.css"
   ],
   "entryPoints": [],
   "cohesion": 0,
   "coupling": 0,
-  "fileCount": 19,
-  "lineCount": 4338,
+  "fileCount": 20,
+  "lineCount": 6160,
   "riskMetrics": {
     "cohesion": 0,
     "coupling": 0,
     "riskScore": 0.5,
-    "riskLevel": "at-risk",
+    "riskLevel": "healthy",
     "failsThreshold": false
   }
 }
