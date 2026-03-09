@@ -56,6 +56,8 @@ import {
 import { enrichZonesWithAI, enrichZonesPerZone } from "./enrich.js";
 import type { EnrichResult, PerZoneEnrichResult } from "./enrich.js";
 import { deduplicateFindings, enforceSeverityRules } from "./enrich-parsing.js";
+import { detectPinDivergence, detectImportNeighborMoves } from "./move-recommendations.js";
+import type { MoveContext } from "./move-recommendations.js";
 
 /** Result from analyzeZones, including the zones data and optional token usage. */
 export interface AnalyzeZonesResult {
@@ -1884,6 +1886,19 @@ export async function analyzeZones(
     undefined,
     filenameBasedZoneIds,
   );
+
+  // ── Move recommendations ──
+  const moveCtx: MoveContext = {
+    zones: pinnedFinalZones,
+    crossings: crossings.filter((c) => !c.fromZone.includes(":") && !c.toZone.includes(":")),
+    edges: imports.edges,
+    zonePins: options?.zonePins ?? {},
+  };
+  const moveFindings = [
+    ...detectPinDivergence(moveCtx),
+    ...detectImportNeighborMoves(moveCtx),
+  ];
+  structural.findings.push(...moveFindings);
 
   // ── Merge insights ──
   mergeZoneInsights(pinnedFinalZones, structural, aiZoneInsights, validPrevious);

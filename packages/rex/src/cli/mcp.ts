@@ -66,6 +66,8 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       status: z.enum(["pending", "in_progress", "completed", "failing", "deferred", "blocked", "deleted"]).describe("New status"),
       force: z.boolean().optional().describe("Force the transition even if it violates transition rules (e.g. completed → pending)"),
       reason: z.string().optional().describe("Failure reason (used when status is 'failing')"),
+      resolutionType: z.enum(["code-change", "config-override", "acknowledgment", "deferred", "unclassified"]).optional().describe("How the task was resolved (required when status is 'completed')"),
+      resolutionDetail: z.string().optional().describe("Brief description of how the resolution was achieved"),
     },
     async (args) => handleUpdateTaskStatus(store, args),
   );

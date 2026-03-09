@@ -3,190 +3,34 @@
     "vendor": "claude"
   },
   "sourcevision": {
-    "archetypes": {
-      "overrides": {
-        "packages/web/build.js": "entrypoint",
-        "packages/web/dev.js": "entrypoint",
-        "packages/web/src/viewer/route-state.ts": "store",
-        "packages/web/src/landing/landing.ts": "entrypoint"
-      }
-    },
     "zones": {
-      "pins": {
-        "packages/web/src/viewer/components/elapsed-time.ts": "web-viewer",
-        "packages/web/src/viewer/views/task-audit.ts": "web-viewer",
-        "packages/web/src/server/websocket.ts": "web-viewer",
-        "packages/web/tests/unit/server/websocket.test.ts": "web-viewer",
-        "packages/web/tests/unit/server/ws-health-tracker.test.ts": "web-viewer",
-        "packages/web/tests/integration/ws-health-integration.test.ts": "web-viewer",
-        "packages/web/tests/integration/boundary-check.test.ts": "web-viewer",
-        "packages/web/src/viewer/performance/crash-detector.ts": "web-viewer",
-        "packages/web/src/viewer/hooks/use-crash-recovery.ts": "web-viewer",
-        "packages/web/tests/unit/viewer/crash-detector.test.ts": "web-viewer",
-        "packages/web/tests/unit/viewer/use-crash-recovery.test.ts": "web-viewer",
-        "packages/web/tests/helpers/crash-detector-test-support.ts": "web-viewer",
-        "packages/web/src/viewer/route-state.ts": "web-viewer",
-        "packages/web/src/viewer/hooks/use-tick.ts": "web-viewer",
-        "packages/web/tests/unit/viewer/route-state.test.ts": "web-viewer",
-        "packages/web/tests/unit/viewer/token-usage-nav.test.ts": "web-viewer",
-        "packages/web/tests/unit/viewer/graph-interaction.test.ts": "web-viewer",
-        "packages/web/tests/unit/viewer/graph-zoom.test.ts": "web-viewer",
-        "packages/web/src/viewer/components/prd-tree/analyze-panel.ts": "web-viewer",
-        "packages/web/src/viewer/views/analysis.ts": "web-viewer",
-        "packages/web/tests/unit/viewer/analyze-panel.test.ts": "web-viewer",
-        "packages/web/src/viewer/components/prd-tree/lazy-children.ts": "web-viewer",
-        "packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts": "web-viewer",
-        "packages/web/src/viewer/polling/tick-timer.ts": "web-viewer",
-        "packages/web/tests/unit/viewer/tick-timer.test.ts": "web-viewer",
-        "packages/web/tests/unit/viewer/elapsed-time-memoization.test.ts": "web-viewer",
-        "packages/web/src/viewer/usage/constants.ts": "web-viewer",
-        "packages/web/src/viewer/usage/index.ts": "web-viewer",
-        "packages/web/src/viewer/views/token-usage.ts": "web-viewer",
-        "packages/web/tests/unit/viewer/usage-polling.test.ts": "web-viewer",
-        "packages/web/build.js": "web-dashboard",
-        "packages/web/dev.js": "web-dashboard",
-        "packages/web/package.json": "web-dashboard",
-        "packages/web/tsconfig.json": "web-dashboard",
-        "packages/web/vitest.config.ts": "web-dashboard",
-        "packages/web/SourceVision-F.png": "web-dashboard",
-        "packages/web/SourceVision.png": "web-dashboard",
-        "packages/web/src/landing/index.html": "web-dashboard",
-        "packages/web/src/landing/landing.css": "web-dashboard",
-        "packages/web/src/landing/landing.ts": "web-dashboard",
-        "packages/web/tests/integration/build-output-contract.test.ts": "web-dashboard",
-        "packages/web/tests/unit/landing/landing.test.ts": "web-dashboard",
-        "scripts/hench-callgraph-analysis.mjs": "monorepo-maintenance-scripts",
-
-        "packages/rex/src/store/integration-schemas/notion.ts": "notion-integration",
-
-        "packages/rex/src/cli/commands/report.ts": "rex-status-mcp-cli",
-        "packages/rex/tests/unit/cli/commands/report.test.ts": "rex-status-mcp-cli",
-        "packages/rex/tests/e2e/cli-init.test.ts": "cli-e2e-tests",
-
-        "packages/rex/src/core/move.ts": "prd-operations-core",
-        "packages/rex/tests/unit/core/move.test.ts": "prd-operations-core",
-        "packages/rex/src/analyze/acknowledge.ts": "prd-operations-core",
-        "packages/rex/tests/unit/analyze/acknowledge.test.ts": "prd-operations-core",
-        "packages/rex/src/recommend/types.ts": "prd-operations-core",
-        "packages/rex/src/recommend/create-from-recommendations.ts": "prd-operations-core",
-
-        "packages/rex/src/cli/commands/recommend.ts": "mutation-commands",
-        "packages/rex/tests/unit/cli/commands/recommend.test.ts": "mutation-commands",
-        "packages/rex/src/cli/commands/sync.ts": "mutation-commands",
-        "packages/rex/tests/unit/cli/commands/sync.test.ts": "mutation-commands",
-
-        "packages/rex/src/cli/commands/constants.ts": "rex-runtime-data",
-
-        "packages/web/src/server/rex-gateway.ts": "mcp-route-layer",
-
-        "packages/web/src/server/domain-gateway.ts": "web-viewer",
-        "packages/web/src/server/routes-mcp.ts": "web-viewer",
-        "packages/web/tests/unit/server/domain-gateway.test.ts": "web-viewer",
-        "packages/web/tests/unit/server/routes-mcp.test.ts": "web-viewer",
-
-        "packages/hench/src/store/suggestions.ts": "hench-agent",
-        "packages/hench/tests/unit/store/suggestions.test.ts": "hench-agent"
+      "types": {
+        "packages-rex:unit": "test",
+        "packages-rex:unit-core": "test",
+        "packages-rex:unit-cli": "test",
+        "packages-rex:unit-store": "test",
+        "packages-rex:unit-analyze": "test",
+        "packages-rex:e2e": "test",
+        "packages-rex:fix": "test",
+        "packages-sourcevision:unit": "test",
+        "packages-sourcevision:e2e": "test",
+        "packages-llm-client:unit": "test",
+        "cli-e2e-tests": "test",
+        "cross-package-integration-tests": "test",
+        "packages-rex:cli": "integration",
+        "packages-sourcevision:cli": "integration",
+        "packages-rex:store": "integration",
+        "packages-sourcevision:analyzers-3": "domain",
+        "packages-rex:core": "domain",
+        "web-dashboard": "orchestration",
+        "packages-rex:root": "infrastructure",
+        "packages-sourcevision:root": "infrastructure",
+        "packages-sourcevision:fixtures": "infrastructure",
+        "packages-llm-client:root": "infrastructure",
+        "monorepo-root": "infrastructure",
+        "architecture-docs": "infrastructure",
+        "rex-runtime-data": "infrastructure"
       }
-    },
-    "riskJustifications": [
-      {
-        "zone": "packages-rex:task-selection-engine",
-        "reason": "Test-dominated zone (5 test files for 2 source files). High coupling is inherent: test files import store, types, and fixtures from across rex. The CLI command + core next-task logic are cohesive; the apparent low cohesion is an artifact of test files having many external imports. Production-level call graph shows cohesion 0.95, coupling 0.05. No refactoring would reduce coupling without splitting tests from source."
-      },
-      {
-        "zone": "packages-rex:prd-fix-command",
-        "reason": "Test-dominated zone (2 test files for 2 source files). The fix CLI command and core fix logic form a natural pair. High coupling is driven by test imports of store, validation, and type modules. Structurally sound — the zone boundary correctly groups the feature's implementation and tests."
-      },
-      {
-        "zone": "packages-sourcevision:analyzers-3",
-        "reason": "Core zone analysis engine (Louvain algorithm, zone detection, zone hashing) with 3 test files. High coupling is expected: these files import inventory types, import graph types, and shared utilities that are fundamental to the analysis pipeline. The files are tightly cohesive in purpose — splitting them would create artificial boundaries in the zone detection pipeline."
-      },
-      {
-        "zone": "packages-rex:prd-analysis-pipeline",
-        "reason": "Large cross-cutting zone spanning analyze/ and recommend/ subsystems. High coupling reflects shared dependencies on store, types, and LLM client. The analyze and recommend features are functionally related (recommendations feed into analysis proposals). Splitting would not improve cohesion — the Louvain algorithm correctly identified these as a community."
-      },
-      {
-        "zone": "global",
-        "file": "packages/rex/src/schema/index.ts",
-        "reason": "Schema barrel file with high fan-in (24 importers) is by design. It serves as the single public surface for rex's type definitions and domain constants. The docblock explicitly documents the stability contract: adding exports is safe, renaming/removing requires updating all consumers. Splitting the barrel would scatter the public API without reducing coupling."
-      },
-      {
-        "zone": "mcp-route-layer",
-        "reason": "Coupling of 0.6 is architectural: routes-mcp.ts imports rex-gateway.ts (runtime gateway, required for MCP server creation) and types.ts (type-only import, erased at compile). After pinning routes-mcp.ts and domain-gateway.ts into web-viewer, the web-server zone is dissolved, eliminating bidirectional coupling. The remaining mcp-route-layer (rex-gateway.ts) is a gateway module that correctly concentrates cross-package imports."
-      },
-      {
-        "zone": "web",
-        "reason": "Low cohesion (0.33) is inherent: this zone contains root-level project files (build.js, dev.js, package.json, tsconfig.json, vitest.config.ts, logo assets) with no shared import edges. These are configuration and build infrastructure files — they are not expected to import each other. Splitting would not improve cohesion."
-      },
-      {
-        "zone": "web-viewer",
-        "reason": "10 entry points reflect the zone's role as the web package's primary surface: server gateways (prd-io.ts, rex-gateway.ts, types.ts), shared UI primitives (logos.ts, rex-task-link.ts, sidebar.ts), polling infrastructure (index.ts, polling-state.ts), viewer types, and usage constants. Each entry point serves a distinct consumer (server routes, viewer components, or external tests). Consolidation would force artificial re-exports without reducing the API surface."
-      },
-      {
-        "zone": "packages-rex:notion-integration",
-        "reason": "Cohesion 0.14 is a zone-size artifact: with only 2 production files (notion-map.ts, notion-adapter.ts) plus their Notion schema, the ratio of internal to external imports is inherently low. The files form a tight functional unit — notion-map provides bidirectional mapping consumed exclusively by notion-adapter. Pin of integration-schemas/notion.ts reunites the Notion contract in a single zone. Physical relocation of notion-map.ts from core/ to store/ colocates it with its sole consumer."
-      },
-      {
-        "zone": "packages-rex:data-persistence-validation",
-        "reason": "After pinning report.ts to rex-status-mcp-cli and cli-init.test.ts to cli-e2e-tests, remaining files (file-adapter.ts, validate.ts, store-contract.test.ts) form a cohesive persistence + validation cluster. High coupling reflects legitimate dependencies on schema types and the store interface contract."
-      },
-      {
-        "zone": "packages-rex:remote-integration",
-        "reason": "After pinning tree/DAG primitives to prd-operations-core, acknowledge.ts to prd-operations-core, recommend types/creators to prd-operations-core, and CLI commands to mutation-commands, the zone contracts to its true domain: remote adapter registry, Notion client, sync engine, and conflict detection. Remaining coupling is expected for integration infrastructure."
-      },
-      {
-        "zone": "packages-rex:integration-schemas",
-        "reason": "After pinning notion.ts to notion-integration, this zone contains only jira.ts and its barrel index.ts. Low cohesion is inherent to a schema-only zone with no shared internal logic. When a Jira adapter is added, this zone should be reconsidered for merging into a jira-integration zone."
-      },
-      {
-        "zone": "packages-rex:mutation-commands",
-        "reason": "CLI mutation command handlers (add, move, remove, update, verify, recommend, sync) with shared infrastructure (errors.ts, output.ts, validate-input.ts). High coupling is expected: commands import from core/, schema/, and store/ to perform mutations. After absorbing recommend.ts and sync.ts commands, the zone has a clear purpose: all user-facing write operations."
-      },
-      {
-        "zone": "packages-rex:rex-status-mcp-cli",
-        "reason": "Read-only CLI commands (status, health, usage, report) and MCP tool definitions. After absorbing report.ts and pinning constants.ts to rex-runtime-data, the zone focuses on query/display operations. Remaining coupling reflects legitimate dependencies on core stats, health checks, and token usage modules."
-      },
-      {
-        "zone": "global",
-        "scope": "task-usage-analytics↔web-dashboard",
-        "reason": "Bidirectional coupling is architectural, not circular. web-dashboard (start.ts, routes-hench.ts) imports from task-usage.ts facade; usage-cleanup-scheduler.ts receives its only dashboard dependency (collectAllIds) via dependency injection callback, not direct import. The shared-types.ts file acts as a zone-neutral type anchor. Data flows strictly one-way at runtime: web-dashboard → task-usage-analytics → prd-io. No refactoring would reduce zone crossings without breaking the DI pattern."
-      },
-      {
-        "zone": "web-build-infrastructure",
-        "reason": "After pinning hench store files (suggestions.ts) to hench-agent and viewer components to web-viewer, this zone contracts to its true purpose: web package root-level build and config files (build.js, dev.js, package.json, tsconfig.json, vitest.config.ts, landing page assets). Low cohesion is inherent — build/config files do not import each other. The zone is a structural grouping, not a domain unit."
-      },
-      {
-        "zone": "web-dashboard",
-        "reason": "11 entry points reflect the zone's dual role as both server infrastructure and viewer application. Server entry points (prd-io.ts, rex-gateway.ts, types.ts) serve route handlers; viewer entry points (logos.ts, rex-task-link.ts, sidebar.ts, polling/index.ts, polling-state.ts, performance/index.ts, viewer/types.ts, usage/constants.ts) serve the SPA component tree. Each serves a distinct consumer. Consolidation would require artificial barrel modules that add indirection without reducing the API surface."
-      },
-      {
-        "zone": "packages-rex:unit-core",
-        "reason": "Test infrastructure zone containing core unit test helpers and fixtures. Low cohesion is inherent: test support files import from many rex subsystems (store, schema, core) to provide test factories and utilities. These are test-only files — high coupling to production code is expected and does not indicate architectural risk."
-      },
-      {
-        "zone": "packages-rex:cli",
-        "reason": "CLI command handlers are thin dispatch wrappers that import from core/, store/, schema/, and analyze/ to orchestrate operations. High coupling is by design: CLI commands are the integration layer that wires together domain modules. Low cohesion reflects diverse command responsibilities (init, status, health, validate, etc.) — grouping by CLI surface is correct."
-      },
-      {
-        "zone": "packages-rex:fix",
-        "reason": "Fix command and its test form a focused pair. High coupling is driven by test imports of store, validation, and type modules to verify fix behavior across different PRD states. The zone boundary correctly groups the feature's implementation and verification."
-      },
-      {
-        "zone": "packages-rex:unit",
-        "reason": "Unit test zone spanning multiple rex subsystems. Test files inherently couple to many production modules (schema, store, core, analyze). Low cohesion is an artifact of Louvain grouping test files that share import targets but test different features. No refactoring would reduce coupling without relocating tests away from their subjects."
-      },
-      {
-        "zone": "packages-rex:core",
-        "reason": "Core domain logic zone (tree operations, validation, status computation). Moderate coupling reflects legitimate dependencies on schema types and store interfaces. These files form the central nervous system of rex — they are imported by CLI, MCP, and analyze subsystems by design."
-      },
-      {
-        "zone": "packages-rex:store",
-        "reason": "Persistence layer (file adapter, PRD store, sync state). Coupling to schema types and validation modules is inherent to the store's contract. Low cohesion reflects the zone spanning both the store implementation and its integration tests. The store is the data access layer — it must import from schema and core."
-      },
-      {
-        "zone": "hench-agent-2",
-        "reason": "RESOLVED: Zone dissolved by pinning remaining files to their correct zones (viewer files → web-viewer, build infrastructure → web-dashboard). The bidirectional coupling, low cohesion, and high coupling findings were artifacts of zone misclassification, not architectural problems."
-      }
-    ]
+    }
   }
 }

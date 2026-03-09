@@ -82,6 +82,13 @@ export type ItemStatus = "pending" | "in_progress" | "completed" | "failing" | "
 
 export type Priority = "critical" | "high" | "medium" | "low";
 
+/**
+ * How a task was resolved. Tracks whether completion involved actual code
+ * changes or just configuration overrides, enabling escalation when zones
+ * accumulate too many override-based resolutions.
+ */
+export type ResolutionType = "code-change" | "config-override" | "acknowledgment" | "deferred" | "unclassified";
+
 // ── Requirements ─────────────────────────────────────────────────
 
 /**
@@ -233,6 +240,10 @@ export interface PRDItem {
   startedAt?: string;
   completedAt?: string;
   failureReason?: string;
+  /** How this item was resolved (code change, config override, etc.). */
+  resolutionType?: ResolutionType;
+  /** Brief description of how the resolution was achieved. */
+  resolutionDetail?: string;
   /** Present only when duplicate protection was explicitly overridden. */
   overrideMarker?: DuplicateOverrideMarker;
   /** Present when duplicate proposals were merged into this existing item. */

@@ -43,6 +43,7 @@ export type {
   ItemLevel,
   ItemStatus,
   Priority,
+  ResolutionType,
   RequirementCategory,
   RequirementValidationType,
   Requirement,

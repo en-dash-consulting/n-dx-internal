@@ -12,9 +12,15 @@
  * - Risk levels: healthy → at-risk → critical → catastrophic
  * - Catastrophic: cohesion < 0.3 AND coupling > 0.7
  *
- * Supports risk justifications: zones with a documented justification in
- * .n-dx.json are still assessed but their findings are downgraded to
- * informational severity and annotated with the justification text.
+ * Supports two mechanisms for adjusting zone assessment:
+ *
+ * 1. **Zone types** (preferred): Annotate a zone with its architectural role
+ *    (domain, test, integration, etc.) and appropriate thresholds are applied
+ *    automatically. No paragraph-length justifications needed.
+ *
+ * 2. **Risk justifications** (legacy): Zones with a documented justification
+ *    in .n-dx.json are still assessed but findings are downgraded to
+ *    informational severity. Zone types take precedence when both are present.
  *
  * All findings are deterministic — no AI invocation required.
  */
@@ -24,7 +30,34 @@ import type { ZoneRiskMetrics, RiskJustificationEntry } from "../schema/v1.js";
 
 export type { ZoneRiskMetrics };
 
-// ── Thresholds ──────────────────────────────────────────────────────────────
+// ── Zone types ──────────────────────────────────────────────────────────────
+
+/**
+ * Architectural role of a zone, determining which risk thresholds apply.
+ */
+export type ZoneType =
+  | "domain"         // Standard domain logic: strict thresholds
+  | "integration"    // CLI, API routes: naturally high coupling
+  | "test"           // Test zones: coupling to subjects is expected
+  | "infrastructure" // Build/config files: no cohesion expected
+  | "gateway"        // Gateway modules: high coupling by design
+  | "orchestration"; // Entry points wiring modules together
+
+/**
+ * Per-zone-type threshold overrides. Zones whose metrics fall within
+ * their type's thresholds are considered healthy regardless of the
+ * global governance thresholds.
+ */
+export const ZONE_TYPE_THRESHOLDS: Record<ZoneType, { cohesionFloor: number; couplingCeiling: number }> = {
+  domain:         { cohesionFloor: 0.4, couplingCeiling: 0.6 },
+  integration:    { cohesionFloor: 0.2, couplingCeiling: 0.8 },
+  test:           { cohesionFloor: 0.1, couplingCeiling: 0.9 },
+  infrastructure: { cohesionFloor: 0.0, couplingCeiling: 1.0 },
+  gateway:        { cohesionFloor: 0.1, couplingCeiling: 0.9 },
+  orchestration:  { cohesionFloor: 0.2, couplingCeiling: 0.8 },
+};
+
+// ── Default thresholds ──────────────────────────────────────────────────────
 
 /**
  * Governance thresholds for architectural risk.
@@ -59,25 +92,38 @@ export function computeRiskScore(cohesion: number, coupling: number): number {
 
 /**
  * Classify a zone into a risk level based on cohesion and coupling.
+ * When a zone type is provided, uses type-specific thresholds.
  *
  * - **healthy**: both metrics within acceptable range
  * - **at-risk**: one metric outside thresholds (but not both)
- * - **critical**: both cohesion < 0.4 AND coupling > 0.6
- * - **catastrophic**: cohesion < 0.3 AND coupling > 0.7
+ * - **critical**: both metrics outside thresholds
+ * - **catastrophic**: both metrics severely outside thresholds
  */
 export function classifyRiskLevel(
   cohesion: number,
-  coupling: number
+  coupling: number,
+  zoneType?: ZoneType,
 ): ZoneRiskMetrics["riskLevel"] {
-  const lowCohesion = cohesion < RISK_THRESHOLDS.cohesionFloor;
-  const highCoupling = coupling > RISK_THRESHOLDS.couplingCeiling;
+  const thresholds = zoneType ? ZONE_TYPE_THRESHOLDS[zoneType] : undefined;
+
+  const floor = thresholds?.cohesionFloor ?? RISK_THRESHOLDS.cohesionFloor;
+  const ceiling = thresholds?.couplingCeiling ?? RISK_THRESHOLDS.couplingCeiling;
+
+  const lowCohesion = cohesion < floor;
+  const highCoupling = coupling > ceiling;
 
   if (lowCohesion && highCoupling) {
-    // Both thresholds breached — check severity
-    if (
-      cohesion < RISK_THRESHOLDS.catastrophicCohesion &&
-      coupling > RISK_THRESHOLDS.catastrophicCoupling
-    ) {
+    // Both thresholds breached — check severity using proportional distance
+    // For typed zones, catastrophic is defined as exceeding the type threshold
+    // by the same margin that default catastrophic exceeds default thresholds
+    const catastrophicCohesion = zoneType
+      ? Math.max(0, floor - (RISK_THRESHOLDS.cohesionFloor - RISK_THRESHOLDS.catastrophicCohesion))
+      : RISK_THRESHOLDS.catastrophicCohesion;
+    const catastrophicCoupling = zoneType
+      ? Math.min(1, ceiling + (RISK_THRESHOLDS.catastrophicCoupling - RISK_THRESHOLDS.couplingCeiling))
+      : RISK_THRESHOLDS.catastrophicCoupling;
+
+    if (cohesion < catastrophicCohesion && coupling > catastrophicCoupling) {
       return "catastrophic";
     }
     return "critical";
@@ -92,13 +138,17 @@ export function classifyRiskLevel(
 
 /**
  * Compute full risk metrics for a single zone.
+ * Optionally accepts a zone type for type-specific thresholds.
  */
-export function assessZoneRisk(zone: Zone, justification?: string): ZoneRiskMetrics {
+export function assessZoneRisk(zone: Zone, justification?: string, zoneType?: ZoneType): ZoneRiskMetrics {
   const riskScore = computeRiskScore(zone.cohesion, zone.coupling);
-  const riskLevel = classifyRiskLevel(zone.cohesion, zone.coupling);
-  const failsThreshold =
-    zone.cohesion < RISK_THRESHOLDS.cohesionFloor &&
-    zone.coupling > RISK_THRESHOLDS.couplingCeiling;
+  const riskLevel = classifyRiskLevel(zone.cohesion, zone.coupling, zoneType);
+
+  const thresholds = zoneType ? ZONE_TYPE_THRESHOLDS[zoneType] : undefined;
+  const floor = thresholds?.cohesionFloor ?? RISK_THRESHOLDS.cohesionFloor;
+  const ceiling = thresholds?.couplingCeiling ?? RISK_THRESHOLDS.couplingCeiling;
+
+  const failsThreshold = zone.cohesion < floor && zone.coupling > ceiling;
 
   return {
     cohesion: zone.cohesion,
@@ -127,6 +177,12 @@ export interface RiskAssessmentOptions {
    * to informational severity.
    */
   justifications?: RiskJustificationEntry[];
+  /**
+   * Zone type annotations from .n-dx.json config.
+   * Maps zone ID → zone type. When present, type-specific thresholds
+   * are used instead of global defaults. Takes precedence over justifications.
+   */
+  zoneTypes?: Record<string, ZoneType>;
 }
 
 /**
@@ -135,8 +191,10 @@ export interface RiskAssessmentOptions {
  * Findings are deterministic (pass 0) — they use only structural zone metrics,
  * no AI invocation.
  *
- * When justifications are provided, justified zones have their findings
- * downgraded to "info" severity and annotated with the justification text.
+ * Assessment priority:
+ * 1. Zone type (if present) → use type-specific thresholds
+ * 2. Risk justification (if present) → downgrade findings to info
+ * 3. Default thresholds
  */
 export function assessAllZoneRisks(
   zones: Zones,
@@ -145,22 +203,32 @@ export function assessAllZoneRisks(
   const metrics: Record<string, ZoneRiskMetrics> = {};
   const findings: Finding[] = [];
 
-  // Build justification lookup
+  // Build lookups
   const justificationMap = new Map<string, string>();
   if (opts?.justifications) {
     for (const j of opts.justifications) {
       justificationMap.set(j.zone, j.reason);
     }
   }
+  const zoneTypeMap = opts?.zoneTypes ?? {};
 
   // Compute metrics for all zones
-  const assessed: Array<{ zone: Zone; risk: ZoneRiskMetrics; justified: boolean }> = [];
+  const assessed: Array<{ zone: Zone; risk: ZoneRiskMetrics; justified: boolean; typed: boolean }> = [];
   for (const zone of zones.zones) {
+    const zoneType = zoneTypeMap[zone.id] as ZoneType | undefined;
     const justification = justificationMap.get(zone.id);
-    const risk = assessZoneRisk(zone, justification);
+
+    // Zone type takes precedence: if typed, use type thresholds
+    const risk = assessZoneRisk(zone, zoneType ? undefined : justification, zoneType);
     metrics[zone.id] = risk;
+
     if (risk.riskLevel !== "healthy") {
-      assessed.push({ zone, risk, justified: !!justification });
+      assessed.push({
+        zone,
+        risk,
+        justified: !zoneType && !!justification,
+        typed: !!zoneType,
+      });
     }
   }
 
@@ -168,8 +236,17 @@ export function assessAllZoneRisks(
   assessed.sort((a, b) => b.risk.riskScore - a.risk.riskScore);
 
   // Emit per-zone findings
-  for (const { zone, risk, justified } of assessed) {
-    if (justified) {
+  for (const { zone, risk, justified, typed } of assessed) {
+    if (typed) {
+      // Zone has a type — it exceeded even the relaxed thresholds
+      findings.push({
+        type: "suggestion",
+        pass: 0,
+        scope: zone.id,
+        text: formatZoneFinding(zone, risk),
+        severity: riskLevelToSeverity(risk.riskLevel),
+      });
+    } else if (justified) {
       findings.push({
         type: "suggestion",
         pass: 0,
@@ -188,8 +265,10 @@ export function assessAllZoneRisks(
     }
   }
 
-  // Emit global summary if multiple unjustified zones fail the governance threshold
-  const failingZones = assessed.filter(({ risk, justified }) => risk.failsThreshold && !justified);
+  // Emit global summary if multiple unjustified/untyped zones fail governance threshold
+  const failingZones = assessed.filter(({ risk, justified, typed }) =>
+    risk.failsThreshold && !justified && !typed
+  );
   if (failingZones.length >= 2) {
     findings.push({
       type: "suggestion",

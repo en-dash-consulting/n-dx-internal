@@ -15,6 +15,7 @@ import { info } from "../output.js";
 import { emptyAnalyzeTokenUsage, formatTokenUsage } from "../../analyzers/token-usage.js";
 import { loadLLMConfig } from "@n-dx/llm-client";
 import type { RiskJustificationEntry } from "../../schema/v1.js";
+import type { ZoneType } from "../../analyzers/risk-scoring.js";
 import { detectSubAnalyses } from "../../analyzers/workspace.js";
 import {
   setLLMConfig,
@@ -280,13 +281,15 @@ function generateOutputFiles(ctx: AnalyzeContext): void {
       ? JSON.parse(readFileSync(classificationsPath, "utf-8"))
       : null;
 
-    // Load risk justifications from .n-dx.json (synchronous — we're in a sync function)
+    // Load risk justifications and zone types from .n-dx.json
     const riskJustifications = loadRiskJustifications(ctx.svDir);
+    const zoneTypes = loadZoneTypes(ctx.svDir);
 
     // Compute architectural risk scoring and attach metrics to zones
     if (zonesData.zones.length > 0) {
       const riskResult = assessAllZoneRisks(zonesData, {
         justifications: riskJustifications,
+        zoneTypes,
       });
 
       // Attach risk metrics to each zone object
@@ -350,6 +353,26 @@ function loadRiskJustifications(svDir: string): RiskJustificationEntry[] | undef
     }
   } catch {
     // Invalid config — no justifications
+  }
+  return undefined;
+}
+
+/**
+ * Load zone type annotations from .n-dx.json (synchronous).
+ * Returns the map from `sourcevision.zones.types` or undefined.
+ */
+function loadZoneTypes(svDir: string): Record<string, ZoneType> | undefined {
+  try {
+    const projectDir = resolve(svDir, "..");
+    const configPath = join(projectDir, ".n-dx.json");
+    if (!existsSync(configPath)) return undefined;
+    const data = JSON.parse(readFileSync(configPath, "utf-8"));
+    const types = data?.sourcevision?.zones?.types;
+    if (types && typeof types === "object" && Object.keys(types).length > 0) {
+      return types as Record<string, ZoneType>;
+    }
+  } catch {
+    // Invalid config — no zone types
   }
   return undefined;
 }

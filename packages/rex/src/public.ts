@@ -80,7 +80,7 @@ export { jiraIntegrationSchema } from "./store/integration-schemas/jira.js";
 // ---- Schema types & constants -----------------------------------------------
 
 export type {
-  PRDItem, PRDDocument, ItemLevel, ItemStatus, Priority, RexConfig,
+  PRDItem, PRDDocument, ItemLevel, ItemStatus, Priority, ResolutionType, RexConfig,
   RequirementCategory, RequirementValidationType, Requirement,
   FacetDefinition, LoEConfig,
 } from "./schema/v1.js";

@@ -90,10 +90,10 @@ export async function handleGetNextTask(store: PRDStore): Promise<McpResult> {
 
 export async function handleUpdateTaskStatus(
   store: PRDStore,
-  args: { id: string; status: string; force?: boolean; reason?: string },
+  args: { id: string; status: string; force?: boolean; reason?: string; resolutionType?: string; resolutionDetail?: string },
 ): Promise<McpResult> {
   try {
-    const { id, status, force, reason } = args;
+    const { id, status, force, reason, resolutionType, resolutionDetail } = args;
     const existing = await store.getItem(id);
     if (!existing) {
       return textResult(`Item "${id}" not found. Use get_prd_status to see available items.`, true);
@@ -135,6 +135,12 @@ export async function handleUpdateTaskStatus(
     const statusUpdates: Partial<PRDItem> = { status: status as ItemStatus, ...tsUpdates };
     if (status === "failing" && reason) {
       statusUpdates.failureReason = reason;
+    }
+    if (status === "completed" && resolutionType) {
+      statusUpdates.resolutionType = resolutionType as PRDItem["resolutionType"];
+    }
+    if (status === "completed" && resolutionDetail) {
+      statusUpdates.resolutionDetail = resolutionDetail;
     }
     await store.updateItem(id, statusUpdates);
     await store.appendLog({

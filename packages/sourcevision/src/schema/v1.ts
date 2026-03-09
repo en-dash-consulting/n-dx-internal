@@ -141,7 +141,7 @@ export interface Imports {
 
 // ── Findings ─────────────────────────────────────────────────────────────────
 
-export type FindingType = "observation" | "pattern" | "relationship" | "anti-pattern" | "suggestion";
+export type FindingType = "observation" | "pattern" | "relationship" | "anti-pattern" | "suggestion" | "move-file";
 
 export interface Finding {
   type: FindingType;
@@ -153,6 +153,28 @@ export interface Finding {
   severity?: "info" | "warning" | "critical";
   /** Related zone IDs or file paths */
   related?: string[];
+}
+
+/** Reason a file-move is recommended. */
+export type MoveFileReason = "zone-pin-override" | "import-neighbor-majority" | "directory-consolidation";
+
+/**
+ * Concrete file-move recommendation with predicted metric impact.
+ *
+ * Emitted when a file's physical location diverges from its architectural
+ * zone membership — either because a zone pin overrides Louvain placement,
+ * or because a file's import neighbors are predominantly in another directory.
+ */
+export interface MoveFileFinding extends Finding {
+  type: "move-file";
+  /** Current file path (relative to project root). */
+  from: string;
+  /** Recommended destination directory. */
+  to: string;
+  /** Why this move is recommended. */
+  moveReason: MoveFileReason;
+  /** Number of cross-zone edges this move would eliminate. */
+  predictedImpact: number;
 }
 
 // ── Zones ───────────────────────────────────────────────────────────────────

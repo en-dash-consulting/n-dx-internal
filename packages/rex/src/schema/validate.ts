@@ -61,6 +61,8 @@ export const PRDItemSchema: z.ZodType<Record<string, unknown>> = z.lazy(() =>
       startedAt: z.string().optional(),
       completedAt: z.string().optional(),
       failureReason: z.string().optional(),
+      resolutionType: z.enum(["code-change", "config-override", "acknowledgment", "deferred", "unclassified"]).optional(),
+      resolutionDetail: z.string().optional(),
       mergedProposals: z.array(z.object({
         proposalNodeKey: z.string(),
         proposalTitle: z.string(),
