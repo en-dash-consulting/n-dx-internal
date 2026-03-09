@@ -1747,6 +1747,143 @@ export function runZonePipeline(options: ZonePipelineOptions): ZonePipelineResul
   return { zones: pinnedZones, crossings, unzoned, filenameBasedZoneIds };
 }
 
+// ── Helper: prepare scope and edges ──────────────────────────────────────────
+
+/** Filter sub-analyzed files from edges/inventory and build the test file set. */
+function prepareScopeAndEdges(
+  inventory: Inventory,
+  imports: Imports,
+  subAnalyses: SubAnalysis[],
+): {
+  filteredEdges: ImportEdge[];
+  scopeFiles: string[];
+  testFiles: Set<string>;
+  subAnalyzedPrefixes: string[];
+} {
+  const subAnalyzedPrefixes = getSubAnalyzedPrefixes(subAnalyses);
+  const filteredEdges = subAnalyzedPrefixes.length > 0
+    ? imports.edges.filter(
+        (e) =>
+          !isSubAnalyzedFile(e.from, subAnalyzedPrefixes) &&
+          !isSubAnalyzedFile(e.to, subAnalyzedPrefixes)
+      )
+    : imports.edges;
+
+  const scopeFiles = inventory.files
+    .filter(f => !isSubAnalyzedFile(f.path, subAnalyzedPrefixes))
+    .map(f => f.path);
+
+  const testFiles = new Set<string>();
+  for (const f of inventory.files) {
+    if (f.role === "test") testFiles.add(f.path);
+  }
+
+  return { filteredEdges, scopeFiles, testFiles, subAnalyzedPrefixes };
+}
+
+// ── Helper: promote sub-analyses ─────────────────────────────────────────────
+
+/**
+ * Promote zones and crossings from sub-analyses into the root zone list.
+ * Also resolves workspace member npm imports (e.g. `@n-dx/llm-client`) into
+ * zone crossings so foundation-tier coupling is visible in the monorepo graph.
+ */
+function promoteSubAnalyses(
+  subAnalyses: SubAnalysis[],
+  pinnedFinalZones: Zone[],
+): { allZones: Zone[]; promotedCrossings: ZoneCrossing[] } {
+  const promotedZones: Zone[] = [];
+  const promotedCrossings: ZoneCrossing[] = [];
+  for (const sub of subAnalyses) {
+    promotedZones.push(...promoteZones(sub));
+    promotedCrossings.push(...promoteCrossings(sub));
+  }
+  const allZones = [...pinnedFinalZones, ...promotedZones];
+
+  if (subAnalyses.length > 0) {
+    const packageMap = buildPackageMap(subAnalyses);
+    const crossRepoCrossings = computeCrossRepoCrossings(
+      subAnalyses, allZones, packageMap,
+    );
+    promotedCrossings.push(...crossRepoCrossings);
+  }
+
+  return { allZones, promotedCrossings };
+}
+
+// ── Helper: move recommendations ─────────────────────────────────────────────
+
+/** Detect pin divergence and import-neighbor move recommendations. */
+function computeMoveFindings(
+  pinnedFinalZones: Zone[],
+  crossings: ZoneCrossing[],
+  edges: ImportEdge[],
+  zonePins: Record<string, string>,
+): Finding[] {
+  const rootCrossings = crossings.filter(
+    (c) => !c.fromZone.includes(":") && !c.toZone.includes(":"),
+  );
+  const moveCtx: MoveContext = {
+    zones: pinnedFinalZones,
+    crossings: rootCrossings,
+    edges,
+    zonePins,
+  };
+  return [
+    ...detectPinDivergence(moveCtx),
+    ...detectImportNeighborMoves(moveCtx),
+  ];
+}
+
+// ── Helper: build final result ───────────────────────────────────────────────
+
+/** Assemble the final AnalyzeZonesResult with sorted zones data. */
+function buildAnalyzeZonesResult(opts: {
+  allZones: Zone[];
+  crossings: ZoneCrossing[];
+  unzoned: string[];
+  allGlobalInsights: string[];
+  allFindings: Finding[];
+  enrichmentPass: number;
+  structureHash: string;
+  remappedContentHashes: Record<string, string>;
+  previousZones: Zones | undefined;
+  structureChanged: boolean;
+  enrichTokenUsage: AnalyzeTokenUsage | undefined;
+}): AnalyzeZonesResult {
+  const {
+    allZones, crossings, unzoned, allGlobalInsights, allFindings,
+    enrichmentPass, structureHash, remappedContentHashes,
+    previousZones, structureChanged, enrichTokenUsage,
+  } = opts;
+
+  const prevMetaCount = previousZones?.metaEvaluationCount ?? 0;
+  const metaEvaluationCount = enrichmentPass >= 5
+    ? prevMetaCount + 1
+    : prevMetaCount > 0 ? prevMetaCount : undefined;
+  const displayPass = enrichmentPass > 4 ? 4 : enrichmentPass;
+  const lastReset = (structureChanged && previousZones?.enrichmentPass)
+    ? { from: previousZones.enrichmentPass, to: 1 }
+    : undefined;
+
+  return {
+    zones: sortZonesData({
+      zones: allZones,
+      crossings,
+      unzoned,
+      insights: allGlobalInsights.length > 0 ? allGlobalInsights : undefined,
+      findings: allFindings.length > 0 ? allFindings : undefined,
+      enrichmentPass: allFindings.length > 0 ? displayPass : undefined,
+      ...(metaEvaluationCount ? { metaEvaluationCount } : {}),
+      structureHash,
+      zoneContentHashes: remappedContentHashes,
+      ...(lastReset ? { lastReset } : {}),
+    }),
+    tokenUsage: enrichTokenUsage,
+    structureChanged,
+  };
+}
+
 // ── Main entry point ────────────────────────────────────────────────────────
 
 export async function analyzeZones(
@@ -1782,25 +1919,9 @@ export async function analyzeZones(
   const previousZones = options?.previousZones;
   const subAnalyses = options?.subAnalyses ?? [];
 
-  // ── Exclude sub-analyzed files from Louvain ──
-  const subAnalyzedPrefixes = getSubAnalyzedPrefixes(subAnalyses);
-  const filteredEdges = subAnalyzedPrefixes.length > 0
-    ? imports.edges.filter(
-        (e) =>
-          !isSubAnalyzedFile(e.from, subAnalyzedPrefixes) &&
-          !isSubAnalyzedFile(e.to, subAnalyzedPrefixes)
-      )
-    : imports.edges;
-
-  const scopeFiles = inventory.files
-    .filter(f => !isSubAnalyzedFile(f.path, subAnalyzedPrefixes))
-    .map(f => f.path);
-
-  // Build set of test files for metric exclusion
-  const testFiles = new Set<string>();
-  for (const f of inventory.files) {
-    if (f.role === "test") testFiles.add(f.path);
-  }
+  // ── Prepare scope ──
+  const { filteredEdges, scopeFiles, testFiles, subAnalyzedPrefixes } =
+    prepareScopeAndEdges(inventory, imports, subAnalyses);
 
   // ── Run zone detection pipeline ──
   const pipeline = runZonePipeline({
@@ -1836,45 +1957,21 @@ export async function analyzeZones(
     enrichmentPass, metaUpdatedFindings, enrichTokenUsage } = enrichResult;
 
   // ── Remap content hashes to post-enrichment zone IDs ──
-  // Enrichment may rename zone IDs (e.g. "dom" → "dom-performance-monitoring").
-  // The content hashes were computed with pre-enrichment IDs and must be remapped
-  // so that downstream consumers can join zone metadata with content hashes by ID.
   const remappedContentHashes = remapContentHashKeys(
     zoneContentHashes, expandedZones, finalZones,
   );
 
   // ── Apply zone pins (post-enrichment) ──
-  // Zone pins reference enriched IDs (e.g. "web-dashboard"), so they must run
-  // after enrichment gives zones their final names — not during the pipeline
-  // where zones still have algorithmic IDs.
   const pinnedFinalZones = options?.zonePins && Object.keys(options.zonePins).length > 0
     ? applyZonePins(finalZones, options.zonePins)
     : finalZones;
 
-  // ── Promote zones from sub-analyses ──
-  const promotedZones: Zone[] = [];
-  const promotedCrossings: ZoneCrossing[] = [];
-  for (const sub of subAnalyses) {
-    promotedZones.push(...promoteZones(sub));
-    promotedCrossings.push(...promoteCrossings(sub));
-  }
-  const allZones = [...pinnedFinalZones, ...promotedZones];
-
-  // ── Compute cross-package crossings ──
-  // Resolve workspace member npm imports (e.g. `@n-dx/llm-client`) into
-  // zone crossings so foundation-tier coupling is visible in the monorepo graph.
-  if (subAnalyses.length > 0) {
-    const packageMap = buildPackageMap(subAnalyses);
-    const crossRepoCrossings = computeCrossRepoCrossings(
-      subAnalyses, allZones, packageMap,
-    );
-    promotedCrossings.push(...crossRepoCrossings);
-  }
-
-  // ── Build final crossings ──
+  // ── Promote sub-analyses and build crossings ──
+  const { allZones, promotedCrossings } =
+    promoteSubAnalyses(subAnalyses, pinnedFinalZones);
   const crossings = buildCrossings(allZones, imports, promotedCrossings);
 
-  // ── Generate structural insights ──
+  // ── Generate structural insights + move recommendations ──
   const rootFileCount = inventory.files.filter(
     (f) => !isSubAnalyzedFile(f.path, subAnalyzedPrefixes)
   ).length;
@@ -1886,19 +1983,9 @@ export async function analyzeZones(
     undefined,
     filenameBasedZoneIds,
   );
-
-  // ── Move recommendations ──
-  const moveCtx: MoveContext = {
-    zones: pinnedFinalZones,
-    crossings: crossings.filter((c) => !c.fromZone.includes(":") && !c.toZone.includes(":")),
-    edges: imports.edges,
-    zonePins: options?.zonePins ?? {},
-  };
-  const moveFindings = [
-    ...detectPinDivergence(moveCtx),
-    ...detectImportNeighborMoves(moveCtx),
-  ];
-  structural.findings.push(...moveFindings);
+  structural.findings.push(
+    ...computeMoveFindings(pinnedFinalZones, crossings, imports.edges, options?.zonePins ?? {}),
+  );
 
   // ── Merge insights ──
   mergeZoneInsights(pinnedFinalZones, structural, aiZoneInsights, validPrevious);
@@ -1916,27 +2003,9 @@ export async function analyzeZones(
   backPopulateInsights(pinnedFinalZones, allFindings, allGlobalInsights);
 
   // ── Build result ──
-  const prevMetaCount = previousZones?.metaEvaluationCount ?? 0;
-  const metaEvaluationCount = enrichmentPass >= 5 ? prevMetaCount + 1 : prevMetaCount > 0 ? prevMetaCount : undefined;
-  const displayPass = enrichmentPass > 4 ? 4 : enrichmentPass;
-  const lastReset = (structureChanged && previousZones?.enrichmentPass)
-    ? { from: previousZones.enrichmentPass, to: 1 }
-    : undefined;
-
-  return {
-    zones: sortZonesData({
-      zones: allZones,
-      crossings,
-      unzoned,
-      insights: allGlobalInsights.length > 0 ? allGlobalInsights : undefined,
-      findings: allFindings.length > 0 ? allFindings : undefined,
-      enrichmentPass: allFindings.length > 0 ? displayPass : undefined,
-      ...(metaEvaluationCount ? { metaEvaluationCount } : {}),
-      structureHash,
-      zoneContentHashes: remappedContentHashes,
-      ...(lastReset ? { lastReset } : {}),
-    }),
-    tokenUsage: enrichTokenUsage,
-    structureChanged,
-  };
+  return buildAnalyzeZonesResult({
+    allZones, crossings, unzoned, allGlobalInsights, allFindings,
+    enrichmentPass, structureHash, remappedContentHashes,
+    previousZones, structureChanged, enrichTokenUsage,
+  });
 }
