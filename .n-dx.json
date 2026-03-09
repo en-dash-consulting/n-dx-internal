@@ -87,7 +87,27 @@
         "packages/web/tests/unit/viewer/call-rate-limiter.test.ts": "viewer-message-pipeline",
         "packages/web/tests/unit/viewer/execution-panel-dedup.test.ts": "viewer-message-pipeline",
 
-        "packages/web/tests/unit/viewer/sidebar.test.ts": "web-viewer"
+        "packages/web/tests/unit/viewer/sidebar.test.ts": "web-viewer",
+
+        "packages/web/tests/unit/viewer/graph-interaction.test.ts": "web-dashboard",
+        "packages/web/tests/unit/viewer/graph-zoom.test.ts": "web-dashboard"
+      },
+      "healthAnnotations": {
+        "web-viewer-messaging": {
+          "expectedCohesion": 0.3,
+          "expectedCoupling": 0.7,
+          "reason": "Messaging pipeline is architecturally thin — 6 files form a composed pipeline chain. Low cohesion is inherent to the pipeline pattern (each stage has different concerns). High coupling reflects the viewer↔messaging integration surface, which is by-design."
+        },
+        "packages-rex:validate": {
+          "expectedCohesion": 0.36,
+          "expectedCoupling": 0.64,
+          "reason": "Validation zone necessarily imports from core, store, and schema zones to perform cross-cutting integrity checks. High coupling is intrinsic to the validation responsibility."
+        },
+        "packages-sourcevision:analyzers-3": {
+          "expectedCohesion": 0.27,
+          "expectedCoupling": 0.73,
+          "reason": "Analyzer residual zone created by Louvain community detection. Contains files that bridge multiple analyzer phases. High coupling reflects cross-phase data flow, which is architectural rather than accidental."
+        }
       }
     }
   }

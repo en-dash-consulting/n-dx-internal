@@ -17,6 +17,12 @@
       "gatewayFiles": ["packages/web/src/server/domain-gateway.ts"]
     }
   ],
+  "internalBarrels": [
+    {
+      "file": "packages/web/src/viewer/messaging/index.ts",
+      "description": "Sole public surface for the viewer messaging subsystem — must remain re-export-only"
+    }
+  ],
   "boundaries": [
     {
       "sourceDir": "packages/web/src/server",

@@ -565,6 +565,75 @@ describe("architecture policy: gateway enforcement", () => {
   }
 
   /**
+   * Internal barrel enforcement — re-export-only check for intra-package
+   * barrel files listed in gateway-rules.json's "internalBarrels".
+   *
+   * These files act as de facto gateways within a package (sole public
+   * surface for a subsystem) but are not cross-package gateways. They
+   * must still be re-export-only to prevent logic accumulation.
+   */
+  const internalBarrels = _gatewayConfig.internalBarrels || [];
+
+  for (const barrel of internalBarrels) {
+    it(`internal barrel ${barrel.file} contains only re-exports (no logic)`, () => {
+      const fullPath = join(ROOT, barrel.file);
+      if (!existsSync(fullPath)) return;
+
+      const content = readFileSync(fullPath, "utf-8");
+      const lines = content.split("\n");
+      const violations = [];
+
+      let inBlockComment = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+
+        if (inBlockComment) {
+          if (trimmed.includes("*/")) {
+            inBlockComment = false;
+          }
+          continue;
+        }
+
+        if (trimmed.startsWith("/*")) {
+          if (!trimmed.includes("*/")) {
+            inBlockComment = true;
+          }
+          continue;
+        }
+
+        if (trimmed === "") continue;
+        if (trimmed.startsWith("//")) continue;
+        if (trimmed.startsWith("*")) continue;
+
+        if (/^export\s+(type\s+)?{/.test(trimmed)) continue;
+        if (/^export\s+{/.test(trimmed)) continue;
+        if (/^[A-Za-z_$][\w$]*\s*,?\s*$/.test(trimmed)) continue;
+        if (/^}\s*from\s+["']/.test(trimmed)) continue;
+        if (/^type\s+[A-Za-z_$][\w$]*\s*,?\s*$/.test(trimmed)) continue;
+        if (/^@\w+/.test(trimmed)) continue;
+
+        violations.push({ line: i + 1, content: trimmed });
+      }
+
+      if (violations.length > 0) {
+        expect.fail(
+          [
+            `Internal barrel ${barrel.file} contains logic — barrels must be re-export-only.`,
+            barrel.description,
+            "",
+            "Violations:",
+            ...violations.map((v) => `  line ${v.line}: ${v.content}`),
+            "",
+            "Move any logic to an internal module within the subsystem.",
+          ].join("\n"),
+        );
+      }
+    });
+  }
+
+  /**
    * Data-layer contract: no source file may import from .rex/, .sourcevision/,
    * or .hench/ directories. These are data directories containing JSON state
    * files — they must be accessed via filesystem I/O, not module imports.

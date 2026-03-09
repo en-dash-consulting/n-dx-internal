@@ -321,7 +321,7 @@ describe("architecture policy: CLAUDE.md coverage cross-reference", () => {
     // add an entry to DOCUMENTED_POLICIES above. If this test has
     // fewer entries than the rules in CLAUDE.md, the gap is visible
     // in code review. Minimum: 12 policies.
-    expect(DOCUMENTED_POLICIES.length).toBeGreaterThanOrEqual(12);
+    expect(DOCUMENTED_POLICIES.length).toBe(13);
   });
 
   for (const policy of DOCUMENTED_POLICIES) {
@@ -495,6 +495,167 @@ describe("architecture policy: zone import cycle detection", () => {
           "  3. Using zone pins to correct misclassified files",
         ].join("\n"),
       );
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Zone-boundary coupling guard for non-web packages
+// ---------------------------------------------------------------------------
+
+/**
+ * Ensures non-web package families (hench, rex, sourcevision, root) maintain
+ * zero inter-package coupling. Currently enforced indirectly by gateway and
+ * spawn-only rules, but this test makes the invariant explicit so that new
+ * packages cannot accumulate coupling without a test failure.
+ *
+ * This test reads zone crossings from zones.json and asserts that no
+ * production zone in the listed package families has outbound edges to
+ * zones in a different package family — confirming coupling === 0.
+ */
+describe("architecture policy: non-web zone coupling guard", () => {
+  it("non-web package families have zero inter-family zone coupling", () => {
+    const zonesPath = join(ROOT, ".sourcevision/zones.json");
+    if (!existsSync(zonesPath)) return;
+
+    const configPath = join(ROOT, ".n-dx.json");
+
+    const data = JSON.parse(readFileSync(zonesPath, "utf-8"));
+    const crossings = data.crossings || [];
+
+    // Load zone types to exclude test/infrastructure zones
+    const zoneTypes = existsSync(configPath)
+      ? JSON.parse(readFileSync(configPath, "utf-8"))?.sourcevision?.zones?.types ?? {}
+      : {};
+
+    const productionZones = new Set();
+    for (const zone of data.zones || []) {
+      const zoneType = zoneTypes[zone.id];
+      if (!zoneType || !CYCLE_EXEMPT_ZONE_TYPES.has(zoneType)) {
+        productionZones.add(zone.id);
+      }
+    }
+
+    // Load zone pins
+    const zonePins = existsSync(configPath)
+      ? JSON.parse(readFileSync(configPath, "utf-8"))?.sourcevision?.zones?.pins ?? {}
+      : {};
+
+    // Build file-to-zone with pins
+    const fileToZone = new Map();
+    for (const zone of data.zones || []) {
+      for (const file of zone.files || []) {
+        fileToZone.set(file, zone.id);
+      }
+    }
+    for (const [file, zoneId] of Object.entries(zonePins)) {
+      fileToZone.set(file, zoneId);
+    }
+
+    function packageFamily(zoneId) {
+      const colonIdx = zoneId.indexOf(":");
+      return colonIdx >= 0 ? zoneId.slice(0, colonIdx) : zoneId;
+    }
+
+    // Domain package families that must remain coupling-free with each other.
+    // web is excluded (has legitimate cross-package coupling via gateways).
+    // llm-client (foundation) is excluded as a *target* — all tiers may import
+    // from foundation by design. But llm-client as a *source* must not import
+    // from domain packages (enforced separately by foundation tier boundary test).
+    const COUPLING_FREE_FAMILIES = new Set([
+      "packages-hench",
+      "packages-rex",
+      "packages-sourcevision",
+    ]);
+
+    // Foundation tier — imports *to* these families are always allowed
+    const FOUNDATION_FAMILIES = new Set([
+      "packages-llm-client",
+    ]);
+
+    const violations = [];
+
+    for (const c of crossings) {
+      const fromZone = fileToZone.get(c.from) ?? c.fromZone;
+      const toZone = fileToZone.get(c.to) ?? c.toZone;
+
+      if (fromZone === toZone) continue;
+      if (!productionZones.has(fromZone) || !productionZones.has(toZone)) continue;
+
+      const fromFamily = packageFamily(fromZone);
+      const toFamily = packageFamily(toZone);
+
+      if (fromFamily === toFamily) continue; // intra-package, OK
+
+      // Imports to foundation tier are always allowed (by-design)
+      if (FOUNDATION_FAMILIES.has(toFamily)) continue;
+
+      // Only flag if both families are in the coupling-free set
+      if (COUPLING_FREE_FAMILIES.has(fromFamily) && COUPLING_FREE_FAMILIES.has(toFamily)) {
+        violations.push(`${fromZone} → ${toZone} (${c.from} → ${c.to})`);
+      }
+    }
+
+    if (violations.length > 0) {
+      expect.fail(
+        [
+          "Non-web package families have inter-family zone coupling.",
+          "These packages must remain coupling-free (enforced by gateway and spawn-only rules).",
+          "",
+          "Violations:",
+          ...violations.map((v) => `  - ${v}`),
+          "",
+          "To fix: route the import through a gateway module, or extract shared types to @n-dx/llm-client.",
+        ].join("\n"),
+      );
+    }
+  });
+});
+
+describe("architecture policy: intra-package layering staleness", () => {
+  it("KNOWN_VIOLATIONS list contains no stale entries (all files exist on disk)", () => {
+    const stale = [];
+    for (const rel of KNOWN_VIOLATIONS) {
+      const full = join(ROOT, rel);
+      if (!existsSync(full)) {
+        stale.push(rel);
+      }
+    }
+
+    if (stale.length > 0) {
+      const msg = [
+        "KNOWN_VIOLATIONS list contains files that no longer exist on disk.",
+        "Remove stale entries — the violation has been resolved (file deleted/moved):",
+        "",
+        ...stale.map((s) => `  - ${s}`),
+      ].join("\n");
+
+      expect.fail(msg);
+    }
+  });
+
+  it("KNOWN_VIOLATIONS entries still contain the violating import", () => {
+    const resolved = [];
+    for (const rel of KNOWN_VIOLATIONS) {
+      const full = join(ROOT, rel);
+      if (!existsSync(full)) continue; // covered by staleness test above
+
+      const content = readFileSync(full, "utf-8");
+      const cliImportPattern = /from\s+["']\.\.\/cli\//;
+      if (!cliImportPattern.test(content)) {
+        resolved.push(rel);
+      }
+    }
+
+    if (resolved.length > 0) {
+      const msg = [
+        "KNOWN_VIOLATIONS entries no longer contain the violating import.",
+        "The violation has been resolved — remove these entries from KNOWN_VIOLATIONS:",
+        "",
+        ...resolved.map((r) => `  - ${r}`),
+      ].join("\n");
+
+      expect.fail(msg);
     }
   });
 });
