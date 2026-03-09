@@ -142,6 +142,34 @@
       {
         "zone": "web-dashboard",
         "reason": "11 entry points reflect the zone's dual role as both server infrastructure and viewer application. Server entry points (prd-io.ts, rex-gateway.ts, types.ts) serve route handlers; viewer entry points (logos.ts, rex-task-link.ts, sidebar.ts, polling/index.ts, polling-state.ts, performance/index.ts, viewer/types.ts, usage/constants.ts) serve the SPA component tree. Each serves a distinct consumer. Consolidation would require artificial barrel modules that add indirection without reducing the API surface."
+      },
+      {
+        "zone": "packages-rex:unit-core",
+        "reason": "Test infrastructure zone containing core unit test helpers and fixtures. Low cohesion is inherent: test support files import from many rex subsystems (store, schema, core) to provide test factories and utilities. These are test-only files — high coupling to production code is expected and does not indicate architectural risk."
+      },
+      {
+        "zone": "packages-rex:cli",
+        "reason": "CLI command handlers are thin dispatch wrappers that import from core/, store/, schema/, and analyze/ to orchestrate operations. High coupling is by design: CLI commands are the integration layer that wires together domain modules. Low cohesion reflects diverse command responsibilities (init, status, health, validate, etc.) — grouping by CLI surface is correct."
+      },
+      {
+        "zone": "packages-rex:fix",
+        "reason": "Fix command and its test form a focused pair. High coupling is driven by test imports of store, validation, and type modules to verify fix behavior across different PRD states. The zone boundary correctly groups the feature's implementation and verification."
+      },
+      {
+        "zone": "packages-rex:unit",
+        "reason": "Unit test zone spanning multiple rex subsystems. Test files inherently couple to many production modules (schema, store, core, analyze). Low cohesion is an artifact of Louvain grouping test files that share import targets but test different features. No refactoring would reduce coupling without relocating tests away from their subjects."
+      },
+      {
+        "zone": "packages-rex:core",
+        "reason": "Core domain logic zone (tree operations, validation, status computation). Moderate coupling reflects legitimate dependencies on schema types and store interfaces. These files form the central nervous system of rex — they are imported by CLI, MCP, and analyze subsystems by design."
+      },
+      {
+        "zone": "packages-rex:store",
+        "reason": "Persistence layer (file adapter, PRD store, sync state). Coupling to schema types and validation modules is inherent to the store's contract. Low cohesion reflects the zone spanning both the store implementation and its integration tests. The store is the data access layer — it must import from schema and core."
+      },
+      {
+        "zone": "hench-agent-2",
+        "reason": "Residual detection artifact from Louvain community detection after pinning hench store files to hench-agent. Contains leftover files that did not get absorbed by the primary zone. Metrics are non-representative — this zone should be treated as a detection artifact, not a genuine architectural unit."
       }
     ]
   }

@@ -58,6 +58,11 @@ export interface ZoneSummary {
   lineCount: number;
   /** Computed architectural risk metrics (present when risk scoring is enabled). */
   riskMetrics?: ZoneRiskMetrics;
+  /**
+   * Indicates whether this zone is a detection artifact rather than a genuine
+   * architectural unit. Mirrors Zone.detectionQuality.
+   */
+  detectionQuality?: "genuine" | "artifact" | "residual";
 }
 
 // ── Inventory ───────────────────────────────────────────────────────────────
@@ -178,6 +183,14 @@ export interface Zone {
   subCrossings?: ZoneCrossing[];
   /** Computed architectural risk metrics (deterministic, from cohesion/coupling). */
   riskMetrics?: ZoneRiskMetrics;
+  /**
+   * Indicates whether this zone is a detection artifact rather than a genuine
+   * architectural unit. Artifact zones arise from residual Louvain community
+   * detection when most files have been pinned elsewhere. Dashboards and CI
+   * gates should filter or annotate artifact zones to prevent misleading
+   * cohesion/coupling scores from influencing architectural decisions.
+   */
+  detectionQuality?: "genuine" | "artifact" | "residual";
 }
 
 // ── Risk Metrics ────────────────────────────────────────────────────────────

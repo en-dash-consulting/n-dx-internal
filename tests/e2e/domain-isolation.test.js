@@ -609,4 +609,129 @@ describe("architecture policy: gateway enforcement", () => {
       );
     }
   });
+
+  /**
+   * Deny-list enforcement: no file outside a designated gateway may import
+   * from upstream cross-package namespaces. This inverts the gateway allowlist
+   * into an opt-out deny-list — violations are impossible to introduce silently.
+   *
+   * For each gateway rule, we scan ALL source files in the consumer directory
+   * and assert that only the designated gateway files contain runtime imports
+   * from the external package. This is a superset of the per-rule tests above,
+   * consolidated here for completeness.
+   */
+  describe("deny-list: no non-gateway file imports from upstream packages", () => {
+    /** Map from consumer dir to all upstream packages that require gateways. */
+    const consumerPkgMap = new Map();
+    for (const rule of GATEWAY_RULES) {
+      if (!consumerPkgMap.has(rule.packageDir)) {
+        consumerPkgMap.set(rule.packageDir, []);
+      }
+      consumerPkgMap.get(rule.packageDir).push(rule);
+    }
+
+    for (const [consumerDir, rules] of consumerPkgMap) {
+      it(`${consumerDir}: no non-gateway file has runtime imports from gated packages`, () => {
+        const allGateways = new Set();
+        for (const r of rules) {
+          for (const gw of r.gatewayFiles) allGateways.add(gw);
+        }
+
+        const srcFiles = walk(join(ROOT, consumerDir));
+        const violations = [];
+
+        for (const file of srcFiles) {
+          const rel = relative(ROOT, file).replace(/\\/g, "/");
+          if (allGateways.has(rel)) continue;
+
+          const content = readFileSync(file, "utf-8");
+          for (const rule of rules) {
+            if (hasRuntimeImportFrom(content, rule.externalPkg)) {
+              violations.push(`${rel} → ${rule.externalPkg}`);
+            }
+          }
+        }
+
+        if (violations.length > 0) {
+          expect.fail(
+            [
+              `Non-gateway files in ${consumerDir} have runtime imports from gated packages.`,
+              "All runtime cross-package imports must go through the designated gateway module.",
+              "",
+              "Violations:",
+              ...violations.map((v) => `  - ${v}`),
+              "",
+              "To fix: import from the gateway instead of the upstream package directly.",
+            ].join("\n"),
+          );
+        }
+      });
+    }
+  });
+});
+
+/**
+ * Foundation tier boundary: @n-dx/llm-client is the bottom of the hierarchy.
+ * Only Domain-tier packages (rex, sourcevision) and Execution-tier (hench, web)
+ * may import from it. Orchestration-tier scripts must not.
+ */
+describe("architecture policy: foundation tier boundary (@n-dx/llm-client)", () => {
+  const ORCHESTRATION_FILES = [
+    "cli.js",
+    "ci.js",
+    "web.js",
+    "config.js",
+    "pr-check.js",
+    "claude-integration.js",
+  ];
+
+  for (const file of ORCHESTRATION_FILES) {
+    it(`${file} must not import from @n-dx/llm-client`, () => {
+      const fullPath = join(ROOT, file);
+      if (!existsSync(fullPath)) return;
+
+      const content = readFileSync(fullPath, "utf-8");
+      if (hasRuntimeImportFrom(content, "@n-dx/llm-client")) {
+        expect.fail(
+          [
+            `Orchestration-tier file ${file} imports from @n-dx/llm-client.`,
+            "Orchestration files must spawn CLIs — they cannot import from any package tier,",
+            "including the foundation layer.",
+            "",
+            "Move the import into the relevant package or use child_process.spawn instead.",
+          ].join("\n"),
+        );
+      }
+    });
+  }
+
+  it("@n-dx/llm-client must not import from domain or execution packages", () => {
+    const llmSrc = walk(join(ROOT, "packages/llm-client/src"));
+    const forbidden = ["rex", "sourcevision", "hench", "@n-dx/web"];
+    const violations = [];
+
+    for (const file of llmSrc) {
+      const rel = relative(ROOT, file).replace(/\\/g, "/");
+      const content = readFileSync(file, "utf-8");
+
+      for (const pkg of forbidden) {
+        const pattern = new RegExp(`from\\s+["']${pkg.replace("/", "\\/")}["']`);
+        if (pattern.test(content)) {
+          violations.push(`${rel} imports from "${pkg}"`);
+        }
+      }
+    }
+
+    if (violations.length > 0) {
+      expect.fail(
+        [
+          "@n-dx/llm-client (foundation) must not import from upper-tier packages.",
+          "Foundation is the bottom of the hierarchy — it cannot depend on domain, execution, or orchestration.",
+          "",
+          "Violations:",
+          ...violations.map((v) => `  - ${v}`),
+        ].join("\n"),
+      );
+    }
+  });
 });

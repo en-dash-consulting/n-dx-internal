@@ -1,3 +1,20 @@
+<!--
+  SYNC NOTICE — Sections that must be mirrored in CLAUDE.md:
+    • Packages (list and descriptions)
+    • Monorepo Structure (directory tree)
+    • Architecture (four-tier hierarchy diagram)
+    • Gateway modules (table and rules)
+    • Package conventions (table)
+    • Build and test commands
+    • Command Aliases
+    • Orchestration Commands
+    • Direct Tool Access (rex, sourcevision, hench commands)
+    • MCP Servers (HTTP/stdio setup, tool lists)
+    • Development Workflow
+    • Key Files table
+  When updating any of these sections, update CLAUDE.md as well.
+  CODEX.md additionally contains the Codex Troubleshooting section (unique to this file).
+-->
 # n-dx
 
 AI-powered development toolkit. Three packages that chain together: analyze a codebase, build a PRD, execute tasks autonomously.
@@ -272,5 +289,6 @@ Use `ndx start --background .` for daemon mode, `ndx start status .` to check, `
 | `.rex/config.json` | Rex project configuration |
 | `.hench/config.json` | Hench agent configuration (model, max turns) |
 | `.hench/runs/` | Run history and transcripts |
+| `.rex/archive.json` | Pruned/reshaped item archive (written by `rex prune` and `rex reshape`; max 100 batches, auto-trimmed; safe to delete — only used for item recovery/audit) |
 | `.n-dx.json` | Project-level config overrides (web.port, etc.) |
 | `.n-dx-web.pid` | Background web server PID file (auto-managed) |
