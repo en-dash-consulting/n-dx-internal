@@ -117,6 +117,14 @@
           "expectedCoupling": 0.6,
           "reason": "Gateway zone bridging sourcevision MCP routes to web-dashboard. Coupling to web-dashboard is inherent to the gateway pattern — routes-mcp.ts imports server types and rex-gateway.ts. Files are pinned to web-dashboard and will merge on next analysis."
         },
+        "web-ancillary": {
+          "expectedCohesion": 0,
+          "expectedCoupling": 0,
+          "reason": "Residual zone containing orphaned web package files (config, assets) that Louvain cannot cluster. Production files like landing.ts are pinned to web-dashboard; remaining files are infrastructure artifacts with no import edges. Zero cohesion and coupling are structural invariants."
+        },
+        "viewer-message-pipeline": {
+          "reason": "Messaging pipeline is a composed integration layer, not a pure utility. Outbound edges to the viewer external gateway (request-dedup, schema types) are intentional cross-zone contracts. Fan-out > fan-in is expected: the pipeline consumes shared primitives and exposes a unified API surface to 4 consumer hooks."
+        },
         "web-dashboard": {
           "reason": "Orchestration zone with 374 files. 11 entry points are expected: the zone serves as the integration hub for viewer, messaging, and MCP subsystems. Entry points include gateway modules (rex-gateway, external), shared types, and polling infrastructure — all intentional cross-zone contracts."
         }
