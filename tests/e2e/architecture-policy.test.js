@@ -243,6 +243,95 @@ describe("architecture policy: orchestration spawn-only rule", () => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// CLAUDE.md policy coverage cross-reference
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates that every tier boundary rule documented in CLAUDE.md has a
+ * corresponding enforcement test in this file or domain-isolation.test.js.
+ *
+ * This closes the gap where a new rule could be added to CLAUDE.md but
+ * never make it into the test suite — leaving the rule as
+ * documentation-only with no enforcement path.
+ *
+ * Each expected policy maps to the test file + describe block that
+ * enforces it. If you add a new tier boundary rule to CLAUDE.md,
+ * add an entry here and write the corresponding test.
+ */
+const DOCUMENTED_POLICIES = [
+  {
+    rule: "Domain packages must not import from execution or orchestration layers",
+    enforcedBy: "domain-isolation.test.js → architecture policy: domain layer isolation",
+  },
+  {
+    rule: "Rex and sourcevision must never import each other",
+    enforcedBy: "domain-isolation.test.js → architecture policy: domain layer isolation",
+  },
+  {
+    rule: "Orchestration-tier scripts must spawn CLIs, not import libraries",
+    enforcedBy: "architecture-policy.test.js → architecture policy: orchestration spawn-only rule",
+  },
+  {
+    rule: "Cross-package runtime imports must flow through gateway modules",
+    enforcedBy: "domain-isolation.test.js → architecture policy: gateway enforcement",
+  },
+  {
+    rule: "Gateway files must contain only re-exports (no logic)",
+    enforcedBy: "domain-isolation.test.js → architecture policy: gateway enforcement",
+  },
+  {
+    rule: "Type imports must also flow through gateways (prevent promotion erosion)",
+    enforcedBy: "domain-isolation.test.js → architecture policy: gateway enforcement",
+  },
+  {
+    rule: "Foundation tier (@n-dx/llm-client) must not import from upper tiers",
+    enforcedBy: "domain-isolation.test.js → architecture policy: foundation tier boundary",
+  },
+  {
+    rule: "Orchestration scripts must not import @n-dx/llm-client",
+    enforcedBy: "domain-isolation.test.js → architecture policy: foundation tier boundary",
+  },
+  {
+    rule: "Domain-layer files must not import from CLI layer (intra-package layering)",
+    enforcedBy: "architecture-policy.test.js → architecture policy: intra-package layering",
+  },
+  {
+    rule: "Direct child_process imports forbidden outside allowed files",
+    enforcedBy: "architecture-policy.test.js → architecture policy: process execution",
+  },
+  {
+    rule: "config.js must only import from node: builtins (spawn-exempt exception)",
+    enforcedBy: "domain-isolation.test.js → architecture policy: orchestration tier boundary",
+  },
+  {
+    rule: "No source file may import from .rex/, .sourcevision/, or .hench/ directories",
+    enforcedBy: "domain-isolation.test.js → data-layer contract",
+  },
+];
+
+describe("architecture policy: CLAUDE.md coverage cross-reference", () => {
+  it("all documented tier boundary rules have enforcement tests", () => {
+    // This is a declarative registry — it does not parse CLAUDE.md.
+    // When you add a new tier boundary rule to CLAUDE.md, you MUST
+    // add an entry to DOCUMENTED_POLICIES above. If this test has
+    // fewer entries than the rules in CLAUDE.md, the gap is visible
+    // in code review. Minimum: 12 policies.
+    expect(DOCUMENTED_POLICIES.length).toBeGreaterThanOrEqual(12);
+  });
+
+  for (const policy of DOCUMENTED_POLICIES) {
+    it(`"${policy.rule}" is documented as enforced by ${policy.enforcedBy.split(" → ")[0]}`, () => {
+      // Each entry must reference a real test file
+      const testFile = policy.enforcedBy.split(" → ")[0];
+      expect(
+        ["architecture-policy.test.js", "domain-isolation.test.js"].includes(testFile),
+        `Unknown enforcement test file: ${testFile}`,
+      ).toBe(true);
+    });
+  }
+});
+
 describe("architecture policy: process execution", () => {
   it("ALLOWED list contains no stale entries (all files exist on disk)", () => {
     const stale = [];

@@ -76,6 +76,21 @@ package-specific zone they most logically belong to. A cross-package residual
 zone makes zone-level health metrics unreliable because hints or thresholds
 applied to one package's files unintentionally affect the other package's files.
 
+## Residual zone resolution status
+
+All cross-package residual zones have been dissolved through zone pins:
+
+- **hench-agent-2** — dissolved by pinning all files to their correct zones
+  (viewer files → web-viewer, build infrastructure → web-dashboard, hench
+  store files → hench-agent). The bidirectional coupling, low cohesion, and
+  high coupling findings were artifacts of zone misclassification.
+- **web residual zone** — root-level project files (build.js, dev.js,
+  package.json, tsconfig.json, vitest.config.ts, logo assets) are now
+  pinned to web-dashboard. Low cohesion (0.33) is inherent — build/config
+  files do not import each other.
+
+No residual zones with misleading metrics remain in the zone graph.
+
 ## Task usage analytics coupling
 
 The bidirectional zone crossing between task-usage-analytics and web-dashboard is
