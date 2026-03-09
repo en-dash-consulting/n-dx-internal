@@ -20170,22 +20170,26 @@
     {
       "id": "d677010f-a2b8-4b74-8372-d6036078cd69",
       "title": "MCP over HTTP transport",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-03-09T01:23:07.906Z",
+      "completedAt": "2026-03-09T01:23:07.906Z",
       "children": [
         {
           "id": "653cb773-dd9d-467c-880a-bc8c8de9cbe2",
           "title": "rex_edit_item MCP tool",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Expose a dedicated edit_item action on the rex MCP server so AI agents and Claude Code can modify PRD item content (title, description, acceptance criteria, priority, tags, LoE fields) in a single structured call — distinct from rex_update which handles status/lifecycle transitions.",
           "source": "smart-add",
+          "startedAt": "2026-03-09T01:23:07.809Z",
+          "completedAt": "2026-03-09T01:23:07.809Z",
           "children": [
             {
               "id": "322588c0-9776-4853-a0e4-13cffc4dd37e",
               "title": "Implement rex_edit_item tool handler and schema",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add an edit_item tool to the rex MCP server that accepts a target item ID and a partial patch of editable fields (title, description, acceptanceCriteria, priority, tags, loe, loeRationale, loeConfidence). The handler should validate the patch against the PRD schema, apply it via the existing PRDStore mutation API, and return the updated item. Wire the new tool into the MCP tool registry alongside the existing rex tools.",
               "acceptanceCriteria": [
@@ -20202,7 +20206,9 @@
                 "mcp",
                 "backend"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-09T01:16:42.183Z",
+              "completedAt": "2026-03-09T01:23:07.606Z"
             },
             {
               "id": "45937170-e43c-47ca-93d5-a86fa3bdc1a0",

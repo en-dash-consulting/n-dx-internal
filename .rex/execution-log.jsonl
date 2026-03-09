@@ -602,3 +602,12 @@
 {"timestamp":"2026-03-09T01:10:42.112Z","event":"smart_add_accept","detail":"Added 4 items from smart add"}
 {"timestamp":"2026-03-09T01:12:11.530Z","event":"status_updated","itemId":"45937170-e43c-47ca-93d5-a86fa3bdc1a0","detail":"Status changed to in_progress by hench agent"}
 {"timestamp":"2026-03-09T01:16:11.558Z","event":"status_changed","itemId":"45937170-e43c-47ca-93d5-a86fa3bdc1a0","detail":"in_progress → completed"}
+{"timestamp":"2026-03-09T01:16:39.729Z","event":"status_updated","itemId":"45937170-e43c-47ca-93d5-a86fa3bdc1a0","detail":"Status changed to completed by hench agent"}
+{"timestamp":"2026-03-09T01:16:39.795Z","event":"task_completed","itemId":"45937170-e43c-47ca-93d5-a86fa3bdc1a0","detail":"## Summary\n\nImplemented the `edit_item` MCP tool end-to-end across the rex and web packages:\n\n### Changes Made\n\n| File | Change |\n|------|--------|\n| `packages/rex/src/cli/mcp-tools.ts` | Added `handleEditItem` handler supporting title, description, acceptanceCriteria, priority, tags, source, blockedBy fields with DAG validation for dependency changes |\n| `packages/rex/src/cli/mcp.ts` | Registered `edit_item` tool with zod schema and imported `handleEditItem` |\n| `packages/rex/src/public.ts` | E"}
+{"timestamp":"2026-03-09T01:16:42.247Z","event":"status_updated","itemId":"322588c0-9776-4853-a0e4-13cffc4dd37e","detail":"Status changed to in_progress by hench agent"}
+{"timestamp":"2026-03-09T01:16:51.799Z","event":"status_changed","itemId":"322588c0-9776-4853-a0e4-13cffc4dd37e","detail":"in_progress → in_progress"}
+{"timestamp":"2026-03-09T01:23:07.710Z","event":"status_changed","itemId":"322588c0-9776-4853-a0e4-13cffc4dd37e","detail":"in_progress → completed"}
+{"timestamp":"2026-03-09T01:23:07.874Z","event":"auto_completed","itemId":"653cb773-dd9d-467c-880a-bc8c8de9cbe2","detail":"Auto-completed feature: rex_edit_item MCP tool (all children done)"}
+{"timestamp":"2026-03-09T01:23:07.973Z","event":"auto_completed","itemId":"d677010f-a2b8-4b74-8372-d6036078cd69","detail":"Auto-completed epic: MCP over HTTP transport (all children done)"}
+{"timestamp":"2026-03-09T01:23:27.779Z","event":"status_updated","itemId":"322588c0-9776-4853-a0e4-13cffc4dd37e","detail":"Status changed to completed by hench agent"}
+{"timestamp":"2026-03-09T01:23:27.852Z","event":"task_completed","itemId":"322588c0-9776-4853-a0e4-13cffc4dd37e","detail":"This was the second test run that I already reviewed the output of. All tests passed and the task is complete — changes are committed."}
