@@ -112,6 +112,65 @@ describe("detectPinDivergence", () => {
     expect(findings[0].predictedImpact).toBe(3);
   });
 
+  it("excludes test files from majority directory computation", () => {
+    // Zone has more test files than source files — majority dir should still
+    // be the source directory, not the test directory.
+    const zones = [
+      makeZone("zone-a", ["src/old/file.ts"]),
+      makeZone("zone-b", [
+        "src/new/source.ts",
+        "tests/unit/new/test-a.test.ts",
+        "tests/unit/new/test-b.test.ts",
+        "tests/unit/new/test-c.test.ts",
+      ]),
+    ];
+    const pins: Record<string, string> = { "src/old/file.ts": "zone-b" };
+
+    const findings = detectPinDivergence(
+      makeMoveContext({ zones, zonePins: pins })
+    );
+
+    expect(findings).toHaveLength(1);
+    // Should suggest src/new/ (source majority), not tests/unit/new/
+    expect(findings[0].to).toBe("src/new/");
+  });
+
+  it("skips findings for pinned test files", () => {
+    const zones = [
+      makeZone("zone-a", ["src/a/foo.ts"]),
+      makeZone("zone-b", ["src/b/bar.ts"]),
+    ];
+    // A test file pinned to zone-b — should not generate a move finding
+    const pins: Record<string, string> = {
+      "tests/unit/a/foo.test.ts": "zone-b",
+    };
+
+    const findings = detectPinDivergence(
+      makeMoveContext({ zones, zonePins: pins })
+    );
+
+    expect(findings).toHaveLength(0);
+  });
+
+  it("emits no finding when only test files remain after filtering", () => {
+    // Zone has only test files (no source files) — no majority dir available
+    const zones = [
+      makeZone("zone-a", ["src/old/file.ts"]),
+      makeZone("zone-b", [
+        "tests/unit/new/test-a.test.ts",
+        "tests/unit/new/test-b.test.ts",
+      ]),
+    ];
+    const pins: Record<string, string> = { "src/old/file.ts": "zone-b" };
+
+    const findings = detectPinDivergence(
+      makeMoveContext({ zones, zonePins: pins })
+    );
+
+    // No source files in zone-b → can't determine a target directory
+    expect(findings).toHaveLength(0);
+  });
+
   it("handles multiple pins", () => {
     const zones = [
       makeZone("zone-a", ["src/a/one.ts", "src/a/two.ts"]),

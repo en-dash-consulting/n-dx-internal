@@ -18,6 +18,9 @@
 import { dirname } from "node:path";
 import type { Zone, ImportEdge, ZoneCrossing, MoveFileFinding } from "../schema/index.js";
 
+/** Common test directory segments — files under these are test files. */
+const TEST_DIR_SEGMENTS = /(?:^|\/)(tests?|__tests?__|spec|__spec__)\//;
+
 /** Input context for move recommendation analysis. */
 export interface MoveContext {
   zones: Zone[];
@@ -26,15 +29,22 @@ export interface MoveContext {
   zonePins: Record<string, string>;
 }
 
+interface MajorityDirOptions {
+  excludeFile?: string;
+  /** When true, ignore files under test directories (tests/, __tests__/, etc.). */
+  excludeTests?: boolean;
+}
+
 /**
- * Find the majority directory for a zone's files (excluding a specific file).
+ * Find the majority directory for a zone's files.
  * Returns the directory that contains the most files, or undefined if the zone
- * has no other files.
+ * has no qualifying files.
  */
-function majorityDirectory(zone: Zone, excludeFile?: string): string | undefined {
+function majorityDirectory(zone: Zone, opts?: MajorityDirOptions): string | undefined {
   const dirCounts = new Map<string, number>();
   for (const f of zone.files) {
-    if (f === excludeFile) continue;
+    if (f === opts?.excludeFile) continue;
+    if (opts?.excludeTests && TEST_DIR_SEGMENTS.test(f)) continue;
     const dir = dirname(f);
     dirCounts.set(dir, (dirCounts.get(dir) ?? 0) + 1);
   }
@@ -84,8 +94,13 @@ export function detectPinDivergence(ctx: MoveContext): MoveFileFinding[] {
     const targetZone = zoneById.get(targetZoneId);
     if (!targetZone) continue;
 
-    // Find the target zone's majority directory (excluding the pinned file itself)
-    const targetDir = majorityDirectory(targetZone, file);
+    // Skip test files — they are pinned for zone metrics, not physical placement.
+    if (TEST_DIR_SEGMENTS.test(file)) continue;
+
+    // Find the target zone's majority source directory (excluding the pinned file
+    // itself and test files — test files are pinned for zone health metrics but
+    // should not drive where source files should live).
+    const targetDir = majorityDirectory(targetZone, { excludeFile: file, excludeTests: true });
     if (!targetDir) continue;
 
     const fileDir = dirname(file);
