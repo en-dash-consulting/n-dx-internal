@@ -1,5 +1,5 @@
 {
-  "description": "Authoritative source of gateway file paths and allowed import patterns. Consumed by ci.js and domain-isolation.test.js to enforce the gateway pattern consistently. Domain-tier packages (rex, sourcevision) are not listed here because they do not import from sibling or upper-tier packages — their isolation is enforced by domain-isolation.test.js instead. Foundation-tier imports (@n-dx/llm-client) are intentionally ungated: foundation is the bottom of the hierarchy, designed for direct use by all tiers.",
+  "description": "Authoritative source of gateway file paths and allowed import patterns. Consumed by ci.js (checkGatewayImports) and domain-isolation.test.js (gateway enforcement tests) to enforce the gateway pattern consistently — both load this file directly, so adding or changing a rule here automatically updates both enforcement paths. Domain-tier packages (rex, sourcevision) are not listed here because they do not import from sibling or upper-tier packages — their isolation is enforced by domain-isolation.test.js instead. Foundation-tier imports (@n-dx/llm-client) are intentionally ungated: foundation is the bottom of the hierarchy, designed for direct use by all tiers.",
   "gateways": [
     {
       "consumer": "packages/hench/src",

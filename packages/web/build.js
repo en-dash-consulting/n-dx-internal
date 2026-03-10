@@ -13,7 +13,12 @@ const cssEntryPoint = resolve(__dirname, "src/viewer/styles/index.css");
 const htmlTemplatePath = resolve(__dirname, "src/viewer/index.html");
 const outDir = resolve(__dirname, "dist/viewer");
 
-// Landing page entry points
+// ── Landing page entry points ─────────────────────────────────────────────────
+// The landing page is a self-contained vanilla-JS feature with no Preact
+// dependency.  All source files (landing.ts, landing.css, index.html) are
+// co-located in src/landing/ so a single zone owns the full feature boundary.
+// Build-time coupling is limited to this build script — there are no runtime
+// imports between the landing page and the dashboard viewer.
 const landingJsEntryPoint = resolve(__dirname, "src/landing/landing.ts");
 const landingCssEntryPoint = resolve(__dirname, "src/landing/landing.css");
 const landingHtmlTemplatePath = resolve(__dirname, "src/landing/index.html");

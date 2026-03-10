@@ -8,7 +8,10 @@
         "packages/web/src/viewer/views/hench-runs.ts": "web-dashboard",
         "packages/web/src/viewer/hooks/use-polling.ts": "web-dashboard",
         "packages/hench/src/prd/rex-gateway.ts": "hench-gateway",
-        "packages/hench/src/shared/glob.ts": "autonomous-agent-engine"
+        "packages/hench/src/shared/glob.ts": "autonomous-agent-engine",
+        "packages/web/src/server/rex-gateway.ts": "web-server",
+        "packages/web/src/server/domain-gateway.ts": "web-server",
+        "packages/web/src/viewer/external.ts": "web-viewer"
       }
     }
   }

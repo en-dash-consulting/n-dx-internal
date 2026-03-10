@@ -103,6 +103,20 @@ describe("server/client boundary", () => {
     expect(violations).toEqual([]);
   });
 
+  /**
+   * Viewer → server import check.
+   *
+   * This test catches ALL import forms — both runtime (`import { foo }`)
+   * and type-only (`import type { Foo }`). For the viewer → server
+   * direction, even type-only imports are treated as violations because
+   * the viewer is built separately and served as static assets; it has
+   * no legitimate reason to reference server-side modules at any level.
+   *
+   * Cross-zone import analysis may report "web-viewer → web-server"
+   * edges when zones don't map exactly to src/viewer/ vs src/server/.
+   * This test is the ground-truth enforcement — zero violations means
+   * the boundary is clean regardless of zone-level analysis.
+   */
   it("no viewer file imports from server", () => {
     const viewerDir = join(WEB_SRC, "viewer");
     const violations: string[] = [];
