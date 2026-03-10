@@ -18526,7 +18526,7 @@
     {
       "id": "ff24d31d-6bfc-4ed8-979e-2bc790ed8549",
       "title": "Smart Prune Proposal Caching Enhancement",
-      "status": "completed",
+      "status": "in_progress",
       "level": "epic",
       "source": "smart-add",
       "startedAt": "2026-03-06T05:59:33.851Z",
@@ -18590,13 +18590,31 @@
               "children": []
             }
           ]
+        },
+        {
+          "id": "c79dec6c-2402-4a63-a9dd-aa81f4270f83",
+          "title": "Integration tests for smart prune caching workflow",
+          "status": "pending",
+          "level": "feature",
+          "source": "manual",
+          "priority": "high",
+          "description": "Add integration tests to verify the smart prune caching workflow end-to-end. Tests go in packages/rex/tests/integration/cli/commands/prune-cache.test.ts.\n\nThe smart prune caching feature (packages/rex/src/cli/commands/prune.ts lines 467-502) caches LLM-generated reshape proposals so that a dry-run followed by --accept reuses proposals without a second LLM call. The cache module is packages/rex/src/core/pending-cache.ts (hashPRD, savePendingSmartPrune, loadPendingSmartPrune, clearPendingSmartPrune).\n\nUnit tests exist in packages/rex/tests/unit/core/pending-cache.test.ts covering the cache module in isolation. These new integration tests must cover the actual smartPrune function's caching behavior.",
+          "acceptanceCriteria": [
+            "Test: cache file (.rex/pending-smart-prune.json) is written after LLM generation with correct prdHash",
+            "Test: second smartPrune call with unchanged PRD uses cache (reasonForReshape not called again, 'Using cached proposals' message emitted)",
+            "Test: cache is invalidated when PRD changes between runs (hash mismatch triggers fresh LLM call)",
+            "Test: cache is cleared after successful apply (accept=true)",
+            "All tests mock the LLM layer (vi.mock on reasonForReshape from ../../core/reshape.js) — no real LLM calls",
+            "Tests use temp directory with valid .rex/prd.json setup per test case"
+          ],
+          "children": []
         }
       ]
     },
     {
       "id": "6772d41b-37bf-44ea-9cf9-e7dc25c15c79",
       "title": "Smart Add Cache Validation Enhancement",
-      "status": "completed",
+      "status": "in_progress",
       "level": "epic",
       "source": "smart-add",
       "startedAt": "2026-03-06T06:05:30.434Z",
@@ -18683,6 +18701,26 @@
               "children": []
             }
           ]
+        },
+        {
+          "id": "3ac045d9-23d2-442e-8be6-28d13edea664",
+          "title": "Integration tests for smart-add cache staleness detection",
+          "status": "pending",
+          "level": "feature",
+          "source": "manual",
+          "priority": "high",
+          "description": "Add integration tests to verify the smart-add PRD hash validation and staleness detection. Tests go in packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts.\n\nThe smart-add caching feature (packages/rex/src/cli/commands/smart-add.ts) saves a prdHash alongside cached proposals via savePending(). When --accept is used, replayCachedIfRequested() (line ~1129) loads cached proposals, computes current PRD hash, and compares. If hashes differ, it warns and clears stale cache.\n\nThe prdHash is passed through maybeCacheSmartAddProposals() at three call sites (lines ~1376, ~1496, ~1532) using hashPRD(existing) where existing is the current PRD items array.\n\nKey functions to test:\n- savePending (line 706): should include prdHash in JSON\n- loadPending (line 714): should return prdHash from JSON  \n- replayCachedIfRequested (line ~1127): staleness check logic\n- maybeCacheSmartAddProposals (line ~1303): hash passthrough",
+          "acceptanceCriteria": [
+            "Test: savePending writes prdHash to pending-proposals.json when provided",
+            "Test: loadPending returns prdHash from cached file",
+            "Test: --accept (replayCachedIfRequested) succeeds when PRD hash matches cached hash",
+            "Test: --accept rejects stale cache when PRD has changed (warns and clears cache, returns false)",
+            "Test: --accept works with backward-compatible cache files that have no prdHash field (proceeds without validation)",
+            "Test: maybeCacheSmartAddProposals passes hash through to savePending",
+            "All tests mock the LLM layer — no real LLM calls",
+            "Tests use temp directory with valid .rex/ setup per test case"
+          ],
+          "children": []
         }
       ]
     }
