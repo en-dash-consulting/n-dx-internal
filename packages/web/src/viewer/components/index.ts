@@ -47,9 +47,14 @@ export { RefreshQueueStatus } from "./refresh-queue-status.js";
 // ── Status indicators ───────────────────────────────────────────────
 
 export {
+  useProjectStatus,
   SvFreshnessIndicator,
   RexCompletionIndicator,
   HenchActivityIndicator,
+  type ProjectStatus,
+  type SourceVisionStatus,
+  type RexStatus,
+  type HenchStatus,
 } from "./status-indicators.js";
 
 // ── Search ──────────────────────────────────────────────────────────

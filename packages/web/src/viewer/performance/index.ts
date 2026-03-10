@@ -56,7 +56,7 @@ export {
   type RefreshPriority,
 } from "./refresh-throttle.js";
 
-// ── Crash detector ────────────────────────────────────────────────────────────
+// ── Crash detector (canonical location: ../crash/) ──────────────────────────
 
 export {
   detectCrash,
@@ -69,7 +69,7 @@ export {
   resetCrashDetector,
   type CrashDetectionResult,
   type SavedNavigationState,
-} from "./crash-detector.js";
+} from "../crash/index.js";
 
 // ── DOM performance monitor ──────────────────────────────────────────────────
 
