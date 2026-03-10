@@ -6,7 +6,9 @@
     "zones": {
       "pins": {
         "packages/web/src/viewer/views/hench-runs.ts": "web-dashboard",
-        "packages/web/src/viewer/hooks/use-polling.ts": "web-dashboard"
+        "packages/web/src/viewer/hooks/use-polling.ts": "web-dashboard",
+        "packages/hench/src/prd/rex-gateway.ts": "hench-gateway",
+        "packages/hench/src/shared/glob.ts": "autonomous-agent-engine"
       }
     }
   }

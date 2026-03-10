@@ -949,6 +949,22 @@ function collectFileStructureFindings(
     }
   }
 
+  // Numeric suffix zones — overflow communities requiring pin or merge decision.
+  // Mirrors the cross-package residual zone dissolution policy but applies it
+  // to intra-package overflow communities (e.g. web-2, src-2, unit-3).
+  for (const zone of zones) {
+    const leafId = zone.id.includes("/") ? zone.id.split("/").pop()! : zone.id;
+    if (/-\d+$/.test(leafId)) {
+      findings.push({
+        type: "suggestion",
+        pass: 0,
+        scope: zone.id,
+        text: `Zone "${leafId}" has a numeric suffix indicating an overflow community — pin its files to a named zone or merge with the base zone to eliminate the ambiguous ID`,
+        severity: "warning",
+      });
+    }
+  }
+
   // Filename-derived zone
   if (filenameBasedZoneIds) {
     for (const zoneId of filenameBasedZoneIds) {

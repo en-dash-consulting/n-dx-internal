@@ -114,4 +114,64 @@ describe("build output contract", () => {
     expect(html).toContain("<script type=\"module\">");
     expect(html).toContain("<style>");
   });
+
+  it("landing HTML does not reference unbundled source paths", () => {
+    const landingPath = resolve(WEB_PKG, "dist/landing/index.html");
+    if (!existsSync(landingPath)) {
+      return;
+    }
+
+    const html = readFileSync(landingPath, "utf-8");
+
+    // After build, source references like ./landing.ts and ./landing.css
+    // should be resolved to inlined content, not left as raw paths.
+    const unbundledRefs = [
+      'src="./landing.ts"',
+      'href="./landing.css"',
+    ];
+
+    const found = unbundledRefs.filter((ref) => html.includes(ref));
+    if (found.length > 0) {
+      expect.fail(
+        [
+          "Landing HTML references unbundled source paths after build.",
+          "The build should inline or hash these assets.",
+          "",
+          "Found unbundled references:",
+          ...found.map((f) => `  - ${f}`),
+          "",
+          "Verify build.js correctly processes the landing page.",
+        ].join("\n"),
+      );
+    }
+  });
+
+  it("viewer HTML does not reference unbundled source paths", () => {
+    const viewerPath = resolve(WEB_PKG, "dist/viewer/index.html");
+    if (!existsSync(viewerPath)) {
+      return;
+    }
+
+    const html = readFileSync(viewerPath, "utf-8");
+
+    const unbundledRefs = [
+      'src="./main.ts"',
+      'href="./styles.css"',
+    ];
+
+    const found = unbundledRefs.filter((ref) => html.includes(ref));
+    if (found.length > 0) {
+      expect.fail(
+        [
+          "Viewer HTML references unbundled source paths after build.",
+          "The build should inline or hash these assets.",
+          "",
+          "Found unbundled references:",
+          ...found.map((f) => `  - ${f}`),
+          "",
+          "Verify build.js correctly processes the viewer page.",
+        ].join("\n"),
+      );
+    }
+  });
 });
