@@ -350,6 +350,70 @@ describe("server/client boundary", () => {
     expect(violations).toEqual([]);
   });
 
+  /**
+   * Two-consumer rule for web-shared — every module in src/shared/ must have
+   * at least two distinct consumer zones (directories under src/) to justify
+   * its placement in the shared foundation layer. Single-consumer utilities
+   * should live closer to their dominant use site.
+   *
+   * This enforces the governance rule from CLAUDE.md:
+   * > A new module must have at least two distinct consumer zones before
+   * > being added. Single-consumer utilities belong closer to their
+   * > dominant use site.
+   */
+  it("shared/ modules have at least two consumer zones", () => {
+    const sharedDir = join(WEB_SRC, "shared");
+
+    // Collect leaf module names exported from shared/
+    let sharedModules: string[];
+    try {
+      sharedModules = readdirSync(sharedDir)
+        .filter((f) => /\.ts$/.test(f) && f !== "index.ts")
+        .map((f) => f.replace(/\.ts$/, ""));
+    } catch {
+      // shared/ doesn't exist in test environment — pass
+      return;
+    }
+
+    // For each shared module, count distinct top-level zone directories that import it
+    const violations: string[] = [];
+
+    for (const mod of sharedModules) {
+      const consumerZones = new Set<string>();
+
+      // Scan all TS files under src/
+      for (const dir of ["server", "viewer"]) {
+        const base = join(WEB_SRC, dir);
+        try {
+          for (const file of collectTsFiles(base)) {
+            for (const imp of extractImportPaths(file)) {
+              // Match both barrel imports (shared/index) and direct imports (shared/<mod>)
+              if (imp.includes(`shared/${mod}`) || imp.includes("shared/index")) {
+                const rel = relative(WEB_SRC, file);
+                // Extract the top-level zone: "server", "viewer", or "viewer/<subzone>"
+                const parts = rel.split("/");
+                const zone = parts[0] === "viewer" && parts.length > 2
+                  ? `${parts[0]}/${parts[1]}`
+                  : parts[0]!;
+                consumerZones.add(zone);
+              }
+            }
+          }
+        } catch {
+          // Directory doesn't exist — skip
+        }
+      }
+
+      if (consumerZones.size < 2) {
+        violations.push(
+          `shared/${mod}.ts has ${consumerZones.size} consumer zone(s) [${[...consumerZones].join(", ")}] — requires at least 2`
+        );
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
   it("no viewer file imports from server", () => {
     const viewerDir = join(WEB_SRC, "viewer");
     const violations: string[] = [];
