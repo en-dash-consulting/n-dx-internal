@@ -21448,6 +21448,132 @@
         },
         "findingCount": 13
       }
+    },
+    {
+      "id": "ed7a9451-cccb-45a7-b028-62afb3714b0a",
+      "title": "Address observation issues (15 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Bidirectional coupling: \"rex-fix-command\" ↔ \"rex-prd-engine\" (7+1 crossings) — consider extracting shared interface\n- Bidirectional coupling: \"web-application-core\" ↔ \"web-viewer-messaging-pipeline\" (22+16 crossings) — consider extracting shared interface\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 24 files — high-impact module, changes may have wide ripple effects\n- High coupling (0.71) — 11 imports target \"web-application-core\"\n- Low cohesion (0.29) — files are loosely related, consider splitting this zone\n- Cohesion of 0.29 is below the 0.4 threshold, likely because the community-detection algorithm sees the four files as loosely connected within the broader viewer graph; semantically they are tightly related around hench observability.\n- Coupling of 0.71 exceeds the 0.6 warning threshold; the zone has no internal edges compared to its 11 outbound imports into web-viewer, making it a pure leaf consumer cluster — splitting it further would not reduce coupling.\n- High coupling (0.75) — 7 imports target \"rex-prd-engine\"\n- Low cohesion (0.25) — files are loosely related, consider splitting this zone\n- Coupling 0.75 reflects a thin command layer that delegates heavily to rex-unit — acceptable for a CLI shim, but the reverse edge (rex-unit → fix: 1 import) creates a bidirectional dependency that should be audited for circular risk.\n- Rex dogfoods its own PRD tooling by storing .rex/ state inside the package directory; this is architecturally intentional but the execution-log.jsonl committed to the repo should be gitignored to avoid noisy diffs.\n- 20 entry points — wide API surface, consider consolidating exports\n- web-unit imports web-application-core 7 times; since routes-data.ts is a server route handler, confirm these imports are type-only (stripped at compile time) and do not introduce a runtime dependency from server routing logic into viewer modules.\n- sourcevision (domain layer) imports this web-server zone once; domain packages should not depend on web-tier modules — verify this reference is a type-only import from shared-types.ts that can be relocated to a foundation-tier package if it grows.\n- 10 entry points — wide API surface, consider consolidating exports",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "9841b7329bfb",
+          "7a5126bd25ef",
+          "3a82920140f7",
+          "1d0e54a08d36",
+          "6bf033e52c66",
+          "3444c9927280",
+          "9f57492b1270",
+          "067c038e5a15",
+          "a34e0938fdf4",
+          "e0ad3e8dc8e0",
+          "47d44775e9bd",
+          "444269ac1838",
+          "dd0dbb951483",
+          "431c220e897b",
+          "40554300e50b"
+        ],
+        "category": "observation",
+        "severityDistribution": {
+          "warning": 15
+        },
+        "findingCount": 15
+      }
+    },
+    {
+      "id": "8740aed4-fe8b-403b-9da3-ea7ab15510a4",
+      "title": "Address suggestion issues (23 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Add a monorepo-wide invariant test asserting that every zone with cohesion below 0.4 is either a data zone (no source files), a test fixture zone, or has an explicit waiver comment in architecture-policy.test.js. Zones currently below threshold without waivers: fix (0.25), panel (0.29). The test would prevent low-cohesion zones from silently accumulating as new files are added.\n- CLAUDE.md documents the web package's internal zone layering as a linear stack (web-server → web-viewer → messaging → web-shared), but the actual import graph forms a hub topology with web-viewer at the center (11 distinct cross-zone edges). The linear model cannot be topologically sorted given current imports. Update CLAUDE.md to document the hub topology and web-viewer's role as the shared-state hub, so contributors do not introduce new imports based on an incorrect mental model of the dependency direction.\n- Change the REQUIRED_CONTRACTS coverage check in integration-coverage-policy.test.js from package-directory-name matching to gateway-file-path or gateway-exported-symbol matching so each entry in the list is independently verified; the current strategy silently conflates multiple gateways sharing the same package name (hench rex-gateway + llm-gateway both match on 'hench')\n- Establish a policy that every critical or warning finding produced by sourcevision zone enrichment must be accompanied by a corresponding policy-test assertion within the same PR that resolves the finding. The current workflow (analyze → insight → eventual fix) allows findings to age indefinitely; a 'findings must be enforced or explicitly waived' policy would create a mechanical link between detection and resolution.\n- The three pending one-line fixes (crash-detector.ts ViewId import path, hench-runs.ts barrel migration, ActiveRun added to barrel) are individually small but together resolve the hench-agent-monitor and viewer-crash-recovery zone violations flagged in previous analysis passes. Batching them into a single 'barrel and import path hygiene' PR would complete the web package's outstanding structural fixes with minimal risk.\n- The three web package zones with simultaneously low cohesion AND participation in bidirectional cycles — web (0.55), crash (0.5), panel (0.29) — are the monorepo's structural risk concentration. All three are governed only by zone conventions (enforcement tier 3). Adding a boundary-check.test.ts assertion for each zone's import direction would promote them to enforcement tier 2 and yield the highest risk reduction per unit of effort of any single architectural improvement available.\n- The src/analyze/ directory contains 8+ specialized services with no documented test-pairing rule. Add a CI assertion (or README mapping table) that requires a tests/unit/analyze/<service>.test.ts counterpart for every src/analyze/<service>.ts file, preventing coverage gaps from accumulating silently in the zone's largest subdirectory.\n- This is the only web zone meeting the joint fragility criterion (cohesion < 0.6 AND coupling > 0.3). Its 10 entry points expose a wide API surface into bidirectionally-coupled neighbors. Treat refactoring changes in this zone as high-risk until cohesion improves or the catch-all content is redistributed.\n- Add a boundary assertion in boundary-check.test.ts specifically for crash-detector.ts: assert it does not import from viewer/external.ts and does import ViewId from shared/view-id.ts. This converts the existing code comment contract into a machine-checked invariant, preventing the misrouted import from silently re-appearing after refactoring.\n- The REQUIRED_CONTRACTS gateway coverage check in integration-coverage-policy.test.js matches on package directory name ('hench') rather than gateway path, so one reference to 'hench' in cross-package-contracts.test.js satisfies both the rex-gateway and llm-gateway entries; change the hasReference check to require the gateway file path or a gateway-specific symbol name to make each contract independently verifiable\n- Audit whether the single reverse import (rex-unit → fix, 1 edge) is a type-only import or a runtime import. If runtime, it creates the Domain tier's only bidirectional cycle and should be resolved by moving the shared symbol to a neutral location within the rex package (e.g., src/shared/).\n- Add ActiveRun (and ActiveTasksPanelProps if consumed externally) to components/index.ts so the barrel can serve as the exclusive entry point for all hench-agent-monitor exports. Without it, hench-runs.ts cannot fully migrate to barrel imports even if it wanted to.\n- Update hench-runs.ts lines 19-24 to import all six panels from '../components/index.js' rather than from individual component files — the barrel already exports all five value components, and adding ActiveRun would remove the last blocker for full barrel adoption.\n- The REQUIRED_CONTRACTS weak-match means the llm-gateway contract (packages/hench/src/prd/llm-gateway.ts, 30 functions + 10 types) is not independently verified at integration level; add a dedicated assertion block in cross-package-contracts.test.js that imports and exercises at least one symbol from the llm-gateway to close the gap the policy test currently fails to detect\n- rex-fix-command is the only rex zone with BOTH low cohesion (0.25) AND high coupling (0.75) — the canonical fragile-zone signature. Its 2 production files carry no independent domain weight, meaning any interface change in rex-prd-engine forces a corresponding change here. Inlining fix.ts into rex-prd-engine's CLI command layer eliminates the fragile satellite without loss of functionality.\n- .rex/execution-log.jsonl is tracked by git and modified on every hench run, generating permanent diff noise in code review. Add it to .gitignore to prevent operational state from contaminating source history and reduce accidental staging risk.\n- Rename or re-classify the 'rex-unit' zone to 'rex-core' or 'rex-prd-engine' to disambiguate it from the test zones that share the '-unit' suffix convention. The current name is the only production zone in the monorepo that uses a suffix reserved for test zones.\n- boundary-check.test.ts should add an assertion that crash/crash-detector.ts does not import from viewer/external.ts — the one-line import change needed has been identified but has no automated guard preventing it from being re-introduced or missed in review.\n- Introduce a src/index.ts or src/public.ts entry point for the web seam zone that explicitly declares which symbols are part of its stable interface, analogous to the src/public.ts convention used by every npm package. The absence of a declared API surface is a structural reason why the web↔web-viewer bidirectional coupling has 38 edges rather than a focused set.\n- Add a boundary-check assertion that files importing hench-agent-monitor panel components (active-tasks-panel, concurrency-panel, memory-panel, ws-health-panel, throttle-controls) must do so via components/index.ts rather than direct file paths — this enforces the barrel contract that already exists but is currently bypassed by hench-runs.ts.\n- Add a boundary-check.test.ts assertion that no file in src/shared/ imports from src/viewer/, src/server/, or src/viewer/messaging/. This is the missing symmetrical enforcement for the foundation layer: web-shared's zero-coupling property is documented and observed but not mechanically protected.\n- The fix for crash-detector.ts importing ViewId is one line: change '../external.js' to '../shared/view-id.js' (or '../shared/index.js'). Until this is done, ViewId's placement in web-shared provides no practical isolation benefit because the import still traverses the viewer layer's external.ts gateway.\n- Add a boundary-check.test.ts assertion that viewer-layer files do not import directly from server-layer modules — enforce that all server-originated types entering the viewer flow through src/viewer/external.ts. This converts the CLAUDE.md gateway documentation into a machine-verified invariant, analogous to how domain-isolation.test.js enforces the package-level gateway pattern.",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "2e0eee3deefc",
+          "0b3d31f60053",
+          "4d7e886e844d",
+          "e3b0de66599e",
+          "d92191121f00",
+          "038e7c47eda0",
+          "b7aafb32430e",
+          "d13c3581e280",
+          "ae9459b0c0b8",
+          "c6fe8c64cce1",
+          "0a5b079a9ffb",
+          "bcf451a26e4f",
+          "e27fa84e3903",
+          "dd9f55cf2002",
+          "583238fda801",
+          "1f2f40eef8a7",
+          "961a4ebcf212",
+          "b85294289e41",
+          "b1da5a46362d",
+          "b44c366ac5e2",
+          "f48f039ff3ab",
+          "c436840db792",
+          "7cb1fd16292b"
+        ],
+        "category": "suggestion",
+        "severityDistribution": {
+          "warning": 23
+        },
+        "findingCount": 23
+      }
+    },
+    {
+      "id": "6d269c81-4eec-401b-95a0-85d7756677bd",
+      "title": "Address pattern issues (3 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- The domain-isolation.test.js in the E2E zone is the only automated guard against the web-viewer → web-unit boundary violation identified above — verify it explicitly asserts that no production viewer file imports from a test zone, as this class of violation may not be caught by the current gateway-only checks.\n- No policy test currently verifies that web-viewer's 2 inbound imports to crash target only crash/index.ts — direct imports into crash/crash-detector.ts or crash internals would erode encapsulation without failing any existing test\n- Neither boundary-check nor build-output-contract validates that web-viewer's inbound imports to viewer sub-zones (crash, panel) enter only through declared barrel files — internal encapsulation of viewer sub-zones is outside the current test scope",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "86a3bb1553ff",
+          "e25169648b8e",
+          "d88afcfdec56"
+        ],
+        "category": "pattern",
+        "severityDistribution": {
+          "warning": 3
+        },
+        "findingCount": 3
+      }
+    },
+    {
+      "id": "101568f8-c073-4554-8403-393697baa51c",
+      "title": "Address relationship issues (8 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- hench-agent-monitor bypasses the web-shared foundation layer entirely (0 imports) and depends exclusively on web-viewer (11 imports) — any future need for shared utilities will route through the viewer abstraction rather than the designated foundation layer\n- The fix command zone has net zero structural contribution beyond delegation — with 7 imports from rex-prd-engine and only 1 reverse edge, it is closer to a pass-through adapter than a domain zone; if its only role is translating CLI args to rex-prd-engine calls, it could be inlined into the CLI command layer without architectural loss.\n- crash ↔ web-viewer (3+2 crossings) and panel ↔ web-viewer (11+4 crossings) both create bidirectional satellite relationships with the same hub zone; the pattern of multiple low-cohesion satellite zones bidirectionally coupled to one high-cohesion core zone is a hub-and-spoke anti-pattern that makes web-viewer changes high-risk.\n- packages/web/src/viewer/crash/crash-detector.ts imports ViewId from external.ts (viewer zone) while packages/web/src/viewer/performance/index.ts imports from crash/index.js — bidirectional dependency between the 'crash' detected zone and 'web-application-core' forms a cycle; crash should depend on viewer types through a one-way edge only.\n- web-viewer imports 1 symbol from web-unit (a test zone) — production code acquiring a runtime dependency on a test zone is a structural boundary violation that could accidentally pull test-only utilities into the production bundle; identify the import and relocate the shared symbol to web-shared or a dedicated viewer utility module.\n- routes-data.ts (server route handler, 3-file zone) imports 7 symbols from the 338-file web-application-core zone which contains viewer components; the asymmetric edge count (7 in from the small zone, 1 out from the large zone) indicates routes-data.ts is consuming viewer-side abstractions — these must be verified as type-only imports to prevent server code from acquiring a Preact runtime dependency.\n- sourcevision (domain tier) has 1 import targeting the web-server zone that likely resolves to web-task-usage-scheduler/shared-types.ts; this inverts the four-tier dependency hierarchy at a concrete file level — the referenced type must be relocated to a foundation-tier package (@n-dx/llm-client or a new shared package) to restore tier integrity.\n- routes-mcp.ts has exactly one consumer (server/start.ts) inside the server composition root but landed in the messaging-pipeline zone; this placement splits the MCP request lifecycle across two zones and obscures the full server routing surface during audits.",
+      "priority": "critical",
+      "source": "sourcevision",
+      "startedAt": "2026-03-11T04:15:01.001Z",
+      "recommendationMeta": {
+        "findingHashes": [
+          "ece087b6b9c2",
+          "fd3f3762ac4f",
+          "704fb4c91512",
+          "d0e0d87a07cd",
+          "361496b6c9e7",
+          "716f1c4b51df",
+          "9d7b1e0c215a",
+          "f230eef96f74"
+        ],
+        "category": "relationship",
+        "severityDistribution": {
+          "warning": 5,
+          "critical": 3
+        },
+        "findingCount": 8
+      },
+      "completedAt": "2026-03-11T04:32:28.910Z",
+      "resolutionType": "code-change",
+      "resolutionDetail": "Fixed 3 critical findings with code/config changes, fixed 3 pre-existing test failures, acknowledged 5 warnings as by-design or false positives. Details: (1) crash→external.ts cycle broken by importing ViewId from shared/view-id.js directly with boundary-check exemption; (2) progressive-loader.ts zone-pinned to web-viewer to fix web-unit misclassification; (3) routes-mcp.ts zone-pinned to web-server to fix messaging-pipeline misplacement; (4) routes-data.ts imports verified safe (server-side only, no viewer contamination); (5) sourcevision→web import confirmed false positive (no actual cross-tier import); (6) hench-agent-monitor web-shared bypass acknowledged as by-design (viewer components legitimately need viewer); (7) rex-fix-command acknowledged as having legitimate domain logic; (8) hub-and-spoke partially addressed by crash cycle fix."
     }
   ]
 }

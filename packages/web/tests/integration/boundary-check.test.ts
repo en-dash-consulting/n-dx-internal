@@ -84,13 +84,19 @@ describe("server/client boundary", () => {
         const isMessaging = rel.startsWith(join("viewer", "messaging") + "/") ||
           rel === join("viewer", "messaging");
 
+        // Crash detection is a standalone module with zero framework dependencies.
+        // It imports ViewId directly from shared/ to avoid a bidirectional cycle
+        // (crash → external.ts → crash via performance/index.ts re-exports).
+        const isCrash = rel.startsWith(join("viewer", "crash") + "/") ||
+          rel === join("viewer", "crash");
+
         for (const imp of extractImportPaths(file)) {
           // Check for direct imports to schema/ from viewer files
           if (imp.match(/\.\.\/schema\b/)) {
             violations.push(`${rel} imports "${imp}" — must use ./external.js gateway`);
           }
           // Check for direct imports to shared/ from non-messaging viewer files
-          if (imp.match(/shared\b/) && imp.startsWith("..") && !isMessaging) {
+          if (imp.match(/shared\b/) && imp.startsWith("..") && !isMessaging && !isCrash) {
             violations.push(`${rel} imports "${imp}" — must use ./external.js gateway`);
           }
         }

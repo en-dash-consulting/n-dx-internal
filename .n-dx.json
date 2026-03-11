@@ -24,7 +24,9 @@
         "packages/web/tsconfig.json": "web-package-assets",
         "packages/web/vitest.config.ts": "web-package-assets",
         "packages/web/SourceVision-F.png": "web-package-assets",
-        "packages/web/SourceVision.png": "web-package-assets"
+        "packages/web/SourceVision.png": "web-package-assets",
+        "packages/web/src/server/routes-mcp.ts": "web-server",
+        "packages/web/src/viewer/components/prd-tree/progressive-loader.ts": "web-viewer"
       }
     }
   }

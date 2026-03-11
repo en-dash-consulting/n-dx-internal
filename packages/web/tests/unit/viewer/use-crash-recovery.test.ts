@@ -28,7 +28,7 @@ const mockMarkRecoveryShown = vi.fn();
 const mockWasRecoveryShown = vi.fn<() => boolean>();
 const mockResetCrashDetector = vi.fn();
 
-vi.mock("../../../src/viewer/performance/crash-detector.js", () => ({
+vi.mock("../../../src/viewer/performance/index.js", () => ({
   detectCrash: (...args: unknown[]) => mockDetectCrash(...(args as [])),
   saveNavigationState: (...args: unknown[]) => mockSaveNavigationState(...args),
   clearSavedNavigationState: (...args: unknown[]) => mockClearSavedNavigationState(...args),

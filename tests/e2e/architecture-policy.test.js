@@ -781,13 +781,11 @@ const COHESION_THRESHOLD = 0.5;
  */
 const COHESION_EXCEPTIONS = new Map([
   ["rex-fix-command", "4-file zone with bidirectional coupling to rex-domain-core; tracked for merger"],
-  ["web-shared-utilities", "4-file foundation zone; cohesion improves when multi-layer consumers are consolidated"],
-  ["viewer-route-state", "4-file zone; merger candidate into web-shared (route-state.ts) and web-viewer (hook)"],
-  ["landing-page-assets", "2-file static asset zone; no internal imports expected"],
-  ["rex-runtime-state", "Archive/state files with no internal import structure"],
-  ["viewer-app-shell", "3-file shell zone; minimal internal cross-references expected"],
+  ["hench-agent-monitor", "4-file viewer satellite zone; viewer components naturally couple to web-viewer hub"],
+  ["prd-runtime-state", "Runtime state files with no internal import structure"],
+  ["rex-package-metadata", "Package config and metadata files; no internal import structure"],
+  ["viewer-entry-assets", "Entry-point asset files; no internal imports expected"],
   ["project-documentation", "Documentation-only zone; no code imports"],
-  ["rex-package-assets", "Package config and asset files; no internal import structure"],
 ]);
 
 describe("architecture policy: zone cohesion gate", () => {
