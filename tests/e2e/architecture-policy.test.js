@@ -322,6 +322,14 @@ const DOCUMENTED_POLICIES = [
     rule: "No import crosses the server/viewer boundary within the web package",
     enforcedBy: "boundary-check.test.ts → server/client boundary",
   },
+  {
+    rule: "Production zones must meet minimum cohesion threshold (0.5)",
+    enforcedBy: "architecture-policy.test.js → architecture policy: zone cohesion gate",
+  },
+  {
+    rule: "Boundary gateway files must not exceed export caps",
+    enforcedBy: "architecture-policy.test.js → architecture policy: boundary file export caps",
+  },
 ];
 
 describe("architecture policy: CLAUDE.md coverage cross-reference", () => {
@@ -331,7 +339,7 @@ describe("architecture policy: CLAUDE.md coverage cross-reference", () => {
     // add an entry to DOCUMENTED_POLICIES above. If this test has
     // fewer entries than the rules in CLAUDE.md, the gap is visible
     // in code review. Minimum: 12 policies.
-    expect(DOCUMENTED_POLICIES.length).toBe(14);
+    expect(DOCUMENTED_POLICIES.length).toBe(16);
   });
 
   for (const policy of DOCUMENTED_POLICIES) {
@@ -394,10 +402,18 @@ describe("architecture policy: zone import cycle detection", () => {
       }
     }
 
-    // Extract package family from zone ID (e.g. "packages-rex:cli" → "packages-rex")
+    // Derive package family from zone file paths (e.g. "packages/web/..." → "web")
+    // Zone IDs are plain kebab-case names — the package must be inferred from
+    // the files that belong to each zone, not from the zone ID itself.
+    const zoneToPackage = new Map();
+    for (const zone of data.zones || []) {
+      const firstFile = (zone.files || [])[0];
+      if (firstFile && firstFile.startsWith("packages/")) {
+        zoneToPackage.set(zone.id, firstFile.split("/")[1]);
+      }
+    }
     function packageFamily(zoneId) {
-      const colonIdx = zoneId.indexOf(":");
-      return colonIdx >= 0 ? zoneId.slice(0, colonIdx) : zoneId;
+      return zoneToPackage.get(zoneId) ?? zoneId;
     }
 
     // Load zone pins from .n-dx.json to remap file→zone assignments
@@ -562,9 +578,16 @@ describe("architecture policy: non-web zone coupling guard", () => {
       fileToZone.set(file, zoneId);
     }
 
+    // Derive package family from zone file paths (same logic as cycle detection)
+    const zoneToPackage = new Map();
+    for (const zone of data.zones || []) {
+      const firstFile = (zone.files || [])[0];
+      if (firstFile && firstFile.startsWith("packages/")) {
+        zoneToPackage.set(zone.id, firstFile.split("/")[1]);
+      }
+    }
     function packageFamily(zoneId) {
-      const colonIdx = zoneId.indexOf(":");
-      return colonIdx >= 0 ? zoneId.slice(0, colonIdx) : zoneId;
+      return zoneToPackage.get(zoneId) ?? zoneId;
     }
 
     // Domain package families that must remain coupling-free with each other.
@@ -731,4 +754,195 @@ describe("architecture policy: process execution", () => {
       expect.fail(msg);
     }
   });
+});
+
+// ---------------------------------------------------------------------------
+// Zone cohesion CI gate
+// ---------------------------------------------------------------------------
+
+/**
+ * Enforces a minimum cohesion threshold for production zones.
+ *
+ * The current codebase has a bimodal distribution: healthy zones ≥ 0.58
+ * and problem zones ≤ 0.44. A threshold of 0.5 catches all current
+ * structural outliers without flagging any currently healthy zone,
+ * making it a zero-false-positive enforcement rule.
+ *
+ * Zones below the threshold must either:
+ *   1. Be refactored to improve cohesion
+ *   2. Be merged into a more cohesive parent zone
+ *   3. Be added to COHESION_EXCEPTIONS with a justification
+ */
+const COHESION_THRESHOLD = 0.5;
+
+/**
+ * Zones exempt from the cohesion gate with documented justifications.
+ * Each entry must explain why the zone cannot meet the threshold and
+ * what structural condition would allow removing the exemption.
+ */
+const COHESION_EXCEPTIONS = new Map([
+  ["rex-fix-command", "4-file zone with bidirectional coupling to rex-domain-core; tracked for merger"],
+  ["web-shared-utilities", "4-file foundation zone; cohesion improves when multi-layer consumers are consolidated"],
+  ["viewer-route-state", "4-file zone; merger candidate into web-shared (route-state.ts) and web-viewer (hook)"],
+  ["landing-page-assets", "2-file static asset zone; no internal imports expected"],
+  ["rex-runtime-state", "Archive/state files with no internal import structure"],
+  ["viewer-app-shell", "3-file shell zone; minimal internal cross-references expected"],
+  ["project-documentation", "Documentation-only zone; no code imports"],
+  ["rex-package-assets", "Package config and asset files; no internal import structure"],
+]);
+
+describe("architecture policy: zone cohesion gate", () => {
+  it(`all production zones meet minimum cohesion threshold (${COHESION_THRESHOLD})`, () => {
+    const zonesDir = join(ROOT, ".sourcevision/zones");
+    if (!existsSync(zonesDir)) return;
+
+    const configPath = join(ROOT, ".n-dx.json");
+    const zoneTypes = existsSync(configPath)
+      ? JSON.parse(readFileSync(configPath, "utf-8"))?.sourcevision?.zones?.types ?? {}
+      : {};
+
+    const violations = [];
+
+    for (const dir of readdirSync(zonesDir)) {
+      const summaryPath = join(zonesDir, dir, "summary.json");
+      if (!existsSync(summaryPath)) continue;
+
+      const summary = JSON.parse(readFileSync(summaryPath, "utf-8"));
+      const cohesion = summary.riskMetrics?.cohesion;
+
+      // Skip zones without cohesion metrics
+      if (cohesion === undefined || cohesion === null) continue;
+
+      // Skip test/infrastructure zones
+      const zoneType = zoneTypes[dir];
+      if (zoneType && CYCLE_EXEMPT_ZONE_TYPES.has(zoneType)) continue;
+
+      // Skip exempted zones
+      if (COHESION_EXCEPTIONS.has(dir)) continue;
+
+      if (cohesion < COHESION_THRESHOLD) {
+        violations.push(`${dir}: cohesion ${cohesion} < ${COHESION_THRESHOLD}`);
+      }
+    }
+
+    if (violations.length > 0) {
+      expect.fail(
+        [
+          `Zones below minimum cohesion threshold (${COHESION_THRESHOLD}):`,
+          "",
+          ...violations.map((v) => `  - ${v}`),
+          "",
+          "To fix:",
+          "  1. Refactor the zone to improve internal cohesion",
+          "  2. Merge into a more cohesive parent zone",
+          "  3. Add to COHESION_EXCEPTIONS with justification (last resort)",
+        ].join("\n"),
+      );
+    }
+  });
+
+  it("COHESION_EXCEPTIONS contains no stale entries", () => {
+    const zonesDir = join(ROOT, ".sourcevision/zones");
+    if (!existsSync(zonesDir)) return;
+
+    const stale = [];
+    for (const [zoneId] of COHESION_EXCEPTIONS) {
+      const summaryPath = join(zonesDir, zoneId, "summary.json");
+      if (!existsSync(summaryPath)) {
+        stale.push(zoneId);
+        continue;
+      }
+      const summary = JSON.parse(readFileSync(summaryPath, "utf-8"));
+      const cohesion = summary.riskMetrics?.cohesion;
+      if (cohesion !== undefined && cohesion >= COHESION_THRESHOLD) {
+        stale.push(`${zoneId} (cohesion ${cohesion} now meets threshold)`);
+      }
+    }
+
+    if (stale.length > 0) {
+      expect.fail(
+        [
+          "COHESION_EXCEPTIONS contains zones that no longer need exemption:",
+          "",
+          ...stale.map((s) => `  - ${s}`),
+          "",
+          "Remove the stale entry — the zone meets the cohesion threshold or no longer exists.",
+        ].join("\n"),
+      );
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Boundary file import-graph edge count assertions
+// ---------------------------------------------------------------------------
+
+/**
+ * For large zones (355+ files), cohesion thresholds are statistically
+ * insensitive — a single file change moves the metric by ≤ 0.003.
+ * Instead of relying solely on cohesion, we assert maximum inbound
+ * import counts on specific boundary files (gateways, barrels).
+ *
+ * If a boundary file's import count exceeds its cap, the gateway surface
+ * has grown beyond its documented scope and needs review.
+ */
+const BOUNDARY_FILES = [
+  {
+    file: "packages/web/src/viewer/external.ts",
+    maxExports: 25,
+    description: "viewer outbound gateway (schema types, shared utilities, messaging)",
+  },
+  {
+    file: "packages/web/src/server/rex-gateway.ts",
+    maxExports: 50,
+    description: "web→rex gateway (domain types, MCP server factory, tree utilities, constants)",
+  },
+  {
+    file: "packages/web/src/server/domain-gateway.ts",
+    maxExports: 15,
+    description: "web→sourcevision gateway (MCP server factory, domain types)",
+  },
+  {
+    file: "packages/hench/src/prd/rex-gateway.ts",
+    maxExports: 30,
+    description: "hench→rex gateway (schema, store, tree, task selection, timestamps)",
+  },
+  {
+    file: "packages/hench/src/prd/llm-gateway.ts",
+    maxExports: 45,
+    description: "hench→llm-client gateway (config, constants, JSON, output, errors, exec)",
+  },
+];
+
+describe("architecture policy: boundary file export caps", () => {
+  for (const boundary of BOUNDARY_FILES) {
+    it(`${boundary.file} does not exceed ${boundary.maxExports} exports`, () => {
+      const fullPath = join(ROOT, boundary.file);
+      if (!existsSync(fullPath)) return;
+
+      const content = readFileSync(fullPath, "utf-8");
+
+      // Count export statements (both named exports and re-exports)
+      const exportMatches = content.match(/\bexport\s+(?:type\s+)?{[^}]*}/g) || [];
+      let exportCount = 0;
+      for (const match of exportMatches) {
+        // Count comma-separated items within braces
+        const inner = match.replace(/^export\s+(?:type\s+)?{/, "").replace(/}$/, "");
+        exportCount += inner.split(",").filter((s) => s.trim()).length;
+      }
+
+      if (exportCount > boundary.maxExports) {
+        expect.fail(
+          [
+            `${boundary.file} has ${exportCount} exports (cap: ${boundary.maxExports}).`,
+            `Description: ${boundary.description}`,
+            "",
+            "The gateway surface has grown beyond its documented scope.",
+            "Review whether all exports are necessary, or increase the cap",
+            "with a justification in BOUNDARY_FILES.",
+          ].join("\n"),
+        );
+      }
+    });
+  }
 });

@@ -11,7 +11,14 @@
         "packages/hench/src/shared/glob.ts": "autonomous-agent-engine",
         "packages/web/src/server/rex-gateway.ts": "web-server",
         "packages/web/src/server/domain-gateway.ts": "web-server",
-        "packages/web/src/viewer/external.ts": "web-viewer"
+        "packages/web/src/viewer/external.ts": "web-viewer",
+        "packages/web/src/viewer/messaging/call-rate-limiter.ts": "viewer-message-pipeline",
+        "packages/web/src/viewer/messaging/fetch-pipeline.ts": "viewer-message-pipeline",
+        "packages/web/src/viewer/messaging/index.ts": "viewer-message-pipeline",
+        "packages/web/src/viewer/messaging/message-coalescer.ts": "viewer-message-pipeline",
+        "packages/web/src/viewer/messaging/message-throttle.ts": "viewer-message-pipeline",
+        "packages/web/src/viewer/messaging/request-dedup.ts": "viewer-message-pipeline",
+        "packages/web/src/viewer/messaging/ws-pipeline.ts": "viewer-message-pipeline"
       }
     }
   }
