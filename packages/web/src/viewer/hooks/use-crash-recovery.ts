@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "preact/hooks";
-import type { ViewId } from "../types.js";
+import type { ViewId } from "../external.js";
 import {
   detectCrash,
   saveNavigationState,

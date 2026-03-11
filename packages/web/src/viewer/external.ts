@@ -34,6 +34,9 @@ export * as V1 from "../schema/v1.js";
 // ── Shared data-file constants ─────────────────────────────────────────────
 export { DATA_FILES, ALL_DATA_FILES } from "../shared/data-files.js";
 
+// ── Shared types ──────────────────────────────────────────────────────────
+export type { ViewId } from "../shared/view-id.js";
+
 // ── Shared utilities ───────────────────────────────────────────────────────
 export { createRequestDedup } from "./messaging/request-dedup.js";
 export type { RequestDedup } from "./messaging/request-dedup.js";

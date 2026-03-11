@@ -13,7 +13,7 @@
  * the Preact hook (`useCrashRecovery`) is provided separately.
  */
 
-import type { ViewId } from "../types.js";
+import type { ViewId } from "../external.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
