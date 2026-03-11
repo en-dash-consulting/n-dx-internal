@@ -171,6 +171,28 @@ describe("detectPinDivergence", () => {
     expect(findings).toHaveLength(0);
   });
 
+  it("skips when target directory is a subdirectory of file's directory (zone-root gateway)", () => {
+    // external.ts sits at the root of src/viewer/ as a gateway file.
+    // The zone's majority directory is a subdirectory (src/viewer/styles/).
+    // Moving the gateway into a subdirectory would be architecturally wrong.
+    const zones = [
+      makeZone("web-viewer", [
+        "src/viewer/external.ts",
+        "src/viewer/styles/theme.ts",
+        "src/viewer/styles/colors.ts",
+        "src/viewer/styles/layout.ts",
+      ]),
+    ];
+    const pins: Record<string, string> = { "src/viewer/external.ts": "web-viewer" };
+
+    const findings = detectPinDivergence(
+      makeMoveContext({ zones, zonePins: pins })
+    );
+
+    // Should not suggest moving a zone-root file into its own subdirectory
+    expect(findings).toHaveLength(0);
+  });
+
   it("handles multiple pins", () => {
     const zones = [
       makeZone("zone-a", ["src/a/one.ts", "src/a/two.ts"]),

@@ -21495,6 +21495,9 @@
       "priority": "high",
       "source": "sourcevision",
       "startedAt": "2026-03-11T04:48:21.034Z",
+      "completedAt": "2026-03-11T04:56:11.247Z",
+      "resolutionType": "code-change",
+      "resolutionDetail": "Addressed all 23 suggestion findings: 9 with code changes, 3 already resolved, 11 acknowledged/deferred with justification",
       "recommendationMeta": {
         "findingHashes": [
           "2e0eee3deefc",
@@ -21526,10 +21529,7 @@
           "warning": 23
         },
         "findingCount": 23
-      },
-      "completedAt": "2026-03-11T04:56:11.247Z",
-      "resolutionType": "code-change",
-      "resolutionDetail": "Addressed all 23 suggestion findings: 9 with code changes, 3 already resolved, 11 acknowledged/deferred with justification"
+      }
     },
     {
       "id": "6d269c81-4eec-401b-95a0-85d7756677bd",
@@ -21585,6 +21585,148 @@
           "critical": 3
         },
         "findingCount": 8
+      }
+    },
+    {
+      "id": "ba87c792-7a8a-4247-93c0-a608eee72baa",
+      "title": "Address observation issues (13 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Bidirectional coupling: \"rex-core\" ↔ \"rex-fix-command\" (1+7 crossings) — consider extracting shared interface\n- Bidirectional coupling: \"web-peripheral\" ↔ \"web-viewer\" (15+21 crossings) — consider extracting shared interface\n- High coupling (0.75) — 7 imports target \"rex-core\"\n- Coupling of 0.75 with only 4 files suggests the fix command is functionally part of rex-core but was split off by community detection — consider this a zone-map artifact rather than an intentional boundary.\n- The bidirectional zone-level import cycle (fix ↔ rex-unit) warrants verification that src/core/fix.ts does not import from src/cli/commands/fix.ts, which would violate the CLI/core layering rule.\n- 10 entry points — wide API surface, consider consolidating exports\n- Bidirectional imports with web-viewer (21 outbound, 15 inbound) indicate mutual coupling; resolving the cycle would make both zones more independently testable and reduce the peripheral zone's coupling score of 0.45.\n- Build configuration files (build.js, dev.js, package.json) co-exist with runtime source files (landing.ts, viewer components), blurring the boundary between build infrastructure and application code.\n- Cohesion of 0.55 is below the healthy threshold; grouping files by purpose (build tooling vs. runtime UI periphery) into separate zones would improve discoverability and zone metrics.\n- 14 entry points — wide API surface, consider consolidating exports\n- One reverse import from web-server back into web-viewer exists; verify it is not a runtime import that breaks the server/viewer build boundary, as the viewer is built separately and served as static assets.\n- Bidirectional imports between crash and web-viewer indicate a loose cycle: crash imports from web-viewer and web-viewer imports from crash. Per CLAUDE.md, crash is a sub-zone that should receive imports from the hub, not contribute back to it — consider whether crash's outbound imports to web-viewer can be inverted via a callback or event interface.\n- Cohesion of 0.46 is just below the healthy threshold; the mix of constant files (data-files, view-id) and a stateful utility (node-culler) may be worth splitting if the zone grows.",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "af4bfad43fd8",
+          "c6a4f3bd7c48",
+          "bcb11b9d11e1",
+          "9ac8809e3540",
+          "a2e0f85c5839",
+          "343b69f9d5ee",
+          "a38a0cf6e110",
+          "ba638d262a4e",
+          "c51f109e9b0d",
+          "f1a3cd8408d2",
+          "da401c49774e",
+          "a33ba8b4b183",
+          "724d41a7edef"
+        ],
+        "category": "observation",
+        "severityDistribution": {
+          "warning": 13
+        },
+        "findingCount": 13
+      }
+    },
+    {
+      "id": "89d758b4-b1cb-47ee-972b-12525e5f27de",
+      "title": "Address suggestion issues (13 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- A vitest config-level include pattern that restricts tests/integration/ to **/*.test.js (rejecting .ts files) would enforce the dist/-only import guarantee automatically and catch extension mistakes in CI rather than silently degrading the zone's fidelity contract.\n- Intra-package gateway modules (web external.ts and api.ts) are not validated for the re-export only no-logic invariant that domain-isolation.test.js enforces for cross-package gateways. Extending the gateway logic check to cover intra-package gateways would close a systematic enforcement gap and make the policy symmetric across all gateway types.\n- No CI gate enforces a minimum cohesion threshold for source zones. Zones below 0.5 cohesion (fix: 0.25, web-shared: 0.46, crash: 0.5) are flagged only in analysis reports. Adding a zone health gate to ci.js (minimum cohesion 0.5 for source zones with 5 or more files) would prevent silent accumulation of incoherent utility zones over time.\n- The server and viewer independently define the FeatureToggle API contract shape (routes-features.ts and views/feature-toggles.ts). Audit all other API response types defined in server route files to identify additional silent duplications in viewer code — the FeatureToggle case is likely not unique. A one-time grep for interface/type definitions in routes-*.ts whose fields also appear in viewer/views/*.ts would surface the full duplication set.\n- The web package has a shared-types.ts file in the server zone whose viewer-consumed types are the probable source of the 32 web-viewer→web-server import edges. A systematic audit of shared-types.ts exports — classifying each as server-only, viewer-only, or framework-agnostic — would produce a concrete relocation plan: server-only types stay, viewer-only types move to viewer/types.ts, and framework-agnostic types move to web-shared. This single audit would likely resolve the 32-edge anomaly that has been flagged across multiple prior enrichment passes.\n- web-shared satisfies both fragility criteria (cohesion: 0.46, coupling: 0.54) while serving as the three-consumer foundation of the web package. Establish a formal addition policy for web-shared: a new module should have at least two distinct consumer zones before being added to web-shared; single-consumer utilities belong closer to their dominant use site. Document this in CLAUDE.md under the web-shared zone description.\n- Zone-confirm that packages/web/src/schema/v1.ts is in web-viewer (not web-server). If confirmed, the 32 web-viewer→web-server edges are genuine server-zone type imports by viewer components, not schema imports. This makes relocating the source of those 32 imports (likely types.ts and shared-types.ts) to web-shared the highest-leverage single action to resolve the 32-edge coupling anomaly.\n- Add a top-of-directory README.md or a comment block in each test file explicitly documenting the .js-extension convention and the reason (prevent TypeScript alias resolution, preserve dist/-only boundary). Without this, the next contributor adding an integration test will default to .ts and silently disable the zone's core guarantee.\n- The web peripheral zone combines cohesion 0.55 with bidirectional imports from both web-viewer (15 edges) and web-server (2 edges) — high coupling AND low cohesion simultaneously. Audit whether the 15 web-viewer imports can be reduced by extracting shared types to web-shared; this would raise cohesion and lower coupling in a single pass.\n- FeatureToggle and FeaturesResponse are duplicated between routes-features.ts (server) and views/feature-toggles.ts (viewer). The viewer definition was written from scratch rather than sharing the server's type — a concrete manifestation of the missing server/viewer contract layer. Extract both interfaces to src/schema/v1.ts or a new src/schema/features.ts and import from there in both files. This resolves a silent drift risk: a server field change currently requires a manual viewer update with no compile-time failure.\n- packages/web/src/server/shared-types.ts is a probable root cause of the 32 web-viewer→web-server edges: if viewer components import server-side shared types from this file, those imports register as viewer→server boundary crossings. Moving framework-agnostic types from shared-types.ts into web-shared would allow viewer to import them without crossing the server zone boundary and would reduce the 32-edge count to zero for those specific imports.\n- external.ts is missing a re-export for SUPPLEMENTARY_FILES from shared/data-files.ts. shared/index.ts exports all three constants (DATA_FILES, ALL_DATA_FILES, SUPPLEMENTARY_FILES) but external.ts only surfaces the first two. Add SUPPLEMENTARY_FILES to external.ts to close the gap and prevent future viewer code from bypassing the gateway with a direct shared/ import to access supplementary file names.\n- web-shared has cohesion 0.46 AND coupling 0.54 — the only production zone meeting both the low-cohesion and moderate-coupling thresholds simultaneously. This combination makes it fragile: changes have wide blast radius while the zone lacks the internal coherence to absorb or predict those changes. Treat web-shared as a risk zone requiring active governance on additions.",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "f04d784f5c1e",
+          "7fc8f4b6db3a",
+          "e7b0a70e09e3",
+          "c1ee50fee55b",
+          "0c6e3f08dd67",
+          "3ac6fc023278",
+          "3cfb63fafbdd",
+          "41e84eb8ee6a",
+          "a3242647c6aa",
+          "54d43104e933",
+          "2c8bfd0ca570",
+          "29c647c299e6",
+          "e5608695c013"
+        ],
+        "category": "suggestion",
+        "severityDistribution": {
+          "warning": 13
+        },
+        "findingCount": 13
+      }
+    },
+    {
+      "id": "f036c159-2f2b-436b-b1eb-4cf74ae91e3a",
+      "title": "Address move-file issues (1 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- File \"packages/web/src/viewer/external.ts\" is pinned to zone \"Web Viewer\" but lives in packages/web/src/viewer/ — consider moving to packages/web/src/viewer/styles/ to align physical location with architectural zone",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-03-11T05:52:38.428Z",
+      "recommendationMeta": {
+        "findingHashes": [
+          "6c3d8c068e94"
+        ],
+        "category": "move-file",
+        "severityDistribution": {
+          "warning": 1
+        },
+        "findingCount": 1
+      },
+      "completedAt": "2026-03-11T05:54:43.458Z",
+      "resolutionType": "code-change",
+      "resolutionDetail": "Fixed detectPinDivergence to skip move suggestions when the target directory is a subdirectory of the file's current directory, preventing false positives for zone-root gateway files like external.ts"
+    },
+    {
+      "id": "e991d894-32d5-400f-bda9-b947640c60f4",
+      "title": "Address pattern issues (4 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Foundation layer web-shared has cohesion of only 0.46, the lowest of any production web zone — a foundation should be highly cohesive; the low score suggests it accumulates unrelated utilities that would be better placed in their consuming zones\n- web-viewer actively imports 21 symbols from web-peripheral while web-peripheral imports 15 from web-viewer. A hub importing from its own spoke periphery creates a circular cluster at the hub layer; the hub should be a stable dependency target, not a consumer of peripheral files.\n- web-viewer has 61 outbound vs 25 inbound cross-zone imports — net consumer profile contradicts the documented hub role. True hubs are imported more than they import. Consider whether some outbound edges indicate responsibilities that should be extracted into a lower-layer zone.\n- web-viewer participates in 5 distinct bidirectional import cycles (with web, web-server, web-unit, crash, and implicitly web-shared via the hub role) — this density of bidirectionality makes safe refactoring extremely difficult and indicates the hub has grown beyond a manageable boundary",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "eb40fc5cb023",
+          "baf3bf8b62dc",
+          "d351b317af01",
+          "036deeb05a67"
+        ],
+        "category": "pattern",
+        "severityDistribution": {
+          "warning": 4
+        },
+        "findingCount": 4
+      }
+    },
+    {
+      "id": "610c13c5-fe20-4049-bade-028ee4f18816",
+      "title": "Address relationship issues (12 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- crash ↔ web-viewer (2+2 symmetric cycle): equal edge counts in both directions are a strong signal of an unextracted shared interface. Define a crash-boundary type module in crash/ or web-shared to break the cycle.\n- data-routes imports 7 symbols from web-viewer. Route handlers should produce data consumed by the viewer, not depend on viewer-internal types. Verify all 7 imports flow through viewer/api.ts; any that reach into viewer-internal modules represent a layering inversion between the server route and UI layers.\n- rex-core exports to rex-fix-command (7 imports) while also importing from it (1 import), creating a bidirectional dependency where the canonical core depends on a satellite command — the reverse edge must be removed to restore layering\n- High coupling (0.75) is entirely attributable to 7 imports from fix into rex-core, which is correct; the 1 reverse import from rex-core into fix is the sole violation and the only edge that needs removal\n- sourcevision-engine has 1 outbound import into web-server, which is a tier-inversion: Domain importing from Web Execution violates the four-tier hierarchy and compromises package independence\n- usage-tracking-scheduler has 1 outbound import into web-viewer. Server-side scheduling code importing from the viewer layer (which is compiled separately and served as static assets) is a build-boundary violation if the import is runtime rather than type-only. Trace and confirm it is an `import type` or relocate the shared symbol to web-shared or web-server.\n- web-landing (HTML/CSS) and landing.ts (web-peripheral) form an implicit subsystem split across two zones with zero shared import edges. Because HTML and CSS are invisible to the import graph, this split is undetectable by all graph-based tooling and must be resolved by physical co-location.\n- web-peripheral imports directly from web-server (2 edges), bypassing the web-viewer hub. CLAUDE.md documents hub-and-spoke with web-viewer at center; a direct peripheral→server edge is architecturally undocumented and adds a hidden composition-root dependency to an already heterogeneous zone.\n- web-viewer has 1 import into web-unit (a test zone). Production code depending on test infrastructure is a critical boundary violation — the dependency must be inverted or the shared symbol relocated to a production module.\n- web-viewer imports from web-unit (1 edge), meaning production hub code depends on test infrastructure — this edge should be eliminated or the shared symbol moved to a production module\n- web-viewer imports from web-unit (1 edge): production code must never import from a test zone. Trace the import and relocate the shared symbol to a production module or web-shared.\n- web-viewer → web-unit (1 import) inverts the production/test dependency direction: production hub code imports from a test-only zone. This is the sole instance in the codebase where production source depends on test infrastructure and must be eliminated — move any shared type or utility needed by both into web-shared or a dedicated types file inside web-viewer.",
+      "priority": "critical",
+      "source": "sourcevision",
+      "startedAt": "2026-03-11T05:42:43.994Z",
+      "completedAt": "2026-03-11T05:52:15.814Z",
+      "resolutionType": "code-change",
+      "resolutionDetail": "Fixed sourcevision serve.ts tier inversion, added zone pins for misclassified files, updated cohesion exceptions, and added cross-package path enforcement test",
+      "recommendationMeta": {
+        "findingHashes": [
+          "afb7e89e6ffa",
+          "5e498ac5fad0",
+          "928d9bc73ba5",
+          "6babdd7bb71a",
+          "6ecb1369ebc9",
+          "b2c085c197bf",
+          "75ba8d4af1e9",
+          "175b73583c85",
+          "37e2357058ca",
+          "f12db548df75",
+          "2422068b1752",
+          "57f4efc6c331"
+        ],
+        "category": "relationship",
+        "severityDistribution": {
+          "warning": 7,
+          "critical": 5
+        },
+        "findingCount": 12
       }
     }
   ]

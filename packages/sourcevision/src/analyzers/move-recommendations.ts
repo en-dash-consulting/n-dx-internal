@@ -107,6 +107,11 @@ export function detectPinDivergence(ctx: MoveContext): MoveFileFinding[] {
     // Skip if file is already in the target zone's directory
     if (fileDir === targetDir) continue;
 
+    // Skip if the target directory is a subdirectory of the file's directory.
+    // This avoids pushing zone-root files (gateways, index modules) into
+    // subdirectories — they sit at the root by architectural intent.
+    if (targetDir.startsWith(fileDir + "/")) continue;
+
     // Compute predicted impact: edges between this file and target zone files
     const targetFiles = new Set(targetZone.files);
     const impact = countEliminatedEdges(file, targetFiles, ctx.edges);
