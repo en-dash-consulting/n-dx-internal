@@ -21,6 +21,9 @@ import type { Zone, ImportEdge, ZoneCrossing, MoveFileFinding } from "../schema/
 /** Common test directory segments — files under these are test files. */
 const TEST_DIR_SEGMENTS = /(?:^|\/)(tests?|__tests?__|spec|__spec__)\//;
 
+/** File extensions that represent importable source code. */
+const SOURCE_EXTENSIONS = /\.(tsx?|jsx?|mjs|cjs|mts|cts)$/;
+
 /** Input context for move recommendation analysis. */
 export interface MoveContext {
   zones: Zone[];
@@ -33,6 +36,8 @@ interface MajorityDirOptions {
   excludeFile?: string;
   /** When true, ignore files under test directories (tests/, __tests__/, etc.). */
   excludeTests?: boolean;
+  /** When true, only count importable source files (.ts, .tsx, .js, .jsx, etc.). */
+  sourceOnly?: boolean;
 }
 
 /**
@@ -45,6 +50,7 @@ function majorityDirectory(zone: Zone, opts?: MajorityDirOptions): string | unde
   for (const f of zone.files) {
     if (f === opts?.excludeFile) continue;
     if (opts?.excludeTests && TEST_DIR_SEGMENTS.test(f)) continue;
+    if (opts?.sourceOnly && !SOURCE_EXTENSIONS.test(f)) continue;
     const dir = dirname(f);
     dirCounts.set(dir, (dirCounts.get(dir) ?? 0) + 1);
   }
@@ -100,7 +106,7 @@ export function detectPinDivergence(ctx: MoveContext): MoveFileFinding[] {
     // Find the target zone's majority source directory (excluding the pinned file
     // itself and test files — test files are pinned for zone health metrics but
     // should not drive where source files should live).
-    const targetDir = majorityDirectory(targetZone, { excludeFile: file, excludeTests: true });
+    const targetDir = majorityDirectory(targetZone, { excludeFile: file, excludeTests: true, sourceOnly: true });
     if (!targetDir) continue;
 
     const fileDir = dirname(file);

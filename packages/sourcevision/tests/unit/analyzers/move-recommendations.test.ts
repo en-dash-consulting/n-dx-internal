@@ -193,6 +193,43 @@ describe("detectPinDivergence", () => {
     expect(findings).toHaveLength(0);
   });
 
+  it("excludes non-source files from majority directory computation", () => {
+    // Zone contains Louvain artifacts (images, config, build scripts) in the
+    // package root alongside genuine source files in a subdirectory. The
+    // majority directory should be the source subdirectory, not the root.
+    const zones = [
+      makeZone("zone-a", ["src/old/file.ts"]),
+      makeZone("viewer-msg", [
+        "packages/web/build.js",
+        "packages/web/dev.js",
+        "packages/web/package.json",
+        "packages/web/tsconfig.json",
+        "packages/web/vitest.config.ts",
+        "packages/web/Logo.png",
+        "packages/web/Icon.png",
+        "packages/web/src/viewer/messaging/call-rate-limiter.ts",
+        "packages/web/src/viewer/messaging/fetch-pipeline.ts",
+        "packages/web/src/viewer/messaging/index.ts",
+        "packages/web/src/viewer/messaging/message-coalescer.ts",
+        "packages/web/src/viewer/messaging/message-throttle.ts",
+        "packages/web/src/viewer/messaging/request-dedup.ts",
+        "packages/web/src/viewer/messaging/ws-pipeline.ts",
+      ]),
+    ];
+    const pins: Record<string, string> = {
+      "packages/web/src/viewer/messaging/call-rate-limiter.ts": "viewer-msg",
+    };
+
+    const findings = detectPinDivergence(
+      makeMoveContext({ zones, zonePins: pins })
+    );
+
+    // File is already in the correct source directory — no move needed.
+    // Without the sourceOnly filter, packages/web/ would incorrectly win as
+    // majority directory due to config/image artifacts.
+    expect(findings).toHaveLength(0);
+  });
+
   it("handles multiple pins", () => {
     const zones = [
       makeZone("zone-a", ["src/a/one.ts", "src/a/two.ts"]),
