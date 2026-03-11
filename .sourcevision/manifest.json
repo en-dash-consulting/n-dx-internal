@@ -1,45 +1,45 @@
 {
   "schemaVersion": "1.0.0",
   "toolVersion": "0.1.0",
-  "analyzedAt": "2026-03-11T04:02:20.606Z",
+  "analyzedAt": "2026-03-11T06:59:14.915Z",
   "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093",
   "gitBranch": "feature/sv-fixes-0306",
   "targetPath": "/Users/nick/development/endash/n-dx",
   "modules": {
     "inventory": {
       "status": "complete",
-      "startedAt": "2026-03-11T03:15:01.158Z",
-      "completedAt": "2026-03-11T03:15:01.297Z"
+      "startedAt": "2026-03-11T06:56:57.794Z",
+      "completedAt": "2026-03-11T06:56:57.822Z"
     },
     "imports": {
       "status": "complete",
-      "startedAt": "2026-03-11T03:15:01.297Z",
-      "completedAt": "2026-03-11T03:15:02.013Z"
+      "startedAt": "2026-03-11T06:56:57.822Z",
+      "completedAt": "2026-03-11T06:56:57.831Z"
     },
     "classifications": {
       "status": "complete",
-      "startedAt": "2026-03-11T03:15:02.013Z",
-      "completedAt": "2026-03-11T03:21:02.927Z"
+      "startedAt": "2026-03-11T06:56:57.831Z",
+      "completedAt": "2026-03-11T06:56:57.836Z"
     },
     "zones": {
       "status": "complete",
-      "startedAt": "2026-03-11T03:21:02.928Z",
-      "completedAt": "2026-03-11T04:02:17.678Z"
+      "startedAt": "2026-03-11T06:56:57.836Z",
+      "completedAt": "2026-03-11T06:59:14.559Z"
     },
     "components": {
       "status": "complete",
-      "startedAt": "2026-03-11T04:02:17.681Z",
-      "completedAt": "2026-03-11T04:02:17.907Z"
+      "startedAt": "2026-03-11T06:59:14.561Z",
+      "completedAt": "2026-03-11T06:59:14.658Z"
     },
     "callgraph": {
       "status": "complete",
-      "startedAt": "2026-03-11T04:02:17.907Z",
-      "completedAt": "2026-03-11T04:02:20.606Z"
+      "startedAt": "2026-03-11T06:59:14.659Z",
+      "completedAt": "2026-03-11T06:59:14.915Z"
     }
   },
   "zoneOutputs": true,
   "tokenUsage": {
-    "calls": 27,
+    "calls": 1,
     "inputTokens": 0,
     "outputTokens": 0,
     "vendor": "claude",

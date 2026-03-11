@@ -1,0 +1,22 @@
+{
+  "id": "web-landing",
+  "name": "Web Landing",
+  "description": "2 files, primarily HTML, CSS",
+  "files": [
+    "packages/web/src/landing/index.html",
+    "packages/web/src/landing/landing.css",
+    "packages/web/src/landing/landing.ts"
+  ],
+  "entryPoints": [],
+  "cohesion": 0,
+  "coupling": 0,
+  "fileCount": 3,
+  "lineCount": 1991,
+  "riskMetrics": {
+    "cohesion": 0,
+    "coupling": 0,
+    "riskScore": 0.5,
+    "riskLevel": "at-risk",
+    "failsThreshold": false
+  }
+}

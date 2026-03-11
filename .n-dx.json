@@ -29,7 +29,18 @@
         "packages/web/src/viewer/components/prd-tree/progressive-loader.ts": "web-viewer",
         "packages/web/src/server/routes-token-usage.ts": "web-server",
         "packages/web/src/server/aggregation-cache.ts": "web-server",
-        "packages/web/src/landing/landing.ts": "web-landing"
+        "packages/web/src/landing/landing.ts": "web-landing",
+        "packages/web/src/viewer/components/guide.ts": "web-viewer",
+        "packages/web/src/viewer/components/prd-tree/status-filter.ts": "web-viewer",
+        "packages/web/src/viewer/views/enrichment-thresholds.ts": "web-viewer",
+        "packages/web/src/viewer/views/graph.ts": "web-viewer",
+        "packages/web/src/viewer/views/sourcevision-tabs.ts": "web-viewer",
+        "packages/web/src/viewer/views/token-usage.ts": "web-viewer",
+        "packages/web/src/viewer/usage/constants.ts": "web-viewer",
+        "packages/web/src/viewer/usage/index.ts": "web-viewer",
+        "packages/web/src/viewer/graph/index.ts": "web-viewer",
+        "packages/web/src/viewer/graph/physics.ts": "web-viewer",
+        "packages/web/src/viewer/graph/renderer.ts": "web-viewer"
       }
     }
   }

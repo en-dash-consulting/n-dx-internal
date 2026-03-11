@@ -1,0 +1,217 @@
+{
+  "schemaVersion": "1.0.0",
+  "snapshots": [
+    {
+      "zoneId": ".rex",
+      "zoneName": ".rex",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 4,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "crash",
+      "zoneName": "Crash",
+      "cohesion": 0.5,
+      "coupling": 0.5,
+      "riskScore": 0.5,
+      "fileCount": 5,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "docs",
+      "zoneName": "Docs",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 16,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "e2e",
+      "zoneName": "E2e",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 22,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "fix",
+      "zoneName": "Fix",
+      "cohesion": 0.25,
+      "coupling": 0.75,
+      "riskScore": 0.75,
+      "fileCount": 4,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "hench",
+      "zoneName": "Hench",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 160,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "integration",
+      "zoneName": "Integration",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 5,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "llm-client",
+      "zoneName": "Llm Client",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 44,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "logo",
+      "zoneName": "Logo",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 3,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex",
+      "zoneName": "Rex",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 13,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex-e2e",
+      "zoneName": "Rex E2e",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 4,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex-unit",
+      "zoneName": "Rex Unit",
+      "cohesion": 0.99,
+      "coupling": 0.01,
+      "riskScore": 0.010000000000000005,
+      "fileCount": 232,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "root",
+      "zoneName": "Root",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 32,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "sourcevision",
+      "zoneName": "Sourcevision",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 144,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web",
+      "zoneName": "Web",
+      "cohesion": 0.55,
+      "coupling": 0.45,
+      "riskScore": 0.44999999999999996,
+      "fileCount": 34,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-integration",
+      "zoneName": "Web Integration",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-landing",
+      "zoneName": "Web Landing",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 3,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-server",
+      "zoneName": "Web Server",
+      "cohesion": 0.87,
+      "coupling": 0.13,
+      "riskScore": 0.13,
+      "fileCount": 15,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-shared",
+      "zoneName": "Web Shared",
+      "cohesion": 0.46,
+      "coupling": 0.54,
+      "riskScore": 0.54,
+      "fileCount": 5,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-unit",
+      "zoneName": "Web Unit",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 3,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-viewer",
+      "zoneName": "Web Viewer",
+      "cohesion": 0.96,
+      "coupling": 0.04,
+      "riskScore": 0.04000000000000002,
+      "fileCount": 349,
+      "timestamp": "2026-03-11T06:54:35.206Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    }
+  ],
+  "analyzedAt": "2026-03-11T06:54:35.206Z",
+  "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+}

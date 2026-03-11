@@ -1,0 +1,26 @@
+{
+  "id": "crash",
+  "name": "Crash",
+  "description": "5 files, primarily TypeScript",
+  "files": [
+    "packages/web/src/viewer/crash/crash-detector.ts",
+    "packages/web/src/viewer/crash/index.ts",
+    "packages/web/tests/helpers/crash-detector-test-support.ts",
+    "packages/web/tests/unit/viewer/crash-detector.test.ts",
+    "packages/web/tests/unit/viewer/use-crash-recovery.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/viewer/crash/index.ts"
+  ],
+  "cohesion": 0.5,
+  "coupling": 0.5,
+  "fileCount": 5,
+  "lineCount": 879,
+  "riskMetrics": {
+    "cohesion": 0.5,
+    "coupling": 0.5,
+    "riskScore": 0.5,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

@@ -9,7 +9,6 @@
  * the Preact hook (`useDOMPerformanceMonitor`) is provided separately.
  *
  * @see ./memory-monitor.ts — complementary heap-level memory monitoring
- * @see ../../shared/node-culler.ts — off-screen culling integration
  * @see ./components/prd-tree/progressive-loader.ts — progressive load integration
  */
 

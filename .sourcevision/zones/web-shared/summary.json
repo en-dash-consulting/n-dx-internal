@@ -1,7 +1,7 @@
 {
   "id": "web-shared",
-  "name": "Web Shared Utilities",
-  "description": "Framework-agnostic foundation layer for the web package, providing data-file constants, view ID types, and the node-culler tree utility consumed by both viewer and server zones.",
+  "name": "Web Shared",
+  "description": "5 files, primarily TypeScript",
   "files": [
     "packages/web/src/shared/data-files.ts",
     "packages/web/src/shared/index.ts",
@@ -13,14 +13,14 @@
     "packages/web/src/shared/data-files.ts",
     "packages/web/src/shared/view-id.ts"
   ],
-  "cohesion": 0.5,
-  "coupling": 0.5,
+  "cohesion": 0.46,
+  "coupling": 0.54,
   "fileCount": 5,
   "lineCount": 583,
   "riskMetrics": {
-    "cohesion": 0.5,
-    "coupling": 0.5,
-    "riskScore": 0.5,
+    "cohesion": 0.46,
+    "coupling": 0.54,
+    "riskScore": 0.54,
     "riskLevel": "healthy",
     "failsThreshold": false
   }

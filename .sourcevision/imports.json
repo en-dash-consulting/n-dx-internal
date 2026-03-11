@@ -19415,6 +19415,14 @@
     },
     {
       "from": "packages/web/src/viewer/components/index.ts",
+      "to": "packages/web/src/viewer/components/active-tasks-panel.ts",
+      "type": "type",
+      "symbols": [
+        "ActiveRun"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/components/index.ts",
       "to": "packages/web/src/viewer/components/breadcrumb.ts",
       "type": "reexport",
       "symbols": [
@@ -20510,7 +20518,7 @@
     },
     {
       "from": "packages/web/src/viewer/crash/crash-detector.ts",
-      "to": "packages/web/src/viewer/external.ts",
+      "to": "packages/web/src/shared/view-id.ts",
       "type": "type",
       "symbols": [
         "ViewId"
@@ -22343,74 +22351,25 @@
     },
     {
       "from": "packages/web/src/viewer/views/hench-runs.ts",
-      "to": "packages/web/src/viewer/components/active-tasks-panel.ts",
+      "to": "packages/web/src/viewer/components/index.ts",
       "type": "static",
       "symbols": [
-        "ActiveTasksPanel"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/hench-runs.ts",
-      "to": "packages/web/src/viewer/components/active-tasks-panel.ts",
-      "type": "type",
-      "symbols": [
-        "ActiveRun"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/hench-runs.ts",
-      "to": "packages/web/src/viewer/components/concurrency-panel.ts",
-      "type": "static",
-      "symbols": [
-        "ConcurrencyPanel"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/hench-runs.ts",
-      "to": "packages/web/src/viewer/components/copy-link-button.ts",
-      "type": "static",
-      "symbols": [
-        "CopyLinkButton"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/hench-runs.ts",
-      "to": "packages/web/src/viewer/components/logos.ts",
-      "type": "static",
-      "symbols": [
-        "BrandedHeader"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/hench-runs.ts",
-      "to": "packages/web/src/viewer/components/memory-panel.ts",
-      "type": "static",
-      "symbols": [
-        "MemoryPanel"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/hench-runs.ts",
-      "to": "packages/web/src/viewer/components/rex-task-link.ts",
-      "type": "static",
-      "symbols": [
-        "RexTaskLink"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/views/hench-runs.ts",
-      "to": "packages/web/src/viewer/components/throttle-controls.ts",
-      "type": "static",
-      "symbols": [
+        "BrandedHeader",
+        "RexTaskLink",
+        "CopyLinkButton",
+        "ActiveTasksPanel",
+        "ConcurrencyPanel",
+        "MemoryPanel",
+        "WsHealthPanel",
         "ThrottleControlsPanel"
       ]
     },
     {
       "from": "packages/web/src/viewer/views/hench-runs.ts",
-      "to": "packages/web/src/viewer/components/ws-health-panel.ts",
-      "type": "static",
+      "to": "packages/web/src/viewer/components/index.ts",
+      "type": "type",
       "symbols": [
-        "WsHealthPanel"
+        "ActiveRun"
       ]
     },
     {
@@ -27230,7 +27189,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 2814,
+    "totalEdges": 2808,
     "totalExternal": 18,
     "circularCount": 0,
     "circulars": [],
@@ -27264,11 +27223,11 @@
         "count": 23
       },
       {
-        "path": "packages/web/src/viewer/components/logos.ts",
-        "count": 23
+        "path": "packages/web/src/server/types.ts",
+        "count": 22
       },
       {
-        "path": "packages/web/src/server/types.ts",
+        "path": "packages/web/src/viewer/components/logos.ts",
         "count": 22
       },
       {
@@ -27316,6 +27275,6 @@
         "count": 11
       }
     ],
-    "avgImportsPerFile": 3.44
+    "avgImportsPerFile": 3.43
   }
 }
