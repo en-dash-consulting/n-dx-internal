@@ -35,7 +35,7 @@ import {
 import type { ScanResult, Proposal } from "../../analyze/index.js";
 import type { PRDItem, PRDDocument, AnalyzeTokenUsage, LoEConfig } from "../../schema/index.js";
 import { LOE_DEFAULTS } from "../../schema/index.js";
-import type { BatchAcceptanceRecord } from "./chunked-review.js";
+import type { BatchAcceptanceRecord } from "../../analyze/index.js";
 import { loadClaudeConfig, loadLLMConfig } from "../../store/project-config.js";
 import { formatTaskLoE, formatTaskLoERationale } from "./format-loe.js";
 

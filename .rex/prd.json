@@ -21740,6 +21740,149 @@
         },
         "findingCount": 12
       }
+    },
+    {
+      "id": "bbcf2eba-68d6-41af-8fb6-b4469218f9a4",
+      "title": "Address observation issues (14 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- High coupling (0.75) — 8 imports target \"rex-prd-engine\"\n- Low cohesion (0.25) — files are loosely related, consider splitting this zone\n- Cohesion of 0.25 and coupling of 0.75 indicate this is a thin feature satellite rather than a cohesive module — 8 imports flow into rex-unit with little internal binding.\n- loe-display.test.ts appears in this zone while its source file is in rex-unit — the test's import path pulled it into this cluster, which may cause misclassification in tooling.\n- Bidirectional coupling: \"chunked-review\" ↔ \"rex-prd-engine\" (8+2 crossings) — consider extracting shared interface\n- Bidirectional coupling: \"server-usage-scheduler\" ↔ \"web-dashboard-platform\" (3+37 crossings) — consider extracting shared interface\n- High coupling (0.75) — 7 imports target \"rex-prd-engine\"\n- Low cohesion (0.25) — files are loosely related, consider splitting this zone\n- Cohesion of 0.25 and coupling of 0.75 reflect a deliberately small, focused command — not a structural problem, but a candidate for absorption into rex-unit if the fix surface grows.\n- 9 entry points — wide API surface, consider consolidating exports\n- 10 entry points — wide API surface, consider consolidating exports\n- 14 entry points — wide API surface, consider consolidating exports\n- Cohesion of 0.36 is below the 0.4 warning threshold — the two exported utilities (data-files and view-id) share little internal relationship, making the zone feel artificially bundled.\n- Coupling of 0.64 exceeds the 0.6 warning threshold — five inbound import edges from web-viewer alone make this the highest-traffic foundation layer in the web package.",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "d7fb7435f660",
+          "5ece6cadcc98",
+          "d88d467e9d62",
+          "7709e93b65ba",
+          "4fbf91bff419",
+          "d5717b5508c3",
+          "e3b652132a17",
+          "c19f228a98e7",
+          "e330886c53ca",
+          "8d4bbe16ff67",
+          "82d1745235c8",
+          "d6348f899565",
+          "52a0ea09a6fa",
+          "63fbd342a607"
+        ],
+        "category": "observation",
+        "severityDistribution": {
+          "warning": 14
+        },
+        "findingCount": 14
+      }
+    },
+    {
+      "id": "ad1e620e-9a22-4c46-9c5a-35357b607b48",
+      "title": "Address suggestion issues (20 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- Add a non-importable file extension exclusion list to sourcevision zone detection (PNG, JPG, SVG, GIF, HTML, CSS, MD, JSON, YAML, lock files). Binary assets and markup files cannot form import edges, so including them in zone detection produces noise zones (logo, web-landing) with false-positive 'at-risk' labels and distorted cohesion scores of 0. This single change would eliminate at least 3 noise zones and remove misleading risk labels from the zone map.\n- Add subdirectory grouping to packages/rex/src/cli/commands/ to make the three-zone split visible in the file tree. Create commands/chunked-review/ and commands/fix/ subdirectories for the satellite zone files, leaving the remaining 27+ core-zone files in the flat commands/ root. This mirrors the convention used elsewhere in the monorepo and gives the community detection algorithm a directory signal to produce stable zone assignments.\n- CLAUDE.md's web-shared governance section states it is 'the only production zone meeting both fragility thresholds simultaneously' — this is factually incorrect. rex-cli (0.25/0.75) and fix (0.25/0.75) also meet both thresholds. Update the documentation to list all three dual-fragility zones and apply consistent governance to each.\n- Establish a monorepo-wide zone governance policy that applies the dual-threshold fragility test (cohesion < 0.5 AND coupling > 0.5) uniformly across all packages — not just web-shared. Both rex satellite zones currently breach both thresholds but have no governance response. A single governance rule in CLAUDE.md covering all packages prevents the current situation where identical metric signatures receive different treatment depending on which package they appear in.\n- The implicit web-package load order (web-shared → viewer-message-pipeline → web-dashboard-platform → web-server) has no mechanical enforcement. Add a zone-cycle assertion in boundary-check.test.ts or architecture-policy.test.js that validates no new import cycle is introduced across these four zones — the existing zone-cycle detection covers package-level cycles but not intra-web-package load-order violations, leaving the web package's internal layering unguarded.\n- boundary-check.test.ts uses regex-based import path extraction that is blind to dynamic imports, making it structurally unable to enforce policies against the dynamic import patterns already identified in rex (analyze.ts) and any future dynamic imports in web. Supplement boundary-check.test.ts with a separate dynamic-import-audit test (or a grep-based CI check) that enumerates all 'await import()' call sites across package source directories and asserts that none cross zone boundaries without documentation.\n- hench-agent (160 files, 31 directories) has no documented intra-zone governance despite being the second-largest zone in the monorepo. Establish a governance document for hench parallel to CLAUDE.md's web-shared section: identify sub-zone boundaries (agent/, prd/, brief/), document index.ts barrel requirements, and add boundary assertions to hench's test suite before the zone reaches web-viewer's scale.\n- Add a ZONE_BOUNDARY marker comment or README to packages/rex/src/cli/commands/ explaining which files belong to the satellite zones (chunked-review, prd-fix-command) vs the core zone. A flat directory with three zone memberships and no sub-directories creates invisible boundaries that only sourcevision can detect.\n- The production→test import from web-dashboard-platform into web-unit combined with 7 reverse imports from web-unit back into web-viewer forms a closed production↔test cycle, not a simple one-directional violation. Treat remediation as requiring both edges to be resolved simultaneously — eliminating only the production→test direction will leave a unidirectional cycle that still couples test zone stability to production API changes.\n- Establish a rex-satellite governance policy in CLAUDE.md analogous to the web-shared policy: both satellite zones (chunked-review, prd-fix-command) have cohesion 0.25 and coupling 0.75, meeting the same dual-threshold condition that triggered web-shared governance. Without a policy, these zones will continue accepting new files with no fragility guardrail.\n- crash (cohesion 0.5, bidirectional web-viewer coupling) is one poorly-placed addition away from dual-fragility. Apply the two-consumer rule proactively to new crash zone additions before cohesion degrades further.\n- fix has cohesion 0.25 and coupling 0.75 — both exceed fragility thresholds, yet CLAUDE.md's governance section does not list it as a dual-fragility zone. Apply the same active governance policy applied to web-shared (addition review, consumer count checks) to fix immediately.\n- Relocate packages/rex/src/core/fix.ts to rex-prd-engine by auditing whether its imports are exclusively to other rex-prd-engine files. If confirmed, the file was misassigned to prd-fix-command by import-proximity clustering. Moving it removes the zone's only non-CLI file and makes the zone name accurate.\n- rex-cli has cohesion 0.25 and coupling 0.75 — both exceed fragility thresholds, matching the profile CLAUDE.md reserves exclusively for web-shared. Update CLAUDE.md to acknowledge rex-cli as a dual-fragility zone and apply equivalent active governance.\n- shared-types.ts (permanent, cycle-breaking, wide blast radius) and the scheduler services (transient, event-driven, narrow blast radius) have incompatible stability contracts but share a zone. Consider moving shared-types.ts to src/shared/ to correctly reflect its zone-neutral role and decouple its governance from the transient service lifecycle — a change to shared-types.ts should trigger broader review than a change to register-scheduler.ts, but the current zone co-location makes them indistinguishable.\n- The 'web' zone's bidirectional coupling with web-viewer (16 in + 6 out) combined with its 2 imports from web-server creates a hidden secondary coupling path web-server→web→web-viewer that inflates the real viewer-server dependency beyond the direct 37-edge count. Audit the 6 web-viewer→web edges and 2 web→web-server edges to determine whether they represent the same type contracts as the direct viewer→server edges, making the secondary path redundant and removable.\n- The web↔web-viewer cycle (2.7:1 ratio) is the most tightly mutually dependent cycle in the monorepo. Unlike lopsided cycles resolvable by elevating a few reverse imports through a shared interface, this cycle likely requires a structural decision: fully absorb 'web' into web-viewer, split its responsibilities into web-server, or formalize it as an explicit composition shell with a documented API contract.\n- boundary-check.test.ts uses regex-based import extraction, which is blind to dynamic imports (await import()), template-literal paths, and multiline import statements. Any new enforcement assertion (including the proposed two-consumer rule check) will inherit these blind spots. Document this limitation in a comment at the top of boundary-check.test.ts and consider whether the two critical dynamic import paths in analyze.ts and cli/index.ts need a separate enforcement mechanism.\n- web-landing's summary.json reports fileCount: 2 but the files array contains 3 entries (index.html, landing.css, landing.ts) — a data integrity mismatch. Verify the zone serialization path handles HTML/CSS file counting correctly and does not silently drop non-TypeScript files from the count.\n- shared/index.ts is the only cohesion mechanism in this zone — it is a barrel exporting 3 constants and 1 type from two semantically unrelated files. No automated check enforces that consumers import through index.ts rather than directly from data-files.ts or view-id.ts. If direct imports proliferate, zone cohesion becomes unmeasurable and the two-consumer rule cannot be applied per-module. boundary-check.test.ts should assert that web-shared consumers import through the barrel index rather than from leaf files directly.",
+      "priority": "critical",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "2ab4301c3797",
+          "54d93ed1090d",
+          "ee95467386c7",
+          "8952d7d9ecec",
+          "9d2843ed0010",
+          "9e8f385ee75b",
+          "47ecbc152064",
+          "a8c89bab97e8",
+          "c7d70579881f",
+          "6cd0229d32dc",
+          "96284b6c4e09",
+          "19fb405cf820",
+          "f5c5b5dea473",
+          "f2755cddc94f",
+          "6c91aeb0baf8",
+          "25838a898744",
+          "88b64f12b262",
+          "0fa5e62a8f61",
+          "01a4ea6c65c6",
+          "37f04830a5dd"
+        ],
+        "category": "suggestion",
+        "severityDistribution": {
+          "warning": 19,
+          "critical": 1
+        },
+        "findingCount": 20
+      }
+    },
+    {
+      "id": "06164479-3023-4d63-9026-4c50bed97883",
+      "title": "Address move-file issues (1 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- File \"packages/web/src/viewer/messaging/call-rate-limiter.ts\" is pinned to zone \"Viewer Message Pipeline\" but lives in packages/web/src/viewer/messaging/ — consider moving to packages/web/ to align physical location with architectural zone",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "350c5ca9be88"
+        ],
+        "category": "move-file",
+        "severityDistribution": {
+          "warning": 1
+        },
+        "findingCount": 1
+      }
+    },
+    {
+      "id": "c04e8444-ae95-4f45-9979-9c8cd219caa8",
+      "title": "Address pattern issues (5 findings)",
+      "status": "pending",
+      "level": "feature",
+      "description": "- index.html references the Preact bundle via a path that is outside the module graph — build-output-contract.test.ts is the sole enforcement point for this contract, but if that test is skipped or scoped incorrectly, the viewer mount point is entirely unguarded.\n- boundary-check.test.ts enforces import directions and the messaging exemption but leaves the two-consumer rule for web-shared unenforced by automation — this is the most actively degrading policy in the codebase and warrants a dedicated count-based assertion.\n- 37 imports flowing from web-dashboard-platform into web-server (vs 3 reverse) establish this zone as the true composition root at runtime, inverting the documented layering where web-server should sit above the viewer hub.\n- The cohesion degradation from the CLAUDE.md baseline (0.46 → 0.36) is measurable and ongoing; the two-consumer rule is documented but not machine-enforced by boundary-check.test.ts, leaving the primary governance at PR review discretion only.\n- web-shared cohesion has degraded from 0.46 (documented in CLAUDE.md) to 0.36 while coupling increased from 0.54 to 0.64. The zone has 5 files now vs the 3 mentioned in the overview context — the discrepancy suggests recent file additions violated the two-consumer rule or added framework-specific utilities. Audit data-files.ts, view-id.ts, and node-culler.ts for single-consumer additions.",
+      "priority": "high",
+      "source": "sourcevision",
+      "recommendationMeta": {
+        "findingHashes": [
+          "8c26f561dd3c",
+          "8271ecfc9541",
+          "89b6b9a3b7c1",
+          "47803b174b2a",
+          "d31378e507a5"
+        ],
+        "category": "pattern",
+        "severityDistribution": {
+          "warning": 5
+        },
+        "findingCount": 5
+      }
+    },
+    {
+      "id": "fe8a5762-efea-45c6-bf57-2f220e61f3ea",
+      "title": "Address relationship issues (7 findings)",
+      "status": "completed",
+      "level": "feature",
+      "description": "- crash-detection exports are aggregated by a performance barrel zone (viewer/performance/index.ts) before reaching web-viewer consumers — this intermediate aggregator is not documented in CLAUDE.md's four-zone topology and creates a hidden dependency on the performance zone's re-export contract.\n- The single reverse import from rex-prd-engine into prd-fix-command (1 edge) is the lowest-risk of the core→satellite inversions; if this edge is a type import it should be moved to an interface in the core to eliminate the inversion without breaking callers\n- rex-prd-engine imports from both chunked-review (2) and prd-fix-command (1), creating a partial inversion where the core domain layer depends on its satellite feature zones — violates standard layered architecture where cores should have no knowledge of their consumers\n- packages/web/src/server/routes-data.ts has 7 direct imports from web-viewer with no gateway mediation — it is the highest-coupling single file crossing the server/viewer boundary and should be the first candidate for a dedicated server-side adapter or type-projection layer if viewer types are refactored.\n- server-usage-scheduler emits 3 imports upward into web-dashboard-platform and 2 into viewer-message-pipeline; if any are runtime (non-type) imports this violates the intended downward-only service dependency flow.\n- Bidirectional import cycle between viewer-message-pipeline and web-dashboard-platform (16 in, 6 out) means neither zone can be loaded in isolation; extracting a thin shared-types layer would break the cycle.\n- web-dashboard-platform imports from web-unit (a test zone) — production code must never import test utilities; locate and remove the offending import immediately.",
+      "priority": "critical",
+      "source": "sourcevision",
+      "startedAt": "2026-03-11T13:24:55.624Z",
+      "recommendationMeta": {
+        "findingHashes": [
+          "f00b2010046c",
+          "733bfc78ac06",
+          "0dc5cb407c1d",
+          "5ef885a0c7d3",
+          "125f4cf99481",
+          "d8ebe8e96bfd",
+          "a310b01077cc"
+        ],
+        "category": "relationship",
+        "severityDistribution": {
+          "warning": 6,
+          "critical": 1
+        },
+        "findingCount": 7
+      },
+      "completedAt": "2026-03-11T13:46:51.341Z",
+      "resolutionType": "code-change",
+      "resolutionDetail": "Fixed 2 code issues (crash-detection barrel re-export removal, BatchAcceptanceRecord type moved to core), fixed pre-existing stale cohesion exceptions, acknowledged 5 findings as type-only/zone-classification/stale"
     }
   ]
 }

@@ -16,7 +16,7 @@ import {
   wasRecoveryShown,
   type CrashDetectionResult,
   type SavedNavigationState,
-} from "../performance/index.js";
+} from "../crash/index.js";
 
 export interface UseCrashRecoveryOptions {
   /** Current active view. */
