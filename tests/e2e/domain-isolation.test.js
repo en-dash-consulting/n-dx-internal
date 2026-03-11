@@ -271,6 +271,57 @@ describe("architecture policy: domain layer isolation", () => {
       );
     }
   });
+
+  /**
+   * Domain packages must not contain hardcoded file paths that resolve into
+   * sibling packages. Such paths create invisible tier-inversion edges that
+   * bypass package.json dependency declarations and are undetectable by
+   * standard import-graph tooling.
+   *
+   * This catches patterns like: resolve(__dirname, "../../../web/dist/...")
+   * which create a build-time coupling between domain and upper-tier packages.
+   */
+  it("domain packages must not contain hardcoded cross-package file paths", () => {
+    const DOMAIN_PKGS = ["rex", "sourcevision"];
+    const SIBLING_PKGS = ["web", "hench", "rex", "sourcevision", "llm-client"];
+    const violations = [];
+
+    for (const pkg of DOMAIN_PKGS) {
+      const srcDir = join(ROOT, `packages/${pkg}/src`);
+      if (!existsSync(srcDir)) continue;
+
+      const files = walk(srcDir);
+      for (const file of files) {
+        const rel = relative(ROOT, file).replace(/\\/g, "/");
+        const content = readFileSync(file, "utf-8");
+
+        for (const sibling of SIBLING_PKGS) {
+          if (sibling === pkg) continue; // intra-package paths are fine
+          // Match hardcoded relative paths that traverse into sibling packages
+          // e.g. "../../../web/dist/..." or "../../rex/src/..."
+          const pattern = new RegExp(`["']\\.\\./[^"']*/${sibling}/[^"']*["']`);
+          if (pattern.test(content)) {
+            violations.push(`${rel} contains hardcoded path into packages/${sibling}`);
+          }
+        }
+      }
+    }
+
+    if (violations.length > 0) {
+      expect.fail(
+        [
+          "Domain packages contain hardcoded file paths into sibling packages.",
+          "These create invisible tier-inversion edges that bypass package.json.",
+          "",
+          "Violations:",
+          ...violations.map((v) => `  - ${v}`),
+          "",
+          "To fix: use workspace-root resolution, dynamic import.meta.resolve(),",
+          "or delegate the cross-package call to the orchestration tier.",
+        ].join("\n"),
+      );
+    }
+  });
 });
 
 describe("architecture policy: orchestration tier boundary", () => {
