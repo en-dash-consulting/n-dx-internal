@@ -5,25 +5,38 @@
 <zone>
 
 Zone: Web Viewer/web Viewer/web 4 (`web-viewer/web-viewer/web-4`)
-Files: 3, Cohesion: 0.20, Coupling: 0.80
-Description: 3 files, primarily TypeScript
-Entry points: packages/web/src/viewer/components/prd-tree/tree-differ.ts, packages/web/src/viewer/hooks/use-prd-websocket.ts
-Lines: 784
+Files: 9, Cohesion: 0.42, Coupling: 0.58
+Description: 9 files, primarily TypeScript
+Entry points: packages/web/src/viewer/components/logos.ts, packages/web/src/viewer/components/notion-schema-wizard.ts, packages/web/src/viewer/views/hench-config.ts, packages/web/src/viewer/views/hench-templates.ts, packages/web/src/viewer/views/integration-config.ts, packages/web/src/viewer/views/notion-config.ts, packages/web/src/viewer/views/validation.ts, packages/web/src/viewer/views/workflow-optimization.ts
+Lines: 4870
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/components/prd-tree/tree-differ.ts (TypeScript, 233 lines, source)
-packages/web/src/viewer/hooks/use-prd-websocket.ts (TypeScript, 157 lines, source)
-packages/web/tests/unit/viewer/tree-differ.test.ts (TypeScript, 394 lines, test)
+packages/web/src/viewer/components/logos.ts (TypeScript, 62 lines, source)
+packages/web/src/viewer/components/notion-schema-wizard.ts (TypeScript, 435 lines, source)
+packages/web/src/viewer/views/hench-config.ts (TypeScript, 674 lines, source)
+packages/web/src/viewer/views/hench-templates.ts (TypeScript, 422 lines, source)
+packages/web/src/viewer/views/integration-config.ts (TypeScript, 796 lines, source)
+packages/web/src/viewer/views/notion-config.ts (TypeScript, 567 lines, source)
+packages/web/src/viewer/views/validation.ts (TypeScript, 819 lines, source)
+packages/web/src/viewer/views/workflow-optimization.ts (TypeScript, 598 lines, source)
+packages/web/tests/unit/viewer/hench-config.test.ts (TypeScript, 497 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/components/prd-tree/tree-differ.ts {applyItemUpdate}
-  packages/web/tests/unit/viewer/tree-differ.test.ts → packages/web/src/viewer/components/prd-tree/tree-differ.ts {diffItems, diffDocument, applyItemUpdate}
+  packages/web/src/viewer/views/hench-config.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/hench-templates.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/integration-config.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/notion-config.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/notion-config.ts → packages/web/src/viewer/components/notion-schema-wizard.ts {NotionSchemaWizard}
+  packages/web/src/viewer/views/validation.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/workflow-optimization.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/tests/unit/viewer/hench-config.test.ts → packages/web/src/viewer/views/hench-config.ts {HenchConfigView, formatDisplayValue, coerceFieldValue, validateField, getPreviewImpact}
+  packages/web/tests/unit/viewer/hench-config.test.ts → packages/web/src/viewer/views/hench-config.ts {ConfigField}
 
 </imports>

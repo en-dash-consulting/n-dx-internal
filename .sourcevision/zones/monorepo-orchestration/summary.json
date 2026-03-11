@@ -1,0 +1,37 @@
+{
+  "id": "monorepo-orchestration",
+  "name": "Monorepo Orchestration",
+  "description": "Top-level entry points and configuration scripts that wire together all packages via spawn — the orchestration tier of the four-tier hierarchy.",
+  "files": [
+    ".DS_Store",
+    ".gitignore",
+    ".npmrc",
+    "ci.js",
+    "claude-integration.js",
+    "cli.js",
+    "config.js",
+    "help.js",
+    "pr-check.js",
+    "refresh-artifacts.js",
+    "refresh-plan.js",
+    "refresh-validate.js",
+    "tests/unit/help.test.js",
+    "tests/unit/refresh-artifacts.test.js",
+    "tests/unit/refresh-plan.test.js",
+    "tests/unit/refresh-validate.test.js",
+    "vitest.config.js",
+    "web.js"
+  ],
+  "entryPoints": [],
+  "cohesion": 1,
+  "coupling": 0,
+  "fileCount": 18,
+  "lineCount": 6070,
+  "riskMetrics": {
+    "cohesion": 1,
+    "coupling": 0,
+    "riskScore": 0,
+    "riskLevel": "healthy",
+    "failsThreshold": false
+  }
+}

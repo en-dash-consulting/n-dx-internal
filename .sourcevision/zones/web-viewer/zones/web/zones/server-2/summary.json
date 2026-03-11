@@ -1,20 +1,17 @@
 {
   "id": "web-viewer/web/server-2",
   "name": "Web Viewer/web/server 2",
-  "description": "5 files, primarily TypeScript",
+  "description": "3 files, primarily TypeScript",
   "files": [
-    "packages/web/src/server/routes-rex/analysis.ts",
-    "packages/web/src/server/websocket.ts",
-    "packages/web/tests/integration/ws-health-integration.test.ts",
-    "packages/web/tests/unit/server/websocket.test.ts",
-    "packages/web/tests/unit/server/ws-health-tracker.test.ts"
+    "packages/web/src/server/concurrent-execution-metrics.ts",
+    "packages/web/src/server/process-memory-tracker.ts",
+    "packages/web/src/server/routes-hench.ts"
   ],
   "entryPoints": [
-    "packages/web/src/server/routes-rex/analysis.ts",
-    "packages/web/src/server/websocket.ts"
+    "packages/web/src/server/routes-hench.ts"
   ],
-  "cohesion": 0.13,
-  "coupling": 0.88,
-  "fileCount": 5,
-  "lineCount": 2192
+  "cohesion": 0.4,
+  "coupling": 0.6,
+  "fileCount": 3,
+  "lineCount": 3181
 }

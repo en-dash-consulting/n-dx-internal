@@ -1,7 +1,7 @@
 {
   "id": "e2e",
-  "name": "E2e",
-  "description": "22 files, primarily JavaScript",
+  "name": "Monorepo E2E Tests",
+  "description": "The top-level end-to-end test suite validating CLI contracts, architecture policy, MCP transport, domain isolation, and orchestration behaviour across all packages.",
   "files": [
     "tests/e2e/architecture-policy.test.js",
     "tests/e2e/cli-arg-contracts.test.js",
@@ -30,7 +30,7 @@
   "cohesion": 1,
   "coupling": 0,
   "fileCount": 22,
-  "lineCount": 7250,
+  "lineCount": 7488,
   "riskMetrics": {
     "cohesion": 1,
     "coupling": 0,

@@ -1,27 +1,25 @@
 {
   "id": "web-shared",
-  "name": "Web Shared",
-  "description": "5 files, primarily TypeScript",
+  "name": "Web Shared Foundation",
+  "description": "Framework-agnostic utilities shared across viewer, server, and messaging zones — data-file constants and view-id helpers.",
   "files": [
     "packages/web/src/shared/data-files.ts",
     "packages/web/src/shared/index.ts",
-    "packages/web/src/shared/node-culler.ts",
-    "packages/web/src/shared/view-id.ts",
-    "packages/web/tests/unit/shared/node-culler.test.ts"
+    "packages/web/src/shared/view-id.ts"
   ],
   "entryPoints": [
     "packages/web/src/shared/data-files.ts",
     "packages/web/src/shared/view-id.ts"
   ],
-  "cohesion": 0.46,
-  "coupling": 0.54,
-  "fileCount": 5,
-  "lineCount": 583,
+  "cohesion": 0.36,
+  "coupling": 0.64,
+  "fileCount": 3,
+  "lineCount": 61,
   "riskMetrics": {
-    "cohesion": 0.46,
-    "coupling": 0.54,
-    "riskScore": 0.54,
-    "riskLevel": "healthy",
-    "failsThreshold": false
+    "cohesion": 0.36,
+    "coupling": 0.64,
+    "riskScore": 0.64,
+    "riskLevel": "critical",
+    "failsThreshold": true
   }
 }

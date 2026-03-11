@@ -5,46 +5,58 @@
 <zone>
 
 Zone: Web Viewer/web Viewer/web 3 (`web-viewer/web-viewer/web-3`)
-Files: 11, Cohesion: 0.48, Coupling: 0.52
-Description: 11 files, primarily TypeScript
-Entry points: packages/web/src/viewer/components/prd-tree/facet-filter.ts, packages/web/src/viewer/components/prd-tree/index.ts, packages/web/src/viewer/views/analysis.ts, packages/web/src/viewer/views/rex-dashboard.ts
-Lines: 3453
+Files: 19, Cohesion: 0.39, Coupling: 0.61
+Description: 19 files, primarily TypeScript
+Entry points: packages/web/src/viewer/components/degradation-banner.ts, packages/web/src/viewer/components/faq.ts, packages/web/src/viewer/components/index.ts, packages/web/src/viewer/components/theme-toggle.ts, packages/web/src/viewer/views/hench-runs.ts, packages/web/src/viewer/views/task-audit.ts
+Lines: 4901
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/components/prd-tree/batch-import-panel.ts (TypeScript, 626 lines, source)
-packages/web/src/viewer/components/prd-tree/facet-filter.ts (TypeScript, 306 lines, source)
-packages/web/src/viewer/components/prd-tree/index.ts (TypeScript, 31 lines, source)
-packages/web/src/viewer/components/prd-tree/lazy-children.ts (TypeScript, 93 lines, source)
-packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts (TypeScript, 225 lines, source)
-packages/web/src/viewer/components/prd-tree/reorganize-panel.ts (TypeScript, 292 lines, source)
-packages/web/src/viewer/views/analysis.ts (TypeScript, 156 lines, source)
-packages/web/src/viewer/views/rex-dashboard.ts (TypeScript, 640 lines, source)
-packages/web/tests/unit/viewer/batch-import-panel.test.ts (TypeScript, 372 lines, test)
-packages/web/tests/unit/viewer/lazy-children.test.ts (TypeScript, 295 lines, test)
-packages/web/tests/unit/viewer/listener-lifecycle.test.ts (TypeScript, 417 lines, test)
+packages/web/src/viewer/components/concurrency-panel.ts (TypeScript, 251 lines, source)
+packages/web/src/viewer/components/degradation-banner.ts (TypeScript, 100 lines, source)
+packages/web/src/viewer/components/faq.ts (TypeScript, 321 lines, source)
+packages/web/src/viewer/components/favicon.ts (TypeScript, 107 lines, source)
+packages/web/src/viewer/components/index.ts (TypeScript, 87 lines, source)
+packages/web/src/viewer/components/memory-panel.ts (TypeScript, 300 lines, source)
+packages/web/src/viewer/components/polling-suspension-indicator.ts (TypeScript, 65 lines, source)
+packages/web/src/viewer/components/theme-toggle.ts (TypeScript, 36 lines, source)
+packages/web/src/viewer/components/throttle-controls.ts (TypeScript, 382 lines, source)
+packages/web/src/viewer/components/ws-health-panel.ts (TypeScript, 389 lines, source)
+packages/web/src/viewer/main.ts (TypeScript, 201 lines, source)
+packages/web/src/viewer/views/hench-runs.ts (TypeScript, 752 lines, source)
+packages/web/src/viewer/views/task-audit.ts (TypeScript, 635 lines, source)
+packages/web/tests/integration/pr-markdown-tab-parity.test.ts (TypeScript, 236 lines, test)
+packages/web/tests/integration/token-usage-route-regression.test.ts (TypeScript, 200 lines, test)
+packages/web/tests/unit/viewer/favicon.test.ts (TypeScript, 157 lines, test)
+packages/web/tests/unit/viewer/polling-suspension-indicator.test.ts (TypeScript, 114 lines, test)
+packages/web/tests/unit/viewer/throttle-controls.test.ts (TypeScript, 269 lines, test)
+packages/web/tests/unit/viewer/ws-health-panel.test.ts (TypeScript, 299 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanel}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanelProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/facet-filter.ts {FacetFilter}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/facet-filter.ts {FacetFilterProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/lazy-children.ts {LazyChildren, UNMOUNT_DELAY_MS}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/lazy-children.ts {LazyChildrenProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts {ListenerLifecycleManager, useNodeListeners}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts {ListenerRecord, ListenerLifecycleState}
-  packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/index.ts {SmartAddInput, BatchImportPanel}
-  packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/index.ts {SmartAddInput}
-  packages/web/src/viewer/views/rex-dashboard.ts → packages/web/src/viewer/components/prd-tree/reorganize-panel.ts {ReorganizePanel}
-  packages/web/tests/unit/viewer/batch-import-panel.test.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanel, BatchItemRow}
-  packages/web/tests/unit/viewer/batch-import-panel.test.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchItem}
-  packages/web/tests/unit/viewer/lazy-children.test.ts → packages/web/src/viewer/components/prd-tree/lazy-children.ts {LazyChildren, UNMOUNT_DELAY_MS}
-  packages/web/tests/unit/viewer/listener-lifecycle.test.ts → packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts {ListenerLifecycleManager}
+  packages/web/src/viewer/components/index.ts → packages/web/src/viewer/components/concurrency-panel.ts {ConcurrencyPanel}
+  packages/web/src/viewer/components/index.ts → packages/web/src/viewer/components/degradation-banner.ts {DegradationBanner, DegradationBannerProps}
+  packages/web/src/viewer/components/index.ts → packages/web/src/viewer/components/faq.ts {GlobalFAQ, HeaderFAQ}
+  packages/web/src/viewer/components/index.ts → packages/web/src/viewer/components/favicon.ts {updateFavicon, resetFavicon, FAVICON_PNGS, VIEW_TO_PRODUCT}
+  packages/web/src/viewer/components/index.ts → packages/web/src/viewer/components/memory-panel.ts {MemoryPanel}
+  packages/web/src/viewer/components/index.ts → packages/web/src/viewer/components/polling-suspension-indicator.ts {PollingSuspensionIndicator}
+  packages/web/src/viewer/components/index.ts → packages/web/src/viewer/components/theme-toggle.ts {SidebarThemeToggle, initTheme}
+  packages/web/src/viewer/components/index.ts → packages/web/src/viewer/components/throttle-controls.ts {ThrottleControlsPanel}
+  packages/web/src/viewer/components/index.ts → packages/web/src/viewer/components/ws-health-panel.ts {WsHealthPanel}
+  packages/web/src/viewer/main.ts → packages/web/src/viewer/components/index.ts {Sidebar, DetailPanel, Guide, HeaderFAQ, Breadcrumb, updateFavicon, MemoryWarningBanner, CrashRecoveryBanner, DegradationBanner, RefreshQueueStatus, PollingSuspensionIndicator, SearchOverlay, useSearchOverlay}
+  packages/web/src/viewer/views/hench-runs.ts → packages/web/src/viewer/components/index.ts {BrandedHeader, RexTaskLink, CopyLinkButton, ActiveTasksPanel, ConcurrencyPanel, MemoryPanel, WsHealthPanel, ThrottleControlsPanel}
+  packages/web/src/viewer/views/hench-runs.ts → packages/web/src/viewer/components/index.ts {ActiveRun}
+  packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/index.ts {BrandedHeader, RexTaskLink, ElapsedTime}
+  packages/web/tests/integration/pr-markdown-tab-parity.test.ts → packages/web/src/viewer/main.ts {*}
+  packages/web/tests/integration/token-usage-route-regression.test.ts → packages/web/src/viewer/main.ts {*}
+  packages/web/tests/unit/viewer/favicon.test.ts → packages/web/src/viewer/components/favicon.ts {updateFavicon, resetFavicon, FAVICON_PNGS, VIEW_TO_PRODUCT}
+  packages/web/tests/unit/viewer/polling-suspension-indicator.test.ts → packages/web/src/viewer/components/polling-suspension-indicator.ts {PollingSuspensionIndicator}
+  packages/web/tests/unit/viewer/throttle-controls.test.ts → packages/web/src/viewer/components/throttle-controls.ts {ThrottleControlsPanel}
+  packages/web/tests/unit/viewer/ws-health-panel.test.ts → packages/web/src/viewer/components/ws-health-panel.ts {WsHealthPanel}
 
 </imports>

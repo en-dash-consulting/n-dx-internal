@@ -1,25 +1,29 @@
 {
   "id": "crash",
-  "name": "Crash",
-  "description": "5 files, primarily TypeScript",
+  "name": "Viewer Crash Recovery",
+  "description": "Encapsulates crash detection, recovery state management, and recovery UI within the web viewer.",
   "files": [
+    "packages/web/src/viewer/components/crash-recovery-banner.ts",
     "packages/web/src/viewer/crash/crash-detector.ts",
     "packages/web/src/viewer/crash/index.ts",
+    "packages/web/src/viewer/hooks/use-crash-recovery.ts",
     "packages/web/tests/helpers/crash-detector-test-support.ts",
     "packages/web/tests/unit/viewer/crash-detector.test.ts",
+    "packages/web/tests/unit/viewer/crash-recovery-banner.test.ts",
     "packages/web/tests/unit/viewer/use-crash-recovery.test.ts"
   ],
   "entryPoints": [
-    "packages/web/src/viewer/crash/index.ts"
+    "packages/web/src/viewer/components/crash-recovery-banner.ts",
+    "packages/web/src/viewer/hooks/use-crash-recovery.ts"
   ],
-  "cohesion": 0.5,
-  "coupling": 0.5,
-  "fileCount": 5,
-  "lineCount": 879,
+  "cohesion": 0.6,
+  "coupling": 0.4,
+  "fileCount": 8,
+  "lineCount": 1379,
   "riskMetrics": {
-    "cohesion": 0.5,
-    "coupling": 0.5,
-    "riskScore": 0.5,
+    "cohesion": 0.6,
+    "coupling": 0.4,
+    "riskScore": 0.4,
     "riskLevel": "healthy",
     "failsThreshold": false
   }

@@ -5,29 +5,71 @@
 <zone>
 
 Zone: Web Viewer/web 3 (`web-viewer/web-3`)
-Files: 4, Cohesion: 0.33, Coupling: 0.67
-Description: 4 files, primarily TypeScript
-Entry points: packages/web/src/viewer/components/prd-tree/analyze-panel.ts, packages/web/src/viewer/components/prd-tree/proposal-editor.ts
-Lines: 1569
+Files: 16, Cohesion: 0.81, Coupling: 0.19
+Description: 16 files, primarily TypeScript
+Entry points: packages/web/src/viewer/messaging/index.ts, packages/web/src/viewer/messaging/request-dedup.ts
+Lines: 4377
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/components/prd-tree/analyze-panel.ts (TypeScript, 362 lines, source)
-packages/web/src/viewer/components/prd-tree/proposal-editor.ts (TypeScript, 704 lines, source)
-packages/web/tests/unit/viewer/analyze-panel.test.ts (TypeScript, 214 lines, test)
-packages/web/tests/unit/viewer/proposal-editor.test.ts (TypeScript, 289 lines, test)
+packages/web/src/viewer/messaging/call-rate-limiter.ts (TypeScript, 153 lines, source)
+packages/web/src/viewer/messaging/fetch-pipeline.ts (TypeScript, 104 lines, source)
+packages/web/src/viewer/messaging/index.ts (TypeScript, 78 lines, source)
+packages/web/src/viewer/messaging/message-coalescer.ts (TypeScript, 194 lines, source)
+packages/web/src/viewer/messaging/message-throttle.ts (TypeScript, 230 lines, source)
+packages/web/src/viewer/messaging/request-dedup.ts (TypeScript, 84 lines, source)
+packages/web/src/viewer/messaging/ws-pipeline.ts (TypeScript, 130 lines, source)
+packages/web/tests/integration/messaging-stack.test.ts (TypeScript, 464 lines, test)
+packages/web/tests/integration/request-dedup.test.ts (TypeScript, 626 lines, test)
+packages/web/tests/unit/viewer/call-rate-limiter.test.ts (TypeScript, 408 lines, test)
+packages/web/tests/unit/viewer/execution-panel-dedup.test.ts (TypeScript, 280 lines, test)
+packages/web/tests/unit/viewer/fetch-pipeline.test.ts (TypeScript, 133 lines, test)
+packages/web/tests/unit/viewer/message-coalescer.test.ts (TypeScript, 534 lines, test)
+packages/web/tests/unit/viewer/message-throttle.test.ts (TypeScript, 578 lines, test)
+packages/web/tests/unit/viewer/request-dedup.test.ts (TypeScript, 235 lines, test)
+packages/web/tests/unit/viewer/ws-pipeline.test.ts (TypeScript, 146 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/src/viewer/components/prd-tree/analyze-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
-  packages/web/src/viewer/components/prd-tree/analyze-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
-  packages/web/tests/unit/viewer/analyze-panel.test.ts → packages/web/src/viewer/components/prd-tree/analyze-panel.ts {AnalyzePanel}
-  packages/web/tests/unit/viewer/proposal-editor.test.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
-  packages/web/tests/unit/viewer/proposal-editor.test.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {CallRateLimiter, CallRateLimiterConfig}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/viewer/messaging/request-dedup.ts {RequestDedup}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter, CallRateLimiter, CallRateLimiterConfig}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/fetch-pipeline.ts {createFetchPipeline, FetchPipeline, FetchPipelineConfig}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer, MessageCoalescer, MessageCoalescerConfig, ParsedWSMessage, CoalescedBatch}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle, MessageThrottle, ThrottledHandlerConfig}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup, RequestDedup}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/ws-pipeline.ts {createWSPipeline, WSPipeline, WSPipelineConfig}
+  packages/web/src/viewer/messaging/message-throttle.ts → packages/web/src/viewer/messaging/message-coalescer.ts {ParsedWSMessage}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-coalescer.ts {MessageCoalescer, ParsedWSMessage, CoalescedBatch}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-throttle.ts {MessageThrottle}
+  packages/web/tests/integration/messaging-stack.test.ts → packages/web/src/viewer/messaging/index.ts {createWSPipeline, createFetchPipeline}
+  packages/web/tests/integration/messaging-stack.test.ts → packages/web/src/viewer/messaging/index.ts {WSPipeline, FetchPipeline, CoalescedBatch, ParsedWSMessage}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
+  packages/web/tests/unit/viewer/call-rate-limiter.test.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter}
+  packages/web/tests/unit/viewer/call-rate-limiter.test.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {CallRateLimiter}
+  packages/web/tests/unit/viewer/execution-panel-dedup.test.ts → packages/web/src/viewer/messaging/fetch-pipeline.ts {createFetchPipeline}
+  packages/web/tests/unit/viewer/fetch-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {createFetchPipeline}
+  packages/web/tests/unit/viewer/fetch-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {FetchPipeline}
+  packages/web/tests/unit/viewer/message-coalescer.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer}
+  packages/web/tests/unit/viewer/message-coalescer.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {MessageCoalescer, CoalescedBatch, ParsedWSMessage}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {ParsedWSMessage}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {MessageThrottle, ThrottledHandlerConfig}
+  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
+  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {RequestDedup}
+  packages/web/tests/unit/viewer/ws-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {createWSPipeline}
+  packages/web/tests/unit/viewer/ws-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {WSPipeline, CoalescedBatch, ParsedWSMessage}
 
 </imports>

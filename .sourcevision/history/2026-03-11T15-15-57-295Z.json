@@ -1,0 +1,217 @@
+{
+  "schemaVersion": "1.0.0",
+  "snapshots": [
+    {
+      "zoneId": "chunked-review",
+      "zoneName": "Chunked Review",
+      "cohesion": 0.36,
+      "coupling": 0.64,
+      "riskScore": 0.64,
+      "fileCount": 5,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "crash",
+      "zoneName": "Viewer Crash Recovery",
+      "cohesion": 0.6,
+      "coupling": 0.4,
+      "riskScore": 0.4,
+      "fileCount": 8,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "e2e",
+      "zoneName": "Monorepo E2E Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 22,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "hench-agent",
+      "zoneName": "Hench Agent",
+      "cohesion": 0.99,
+      "coupling": 0.01,
+      "riskScore": 0.010000000000000005,
+      "fileCount": 141,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "hench-guard",
+      "zoneName": "Hench Guard",
+      "cohesion": 0.8,
+      "coupling": 0.2,
+      "riskScore": 0.19999999999999998,
+      "fileCount": 10,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "landing-page",
+      "zoneName": "Landing Page",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "llm-foundation",
+      "zoneName": "LLM Foundation",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 41,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "monorepo-integration-tests",
+      "zoneName": "Monorepo Integration Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 5,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "monorepo-orchestration",
+      "zoneName": "Monorepo Orchestration",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 18,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "prd-fix-command",
+      "zoneName": "PRD Fix Command",
+      "cohesion": 0.25,
+      "coupling": 0.75,
+      "riskScore": 0.75,
+      "fileCount": 3,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex-cli-e2e",
+      "zoneName": "Rex CLI E2E",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 4,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex-core-utilities",
+      "zoneName": "Rex Core Utilities",
+      "cohesion": 0.18,
+      "coupling": 0.82,
+      "riskScore": 0.8200000000000001,
+      "fileCount": 4,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex-e2e-config",
+      "zoneName": "Rex E2E Config",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 8,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex-prd-engine",
+      "zoneName": "Rex PRD Engine",
+      "cohesion": 0.98,
+      "coupling": 0.02,
+      "riskScore": 0.02000000000000001,
+      "fileCount": 217,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "server-usage-scheduler",
+      "zoneName": "Server Usage Scheduler",
+      "cohesion": 0.87,
+      "coupling": 0.13,
+      "riskScore": 0.13,
+      "fileCount": 15,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "sourcevision-analysis-engine",
+      "zoneName": "Sourcevision Analysis Engine",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 133,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "viewer-prd-interaction",
+      "zoneName": "Viewer PRD Interaction Layer",
+      "cohesion": 0.26,
+      "coupling": 0.74,
+      "riskScore": 0.74,
+      "fileCount": 4,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-dashboard-platform",
+      "zoneName": "Web Dashboard Platform",
+      "cohesion": 0.53,
+      "coupling": 0.47,
+      "riskScore": 0.47,
+      "fileCount": 33,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-integration-tests",
+      "zoneName": "Web Integration Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-viewer",
+      "zoneName": "Web Viewer Hub",
+      "cohesion": 0.94,
+      "coupling": 0.06,
+      "riskScore": 0.060000000000000026,
+      "fileCount": 300,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-viewer-unit-tests",
+      "zoneName": "Web Viewer Isolated Unit Tests",
+      "cohesion": 0,
+      "coupling": 1,
+      "riskScore": 1,
+      "fileCount": 2,
+      "timestamp": "2026-03-11T15:15:57.295Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    }
+  ],
+  "analyzedAt": "2026-03-11T15:15:57.295Z",
+  "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+}

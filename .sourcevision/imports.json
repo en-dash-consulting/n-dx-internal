@@ -5627,6 +5627,15 @@
     },
     {
       "from": "packages/rex/src/analyze/index.ts",
+      "to": "packages/rex/src/analyze/batch-types.ts",
+      "type": "type",
+      "symbols": [
+        "BatchAcceptanceRecord",
+        "GranularityAdjustmentRecord"
+      ]
+    },
+    {
+      "from": "packages/rex/src/analyze/index.ts",
       "to": "packages/rex/src/analyze/consolidation-guard.ts",
       "type": "reexport",
       "symbols": [
@@ -6430,7 +6439,8 @@
       "type": "type",
       "symbols": [
         "ScanResult",
-        "Proposal"
+        "Proposal",
+        "BatchAcceptanceRecord"
       ]
     },
     {
@@ -6442,14 +6452,6 @@
         "createReviewState",
         "buildBatchRecord",
         "runChunkedReview"
-      ]
-    },
-    {
-      "from": "packages/rex/src/cli/commands/analyze.ts",
-      "to": "packages/rex/src/cli/commands/chunked-review.ts",
-      "type": "type",
-      "symbols": [
-        "BatchAcceptanceRecord"
       ]
     },
     {
@@ -6558,6 +6560,15 @@
       "symbols": [
         "loadClaudeConfig",
         "loadLLMConfig"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/chunked-review-state.ts",
+      "to": "packages/rex/src/analyze/batch-types.ts",
+      "type": "type",
+      "symbols": [
+        "GranularityAdjustmentRecord",
+        "BatchAcceptanceRecord"
       ]
     },
     {
@@ -12257,7 +12268,7 @@
       ]
     },
     {
-      "from": "packages/rex/tests/unit/cli/commands/loe-display.test.ts",
+      "from": "packages/rex/tests/unit/cli/commands/loe-display-chunked-review.test.ts",
       "to": "packages/rex/src/analyze/index.ts",
       "type": "type",
       "symbols": [
@@ -12266,7 +12277,7 @@
       ]
     },
     {
-      "from": "packages/rex/tests/unit/cli/commands/loe-display.test.ts",
+      "from": "packages/rex/tests/unit/cli/commands/loe-display-chunked-review.test.ts",
       "to": "packages/rex/src/cli/commands/chunked-review-state.ts",
       "type": "static",
       "symbols": [
@@ -12275,7 +12286,16 @@
       ]
     },
     {
-      "from": "packages/rex/tests/unit/cli/commands/loe-display.test.ts",
+      "from": "packages/rex/tests/unit/cli/commands/loe-display-proposal-tree.test.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal",
+        "ProposalTask"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/cli/commands/loe-display-proposal-tree.test.ts",
       "to": "packages/rex/src/cli/commands/smart-add.ts",
       "type": "static",
       "symbols": [
@@ -17955,11 +17975,20 @@
     },
     {
       "from": "packages/web/src/server/routes-data.ts",
-      "to": "packages/web/src/shared/data-files.ts",
+      "to": "packages/web/src/shared/index.ts",
       "type": "static",
       "symbols": [
         "ALL_DATA_FILES",
         "SUPPLEMENTARY_FILES"
+      ]
+    },
+    {
+      "from": "packages/web/src/server/routes-features.ts",
+      "to": "packages/web/src/schema/features.ts",
+      "type": "type",
+      "symbols": [
+        "FeatureToggle",
+        "FeaturesResponse"
       ]
     },
     {
@@ -18707,7 +18736,7 @@
     },
     {
       "from": "packages/web/src/server/routes-sourcevision.ts",
-      "to": "packages/web/src/shared/data-files.ts",
+      "to": "packages/web/src/shared/index.ts",
       "type": "static",
       "symbols": [
         "DATA_FILES"
@@ -18766,7 +18795,7 @@
     },
     {
       "from": "packages/web/src/server/routes-status.ts",
-      "to": "packages/web/src/shared/data-files.ts",
+      "to": "packages/web/src/shared/index.ts",
       "type": "static",
       "symbols": [
         "DATA_FILES"
@@ -19093,7 +19122,7 @@
     },
     {
       "from": "packages/web/src/server/start.ts",
-      "to": "packages/web/src/shared/data-files.ts",
+      "to": "packages/web/src/shared/index.ts",
       "type": "static",
       "symbols": [
         "ALL_DATA_FILES"
@@ -19172,24 +19201,6 @@
         "DATA_FILES",
         "ALL_DATA_FILES",
         "SUPPLEMENTARY_FILES"
-      ]
-    },
-    {
-      "from": "packages/web/src/shared/index.ts",
-      "to": "packages/web/src/shared/node-culler.ts",
-      "type": "reexport",
-      "symbols": [
-        "NodeCuller"
-      ]
-    },
-    {
-      "from": "packages/web/src/shared/index.ts",
-      "to": "packages/web/src/shared/node-culler.ts",
-      "type": "type",
-      "symbols": [
-        "NodeCullerOptions",
-        "NodeCullerState",
-        "VisibilityCallback"
       ]
     },
     {
@@ -19303,7 +19314,7 @@
     },
     {
       "from": "packages/web/src/viewer/components/crash-recovery-banner.ts",
-      "to": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/crash/index.ts",
       "type": "type",
       "symbols": [
         "SavedNavigationState"
@@ -20543,6 +20554,15 @@
     },
     {
       "from": "packages/web/src/viewer/external.ts",
+      "to": "packages/web/src/schema/features.ts",
+      "type": "type",
+      "symbols": [
+        "FeatureToggle",
+        "FeaturesResponse"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/external.ts",
       "to": "packages/web/src/schema/v1.ts",
       "type": "reexport",
       "symbols": [
@@ -20577,7 +20597,8 @@
       "type": "reexport",
       "symbols": [
         "DATA_FILES",
-        "ALL_DATA_FILES"
+        "ALL_DATA_FILES",
+        "SUPPLEMENTARY_FILES"
       ]
     },
     {
@@ -20696,15 +20717,7 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
-      "to": "packages/web/src/viewer/external.ts",
-      "type": "type",
-      "symbols": [
-        "ViewId"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
-      "to": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/crash/index.ts",
       "type": "static",
       "symbols": [
         "detectCrash",
@@ -20716,11 +20729,19 @@
     },
     {
       "from": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
-      "to": "packages/web/src/viewer/performance/index.ts",
+      "to": "packages/web/src/viewer/crash/index.ts",
       "type": "type",
       "symbols": [
         "CrashDetectionResult",
         "SavedNavigationState"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/use-crash-recovery.ts",
+      "to": "packages/web/src/viewer/external.ts",
+      "type": "type",
+      "symbols": [
+        "ViewId"
       ]
     },
     {
@@ -21570,23 +21591,6 @@
     },
     {
       "from": "packages/web/src/viewer/performance/index.ts",
-      "to": "packages/web/src/viewer/crash/index.ts",
-      "type": "reexport",
-      "symbols": [
-        "detectCrash",
-        "saveNavigationState",
-        "clearSavedNavigationState",
-        "markRecoveryShown",
-        "wasRecoveryShown",
-        "getDetectionResult",
-        "clearCrashHistory",
-        "resetCrashDetector",
-        "CrashDetectionResult",
-        "SavedNavigationState"
-      ]
-    },
-    {
-      "from": "packages/web/src/viewer/performance/index.ts",
       "to": "packages/web/src/viewer/performance/dom-performance-monitor.ts",
       "type": "reexport",
       "symbols": [
@@ -22251,6 +22255,15 @@
       "type": "static",
       "symbols": [
         "NdxLogoPng"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/feature-toggles.ts",
+      "to": "packages/web/src/viewer/external.ts",
+      "type": "type",
+      "symbols": [
+        "FeatureToggle",
+        "FeaturesResponse"
       ]
     },
     {
@@ -24223,22 +24236,6 @@
       "type": "static",
       "symbols": [
         "WsHealthTracker"
-      ]
-    },
-    {
-      "from": "packages/web/tests/unit/shared/node-culler.test.ts",
-      "to": "packages/web/src/shared/node-culler.ts",
-      "type": "static",
-      "symbols": [
-        "NodeCuller"
-      ]
-    },
-    {
-      "from": "packages/web/tests/unit/shared/node-culler.test.ts",
-      "to": "packages/web/src/shared/node-culler.ts",
-      "type": "type",
-      "symbols": [
-        "VisibilityCallback"
       ]
     },
     {
@@ -26847,7 +26844,8 @@
         "packages/rex/tests/unit/cli/commands/decomposition-review.test.ts",
         "packages/rex/tests/unit/cli/commands/fix.test.ts",
         "packages/rex/tests/unit/cli/commands/format-loe.test.ts",
-        "packages/rex/tests/unit/cli/commands/loe-display.test.ts",
+        "packages/rex/tests/unit/cli/commands/loe-display-chunked-review.test.ts",
+        "packages/rex/tests/unit/cli/commands/loe-display-proposal-tree.test.ts",
         "packages/rex/tests/unit/cli/commands/move.test.ts",
         "packages/rex/tests/unit/cli/commands/recommend.test.ts",
         "packages/rex/tests/unit/cli/commands/remove.test.ts",
@@ -27030,7 +27028,6 @@
         "packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts",
         "packages/web/tests/unit/server/websocket.test.ts",
         "packages/web/tests/unit/server/ws-health-tracker.test.ts",
-        "packages/web/tests/unit/shared/node-culler.test.ts",
         "packages/web/tests/unit/viewer/accessibility.test.ts",
         "packages/web/tests/unit/viewer/add-item-form.test.ts",
         "packages/web/tests/unit/viewer/analyze-panel.test.ts",
