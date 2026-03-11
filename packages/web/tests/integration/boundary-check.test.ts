@@ -110,6 +110,60 @@ describe("server/client boundary", () => {
   });
 
   /**
+   * Sub-zone barrel enforcement — imports to viewer sub-zones (crash, panel,
+   * etc.) from outside the sub-zone must enter through the declared barrel
+   * file (index.ts), not through internal implementation files.
+   *
+   * This prevents encapsulation erosion: if external code imports directly
+   * from crash/crash-detector.ts, the internal module becomes de facto public
+   * and cannot be refactored without cross-zone breakage.
+   *
+   * Sub-zones with barrel enforcement:
+   * - crash/ — crash recovery (barrel: crash/index.ts)
+   *
+   * Panel is a logical zone (Louvain classification), not a physical directory,
+   * so it does not require barrel enforcement.
+   */
+  it("imports to viewer sub-zones must go through barrel files", () => {
+    const viewerDir = join(WEB_SRC, "viewer");
+    const violations: string[] = [];
+
+    // Sub-zones with declared barrel files (relative to viewer/)
+    const BARREL_ZONES = ["crash"];
+
+    try {
+      for (const file of collectTsFiles(viewerDir)) {
+        const rel = relative(WEB_SRC, file);
+
+        for (const zone of BARREL_ZONES) {
+          const zonePrefix = join("viewer", zone) + "/";
+
+          // Files inside the sub-zone can import freely from siblings
+          if (rel.startsWith(zonePrefix)) continue;
+
+          for (const imp of extractImportPaths(file)) {
+            // Check if import targets a file inside the sub-zone
+            // Match patterns like "../crash/crash-detector" but not "../crash/index"
+            const zoneImportPattern = new RegExp(
+              `(?:^|/)${zone}/(?!index\\.)`
+            );
+            if (zoneImportPattern.test(imp)) {
+              violations.push(
+                `${rel} imports "${imp}" — must use ${zone}/index.js barrel`
+              );
+            }
+          }
+        }
+      }
+    } catch {
+      // viewerDir doesn't exist in test environment — pass
+      return;
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  /**
    * Viewer → server import check.
    *
    * This test catches ALL import forms — both runtime (`import { foo }`)

@@ -26,6 +26,10 @@
     {
       "file": "packages/web/src/viewer/messaging/index.ts",
       "description": "Sole public surface for the viewer messaging subsystem — must remain re-export-only"
+    },
+    {
+      "file": "packages/web/src/viewer/crash/index.ts",
+      "description": "Sole public surface for the crash recovery sub-zone — cross-zone consumers must import from this barrel, not crash internals"
     }
   ],
   "boundaries": [

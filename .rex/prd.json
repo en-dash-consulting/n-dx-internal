@@ -21452,11 +21452,15 @@
     {
       "id": "ed7a9451-cccb-45a7-b028-62afb3714b0a",
       "title": "Address observation issues (15 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- Bidirectional coupling: \"rex-fix-command\" ↔ \"rex-prd-engine\" (7+1 crossings) — consider extracting shared interface\n- Bidirectional coupling: \"web-application-core\" ↔ \"web-viewer-messaging-pipeline\" (22+16 crossings) — consider extracting shared interface\n- Fan-in hotspot: packages/rex/src/schema/index.ts receives calls from 24 files — high-impact module, changes may have wide ripple effects\n- High coupling (0.71) — 11 imports target \"web-application-core\"\n- Low cohesion (0.29) — files are loosely related, consider splitting this zone\n- Cohesion of 0.29 is below the 0.4 threshold, likely because the community-detection algorithm sees the four files as loosely connected within the broader viewer graph; semantically they are tightly related around hench observability.\n- Coupling of 0.71 exceeds the 0.6 warning threshold; the zone has no internal edges compared to its 11 outbound imports into web-viewer, making it a pure leaf consumer cluster — splitting it further would not reduce coupling.\n- High coupling (0.75) — 7 imports target \"rex-prd-engine\"\n- Low cohesion (0.25) — files are loosely related, consider splitting this zone\n- Coupling 0.75 reflects a thin command layer that delegates heavily to rex-unit — acceptable for a CLI shim, but the reverse edge (rex-unit → fix: 1 import) creates a bidirectional dependency that should be audited for circular risk.\n- Rex dogfoods its own PRD tooling by storing .rex/ state inside the package directory; this is architecturally intentional but the execution-log.jsonl committed to the repo should be gitignored to avoid noisy diffs.\n- 20 entry points — wide API surface, consider consolidating exports\n- web-unit imports web-application-core 7 times; since routes-data.ts is a server route handler, confirm these imports are type-only (stripped at compile time) and do not introduce a runtime dependency from server routing logic into viewer modules.\n- sourcevision (domain layer) imports this web-server zone once; domain packages should not depend on web-tier modules — verify this reference is a type-only import from shared-types.ts that can be relocated to a foundation-tier package if it grows.\n- 10 entry points — wide API surface, consider consolidating exports",
       "priority": "high",
       "source": "sourcevision",
+      "startedAt": "2026-03-11T04:33:32.070Z",
+      "completedAt": "2026-03-11T04:42:34.428Z",
+      "resolutionType": "acknowledgment",
+      "resolutionDetail": "Gitignored execution-log.jsonl files (code change) and acknowledged all 15 observation findings after auditing each one: bidirectional couplings are community-detection artifacts or expected CLI dispatch patterns; fan-in hotspot on schema/index.ts is expected for a barrel file; hench-agent-monitor low cohesion/high coupling is a pure leaf consumer cluster; rex-fix-command metrics reflect thin CLI shim delegation; entry point counts are proportional to zone sizes; cross-tier imports verified as non-existent or type-only.",
       "recommendationMeta": {
         "findingHashes": [
           "9841b7329bfb",
@@ -21526,11 +21530,12 @@
     {
       "id": "6d269c81-4eec-401b-95a0-85d7756677bd",
       "title": "Address pattern issues (3 findings)",
-      "status": "pending",
+      "status": "completed",
       "level": "feature",
       "description": "- The domain-isolation.test.js in the E2E zone is the only automated guard against the web-viewer → web-unit boundary violation identified above — verify it explicitly asserts that no production viewer file imports from a test zone, as this class of violation may not be caught by the current gateway-only checks.\n- No policy test currently verifies that web-viewer's 2 inbound imports to crash target only crash/index.ts — direct imports into crash/crash-detector.ts or crash internals would erode encapsulation without failing any existing test\n- Neither boundary-check nor build-output-contract validates that web-viewer's inbound imports to viewer sub-zones (crash, panel) enter only through declared barrel files — internal encapsulation of viewer sub-zones is outside the current test scope",
       "priority": "high",
       "source": "sourcevision",
+      "startedAt": "2026-03-11T04:43:23.164Z",
       "recommendationMeta": {
         "findingHashes": [
           "86a3bb1553ff",
@@ -21542,7 +21547,10 @@
           "warning": 3
         },
         "findingCount": 3
-      }
+      },
+      "completedAt": "2026-03-11T04:47:42.271Z",
+      "resolutionType": "code-change",
+      "resolutionDetail": "Added 3 new architectural policy tests: (1) production→test boundary enforcement in domain-isolation.test.js, (2) sub-zone barrel enforcement in boundary-check.test.ts ensuring crash imports go through crash/index.ts, (3) registered crash/index.ts as internal barrel in gateway-rules.json for re-export-only enforcement"
     },
     {
       "id": "101568f8-c073-4554-8403-393697baa51c",
@@ -21553,6 +21561,9 @@
       "priority": "critical",
       "source": "sourcevision",
       "startedAt": "2026-03-11T04:15:01.001Z",
+      "completedAt": "2026-03-11T04:32:28.910Z",
+      "resolutionType": "code-change",
+      "resolutionDetail": "Fixed 3 critical findings with code/config changes, fixed 3 pre-existing test failures, acknowledged 5 warnings as by-design or false positives. Details: (1) crash→external.ts cycle broken by importing ViewId from shared/view-id.js directly with boundary-check exemption; (2) progressive-loader.ts zone-pinned to web-viewer to fix web-unit misclassification; (3) routes-mcp.ts zone-pinned to web-server to fix messaging-pipeline misplacement; (4) routes-data.ts imports verified safe (server-side only, no viewer contamination); (5) sourcevision→web import confirmed false positive (no actual cross-tier import); (6) hench-agent-monitor web-shared bypass acknowledged as by-design (viewer components legitimately need viewer); (7) rex-fix-command acknowledged as having legitimate domain logic; (8) hub-and-spoke partially addressed by crash cycle fix.",
       "recommendationMeta": {
         "findingHashes": [
           "ece087b6b9c2",
@@ -21570,10 +21581,7 @@
           "critical": 3
         },
         "findingCount": 8
-      },
-      "completedAt": "2026-03-11T04:32:28.910Z",
-      "resolutionType": "code-change",
-      "resolutionDetail": "Fixed 3 critical findings with code/config changes, fixed 3 pre-existing test failures, acknowledged 5 warnings as by-design or false positives. Details: (1) crash→external.ts cycle broken by importing ViewId from shared/view-id.js directly with boundary-check exemption; (2) progressive-loader.ts zone-pinned to web-viewer to fix web-unit misclassification; (3) routes-mcp.ts zone-pinned to web-server to fix messaging-pipeline misplacement; (4) routes-data.ts imports verified safe (server-side only, no viewer contamination); (5) sourcevision→web import confirmed false positive (no actual cross-tier import); (6) hench-agent-monitor web-shared bypass acknowledged as by-design (viewer components legitimately need viewer); (7) rex-fix-command acknowledged as having legitimate domain logic; (8) hub-and-spoke partially addressed by crash cycle fix."
+      }
     }
   ]
 }

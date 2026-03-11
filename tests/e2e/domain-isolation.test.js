@@ -944,6 +944,77 @@ describe("gateway surface parity", () => {
 });
 
 /**
+ * Production → test boundary: no production source file may import from a
+ * test directory. This catches the web-viewer → web-unit zone violation class
+ * where a production viewer file accidentally imports test utilities, fixtures,
+ * or mock helpers — a dependency that would not be caught by gateway-only checks.
+ *
+ * The test scans all src/ files across all packages and verifies none of them
+ * import from a path containing /tests/ or /__tests__/.
+ */
+describe("architecture policy: production → test boundary", () => {
+  const PACKAGE_SRC_DIRS = [
+    "packages/rex/src",
+    "packages/sourcevision/src",
+    "packages/hench/src",
+    "packages/web/src",
+    "packages/llm-client/src",
+  ];
+
+  it("no production source file imports from test directories", () => {
+    const violations = [];
+
+    for (const srcDir of PACKAGE_SRC_DIRS) {
+      const fullDir = join(ROOT, srcDir);
+      if (!existsSync(fullDir)) continue;
+
+      for (const file of walk(fullDir)) {
+        const rel = relative(ROOT, file).replace(/\\/g, "/");
+        const content = readFileSync(file, "utf-8");
+        const lines = content.split("\n");
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const trimmed = line.trim();
+
+          // Skip comments
+          if (trimmed.startsWith("//") || trimmed.startsWith("*")) continue;
+
+          // Check for import/require from test paths
+          const importMatch = trimmed.match(
+            /(?:from\s+["']([^"']+)["']|require\(["']([^"']+)["']\))/,
+          );
+          if (!importMatch) continue;
+
+          const importPath = importMatch[1] || importMatch[2];
+          if (
+            importPath.includes("/tests/") ||
+            importPath.includes("/__tests__/") ||
+            importPath.match(/^\.\.\/.*tests\//)
+          ) {
+            violations.push(`${rel}:${i + 1} imports "${importPath}"`);
+          }
+        }
+      }
+    }
+
+    if (violations.length > 0) {
+      expect.fail(
+        [
+          "Production source files must not import from test directories.",
+          "Test utilities, fixtures, and mocks must stay in the test layer.",
+          "",
+          "Violations:",
+          ...violations.map((v) => `  - ${v}`),
+          "",
+          "To fix: extract shared utilities into a src/ module or use dependency injection.",
+        ].join("\n"),
+      );
+    }
+  });
+});
+
+/**
  * Foundation tier boundary: @n-dx/llm-client is the bottom of the hierarchy.
  * Only Domain-tier packages (rex, sourcevision) and Execution-tier (hench, web)
  * may import from it. Orchestration-tier scripts must not.
