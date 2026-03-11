@@ -21631,6 +21631,9 @@
       "priority": "high",
       "source": "sourcevision",
       "startedAt": "2026-03-11T07:01:47.523Z",
+      "completedAt": "2026-03-11T07:14:20.146Z",
+      "resolutionType": "code-change",
+      "resolutionDetail": "Addressed all 13 suggestion findings through code changes, documentation, and investigation-based acknowledgments. Key changes: (1) Added SUPPLEMENTARY_FILES to external.ts gateway, (2) Extracted FeatureToggle/FeaturesResponse to shared schema eliminating type duplication, (3) Added external.ts and api.ts to gateway-rules.json internalBarrels with namespace re-export support, (4) Added tests/integration/README.md documenting .js convention, (5) Documented web-shared addition policy in CLAUDE.md, (6) Fixed stale COHESION_EXCEPTIONS with current zone names. Investigation confirmed shared-types.ts has zero viewer imports — not the 32-edge cause.",
       "recommendationMeta": {
         "findingHashes": [
           "f04d784f5c1e",
@@ -21652,10 +21655,7 @@
           "warning": 13
         },
         "findingCount": 13
-      },
-      "completedAt": "2026-03-11T07:14:20.146Z",
-      "resolutionType": "code-change",
-      "resolutionDetail": "Addressed all 13 suggestion findings through code changes, documentation, and investigation-based acknowledgments. Key changes: (1) Added SUPPLEMENTARY_FILES to external.ts gateway, (2) Extracted FeatureToggle/FeaturesResponse to shared schema eliminating type duplication, (3) Added external.ts and api.ts to gateway-rules.json internalBarrels with namespace re-export support, (4) Added tests/integration/README.md documenting .js convention, (5) Documented web-shared addition policy in CLAUDE.md, (6) Fixed stale COHESION_EXCEPTIONS with current zone names. Investigation confirmed shared-types.ts has zero viewer imports — not the 32-edge cause."
+      }
     },
     {
       "id": "f036c159-2f2b-436b-b1eb-4cf74ae91e3a",
