@@ -10,6 +10,8 @@ package-lock.json
 .rex/adapters.json
 .rex/pending-proposals.json
 .rex/acknowledged-findings.json
+.rex/execution-log*.jsonl
+packages/rex/.rex/execution-log*.jsonl
 .sv2/
 .sv3/
 .claude/settings.local.json
