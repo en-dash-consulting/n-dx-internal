@@ -1,7 +1,7 @@
 {
   "id": "landing-page-assets",
   "name": "Landing Page Assets",
-  "description": "Static HTML and CSS assets for the web dashboard landing page, with no JavaScript dependencies.",
+  "description": "Isolated static assets (HTML template and CSS) for the product landing page, with no runtime imports or exports.",
   "files": [
     "packages/web/src/landing/index.html",
     "packages/web/src/landing/landing.css"

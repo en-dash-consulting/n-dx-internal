@@ -1,18 +1,19 @@
 {
   "id": "web-viewer/web/unit-server",
   "name": "Web Viewer/web/unit Server",
-  "description": "4 files, primarily TypeScript",
+  "description": "7 files, primarily TypeScript",
   "files": [
-    "packages/web/src/server/websocket.ts",
-    "packages/web/tests/integration/ws-health-integration.test.ts",
-    "packages/web/tests/unit/server/websocket.test.ts",
-    "packages/web/tests/unit/server/ws-health-tracker.test.ts"
+    "packages/web/tests/unit/server/routes-adaptive.test.ts",
+    "packages/web/tests/unit/server/routes-config.test.ts",
+    "packages/web/tests/unit/server/routes-mcp.test.ts",
+    "packages/web/tests/unit/server/routes-notion.test.ts",
+    "packages/web/tests/unit/server/routes-project.test.ts",
+    "packages/web/tests/unit/server/routes-search.test.ts",
+    "packages/web/tests/unit/server/routes-workflow.test.ts"
   ],
-  "entryPoints": [
-    "packages/web/src/server/websocket.ts"
-  ],
+  "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
-  "fileCount": 4,
-  "lineCount": 1482
+  "fileCount": 7,
+  "lineCount": 2142
 }

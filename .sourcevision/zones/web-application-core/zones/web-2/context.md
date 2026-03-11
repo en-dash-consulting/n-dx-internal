@@ -5,7 +5,7 @@
 <zone>
 
 Zone: Web Viewer/web 2 (`web-viewer/web-2`)
-Files: 5, Cohesion: 0.40, Coupling: 0.60
+Files: 5, Cohesion: 0.50, Coupling: 0.50
 Description: 5 files, primarily TypeScript
 Entry points: packages/web/src/server/routes-sourcevision.ts
 Lines: 1941

@@ -1,7 +1,7 @@
 {
   "id": "cross-package-integration-tests",
   "name": "Cross-Package Integration Tests",
-  "description": "Validates cross-package API contracts and server scheduler startup behavior at the monorepo integration level.",
+  "description": "Monorepo-level integration tests that verify cross-package contracts and scheduler startup behavior without going through the full E2E suite.",
   "files": [
     "tests/integration/cross-package-contracts.test.js",
     "tests/integration/scheduler-startup.test.js"

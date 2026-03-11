@@ -1,7 +1,7 @@
 {
   "id": "rex-runtime-state",
   "name": "Rex Runtime State",
-  "description": "Mutable runtime state files for the rex PRD tracker: the live PRD tree, execution logs, configuration, and item archive — disk state, not source code.",
+  "description": "Persistent data files that store the live PRD tree, execution logs, workflow state, and project configuration for the rex task tracker.",
   "files": [
     ".rex/archive.json",
     ".rex/config.json",
@@ -14,7 +14,7 @@
   "cohesion": 0,
   "coupling": 0,
   "fileCount": 6,
-  "lineCount": 26421,
+  "lineCount": 26821,
   "riskMetrics": {
     "cohesion": 0,
     "coupling": 0,

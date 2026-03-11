@@ -7,7 +7,7 @@
 Zone: Viewer Route State (`viewer-route-state`)
 Files: 4, Cohesion: 0.40, Coupling: 0.60
 Risk: healthy (score: 0.60)
-Description: Manages URL route parsing, resolution, and navigation state for the viewer application, including the React hook surface.
+Description: Client-side URL routing state for the viewer: a vanilla route-state module and a React hook wrapper that expose the current route to Preact components.
 Entry points: packages/web/src/viewer/hooks/use-route-state.ts
 Lines: 410
 
@@ -30,8 +30,8 @@ Internal:
   packages/web/tests/unit/viewer/token-usage-nav.test.ts → packages/web/src/viewer/route-state.ts {parsePathnameRoute}
 
 Outgoing (this zone → other zones):
+  → viewer-shell-assets: packages/web/tests/unit/viewer/token-usage-nav.test.ts → packages/web/src/viewer/usage/constants.ts
   → web-application-core: packages/web/src/viewer/hooks/use-route-state.ts → packages/web/src/viewer/types.ts; packages/web/src/viewer/route-state.ts → packages/web/src/viewer/types.ts; packages/web/tests/unit/viewer/route-state.test.ts → packages/web/src/viewer/types.ts; packages/web/tests/unit/viewer/token-usage-nav.test.ts → packages/web/src/viewer/components/sidebar.ts; packages/web/tests/unit/viewer/token-usage-nav.test.ts → packages/web/src/viewer/types.ts
-  → web-dashboard: packages/web/tests/unit/viewer/token-usage-nav.test.ts → packages/web/src/viewer/usage/constants.ts
 
 Incoming (other zones → this zone):
   ← web-application-core: packages/web/src/viewer/main.ts → packages/web/src/viewer/hooks/use-route-state.ts
@@ -41,19 +41,21 @@ Incoming (other zones → this zone):
 <findings>
 
 [observation] [warning] High coupling (0.6) — 5 imports target "web-application-core"
-[observation] [warning] cohesion is at threshold (0.4) and coupling is at threshold (0.6); monitor for further drift as the navigation layer grows
-[observation] [info] token-usage-nav.test.ts has no corresponding production file in this zone; if its production counterpart lives in web-viewer it should move there to keep test colocation consistent
+[observation] [warning] Coupling of 0.6 is at the warning threshold: route → web-viewer (5 imports) and route → web (1 import) show that routing logic pulls in viewer internals. Invert this — viewer components should import the route hook, not the other way around.
+[observation] [info] Splitting the raw route-state module (framework-free) from the use-route-state hook (Preact) is a clean layering pattern that enables fast unit tests without JSDOM.
+[observation] [info] token-usage-nav.test.ts residing in this zone indicates navigation state awareness is needed for the usage analytics feature — document this coupling explicitly or extract a dedicated nav hook for that feature.
 
 </findings>
 
 <insights>
 
 - High coupling (0.6) — 5 imports target "web-application-core"
-- The zone sits exactly at the cohesion/coupling threshold (0.4/0.6); the token-usage-nav test co-locating here without a corresponding production file suggests mild test-placement drift
-- The single entry point (use-route-state.ts) cleanly encapsulates the hook API over route-state.ts, which is good layering within the zone
-- 5 cross-zone imports into web-viewer confirm route state is a consumed primitive — consider verifying it is re-exported through the viewer's barrel to keep the import path canonical
-- cohesion is at threshold (0.4) and coupling is at threshold (0.6); monitor for further drift as the navigation layer grows
-- token-usage-nav.test.ts has no corresponding production file in this zone; if its production counterpart lives in web-viewer it should move there to keep test colocation consistent
+- route-state.ts encodes the routing contract independently of Preact — keeping it framework-free means it can be unit-tested without rendering and reused if the UI framework changes
+- use-route-state.ts is the only Preact-coupled surface; all components should import the hook rather than route-state.ts directly to preserve that boundary
+- The token-usage-nav test living in this zone suggests navigation state is tightly coupled to the usage analytics view — consider whether a separate useTokenUsageRoute hook would improve cohesion
+- Coupling of 0.6 is at the warning threshold: route → web-viewer (5 imports) and route → web (1 import) show that routing logic pulls in viewer internals. Invert this — viewer components should import the route hook, not the other way around.
+- Splitting the raw route-state module (framework-free) from the use-route-state hook (Preact) is a clean layering pattern that enables fast unit tests without JSDOM.
+- token-usage-nav.test.ts residing in this zone indicates navigation state awareness is needed for the usage analytics feature — document this coupling explicitly or extract a dedicated nav hook for that feature.
 - [call graph] 47 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
 
 </insights>

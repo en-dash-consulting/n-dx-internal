@@ -1,0 +1,227 @@
+{
+  "schemaVersion": "1.0.0",
+  "snapshots": [
+    {
+      "zoneId": "architecture-documentation",
+      "zoneName": "Architecture Documentation",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 16,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "autonomous-agent-engine",
+      "zoneName": "Autonomous Agent Engine",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 159,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "crash-recovery-system",
+      "zoneName": "Crash Recovery System",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 4,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "cross-package-integration-tests",
+      "zoneName": "Cross-Package Integration Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "landing-page-static-assets",
+      "zoneName": "Landing Page Static Assets",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 2,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "llm-client-foundation",
+      "zoneName": "LLM Client Foundation",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 44,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "monorepo-configuration-root",
+      "zoneName": "Monorepo Configuration Root",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 31,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "monorepo-e2e-test-suite",
+      "zoneName": "Monorepo E2E Test Suite",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 22,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "prd-fix-command",
+      "zoneName": "PRD Fix Command",
+      "cohesion": 0.25,
+      "coupling": 0.75,
+      "riskScore": 0.75,
+      "fileCount": 4,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex-cli-e2e-tests",
+      "zoneName": "Rex CLI End-to-End Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 9,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex-package-root",
+      "zoneName": "Rex Package Root",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 18,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex-prd-management-core",
+      "zoneName": "Rex PRD Management Core",
+      "cohesion": 0.99,
+      "coupling": 0.01,
+      "riskScore": 0.010000000000000005,
+      "fileCount": 218,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "rex-runtime-state",
+      "zoneName": "Rex Runtime State",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 6,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "server-data-route-handler",
+      "zoneName": "Server Data Route Handler",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 3,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "sourcevision-analysis-engine",
+      "zoneName": "Sourcevision Analysis Engine",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 144,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "task-usage-analytics-gateway",
+      "zoneName": "Task Usage Analytics and Server Gateways",
+      "cohesion": 0.83,
+      "coupling": 0.17,
+      "riskScore": 0.17000000000000004,
+      "fileCount": 10,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "viewer-route-state",
+      "zoneName": "Viewer Route State",
+      "cohesion": 0.4,
+      "coupling": 0.6,
+      "riskScore": 0.6,
+      "fileCount": 4,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "viewer-shell-assets",
+      "zoneName": "Viewer Shell Assets",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 3,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-application-core",
+      "zoneName": "Web Application Core",
+      "cohesion": 0.96,
+      "coupling": 0.04,
+      "riskScore": 0.04000000000000002,
+      "fileCount": 355,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-dashboard-peripheral-views",
+      "zoneName": "Web Dashboard Peripheral Views",
+      "cohesion": 0.4,
+      "coupling": 0.6,
+      "riskScore": 0.6,
+      "fileCount": 28,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-integration-tests",
+      "zoneName": "Web Package Integration Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    },
+    {
+      "zoneId": "web-shared",
+      "zoneName": "Viewer Shared Utilities",
+      "cohesion": 0.44,
+      "coupling": 0.56,
+      "riskScore": 0.56,
+      "fileCount": 4,
+      "timestamp": "2026-03-11T00:43:05.032Z",
+      "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+    }
+  ],
+  "analyzedAt": "2026-03-11T00:43:05.032Z",
+  "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093"
+}

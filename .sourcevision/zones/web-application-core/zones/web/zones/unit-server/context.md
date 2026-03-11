@@ -5,27 +5,20 @@
 <zone>
 
 Zone: Web Viewer/web/unit Server (`web-viewer/web/unit-server`)
-Files: 4, Cohesion: 1.00, Coupling: 0.00
-Description: 4 files, primarily TypeScript
-Entry points: packages/web/src/server/websocket.ts
-Lines: 1482
+Files: 7, Cohesion: 1.00, Coupling: 0.00
+Description: 7 files, primarily TypeScript
+Lines: 2142
 
 </zone>
 
 <files>
 
-packages/web/src/server/websocket.ts (TypeScript, 651 lines, source)
-packages/web/tests/integration/ws-health-integration.test.ts (TypeScript, 153 lines, test)
-packages/web/tests/unit/server/websocket.test.ts (TypeScript, 454 lines, test)
-packages/web/tests/unit/server/ws-health-tracker.test.ts (TypeScript, 224 lines, test)
+packages/web/tests/unit/server/routes-adaptive.test.ts (TypeScript, 446 lines, test)
+packages/web/tests/unit/server/routes-config.test.ts (TypeScript, 234 lines, test)
+packages/web/tests/unit/server/routes-mcp.test.ts (TypeScript, 325 lines, test)
+packages/web/tests/unit/server/routes-notion.test.ts (TypeScript, 255 lines, test)
+packages/web/tests/unit/server/routes-project.test.ts (TypeScript, 249 lines, test)
+packages/web/tests/unit/server/routes-search.test.ts (TypeScript, 277 lines, test)
+packages/web/tests/unit/server/routes-workflow.test.ts (TypeScript, 356 lines, test)
 
 </files>
-
-<imports>
-
-Internal:
-  packages/web/tests/integration/ws-health-integration.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager, WsHealthTracker}
-  packages/web/tests/unit/server/websocket.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager, PING_INTERVAL_MS}
-  packages/web/tests/unit/server/ws-health-tracker.test.ts → packages/web/src/server/websocket.ts {WsHealthTracker}
-
-</imports>

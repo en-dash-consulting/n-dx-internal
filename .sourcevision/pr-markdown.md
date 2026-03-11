@@ -2,12 +2,14 @@
 
 **Branch:** `feature/sv-fixes-0306`
 **Base:** `main`
-**Completed items:** 111
+**Completed items:** 118
 
 | Epic | Completed |
 |------|-----------|
 | Repository Governance and Community Standards | 3 |
 | MCP over HTTP transport | 3 |
+| Smart Prune Proposal Caching Enhancement | 3 |
+| Smart Add Cache Validation Enhancement | 4 |
 
 ## ⚠️ Breaking Changes
 
@@ -330,6 +332,10 @@
 4. Add cross-reference between boundary-check.test.ts and domain-isolation.test.js
 5. Add source imports to graph-interaction/graph-zoom tests
 6. Acknowledge already-resolved findings (packageFamily colon splitting, test relocations, cmdAnalyze decomposition, zone ID collision)
+- **Implement pending smart prune cache infrastructure** [critical]
+  Create cache file structure, interfaces, and utility functions for smart prune proposals following the reshape.ts pattern with PendingSmartPruneCache interface and file operations
+- **Implement PRD hash validation in smart-add cache structure** [critical]
+  Update pending proposal cache to include PRD hash metadata and implement hash calculation function for PRD change detection
 
 ## Completed Work
 
@@ -363,6 +369,46 @@
 
 - Code of Conduct *(feature)*
   Establish a code of conduct document for the repository to set community and contributor expectations.
+
+### Smart Add Cache Validation Enhancement
+
+**PRD Hash Validation for Smart Add Cache**
+- 🔶 **Implement PRD hash validation in smart-add cache structure**
+  Update pending proposal cache to include PRD hash metadata and implement hash calculation function for PRD change detection
+  - hashPRD function implemented using SHA256 of canonical JSON
+  - savePending function updated to accept and store prdHash parameter
+  - loadPending function return type updated to include optional prdHash field
+  - Required crypto and canonical JSON imports added
+- Update cache save operations with hash metadata
+  Modify all savePending call sites to compute and pass PRD hash, ensuring cache entries include hash metadata for validation
+  - Both savePending call sites (around lines 1140 and 1326) updated to compute and pass PRD hash
+  - PRD items accessible at call sites for hash computation
+  - Cache structure consistently includes prdHash field across all save operations
+  - Hash computation uses current PRD state at time of caching
+- Add staleness detection for cached proposals
+
+- PRD Hash Validation for Smart Add Cache *(feature)*
+  Add PRD hash validation to smart-add pending proposal cache to prevent applying stale proposals when PRD changes between generation and acceptance
+
+### Smart Prune Proposal Caching Enhancement
+
+**LLM Proposal Caching for Prune Operations**
+- 🔶 **Implement pending smart prune cache infrastructure**
+  Create cache file structure, interfaces, and utility functions for smart prune proposals following the reshape.ts pattern with PendingSmartPruneCache interface and file operations
+  - PENDING_SMART_PRUNE_FILE constant defined as 'pending-smart-prune.json'
+  - PendingSmartPruneCache interface includes generatedAt, prdHash, and proposals fields
+  - savePendingSmartPrune, loadPendingSmartPrune, and clearPendingSmartPrune functions implemented
+  - hashPRD function implemented using SHA256 hash of canonical JSON
+- Integrate cache with smart prune workflow
+  Wire cache operations into the existing smartPrune function to check cache before LLM calls, save proposals after generation, and clear cache after successful application
+  - Cache checked before LLM call in smartPrune function with hash validation
+  - Cached proposals used when valid with 'Using cached proposals' log message
+  - Proposals saved to cache after LLM generation with current PRD hash
+  - Cache cleared after successful prune application
+  - Required imports added for crypto and filesystem operations
+
+- LLM Proposal Caching for Prune Operations *(feature)*
+  Implement caching system for smart prune proposals to enable reuse between dry-run and accept operations without redundant LLM calls
 
 ### (Ungrouped)
 

@@ -7,7 +7,7 @@
 Zone: Cross-Package Integration Tests (`cross-package-integration-tests`)
 Files: 2, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Validates cross-package API contracts and server scheduler startup behavior at the monorepo integration level.
+Description: Monorepo-level integration tests that verify cross-package contracts and scheduler startup behavior without going through the full E2E suite.
 Lines: 1474
 
 </zone>
@@ -22,17 +22,21 @@ tests/integration/scheduler-startup.test.js (JavaScript, 400 lines, test)
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] 2 integration tests cover the most critical cross-package seams; as new cross-package interactions are added (e.g. new gateway exports), add corresponding contract tests here rather than relying solely on unit tests
+[observation] [info] Coupling of 0 is ideal for a test zone — tests consume production packages as black boxes and are not imported by anything else, preventing test infrastructure from leaking into the production dependency graph.
+[observation] [info] With only 2 files covering cross-package contracts and scheduler startup, coverage may be thin; consider whether other inter-package boundaries (e.g. hench↔rex, web↔sourcevision) have dedicated contract tests or rely solely on E2E.
+[observation] [info] Zone contains only test files with no production sources, correctly earning the '-tests' suffix per naming convention.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Only 2 files at perfect cohesion — the suite is intentionally narrow and focused on the highest-risk integration surfaces (cross-package contracts and scheduler startup)
-- scheduler-startup.test.js guarding server startup behavior provides fast feedback when the web server's initialization sequence breaks without requiring a full e2e run
-- cross-package-contracts.test.js complements domain-isolation.test.js by testing runtime behavior rather than static import analysis — both layers are needed
-- 2 integration tests cover the most critical cross-package seams; as new cross-package interactions are added (e.g. new gateway exports), add corresponding contract tests here rather than relying solely on unit tests
+- These two tests sit at the seam between package-level unit tests and full E2E tests — they validate inter-package contracts (cross-package-contracts) and runtime wiring (scheduler-startup) without spinning up the full system.
+- Perfect cohesion (1.0) and zero coupling confirm this zone is fully self-contained; tests import from production packages but introduce no inbound dependencies, which is the correct topology for a test-only zone.
+- The small file count (2 files) relative to the broader Monorepo E2E Test Suite (22 files, algorithmicId: e2e) suggests these tests may have grown organically — periodically audit whether new cross-package contract tests belong here or in the e2e suite.
+- Zone contains only test files with no production sources, correctly earning the '-tests' suffix per naming convention.
+- Coupling of 0 is ideal for a test zone — tests consume production packages as black boxes and are not imported by anything else, preventing test infrastructure from leaking into the production dependency graph.
+- With only 2 files covering cross-package contracts and scheduler startup, coverage may be thin; consider whether other inter-package boundaries (e.g. hench↔rex, web↔sourcevision) have dedicated contract tests or rely solely on E2E.
 - [call graph] 25 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

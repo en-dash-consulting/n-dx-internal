@@ -1,7 +1,7 @@
 {
   "id": "project-documentation",
   "name": "Project Documentation",
-  "description": "Architecture decision records, codebase analysis reports, and developer reference guides covering memory architecture, signal handling, viewer audits, and process lifecycle investigations.",
+  "description": "Architecture decision records, analysis reports, and design documents that capture the project's evolving architectural reasoning and audit trail.",
   "files": [
     "docs/analysis/2026-03-03-refresh-orchestration-memory-analysis.md",
     "docs/analysis/memory-risks-and-flaws.md",

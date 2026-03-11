@@ -1,7 +1,7 @@
 {
   "id": "task-usage-analytics",
   "name": "Task Usage Analytics",
-  "description": "Server-side task usage collection, incremental aggregation, and scheduled cleanup infrastructure, including the two cross-package gateways that give the web server access to Rex and Sourcevision.",
+  "description": "Server-side task usage tracking subsystem: incremental accumulation, scheduled cleanup, shared type contracts, and the cross-package gateway modules that connect the server to rex and sourcevision.",
   "files": [
     "packages/web/src/server/domain-gateway.ts",
     "packages/web/src/server/incremental-task-usage.ts",

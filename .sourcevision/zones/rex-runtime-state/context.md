@@ -7,8 +7,8 @@
 Zone: Rex Runtime State (`rex-runtime-state`)
 Files: 6, Cohesion: 0.00, Coupling: 0.00
 Risk: at-risk (score: 0.50)
-Description: Mutable runtime state files for the rex PRD tracker: the live PRD tree, execution logs, configuration, and item archive — disk state, not source code.
-Lines: 26421
+Description: Persistent data files that store the live PRD tree, execution logs, workflow state, and project configuration for the rex task tracker.
+Lines: 26821
 
 </zone>
 
@@ -17,8 +17,8 @@ Lines: 26421
 .rex/archive.json (JSON, 840 lines, other)
 .rex/config.json (JSON, 6 lines, other)
 .rex/execution-log.1.jsonl (Other, 3899 lines, other)
-.rex/execution-log.jsonl (Other, 728 lines, other)
-.rex/prd.json (JSON, 20930 lines, other)
+.rex/execution-log.jsonl (Other, 737 lines, other)
+.rex/prd.json (JSON, 21321 lines, other)
 .rex/workflow.md (Markdown, 18 lines, docs)
 
 </files>
@@ -26,9 +26,9 @@ Lines: 26421
 <findings>
 
 [observation] [info] Isolated files — no import edges between 6 files, cohesion is unmeasurable (reported as 0)
-[observation] [info] Zero cohesion and zero coupling are correct for a data-file zone — JSON and JSONL state files have no import graph edges by definition.
-[observation] [info] archive.json auto-trims at 100 batches, making it self-maintaining; the explicit 'safe to delete' note in CLAUDE.md is good developer UX and should be preserved in any future documentation refactors.
-[observation] [info] prd.json is written by three separate commands (plan, work, ci); the web server's in-process cache can serve stale data after bulk rewrites, requiring a server restart to flush — this is documented but worth surfacing in operator runbooks.
+[observation] [warning] Concurrent writes to prd.json from ndx plan and ndx work risk data corruption; no file-locking mechanism is documented — consider adding a lock file or serialization guard for production use.
+[observation] [info] Runtime state files (prd.json, workflow.md, execution logs) are correctly separated from source code, making them easy to .gitignore selectively or back up independently.
+[observation] [info] The archive.json file caps at 100 batches and auto-trims, which is a clean approach to bounded state growth without requiring manual maintenance.
 [suggestion] [info] Zone "Rex Runtime State" (rex-runtime-state) has at-risk risk (score: 0.50, cohesion: 0.00, coupling: 0.00) — approaching architectural risk thresholds
 
 </findings>
@@ -36,11 +36,11 @@ Lines: 26421
 <insights>
 
 - Isolated files — no import edges between 6 files, cohesion is unmeasurable (reported as 0)
-- These are data files only; they have no import relationships and should never be directly imported by production source code.
-- The split execution log (execution-log.jsonl and execution-log.1.jsonl) indicates log rotation is active, keeping individual files bounded in size.
-- prd.json is the highest-risk concurrency surface in the project — ndx plan, ndx work, and ndx ci all write to it and must not run simultaneously per the documented concurrency contract.
-- Zero cohesion and zero coupling are correct for a data-file zone — JSON and JSONL state files have no import graph edges by definition.
-- prd.json is written by three separate commands (plan, work, ci); the web server's in-process cache can serve stale data after bulk rewrites, requiring a server restart to flush — this is documented but worth surfacing in operator runbooks.
-- archive.json auto-trims at 100 batches, making it self-maintaining; the explicit 'safe to delete' note in CLAUDE.md is good developer UX and should be preserved in any future documentation refactors.
+- These files are written by multiple commands (plan, work, ci) and must not be modified concurrently — the concurrency contract in CLAUDE.md should be enforced at the CI level to prevent data corruption.
+- The execution log splitting into .rex/execution-log.1.jsonl and .rex/execution-log.jsonl suggests log rotation is in place, which is good for keeping file sizes manageable.
+- Cohesion of 0 is expected for a data-file zone — these files share a directory and lifecycle, not import relationships.
+- Runtime state files (prd.json, workflow.md, execution logs) are correctly separated from source code, making them easy to .gitignore selectively or back up independently.
+- Concurrent writes to prd.json from ndx plan and ndx work risk data corruption; no file-locking mechanism is documented — consider adding a lock file or serialization guard for production use.
+- The archive.json file caps at 100 batches and auto-trims, which is a clean approach to bounded state growth without requiring manual maintenance.
 
 </insights>

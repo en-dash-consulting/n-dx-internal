@@ -3,15 +3,16 @@
   "name": "Web Viewer/web/server 2",
   "description": "3 files, primarily TypeScript",
   "files": [
-    "packages/web/src/server/concurrent-execution-metrics.ts",
-    "packages/web/src/server/process-memory-tracker.ts",
-    "packages/web/src/server/routes-hench.ts"
+    "packages/web/src/server/prd-io.ts",
+    "packages/web/src/server/search-index.ts",
+    "packages/web/tests/unit/server/search-index.test.ts"
   ],
   "entryPoints": [
-    "packages/web/src/server/routes-hench.ts"
+    "packages/web/src/server/prd-io.ts",
+    "packages/web/src/server/search-index.ts"
   ],
-  "cohesion": 0.4,
-  "coupling": 0.6,
+  "cohesion": 0.22,
+  "coupling": 0.78,
   "fileCount": 3,
-  "lineCount": 3181
+  "lineCount": 1075
 }

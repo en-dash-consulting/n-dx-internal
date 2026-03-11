@@ -5,63 +5,42 @@
 <zone>
 
 Zone: Web Viewer/web Viewer/web 3 (`web-viewer/web-viewer/web-3`)
-Files: 15, Cohesion: 0.71, Coupling: 0.29
-Description: 15 files, primarily TypeScript
-Entry points: packages/web/src/viewer/components/prd-tree/facet-filter.ts, packages/web/src/viewer/components/prd-tree/index.ts, packages/web/src/viewer/views/analysis.ts
-Lines: 5299
+Files: 11, Cohesion: 0.42, Coupling: 0.58
+Description: 11 files, primarily TypeScript
+Entry points: packages/web/src/viewer/components/logos.ts, packages/web/src/viewer/components/notion-schema-wizard.ts, packages/web/src/viewer/views/feature-toggles.ts, packages/web/src/viewer/views/hench-config.ts, packages/web/src/viewer/views/hench-templates.ts, packages/web/src/viewer/views/integration-config.ts, packages/web/src/viewer/views/notion-config.ts, packages/web/src/viewer/views/problems.ts, packages/web/src/viewer/views/validation.ts, packages/web/src/viewer/views/workflow-optimization.ts
+Lines: 5304
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/components/prd-tree/analyze-panel.ts (TypeScript, 362 lines, source)
-packages/web/src/viewer/components/prd-tree/batch-import-panel.ts (TypeScript, 626 lines, source)
-packages/web/src/viewer/components/prd-tree/facet-filter.ts (TypeScript, 306 lines, source)
-packages/web/src/viewer/components/prd-tree/index.ts (TypeScript, 31 lines, source)
-packages/web/src/viewer/components/prd-tree/lazy-children.ts (TypeScript, 93 lines, source)
-packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts (TypeScript, 225 lines, source)
-packages/web/src/viewer/components/prd-tree/proposal-editor.ts (TypeScript, 704 lines, source)
-packages/web/src/viewer/components/prd-tree/smart-add-input.ts (TypeScript, 604 lines, source)
-packages/web/src/viewer/views/analysis.ts (TypeScript, 156 lines, source)
-packages/web/tests/unit/viewer/analyze-panel.test.ts (TypeScript, 214 lines, test)
-packages/web/tests/unit/viewer/batch-import-panel.test.ts (TypeScript, 372 lines, test)
-packages/web/tests/unit/viewer/lazy-children.test.ts (TypeScript, 295 lines, test)
-packages/web/tests/unit/viewer/listener-lifecycle.test.ts (TypeScript, 417 lines, test)
-packages/web/tests/unit/viewer/proposal-editor.test.ts (TypeScript, 289 lines, test)
-packages/web/tests/unit/viewer/smart-add-input.test.ts (TypeScript, 605 lines, test)
+packages/web/src/viewer/components/logos.ts (TypeScript, 62 lines, source)
+packages/web/src/viewer/components/notion-schema-wizard.ts (TypeScript, 435 lines, source)
+packages/web/src/viewer/views/feature-toggles.ts (TypeScript, 332 lines, source)
+packages/web/src/viewer/views/hench-config.ts (TypeScript, 674 lines, source)
+packages/web/src/viewer/views/hench-templates.ts (TypeScript, 422 lines, source)
+packages/web/src/viewer/views/integration-config.ts (TypeScript, 796 lines, source)
+packages/web/src/viewer/views/notion-config.ts (TypeScript, 567 lines, source)
+packages/web/src/viewer/views/problems.ts (TypeScript, 102 lines, source)
+packages/web/src/viewer/views/validation.ts (TypeScript, 819 lines, source)
+packages/web/src/viewer/views/workflow-optimization.ts (TypeScript, 598 lines, source)
+packages/web/tests/unit/viewer/hench-config.test.ts (TypeScript, 497 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/src/viewer/components/prd-tree/analyze-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
-  packages/web/src/viewer/components/prd-tree/analyze-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
-  packages/web/src/viewer/components/prd-tree/batch-import-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
-  packages/web/src/viewer/components/prd-tree/batch-import-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanel}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanelProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/facet-filter.ts {FacetFilter}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/facet-filter.ts {FacetFilterProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/lazy-children.ts {LazyChildren, UNMOUNT_DELAY_MS}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/lazy-children.ts {LazyChildrenProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts {ListenerLifecycleManager, useNodeListeners}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts {ListenerRecord, ListenerLifecycleState}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal, ProposalEditorProps}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts {SmartAddInput}
-  packages/web/src/viewer/components/prd-tree/index.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts {SmartAddInputProps}
-  packages/web/src/viewer/components/prd-tree/smart-add-input.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
-  packages/web/src/viewer/components/prd-tree/smart-add-input.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
-  packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/analyze-panel.ts {AnalyzePanel}
-  packages/web/src/viewer/views/analysis.ts → packages/web/src/viewer/components/prd-tree/index.ts {SmartAddInput, BatchImportPanel}
-  packages/web/tests/unit/viewer/analyze-panel.test.ts → packages/web/src/viewer/components/prd-tree/analyze-panel.ts {AnalyzePanel}
-  packages/web/tests/unit/viewer/batch-import-panel.test.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchImportPanel, BatchItemRow}
-  packages/web/tests/unit/viewer/batch-import-panel.test.ts → packages/web/src/viewer/components/prd-tree/batch-import-panel.ts {BatchItem}
-  packages/web/tests/unit/viewer/lazy-children.test.ts → packages/web/src/viewer/components/prd-tree/lazy-children.ts {LazyChildren, UNMOUNT_DELAY_MS}
-  packages/web/tests/unit/viewer/listener-lifecycle.test.ts → packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts {ListenerLifecycleManager}
-  packages/web/tests/unit/viewer/proposal-editor.test.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
-  packages/web/tests/unit/viewer/proposal-editor.test.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
-  packages/web/tests/unit/viewer/smart-add-input.test.ts → packages/web/src/viewer/components/prd-tree/smart-add-input.ts {SmartAddInput}
+  packages/web/src/viewer/views/feature-toggles.ts → packages/web/src/viewer/components/logos.ts {NdxLogoPng}
+  packages/web/src/viewer/views/hench-config.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/hench-templates.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/integration-config.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/notion-config.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/notion-config.ts → packages/web/src/viewer/components/notion-schema-wizard.ts {NotionSchemaWizard}
+  packages/web/src/viewer/views/problems.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/validation.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/src/viewer/views/workflow-optimization.ts → packages/web/src/viewer/components/logos.ts {BrandedHeader}
+  packages/web/tests/unit/viewer/hench-config.test.ts → packages/web/src/viewer/views/hench-config.ts {HenchConfigView, formatDisplayValue, coerceFieldValue, validateField, getPreviewImpact}
+  packages/web/tests/unit/viewer/hench-config.test.ts → packages/web/src/viewer/views/hench-config.ts {ConfigField}
 
 </imports>

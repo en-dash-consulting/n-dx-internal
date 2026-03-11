@@ -6712,8 +6712,8 @@
       "to": "packages/rex/src/analyze/reshape-reason.ts",
       "type": "dynamic",
       "symbols": [
-        "formatReshapeProposal",
-        "reasonForReshape"
+        "reasonForReshape",
+        "formatReshapeProposal"
       ]
     },
     {
@@ -6755,6 +6755,17 @@
       "type": "static",
       "symbols": [
         "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/prune.ts",
+      "to": "packages/rex/src/core/pending-cache.ts",
+      "type": "static",
+      "symbols": [
+        "hashPRD",
+        "savePendingSmartPrune",
+        "loadPendingSmartPrune",
+        "clearPendingSmartPrune"
       ]
     },
     {
@@ -7431,6 +7442,14 @@
       "type": "static",
       "symbols": [
         "cascadeParentReset"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/smart-add.ts",
+      "to": "packages/rex/src/core/pending-cache.ts",
+      "type": "static",
+      "symbols": [
+        "hashPRD"
       ]
     },
     {
@@ -9087,6 +9106,30 @@
     },
     {
       "from": "packages/rex/src/core/parent-reset.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/pending-cache.ts",
+      "to": "packages/rex/src/core/canonical.ts",
+      "type": "static",
+      "symbols": [
+        "toCanonicalJSON"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/pending-cache.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "type",
+      "symbols": [
+        "ReshapeProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/src/core/pending-cache.ts",
       "to": "packages/rex/src/schema/index.ts",
       "type": "type",
       "symbols": [
@@ -11039,6 +11082,111 @@
       ]
     },
     {
+      "from": "packages/rex/tests/integration/cli/commands/prune-cache.test.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/prune-cache.test.ts",
+      "to": "packages/rex/src/cli/commands/init.ts",
+      "type": "static",
+      "symbols": [
+        "cmdInit"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/prune-cache.test.ts",
+      "to": "packages/rex/src/cli/commands/prune.ts",
+      "type": "static",
+      "symbols": [
+        "cmdPrune"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/prune-cache.test.ts",
+      "to": "packages/rex/src/core/pending-cache.ts",
+      "type": "static",
+      "symbols": [
+        "PENDING_SMART_PRUNE_FILE",
+        "loadPendingSmartPrune"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/prune-cache.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/prune-cache.test.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts",
+      "to": "packages/rex/src/analyze/index.ts",
+      "type": "type",
+      "symbols": [
+        "Proposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts",
+      "to": "packages/rex/src/cli/commands/init.ts",
+      "type": "static",
+      "symbols": [
+        "cmdInit"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts",
+      "to": "packages/rex/src/cli/commands/smart-add.ts",
+      "type": "static",
+      "symbols": [
+        "cmdSmartAdd"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts",
+      "to": "packages/rex/src/core/pending-cache.ts",
+      "type": "static",
+      "symbols": [
+        "hashPRD"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
       "from": "packages/rex/tests/integration/project-config.test.ts",
       "to": "packages/rex/src/core/canonical.ts",
       "type": "static",
@@ -12808,6 +12956,34 @@
     {
       "from": "packages/rex/tests/unit/core/parent-reset.test.ts",
       "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/pending-cache.test.ts",
+      "to": "packages/rex/src/core/pending-cache.ts",
+      "type": "static",
+      "symbols": [
+        "PENDING_SMART_PRUNE_FILE",
+        "hashPRD",
+        "savePendingSmartPrune",
+        "loadPendingSmartPrune",
+        "clearPendingSmartPrune"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/pending-cache.test.ts",
+      "to": "packages/rex/src/core/reshape.ts",
+      "type": "type",
+      "symbols": [
+        "ReshapeProposal"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/core/pending-cache.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
       "type": "type",
       "symbols": [
         "PRDItem"
@@ -15377,6 +15553,14 @@
         "BranchWorkRecord",
         "BranchWorkRecordItem",
         "BranchWorkEpicSummary"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/reset.ts",
+      "to": "packages/sourcevision/src/analyzers/workspace.ts",
+      "type": "static",
+      "symbols": [
+        "detectSubAnalyses"
       ]
     },
     {
@@ -26380,6 +26564,8 @@
         "packages/rex/tests/e2e/cli-sync.test.ts",
         "packages/rex/tests/e2e/cli-workflow.test.ts",
         "packages/rex/tests/integration/claude-config.test.ts",
+        "packages/rex/tests/integration/cli/commands/prune-cache.test.ts",
+        "packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts",
         "packages/rex/tests/integration/project-config.test.ts",
         "packages/rex/tests/integration/smart-add-duplicate-outcomes.test.ts",
         "packages/rex/tests/integration/smart-add-orphaned-parent.test.ts",
@@ -26456,6 +26642,7 @@
         "packages/rex/tests/unit/core/override-escalation.test.ts",
         "packages/rex/tests/unit/core/parent-completion.test.ts",
         "packages/rex/tests/unit/core/parent-reset.test.ts",
+        "packages/rex/tests/unit/core/pending-cache.test.ts",
         "packages/rex/tests/unit/core/prune.test.ts",
         "packages/rex/tests/unit/core/remove-epic.test.ts",
         "packages/rex/tests/unit/core/remove-feature.test.ts",
@@ -26751,7 +26938,7 @@
     }
   ],
   "summary": {
-    "totalEdges": 2762,
+    "totalEdges": 2784,
     "totalExternal": 18,
     "circularCount": 1,
     "circulars": [
@@ -26775,11 +26962,11 @@
       },
       {
         "path": "packages/rex/src/store/index.ts",
-        "count": 32
+        "count": 34
       },
       {
         "path": "packages/rex/src/cli/commands/constants.ts",
-        "count": 29
+        "count": 31
       },
       {
         "path": "packages/rex/src/cli/output.ts",
@@ -26807,7 +26994,7 @@
       },
       {
         "path": "packages/rex/src/core/canonical.ts",
-        "count": 17
+        "count": 18
       },
       {
         "path": "packages/web/src/server/rex-gateway.ts",
@@ -26846,6 +27033,6 @@
         "count": 11
       }
     ],
-    "avgImportsPerFile": 3.44
+    "avgImportsPerFile": 3.45
   }
 }

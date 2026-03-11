@@ -1,7 +1,7 @@
 {
   "id": "monorepo-e2e-test-suite",
   "name": "Monorepo E2E Test Suite",
-  "description": "End-to-end test suite validating CLI contracts, architecture policies, MCP transport, and orchestration behavior across the entire monorepo.",
+  "description": "Top-level end-to-end test suite covering CLI contracts, architecture policy enforcement, cross-package delegation, MCP transport, and integration coverage policy across the entire monorepo.",
   "files": [
     "tests/e2e/architecture-policy.test.js",
     "tests/e2e/cli-arg-contracts.test.js",
@@ -30,7 +30,7 @@
   "cohesion": 1,
   "coupling": 0,
   "fileCount": 22,
-  "lineCount": 6790,
+  "lineCount": 6793,
   "riskMetrics": {
     "cohesion": 1,
     "coupling": 0,

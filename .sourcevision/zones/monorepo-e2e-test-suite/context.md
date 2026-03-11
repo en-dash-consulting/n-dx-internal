@@ -7,8 +7,8 @@
 Zone: Monorepo E2E Test Suite (`monorepo-e2e-test-suite`)
 Files: 22, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: End-to-end test suite validating CLI contracts, architecture policies, MCP transport, and orchestration behavior across the entire monorepo.
-Lines: 6790
+Description: Top-level end-to-end test suite covering CLI contracts, architecture policy enforcement, cross-package delegation, MCP transport, and integration coverage policy across the entire monorepo.
+Lines: 6793
 
 </zone>
 
@@ -17,16 +17,16 @@ Lines: 6790
 tests/e2e/architecture-policy.test.js (JavaScript, 734 lines, test)
 tests/e2e/cli-arg-contracts.test.js (JavaScript, 320 lines, test)
 tests/e2e/cli-ci.test.js (JavaScript, 447 lines, test)
-tests/e2e/cli-config.test.js (JavaScript, 1044 lines, test)
+tests/e2e/cli-config.test.js (JavaScript, 1066 lines, test)
 tests/e2e/cli-contract.test.js (JavaScript, 99 lines, test)
 tests/e2e/cli-delegation.test.js (JavaScript, 65 lines, test)
 tests/e2e/cli-dev.test.js (JavaScript, 30 lines, test)
 tests/e2e/cli-errors.test.js (JavaScript, 126 lines, test)
-tests/e2e/cli-init.test.js (JavaScript, 264 lines, test)
+tests/e2e/cli-init.test.js (JavaScript, 244 lines, test)
 tests/e2e/cli-orchestration.test.js (JavaScript, 401 lines, test)
 tests/e2e/cli-output-contracts.test.js (JavaScript, 85 lines, test)
 tests/e2e/cli-pr-check.test.js (JavaScript, 325 lines, test)
-tests/e2e/cli-refresh.test.js (JavaScript, 307 lines, test)
+tests/e2e/cli-refresh.test.js (JavaScript, 308 lines, test)
 tests/e2e/cli-spawn-boundary.test.js (JavaScript, 169 lines, test)
 tests/e2e/cli-start.test.js (JavaScript, 312 lines, test)
 tests/e2e/cli-tool-resolution.test.js (JavaScript, 55 lines, test)
@@ -55,19 +55,21 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] 22 e2e files with perfect internal cohesion and zero external coupling is a strong indicator of a well-maintained integration boundary at the monorepo root
-[observation] [info] ensure architecture-policy.test.js is run in CI before any PR that touches cli.js, web.js, or ci.js to prevent silent tier-boundary violations
+[observation] [info] Perfect cohesion (1.0) across 22+ files confirms the suite is tightly focused on cross-package, full-stack scenarios with no production code mixed in.
+[observation] [info] The suite covers both structural concerns (architecture-policy, domain-isolation) and behavioural concerns (cli-ci, cli-errors, mcp-transport) — this dual focus is a strong signal of mature test discipline.
+[observation] [info] Zero coupling to any production zone means the e2e tests exercise the system exclusively through CLI and HTTP boundaries, which correctly mirrors how real consumers use the toolkit.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- 22-file suite with perfect cohesion and zero coupling is exactly what a top-level e2e layer should look like — no production code contamination
-- The suite covers multiple concern categories (CLI contracts, delegation, errors, architecture-policy, MCP transport) which provides broad regression safety for the orchestration tier
-- architecture-policy.test.js enforces the spawn-only rule for orchestration scripts documented in CLAUDE.md, making the architectural constraint machine-verifiable rather than convention-only
-- 22 e2e files with perfect internal cohesion and zero external coupling is a strong indicator of a well-maintained integration boundary at the monorepo root
-- ensure architecture-policy.test.js is run in CI before any PR that touches cli.js, web.js, or ci.js to prevent silent tier-boundary violations
-- [call graph] 453 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- architecture-policy.test.js and domain-isolation.test.js act as architectural guardrails — they must pass before any PR merges that touches tier boundaries or gateway modules
+- cli-contract.test.js and cli-delegation.test.js document the public CLI API surface; treat failures as breaking changes requiring a changelog entry
+- With 22+ files and perfect cohesion, this suite is well-organised; ensure new features always ship with a corresponding e2e test file to keep integration-coverage-policy.test.js green
+- Perfect cohesion (1.0) across 22+ files confirms the suite is tightly focused on cross-package, full-stack scenarios with no production code mixed in.
+- The suite covers both structural concerns (architecture-policy, domain-isolation) and behavioural concerns (cli-ci, cli-errors, mcp-transport) — this dual focus is a strong signal of mature test discipline.
+- Zero coupling to any production zone means the e2e tests exercise the system exclusively through CLI and HTTP boundaries, which correctly mirrors how real consumers use the toolkit.
+- [call graph] 465 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

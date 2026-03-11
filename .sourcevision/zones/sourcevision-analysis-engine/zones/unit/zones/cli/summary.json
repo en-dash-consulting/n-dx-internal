@@ -1,0 +1,30 @@
+{
+  "id": "sourcevision/unit/cli",
+  "name": "Sourcevision/unit/cli",
+  "description": "10 files, primarily TypeScript",
+  "files": [
+    "packages/sourcevision/src/cli/commands/constants.ts",
+    "packages/sourcevision/src/cli/commands/init.ts",
+    "packages/sourcevision/src/cli/commands/reset.ts",
+    "packages/sourcevision/src/cli/commands/validate.ts",
+    "packages/sourcevision/src/cli/mcp.ts",
+    "packages/sourcevision/src/cli/output.ts",
+    "packages/sourcevision/src/schema/data-files.ts",
+    "packages/sourcevision/tests/unit/cli/mcp.test.ts",
+    "packages/sourcevision/tests/unit/cli/output.test.ts",
+    "packages/sourcevision/tests/unit/schema/data-files.test.ts"
+  ],
+  "entryPoints": [
+    "packages/sourcevision/src/cli/commands/constants.ts",
+    "packages/sourcevision/src/cli/commands/init.ts",
+    "packages/sourcevision/src/cli/commands/reset.ts",
+    "packages/sourcevision/src/cli/commands/validate.ts",
+    "packages/sourcevision/src/cli/mcp.ts",
+    "packages/sourcevision/src/cli/output.ts",
+    "packages/sourcevision/src/schema/data-files.ts"
+  ],
+  "cohesion": 0.31,
+  "coupling": 0.69,
+  "fileCount": 10,
+  "lineCount": 1191
+}

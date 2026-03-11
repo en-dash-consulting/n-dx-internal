@@ -1,0 +1,20 @@
+{
+  "id": "web-viewer/web/server-routes-rex",
+  "name": "Web Viewer/web/server Routes Rex",
+  "description": "5 files, primarily TypeScript",
+  "files": [
+    "packages/web/src/server/routes-rex/analysis.ts",
+    "packages/web/src/server/websocket.ts",
+    "packages/web/tests/integration/ws-health-integration.test.ts",
+    "packages/web/tests/unit/server/websocket.test.ts",
+    "packages/web/tests/unit/server/ws-health-tracker.test.ts"
+  ],
+  "entryPoints": [
+    "packages/web/src/server/routes-rex/analysis.ts",
+    "packages/web/src/server/websocket.ts"
+  ],
+  "cohesion": 0.13,
+  "coupling": 0.88,
+  "fileCount": 5,
+  "lineCount": 2192
+}

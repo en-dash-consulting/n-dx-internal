@@ -5,26 +5,29 @@
 <zone>
 
 Zone: Web Viewer/web 3 (`web-viewer/web-3`)
-Files: 3, Cohesion: 0.25, Coupling: 0.75
-Description: 3 files, primarily TypeScript
-Entry points: packages/web/src/viewer/components/prd-tree/tree-search.ts, packages/web/src/viewer/hooks/use-facet-state.ts
-Lines: 811
+Files: 4, Cohesion: 0.33, Coupling: 0.67
+Description: 4 files, primarily TypeScript
+Entry points: packages/web/src/viewer/components/prd-tree/analyze-panel.ts, packages/web/src/viewer/components/prd-tree/proposal-editor.ts
+Lines: 1569
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/components/prd-tree/tree-search.ts (TypeScript, 242 lines, source)
-packages/web/src/viewer/hooks/use-facet-state.ts (TypeScript, 154 lines, source)
-packages/web/tests/unit/viewer/tree-search.test.ts (TypeScript, 415 lines, test)
+packages/web/src/viewer/components/prd-tree/analyze-panel.ts (TypeScript, 362 lines, source)
+packages/web/src/viewer/components/prd-tree/proposal-editor.ts (TypeScript, 704 lines, source)
+packages/web/tests/unit/viewer/analyze-panel.test.ts (TypeScript, 214 lines, test)
+packages/web/tests/unit/viewer/proposal-editor.test.ts (TypeScript, 289 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/src/viewer/hooks/use-facet-state.ts → packages/web/src/viewer/components/prd-tree/tree-search.ts {SearchFacets}
-  packages/web/tests/unit/viewer/tree-search.test.ts → packages/web/src/viewer/components/prd-tree/tree-search.ts {searchTree, itemMatchesSearch, highlightSearchText, collectAllTags}
-  packages/web/tests/unit/viewer/tree-search.test.ts → packages/web/src/viewer/components/prd-tree/tree-search.ts {SearchFacets}
+  packages/web/src/viewer/components/prd-tree/analyze-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
+  packages/web/src/viewer/components/prd-tree/analyze-panel.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
+  packages/web/tests/unit/viewer/analyze-panel.test.ts → packages/web/src/viewer/components/prd-tree/analyze-panel.ts {AnalyzePanel}
+  packages/web/tests/unit/viewer/proposal-editor.test.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {ProposalEditor}
+  packages/web/tests/unit/viewer/proposal-editor.test.ts → packages/web/src/viewer/components/prd-tree/proposal-editor.ts {RawProposal}
 
 </imports>

@@ -1,7 +1,7 @@
 {
   "id": "viewer-route-state",
   "name": "Viewer Route State",
-  "description": "Manages URL route parsing, resolution, and navigation state for the viewer application, including the React hook surface.",
+  "description": "Client-side URL routing state for the viewer: a vanilla route-state module and a React hook wrapper that expose the current route to Preact components.",
   "files": [
     "packages/web/src/viewer/hooks/use-route-state.ts",
     "packages/web/src/viewer/route-state.ts",

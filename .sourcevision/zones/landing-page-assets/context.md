@@ -7,7 +7,7 @@
 Zone: Landing Page Assets (`landing-page-assets`)
 Files: 2, Cohesion: 0.00, Coupling: 0.00
 Risk: at-risk (score: 0.50)
-Description: Static HTML and CSS assets for the web dashboard landing page, with no JavaScript dependencies.
+Description: Isolated static assets (HTML template and CSS) for the product landing page, with no runtime imports or exports.
 Lines: 1640
 
 </zone>
@@ -22,9 +22,9 @@ packages/web/src/landing/landing.css (CSS, 1317 lines, other)
 <findings>
 
 [observation] [info] Isolated files — no import edges between 2 files, cohesion is unmeasurable (reported as 0)
-[observation] [info] Cohesion and coupling are both 0 because static HTML and CSS files do not participate in the import graph — this is expected and not a quality concern.
-[observation] [info] This zone and the viewer-shell-assets zone (index.html + logos) represent two separate static entry points; consider whether they should be consolidated into a single shell-assets zone to reduce zone fragmentation.
-[observation] [info] Zone contains only 2 files with no entry points registered; tooling that relies on entry points for reachability analysis will not traverse into this zone automatically.
+[observation] [info] The zone is completely disconnected from the rest of the import graph, which means it can be independently deployed or replaced without touching any other zone.
+[observation] [info] Zero cohesion and coupling are expected and correct for static HTML/CSS assets — no action needed; this zone is architecturally isolated by design.
+[observation] [info] landing.ts (a page-classified TypeScript file) lives in viewer-shell-assets rather than here alongside its sibling HTML/CSS — consider whether these should be co-located in one zone.
 [suggestion] [info] Zone "Landing Page Assets" (landing-page-assets) has at-risk risk (score: 0.50, cohesion: 0.00, coupling: 0.00) — unreliable: zone has only 2 files (minimum 5 for reliable metrics)
 
 </findings>
@@ -32,11 +32,11 @@ packages/web/src/landing/landing.css (CSS, 1317 lines, other)
 <insights>
 
 - Isolated files — no import edges between 2 files, cohesion is unmeasurable (reported as 0)
-- Pure static assets — cohesion and coupling of 0 are expected and correct for files with no import graph edges
-- Consider co-locating with the viewer shell assets zone (logo zone) since both are static entry-point resources with no runtime imports
-- No build tooling integration visible; verify these assets are correctly referenced by the web server's static file serving configuration
-- Cohesion and coupling are both 0 because static HTML and CSS files do not participate in the import graph — this is expected and not a quality concern.
-- This zone and the viewer-shell-assets zone (index.html + logos) represent two separate static entry points; consider whether they should be consolidated into a single shell-assets zone to reduce zone fragmentation.
-- Zone contains only 2 files with no entry points registered; tooling that relies on entry points for reachability analysis will not traverse into this zone automatically.
+- Cohesion and coupling are both 0.0, which is expected for a zone containing only static assets with no module graph edges — this is not a quality concern
+- The zone has exactly 2 files with no entry points, making it naturally stable and low-risk; changes here cannot break any other zone
+- If the landing page ever gains JavaScript logic (e.g. analytics, form handling), a dedicated landing script module should be created and grouped here rather than placed in viewer-shell-assets
+- Zero cohesion and coupling are expected and correct for static HTML/CSS assets — no action needed; this zone is architecturally isolated by design.
+- The zone is completely disconnected from the rest of the import graph, which means it can be independently deployed or replaced without touching any other zone.
+- landing.ts (a page-classified TypeScript file) lives in viewer-shell-assets rather than here alongside its sibling HTML/CSS — consider whether these should be co-located in one zone.
 
 </insights>
