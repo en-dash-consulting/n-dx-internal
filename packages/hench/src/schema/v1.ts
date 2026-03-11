@@ -1,4 +1,4 @@
-import { PROJECT_DIRS } from "@n-dx/llm-client";
+import { PROJECT_DIRS } from "../prd/llm-gateway.js";
 export type { MemoryThrottleConfig } from "../process/memory-throttle.js";
 export type { MemoryMonitorConfig } from "../process/memory-monitor.js";
 export type { RuntimePoolConfig } from "../process/pool.js";

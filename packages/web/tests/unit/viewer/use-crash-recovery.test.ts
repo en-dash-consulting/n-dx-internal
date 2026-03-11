@@ -17,7 +17,7 @@ import {
   useCrashRecovery,
   type UseCrashRecoveryResult,
 } from "../../../src/viewer/hooks/use-crash-recovery.js";
-import type { CrashDetectionResult, SavedNavigationState } from "../../../src/viewer/performance/crash-detector.js";
+import type { CrashDetectionResult, SavedNavigationState } from "../../../src/viewer/crash/crash-detector.js";
 
 // ── Mocks ─────────────────────────────────────────────────────────────
 

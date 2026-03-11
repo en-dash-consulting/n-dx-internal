@@ -14,7 +14,7 @@ import {
   resolveApiKey,
   resolveLLMVendor,
 } from "../../store/project-config.js";
-import { resolveModel } from "@n-dx/llm-client";
+import { resolveModel } from "../../prd/llm-gateway.js";
 import { checkTokenBudget } from "./token-budget.js";
 import { parseTokenUsage } from "./token-usage.js";
 import { startHeartbeat } from "./heartbeat.js";

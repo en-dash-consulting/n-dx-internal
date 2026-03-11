@@ -217,6 +217,99 @@ describe("hench → rex gateway contract", () => {
 });
 
 // ---------------------------------------------------------------------------
+// hench → llm-client gateway contract
+// ---------------------------------------------------------------------------
+
+describe("hench → llm-client gateway contract", () => {
+  /** @type {Record<string, unknown>} */
+  let gateway;
+
+  it("can import hench llm-gateway", async () => {
+    gateway = await import("../../packages/hench/dist/prd/llm-gateway.js");
+    expect(gateway).toBeDefined();
+  });
+
+  const GATEWAY_FUNCTIONS = [
+    "loadClaudeConfig",
+    "loadLLMConfig",
+    "resolveApiKey",
+    "resolveCliPath",
+    "loadProjectOverrides",
+    "mergeWithOverrides",
+    "toCanonicalJSON",
+    "setQuiet",
+    "isQuiet",
+    "info",
+    "result",
+    "formatHelp",
+    "formatTypoSuggestion",
+    "exec",
+    "execStdout",
+    "execShellCmd",
+    "getCurrentHead",
+    "getCurrentBranch",
+    "isExecutableOnPath",
+    "spawnTool",
+    "spawnManaged",
+    "parseApiTokenUsage",
+    "parseStreamTokenUsage",
+    "resolveModel",
+    "formatUsage",
+  ];
+
+  const GATEWAY_CLASSES = ["CLIError", "ClaudeClientError", "ProcessPool", "ProcessLimitError"];
+
+  const GATEWAY_CONSTANTS = ["PROJECT_DIRS"];
+
+  for (const name of GATEWAY_FUNCTIONS) {
+    it(`re-exports "${name}" as a function`, async () => {
+      if (!gateway) {
+        gateway = await import("../../packages/hench/dist/prd/llm-gateway.js");
+      }
+      expect(gateway[name], `hench llm-gateway missing "${name}"`).toBeDefined();
+      expect(typeof gateway[name]).toBe("function");
+    });
+  }
+
+  for (const name of GATEWAY_CLASSES) {
+    it(`re-exports "${name}" as a constructor`, async () => {
+      if (!gateway) {
+        gateway = await import("../../packages/hench/dist/prd/llm-gateway.js");
+      }
+      expect(gateway[name], `hench llm-gateway missing "${name}"`).toBeDefined();
+      expect(typeof gateway[name]).toBe("function");
+    });
+  }
+
+  for (const name of GATEWAY_CONSTANTS) {
+    it(`re-exports "${name}" as a constant`, async () => {
+      if (!gateway) {
+        gateway = await import("../../packages/hench/dist/prd/llm-gateway.js");
+      }
+      expect(gateway[name], `hench llm-gateway missing "${name}"`).toBeDefined();
+      expect(typeof gateway[name]).toBe("object");
+    });
+  }
+
+  it("gateway exports match llm-client public API (no stale re-exports)", async () => {
+    if (!gateway) {
+      gateway = await import("../../packages/hench/dist/prd/llm-gateway.js");
+    }
+    const llmPublic = await import("../../packages/llm-client/dist/public.js");
+
+    const gatewayExports = Object.keys(gateway);
+    const mismatched = gatewayExports.filter(
+      (name) => llmPublic[name] === undefined,
+    );
+
+    expect(
+      mismatched,
+      `hench llm-gateway re-exports symbols not found in llm-client public API: ${mismatched.join(", ")}`,
+    ).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // web → rex gateway contract
 // ---------------------------------------------------------------------------
 
@@ -473,6 +566,37 @@ describe("gateway export auto-detection", () => {
         parts.push("", "Stale entries in contract test (removed from gateway):", ...stale.map((s) => `  - ${s}`));
       }
       parts.push("", "Update GATEWAY_FUNCTIONS/GATEWAY_CONSTANTS in cross-package-contracts.test.js");
+      expect.fail(parts.join("\n"));
+    }
+  });
+
+  it("hench llm-gateway source exports match contract test list", () => {
+    const gwPath = join(ROOT, "packages/hench/src/prd/llm-gateway.ts");
+    const sourceExports = parseRuntimeExports(gwPath);
+
+    const testedSymbols = new Set([
+      ...["loadClaudeConfig", "loadLLMConfig", "resolveApiKey", "resolveCliPath",
+        "loadProjectOverrides", "mergeWithOverrides", "toCanonicalJSON",
+        "setQuiet", "isQuiet", "info", "result", "formatHelp", "formatTypoSuggestion",
+        "CLIError", "ClaudeClientError",
+        "exec", "execStdout", "execShellCmd", "getCurrentHead", "getCurrentBranch",
+        "isExecutableOnPath", "spawnTool", "spawnManaged", "ProcessPool", "ProcessLimitError",
+        "parseApiTokenUsage", "parseStreamTokenUsage", "resolveModel", "formatUsage"],
+      ...["PROJECT_DIRS"],
+    ]);
+
+    const untested = sourceExports.filter((s) => !testedSymbols.has(s));
+    const stale = [...testedSymbols].filter((s) => !sourceExports.includes(s));
+
+    if (untested.length > 0 || stale.length > 0) {
+      const parts = ["Hench llm-gateway contract test list is out of sync with gateway source."];
+      if (untested.length > 0) {
+        parts.push("", "New exports not in contract test:", ...untested.map((s) => `  + ${s}`));
+      }
+      if (stale.length > 0) {
+        parts.push("", "Stale entries in contract test (removed from gateway):", ...stale.map((s) => `  - ${s}`));
+      }
+      parts.push("", "Update GATEWAY_FUNCTIONS/GATEWAY_CLASSES/GATEWAY_CONSTANTS in cross-package-contracts.test.js");
       expect.fail(parts.join("\n"));
     }
   });

@@ -27,6 +27,10 @@ const REQUIRED_CONTRACTS = [
     description: "hench → rex gateway contract",
   },
   {
+    gateway: "packages/hench/src/prd/llm-gateway.ts",
+    description: "hench → llm-client gateway contract",
+  },
+  {
     gateway: "packages/web/src/server/rex-gateway.ts",
     description: "web → rex gateway contract",
   },
@@ -98,6 +102,32 @@ describe("integration test coverage policy", () => {
         ].join("\n"),
       ).toBe(true);
     }
+  });
+
+  it("integration test count grows proportionally with e2e test count", () => {
+    const e2eDir = join(ROOT, "tests", "e2e");
+    const e2eFiles = existsSync(e2eDir)
+      ? readdirSync(e2eDir).filter((f) => f.endsWith(".test.js") || f.endsWith(".test.ts"))
+      : [];
+    const integrationFiles = existsSync(integrationDir)
+      ? readdirSync(integrationDir).filter((f) => f.endsWith(".test.js") || f.endsWith(".test.ts"))
+      : [];
+
+    // Integration tests should be at least 15% of e2e test count.
+    // This ensures the integration tier grows as the test suite expands.
+    const minRatio = 0.15;
+    const minExpected = Math.max(MIN_INTEGRATION_FILES, Math.ceil(e2eFiles.length * minRatio));
+
+    expect(
+      integrationFiles.length,
+      [
+        `Integration test count (${integrationFiles.length}) is below the proportional minimum (${minExpected}).`,
+        `E2E tests: ${e2eFiles.length}, required ratio: ${(minRatio * 100).toFixed(0)}%`,
+        "",
+        "Add integration tests for cross-package boundaries.",
+        "See TESTING.md for required coverage scenarios.",
+      ].join("\n"),
+    ).toBeGreaterThanOrEqual(minExpected);
   });
 
   it("all gateway files referenced in REQUIRED_CONTRACTS exist on disk", () => {

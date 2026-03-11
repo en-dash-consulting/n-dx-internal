@@ -19,7 +19,7 @@ import {
   resetCrashDetector,
   type CrashDetectionResult,
   type SavedNavigationState,
-} from "../../../src/viewer/performance/crash-detector.js";
+} from "../../../src/viewer/crash/crash-detector.js";
 import {
   HEARTBEAT_KEY,
   NAV_STATE_KEY,
