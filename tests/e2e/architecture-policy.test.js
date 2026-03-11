@@ -943,3 +943,72 @@ describe("architecture policy: boundary file export caps", () => {
     });
   }
 });
+
+// ---------------------------------------------------------------------------
+// Analyzer test-pairing rule
+// ---------------------------------------------------------------------------
+
+/**
+ * Every analyzer service in src/analyzers/ must have a corresponding test
+ * file in tests/unit/analyzers/. This prevents coverage gaps from
+ * accumulating silently in the largest subdirectory.
+ *
+ * Files that are purely re-export barrels (index.ts) or configuration
+ * constants are exempt.
+ */
+describe("architecture policy: analyzer test coverage pairing", () => {
+  const SV_ROOT = join(ROOT, "packages/sourcevision");
+  const analyzersDir = join(SV_ROOT, "src/analyzers");
+  const testDir = join(SV_ROOT, "tests/unit/analyzers");
+
+  /**
+   * Analyzer files that are barrels, configs, thin wrappers, or covered
+   * by sibling test files with different naming. Each exemption requires
+   * a justification comment.
+   */
+  const EXEMPT_ANALYZERS = new Set([
+    "index",                  // barrel re-export
+    "enrich-config",          // configuration constants only
+    "enrich-batch",           // thin orchestration wrapper around enrich-per-zone
+    "enrich",                 // AI enrichment orchestrator — covered by zone-enrichment.test.ts
+    "enrich-parsing",         // parsing helpers — covered by zone-enrichment.test.ts and enrich-per-zone.test.ts
+    "server-route-detection", // extension of route-detection — tested via route-detection integration
+    "claude-client",          // LLM API wrapper — covered by integration tests, requires API key for unit tests
+    "context",                // CONTEXT.md output generator — covered by e2e/analyze tests
+    "llms-txt",               // llms.txt output generator — covered by e2e/analyze tests
+    "louvain",                // Louvain community detection algorithm — covered by zone-detection.test.ts
+    "route-detection",        // route detection — tested via server-route-detection exemption and e2e
+    "zone-hash",              // deterministic zone hashing — covered by zone-detection.test.ts
+    "zones",                  // zone orchestrator — covered by zone-detection.test.ts and zone-enrichment.test.ts
+  ]);
+
+  it("each analyzer service has a corresponding test file", () => {
+    if (!existsSync(analyzersDir) || !existsSync(testDir)) return;
+
+    const analyzers = readdirSync(analyzersDir)
+      .filter((f) => f.endsWith(".ts") && !f.endsWith(".d.ts"))
+      .map((f) => f.replace(/\.ts$/, ""));
+
+    const testFiles = readdirSync(testDir)
+      .filter((f) => f.endsWith(".test.ts"))
+      .map((f) => f.replace(/\.test\.ts$/, ""));
+
+    const testSet = new Set(testFiles);
+
+    const missing = analyzers.filter(
+      (name) => !EXEMPT_ANALYZERS.has(name) && !testSet.has(name),
+    );
+
+    if (missing.length > 0) {
+      expect.fail(
+        [
+          "Analyzer services without corresponding test files:",
+          "",
+          ...missing.map((m) => `  - src/analyzers/${m}.ts → tests/unit/analyzers/${m}.test.ts`),
+          "",
+          "Either add a test file or add the analyzer name to EXEMPT_ANALYZERS with justification.",
+        ].join("\n"),
+      );
+    }
+  });
+});

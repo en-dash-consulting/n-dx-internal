@@ -25,18 +25,22 @@ const REQUIRED_CONTRACTS = [
   {
     gateway: "packages/hench/src/prd/rex-gateway.ts",
     description: "hench → rex gateway contract",
+    distinctiveSymbols: ["rex-gateway", "resolveStore", "acknowledgeFinding"],
   },
   {
     gateway: "packages/hench/src/prd/llm-gateway.ts",
     description: "hench → llm-client gateway contract",
+    distinctiveSymbols: ["llm-gateway", "loadClaudeConfig", "spawnManaged"],
   },
   {
     gateway: "packages/web/src/server/rex-gateway.ts",
     description: "web → rex gateway contract",
+    distinctiveSymbols: ["web/dist/server/rex-gateway", "handleEditItem"],
   },
   {
     gateway: "packages/web/src/server/domain-gateway.ts",
     description: "web → sourcevision gateway contract",
+    distinctiveSymbols: ["domain-gateway", "createSourcevisionMcpServer"],
   },
 ];
 
@@ -86,19 +90,25 @@ describe("integration test coverage policy", () => {
       const gatewayExists = existsSync(join(ROOT, contract.gateway));
       if (!gatewayExists) continue; // Gateway was removed, skip
 
-      // Verify the test file mentions the gateway or its package
-      const packageName = contract.gateway.split("/")[1]; // e.g. "hench", "web"
+      // Verify the test file mentions a gateway-specific identifier:
+      // either the gateway file path or one of its distinctive symbols.
+      // Package-directory-name matching (e.g. "hench") is too weak because
+      // a single reference to the package name satisfies multiple gateways
+      // (hench rex-gateway + llm-gateway both match on "hench").
       const hasReference =
-        contractContent.includes(packageName) ||
-        contractContent.includes(contract.gateway);
+        contractContent.includes(contract.gateway) ||
+        contract.distinctiveSymbols?.some((sym) => contractContent.includes(sym));
 
       expect(
         hasReference,
         [
-          `Integration test does not cover ${contract.description}`,
+          `Integration test does not independently cover ${contract.description}`,
           `Gateway: ${contract.gateway}`,
+          `Distinctive symbols: ${(contract.distinctiveSymbols || []).join(", ") || "(none defined)"}`,
           "",
-          "Add contract assertions to tests/integration/cross-package-contracts.test.js",
+          "Each gateway must be independently verified. Add contract assertions",
+          "referencing the gateway path or a distinctive symbol to",
+          "tests/integration/cross-package-contracts.test.js",
         ].join("\n"),
       ).toBe(true);
     }

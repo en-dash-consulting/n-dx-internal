@@ -164,6 +164,113 @@ describe("server/client boundary", () => {
   });
 
   /**
+   * Shared layer isolation — src/shared/ is the foundation layer with zero
+   * upward dependencies. No file in shared/ should import from viewer/,
+   * server/, or viewer/messaging/. This property is documented and observed
+   * but must be mechanically protected to prevent erosion.
+   */
+  it("shared/ does not import from viewer, server, or messaging", () => {
+    const sharedDir = join(WEB_SRC, "shared");
+    const violations: string[] = [];
+
+    try {
+      for (const file of collectTsFiles(sharedDir)) {
+        const rel = relative(WEB_SRC, file);
+        for (const imp of extractImportPaths(file)) {
+          if (
+            imp.includes("/viewer/") || imp.match(/\.\.\/viewer\b/) ||
+            imp.includes("/server/") || imp.match(/\.\.\/server\b/) ||
+            imp.includes("/messaging/")
+          ) {
+            violations.push(`${rel} imports "${imp}" — shared/ must have zero upward dependencies`);
+          }
+        }
+      }
+    } catch {
+      // sharedDir doesn't exist in test environment — pass
+      return;
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  /**
+   * crash-detector.ts import guard — crash-detector.ts must import ViewId
+   * directly from shared/view-id.ts (or shared/index.ts), NOT through
+   * viewer/external.ts. Importing through external.ts creates a bidirectional
+   * cycle (crash → external → crash via performance/index.ts re-exports).
+   *
+   * This converts the exemption documented in the "viewer cross-boundary
+   * imports" test into a positive assertion: crash-detector.ts MUST use the
+   * direct shared/ path.
+   */
+  it("crash-detector.ts imports ViewId from shared/, not external.ts", () => {
+    const crashDetector = join(WEB_SRC, "viewer", "crash", "crash-detector.ts");
+    const violations: string[] = [];
+
+    try {
+      for (const imp of extractImportPaths(crashDetector)) {
+        if (imp.includes("external")) {
+          violations.push(
+            `crash-detector.ts imports "${imp}" — must use shared/view-id.js directly`
+          );
+        }
+      }
+    } catch {
+      // File doesn't exist in test environment — pass
+      return;
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  /**
+   * Hench-agent-monitor panel barrel enforcement — files outside the
+   * components/ directory that import panel components must do so through
+   * components/index.ts rather than individual component files.
+   *
+   * This enforces the barrel contract that exists in components/index.ts
+   * and prevents direct file imports from creating encapsulation leaks.
+   */
+  it("panel component imports from outside components/ must use barrel", () => {
+    const viewerDir = join(WEB_SRC, "viewer");
+    const violations: string[] = [];
+
+    // Panel components that must be imported via barrel
+    const PANEL_FILES = [
+      "active-tasks-panel",
+      "concurrency-panel",
+      "memory-panel",
+      "ws-health-panel",
+      "throttle-controls",
+    ];
+
+    try {
+      for (const file of collectTsFiles(viewerDir)) {
+        const rel = relative(WEB_SRC, file);
+
+        // Files inside components/ can import freely from siblings
+        if (rel.startsWith(join("viewer", "components") + "/")) continue;
+
+        for (const imp of extractImportPaths(file)) {
+          for (const panel of PANEL_FILES) {
+            if (imp.includes(`/${panel}`) && !imp.includes("/index")) {
+              violations.push(
+                `${rel} imports "${imp}" — must use components/index.js barrel`
+              );
+            }
+          }
+        }
+      }
+    } catch {
+      // viewerDir doesn't exist in test environment — pass
+      return;
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  /**
    * Viewer → server import check.
    *
    * This test catches ALL import forms — both runtime (`import { foo }`)

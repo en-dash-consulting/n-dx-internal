@@ -58,19 +58,19 @@ Zero circular dependencies. The web package sits alongside orchestration — it 
 
 #### Web package internal zone layering
 
-Within the web package, four internal zones form a directed dependency stack:
+Within the web package, four internal zones form a hub topology with `web-viewer` at the center:
 
 ```
   web-server          (composition root — Express routes, gateways, MCP handlers)
-       ↓
-  web-viewer          (Preact UI components, hooks, views)
-       ↓
+       ↓                    ↓ (serves static assets only, no runtime import)
+  web-viewer          (Preact UI hub — components, hooks, views)
+       ↑ ↓                  ↓
   viewer-message-pipeline  (messaging middleware — coalescer, throttle, rate-limiter, request-dedup)
-       ↓
-  web-shared          (framework-agnostic utilities — data-files, node-culler)
+       ↓                    ↓
+  web-shared          (framework-agnostic utilities — data-files, node-culler, view-id)
 ```
 
-Import direction flows downward only. `web-server` is a parallel composition root — it wires gateways and routes but does not import from `web-viewer` at runtime (the viewer is built separately and served as static assets). The `viewer-message-pipeline` zone owns all messaging primitives; `web-viewer` consumes them through `external.ts`. `web-shared` is the foundation layer with zero framework dependencies.
+`web-viewer` is the hub: it imports from `viewer-message-pipeline` (via `external.ts`) and `web-shared`, while also receiving imports from sub-zones like `crash/` and `hench-agent-monitor`. The actual import graph has 11+ distinct cross-zone edges radiating from `web-viewer`, making it a hub rather than a linear stack. `web-server` is a parallel composition root — it wires gateways and routes but does not import from `web-viewer` at runtime (the viewer is built separately and served as static assets). `web-shared` is the foundation layer with zero upward dependencies (enforced by `boundary-check.test.ts`).
 
 > **Spawn-exempt exception:** `config.js` directly reads/writes package config files (`.rex/config.json`, `.hench/config.json`, `.sourcevision/manifest.json`, `.n-dx.json`) rather than delegating to spawned CLIs. This is intentional — config operations require cross-package reads, atomic merges, and validation logic that cannot be expressed as a single CLI spawn. It is the only orchestration-tier script that breaks the spawn-only rule.
 
