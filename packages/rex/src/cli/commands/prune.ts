@@ -21,6 +21,13 @@ import { getLevelEmoji, formatLevelSummary as formatLevels } from "../../schema/
 const ARCHIVE_FILE = "archive.json";
 
 /**
+ * Maximum number of archive batches to retain.
+ * Older batches are discarded when this limit is exceeded,
+ * preventing unbounded growth of archive.json over time.
+ */
+const MAX_ARCHIVE_BATCHES = 100;
+
+/**
  * Archive structure written to `.rex/archive.json`.
  *
  * Each prune run appends a batch to the archive's `batches` array,
@@ -40,6 +47,34 @@ interface PruneBatch {
   actions?: ReshapeProposal[];
 }
 
+// ── Parsed flag helpers ──────────────────────────────────────────────
+
+interface PruneFlags {
+  dryRun: boolean;
+  skipConsolidate: boolean;
+  accept: boolean;
+  autoConfirm: boolean;
+  isJson: boolean;
+  model?: string;
+  format?: string;
+  raw: Record<string, string>;
+}
+
+function parseFlags(flags: Record<string, string>): PruneFlags {
+  return {
+    dryRun: flags["dry-run"] === "true",
+    skipConsolidate: flags["no-consolidate"] === "true",
+    accept: flags.accept === "true",
+    autoConfirm: flags.yes === "true" || flags.y === "true",
+    isJson: flags.format === "json",
+    model: flags.model,
+    format: flags.format,
+    raw: flags,
+  };
+}
+
+// ── Archive I/O ──────────────────────────────────────────────────────
+
 async function loadArchive(archivePath: string): Promise<PruneArchive> {
   try {
     const { readFile } = await import("node:fs/promises");
@@ -49,6 +84,33 @@ async function loadArchive(archivePath: string): Promise<PruneArchive> {
     return { schema: "rex/archive/v1", batches: [] };
   }
 }
+
+/**
+ * Trim archive to retain only the most recent batches.
+ * Prevents unbounded growth of archive.json in long-running projects.
+ */
+function trimArchive(archive: PruneArchive, maxBatches: number = MAX_ARCHIVE_BATCHES): number {
+  if (archive.batches.length <= maxBatches) return 0;
+  const excess = archive.batches.length - maxBatches;
+  archive.batches = archive.batches.slice(excess);
+  return excess;
+}
+
+/**
+ * Append a batch to the archive and persist to disk.
+ */
+async function appendArchiveBatch(
+  rexDir: string,
+  batch: PruneBatch,
+): Promise<void> {
+  const archivePath = join(rexDir, ARCHIVE_FILE);
+  const archive = await loadArchive(archivePath);
+  archive.batches.push(batch);
+  trimArchive(archive);
+  await writeFile(archivePath, toCanonicalJSON(archive), "utf-8");
+}
+
+// ── TTY interaction ──────────────────────────────────────────────────
 
 /**
  * Ask a single yes/no question in a TTY. Returns true for "y"/"yes".
@@ -88,7 +150,7 @@ function formatPrunePreview(prunable: PRDItem[]): {
     byLevel[item.level] = (byLevel[item.level] || 0) + 1;
 
     const childInfo = subtreeCount > 1 ? ` (${subtreeCount} items including children)` : "";
-    lines.push(`  ${icon(item.level)} ${item.title} [${item.id.slice(0, 8)}]${childInfo}`);
+    lines.push(`  ${getLevelEmoji(item.level)} ${item.title} [${item.id.slice(0, 8)}]${childInfo}`);
   }
 
   return { lines, totalItems, byLevel };
@@ -301,7 +363,7 @@ export async function cmdPrune(
   } else {
     result(`Pruned ${pruneResult.prunedCount} completed item${pruneResult.prunedCount === 1 ? "" : "s"}:`);
     for (const item of pruneResult.pruned) {
-      result(`  ${icon(item.level)} ${item.title}`);
+      result(`  ${getLevelEmoji(item.level)} ${item.title}`);
     }
     info(`Archived to ${ARCHIVE_FILE}`);
 
@@ -593,6 +655,10 @@ async function smartPrune(
   }
 }
 
+function summarize(item: PRDItem): { id: string; title: string; level: string } {
+  return { id: item.id, title: item.title, level: item.level };
+}
+
 async function interactiveAcceptProposals(
   proposals: ReshapeProposal[],
   items: PRDItem[],
@@ -631,12 +697,4 @@ async function interactiveAcceptProposals(
   }
 
   return accepted;
-}
-
-function summarize(item: PRDItem): { id: string; title: string; level: string } {
-  return { id: item.id, title: item.title, level: item.level };
-}
-
-function icon(level: string): string {
-  return getLevelEmoji(level);
 }

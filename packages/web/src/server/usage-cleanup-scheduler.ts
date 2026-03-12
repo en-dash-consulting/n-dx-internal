@@ -32,7 +32,10 @@
 
 import { readFileSync, appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
-import type { IncrementalTaskUsageAggregator, TaskUsageAccumulator } from "./incremental-task-usage.js";
+import type { IncrementalTaskUsageAggregator } from "./incremental-task-usage.js";
+import type { TaskUsageAccumulator, CollectAllIdsFn, OrphanedEntry, CleanupResult, CleanupLogEntry, CleanupConfig } from "./shared-types.js";
+
+export type { CollectAllIdsFn, OrphanedEntry, CleanupResult, CleanupLogEntry, CleanupConfig } from "./shared-types.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -40,38 +43,6 @@ import type { IncrementalTaskUsageAggregator, TaskUsageAccumulator } from "./inc
 
 /** Default cleanup interval: 7 days (weekly). */
 export const DEFAULT_CLEANUP_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-/** A single orphaned usage entry identified during cleanup. */
-export interface OrphanedEntry {
-  taskId: string;
-  totalTokens: number;
-  runCount: number;
-}
-
-/** Result of a single cleanup cycle. */
-export interface CleanupResult {
-  timestamp: string;
-  prdAvailable: boolean;
-  orphanedEntries: OrphanedEntry[];
-  totalOrphaned: number;
-  totalTokensRemoved: number;
-  totalRunsRemoved: number;
-}
-
-/** Persistent log entry written to the cleanup JSONL audit file. */
-export interface CleanupLogEntry extends CleanupResult {
-  event: "usage_cleanup";
-}
-
-/** Cleanup configuration read from `.n-dx.json`. */
-export interface CleanupConfig {
-  /** Cleanup interval in milliseconds. */
-  intervalMs: number;
-}
 
 // ---------------------------------------------------------------------------
 // Pure functions
@@ -152,13 +123,10 @@ interface PRDShape {
   items?: unknown[];
 }
 
-/**
- * Callback that extracts valid task IDs from a flat array of PRD items.
- * Injected by the caller to avoid a direct import of rex-gateway, which
- * would create a bidirectional dependency cycle between the web-server
- * and web-viewer zones.
- */
-export type CollectAllIdsFn = (items: unknown[]) => Set<string>;
+// CollectAllIdsFn is imported from shared-types.ts and re-exported above.
+
+/** Signature for PRD loaders compatible with `loadPRDSync`. */
+export type LoadPRDFn = (rexDir: string) => unknown;
 
 /**
  * Load valid task IDs from the PRD file.
@@ -169,16 +137,11 @@ export type CollectAllIdsFn = (items: unknown[]) => Set<string>;
 function loadValidTaskIds(
   rexDir: string,
   collectAllIds: CollectAllIdsFn,
+  loadPRD: LoadPRDFn,
 ): Set<string> | null {
-  const prdPath = join(rexDir, "prd.json");
-  if (!existsSync(prdPath)) return null;
-  try {
-    const doc = JSON.parse(readFileSync(prdPath, "utf-8")) as PRDShape;
-    if (!Array.isArray(doc.items)) return null;
-    return collectAllIds(doc.items);
-  } catch {
-    return null;
-  }
+  const doc = loadPRD(rexDir) as PRDShape | null;
+  if (!doc || !Array.isArray(doc.items)) return null;
+  return collectAllIds(doc.items);
 }
 
 // ---------------------------------------------------------------------------
@@ -201,6 +164,7 @@ function loadValidTaskIds(
  * @param options.collectAllIds Injected function to extract IDs from PRD items
  * @param options.logPath Optional path for the JSONL audit log
  * @param options.broadcast Optional WebSocket broadcast function
+ * @param options.loadPRD PRD loader function (injected to avoid cross-zone coupling; required when collectAllIds is provided)
  */
 export async function runCleanupCycle(options: {
   aggregator: IncrementalTaskUsageAggregator;
@@ -208,12 +172,13 @@ export async function runCleanupCycle(options: {
   collectAllIds?: CollectAllIdsFn;
   logPath?: string;
   broadcast?: (data: unknown) => void;
+  loadPRD?: LoadPRDFn;
 }): Promise<CleanupResult> {
-  const { aggregator, rexDir, collectAllIds: collectIds, logPath, broadcast } = options;
+  const { aggregator, rexDir, collectAllIds: collectIds, logPath, broadcast, loadPRD } = options;
 
   // Ensure aggregator is populated before checking for orphans
   const taskUsage = await aggregator.getTaskUsage();
-  const validIds = collectIds ? loadValidTaskIds(rexDir, collectIds) : null;
+  const validIds = collectIds && loadPRD ? loadValidTaskIds(rexDir, collectIds, loadPRD) : null;
 
   const result: CleanupResult = {
     timestamp: new Date().toISOString(),
@@ -287,6 +252,7 @@ export function startUsageCleanupScheduler(
   broadcast?: (data: unknown) => void,
   overrideIntervalMs?: number,
   collectAllIds?: CollectAllIdsFn,
+  loadPRD?: LoadPRDFn,
 ): ReturnType<typeof setInterval> {
   const logPath = join(ctx.projectDir, ".hench", "usage-cleanup.jsonl");
 
@@ -302,6 +268,7 @@ export function startUsageCleanupScheduler(
         collectAllIds,
         logPath,
         broadcast,
+        loadPRD,
       });
 
       if (result.totalOrphaned > 0) {

@@ -471,6 +471,13 @@ async function handleInit(rest) {
   process.exit(0);
 }
 
+async function handleAdd(rest) {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".rex"]);
+  await runOrDie(tools.rex, ["add", ...rest]);
+  process.exit(0);
+}
+
 async function handlePlan(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex"]);
@@ -734,6 +741,46 @@ async function handleStart(rest, commandName = "start") {
   }
 }
 
+async function handleSelfHeal(rest) {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".rex", ".hench", ".sourcevision"]);
+
+  const vendor = readLLMVendor(dir);
+  if (!vendor) {
+    console.error("Error: No LLM vendor configured for this project.");
+    console.error("Hint: Run 'ndx config llm.vendor claude' or 'ndx config llm.vendor codex' to configure a vendor.");
+    process.exit(1);
+  }
+
+  // Parse iteration count from positional args (e.g. `ndx self-heal 3 .` or `ndx self-heal . 3`)
+  const positionals = rest.filter((a) => !a.startsWith("-"));
+  const iterCount = positionals.reduce((found, arg) => {
+    const n = parseInt(arg, 10);
+    return !isNaN(n) && n > 0 ? n : found;
+  }, 1);
+
+  console.log(`[self-heal] starting ${iterCount} iteration${iterCount === 1 ? "" : "s"}`);
+
+  for (let i = 1; i <= iterCount; i++) {
+    console.log(`\n[self-heal] ── iteration ${i}/${iterCount} ──\n`);
+
+    console.log("[self-heal] step 1/4: sourcevision analyze --deep --full");
+    await runOrDie(tools.sourcevision, ["analyze", "--deep", "--full", dir]);
+
+    console.log("\n[self-heal] step 2/4: rex recommend");
+    await runOrDie(tools.rex, ["recommend", dir]);
+
+    console.log("\n[self-heal] step 3/4: rex recommend --accept");
+    await runOrDie(tools.rex, ["recommend", "--accept", dir]);
+
+    console.log("\n[self-heal] step 4/4: hench run --auto --loop");
+    await runOrDie(tools.hench, ["run", "--auto", "--loop", dir]);
+  }
+
+  console.log(`\n[self-heal] completed ${iterCount} iteration${iterCount === 1 ? "" : "s"}`);
+  process.exit(0);
+}
+
 async function handleConfig(rest) {
   try {
     await runConfig(rest);
@@ -826,6 +873,7 @@ async function main() {
     case "help":    return handleHelp(rest);
     case "init":    return handleInit(rest);
     case "plan":    return handlePlan(rest);
+    case "add":     return handleAdd(rest);
     case "refresh": return handleRefresh(rest);
     case "work":    return handleWork(rest);
     case "status":  return handleStatus(rest);
@@ -835,7 +883,8 @@ async function main() {
     case "dev":     return handleDev(rest);
     case "start":   return handleStart(rest, "start");
     case "web":     return handleStart(rest, "web");
-    case "config":  return handleConfig(rest);
+    case "config":    return handleConfig(rest);
+    case "self-heal": return handleSelfHeal(rest);
   }
 
   // ── Tool delegation ───────────────────────────────────────────────────────

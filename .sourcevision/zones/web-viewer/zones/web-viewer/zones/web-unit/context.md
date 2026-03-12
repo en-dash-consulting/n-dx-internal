@@ -7,25 +7,22 @@
 Zone: Web Viewer/web Viewer/web Unit (`web-viewer/web-viewer/web-unit`)
 Files: 3, Cohesion: 1.00, Coupling: 0.00
 Description: 3 files, primarily TypeScript
-Entry points: packages/web/src/viewer/graph/physics.ts
-Lines: 888
+Lines: 1883
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/graph/physics.ts (TypeScript, 443 lines, source)
-packages/web/tests/unit/viewer/graph-destroy.test.ts (TypeScript, 132 lines, test)
-packages/web/tests/unit/viewer/graph-layout.test.ts (TypeScript, 313 lines, test)
+packages/web/src/viewer/components/prd-tree/progressive-loader.ts (TypeScript, 356 lines, source)
+packages/web/tests/unit/viewer/large-tree-performance.test.ts (TypeScript, 1001 lines, test)
+packages/web/tests/unit/viewer/progressive-loader.test.ts (TypeScript, 526 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/tests/unit/viewer/graph-destroy.test.ts → packages/web/src/viewer/graph/physics.ts {tick}
-  packages/web/tests/unit/viewer/graph-destroy.test.ts → packages/web/src/viewer/graph/physics.ts {SimState, TickCallbacks}
-  packages/web/tests/unit/viewer/graph-layout.test.ts → packages/web/src/viewer/graph/physics.ts {computeForceParams, hashPosition, initZoneClusteredPositions, computeZoneCentroids, applyZoneCentroidRepulsion, tick}
-  packages/web/tests/unit/viewer/graph-layout.test.ts → packages/web/src/viewer/graph/physics.ts {PhysicsNode, PhysicsLink, SimState, TickCallbacks}
+  packages/web/tests/unit/viewer/large-tree-performance.test.ts → packages/web/src/viewer/components/prd-tree/progressive-loader.ts {countVisibleNodes, sliceVisibleTree, PROGRESSIVE_THRESHOLD}
+  packages/web/tests/unit/viewer/progressive-loader.test.ts → packages/web/src/viewer/components/prd-tree/progressive-loader.ts {countVisibleNodes, sliceVisibleTree, DEFAULT_CHUNK_SIZE, PROGRESSIVE_THRESHOLD, LoadMoreIndicator}
 
 </imports>

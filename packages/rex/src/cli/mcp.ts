@@ -21,6 +21,7 @@ import {
   handleReorganize,
   handleHealth,
   handleFacets,
+  handleEditItem,
 } from "./mcp-tools.js";
 
 /**
@@ -65,6 +66,8 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       status: z.enum(["pending", "in_progress", "completed", "failing", "deferred", "blocked", "deleted"]).describe("New status"),
       force: z.boolean().optional().describe("Force the transition even if it violates transition rules (e.g. completed → pending)"),
       reason: z.string().optional().describe("Failure reason (used when status is 'failing')"),
+      resolutionType: z.enum(["code-change", "config-override", "acknowledgment", "deferred", "unclassified"]).optional().describe("How the task was resolved (required when status is 'completed')"),
+      resolutionDetail: z.string().optional().describe("Brief description of how the resolution was achieved"),
     },
     async (args) => handleUpdateTaskStatus(store, args),
   );
@@ -84,6 +87,22 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       blockedBy: z.array(z.string()).optional().describe("IDs of blocking items"),
     },
     async (args) => handleAddItem(store, args),
+  );
+
+  server.tool(
+    "edit_item",
+    "Edit content fields of a PRD item (title, description, acceptance criteria, priority, tags). Use for content changes — use update_task_status for status/lifecycle transitions.",
+    {
+      id: z.string().describe("Item ID"),
+      title: z.string().optional().describe("New title"),
+      description: z.string().optional().describe("New description"),
+      acceptanceCriteria: z.array(z.string()).optional().describe("New acceptance criteria"),
+      priority: z.enum(["critical", "high", "medium", "low"]).optional().describe("New priority"),
+      tags: z.array(z.string()).optional().describe("New tags"),
+      source: z.string().optional().describe("New source"),
+      blockedBy: z.array(z.string()).optional().describe("New blocked-by IDs"),
+    },
+    async (args) => handleEditItem(store, args),
   );
 
   server.tool(

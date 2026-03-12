@@ -11,7 +11,7 @@
 import { h } from "preact";
 import { useState, useMemo, useCallback, useEffect } from "preact/hooks";
 import type { LoadedData, DetailItem, NavigateTo } from "../types.js";
-import type { CallGraph, Zone, ZoneCrossing } from "../../schema/v1.js";
+import type { CallGraph, Zone, ZoneCrossing } from "../external.js";
 import {
   CollapsibleSection,
   buildFileToZoneMap,
@@ -34,10 +34,7 @@ import type {
   ZoneBreadcrumb,
   ExpandedSubZones,
 } from "./zone-types.js";
-import { usePanZoom } from "../hooks/use-pan-zoom.js";
-import { useZoneDrag } from "../hooks/use-zone-drag.js";
-import { useFileEdges } from "../hooks/use-file-edges.js";
-import { useSubZoneEdges } from "../hooks/use-subzone-edges.js";
+import { usePanZoom, useZoneDrag, useFileEdges, useSubZoneEdges } from "../hooks/index.js";
 
 // ── Re-export types for downstream consumers ─────────────────────────
 export type { ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap, ZoneBreadcrumb } from "./zone-types.js";
@@ -1599,8 +1596,33 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   const fileToZoneMap = useMemo(() => buildFileToZoneMap(zones), [zones]);
 
   const { zoneDataList } = useMemo(() => {
-    if (!callGraph) return { zoneDataList: [], unzonedFiles: [] };
-    return buildExplorerData(callGraph, fileToZoneMap, zones);
+    if (callGraph) {
+      return buildExplorerData(callGraph, fileToZoneMap, zones);
+    }
+    // Fallback: build zone data from zones.json alone (no call graph enrichment)
+    if (!zones) return { zoneDataList: [], unzonedFiles: [] };
+    const list: ZoneData[] = zones.zones.map((z, i) => {
+      const zd: ZoneData = {
+        id: z.id,
+        name: z.name,
+        color: getZoneColorByIndex(i),
+        description: z.description,
+        cohesion: z.cohesion,
+        coupling: z.coupling,
+        files: z.files.map((path) => ({ path, functions: [], internalCalls: 0, crossZoneCalls: 0 })),
+        totalFiles: z.files.length,
+        totalFunctions: 0,
+        internalCalls: 0,
+        crossZoneCalls: 0,
+      };
+      if (z.subZones && z.subZones.length > 0) {
+        zd.subZones = convertSubZones(z.subZones);
+        zd.subCrossings = convertCrossings(z.subCrossings);
+        zd.hasDrillDown = true;
+      }
+      return zd;
+    });
+    return { zoneDataList: list, unzonedFiles: [] };
   }, [callGraph, fileToZoneMap, zones]);
 
   const flowEdges = useMemo(() => {

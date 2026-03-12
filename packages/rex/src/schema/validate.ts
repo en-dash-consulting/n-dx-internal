@@ -1,5 +1,7 @@
 import { z, ZodError } from "zod";
 import {
+  SCHEMA_VERSION,
+  isCompatibleSchema,
   VALID_STATUSES,
   VALID_LEVELS,
   VALID_PRIORITIES,
@@ -59,6 +61,8 @@ export const PRDItemSchema: z.ZodType<Record<string, unknown>> = z.lazy(() =>
       startedAt: z.string().optional(),
       completedAt: z.string().optional(),
       failureReason: z.string().optional(),
+      resolutionType: z.enum(["code-change", "config-override", "acknowledgment", "deferred", "unclassified"]).optional(),
+      resolutionDetail: z.string().optional(),
       mergedProposals: z.array(z.object({
         proposalNodeKey: z.string(),
         proposalTitle: z.string(),
@@ -75,7 +79,9 @@ export const PRDItemSchema: z.ZodType<Record<string, unknown>> = z.lazy(() =>
 
 export const PRDDocumentSchema = z
   .object({
-    schema: z.string(),
+    schema: z.string().refine(isCompatibleSchema, {
+      message: `Incompatible PRD schema version, expected "${SCHEMA_VERSION}"`,
+    }),
     title: z.string(),
     items: z.array(PRDItemSchema),
   })

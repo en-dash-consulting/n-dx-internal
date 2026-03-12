@@ -45,9 +45,10 @@ import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./types.js";
 import type { WebSocketBroadcaster } from "./websocket.js";
 import { clearStatusCache } from "./routes-status.js";
-import { IncrementalTaskUsageAggregator } from "./incremental-task-usage.js";
+import { IncrementalTaskUsageAggregator } from "./task-usage.js";
 import { collectAllIds } from "./rex-gateway.js";
 import type { PRDDocument } from "./rex-gateway.js";
+import { loadPRDSync } from "./prd-io.js";
 import { ProcessMemoryTracker } from "./process-memory-tracker.js";
 import { ConcurrentExecutionMetrics } from "./concurrent-execution-metrics.js";
 
@@ -966,13 +967,7 @@ const activeExecutions = new Map<string, {
 
 /** Load and parse prd.json from disk. */
 function loadPRDForExecute(ctx: ServerContext): Record<string, unknown> | null {
-  const prdPath = join(ctx.rexDir, "prd.json");
-  if (!existsSync(prdPath)) return null;
-  try {
-    return JSON.parse(readFileSync(prdPath, "utf-8")) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
+  return loadPRDSync(ctx.rexDir) as Record<string, unknown> | null;
 }
 
 /**
@@ -981,15 +976,9 @@ function loadPRDForExecute(ctx: ServerContext): Record<string, unknown> | null {
  * allowing callers to degrade gracefully.
  */
 function loadValidTaskIds(ctx: ServerContext): Set<string> | null {
-  const prdPath = join(ctx.rexDir, "prd.json");
-  if (!existsSync(prdPath)) return null;
-  try {
-    const doc = JSON.parse(readFileSync(prdPath, "utf-8")) as PRDDocument;
-    if (!Array.isArray(doc.items)) return null;
-    return collectAllIds(doc.items);
-  } catch {
-    return null;
-  }
+  const doc = loadPRDSync(ctx.rexDir);
+  if (!doc || !Array.isArray(doc.items)) return null;
+  return collectAllIds(doc.items);
 }
 
 /** Recursively find a PRD item by ID. */
@@ -1920,14 +1909,9 @@ function handleConcurrency(res: ServerResponse, ctx: ServerContext): boolean {
   // 5. Count pending PRD tasks
   let pendingTaskCount = 0;
   try {
-    const prdPath = join(ctx.rexDir, "prd.json");
-    if (existsSync(prdPath)) {
-      const prdRaw = readFileSync(prdPath, "utf-8");
-      const prd = JSON.parse(prdRaw) as Record<string, unknown>;
-      const items = prd.items as Array<Record<string, unknown>> | undefined;
-      if (items) {
-        pendingTaskCount = countPendingTasks(items);
-      }
+    const prd = loadPRDSync(ctx.rexDir);
+    if (prd && Array.isArray(prd.items)) {
+      pendingTaskCount = countPendingTasks(prd.items as Array<Record<string, unknown>>);
     }
   } catch {
     // PRD not available

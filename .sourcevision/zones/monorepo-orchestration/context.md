@@ -5,32 +5,24 @@
 <zone>
 
 Zone: Monorepo Orchestration (`monorepo-orchestration`)
-Files: 27, Cohesion: 1.00, Coupling: 0.00
+Files: 18, Cohesion: 1.00, Coupling: 0.00
 Risk: healthy (score: 0.00)
-Description: Root-level entry points and configuration that coordinate the three-package pipeline (sourcevision → rex → hench) without importing from any package directly.
-Lines: 9407
+Description: Top-level entry point scripts and project-wide configuration that wire together all packages via spawned child processes.
+Lines: 6070
 
 </zone>
 
 <files>
 
-.gitignore (Other, 12 lines, config)
+.DS_Store (Other, 0 lines, other)
+.gitignore (Other, 19 lines, config)
 .npmrc (Other, 2 lines, config)
-CLAUDE.md (Markdown, 208 lines, docs)
-CODEX.md (Markdown, 276 lines, docs)
-PACKAGE_GUIDELINES.md (Markdown, 216 lines, docs)
-README.md (Markdown, 355 lines, docs)
-ci.js (JavaScript, 368 lines, source)
+ci.js (JavaScript, 1173 lines, source)
 claude-integration.js (JavaScript, 331 lines, source)
-cli.js (JavaScript, 855 lines, source)
-config.js (JavaScript, 1036 lines, source)
-help.js (JavaScript, 901 lines, source)
-n-dx.png (Other, 0 lines, asset)
-package.json (JSON, 29 lines, config)
-pnpm-lock.yaml (YAML, 2976 lines, generated)
-pnpm-workspace.yaml (YAML, 2 lines, other)
-pr-check.js (JavaScript, 202 lines, source)
-prd.md (Markdown, 164 lines, docs)
+cli.js (JavaScript, 895 lines, source)
+config.js (JavaScript, 1054 lines, source)
+help.js (JavaScript, 928 lines, source)
+pr-check.js (JavaScript, 205 lines, source)
 refresh-artifacts.js (JavaScript, 54 lines, source)
 refresh-plan.js (JavaScript, 79 lines, source)
 refresh-validate.js (JavaScript, 175 lines, source)
@@ -38,8 +30,7 @@ tests/unit/help.test.js (JavaScript, 253 lines, test)
 tests/unit/refresh-artifacts.test.js (JavaScript, 32 lines, test)
 tests/unit/refresh-plan.test.js (JavaScript, 69 lines, test)
 tests/unit/refresh-validate.test.js (JavaScript, 335 lines, test)
-tsconfig.base.json (JSON, 14 lines, config)
-vitest.config.js (JavaScript, 5 lines, config)
+vitest.config.js (JavaScript, 8 lines, config)
 web.js (JavaScript, 458 lines, source)
 
 </files>
@@ -65,34 +56,24 @@ Internal:
 <findings>
 
 [observation] [info] High cohesion (1) — files are tightly interconnected
-[observation] [info] No declared entry points despite containing executable scripts (ci.js, cli.js, web.js) — sourcevision may need path hints to correctly classify these as entry points.
-[observation] [info] Zero coupling to any other zone is the intended design for an orchestration layer — this is healthy and should be preserved.
-[observation] [info] claude-integration.js classified as a service at root level suggests it may contain reusable logic that could migrate into a dedicated package if complexity grows.
-[relationship] [warning] Orchestration layer's zero-coupling guarantee is enforced structurally but not contractually — CLI argument interfaces between cli.js and domain package CLIs are untyped; adding schema validation or contract tests would make the spawn boundary explicit.
-[anti-pattern] [warning] CLI argument interfaces between orchestration scripts and domain package CLIs are untyped; any CLI signature change in rex, hench, or sourcevision is a silent breaking change with no compile-time or schema-level safety net — add contract tests or a shared CLI-args schema to make this boundary explicit
-[suggestion] [info] Add a .sourcevision/hints file or zone archetype annotations to explicitly classify the 4 entry-point scripts vs the 23 config/doc files in this zone — the current single-zone grouping obscures the entry-point surface for tooling and documentation generators.
-[suggestion] [info] Rename claude-integration.js to a role-based name (e.g. ai-integration.js or llm-hooks.js) to match the action/role naming convention of all other orchestration scripts and avoid leaking the Claude vendor name at the layer that is supposed to be vendor-neutral.
+[observation] [info] Non-source artifacts like .DS_Store should be excluded from zone analysis via .sourcevisionignore to keep inventory metrics accurate and prevent noise in cohesion calculations.
+[observation] [info] Perfect cohesion (1.0) and zero coupling are misleading for this zone — these files have no import edges, so the metrics reflect isolation rather than internal coherence. The zone is more a catch-all for root-level artifacts than a structurally unified module.
+[observation] [info] The orchestration entry points (cli.js, web.js, ci.js, config.js) correctly implement the spawn-only tier contract, making the boundary between orchestration and execution tiers explicit and auditable.
+[suggestion] [info] claude-integration.js archetype was changed from entrypoint to service and help.js from entrypoint to utility. These files sit at the orchestration tier alongside cli.js and web.js — verify the new archetypes correctly reflect their role before any inventory-based tooling (e.g. entrypoint discovery, spawn-only enforcement) relies on archetype for classification.
 
 </findings>
 
 <insights>
 
 - High cohesion (1) — files are tightly interconnected
-- Orchestration layer correctly avoids library imports by spawning CLIs, preserving the four-tier hierarchy
-- ci.js and claude-integration.js serve distinct roles (validation pipeline vs. AI integration) and could be documented as separate concerns
-- The 27-file zone mixes config files, markdown docs, and executable scripts — consider whether non-executable root files (tsconfig, .npmrc) belong in a dedicated config subgroup
-- Zero coupling to any other zone is the intended design for an orchestration layer — this is healthy and should be preserved.
-- claude-integration.js classified as a service at root level suggests it may contain reusable logic that could migrate into a dedicated package if complexity grows.
-- No declared entry points despite containing executable scripts (ci.js, cli.js, web.js) — sourcevision may need path hints to correctly classify these as entry points.
-- Zero inter-zone coupling means orchestration scripts can only communicate with domain packages via process spawn — this is the correct pattern but means no type-safe contract exists between orchestration and domain layers; any CLI API change is a silent breaking change unless covered by E2E tests
-- Orchestration layer's zero-coupling guarantee is enforced structurally but not contractually — CLI argument interfaces between cli.js and domain package CLIs are untyped; adding schema validation or contract tests would make the spawn boundary explicit.
-- The spawn boundary between cli.js and domain package CLIs is the only untyped contract in an otherwise well-typed monorepo — a schema or integration test layer at this boundary would surface CLI API regressions before they reach users
-- claude-integration.js classified as a service at root level has zero coupling to other zones yet provides AI integration — if it grows, it should be promoted to a dedicated package rather than staying in the orchestration layer
-- CLI argument interfaces between orchestration scripts and domain package CLIs are untyped; any CLI signature change in rex, hench, or sourcevision is a silent breaking change with no compile-time or schema-level safety net — add contract tests or a shared CLI-args schema to make this boundary explicit
-- claude-integration.js uses a vendor-specific name ('claude') while the codebase uses @n-dx/llm-client for vendor neutrality — the name leaks an implementation detail at the orchestration boundary that the llm-client abstraction was designed to hide
-- The four executable entry scripts (ci.js, cli.js, web.js, config.js) all follow action/role naming (what they do or configure), while claude-integration.js follows a vendor+noun pattern — this single file breaks the naming convention of every other root-level script
-- Rename claude-integration.js to a role-based name (e.g. ai-integration.js or llm-hooks.js) to match the action/role naming convention of all other orchestration scripts and avoid leaking the Claude vendor name at the layer that is supposed to be vendor-neutral.
-- Add a .sourcevision/hints file or zone archetype annotations to explicitly classify the 4 entry-point scripts vs the 23 config/doc files in this zone — the current single-zone grouping obscures the entry-point surface for tooling and documentation generators.
-- [call graph] 418 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
+- The spawn-only architecture at this tier enforces strong package isolation — orchestration scripts never import package internals directly, keeping the dependency graph clean.
+- config.js is the documented exception to spawn-only: it reads and writes cross-package config files directly, which is the correct trade-off for atomic cross-package config merges.
+- The mix of source files (.gitignore, .DS_Store, llms.txt) with entry points (cli.js, web.js, ci.js) in a single zone is expected for a monorepo root — these files have no import relationships and the zone detector groups them by proximity.
+- Perfect cohesion (1.0) and zero coupling are misleading for this zone — these files have no import edges, so the metrics reflect isolation rather than internal coherence. The zone is more a catch-all for root-level artifacts than a structurally unified module.
+- The orchestration entry points (cli.js, web.js, ci.js, config.js) correctly implement the spawn-only tier contract, making the boundary between orchestration and execution tiers explicit and auditable.
+- Non-source artifacts like .DS_Store should be excluded from zone analysis via .sourcevisionignore to keep inventory metrics accurate and prevent noise in cohesion calculations.
+- classifications.json reclassified claude-integration.js from entrypoint to service and help.js from entrypoint to utility. In the monorepo-orchestration zone these files have zero import edges so the archetype changes do not affect cohesion or coupling metrics, but they do affect archetype-based filtering in inventory views — consumers that query inventory for entrypoints will no longer surface these two files.
+- claude-integration.js archetype was changed from entrypoint to service and help.js from entrypoint to utility. These files sit at the orchestration tier alongside cli.js and web.js — verify the new archetypes correctly reflect their role before any inventory-based tooling (e.g. entrypoint discovery, spawn-only enforcement) relies on archetype for classification.
+- [call graph] 479 internal calls, 0 outgoing, 0 incoming (cohesion: 1, coupling: 0)
 
 </insights>

@@ -20,6 +20,8 @@
 
 export {
   SCHEMA_VERSION,
+  isCompatibleSchema,
+  assertSchemaVersion,
   LEVEL_HIERARCHY,
   PRIORITY_ORDER,
   VALID_LEVELS,
@@ -41,6 +43,7 @@ export type {
   ItemLevel,
   ItemStatus,
   Priority,
+  ResolutionType,
   RequirementCategory,
   RequirementValidationType,
   Requirement,

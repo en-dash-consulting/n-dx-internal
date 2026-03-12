@@ -350,6 +350,10 @@ pnpm typecheck      # typecheck all packages
 | `.rex/` | rex | `prd.json`, `config.json`, `execution-log.jsonl`, `workflow.md` |
 | `.hench/` | hench | `config.json`, `runs/` |
 
+## Community
+
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
+
 ## License
 
 ISC

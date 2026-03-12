@@ -1,62 +1,45 @@
 {
   "schemaVersion": "1.0.0",
   "toolVersion": "0.1.0",
-  "analyzedAt": "2026-03-06T22:09:41.995Z",
-  "gitSha": "21786d24aeb21767389090712636b7f7c224e7e2",
-  "gitBranch": "feature/integrate-codex",
-  "targetPath": "/Users/ryankeith/work-internal/n-dx",
+  "analyzedAt": "2026-03-11T20:15:14.023Z",
+  "gitSha": "8c2a2e8798450de1ce46170ab123d4a467e50093",
+  "gitBranch": "feature/sv-fixes-0306",
+  "targetPath": "/Users/nick/development/endash/n-dx",
   "modules": {
     "inventory": {
       "status": "complete",
-      "startedAt": "2026-03-06T21:54:44.637Z",
-      "completedAt": "2026-03-06T21:54:44.754Z"
+      "startedAt": "2026-03-11T19:37:29.028Z",
+      "completedAt": "2026-03-11T19:37:29.240Z"
     },
     "imports": {
       "status": "complete",
-      "startedAt": "2026-03-06T21:54:44.754Z",
-      "completedAt": "2026-03-06T21:54:45.287Z"
+      "startedAt": "2026-03-11T19:37:29.240Z",
+      "completedAt": "2026-03-11T19:37:30.017Z"
     },
     "classifications": {
       "status": "complete",
-      "startedAt": "2026-03-06T21:54:45.287Z",
-      "completedAt": "2026-03-06T22:00:53.892Z"
+      "startedAt": "2026-03-11T19:37:30.017Z",
+      "completedAt": "2026-03-11T19:45:53.130Z"
     },
     "zones": {
       "status": "complete",
-      "startedAt": "2026-03-06T22:00:53.892Z",
-      "completedAt": "2026-03-06T22:09:39.814Z"
+      "startedAt": "2026-03-11T19:45:53.131Z",
+      "completedAt": "2026-03-11T20:15:11.241Z"
     },
     "components": {
       "status": "complete",
-      "startedAt": "2026-03-06T22:09:39.815Z",
-      "completedAt": "2026-03-06T22:09:39.938Z"
+      "startedAt": "2026-03-11T20:15:11.243Z",
+      "completedAt": "2026-03-11T20:15:11.429Z"
     },
     "callgraph": {
       "status": "complete",
-      "startedAt": "2026-03-06T22:09:39.938Z",
-      "completedAt": "2026-03-06T22:09:41.995Z"
+      "startedAt": "2026-03-11T20:15:11.430Z",
+      "completedAt": "2026-03-11T20:15:14.023Z"
     }
   },
-  "children": [
-    {
-      "id": "packages-llm-client",
-      "prefix": "packages/llm-client",
-      "manifestPath": "packages/llm-client/.sourcevision/manifest.json"
-    },
-    {
-      "id": "packages-rex",
-      "prefix": "packages/rex",
-      "manifestPath": "packages/rex/.sourcevision/manifest.json"
-    },
-    {
-      "id": "packages-sourcevision",
-      "prefix": "packages/sourcevision",
-      "manifestPath": "packages/sourcevision/.sourcevision/manifest.json"
-    }
-  ],
   "zoneOutputs": true,
   "tokenUsage": {
-    "calls": 16,
+    "calls": 19,
     "inputTokens": 0,
     "outputTokens": 0,
     "vendor": "claude",

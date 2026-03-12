@@ -3,15 +3,13 @@
   "name": "Web Viewer/web Viewer/web Unit",
   "description": "3 files, primarily TypeScript",
   "files": [
-    "packages/web/src/viewer/graph/physics.ts",
-    "packages/web/tests/unit/viewer/graph-destroy.test.ts",
-    "packages/web/tests/unit/viewer/graph-layout.test.ts"
+    "packages/web/src/viewer/components/prd-tree/progressive-loader.ts",
+    "packages/web/tests/unit/viewer/large-tree-performance.test.ts",
+    "packages/web/tests/unit/viewer/progressive-loader.test.ts"
   ],
-  "entryPoints": [
-    "packages/web/src/viewer/graph/physics.ts"
-  ],
+  "entryPoints": [],
   "cohesion": 1,
   "coupling": 0,
   "fileCount": 3,
-  "lineCount": 888
+  "lineCount": 1883
 }

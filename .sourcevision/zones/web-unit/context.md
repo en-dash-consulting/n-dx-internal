@@ -5,65 +5,61 @@
 <zone>
 
 Zone: Web Unit (`web-unit`)
-Files: 6, Cohesion: 0.25, Coupling: 0.75
-Risk: catastrophic (score: 0.75)
-Description: 5 files, primarily TypeScript
-Entry points: packages/web/src/server/websocket.ts, packages/web/src/server/ws-health-tracker.ts
-Lines: 1561
+Files: 3, Cohesion: 1.00, Coupling: 0.00
+Risk: healthy (score: 0.00)
+Description: 3 files, primarily TypeScript
+Entry points: packages/web/src/server/routes-data.ts
+Lines: 628
 
 </zone>
 
 <files>
 
-packages/web/src/server/websocket.ts (TypeScript, 370 lines, source)
-packages/web/src/server/ws-health-tracker.ts (TypeScript, 275 lines, source)
-packages/web/tests/unit/server/boundary-check.test.ts (TypeScript, 84 lines, test)
-packages/web/tests/unit/server/websocket.test.ts (TypeScript, 454 lines, test)
-packages/web/tests/unit/server/ws-health-integration.test.ts (TypeScript, 154 lines, test)
-packages/web/tests/unit/server/ws-health-tracker.test.ts (TypeScript, 224 lines, test)
+packages/web/src/server/routes-data.ts (TypeScript, 147 lines, source)
+packages/web/tests/unit/server/data-loading-efficiency.test.ts (TypeScript, 357 lines, test)
+packages/web/tests/unit/server/routes-data.test.ts (TypeScript, 124 lines, test)
 
 </files>
 
 <imports>
 
 Internal:
-  packages/web/src/server/websocket.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker, CleanupReason}
-  packages/web/tests/unit/server/websocket.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager, PING_INTERVAL_MS}
-  packages/web/tests/unit/server/ws-health-integration.test.ts → packages/web/src/server/websocket.ts {createWebSocketManager}
-  packages/web/tests/unit/server/ws-health-integration.test.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
-  packages/web/tests/unit/server/ws-health-tracker.test.ts → packages/web/src/server/ws-health-tracker.ts {WsHealthTracker}
+  packages/web/tests/unit/server/data-loading-efficiency.test.ts → packages/web/src/server/routes-data.ts {createDataWatcher, handleDataRoute}
+  packages/web/tests/unit/server/routes-data.test.ts → packages/web/src/server/routes-data.ts {createDataWatcher, handleDataRoute}
+
+Outgoing (this zone → other zones):
+  → web-shared: packages/web/src/server/routes-data.ts → packages/web/src/shared/data-files.ts
+  → web-viewer: packages/web/src/server/routes-data.ts → packages/web/src/server/prd-io.ts; packages/web/src/server/routes-data.ts → packages/web/src/server/types.ts; packages/web/src/server/routes-data.ts → packages/web/src/server/types.ts; packages/web/tests/unit/server/data-loading-efficiency.test.ts → packages/web/src/server/routes-hench.ts; packages/web/tests/unit/server/data-loading-efficiency.test.ts → packages/web/src/server/routes-sourcevision.ts; packages/web/tests/unit/server/data-loading-efficiency.test.ts → packages/web/src/server/types.ts; packages/web/tests/unit/server/routes-data.test.ts → packages/web/src/server/types.ts
 
 Incoming (other zones → this zone):
-  ← web-viewer: packages/web/src/public.ts → packages/web/src/server/websocket.ts; packages/web/src/server/index.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-hench.ts → packages/web/src/server/websocket.ts; packages/web/src/server/routes-rex.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/websocket.ts; packages/web/src/server/start.ts → packages/web/src/server/ws-health-tracker.ts
+  ← web-viewer: packages/web/src/server/start.ts → packages/web/src/server/routes-data.ts
 
 </imports>
 
 <findings>
 
-[observation] [warning] Low cohesion (0.25) — files are loosely related, consider splitting this zone
-[suggestion] [critical] Zone "Web Unit" (web-unit) has catastrophic risk (score: 0.75, cohesion: 0.25, coupling: 0.75) — requires immediate architectural intervention
+[observation] [info] High cohesion (1) — files are tightly interconnected
 
 </findings>
 
 <insights>
 
-- Low cohesion (0.25) — files are loosely related, consider splitting this zone
-- Cohesion (0.5) and coupling (0.5) are borderline — the 6 inbound imports from dashboard-mcp-server dominate this zone's coupling profile and suggest it should live inside that zone
-- Four test files for two source files indicates thorough test coverage of the real-time layer, including a boundary-check test for edge cases
-- The ws-health-integration test suggests there is meaningful stateful interaction between the WebSocket server and health tracker worth preserving as the zone grows
-- Coupling of 0.5 driven by 6 imports from dashboard-mcp-server suggests this cluster is a natural sub-module of that zone rather than an independent architectural boundary.
-- Four test files covering two source modules, including an integration test, reflects strong testing discipline for the real-time communication layer.
-- boundary-check.test.ts is a useful safety net for WebSocket edge cases; ensure it covers reconnection and graceful shutdown scenarios.
-- Unlike task-usage-tracking, websocket-realtime-layer has zero outgoing inter-zone imports despite being a functional service zone — it is a pure downstream consumer and forms a clean unidirectional dependency with dashboard-mcp-server
-- The contrast between websocket-realtime-layer (clean directional) and task-usage-tracking (cyclic) illustrates two distinct coupling anti-patterns that emerged from the same community detection pass
-- websocket-realtime-layer has 6 inbound imports from dashboard-mcp-server and 0 outgoing — it is a pure downstream leaf. This is architecturally clean; the only concern is whether the community detection boundary reflects a real architectural seam or is an artifact of graph partitioning.
-- boundary-check.test.ts is named for cross-zone boundary behavior rather than a specific unit, suggesting it may be testing interactions that span websocket.ts and server infrastructure owned by dashboard-mcp-server — if so, it is a misplaced integration test masquerading as a unit test
-- The zone has 4 test files but 0 outgoing inter-zone imports, meaning all 6 inbound imports from dashboard-mcp-server are one-directional — this pure-leaf status means the zone could be promoted to a sub-zone of dashboard-mcp-server with zero restructuring of production code, only test file moves
-- boundary-check.test.ts is co-located in the unit test directory but its name implies cross-boundary integration behavior — if it exercises interactions between websocket.ts and dashboard-mcp-server internals it belongs in an integration test directory to prevent false confidence in unit isolation
-- websocket-realtime-layer has cohesion 0.5 AND coupling 0.5 — it meets the dual fragility criterion (both below 0.6 and both non-trivial), making it the second highest-risk zone by the combined fragility metric alongside task-usage-tracking
-- ws-health-tracker.ts is a cross-cutting health/monitoring concern; co-locating it with the WebSocket transport implementation (websocket.ts) couples two orthogonal responsibilities in one zone — health tracking is conceptually closer to the metrics infrastructure in dashboard-mcp-server than to WebSocket I/O
-- websocket-realtime-layer has both cohesion 0.5 and coupling 0.5 — the dual fragility threshold described in the severity guide. ws-health-tracker.ts (monitoring concern) and websocket.ts (transport concern) are orthogonal responsibilities. Either absorb this zone into dashboard-mcp-server as a sub-zone (eliminating the 6 inbound import edges) or split ws-health-tracker.ts into the metrics infrastructure alongside concurrent-execution-metrics.ts.
-- ws-health-integration.test.ts is located in tests/unit/server/ but its name declares it as an integration test. This placement gives false unit-test confidence in CI: if it exercises cross-boundary behavior between websocket.ts and dashboard-mcp-server infrastructure, a unit test failure in isolation may not reproduce in the full integration run. Move it to tests/integration/server/.
-- [call graph] 76 internal calls, 0 outgoing, 1 incoming (cohesion: 1, coupling: 0)
+- High cohesion (1) — files are tightly interconnected
+- Perfect cohesion (1.0) with zero coupling in a 3-file zone signals a deliberately isolated, single-responsibility module with a well-defined boundary
+- The zone contains exactly one production file (routes-data.ts) and two test files — an ideal unit of testability, with data-loading efficiency tested separately from correctness
+- 7 outbound imports to web-application-core and 1 to web-shared reflect a standard consumer pattern: this handler reads shared infrastructure without contributing back, maintaining correct dependency direction
+- The zone correctly avoids a '-tests' suffix despite containing test files — the production file routes-data.ts anchors its identity and prevents tooling from misclassifying it as a test-only zone.
+- Separating data-loading-efficiency.test.ts from routes-data.test.ts within the same zone is a useful test decomposition — performance characteristics are validated independently from functional correctness.
+- The 1 reverse import from web-application-core into this zone (web-viewer → web-unit) should be verified to confirm it is a type import or interface reference rather than a runtime circular dependency.
+- web-data-routes is the only zone in the web package with a clean, strictly unidirectional cross-zone relationship (outbound only to web-application-core and web-shared) with the exception of 1 reverse import from web-unit, making it the closest to an ideal zone boundary in the package
+- The single reverse import from web-application-core (web-unit→web-viewer) into web-data-routes is likely a test helper or type reference from the unit test co-located in this zone. The production file routes-data.ts almost certainly has zero reverse imports — the 1 reverse edge should be verified to confirm it does not represent a runtime coupling from a higher-level zone into a route handler.
+- A 3-file zone with a single production file falls below the practical threshold where a separate zone boundary provides navigability benefit over internal co-location. The 9 outbound cross-zone import edges counted for this zone would be internal edges if routes-data.ts were merged into the web-server zone — reducing the apparent cross-zone coupling count without any architectural loss.
+- routes-data.ts is classified as [route-handler] archetype but lives in an isolated zone rather than in the web-server composition root where CLAUDE.md places all route handling. This creates an implicit split in the server layer that the documented zone topology does not acknowledge.
+- Single-production-file zone (routes-data.ts + 2 test files) adds zone-boundary overhead without encapsulation benefit. Route handlers are architecturally part of the web-server composition root (src/server/); isolating one route handler in its own zone fragments the server layer and inflates the cross-zone edge count by 9 imports that should be internal.
+- routes-data.ts is physically located in packages/web/src/server/ alongside 15 other route handler files (routes-validation.ts, routes-project.ts, routes-mcp.ts, etc.) — making 'web-data-routes' a pure community-detection artifact, not a genuine architectural boundary. The file is in the correct directory with its siblings; the zone algorithm created a phantom isolation. This is the clearest example in the codebase of a zone boundary that does not correspond to any physical or logical separation in the file system.
+- Zone ID 'web-data-routes' and its sole production file 'routes-data.ts' use reversed word order for the same compound noun (data+routes vs routes+data). No other zone in the codebase has word-order inversion between its ID and primary file name. A search for 'data-routes' finds the zone but not the file; a search for 'routes-data' finds the file but not the zone.
+- routes-data.ts lives in src/server/ alongside 15 sibling route handler files — the 'web-data-routes' zone is a community-detection artifact with no physical or logical justification. Dissolving this zone into web-application-core would consolidate all 16 route handlers in one zone, reduce the cross-zone edge count by 9, and eliminate the zone-boundary overhead for what is effectively a single-file zone with no encapsulation benefit.
+- Zone ID 'web-data-routes' and primary file 'routes-data.ts' use reversed word order for the same concept. Standardize to match the file naming convention used by all 15 sibling route files ('routes-*.ts') — either rename the zone to 'web-routes-data' or accept that the mismatch is a navigation friction point until the zone is dissolved.
+- [call graph] 9 internal calls, 9 outgoing, 2 incoming (cohesion: 0.5, coupling: 0.5)
 
 </insights>

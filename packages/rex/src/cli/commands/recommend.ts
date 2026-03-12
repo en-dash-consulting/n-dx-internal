@@ -24,6 +24,10 @@ import {
   formatConflict,
   formatIntraBatchDuplicate,
 } from "../../recommend/conflict-detection.js";
+import type {
+  RecommendationConflict,
+  IntraBatchDuplicate,
+} from "../../recommend/conflict-detection.js";
 
 interface Finding {
   severity: string;
@@ -251,6 +255,223 @@ function toEnrichedRecommendation(rec: Recommendation): EnrichedRecommendation {
   };
 }
 
+// ── Acknowledge handling ────────────────────────────────────────────────
+
+interface AcknowledgeContext {
+  rexDir: string;
+  ackStore: Awaited<ReturnType<typeof loadAcknowledged>>;
+  findings: Finding[];
+}
+
+async function handleAcknowledge(
+  flag: string,
+  ctx: AcknowledgeContext,
+): Promise<void> {
+  const { rexDir, ackStore, findings } = ctx;
+
+  if (flag === "all") {
+    let updated = ackStore;
+    for (const f of findings) {
+      updated = acknowledgeFinding(updated, f.hash, f.message, "acknowledged", "user");
+    }
+    await saveAcknowledged(rexDir, updated);
+    result(`Acknowledged all ${findings.length} findings.`);
+    return;
+  }
+
+  const indices = flag.split(",").map((s) => parseInt(s.trim(), 10));
+  let updated = ackStore;
+  const acked: string[] = [];
+  for (const idx of indices) {
+    const f = findings[idx - 1]; // 1-based index
+    if (!f) {
+      console.error(`Finding index ${idx} out of range (1-${findings.length}).`);
+      continue;
+    }
+    updated = acknowledgeFinding(updated, f.hash, f.message, "acknowledged", "user");
+    acked.push(`${idx}. ${f.message.slice(0, 60)}`);
+  }
+  await saveAcknowledged(rexDir, updated);
+  for (const a of acked) result(`Acknowledged: ${a}`);
+}
+
+// ── Display recommendations ─────────────────────────────────────────────
+
+function displayRecommendations(
+  recommendations: Recommendation[],
+  findings: Finding[],
+  ackStore: Awaited<ReturnType<typeof loadAcknowledged>>,
+  showAll: boolean,
+  acknowledgedCount: number,
+): void {
+  result(`\n${recommendations.length} recommended items:\n`);
+  let displayIdx = 0;
+  for (const rec of recommendations) {
+    result(`  [${rec.priority}] ${rec.title}`);
+    for (const line of rec.description.split("\n")) {
+      displayIdx++;
+      const finding = findings.find((f) => line.includes(f.message));
+      const ackMarker = showAll && finding && isAcknowledged(ackStore, finding.hash) ? " (acknowledged)" : "";
+      info(`    ${displayIdx}. ${line.replace(/^- /, "")}${ackMarker}`);
+    }
+    info("");
+  }
+
+  if (acknowledgedCount > 0) {
+    info(`(${acknowledgedCount} finding${acknowledgedCount === 1 ? "" : "s"} acknowledged, use --show-all to include)`);
+  }
+}
+
+// ── Resolve accepted recommendations from --accept flag ─────────────────
+
+function resolveAcceptedRecommendations(
+  acceptFlag: string,
+  recommendations: Recommendation[],
+): Recommendation[] | null {
+  const trimmed = acceptFlag.trim();
+  const usesSelectorMode = trimmed !== "true";
+  if (usesSelectorMode && !trimmed.startsWith("=")) {
+    const hint = suggestSelectorFix(trimmed);
+    throw selectorFormatError(
+      `Invalid --accept selector format. Expected '=N[,M,...]' when passing a selector.${hint}`,
+    );
+  }
+
+  const lowerFlag = trimmed.toLowerCase();
+  const isWildcard = lowerFlag === "=all" || trimmed === "=.";
+  const selectedIndices = usesSelectorMode
+    ? (isWildcard ? null : parseSelectionIndices(trimmed, recommendations.length))
+    : null;
+  const accepted = selectedIndices === null
+    ? recommendations
+    : selectedIndices.map((i) => recommendations[i]).filter(Boolean);
+
+  if (accepted.length === 0) {
+    info(selectedIndices !== null
+      ? "No recommendations matched the selected indices."
+      : "No recommendations available to accept.");
+    return null;
+  }
+
+  return accepted;
+}
+
+// ── Report creation results ─────────────────────────────────────────────
+
+interface CreationResult {
+  created: Array<{ title: string; level: string; id: string; parentId?: string }>;
+  skipped?: Array<{ title: string }>;
+  updated?: Array<{ title: string; existingItemId: string }>;
+  reparented?: Array<{ title: string; newLevel: string; parentTitle: string }>;
+  conflictReport?: { hasConflicts: boolean; conflicts: RecommendationConflict[]; intraBatchDuplicates: IntraBatchDuplicate[] } | null;
+}
+
+function reportCreationResults(
+  creationResult: CreationResult,
+  totalAccepted: number,
+  conflictStrategy: ConflictStrategy,
+): void {
+  const { created, skipped, updated, reparented, conflictReport } = creationResult;
+
+  // Conflict summary (when items were skipped)
+  if (conflictReport?.hasConflicts && skipped && skipped.length > 0) {
+    info("");
+    info(`⚠ ${skipped.length} conflicting recommendation${skipped.length === 1 ? "" : "s"} skipped:`);
+    for (const conflict of conflictReport.conflicts) {
+      info(`  ⊘ ${formatConflict(conflict)}`);
+    }
+    for (const dup of conflictReport.intraBatchDuplicates) {
+      info(`  ⊘ ${formatIntraBatchDuplicate(dup)}`);
+    }
+    if (conflictStrategy !== "force") {
+      info(`  Use --force to create items regardless of conflicts.`);
+    }
+  }
+
+  // Updated items (pending-item conflicts refreshed in-place)
+  if (updated && updated.length > 0) {
+    info("");
+    for (const u of updated) {
+      info(`  ↻ "${u.title}" updated existing pending item ${u.existingItemId}`);
+    }
+  }
+
+  // Reparented items (completed-item conflicts created as children)
+  if (reparented && reparented.length > 0) {
+    info("");
+    for (const r of reparented) {
+      info(`  ↳ "${r.title}" created as ${r.newLevel} under completed "${r.parentTitle}"`);
+    }
+  }
+
+  // Post-creation item listing
+  result("");
+  for (const item of created) {
+    const placement = item.parentId ? `under ${item.parentId}` : "root";
+    result(`  ✓ ${item.title} → ${item.level} ${item.id} (${placement})`);
+  }
+
+  // Summary counts
+  const createdCount = created.length;
+  const updatedCount = updated?.length ?? 0;
+  const skippedCount = skipped?.length ?? 0;
+  const reparentedCount = reparented?.length ?? 0;
+  const countSuffix = totalAccepted === 1 ? "" : "s";
+  const parts: string[] = [`${createdCount}/${totalAccepted} selected recommendation${countSuffix} created`];
+  if (updatedCount > 0) parts.push(`${updatedCount} updated`);
+  if (reparentedCount > 0) parts.push(`${reparentedCount} reparented`);
+  if (skippedCount > 0) parts.push(`${skippedCount} skipped (conflicts)`);
+  result(`\n  ${parts.join(", ")}.`);
+}
+
+// ── Accept recommendations into the PRD ─────────────────────────────────
+
+async function acceptRecommendations(
+  rexDir: string,
+  acceptFlag: string,
+  recommendations: Recommendation[],
+  flags: Record<string, string>,
+): Promise<void> {
+  const acceptedRecommendations = resolveAcceptedRecommendations(acceptFlag, recommendations);
+  if (!acceptedRecommendations) return;
+
+  // Pre-creation summary
+  const isSubset = acceptedRecommendations.length < recommendations.length;
+  info(
+    isSubset
+      ? `\nCreating ${acceptedRecommendations.length} of ${recommendations.length} recommendations:\n`
+      : `\nCreating ${acceptedRecommendations.length} recommendation${acceptedRecommendations.length === 1 ? "" : "s"}:\n`,
+  );
+  for (let i = 0; i < acceptedRecommendations.length; i++) {
+    const rec = acceptedRecommendations[i];
+    info(`  ${i + 1}. [${rec.priority}] ${rec.title} (${rec.level})`);
+  }
+  info("");
+
+  // Create items with conflict detection
+  const conflictStrategy: ConflictStrategy =
+    flags.force !== undefined ? "force" : "skip";
+  const enriched = acceptedRecommendations.map(toEnrichedRecommendation);
+  const store = await resolveStore(rexDir);
+
+  let creationResult: Awaited<ReturnType<typeof createItemsFromRecommendations>>;
+  try {
+    creationResult = await createItemsFromRecommendations(
+      store,
+      enriched,
+      { conflictStrategy },
+    );
+  } catch (err) {
+    result(`\n✗ Creation failed: ${(err as Error).message}`);
+    result(`\n  0/${acceptedRecommendations.length} selected recommendation${acceptedRecommendations.length === 1 ? "" : "s"} created.`);
+    throw err;
+  }
+
+  reportCreationResults(creationResult, acceptedRecommendations.length, conflictStrategy);
+}
+
+// ── Main command entry point ────────────────────────────────────────────
+
 export async function cmdRecommend(
   dir: string,
   flags: Record<string, string>,
@@ -279,31 +500,7 @@ export async function cmdRecommend(
     const findings = showAll
       ? allFindings
       : allFindings.filter((f) => !isAcknowledged(ackStore, f.hash));
-
-    if (flags.acknowledge === "all") {
-      let updated = ackStore;
-      for (const f of findings) {
-        updated = acknowledgeFinding(updated, f.hash, f.message, "acknowledged", "user");
-      }
-      await saveAcknowledged(rexDir, updated);
-      result(`Acknowledged all ${findings.length} findings.`);
-      return;
-    }
-
-    const indices = flags.acknowledge.split(",").map((s) => parseInt(s.trim(), 10));
-    let updated = ackStore;
-    const acked: string[] = [];
-    for (const idx of indices) {
-      const f = findings[idx - 1]; // 1-based index
-      if (!f) {
-        console.error(`Finding index ${idx} out of range (1-${findings.length}).`);
-        continue;
-      }
-      updated = acknowledgeFinding(updated, f.hash, f.message, "acknowledged", "user");
-      acked.push(`${idx}. ${f.message.slice(0, 60)}`);
-    }
-    await saveAcknowledged(rexDir, updated);
-    for (const a of acked) result(`Acknowledged: ${a}`);
+    await handleAcknowledge(flags.acknowledge, { rexDir, ackStore, findings });
     return;
   }
 
@@ -329,123 +526,10 @@ export async function cmdRecommend(
     return;
   }
 
-  result(`\n${recommendations.length} recommended items:\n`);
-  let displayIdx = 0;
-  for (const rec of recommendations) {
-    result(`  [${rec.priority}] ${rec.title}`);
-    for (const line of rec.description.split("\n")) {
-      displayIdx++;
-      const finding = findings.find((f) => line.includes(f.message));
-      const ackMarker = showAll && finding && isAcknowledged(ackStore, finding.hash) ? " (acknowledged)" : "";
-      info(`    ${displayIdx}. ${line.replace(/^- /, "")}${ackMarker}`);
-    }
-    info("");
-  }
-
-  if (acknowledgedCount > 0) {
-    info(`(${acknowledgedCount} finding${acknowledgedCount === 1 ? "" : "s"} acknowledged, use --show-all to include)`);
-  }
+  displayRecommendations(recommendations, findings, ackStore, showAll, acknowledgedCount);
 
   if (flags.accept) {
-    const store = await resolveStore(rexDir);
-    const acceptFlag = flags.accept.trim();
-    const usesSelectorMode = acceptFlag !== "true";
-    if (usesSelectorMode && !acceptFlag.startsWith("=")) {
-      const hint = suggestSelectorFix(acceptFlag);
-      throw selectorFormatError(
-        `Invalid --accept selector format. Expected '=N[,M,...]' when passing a selector.${hint}`,
-      );
-    }
-
-    const lowerFlag = acceptFlag.toLowerCase();
-    const isWildcard = lowerFlag === "=all" || acceptFlag === "=.";
-    const selectedIndices = usesSelectorMode
-      ? (isWildcard ? null : parseSelectionIndices(acceptFlag, recommendations.length))
-      : null;
-    const acceptedRecommendations = selectedIndices === null
-      ? recommendations
-      : selectedIndices.map((i) => recommendations[i]).filter(Boolean);
-
-    if (acceptedRecommendations.length === 0) {
-      info(selectedIndices !== null
-        ? "No recommendations matched the selected indices."
-        : "No recommendations available to accept.");
-      return;
-    }
-
-    // ── Pre-creation summary ────────────────────────────────────────
-    const isSubset = acceptedRecommendations.length < recommendations.length;
-    info(
-      isSubset
-        ? `\nCreating ${acceptedRecommendations.length} of ${recommendations.length} recommendations:\n`
-        : `\nCreating ${acceptedRecommendations.length} recommendation${acceptedRecommendations.length === 1 ? "" : "s"}:\n`,
-    );
-    for (let i = 0; i < acceptedRecommendations.length; i++) {
-      const rec = acceptedRecommendations[i];
-      info(`  ${i + 1}. [${rec.priority}] ${rec.title} (${rec.level})`);
-    }
-    info("");
-
-    // ── Determine conflict strategy ──────────────────────────────────
-    const conflictStrategy: ConflictStrategy =
-      flags.force !== undefined ? "force" : "skip";
-
-    // ── Create items with conflict detection ────────────────────────
-    const enriched = acceptedRecommendations.map(toEnrichedRecommendation);
-    let creationResult: Awaited<ReturnType<typeof createItemsFromRecommendations>>;
-    try {
-      creationResult = await createItemsFromRecommendations(
-        store,
-        enriched,
-        { conflictStrategy },
-      );
-    } catch (err) {
-      result(`\n✗ Creation failed: ${(err as Error).message}`);
-      result(`\n  0/${acceptedRecommendations.length} selected recommendation${acceptedRecommendations.length === 1 ? "" : "s"} created.`);
-      throw err;
-    }
-
-    const { created, skipped, reparented, conflictReport } = creationResult;
-
-    // ── Conflict summary (when items were skipped) ──────────────────
-    if (conflictReport?.hasConflicts && skipped && skipped.length > 0) {
-      info("");
-      info(`⚠ ${skipped.length} conflicting recommendation${skipped.length === 1 ? "" : "s"} skipped:`);
-      for (const conflict of conflictReport.conflicts) {
-        info(`  ⊘ ${formatConflict(conflict)}`);
-      }
-      for (const dup of conflictReport.intraBatchDuplicates) {
-        info(`  ⊘ ${formatIntraBatchDuplicate(dup)}`);
-      }
-      if (conflictStrategy !== "force") {
-        info(`  Use --force to create items regardless of conflicts.`);
-      }
-    }
-
-    // ── Reparented items (completed-item conflicts created as children) ──
-    if (reparented && reparented.length > 0) {
-      info("");
-      for (const r of reparented) {
-        info(`  ↳ "${r.title}" created as ${r.newLevel} under completed "${r.parentTitle}"`);
-      }
-    }
-
-    // ── Post-creation results ───────────────────────────────────────
-    result("");
-    for (const item of created) {
-      const placement = item.parentId ? `under ${item.parentId}` : "root";
-      result(`  ✓ ${item.title} → ${item.level} ${item.id} (${placement})`);
-    }
-
-    const total = acceptedRecommendations.length;
-    const createdCount = created.length;
-    const skippedCount = skipped?.length ?? 0;
-    const reparentedCount = reparented?.length ?? 0;
-    const countSuffix = total === 1 ? "" : "s";
-    const parts: string[] = [`${createdCount}/${total} selected recommendation${countSuffix} created`];
-    if (reparentedCount > 0) parts.push(`${reparentedCount} reparented`);
-    if (skippedCount > 0) parts.push(`${skippedCount} skipped (conflicts)`);
-    result(`\n  ${parts.join(", ")}.`);
+    await acceptRecommendations(rexDir, flags.accept, recommendations, flags);
   } else {
     info("Run with --accept to add all recommendations to the PRD.");
     info("Run with --acknowledge=1,2 to acknowledge specific findings.");

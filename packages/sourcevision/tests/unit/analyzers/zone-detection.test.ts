@@ -15,6 +15,7 @@ import {
   deriveZoneIdFromFilenames,
   analyzeZones,
   assignByProximity,
+  applyZonePins,
   SUBDIVISION_THRESHOLD,
 } from "../../../src/analyzers/zones.js";
 import type { Zone, ImportEdge } from "../../../src/schema/index.js";
@@ -151,21 +152,26 @@ describe("deriveZoneName", () => {
 // ── Integration: analyzeZones ───────────────────────────────────────────────
 
 describe("analyzeZones", () => {
-  it("groups root-level files into a zone via directory proximity", async () => {
+  it("groups root-level importable files into a zone via directory proximity", async () => {
     const inventory = makeInventory([
+      makeFileEntry("index.ts"),
+      makeFileEntry("config.ts"),
+      // Non-importable files (.md, .json) are excluded from zone detection
       makeFileEntry("README.md", { role: "docs" }),
       makeFileEntry("package.json", { role: "config" }),
     ]);
-    const imports = makeImports([]);
+    const imports = makeImports([
+      makeEdge("index.ts", "config.ts"),
+    ]);
 
     const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
 
-    // Directory proximity edges pull root-level files into the graph,
-    // forming a zone instead of leaving them unzoned
+    // Importable .ts files form a zone; non-importable files are excluded entirely
     expect(result.zones).toHaveLength(1);
     expect(result.zones[0].id).toBe("root");
     expect(result.crossings).toHaveLength(0);
-    expect(result.unzoned).toHaveLength(0);
+    expect(result.zones[0].files).not.toContain("README.md");
+    expect(result.zones[0].files).not.toContain("package.json");
   });
 
   it("detects two disconnected clusters as separate zones", async () => {
@@ -218,6 +224,23 @@ describe("analyzeZones", () => {
     expect(result.zones[0].coupling).toBe(0);
   });
 
+  it("gives cohesion=0 to multi-file zones with no import edges", async () => {
+    // Two files in the same directory but no imports between them
+    const inventory = makeInventory([
+      makeFileEntry("scripts/check-a.mjs"),
+      makeFileEntry("scripts/check-b.mjs"),
+    ]);
+    const imports = makeImports([]);
+
+    const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
+
+    // All files should land in one zone (proximity-based)
+    expect(result.zones).toHaveLength(1);
+    // No edges → cohesion should be 0, not the old default of 1
+    expect(result.zones[0].cohesion).toBe(0);
+    expect(result.zones[0].coupling).toBe(0);
+  });
+
   it("populates crossings for cross-zone edges", async () => {
     const inventory = makeInventory([
       makeFileEntry("src/a/x.ts"),
@@ -251,13 +274,16 @@ describe("analyzeZones", () => {
     }
   });
 
-  it("assigns non-import files to zones via directory proximity", async () => {
+  it("excludes non-importable files from zone proximity assignment", async () => {
     const inventory = makeInventory([
       makeFileEntry("src/m/a.ts"),
       makeFileEntry("src/m/b.ts"),
       makeFileEntry("src/m/c.ts"),
+      // Non-importable files are excluded from zone scope
       makeFileEntry("README.md", { role: "docs" }),
-      makeFileEntry(".gitignore", { role: "config" }),
+      // .gitignore has no extension — not in NON_IMPORTABLE_EXTENSIONS
+      // but also has no import edges, so it may remain unzoned
+      makeFileEntry("src/m/helper.ts"),
     ]);
     const imports = makeImports([
       makeEdge("src/m/a.ts", "src/m/b.ts"),
@@ -267,14 +293,12 @@ describe("analyzeZones", () => {
 
     const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
 
-    // Directory proximity edges pull non-import files into the graph,
-    // so they get assigned to zones instead of remaining unzoned
-    expect(result.unzoned).toHaveLength(0);
-    // All files should be accounted for in zones
+    // Importable .ts files should be zoned
     const allZonedFiles = result.zones.flatMap(z => z.files);
     expect(allZonedFiles).toContain("src/m/a.ts");
-    expect(allZonedFiles).toContain("README.md");
-    expect(allZonedFiles).toContain(".gitignore");
+    // Non-importable files should be excluded entirely
+    expect(allZonedFiles).not.toContain("README.md");
+    expect(result.unzoned).not.toContain("README.md");
   });
 
   it("merges communities that derive the same zone ID into one zone", async () => {
@@ -625,14 +649,14 @@ describe("directory proximity integration", () => {
     expect(ids).toEqual(["auth", "billing"]);
   });
 
-  it("reduces unzoned files by pulling import-isolated files into graph", async () => {
+  it("excludes non-importable files from zone scope entirely", async () => {
     const inventory = makeInventory([
       makeFileEntry("src/core/a.ts"),
       makeFileEntry("src/core/b.ts"),
       makeFileEntry("src/core/c.ts"),
-      // Config files with no imports — previously would be unzoned
+      // Non-importable files (.json, .md) are excluded from zone detection
       makeFileEntry("src/core/config.json", { role: "config", language: "JSON" }),
-      makeFileEntry("src/core/types.d.ts", { language: "TypeScript" }),
+      makeFileEntry("src/core/README.md", { role: "docs" }),
     ]);
     const imports = makeImports([
       makeEdge("src/core/a.ts", "src/core/b.ts"),
@@ -642,8 +666,16 @@ describe("directory proximity integration", () => {
 
     const { zones: result } = await analyzeZones(inventory, imports, { enrich: false });
 
-    // All files should end up zoned (either in graph or via proximity assignment)
-    expect(result.unzoned).toHaveLength(0);
+    // Non-importable files should not appear in zones or unzoned
+    const allZonedFiles = result.zones.flatMap(z => z.files);
+    expect(allZonedFiles).not.toContain("src/core/config.json");
+    expect(allZonedFiles).not.toContain("src/core/README.md");
+    expect(result.unzoned).not.toContain("src/core/config.json");
+    expect(result.unzoned).not.toContain("src/core/README.md");
+    // Importable .ts files should be zoned
+    expect(allZonedFiles).toContain("src/core/a.ts");
+    expect(allZonedFiles).toContain("src/core/b.ts");
+    expect(allZonedFiles).toContain("src/core/c.ts");
   });
 
   it("produces disambiguated zone names instead of numeric suffixes", async () => {
@@ -1014,6 +1046,51 @@ describe("assignByProximity", () => {
 
     expect(expanded[0].files).toHaveLength(6); // all assigned
     expect(remaining).toHaveLength(0);
+  });
+});
+
+// ── applyZonePins ────────────────────────────────────────────────────────────
+
+describe("applyZonePins", () => {
+  const baseZones: Zone[] = [
+    { id: "build", name: "Build", description: "", files: ["build.js", "src/a.ts", "src/b.ts"], cohesion: 0, coupling: 0 },
+    { id: "viewer", name: "Viewer", description: "", files: ["src/viewer/main.ts", "src/viewer/app.ts"], cohesion: 0, coupling: 0 },
+  ];
+
+  it("moves pinned files from source zone to target zone", () => {
+    const result = applyZonePins(baseZones, { "src/a.ts": "viewer" });
+    const build = result.find((z) => z.id === "build")!;
+    const viewer = result.find((z) => z.id === "viewer")!;
+
+    expect(build.files).not.toContain("src/a.ts");
+    expect(viewer.files).toContain("src/a.ts");
+  });
+
+  it("skips pins for files not in any zone", () => {
+    const result = applyZonePins(baseZones, { "missing.ts": "viewer" });
+    expect(result).toHaveLength(2);
+    expect(result.find((z) => z.id === "build")!.files).toHaveLength(3);
+  });
+
+  it("skips pins targeting a nonexistent zone", () => {
+    const result = applyZonePins(baseZones, { "src/a.ts": "nonexistent" });
+    expect(result.find((z) => z.id === "build")!.files).toContain("src/a.ts");
+  });
+
+  it("removes zones that become empty after pinning", () => {
+    const zones: Zone[] = [
+      { id: "tiny", name: "Tiny", description: "", files: ["only.ts"], cohesion: 0, coupling: 0 },
+      { id: "big", name: "Big", description: "", files: ["a.ts"], cohesion: 0, coupling: 0 },
+    ];
+    const result = applyZonePins(zones, { "only.ts": "big" });
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("big");
+    expect(result[0].files).toContain("only.ts");
+  });
+
+  it("is a no-op when file is already in target zone", () => {
+    const result = applyZonePins(baseZones, { "src/viewer/main.ts": "viewer" });
+    expect(result.find((z) => z.id === "viewer")!.files).toHaveLength(2);
   });
 });
 

@@ -1,5 +1,6 @@
 import { join, resolve } from "node:path";
-import { access, writeFile, readFile, unlink } from "node:fs/promises";
+import { access, readFile, unlink } from "node:fs/promises";
+import { atomicWriteJSON } from "../../store/atomic-write.js";
 import { createInterface } from "node:readline";
 import { randomUUID } from "node:crypto";
 import { resolveStore } from "../../store/index.js";
@@ -463,11 +464,13 @@ export async function applyDuplicateProposalMerges(
 ): Promise<{
   mergedCount: number;
   mergeTargetsByNodeKey: Record<string, string>;
+  reopenedItemIds: string[];
 }> {
   const rexDir = join(dir, REX_DIR);
   const store = await resolveStore(rexDir);
   const proposalNodeIndex = buildMergeableProposalNodeIndex(proposals);
   const mergeTargetsByNodeKey: Record<string, string> = {};
+  const reopenedItemIds: string[] = [];
   const mergedAt = new Date().toISOString();
   let mergedCount = 0;
 
@@ -482,6 +485,14 @@ export async function applyDuplicateProposalMerges(
     if (!existing) continue;
 
     const updates: Partial<ItemWithMergedProposals> = {};
+
+    // Reset completed items that receive new merged content
+    if (existing.status === "completed") {
+      updates.status = "pending";
+      updates.completedAt = undefined;
+      reopenedItemIds.push(existing.id);
+    }
+
     const nextDescription = mergeDescription(existing.description, proposalNode.description);
     if (nextDescription !== existing.description) {
       updates.description = nextDescription;
@@ -530,7 +541,7 @@ export async function applyDuplicateProposalMerges(
     }
   }
 
-  return { mergedCount, mergeTargetsByNodeKey };
+  return { mergedCount, mergeTargetsByNodeKey, reopenedItemIds };
 }
 
 /**
@@ -709,7 +720,7 @@ async function savePending(
   prdHash?: string,
 ): Promise<void> {
   const filePath = join(dir, REX_DIR, PENDING_FILE);
-  await writeFile(filePath, JSON.stringify({ proposals, parentId, prdHash }, null, 2));
+  await atomicWriteJSON(filePath, { proposals, parentId, prdHash });
 }
 
 async function loadPending(
@@ -787,6 +798,7 @@ async function acceptProposals(
     overrideMarkersByNodeKey?: Record<string, DuplicateOverrideMarker>;
     mergeTargetsByNodeKey?: Record<string, string>;
     mergedCount?: number;
+    reopenedItemIds?: string[];
   } = {},
 ): Promise<number> {
   const {
@@ -794,6 +806,7 @@ async function acceptProposals(
     overrideMarkersByNodeKey,
     mergeTargetsByNodeKey,
     mergedCount = 0,
+    reopenedItemIds = [],
   } = options;
   const rexDir = join(dir, REX_DIR);
   const store = await resolveStore(rexDir);
@@ -802,6 +815,8 @@ async function acceptProposals(
   let addedCount = 0;
   // Track newly created container IDs so we can clean up empty ones after merges
   const newContainerIds: string[] = [];
+  // Track existing containers reused via existingId so we cascade-reset them
+  const reusedContainerIds: string[] = [];
 
   for (let pIdx = 0; pIdx < proposals.length; pIdx++) {
     const p = proposals[pIdx];
@@ -822,6 +837,7 @@ async function acceptProposals(
         if (existing) {
           epicId = epicExistingRef;
           epicReused = true;
+          reusedContainerIds.push(epicExistingRef);
           // Update title if the LLM expanded the scope
           if (p.epic.title && p.epic.title !== existing.item.title) {
             await store.updateItem(epicExistingRef, { title: p.epic.title });
@@ -861,6 +877,7 @@ async function acceptProposals(
           if (existing) {
             featureId = featureExistingRef;
             featureReused = true;
+            reusedContainerIds.push(featureExistingRef);
             if (f.title && f.title !== existing.item.title) {
               await store.updateItem(featureExistingRef, { title: f.title });
             }
@@ -1058,6 +1075,16 @@ async function acceptProposals(
 
   // Reset completed ancestors when adding under a completed parent
   await cascadeParentReset(store, parentId);
+
+  // Reset completed reused containers (existingId) and their ancestors
+  for (const id of reusedContainerIds) {
+    await cascadeParentReset(store, id);
+  }
+
+  // Cascade-reset reopened merge targets and their ancestors
+  for (const id of reopenedItemIds) {
+    await cascadeParentReset(store, id);
+  }
 
   const overrideCount = overrideMarkersByNodeKey
     ? Object.keys(overrideMarkersByNodeKey).length
@@ -1394,6 +1421,7 @@ async function runInteractiveSmartAddApproval(params: {
       let overrideMarkersByNodeKey: Record<string, DuplicateOverrideMarker> | undefined;
       let mergeTargetsByNodeKey: Record<string, string> | undefined;
       let mergedCount = 0;
+      let reopenedItemIds: string[] = [];
       if (hasDuplicateMatches(currentDuplicateMatches)) {
         info("Duplicate matches were detected in the selected proposals.");
         info("Choose action: c=cancel / m=merge with existing / p=proceed anyway");
@@ -1407,6 +1435,7 @@ async function runInteractiveSmartAddApproval(params: {
           );
           mergeTargetsByNodeKey = mergeResult.mergeTargetsByNodeKey;
           mergedCount = mergeResult.mergedCount;
+          reopenedItemIds = mergeResult.reopenedItemIds;
         }
         if (duplicateDecision === "cancel") {
           info("Cancelled. No items were created.");
@@ -1426,6 +1455,7 @@ async function runInteractiveSmartAddApproval(params: {
         overrideMarkersByNodeKey,
         mergeTargetsByNodeKey,
         mergedCount,
+        reopenedItemIds,
       });
       if (mergedCount > 0) {
         result(`Merged ${mergedCount} duplicate node(s) and added ${added} new item(s) to PRD.`);
@@ -1453,6 +1483,7 @@ async function runInteractiveSmartAddApproval(params: {
     let overrideMarkersByNodeKey: Record<string, DuplicateOverrideMarker> | undefined;
     let mergeTargetsByNodeKey: Record<string, string> | undefined;
     let mergedCount = 0;
+    let reopenedItemIds: string[] = [];
     let usedMergeDecision = false;
     if (hasDuplicateMatches(selectedMatches)) {
       info("Duplicate matches were detected in the selected proposals.");
@@ -1467,6 +1498,7 @@ async function runInteractiveSmartAddApproval(params: {
         );
         mergeTargetsByNodeKey = mergeResult.mergeTargetsByNodeKey;
         mergedCount = mergeResult.mergedCount;
+        reopenedItemIds = mergeResult.reopenedItemIds;
         usedMergeDecision = true;
       }
       if (duplicateDecision === "cancel") {
@@ -1487,6 +1519,7 @@ async function runInteractiveSmartAddApproval(params: {
       overrideMarkersByNodeKey,
       mergeTargetsByNodeKey,
       mergedCount,
+      reopenedItemIds,
     });
     if (mergedCount > 0) {
       result(`Merged ${mergedCount} duplicate node(s) and added ${added} new item(s) to PRD.`);

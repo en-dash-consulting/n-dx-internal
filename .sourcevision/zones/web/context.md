@@ -5,30 +5,48 @@
 <zone>
 
 Zone: Web (`web`)
-Files: 16, Cohesion: 0.77, Coupling: 0.23
-Risk: healthy (score: 0.23)
-Description: 16 files, primarily TypeScript, Markdown, Other
-Entry points: packages/web/src/viewer/components/elapsed-time.ts, packages/web/src/viewer/views/task-audit.ts
-Lines: 3352
+Files: 34, Cohesion: 0.55, Coupling: 0.45
+Risk: healthy (score: 0.45)
+Description: 47 files, primarily TypeScript, Other, JavaScript
+Entry points: packages/web/src/server/routes-mcp.ts, packages/web/src/viewer/components/guide.ts, packages/web/src/viewer/components/prd-tree/status-filter.ts, packages/web/src/viewer/messaging/index.ts, packages/web/src/viewer/messaging/request-dedup.ts, packages/web/src/viewer/usage/constants.ts, packages/web/src/viewer/views/enrichment-thresholds.ts, packages/web/src/viewer/views/graph.ts, packages/web/src/viewer/views/sourcevision-tabs.ts, packages/web/src/viewer/views/token-usage.ts
+Lines: 7626
 
 </zone>
 
 <files>
 
-packages/web/BROWSER_ERROR_CODE_5.md (Markdown, 580 lines, docs)
-packages/web/MEMORY_PROFILE.md (Markdown, 531 lines, docs)
 packages/web/SourceVision-F.png (Other, 0 lines, asset)
 packages/web/SourceVision.png (Other, 0 lines, asset)
-packages/web/build.js (JavaScript, 225 lines, source)
+packages/web/build.js (JavaScript, 243 lines, source)
 packages/web/dev.js (JavaScript, 114 lines, source)
-packages/web/package.json (JSON, 50 lines, config)
-packages/web/src/viewer/components/elapsed-time.ts (TypeScript, 51 lines, source)
-packages/web/src/viewer/components/prd-tree/lazy-children.ts (TypeScript, 93 lines, source)
-packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts (TypeScript, 225 lines, source)
-packages/web/src/viewer/hooks/use-tick.ts (TypeScript, 90 lines, source)
-packages/web/src/viewer/views/task-audit.ts (TypeScript, 637 lines, source)
-packages/web/tests/unit/viewer/lazy-children.test.ts (TypeScript, 295 lines, test)
-packages/web/tests/unit/viewer/listener-lifecycle.test.ts (TypeScript, 417 lines, test)
+packages/web/package.json (JSON, 51 lines, config)
+packages/web/src/viewer/messaging/call-rate-limiter.ts (TypeScript, 153 lines, source)
+packages/web/src/viewer/messaging/fetch-pipeline.ts (TypeScript, 104 lines, source)
+packages/web/src/viewer/messaging/index.ts (TypeScript, 78 lines, source)
+packages/web/src/viewer/messaging/message-coalescer.ts (TypeScript, 194 lines, source)
+packages/web/src/viewer/messaging/message-throttle.ts (TypeScript, 230 lines, source)
+packages/web/src/viewer/messaging/request-dedup.ts (TypeScript, 84 lines, source)
+packages/web/src/viewer/messaging/ws-pipeline.ts (TypeScript, 130 lines, source)
+packages/web/tests/integration/messaging-stack.test.ts (TypeScript, 464 lines, test)
+packages/web/tests/integration/request-dedup.test.ts (TypeScript, 626 lines, test)
+packages/web/tests/unit/landing/landing.test.ts (TypeScript, 159 lines, test)
+packages/web/tests/unit/server/memory-leak-fixes.test.ts (TypeScript, 91 lines, test)
+packages/web/tests/unit/server/routes-mcp.test.ts (TypeScript, 325 lines, test)
+packages/web/tests/unit/viewer/accessibility.test.ts (TypeScript, 401 lines, test)
+packages/web/tests/unit/viewer/call-rate-limiter.test.ts (TypeScript, 408 lines, test)
+packages/web/tests/unit/viewer/enrichment-thresholds.test.ts (TypeScript, 28 lines, test)
+packages/web/tests/unit/viewer/execution-panel-dedup.test.ts (TypeScript, 280 lines, test)
+packages/web/tests/unit/viewer/fetch-pipeline.test.ts (TypeScript, 133 lines, test)
+packages/web/tests/unit/viewer/graph-destroy.test.ts (TypeScript, 132 lines, test)
+packages/web/tests/unit/viewer/graph-interaction.test.ts (TypeScript, 721 lines, test)
+packages/web/tests/unit/viewer/graph-layout.test.ts (TypeScript, 313 lines, test)
+packages/web/tests/unit/viewer/graph-zoom.test.ts (TypeScript, 299 lines, test)
+packages/web/tests/unit/viewer/message-coalescer.test.ts (TypeScript, 534 lines, test)
+packages/web/tests/unit/viewer/message-throttle.test.ts (TypeScript, 578 lines, test)
+packages/web/tests/unit/viewer/request-dedup.test.ts (TypeScript, 235 lines, test)
+packages/web/tests/unit/viewer/sourcevision-tabs.test.ts (TypeScript, 71 lines, test)
+packages/web/tests/unit/viewer/status-filter.test.ts (TypeScript, 257 lines, test)
+packages/web/tests/unit/viewer/ws-pipeline.test.ts (TypeScript, 146 lines, test)
 packages/web/tsconfig.json (JSON, 11 lines, config)
 packages/web/vitest.config.ts (TypeScript, 33 lines, config)
 
@@ -37,45 +55,81 @@ packages/web/vitest.config.ts (TypeScript, 33 lines, config)
 <imports>
 
 Internal:
-  packages/web/src/viewer/components/elapsed-time.ts → packages/web/src/viewer/hooks/use-tick.ts {useTick}
-  packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/elapsed-time.ts {ElapsedTime}
-  packages/web/tests/unit/viewer/lazy-children.test.ts → packages/web/src/viewer/components/prd-tree/lazy-children.ts {LazyChildren, UNMOUNT_DELAY_MS}
-  packages/web/tests/unit/viewer/listener-lifecycle.test.ts → packages/web/src/viewer/components/prd-tree/listener-lifecycle.ts {ListenerLifecycleManager}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {CallRateLimiter, CallRateLimiterConfig}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
+  packages/web/src/viewer/messaging/fetch-pipeline.ts → packages/web/src/viewer/messaging/request-dedup.ts {RequestDedup}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter, CallRateLimiter, CallRateLimiterConfig}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/fetch-pipeline.ts {createFetchPipeline, FetchPipeline, FetchPipelineConfig}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer, MessageCoalescer, MessageCoalescerConfig, ParsedWSMessage, CoalescedBatch}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle, MessageThrottle, ThrottledHandlerConfig}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup, RequestDedup}
+  packages/web/src/viewer/messaging/index.ts → packages/web/src/viewer/messaging/ws-pipeline.ts {createWSPipeline, WSPipeline, WSPipelineConfig}
+  packages/web/src/viewer/messaging/message-throttle.ts → packages/web/src/viewer/messaging/message-coalescer.ts {ParsedWSMessage}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-coalescer.ts {MessageCoalescer, ParsedWSMessage, CoalescedBatch}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle}
+  packages/web/src/viewer/messaging/ws-pipeline.ts → packages/web/src/viewer/messaging/message-throttle.ts {MessageThrottle}
+  packages/web/tests/integration/messaging-stack.test.ts → packages/web/src/viewer/messaging/index.ts {createWSPipeline, createFetchPipeline}
+  packages/web/tests/integration/messaging-stack.test.ts → packages/web/src/viewer/messaging/index.ts {WSPipeline, FetchPipeline, CoalescedBatch, ParsedWSMessage}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle}
+  packages/web/tests/integration/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
+  packages/web/tests/unit/viewer/call-rate-limiter.test.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {createCallRateLimiter}
+  packages/web/tests/unit/viewer/call-rate-limiter.test.ts → packages/web/src/viewer/messaging/call-rate-limiter.ts {CallRateLimiter}
+  packages/web/tests/unit/viewer/execution-panel-dedup.test.ts → packages/web/src/viewer/messaging/fetch-pipeline.ts {createFetchPipeline}
+  packages/web/tests/unit/viewer/fetch-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {createFetchPipeline}
+  packages/web/tests/unit/viewer/fetch-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {FetchPipeline}
+  packages/web/tests/unit/viewer/message-coalescer.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {createMessageCoalescer}
+  packages/web/tests/unit/viewer/message-coalescer.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {MessageCoalescer, CoalescedBatch, ParsedWSMessage}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-coalescer.ts {ParsedWSMessage}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {createMessageThrottle}
+  packages/web/tests/unit/viewer/message-throttle.test.ts → packages/web/src/viewer/messaging/message-throttle.ts {MessageThrottle, ThrottledHandlerConfig}
+  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {createRequestDedup}
+  packages/web/tests/unit/viewer/request-dedup.test.ts → packages/web/src/viewer/messaging/request-dedup.ts {RequestDedup}
+  packages/web/tests/unit/viewer/ws-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {createWSPipeline}
+  packages/web/tests/unit/viewer/ws-pipeline.test.ts → packages/web/src/viewer/messaging/index.ts {WSPipeline, CoalescedBatch, ParsedWSMessage}
 
 Outgoing (this zone → other zones):
-  → web-viewer: packages/web/src/viewer/hooks/use-tick.ts → packages/web/src/viewer/polling/index.ts; packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/logos.ts; packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/components/rex-task-link.ts; packages/web/src/viewer/views/task-audit.ts → packages/web/src/viewer/types.ts
+  → web-landing: packages/web/tests/unit/landing/landing.test.ts → packages/web/src/landing/landing.ts
+  → web-server: packages/web/tests/unit/server/memory-leak-fixes.test.ts → packages/web/src/server/routes-mcp.ts; packages/web/tests/unit/server/routes-mcp.test.ts → packages/web/src/server/routes-mcp.ts
+  → web-viewer: packages/web/tests/unit/server/routes-mcp.test.ts → packages/web/src/server/types.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/guide.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/prd-tree.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/prd-tree/types.ts; packages/web/tests/unit/viewer/accessibility.test.ts → packages/web/src/viewer/components/theme-toggle.ts; packages/web/tests/unit/viewer/enrichment-thresholds.test.ts → packages/web/src/viewer/views/enrichment-thresholds.ts; packages/web/tests/unit/viewer/graph-destroy.test.ts → packages/web/src/viewer/graph/physics.ts; packages/web/tests/unit/viewer/graph-destroy.test.ts → packages/web/src/viewer/graph/physics.ts; packages/web/tests/unit/viewer/graph-layout.test.ts → packages/web/src/viewer/graph/physics.ts; packages/web/tests/unit/viewer/graph-layout.test.ts → packages/web/src/viewer/graph/physics.ts; packages/web/tests/unit/viewer/sourcevision-tabs.test.ts → packages/web/src/viewer/views/enrichment-thresholds.ts; packages/web/tests/unit/viewer/sourcevision-tabs.test.ts → packages/web/src/viewer/views/sourcevision-tabs.ts; packages/web/tests/unit/viewer/sourcevision-tabs.test.ts → packages/web/src/viewer/views/sourcevision-tabs.ts; packages/web/tests/unit/viewer/status-filter.test.ts → packages/web/src/viewer/components/prd-tree/status-filter.ts; packages/web/tests/unit/viewer/status-filter.test.ts → packages/web/src/viewer/components/prd-tree/types.ts
 
 Incoming (other zones → this zone):
-  ← web-viewer: packages/web/src/viewer/components/active-tasks-panel.ts → packages/web/src/viewer/components/elapsed-time.ts; packages/web/src/viewer/views/domain-rex.ts → packages/web/src/viewer/views/task-audit.ts
+  ← web-viewer: packages/web/src/viewer/components/prd-tree/execution-panel.ts → packages/web/src/viewer/messaging/index.ts; packages/web/src/viewer/external.ts → packages/web/src/viewer/messaging/request-dedup.ts; packages/web/src/viewer/external.ts → packages/web/src/viewer/messaging/request-dedup.ts; packages/web/src/viewer/hooks/use-prd-data.ts → packages/web/src/viewer/messaging/index.ts; packages/web/src/viewer/hooks/use-prd-websocket.ts → packages/web/src/viewer/messaging/index.ts; packages/web/src/viewer/hooks/use-project-status.ts → packages/web/src/viewer/messaging/index.ts
 
 </imports>
 
 <findings>
 
+[observation] [warning] 10 entry points — wide API surface, consider consolidating exports
 [suggestion] [info] Zone "web" has files across 6 directories — consider consolidating under a dedicated directory
 
 </findings>
 
 <insights>
 
-- With 4 imports flowing into web-viewer and 2 coming back from web-viewer, this zone acts as a thin coordination layer — keep it focused on wiring, not logic
-- elapsed-time.ts and task-audit.ts are entry-point components in this zone while the bulk of viewer code lives in web-viewer; evaluate whether these belong in web-viewer to reduce the split
-- Cohesion of 0.79 is healthy, but the presence of both production components and package-level config files (build.js, dev.js) in one zone suggests the community detection is grouping heterogeneous concerns — no action needed but worth monitoring
-- Zone "web-package-shell" has files across 6 directories — consider consolidating under a dedicated directory
-- elapsed-time.ts and task-audit.ts are classified as entry points in this zone but logically belong to the viewer layer — consider moving them into web-viewer to consolidate the component surface.
-- Cohesion of 0.79 with coupling of 0.21 is within healthy bounds; the bidirectional import relationship with web-viewer (4 out, 2 in) should be watched to ensure it doesn't become circular.
-- BROWSER_ERROR_CODE_5.md and MEMORY_PROFILE.md in this zone suggest past debugging artifacts; review whether these are still relevant or can be removed to keep the package root clean.
-- web-package-shell participates in a bidirectional import cycle with web-viewer (4 out, 2 back) — this constitutes a circular zone dependency that should be broken by extracting shared types or interfaces into a neutral third zone
-- The 2 reverse imports from web-viewer back into web-package-shell likely represent shared component or utility re-use; identifying and extracting these into a dedicated shared zone would eliminate the cycle without restructuring either package
-- web-package-shell ↔ web-viewer bidirectional import cycle (4+2 crossings) is a circular zone dependency — extract the 2 symbols imported by web-viewer from web-package-shell into a neutral shared zone to restore unidirectional flow.
-- build.js and dev.js (config files) colocated with elapsed-time.ts and task-audit.ts (runtime components) in one zone means any change to either class of files triggers unnecessary review of the other — a symptom of the zone grouping heterogeneous concerns
-- elapsed-time.ts and task-audit.ts are production viewer components classified as entry points inside web-package-shell, while the bulk of viewer code lives in web-viewer. This split means a single logical component surface has two zone owners, which breaks the assumption that a zone is the unit of independent deployment or testing.
-- web-package-shell mixes package-level tooling files (build.js, dev.js, package.json) with runtime component files (elapsed-time.ts, task-audit.ts) in one zone. Tooling files and runtime components have completely different change drivers and reviewers — they should not share a zone boundary.
-- web-server (cohesion 0.63, bidirectional cycle with web-viewer) is the only zone in the codebase that simultaneously has cohesion below 0.7 AND participates in a bidirectional import cycle — this combination makes it the single highest-fragility zone in the project. Low cohesion means its internal seams are unclear; bidirectional coupling means it cannot be changed without negotiating with web-viewer. Every other zone with coupling has cohesion above 0.75.
-- The zone named 'web-unit' (cohesion 0.5, 6 files) receives 6 imports from web-viewer with no reverse imports — its name implies unit tests, but it contains production components consumed exclusively by web-viewer. This name/role mismatch causes navigational confusion: developers expecting unit test utilities will find production component files.
-- web-server is the only zone combining cohesion < 0.7 with an active bidirectional import cycle. Absorbing web-server into web-viewer would resolve one cycle, eliminate the lowest-cohesion zone with coupling, and reduce web-viewer's bidirectional cycle count from 2 to 1. Prioritize web-server absorption before any other web cluster refactor.
-- Rename zone 'web-unit' to 'web-shared-components' or 'web-viewer-utils' to reflect its actual role as a production utility module for web-viewer. The current name implies test infrastructure and will mislead contributors searching for test helpers.
+- 10 entry points — wide API surface, consider consolidating exports
+- Contains the viewer messaging middleware layer (call-rate-limiter, fetch-pipeline, request-dedup) that forms the communication backbone between viewer and server
+- Build tooling files (build.js, dev.js) and static assets (PNG images) are grouped with viewer messaging code due to package-root proximity — these are structurally unrelated concerns
+- Bidirectional imports with web-viewer (16 outbound, 6 inbound) suggest a circular dependency that may undermine the one-way messaging contract enforced by external.ts
+- Bidirectional imports with web-application-core (16 from this zone into web-viewer, 6 back) indicate a circular dependency; messaging utilities should flow one-way into the viewer via external.ts, not back out.
+- Build tooling (build.js, dev.js) and static assets (PNG images) are co-located with messaging source files due to package-root proximity — these inflate the zone and distort cohesion metrics without representing a real architectural relationship.
+- The messaging layer (call-rate-limiter, fetch-pipeline, request-dedup) aligns with the intended viewer-message-pipeline architectural zone described in CLAUDE.md, confirming clean separation of transport concerns from UI logic.
+- Zone "viewer-messaging-pipeline" has files across 6 directories — consider consolidating under a dedicated directory
+- All six messaging source files are internally pure and framework-agnostic — none import from src/viewer/ or Preact code, making the 16→6 bidirectional count with web-application-core a zone-boundary artifact of where the algorithm placed the messaging/viewer split, not a genuine runtime circular dependency
+- The messaging zone exports two composed pipelines (createWSPipeline, createFetchPipeline) as the primary consumer surface alongside five primitives — this two-tier API design (composed vs primitive) is a sign of deliberate interface design
+- The 16 outbound and 6 inbound cross-zone edges with web-application-core are artifacts of zone boundary placement, not runtime circular dependencies — messaging files are internally pure and do not import from viewer code. The bidirectional count reflects the graph algorithm grouping viewer consumers of messaging in one zone and messaging producers in another, not a real architectural violation.
+- The zone exports a two-tier API: composed pipelines (createWSPipeline, createFetchPipeline) as the preferred consumer surface and five lower-level primitives for custom composition. This layered export design reduces coupling at the call site and is worth replicating in other infrastructure zones.
+- The zone's call-graph cohesion (0.9) is dramatically higher than its file-level cohesion (0.55) — the 0.35-point gap is explained entirely by non-source files (build.js, dev.js, two PNG images, package.json) that participate in zero import edges. Removing these non-source files from zone membership would bring file-level cohesion in line with the call-graph measurement and reveal the messaging layer as a genuinely high-cohesion zone.
+- Six non-source files (build.js, dev.js, SourceVision.png, SourceVision-F.png, package.json, and likely tsconfig) inflate the zone's file count and suppress cohesion from 0.9 (call-graph) to 0.55 (file-level). These files should be excluded from zone analysis or relocated so the messaging zone's cohesion reflects only its runtime source members.
+- Confirmed gateway bypass: packages/web/src/viewer/hooks/use-prd-data.ts and use-prd-websocket.ts import directly from ../messaging/index.js instead of through external.ts. This is a live violation of the gateway contract — the two files are viewer code (not messaging infrastructure) and should be accessing messaging primitives only through external.ts. The bypass is undetected because boundary-check.test.ts does not assert that viewer/ files outside messaging/ must import messaging symbols through external.ts.
+- Zone ID 'viewer-messaging-pipeline' does not correspond to any single directory — source files live under src/viewer/messaging/ while the zone boundary also captures package-root files (build.js, dev.js, PNG assets). The zone name implies a focused sub-directory scope but its physical extent is a mix of directory content and package-root proximity.
+- Two viewer hook files (use-prd-data.ts, use-prd-websocket.ts) import createFetchPipeline and createWSPipeline directly from ../messaging/index.js rather than through external.ts. Add a boundary-check.test.ts assertion: no file in src/viewer/ outside src/viewer/messaging/ may import from src/viewer/messaging/ directly — all viewer consumers must go through external.ts. Without this rule the gateway contract has a live bypass.
+- Zone ID 'viewer-messaging-pipeline' does not match any directory in the codebase (source is in src/viewer/messaging/). Consider renaming the zone to 'web-viewer-messaging' to align with the directory path and make zone-to-directory navigation unambiguous.
+- 67 runtime calls from viewer-messaging-pipeline into web-application-core contradict the messaging layer's documented role as framework-agnostic infrastructure. Separate the 67 call sites into: (a) data transformation calls that belong in messaging, and (b) domain operation calls that should be inverted via a callback or event interface — resolving both the bidirectional import metric and the runtime coupling simultaneously.
 - Zone "web" has files across 6 directories — consider consolidating under a dedicated directory
-- [call graph] 59 internal calls, 1 outgoing, 0 incoming (cohesion: 0.98, coupling: 0.02)
+- [call graph] 632 internal calls, 71 outgoing, 5 incoming (cohesion: 0.9, coupling: 0.1)
 
 </insights>

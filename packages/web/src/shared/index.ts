@@ -7,7 +7,4 @@
  */
 
 export { DATA_FILES, ALL_DATA_FILES, SUPPLEMENTARY_FILES } from "./data-files.js";
-export { NodeCuller } from "./node-culler.js";
-export type { NodeCullerOptions, NodeCullerState, VisibilityCallback } from "./node-culler.js";
-export { createRequestDedup } from "./request-dedup.js";
-export type { RequestDedup } from "./request-dedup.js";
+export type { ViewId } from "./view-id.js";

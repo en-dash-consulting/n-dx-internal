@@ -5,17 +5,16 @@
 <zone>
 
 Zone: Web Viewer/web/viewer Styles (`web-viewer/web/viewer-styles`)
-Files: 4, Cohesion: 0.86, Coupling: 0.14
-Description: 4 files, primarily CSS
-Lines: 321
+Files: 3, Cohesion: 0.00, Coupling: 0.00
+Description: 3 files, primarily CSS
+Lines: 1637
 
 </zone>
 
 <files>
 
-packages/web/src/viewer/styles/a11y.css (CSS, 46 lines, other)
-packages/web/src/viewer/styles/analysis.css (CSS, 131 lines, other)
-packages/web/src/viewer/styles/badges.css (CSS, 110 lines, other)
-packages/web/src/viewer/styles/base.css (CSS, 34 lines, other)
+packages/web/src/viewer/styles/validation.css (CSS, 784 lines, other)
+packages/web/src/viewer/styles/zone-map.css (CSS, 503 lines, other)
+packages/web/src/viewer/styles/zone-slideout.css (CSS, 350 lines, other)
 
 </files>

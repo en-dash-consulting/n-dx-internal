@@ -95,7 +95,14 @@ const COMMAND_REGISTRY = [
     category: "Orchestration",
     summary: "Analyze codebase and generate PRD proposals",
     keywords: ["analyze", "PRD", "proposals", "codebase", "scan", "guided", "import", "spec"],
-    related: ["init", "work", "status"],
+    related: ["init", "add", "work", "status"],
+  },
+  {
+    name: "add",
+    category: "Orchestration",
+    summary: "Add items to the PRD from descriptions or files",
+    keywords: ["add", "create", "PRD", "epic", "feature", "task", "subtask", "import", "smart"],
+    related: ["plan", "status", "work"],
   },
   {
     name: "refresh",
@@ -166,6 +173,13 @@ const COMMAND_REGISTRY = [
     summary: "View and edit settings across all packages",
     keywords: ["settings", "configuration", "preferences", "edit", "view", "feature", "toggle"],
     related: [],
+  },
+  {
+    name: "self-heal",
+    category: "Orchestration",
+    summary: "Iterative codebase improvement loop",
+    keywords: ["heal", "iterate", "loop", "improve", "analyze", "recommend", "accept", "agent", "autonomous"],
+    related: ["plan", "work", "refresh"],
   },
   // ── Tool delegation commands ──
   {
@@ -590,7 +604,29 @@ const ORCHESTRATOR_HELP_DEFS = {
       { command: "ndx plan --file=spec.md .", description: "Generate PRD from a spec document" },
       { command: "ndx plan --guided .", description: "Guided setup for a new project" },
     ],
-    related: ["init", "work", "status"],
+    related: ["init", "add", "work", "status"],
+  },
+  add: {
+    summary: "add items to the PRD",
+    description: "Add items to the PRD from freeform descriptions, files, or stdin.\nDelegates to 'rex add' — supports smart-add (LLM-powered),\nmanual level-based add, and file import.",
+    usage: [
+      "ndx add <level> [dir]",
+      'ndx add "<description>" ["<desc2>"]',
+      "ndx add --file=<path> [dir]",
+      "echo \"desc\" | ndx add [dir]",
+    ],
+    options: [
+      { flag: "--file=<path>", description: "Import ideas from a freeform text file (repeatable)" },
+      { flag: "--model=<name>", description: "Override LLM model for smart-add" },
+      { flag: "--quiet, -q", description: "Suppress informational output" },
+    ],
+    examples: [
+      { command: 'ndx add "Add user authentication"', description: "Smart-add from description" },
+      { command: "ndx add epic", description: "Manually add an epic" },
+      { command: "ndx add --file=ideas.md .", description: "Import from a text file" },
+      { command: 'echo "dark mode" | ndx add', description: "Pipe description via stdin" },
+    ],
+    related: ["plan", "status", "work"],
   },
   refresh: {
     summary: "refresh dashboard data and UI artifacts",
@@ -748,6 +784,25 @@ const ORCHESTRATOR_HELP_DEFS = {
     ],
     related: ["start"],
   },
+  "self-heal": {
+    summary: "iterative codebase improvement loop",
+    description:
+      "Runs N iterations of the full improvement cycle:\n" +
+      "  1. sourcevision analyze --deep --full  (deep static analysis)\n" +
+      "  2. rex recommend                       (generate recommendations)\n" +
+      "  3. rex recommend --accept              (accept recommendations into PRD)\n" +
+      "  4. hench run --auto --loop             (execute tasks autonomously)\n\n" +
+      "Each iteration builds on the previous one — analysis improves as the\n" +
+      "codebase evolves, recommendations become more targeted, and the agent\n" +
+      "addresses progressively deeper issues.",
+    usage: "ndx self-heal [N] [dir]",
+    examples: [
+      { command: "ndx self-heal 3 .", description: "Run 3 improvement iterations" },
+      { command: "ndx self-heal .", description: "Run 1 iteration (default)" },
+      { command: "ndx self-heal 5", description: "Run 5 iterations in current directory" },
+    ],
+    related: ["plan", "work", "refresh"],
+  },
 };
 
 /**
@@ -848,6 +903,7 @@ export function formatMainHelp() {
     ["init [dir]", "Initialize all tools (sourcevision + rex + hench)"],
     ["plan [dir]", "Analyze codebase and show PRD proposals (--guided for new projects)"],
     ["plan --accept [dir]", "Analyze and accept proposals into PRD"],
+    ['add "<desc>" [dir]', "Add PRD items from descriptions, files, or stdin"],
     ["refresh [dir]", "Refresh dashboard artifacts (--ui-only, --data-only, --pr-markdown, --no-build)"],
     ["work [dir]", "Run next task (--task=ID, --epic=ID, --epic-by-epic, --auto)"],
     ["status [dir]", "Show PRD status (--format=json, --since, --until)"],
@@ -858,6 +914,7 @@ export function formatMainHelp() {
     ["web [dir]", "Alias for start (--port=N, --background, stop, status)"],
     ["ci [dir]", "Run analysis pipeline and validate PRD health"],
     ["config [key] [value]", "View and edit settings (--json, --help)"],
+    ["self-heal [N] [dir]", "Iterative improvement loop (analyze → recommend → accept → execute)"],
   ];
   const maxOrchLen = Math.max(...orchestrationItems.map(([n]) => n.length));
   const orchPad = Math.max(maxOrchLen + 4, 24);
