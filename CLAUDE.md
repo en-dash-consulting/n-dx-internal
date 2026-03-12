@@ -235,6 +235,8 @@ ndx init [dir]            # sourcevision init → rex init → hench init
 ndx config llm.vendor ... # set active LLM vendor (claude|codex)
 ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals)
 ndx plan --accept [dir]   # ...then accept proposals into PRD
+ndx add "description"     # smart-add PRD items from freeform descriptions
+ndx add --file=spec.md    # import ideas from a text file
 ndx work [dir]            # hench run (pass --task=ID, --dry-run, etc.)
 ndx status [dir]          # rex status (pass --format=json)
 ndx usage [dir]           # token usage analytics (--format=json, --group=day|week|month)

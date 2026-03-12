@@ -471,6 +471,13 @@ async function handleInit(rest) {
   process.exit(0);
 }
 
+async function handleAdd(rest) {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".rex"]);
+  await runOrDie(tools.rex, ["add", ...rest]);
+  process.exit(0);
+}
+
 async function handlePlan(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex"]);
@@ -866,6 +873,7 @@ async function main() {
     case "help":    return handleHelp(rest);
     case "init":    return handleInit(rest);
     case "plan":    return handlePlan(rest);
+    case "add":     return handleAdd(rest);
     case "refresh": return handleRefresh(rest);
     case "work":    return handleWork(rest);
     case "status":  return handleStatus(rest);
