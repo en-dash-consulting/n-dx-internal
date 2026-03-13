@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
-import type { PRDStore, PRDItem, ItemStatus, CommandExecutor } from "../prd/rex-gateway.js";
+import type { PRDStore, PRDItem, ItemStatus, ResolutionType, CommandExecutor } from "../prd/rex-gateway.js";
 import { PROJECT_DIRS } from "../prd/llm-gateway.js";
 import { execShellCmd } from "../process/index.js";
 import { computeTimestampUpdates, findAutoCompletions, validateAutomatedRequirements, formatRequirementsValidation, loadAcknowledged, saveAcknowledged, acknowledgeFinding } from "../prd/rex-gateway.js";
@@ -20,12 +20,14 @@ export interface UpdateStatusOptions {
   testCommand?: string;
   /** Commit hash captured before the agent started, for diffing against. */
   startingHead?: string;
+  /** When true, reject doc-only completions. */
+  selfHeal?: boolean;
 }
 
 export async function toolRexUpdateStatus(
   store: PRDStore,
   taskId: string,
-  params: { status: string; reason?: string },
+  params: { status: string; reason?: string; resolutionType?: string },
   options?: UpdateStatusOptions,
 ): Promise<string> {
   const validStatuses = ["pending", "in_progress", "completed", "failing", "deferred", "blocked"];
@@ -40,6 +42,7 @@ export async function toolRexUpdateStatus(
     const validation = await validateCompletion(options.projectDir, {
       testCommand: options.testCommand,
       startingHead: options.startingHead,
+      selfHeal: options.selfHeal,
     });
 
     if (!validation.valid) {
@@ -101,6 +104,9 @@ export async function toolRexUpdateStatus(
   const statusUpdates: Partial<PRDItem> = { status: params.status as ItemStatus, ...tsUpdates };
   if (params.status === "failing" && params.reason) {
     statusUpdates.failureReason = params.reason;
+  }
+  if (params.status === "completed" && params.resolutionType) {
+    statusUpdates.resolutionType = params.resolutionType as ResolutionType;
   }
   await store.updateItem(taskId, statusUpdates);
   await store.appendLog({
@@ -222,6 +228,7 @@ export const rexToolHandlers: RexToolHandlers = {
         projectDir: ctx.projectDir,
         testCommand: ctx.testCommand,
         startingHead: ctx.startingHead,
+        selfHeal: ctx.selfHeal,
       },
     ),
   appendLog: (ctx: ToolContext, params: RexAppendLogParams) =>

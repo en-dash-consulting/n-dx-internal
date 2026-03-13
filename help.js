@@ -813,12 +813,15 @@ const ORCHESTRATOR_HELP_DEFS = {
     description:
       "Runs N iterations of the full improvement cycle:\n" +
       "  1. sourcevision analyze --deep --full  (deep static analysis)\n" +
-      "  2. rex recommend                       (generate recommendations)\n" +
-      "  3. rex recommend --accept              (accept recommendations into PRD)\n" +
-      "  4. hench run --auto --loop             (execute tasks autonomously)\n\n" +
-      "Each iteration builds on the previous one — analysis improves as the\n" +
-      "codebase evolves, recommendations become more targeted, and the agent\n" +
-      "addresses progressively deeper issues.",
+      "  2. rex recommend                       (zone-scoped, ≤3 findings/task)\n" +
+      "  3. rex recommend --accept              (accept into PRD)\n" +
+      "  4. hench run --auto --loop --self-heal (execute with code-change focus)\n" +
+      "  5. rex recommend --acknowledge-completed (prevent finding regeneration)\n\n" +
+      "Tasks are scoped by zone and capped at 3 findings each for actionable\n" +
+      "granularity. Self-heal mode instructs the agent to make source code\n" +
+      "changes (not documentation) and rejects doc-only completions.\n" +
+      "Completed findings are acknowledged to prevent regeneration.\n" +
+      "The loop terminates early if no progress is made between iterations.",
     usage: "ndx self-heal [N] [dir]",
     examples: [
       { command: "ndx self-heal 3 .", description: "Run 3 improvement iterations" },

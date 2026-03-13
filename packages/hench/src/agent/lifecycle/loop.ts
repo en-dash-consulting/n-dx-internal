@@ -146,6 +146,7 @@ async function initApiResources(
     testCommand,
     startingHead,
     memoryMonitor,
+    selfHeal: config.selfHeal,
   };
 
   return { client, vendor, toolCtx };

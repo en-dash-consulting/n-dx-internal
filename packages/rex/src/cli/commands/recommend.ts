@@ -34,6 +34,7 @@ interface Finding {
   category: string;
   message: string;
   file?: string;
+  scope?: string;
   hash: string;
 }
 
@@ -197,6 +198,7 @@ async function readFindings(
       category: f.category ?? f.type ?? "general",
       message: f.message ?? f.text ?? "",
       file: f.file,
+      scope: f.scope ?? "global",
       hash: computeFindingHash({
         type: f.type ?? "general",
         scope: f.scope ?? "global",
@@ -205,37 +207,62 @@ async function readFindings(
     }));
 }
 
-function mapFindingsToRecommendations(findings: Finding[]): Recommendation[] {
+/**
+ * Derive the zone from a finding. Falls back to "global" when the finding
+ * has no file or scope information.
+ */
+function findingZone(f: Finding): string {
+  return f.scope ?? "global";
+}
+
+function mapFindingsToRecommendations(
+  findings: Finding[],
+  maxFindingsPerTask = 3,
+): Recommendation[] {
+  // Group by zone + category for granular, actionable recommendations
   const grouped = new Map<string, Finding[]>();
   for (const f of findings) {
-    const group = grouped.get(f.category) ?? [];
+    const key = `${findingZone(f)}::${f.category}`;
+    const group = grouped.get(key) ?? [];
     group.push(f);
-    grouped.set(f.category, group);
+    grouped.set(key, group);
   }
 
   const recommendations: Recommendation[] = [];
-  for (const [category, items] of grouped) {
+  for (const [key, items] of grouped) {
+    const [zone, category] = key.split("::");
     const hasCritical = items.some((f) => f.severity === "critical");
 
-    // Compute severity distribution for quality scoring
-    const severityDistribution: Record<string, number> = {};
-    for (const f of items) {
-      severityDistribution[f.severity] = (severityDistribution[f.severity] ?? 0) + 1;
-    }
+    // Split into chunks of maxFindingsPerTask
+    for (let offset = 0; offset < items.length; offset += maxFindingsPerTask) {
+      const chunk = items.slice(offset, offset + maxFindingsPerTask);
 
-    recommendations.push({
-      title: `Address ${category} issues (${items.length} findings)`,
-      level: "feature",
-      description: items.map((f) => `- ${f.message}`).join("\n"),
-      priority: hasCritical ? "critical" : "high",
-      source: "sourcevision",
-      meta: {
-        findingHashes: items.map((f) => f.hash),
-        category,
-        severityDistribution,
-        findingCount: items.length,
-      },
-    });
+      // Compute severity distribution for quality scoring
+      const severityDistribution: Record<string, number> = {};
+      for (const f of chunk) {
+        severityDistribution[f.severity] = (severityDistribution[f.severity] ?? 0) + 1;
+      }
+
+      // Build a descriptive title
+      const firstSummary = chunk[0].message.slice(0, 80);
+      const title = chunk.length === 1
+        ? `Fix ${category} in ${zone}: ${firstSummary}`
+        : `Fix ${category} in ${zone}: ${firstSummary} (+${chunk.length - 1} more)`;
+
+      recommendations.push({
+        title,
+        level: chunk.length <= maxFindingsPerTask ? "task" : "feature",
+        description: chunk.map((f) => `- ${f.message}`).join("\n"),
+        priority: hasCritical ? "critical" : "high",
+        source: "sourcevision",
+        meta: {
+          findingHashes: chunk.map((f) => f.hash),
+          category,
+          severityDistribution,
+          findingCount: chunk.length,
+        },
+      });
+    }
   }
 
   return recommendations;
@@ -504,6 +531,38 @@ export async function cmdRecommend(
     return;
   }
 
+  // Handle --acknowledge-completed: acknowledge findings from completed tasks
+  if (flags["acknowledge-completed"] !== undefined) {
+    const store = await resolveStore(rexDir);
+    const doc = await store.loadDocument();
+    let updated = ackStore;
+    let count = 0;
+    const walk = (items: typeof doc.items): void => {
+      for (const item of items) {
+        if (item.status === "completed" && item.source === "sourcevision") {
+          const meta = item.recommendationMeta as RecommendationMeta | undefined;
+          if (meta?.findingHashes) {
+            for (const hash of meta.findingHashes) {
+              if (!isAcknowledged(updated, hash)) {
+                updated = acknowledgeFinding(updated, hash, item.title, "completed", "self-heal");
+                count++;
+              }
+            }
+          }
+        }
+        if (item.children) walk(item.children);
+      }
+    };
+    walk(doc.items);
+    if (count > 0) {
+      await saveAcknowledged(rexDir, updated);
+      result(`Acknowledged ${count} findings from completed tasks.`);
+    } else {
+      result("No new findings to acknowledge from completed tasks.");
+    }
+    return;
+  }
+
   // Filter acknowledged findings unless --show-all
   const showAll = flags["show-all"] !== undefined;
   const findings = showAll
@@ -519,7 +578,10 @@ export async function cmdRecommend(
     return;
   }
 
-  const recommendations = mapFindingsToRecommendations(findings);
+  const maxPerTask = flags["max-findings-per-task"]
+    ? parseInt(flags["max-findings-per-task"], 10)
+    : 3;
+  const recommendations = mapFindingsToRecommendations(findings, maxPerTask);
 
   if (flags.format === "json") {
     result(JSON.stringify(recommendations, null, 2));

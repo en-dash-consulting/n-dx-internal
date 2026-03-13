@@ -96,7 +96,7 @@ describe("cmdRecommend --accept indexed selection", () => {
 
     const items = await readPrdItems(tmpDir);
     expect(items).toHaveLength(1);
-    expect(items[0].title).toContain("Address perf issues");
+    expect(items[0].title).toContain("Fix perf in global");
     expect(items[0].status).toBe("pending");
   });
 
@@ -105,8 +105,8 @@ describe("cmdRecommend --accept indexed selection", () => {
 
     const items = await readPrdItems(tmpDir);
     expect(items).toHaveLength(2);
-    expect(items[0].title).toContain("Address auth issues");
-    expect(items[1].title).toContain("Address security issues");
+    expect(items[0].title).toContain("Fix auth in global");
+    expect(items[1].title).toContain("Fix security in global");
   });
 
   it("parses equals-prefixed indices with commas and whitespace", async () => {
@@ -122,9 +122,9 @@ describe("cmdRecommend --accept indexed selection", () => {
 
     const items = await readPrdItems(tmpDir);
     expect(items).toHaveLength(3);
-    expect(items[0].title).toContain("Address auth issues");
-    expect(items[1].title).toContain("Address docs issues");
-    expect(items[2].title).toContain("Address ops issues");
+    expect(items[0].title).toContain("Fix auth in global");
+    expect(items[1].title).toContain("Fix docs in global");
+    expect(items[2].title).toContain("Fix ops in global");
   });
 
   it("keeps all-accept behavior when no equals selector is provided", async () => {
@@ -151,7 +151,7 @@ describe("cmdRecommend --accept indexed selection", () => {
 
     const items = await readPrdItems(tmpDir);
     expect(items).toHaveLength(1);
-    expect(items[0].title).toContain("Address perf issues");
+    expect(items[0].title).toContain("Fix perf in global");
   });
 
   // ── Wildcard / =all syntax ──────────────────────────────────────────
@@ -161,9 +161,9 @@ describe("cmdRecommend --accept indexed selection", () => {
 
     const items = await readPrdItems(tmpDir);
     expect(items).toHaveLength(3);
-    expect(items[0].title).toContain("Address auth issues");
-    expect(items[1].title).toContain("Address perf issues");
-    expect(items[2].title).toContain("Address security issues");
+    expect(items[0].title).toContain("Fix auth in global");
+    expect(items[1].title).toContain("Fix perf in global");
+    expect(items[2].title).toContain("Fix security in global");
   });
 
   it("=all and --accept=true produce equivalent results", async () => {
@@ -197,9 +197,9 @@ describe("cmdRecommend --accept indexed selection", () => {
 
     const items = await readPrdItems(tmpDir);
     expect(items).toHaveLength(3);
-    expect(items[0].title).toContain("Address auth issues");
-    expect(items[1].title).toContain("Address perf issues");
-    expect(items[2].title).toContain("Address security issues");
+    expect(items[0].title).toContain("Fix auth in global");
+    expect(items[1].title).toContain("Fix perf in global");
+    expect(items[2].title).toContain("Fix security in global");
   });
 
   it("=. and =all produce equivalent results", async () => {
@@ -247,7 +247,7 @@ describe("cmdRecommend --accept indexed selection", () => {
 
     const items = await readPrdItems(tmpDir);
     expect(items).toHaveLength(1);
-    expect(items[0].title).toContain("Address auth issues");
+    expect(items[0].title).toContain("Fix auth in global");
   });
 
   // ── Selecting all indices explicitly ────────────────────────────────
@@ -738,7 +738,7 @@ describe("cmdRecommend --accept creation summary output", () => {
   it("shows pre-creation summary with each recommendation's priority, title, and level", async () => {
     await cmdRecommend(tmpDir, { accept: "=2" });
 
-    const itemLine = infoCalls.find((c) => c.includes("[high]") && c.includes("Address perf issues") && c.includes("(feature)"));
+    const itemLine = infoCalls.find((c) => c.includes("[high]") && c.includes("Fix perf in global") && c.includes("(task)"));
     expect(itemLine).toBeDefined();
   });
 
@@ -778,7 +778,7 @@ describe("cmdRecommend --accept creation summary output", () => {
 
     const items = await readPrdItems(tmpDir);
     const successLine = resultCalls.find(
-      (c) => c.includes("✓") && c.includes(items[0].id) && c.includes("Address perf issues"),
+      (c) => c.includes("✓") && c.includes(items[0].id) && c.includes("Fix perf in global"),
     );
     expect(successLine).toBeDefined();
   });
@@ -788,7 +788,7 @@ describe("cmdRecommend --accept creation summary output", () => {
 
     const items = await readPrdItems(tmpDir);
     const successLine = resultCalls.find(
-      (c) => c.includes("✓") && c.includes("feature") && c.includes(items[0].id),
+      (c) => c.includes("✓") && c.includes("task") && c.includes(items[0].id),
     );
     expect(successLine).toBeDefined();
   });
@@ -844,11 +844,11 @@ describe("cmdRecommend --accept creation summary output", () => {
     await cmdRecommend(tmpDir, { accept: "=2" });
 
     // Should have a numbered list entry for perf
-    const perfLine = infoCalls.find((c) => c.includes("1.") && c.includes("Address perf issues"));
+    const perfLine = infoCalls.find((c) => c.includes("1.") && c.includes("Fix perf in global"));
     expect(perfLine).toBeDefined();
 
     // Should NOT list auth or security in the pre-creation summary lines
-    const authLine = infoCalls.find((c) => /^\s+\d+\./.test(c) && c.includes("Address auth issues"));
+    const authLine = infoCalls.find((c) => /^\s+\d+\./.test(c) && c.includes("Fix auth in global"));
     expect(authLine).toBeUndefined();
   });
 });
@@ -901,7 +901,7 @@ describe("cmdRecommend --accept conflict detection", () => {
         items: [
           {
             id: "existing-auth",
-            title: "Address auth issues (2 findings)",
+            title: "Fix auth in global: Auth finding A (+1 more)",
             status: "pending",
             level: "feature",
           },
@@ -928,7 +928,7 @@ describe("cmdRecommend --accept conflict detection", () => {
         items: [
           {
             id: "existing-auth",
-            title: "Address auth issues (2 findings)",
+            title: "Fix auth in global: Auth finding A (+1 more)",
             status: "pending",
             level: "feature",
           },
@@ -952,7 +952,7 @@ describe("cmdRecommend --accept conflict detection", () => {
         items: [
           {
             id: "existing-auth",
-            title: "Address auth issues (2 findings)",
+            title: "Fix auth in global: Auth finding A (+1 more)",
             status: "pending",
             level: "feature",
           },
@@ -976,7 +976,7 @@ describe("cmdRecommend --accept conflict detection", () => {
         items: [
           {
             id: "existing-auth",
-            title: "Address auth issues (2 findings)",
+            title: "Fix auth in global: Auth finding A (+1 more)",
             status: "pending",
             level: "feature",
           },
@@ -1001,7 +1001,7 @@ describe("cmdRecommend --accept conflict detection", () => {
         items: [
           {
             id: "existing-auth",
-            title: "Address auth issues (2 findings)",
+            title: "Fix auth in global: Auth finding A (+1 more)",
             status: "pending",
             level: "feature",
           },
