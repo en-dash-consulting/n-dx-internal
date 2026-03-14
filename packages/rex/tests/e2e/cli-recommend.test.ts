@@ -74,9 +74,23 @@ describe("rex recommend", () => {
     expect(creationSection).not.toContain("Fix security in global");
     expect(output).toContain("3/3 selected recommendation");
 
+    // Hierarchical structure: epic at root → features → tasks
     const prd = JSON.parse(await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"));
-    const titles = prd.items.map((item: { title: string }) => item.title);
-    expect(titles).toEqual([
+    expect(prd.items).toHaveLength(1); // 1 epic at root
+    expect(prd.items[0].level).toBe("epic");
+
+    // Collect all task titles from the hierarchy
+    type Item = { title: string; level: string; children?: Item[] };
+    const collectTasks = (items: Item[]): string[] => {
+      const result: string[] = [];
+      for (const item of items) {
+        if (item.level === "task") result.push(item.title);
+        if (item.children) result.push(...collectTasks(item.children));
+      }
+      return result;
+    };
+    const taskTitles = collectTasks(prd.items);
+    expect(taskTitles).toEqual([
       "Fix auth in global: Auth finding",
       "Fix docs in global: Docs finding",
       "Fix ops in global: Ops finding",

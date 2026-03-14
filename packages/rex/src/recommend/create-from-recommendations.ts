@@ -128,6 +128,7 @@ function validatePlacement(
   item: PRDItem,
   parentId: string | undefined,
   docItems: PRDItem[],
+  batchItems?: Map<string, PRDItem>,
 ): string | null {
   const allowedParents = LEVEL_HIERARCHY[item.level];
   if (!allowedParents) {
@@ -139,19 +140,22 @@ function validatePlacement(
   );
 
   if (parentId) {
-    // Validate parent exists and level hierarchy is respected
+    // Check both existing doc items and items being created in the same batch
     const parentEntry = findItem(docItems, parentId);
-    if (!parentEntry) {
+    const batchParent = batchItems?.get(parentId);
+    const parentLevel = parentEntry?.item.level ?? batchParent?.level;
+
+    if (!parentLevel) {
       return `Parent "${parentId}" not found for item "${item.title}".`;
     }
     if (
       allowedParentLevels.length > 0 &&
-      !allowedParentLevels.includes(parentEntry.item.level)
+      !allowedParentLevels.includes(parentLevel)
     ) {
       const parentNames = allowedParentLevels.join(" or ");
       return (
         `A ${item.level} must be a child of a ${parentNames}, ` +
-        `but "${parentId}" is a ${parentEntry.item.level}.`
+        `but "${parentId}" is a ${parentLevel}.`
       );
     }
   } else {
@@ -336,7 +340,7 @@ export async function createItemsFromRecommendations(
   const pending: Array<{ item: PRDItem; parentId?: string }> = [];
   for (const rec of effectiveRecommendations) {
     const item: PRDItem = {
-      id: randomUUID(),
+      id: rec.id ?? randomUUID(),
       title: rec.title,
       status: "pending",
       level: rec.level,
@@ -358,9 +362,14 @@ export async function createItemsFromRecommendations(
   }
 
   // 4. Validate placement (level hierarchy) for each item
+  //    Build a map of batch items so intra-batch parent references resolve.
+  const batchItemMap = new Map<string, PRDItem>();
+  for (const { item } of pending) {
+    batchItemMap.set(item.id, item);
+  }
   const placementErrors: string[] = [];
   for (const { item, parentId } of pending) {
-    const err = validatePlacement(item, parentId, doc.items);
+    const err = validatePlacement(item, parentId, doc.items, batchItemMap);
     if (err) placementErrors.push(err);
   }
   if (placementErrors.length > 0) {

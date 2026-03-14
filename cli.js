@@ -802,7 +802,7 @@ async function handleSelfHeal(rest) {
     if (code === 0 && stdout.trim()) {
       try {
         const remaining = JSON.parse(stdout.trim());
-        const currentCount = remaining.reduce((sum, r) => sum + (r.meta?.findingCount ?? 0), 0);
+        const currentCount = remaining.filter(r => r.level === "task").reduce((sum, r) => sum + (r.meta?.findingCount ?? 0), 0);
 
         if (currentCount === 0) {
           console.log(`\n[self-heal] all findings resolved after iteration ${i}.`);

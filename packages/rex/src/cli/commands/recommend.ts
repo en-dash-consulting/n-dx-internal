@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 import { access, readFile } from "node:fs/promises";
 import { PROJECT_DIRS } from "@n-dx/llm-client";
 import { resolveStore } from "../../store/index.js";
@@ -39,6 +40,8 @@ interface Finding {
 }
 
 interface Recommendation {
+  id?: string;
+  parentId?: string;
   title: string;
   level: ItemLevel;
   description: string;
@@ -228,30 +231,70 @@ function mapFindingsToRecommendations(
     grouped.set(key, group);
   }
 
-  const recommendations: Recommendation[] = [];
+  // Collect unique zones for epic description
+  const zones = new Set<string>();
+  for (const f of findings) zones.add(findingZone(f));
+
+  // Epic: one per recommend run
+  const epicId = randomUUID();
+  const epicRec: Recommendation = {
+    id: epicId,
+    title: `Code Health: ${findings.length} findings across ${zones.size} zone${zones.size === 1 ? "" : "s"}`,
+    level: "epic",
+    description: `Automated recommendations from SourceVision analysis. ${grouped.size} zone+category groups covering ${findings.length} total findings.`,
+    priority: findings.some((f) => f.severity === "critical") ? "critical" : "high",
+    source: "sourcevision",
+    meta: { findingCount: findings.length },
+  };
+
+  const recommendations: Recommendation[] = [epicRec];
+
   for (const [key, items] of grouped) {
     const [zone, category] = key.split("::");
     const hasCritical = items.some((f) => f.severity === "critical");
 
-    // Split into chunks of maxFindingsPerTask
+    // Feature: one per zone+category group
+    const featureId = randomUUID();
+    const featureHashes = items.map((f) => f.hash);
+    const featureSeverity: Record<string, number> = {};
+    for (const f of items) {
+      featureSeverity[f.severity] = (featureSeverity[f.severity] ?? 0) + 1;
+    }
+
+    recommendations.push({
+      id: featureId,
+      parentId: epicId,
+      title: `Fix ${category} in ${zone} (${items.length} finding${items.length === 1 ? "" : "s"})`,
+      level: "feature",
+      description: items.map((f) => `- ${f.message}`).join("\n"),
+      priority: hasCritical ? "critical" : "high",
+      source: "sourcevision",
+      meta: {
+        findingHashes: featureHashes,
+        category,
+        severityDistribution: featureSeverity,
+        findingCount: items.length,
+      },
+    });
+
+    // Tasks: chunked under the feature
     for (let offset = 0; offset < items.length; offset += maxFindingsPerTask) {
       const chunk = items.slice(offset, offset + maxFindingsPerTask);
 
-      // Compute severity distribution for quality scoring
       const severityDistribution: Record<string, number> = {};
       for (const f of chunk) {
         severityDistribution[f.severity] = (severityDistribution[f.severity] ?? 0) + 1;
       }
 
-      // Build a descriptive title
       const firstSummary = chunk[0].message.slice(0, 80);
       const title = chunk.length === 1
         ? `Fix ${category} in ${zone}: ${firstSummary}`
         : `Fix ${category} in ${zone}: ${firstSummary} (+${chunk.length - 1} more)`;
 
       recommendations.push({
+        parentId: featureId,
         title,
-        level: chunk.length <= maxFindingsPerTask ? "task" : "feature",
+        level: "task",
         description: chunk.map((f) => `- ${f.message}`).join("\n"),
         priority: hasCritical ? "critical" : "high",
         source: "sourcevision",
@@ -273,6 +316,8 @@ function mapFindingsToRecommendations(
  */
 function toEnrichedRecommendation(rec: Recommendation): EnrichedRecommendation {
   return {
+    id: rec.id,
+    parentId: rec.parentId,
     title: rec.title,
     level: rec.level,
     description: rec.description,
@@ -331,15 +376,27 @@ function displayRecommendations(
   showAll: boolean,
   acknowledgedCount: number,
 ): void {
-  result(`\n${recommendations.length} recommended items:\n`);
-  let displayIdx = 0;
-  for (const rec of recommendations) {
-    result(`  [${rec.priority}] ${rec.title}`);
-    for (const line of rec.description.split("\n")) {
-      displayIdx++;
-      const finding = findings.find((f) => line.includes(f.message));
-      const ackMarker = showAll && finding && isAcknowledged(ackStore, finding.hash) ? " (acknowledged)" : "";
-      info(`    ${displayIdx}. ${line.replace(/^- /, "")}${ackMarker}`);
+  // Display hierarchically: epic → features → tasks
+  const tasks = recommendations.filter((r) => r.level === "task");
+  const features = recommendations.filter((r) => r.level === "feature");
+  const epic = recommendations.find((r) => r.level === "epic");
+
+  if (epic) {
+    result(`\n${epic.title}\n`);
+  }
+
+  let taskIdx = 0;
+  for (const feature of features) {
+    result(`  [${feature.priority}] ${feature.title}`);
+    const featureTasks = tasks.filter((t) => t.parentId === feature.id);
+    for (const task of featureTasks) {
+      taskIdx++;
+      result(`    ${taskIdx}. ${task.title}`);
+      for (const line of task.description.split("\n")) {
+        const finding = findings.find((f) => line.includes(f.message));
+        const ackMarker = showAll && finding && isAcknowledged(ackStore, finding.hash) ? " (acknowledged)" : "";
+        info(`       ${line.replace(/^- /, "")}${ackMarker}`);
+      }
     }
     info("");
   }
@@ -351,6 +408,13 @@ function displayRecommendations(
 
 // ── Resolve accepted recommendations from --accept flag ─────────────────
 
+/**
+ * Resolve which recommendations to accept based on the --accept flag.
+ *
+ * Selection indices apply only to tasks (the actionable items). The epic
+ * and any features that contain selected tasks are included automatically
+ * to maintain hierarchy.
+ */
 function resolveAcceptedRecommendations(
   acceptFlag: string,
   recommendations: Recommendation[],
@@ -364,21 +428,38 @@ function resolveAcceptedRecommendations(
     );
   }
 
+  const tasks = recommendations.filter((r) => r.level === "task");
   const lowerFlag = trimmed.toLowerCase();
   const isWildcard = lowerFlag === "=all" || trimmed === "=.";
   const selectedIndices = usesSelectorMode
-    ? (isWildcard ? null : parseSelectionIndices(trimmed, recommendations.length))
+    ? (isWildcard ? null : parseSelectionIndices(trimmed, tasks.length))
     : null;
-  const accepted = selectedIndices === null
-    ? recommendations
-    : selectedIndices.map((i) => recommendations[i]).filter(Boolean);
+  const selectedTasks = selectedIndices === null
+    ? tasks
+    : selectedIndices.map((i) => tasks[i]).filter(Boolean);
 
-  if (accepted.length === 0) {
+  if (selectedTasks.length === 0) {
     info(selectedIndices !== null
       ? "No recommendations matched the selected indices."
       : "No recommendations available to accept.");
     return null;
   }
+
+  // Include structural parents (epic + features) for selected tasks
+  const neededParentIds = new Set(selectedTasks.map((t) => t.parentId).filter(Boolean));
+  const neededFeatures = recommendations.filter(
+    (r) => r.level === "feature" && r.id && neededParentIds.has(r.id),
+  );
+  const epicParentIds = new Set(neededFeatures.map((f) => f.parentId).filter(Boolean));
+  const epic = recommendations.find(
+    (r) => r.level === "epic" && r.id && epicParentIds.has(r.id),
+  );
+
+  // Return in creation order: epic → features → tasks
+  const accepted: Recommendation[] = [];
+  if (epic) accepted.push(epic);
+  accepted.push(...neededFeatures);
+  accepted.push(...selectedTasks);
 
   return accepted;
 }
@@ -438,8 +519,9 @@ function reportCreationResults(
     result(`  ✓ ${item.title} → ${item.level} ${item.id} (${placement})`);
   }
 
-  // Summary counts
-  const createdCount = created.length;
+  // Summary counts — only count tasks (not structural epic/features)
+  const createdTasks = created.filter((c) => c.level === "task").length;
+  const createdCount = createdTasks > 0 ? createdTasks : created.length;
   const updatedCount = updated?.length ?? 0;
   const skippedCount = skipped?.length ?? 0;
   const reparentedCount = reparented?.length ?? 0;
@@ -462,22 +544,30 @@ async function acceptRecommendations(
   const acceptedRecommendations = resolveAcceptedRecommendations(acceptFlag, recommendations);
   if (!acceptedRecommendations) return;
 
+  const totalTasks = recommendations.filter((r) => r.level === "task").length;
+  const selectedTasks = acceptedRecommendations.filter((r) => r.level === "task").length;
+
   // Pre-creation summary
-  const isSubset = acceptedRecommendations.length < recommendations.length;
+  const isSubset = selectedTasks < totalTasks;
   info(
     isSubset
-      ? `\nCreating ${acceptedRecommendations.length} of ${recommendations.length} recommendations:\n`
-      : `\nCreating ${acceptedRecommendations.length} recommendation${acceptedRecommendations.length === 1 ? "" : "s"}:\n`,
+      ? `\nCreating ${selectedTasks} of ${totalTasks} tasks (plus structural items):\n`
+      : `\nCreating ${selectedTasks} task${selectedTasks === 1 ? "" : "s"} (plus structural items):\n`,
   );
   for (let i = 0; i < acceptedRecommendations.length; i++) {
     const rec = acceptedRecommendations[i];
-    info(`  ${i + 1}. [${rec.priority}] ${rec.title} (${rec.level})`);
+    const indent = rec.level === "epic" ? "" : rec.level === "feature" ? "  " : "    ";
+    info(`  ${indent}[${rec.priority}] ${rec.title} (${rec.level})`);
   }
   info("");
 
-  // Create items with conflict detection
+  // Hierarchical recommendations (epic → features → tasks) use "force" strategy:
+  // each run creates a fresh hierarchy with unique IDs, and the acknowledgment
+  // system handles finding dedup between runs. The conflict detection was designed
+  // for flat recommendations and would false-positive on parent↔child title similarity.
+  const isHierarchical = acceptedRecommendations.some((r) => r.level === "epic");
   const conflictStrategy: ConflictStrategy =
-    flags.force !== undefined ? "force" : "skip";
+    isHierarchical ? "force" : (flags.force !== undefined ? "force" : "skip");
   const enriched = acceptedRecommendations.map(toEnrichedRecommendation);
   const store = await resolveStore(rexDir);
 
@@ -490,11 +580,11 @@ async function acceptRecommendations(
     );
   } catch (err) {
     result(`\n✗ Creation failed: ${(err as Error).message}`);
-    result(`\n  0/${acceptedRecommendations.length} selected recommendation${acceptedRecommendations.length === 1 ? "" : "s"} created.`);
+    result(`\n  0/${selectedTasks} selected recommendation${selectedTasks === 1 ? "" : "s"} created.`);
     throw err;
   }
 
-  reportCreationResults(creationResult, acceptedRecommendations.length, conflictStrategy);
+  reportCreationResults(creationResult, selectedTasks, conflictStrategy);
 }
 
 // ── Main command entry point ────────────────────────────────────────────
