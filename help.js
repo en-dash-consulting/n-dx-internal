@@ -798,7 +798,7 @@ const ORCHESTRATOR_HELP_DEFS = {
     options: [
       { flag: "--out-dir=<path>", description: "Output directory (default: ./ndx-export)" },
       { flag: "--base-path=<path>", description: "Base URL path for deployment (default: /)" },
-      { flag: "--deploy=github", description: "Push to dashboard-deployment branch for GitHub Pages" },
+      { flag: "--deploy=github", description: "Push to n-dx-dashboard branch for GitHub Pages" },
     ],
     examples: [
       { command: "ndx export", description: "Export to ./ndx-export" },

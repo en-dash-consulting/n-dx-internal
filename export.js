@@ -389,10 +389,10 @@ function copyViewerAssets(srcDir, destDir) {
 }
 
 /**
- * Deploy output directory to the dashboard-deployment branch (GitHub Pages).
+ * Deploy output directory to the n-dx-dashboard branch (GitHub Pages).
  */
 function deployToGitHubPages(outDir, projectDir) {
-  const branch = "dashboard-deployment";
+  const branch = "n-dx-dashboard";
   console.log(`[export] deploying to ${branch}...`);
   try {
     // Check if branch exists
