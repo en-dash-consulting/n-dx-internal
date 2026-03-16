@@ -6,11 +6,11 @@ export default defineConfig({
   base: "/n-dx/",
 
   head: [
-    ["link", { rel: "icon", type: "image/svg+xml", href: "/n-dx/logo.svg" }],
+    ["link", { rel: "icon", type: "image/png", href: "/n-dx/n-dx-logo.png" }],
   ],
 
   themeConfig: {
-    logo: "/logo.svg",
+    logo: "/n-dx-logo.png",
     siteTitle: "n-dx",
 
     nav: [

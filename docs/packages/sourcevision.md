@@ -1,3 +1,5 @@
+<img src="/sourcevision.png" alt="SourceVision" width="96" style="float: right; margin: 0 0 1rem 1rem;" />
+
 # SourceVision
 
 Static analysis engine that inventories files, maps imports, detects architectural zones, and catalogs React components.

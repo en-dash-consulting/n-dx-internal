@@ -1,3 +1,5 @@
+<img src="/rex.png" alt="Rex" width="96" style="float: right; margin: 0 0 1rem 1rem;" />
+
 # Rex
 
 PRD management with hierarchical epics, features, tasks, and subtasks. LLM-powered analysis turns codebase findings into structured work items.

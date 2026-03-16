@@ -17,15 +17,27 @@ hero:
       link: https://github.com/en-dash-consulting/n-dx
 
 features:
-  - icon: "🔬"
+  - icon:
+      src: /sourcevision-f.png
+      alt: SourceVision
+      width: 48
+      height: 48
     title: SourceVision
     details: Static analysis engine — file inventory, import graph, zone detection via Louvain community detection, React component catalog. Produces AI-readable context files.
     link: /packages/sourcevision
-  - icon: "📋"
+  - icon:
+      src: /rex-f.png
+      alt: Rex
+      width: 48
+      height: 48
     title: Rex
     details: PRD management — hierarchical epics/features/tasks/subtasks, LLM-powered analysis that turns codebase findings into actionable work items.
     link: /packages/rex
-  - icon: "🤖"
+  - icon:
+      src: /hench-f.png
+      alt: Hench
+      width: 48
+      height: 48
     title: Hench
     details: Autonomous agent — picks the next task, builds a brief with codebase context, runs an LLM tool-use loop to implement it, records everything.
     link: /packages/hench
