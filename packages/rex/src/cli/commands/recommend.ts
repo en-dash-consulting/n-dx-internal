@@ -670,7 +670,7 @@ export async function cmdRecommend(
 
   const maxPerTask = flags["max-findings-per-task"]
     ? parseInt(flags["max-findings-per-task"], 10)
-    : 3;
+    : 10;
   const recommendations = mapFindingsToRecommendations(findings, maxPerTask);
 
   if (flags.format === "json") {

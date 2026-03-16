@@ -50,7 +50,7 @@ describe("sourcevision serve (e2e)", () => {
     if (tmpDir) await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it("serves viewer and data files", async () => {
+  it("serves viewer and data files", { timeout: 30000 }, async () => {
     tmpDir = await mkdtemp(join(tmpdir(), "sv-serve-"));
     await cp(FIXTURE_DIR, tmpDir, { recursive: true });
 

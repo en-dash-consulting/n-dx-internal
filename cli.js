@@ -786,10 +786,10 @@ async function handleSelfHeal(rest) {
     await runOrDie(tools.sourcevision, ["analyze", "--deep", "--full", dir]);
 
     console.log("\n[self-heal] step 2/5: rex recommend");
-    await runOrDie(tools.rex, ["recommend", "--max-findings-per-task=3", dir]);
+    await runOrDie(tools.rex, ["recommend", dir]);
 
     console.log("\n[self-heal] step 3/5: rex recommend --accept");
-    await runOrDie(tools.rex, ["recommend", "--accept", "--max-findings-per-task=3", dir]);
+    await runOrDie(tools.rex, ["recommend", "--accept", dir]);
 
     console.log("\n[self-heal] step 4/5: hench run --auto --loop --self-heal");
     await runOrDie(tools.hench, ["run", "--auto", "--loop", "--self-heal", dir]);
@@ -798,7 +798,7 @@ async function handleSelfHeal(rest) {
     await runOrDie(tools.rex, ["recommend", "--acknowledge-completed", dir]);
 
     // Check progress: count remaining findings
-    const { code, stdout } = await runCapture(tools.rex, ["recommend", "--format=json", "--max-findings-per-task=3", dir]);
+    const { code, stdout } = await runCapture(tools.rex, ["recommend", "--format=json", dir]);
     if (code === 0 && stdout.trim()) {
       try {
         const remaining = JSON.parse(stdout.trim());
