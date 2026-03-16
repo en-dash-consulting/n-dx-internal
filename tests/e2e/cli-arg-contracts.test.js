@@ -136,17 +136,21 @@ const SOURCEVISION_SUBCOMMANDS = [
 
 const NDX_ORCHESTRATION_COMMANDS = [
   "init",
+  "analyze",
+  "recommend",
+  "add",
   "plan",
   "refresh",
   "work",
+  "self-heal",
   "status",
   "usage",
   "sync",
   "start",
   "dev",
-  "web",
   "ci",
   "config",
+  "export",
 ];
 
 const NDX_TOOL_COMMANDS = [

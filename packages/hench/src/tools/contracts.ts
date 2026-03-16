@@ -29,11 +29,14 @@ export interface ToolContext {
   startingHead?: string;
   /** System memory monitor for pre-spawn checks. */
   memoryMonitor?: SystemMemoryMonitor;
+  /** When true, the agent is in self-heal mode (stricter completion validation). */
+  selfHeal?: boolean;
 }
 
 export interface RexUpdateStatusParams {
   status: string;
   reason?: string;
+  resolutionType?: string;
 }
 
 export interface RexAppendLogParams {

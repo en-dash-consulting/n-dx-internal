@@ -539,6 +539,12 @@ export async function cmdRun(
   const model = flags.model;
   const auto = flags.auto === "true";
   const loop = flags.loop === "true";
+  const selfHeal = flags["self-heal"] === "true";
+
+  // Apply self-heal mode to config so it flows through to prompt building
+  if (selfHeal) {
+    config.selfHeal = true;
+  }
 
   if (llmVendor === "codex" && provider === "api" && !dryRun) {
     throw new CLIError(

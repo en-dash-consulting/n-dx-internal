@@ -14,7 +14,10 @@ package-lock.json
 packages/rex/.rex/execution-log*.jsonl
 .sv2/
 .sv3/
+ndx-export/
+.ndx-deploy-tmp/
 .claude/settings.local.json
 .claude/worktrees/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
 scripts/HENCH_CALLGRAPH_FINDINGS.md
-.sourcevision/history/

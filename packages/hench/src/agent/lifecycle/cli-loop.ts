@@ -904,6 +904,7 @@ interface SuccessContext {
   testCommand?: string;
   tokenBudget?: number;
   review?: boolean;
+  selfHeal?: boolean;
 }
 
 /**
@@ -927,6 +928,7 @@ async function processSuccessfulResult(ctx: SuccessContext): Promise<SuccessActi
   const validation = await validateCompletion(projectDir, {
     testCommand: ctx.testCommand,
     startingHead: ctx.startingHead,
+    selfHeal: ctx.selfHeal,
   });
 
   syncRunFromAccumulated(run, accumulated, attempt);
@@ -1127,6 +1129,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
           testCommand: brief.project.testCommand,
           tokenBudget: config.tokenBudget,
           review: opts.review,
+          selfHeal: config.selfHeal,
         });
         if (action === "break") break;
       } else {

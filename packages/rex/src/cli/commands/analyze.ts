@@ -229,39 +229,47 @@ async function acceptProposals(
 
   let addedCount = 0;
 
+  let completedCount = 0;
   for (const p of proposals) {
     const epicId = randomUUID();
+    const epicStatus = p.epic.status ?? "pending";
     const epicItem: PRDItem = {
       id: epicId,
       title: p.epic.title,
       level: "epic",
-      status: "pending",
+      status: epicStatus,
       source: p.epic.source,
       description: p.epic.description,
+      ...(epicStatus === "completed" && { completedAt: new Date().toISOString() }),
     };
     await store.addItem(epicItem);
     addedCount++;
+    if (epicStatus === "completed") completedCount++;
 
     for (const f of p.features) {
       const featureId = randomUUID();
+      const featureStatus = f.status ?? "pending";
       const featureItem: PRDItem = {
         id: featureId,
         title: f.title,
         level: "feature",
-        status: "pending",
+        status: featureStatus,
         source: f.source,
         description: f.description,
+        ...(featureStatus === "completed" && { completedAt: new Date().toISOString() }),
       };
       await store.addItem(featureItem, epicId);
       addedCount++;
+      if (featureStatus === "completed") completedCount++;
 
       for (const t of f.tasks) {
         const taskId = randomUUID();
+        const taskStatus = t.status ?? "pending";
         const taskItem: PRDItem = {
           id: taskId,
           title: t.title,
           level: "task",
-          status: "pending",
+          status: taskStatus,
           source: t.source,
           description: t.description,
           acceptanceCriteria: t.acceptanceCriteria,
@@ -271,9 +279,11 @@ async function acceptProposals(
           ...(t.loe !== undefined && { loe: t.loe }),
           ...(t.loeRationale !== undefined && { loeRationale: t.loeRationale }),
           ...(t.loeConfidence !== undefined && { loeConfidence: t.loeConfidence }),
+          ...(taskStatus === "completed" && { completedAt: new Date().toISOString() }),
         };
         await store.addItem(taskItem, featureId);
         addedCount++;
+        if (taskStatus === "completed") completedCount++;
       }
     }
   }
@@ -303,6 +313,11 @@ async function acceptProposals(
     result(formatBatchSummary(finalRecord));
   } else {
     result(`Added ${addedCount} items to PRD.`);
+  }
+
+  if (completedCount > 0) {
+    const pendingCount = addedCount - completedCount;
+    info(`Baseline: ${completedCount} items marked completed (existing code), ${pendingCount} pending (gaps/improvements).`);
   }
 }
 

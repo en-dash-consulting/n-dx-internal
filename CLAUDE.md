@@ -232,20 +232,23 @@ Both `n-dx` and `ndx` work identically (`ndx` is shorter to type).
 
 ```sh
 ndx init [dir]            # sourcevision init → rex init → hench init
-ndx config llm.vendor ... # set active LLM vendor (claude|codex)
-ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals)
-ndx plan --accept [dir]   # ...then accept proposals into PRD
+ndx analyze [dir]         # sourcevision analyze (--deep, --full, --lite)
+ndx recommend [dir]       # rex recommend (--accept, --actionable-only, --acknowledge)
 ndx add "description"     # smart-add PRD items from freeform descriptions
 ndx add --file=spec.md    # import ideas from a text file
-ndx work [dir]            # hench run (pass --task=ID, --dry-run, etc.)
+ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals)
+ndx plan --accept [dir]   # ...then accept proposals into PRD
+ndx work [dir]            # hench run (pass --task=ID, --auto, --iterations=N, etc.)
+ndx self-heal [N] [dir]   # iterative improvement loop (analyze → recommend → execute)
+ndx start [dir]           # start server: dashboard + MCP endpoints (--port=N, --background, stop, status)
 ndx status [dir]          # rex status (pass --format=json)
 ndx usage [dir]           # token usage analytics (--format=json, --group=day|week|month)
 ndx sync [dir]            # sync local PRD with remote adapter (--push, --pull)
-ndx start [dir]           # start server: dashboard + MCP endpoints (--port=N, --background, stop, status)
-ndx web [dir]             # alias for start (legacy name)
+ndx refresh [dir]         # refresh dashboard artifacts (--ui-only, --data-only, --no-build)
 ndx dev [dir]             # start web dev server with live reload
 ndx ci [dir]              # run analysis pipeline and validate PRD health (--format=json)
 ndx config [key] [value]  # view/edit settings (--json, --help)
+ndx export [dir]          # export static deployable dashboard (--out-dir, --deploy=github)
 ```
 
 ## Direct Tool Access

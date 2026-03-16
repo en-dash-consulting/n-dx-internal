@@ -51,12 +51,15 @@ import { spawnClaude } from "./llm-bridge.js";
 
 // ── Zod schemas for LLM response validation ──
 
+const STATUS_ENUM = z.enum(["pending", "completed"]).optional();
+
 const ProposalTaskSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   acceptanceCriteria: z.array(z.string()).optional(),
   priority: z.enum(["critical", "high", "medium", "low"]).optional(),
   tags: z.array(z.string()).optional(),
+  status: STATUS_ENUM,
   loe: z.number().positive().optional(),
   loeRationale: z.string().optional(),
   loeConfidence: z.enum(["low", "medium", "high"]).optional(),
@@ -66,6 +69,7 @@ const ProposalFeatureSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   existingId: z.string().optional(),
+  status: STATUS_ENUM,
   tasks: z.array(ProposalTaskSchema),
 });
 
@@ -73,6 +77,7 @@ const ProposalSchema = z.object({
   epic: z.object({
     title: z.string(),
     existingId: z.string().optional(),
+    status: STATUS_ENUM,
   }),
   features: z.array(ProposalFeatureSchema),
 });
@@ -198,12 +203,13 @@ function normalizeProposals(
   validated: z.infer<typeof ProposalArraySchema>,
 ): Proposal[] {
   return validated.map((p) => ({
-    epic: { title: p.epic.title, source: "llm", existingId: p.epic.existingId },
+    epic: { title: p.epic.title, source: "llm", existingId: p.epic.existingId, status: p.epic.status },
     features: p.features.map((f) => ({
       title: f.title,
       source: "llm",
       description: f.description,
       existingId: f.existingId,
+      status: f.status,
       tasks: f.tasks.map((t) => ({
         title: t.title,
         source: "llm",
@@ -212,6 +218,7 @@ function normalizeProposals(
         acceptanceCriteria: t.acceptanceCriteria,
         priority: t.priority,
         tags: t.tags,
+        status: t.status,
         loe: t.loe,
         loeRationale: t.loeRationale,
         loeConfidence: t.loeConfidence,
@@ -906,6 +913,11 @@ export async function reasonFromScanResults(
   const existingSummary = summarizeExisting(existingItems);
   const tokenUsage = emptyAnalyzeTokenUsage();
 
+  // Baseline detection: empty PRD + existing code = first scan of an existing project.
+  // In baseline mode, the LLM should mark already-built functionality as "completed"
+  // and only mark gaps/improvements as "pending".
+  const isBaseline = existingItems.length === 0 && results.length > 0;
+
   // Read project documentation for additional context
   const projectContext = options?.dir
     ? await readProjectContext(options.dir)
@@ -940,13 +952,24 @@ export async function reasonFromScanResults(
       chunkNote += "\n";
     }
 
+    const baselineInstruction = isBaseline ? `
+IMPORTANT — Baseline mode:
+This is the first scan of an existing codebase. The PRD is empty, but the code already exists.
+You MUST include a "status" field on every epic, feature, and task:
+- "completed" — the code already implements this functionality (the scan found evidence it exists)
+- "pending" — this is a gap, improvement, or missing feature that should be built
+
+Most items from an existing codebase scan should be "completed". Only mark items as "pending" if
+they represent genuinely missing functionality, TODOs, or improvements identified in the scan results.
+` : "";
+
     const prompt = `You are a product requirements analyst. Given the following raw scan results from automated code analysis, organize them into a clean, well-structured PRD as a JSON array.
 
 ${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
 ${CONSOLIDATION_INSTRUCTION}
-
+${baselineInstruction}
 Structuring guidelines:
 - Near-duplicate items have already been merged. Focus on semantic grouping and structure.
 - If any remaining items are clearly about the same thing, merge them into a single item.

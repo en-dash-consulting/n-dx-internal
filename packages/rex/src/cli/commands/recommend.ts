@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 import { access, readFile } from "node:fs/promises";
 import { PROJECT_DIRS } from "@n-dx/llm-client";
 import { resolveStore } from "../../store/index.js";
@@ -11,6 +12,7 @@ import {
   saveAcknowledged,
   acknowledgeFinding,
   isAcknowledged,
+  isAcknowledgedFuzzy,
 } from "../../analyze/acknowledge.js";
 import {
   createItemsFromRecommendations,
@@ -30,14 +32,18 @@ import type {
 } from "../../recommend/conflict-detection.js";
 
 interface Finding {
+  type: string;
   severity: string;
   category: string;
   message: string;
   file?: string;
+  scope?: string;
   hash: string;
 }
 
 interface Recommendation {
+  id?: string;
+  parentId?: string;
   title: string;
   level: ItemLevel;
   description: string;
@@ -193,10 +199,12 @@ async function readFindings(
   return rawFindings
     .filter((f) => f.severity && sevSet.has(f.severity))
     .map((f) => ({
+      type: f.type ?? "general",
       severity: f.severity!,
       category: f.category ?? f.type ?? "general",
       message: f.message ?? f.text ?? "",
       file: f.file,
+      scope: f.scope ?? "global",
       hash: computeFindingHash({
         type: f.type ?? "general",
         scope: f.scope ?? "global",
@@ -205,37 +213,102 @@ async function readFindings(
     }));
 }
 
-function mapFindingsToRecommendations(findings: Finding[]): Recommendation[] {
+/**
+ * Derive the zone from a finding. Falls back to "global" when the finding
+ * has no file or scope information.
+ */
+function findingZone(f: Finding): string {
+  return f.scope ?? "global";
+}
+
+function mapFindingsToRecommendations(
+  findings: Finding[],
+  maxFindingsPerTask = 3,
+): Recommendation[] {
+  // Group by zone + category for granular, actionable recommendations
   const grouped = new Map<string, Finding[]>();
   for (const f of findings) {
-    const group = grouped.get(f.category) ?? [];
+    const key = `${findingZone(f)}::${f.category}`;
+    const group = grouped.get(key) ?? [];
     group.push(f);
-    grouped.set(f.category, group);
+    grouped.set(key, group);
   }
 
-  const recommendations: Recommendation[] = [];
-  for (const [category, items] of grouped) {
+  // Collect unique zones for epic description
+  const zones = new Set<string>();
+  for (const f of findings) zones.add(findingZone(f));
+
+  // Epic: one per recommend run
+  const epicId = randomUUID();
+  const epicRec: Recommendation = {
+    id: epicId,
+    title: `Code Health: ${findings.length} findings across ${zones.size} zone${zones.size === 1 ? "" : "s"}`,
+    level: "epic",
+    description: `Automated recommendations from SourceVision analysis. ${grouped.size} zone+category groups covering ${findings.length} total findings.`,
+    priority: findings.some((f) => f.severity === "critical") ? "critical" : "high",
+    source: "sourcevision",
+    meta: { findingCount: findings.length },
+  };
+
+  const recommendations: Recommendation[] = [epicRec];
+
+  for (const [key, items] of grouped) {
+    const [zone, category] = key.split("::");
     const hasCritical = items.some((f) => f.severity === "critical");
 
-    // Compute severity distribution for quality scoring
-    const severityDistribution: Record<string, number> = {};
+    // Feature: one per zone+category group
+    const featureId = randomUUID();
+    const featureHashes = items.map((f) => f.hash);
+    const featureSeverity: Record<string, number> = {};
     for (const f of items) {
-      severityDistribution[f.severity] = (severityDistribution[f.severity] ?? 0) + 1;
+      featureSeverity[f.severity] = (featureSeverity[f.severity] ?? 0) + 1;
     }
 
     recommendations.push({
-      title: `Address ${category} issues (${items.length} findings)`,
+      id: featureId,
+      parentId: epicId,
+      title: `Fix ${category} in ${zone} (${items.length} finding${items.length === 1 ? "" : "s"})`,
       level: "feature",
       description: items.map((f) => `- ${f.message}`).join("\n"),
       priority: hasCritical ? "critical" : "high",
       source: "sourcevision",
       meta: {
-        findingHashes: items.map((f) => f.hash),
+        findingHashes: featureHashes,
         category,
-        severityDistribution,
+        severityDistribution: featureSeverity,
         findingCount: items.length,
       },
     });
+
+    // Tasks: chunked under the feature
+    for (let offset = 0; offset < items.length; offset += maxFindingsPerTask) {
+      const chunk = items.slice(offset, offset + maxFindingsPerTask);
+
+      const severityDistribution: Record<string, number> = {};
+      for (const f of chunk) {
+        severityDistribution[f.severity] = (severityDistribution[f.severity] ?? 0) + 1;
+      }
+
+      const firstSummary = chunk[0].message.slice(0, 80);
+      const title = chunk.length === 1
+        ? `Fix ${category} in ${zone}: ${firstSummary}`
+        : `Fix ${category} in ${zone}: ${firstSummary} (+${chunk.length - 1} more)`;
+
+      recommendations.push({
+        parentId: featureId,
+        title,
+        level: "task",
+        description: chunk.map((f) => `- ${f.message}`).join("\n"),
+        priority: hasCritical ? "critical" : "high",
+        source: "sourcevision",
+        meta: {
+          findingHashes: chunk.map((f) => f.hash),
+          category,
+          severityDistribution,
+          findingCount: chunk.length,
+        },
+      });
+    }
   }
 
   return recommendations;
@@ -246,6 +319,8 @@ function mapFindingsToRecommendations(findings: Finding[]): Recommendation[] {
  */
 function toEnrichedRecommendation(rec: Recommendation): EnrichedRecommendation {
   return {
+    id: rec.id,
+    parentId: rec.parentId,
     title: rec.title,
     level: rec.level,
     description: rec.description,
@@ -272,7 +347,7 @@ async function handleAcknowledge(
   if (flag === "all") {
     let updated = ackStore;
     for (const f of findings) {
-      updated = acknowledgeFinding(updated, f.hash, f.message, "acknowledged", "user");
+      updated = acknowledgeFinding(updated, f.hash, f.message, "acknowledged", "user", f.type, f.scope);
     }
     await saveAcknowledged(rexDir, updated);
     result(`Acknowledged all ${findings.length} findings.`);
@@ -288,7 +363,7 @@ async function handleAcknowledge(
       console.error(`Finding index ${idx} out of range (1-${findings.length}).`);
       continue;
     }
-    updated = acknowledgeFinding(updated, f.hash, f.message, "acknowledged", "user");
+    updated = acknowledgeFinding(updated, f.hash, f.message, "acknowledged", "user", f.type, f.scope);
     acked.push(`${idx}. ${f.message.slice(0, 60)}`);
   }
   await saveAcknowledged(rexDir, updated);
@@ -304,15 +379,27 @@ function displayRecommendations(
   showAll: boolean,
   acknowledgedCount: number,
 ): void {
-  result(`\n${recommendations.length} recommended items:\n`);
-  let displayIdx = 0;
-  for (const rec of recommendations) {
-    result(`  [${rec.priority}] ${rec.title}`);
-    for (const line of rec.description.split("\n")) {
-      displayIdx++;
-      const finding = findings.find((f) => line.includes(f.message));
-      const ackMarker = showAll && finding && isAcknowledged(ackStore, finding.hash) ? " (acknowledged)" : "";
-      info(`    ${displayIdx}. ${line.replace(/^- /, "")}${ackMarker}`);
+  // Display hierarchically: epic → features → tasks
+  const tasks = recommendations.filter((r) => r.level === "task");
+  const features = recommendations.filter((r) => r.level === "feature");
+  const epic = recommendations.find((r) => r.level === "epic");
+
+  if (epic) {
+    result(`\n${epic.title}\n`);
+  }
+
+  let taskIdx = 0;
+  for (const feature of features) {
+    result(`  [${feature.priority}] ${feature.title}`);
+    const featureTasks = tasks.filter((t) => t.parentId === feature.id);
+    for (const task of featureTasks) {
+      taskIdx++;
+      result(`    ${taskIdx}. ${task.title}`);
+      for (const line of task.description.split("\n")) {
+        const finding = findings.find((f) => line.includes(f.message));
+        const ackMarker = showAll && finding && isAcknowledged(ackStore, finding.hash) ? " (acknowledged)" : "";
+        info(`       ${line.replace(/^- /, "")}${ackMarker}`);
+      }
     }
     info("");
   }
@@ -324,6 +411,13 @@ function displayRecommendations(
 
 // ── Resolve accepted recommendations from --accept flag ─────────────────
 
+/**
+ * Resolve which recommendations to accept based on the --accept flag.
+ *
+ * Selection indices apply only to tasks (the actionable items). The epic
+ * and any features that contain selected tasks are included automatically
+ * to maintain hierarchy.
+ */
 function resolveAcceptedRecommendations(
   acceptFlag: string,
   recommendations: Recommendation[],
@@ -337,21 +431,38 @@ function resolveAcceptedRecommendations(
     );
   }
 
+  const tasks = recommendations.filter((r) => r.level === "task");
   const lowerFlag = trimmed.toLowerCase();
   const isWildcard = lowerFlag === "=all" || trimmed === "=.";
   const selectedIndices = usesSelectorMode
-    ? (isWildcard ? null : parseSelectionIndices(trimmed, recommendations.length))
+    ? (isWildcard ? null : parseSelectionIndices(trimmed, tasks.length))
     : null;
-  const accepted = selectedIndices === null
-    ? recommendations
-    : selectedIndices.map((i) => recommendations[i]).filter(Boolean);
+  const selectedTasks = selectedIndices === null
+    ? tasks
+    : selectedIndices.map((i) => tasks[i]).filter(Boolean);
 
-  if (accepted.length === 0) {
+  if (selectedTasks.length === 0) {
     info(selectedIndices !== null
       ? "No recommendations matched the selected indices."
       : "No recommendations available to accept.");
     return null;
   }
+
+  // Include structural parents (epic + features) for selected tasks
+  const neededParentIds = new Set(selectedTasks.map((t) => t.parentId).filter(Boolean));
+  const neededFeatures = recommendations.filter(
+    (r) => r.level === "feature" && r.id && neededParentIds.has(r.id),
+  );
+  const epicParentIds = new Set(neededFeatures.map((f) => f.parentId).filter(Boolean));
+  const epic = recommendations.find(
+    (r) => r.level === "epic" && r.id && epicParentIds.has(r.id),
+  );
+
+  // Return in creation order: epic → features → tasks
+  const accepted: Recommendation[] = [];
+  if (epic) accepted.push(epic);
+  accepted.push(...neededFeatures);
+  accepted.push(...selectedTasks);
 
   return accepted;
 }
@@ -411,8 +522,9 @@ function reportCreationResults(
     result(`  ✓ ${item.title} → ${item.level} ${item.id} (${placement})`);
   }
 
-  // Summary counts
-  const createdCount = created.length;
+  // Summary counts — only count tasks (not structural epic/features)
+  const createdTasks = created.filter((c) => c.level === "task").length;
+  const createdCount = createdTasks > 0 ? createdTasks : created.length;
   const updatedCount = updated?.length ?? 0;
   const skippedCount = skipped?.length ?? 0;
   const reparentedCount = reparented?.length ?? 0;
@@ -435,22 +547,30 @@ async function acceptRecommendations(
   const acceptedRecommendations = resolveAcceptedRecommendations(acceptFlag, recommendations);
   if (!acceptedRecommendations) return;
 
+  const totalTasks = recommendations.filter((r) => r.level === "task").length;
+  const selectedTasks = acceptedRecommendations.filter((r) => r.level === "task").length;
+
   // Pre-creation summary
-  const isSubset = acceptedRecommendations.length < recommendations.length;
+  const isSubset = selectedTasks < totalTasks;
   info(
     isSubset
-      ? `\nCreating ${acceptedRecommendations.length} of ${recommendations.length} recommendations:\n`
-      : `\nCreating ${acceptedRecommendations.length} recommendation${acceptedRecommendations.length === 1 ? "" : "s"}:\n`,
+      ? `\nCreating ${selectedTasks} of ${totalTasks} tasks (plus structural items):\n`
+      : `\nCreating ${selectedTasks} task${selectedTasks === 1 ? "" : "s"} (plus structural items):\n`,
   );
   for (let i = 0; i < acceptedRecommendations.length; i++) {
     const rec = acceptedRecommendations[i];
-    info(`  ${i + 1}. [${rec.priority}] ${rec.title} (${rec.level})`);
+    const indent = rec.level === "epic" ? "" : rec.level === "feature" ? "  " : "    ";
+    info(`  ${indent}[${rec.priority}] ${rec.title} (${rec.level})`);
   }
   info("");
 
-  // Create items with conflict detection
+  // Hierarchical recommendations (epic → features → tasks) use "force" strategy:
+  // each run creates a fresh hierarchy with unique IDs, and the acknowledgment
+  // system handles finding dedup between runs. The conflict detection was designed
+  // for flat recommendations and would false-positive on parent↔child title similarity.
+  const isHierarchical = acceptedRecommendations.some((r) => r.level === "epic");
   const conflictStrategy: ConflictStrategy =
-    flags.force !== undefined ? "force" : "skip";
+    isHierarchical ? "force" : (flags.force !== undefined ? "force" : "skip");
   const enriched = acceptedRecommendations.map(toEnrichedRecommendation);
   const store = await resolveStore(rexDir);
 
@@ -463,11 +583,11 @@ async function acceptRecommendations(
     );
   } catch (err) {
     result(`\n✗ Creation failed: ${(err as Error).message}`);
-    result(`\n  0/${acceptedRecommendations.length} selected recommendation${acceptedRecommendations.length === 1 ? "" : "s"} created.`);
+    result(`\n  0/${selectedTasks} selected recommendation${selectedTasks === 1 ? "" : "s"} created.`);
     throw err;
   }
 
-  reportCreationResults(creationResult, acceptedRecommendations.length, conflictStrategy);
+  reportCreationResults(creationResult, selectedTasks, conflictStrategy);
 }
 
 // ── Main command entry point ────────────────────────────────────────────
@@ -499,34 +619,86 @@ export async function cmdRecommend(
     const showAll = flags["show-all"] !== undefined;
     const findings = showAll
       ? allFindings
-      : allFindings.filter((f) => !isAcknowledged(ackStore, f.hash));
+      : allFindings.filter((f) => !isAcknowledgedFuzzy(ackStore, { hash: f.hash, type: f.type, scope: f.scope ?? "global", text: f.message }));
     await handleAcknowledge(flags.acknowledge, { rexDir, ackStore, findings });
+    return;
+  }
+
+  // Handle --acknowledge-completed: acknowledge findings from completed tasks
+  if (flags["acknowledge-completed"] !== undefined) {
+    const store = await resolveStore(rexDir);
+    const doc = await store.loadDocument();
+    let updated = ackStore;
+    let count = 0;
+    // Build a hash→finding map for type+scope lookup
+    const findingsByHash = new Map(allFindings.map((f) => [f.hash, f]));
+    const walk = (items: typeof doc.items): void => {
+      for (const item of items) {
+        if (item.status === "completed" && item.source === "sourcevision") {
+          const meta = item.recommendationMeta as RecommendationMeta | undefined;
+          if (meta?.findingHashes) {
+            for (const hash of meta.findingHashes) {
+              if (!isAcknowledged(updated, hash)) {
+                const finding = findingsByHash.get(hash);
+                updated = acknowledgeFinding(
+                  updated, hash, item.title, "completed", "self-heal",
+                  finding?.type, finding?.scope,
+                );
+                count++;
+              }
+            }
+          }
+        }
+        if (item.children) walk(item.children);
+      }
+    };
+    walk(doc.items);
+    if (count > 0) {
+      await saveAcknowledged(rexDir, updated);
+      result(`Acknowledged ${count} findings from completed tasks.`);
+    } else {
+      result("No new findings to acknowledge from completed tasks.");
+    }
     return;
   }
 
   // Filter acknowledged findings unless --show-all
   const showAll = flags["show-all"] !== undefined;
+  const isFuzzyAcked = (f: Finding) => isAcknowledgedFuzzy(ackStore, { hash: f.hash, type: f.type, scope: f.scope ?? "global", text: f.message });
   const findings = showAll
     ? allFindings
-    : allFindings.filter((f) => !isAcknowledged(ackStore, f.hash));
-  const acknowledgedCount = allFindings.length - allFindings.filter((f) => !isAcknowledged(ackStore, f.hash)).length;
+    : allFindings.filter((f) => !isFuzzyAcked(f));
+  const acknowledgedCount = allFindings.length - allFindings.filter((f) => !isFuzzyAcked(f)).length;
 
-  if (findings.length === 0) {
+  // --actionable-only: keep only concretely actionable finding types
+  const ACTIONABLE_TYPES = new Set(["anti-pattern", "suggestion", "move-file"]);
+  const actionableOnly = flags["actionable-only"] !== undefined;
+  const filteredFindings = actionableOnly
+    ? findings.filter((f) => ACTIONABLE_TYPES.has(f.type))
+    : findings;
+
+  if (filteredFindings.length === 0) {
     result("No findings to recommend.");
     if (acknowledgedCount > 0) {
       info(`(${acknowledgedCount} finding${acknowledgedCount === 1 ? "" : "s"} acknowledged, use --show-all to include)`);
     }
+    if (actionableOnly && findings.length > 0) {
+      info(`(${findings.length} non-actionable finding${findings.length === 1 ? "" : "s"} filtered out by --actionable-only)`);
+    }
     return;
   }
 
-  const recommendations = mapFindingsToRecommendations(findings);
+  const maxPerTask = flags["max-findings-per-task"]
+    ? parseInt(flags["max-findings-per-task"], 10)
+    : 10;
+  const recommendations = mapFindingsToRecommendations(filteredFindings, maxPerTask);
 
   if (flags.format === "json") {
     result(JSON.stringify(recommendations, null, 2));
     return;
   }
 
-  displayRecommendations(recommendations, findings, ackStore, showAll, acknowledgedCount);
+  displayRecommendations(recommendations, filteredFindings, ackStore, showAll, acknowledgedCount);
 
   if (flags.accept) {
     await acceptRecommendations(rexDir, flags.accept, recommendations, flags);

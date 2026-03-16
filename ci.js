@@ -139,6 +139,65 @@ export async function runCI(dir, flags, { run, tools }) {
     }
   }
 
+  // ── Step 0b: guide docs freshness ─────────────────────────────────────
+  // Detects docs/guide/ files that haven't been updated since CLI source
+  // files (cli.js, help.js, CLAUDE.md) were last changed.
+  info("── guide docs freshness ──");
+  const guideDocsResult = checkDocsFreshness(dir, "guide", GUIDE_SOURCE_FILES);
+
+  steps.push({
+    name: "guide-docs-freshness",
+    ok: true, // warn-only, never fails the pipeline
+    detail: guideDocsResult.stale.length === 0
+      ? `${guideDocsResult.checked} guide doc(s) up to date`
+      : `${guideDocsResult.stale.length} guide doc(s) may be stale`,
+    ...(guideDocsResult.stale.length > 0 ? { stale: guideDocsResult.stale } : {}),
+  });
+
+  if (guideDocsResult.stale.length === 0) {
+    info(`  ✓ guide docs freshness (${guideDocsResult.checked} checked)`);
+  } else {
+    info(`  ⚠ guide docs freshness`);
+    if (!isJSON) {
+      for (const s of guideDocsResult.stale) {
+        info(`    ⚠ ${s}`);
+      }
+    }
+  }
+
+  // ── Step 0c: docs build ────────────────────────────────────────────────
+  // Verifies the VitePress docs site builds without errors (dead links,
+  // broken markdown, etc.). Catches documentation regressions before merge.
+  info("── docs build ──");
+  const docsBuild = await new Promise((res) => {
+    const child = spawn("pnpm", ["docs:build"], { cwd: dir, stdio: ["ignore", "pipe", "pipe"] });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (d) => { stdout += d; });
+    child.stderr.on("data", (d) => { stderr += d; });
+    child.on("close", (code) => res({ code: code ?? 1, stdout, stderr }));
+  });
+  const docsBuildOk = docsBuild.code === 0;
+
+  steps.push({
+    name: "docs-build",
+    ok: docsBuildOk,
+    detail: docsBuildOk ? "docs site builds successfully" : "docs build failed",
+    ...(docsBuildOk ? {} : { stderr: docsBuild.stderr.slice(-500) }),
+  });
+
+  if (docsBuildOk) {
+    info("  ✓ docs build");
+  } else {
+    info("  ✗ docs build failed");
+    if (!isJSON) {
+      const lines = docsBuild.stderr.split("\n").filter((l) => l.includes("dead link") || l.includes("error"));
+      for (const l of lines.slice(0, 10)) {
+        info(`    ${l.trim()}`);
+      }
+    }
+  }
+
   // ── Step 1: sourcevision analyze ────────────────────────────────────────
   info("── sourcevision analyze ──");
   const svAnalyze = await runCapture(tools.sourcevision, ["analyze", "--fast", "--quiet", dir]);
@@ -1085,6 +1144,12 @@ function checkDataLayerContract(dir) {
 const ARCHITECTURE_SOURCE_FILES = ["CLAUDE.md", "gateway-rules.json", "PACKAGE_GUIDELINES.md"];
 
 /**
+ * Guide docs source-of-truth files. Changes to CLI commands, help text,
+ * or orchestration scripts should trigger guide doc review.
+ */
+const GUIDE_SOURCE_FILES = ["cli.js", "help.js", "CLAUDE.md"];
+
+/**
  * Get the Unix timestamp of the most recent git commit that touched a file.
  * Returns 0 if the file is untracked or git is unavailable.
  *
@@ -1109,32 +1174,32 @@ function gitLastCommitTime(filePath, cwd) {
 }
 
 /**
- * Check whether docs/architecture/ files are stale relative to the
- * source-of-truth files they document.
+ * Check whether markdown files in a docs subdirectory are stale relative
+ * to their source-of-truth files.
  *
- * Uses git commit timestamps: if a source-of-truth file (CLAUDE.md,
- * gateway-rules.json, PACKAGE_GUIDELINES.md) was committed more recently
- * than an architecture doc, the doc is flagged as potentially stale.
+ * Uses git commit timestamps: if a source-of-truth file was committed
+ * more recently than a doc, the doc is flagged as potentially stale.
  *
  * This is a heuristic — not all source-of-truth changes invalidate every
- * architecture doc — but it provides an automated signal that was previously
- * missing entirely.
+ * doc — but it provides an automated signal that was previously missing.
  *
- * @param {string} dir  Project root directory
+ * @param {string} dir          Project root directory
+ * @param {string} docsSubdir   Subdirectory under docs/ to check (e.g. "architecture", "guide")
+ * @param {string[]} sourceFiles  Source-of-truth files (relative to project root)
  * @returns {{ checked: number, stale: string[] }}
  */
-function checkArchitectureDocsFreshness(dir) {
-  const archDir = join(dir, "docs", "architecture");
+function checkDocsFreshness(dir, docsSubdir, sourceFiles) {
+  const docsDir = join(dir, "docs", docsSubdir);
   const stale = [];
 
-  if (!existsSync(archDir)) {
+  if (!existsSync(docsDir)) {
     return { checked: 0, stale: [] };
   }
 
   // Find the most recent commit time among source-of-truth files
   let latestSourceTime = 0;
   let latestSourceFile = "";
-  for (const srcFile of ARCHITECTURE_SOURCE_FILES) {
+  for (const srcFile of sourceFiles) {
     const srcPath = join(dir, srcFile);
     if (!existsSync(srcPath)) continue;
     const t = gitLastCommitTime(srcPath, dir);
@@ -1149,25 +1214,30 @@ function checkArchitectureDocsFreshness(dir) {
     return { checked: 0, stale: [] };
   }
 
-  // Check each architecture doc
-  let archFiles;
+  // Check each doc
+  let docFiles;
   try {
-    archFiles = readdirSync(archDir).filter((f) => f.endsWith(".md"));
+    docFiles = readdirSync(docsDir).filter((f) => f.endsWith(".md"));
   } catch {
     return { checked: 0, stale: [] };
   }
 
   let checked = 0;
-  for (const file of archFiles) {
-    const archPath = join(archDir, file);
-    const archTime = gitLastCommitTime(archPath, dir);
-    if (archTime === 0) continue; // untracked or no history
+  for (const file of docFiles) {
+    const docPath = join(docsDir, file);
+    const docTime = gitLastCommitTime(docPath, dir);
+    if (docTime === 0) continue; // untracked or no history
     checked++;
 
-    if (archTime < latestSourceTime) {
+    if (docTime < latestSourceTime) {
       stale.push(`${file} (last updated before ${latestSourceFile})`);
     }
   }
 
   return { checked, stale };
+}
+
+/** @deprecated Use checkDocsFreshness(dir, "architecture", ARCHITECTURE_SOURCE_FILES) */
+function checkArchitectureDocsFreshness(dir) {
+  return checkDocsFreshness(dir, "architecture", ARCHITECTURE_SOURCE_FILES);
 }

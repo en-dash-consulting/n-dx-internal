@@ -348,9 +348,10 @@ export function repairTruncatedJson(text: string): string | null {
 // ── Prompt constants ──
 
 export const PRD_SCHEMA = `Each element must be an object with:
-- "epic": { "title": string, "existingId"?: string }
-- "features": array of { "title": string, "description"?: string, "existingId"?: string, "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[], "loe"?: number, "loeRationale"?: string, "loeConfidence"?: "low"|"medium"|"high" } }
+- "epic": { "title": string, "existingId"?: string, "status"?: "completed"|"pending" }
+- "features": array of { "title": string, "description"?: string, "existingId"?: string, "status"?: "completed"|"pending", "tasks": array of { "title": string, "description"?: string, "acceptanceCriteria"?: string[], "priority"?: "critical"|"high"|"medium"|"low", "tags"?: string[], "status"?: "completed"|"pending", "loe"?: number, "loeRationale"?: string, "loeConfidence"?: "low"|"medium"|"high" } }
 The optional "existingId" on epics and features references an existing PRD item by ID — use it to place new items under existing containers instead of creating duplicates.
+The optional "status" field defaults to "pending". Set to "completed" when the code already implements the described functionality (used during baseline scans of existing codebases).
 
 Level-of-Effort (LoE) fields on tasks:
 - "loe": estimated effort in engineer-weeks (positive number, e.g. 0.5, 1, 2, 4).

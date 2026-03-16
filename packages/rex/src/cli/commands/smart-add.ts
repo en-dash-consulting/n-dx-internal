@@ -638,8 +638,12 @@ export function classifySmartAddError(
   const hasInvalidApiKey = /invalid.*api.*key/i.test(err.message);
   llmDebug(`classify error vendor=${vendor} mode=${mode} message="${err.message}"`);
 
-  // Authentication issues
-  if (msg.includes("401") || msg.includes("unauthorized") || hasInvalidApiKey || msg.includes("authentication")) {
+  // Authentication issues — match HTTP status codes and specific API error patterns,
+  // not generic words like "authentication" which may appear in user input descriptions.
+  const isAuthError = /\b401\b/.test(msg) || hasInvalidApiKey
+    || /authentication.*(fail|error|invalid|expired)/i.test(err.message)
+    || /unauthorized.*(request|access|error)/i.test(err.message);
+  if (isAuthError) {
     if (vendor === "codex") {
       return {
         message: "Authentication failed — Codex CLI credentials were rejected.",
@@ -653,7 +657,7 @@ export function classifySmartAddError(
   }
 
   // Rate limiting
-  if (msg.includes("429") || msg.includes("rate limit") || msg.includes("too many requests")) {
+  if (/\b429\b/.test(msg) || msg.includes("rate limit") || msg.includes("too many requests")) {
     return {
       message: "Rate limit exceeded — the API is temporarily throttling requests.",
       suggestion: "Wait a few minutes and try again, or use a different model with --model.",
@@ -695,7 +699,7 @@ export function classifySmartAddError(
   }
 
   // Overloaded / server errors
-  if (msg.includes("529") || msg.includes("503") || msg.includes("overloaded") || msg.includes("server error") || msg.includes("500")) {
+  if (/\b(529|503|500)\b/.test(msg) || msg.includes("overloaded") || msg.includes("server error")) {
     return {
       message: "The API is temporarily overloaded or experiencing errors.",
       suggestion: "Wait a moment and retry. Consider using a different model with --model.",

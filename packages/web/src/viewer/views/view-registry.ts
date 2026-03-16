@@ -30,7 +30,6 @@ import {
   SuggestionsView,
   PRMarkdownView,
   RoutesView,
-  AnalysisView,
 } from "./domain-sourcevision.js";
 
 import {
@@ -116,9 +115,6 @@ const REGISTRY: Record<string, ViewRenderer> = {
   "prd": ({ setDetail, setPrdDetailContent, selectedTaskId, navigateTo }) =>
     h(PRDView, { onSelectItem: setDetail, onDetailContent: setPrdDetailContent, initialTaskId: selectedTaskId, navigateTo }),
 
-  "rex-analysis": () =>
-    h(AnalysisView, null),
-
   "token-usage": () =>
     h(TokenUsageView, null),
 
@@ -161,7 +157,7 @@ export function renderActiveView(view: ViewId, ctx: ViewRenderContext): Componen
 /** All known views grouped by product scope. */
 const VIEWS_BY_SCOPE: Record<string, ViewId[]> = {
   sourcevision: SOURCEVISION_TAB_IDS,
-  rex: ["rex-dashboard", "prd", "rex-analysis", "validation", "notion-config", "integrations"],
+  rex: ["rex-dashboard", "prd", "validation", "notion-config", "integrations"],
   hench: ["hench-runs", "hench-audit", "hench-config", "hench-templates", "hench-optimization"],
 };
 
@@ -172,6 +168,6 @@ const ALL_VIEWS = new Set<ViewId>([...Object.values(VIEWS_BY_SCOPE).flat(), ...C
 
 /** Build the valid view set based on an optional scope. */
 export function buildValidViews(scope: string | null): Set<ViewId> {
-  if (!scope) return ALL_VIEWS;
+  if (!scope || scope === "all") return ALL_VIEWS;
   return new Set<ViewId>([...(VIEWS_BY_SCOPE[scope] ?? []), ...CROSS_CUTTING_VIEWS] as ViewId[]);
 }

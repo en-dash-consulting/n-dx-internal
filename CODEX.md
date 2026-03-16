@@ -118,17 +118,20 @@ Both `n-dx` and `ndx` work identically (`ndx` is shorter to type).
 
 ```sh
 ndx init [dir]            # sourcevision init → rex init → hench init
-ndx config llm.vendor ... # set active LLM vendor (claude|codex)
+ndx analyze [dir]         # run SourceVision codebase analysis
+ndx recommend [dir]       # show/accept SourceVision recommendations (--accept, --actionable-only)
+ndx add "<desc>" [dir]    # add PRD items from descriptions or files
 ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals)
 ndx plan --accept [dir]   # ...then accept proposals into PRD
-ndx work [dir]            # hench run (pass --task=ID, --dry-run, etc.)
+ndx work [dir]            # hench run (pass --task=ID, --auto, --iterations=N, etc.)
+ndx self-heal [N] [dir]   # iterative improvement loop (analyze → recommend → execute)
 ndx status [dir]          # rex status (pass --format=json)
+ndx start [dir]           # start server: dashboard + MCP endpoints (--port=N, --background, stop, status)
 ndx usage [dir]           # token usage analytics (--format=json, --group=day|week|month)
 ndx sync [dir]            # sync local PRD with remote adapter (--push, --pull)
-ndx start [dir]           # start server: dashboard + MCP endpoints (--port=N, --background, stop, status)
-ndx web [dir]             # alias for start (legacy name)
 ndx ci [dir]              # run analysis pipeline and validate PRD health (--format=json)
 ndx config [key] [value]  # view/edit settings (--json, --help)
+ndx export [dir]          # export static deployable dashboard (--out-dir, --deploy=github)
 ```
 
 ## Direct Tool Access
@@ -288,13 +291,13 @@ Benefits of HTTP over stdio: single process, shared port with the web dashboard,
 ## Development Workflow
 
 1. `ndx init .` — set up all tool directories
-2. `ndx start .` — start server (dashboard + MCP endpoints)
-3. `ndx plan .` — analyze codebase, review proposals
-4. `ndx plan --accept .` — accept proposals into PRD
-5. `ndx work .` — execute next task autonomously
+2. `ndx analyze .` — run SourceVision codebase analysis
+3. `ndx recommend --accept .` — turn findings into PRD tasks
+4. `ndx add "feature description" .` — add custom feature requests
+5. `ndx work --auto .` — execute the next task autonomously
 6. `ndx status .` — check progress
 
-Use `ndx start --background .` for daemon mode, `ndx start status .` to check, `ndx start stop .` to stop.
+Use `ndx start .` for the dashboard + MCP server, `ndx self-heal 3 .` for iterative improvement loops.
 
 ## Key Files
 

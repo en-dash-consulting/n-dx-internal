@@ -66,6 +66,7 @@ import {
   formatOrchestratorCommandHelp,
 } from "./help.js";
 import { setupClaudeIntegration, printClaudeSetupSummary } from "./claude-integration.js";
+import { runExport } from "./export.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 
@@ -471,6 +472,22 @@ async function handleInit(rest) {
   process.exit(0);
 }
 
+async function handleAnalyze(rest) {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".sourcevision"]);
+  const flags = extractFlags(rest);
+  await runOrDie(tools.sourcevision, ["analyze", ...flags, dir]);
+  process.exit(0);
+}
+
+async function handleRecommend(rest) {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".rex", ".sourcevision"]);
+  const flags = extractFlags(rest);
+  await runOrDie(tools.rex, ["recommend", ...flags, dir]);
+  process.exit(0);
+}
+
 async function handleAdd(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex"]);
@@ -741,6 +758,21 @@ async function handleStart(rest, commandName = "start") {
   }
 }
 
+/**
+ * Spawn a tool and capture its stdout (instead of inheriting it).
+ * Returns { code, stdout }.
+ */
+function runCapture(script, args) {
+  return new Promise((res) => {
+    const child = spawn(process.execPath, [resolve(__dir, script), ...args], {
+      stdio: ["inherit", "pipe", "inherit"],
+    });
+    let stdout = "";
+    child.stdout.on("data", (chunk) => { stdout += chunk; });
+    child.on("close", (code) => res({ code: code ?? 1, stdout }));
+  });
+}
+
 async function handleSelfHeal(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex", ".hench", ".sourcevision"]);
@@ -761,24 +793,61 @@ async function handleSelfHeal(rest) {
 
   console.log(`[self-heal] starting ${iterCount} iteration${iterCount === 1 ? "" : "s"}`);
 
+  let prevFindingCount = Infinity;
+
   for (let i = 1; i <= iterCount; i++) {
     console.log(`\n[self-heal] ── iteration ${i}/${iterCount} ──\n`);
 
-    console.log("[self-heal] step 1/4: sourcevision analyze --deep --full");
+    console.log("[self-heal] step 1/5: sourcevision analyze --deep --full");
     await runOrDie(tools.sourcevision, ["analyze", "--deep", "--full", dir]);
 
-    console.log("\n[self-heal] step 2/4: rex recommend");
-    await runOrDie(tools.rex, ["recommend", dir]);
+    console.log("\n[self-heal] step 2/5: rex recommend --actionable-only");
+    await runOrDie(tools.rex, ["recommend", "--actionable-only", dir]);
 
-    console.log("\n[self-heal] step 3/4: rex recommend --accept");
-    await runOrDie(tools.rex, ["recommend", "--accept", dir]);
+    console.log("\n[self-heal] step 3/5: rex recommend --actionable-only --accept");
+    await runOrDie(tools.rex, ["recommend", "--actionable-only", "--accept", dir]);
 
-    console.log("\n[self-heal] step 4/4: hench run --auto --loop");
-    await runOrDie(tools.hench, ["run", "--auto", "--loop", dir]);
+    console.log("\n[self-heal] step 4/5: hench run --auto --loop --self-heal");
+    await runOrDie(tools.hench, ["run", "--auto", "--loop", "--self-heal", dir]);
+
+    console.log("\n[self-heal] step 5/5: acknowledge completed findings");
+    await runOrDie(tools.rex, ["recommend", "--acknowledge-completed", dir]);
+
+    // Check progress: count remaining findings
+    const { code, stdout } = await runCapture(tools.rex, ["recommend", "--actionable-only", "--format=json", dir]);
+    if (code === 0 && stdout.trim()) {
+      try {
+        const remaining = JSON.parse(stdout.trim());
+        const currentCount = remaining.filter(r => r.level === "task").reduce((sum, r) => sum + (r.meta?.findingCount ?? 0), 0);
+
+        if (currentCount === 0) {
+          console.log(`\n[self-heal] all findings resolved after iteration ${i}.`);
+          break;
+        }
+        if (currentCount >= prevFindingCount) {
+          console.log(`\n[self-heal] no improvement after iteration ${i} (${currentCount} findings remaining). Stopping.`);
+          break;
+        }
+        console.log(`\n[self-heal] ${currentCount} findings remaining (was ${prevFindingCount === Infinity ? "unknown" : prevFindingCount}).`);
+        prevFindingCount = currentCount;
+      } catch {
+        // JSON parse failed — continue without progress tracking
+      }
+    }
   }
 
-  console.log(`\n[self-heal] completed ${iterCount} iteration${iterCount === 1 ? "" : "s"}`);
+  console.log(`\n[self-heal] completed`);
   process.exit(0);
+}
+
+async function handleExport(rest) {
+  try {
+    const code = await runExport(rest);
+    process.exit(code);
+  } catch (err) {
+    console.error(formatError(err));
+    process.exit(1);
+  }
 }
 
 async function handleConfig(rest) {
@@ -870,12 +939,14 @@ async function main() {
 
   // ── Dispatch to command handler ─────────────────────────────────────────
   switch (command) {
-    case "help":    return handleHelp(rest);
-    case "init":    return handleInit(rest);
-    case "plan":    return handlePlan(rest);
-    case "add":     return handleAdd(rest);
-    case "refresh": return handleRefresh(rest);
-    case "work":    return handleWork(rest);
+    case "help":      return handleHelp(rest);
+    case "init":      return handleInit(rest);
+    case "analyze":   return handleAnalyze(rest);
+    case "recommend": return handleRecommend(rest);
+    case "plan":      return handlePlan(rest);
+    case "add":       return handleAdd(rest);
+    case "refresh":   return handleRefresh(rest);
+    case "work":      return handleWork(rest);
     case "status":  return handleStatus(rest);
     case "usage":   return handleUsage(rest);
     case "sync":    return handleSync(rest);
@@ -883,6 +954,7 @@ async function main() {
     case "dev":     return handleDev(rest);
     case "start":   return handleStart(rest, "start");
     case "web":     return handleStart(rest, "web");
+    case "export":    return handleExport(rest);
     case "config":    return handleConfig(rest);
     case "self-heal": return handleSelfHeal(rest);
   }
