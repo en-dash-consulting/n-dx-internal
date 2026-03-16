@@ -119,7 +119,7 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
 
   /** Sections filtered by scope and feature gates. */
   const visibleSections = useMemo(() => {
-    const scopeFiltered = scope
+    const scopeFiltered = scope && scope !== "all"
       ? SECTIONS.filter((s) => s.product === scope || !s.product)
       : SECTIONS;
     // Filter out feature-gated items that are disabled

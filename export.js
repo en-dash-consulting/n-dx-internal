@@ -25,7 +25,8 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 
 function parseExportArgs(args) {
   let outDir = "./ndx-export";
-  let basePath = "/";
+  let basePath = null;
+  let cname = null;
   let deploy = null;
   let dir = process.cwd();
 
@@ -35,6 +36,8 @@ function parseExportArgs(args) {
       outDir = arg.slice("--out-dir=".length);
     } else if (arg.startsWith("--base-path=")) {
       basePath = arg.slice("--base-path=".length);
+    } else if (arg.startsWith("--cname=")) {
+      cname = arg.slice("--cname=".length);
     } else if (arg.startsWith("--deploy=")) {
       deploy = arg.slice("--deploy=".length);
     } else if (!arg.startsWith("-")) {
@@ -42,11 +45,38 @@ function parseExportArgs(args) {
     }
   }
 
+  // Auto-detect base path for GitHub Pages.
+  // Custom domain (CNAME) → root path. Otherwise infer /{repo}/ from remote.
+  if (basePath == null && deploy === "github") {
+    // Check for CNAME: explicit flag, existing deploy branch, or .n-dx.json config
+    if (!cname) {
+      try {
+        cname = execSync("git show n-dx-dashboard:CNAME", { cwd: dir, encoding: "utf-8", stdio: "pipe" }).trim();
+      } catch { /* no CNAME on deploy branch */ }
+    }
+
+    if (cname) {
+      // Custom domain — serve at root
+      basePath = "/";
+    } else {
+      try {
+        const remote = execSync("git remote get-url origin", { cwd: dir, encoding: "utf-8" }).trim();
+        const match = remote.match(/[/:]([^/]+?)(?:\.git)?$/);
+        if (match) {
+          basePath = `/${match[1]}/`;
+          console.log(`[export] auto-detected base path: ${basePath}`);
+        }
+      } catch { /* fall through to default */ }
+    }
+  }
+
+  if (basePath == null) basePath = "/";
+
   // Normalize basePath
   if (!basePath.startsWith("/")) basePath = "/" + basePath;
   if (!basePath.endsWith("/")) basePath += "/";
 
-  return { outDir: resolve(dir, outDir), basePath, deploy, dir: resolve(dir) };
+  return { outDir: resolve(dir, outDir), basePath, cname, deploy, dir: resolve(dir) };
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -95,7 +125,7 @@ function getGitInfo(dir) {
 // ── Main export logic ────────────────────────────────────────────────────────
 
 export async function runExport(args) {
-  const { outDir, basePath, deploy, dir } = parseExportArgs(args);
+  const { outDir, basePath, cname, deploy, dir } = parseExportArgs(args);
   const svDir = join(dir, ".sourcevision");
   const rexDir = join(dir, ".rex");
   const henchDir = join(dir, ".hench");
@@ -356,7 +386,7 @@ export async function runExport(args) {
 
   // ── Optional: deploy to GitHub Pages ────────────────────────────────────
   if (deploy === "github") {
-    return deployToGitHubPages(outDir, dir);
+    return deployToGitHubPages(outDir, dir, cname);
   }
 
   return 0;
@@ -392,7 +422,7 @@ function copyViewerAssets(srcDir, destDir) {
 /**
  * Deploy output directory to the n-dx-dashboard branch (GitHub Pages).
  */
-function deployToGitHubPages(outDir, projectDir) {
+function deployToGitHubPages(outDir, projectDir, cname) {
   const branch = "n-dx-dashboard";
   console.log(`[export] deploying to ${branch}...`);
   try {
@@ -419,6 +449,14 @@ function deployToGitHubPages(outDir, projectDir) {
         execSync("git rm -rf . 2>/dev/null || true", { cwd: tmpWorktree, stdio: "pipe" });
       }
 
+      // Preserve CNAME from existing deploy branch, or use --cname flag
+      let resolvedCname = cname;
+      if (!resolvedCname) {
+        try {
+          resolvedCname = readFileSync(join(tmpWorktree, "CNAME"), "utf-8").trim();
+        } catch { /* no CNAME */ }
+      }
+
       // Clean worktree and copy export output
       const existingFiles = readdirSync(tmpWorktree).filter((f) => f !== ".git");
       for (const f of existingFiles) {
@@ -426,6 +464,12 @@ function deployToGitHubPages(outDir, projectDir) {
       }
 
       copyDirRecursive(outDir, tmpWorktree);
+
+      // Write CNAME for custom domain
+      if (resolvedCname) {
+        writeFileSync(join(tmpWorktree, "CNAME"), resolvedCname + "\n");
+        console.log(`[export] CNAME: ${resolvedCname}`);
+      }
 
       // Commit and push
       execSync("git add -A", { cwd: tmpWorktree, stdio: "pipe" });
@@ -436,7 +480,7 @@ function deployToGitHubPages(outDir, projectDir) {
       } else {
         const timestamp = new Date().toISOString();
         execSync(`git commit -m "Deploy dashboard (${timestamp})"`, { cwd: tmpWorktree, stdio: "pipe" });
-        execSync(`git push origin ${branch}`, { cwd: tmpWorktree, stdio: "inherit" });
+        execSync(`git push --force origin ${branch}`, { cwd: tmpWorktree, stdio: "inherit" });
         console.log(`[export] pushed to ${branch}`);
       }
     } finally {

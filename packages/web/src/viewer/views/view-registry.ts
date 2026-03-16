@@ -168,6 +168,6 @@ const ALL_VIEWS = new Set<ViewId>([...Object.values(VIEWS_BY_SCOPE).flat(), ...C
 
 /** Build the valid view set based on an optional scope. */
 export function buildValidViews(scope: string | null): Set<ViewId> {
-  if (!scope) return ALL_VIEWS;
+  if (!scope || scope === "all") return ALL_VIEWS;
   return new Set<ViewId>([...(VIEWS_BY_SCOPE[scope] ?? []), ...CROSS_CUTTING_VIEWS] as ViewId[]);
 }
