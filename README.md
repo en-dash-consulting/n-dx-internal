@@ -209,4 +209,4 @@ Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
 
 ## License
 
-ISC
+[Elastic License 2.0](LICENSE)
