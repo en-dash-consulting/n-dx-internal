@@ -7,6 +7,8 @@ export default defineConfig({
 
   head: [
     ["link", { rel: "icon", type: "image/png", href: "/n-dx/n-dx-logo.png" }],
+    ["script", { async: "", src: "https://www.googletagmanager.com/gtag/js?id=G-C1ZPPSFEZD" }],
+    ["script", {}, "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C1ZPPSFEZD')"],
   ],
 
   themeConfig: {
