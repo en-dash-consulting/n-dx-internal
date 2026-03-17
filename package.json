@@ -1,5 +1,8 @@
 {
-  "name": "n-dx",
+  "name": "@n-dx/core",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
   "description": "AI-powered development toolkit — analyze a codebase, build a PRD, and execute tasks autonomously",
   "type": "module",
