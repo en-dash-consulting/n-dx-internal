@@ -48,6 +48,7 @@
     "ci.js",
     "web.js",
     "help.js",
+    "gateway-rules.json",
     "refresh-plan.js",
     "refresh-artifacts.js",
     "export.js",
