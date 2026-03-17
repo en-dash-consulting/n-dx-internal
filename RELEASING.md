@@ -42,17 +42,6 @@ After merging PRs with changeset files to `main`:
 
 The release workflow needs an `NPM_TOKEN` secret in the GitHub repo settings. Create one at [npmjs.com/settings/tokens](https://www.npmjs.com/settings/tokens) with publish permission.
 
-## Manual / first-time publish
-
-For the initial publish or if you need to publish manually:
-
-```sh
-npm login
-npm publish
-```
-
-The `prepublishOnly` script runs automatically (build + typecheck + test). If any step fails, the publish is aborted.
-
 ## What gets published
 
 The `files` field in `package.json` controls the tarball contents:
