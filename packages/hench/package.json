@@ -1,6 +1,7 @@
 {
   "name": "hench",
   "version": "0.1.0",
+  "private": true,
   "license": "Elastic-2.0",
   "type": "module",
   "bin": {
@@ -23,12 +24,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "validate": "tsc --noEmit && vitest run",
-    "prepare": "npm run build"
+    "prepare": "pnpm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@n-dx/llm-client": "workspace:*",
-    "rex": "*",
+    "rex": "workspace:*",
     "zod": "^3.22.0"
   },
   "devDependencies": {

@@ -1,9 +1,33 @@
 {
   "name": "n-dx",
   "version": "0.1.0",
-  "private": true,
-  "license": "Elastic-2.0",
+  "description": "AI-powered development toolkit — analyze a codebase, build a PRD, and execute tasks autonomously",
   "type": "module",
+  "keywords": [
+    "ai",
+    "cli",
+    "prd",
+    "agent",
+    "sourcevision",
+    "rex",
+    "hench",
+    "codebase-analysis",
+    "autonomous",
+    "developer-tools"
+  ],
+  "author": "Nick Daniel <nick@endash.us>",
+  "license": "Elastic-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/en-dash-consulting/n-dx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/en-dash-consulting/n-dx/issues"
+  },
+  "homepage": "https://github.com/en-dash-consulting/n-dx#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "workspaces": [
     "packages/*"
   ],
@@ -15,6 +39,29 @@
     "sourcevision": "./packages/sourcevision/dist/cli/index.js",
     "sv": "./packages/sourcevision/dist/cli/index.js"
   },
+  "files": [
+    "cli.js",
+    "config.js",
+    "ci.js",
+    "web.js",
+    "help.js",
+    "refresh-plan.js",
+    "refresh-artifacts.js",
+    "export.js",
+    "claude-integration.js",
+    "refresh-validate.js",
+    "packages/rex/dist",
+    "packages/rex/package.json",
+    "packages/sourcevision/dist",
+    "packages/sourcevision/package.json",
+    "packages/hench/dist",
+    "packages/hench/package.json",
+    "packages/llm-client/dist",
+    "packages/llm-client/package.json",
+    "packages/web/dist",
+    "packages/web/package.json",
+    "packages/web/build.js"
+  ],
   "scripts": {
     "build": "pnpm -r run build",
     "dev": "pnpm -r run dev",
@@ -23,11 +70,18 @@
     "validate": "pnpm -r run validate",
     "verify": "vitest run tests/e2e && node ci.js .",
     "pr-check": "node pr-check.js",
+    "prepublishOnly": "pnpm run build && pnpm run typecheck && pnpm run test",
+    "prepare": "pnpm run build",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.6.0",
+    "@changesets/cli": "^2.30.0",
     "vitepress": "^1.6.4",
     "vitest": "^4.0.18"
   },
