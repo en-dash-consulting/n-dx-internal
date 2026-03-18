@@ -40,7 +40,7 @@ Zones are the core architectural insight. SourceVision uses **Louvain community 
 
 4. **Post-processing** -- Several refinement passes clean up the raw communities:
    - **Bidirectional coupling merge**: Pairs of zones with >40% shared edges are merged
-   - **Small zone absorption**: Zones with <3 files are absorbed into their most-connected neighbor
+   - **Small zone absorption**: Zones with fewer than 3 files are absorbed into their most-connected neighbor
    - **Satellite merging**: Zones with <=8 files and >30% external coupling are merged into their dominant neighbor
    - **Large zone splitting**: Oversized zones are subdivided using progressively higher resolution, with directory-based fallback
    - **Zone count capping**: If there are too many zones, the weakest-connected pairs are merged
