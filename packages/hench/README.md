@@ -95,11 +95,49 @@ Display full details of a specific run including tool calls, token usage, and ou
 
 ## Security
 
-Hench enforces guardrails on the agent:
-- **Blocked paths**: `.hench/`, `.rex/`, `.git/`, `node_modules/`
-- **Allowed commands**: `npm`, `npx`, `node`, `git`, `tsc`, `vitest`
-- **Command timeout**: 30 seconds
-- **File size limit**: 1 MB
+Hench enforces multi-layered guardrails on the autonomous agent. All defaults are restrictive and configurable via `.hench/config.json` under the `guard` key.
+
+### Filesystem
+
+All file operations (read, write, list, search) pass through `guard.checkPath()` before any I/O. The validation chain:
+
+1. **Null-byte rejection** — prevents poison-null-byte path truncation attacks
+2. **Directory escape detection** — `path.relative()` rejects any resolved path outside the project directory
+3. **Glob blocklist** — configurable patterns for off-limits paths
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `blockedPaths` | `.hench/**`, `.rex/**`, `.git/**`, `node_modules/**` | Glob patterns the agent cannot read or write |
+| `maxFileSize` | 1 MB | Maximum file size for read/write operations |
+
+### Shell execution
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `allowedCommands` | `npm`, `npx`, `node`, `git`, `tsc`, `vitest` | Executable allowlist (base name matched) |
+| `allowedGitSubcommands` | `status`, `add`, `commit`, `diff`, `log`, `branch`, `checkout`, `stash`, `show`, `rev-parse` | Git subcommand allowlist |
+| `commandTimeout` | 30s | Per-command timeout |
+| `spawnTimeout` | 5 min | Long-running spawn timeout |
+| `maxConcurrentProcesses` | 3 | Concurrent child process limit |
+
+Shell metacharacters (`;`, `&`, `|`, `` ` ``, `$`) are rejected before the allowlist is checked. Dangerous patterns (`sudo`, `chmod 777`, `rm` with absolute paths, `eval`, `exec`) are blocked even for allowed executables.
+
+### Rate limiting
+
+The policy engine enforces sliding-window and cumulative limits:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `policy.maxCommandsPerMinute` | 60 | Sliding-window command rate limit |
+| `policy.maxWritesPerMinute` | 30 | Sliding-window file write rate limit |
+| `policy.maxTotalBytesWritten` | 0 (unlimited) | Cumulative bytes written per run |
+| `policy.maxTotalCommands` | 0 (unlimited) | Cumulative commands per run |
+
+All guard decisions are recorded in an audit log accessible after each run.
+
+### Network
+
+The only outbound network access is to the configured LLM API through `@n-dx/llm-client`. No other HTTP clients or socket connections exist in the agent runtime.
 
 ## Development
 
