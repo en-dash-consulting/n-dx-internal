@@ -2,8 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, writeFile, mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import Anthropic from "@anthropic-ai/sdk";
 import { initConfig } from "../../../src/store/config.js";
 import { toolRexUpdateStatus } from "../../../src/tools/rex.js";
+
+// Get the Messages prototype for mocking
+const messagesProto = Object.getPrototypeOf(
+  new Anthropic({ apiKey: "test" }).messages,
+);
 
 /**
  * Tests that both agentLoop and cliLoop atomically transition
@@ -65,7 +71,15 @@ describe("atomic task state transitions", () => {
       await rm(projectDir, { recursive: true, force: true });
     });
 
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
     it("transitions pending task to in_progress before API calls, then deferred on failure", async () => {
+      // Mock Anthropic SDK to throw an auth error (avoids real network calls)
+      const authError = Object.assign(new Error("Authentication error"), { status: 401 });
+      vi.spyOn(messagesProto, "create").mockRejectedValue(authError);
+
       await writeFile(
         join(rexDir, "prd.json"),
         JSON.stringify({
@@ -116,6 +130,10 @@ describe("atomic task state transitions", () => {
     });
 
     it("preserves startedAt for already in_progress task that fails", async () => {
+      // Mock Anthropic SDK to throw an auth error (avoids real network calls)
+      const authError = Object.assign(new Error("Authentication error"), { status: 401 });
+      vi.spyOn(messagesProto, "create").mockRejectedValue(authError);
+
       const existingStartedAt = "2025-06-01T00:00:00.000Z";
       await writeFile(
         join(rexDir, "prd.json"),

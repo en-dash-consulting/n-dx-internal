@@ -94,6 +94,10 @@ describe("API loop task failure handling", () => {
   });
 
   it("marks task as deferred on uncaught exception and logs error", async () => {
+    // Mock Anthropic SDK to throw an auth error (non-transient)
+    const authError = Object.assign(new Error("Authentication error"), { status: 401 });
+    vi.spyOn(messagesProto, "create").mockRejectedValue(authError);
+
     const { agentLoop } = await import("../../../src/agent/lifecycle/loop.js");
     const { createStore } = await import("@n-dx/rex/dist/store/index.js");
     const { loadConfig } = await import("../../../src/store/config.js");
@@ -101,7 +105,7 @@ describe("API loop task failure handling", () => {
     const config = await loadConfig(henchDir);
     const store = createStore("file", rexDir);
 
-    // Set a fake API key — the API call will fail with an auth error (non-transient)
+    // Set a fake API key so we get past the env check
     const origKey = process.env.ANTHROPIC_API_KEY;
     process.env.ANTHROPIC_API_KEY = "test-key-fake";
 
