@@ -33,14 +33,16 @@ export function countSubtree(item: PRDItem): number {
  *
  * An item is considered "fully completed" when:
  * - Its own status is "completed"
- * - All children (recursively) are also "completed"
+ * - All children (recursively) are also "completed" or "deleted"
  *
  * Leaf items (no children) only need their own status to be "completed".
  */
 export function isFullyCompleted(item: PRDItem): boolean {
   if (item.status !== "completed") return false;
   if (item.children && item.children.length > 0) {
-    return item.children.every(isFullyCompleted);
+    return item.children.every(
+      (child) => child.status === "deleted" || isFullyCompleted(child),
+    );
   }
   return true;
 }
