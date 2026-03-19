@@ -1,5 +1,5 @@
 ---
-name: zone
+name: ndx-zone
 description: Deep-dive into an architectural zone's structure and health
 argument-hint: "[zone-id]"
 ---

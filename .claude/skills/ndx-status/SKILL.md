@@ -1,5 +1,5 @@
 ---
-name: status
+name: ndx-status
 description: Show comprehensive project status combining PRD progress and codebase health
 ---
 
