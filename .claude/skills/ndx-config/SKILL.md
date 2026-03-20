@@ -1,5 +1,5 @@
 ---
-name: configure
+name: ndx-config
 description: View or change n-dx configuration with guided assistance
 argument-hint: "[key] [value]"
 ---

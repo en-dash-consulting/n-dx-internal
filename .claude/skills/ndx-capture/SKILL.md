@@ -1,5 +1,5 @@
 ---
-name: capture
+name: ndx-capture
 description: Capture a requirement, feature idea, or task from conversation context
 argument-hint: "[description]"
 ---

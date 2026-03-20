@@ -1,5 +1,5 @@
 ---
-name: plan
+name: ndx-plan
 description: Analyze the codebase and propose PRD updates
 ---
 

@@ -16106,26 +16106,6 @@
               "completedAt": "2026-02-26T05:22:10.635Z"
             },
             {
-              "id": "959966ce-464a-4186-8c08-abaca782129c",
-              "title": "Implement immediate data synchronization on tab activation",
-              "status": "deferred",
-              "level": "task",
-              "description": "Trigger immediate data refresh when tab becomes active to catch up on missed updates",
-              "acceptanceCriteria": [
-                "Fetches latest data immediately when tab becomes active",
-                "Updates all suspended components with current state",
-                "Completes initial sync before resuming normal polling"
-              ],
-              "priority": "high",
-              "tags": [
-                "synchronization",
-                "recovery",
-                "data-refresh"
-              ],
-              "source": "smart-add",
-              "startedAt": "2026-02-26T02:32:14.905Z"
-            },
-            {
               "id": "79680865-38d1-4d53-a043-cb4a77f384a0",
               "title": "Add integration tests for background suspension and recovery",
               "status": "completed",
@@ -17748,10 +17728,23 @@
           "title": "Smart Add Command Regression Fix",
           "status": "completed",
           "level": "feature",
-          "description": "The Rex Dashboard Smart Add input throws 'Unknown command: smart-add' once the character count threshold is met. The web UI is invoking a rex CLI subcommand name that no longer matches the registered command, breaking the real-time proposal flow entirely.",
+          "description": "The `ndx add` orchestration command currently throws a 'missing .rex' error instead of delegating to `rex add` as expected. The fix should ensure `ndx add` spawns the rex CLI with the correct arguments and working directory, matching the behavior documented in CLAUDE.md.",
           "source": "smart-add",
           "startedAt": "2026-03-06T16:45:34.740Z",
-          "completedAt": "2026-03-06T16:45:34.740Z",
+          "completedAt": "2026-03-19T15:03:54.710Z",
+          "resolutionType": "acknowledgment",
+          "resolutionDetail": "All children completed; pending tasks moved to new CLI epic",
+          "mergedProposals": [
+            {
+              "proposalNodeKey": "p0:feature:0",
+              "proposalTitle": "Fix ndx add command delegation to rex add",
+              "proposalKind": "feature",
+              "reason": "semantic_title",
+              "score": 0.6229508196721312,
+              "mergedAt": "2026-03-19T14:57:36.835Z",
+              "source": "smart-add"
+            }
+          ],
           "children": [
             {
               "id": "aed32a03-80d2-41de-b9e5-cafdd0d1f400",
@@ -20884,14 +20877,6 @@
                   "resolutionDetail": "Added 7 zone pins in .n-dx.json for all viewer-message-pipeline files (messaging/)"
                 },
                 {
-                  "id": "f67856c3-cd08-4ca6-8f90-65212c8ae0ad",
-                  "title": "Zone renames (peripheral, crash-recovery-system, web zone)",
-                  "status": "deferred",
-                  "level": "subtask",
-                  "description": "Rename zones: peripheral → viewer-supplemental-components, crash-recovery-system → crash-detection (reflects actual scope), web → web-server-routes (resolves naming collision with package).",
-                  "priority": "high"
-                },
-                {
                   "id": "02cf216f-ab45-4be2-a57a-fb0c1ac78405",
                   "title": "Route zone merger and viewer inbound API barrel",
                   "status": "completed",
@@ -21067,39 +21052,6 @@
               "critical": 4
             },
             "findingCount": 11
-          }
-        },
-        {
-          "id": "a00b3658-59c6-4397-870d-5f3d5e97ba29",
-          "title": "Address anti-pattern issues (13 findings)",
-          "status": "deferred",
-          "level": "feature",
-          "description": "- use-crash-recovery.test.ts lives in crash-recovery-system but its production subject (use-crash-recovery.ts) lives in web-viewer. Tests should reside in the same zone as the code they exercise; relocate use-crash-recovery.test.ts to web-viewer or move the production hook into crash-recovery-system to restore accurate zone cohesion.\n- The integration tier (2 files) has not grown proportionally with the number of confirmed boundary violations (6+) and bidirectional cycles (3). Each new boundary violation currently has no fast integration-tier regression test; regressions are only caught by the slower 22-file e2e suite. Add one integration test per confirmed violation to restore a bottom-heavy test pyramid.\n- scheduler-startup.test.js is a single point of failure for in-process web server boot coverage — if this file is removed or skipped there is no test at any tier that validates the server's startup sequencing. Its unique role should be documented and it should be marked as a CI-required test analogous to the architectural gate tests.\n- domain-isolation.test.js likely exempts test-zone source paths from gateway enforcement, allowing rex-unit → web-server (1 import) to pass CI silently. Test files that cross tier boundaries are as harmful as production files doing the same — the isolation test should validate all source trees, not only src/ directories.\n- src/core/fix.ts is domain logic co-located with a CLI command in a satellite zone rather than residing in rex-prd-management-core where domain core logic belongs by convention. This misplacement is the direct cause of the reverse import (rex-unit → fix) that creates the bidirectional cycle. Moving core/fix.ts into the core domain zone would simultaneously eliminate the reverse edge, dissolve the cycle, and raise prd-fix-command to a clean single-purpose CLI adapter zone.\n- shared-types.ts defines analytics-domain types (TaskUsageAccumulator, CleanupResult, OrphanedEntry, CleanupLogEntry) in a zone that is also the gateway seam between the web package and its upstream dependencies. These analytics types are unrestricted — any server consumer can import them without crossing a recognized boundary — creating a path for analytics-specific concerns to spread into unrelated server modules.\n- The 1-import back-edge from web-viewer into viewer-route-state indicates a shared type or constant is defined in the viewer layer but consumed by the routing layer, inverting the expected dependency direction. The shared symbol should be extracted to web-shared so both zones import downward rather than maintaining a mutual dependency at the viewer layer boundary.\n- The 33 web-viewer → web-server import edges reported by zone analysis are not reproducible through direct static file inspection (zero ../server/ imports exist in src/viewer/). The zone metric likely aggregates type-re-export chains or import aliases, producing a high-severity coupling number that cannot be traced to specific import statements. Without knowing which files contribute these edges, the boundary cannot be enforced or tested.\n- build.js and dev.js are Node.js build-time scripts colocated with browser-runtime Preact components in the same zone. Bundlers, linters, and import analyzers that operate zone-uniformly will apply incorrect resolution rules to one category or the other. The two artifact classes should be separated so tooling can target each with appropriate configuration.\n- boundary-check.test.ts appears to not assert against the confirmed cross-boundary imports (sourcevision→web-server, rex-unit→web-server, web-server→web-viewer), since those violations pass CI. Any known violation that is exempted rather than fixed should be an explicit, documented allowlist entry in the test — currently these are invisible omissions that future contributors cannot distinguish from uncovered cases.\n- The foundation layer has cohesion 0.44 with no documented admission criterion beyond 'framework-agnostic utilities'. This vague boundary makes web-shared a de facto catch-all: files land here when no other zone claims them, not because they belong to a coherent foundation abstraction. As the layer grows, its zero-coupling property becomes harder to maintain because more zones depend on an increasingly heterogeneous set of utilities.\n- node-culler.test.ts is placed under tests/unit/viewer/ despite node-culler.ts being a zero-framework shared utility. The test should live under tests/unit/shared/ to accurately reflect the utility's layer and prevent future contributors from assuming it belongs to the viewer.\n- God function: cmdPrune in packages/rex/src/cli/commands/prune.ts calls 36 unique functions — consider decomposing into smaller, focused functions",
-          "priority": "critical",
-          "source": "sourcevision",
-          "startedAt": "2026-03-11T00:50:40.255Z",
-          "recommendationMeta": {
-            "findingHashes": [
-              "00394f5a6db9",
-              "9fc44a35f31d",
-              "e5d361ea3891",
-              "6b17a5115d80",
-              "4b639b1fe48f",
-              "136aadbba6ca",
-              "7a58ea9333c1",
-              "0b82052a343f",
-              "bc333465a759",
-              "a491a9fbc97f",
-              "992d0eb38c88",
-              "dcf622b6ab60",
-              "486aefc7b2f8"
-            ],
-            "category": "anti-pattern",
-            "severityDistribution": {
-              "warning": 12,
-              "critical": 1
-            },
-            "findingCount": 13
           }
         },
         {
@@ -22131,6 +22083,65 @@
           "children": []
         }
       ]
+    },
+    {
+      "id": "31fa50b1-31fc-48f3-a311-341ddbd510de",
+      "title": "ndx add CLI Delegation Fix",
+      "status": "completed",
+      "level": "epic",
+      "description": "Fix the ndx add orchestration command which currently throws a missing-.rex error instead of properly delegating to rex add.",
+      "children": [
+        {
+          "id": "ed519429-b3c8-4b93-bf6c-ef9b3233fd06",
+          "title": "Diagnose and fix ndx add spawn delegation in cli.js",
+          "status": "completed",
+          "level": "task",
+          "description": "Audit the `ndx add` handler in `cli.js` to identify why it raises a missing-.rex error rather than delegating to `rex add`. The most likely causes are: (1) the spawn call passes the wrong working directory, (2) arguments are not forwarded correctly, or (3) the rex binary path resolution fails before the spawn. Fix the root cause so `ndx add <description>` and all its flags (`--file`, `--accept`, etc.) behave identically to `rex add`.",
+          "acceptanceCriteria": [
+            "`ndx add \"some description\"` completes without a missing-.rex error when run from a directory containing `.rex/`",
+            "All flags supported by `rex add` (`--file`, `--accept`, `--parent`, `--manual`) are forwarded correctly through `ndx add`",
+            "Running `ndx add` outside an initialized directory surfaces the same user-friendly error as `rex add`, not a raw stack trace",
+            "Exit code from `rex add` is propagated through `ndx add` unchanged"
+          ],
+          "priority": "critical",
+          "tags": [
+            "cli",
+            "bugfix",
+            "orchestration"
+          ],
+          "source": "smart-add",
+          "startedAt": "2026-03-19T18:17:38.180Z",
+          "completedAt": "2026-03-19T18:23:25.880Z",
+          "resolutionType": "code-change",
+          "resolutionDetail": "Fixed handleAdd in cli.js to use process.cwd() instead of resolveDir(rest) for the requireInit check. The add command's positional args are descriptions, not directory paths, so resolveDir was misinterpreting them. Rex's dispatchAdd already handles dir resolution internally via resolveSmartAddArgs."
+        },
+        {
+          "id": "caf6319e-35fa-4b12-90b9-74440b2a753f",
+          "title": "Add regression test for ndx add CLI delegation",
+          "status": "completed",
+          "level": "task",
+          "description": "Add a test to `tests/e2e/` (or the appropriate orchestration test file) that invokes `ndx add` against a fixture project with a valid `.rex/` directory and asserts it exits cleanly and produces the expected PRD output. This prevents the delegation bug from regressing silently.",
+          "acceptanceCriteria": [
+            "Test invokes `ndx add` via child_process spawn against a fixture or temp directory with an initialized `.rex/`",
+            "Test asserts exit code 0 and absence of 'missing .rex' or stack-trace output",
+            "Test is wired into the existing e2e test suite and passes in CI"
+          ],
+          "priority": "high",
+          "tags": [
+            "cli",
+            "test",
+            "regression",
+            "orchestration"
+          ],
+          "source": "smart-add",
+          "startedAt": "2026-03-19T18:47:08.893Z",
+          "completedAt": "2026-03-19T18:48:18.205Z",
+          "resolutionType": "code-change",
+          "resolutionDetail": "Added tests/e2e/cli-add.test.js with 3 tests: successful manual-mode delegation, missing-.rex user-friendly error, and exit code propagation on failure."
+        }
+      ],
+      "startedAt": "2026-03-19T18:48:18.396Z",
+      "completedAt": "2026-03-19T18:48:18.396Z"
     }
   ]
 }
