@@ -77,7 +77,36 @@ ndx work --task=abc123 .               # specific task
 ndx work --epic="Auth System" --auto . # scope to epic
 ndx work --dry-run .                   # preview without executing
 ndx work --model=claude-opus-4-20250514 .  # override model
+ndx work --auto --loop .               # run continuously until done
 ```
+
+#### Task selection modes
+
+By default on an interactive terminal, `ndx work` presents a menu to choose which task to work on. The `--auto` flag skips this and auto-selects the highest-priority pending task instead. Use `--task=<id>` to target a specific task directly (this overrides both interactive and auto selection).
+
+| Flag | Behavior |
+|------|----------|
+| _(none, TTY)_ | Interactive menu — pick a task from the list |
+| `--auto` | Auto-select highest-priority pending task |
+| `--task=<id>` | Run a specific task by ID |
+
+#### Running multiple tasks
+
+`--iterations=N` runs N tasks back-to-back, auto-selecting the next highest-priority task after each one completes. Defaults to 1. Stuck detection skips tasks that have failed repeatedly (default: 3 consecutive failures) so iterations don't get stuck on the same broken task.
+
+`--loop` runs tasks continuously until all tasks are complete or you hit Ctrl+C. Implies auto-selection. Use `--loop-pause=<ms>` to add a delay between iterations.
+
+#### Scoping
+
+`--epic=<name-or-id>` restricts task selection (both interactive and auto) to tasks within a specific epic. Combine with `--auto` or `--iterations` to work through an epic sequentially.
+
+#### Other flags
+
+| Flag | Description |
+|------|-------------|
+| `--dry-run` | Build and display the brief without executing |
+| `--model=<model>` | Override the LLM model for this run |
+| `--priority=<level>` | Override task scheduling priority (critical, high, medium, low) |
 
 ### self-heal
 

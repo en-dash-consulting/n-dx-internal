@@ -29,6 +29,7 @@ import { runPostTaskTests } from "../../tools/index.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/rex.js";
 import { section, subsection, stream, detail, info } from "../../types/output.js";
 import { displayTaskInfo } from "./task-display.js";
+import type { SelectionReason } from "./task-display.js";
 import type { Heartbeat } from "./heartbeat.js";
 
 // ---------------------------------------------------------------------------
@@ -77,7 +78,8 @@ export async function prepareBrief(
   const briefText = formatTaskBrief(brief);
   const systemPrompt = buildSystemPrompt(brief.project, config);
 
-  displayTaskInfo(brief);
+  const reason: SelectionReason = taskId ? "explicit" : "auto";
+  displayTaskInfo(brief, reason);
 
   return { brief, taskId: resolvedTaskId, briefText, systemPrompt };
 }
