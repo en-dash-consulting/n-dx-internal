@@ -18,7 +18,7 @@
 import { h, Fragment } from "preact";
 import type { VNode } from "preact";
 import { useState, useEffect, useCallback, useMemo, useRef } from "preact/hooks";
-import { PRDTree, StatusFilter } from "../components/prd-tree/index.js";
+import { PRDTree } from "../components/prd-tree/index.js";
 import { AddItemForm } from "../components/prd-tree/add-item-form.js";
 import { BulkActions } from "../components/prd-tree/bulk-actions.js";
 import { MergePreview } from "../components/prd-tree/merge-preview.js";
@@ -218,25 +218,6 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
         )
       : null,
 
-    // Command bar — action buttons
-    h("div", { class: "rex-command-bar" },
-      h("button", {
-        class: `rex-command-btn${actions.activeTab === "add" ? " active" : ""}`,
-        onClick: () => {
-          actions.setActiveTab(actions.activeTab === "add" ? null : "add");
-          actions.setAddParentId(null);
-        },
-        title: "Add a new item to the PRD",
-      }, "+ Add Item"),
-      h("button", {
-        class: `rex-command-btn${actions.activeTab === "prune" ? " active" : ""}`,
-        onClick: () => {
-          actions.setActiveTab(actions.activeTab === "prune" ? null : "prune");
-        },
-        title: "Remove completed subtrees from the PRD",
-      }, "\u2702 Prune"),
-    ),
-
     // Active panel
     actions.activeTab === "add"
       ? h(AddItemForm, {
@@ -290,6 +271,19 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
               title: "Clear search and facets",
             }, "\u00d7")
           : null,
+        // Command actions inline
+        h("button", {
+          class: `prd-search-action${actions.activeTab === "add" ? " active" : ""}`,
+          onClick: () => { actions.setActiveTab(actions.activeTab === "add" ? null : "add"); actions.setAddParentId(null); },
+          title: "Add item",
+          "aria-label": "Add a new item to the PRD",
+        }, "+"),
+        h("button", {
+          class: `prd-search-action${actions.activeTab === "prune" ? " active" : ""}`,
+          onClick: () => { actions.setActiveTab(actions.activeTab === "prune" ? null : "prune"); },
+          title: "Prune completed",
+          "aria-label": "Remove completed subtrees",
+        }, "\u2702"),
       ),
       // Facet filter chips (tags + statuses for search narrowing)
       h(FacetFilter, {
@@ -300,7 +294,6 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
         onStatusesChange: setActiveSearchStatuses,
         onClearAll: clearFacets,
       }),
-      h(StatusFilter, { activeStatuses, onChange: setActiveStatuses }),
     ),
 
     // PRD tree
