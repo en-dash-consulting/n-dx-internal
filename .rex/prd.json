@@ -812,8 +812,7 @@
                   ],
                   "priority": "high",
                   "startedAt": "2026-02-11T18:04:45.128Z",
-                  "completedAt": "2026-02-11T18:11:07.513Z",
-                  "children": []
+                  "completedAt": "2026-02-11T18:11:07.513Z"
                 }
               ]
             },
@@ -1409,7 +1408,7 @@
               "id": "ce0f3736-1f0a-43dc-a0a0-34fee6fb407e",
               "title": "Include project context in LLM prompt",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Add CLAUDE.md or README content to reasonFromScanResults prompt",
               "acceptanceCriteria": [
                 "Reads project documentation",
@@ -1425,7 +1424,7 @@
               "id": "0d818bc8-36f7-4c4f-a94f-a8572d3a429d",
               "title": "Implement duplicate merging",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "LLM should merge near-duplicate scan results",
               "acceptanceCriteria": [
                 "Identifies similar results",
@@ -1441,7 +1440,7 @@
               "id": "53558943-22ff-4e1a-b1e8-787b51bb7639",
               "title": "Add model selection for analyze",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Support --model flag to override default model",
               "acceptanceCriteria": [
                 "Accepts --model parameter",
@@ -1457,7 +1456,7 @@
               "id": "46f6c6a0-f5c0-4e3c-bfe2-74b25ce959ec",
               "title": "Handle large result sets with chunking",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Batch large scan results into multiple LLM calls",
               "acceptanceCriteria": [
                 "Detects when results exceed threshold",
@@ -1473,7 +1472,7 @@
               "id": "337fd5f7-c548-4ab7-ada2-01450a79706d",
               "title": "Robust LLM response parsing with retry and recovery",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "startedAt": "2026-02-24T20:33:37.695Z",
               "completedAt": "2026-02-24T20:33:37.695Z"
             },
@@ -1481,7 +1480,7 @@
               "id": "8bb3e9b8-9c93-41bc-b60f-1c7ad7014d6d",
               "title": "Add few-shot examples to LLM prompts",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "startedAt": "2026-02-24T20:33:37.695Z",
               "completedAt": "2026-02-24T20:33:37.695Z"
             },
@@ -1489,7 +1488,7 @@
               "id": "bc3747a6-1c71-4aae-bbfa-5edb8c9d2a83",
               "title": "Add semantic quality validation for LLM output",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "startedAt": "2026-02-24T20:33:37.695Z",
               "completedAt": "2026-02-24T20:33:37.695Z"
             },
@@ -1497,7 +1496,7 @@
               "id": "9ef3a745-ed2b-41f0-ae12-4604b07c7658",
               "title": "Improve multi-chunk context carryover",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "startedAt": "2026-02-24T20:33:37.695Z",
               "completedAt": "2026-02-24T20:33:37.695Z"
             },
@@ -1535,8 +1534,7 @@
                   ],
                   "priority": "high",
                   "startedAt": "2026-02-11T18:01:49.571Z",
-                  "completedAt": "2026-02-11T18:04:27.930Z",
-                  "children": []
+                  "completedAt": "2026-02-11T18:04:27.930Z"
                 },
                 {
                   "id": "5dde9f98-83c9-4db7-a25a-cf998792ed71",
@@ -1554,8 +1552,7 @@
                   ],
                   "priority": "medium",
                   "startedAt": "2026-02-11T18:11:24.734Z",
-                  "completedAt": "2026-02-11T18:15:02.967Z",
-                  "children": []
+                  "completedAt": "2026-02-11T18:15:02.967Z"
                 }
               ]
             },
@@ -1563,7 +1560,7 @@
               "id": "4c930737-e43a-47ee-9ba9-b417fe9d6146",
               "title": "Fix LLM analysis in reorganize command returning invalid responses",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "The LLM analysis pass in `rex reorganize --mode=full` fails consistently. Two observed failure modes: (1) LLM returns prose instead of JSON (hallucinating a file edit approval prompt), (2) LLM returns JSON that fails schema validation with \"Required; Required; Required...\" (missing required fields in reshape proposal objects). The reshape-reason module needs the same JSON extraction/repair pipeline used in rex analyze.",
               "acceptanceCriteria": [
                 "LLM analysis in reorganize returns valid JSON proposals or a clean error with details",
@@ -1732,7 +1729,7 @@
               "id": "e6615ff0-9b2f-4e35-bd69-51e0b06e68db",
               "title": "Enhance scanSourceVision output",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Produce more actionable tasks from zone findings with file paths and suggested fixes",
               "acceptanceCriteria": [
                 "Includes specific file paths in findings",
@@ -1752,7 +1749,7 @@
               "id": "8c6b13f8-3fa8-48b8-9a32-458e880d87bd",
               "title": "Filter low-signal items from scanner output",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Add filtering to reduce noise in scanner outputs: exclude type-only imports from mostImported rankings, filter info-severity findings from CONTEXT.md next-steps, and skip test files from zone cohesion/coupling calculations",
               "priority": "high",
               "startedAt": "2026-02-09T15:17:16.955Z",
@@ -1762,7 +1759,7 @@
               "id": "e4345e18-1bd5-4028-9c38-69092afacdb6",
               "title": "Deduplicate near-identical findings across enrichment passes",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Add finding deduplication to zones scanner: detect and merge findings with similar text across different passes, keeping the highest-severity version",
               "priority": "medium",
               "startedAt": "2026-02-09T18:39:30.216Z",
@@ -1772,7 +1769,7 @@
               "id": "ed9582a2-6b8a-437d-826b-f7636488dc3d",
               "title": "Enhance next-steps impact scoring with zone metrics",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Improve deriveNextSteps priority scoring by incorporating zone cohesion and coupling metrics alongside the existing related-count threshold",
               "priority": "medium",
               "startedAt": "2026-02-09T18:59:04.383Z",
@@ -5452,57 +5449,55 @@
                   "description": "1. Add archetype annotations for viewer-message-pipeline files\n2. Zone renames (peripheral, crash-recovery-system, web zone)\n3. Route zone merger candidates\n4. Viewer inbound API barrel (src/viewer/api.ts)\n5. Cohesion CI gate at threshold 0.5\n6. Import-graph edge count assertions for boundary files\n7. Rex and sourcevision integration test directories",
                   "priority": "high",
                   "startedAt": "2026-03-11T02:01:37.488Z",
-                  "completedAt": "2026-03-11T02:14:36.973Z",
-                  "children": [
-                    {
-                      "id": "d18fc884-527f-491c-9c0b-f89195481e8f",
-                      "title": "Add archetype annotations for viewer-message-pipeline files",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Add zone pins in .n-dx.json for packages/web/src/viewer/messaging/ files to assign them to the viewer-message-pipeline zone, so zone tooling can surface their coupling independently from web-application-core.",
-                      "priority": "high",
-                      "startedAt": "2026-03-11T02:14:21.414Z",
-                      "completedAt": "2026-03-11T02:14:21.414Z",
-                      "resolutionType": "config-override",
-                      "resolutionDetail": "Added 7 zone pins in .n-dx.json for all viewer-message-pipeline files (messaging/)"
-                    },
-                    {
-                      "id": "02cf216f-ab45-4be2-a57a-fb0c1ac78405",
-                      "title": "Route zone merger and viewer inbound API barrel",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "1. Evaluate route zone files and pin them into web-shared or web-viewer as appropriate. 2. Create src/viewer/api.ts barrel re-exporting symbols consumed by crash, route, web-unit, and web zones.",
-                      "priority": "high",
-                      "startedAt": "2026-03-11T02:14:29.364Z",
-                      "completedAt": "2026-03-11T02:14:29.364Z",
-                      "resolutionType": "code-change",
-                      "resolutionDetail": "Created src/viewer/api.ts barrel with types (LoadedData, NavigateTo, DetailItem, ViewId) and route-state functions. Route zone (data-loading-routes, 3 files, cohesion 1.0) is healthy and doesn't need merging."
-                    },
-                    {
-                      "id": "6b6a5215-23cf-4958-906b-78a5955acd89",
-                      "title": "Cohesion CI gate and boundary file edge count assertions",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "1. Add cohesion CI gate at threshold 0.5 in architecture-policy.test.js. 2. Add import-graph edge count assertions for boundary files (external.ts, rex-gateway.ts, domain-gateway.ts).",
-                      "priority": "high",
-                      "startedAt": "2026-03-11T02:14:33.637Z",
-                      "completedAt": "2026-03-11T02:14:33.637Z",
-                      "resolutionType": "code-change",
-                      "resolutionDetail": "Added cohesion CI gate (threshold 0.5) with 8 documented exceptions, staleness check, and boundary file export caps for 5 gateway files. Also fixed pre-existing zone cycle detection bug (packageFamily was based on colon-splitting zone IDs instead of deriving from file paths)."
-                    },
-                    {
-                      "id": "ffeb54ec-e317-4029-a42d-05a8a566b06f",
-                      "title": "Rex and sourcevision integration test directory setup",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Ensure rex and sourcevision have proper tests/integration/ directories with meaningful contract tests covering gateway re-exports and store mutation correctness.",
-                      "priority": "medium",
-                      "startedAt": "2026-03-11T02:14:36.785Z",
-                      "completedAt": "2026-03-11T02:14:36.785Z",
-                      "resolutionType": "acknowledgment",
-                      "resolutionDetail": "Both rex and sourcevision already have tests/integration/ directories with meaningful tests (rex: 6 files including store-roundtrip, project-config; sourcevision: 5 files including pipeline, context, llms-txt)."
-                    }
-                  ]
+                  "completedAt": "2026-03-11T02:14:36.973Z"
+                },
+                {
+                  "id": "d18fc884-527f-491c-9c0b-f89195481e8f",
+                  "title": "Add archetype annotations for viewer-message-pipeline files",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add zone pins in .n-dx.json for packages/web/src/viewer/messaging/ files to assign them to the viewer-message-pipeline zone, so zone tooling can surface their coupling independently from web-application-core.",
+                  "priority": "high",
+                  "startedAt": "2026-03-11T02:14:21.414Z",
+                  "completedAt": "2026-03-11T02:14:21.414Z",
+                  "resolutionType": "config-override",
+                  "resolutionDetail": "Added 7 zone pins in .n-dx.json for all viewer-message-pipeline files (messaging/)"
+                },
+                {
+                  "id": "02cf216f-ab45-4be2-a57a-fb0c1ac78405",
+                  "title": "Route zone merger and viewer inbound API barrel",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "1. Evaluate route zone files and pin them into web-shared or web-viewer as appropriate. 2. Create src/viewer/api.ts barrel re-exporting symbols consumed by crash, route, web-unit, and web zones.",
+                  "priority": "high",
+                  "startedAt": "2026-03-11T02:14:29.364Z",
+                  "completedAt": "2026-03-11T02:14:29.364Z",
+                  "resolutionType": "code-change",
+                  "resolutionDetail": "Created src/viewer/api.ts barrel with types (LoadedData, NavigateTo, DetailItem, ViewId) and route-state functions. Route zone (data-loading-routes, 3 files, cohesion 1.0) is healthy and doesn't need merging."
+                },
+                {
+                  "id": "6b6a5215-23cf-4958-906b-78a5955acd89",
+                  "title": "Cohesion CI gate and boundary file edge count assertions",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "1. Add cohesion CI gate at threshold 0.5 in architecture-policy.test.js. 2. Add import-graph edge count assertions for boundary files (external.ts, rex-gateway.ts, domain-gateway.ts).",
+                  "priority": "high",
+                  "startedAt": "2026-03-11T02:14:33.637Z",
+                  "completedAt": "2026-03-11T02:14:33.637Z",
+                  "resolutionType": "code-change",
+                  "resolutionDetail": "Added cohesion CI gate (threshold 0.5) with 8 documented exceptions, staleness check, and boundary file export caps for 5 gateway files. Also fixed pre-existing zone cycle detection bug (packageFamily was based on colon-splitting zone IDs instead of deriving from file paths)."
+                },
+                {
+                  "id": "ffeb54ec-e317-4029-a42d-05a8a566b06f",
+                  "title": "Rex and sourcevision integration test directory setup",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Ensure rex and sourcevision have proper tests/integration/ directories with meaningful contract tests covering gateway re-exports and store mutation correctness.",
+                  "priority": "medium",
+                  "startedAt": "2026-03-11T02:14:36.785Z",
+                  "completedAt": "2026-03-11T02:14:36.785Z",
+                  "resolutionType": "acknowledgment",
+                  "resolutionDetail": "Both rex and sourcevision already have tests/integration/ directories with meaningful tests (rex: 6 files including store-roundtrip, project-config; sourcevision: 5 files including pipeline, context, llms-txt)."
                 },
                 {
                   "id": "ab0c44d6-c808-4c13-8d50-f76ac2b96938",
@@ -6485,8 +6480,7 @@
                   "source": "smart-add",
                   "startedAt": "2026-02-11T03:35:40.021Z",
                   "completedAt": "2026-02-11T06:44:22.234Z",
-                  "failureReason": "still not viable to read anything. zone names are not accessible to read on dark mode and theyre being overlapped by filenames and file blobs anyway",
-                  "children": []
+                  "failureReason": "still not viable to read anything. zone names are not accessible to read on dark mode and theyre being overlapped by filenames and file blobs anyway"
                 }
               ]
             }
@@ -6589,8 +6583,7 @@
                   ],
                   "source": "smart-add",
                   "startedAt": "2026-02-18T10:49:15.968Z",
-                  "completedAt": "2026-02-18T11:29:02.189Z",
-                  "children": []
+                  "completedAt": "2026-02-18T11:29:02.189Z"
                 }
               ]
             },
@@ -9092,26 +9085,6 @@
                   "source": "smart-add",
                   "startedAt": "2026-02-25T04:48:24.853Z",
                   "completedAt": "2026-02-25T05:06:43.430Z"
-                },
-                {
-                  "id": "d9d6b8ec-350e-4e7d-beef-b656c6c2c93f",
-                  "title": "Add PR markdown generation status to analyze output",
-                  "status": "deleted",
-                  "level": "subtask",
-                  "description": "Include PR markdown generation status and results in the sourcevision analyze command output and web UI feedback",
-                  "acceptanceCriteria": [
-                    "Analyze command reports PR markdown generation success/failure",
-                    "Output includes path to generated markdown file",
-                    "Web UI shows PR markdown refresh status in analyze feedback",
-                    "Error messages provide actionable guidance for generation failures"
-                  ],
-                  "priority": "low",
-                  "tags": [
-                    "feedback",
-                    "status"
-                  ],
-                  "source": "smart-add",
-                  "startedAt": "2026-02-25T05:06:43.658Z"
                 }
               ],
               "overrideMarker": {
@@ -9604,7 +9577,7 @@
               "id": "8d4e7984-e4d4-4cbf-b458-23f6e24fa676",
               "title": "Add file-level locking to PRD store to prevent concurrent write corruption",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "When multiple writers (MCP server, CLI commands, reorganize, etc.) modify `.rex/prd.json` concurrently, the last writer wins and silently drops changes from other writers. This caused data loss when an MCP `add_item` call ran while `rex reorganize` was saving in the background.\n\nThe store layer (`packages/rex/src/store/`) should acquire an advisory file lock (e.g., `flock` or a `.rex/prd.lock` file) before reading and hold it through the write. Concurrent callers should either queue or fail fast with a clear error (\"PRD is locked by another operation\").",
               "acceptanceCriteria": [
                 "Concurrent writes to prd.json are serialized or rejected with a clear error",
@@ -9815,34 +9788,6 @@
                   "source": "llm",
                   "startedAt": "2026-02-05T01:54:16.173Z",
                   "completedAt": "2026-02-05T02:03:55.707Z"
-                },
-                {
-                  "id": "e4cda52c-2124-4ce4-8a18-4210af010937",
-                  "title": "Harden status transitions and dependency management",
-                  "status": "deleted",
-                  "level": "subtask",
-                  "description": "Improve status transition validation, error messages, and edge case handling. Implement full blockedBy support in add and update commands with proper validation.",
-                  "acceptanceCriteria": [
-                    "Includes --force hint and allowed transitions in transition error messages",
-                    "Allows same-status no-op without error",
-                    "Does not require --force for non-status updates on completed items",
-                    "Does not add timestamps for non-status updates",
-                    "Accepts blocked as a valid status in validation",
-                    "Accepts single blockedBy ID in add command",
-                    "Supports comma-separated blockedBy values in update command",
-                    "Clears blockedBy with empty string",
-                    "Rejects nonexistent IDs, self-references, and cycles"
-                  ],
-                  "priority": "high",
-                  "tags": [
-                    "cmdAdd",
-                    "cmdUpdate",
-                    "blockedBy",
-                    "validateTransition",
-                    "status"
-                  ],
-                  "source": "llm",
-                  "startedAt": "2026-02-07T22:03:22.142Z"
                 }
               ]
             },
@@ -10937,26 +10882,6 @@
               "completedAt": "2026-02-22T21:11:08.060Z",
               "children": [
                 {
-                  "id": "3c1dcb21-2b66-4c02-b126-e38be939175b",
-                  "title": "Render duplicate confirmation prompt with Cancel, Merge, and Proceed anyway options",
-                  "status": "deleted",
-                  "level": "subtask",
-                  "description": "Ensure users make an intentional choice whenever duplicates are found by presenting an interactive prompt that includes duplicate reason context before writing changes.",
-                  "acceptanceCriteria": [
-                    "When duplicates are detected during rex add, CLI displays an interactive prompt before any mutation",
-                    "Prompt shows duplicate reason and matched item reference for each flagged proposal",
-                    "Prompt offers exactly three actions: Cancel, Merge with existing, Proceed anyway (force-create)"
-                  ],
-                  "priority": "critical",
-                  "tags": [
-                    "rex",
-                    "cli",
-                    "interaction"
-                  ],
-                  "source": "smart-add",
-                  "startedAt": "2026-02-22T20:36:48.280Z"
-                },
-                {
                   "id": "26f6e5a1-a73c-4f6f-8444-0803d4bb3ea5",
                   "title": "Implement merge-path application for user-selected duplicate proposals",
                   "status": "completed",
@@ -11363,8 +11288,7 @@
                   ],
                   "source": "smart-add",
                   "startedAt": "2026-03-06T05:44:55.116Z",
-                  "completedAt": "2026-03-06T05:49:44.946Z",
-                  "children": []
+                  "completedAt": "2026-03-06T05:49:44.946Z"
                 },
                 {
                   "id": "f6e8b37f-0ad4-41a2-abc2-79af26d5bc79",
@@ -11387,8 +11311,7 @@
                   ],
                   "source": "smart-add",
                   "startedAt": "2026-03-06T05:55:06.130Z",
-                  "completedAt": "2026-03-06T05:59:33.382Z",
-                  "children": []
+                  "completedAt": "2026-03-06T05:59:33.382Z"
                 }
               ]
             },
@@ -11411,8 +11334,7 @@
               "startedAt": "2026-03-11T02:15:34.342Z",
               "completedAt": "2026-03-11T02:19:12.951Z",
               "resolutionType": "acknowledgment",
-              "resolutionDetail": "Integration tests already exist at packages/rex/tests/integration/cli/commands/prune-cache.test.ts with all 4 acceptance criteria covered and passing.",
-              "children": []
+              "resolutionDetail": "Integration tests already exist at packages/rex/tests/integration/cli/commands/prune-cache.test.ts with all 4 acceptance criteria covered and passing."
             }
           ]
         },
@@ -11456,8 +11378,7 @@
                   ],
                   "source": "smart-add",
                   "startedAt": "2026-03-06T05:37:14.315Z",
-                  "completedAt": "2026-03-06T06:05:29.949Z",
-                  "children": []
+                  "completedAt": "2026-03-06T06:05:29.949Z"
                 },
                 {
                   "id": "d96ec242-803d-40ff-a008-609baa3d3366",
@@ -11479,8 +11400,7 @@
                   ],
                   "source": "smart-add",
                   "startedAt": "2026-03-06T05:49:45.412Z",
-                  "completedAt": "2026-03-06T05:55:05.622Z",
-                  "children": []
+                  "completedAt": "2026-03-06T05:55:05.622Z"
                 },
                 {
                   "id": "f254899a-6ef9-4ff8-8380-59752d29b5aa",
@@ -11502,8 +11422,7 @@
                   ],
                   "source": "smart-add",
                   "startedAt": "2026-03-06T05:59:34.169Z",
-                  "completedAt": "2026-03-06T06:03:07.165Z",
-                  "children": []
+                  "completedAt": "2026-03-06T06:03:07.165Z"
                 }
               ]
             },
@@ -11528,8 +11447,7 @@
               "startedAt": "2026-03-11T02:19:29.143Z",
               "completedAt": "2026-03-11T02:24:01.931Z",
               "resolutionType": "acknowledgment",
-              "resolutionDetail": "All 6 integration tests already exist in packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts and pass. Tests cover: savePending prdHash writing, loadPending prdHash reading, --accept with matching hash, --accept stale cache rejection, backward-compatible cache without prdHash, and maybeCacheSmartAddProposals hash passthrough. All use mocked LLM and temp directories.",
-              "children": []
+              "resolutionDetail": "All 6 integration tests already exist in packages/rex/tests/integration/cli/commands/smart-add-cache.test.ts and pass. Tests cover: savePending prdHash writing, loadPending prdHash reading, --accept with matching hash, --accept stale cache rejection, backward-compatible cache without prdHash, and maybeCacheSmartAddProposals hash passthrough. All use mocked LLM and temp directories."
             }
           ]
         },
@@ -11546,7 +11464,7 @@
               "id": "ed519429-b3c8-4b93-bf6c-ef9b3233fd06",
               "title": "Diagnose and fix ndx add spawn delegation in cli.js",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Audit the `ndx add` handler in `cli.js` to identify why it raises a missing-.rex error rather than delegating to `rex add`. The most likely causes are: (1) the spawn call passes the wrong working directory, (2) arguments are not forwarded correctly, or (3) the rex binary path resolution fails before the spawn. Fix the root cause so `ndx add <description>` and all its flags (`--file`, `--accept`, etc.) behave identically to `rex add`.",
               "acceptanceCriteria": [
                 "`ndx add \"some description\"` completes without a missing-.rex error when run from a directory containing `.rex/`",
@@ -11570,7 +11488,7 @@
               "id": "caf6319e-35fa-4b12-90b9-74440b2a753f",
               "title": "Add regression test for ndx add CLI delegation",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Add a test to `tests/e2e/` (or the appropriate orchestration test file) that invokes `ndx add` against a fixture project with a valid `.rex/` directory and asserts it exits cleanly and produces the expected PRD output. This prevents the delegation bug from regressing silently.",
               "acceptanceCriteria": [
                 "Test invokes `ndx add` via child_process spawn against a fixture or temp directory with an initialized `.rex/`",
@@ -11664,72 +11582,70 @@
                       "mergedAt": "2026-02-27T18:26:10.896Z",
                       "source": "smart-add"
                     }
-                  ],
-                  "children": [
-                    {
-                      "id": "4665728f-a7cc-4f9d-83f2-66d88188433a",
-                      "title": "CLI interactive workflow configuration command",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Add `hench config` CLI command with interactive menu for configuring workflow parameters (execution strategy, retry policy, guard settings, task selection). Uses readline-based menus following existing patterns.",
-                      "acceptanceCriteria": [
-                        "CLI presents configurable workflow options in interactive menu format",
-                        "Users can modify execution strategies, retry policies, and task selection criteria",
-                        "Changes are validated and applied immediately to workflow configuration",
-                        "Configuration changes persist across hench runs"
-                      ],
-                      "priority": "high",
-                      "tags": [
-                        "cli",
-                        "hench",
-                        "configuration"
-                      ],
-                      "startedAt": "2026-02-10T21:38:22.825Z",
-                      "completedAt": "2026-02-11T05:40:11.163Z"
-                    },
-                    {
-                      "id": "3755a5ee-a832-4635-8c99-bd79da3d5b41",
-                      "title": "Web UI workflow configuration API endpoints",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Add REST API endpoints for reading and updating hench workflow configuration: GET /api/hench/config (read), PUT /api/hench/config (update with validation). Include preview of impact on workflow behavior.",
-                      "acceptanceCriteria": [
-                        "GET /api/hench/config returns current workflow configuration",
-                        "PUT /api/hench/config validates and persists changes",
-                        "API returns preview of configuration impact on workflow behavior"
-                      ],
-                      "priority": "high",
-                      "tags": [
-                        "web",
-                        "api",
-                        "hench",
-                        "configuration"
-                      ],
-                      "startedAt": "2026-02-11T05:40:27.202Z",
-                      "completedAt": "2026-02-11T05:43:03.348Z"
-                    },
-                    {
-                      "id": "903901a4-0c94-4719-88d9-84df8480753e",
-                      "title": "Web UI workflow configuration form component",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Create Preact component for editing hench workflow configuration with form controls (dropdowns, number inputs, toggles, tag lists). Shows current config in editable form and previews impact of changes.",
-                      "acceptanceCriteria": [
-                        "Web UI displays current workflow configuration in editable form with form controls",
-                        "Configuration changes show preview of impact on workflow behavior",
-                        "Changes are validated client-side before submission"
-                      ],
-                      "priority": "high",
-                      "tags": [
-                        "web",
-                        "ui",
-                        "hench",
-                        "configuration"
-                      ],
-                      "startedAt": "2026-02-11T05:43:23.401Z",
-                      "completedAt": "2026-02-11T05:51:25.230Z"
-                    }
                   ]
+                },
+                {
+                  "id": "4665728f-a7cc-4f9d-83f2-66d88188433a",
+                  "title": "CLI interactive workflow configuration command",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add `hench config` CLI command with interactive menu for configuring workflow parameters (execution strategy, retry policy, guard settings, task selection). Uses readline-based menus following existing patterns.",
+                  "acceptanceCriteria": [
+                    "CLI presents configurable workflow options in interactive menu format",
+                    "Users can modify execution strategies, retry policies, and task selection criteria",
+                    "Changes are validated and applied immediately to workflow configuration",
+                    "Configuration changes persist across hench runs"
+                  ],
+                  "priority": "high",
+                  "tags": [
+                    "cli",
+                    "hench",
+                    "configuration"
+                  ],
+                  "startedAt": "2026-02-10T21:38:22.825Z",
+                  "completedAt": "2026-02-11T05:40:11.163Z"
+                },
+                {
+                  "id": "3755a5ee-a832-4635-8c99-bd79da3d5b41",
+                  "title": "Web UI workflow configuration API endpoints",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add REST API endpoints for reading and updating hench workflow configuration: GET /api/hench/config (read), PUT /api/hench/config (update with validation). Include preview of impact on workflow behavior.",
+                  "acceptanceCriteria": [
+                    "GET /api/hench/config returns current workflow configuration",
+                    "PUT /api/hench/config validates and persists changes",
+                    "API returns preview of configuration impact on workflow behavior"
+                  ],
+                  "priority": "high",
+                  "tags": [
+                    "web",
+                    "api",
+                    "hench",
+                    "configuration"
+                  ],
+                  "startedAt": "2026-02-11T05:40:27.202Z",
+                  "completedAt": "2026-02-11T05:43:03.348Z"
+                },
+                {
+                  "id": "903901a4-0c94-4719-88d9-84df8480753e",
+                  "title": "Web UI workflow configuration form component",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Create Preact component for editing hench workflow configuration with form controls (dropdowns, number inputs, toggles, tag lists). Shows current config in editable form and previews impact of changes.",
+                  "acceptanceCriteria": [
+                    "Web UI displays current workflow configuration in editable form with form controls",
+                    "Configuration changes show preview of impact on workflow behavior",
+                    "Changes are validated client-side before submission"
+                  ],
+                  "priority": "high",
+                  "tags": [
+                    "web",
+                    "ui",
+                    "hench",
+                    "configuration"
+                  ],
+                  "startedAt": "2026-02-11T05:43:23.401Z",
+                  "completedAt": "2026-02-11T05:51:25.230Z"
                 },
                 {
                   "id": "d8730c3d-f5f7-4262-920a-9c7292bf1871",
@@ -11881,60 +11797,58 @@
                   ],
                   "source": "smart-add",
                   "startedAt": "2026-02-10T22:10:17.673Z",
-                  "completedAt": "2026-02-10T22:24:56.327Z",
-                  "children": [
-                    {
-                      "id": "a4618fb1-18da-49f6-b13d-f7fce10872cf",
-                      "title": "Add requirements CRUD API endpoints to web server",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Add REST API endpoints for requirements management: GET requirements for an item, POST to add, PATCH to update, DELETE to remove. Also add coverage/traceability endpoints.",
-                      "acceptanceCriteria": [
-                        "GET /api/rex/items/:id/requirements returns requirements with inheritance",
-                        "POST /api/rex/items/:id/requirements adds a new requirement",
-                        "PATCH /api/rex/items/:id/requirements/:reqId updates a requirement",
-                        "DELETE /api/rex/items/:id/requirements/:reqId removes a requirement",
-                        "GET /api/rex/requirements/coverage returns coverage stats",
-                        "GET /api/rex/requirements/traceability returns traceability matrix"
-                      ],
-                      "priority": "high",
-                      "startedAt": "2026-02-10T22:24:53.464Z",
-                      "completedAt": "2026-02-10T22:24:53.464Z"
-                    },
-                    {
-                      "id": "7b2aff7d-f4f5-48fa-9714-36968c5dc5cc",
-                      "title": "Build requirements management UI and dashboard views",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Create Preact UI components: requirements section in task detail panel, requirements editor for adding/editing requirements with structured templates, requirements coverage dashboard with filtering and traceability view.",
-                      "acceptanceCriteria": [
-                        "Task detail panel shows requirements section with category badges and validation type",
-                        "Requirements editor allows creation with structured template (title, category, type, criteria)",
-                        "Requirements can be filtered by category and validation type",
-                        "Dashboard shows requirements coverage and compliance overview",
-                        "Requirements visually linked to associated PRD items via traceability view"
-                      ],
-                      "priority": "high",
-                      "startedAt": "2026-02-10T22:24:55.012Z",
-                      "completedAt": "2026-02-10T22:24:55.012Z"
-                    },
-                    {
-                      "id": "6e156feb-c447-47e1-ab4a-1e53eeabd103",
-                      "title": "Enhance task prioritization with requirements-based weighting",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Add requirements-aware task selection: tasks with critical requirements get priority boost, tasks blocking requirements-heavy items are elevated, configurable weighting for risk tolerance.",
-                      "acceptanceCriteria": [
-                        "Task selection weights tasks based on associated requirements priority",
-                        "Tasks blocking critical requirements are automatically elevated",
-                        "Requirement dependencies influence task scheduling",
-                        "Prioritization logic can be configured via riskTolerance setting"
-                      ],
-                      "priority": "high",
-                      "startedAt": "2026-02-10T22:24:56.277Z",
-                      "completedAt": "2026-02-10T22:24:56.277Z"
-                    }
-                  ]
+                  "completedAt": "2026-02-10T22:24:56.327Z"
+                },
+                {
+                  "id": "a4618fb1-18da-49f6-b13d-f7fce10872cf",
+                  "title": "Add requirements CRUD API endpoints to web server",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add REST API endpoints for requirements management: GET requirements for an item, POST to add, PATCH to update, DELETE to remove. Also add coverage/traceability endpoints.",
+                  "acceptanceCriteria": [
+                    "GET /api/rex/items/:id/requirements returns requirements with inheritance",
+                    "POST /api/rex/items/:id/requirements adds a new requirement",
+                    "PATCH /api/rex/items/:id/requirements/:reqId updates a requirement",
+                    "DELETE /api/rex/items/:id/requirements/:reqId removes a requirement",
+                    "GET /api/rex/requirements/coverage returns coverage stats",
+                    "GET /api/rex/requirements/traceability returns traceability matrix"
+                  ],
+                  "priority": "high",
+                  "startedAt": "2026-02-10T22:24:53.464Z",
+                  "completedAt": "2026-02-10T22:24:53.464Z"
+                },
+                {
+                  "id": "7b2aff7d-f4f5-48fa-9714-36968c5dc5cc",
+                  "title": "Build requirements management UI and dashboard views",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Create Preact UI components: requirements section in task detail panel, requirements editor for adding/editing requirements with structured templates, requirements coverage dashboard with filtering and traceability view.",
+                  "acceptanceCriteria": [
+                    "Task detail panel shows requirements section with category badges and validation type",
+                    "Requirements editor allows creation with structured template (title, category, type, criteria)",
+                    "Requirements can be filtered by category and validation type",
+                    "Dashboard shows requirements coverage and compliance overview",
+                    "Requirements visually linked to associated PRD items via traceability view"
+                  ],
+                  "priority": "high",
+                  "startedAt": "2026-02-10T22:24:55.012Z",
+                  "completedAt": "2026-02-10T22:24:55.012Z"
+                },
+                {
+                  "id": "6e156feb-c447-47e1-ab4a-1e53eeabd103",
+                  "title": "Enhance task prioritization with requirements-based weighting",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add requirements-aware task selection: tasks with critical requirements get priority boost, tasks blocking requirements-heavy items are elevated, configurable weighting for risk tolerance.",
+                  "acceptanceCriteria": [
+                    "Task selection weights tasks based on associated requirements priority",
+                    "Tasks blocking critical requirements are automatically elevated",
+                    "Requirement dependencies influence task scheduling",
+                    "Prioritization logic can be configured via riskTolerance setting"
+                  ],
+                  "priority": "high",
+                  "startedAt": "2026-02-10T22:24:56.277Z",
+                  "completedAt": "2026-02-10T22:24:56.277Z"
                 }
               ]
             }
@@ -12044,7 +11958,7 @@
           "id": "8fc4844a-d6f9-480e-94c6-c8536f89c207",
           "title": "Audit MCP tool schemas against PRDItem fields",
           "status": "completed",
-          "level": "task",
+          "level": "feature",
           "description": "The edit_item MCP tool was missing the `level` field — it only exposed title, description, priority, tags, acceptanceCriteria, source, and blockedBy. Level was added ad-hoc during a restructuring session. There may be other mutable PRDItem fields not exposed through MCP tools. The MCP tool schemas should be systematically audited against the PRDItem type to ensure full coverage.",
           "acceptanceCriteria": [
             "Every mutable field on PRDItem has a corresponding parameter in the appropriate MCP tool",
@@ -12063,7 +11977,7 @@
           "id": "0f8711c6-1dc3-4e54-b156-54579f60771f",
           "title": "Fix --mode=fast being ignored when --accept is passed to reorganize",
           "status": "completed",
-          "level": "task",
+          "level": "feature",
           "description": "Running `rex reorganize --mode=fast --accept=3,4 .` still triggers the LLM analysis pass, wasting time and tokens. The --mode flag should be respected regardless of whether --accept is also passed. The LLM analysis should only run when mode is \"full\" (the default).",
           "acceptanceCriteria": [
             "--mode=fast with --accept skips LLM analysis entirely",
@@ -12082,7 +11996,7 @@
           "id": "9fa85475-a6ff-474a-bf4f-e1f531df7916",
           "title": "Move file lock to saveDocument for complete write safety",
           "status": "completed",
-          "level": "task",
+          "level": "feature",
           "description": "File locking was added to the convenience methods (addItem, updateItem, removeItem) but CLI commands like reorganize, prune, and reshape do their own loadDocument → mutate → saveDocument outside those methods, bypassing the lock entirely. The lock should be at the saveDocument level (or a withTransaction API) so all write paths are protected, not just the store convenience methods.",
           "acceptanceCriteria": [
             "All writes to prd.json go through a single lock regardless of whether they use convenience methods or direct saveDocument",
@@ -13205,34 +13119,6 @@
                   ],
                   "startedAt": "2026-02-09T17:52:05.137Z",
                   "completedAt": "2026-02-09T17:59:33.787Z"
-                },
-                {
-                  "id": "53af5c5d-5434-43d4-8235-dd3f742248a9",
-                  "title": "Move Validation view under Rex section",
-                  "status": "deleted",
-                  "level": "subtask",
-                  "description": "Validation (PRD integrity checks, dependency graph, blocking chain visualization) is a Rex concern. Move it from the general Analysis section into the Rex section in the sidebar. The view implementation stays the same — this is a navigation reorganization.",
-                  "priority": "medium",
-                  "tags": [
-                    "web",
-                    "rex",
-                    "navigation"
-                  ],
-                  "startedAt": "2026-02-09T17:37:18.513Z"
-                },
-                {
-                  "id": "c112a76c-e8f4-414d-91ed-69cef649541c",
-                  "title": "Move Token Usage view under Rex section",
-                  "status": "deleted",
-                  "level": "subtask",
-                  "description": "Token Usage tracks API consumption across rex, hench, and sourcevision. Since it's primarily about execution cost tracking (a Rex/Hench operational concern), move it under the Rex section in the sidebar. The view implementation stays the same.",
-                  "priority": "medium",
-                  "tags": [
-                    "web",
-                    "rex",
-                    "navigation"
-                  ],
-                  "startedAt": "2026-02-09T17:37:18.556Z"
                 },
                 {
                   "id": "2048ebbf-fa7c-44ed-8929-32d16aa7aa49",
@@ -16052,7 +15938,7 @@
               "id": "5afe5ef6-7961-4969-a843-aa346909b7f4",
               "title": "Build landing page with hero and package showcase",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Create the landing page HTML/CSS/JS with a hero section (tagline, CTA) and a three-package showcase showing sourcevision → rex → hench as a pipeline. Responsive, dark/light theme, accessible. This is the core of the page.",
               "priority": "high",
               "startedAt": "2026-02-12T18:00:54.148Z",
@@ -16062,7 +15948,7 @@
               "id": "7ff4f6b5-031e-45a8-8678-728f5caa7b8a",
               "title": "Add interactive workflow demo and animations",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Add interactive elements: animated terminal showing the CLI workflow (ndx init → plan → work), hover/scroll animations on package cards, smooth section transitions. Make the page feel alive.",
               "priority": "medium",
               "startedAt": "2026-02-13T17:07:10.264Z",
@@ -16072,7 +15958,7 @@
               "id": "28610126-7a2c-4f76-b375-d190d2cb166d",
               "title": "Add getting started section and wire up routing",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Add a getting started section with install commands (copy-to-clipboard), prerequisites, and links to docs/GitHub. Wire up the landing page route in the web server so it serves at the root when appropriate.",
               "priority": "medium",
               "startedAt": "2026-02-12T20:17:12.692Z",
@@ -16826,48 +16712,6 @@
                   "source": "smart-add",
                   "startedAt": "2026-02-25T23:04:34.884Z",
                   "completedAt": "2026-03-03T05:08:49.650Z"
-                },
-                {
-                  "id": "7a4147b5-4841-48b1-8b52-8b9d18f85e6b",
-                  "title": "Add viewport intersection detection for tree nodes",
-                  "status": "deleted",
-                  "level": "subtask",
-                  "description": "Implement efficient intersection observer-based detection to determine which tree nodes should be rendered based on viewport visibility",
-                  "acceptanceCriteria": [
-                    "Uses IntersectionObserver API for efficient visibility detection",
-                    "Handles nested tree item visibility correctly",
-                    "Includes configurable margins for pre-rendering buffer",
-                    "Works correctly with dynamic tree height changes"
-                  ],
-                  "priority": "critical",
-                  "tags": [
-                    "ui",
-                    "performance",
-                    "viewport"
-                  ],
-                  "source": "smart-add",
-                  "startedAt": "2026-02-25T23:03:38.306Z"
-                },
-                {
-                  "id": "4482fa07-daf2-427b-b7db-43dfd54596a1",
-                  "title": "Implement dynamic tree height calculation",
-                  "status": "deleted",
-                  "level": "subtask",
-                  "description": "Calculate and maintain accurate virtual tree height for scrolling while only rendering visible nodes",
-                  "acceptanceCriteria": [
-                    "Accurately calculates total virtual height for collapsed and expanded states",
-                    "Updates height dynamically when nodes are expanded/collapsed",
-                    "Maintains scroll position accuracy during height changes",
-                    "Handles variable node heights correctly"
-                  ],
-                  "priority": "high",
-                  "tags": [
-                    "ui",
-                    "performance",
-                    "calculation"
-                  ],
-                  "source": "smart-add",
-                  "startedAt": "2026-02-25T23:06:31.700Z"
                 }
               ]
             },
@@ -17478,27 +17322,6 @@
                   "source": "smart-add",
                   "startedAt": "2026-02-26T05:35:41.732Z",
                   "completedAt": "2026-02-26T05:52:26.741Z"
-                },
-                {
-                  "id": "561a77de-29fe-49e9-b64e-460de3baf57f",
-                  "title": "Add update batching for rapid WebSocket message sequences",
-                  "status": "deleted",
-                  "level": "subtask",
-                  "description": "Batch UI updates within animation frames to ensure smooth rendering and prevent UI blocking during message bursts",
-                  "acceptanceCriteria": [
-                    "UI updates are batched using requestAnimationFrame",
-                    "Maximum one UI update per animation frame",
-                    "Update batching preserves final state consistency",
-                    "Batching can be disabled via debug configuration"
-                  ],
-                  "priority": "medium",
-                  "tags": [
-                    "ui",
-                    "batching",
-                    "rendering"
-                  ],
-                  "source": "smart-add",
-                  "startedAt": "2026-02-26T18:15:03.720Z"
                 }
               ]
             }
@@ -17832,26 +17655,6 @@
                   "completedAt": "2026-02-26T15:56:33.983Z"
                 },
                 {
-                  "id": "f397d10d-bc45-4afb-9c6c-5470ccfc6c34",
-                  "title": "Suspend execution panel polling during memory pressure",
-                  "status": "deleted",
-                  "level": "subtask",
-                  "description": "Stop the 3s execution-panel polling loop when memory pressure flag is active to reduce background resource consumption",
-                  "acceptanceCriteria": [
-                    "Execution panel polling stops when memory pressure flag is set",
-                    "No execution panel requests made during memory degradation",
-                    "Existing execution state remains visible without updates"
-                  ],
-                  "priority": "high",
-                  "tags": [
-                    "memory",
-                    "polling",
-                    "execution"
-                  ],
-                  "source": "smart-add",
-                  "startedAt": "2026-02-26T07:12:40.183Z"
-                },
-                {
                   "id": "f1072210-2117-4456-9326-7659a755921c",
                   "title": "Suspend status indicator polling during memory pressure",
                   "status": "completed",
@@ -17871,26 +17674,6 @@
                   "source": "smart-add",
                   "startedAt": "2026-02-26T15:42:43.638Z",
                   "completedAt": "2026-02-26T15:49:11.475Z"
-                },
-                {
-                  "id": "5198ec1d-e5a0-4e82-a4e4-e6efbcd8271b",
-                  "title": "Implement polling restart when memory pressure subsides",
-                  "status": "deleted",
-                  "level": "subtask",
-                  "description": "Automatically restart all suspended polling loops when memory usage drops below pressure threshold and autoRefresh is re-enabled",
-                  "acceptanceCriteria": [
-                    "All polling loops restart when memory pressure flag clears",
-                    "Polling intervals resume at original frequencies (5s, 3s, 10s)",
-                    "No duplicate polling loops created during restart"
-                  ],
-                  "priority": "medium",
-                  "tags": [
-                    "memory",
-                    "polling",
-                    "recovery"
-                  ],
-                  "source": "smart-add",
-                  "startedAt": "2026-02-26T22:16:42.797Z"
                 },
                 {
                   "id": "2497cbfc-79ac-402d-a799-85b33978b38c",
@@ -18663,18 +18446,16 @@
                   ],
                   "source": "smart-add",
                   "startedAt": "2026-02-24T07:14:18.194Z",
-                  "completedAt": "2026-02-24T07:18:14.193Z",
-                  "children": [
-                    {
-                      "id": "ead56978-df3b-4c2b-b409-2ec91a69f222",
-                      "title": "Fix GAP-1: export shutdownRexExecution from routes-rex.ts and wire into start.ts gracefulShutdown",
-                      "status": "completed",
-                      "level": "subtask",
-                      "priority": "high",
-                      "startedAt": "2026-02-24T07:18:41.310Z",
-                      "completedAt": "2026-02-24T07:21:30.168Z"
-                    }
-                  ]
+                  "completedAt": "2026-02-24T07:18:14.193Z"
+                },
+                {
+                  "id": "ead56978-df3b-4c2b-b409-2ec91a69f222",
+                  "title": "Fix GAP-1: export shutdownRexExecution from routes-rex.ts and wire into start.ts gracefulShutdown",
+                  "status": "completed",
+                  "level": "subtask",
+                  "priority": "high",
+                  "startedAt": "2026-02-24T07:18:41.310Z",
+                  "completedAt": "2026-02-24T07:21:30.168Z"
                 }
               ]
             },
@@ -18971,7 +18752,7 @@
           "id": "5dd63e4e-1bbb-47a8-a0fa-754bc142a377",
           "title": "Hot-reload MCP tool schemas on HTTP transport without server restart",
           "status": "deferred",
-          "level": "task",
+          "level": "feature",
           "description": "The HTTP MCP server holds tool schemas in memory from startup. When rex or sourcevision are rebuilt with new/changed tool parameters, the running server still serves the old schemas. Users must restart the server to pick up changes. This is a friction point during development — stdio MCP doesn't have this problem since each invocation spawns fresh.\n\nOptions: file-watch the dist/ directories and re-initialize MCP servers on change, or add an admin endpoint to trigger reload.",
           "acceptanceCriteria": [
             "After rebuilding rex or sourcevision, the HTTP MCP server serves updated tool schemas without manual restart",
@@ -19405,71 +19186,69 @@
                   ],
                   "source": "smart-add",
                   "startedAt": "2026-02-17T21:55:01.655Z",
-                  "completedAt": "2026-02-17T23:24:13.706Z",
-                  "children": [
-                    {
-                      "id": "5df1865c-e076-475b-9c4c-b37000615d06",
-                      "title": "Add navigation hints and related commands to help output",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Enhance the main help in cli.js to include navigation hints (e.g., 'Run ndx <cmd> --help for details'). Add 'See also' related command suggestions to per-command help output in all three package help.ts files. Add subcommand help accessibility from parent command help (e.g., ndx rex --help shows rex commands with hint to drill down).",
-                      "acceptanceCriteria": [
-                        "Main help shows navigation hints like 'Run ndx <command> --help for details'",
-                        "Per-command help includes 'See also:' section with related commands",
-                        "Users can access subcommand help from parent command help (ndx rex --help → rex subcommands)"
-                      ],
-                      "priority": "medium",
-                      "tags": [
-                        "cli",
-                        "help",
-                        "navigation"
-                      ],
-                      "startedAt": "2026-02-17T23:24:10.895Z",
-                      "completedAt": "2026-02-17T23:24:10.895Z"
-                    },
-                    {
-                      "id": "ccff7d53-6a94-4821-b718-0446e4974293",
-                      "title": "Implement typo correction with edit distance matching",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Add Levenshtein edit distance matching to suggest similar commands when the user types an unrecognized command. Applies to both the orchestrator (cli.js) and per-package CLIs (rex, hench, sourcevision). Suggest commands within distance ≤ 2.",
-                      "acceptanceCriteria": [
-                        "Typing 'ndx statis' suggests 'ndx status'",
-                        "Typing 'rex valdate' suggests 'rex validate'",
-                        "Suggestions only shown when edit distance ≤ 2",
-                        "Works for all three package CLIs and orchestrator"
-                      ],
-                      "priority": "medium",
-                      "tags": [
-                        "cli",
-                        "typo-correction",
-                        "discovery"
-                      ],
-                      "startedAt": "2026-02-17T23:24:12.208Z",
-                      "completedAt": "2026-02-17T23:24:12.208Z"
-                    },
-                    {
-                      "id": "5717ebd1-09f2-4f8e-a8af-38d39fb484e6",
-                      "title": "Implement keyword search across all help content",
-                      "status": "completed",
-                      "level": "subtask",
-                      "description": "Add 'ndx help <keyword>' command to search across all help content (orchestrator + packages). Score results by relevance (title match > description match > option match). Display matched commands with context snippets showing why they matched.",
-                      "acceptanceCriteria": [
-                        "ndx help PRD returns commands related to PRD management",
-                        "ndx help sync returns the sync command with relevant context",
-                        "Results are scored and sorted by relevance",
-                        "Search covers orchestrator commands and all package commands"
-                      ],
-                      "priority": "medium",
-                      "tags": [
-                        "cli",
-                        "search",
-                        "discovery"
-                      ],
-                      "startedAt": "2026-02-17T23:24:13.649Z",
-                      "completedAt": "2026-02-17T23:24:13.649Z"
-                    }
-                  ]
+                  "completedAt": "2026-02-17T23:24:13.706Z"
+                },
+                {
+                  "id": "5df1865c-e076-475b-9c4c-b37000615d06",
+                  "title": "Add navigation hints and related commands to help output",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Enhance the main help in cli.js to include navigation hints (e.g., 'Run ndx <cmd> --help for details'). Add 'See also' related command suggestions to per-command help output in all three package help.ts files. Add subcommand help accessibility from parent command help (e.g., ndx rex --help shows rex commands with hint to drill down).",
+                  "acceptanceCriteria": [
+                    "Main help shows navigation hints like 'Run ndx <command> --help for details'",
+                    "Per-command help includes 'See also:' section with related commands",
+                    "Users can access subcommand help from parent command help (ndx rex --help → rex subcommands)"
+                  ],
+                  "priority": "medium",
+                  "tags": [
+                    "cli",
+                    "help",
+                    "navigation"
+                  ],
+                  "startedAt": "2026-02-17T23:24:10.895Z",
+                  "completedAt": "2026-02-17T23:24:10.895Z"
+                },
+                {
+                  "id": "ccff7d53-6a94-4821-b718-0446e4974293",
+                  "title": "Implement typo correction with edit distance matching",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add Levenshtein edit distance matching to suggest similar commands when the user types an unrecognized command. Applies to both the orchestrator (cli.js) and per-package CLIs (rex, hench, sourcevision). Suggest commands within distance ≤ 2.",
+                  "acceptanceCriteria": [
+                    "Typing 'ndx statis' suggests 'ndx status'",
+                    "Typing 'rex valdate' suggests 'rex validate'",
+                    "Suggestions only shown when edit distance ≤ 2",
+                    "Works for all three package CLIs and orchestrator"
+                  ],
+                  "priority": "medium",
+                  "tags": [
+                    "cli",
+                    "typo-correction",
+                    "discovery"
+                  ],
+                  "startedAt": "2026-02-17T23:24:12.208Z",
+                  "completedAt": "2026-02-17T23:24:12.208Z"
+                },
+                {
+                  "id": "5717ebd1-09f2-4f8e-a8af-38d39fb484e6",
+                  "title": "Implement keyword search across all help content",
+                  "status": "completed",
+                  "level": "subtask",
+                  "description": "Add 'ndx help <keyword>' command to search across all help content (orchestrator + packages). Score results by relevance (title match > description match > option match). Display matched commands with context snippets showing why they matched.",
+                  "acceptanceCriteria": [
+                    "ndx help PRD returns commands related to PRD management",
+                    "ndx help sync returns the sync command with relevant context",
+                    "Results are scored and sorted by relevance",
+                    "Search covers orchestrator commands and all package commands"
+                  ],
+                  "priority": "medium",
+                  "tags": [
+                    "cli",
+                    "search",
+                    "discovery"
+                  ],
+                  "startedAt": "2026-02-17T23:24:13.649Z",
+                  "completedAt": "2026-02-17T23:24:13.649Z"
                 },
                 {
                   "id": "402ce915-dc9d-458a-9e58-107e1f334f8e",
@@ -19933,7 +19712,7 @@
               "id": "fdd4fece-07ba-47c9-9611-6603a8bed17f",
               "title": "Refactor rex package to expose proper public API",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "Rex has no package.json exports field or public API barrel — hench imports 7 runtime functions from 5 internal dist/ paths. Add packages/rex/src/public.ts re-exporting the 7 consumed functions + 3 consumed types, add exports field to rex package.json mapping rex → dist/public.js, update hench imports to use rex (not rex/dist/...).",
               "acceptanceCriteria": [
                 "Creates packages/rex/src/public.ts with re-exports of consumed functions",
@@ -20586,7 +20365,7 @@
               "id": "1ae1ab98-c9b0-47a6-ba63-dded0edb0d51",
               "title": "Implement token usage tracking, reporting, and budget checking",
               "status": "completed",
-              "level": "subtask",
+              "level": "task",
               "description": "End-to-end token analytics: extract and aggregate usage across packages, format reports with budget warnings, and check token/cost budgets with custom pricing.",
               "acceptanceCriteria": [
                 "Extracts token events from rex, hench, and sourcevision with proper filtering and error handling",
@@ -21623,17 +21402,15 @@
                   ],
                   "source": "smart-add",
                   "startedAt": "2026-02-24T07:16:13.665Z",
-                  "completedAt": "2026-02-24T07:21:50.653Z",
-                  "children": [
-                    {
-                      "id": "6d3d8a74-c84d-4615-a418-11ac553c4f8c",
-                      "title": "Log",
-                      "status": "completed",
-                      "level": "subtask",
-                      "startedAt": "2026-02-24T07:21:50.555Z",
-                      "completedAt": "2026-02-24T07:21:50.555Z"
-                    }
-                  ]
+                  "completedAt": "2026-02-24T07:21:50.653Z"
+                },
+                {
+                  "id": "6d3d8a74-c84d-4615-a418-11ac553c4f8c",
+                  "title": "Log",
+                  "status": "completed",
+                  "level": "subtask",
+                  "startedAt": "2026-02-24T07:21:50.555Z",
+                  "completedAt": "2026-02-24T07:21:50.555Z"
                 }
               ]
             },
