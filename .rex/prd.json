@@ -18914,7 +18914,7 @@
     {
       "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",
       "title": "CLI & Developer Tools",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Command-line interface: error handling, validation, formatting, help navigation, command aliases, configuration management, and CI pipeline.",
       "children": [
@@ -19947,7 +19947,7 @@
           "id": "fa59f28a-e444-4451-b770-f965c8db1798",
           "title": "Polished CLI first-run and re-init experience",
           "level": "feature",
-          "status": "pending",
+          "status": "completed",
           "priority": "medium",
           "description": "Branded ASCII art, smart config reuse, clean summary output on init.",
           "children": [
@@ -19955,7 +19955,7 @@
               "id": "224703a3-3a67-44ef-9e01-375c0990827b",
               "title": "Skip provider prompt when existing config is valid",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "medium",
               "acceptanceCriteria": [
                 "Re-running ndx init with existing config skips provider prompt",
@@ -19965,13 +19965,14 @@
               "tags": [
                 "cli",
                 "ux"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             },
             {
               "id": "7be07d44-976d-4d18-a209-887526f741b3",
               "title": "Unified init status report instead of mixed sub-init output",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "medium",
               "acceptanceCriteria": [
                 "Clean unified summary on first run and re-run",
@@ -19983,13 +19984,14 @@
               ],
               "blockedBy": [
                 "224703a3-3a67-44ef-9e01-375c0990827b"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             },
             {
               "id": "768c9835-31a7-4113-996b-ab7749a731a4",
               "title": "Branded n-dx ASCII art CLI header for init",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "low",
               "acceptanceCriteria": [
                 "Compact ASCII header with ANSI color",
@@ -19999,15 +20001,17 @@
               "tags": [
                 "cli",
                 "branding"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             }
-          ]
+          ],
+          "completedAt": "2026-03-24T13:06:25.502Z"
         },
         {
           "id": "69eb6b07-7b69-49cb-8fd9-f1a67a4460ee",
           "title": "ndx as the single CLI interface",
           "level": "feature",
-          "status": "pending",
+          "status": "completed",
           "priority": "high",
           "description": "Every user-facing command accessible through ndx. Users never need to know which package owns what.",
           "children": [
@@ -20015,7 +20019,7 @@
               "id": "70cd90a1-cb38-4536-ae0b-671af963878f",
               "title": "Audit and surface all package commands through ndx",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "high",
               "acceptanceCriteria": [
                 "Every rex/sv/hench command has an ndx equivalent",
@@ -20024,13 +20028,14 @@
               "tags": [
                 "cli",
                 "ux"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             },
             {
               "id": "926c6deb-91ed-4b60-8013-3e8c5e03c481",
               "title": "Helpful error when users run package commands that belong to ndx",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "medium",
               "acceptanceCriteria": [
                 "rex/sv/hench CLIs suggest ndx equivalent for orchestrator-only commands",
@@ -20039,13 +20044,14 @@
               "tags": [
                 "cli",
                 "ux"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             },
             {
               "id": "6440a3d3-00b3-4599-ac3a-836fb27945e7",
               "title": "Rewrite ndx --help to be user-centric",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "medium",
               "acceptanceCriteria": [
                 "Commands grouped by workflow stage",
@@ -20057,15 +20063,17 @@
               ],
               "blockedBy": [
                 "70cd90a1-cb38-4536-ae0b-671af963878f"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             }
-          ]
+          ],
+          "completedAt": "2026-03-24T13:06:25.502Z"
         },
         {
           "id": "24a05d75-a370-4ebd-a4b9-8e52395b622d",
           "title": "Documentation improvements",
           "level": "feature",
-          "status": "pending",
+          "status": "completed",
           "priority": "medium",
           "description": "Docs match the product vision: ndx is the interface, no package internals needed.",
           "children": [
@@ -20073,7 +20081,7 @@
               "id": "addc40f1-decb-4d0c-9f17-6cc455e1590e",
               "title": "Write a 5-minute quickstart tutorial",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "high",
               "acceptanceCriteria": [
                 "Copy-paste tutorial from install to first status",
@@ -20082,26 +20090,28 @@
               ],
               "tags": [
                 "docs"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             },
             {
               "id": "c9f50a60-abe8-4f8e-91a4-2da8d9a4bf10",
               "title": "Add troubleshooting guide for common issues",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "medium",
               "acceptanceCriteria": [
                 "At least 5 issues with problem/cause/fix format"
               ],
               "tags": [
                 "docs"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             },
             {
               "id": "22625730-8bd0-4b82-8e61-2144ee207ea8",
               "title": "Rewrite commands.md to be user-centric",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "medium",
               "acceptanceCriteria": [
                 "Commands grouped by workflow",
@@ -20112,15 +20122,17 @@
               ],
               "blockedBy": [
                 "70cd90a1-cb38-4536-ae0b-671af963878f"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             }
-          ]
+          ],
+          "completedAt": "2026-03-24T13:06:25.502Z"
         },
         {
           "id": "cb54ce3f-e213-4020-bfc5-1ed517a29060",
           "title": "Transparent task selection and completion reasoning",
           "level": "feature",
-          "status": "pending",
+          "status": "completed",
           "priority": "medium",
           "description": "ndx work --auto should make reasoning transparent at both ends of the run.",
           "children": [
@@ -20128,7 +20140,7 @@
               "id": "d0c0c683-75e6-4857-8ef2-0c1a0bb90680",
               "title": "Surface selection reasoning in auto-select run header",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "medium",
               "acceptanceCriteria": [
                 "Shows why task was chosen",
@@ -20138,13 +20150,14 @@
               "tags": [
                 "hench",
                 "ux"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             },
             {
               "id": "e762d16d-81be-4647-8608-cfbe9bda9475",
               "title": "Show prior attempt history in task card",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "medium",
               "acceptanceCriteria": [
                 "Shows prior attempt count and last status",
@@ -20153,13 +20166,14 @@
               "tags": [
                 "hench",
                 "ux"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             },
             {
               "id": "e081ca17-aa6a-47e4-ad19-0ab77f8adb98",
               "title": "Classify changes in run summary (code/docs/config/metadata-only)",
               "level": "task",
-              "status": "pending",
+              "status": "completed",
               "priority": "medium",
               "acceptanceCriteria": [
                 "Files listed with type classification",
@@ -20171,11 +20185,14 @@
               ],
               "blockedBy": [
                 "d0c0c683-75e6-4857-8ef2-0c1a0bb90680"
-              ]
+              ],
+              "completedAt": "2026-03-24T13:06:25.502Z"
             }
-          ]
+          ],
+          "completedAt": "2026-03-24T13:06:25.502Z"
         }
-      ]
+      ],
+      "completedAt": "2026-03-24T13:06:25.502Z"
     },
     {
       "id": "7b2bbeff-44de-4b1b-b164-54fb5ddcb5f3",
