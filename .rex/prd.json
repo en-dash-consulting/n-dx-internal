@@ -8,6 +8,7 @@
       "status": "completed",
       "level": "epic",
       "description": "Static analysis engine: file inventory, import graph, zone detection (Louvain community detection), React component catalog, PR markdown generation. Produces .sourcevision/CONTEXT.md and llms.txt for AI consumption.",
+      "completedAt": "2026-03-24T04:16:45.798Z",
       "children": [
         {
           "id": "3bf3754c-c0d0-4fb7-9cbd-5ebbddb85d51",
@@ -9211,13 +9212,12 @@
             "createdAt": "2026-02-25T03:25:22.943Z"
           }
         }
-      ],
-      "completedAt": "2026-03-24T04:16:45.798Z"
+      ]
     },
     {
       "id": "bf053fb2-509d-4acf-aa61-7243e66027e5",
       "title": "Rex",
-      "status": "completed",
+      "status": "pending",
       "level": "epic",
       "description": "PRD management: hierarchical epics/features/tasks/subtasks, smart add from natural language, LLM-powered analysis and recommendations, validation, pruning, reshaping. Stores state in .rex/prd.json.",
       "children": [
@@ -11939,9 +11939,79 @@
               ]
             }
           ]
+        },
+        {
+          "id": "f0294876-d42d-497e-a3c6-c5abf7a374ed",
+          "title": "Proactive PRD structure health checks",
+          "status": "pending",
+          "level": "feature",
+          "description": "The PRD grew to 70 top-level epics before anyone noticed the structure had degraded. The current `reorganize` command is reactive — it finds problems after they exist. Rex should proactively warn during writes (add, analyze, plan) when structural thresholds are crossed, so the PRD stays organized as it grows rather than requiring periodic manual cleanup.",
+          "acceptanceCriteria": [
+            "rex add/analyze/plan warns when top-level epic count exceeds a configurable threshold (default: 15)",
+            "rex ci includes a structure health gate that fails when epic count, max depth, or avg children-per-container is out of bounds",
+            "Warnings suggest running /ndx-reshape or rex reorganize",
+            "Thresholds are configurable in .rex/config.json"
+          ],
+          "priority": "medium",
+          "tags": [
+            "rex",
+            "quality"
+          ]
+        },
+        {
+          "id": "8fc4844a-d6f9-480e-94c6-c8536f89c207",
+          "title": "Audit MCP tool schemas against PRDItem fields",
+          "status": "pending",
+          "level": "task",
+          "description": "The edit_item MCP tool was missing the `level` field — it only exposed title, description, priority, tags, acceptanceCriteria, source, and blockedBy. Level was added ad-hoc during a restructuring session. There may be other mutable PRDItem fields not exposed through MCP tools. The MCP tool schemas should be systematically audited against the PRDItem type to ensure full coverage.",
+          "acceptanceCriteria": [
+            "Every mutable field on PRDItem has a corresponding parameter in the appropriate MCP tool",
+            "A test asserts that the MCP tool schema keys are a superset of PRDItem mutable fields",
+            "Documentation lists which MCP tool handles which fields"
+          ],
+          "priority": "medium",
+          "tags": [
+            "rex",
+            "mcp"
+          ]
+        },
+        {
+          "id": "0f8711c6-1dc3-4e54-b156-54579f60771f",
+          "title": "Fix --mode=fast being ignored when --accept is passed to reorganize",
+          "status": "pending",
+          "level": "task",
+          "description": "Running `rex reorganize --mode=fast --accept=3,4 .` still triggers the LLM analysis pass, wasting time and tokens. The --mode flag should be respected regardless of whether --accept is also passed. The LLM analysis should only run when mode is \"full\" (the default).",
+          "acceptanceCriteria": [
+            "--mode=fast with --accept skips LLM analysis entirely",
+            "--mode=fast with --accept only applies structural proposals",
+            "Default mode (full) behavior is unchanged"
+          ],
+          "priority": "medium",
+          "tags": [
+            "rex",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "9fa85475-a6ff-474a-bf4f-e1f531df7916",
+          "title": "Move file lock to saveDocument for complete write safety",
+          "level": "task",
+          "status": "pending",
+          "description": "File locking was added to the convenience methods (addItem, updateItem, removeItem) but CLI commands like reorganize, prune, and reshape do their own loadDocument → mutate → saveDocument outside those methods, bypassing the lock entirely. The lock should be at the saveDocument level (or a withTransaction API) so all write paths are protected, not just the store convenience methods.",
+          "priority": "high",
+          "acceptanceCriteria": [
+            "All writes to prd.json go through a single lock regardless of whether they use convenience methods or direct saveDocument",
+            "CLI commands (reorganize, prune, reshape) are protected from concurrent MCP writes",
+            "Lock is acquired before loadDocument and held through saveDocument to prevent read-modify-write races",
+            "Existing convenience methods still work without callers needing to acquire locks manually"
+          ],
+          "tags": [
+            "rex",
+            "reliability",
+            "concurrency"
+          ]
         }
-      ],
-      "completedAt": "2026-03-24T04:16:45.798Z"
+      ]
     },
     {
       "id": "4fc05c48-48b0-4da3-8126-4fa237b924d9",
@@ -11949,6 +12019,7 @@
       "status": "completed",
       "level": "epic",
       "description": "Autonomous agent: picks rex tasks, builds briefs with codebase context, runs an LLM tool-use loop to implement them, records runs. Supports sequential execution, concurrency management, and resource monitoring.",
+      "completedAt": "2026-03-24T04:16:45.798Z",
       "children": [
         {
           "id": "6b0c3873-5607-4adc-9027-abd8d70ab0e3",
@@ -12947,13 +13018,12 @@
             }
           ]
         }
-      ],
-      "completedAt": "2026-03-24T04:16:45.798Z"
+      ]
     },
     {
       "id": "4d62fa6c-ad0d-4e1e-91f8-c2f1ebe696e7",
       "title": "Web Dashboard",
-      "status": "completed",
+      "status": "pending",
       "level": "epic",
       "description": "Unified web dashboard and MCP HTTP server. Preact-based UI with SourceVision, Rex, and Hench views. Includes server architecture, real-time updates, performance optimization, and landing page.",
       "children": [
@@ -18807,9 +18877,25 @@
               ]
             }
           ]
+        },
+        {
+          "id": "5dd63e4e-1bbb-47a8-a0fa-754bc142a377",
+          "title": "Hot-reload MCP tool schemas on HTTP transport without server restart",
+          "status": "pending",
+          "level": "task",
+          "description": "The HTTP MCP server holds tool schemas in memory from startup. When rex or sourcevision are rebuilt with new/changed tool parameters, the running server still serves the old schemas. Users must restart the server to pick up changes. This is a friction point during development — stdio MCP doesn't have this problem since each invocation spawns fresh.\n\nOptions: file-watch the dist/ directories and re-initialize MCP servers on change, or add an admin endpoint to trigger reload.",
+          "acceptanceCriteria": [
+            "After rebuilding rex or sourcevision, the HTTP MCP server serves updated tool schemas without manual restart",
+            "No impact on active MCP sessions (new sessions get new schemas, existing sessions continue with their schemas)"
+          ],
+          "priority": "low",
+          "tags": [
+            "web",
+            "mcp",
+            "dx"
+          ]
         }
-      ],
-      "completedAt": "2026-03-24T04:16:45.798Z"
+      ]
     },
     {
       "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",
@@ -18817,6 +18903,7 @@
       "status": "completed",
       "level": "epic",
       "description": "Command-line interface: error handling, validation, formatting, help navigation, command aliases, configuration management, and CI pipeline.",
+      "completedAt": "2026-03-24T04:16:45.798Z",
       "children": [
         {
           "id": "4ca9aac4-cd85-4af3-96d9-c4274e2d9f83",
@@ -19843,8 +19930,7 @@
             }
           ]
         }
-      ],
-      "completedAt": "2026-03-24T04:16:45.798Z"
+      ]
     },
     {
       "id": "7b2bbeff-44de-4b1b-b164-54fb5ddcb5f3",
@@ -19852,6 +19938,7 @@
       "status": "completed",
       "level": "epic",
       "description": "AI client infrastructure: vendor-neutral LLM foundation, token usage tracking and analytics, budget management, vendor support (Claude, Codex), onboarding and authentication.",
+      "completedAt": "2026-03-24T04:16:45.798Z",
       "children": [
         {
           "id": "05338f33-e638-49b8-815f-ed12949f0c63",
@@ -21143,15 +21230,15 @@
             }
           ]
         }
-      ],
-      "completedAt": "2026-03-24T04:16:45.798Z"
+      ]
     },
     {
       "id": "d0297439-0e0f-41de-9867-3b08f755a246",
       "title": "External Integrations",
-      "level": "epic",
       "status": "completed",
+      "level": "epic",
       "description": "Store adapters, bidirectional sync (Notion, future backends), CI/CD pipeline automation, and external service configuration.",
+      "completedAt": "2026-03-24T04:16:45.798Z",
       "children": [
         {
           "id": "9679e55e-a3c0-43e3-b240-1e749613e9cc",
@@ -21951,8 +22038,7 @@
             }
           ]
         }
-      ],
-      "completedAt": "2026-03-24T04:16:45.798Z"
+      ]
     }
   ]
 }
