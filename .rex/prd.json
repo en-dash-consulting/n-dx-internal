@@ -11959,6 +11959,85 @@
           ],
           "blockedBy": [
             "9fa85475-a6ff-474a-bf4f-e1f531df7916"
+          ],
+          "children": [
+            {
+              "id": "6ce9b707-d96d-4133-a871-bd663e6d966c",
+              "title": "Define structure health thresholds and add to rex config schema",
+              "status": "pending",
+              "level": "task",
+              "description": "Add configurable thresholds to .rex/config.json: maxTopLevelEpics (default: 15), maxTreeDepth (default: 5), maxChildrenPerContainer (default: 20), minChildrenPerContainer (default: 2). Add schema validation for these fields. Expose them through ndx config.",
+              "acceptanceCriteria": [
+                "Thresholds defined in RexConfig with sensible defaults",
+                "Schema validation accepts the new fields",
+                "ndx config can read/write the thresholds"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex"
+              ]
+            },
+            {
+              "id": "bf1fd080-e3f7-4af9-8ee3-1626df8da8d7",
+              "title": "Implement structure health check function",
+              "status": "pending",
+              "level": "task",
+              "description": "Create a core/structure-health.ts function that evaluates the PRD tree against the configured thresholds. Returns a list of warnings (not errors) with severity and suggested action. Reuses metrics from the existing health command but adds threshold comparison.",
+              "acceptanceCriteria": [
+                "Function takes PRD items + thresholds, returns warnings array",
+                "Checks: epic count, max depth, oversized containers, undersized containers",
+                "Each warning includes what threshold was crossed and suggested fix",
+                "Unit tests cover each threshold type"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex"
+              ],
+              "blockedBy": [
+                "6ce9b707-d96d-4133-a871-bd663e6d966c"
+              ]
+            },
+            {
+              "id": "3befc04b-ce05-4d4e-9dad-ead139784587",
+              "title": "Wire health warnings into rex add, analyze, and plan write paths",
+              "status": "pending",
+              "level": "task",
+              "description": "After rex add/analyze/plan successfully write to the PRD, run the structure health check and print any warnings to stderr. Warnings should suggest running /ndx-reshape or rex reorganize. Non-blocking — the command still succeeds.",
+              "acceptanceCriteria": [
+                "Warnings print after successful add/analyze/plan when thresholds crossed",
+                "Warnings suggest ndx reshape or rex reorganize",
+                "Warnings go to stderr, don't pollute stdout or JSON output",
+                "No warning when thresholds are not crossed"
+              ],
+              "priority": "medium",
+              "tags": [
+                "rex"
+              ],
+              "blockedBy": [
+                "bf1fd080-e3f7-4af9-8ee3-1626df8da8d7"
+              ]
+            },
+            {
+              "id": "d587adc9-56f3-4141-8ec8-4b0483758741",
+              "title": "Add structure health gate to rex ci / ndx ci",
+              "level": "task",
+              "status": "pending",
+              "description": "Add the structure health check as a CI gate in rex ci. When thresholds are exceeded, the CI check fails with a clear message listing which thresholds were crossed. This catches structural drift in automated pipelines.",
+              "priority": "medium",
+              "acceptanceCriteria": [
+                "ndx ci fails when structure thresholds are exceeded",
+                "CI JSON output includes structure health results",
+                "Threshold violations listed with specific counts vs limits",
+                "Passes cleanly when structure is healthy"
+              ],
+              "tags": [
+                "rex",
+                "ci"
+              ],
+              "blockedBy": [
+                "bf1fd080-e3f7-4af9-8ee3-1626df8da8d7"
+              ]
+            }
           ]
         },
         {
@@ -13032,9 +13111,10 @@
     {
       "id": "4d62fa6c-ad0d-4e1e-91f8-c2f1ebe696e7",
       "title": "Web Dashboard",
-      "status": "completed",
+      "status": "pending",
       "level": "epic",
       "description": "Unified web dashboard and MCP HTTP server. Preact-based UI with SourceVision, Rex, and Hench views. Includes server architecture, real-time updates, performance optimization, and landing page.",
+      "startedAt": "2026-03-24T05:27:03.754Z",
       "children": [
         {
           "id": "d5ad6f16-156d-496f-99e5-0230dd48cd47",
@@ -18906,10 +18986,90 @@
           "blockedBy": [
             "8fc4844a-d6f9-480e-94c6-c8536f89c207"
           ]
+        },
+        {
+          "id": "797fa0aa-caa0-433f-aa50-de87f0c05e90",
+          "title": "Checkbox multi-select and detail panel UX for PRD tree",
+          "status": "pending",
+          "level": "feature",
+          "description": "Rework the PRD tree row interaction model. Hovering a row reveals a checkbox. Clicking the checkbox enters multi-select mode and shows the bulk action popover. Clicking the row itself (not the checkbox) opens the detail side panel. While the detail panel is open for an item, show its checkbox but don't auto-select it into multi-select. Remove the Edit icon on the right side of rows.",
+          "priority": "medium",
+          "children": [
+            {
+              "id": "81019293-1603-40e3-a410-e532d832b87b",
+              "title": "Hover reveals checkbox, click checkbox enters multi-select",
+              "status": "pending",
+              "level": "task",
+              "description": "On hover, show a checkbox input on the left side of the row. Clicking the checkbox toggles multi-select for that item and shows the bulk action bar. The checkbox should be hidden by default and only appear on hover (or when the item is already in multi-select).",
+              "acceptanceCriteria": [
+                "Checkbox appears on row hover",
+                "Clicking checkbox toggles multi-select without opening detail panel",
+                "Bulk action bar appears when any item is selected",
+                "Checkbox stays visible on selected items even without hover"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "ux"
+              ]
+            },
+            {
+              "id": "914d5466-e655-4cd3-b88e-4f9499b7a3b4",
+              "title": "Click row opens detail panel, show checkbox without auto-selecting",
+              "status": "pending",
+              "level": "task",
+              "description": "Clicking the row (not the checkbox) opens the detail side panel. While the detail panel is showing for an item, display its checkbox visibly but don't auto-add it to the multi-select set. This lets users see the detail and optionally select it for bulk actions.",
+              "acceptanceCriteria": [
+                "Row click opens detail panel",
+                "Selected-for-detail item shows checkbox but is not in multi-select",
+                "User can check the checkbox to add to multi-select while detail is open"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "ux"
+              ],
+              "blockedBy": [
+                "81019293-1603-40e3-a410-e532d832b87b"
+              ]
+            },
+            {
+              "id": "c243c06f-07a2-4c26-b8d6-a333266e0ea4",
+              "title": "Remove Edit icon from PRD tree rows",
+              "status": "pending",
+              "level": "task",
+              "description": "Remove the Edit pencil icon that appears on the right side of PRD tree rows. Editing is handled through the detail panel.",
+              "acceptanceCriteria": [
+                "No edit icon on tree rows",
+                "Detail panel remains the edit entry point"
+              ],
+              "priority": "low",
+              "tags": [
+                "web",
+                "ux"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "577c74cb-da15-4cb2-aca7-3012fe840896",
+          "title": "Item completion timeline view",
+          "status": "pending",
+          "level": "feature",
+          "description": "Add a timeline view to the Rex dashboard showing item completions over time. Users should see which items completed most recently, sorted by completedAt timestamp. This gives visibility into velocity and recent progress without digging through the tree.",
+          "acceptanceCriteria": [
+            "Timeline shows completed items sorted by completedAt (most recent first)",
+            "Each entry shows item title, level, parent chain, and completion date",
+            "Timeline is filterable by date range",
+            "Accessible from the Rex dashboard or as a tab on the Tasks page"
+          ],
+          "priority": "medium",
+          "tags": [
+            "web",
+            "ux"
+          ]
         }
-      ],
-      "startedAt": "2026-03-24T05:27:03.754Z",
-      "completedAt": "2026-03-24T05:27:03.754Z"
+      ]
     },
     {
       "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",
@@ -18917,6 +19077,7 @@
       "status": "completed",
       "level": "epic",
       "description": "Command-line interface: error handling, validation, formatting, help navigation, command aliases, configuration management, and CI pipeline.",
+      "completedAt": "2026-03-24T13:06:25.502Z",
       "children": [
         {
           "id": "4ca9aac4-cd85-4af3-96d9-c4274e2d9f83",
@@ -19946,22 +20107,23 @@
         {
           "id": "fa59f28a-e444-4451-b770-f965c8db1798",
           "title": "Polished CLI first-run and re-init experience",
-          "level": "feature",
           "status": "completed",
-          "priority": "medium",
+          "level": "feature",
           "description": "Branded ASCII art, smart config reuse, clean summary output on init.",
+          "priority": "medium",
+          "completedAt": "2026-03-24T13:06:25.502Z",
           "children": [
             {
               "id": "224703a3-3a67-44ef-9e01-375c0990827b",
               "title": "Skip provider prompt when existing config is valid",
-              "level": "task",
               "status": "completed",
-              "priority": "medium",
+              "level": "task",
               "acceptanceCriteria": [
                 "Re-running ndx init with existing config skips provider prompt",
                 "Existing provider reported as reused",
                 "--provider=X still works to override"
               ],
+              "priority": "medium",
               "tags": [
                 "cli",
                 "ux"
@@ -19971,13 +20133,13 @@
             {
               "id": "7be07d44-976d-4d18-a209-887526f741b3",
               "title": "Unified init status report instead of mixed sub-init output",
-              "level": "task",
               "status": "completed",
-              "priority": "medium",
+              "level": "task",
               "acceptanceCriteria": [
                 "Clean unified summary on first run and re-run",
                 "No mixed noise from sub-inits"
               ],
+              "priority": "medium",
               "tags": [
                 "cli",
                 "ux"
@@ -19990,41 +20152,41 @@
             {
               "id": "768c9835-31a7-4113-996b-ab7749a731a4",
               "title": "Branded n-dx ASCII art CLI header for init",
-              "level": "task",
               "status": "completed",
-              "priority": "low",
+              "level": "task",
               "acceptanceCriteria": [
                 "Compact ASCII header with ANSI color",
                 "Graceful plain text fallback",
                 "Shared module for reuse"
               ],
+              "priority": "low",
               "tags": [
                 "cli",
                 "branding"
               ],
               "completedAt": "2026-03-24T13:06:25.502Z"
             }
-          ],
-          "completedAt": "2026-03-24T13:06:25.502Z"
+          ]
         },
         {
           "id": "69eb6b07-7b69-49cb-8fd9-f1a67a4460ee",
           "title": "ndx as the single CLI interface",
-          "level": "feature",
           "status": "completed",
-          "priority": "high",
+          "level": "feature",
           "description": "Every user-facing command accessible through ndx. Users never need to know which package owns what.",
+          "priority": "high",
+          "completedAt": "2026-03-24T13:06:25.502Z",
           "children": [
             {
               "id": "70cd90a1-cb38-4536-ae0b-671af963878f",
               "title": "Audit and surface all package commands through ndx",
-              "level": "task",
               "status": "completed",
-              "priority": "high",
+              "level": "task",
               "acceptanceCriteria": [
                 "Every rex/sv/hench command has an ndx equivalent",
                 "ndx --help lists all commands without package names"
               ],
+              "priority": "high",
               "tags": [
                 "cli",
                 "ux"
@@ -20034,13 +20196,13 @@
             {
               "id": "926c6deb-91ed-4b60-8013-3e8c5e03c481",
               "title": "Helpful error when users run package commands that belong to ndx",
-              "level": "task",
               "status": "completed",
-              "priority": "medium",
+              "level": "task",
               "acceptanceCriteria": [
                 "rex/sv/hench CLIs suggest ndx equivalent for orchestrator-only commands",
                 "Typo correction still works"
               ],
+              "priority": "medium",
               "tags": [
                 "cli",
                 "ux"
@@ -20050,13 +20212,13 @@
             {
               "id": "6440a3d3-00b3-4599-ac3a-836fb27945e7",
               "title": "Rewrite ndx --help to be user-centric",
-              "level": "task",
               "status": "completed",
-              "priority": "medium",
+              "level": "task",
               "acceptanceCriteria": [
                 "Commands grouped by workflow stage",
                 "Package names not in primary help"
               ],
+              "priority": "medium",
               "tags": [
                 "cli",
                 "ux"
@@ -20066,28 +20228,28 @@
               ],
               "completedAt": "2026-03-24T13:06:25.502Z"
             }
-          ],
-          "completedAt": "2026-03-24T13:06:25.502Z"
+          ]
         },
         {
           "id": "24a05d75-a370-4ebd-a4b9-8e52395b622d",
           "title": "Documentation improvements",
-          "level": "feature",
           "status": "completed",
-          "priority": "medium",
+          "level": "feature",
           "description": "Docs match the product vision: ndx is the interface, no package internals needed.",
+          "priority": "medium",
+          "completedAt": "2026-03-24T13:06:25.502Z",
           "children": [
             {
               "id": "addc40f1-decb-4d0c-9f17-6cc455e1590e",
               "title": "Write a 5-minute quickstart tutorial",
-              "level": "task",
               "status": "completed",
-              "priority": "high",
+              "level": "task",
               "acceptanceCriteria": [
                 "Copy-paste tutorial from install to first status",
                 "Doesnt mention package names",
                 "Covers both providers"
               ],
+              "priority": "high",
               "tags": [
                 "docs"
               ],
@@ -20096,12 +20258,12 @@
             {
               "id": "c9f50a60-abe8-4f8e-91a4-2da8d9a4bf10",
               "title": "Add troubleshooting guide for common issues",
-              "level": "task",
               "status": "completed",
-              "priority": "medium",
+              "level": "task",
               "acceptanceCriteria": [
                 "At least 5 issues with problem/cause/fix format"
               ],
+              "priority": "medium",
               "tags": [
                 "docs"
               ],
@@ -20110,13 +20272,13 @@
             {
               "id": "22625730-8bd0-4b82-8e61-2144ee207ea8",
               "title": "Rewrite commands.md to be user-centric",
-              "level": "task",
               "status": "completed",
-              "priority": "medium",
+              "level": "task",
               "acceptanceCriteria": [
                 "Commands grouped by workflow",
                 "Direct Tool Access demoted to Advanced"
               ],
+              "priority": "medium",
               "tags": [
                 "docs"
               ],
@@ -20125,28 +20287,28 @@
               ],
               "completedAt": "2026-03-24T13:06:25.502Z"
             }
-          ],
-          "completedAt": "2026-03-24T13:06:25.502Z"
+          ]
         },
         {
           "id": "cb54ce3f-e213-4020-bfc5-1ed517a29060",
           "title": "Transparent task selection and completion reasoning",
-          "level": "feature",
           "status": "completed",
-          "priority": "medium",
+          "level": "feature",
           "description": "ndx work --auto should make reasoning transparent at both ends of the run.",
+          "priority": "medium",
+          "completedAt": "2026-03-24T13:06:25.502Z",
           "children": [
             {
               "id": "d0c0c683-75e6-4857-8ef2-0c1a0bb90680",
               "title": "Surface selection reasoning in auto-select run header",
-              "level": "task",
               "status": "completed",
-              "priority": "medium",
+              "level": "task",
               "acceptanceCriteria": [
                 "Shows why task was chosen",
                 "Shows skipped item counts",
                 "Shows unblock potential"
               ],
+              "priority": "medium",
               "tags": [
                 "hench",
                 "ux"
@@ -20156,13 +20318,13 @@
             {
               "id": "e762d16d-81be-4647-8608-cfbe9bda9475",
               "title": "Show prior attempt history in task card",
-              "level": "task",
               "status": "completed",
-              "priority": "medium",
+              "level": "task",
               "acceptanceCriteria": [
                 "Shows prior attempt count and last status",
                 "Nothing shown for fresh tasks"
               ],
+              "priority": "medium",
               "tags": [
                 "hench",
                 "ux"
@@ -20172,13 +20334,13 @@
             {
               "id": "e081ca17-aa6a-47e4-ad19-0ab77f8adb98",
               "title": "Classify changes in run summary (code/docs/config/metadata-only)",
-              "level": "task",
               "status": "completed",
-              "priority": "medium",
+              "level": "task",
               "acceptanceCriteria": [
                 "Files listed with type classification",
                 "Metadata-only completions called out"
               ],
+              "priority": "medium",
               "tags": [
                 "hench",
                 "ux"
@@ -20188,11 +20350,9 @@
               ],
               "completedAt": "2026-03-24T13:06:25.502Z"
             }
-          ],
-          "completedAt": "2026-03-24T13:06:25.502Z"
+          ]
         }
-      ],
-      "completedAt": "2026-03-24T13:06:25.502Z"
+      ]
     },
     {
       "id": "7b2bbeff-44de-4b1b-b164-54fb5ddcb5f3",
