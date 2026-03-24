@@ -12020,16 +12020,16 @@
             {
               "id": "d587adc9-56f3-4141-8ec8-4b0483758741",
               "title": "Add structure health gate to rex ci / ndx ci",
-              "level": "task",
               "status": "pending",
+              "level": "task",
               "description": "Add the structure health check as a CI gate in rex ci. When thresholds are exceeded, the CI check fails with a clear message listing which thresholds were crossed. This catches structural drift in automated pipelines.",
-              "priority": "medium",
               "acceptanceCriteria": [
                 "ndx ci fails when structure thresholds are exceeded",
                 "CI JSON output includes structure health results",
                 "Threshold violations listed with specific counts vs limits",
                 "Passes cleanly when structure is healthy"
               ],
+              "priority": "medium",
               "tags": [
                 "rex",
                 "ci"
@@ -19067,6 +19067,67 @@
           "tags": [
             "web",
             "ux"
+          ],
+          "children": [
+            {
+              "id": "8fd96b07-8037-4722-a80d-88269f148e90",
+              "title": "Build completion timeline data source from PRD items",
+              "status": "pending",
+              "level": "task",
+              "description": "Create a utility that walks the PRD tree, collects all items with a completedAt timestamp, and returns them sorted by completion date (most recent first). Include item title, level, parent chain breadcrumb, and completion timestamp. This feeds the timeline view.",
+              "acceptanceCriteria": [
+                "Returns completed items sorted by completedAt descending",
+                "Each entry includes title, level, parent chain, and timestamp",
+                "Handles items without completedAt gracefully (excluded)",
+                "Unit tested"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "rex"
+              ]
+            },
+            {
+              "id": "380ea760-5f73-4474-8057-81e62e5266a6",
+              "title": "Render completion timeline view in Rex dashboard",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a timeline view component showing recently completed items as a chronological list grouped by day. Each entry shows the item title, level badge, parent breadcrumb, and relative time. Accessible as a tab on the Tasks page or a section on the Rex dashboard.",
+              "acceptanceCriteria": [
+                "Timeline renders completed items grouped by day",
+                "Each entry shows title, level, parent chain, and time",
+                "Scrollable with virtual rendering for large histories",
+                "Accessible from Rex dashboard or Tasks page"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "ux"
+              ],
+              "blockedBy": [
+                "8fd96b07-8037-4722-a80d-88269f148e90"
+              ]
+            },
+            {
+              "id": "99456edd-c26e-4f03-a362-741c28b79aca",
+              "title": "Add date range filter to completion timeline",
+              "level": "task",
+              "status": "pending",
+              "description": "Add filter controls to the timeline: preset ranges (today, this week, this month, all time) and optional custom date picker. Default to showing the last 7 days.",
+              "priority": "low",
+              "acceptanceCriteria": [
+                "Preset range buttons (today, week, month, all)",
+                "Default view shows last 7 days",
+                "Item count shown for current range"
+              ],
+              "tags": [
+                "web",
+                "ux"
+              ],
+              "blockedBy": [
+                "380ea760-5f73-4474-8057-81e62e5266a6"
+              ]
+            }
           ]
         }
       ]
