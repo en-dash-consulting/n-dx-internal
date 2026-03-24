@@ -9190,7 +9190,7 @@
     {
       "id": "bf053fb2-509d-4acf-aa61-7243e66027e5",
       "title": "Rex",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "PRD management: hierarchical epics/features/tasks/subtasks, smart add from natural language, LLM-powered analysis and recommendations, validation, pruning, reshaping. Stores state in .rex/prd.json.",
       "children": [
@@ -11857,7 +11857,7 @@
         {
           "id": "f0294876-d42d-497e-a3c6-c5abf7a374ed",
           "title": "Proactive PRD structure health checks",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "The PRD grew to 70 top-level epics before anyone noticed the structure had degraded. The current `reorganize` command is reactive — it finds problems after they exist. Rex should proactively warn during writes (add, analyze, plan) when structural thresholds are crossed, so the PRD stays organized as it grows rather than requiring periodic manual cleanup.",
           "acceptanceCriteria": [
@@ -11874,11 +11874,13 @@
           "blockedBy": [
             "9fa85475-a6ff-474a-bf4f-e1f531df7916"
           ],
+          "startedAt": "2026-03-24T20:09:27.664Z",
+          "completedAt": "2026-03-24T20:09:27.664Z",
           "children": [
             {
               "id": "6ce9b707-d96d-4133-a871-bd663e6d966c",
               "title": "Define structure health thresholds and add to rex config schema",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add configurable thresholds to .rex/config.json: maxTopLevelEpics (default: 15), maxTreeDepth (default: 5), maxChildrenPerContainer (default: 20), minChildrenPerContainer (default: 2). Add schema validation for these fields. Expose them through ndx config.",
               "acceptanceCriteria": [
@@ -11889,12 +11891,14 @@
               "priority": "high",
               "tags": [
                 "rex"
-              ]
+              ],
+              "startedAt": "2026-03-24T19:53:16.787Z",
+              "completedAt": "2026-03-24T19:54:47.619Z"
             },
             {
               "id": "bf1fd080-e3f7-4af9-8ee3-1626df8da8d7",
               "title": "Implement structure health check function",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create a core/structure-health.ts function that evaluates the PRD tree against the configured thresholds. Returns a list of warnings (not errors) with severity and suggested action. Reuses metrics from the existing health command but adds threshold comparison.",
               "acceptanceCriteria": [
@@ -11909,12 +11913,14 @@
               ],
               "blockedBy": [
                 "6ce9b707-d96d-4133-a871-bd663e6d966c"
-              ]
+              ],
+              "startedAt": "2026-03-24T19:54:48.934Z",
+              "completedAt": "2026-03-24T19:58:49.982Z"
             },
             {
               "id": "3befc04b-ce05-4d4e-9dad-ead139784587",
               "title": "Wire health warnings into rex add, analyze, and plan write paths",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "After rex add/analyze/plan successfully write to the PRD, run the structure health check and print any warnings to stderr. Warnings should suggest running /ndx-reshape or rex reorganize. Non-blocking — the command still succeeds.",
               "acceptanceCriteria": [
@@ -11929,12 +11935,14 @@
               ],
               "blockedBy": [
                 "bf1fd080-e3f7-4af9-8ee3-1626df8da8d7"
-              ]
+              ],
+              "startedAt": "2026-03-24T19:58:51.037Z",
+              "completedAt": "2026-03-24T20:09:26.598Z"
             },
             {
               "id": "d587adc9-56f3-4141-8ec8-4b0483758741",
               "title": "Add structure health gate to rex ci / ndx ci",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add the structure health check as a CI gate in rex ci. When thresholds are exceeded, the CI check fails with a clear message listing which thresholds were crossed. This catches structural drift in automated pipelines.",
               "acceptanceCriteria": [
@@ -11950,7 +11958,9 @@
               ],
               "blockedBy": [
                 "bf1fd080-e3f7-4af9-8ee3-1626df8da8d7"
-              ]
+              ],
+              "startedAt": "2026-03-24T20:09:27.518Z",
+              "completedAt": "2026-03-24T20:09:27.518Z"
             }
           ]
         },
@@ -12013,7 +12023,9 @@
           "startedAt": "2026-03-24T05:12:16.787Z",
           "completedAt": "2026-03-24T05:20:58.936Z"
         }
-      ]
+      ],
+      "startedAt": "2026-03-24T20:09:27.774Z",
+      "completedAt": "2026-03-24T20:09:27.774Z"
     },
     {
       "id": "4fc05c48-48b0-4da3-8126-4fa237b924d9",
@@ -18892,15 +18904,15 @@
             {
               "id": "99456edd-c26e-4f03-a362-741c28b79aca",
               "title": "Add date range filter to completion timeline",
-              "level": "task",
               "status": "pending",
+              "level": "task",
               "description": "Add filter controls to the timeline: preset ranges (today, this week, this month, all time) and optional custom date picker. Default to showing the last 7 days.",
-              "priority": "low",
               "acceptanceCriteria": [
                 "Preset range buttons (today, week, month, all)",
                 "Default view shows last 7 days",
                 "Item count shown for current range"
               ],
+              "priority": "low",
               "tags": [
                 "web",
                 "ux"

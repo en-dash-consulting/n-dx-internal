@@ -326,8 +326,22 @@ export interface RexConfig {
   loe?: LoEConfig;
   /** Facet dimensions for item classification (e.g. component, concern). */
   facets?: Record<string, FacetDefinition>;
+  /** Structural health thresholds — warn when PRD shape degrades. */
+  structureHealth?: StructureHealthThresholds;
   future?: Record<string, unknown>;
   [key: string]: unknown;
+}
+
+/** Configurable thresholds for PRD structural health checks. */
+export interface StructureHealthThresholds {
+  /** Maximum number of top-level epics before warning (default: 15). */
+  maxTopLevelEpics?: number;
+  /** Maximum tree depth before warning (default: 5). */
+  maxTreeDepth?: number;
+  /** Maximum children per container before warning (default: 20). */
+  maxChildrenPerContainer?: number;
+  /** Minimum children per container before warning (default: 2). */
+  minChildrenPerContainer?: number;
 }
 
 export interface LogEntry {

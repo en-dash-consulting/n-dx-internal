@@ -52,6 +52,7 @@ export type {
   PRDItem,
   PRDDocument,
   RexConfig,
+  StructureHealthThresholds,
   FacetDefinition,
   BudgetThresholds,
   LoEConfig,
