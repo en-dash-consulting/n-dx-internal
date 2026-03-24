@@ -309,8 +309,9 @@ export function PRDView({ prdData, onSelectItem, onDetailContent, initialTaskId,
       }),
     ),
 
-    // PRD tree
+    // PRD tree (key forces remount when expand strategy changes)
     h(PRDTree, {
+      key: `prd-${hasActiveWork ? "active" : "done"}`,
       document: data,
       taskUsageById,
       weeklyBudget,
