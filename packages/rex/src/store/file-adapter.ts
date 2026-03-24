@@ -6,6 +6,7 @@ import { toCanonicalJSON } from "../core/canonical.js";
 import { findItem, insertChild, updateInTree, removeFromTree } from "../core/tree.js";
 import { loadProjectOverrides, mergeWithOverrides } from "./project-config.js";
 import { atomicWriteJSON } from "./atomic-write.js";
+import { withLock } from "./file-lock.js";
 import type { PRDStore, StoreCapabilities } from "./contracts.js";
 
 export class FileStore implements PRDStore {
@@ -17,6 +18,10 @@ export class FileStore implements PRDStore {
 
   private path(file: string): string {
     return join(this.rexDir, file);
+  }
+
+  private lockPath(): string {
+    return this.path("prd.json.lock");
   }
 
   async loadDocument(): Promise<PRDDocument> {
@@ -44,34 +49,40 @@ export class FileStore implements PRDStore {
   }
 
   async addItem(item: PRDItem, parentId?: string): Promise<void> {
-    const doc = await this.loadDocument();
-    if (parentId) {
-      const inserted = insertChild(doc.items, parentId, item);
-      if (!inserted) {
-        throw new Error(`Parent "${parentId}" not found`);
+    await withLock(this.lockPath(), async () => {
+      const doc = await this.loadDocument();
+      if (parentId) {
+        const inserted = insertChild(doc.items, parentId, item);
+        if (!inserted) {
+          throw new Error(`Parent "${parentId}" not found`);
+        }
+      } else {
+        doc.items.push(item);
       }
-    } else {
-      doc.items.push(item);
-    }
-    await this.saveDocument(doc);
+      await this.saveDocument(doc);
+    });
   }
 
   async updateItem(id: string, updates: Partial<PRDItem>): Promise<void> {
-    const doc = await this.loadDocument();
-    const updated = updateInTree(doc.items, id, updates);
-    if (!updated) {
-      throw new Error(`Item "${id}" not found`);
-    }
-    await this.saveDocument(doc);
+    await withLock(this.lockPath(), async () => {
+      const doc = await this.loadDocument();
+      const updated = updateInTree(doc.items, id, updates);
+      if (!updated) {
+        throw new Error(`Item "${id}" not found`);
+      }
+      await this.saveDocument(doc);
+    });
   }
 
   async removeItem(id: string): Promise<void> {
-    const doc = await this.loadDocument();
-    const removed = removeFromTree(doc.items, id);
-    if (!removed) {
-      throw new Error(`Item "${id}" not found`);
-    }
-    await this.saveDocument(doc);
+    await withLock(this.lockPath(), async () => {
+      const doc = await this.loadDocument();
+      const removed = removeFromTree(doc.items, id);
+      if (!removed) {
+        throw new Error(`Item "${id}" not found`);
+      }
+      await this.saveDocument(doc);
+    });
   }
 
   async loadConfig(): Promise<RexConfig> {
