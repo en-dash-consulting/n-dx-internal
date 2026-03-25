@@ -19117,7 +19117,7 @@
     {
       "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",
       "title": "CLI & Developer Tools",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Command-line interface: error handling, validation, formatting, help navigation, command aliases, configuration management, and CI pipeline.",
       "children": [
@@ -20395,7 +20395,7 @@
         {
           "id": "c7963f49-483b-4fa5-b540-e378d7b6e70c",
           "title": "Self-Heal Loop Quality",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "The self-heal loop (analyze → recommend → execute) can degrade project metrics instead of improving them. Each cycle may reduce average cohesion, generate new findings about problems introduced by the previous cycle, and continue indefinitely without detecting regression. This feature adds safeguards to ensure the loop converges toward improvement.",
           "priority": "high",
@@ -20404,11 +20404,13 @@
             "user-feedback"
           ],
           "source": "User feedback: react-big-schedule project, 2026-03-24",
+          "startedAt": "2026-03-25T05:23:45.700Z",
+          "completedAt": "2026-03-25T05:23:45.700Z",
           "children": [
             {
               "id": "ed594365-c094-41ad-a9dd-a16829e0adb7",
               "title": "Metric regression guard for self-heal loop",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Before committing changes in each self-heal cycle, compare new cohesion/coupling metrics to the baseline captured at cycle start. If average cohesion dropped or total findings count increased, abort the cycle and report the regression. The current loop only checks finding count — it needs to also track weighted cohesion, coupling, and zone count as regression signals.",
               "acceptanceCriteria": [
@@ -20422,7 +20424,11 @@
                 "self-heal",
                 "regression"
               ],
-              "source": "User feedback: react-big-schedule project, 2026-03-24"
+              "source": "User feedback: react-big-schedule project, 2026-03-24",
+              "startedAt": "2026-03-25T05:22:32.269Z",
+              "completedAt": "2026-03-25T05:23:45.478Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added readZoneMetrics() helper and regression guard to self-heal loop. Captures weighted cohesion baseline, compares after each analysis cycle, aborts on cohesion decrease or zone proliferation without quality improvement."
             },
             {
               "id": "13ae33a3-19c4-4d47-85fd-9bde56ff8370",
@@ -20452,7 +20458,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-03-25T05:23:45.822Z",
+      "completedAt": "2026-03-25T05:23:45.822Z"
     },
     {
       "id": "7b2bbeff-44de-4b1b-b164-54fb5ddcb5f3",

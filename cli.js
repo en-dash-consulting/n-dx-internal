@@ -882,6 +882,37 @@ function runCapture(script, args) {
   });
 }
 
+/**
+ * Read zone metrics from .sourcevision/zones.json for regression detection.
+ * Returns { weightedCohesion, avgCoupling, zoneCount } or null if unavailable.
+ */
+function readZoneMetrics(dir) {
+  try {
+    const zonesPath = resolve(dir, ".sourcevision", "zones.json");
+    const data = JSON.parse(readFileSync(zonesPath, "utf-8"));
+    const zones = data.zones ?? [];
+    if (zones.length === 0) return null;
+
+    let totalFiles = 0;
+    let weightedCohesion = 0;
+    let weightedCoupling = 0;
+    for (const z of zones) {
+      const fileCount = z.files?.length ?? 0;
+      totalFiles += fileCount;
+      weightedCohesion += (z.cohesion ?? 0) * fileCount;
+      weightedCoupling += (z.coupling ?? 0) * fileCount;
+    }
+
+    return {
+      weightedCohesion: totalFiles > 0 ? Math.round((weightedCohesion / totalFiles) * 1000) / 1000 : 0,
+      avgCoupling: totalFiles > 0 ? Math.round((weightedCoupling / totalFiles) * 1000) / 1000 : 0,
+      zoneCount: zones.length,
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function handleSelfHeal(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex", ".hench", ".sourcevision"]);
@@ -907,12 +938,41 @@ async function handleSelfHeal(rest) {
   console.log(`[self-heal] starting ${iterCount} iteration${iterCount === 1 ? "" : "s"}${includeStructural ? "" : " (excluding structural findings)"}`);
 
   let prevFindingCount = Infinity;
+  let baselineMetrics = readZoneMetrics(dir);
 
   for (let i = 1; i <= iterCount; i++) {
     console.log(`\n[self-heal] ── iteration ${i}/${iterCount} ──\n`);
 
     console.log("[self-heal] step 1/5: sourcevision analyze --deep --full");
     await runOrDie(tools.sourcevision, ["analyze", "--deep", "--full", dir]);
+
+    // Metric regression guard: compare post-analysis metrics to baseline
+    const currentMetrics = readZoneMetrics(dir);
+    if (baselineMetrics && currentMetrics && i > 1) {
+      const cohesionDelta = currentMetrics.weightedCohesion - baselineMetrics.weightedCohesion;
+      const zoneCountDelta = currentMetrics.zoneCount - baselineMetrics.zoneCount;
+
+      if (cohesionDelta < -0.01) {
+        console.log(`\n[self-heal] REGRESSION DETECTED after iteration ${i}:`);
+        console.log(`  weighted cohesion: ${baselineMetrics.weightedCohesion} → ${currentMetrics.weightedCohesion} (${cohesionDelta > 0 ? "+" : ""}${cohesionDelta.toFixed(3)})`);
+        console.log(`  avg coupling:      ${baselineMetrics.avgCoupling} → ${currentMetrics.avgCoupling}`);
+        console.log(`  zone count:        ${baselineMetrics.zoneCount} → ${currentMetrics.zoneCount}`);
+        console.log(`  Aborting self-heal — metrics degraded instead of improving.`);
+        break;
+      }
+
+      if (zoneCountDelta > 0 && cohesionDelta <= 0) {
+        console.log(`\n[self-heal] REGRESSION DETECTED after iteration ${i}:`);
+        console.log(`  zone count increased: ${baselineMetrics.zoneCount} → ${currentMetrics.zoneCount} (+${zoneCountDelta})`);
+        console.log(`  weighted cohesion did not improve: ${baselineMetrics.weightedCohesion} → ${currentMetrics.weightedCohesion}`);
+        console.log(`  Aborting self-heal — zone proliferation without quality improvement.`);
+        break;
+      }
+
+      console.log(`[self-heal] metrics: cohesion ${baselineMetrics.weightedCohesion} → ${currentMetrics.weightedCohesion}, zones ${baselineMetrics.zoneCount} → ${currentMetrics.zoneCount}`);
+    }
+    // Update baseline for next iteration
+    if (currentMetrics) baselineMetrics = currentMetrics;
 
     console.log("\n[self-heal] step 2/5: rex recommend --actionable-only");
     await runOrDie(tools.rex, ["recommend", "--actionable-only", ...structuralFlag, dir]);
