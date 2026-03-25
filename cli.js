@@ -900,7 +900,11 @@ async function handleSelfHeal(rest) {
     return !isNaN(n) && n > 0 ? n : found;
   }, 1);
 
-  console.log(`[self-heal] starting ${iterCount} iteration${iterCount === 1 ? "" : "s"}`);
+  // --include-structural opts in to structural findings; excluded by default
+  const includeStructural = rest.includes("--include-structural");
+  const structuralFlag = includeStructural ? [] : ["--exclude-structural"];
+
+  console.log(`[self-heal] starting ${iterCount} iteration${iterCount === 1 ? "" : "s"}${includeStructural ? "" : " (excluding structural findings)"}`);
 
   let prevFindingCount = Infinity;
 
@@ -911,10 +915,10 @@ async function handleSelfHeal(rest) {
     await runOrDie(tools.sourcevision, ["analyze", "--deep", "--full", dir]);
 
     console.log("\n[self-heal] step 2/5: rex recommend --actionable-only");
-    await runOrDie(tools.rex, ["recommend", "--actionable-only", dir]);
+    await runOrDie(tools.rex, ["recommend", "--actionable-only", ...structuralFlag, dir]);
 
     console.log("\n[self-heal] step 3/5: rex recommend --actionable-only --accept");
-    await runOrDie(tools.rex, ["recommend", "--actionable-only", "--accept", dir]);
+    await runOrDie(tools.rex, ["recommend", "--actionable-only", "--accept", ...structuralFlag, dir]);
 
     console.log("\n[self-heal] step 4/5: hench run --auto --loop --self-heal");
     await runOrDie(tools.hench, ["run", "--auto", "--loop", "--self-heal", dir]);
@@ -922,8 +926,8 @@ async function handleSelfHeal(rest) {
     console.log("\n[self-heal] step 5/5: acknowledge completed findings");
     await runOrDie(tools.rex, ["recommend", "--acknowledge-completed", dir]);
 
-    // Check progress: count remaining findings
-    const { code, stdout } = await runCapture(tools.rex, ["recommend", "--actionable-only", "--format=json", dir]);
+    // Check progress: count remaining findings (same filter as accept step)
+    const { code, stdout } = await runCapture(tools.rex, ["recommend", "--actionable-only", ...structuralFlag, "--format=json", dir]);
     if (code === 0 && stdout.trim()) {
       try {
         const remaining = JSON.parse(stdout.trim());

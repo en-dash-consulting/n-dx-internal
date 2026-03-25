@@ -9270,6 +9270,8 @@
             "user-feedback"
           ],
           "source": "User feedback: react-big-schedule project, 2026-03-24",
+          "startedAt": "2026-03-25T05:18:00.349Z",
+          "completedAt": "2026-03-25T05:18:00.349Z",
           "children": [
             {
               "id": "3dd54ff2-dddc-4a3d-b76a-8cbd93fe6f80",
@@ -9318,9 +9320,7 @@
               "resolutionType": "code-change",
               "resolutionDetail": "Added isStaleFinding() validator in scanners.ts that checks finding.related and finding.from against inventory file set. Stale count returned from scanSourceVision and reported in rex analyze summary."
             }
-          ],
-          "startedAt": "2026-03-25T05:18:00.349Z",
-          "completedAt": "2026-03-25T05:18:00.349Z"
+          ]
         },
         {
           "id": "a678b0fc-a779-4b63-a58c-22908e5c8548",
@@ -20427,7 +20427,7 @@
             {
               "id": "13ae33a3-19c4-4d47-85fd-9bde56ff8370",
               "title": "Deprioritize structural findings in autonomous self-heal",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "When the self-heal loop runs autonomously, it should skip or defer structural findings (zone boundary opinions, directory sprawl warnings) and focus on code-level findings (duplication, anti-patterns, actual bugs). Depends on the finding category taxonomy from the Finding Reliability feature. Without this, the loop wastes cycles reshuffling zone boundaries instead of fixing real code issues.",
               "acceptanceCriteria": [
@@ -20444,7 +20444,11 @@
               "source": "User feedback: react-big-schedule project, 2026-03-24",
               "blockedBy": [
                 "3dd54ff2-dddc-4a3d-b76a-8cbd93fe6f80"
-              ]
+              ],
+              "startedAt": "2026-03-25T05:18:27.425Z",
+              "completedAt": "2026-03-25T05:22:09.410Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added --exclude-structural flag to rex recommend that filters findings with category=structural. Self-heal loop passes it by default; --include-structural opts in. Structural skip count reported in recommend output."
             }
           ]
         }
