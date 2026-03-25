@@ -9274,7 +9274,7 @@
             {
               "id": "3dd54ff2-dddc-4a3d-b76a-8cbd93fe6f80",
               "title": "Finding category taxonomy (structural vs code)",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add a category field to findings that distinguishes structural findings (zone boundary opinions, directory sprawl, zone-level coupling) from code findings (duplication, anti-patterns, actual bugs, unused exports). Update the enrichment prompts to emit category, and add a classification heuristic as fallback for findings without an explicit category. This enables downstream consumers (self-heal, dashboard, recommendations) to filter and prioritize appropriately.",
               "acceptanceCriteria": [
@@ -9289,7 +9289,11 @@
                 "findings",
                 "taxonomy"
               ],
-              "source": "User feedback: react-big-schedule project, 2026-03-24"
+              "source": "User feedback: react-big-schedule project, 2026-03-24",
+              "startedAt": "2026-03-25T05:05:28.657Z",
+              "completedAt": "2026-03-25T05:11:39.849Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added FindingCategory type to schema, classifyFinding heuristic in enrich-parsing.ts, LLM prompt updates for category field, and rex scanner integration. 25 new tests."
             },
             {
               "id": "a0a13954-4e7a-473d-98a1-4eeb250e8677",
@@ -9329,16 +9333,16 @@
             {
               "id": "f6078a29-12a0-4382-aef2-0735c9590041",
               "title": "Surface zone pins in CLI, dashboard, and self-heal output",
-              "level": "task",
               "status": "pending",
+              "level": "task",
               "description": "Zone pins (sourcevision.zones.pins in .n-dx.json) exist but users don't discover them. Surface this capability in: (1) ndx analyze output — when zones seem misassigned, suggest pinning, (2) ndx config --help — document the pins config path, (3) dashboard zone view — show which files are pinned and allow pin management, (4) self-heal output — when structural findings relate to zone boundaries, mention pins as an alternative to code changes.",
-              "priority": "medium",
               "acceptanceCriteria": [
                 "ndx analyze output suggests zone pins when misassignment patterns detected",
                 "ndx config --help documents sourcevision.zones.pins",
                 "Dashboard zone detail view shows pinned files",
                 "Self-heal structural finding output mentions zone pins as alternative"
               ],
+              "priority": "medium",
               "tags": [
                 "zone-pins",
                 "UX"
@@ -20431,7 +20435,10 @@
                 "self-heal",
                 "findings"
               ],
-              "source": "User feedback: react-big-schedule project, 2026-03-24"
+              "source": "User feedback: react-big-schedule project, 2026-03-24",
+              "blockedBy": [
+                "3dd54ff2-dddc-4a3d-b76a-8cbd93fe6f80"
+              ]
             }
           ]
         }

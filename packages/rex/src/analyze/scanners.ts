@@ -417,6 +417,7 @@ interface SVFinding {
   text: string;
   severity?: "info" | "warning" | "critical";
   related?: string[];
+  category?: "structural" | "code" | "documentation";
   // move-file specific fields
   from?: string;
   to?: string;
@@ -704,9 +705,10 @@ export async function scanSourceVision(
             }
           }
 
-          // Build tags: zone name + finding hash for feedback loop
+          // Build tags: zone name + finding hash + category for feedback loop
           const tags: string[] = zone ? [zone.name] : finding.scope !== "global" ? [finding.scope] : [];
           tags.push(`finding:${hash}`);
+          if (finding.category) tags.push(`finding-category:${finding.category}`);
           if (finding.type === "move-file") tags.push("structural-debt");
 
           results.push({

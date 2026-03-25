@@ -143,6 +143,9 @@ export interface Imports {
 
 export type FindingType = "observation" | "pattern" | "relationship" | "anti-pattern" | "suggestion" | "move-file";
 
+/** Category distinguishes what kind of issue a finding describes. */
+export type FindingCategory = "structural" | "code" | "documentation";
+
 export interface Finding {
   type: FindingType;
   /** Which pass produced this finding */
@@ -153,6 +156,8 @@ export interface Finding {
   severity?: "info" | "warning" | "critical";
   /** Related zone IDs or file paths */
   related?: string[];
+  /** Category: structural (zone boundary opinions), code (real bugs/duplication), documentation (naming/conventions) */
+  category?: FindingCategory;
 }
 
 /** Reason a file-move is recommended. */
