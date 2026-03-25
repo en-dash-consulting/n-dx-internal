@@ -9187,7 +9187,7 @@
         {
           "id": "4eb57dc8-3b8b-4fbd-ba8e-77514c95c915",
           "title": "Zone Metric Accuracy",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Zone cohesion/coupling metrics are skewed by small zones (<5 files) that score 0.00 cohesion due to having no internal import edges. Since project-wide averages include all zones equally, each new tiny zone drags the average down — making it look like the project is degrading when it isn't. Metrics should be weighted by zone size and sub-threshold zones should be excluded or reported separately.",
           "priority": "high",
@@ -9247,7 +9247,7 @@
             {
               "id": "f955d746-8b7d-42ae-b5f4-0c2462334591",
               "title": "Smarter small-zone merge after remediation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "After self-heal creates or moves files, re-run zone detection may produce new tiny zones (build-configuration, test-infrastructure-mocks, etc.) with 0.00 cohesion. The existing mergeSmallCommunities() should be more aggressive about absorbing these into neighboring zones based on import affinity rather than letting them stand alone. Consider making the merge threshold configurable.",
               "acceptanceCriteria": [
@@ -9261,9 +9261,15 @@
                 "zones",
                 "merge"
               ],
-              "source": "User feedback: react-big-schedule project, 2026-03-24"
+              "source": "User feedback: react-big-schedule project, 2026-03-24",
+              "startedAt": "2026-03-25T05:31:31.872Z",
+              "completedAt": "2026-03-25T05:35:47.533Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "mergeSmallCommunities already used import affinity. Added: configurable threshold via smallZoneMergeThreshold option (wired from analyzeZones → runZonePipeline → mergeSmallCommunities), MergeLogEntry interface for merge decision logging, console output of merge decisions during zone detection."
             }
-          ]
+          ],
+          "startedAt": "2026-03-25T05:35:47.719Z",
+          "completedAt": "2026-03-25T05:35:47.719Z"
         },
         {
           "id": "3cfc11dd-63df-4cba-a872-27cfb97cc771",

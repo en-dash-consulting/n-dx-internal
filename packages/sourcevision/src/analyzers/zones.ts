@@ -53,6 +53,7 @@ import {
   capZoneCount,
   splitLargeCommunities,
 } from "./louvain.js";
+import type { MergeLogEntry } from "./louvain.js";
 import { enrichZonesWithAI, enrichZonesPerZone } from "./enrich.js";
 import type { EnrichResult, PerZoneEnrichResult } from "./enrich.js";
 import { deduplicateFindings, enforceSeverityRules } from "./enrich-parsing.js";
@@ -98,6 +99,12 @@ export interface ZonePipelineOptions {
    * Stored in `.n-dx.json` under `sourcevision.zones.pins`.
    */
   zonePins?: Record<string, string>;
+  /**
+   * Minimum zone size for the small-zone merge pass. Zones with fewer files
+   * than this threshold are merged into their closest neighbor by import affinity.
+   * Default: 3. Configurable via `sourcevision.zones.mergeThreshold` in `.n-dx.json`.
+   */
+  smallZoneMergeThreshold?: number;
 }
 
 /** Result of running the zone detection pipeline. */
@@ -107,6 +114,8 @@ export interface ZonePipelineResult {
   unzoned: string[];
   /** Zone IDs that were derived from filename patterns rather than directory structure. */
   filenameBasedZoneIds: Set<string>;
+  /** Log of small-zone merge decisions for debuggability. */
+  smallZoneMergeLog: MergeLogEntry[];
 }
 
 // ── Zone ID / name derivation ───────────────────────────────────────────────
@@ -1713,6 +1722,7 @@ export function runZonePipeline(options: ZonePipelineOptions): ZonePipelineResul
     depth = 0,
     testFiles = new Set<string>(),
     zonePins,
+    smallZoneMergeThreshold = 3,
   } = options;
 
   // ── Build undirected graph ──
@@ -1761,9 +1771,10 @@ export function runZonePipeline(options: ZonePipelineOptions): ZonePipelineResul
   const scaledMaxZones = Math.min(maxZones, Math.max(scaledByCount, minForSizePolicy));
 
   // ── Louvain community detection ──
+  const smallZoneMergeLog: MergeLogEntry[] = [];
   let community = louvainPhase1(graph);
   community = mergeBidirectionalCoupling(community, graph);
-  community = mergeSmallCommunities(community, graph);
+  community = mergeSmallCommunities(community, graph, smallZoneMergeThreshold, smallZoneMergeLog);
   community = mergeSatelliteCommunities(community, graph);
   community = capZoneCount(community, graph, scaledMaxZones);
 
@@ -1797,7 +1808,7 @@ export function runZonePipeline(options: ZonePipelineOptions): ZonePipelineResul
   // ── Build crossings ──
   const crossings = buildCrossings(pinnedZones, imports, []);
 
-  return { zones: pinnedZones, crossings, unzoned, filenameBasedZoneIds };
+  return { zones: pinnedZones, crossings, unzoned, filenameBasedZoneIds, smallZoneMergeLog };
 }
 
 // ── Non-importable file extensions ────────────────────────────────────────────
@@ -1988,6 +1999,11 @@ export async function analyzeZones(
      * Passed through to the zone pipeline to override Louvain placement.
      */
     zonePins?: Record<string, string>;
+    /**
+     * Minimum zone size for small-zone merge. Zones below this are auto-merged.
+     * Default: 3. Configurable via `sourcevision.zones.mergeThreshold` in `.n-dx.json`.
+     */
+    smallZoneMergeThreshold?: number;
   }
 ): Promise<AnalyzeZonesResult> {
   const enrich = options?.enrich ?? true;
@@ -2008,8 +2024,16 @@ export async function analyzeZones(
     maxZonePercent: options?.maxZonePercent,
     testFiles,
     zonePins: options?.zonePins,
+    smallZoneMergeThreshold: options?.smallZoneMergeThreshold,
   });
-  const { zones: expandedZones, unzoned, filenameBasedZoneIds } = pipeline;
+  const { zones: expandedZones, unzoned, filenameBasedZoneIds, smallZoneMergeLog: mergeLog } = pipeline;
+
+  // Log small-zone merge decisions for debuggability
+  if (mergeLog.length > 0) {
+    for (const entry of mergeLog) {
+      console.log(`  [zones] merged small zone "${entry.smallCommunity}" (${entry.memberCount} files) → "${entry.mergedInto}" (import weight: ${entry.importWeight})`);
+    }
+  }
 
   // ── Structure hash & change detection ──
   const structureHash = computeStructureHash(expandedZones);

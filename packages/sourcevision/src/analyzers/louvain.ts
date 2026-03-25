@@ -209,10 +209,19 @@ export function louvainPhase1(
  * Communities with fewer than `minSize` files get absorbed into
  * their most-connected neighbor community.
  */
+/** Log entries from mergeSmallCommunities for debuggability */
+export interface MergeLogEntry {
+  smallCommunity: string;
+  memberCount: number;
+  mergedInto: string;
+  importWeight: number;
+}
+
 export function mergeSmallCommunities(
   community: Map<string, string>,
   graph: UndirectedGraph,
-  minSize = 3
+  minSize = 3,
+  mergeLog?: MergeLogEntry[],
 ): Map<string, string> {
   const result = new Map(community);
 
@@ -270,6 +279,14 @@ export function mergeSmallCommunities(
       }
 
       // Merge: reassign all members to the best neighbor community
+      if (mergeLog) {
+        mergeLog.push({
+          smallCommunity: smallComm,
+          memberCount: currentMembers.length,
+          mergedInto: bestNeighbor,
+          importWeight: bestWeight,
+        });
+      }
       for (const node of currentMembers) {
         result.set(node, bestNeighbor);
       }
