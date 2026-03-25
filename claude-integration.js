@@ -226,6 +226,15 @@ Use this when the PRD has grown organically and needs cleanup: too many top-leve
 - **Natural groupings**: organize by product area (e.g., SourceVision, Rex, Hench, Web, CLI, Infrastructure) rather than by work type (bugfixes, features, refactors)
 - **Living spec**: the PRD should read as a product spec, not a task backlog. Epic titles should describe product capabilities, not work items
 - **Level cascade**: when demoting an epic to a feature, its children may need to move down too (features->tasks, tasks->subtasks)
+
+## MCP Tools Used
+
+- \`get_prd_status\` — read current structure
+- \`add_item\` — create new parent containers
+- \`move_item\` — reparent items under new parents
+- \`edit_item\` — change level, rename, update descriptions
+- \`merge_items\` — consolidate overlapping items
+- \`reorganize\` — verify structural health after changes
 `,
 };
 
