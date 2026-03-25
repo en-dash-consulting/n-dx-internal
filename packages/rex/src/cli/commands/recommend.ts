@@ -716,6 +716,14 @@ export async function cmdRecommend(
     info(`(${structuralSkipped} structural finding${structuralSkipped === 1 ? "" : "s"} excluded by --exclude-structural)`);
   }
 
+  // Hint about zone pins when structural findings are present
+  const hasStructural = filteredFindings.some((f) => f.category === "structural");
+  if (hasStructural) {
+    info("");
+    info("Tip: Structural findings reflect zone boundary opinions. If assignments look wrong,");
+    info("  override them with zone pins: ndx config sourcevision.zones.pins '{\"file.ts\": \"zone-id\"}'");
+  }
+
   if (flags.accept) {
     await acceptRecommendations(rexDir, flags.accept, recommendations, flags);
   } else {

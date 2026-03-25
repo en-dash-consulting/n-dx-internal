@@ -5,7 +5,7 @@
     {
       "id": "ebe4c082-7e93-44ee-a286-cf01c05dd907",
       "title": "SourceVision",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Static analysis engine: file inventory, import graph, zone detection (Louvain community detection), React component catalog, PR markdown generation. Produces .sourcevision/CONTEXT.md and llms.txt for AI consumption.",
       "children": [
@@ -9197,6 +9197,8 @@
             "user-feedback"
           ],
           "source": "User feedback: react-big-schedule project, 2026-03-24",
+          "startedAt": "2026-03-25T05:35:47.719Z",
+          "completedAt": "2026-03-25T05:35:47.719Z",
           "children": [
             {
               "id": "eb1c87e3-c884-41c2-84a3-4059de4cf40c",
@@ -9267,9 +9269,7 @@
               "resolutionType": "code-change",
               "resolutionDetail": "mergeSmallCommunities already used import affinity. Added: configurable threshold via smallZoneMergeThreshold option (wired from analyzeZones → runZonePipeline → mergeSmallCommunities), MergeLogEntry interface for merge decision logging, console output of merge decisions during zone detection."
             }
-          ],
-          "startedAt": "2026-03-25T05:35:47.719Z",
-          "completedAt": "2026-03-25T05:35:47.719Z"
+          ]
         },
         {
           "id": "3cfc11dd-63df-4cba-a872-27cfb97cc771",
@@ -9339,7 +9339,7 @@
         {
           "id": "a678b0fc-a779-4b63-a58c-22908e5c8548",
           "title": "Zone Pin Discoverability",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Zone pins (sourcevision.zones.pins in .n-dx.json) already allow users to override algorithmic zone assignments, but users don't know this capability exists. The feedback user specifically requested this feature, not realizing it was already implemented. Need to surface zone pins in CLI help, dashboard UI, self-heal output, and documentation.",
           "priority": "medium",
@@ -9349,11 +9349,13 @@
             "user-feedback"
           ],
           "source": "User feedback: react-big-schedule project, 2026-03-24",
+          "startedAt": "2026-03-25T05:39:49.607Z",
+          "completedAt": "2026-03-25T05:39:49.607Z",
           "children": [
             {
               "id": "f6078a29-12a0-4382-aef2-0735c9590041",
               "title": "Surface zone pins in CLI, dashboard, and self-heal output",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Zone pins (sourcevision.zones.pins in .n-dx.json) exist but users don't discover them. Surface this capability in: (1) ndx analyze output — when zones seem misassigned, suggest pinning, (2) ndx config --help — document the pins config path, (3) dashboard zone view — show which files are pinned and allow pin management, (4) self-heal output — when structural findings relate to zone boundaries, mention pins as an alternative to code changes.",
               "acceptanceCriteria": [
@@ -9367,11 +9369,31 @@
                 "zone-pins",
                 "UX"
               ],
-              "source": "User feedback: react-big-schedule project, 2026-03-24"
+              "source": "User feedback: react-big-schedule project, 2026-03-24",
+              "startedAt": "2026-03-25T05:36:14.964Z",
+              "completedAt": "2026-03-25T05:39:49.383Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Zone pin hints added to: (1) ndx analyze output when move-file or structural findings detected, (2) ndx config --help with sourcevision.zones.pins and mergeThreshold documentation, (3) rex recommend output when structural findings present. sourcevision added to PROJECT_SECTIONS for .n-dx.json routing. Dashboard subtask created for remaining AC3.",
+              "children": [
+                {
+                  "id": "aabb1b50-5e7c-4c00-b1f1-9247a05da847",
+                  "title": "Show pinned files in dashboard zone detail view",
+                  "status": "pending",
+                  "level": "subtask",
+                  "description": "Load .n-dx.json zone pins in the web server and pass them to the viewer. In the zone slideout component, annotate pinned files with a pin indicator. Requires changes to web-server (load config), web-viewer zone-slideout.ts (display pins).",
+                  "priority": "low",
+                  "tags": [
+                    "dashboard",
+                    "zone-pins"
+                  ]
+                }
+              ]
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-03-25T05:39:49.717Z",
+      "completedAt": "2026-03-25T05:39:49.717Z"
     },
     {
       "id": "bf053fb2-509d-4acf-aa61-7243e66027e5",
