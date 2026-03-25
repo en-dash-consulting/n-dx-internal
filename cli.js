@@ -91,16 +91,16 @@ const _require = createRequire(import.meta.url);
  *    Uses require.resolve to find the installed package's CLI entry.
  */
 function resolveToolPath(pkgDir) {
-  // 1. Monorepo path — works when running from source checkout
+  // 1. Monorepo path — works when running from source checkout or npm link
   const pkgPath = join(__dir, pkgDir, "package.json");
   try {
     const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
     if (typeof pkg.bin === "string") {
-      return join(pkgDir, pkg.bin);
+      return join(__dir, pkgDir, pkg.bin);
     }
     if (pkg.bin && typeof pkg.bin === "object") {
       const first = Object.values(pkg.bin)[0];
-      if (first) return join(pkgDir, first);
+      if (first) return join(__dir, pkgDir, first);
     }
   } catch {
     // Not in monorepo — fall through to node_modules resolution
@@ -116,7 +116,7 @@ function resolveToolPath(pkgDir) {
     }
   }
 
-  return join(pkgDir, "dist/cli/index.js");
+  return join(__dir, pkgDir, "dist/cli/index.js");
 }
 
 /**
