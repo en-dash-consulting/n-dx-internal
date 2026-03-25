@@ -35,7 +35,19 @@ All commands are run through `ndx` (or `n-dx`). The directory argument `[dir]` d
 | Command | Description |
 |---------|-------------|
 | `ndx status [dir]` | Show PRD status tree |
+| `ndx next [dir]` | Print next actionable task |
+| `ndx update <id> [dir]` | Update item status, priority, or title |
+| `ndx remove <id> [dir]` | Remove an item and its children |
+| `ndx move <id> [dir]` | Reparent an item under a new parent |
 | `ndx validate [dir]` | Check PRD integrity |
+| `ndx fix [dir]` | Auto-fix common PRD issues |
+| `ndx health [dir]` | Show PRD structure health score |
+| `ndx verify [dir]` | Run acceptance criteria tests |
+| `ndx reshape [dir]` | LLM-powered PRD restructuring |
+| `ndx reorganize [dir]` | Detect and fix structural issues |
+| `ndx prune [dir]` | Remove completed subtrees |
+| `ndx reset [dir]` | Remove analysis data and start fresh |
+| `ndx show <run-id> [dir]` | Show details of an agent run |
 | `ndx usage [dir]` | Token usage analytics |
 | `ndx sync [dir]` | Sync PRD with remote adapter |
 | `ndx ci [dir]` | Run analysis pipeline and validate PRD health |

@@ -8,6 +8,20 @@ import { CLIError, handleCLIError, requireRexDir } from "./errors.js";
 import { setQuiet } from "./output.js";
 import { formatTypoSuggestion } from "@n-dx/llm-client";
 import { isItemLevel } from "../schema/index.js";
+import { join } from "node:path";
+
+/** Post-write health warning — lazy-loaded to avoid startup cost. */
+async function postWriteHealthWarning(dir: string, isJson: boolean): Promise<void> {
+  try {
+    const { warnOnStructureDegradation } = await import("./commands/health-warning.js");
+    const { resolveStore } = await import("../store/index.js");
+    const REX_DIR = ".rex";
+    const store = await resolveStore(join(dir, REX_DIR));
+    await warnOnStructureDegradation(store, isJson);
+  } catch {
+    // Non-fatal
+  }
+}
 
 /**
  * Read all data from stdin when input is piped (not a TTY).
@@ -321,6 +335,7 @@ async function dispatchCommand(
     }
     case "add": {
       await dispatchAdd(positional, flags, multiFlags);
+      await postWriteHealthWarning(resolveDir(positional), flags.format === "json");
       break;
     }
     case "update": {
@@ -404,6 +419,7 @@ async function dispatchCommand(
     case "analyze": {
       const { cmdAnalyze } = await import("./commands/analyze.js");
       await cmdAnalyze(resolveDir(positional), flags, multiFlags);
+      await postWriteHealthWarning(resolveDir(positional), flags.format === "json");
       break;
     }
     case "adapter": {

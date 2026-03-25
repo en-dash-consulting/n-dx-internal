@@ -420,6 +420,42 @@ export async function runCI(dir, flags, { run, tools }) {
     }
   }
 
+  // ── Step 4b: structure health ─────────────────────────────────────────
+  info("── structure health ──");
+  const rexHealth = await runCapture(tools.rex, ["health", "--format=json", dir]);
+  let healthOk = rexHealth.code === 0;
+  let healthData = null;
+  try {
+    healthData = JSON.parse(rexHealth.stdout);
+    // Fail if overall health score is critically low
+    if (healthData && healthData.overall < 50) {
+      healthOk = false;
+    }
+  } catch {
+    // Could not parse
+  }
+
+  if (!healthOk) allOk = false;
+
+  steps.push({
+    name: "structure-health",
+    ok: healthOk,
+    detail: healthData
+      ? `score: ${healthData.overall}/100${healthData.suggestions?.length ? ` (${healthData.suggestions.length} suggestions)` : ""}`
+      : trimOutput(rexHealth.stdout || rexHealth.stderr),
+  });
+
+  if (healthOk) {
+    info(`  ✓ structure health (score: ${healthData?.overall ?? "?"})`);
+  } else {
+    info(`  ✗ structure health (score: ${healthData?.overall ?? "?"} — below threshold)`);
+    if (!isJSON && healthData?.suggestions) {
+      for (const s of healthData.suggestions) {
+        info(`    ⚠ ${s}`);
+      }
+    }
+  }
+
   // ── Step 5: rex status ──────────────────────────────────────────────────
   info("── rex status ──");
   const rexStatus = await runCapture(tools.rex, ["status", "--format=json", dir]);

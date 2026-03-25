@@ -115,6 +115,12 @@ export const RexConfigSchema = z
     model: z.string().optional(),
     budget: BudgetThresholdsSchema.optional(),
     loe: LoEConfigSchema.optional(),
+    structureHealth: z.object({
+      maxTopLevelEpics: z.number().int().positive().optional(),
+      maxTreeDepth: z.number().int().positive().optional(),
+      maxChildrenPerContainer: z.number().int().positive().optional(),
+      minChildrenPerContainer: z.number().int().positive().optional(),
+    }).optional(),
     future: z.record(z.unknown()).optional(),
   })
   .passthrough();
