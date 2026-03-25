@@ -236,6 +236,51 @@ Use this when the PRD has grown organically and needs cleanup: too many top-leve
 - \`merge_items\` — consolidate overlapping items
 - \`reorganize\` — verify structural health after changes
 `,
+
+  "ndx-feedback": `---
+name: ndx-feedback
+description: Submit feedback, bug reports, or feature requests for n-dx
+argument-hint: "[description]"
+---
+
+Submit feedback about n-dx — bug reports, feature requests, suggestions, or general observations.
+
+## Process
+
+1. If a description is provided, use it. Otherwise, ask the user what feedback they'd like to share.
+2. Categorize the feedback:
+   - **Bug** — something broken, unexpected behavior, error messages
+   - **Feature request** — new capability or workflow improvement
+   - **Improvement** — enhancement to existing functionality
+   - **Question** — confusion about how something works (may indicate a docs gap)
+3. Draft a GitHub issue with:
+   - Clear title (concise, actionable)
+   - Description with context (what happened, what was expected, steps to reproduce for bugs)
+   - Relevant labels: \`bug\`, \`enhancement\`, \`question\`, or \`documentation\`
+   - For bugs: include n-dx version, Node version, OS if relevant
+4. Present the draft to the user for review before submitting
+5. Create the issue using \`gh issue create\` on \`en-dash-consulting/n-dx\`
+6. If \`gh\` is not available or auth fails, provide the formatted issue content for manual submission
+
+## Context gathering
+
+When creating a bug report, automatically include:
+- n-dx version from package.json or ndx --version
+- Node.js version
+- OS platform
+- Relevant config (sanitized — no API keys)
+- Recent error output if available from conversation context
+
+## Labels
+
+| Category | Label |
+|----------|-------|
+| Bug | \`bug\` |
+| Feature request | \`enhancement\` |
+| Improvement | \`enhancement\` |
+| Question / docs gap | \`question\` |
+| UX / ergonomics | \`ux\` |
+`,
 };
 
 // ── Settings merge ────────────────────────────────────────────────────────────
@@ -405,7 +450,7 @@ export function printClaudeSetupSummary(result) {
   }
 
   // Skills
-  console.log(`  Skills: wrote ${result.skills.written} workflow skills (/ndx-plan, /ndx-status, /ndx-capture, /ndx-zone, /ndx-work, /ndx-config, /ndx-reshape)`);
+  console.log(`  Skills: wrote ${result.skills.written} workflow skills (/ndx-plan, /ndx-status, /ndx-capture, /ndx-zone, /ndx-work, /ndx-config, /ndx-reshape, /ndx-feedback)`);
 
   // MCP
   if (!result.mcp.registered) {
