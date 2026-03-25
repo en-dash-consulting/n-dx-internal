@@ -5,10 +5,9 @@
     {
       "id": "ebe4c082-7e93-44ee-a286-cf01c05dd907",
       "title": "SourceVision",
-      "status": "completed",
+      "status": "pending",
       "level": "epic",
       "description": "Static analysis engine: file inventory, import graph, zone detection (Louvain community detection), React component catalog, PR markdown generation. Produces .sourcevision/CONTEXT.md and llms.txt for AI consumption.",
-      "completedAt": "2026-03-24T04:16:45.798Z",
       "children": [
         {
           "id": "3bf3754c-c0d0-4fb7-9cbd-5ebbddb85d51",
@@ -9184,6 +9183,169 @@
             "matchedItemStatus": "completed",
             "createdAt": "2026-02-25T03:25:22.943Z"
           }
+        },
+        {
+          "id": "4eb57dc8-3b8b-4fbd-ba8e-77514c95c915",
+          "title": "Zone Metric Accuracy",
+          "status": "pending",
+          "level": "feature",
+          "description": "Zone cohesion/coupling metrics are skewed by small zones (<5 files) that score 0.00 cohesion due to having no internal import edges. Since project-wide averages include all zones equally, each new tiny zone drags the average down — making it look like the project is degrading when it isn't. Metrics should be weighted by zone size and sub-threshold zones should be excluded or reported separately.",
+          "priority": "high",
+          "tags": [
+            "metrics",
+            "cohesion",
+            "user-feedback"
+          ],
+          "source": "User feedback: react-big-schedule project, 2026-03-24",
+          "children": [
+            {
+              "id": "eb1c87e3-c884-41c2-84a3-4059de4cf40c",
+              "title": "Weighted cohesion metric by zone file count",
+              "status": "pending",
+              "level": "task",
+              "description": "Compute project-wide average cohesion as a weighted average where each zone's contribution is proportional to its file count. A 51-file zone at 0.93 cohesion should matter far more than a 3-file zone at 0.00. Report both weighted and unweighted averages for transparency.",
+              "acceptanceCriteria": [
+                "zones.ts computes weighted average cohesion using file count as weight",
+                "Both weighted and unweighted averages are available in output",
+                "CONTEXT.md and llms.txt report weighted average as the primary metric",
+                "Unweighted average still available for backwards compatibility"
+              ],
+              "priority": "high",
+              "tags": [
+                "metrics",
+                "cohesion"
+              ],
+              "source": "User feedback: react-big-schedule project, 2026-03-24"
+            },
+            {
+              "id": "6eca4ae5-048e-4b5d-a314-94a1bf133092",
+              "title": "Exclude sub-threshold zones from aggregate cohesion",
+              "status": "pending",
+              "level": "task",
+              "description": "Zones with fewer than 5 files already get a note that their metrics are unreliable. Exclude these zones from project-wide aggregate metrics (both weighted and unweighted averages). Report them in a separate \"small zones\" section so they're visible but don't skew the overall picture.",
+              "acceptanceCriteria": [
+                "Zones with <5 files are excluded from project-wide cohesion/coupling averages",
+                "Small zones are reported in a separate section in CONTEXT.md",
+                "The 5-file threshold is configurable via sourcevision config",
+                "Dashboard and MCP tools reflect the updated averages"
+              ],
+              "priority": "high",
+              "tags": [
+                "metrics",
+                "cohesion"
+              ],
+              "source": "User feedback: react-big-schedule project, 2026-03-24"
+            },
+            {
+              "id": "f955d746-8b7d-42ae-b5f4-0c2462334591",
+              "title": "Smarter small-zone merge after remediation",
+              "status": "pending",
+              "level": "task",
+              "description": "After self-heal creates or moves files, re-run zone detection may produce new tiny zones (build-configuration, test-infrastructure-mocks, etc.) with 0.00 cohesion. The existing mergeSmallCommunities() should be more aggressive about absorbing these into neighboring zones based on import affinity rather than letting them stand alone. Consider making the merge threshold configurable.",
+              "acceptanceCriteria": [
+                "mergeSmallCommunities() considers import affinity when choosing merge target",
+                "Merge threshold is configurable via sourcevision config",
+                "Zones created by remediation that have <3 files are auto-merged",
+                "Zone merge decisions are logged for debuggability"
+              ],
+              "priority": "medium",
+              "tags": [
+                "zones",
+                "merge"
+              ],
+              "source": "User feedback: react-big-schedule project, 2026-03-24"
+            }
+          ]
+        },
+        {
+          "id": "3cfc11dd-63df-4cba-a872-27cfb97cc771",
+          "title": "Finding Reliability",
+          "status": "pending",
+          "level": "feature",
+          "description": "Findings generated by SourceVision enrichment lack category distinction and staleness detection. Structural findings (zone boundary opinions like \"this zone spans too many directories\") are treated the same as code findings (actual bugs/duplication). Additionally, findings from previous scans can persist even after the underlying code has been fixed, causing the self-heal loop to attempt remediation of non-existent problems.",
+          "priority": "high",
+          "tags": [
+            "findings",
+            "enrichment",
+            "user-feedback"
+          ],
+          "source": "User feedback: react-big-schedule project, 2026-03-24",
+          "children": [
+            {
+              "id": "3dd54ff2-dddc-4a3d-b76a-8cbd93fe6f80",
+              "title": "Finding category taxonomy (structural vs code)",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a category field to findings that distinguishes structural findings (zone boundary opinions, directory sprawl, zone-level coupling) from code findings (duplication, anti-patterns, actual bugs, unused exports). Update the enrichment prompts to emit category, and add a classification heuristic as fallback for findings without an explicit category. This enables downstream consumers (self-heal, dashboard, recommendations) to filter and prioritize appropriately.",
+              "acceptanceCriteria": [
+                "Finding interface includes category field: 'structural' | 'code' | 'documentation'",
+                "Enrichment prompts request category classification from LLM",
+                "Fallback heuristic classifies findings when LLM doesn't provide category",
+                "Existing finding consumers (recommend, dashboard) can filter by category",
+                "Schema version bumped appropriately"
+              ],
+              "priority": "high",
+              "tags": [
+                "findings",
+                "taxonomy"
+              ],
+              "source": "User feedback: react-big-schedule project, 2026-03-24"
+            },
+            {
+              "id": "a0a13954-4e7a-473d-98a1-4eeb250e8677",
+              "title": "Finding staleness validation",
+              "status": "pending",
+              "level": "task",
+              "description": "Before acting on a finding, validate that the referenced code/pattern still exists. Findings reference files, zones, and patterns that may have changed since the finding was generated. If the finding's targets no longer match reality (files moved/deleted, imports restructured), mark the finding as stale and skip it. This prevents the self-heal loop from attempting remediation of already-fixed problems.",
+              "acceptanceCriteria": [
+                "Findings that reference deleted/moved files are automatically marked stale",
+                "Findings about imports are validated against current import graph",
+                "Stale findings are excluded from recommend output and self-heal input",
+                "Stale finding count is reported in analysis summary"
+              ],
+              "priority": "high",
+              "tags": [
+                "findings",
+                "staleness"
+              ],
+              "source": "User feedback: react-big-schedule project, 2026-03-24"
+            }
+          ]
+        },
+        {
+          "id": "a678b0fc-a779-4b63-a58c-22908e5c8548",
+          "title": "Zone Pin Discoverability",
+          "status": "pending",
+          "level": "feature",
+          "description": "Zone pins (sourcevision.zones.pins in .n-dx.json) already allow users to override algorithmic zone assignments, but users don't know this capability exists. The feedback user specifically requested this feature, not realizing it was already implemented. Need to surface zone pins in CLI help, dashboard UI, self-heal output, and documentation.",
+          "priority": "medium",
+          "tags": [
+            "zone-pins",
+            "discoverability",
+            "user-feedback"
+          ],
+          "source": "User feedback: react-big-schedule project, 2026-03-24",
+          "children": [
+            {
+              "id": "f6078a29-12a0-4382-aef2-0735c9590041",
+              "title": "Surface zone pins in CLI, dashboard, and self-heal output",
+              "level": "task",
+              "status": "pending",
+              "description": "Zone pins (sourcevision.zones.pins in .n-dx.json) exist but users don't discover them. Surface this capability in: (1) ndx analyze output — when zones seem misassigned, suggest pinning, (2) ndx config --help — document the pins config path, (3) dashboard zone view — show which files are pinned and allow pin management, (4) self-heal output — when structural findings relate to zone boundaries, mention pins as an alternative to code changes.",
+              "priority": "medium",
+              "acceptanceCriteria": [
+                "ndx analyze output suggests zone pins when misassignment patterns detected",
+                "ndx config --help documents sourcevision.zones.pins",
+                "Dashboard zone detail view shows pinned files",
+                "Self-heal structural finding output mentions zone pins as alternative"
+              ],
+              "tags": [
+                "zone-pins",
+                "UX"
+              ],
+              "source": "User feedback: react-big-schedule project, 2026-03-24"
+            }
+          ]
         }
       ]
     },
@@ -13041,6 +13203,7 @@
       "level": "epic",
       "description": "Unified web dashboard and MCP HTTP server. Preact-based UI with SourceVision, Rex, and Hench views. Includes server architecture, real-time updates, performance optimization, and landing page.",
       "startedAt": "2026-03-24T05:27:03.754Z",
+      "completedAt": "2026-03-24T20:36:04.012Z",
       "children": [
         {
           "id": "d5ad6f16-156d-496f-99e5-0230dd48cd47",
@@ -18939,16 +19102,14 @@
             }
           ]
         }
-      ],
-      "completedAt": "2026-03-24T20:36:04.012Z"
+      ]
     },
     {
       "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",
       "title": "CLI & Developer Tools",
-      "status": "completed",
+      "status": "pending",
       "level": "epic",
       "description": "Command-line interface: error handling, validation, formatting, help navigation, command aliases, configuration management, and CI pipeline.",
-      "completedAt": "2026-03-24T13:06:25.502Z",
       "children": [
         {
           "id": "4ca9aac4-cd85-4af3-96d9-c4274e2d9f83",
@@ -20218,6 +20379,59 @@
                 "d0c0c683-75e6-4857-8ef2-0c1a0bb90680"
               ],
               "completedAt": "2026-03-24T13:06:25.502Z"
+            }
+          ]
+        },
+        {
+          "id": "c7963f49-483b-4fa5-b540-e378d7b6e70c",
+          "title": "Self-Heal Loop Quality",
+          "status": "pending",
+          "level": "feature",
+          "description": "The self-heal loop (analyze → recommend → execute) can degrade project metrics instead of improving them. Each cycle may reduce average cohesion, generate new findings about problems introduced by the previous cycle, and continue indefinitely without detecting regression. This feature adds safeguards to ensure the loop converges toward improvement.",
+          "priority": "high",
+          "tags": [
+            "self-heal",
+            "user-feedback"
+          ],
+          "source": "User feedback: react-big-schedule project, 2026-03-24",
+          "children": [
+            {
+              "id": "ed594365-c094-41ad-a9dd-a16829e0adb7",
+              "title": "Metric regression guard for self-heal loop",
+              "status": "pending",
+              "level": "task",
+              "description": "Before committing changes in each self-heal cycle, compare new cohesion/coupling metrics to the baseline captured at cycle start. If average cohesion dropped or total findings count increased, abort the cycle and report the regression. The current loop only checks finding count — it needs to also track weighted cohesion, coupling, and zone count as regression signals.",
+              "acceptanceCriteria": [
+                "Self-heal loop captures cohesion/coupling baseline before each cycle",
+                "Loop aborts if weighted average cohesion decreases after a cycle",
+                "Loop aborts if total zone count increases without cohesion improvement",
+                "Regression report is printed to stdout with before/after metrics"
+              ],
+              "priority": "high",
+              "tags": [
+                "self-heal",
+                "regression"
+              ],
+              "source": "User feedback: react-big-schedule project, 2026-03-24"
+            },
+            {
+              "id": "13ae33a3-19c4-4d47-85fd-9bde56ff8370",
+              "title": "Deprioritize structural findings in autonomous self-heal",
+              "status": "pending",
+              "level": "task",
+              "description": "When the self-heal loop runs autonomously, it should skip or defer structural findings (zone boundary opinions, directory sprawl warnings) and focus on code-level findings (duplication, anti-patterns, actual bugs). Depends on the finding category taxonomy from the Finding Reliability feature. Without this, the loop wastes cycles reshuffling zone boundaries instead of fixing real code issues.",
+              "acceptanceCriteria": [
+                "Self-heal loop filters findings by category when available",
+                "Structural findings are skipped in --auto mode by default",
+                "Flag --include-structural allows opting in to structural fixes",
+                "Skipped structural findings are reported in cycle summary"
+              ],
+              "priority": "high",
+              "tags": [
+                "self-heal",
+                "findings"
+              ],
+              "source": "User feedback: react-big-schedule project, 2026-03-24"
             }
           ]
         }
