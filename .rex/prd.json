@@ -5,7 +5,7 @@
     {
       "id": "ebe4c082-7e93-44ee-a286-cf01c05dd907",
       "title": "SourceVision",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Static analysis engine: file inventory, import graph, zone detection (Louvain community detection), React component catalog, PR markdown generation. Produces .sourcevision/CONTEXT.md and llms.txt for AI consumption.",
       "startedAt": "2026-03-25T05:39:49.717Z",
@@ -9399,7 +9399,7 @@
         {
           "id": "22ecc00b-ceb0-4fa3-8e40-fb29fd4e8869",
           "title": "Incremental Zone Topology Preservation",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Louvain community detection recomputes zones from scratch each run, producing 32 unique zone IDs across 8 runs of the same ~87-file project. Not a single zone survived all 8 runs. The pipeline should preserve the previous zone topology incrementally: bias Louvain toward the previous assignment via synthetic co-zone edges, only reassign files when import neighborhood genuinely shifted, and report a zone stability metric (% files unchanged). This makes zone-relative metrics meaningful as trend indicators rather than noise.",
           "priority": "high",
@@ -9410,6 +9410,8 @@
             "user-feedback"
           ],
           "source": "Analysis of react-big-schedule self-heal history, 2026-03-26",
+          "startedAt": "2026-03-26T21:00:03.513Z",
+          "completedAt": "2026-03-26T21:00:03.513Z",
           "children": [
             {
               "id": "801215db-7e3c-4abe-a83f-7174831aaa4a",
@@ -9490,7 +9492,7 @@
             {
               "id": "43bbd40c-f64d-47cf-9bcb-3f24f9af765c",
               "title": "Fix gitSha recording in history snapshots",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "All 8 history snapshots in react-big-schedule recorded the same gitSha (the pre-heal base commit) despite 83 commits happening between runs. The manifest.gitSha is captured at init time and not refreshed before each analysis run. Fix: re-read HEAD sha at the start of each analyze invocation so history snapshots accurately reflect which code state was analyzed.",
               "acceptanceCriteria": [
@@ -9503,11 +9505,16 @@
                 "history",
                 "git"
               ],
-              "source": "Analysis of react-big-schedule self-heal history, 2026-03-26"
+              "source": "Analysis of react-big-schedule self-heal history, 2026-03-26",
+              "startedAt": "2026-03-26T20:58:49.721Z",
+              "completedAt": "2026-03-26T21:00:03.354Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "updateManifestModule now refreshes gitSha and gitBranch from HEAD when status is 'running' (start of analysis). History snapshots will now record distinct shas when code changes between runs."
             }
           ]
         }
-      ]
+      ],
+      "completedAt": "2026-03-26T21:00:03.668Z"
     },
     {
       "id": "bf053fb2-509d-4acf-aa61-7243e66027e5",
