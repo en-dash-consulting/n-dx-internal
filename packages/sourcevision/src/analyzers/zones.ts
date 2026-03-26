@@ -190,18 +190,48 @@ function addStabilityEdges(
     members.push(file);
   }
 
-  // Add pairwise co-zone edges
+  // Add pairwise co-zone edges (capped for large zones to avoid O(n²) blowup)
+  const MAX_PAIRS_PER_ZONE = 500;
   for (const members of zoneMembers.values()) {
     if (members.length < 2) continue;
-    for (let i = 0; i < members.length; i++) {
-      const a = members[i];
-      const aNeighbors = graph.get(a)!;
-      for (let j = i + 1; j < members.length; j++) {
-        const b = members[j];
-        const bNeighbors = graph.get(b)!;
-        // Add stability edge (additive — doesn't replace existing import edges)
-        aNeighbors.set(b, (aNeighbors.get(b) ?? 0) + edgeWeight);
-        bNeighbors.set(a, (bNeighbors.get(a) ?? 0) + edgeWeight);
+    const totalPairs = members.length * (members.length - 1) / 2;
+
+    if (totalPairs <= MAX_PAIRS_PER_ZONE) {
+      // Small zone: add all pairwise edges
+      for (let i = 0; i < members.length; i++) {
+        const a = members[i];
+        const aNeighbors = graph.get(a)!;
+        for (let j = i + 1; j < members.length; j++) {
+          const b = members[j];
+          const bNeighbors = graph.get(b)!;
+          aNeighbors.set(b, (aNeighbors.get(b) ?? 0) + edgeWeight);
+          bNeighbors.set(a, (bNeighbors.get(a) ?? 0) + edgeWeight);
+        }
+      }
+    } else {
+      // Large zone: connect each file to its existing import neighbors within
+      // the zone, plus a star topology through the first member as hub.
+      // This gives O(n) edges instead of O(n²) while still biasing Louvain.
+      const hub = members[0];
+      const hubNeighbors = graph.get(hub)!;
+      const memberSet = new Set(members);
+
+      for (let i = 1; i < members.length; i++) {
+        const file = members[i];
+        const fileNeighbors = graph.get(file)!;
+
+        // Star edge: connect to hub
+        hubNeighbors.set(file, (hubNeighbors.get(file) ?? 0) + edgeWeight);
+        fileNeighbors.set(hub, (fileNeighbors.get(hub) ?? 0) + edgeWeight);
+
+        // Reinforce existing import edges within the zone
+        for (const [neighbor, _] of importOnlyGraph.get(file) ?? []) {
+          if (memberSet.has(neighbor) && neighbor !== hub) {
+            const nNeighbors = graph.get(neighbor)!;
+            fileNeighbors.set(neighbor, (fileNeighbors.get(neighbor) ?? 0) + edgeWeight);
+            nNeighbors.set(file, (nNeighbors.get(file) ?? 0) + edgeWeight);
+          }
+        }
       }
     }
   }
