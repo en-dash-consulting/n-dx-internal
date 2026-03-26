@@ -13349,7 +13349,7 @@
     {
       "id": "4d62fa6c-ad0d-4e1e-91f8-c2f1ebe696e7",
       "title": "Web Dashboard",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Unified web dashboard and MCP HTTP server. Preact-based UI with SourceVision, Rex, and Hench views. Includes server architecture, real-time updates, performance optimization, and landing page.",
       "startedAt": "2026-03-24T05:27:03.754Z",
@@ -19254,10 +19254,12 @@
         {
           "id": "6d81acf6-de17-43b7-8c08-ce395bc230cf",
           "title": "Adaptive Backend/Frontend UI Panels for SourceVision Dashboard",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Surface backend-specific coupling data (server routes, external dependencies, hub packages) and frontend-specific coupling data as adaptive panels. Panels render based on data presence — no mode switch. Three phases: A (server routes + hub packages, UI-only), B (external deps with schema addition), C (package dependency flow). See docs/architecture/backend-frontend-ui-discovery.md and backend-frontend-ui-implementation-plan.md.",
           "priority": "high",
+          "startedAt": "2026-03-26T23:32:18.597Z",
+          "completedAt": "2026-03-26T23:32:18.597Z",
           "children": [
             {
               "id": "b7b0585b-1975-4a74-94ac-564cf8006dde",
@@ -19305,14 +19307,17 @@
             {
               "id": "f7dd4056-62b0-4293-8142-fdfdcf099355",
               "title": "Add package-level dependency flow visualization to Architecture view",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Phase C: Compute package-level dependencies client-side by aggregating ImportEdge[] — group edges by first N directory segments, deduplicate to unique package-to-package edges with weight. Add Package Dependencies section to architecture.ts using FlowDiagram or TreeView component. Sort packages by fan-in count. No new data files needed — useMemo computation in the view.",
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-03-26T23:27:05.281Z",
+              "completedAt": "2026-03-26T23:32:18.434Z"
             }
           ]
         }
-      ]
+      ],
+      "completedAt": "2026-03-26T23:32:18.711Z"
     },
     {
       "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",
