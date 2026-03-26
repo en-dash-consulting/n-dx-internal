@@ -13041,6 +13041,7 @@
       "level": "epic",
       "description": "Unified web dashboard and MCP HTTP server. Preact-based UI with SourceVision, Rex, and Hench views. Includes server architecture, real-time updates, performance optimization, and landing page.",
       "startedAt": "2026-03-24T05:27:03.754Z",
+      "completedAt": "2026-03-24T20:36:04.012Z",
       "children": [
         {
           "id": "d5ad6f16-156d-496f-99e5-0230dd48cd47",
@@ -18939,8 +18940,7 @@
             }
           ]
         }
-      ],
-      "completedAt": "2026-03-24T20:36:04.012Z"
+      ]
     },
     {
       "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",
@@ -22323,6 +22323,376 @@
                     "createdAt": "2026-03-06T16:21:50.494Z"
                   }
                 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aead1bea-1a28-42f0-92ca-7256469ddf77",
+      "title": "Go / Multi-Language Support",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-03-26T04:05:46.164Z",
+      "completedAt": "2026-03-26T04:05:46.164Z",
+      "children": [
+        {
+          "id": "956b7119-989e-41f1-ba0e-3e8d26494fee",
+          "title": "Phase 1: Language Registry & Inventory Foundation",
+          "status": "completed",
+          "level": "feature",
+          "description": "Establish a language registry abstraction in SourceVision so that Go projects can be inventoried correctly alongside JS/TS. All existing JS/TS behavior is preserved as the default path; Go support is purely additive.",
+          "source": "smart-add",
+          "startedAt": "2026-03-26T04:05:46.055Z",
+          "completedAt": "2026-03-26T04:05:46.055Z",
+          "children": [
+            {
+              "id": "67760efe-1f60-4c4a-9018-d5231486b081",
+              "title": "Implement language registry module in sourcevision",
+              "status": "completed",
+              "level": "task",
+              "description": "Create packages/sourcevision/src/language/ with four files: registry.ts (LanguageConfig interface), go.ts (Go language config: extensions, skipDirectories including vendor/, testFilePatterns for _test.go, generatedFilePatterns for _gen.go/_pb.go/wire_gen.go, configFilenames for go.mod/go.sum/.golangci.yml, entryPointPatterns), typescript.ts (extract existing JS/TS hardcoded constants into registry shape), and detect.ts (auto-detection: check .n-dx.json override → go.mod → package.json → file-count tiebreak → fallback to JS/TS). The registry becomes the single source of truth for all downstream language-specific decisions.",
+              "acceptanceCriteria": [
+                "packages/sourcevision/src/language/registry.ts exports LanguageConfig interface with all fields from spec (id, displayName, extensions, parseableExtensions, testFilePatterns, configFilenames, skipDirectories, generatedFilePatterns, entryPointPatterns, moduleFile)",
+                "packages/sourcevision/src/language/go.ts exports a LanguageConfig that includes vendor/ in skipDirectories, _test.go in testFilePatterns, .go in extensions, and go.mod as moduleFile",
+                "packages/sourcevision/src/language/typescript.ts exports a LanguageConfig whose skipDirectories and configFilenames match the current hardcoded values in inventory.ts",
+                "packages/sourcevision/src/language/detect.ts implements the five-step detection chain: .n-dx.json override → go.mod → package.json → file-count tiebreak → JS/TS fallback",
+                "detect.ts returns the TS/JS config for a project with no go.mod (backward-compatible fallback)",
+                "detect.ts returns the Go config for a project with go.mod and no package.json",
+                "All four files are re-exported from a language/index.ts barrel"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "go",
+                "language-registry"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-25T20:23:35.621Z",
+              "completedAt": "2026-03-25T20:35:14.515Z"
+            },
+            {
+              "id": "e27102cc-3e46-4c45-a124-0ba8c56fa1b4",
+              "title": "Refactor inventory.ts to consume language registry",
+              "status": "completed",
+              "level": "task",
+              "description": "Update packages/sourcevision/src/analyzers/inventory.ts to replace all hardcoded SKIP_DIRS and CONFIG_FILENAMES constants with values from the language registry. Add Go-specific role classification: _test.go files → role 'test', generated file patterns (_gen.go, .pb.go, wire_gen.go, mock_*.go) → role 'generated', testdata/ contents → role 'asset', cmd/*/main.go → role 'source' (entrypoint archetype applied later). The language is resolved once per analysis run via detectLanguage() and threaded through the analyzer.",
+              "acceptanceCriteria": [
+                "inventory.ts imports from packages/sourcevision/src/language/ and uses languageConfig.skipDirectories instead of hardcoded SKIP_DIRS",
+                "inventory.ts uses languageConfig.configFilenames instead of hardcoded CONFIG_FILENAMES",
+                "Files matching languageConfig.testFilePatterns receive role 'test' in inventory output",
+                "Files matching languageConfig.generatedFilePatterns receive role 'generated' in inventory output",
+                "Files under testdata/ directories receive role 'asset'",
+                "All existing inventory unit tests pass without modification (JS/TS behavior unchanged)",
+                "Running sourcevision analyze on a JS/TS project produces identical inventory.json output before and after this change (no regression)"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "go",
+                "inventory",
+                "refactor"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-25T20:37:22.910Z",
+              "completedAt": "2026-03-25T20:54:29.154Z"
+            },
+            {
+              "id": "a070e70d-af05-40aa-b6e7-0f06eea257ea",
+              "title": "Add language field to .n-dx.json schema and wire config support",
+              "status": "completed",
+              "level": "task",
+              "description": "Add an optional language field to the .n-dx.json project config schema with valid values: 'typescript', 'javascript', 'go', 'auto' (default). Update config.js to read, validate, and expose this field. This allows users to explicitly override language detection for edge cases (e.g. mixed repos, unusual layouts). The field must be respected by detectLanguage() as the highest-priority signal.",
+              "acceptanceCriteria": [
+                ".n-dx.json schema accepts an optional 'language' field with enum values: 'typescript', 'javascript', 'go', 'auto'",
+                "config.js reads the language field and includes it in the unified config view",
+                "ndx config language go sets the language field to 'go' in .n-dx.json",
+                "detectLanguage() reads .n-dx.json and returns the corresponding LanguageConfig when language is explicitly set",
+                "Setting language to 'auto' (or omitting the field) triggers the marker-based detection chain",
+                "Invalid language values produce a validation error with the list of valid options",
+                ".sourcevision/manifest.json records the resolved language after analysis"
+              ],
+              "priority": "high",
+              "tags": [
+                "config",
+                "sourcevision",
+                "go",
+                "schema"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-25T21:35:00.413Z",
+              "completedAt": "2026-03-25T21:50:17.784Z"
+            },
+            {
+              "id": "fa93b525-872e-4802-a92b-985a38010776",
+              "title": "Create Go fixture project and language registry test suite",
+              "status": "completed",
+              "level": "task",
+              "description": "Create tests/fixtures/go-project/ with the standard Go layout specified in the plan (cmd/api/main.go, internal/handler/, internal/service/, internal/repository/, internal/middleware/, internal/config/, pkg/response/, testdata/, go.mod, go.sum, Makefile, .golangci.yml). Write the three test files specified in Phase 1.4: language-registry.test.ts (unit, verifies registry returns correct config per language), language-detect.test.ts (unit, auto-detection from go.mod/package.json/both/neither), and inventory-go.test.ts (integration, runs inventory analyzer against the Go fixture and asserts correct language/role/category classification for each file type).",
+              "acceptanceCriteria": [
+                "tests/fixtures/go-project/ exists with go.mod, go.sum, Makefile, .golangci.yml, cmd/api/main.go, internal/handler/user.go + user_test.go, internal/service/user.go + user_test.go, internal/repository/user.go + user_test.go, internal/middleware/auth.go + logging.go, internal/config/config.go, pkg/response/json.go, testdata/users.json",
+                "language-registry.test.ts asserts Go config includes vendor/ in skipDirectories and _test.go in testFilePatterns",
+                "language-registry.test.ts asserts TypeScript config includes node_modules/ in skipDirectories",
+                "language-detect.test.ts: directory with go.mod only → Go; directory with package.json only → TypeScript; directory with neither → TypeScript (fallback)",
+                "language-detect.test.ts: .n-dx.json with language:'go' overrides marker detection even when no go.mod present",
+                "inventory-go.test.ts: internal/handler/user_test.go classified with role 'test'",
+                "inventory-go.test.ts: cmd/api/main.go classified with role 'source'",
+                "inventory-go.test.ts: vendor/ directory (if present) skipped entirely from inventory",
+                "All existing sourcevision tests continue to pass"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "go",
+                "testing",
+                "fixtures"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-26T03:58:52.698Z",
+              "completedAt": "2026-03-26T04:05:45.874Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "f00043c7-f5de-4d79-ab17-19fc6bd8d8db",
+      "title": "Go / Multi-Language Support",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "dfa181b2-9543-4b37-a04b-bdcf0af58da6",
+          "title": "Go Import Parser",
+          "status": "pending",
+          "level": "feature",
+          "description": "Create a regex-based Go import parser in sourcevision that handles all Go import syntax variants and classifies imports as stdlib, third-party, or internal using go.mod module path resolution.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "32f70fa2-70d8-4b26-98a1-e54baeccbf97",
+              "title": "Implement extractGoImports function with full Go import syntax coverage",
+              "status": "pending",
+              "level": "task",
+              "description": "Create packages/sourcevision/src/analyzers/go-imports.ts with an extractGoImports(sourceText, filePath) function. Reads go.mod once to extract the module path and classifies each import as stdlib (no domain prefix, e.g. fmt, net/http), third-party (has domain, e.g. github.com/go-chi/chi), or internal (starts with module path). Handles single imports, grouped import blocks, aliased imports (alias \"pkg\"), blank imports (_ \"pkg\"), and dot imports (. \"pkg\"). Internal imports resolve to relative directory paths as import edges. All Go imports use ImportType.static.",
+              "acceptanceCriteria": [
+                "Single-line import statements (import \"fmt\") are parsed and classified correctly",
+                "Grouped import blocks with all syntax variants are fully parsed",
+                "Aliased imports extract both the alias and underlying package path",
+                "Blank imports (_ \"pkg\") are classified as external packages without crashing",
+                "Dot imports (. \"pkg\") are extracted and classified correctly",
+                "go.mod is read and the module path is extracted before import classification",
+                "Stdlib imports are classified as external with a stdlib: prefix",
+                "Third-party imports are classified as external",
+                "Internal imports produce import edges resolved to relative directory paths",
+                "All produced edges carry ImportType.static",
+                "Comment lines inside grouped import blocks do not produce false edges",
+                "String literals in non-import source code containing import-like text do not produce false edges"
+              ],
+              "priority": "critical",
+              "tags": [
+                "go",
+                "sourcevision",
+                "imports",
+                "parser"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "afab2a23-e2c0-4d95-9325-256f8f5192fd",
+              "title": "Write comprehensive unit tests for go-imports.ts covering all syntax variants and edge cases",
+              "status": "pending",
+              "level": "task",
+              "description": "Write unit tests for go-imports.ts using the existing Go fixture at packages/sourcevision/tests/fixtures/go-project/, which contains real Go files with stdlib, third-party, and internal imports. Tests must cover every import syntax variant, alias and blank import handling, module path resolution from go.mod, and edge cases such as comments inside import blocks and string literals that resemble import statements.",
+              "acceptanceCriteria": [
+                "Tests cover single-line and grouped import block parsing",
+                "Tests cover aliased, blank, and dot import variants in isolation",
+                "Tests verify stdlib imports produce stdlib: prefixed external entries",
+                "Tests verify third-party imports are classified as external",
+                "Tests verify internal imports resolve to correct relative directory paths",
+                "Tests cover comment lines and blank lines inside grouped import blocks",
+                "Tests verify source string literals do not produce spurious import edges",
+                "All tests pass with zero failures when run against the Go fixture files",
+                "Test file is placed adjacent to go-imports.ts or in the package unit test directory"
+              ],
+              "priority": "critical",
+              "tags": [
+                "go",
+                "sourcevision",
+                "imports",
+                "tests"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "aac0a41c-0157-4cca-a75d-efd7655ba909",
+          "title": "Import Analyzer Language Dispatch",
+          "status": "pending",
+          "level": "feature",
+          "description": "Modify the SourceVision import analyzer (imports.ts) to dispatch to the Go import parser when processing .go files, reading go.mod once per invocation and producing file-to-package edges for internal imports. Integration tests validate the full import graph against the Go fixture.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "19509120-0d5b-4aac-a83e-2b200ed8aabf",
+              "title": "Modify imports.ts to route .go files to the Go import parser",
+              "status": "pending",
+              "level": "task",
+              "description": "Expand or replace the JS_TS_EXTENSIONS gate in packages/sourcevision/src/analyzers/imports.ts to include .go files, or replace the check with the language registry's parseableExtensions. The analyzeImports function reads go.mod once per invocation (not per-file) and passes the extracted module path to extractGoImports for each .go file. Internal Go import edges resolve to directory paths (file-to-package rather than file-to-file). Language is determined from manifest.language or via detectLanguage from the language registry. JS/TS dispatch must remain unchanged.",
+              "acceptanceCriteria": [
+                ".go files are routed to extractGoImports and not the JS/TS parser",
+                "go.mod is read exactly once per analyzeImports call, not once per .go file",
+                "Internal Go import edges use directory paths (e.g. cmd/api/main.go → internal/handler/)",
+                "JS/TS files continue to be processed by the existing parser with no regression",
+                "Language dispatch reads manifest.language or uses detectLanguage from the language registry",
+                "A mixed-language project directory does not crash or produce cross-language edge contamination",
+                "go.mod is not read when no .go files are present in the scanned directory"
+              ],
+              "priority": "critical",
+              "tags": [
+                "go",
+                "sourcevision",
+                "imports",
+                "dispatch"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "c42858ab-4a23-467f-b6e2-fccee6cb99f6",
+              "title": "Write integration tests validating the Go import graph against the fixture project",
+              "status": "pending",
+              "level": "task",
+              "description": "Write integration tests that run the full import analyzer against the Go fixture at packages/sourcevision/tests/fixtures/go-project/ and assert on the produced import graph structure. Tests cover internal edges (main.go→handler/, handler/→service/, service/→repository/), third-party external packages (go-chi/chi, jmoiron/sqlx), stdlib entries, and the handling of _test.go imports.",
+              "acceptanceCriteria": [
+                "Integration test runs analyzeImports end-to-end against the Go fixture directory",
+                "Internal edges main.go→internal/handler/, handler/→internal/service/, service/→internal/repository/ appear in the graph",
+                "Third-party packages (go-chi/chi, jmoiron/sqlx) appear as external entries in the graph",
+                "Stdlib packages (fmt, net/http, etc.) appear as external entries with stdlib: prefix",
+                "_test.go import handling is explicitly tested and the behavior (captured or excluded) is documented in the test",
+                "No edges from non-existent internal packages appear in the output",
+                "All integration tests pass with zero failures"
+              ],
+              "priority": "critical",
+              "tags": [
+                "go",
+                "sourcevision",
+                "imports",
+                "integration-tests"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "41a438d4-def7-4e85-ac41-e7b023184764",
+          "title": "Go Fixture Enhancement",
+          "status": "pending",
+          "level": "feature",
+          "description": "Extend the Go fixture project to cover import syntax edge cases required by the parser (aliased, blank, dot imports, test files), update go.mod to match new dependencies, and produce a coverage map documenting which fixture file exercises which syntax variant.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "3a247c6a-8613-490d-888e-016ae0dd5ec2",
+              "title": "Add aliased, blank, and dot import files to the Go fixture and update go.mod",
+              "status": "pending",
+              "level": "task",
+              "description": "Add new Go source files to packages/sourcevision/tests/fixtures/go-project/ to exercise import syntax variants not yet present: a file with aliased imports (e.g. chi \"github.com/go-chi/chi/v5\"), a file with blank/side-effect imports (e.g. _ \"github.com/lib/pq\"), and a dot import if it fits the fixture's domain. Add at least one _test.go file with a testing stdlib import to verify test file capture. Update go.mod require block to include any new third-party dependencies.",
+              "acceptanceCriteria": [
+                "A Go source file with at least one aliased import is present in the fixture",
+                "A Go source file with at least one blank/side-effect import (_ \"pkg\") is present",
+                "At least one _test.go file with a testing or testing/assert import is present",
+                "go.mod require block includes all new third-party packages referenced by the added files",
+                "New files follow the existing fixture package and directory naming conventions",
+                "Files are syntactically valid Go (verified by the import parser not erroring during tests)"
+              ],
+              "priority": "high",
+              "tags": [
+                "go",
+                "sourcevision",
+                "fixtures"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "7e41ce28-7691-4211-8b95-a325919bdb6b",
+              "title": "Create syntax variant coverage map for the Go fixture",
+              "status": "pending",
+              "level": "task",
+              "description": "Audit the enhanced fixture against all import syntax variants that go-imports.ts must handle. For each supported variant (single, grouped, aliased, blank, dot, test file imports), identify which fixture file demonstrates it. Add a coverage comment to go-imports.test.ts or a FIXTURE.md file in the fixture directory mapping each file to the variant(s) it exercises. Document any intentionally absent variant with a rationale.",
+              "acceptanceCriteria": [
+                "All five import syntax variants (single, grouped, aliased, blank, dot) map to at least one fixture file in the coverage map",
+                "A coverage comment in go-imports.test.ts or a FIXTURE.md file lists the file→variant mapping",
+                "Any intentionally absent variant is documented with a rationale rather than silently omitted",
+                "The coverage map is accurate after the preceding fixture-addition task completes",
+                "No variant listed in the go-imports.ts spec is silently uncovered"
+              ],
+              "priority": "high",
+              "tags": [
+                "go",
+                "sourcevision",
+                "fixtures",
+                "documentation"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "fe5bf3cc-7584-4e97-9a58-e1d5ff37c6bd",
+          "title": "Zone Detection Validation for Go Projects",
+          "status": "pending",
+          "level": "feature",
+          "description": "Validate the end-to-end SourceVision pipeline for Go projects by running Louvain community detection against the Go fixture's import graph and asserting sensible zone boundaries corresponding to Go package structure. The detection algorithm requires no changes; this feature validates the data chain from Go source to zones.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "f2234f89-f5b2-4bab-b901-30744cf878e0",
+              "title": "Write end-to-end zone detection integration test for the Go fixture",
+              "status": "pending",
+              "level": "task",
+              "description": "Write go-zones.test.ts that runs the full SourceVision pipeline (inventory → imports → zones) against packages/sourcevision/tests/fixtures/go-project/ and validates that Louvain community detection produces zones mapping to Go package boundaries. Expected zones correspond to cmd/, internal/handler/, internal/service/, and internal/repository/. The test must fail with a descriptive error if the import graph contains zero edges, guarding against silent parser failures upstream.",
+              "acceptanceCriteria": [
+                "go-zones.test.ts runs the full SourceVision pipeline (inventory → imports → zones) against the Go fixture",
+                "Zone detection produces at least 2 distinct zones from the Go import graph",
+                "Each expected package boundary (cmd, handler, service, repository) is represented in at least one zone",
+                "Files from distinct packages are not co-located in the same zone unless the import graph warrants it",
+                "Test fails with a descriptive message if the import graph contains zero edges",
+                "All assertions pass with zero failures against the enhanced Go fixture"
+              ],
+              "priority": "high",
+              "tags": [
+                "go",
+                "sourcevision",
+                "zones",
+                "integration-tests"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "81da168f-62be-4c39-a20d-18a53d808d47",
+              "title": "Document Go zone detection behavior, edge semantics, and known limitations",
+              "level": "task",
+              "status": "pending",
+              "source": "smart-add",
+              "description": "Add documentation in docs/architecture/ or the sourcevision package README covering how Go file-to-package import edges feed into zone detection, how this differs from JS/TS file-to-file edges and its impact on zone granularity, known limitations (e.g. large Go monorepos may produce fragmented zones, no function-level call graph), and how zone names are derived from Go package paths. Reference go-zones.test.ts as the canonical end-to-end validation.",
+              "acceptanceCriteria": [
+                "Documentation explains the difference between Go file-to-package edges and JS/TS file-to-file edges with at least one concrete example",
+                "Impact on zone shape and granularity is described",
+                "At least two known limitations for Go zone detection are listed (minimum: package-level granularity, no function-level call graph)",
+                "go-zones.test.ts is referenced as the canonical zone validation source",
+                "Documentation is placed in docs/architecture/ or an appropriate package-level README",
+                "Documentation accurately reflects the Phase 2 implementation as delivered"
+              ],
+              "priority": "medium",
+              "tags": [
+                "go",
+                "sourcevision",
+                "zones",
+                "documentation"
               ]
             }
           ]
