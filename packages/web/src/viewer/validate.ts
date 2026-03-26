@@ -226,10 +226,25 @@ const RouteTreeNodeSchema: z.ZodType<V1.RouteTreeNode> = z.lazy(() =>
   })
 );
 
+const ServerRouteSchema = z.object({
+  file: z.string(),
+  method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"]),
+  path: z.string(),
+  handler: z.string().optional(),
+});
+
+const ServerRouteGroupSchema = z.object({
+  file: z.string(),
+  prefix: z.string(),
+  handler: z.string().optional(),
+  routes: z.array(ServerRouteSchema),
+});
+
 const ComponentsSummarySchema = z.object({
   totalComponents: z.number().int().nonnegative(),
   totalRouteModules: z.number().int().nonnegative(),
   totalUsageEdges: z.number().int().nonnegative(),
+  totalServerRoutes: z.number().int().nonnegative().optional(),
   routeConventions: z.record(z.string(), z.number().int().nonnegative()),
   mostUsedComponents: z.array(
     z.object({
@@ -246,6 +261,7 @@ const ComponentsSchema = z.object({
   usageEdges: z.array(ComponentUsageEdgeSchema),
   routeModules: z.array(RouteModuleSchema),
   routeTree: z.array(RouteTreeNodeSchema),
+  serverRoutes: z.array(ServerRouteGroupSchema).optional(),
   summary: ComponentsSummarySchema,
 });
 

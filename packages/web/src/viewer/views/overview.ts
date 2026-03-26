@@ -181,6 +181,19 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
             label: "Circular Deps",
             color: imports.summary.circularCount > 0 ? "var(--orange)" : "var(--green)",
           })
+        : null,
+      components && components.summary.totalServerRoutes && components.summary.totalServerRoutes > 0
+        ? h(MetricCard, {
+            value: components.summary.totalServerRoutes,
+            label: "Server Endpoints",
+            color: "var(--accent)",
+          })
+        : null,
+      imports && imports.summary.totalExternal > 0
+        ? h(MetricCard, {
+            value: imports.summary.totalExternal,
+            label: "External Deps",
+          })
         : null
     ),
 
