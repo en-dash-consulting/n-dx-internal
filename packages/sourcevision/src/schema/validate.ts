@@ -81,6 +81,7 @@ const ExternalImportSchema = z.object({
   package: z.string(),
   importedBy: z.array(z.string()),
   symbols: z.array(z.string()),
+  kind: z.enum(["stdlib", "third-party"]).optional(),
 });
 
 const CircularDependencySchema = z.object({

@@ -36,6 +36,7 @@ describe("extractGoImports — single-line imports", () => {
     expect(raw[0]).toMatchObject({ path: "fmt", alias: null, kind: "stdlib" });
     expect(external).toHaveLength(1);
     expect(external[0].package).toBe("stdlib:fmt");
+    expect(external[0].kind).toBe("stdlib");
   });
 
   it("parses a single-line import with alias", () => {
@@ -233,6 +234,7 @@ describe("extractGoImports — alias, blank, and dot import variants", () => {
       kind: "third-party",
     });
     expect(external[0].package).toBe("github.com/go-chi/chi/v5");
+    expect(external[0].kind).toBe("third-party");
   });
 
   it("classifies blank import inside a grouped block", () => {
@@ -697,5 +699,25 @@ describe("extractGoImports — edge cases", () => {
     const source = `package x\nimport "fmt"\n`;
     const { external } = extractGoImports(source, "x.go", null);
     expect(external[0].symbols).toEqual(["*"]);
+  });
+
+  it("external entries persist kind field for stdlib and third-party", () => {
+    const source = [
+      `package main`,
+      ``,
+      `import (`,
+      `  "fmt"`,
+      `  "github.com/go-chi/chi/v5"`,
+      `)`,
+    ].join("\n");
+
+    const { external } = extractGoImports(source, "main.go", null);
+    const stdlib = external.find((e) => e.package === "stdlib:fmt");
+    const thirdParty = external.find((e) => e.package === "github.com/go-chi/chi/v5");
+
+    expect(stdlib).toBeDefined();
+    expect(stdlib!.kind).toBe("stdlib");
+    expect(thirdParty).toBeDefined();
+    expect(thirdParty!.kind).toBe("third-party");
   });
 });

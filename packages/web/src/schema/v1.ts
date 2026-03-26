@@ -109,6 +109,8 @@ export interface ExternalImport {
   package: string;
   importedBy: string[];
   symbols: string[];
+  /** Classification of external import origin. Present for Go imports. */
+  kind?: "stdlib" | "third-party";
 }
 
 export interface CircularDependency {
