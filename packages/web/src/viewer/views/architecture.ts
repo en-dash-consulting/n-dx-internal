@@ -2,7 +2,7 @@ import { h, Fragment } from "preact";
 import { useMemo } from "preact/hooks";
 import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
 import type { Finding, ExternalImport } from "../external.js";
-import { FindingsList, BarChart, CollapsibleSection } from "../visualization/index.js";
+import { FindingsList, BarChart, FlowDiagram, CollapsibleSection } from "../visualization/index.js";
 import { ENRICHMENT_THRESHOLDS } from "./enrichment-thresholds.js";
 import { BrandedHeader } from "../components/logos.js";
 
@@ -122,6 +122,88 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
       }));
   }, [externalDepsData]);
 
+  // Package-level dependency flow: aggregate ImportEdge[] by directory prefix
+  const packageDeps = useMemo(() => {
+    if (!imports) return { nodes: [] as Array<{ id: string; label: string; color: string }>, edges: [] as Array<{ from: string; to: string; weight: number }>, fanIn: [] as Array<{ label: string; value: number; color: string }> };
+
+    const edges = imports.edges;
+    // Determine package prefix from file path: use first 2 segments for "packages/foo/..." style,
+    // otherwise the first segment (e.g. "src/..." → "src")
+    function getPackage(filePath: string): string {
+      const parts = filePath.split("/");
+      if (parts.length >= 2 && parts[0] === "packages") {
+        return parts[1]; // e.g. "rex", "hench", "web"
+      }
+      return parts[0]; // e.g. "src", "tests", "cli.js"
+    }
+
+    // Aggregate edges by package pair
+    const pairWeights = new Map<string, number>();
+    const packageSet = new Set<string>();
+
+    for (const edge of edges) {
+      const fromPkg = getPackage(edge.from);
+      const toPkg = getPackage(edge.to);
+      packageSet.add(fromPkg);
+      packageSet.add(toPkg);
+      if (fromPkg === toPkg) continue; // skip intra-package edges
+      const key = `${fromPkg}->${toPkg}`;
+      pairWeights.set(key, (pairWeights.get(key) ?? 0) + 1);
+    }
+
+    if (pairWeights.size === 0) return { nodes: [], edges: [], fanIn: [] };
+
+    // Build unique flow edges
+    const flowEdges = [...pairWeights.entries()].map(([key, weight]) => {
+      const [from, to] = key.split("->");
+      return { from, to, weight };
+    });
+
+    // Compute fan-in: count of unique packages that import INTO each package
+    const fanInMap = new Map<string, Set<string>>();
+    for (const [key] of pairWeights) {
+      const [from, to] = key.split("->");
+      if (!fanInMap.has(to)) fanInMap.set(to, new Set());
+      fanInMap.get(to)!.add(from);
+    }
+
+    // Only include packages that participate in cross-package edges
+    const participatingPkgs = new Set<string>();
+    for (const [key] of pairWeights) {
+      const [from, to] = key.split("->");
+      participatingPkgs.add(from);
+      participatingPkgs.add(to);
+    }
+
+    // Build flow nodes with colors
+    const pkgColors = new Map<string, string>();
+    const PACKAGE_COLORS = [
+      "var(--accent)", "var(--green)", "var(--orange)", "var(--red)",
+      "#7dd3fc", "#fbbf24", "#6c41f0", "#d52e66",
+    ];
+    const sortedPkgs = [...participatingPkgs].sort();
+    sortedPkgs.forEach((pkg, i) => {
+      pkgColors.set(pkg, PACKAGE_COLORS[i % PACKAGE_COLORS.length]);
+    });
+
+    const flowNodes = sortedPkgs.map((pkg) => ({
+      id: pkg,
+      label: pkg,
+      color: pkgColors.get(pkg) ?? "var(--accent)",
+    }));
+
+    // Fan-in bar chart sorted descending
+    const fanInData = [...fanInMap.entries()]
+      .map(([pkg, importers]) => ({
+        label: pkg,
+        value: importers.size,
+        color: importers.size > 4 ? "var(--red)" : importers.size > 2 ? "var(--orange)" : "var(--accent)",
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    return { nodes: flowNodes, edges: flowEdges, fanIn: fanInData };
+  }, [imports]);
+
   return h("div", null,
     h("div", { class: "view-header" },
       h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
@@ -234,6 +316,62 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
                       ),
                     );
                   })
+                )
+              )
+            )
+          ),
+        )
+      : null,
+
+    // Package Dependencies section
+    packageDeps.nodes.length > 0
+      ? h(Fragment, null,
+          h("h3", { class: "section-header-sm mt-24" }, "Package Dependencies"),
+          h("p", { class: "section-sub" },
+            `${packageDeps.nodes.length} packages with ${packageDeps.edges.length} cross-package dependency edges`
+          ),
+
+          // Flow diagram showing inter-package edges
+          h(FlowDiagram, {
+            nodes: packageDeps.nodes,
+            edges: packageDeps.edges,
+          }),
+
+          // Fan-in bar chart: which packages are depended on most
+          packageDeps.fanIn.length > 0
+            ? h(Fragment, null,
+                h("h4", { class: "section-header-sm" }, "Fan-In (Dependents)"),
+                h("p", { class: "section-sub" }, "Packages sorted by number of internal dependents. High fan-in = foundational."),
+                h(BarChart, { data: packageDeps.fanIn }),
+              )
+            : null,
+
+          // Detailed edge table (collapsible)
+          h(CollapsibleSection, {
+              title: "Dependency Edges",
+              count: packageDeps.edges.length,
+              defaultOpen: false,
+              threshold: 10,
+            },
+            h("div", { class: "data-table-wrapper" },
+              h("table", { class: "data-table" },
+                h("thead", null,
+                  h("tr", null,
+                    h("th", null, "From"),
+                    h("th", null, "To"),
+                    h("th", null, "Weight"),
+                  )
+                ),
+                h("tbody", null,
+                  [...packageDeps.edges]
+                    .sort((a, b) => b.weight - a.weight)
+                    .map((edge) =>
+                      h("tr", { key: `${edge.from}->${edge.to}` },
+                        h("td", null, edge.from),
+                        h("td", null, edge.to),
+                        h("td", null, String(edge.weight)),
+                      )
+                    )
                 )
               )
             )
