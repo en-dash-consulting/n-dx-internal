@@ -19262,18 +19262,22 @@
             {
               "id": "b7b0585b-1975-4a74-94ac-564cf8006dde",
               "title": "Add server routes panel to Routes view and hub packages to Architecture view",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Phase A core: Read serverRoutes from components.json (already populated, just unused). Add Server Endpoints section to routes.ts with HTTP method badges (GET=blue, POST=green, PUT=orange, DELETE=red). Add hub files section to architecture.ts using mostImported data and BarChart. Make Routes view header adaptive based on data presence. Add type re-exports (ServerRoute, ServerRouteGroup, HttpMethod) to external.ts gateway. Add method badge CSS to routes.css.",
-              "priority": "high"
+              "priority": "high",
+              "startedAt": "2026-03-26T23:10:47.644Z",
+              "completedAt": "2026-03-26T23:18:12.237Z"
             },
             {
               "id": "8062280a-c7f2-44a6-8f3e-069a47eb4ce5",
               "title": "Add server endpoint and external dependency counts to Overview metrics",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Phase A+B: Add Server Endpoints MetricCard to overview.ts when components.summary.totalServerRoutes > 0. Add External Deps MetricCard when imports.summary.totalExternal > 0. Uses existing MetricCard component.",
-              "priority": "high"
+              "priority": "high",
+              "startedAt": "2026-03-26T23:00:19.632Z",
+              "completedAt": "2026-03-26T23:07:58.401Z"
             },
             {
               "id": "93d0eb5b-862f-4585-b3d8-20a1c88db40d",
@@ -19288,13 +19292,15 @@
             {
               "id": "d5de3727-a6e9-47d0-9f43-b289a1fb9a40",
               "title": "Add external dependencies panel to Architecture view",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Phase B UI: Add External Dependencies section to architecture.ts with stdlib vs third-party breakdown when kind data is available. Show single sorted list as fallback for TS/JS projects. Use BarChart for top-N visualization, CollapsibleSection + .data-table for full list. Detect stdlib by checking package.startsWith('stdlib:') as backward compat fallback.",
               "priority": "medium",
               "blockedBy": [
                 "93d0eb5b-862f-4585-b3d8-20a1c88db40d"
-              ]
+              ],
+              "startedAt": "2026-03-26T23:18:41.829Z",
+              "completedAt": "2026-03-26T23:24:55.668Z"
             },
             {
               "id": "f7dd4056-62b0-4293-8142-fdfdcf099355",
