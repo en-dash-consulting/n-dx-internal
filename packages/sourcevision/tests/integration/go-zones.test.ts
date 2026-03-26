@@ -202,13 +202,37 @@ describe("zone detection — Go fixture project", () => {
   // ── Crossings ───────────────────────────────────────────────────────────────
   //
   // Go import edges target package directories (e.g. "internal/handler"), not
-  // individual files. The crossing computation matches edge endpoints against
-  // zone file lists, so directory-level targets may not produce crossings even
-  // when zones span multiple packages. We validate structural correctness of
-  // whatever crossings are produced rather than requiring a minimum count.
+  // individual files. The resolver expands directory targets to their constituent
+  // files so that cross-zone imports are correctly detected as crossings.
 
-  it("crossings array is present (may be empty for Go directory-level imports)", () => {
+  it("produces non-zero crossings from Go directory-level imports", () => {
     expect(Array.isArray(zones.crossings)).toBe(true);
+    expect(
+      zones.crossings.length,
+      "Expected non-zero crossings — the Go fixture has cross-package imports " +
+        "(cmd→handler→service→repository) that should produce zone crossings " +
+        "after directory-to-files resolution. Got 0 crossings.",
+    ).toBeGreaterThan(0);
+  });
+
+  it("crossing targets are real file paths, not directory paths", () => {
+    for (const crossing of zones.crossings) {
+      expect(
+        crossing.to,
+        `Crossing target "${crossing.to}" looks like a directory — ` +
+          "the resolver should expand directory targets to actual .go files.",
+      ).toMatch(/\.\w+$/);
+    }
+  });
+
+  it("at least one zone has non-zero coupling from Go cross-package imports", () => {
+    const hasCoupling = zones.zones.some((z) => z.coupling > 0);
+    expect(
+      hasCoupling,
+      "All zones have coupling === 0. The Go fixture has cross-package " +
+        "imports (cmd→handler→service→repository) that should produce " +
+        "non-zero coupling after directory edge resolution.",
+    ).toBe(true);
   });
 
   it("all crossings reference valid zone IDs", () => {
