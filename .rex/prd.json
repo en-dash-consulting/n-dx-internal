@@ -23040,7 +23040,7 @@
     {
       "id": "4700c8ae-721d-4f18-86e7-1eaf5a559bb4",
       "title": "Pre-PR Fixes: Zone Edge Resolution & Mixed-Language Support",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
@@ -23051,6 +23051,8 @@
           "level": "feature",
           "description": "Go import edges target package directories rather than individual files, causing the zone crossing algorithm to silently drop all Go cross-zone imports. This produces 0 crossings and 0 coupling in Go projects (observed: PocketBase had 756 edges but only 49 crossings; grit had 12 edges and 0 crossings). The fix introduces prefix-matching at all edge consumption points so directory-targeted edges resolve to their constituent files. This fix is independent of Fix 2 but is recommended first due to smaller scope and high impact on pure Go projects.",
           "source": "smart-add",
+          "startedAt": "2026-03-26T20:47:10.759Z",
+          "completedAt": "2026-03-26T20:47:10.759Z",
           "children": [
             {
               "id": "9c28061d-d830-4ebb-9389-fae26db29adf",
@@ -23103,22 +23105,22 @@
               "source": "smart-add",
               "startedAt": "2026-03-26T20:09:20.039Z"
             }
-          ],
-          "startedAt": "2026-03-26T20:47:10.759Z",
-          "completedAt": "2026-03-26T20:47:10.759Z"
+          ]
         },
         {
           "id": "a40abbfe-7834-4adc-885b-70e7d80092e1",
           "title": "Fix 2: Mixed-Language Support",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Projects containing both Go and TypeScript files (e.g., a Go CLI with a Next.js docs site) detect only a single primary language. The non-primary language's files are inventoried but produce sparse import edges and orphan zones with 0 cohesion because `manifest.language` is a single string, archetype signal filtering scopes to one language, and only the primary language's skip directories, config file names, and test patterns are applied. Applying Fix 1 (zone edge resolution) first is recommended, but this fix is independent — together they make mixed Go+TS projects produce fully meaningful analysis.",
           "source": "smart-add",
+          "startedAt": "2026-03-26T21:19:10.766Z",
+          "completedAt": "2026-03-26T21:19:10.766Z",
           "children": [
             {
               "id": "d567173b-1770-490a-9757-41712acaa91d",
               "title": "Implement multi-language detection and extend Manifest schema",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Extend `detectLanguage()` in `detect.ts` to return multiple language configs when both Go and TypeScript markers coexist (go.mod + package.json). Add a `languages` string-array field to the Manifest schema in `schema/v1.ts` while keeping the existing `language` string field set to the primary language for backward compatibility. Propagate the languages array through `analyze-phases.ts`, merge skip directories, config filenames, and test patterns from all detected languages, and update classification signal filtering in `classify.ts` to check signals against the full `languages` array instead of a single string.",
               "acceptanceCriteria": [
@@ -23144,12 +23146,14 @@
                 "typescript",
                 "languages"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-26T21:08:17.813Z",
+              "completedAt": "2026-03-26T21:19:10.594Z"
             },
             {
               "id": "44a1fcf3-1830-407b-acc1-889e6f45e8f2",
               "title": "Add test coverage for mixed-language detection",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Validate the multi-language detection pipeline with unit and integration tests. Tests must cover the updated detector, merged language config construction, signal filtering against an array, and the full pipeline against a mixed Go+TS fixture. Pure-language regression tests guard against unintended behavior changes.",
               "acceptanceCriteria": [
@@ -23169,11 +23173,15 @@
                 "typescript",
                 "tests"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-03-26T20:48:15.058Z",
+              "completedAt": "2026-03-26T21:07:33.306Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-03-26T21:19:10.882Z",
+      "completedAt": "2026-03-26T21:19:10.882Z"
     }
   ]
 }
