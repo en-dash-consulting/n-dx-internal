@@ -1,8 +1,8 @@
 import { h, Fragment } from "preact";
 import { useMemo } from "preact/hooks";
 import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
-import type { Finding } from "../external.js";
-import { FindingsList, BarChart } from "../visualization/index.js";
+import type { Finding, ExternalImport } from "../external.js";
+import { FindingsList, BarChart, CollapsibleSection } from "../visualization/index.js";
 import { ENRICHMENT_THRESHOLDS } from "./enrichment-thresholds.js";
 import { BrandedHeader } from "../components/logos.js";
 
@@ -68,6 +68,60 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
       }));
   }, [imports]);
 
+  // External dependencies: stdlib vs third-party breakdown when kind data available
+  const externalDepsData = useMemo(() => {
+    if (!imports) return { hasKind: false, stdlib: [] as ExternalImport[], thirdParty: [] as ExternalImport[], all: [] as ExternalImport[] };
+    const externals = imports.external;
+    if (externals.length === 0) return { hasKind: false, stdlib: [] as ExternalImport[], thirdParty: [] as ExternalImport[], all: [] as ExternalImport[] };
+
+    const stdlib: ExternalImport[] = [];
+    const thirdParty: ExternalImport[] = [];
+
+    for (const ext of externals) {
+      // Use kind field when present; fall back to stdlib: prefix for backward compat
+      const isStdlib = ext.kind === "stdlib" || (!ext.kind && ext.package.startsWith("stdlib:"));
+      if (isStdlib) {
+        stdlib.push(ext);
+      } else {
+        thirdParty.push(ext);
+      }
+    }
+
+    const sortByUsage = (a: ExternalImport, b: ExternalImport) => b.importedBy.length - a.importedBy.length;
+    stdlib.sort(sortByUsage);
+    thirdParty.sort(sortByUsage);
+
+    const all = [...externals].sort(sortByUsage);
+    // hasKind is true when kind field is present OR backward-compat stdlib: prefix detected
+    const hasKind = externals.some((e) => e.kind != null) || stdlib.length > 0;
+
+    return { hasKind, stdlib, thirdParty, all };
+  }, [imports]);
+
+  // Bar chart data for top-N third-party (or all) external deps
+  const topDepsChartData = useMemo(() => {
+    const source = externalDepsData.hasKind ? externalDepsData.thirdParty : externalDepsData.all;
+    return source
+      .slice(0, 15)
+      .map((ext) => ({
+        label: ext.package,
+        value: ext.importedBy.length,
+        color: ext.importedBy.length > 10 ? "var(--red)" : ext.importedBy.length > 5 ? "var(--orange)" : "var(--accent)",
+      }));
+  }, [externalDepsData]);
+
+  // Bar chart data for top-N stdlib packages (only when kind data present)
+  const stdlibChartData = useMemo(() => {
+    if (!externalDepsData.hasKind) return [];
+    return externalDepsData.stdlib
+      .slice(0, 15)
+      .map((ext) => ({
+        label: ext.package.replace(/^stdlib:/, ""),
+        value: ext.importedBy.length,
+        color: "var(--green)",
+      }));
+  }, [externalDepsData]);
+
   return h("div", null,
     h("div", { class: "view-header" },
       h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
@@ -113,6 +167,77 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
           h("h3", { class: "section-header-sm mt-24" }, "Hub Files"),
           h("p", { class: "section-sub" }, "Most-imported files. Red = high coupling risk (>10 importers), orange = moderate (>5)."),
           h(BarChart, { data: hubFilesData }),
+        )
+      : null,
+
+    // External Dependencies section
+    externalDepsData.all.length > 0
+      ? h(Fragment, null,
+          h("h3", { class: "section-header-sm mt-24" }, "External Dependencies"),
+          h("p", { class: "section-sub" },
+            externalDepsData.hasKind
+              ? `${externalDepsData.thirdParty.length} third-party, ${externalDepsData.stdlib.length} stdlib packages`
+              : `${externalDepsData.all.length} external packages sorted by usage`
+          ),
+
+          // Third-party (or all) BarChart
+          topDepsChartData.length > 0
+            ? h(Fragment, null,
+                externalDepsData.hasKind
+                  ? h("h4", { class: "section-header-sm" }, "Third-Party Packages")
+                  : null,
+                h(BarChart, { data: topDepsChartData }),
+              )
+            : null,
+
+          // Stdlib BarChart (only when kind data available)
+          stdlibChartData.length > 0
+            ? h(Fragment, null,
+                h("h4", { class: "section-header-sm mt-24" }, "Standard Library"),
+                h(BarChart, { data: stdlibChartData }),
+              )
+            : null,
+
+          // Full list table
+          h(CollapsibleSection, {
+              title: externalDepsData.hasKind ? "All External Packages" : "Package Details",
+              count: externalDepsData.all.length,
+              defaultOpen: false,
+              threshold: 20,
+            },
+            h("div", { class: "data-table-wrapper" },
+              h("table", { class: "data-table" },
+                h("thead", null,
+                  h("tr", null,
+                    h("th", null, "Package"),
+                    externalDepsData.hasKind ? h("th", null, "Kind") : null,
+                    h("th", null, "Importers"),
+                    h("th", null, "Symbols"),
+                  )
+                ),
+                h("tbody", null,
+                  externalDepsData.all.map((ext) => {
+                    const isStdlib = ext.kind === "stdlib" || (!ext.kind && ext.package.startsWith("stdlib:"));
+                    return h("tr", { key: ext.package },
+                      h("td", null, ext.package),
+                      externalDepsData.hasKind
+                        ? h("td", null,
+                            h("span", {
+                              class: `tag ${isStdlib ? "tag-docs" : "tag-source"}`,
+                            }, isStdlib ? "stdlib" : "third-party")
+                          )
+                        : null,
+                      h("td", null, String(ext.importedBy.length)),
+                      h("td", null, ext.symbols.length > 3
+                        ? `${ext.symbols.slice(0, 3).join(", ")}… +${ext.symbols.length - 3}`
+                        : ext.symbols.join(", ")
+                      ),
+                    );
+                  })
+                )
+              )
+            )
+          ),
         )
       : null,
 
