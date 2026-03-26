@@ -13,7 +13,7 @@ interface ArchitectureProps {
 }
 
 export function ArchitectureView({ data, onSelect, navigateTo }: ArchitectureProps) {
-  const { zones } = data;
+  const { zones, imports } = data;
   const enrichmentPass = zones?.enrichmentPass ?? 0;
 
   if (enrichmentPass < ENRICHMENT_THRESHOLDS.architecture) {
@@ -54,6 +54,20 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
   const crossingCount = zones?.crossings?.length ?? 0;
   const biDirectional = findings.filter((f) => /bidirectional/i.test(f.text)).length;
 
+  // Hub files: most imported files across the codebase
+  const hubFilesData = useMemo(() => {
+    if (!imports) return [];
+    const hubs = imports.summary.mostImported.filter((f) => f.count > 3);
+    if (hubs.length === 0) return [];
+    return hubs
+      .slice(0, 15)
+      .map((f) => ({
+        label: shortFilePath(f.path),
+        value: f.count,
+        color: f.count > 10 ? "var(--red)" : f.count > 5 ? "var(--orange)" : "var(--green)",
+      }));
+  }, [imports]);
+
   return h("div", null,
     h("div", { class: "view-header" },
       h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
@@ -93,6 +107,15 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
         )
       : null,
 
+    // Hub files bar chart
+    hubFilesData.length > 0
+      ? h(Fragment, null,
+          h("h3", { class: "section-header-sm mt-24" }, "Hub Files"),
+          h("p", { class: "section-sub" }, "Most-imported files. Red = high coupling risk (>10 importers), orange = moderate (>5)."),
+          h(BarChart, { data: hubFilesData }),
+        )
+      : null,
+
     h(FindingsList, {
       findings,
       legacyInsights,
@@ -100,4 +123,9 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
       searchable: true,
     })
   );
+}
+
+function shortFilePath(path: string): string {
+  const parts = path.split("/");
+  return parts.length > 3 ? `.../${parts.slice(-3).join("/")}` : path;
 }

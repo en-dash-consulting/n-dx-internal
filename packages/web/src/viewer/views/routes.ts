@@ -1,7 +1,7 @@
 import { h, Fragment } from "preact";
 import { useState, useMemo } from "preact/hooks";
 import type { LoadedData } from "../types.js";
-import type { RouteTreeNode, RouteExportKind, ComponentUsageEdge } from "../external.js";
+import type { RouteTreeNode, RouteExportKind, ComponentUsageEdge, ServerRouteGroup, HttpMethod } from "../external.js";
 import { TreeView, type TreeNode, CollapsibleSection, BarChart } from "../visualization/index.js";
 import { SearchFilter } from "../components/search-filter.js";
 import { BrandedHeader } from "../components/logos.js";
@@ -93,8 +93,11 @@ export function RoutesView({ data }: RoutesViewProps) {
     );
   }
 
-  const { routeModules, routeTree, usageEdges, summary } = components;
+  const { routeModules, routeTree, usageEdges, summary, serverRoutes } = components;
   const componentDefs = components.components;
+
+  const hasClientRoutes = routeTree.length > 0 || routeModules.length > 0;
+  const hasServerRoutes = (serverRoutes?.length ?? 0) > 0;
 
   const treeNodes = useMemo(
     () => routeTree.map(routeToTreeNode),
@@ -153,6 +156,37 @@ export function RoutesView({ data }: RoutesViewProps) {
     }));
   }, [summary.routeConventions]);
 
+  // Flatten all server routes for table display
+  const allServerRoutes = useMemo(() => {
+    if (!serverRoutes) return [];
+    return serverRoutes.flatMap((group) =>
+      group.routes.map((r) => ({ ...r, prefix: group.prefix }))
+    );
+  }, [serverRoutes]);
+
+  // HTTP method distribution for server routes BarChart
+  const methodDistribution = useMemo(() => {
+    if (allServerRoutes.length === 0) return [];
+    const colorMap: Record<string, string> = {
+      GET: "#6cb4ee",
+      POST: "var(--green)",
+      PUT: "var(--orange)",
+      PATCH: "var(--orange)",
+      DELETE: "var(--red)",
+      OPTIONS: "var(--text-dim)",
+      HEAD: "var(--text-dim)",
+    };
+    const counts = new Map<string, number>();
+    for (const r of allServerRoutes) {
+      counts.set(r.method, (counts.get(r.method) ?? 0) + 1);
+    }
+    // Stable ordering: common methods first
+    const order: HttpMethod[] = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"];
+    return order
+      .filter((m) => counts.has(m))
+      .map((m) => ({ label: m, value: counts.get(m)!, color: colorMap[m] || "var(--accent)" }));
+  }, [allServerRoutes]);
+
   const renderRouteNode = (node: TreeNode, depth: number) => {
     const mod = moduleByFile.get(String(node.file));
     return h(Fragment, null,
@@ -190,10 +224,16 @@ export function RoutesView({ data }: RoutesViewProps) {
     );
   };
 
+  const headerTitle = hasClientRoutes && hasServerRoutes
+    ? "Routes, Endpoints & Components"
+    : hasServerRoutes
+      ? "Server Endpoints & Components"
+      : "Routes & Components";
+
   return h("div", null,
     h("div", { class: "view-header" },
       h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
-      h("h2", { class: "section-header" }, "Routes & Components"),
+      h("h2", { class: "section-header" }, headerTitle),
     ),
 
     h("div", { class: "stat-grid" },
@@ -213,6 +253,12 @@ export function RoutesView({ data }: RoutesViewProps) {
         h("div", { class: "value" }, String(summary.layoutDepth)),
         h("div", { class: "label" }, "Layout Depth")
       ),
+      hasServerRoutes
+        ? h("div", { class: "stat-card" },
+            h("div", { class: "value" }, String(summary.totalServerRoutes ?? allServerRoutes.length)),
+            h("div", { class: "label" }, "Server Endpoints")
+          )
+        : null,
     ),
 
     routeTree.length > 0 || componentTreeNodes.length > 0
@@ -254,6 +300,56 @@ export function RoutesView({ data }: RoutesViewProps) {
       ? h(Fragment, null,
           h("h3", { class: "section-header-sm mt-24" }, "Convention Coverage"),
           h(BarChart, { data: conventionData }),
+        )
+      : null,
+
+    // Server Endpoints
+    hasServerRoutes
+      ? h(Fragment, null,
+          h("h3", { class: "section-header-sm mt-24" }, "Server Endpoints"),
+          h("p", { class: "section-sub" }, `${allServerRoutes.length} endpoint${allServerRoutes.length !== 1 ? "s" : ""} across ${serverRoutes!.length} route group${serverRoutes!.length !== 1 ? "s" : ""}.`),
+          methodDistribution.length > 0
+            ? h(BarChart, { data: methodDistribution })
+            : null,
+          h(CollapsibleSection, {
+            title: "Endpoint Details",
+            count: allServerRoutes.length,
+            defaultOpen: true,
+            threshold: 30,
+          },
+            h("div", { class: "data-table-wrapper" },
+              h("table", { class: "data-table" },
+                h("thead", null,
+                  h("tr", null,
+                    h("th", null, "Method"),
+                    h("th", null, "Path"),
+                    h("th", null, "File"),
+                    h("th", null, "Handler"),
+                  )
+                ),
+                h("tbody", null,
+                  allServerRoutes.map((route) =>
+                    h("tr", { key: `${route.method}:${route.path}` },
+                      h("td", null,
+                        h("span", {
+                          class: `method-badge method-badge-${route.method.toLowerCase()}`,
+                        }, route.method)
+                      ),
+                      h("td", null,
+                        h("span", { class: "server-route-path" }, route.path)
+                      ),
+                      h("td", null, route.file),
+                      h("td", null,
+                        route.handler
+                          ? h("span", { class: "server-route-handler" }, route.handler)
+                          : null
+                      ),
+                    )
+                  )
+                )
+              )
+            )
+          ),
         )
       : null,
 

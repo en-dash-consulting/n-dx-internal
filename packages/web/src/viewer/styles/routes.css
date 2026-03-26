@@ -37,3 +37,43 @@
 [data-theme="light"] .route-badge-boundary { background: #fef3c7; color: #92400e; }
 [data-theme="light"] .route-badge-meta { background: #ede9fe; color: #5b21b6; }
 
+/* HTTP method badges for server routes */
+.method-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: monospace;
+  margin-right: 4px;
+  text-transform: uppercase;
+}
+
+.method-badge-get { background: #1e3a5f; color: #6cb4ee; }
+.method-badge-post { background: #1e3f2e; color: var(--green); }
+.method-badge-put { background: #3f2e1e; color: var(--orange); }
+.method-badge-patch { background: #3f2e1e; color: var(--orange); }
+.method-badge-delete { background: #3f1e1e; color: var(--red); }
+.method-badge-options { background: #2e2e3f; color: var(--text-dim); }
+.method-badge-head { background: #2e2e3f; color: var(--text-dim); }
+
+[data-theme="light"] .method-badge-get { background: #dbeafe; color: #1e40af; }
+[data-theme="light"] .method-badge-post { background: #dcfce7; color: #166534; }
+[data-theme="light"] .method-badge-put { background: #fef3c7; color: #92400e; }
+[data-theme="light"] .method-badge-patch { background: #fef3c7; color: #92400e; }
+[data-theme="light"] .method-badge-delete { background: #fee2e2; color: #991b1b; }
+[data-theme="light"] .method-badge-options { background: #f3f4f6; color: #6b7280; }
+[data-theme="light"] .method-badge-head { background: #f3f4f6; color: #6b7280; }
+
+.server-route-path {
+  font-family: monospace;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.server-route-handler {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+

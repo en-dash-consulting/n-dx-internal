@@ -22,8 +22,11 @@ export type {
   ExternalImport,
   FileEntry,
   Finding,
+  HttpMethod,
   RouteExportKind,
   RouteTreeNode,
+  ServerRoute,
+  ServerRouteGroup,
   Zone,
   ZoneCrossing,
 } from "../schema/v1.js";
