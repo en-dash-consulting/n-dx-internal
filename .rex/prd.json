@@ -9523,7 +9523,6 @@
       "level": "epic",
       "description": "PRD management: hierarchical epics/features/tasks/subtasks, smart add from natural language, LLM-powered analysis and recommendations, validation, pruning, reshaping. Stores state in .rex/prd.json.",
       "startedAt": "2026-03-24T20:09:27.774Z",
-      "completedAt": "2026-03-24T20:09:27.774Z",
       "children": [
         {
           "id": "95bfdba2-2cba-4921-b614-3a34779e0892",
@@ -12353,8 +12352,32 @@
           ],
           "startedAt": "2026-03-24T05:12:16.787Z",
           "completedAt": "2026-03-24T05:20:58.936Z"
+        },
+        {
+          "id": "3907a54b-dfe1-42fe-beaa-05e95c756140",
+          "title": "get_prd_status undercounts items when childless features exist",
+          "status": "completed",
+          "level": "task",
+          "description": "get_prd_status reports Hench total as 48 when it should be 49 (47 completed + 1 pending task + 1 pending feature with no children). The stats computation appears to skip or miscount features that have no child tasks. The self-adapting workflow feature is pending under Hench but not reflected in the epic's total or pending count.",
+          "acceptanceCriteria": [
+            "Features with no children are counted in parent epic stats",
+            "get_prd_status total matches actual descendant count",
+            "Pending childless features increment the pending count"
+          ],
+          "priority": "high",
+          "tags": [
+            "rex",
+            "bug",
+            "stats"
+          ],
+          "source": "Observed during self-heal feedback session, 2026-03-27",
+          "startedAt": "2026-03-27T04:17:11.408Z",
+          "completedAt": "2026-03-27T04:28:57.526Z",
+          "resolutionType": "code-change",
+          "resolutionDetail": "computeStats now counts childless features as work items. The root cause was isWorkItem() returning false for features, so childless features were invisible to stats. Fix: count items where level is not epic AND (is a work item OR has no children)."
         }
-      ]
+      ],
+      "completedAt": "2026-03-27T04:28:57.725Z"
     },
     {
       "id": "4fc05c48-48b0-4da3-8126-4fa237b924d9",
@@ -13382,8 +13405,8 @@
         {
           "id": "f5b21324-3b32-4567-93c8-05850e59333a",
           "title": "Self-Adapting Execution Workflow",
-          "level": "feature",
           "status": "pending",
+          "level": "feature",
           "description": "After each hench execution, run an LLM reflection pass that reads the run transcript, the current workflow, and the project state, then recommends or directly applies adjustments to the workflow for future runs. This makes n-dx self-customizing — the agent learns from its own executions without requiring users to manually tune the workflow. The LLM decides in natural language what worked, what didn't, and what rules to add/modify. No rigid schema needed. This also supports moving workflow files to .hench/ (where execution config belongs) and splitting into pre-execution (instructions) and post-execution (reflection/adaptation) phases.",
           "priority": "medium",
           "tags": [
