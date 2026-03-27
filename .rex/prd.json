@@ -13353,6 +13353,7 @@
       "level": "epic",
       "description": "Unified web dashboard and MCP HTTP server. Preact-based UI with SourceVision, Rex, and Hench views. Includes server architecture, real-time updates, performance optimization, and landing page.",
       "startedAt": "2026-03-24T05:27:03.754Z",
+      "completedAt": "2026-03-27T03:03:34.998Z",
       "children": [
         {
           "id": "d5ad6f16-156d-496f-99e5-0230dd48cd47",
@@ -19324,7 +19325,7 @@
           "description": "Phase D of backend-frontend UI discovery: detect database packages from external imports and surface a dedicated panel in the Architecture view.",
           "priority": "high",
           "startedAt": "2026-03-27T01:36:25.527Z",
-          "completedAt": "2026-03-27T01:36:25.527Z",
+          "completedAt": "2026-03-27T03:03:34.880Z",
           "children": [
             {
               "id": "be1614b0-8e14-4c8c-9b8c-734a1f76bf37",
@@ -19352,11 +19353,30 @@
               "priority": "high",
               "startedAt": "2026-03-27T00:52:01.858Z",
               "completedAt": "2026-03-27T01:03:48.551Z"
+            },
+            {
+              "id": "da942514-2a91-4532-9ae8-21458a11e97b",
+              "title": "Redesign Architecture view layout for long package names and uniform spacing",
+              "status": "completed",
+              "level": "task",
+              "description": "Fix bar chart truncation, SVG width, table overflow, and section spacing for Go module paths",
+              "priority": "high",
+              "startedAt": "2026-03-27T02:43:29.821Z",
+              "completedAt": "2026-03-27T02:51:57.437Z"
+            },
+            {
+              "id": "c98b02db-f8a2-4c67-aa9f-76e9bb312912",
+              "title": "Add handler-to-database flow tracing in Architecture view",
+              "status": "completed",
+              "level": "task",
+              "description": "Trace HTTP handler to DB operation paths using import graph edges and surface as a new panel",
+              "priority": "high",
+              "startedAt": "2026-03-27T02:55:53.354Z",
+              "completedAt": "2026-03-27T03:03:34.711Z"
             }
           ]
         }
-      ],
-      "completedAt": "2026-03-27T01:36:25.644Z"
+      ]
     },
     {
       "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",

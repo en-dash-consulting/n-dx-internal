@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ndx-server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["web.js", "start", "/Users/ryankeith/go-projects/go-backend-clean-architecture"],
+      "port": 3117
+    }
+  ]
+}

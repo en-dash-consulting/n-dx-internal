@@ -1,0 +1,94 @@
+{
+  "proposals": [
+    {
+      "epic": {
+        "title": "Web Dashboard",
+        "source": "llm"
+      },
+      "features": [
+        {
+          "title": "Database Layer Detection & Architecture View Panel",
+          "source": "llm",
+          "description": "Phase D of backend/frontend UI discovery: add a detection pass over the existing external imports data to identify database packages across Go and Node.js ecosystems, then surface a dedicated panel in the SourceVision Architecture view showing which databases, drivers, and ORMs are in use and which files interact with the data layer.",
+          "tasks": [
+            {
+              "title": "Implement database package detection analyzer in sourcevision",
+              "source": "llm",
+              "sourceFile": "",
+              "description": "Add a classification pass over the existing imports.json external[] data that pattern-matches known database packages across Go and Node.js ecosystems. Each matched entry should be classified by database type (MongoDB, PostgreSQL, MySQL, SQLite, generic SQL) and driver/ORM kind, with a list of source files that import it. Output should be persisted as a structured artifact alongside other sourcevision outputs so the web server can serve it without re-scanning. The pass should integrate into the existing analyze pipeline without requiring a separate command.",
+              "acceptanceCriteria": [
+                "Detects Go database packages: go.mongodb.org/*, gorm.io/*, database/sql, and common pg/sqlite drivers",
+                "Detects Node.js/TypeScript packages: pg, mysql2, prisma, mongoose, drizzle, sequelize, typeorm, knex",
+                "Each detected entry includes: package name, database type, driver/ORM classification, and list of importing source files",
+                "Detection output is persisted as a structured JSON artifact accessible via the sourcevision MCP and web server API",
+                "Detection runs as part of sourcevision analyze without requiring a separate invocation",
+                "Unit tests cover at least 8 known package patterns and one false-negative edge case"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "analysis",
+                "database",
+                "backend"
+              ]
+            },
+            {
+              "title": "Expose database layer data via web server API endpoint",
+              "source": "llm",
+              "sourceFile": "",
+              "description": "Add a server-side API endpoint that reads the database detection artifact and returns structured database layer data to the frontend. The endpoint should follow the same pattern as the existing external dependencies and server routes endpoints, routing through domain-gateway.ts to avoid direct imports in route handlers. Should handle the pre-first-analyze state gracefully with a structured not-available response.",
+              "acceptanceCriteria": [
+                "GET /api/sourcevision/db-layer returns detected database entries or an empty array when none are found",
+                "Response schema includes: detected databases (name, type, driverKind), per-database file interaction list, and a total count",
+                "Endpoint imports are routed through domain-gateway.ts following the established gateway pattern",
+                "Returns a structured not-available response when the detection artifact does not yet exist",
+                "Integration test covers the happy path and the missing-artifact fallback"
+              ],
+              "priority": "high",
+              "tags": [
+                "web",
+                "api",
+                "backend",
+                "database"
+              ]
+            },
+            {
+              "title": "Add database layer panel to Architecture view",
+              "source": "llm",
+              "sourceFile": "",
+              "description": "Add a dedicated 'Database Layer' panel to the SourceVision Architecture view that displays detected databases and their interaction footprint. The panel should follow the visual conventions of the existing External Dependencies and Package Dependency Flow panels introduced in prior phases, and give developers enough context to understand the data access architecture at a glance. Expandable entries should reveal the files that import each DB package.",
+              "acceptanceCriteria": [
+                "Architecture view renders a 'Database Layer' panel when the db-layer endpoint returns data",
+                "Panel lists each detected database with its name, type (e.g., MongoDB, PostgreSQL), and driver/ORM label",
+                "Each database entry is expandable to show the list of source files that import the package",
+                "Panel shows a 'No databases detected' empty state when the endpoint returns an empty list",
+                "Panel shows a prompt to run sourcevision analyze when the artifact is not yet available",
+                "Visual design is consistent with the existing External Dependencies panel in the same view",
+                "No new zone boundary violations introduced — all imports flow through external.ts gateway"
+              ],
+              "priority": "high",
+              "tags": [
+                "web",
+                "ui",
+                "sourcevision",
+                "database",
+                "architecture-view"
+              ],
+              "duplicateReason": {
+                "type": "completed_item_match",
+                "matchedItem": {
+                  "id": "b7b0585b-1975-4a74-94ac-564cf8006dde",
+                  "title": "Add server routes panel to Routes view and hub packages to Architecture view",
+                  "level": "task",
+                  "status": "completed"
+                },
+                "explanation": "Matches completed task \"Add server routes panel to Routes view and hub packages to Architecture view\"."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "prdHash": "361a1c860e04"
+}
