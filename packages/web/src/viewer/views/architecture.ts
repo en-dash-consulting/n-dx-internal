@@ -5,6 +5,8 @@ import type { Finding, ExternalImport } from "../external.js";
 import { FindingsList, BarChart, FlowDiagram, CollapsibleSection } from "../visualization/index.js";
 import { ENRICHMENT_THRESHOLDS } from "./enrichment-thresholds.js";
 import { BrandedHeader } from "../components/logos.js";
+import { detectDatabasePackages, DB_CATEGORY_LABELS, DB_CATEGORY_TAG_CLASS } from "./db-packages.js";
+import type { DbCategory, DbPackageMatch } from "./db-packages.js";
 
 interface ArchitectureProps {
   data: LoadedData;
@@ -121,6 +123,31 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
         color: "var(--green)",
       }));
   }, [externalDepsData]);
+
+  // Database layer: filter external deps through known database package registry
+  const dbLayerData = useMemo(() => {
+    if (!imports) return { matches: [] as DbPackageMatch[], byCategory: new Map<DbCategory, DbPackageMatch[]>() };
+    const matches = detectDatabasePackages(imports.external);
+    const byCategory = new Map<DbCategory, DbPackageMatch[]>();
+    for (const m of matches) {
+      const list = byCategory.get(m.category) ?? [];
+      list.push(m);
+      byCategory.set(m.category, list);
+    }
+    return { matches, byCategory };
+  }, [imports]);
+
+  // Database layer bar chart data
+  const dbChartData = useMemo(() => {
+    return dbLayerData.matches.map((m) => ({
+      label: m.ext.package,
+      value: m.ext.importedBy.length,
+      color: m.category === "driver" ? "var(--accent)"
+        : m.category === "orm" ? "#9b7af8"
+        : m.category === "cache" ? "var(--green)"
+        : "var(--orange)",
+    }));
+  }, [dbLayerData]);
 
   // Package-level dependency flow: aggregate ImportEdge[] by directory prefix
   const packageDeps = useMemo(() => {
@@ -316,6 +343,69 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
                       ),
                     );
                   })
+                )
+              )
+            )
+          ),
+        )
+      : null,
+
+    // Database Layer section
+    dbLayerData.matches.length > 0
+      ? h(Fragment, null,
+          h("h3", { class: "section-header-sm mt-24" }, "Database Layer"),
+          h("p", { class: "section-sub" },
+            `${dbLayerData.matches.length} database package${dbLayerData.matches.length === 1 ? "" : "s"} detected across ${dbLayerData.byCategory.size} categor${dbLayerData.byCategory.size === 1 ? "y" : "ies"}`
+          ),
+
+          // Category summary chips
+          h("div", { class: "stat-grid" },
+            ...[...dbLayerData.byCategory.entries()].map(([cat, items]) =>
+              h("div", { class: "stat-card", key: cat },
+                h("div", { class: "value" }, String(items.length)),
+                h("div", { class: "label" }, DB_CATEGORY_LABELS[cat]),
+              )
+            ),
+          ),
+
+          // Bar chart of all database packages by usage
+          dbChartData.length > 0
+            ? h(BarChart, { data: dbChartData })
+            : null,
+
+          // Detailed table (collapsible)
+          h(CollapsibleSection, {
+              title: "Database Packages",
+              count: dbLayerData.matches.length,
+              defaultOpen: dbLayerData.matches.length <= 10,
+              threshold: 10,
+            },
+            h("div", { class: "data-table-wrapper" },
+              h("table", { class: "data-table" },
+                h("thead", null,
+                  h("tr", null,
+                    h("th", null, "Package"),
+                    h("th", null, "Category"),
+                    h("th", null, "Importers"),
+                    h("th", null, "Symbols"),
+                  )
+                ),
+                h("tbody", null,
+                  dbLayerData.matches.map((m) =>
+                    h("tr", { key: m.ext.package },
+                      h("td", null, m.ext.package),
+                      h("td", null,
+                        h("span", {
+                          class: `tag ${DB_CATEGORY_TAG_CLASS[m.category]}`,
+                        }, DB_CATEGORY_LABELS[m.category])
+                      ),
+                      h("td", null, String(m.ext.importedBy.length)),
+                      h("td", null, m.ext.symbols.length > 3
+                        ? `${m.ext.symbols.slice(0, 3).join(", ")}… +${m.ext.symbols.length - 3}`
+                        : m.ext.symbols.join(", ")
+                      ),
+                    )
+                  )
                 )
               )
             )
