@@ -5,7 +5,7 @@ import type { Finding, ExternalImport } from "../external.js";
 import { FindingsList, BarChart, FlowDiagram, CollapsibleSection } from "../visualization/index.js";
 import { ENRICHMENT_THRESHOLDS } from "./enrichment-thresholds.js";
 import { BrandedHeader } from "../components/logos.js";
-import { detectDatabasePackages, DB_CATEGORY_LABELS, DB_CATEGORY_TAG_CLASS } from "./db-packages.js";
+import { detectDatabasePackages, classifyDbPackage, DB_CATEGORY_LABELS, DB_CATEGORY_TAG_CLASS } from "./db-packages.js";
 import type { DbCategory, DbPackageMatch } from "./db-packages.js";
 
 interface ArchitectureProps {
@@ -148,6 +148,83 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
         : "var(--orange)",
     }));
   }, [dbLayerData]);
+
+  // Handler-to-database flow: trace HTTP handler files through import graph to DB packages
+  const handlerDbTraces = useMemo(() => {
+    if (!imports || !data.components) return [];
+    const groups = data.components.serverRoutes ?? [];
+    if (groups.length === 0) return [];
+
+    // Build file → DB packages it directly imports
+    const dbFileToPackages = new Map<string, string[]>();
+    for (const ext of imports.external) {
+      if (classifyDbPackage(ext.package) !== null) {
+        for (const file of ext.importedBy) {
+          const list = dbFileToPackages.get(file) ?? [];
+          list.push(ext.package);
+          dbFileToPackages.set(file, list);
+        }
+      }
+    }
+
+    if (dbFileToPackages.size === 0) return [];
+
+    // Build import adjacency list: file → files it imports
+    const fileImports = new Map<string, string[]>();
+    for (const edge of imports.edges) {
+      const targets = fileImports.get(edge.from) ?? [];
+      targets.push(edge.to);
+      fileImports.set(edge.from, targets);
+    }
+
+    const MAX_DEPTH = 3;
+    const traces: Array<{ method: string; path: string; handlerFile: string; dbPackages: string[]; depth: number }> = [];
+    const seen = new Set<string>();
+
+    for (const group of groups) {
+      for (const route of group.routes) {
+        const key = `${route.method}:${route.path}:${route.file}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        // BFS from handler file through import graph
+        const visited = new Set<string>();
+        const queue: Array<{ file: string; depth: number }> = [{ file: route.file, depth: 0 }];
+        const found = new Set<string>();
+        let minDepth = MAX_DEPTH + 1;
+
+        while (queue.length > 0) {
+          const { file, depth } = queue.shift()!;
+          if (visited.has(file)) continue;
+          visited.add(file);
+
+          const dbPkgs = dbFileToPackages.get(file);
+          if (dbPkgs) {
+            for (const pkg of dbPkgs) found.add(pkg);
+            if (depth < minDepth) minDepth = depth;
+          }
+
+          if (depth < MAX_DEPTH) {
+            for (const next of fileImports.get(file) ?? []) {
+              if (!visited.has(next)) queue.push({ file: next, depth: depth + 1 });
+            }
+          }
+        }
+
+        if (found.size > 0) {
+          traces.push({
+            method: route.method,
+            path: route.path,
+            handlerFile: route.file,
+            dbPackages: [...found].sort(),
+            depth: minDepth,
+          });
+        }
+      }
+    }
+
+    return traces.sort((a, b) => a.path.localeCompare(b.path));
+  }, [imports, data.components]);
 
   // Package-level dependency flow: aggregate ImportEdge[] by directory prefix
   const packageDeps = useMemo(() => {
@@ -413,6 +490,51 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
         )
       : null,
 
+    // Handler → Database Flow section
+    handlerDbTraces.length > 0
+      ? h(Fragment, null,
+          h("h3", { class: "section-header-sm mt-24" }, "Handler \u2192 Database Flow"),
+          h("p", { class: "section-sub" },
+            `${handlerDbTraces.length} handler${handlerDbTraces.length === 1 ? "" : "s"} with database access paths (within 3 import hops)`
+          ),
+          h(CollapsibleSection, {
+              title: "Handler Traces",
+              count: handlerDbTraces.length,
+              defaultOpen: handlerDbTraces.length <= 15,
+              threshold: 15,
+            },
+            h("div", { class: "data-table-wrapper" },
+              h("table", { class: "data-table" },
+                h("thead", null,
+                  h("tr", null,
+                    h("th", null, "Method"),
+                    h("th", null, "Route"),
+                    h("th", null, "DB Packages"),
+                    h("th", null, "Hops"),
+                  )
+                ),
+                h("tbody", null,
+                  handlerDbTraces.map((trace) =>
+                    h("tr", { key: `${trace.method}:${trace.path}` },
+                      h("td", null,
+                        h("span", { class: `tag ${methodTagClass(trace.method)}` }, trace.method)
+                      ),
+                      h("td", null, trace.path),
+                      h("td", null,
+                        trace.dbPackages.length > 2
+                          ? `${trace.dbPackages.slice(0, 2).join(", ")} +${trace.dbPackages.length - 2}`
+                          : trace.dbPackages.join(", ")
+                      ),
+                      h("td", null, trace.depth === 0 ? "direct" : String(trace.depth)),
+                    )
+                  )
+                )
+              )
+            )
+          ),
+        )
+      : null,
+
     // Package Dependencies section
     packageDeps.nodes.length > 0
       ? h(Fragment, null,
@@ -481,4 +603,15 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
 function shortFilePath(path: string): string {
   const parts = path.split("/");
   return parts.length > 3 ? `.../${parts.slice(-3).join("/")}` : path;
+}
+
+function methodTagClass(method: string): string {
+  switch (method) {
+    case "GET": return "tag-source";
+    case "POST": return "tag-docs";
+    case "DELETE": return "tag-test";
+    case "PUT":
+    case "PATCH": return "tag-config";
+    default: return "tag-other";
+  }
 }
