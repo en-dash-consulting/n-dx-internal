@@ -58,18 +58,43 @@ const KNOWN_DB_PACKAGES: ReadonlyMap<string, DbCategory> = new Map([
   ["pg", "driver"],
   ["pg-pool", "driver"],
   ["pg-cursor", "driver"],
+  ["pg-native", "driver"],
   ["mysql", "driver"],
   ["mysql2", "driver"],
   ["better-sqlite3", "driver"],
   ["sqlite3", "driver"],
   ["mongodb", "driver"],
   ["tedious", "driver"],        // SQL Server
+  ["mssql", "driver"],          // SQL Server (wrapper)
   ["oracledb", "driver"],
   ["cassandra-driver", "driver"],
   ["neo4j-driver", "driver"],
   ["@neondatabase/serverless", "driver"],
   ["@planetscale/database", "driver"],
   ["@libsql/client", "driver"],
+  ["duckdb", "driver"],
+  ["duckdb-async", "driver"],
+  ["@clickhouse/client", "driver"],
+  ["@surrealdb/node", "driver"],
+  ["surrealdb.js", "driver"],
+  ["couchbase", "driver"],
+  ["nano", "driver"],           // CouchDB
+  ["arangojs", "driver"],       // ArangoDB
+  ["rethinkdb", "driver"],
+  ["@elastic/elasticsearch", "driver"],
+  ["@opensearch-project/opensearch", "driver"],
+
+  // ── Node.js / TypeScript cloud database drivers ──
+  ["@aws-sdk/client-dynamodb", "driver"],
+  ["@aws-sdk/lib-dynamodb", "driver"],
+  ["@azure/cosmos", "driver"],
+  ["@google-cloud/datastore", "driver"],
+  ["@google-cloud/firestore", "driver"],
+  ["@google-cloud/bigtable", "driver"],
+  ["@google-cloud/spanner", "driver"],
+  ["firebase-admin/firestore", "driver"],
+  ["fauna", "driver"],
+  ["faunadb", "driver"],
 
   // ── Node.js / TypeScript ORMs ──
   ["prisma", "orm"],
@@ -89,11 +114,15 @@ const KNOWN_DB_PACKAGES: ReadonlyMap<string, DbCategory> = new Map([
   ["kysely", "query-builder"],
   ["slonik", "query-builder"],
   ["@electric-sql/pglite", "query-builder"],
+  ["sql-template-strings", "query-builder"],
+  ["sql-template-tag", "query-builder"],
 
   // ── Node.js migration tools ──
   ["db-migrate", "migration"],
   ["node-pg-migrate", "migration"],
   ["umzug", "migration"],
+  ["@prisma/migrate", "migration"],
+  ["drizzle-kit", "migration"],
 
   // ── Cache / KV stores ──
   ["redis", "cache"],
@@ -105,6 +134,10 @@ const KNOWN_DB_PACKAGES: ReadonlyMap<string, DbCategory> = new Map([
   ["level", "cache"],
   ["leveldown", "cache"],
   ["levelup", "cache"],
+  ["@upstash/ratelimit", "cache"],
+  ["catbox", "cache"],          // hapi cache framework
+  ["catbox-redis", "cache"],
+  ["catbox-memory", "cache"],
 
   // ── Go drivers (detected via stdlib-style paths) ──
   ["database/sql", "driver"],
@@ -113,35 +146,50 @@ const KNOWN_DB_PACKAGES: ReadonlyMap<string, DbCategory> = new Map([
   ["github.com/go-sql-driver/mysql", "driver"],
   ["github.com/mattn/go-sqlite3", "driver"],
   ["go.mongodb.org/mongo-driver", "driver"],
+  ["github.com/gocql/gocql", "driver"],          // Cassandra
+  ["github.com/elastic/go-elasticsearch", "driver"],
+  ["github.com/olivere/elastic", "driver"],       // Elasticsearch (legacy)
+  ["github.com/neo4j/neo4j-go-driver", "driver"],
+  ["github.com/marcboeker/go-duckdb", "driver"],
 
   // ── Go ORMs ──
   ["gorm.io/gorm", "orm"],
   ["github.com/go-gorm/gorm", "orm"],
   ["entgo.io/ent", "orm"],
   ["github.com/volatiletech/sqlboiler", "orm"],
+  ["github.com/uptrace/bun", "orm"],
 
   // ── Go query builders ──
   ["github.com/Masterminds/squirrel", "query-builder"],
   ["github.com/jmoiron/sqlx", "query-builder"],
+  ["github.com/doug-martin/goqu", "query-builder"],
 
   // ── Go cache ──
   ["github.com/go-redis/redis", "cache"],
   ["github.com/redis/go-redis", "cache"],
+  ["github.com/bradfitz/gomemcache", "cache"],
+  ["github.com/dgraph-io/badger", "cache"],
 
   // ── Go migrations ──
   ["github.com/golang-migrate/migrate", "migration"],
   ["github.com/pressly/goose", "migration"],
+  ["github.com/rubenv/sql-migrate", "migration"],
 
   // ── Python (shown as package names in external imports) ──
   ["sqlalchemy", "orm"],
   ["django.db", "orm"],
   ["peewee", "orm"],
   ["tortoise-orm", "orm"],
+  ["databases", "driver"],      // encode/databases async wrapper
   ["psycopg2", "driver"],
   ["psycopg", "driver"],
   ["pymongo", "driver"],
+  ["motor", "driver"],          // async MongoDB
   ["asyncpg", "driver"],
   ["aiomysql", "driver"],
+  ["aiosqlite", "driver"],
+  ["redis-py", "cache"],
+  ["aioredis", "cache"],
   ["alembic", "migration"],
 ]);
 

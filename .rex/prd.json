@@ -19315,9 +19315,48 @@
               "completedAt": "2026-03-26T23:32:18.434Z"
             }
           ]
+        },
+        {
+          "id": "299f00a9-0c01-4e6f-93a5-d9292160d1a8",
+          "title": "Database Layer Detection & Architecture View Panel",
+          "status": "completed",
+          "level": "feature",
+          "description": "Phase D of backend-frontend UI discovery: detect database packages from external imports and surface a dedicated panel in the Architecture view.",
+          "priority": "high",
+          "startedAt": "2026-03-27T01:36:25.527Z",
+          "completedAt": "2026-03-27T01:36:25.527Z",
+          "children": [
+            {
+              "id": "be1614b0-8e14-4c8c-9b8c-734a1f76bf37",
+              "title": "Implement database package detection analyzer",
+              "status": "completed",
+              "level": "task",
+              "priority": "high",
+              "startedAt": "2026-03-27T01:22:55.129Z",
+              "completedAt": "2026-03-27T01:36:25.354Z"
+            },
+            {
+              "id": "b72270df-1453-4e55-9fca-3ff12bb04ef4",
+              "title": "Expose database layer data via web server API",
+              "status": "completed",
+              "level": "task",
+              "priority": "high",
+              "startedAt": "2026-03-27T01:04:24.994Z",
+              "completedAt": "2026-03-27T01:22:22.923Z"
+            },
+            {
+              "id": "0921be04-45a5-4b8c-875c-9385e7b7f9ae",
+              "title": "Add database layer panel to Architecture view",
+              "status": "completed",
+              "level": "task",
+              "priority": "high",
+              "startedAt": "2026-03-27T00:52:01.858Z",
+              "completedAt": "2026-03-27T01:03:48.551Z"
+            }
+          ]
         }
       ],
-      "completedAt": "2026-03-26T23:32:18.711Z"
+      "completedAt": "2026-03-27T01:36:25.644Z"
     },
     {
       "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",

@@ -85,6 +85,33 @@ describe("classifyDbPackage", () => {
     // "redis-parser" should not match "redis"
     expect(classifyDbPackage("redis-parser")).toBeNull();
   });
+
+  // ── Cloud database drivers ──
+
+  it("classifies cloud database drivers", () => {
+    expect(classifyDbPackage("@aws-sdk/client-dynamodb")).toBe("driver");
+    expect(classifyDbPackage("@aws-sdk/lib-dynamodb")).toBe("driver");
+    expect(classifyDbPackage("@azure/cosmos")).toBe("driver");
+    expect(classifyDbPackage("@google-cloud/firestore")).toBe("driver");
+    expect(classifyDbPackage("@google-cloud/spanner")).toBe("driver");
+  });
+
+  // ── Modern databases ──
+
+  it("classifies modern/specialty database drivers", () => {
+    expect(classifyDbPackage("duckdb")).toBe("driver");
+    expect(classifyDbPackage("@clickhouse/client")).toBe("driver");
+    expect(classifyDbPackage("@surrealdb/node")).toBe("driver");
+    expect(classifyDbPackage("couchbase")).toBe("driver");
+    expect(classifyDbPackage("arangojs")).toBe("driver");
+  });
+
+  // ── Search engines ──
+
+  it("classifies search engine drivers", () => {
+    expect(classifyDbPackage("@elastic/elasticsearch")).toBe("driver");
+    expect(classifyDbPackage("@opensearch-project/opensearch")).toBe("driver");
+  });
 });
 
 // ── detectDatabasePackages ─────────────────────────────────────────
