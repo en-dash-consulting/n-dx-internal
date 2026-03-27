@@ -1971,7 +1971,7 @@ export function runZonePipeline(options: ZonePipelineOptions): ZonePipelineResul
 
   // ── Louvain community detection ──
   const smallZoneMergeLog: MergeLogEntry[] = [];
-  let community = louvainPhase1(graph);
+  let community = louvainPhase1(graph, 100, 1.0, previousZoneAssignment);
   community = mergeBidirectionalCoupling(community, graph);
   community = mergeSmallCommunities(community, graph, smallZoneMergeThreshold, smallZoneMergeLog);
   community = mergeSatelliteCommunities(community, graph);
