@@ -43,6 +43,17 @@ export { DATA_FILES, ALL_DATA_FILES, SUPPLEMENTARY_FILES } from "../shared/data-
 // ── Shared types ──────────────────────────────────────────────────────────
 export type { ViewId } from "../shared/view-id.js";
 
+// ── Shared database detection ─────────────────────────────────────────────
+export {
+  classifyDbPackage,
+  detectDatabasePackages,
+  DB_CATEGORY_LABELS,
+} from "../shared/db-packages.js";
+export type {
+  DbCategory,
+  DbPackageMatch,
+} from "../shared/db-packages.js";
+
 // ── Shared utilities ───────────────────────────────────────────────────────
 export { createRequestDedup } from "./messaging/request-dedup.js";
 export type { RequestDedup } from "./messaging/request-dedup.js";

@@ -366,4 +366,83 @@ describe("Sourcevision API routes", () => {
     const res = await fetch(`http://localhost:${port}/api/sv/manifest`, { method: "POST" });
     expect(res.status).toBe(404);
   });
+
+  // ── db-packages endpoint ─────────────────────────────────────────
+
+  it("GET /api/sv/db-packages returns classified database packages", async () => {
+    const importsData = {
+      edges: [],
+      external: [
+        { package: "react", importedBy: ["src/app.ts", "src/index.ts"], symbols: ["useState"] },
+        { package: "pg", importedBy: ["src/db.ts", "src/repo.ts", "src/migrate.ts"], symbols: ["Pool", "Client"] },
+        { package: "prisma", importedBy: ["src/db.ts", "src/models.ts"], symbols: ["PrismaClient"] },
+        { package: "redis", importedBy: ["src/cache.ts"], symbols: ["createClient"] },
+        { package: "lodash", importedBy: ["src/utils.ts"], symbols: ["debounce"] },
+        { package: "knex", importedBy: ["src/query.ts", "src/db.ts"], symbols: ["knex"] },
+      ],
+      summary: { totalEdges: 0, totalExternal: 6, circularCount: 0 },
+    };
+    await writeFile(join(svDir, "imports.json"), JSON.stringify(importsData));
+
+    const res = await fetch(`http://localhost:${port}/api/sv/db-packages`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+
+    // Should detect 4 database packages (pg, prisma, redis, knex) and skip react/lodash
+    expect(data.totalPackages).toBe(4);
+    expect(data.matches).toHaveLength(4);
+
+    // Sorted by importedBy count descending: pg(3), prisma(2), knex(2), redis(1)
+    expect(data.matches[0].package).toBe("pg");
+    expect(data.matches[0].category).toBe("driver");
+
+    // Categories should be present
+    expect(data.categories.length).toBeGreaterThanOrEqual(3); // driver, orm, query-builder, cache
+    const driverCat = data.categories.find((c: { category: string }) => c.category === "driver");
+    expect(driverCat).toBeDefined();
+    expect(driverCat.packageCount).toBe(1);
+    expect(driverCat.label).toBe("Driver");
+
+    // Total unique importers
+    expect(data.totalImporters).toBeGreaterThan(0);
+  });
+
+  it("GET /api/sv/db-packages returns empty when no database packages exist", async () => {
+    const importsData = {
+      edges: [],
+      external: [
+        { package: "react", importedBy: ["src/app.ts"], symbols: ["useState"] },
+        { package: "lodash", importedBy: ["src/utils.ts"], symbols: ["debounce"] },
+      ],
+      summary: { totalEdges: 0, totalExternal: 2, circularCount: 0 },
+    };
+    await writeFile(join(svDir, "imports.json"), JSON.stringify(importsData));
+
+    const res = await fetch(`http://localhost:${port}/api/sv/db-packages`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.totalPackages).toBe(0);
+    expect(data.matches).toEqual([]);
+    expect(data.categories).toEqual([]);
+    expect(data.totalImporters).toBe(0);
+  });
+
+  it("GET /api/sv/db-packages returns 404 when imports data is missing", async () => {
+    // No imports.json written — should return 404
+    const emptyDir = await mkdtemp(join(tmpdir(), "sv-api-noimports-"));
+    const emptySvDir = join(emptyDir, ".sourcevision");
+    await mkdir(emptySvDir, { recursive: true });
+    const emptyCtx: ServerContext = { projectDir: emptyDir, svDir: emptySvDir, rexDir, dev: false };
+
+    const emptyStarted = await startTestServer(emptyCtx);
+    try {
+      const res = await fetch(`http://localhost:${emptyStarted.port}/api/sv/db-packages`);
+      expect(res.status).toBe(404);
+      const data = await res.json();
+      expect(data.error).toContain("No imports data");
+    } finally {
+      emptyStarted.server.close();
+      await rm(emptyDir, { recursive: true, force: true });
+    }
+  });
 });

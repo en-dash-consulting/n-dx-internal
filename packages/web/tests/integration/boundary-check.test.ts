@@ -314,7 +314,7 @@ describe("server/client boundary", () => {
    */
   it("shared/ consumers import through barrel, not leaf files", () => {
     const violations: string[] = [];
-    const SHARED_LEAF_FILES = ["data-files", "view-id"];
+    const SHARED_LEAF_FILES = ["data-files", "view-id", "db-packages"];
 
     try {
       for (const dir of ["server", "viewer"]) {

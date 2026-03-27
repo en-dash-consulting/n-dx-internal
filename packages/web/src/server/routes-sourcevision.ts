@@ -10,6 +10,7 @@
  * GET /api/sv/components    — React component catalog
  * GET /api/sv/context       — full CONTEXT.md contents
  * GET /api/sv/pr-markdown   — latest PR markdown (if available)
+ * GET /api/sv/db-packages   — database layer detection from external imports
  * GET /api/sv/summary       — summary stats across all analyses
  */
 
@@ -20,7 +21,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse } from "./types.js";
-import { DATA_FILES } from "../shared/index.js";
+import { DATA_FILES, buildDbPackagesResponse } from "../shared/index.js";
 import {
   classifyPRMarkdownRefreshFailureCode,
 } from "./pr-markdown-refresh-diagnostics.js";
@@ -433,6 +434,18 @@ export function handleSourcevisionRoute(
       return true;
     }
     jsonResponse(res, 200, data);
+    return true;
+  }
+
+  // GET /api/sv/db-packages — database layer detection from external imports
+  if (path === "db-packages") {
+    const data = loadDataFile(ctx, DATA_FILES.imports) as Record<string, unknown> | null;
+    if (!data) {
+      errorResponse(res, 404, "No imports data. Run 'sourcevision analyze' first.");
+      return true;
+    }
+    const external = Array.isArray(data.external) ? data.external : [];
+    jsonResponse(res, 200, buildDbPackagesResponse(external));
     return true;
   }
 

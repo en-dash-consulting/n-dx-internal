@@ -8,3 +8,15 @@
 
 export { DATA_FILES, ALL_DATA_FILES, SUPPLEMENTARY_FILES } from "./data-files.js";
 export type { ViewId } from "./view-id.js";
+export {
+  classifyDbPackage,
+  detectDatabasePackages,
+  buildDbPackagesResponse,
+  DB_CATEGORY_LABELS,
+} from "./db-packages.js";
+export type {
+  DbCategory,
+  DbPackageMatch,
+  DbCategorySummary,
+  DbPackagesResponse,
+} from "./db-packages.js";
