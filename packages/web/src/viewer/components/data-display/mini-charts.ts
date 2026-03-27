@@ -14,12 +14,12 @@ interface BarChartProps {
   height?: number;
 }
 
-export function BarChart({ data, width = 500, height }: BarChartProps) {
+export function BarChart({ data, width = 600, height }: BarChartProps) {
   if (data.length === 0) return null;
 
   const barHeight = 22;
   const gap = 4;
-  const labelWidth = 150;
+  const labelWidth = 240;
   const valueWidth = 50;
   const chartHeight = height ?? data.length * (barHeight + gap);
   const barArea = width - labelWidth - valueWidth - 16;
@@ -68,7 +68,7 @@ function truncate(s: string, n: number): string {
 }
 
 function truncateLabel(s: string): string {
-  return s.length > 22 ? s.slice(0, 21) + "\u2026" : s;
+  return s.length > 38 ? s.slice(0, 37) + "\u2026" : s;
 }
 
 // --- FlowDiagram ---

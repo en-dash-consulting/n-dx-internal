@@ -264,7 +264,7 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
     // Zone health bar chart
     zoneHealthData.length > 0
       ? h(Fragment, null,
-          h("h3", { class: "section-header-sm" }, "Zone Sizes"),
+          h("h3", { class: "section-header-sm mt-24" }, "Zone Sizes"),
           h("p", { class: "section-sub" }, "Files per zone. Green = high cohesion, orange = moderate, red = low."),
           h(BarChart, { data: zoneHealthData }),
         )
@@ -293,7 +293,7 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
           topDepsChartData.length > 0
             ? h(Fragment, null,
                 externalDepsData.hasKind
-                  ? h("h4", { class: "section-header-sm" }, "Third-Party Packages")
+                  ? h("h4", { class: "section-header-sm mt-16" }, "Third-Party Packages")
                   : null,
                 h(BarChart, { data: topDepsChartData }),
               )
@@ -430,7 +430,7 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
           // Fan-in bar chart: which packages are depended on most
           packageDeps.fanIn.length > 0
             ? h(Fragment, null,
-                h("h4", { class: "section-header-sm" }, "Fan-In (Dependents)"),
+                h("h4", { class: "section-header-sm mt-16" }, "Fan-In (Dependents)"),
                 h("p", { class: "section-sub" }, "Packages sorted by number of internal dependents. High fan-in = foundational."),
                 h(BarChart, { data: packageDeps.fanIn }),
               )
