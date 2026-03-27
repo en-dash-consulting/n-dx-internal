@@ -9,6 +9,7 @@
       "level": "epic",
       "description": "Static analysis engine: file inventory, import graph, zone detection (Louvain community detection), React component catalog, PR markdown generation. Produces .sourcevision/CONTEXT.md and llms.txt for AI consumption.",
       "startedAt": "2026-03-25T05:39:49.717Z",
+      "completedAt": "2026-03-26T21:00:03.668Z",
       "children": [
         {
           "id": "3bf3754c-c0d0-4fb7-9cbd-5ebbddb85d51",
@@ -9513,8 +9514,7 @@
             }
           ]
         }
-      ],
-      "completedAt": "2026-03-26T21:00:03.668Z"
+      ]
     },
     {
       "id": "bf053fb2-509d-4acf-aa61-7243e66027e5",
@@ -12359,10 +12359,9 @@
     {
       "id": "4fc05c48-48b0-4da3-8126-4fa237b924d9",
       "title": "Hench",
-      "status": "completed",
+      "status": "pending",
       "level": "epic",
       "description": "Autonomous agent: picks rex tasks, builds briefs with codebase context, runs an LLM tool-use loop to implement them, records runs. Supports sequential execution, concurrency management, and resource monitoring.",
-      "completedAt": "2026-03-24T04:16:45.798Z",
       "children": [
         {
           "id": "6b0c3873-5607-4adc-9027-abd8d70ab0e3",
@@ -13360,6 +13359,25 @@
               }
             }
           ]
+        },
+        {
+          "id": "83b64074-3eda-48a6-b3f6-9524cfd6fad7",
+          "title": "Hench should fail tasks when no code changes are made",
+          "status": "pending",
+          "level": "task",
+          "description": "Hench marks tasks as completed even when the agent made no code changes (e.g., due to permission failures preventing tool use). The run shows 'Changes: none' and 'Status: completed', causing the finding to be acknowledged as resolved when the underlying problem persists. Hench should detect zero-change runs and mark the task as failing instead of completed.",
+          "acceptanceCriteria": [
+            "Runs that produce no file changes are marked as failing, not completed",
+            "Failure reason includes 'no changes made' with context about what blocked the agent",
+            "Acknowledged findings are not created for zero-change completions"
+          ],
+          "priority": "high",
+          "tags": [
+            "hench",
+            "self-heal",
+            "bug"
+          ],
+          "source": "Observed during self-heal testing on react-big-schedule, 2026-03-27"
         }
       ]
     },
