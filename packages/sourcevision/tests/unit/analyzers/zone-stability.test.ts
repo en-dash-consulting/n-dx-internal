@@ -227,10 +227,10 @@ describe("preservePreviousZoneIdentity", () => {
 
     const result = preservePreviousZoneIdentity(newZones, prevZones);
 
-    // new-auth shares 3/4 files with authentication (75% Jaccard) → inherits identity
+    // new-auth contains 3/4 of authentication's files (75% directional) → inherits identity
     expect(result[0].id).toBe("authentication");
     expect(result[0].name).toBe("Authentication");
-    // new-api shares 2/2 files with api-layer (100% Jaccard) → inherits identity
+    // new-api contains 2/2 of api-layer's files (100% directional) → inherits identity
     expect(result[1].id).toBe("api-layer");
     expect(result[1].name).toBe("API Layer");
     // Files are preserved from the new zone (not the previous)
@@ -248,7 +248,7 @@ describe("preservePreviousZoneIdentity", () => {
 
     const result = preservePreviousZoneIdentity(newZones, prevZones);
 
-    // Only 1 file in common out of 7 unique files (14% Jaccard) — no remap
+    // Only 1/4 of old-zone's files in new-zone (25% directional) — no remap
     expect(result[0].id).toBe("new-zone");
     expect(result[0].name).not.toBe("Old Zone");
   });
@@ -286,17 +286,17 @@ describe("preservePreviousZoneIdentity", () => {
       makeZone("new-zone", ["src/a.ts", "src/b.ts", "src/c.ts"]),
     ];
     const prevZones = [
-      makeZone("old-zone", ["src/a.ts", "src/b.ts", "src/x.ts", "src/y.ts"],
+      // 1/5 prev files in new zone = 20% directional overlap
+      makeZone("old-zone", ["src/a.ts", "src/w.ts", "src/x.ts", "src/y.ts", "src/z.ts"],
         { name: "Old Zone" }),
     ];
-    // Jaccard: 2 common / 5 unique = 0.4
 
-    // Default threshold (0.7) → no remap
+    // Default threshold (0.5) → no remap (20% < 50%)
     const strict = preservePreviousZoneIdentity(newZones, prevZones);
     expect(strict[0].id).toBe("new-zone");
 
-    // Custom threshold (0.3) → remap
-    const lenient = preservePreviousZoneIdentity(newZones, prevZones, 0.3);
+    // Custom threshold (0.15) → remap (20% > 15%)
+    const lenient = preservePreviousZoneIdentity(newZones, prevZones, 0.15);
     expect(lenient[0].id).toBe("old-zone");
     expect(lenient[0].name).toBe("Old Zone");
   });
