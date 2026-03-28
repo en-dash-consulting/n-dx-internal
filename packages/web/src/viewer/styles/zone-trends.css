@@ -1,0 +1,211 @@
+/* ── Zone Trend Sparklines ─────────────────────────────────────────────── */
+
+.zone-trend-spark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.zone-trend-spark.clickable {
+  cursor: pointer;
+}
+.zone-trend-spark.clickable:hover {
+  background: var(--bg-hover);
+}
+
+.zone-trend-spark-charts {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.zone-trend-indicator {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.zone-trend-placeholder {
+  color: var(--text-dim);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* ── Sparkline SVG ────────────────────────────────────────────────────── */
+
+.sparkline {
+  display: block;
+  overflow: visible;
+}
+
+/* ── Zone Trend Section in Slideout ───────────────────────────────────── */
+
+.zone-slideout-trend-section {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.zone-slideout-trend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.zone-slideout-trend-header h4 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.zone-slideout-trend-header .zone-trend-indicator {
+  font-size: 12px;
+}
+
+.zone-slideout-trend-loading {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 4px 0;
+}
+
+.zone-slideout-trend-empty {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 4px 0;
+  font-style: italic;
+}
+
+/* ── Full Trend Chart Overlay ─────────────────────────────────────────── */
+
+.zone-trend-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 500;
+}
+
+.zone-trend-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  z-index: 501;
+  max-width: 680px;
+  width: 90vw;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.zone-trend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.zone-trend-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zone-trend-title h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.zone-trend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.zone-trend-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.zone-trend-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.zone-trend-close:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+
+.zone-trend-legend {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.zone-trend-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zone-trend-legend-line {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.zone-trend-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.zone-trend-axis-label {
+  font-size: 9px;
+  fill: var(--text-dim);
+}
+
+.zone-trend-tooltip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.zone-trend-tooltip-date {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.zone-trend-tooltip-row {
+  line-height: 1.6;
+}
+
+/* ── Config Surface zone trend row (zone-map grid context) ────────────── */
+
+.config-surface-zone-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}

@@ -53,5 +53,9 @@ export { FindingsList } from "../components/data-display/findings-list.js";
 export { TreeView } from "../components/data-display/tree-view.js";
 export type { TreeNode } from "../components/data-display/tree-view.js";
 
+// ── Primitive components: sparkline & trends ────────────────────────
+export { Sparkline, DualSparkline } from "../components/data-display/sparkline.js";
+export type { SparklinePoint, SparklineProps, DualSparklineProps } from "../components/data-display/sparkline.js";
+
 // ── Composition components: zone visualization ──────────────────────
 export { ZoneMap, ZoneDetail } from "../components/data-display/zone-map.js";

@@ -24,6 +24,7 @@ import { basename } from "../utils.js";
 import { SearchFilter } from "../components/search-filter.js";
 import { BrandedHeader } from "../components/logos.js";
 import { ZoneSlideout } from "../components/zone-slideout.js";
+import { ZoneTrendChart } from "../components/zone-trend-chart.js";
 import type {
   ZoneData,
   BoxRect,
@@ -34,7 +35,7 @@ import type {
   ZoneBreadcrumb,
   ExpandedSubZones,
 } from "./zone-types.js";
-import { usePanZoom, useZoneDrag, useFileEdges, useSubZoneEdges } from "../hooks/index.js";
+import { usePanZoom, useZoneDrag, useFileEdges, useSubZoneEdges, useZoneHistory } from "../hooks/index.js";
 
 // ── Re-export types for downstream consumers ─────────────────────────
 export type { ZoneData, BoxRect, FlowEdge, FileConnectionMap, FileToFileMap, ZoneBreadcrumb } from "./zone-types.js";
@@ -1625,6 +1626,10 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
   const [expandedZones, setExpandedZones] = useState<Set<string>>(new Set());
   const [expandedSubZones, setExpandedSubZones] = useState<ExpandedSubZones>(new Map());
   const [slideoutZone, setSlideoutZone] = useState<Zone | null>(null);
+  const [trendChartZoneId, setTrendChartZoneId] = useState<string | null>(null);
+
+  // ── Zone history (lazy-loaded after initial render) ────────────────
+  const { data: zoneHistory } = useZoneHistory(10, true);
 
   // ── Drill-down navigation state ─────────────────────────────────────
   const ROOT_BREADCRUMB: ZoneBreadcrumb = { zoneId: null, label: "All Zones" };
@@ -1821,6 +1826,14 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
     setSlideoutZone(null);
   }, []);
 
+  const handleOpenTrendChart = useCallback((zoneId: string) => {
+    setTrendChartZoneId(zoneId);
+  }, []);
+
+  const handleCloseTrendChart = useCallback(() => {
+    setTrendChartZoneId(null);
+  }, []);
+
   /** Navigate the drill-down breadcrumb: truncate path to the given depth. */
   const handleBreadcrumbNavigate = useCallback((depth: number) => {
     setDrillPath((prev) => prev.slice(0, depth + 1));
@@ -1922,6 +1935,24 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
       onClose: handleSlideoutClose,
       onFileClick: handleFileSelect,
       navigateTo,
+      zoneHistory: zoneHistory ?? undefined,
+      onOpenTrendChart: handleOpenTrendChart,
     }),
+
+    // Full trend chart overlay
+    trendChartZoneId && zoneHistory
+      ? (() => {
+          const series = zoneHistory.zones.find((z) => z.zoneId === trendChartZoneId);
+          if (!series || series.points.length < 2) return null;
+          const zoneIdx = zones.zones.findIndex((z) => z.id === trendChartZoneId);
+          return h(ZoneTrendChart, {
+            zoneName: series.zoneName,
+            zoneColor: getZoneColorByIndex(zoneIdx >= 0 ? zoneIdx : 0),
+            points: series.points,
+            trend: series.trend,
+            onClose: handleCloseTrendChart,
+          });
+        })()
+      : null,
   );
 }

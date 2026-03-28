@@ -3,7 +3,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 import type { ServerContext } from "./types.js";
 import { jsonResponse } from "./types.js";
@@ -96,6 +96,16 @@ export function handleDataRoute(
     return true;
   }
 
+  // Zone history time-series endpoint
+  if (url === "/data/zone-history" || url.startsWith("/data/zone-history?")) {
+    const parsed = new URL(url, "http://localhost");
+    const limitParam = parsed.searchParams.get("limit");
+    const limit = limitParam ? Math.max(2, Math.min(100, parseInt(limitParam, 10) || 10)) : 10;
+    const result = loadZoneHistory(ctx.svDir, limit);
+    jsonResponse(res, 200, result);
+    return true;
+  }
+
   // Serve individual data files
   if (url.startsWith("/data/")) {
     const dataFile = url.replace("/data/", "");
@@ -144,4 +154,159 @@ export function handleDataRoute(
   }
 
   return false;
+}
+
+// ── Zone history aggregation ─────────────────────────────────────────
+
+/** Snapshot entry within a history file. */
+interface HistorySnapshot {
+  zoneId: string;
+  zoneName: string;
+  cohesion: number;
+  coupling: number;
+  riskScore: number;
+  fileCount: number;
+  timestamp: string;
+  gitSha?: string;
+}
+
+/** Single history file schema. */
+interface HistoryFile {
+  schemaVersion: string;
+  snapshots: HistorySnapshot[];
+  analyzedAt: string;
+  gitSha?: string;
+}
+
+/** A single data point in the time-series. */
+export interface ZoneHistoryPoint {
+  timestamp: string;
+  cohesion: number;
+  coupling: number;
+  riskScore: number;
+  fileCount: number;
+  gitSha?: string;
+}
+
+/** Per-zone time series with trend direction. */
+export interface ZoneTimeSeries {
+  zoneId: string;
+  zoneName: string;
+  points: ZoneHistoryPoint[];
+  trend: "improving" | "degrading" | "stable" | "insufficient";
+}
+
+/** Response shape for /data/zone-history. */
+export interface ZoneHistoryResponse {
+  zones: ZoneTimeSeries[];
+  snapshotCount: number;
+  oldestTimestamp: string | null;
+  newestTimestamp: string | null;
+}
+
+/**
+ * Load and aggregate history files from .sourcevision/history/ into
+ * per-zone time series. Returns the most recent `limit` snapshots.
+ */
+function loadZoneHistory(svDir: string, limit: number): ZoneHistoryResponse {
+  const historyDir = join(svDir, "history");
+
+  if (!existsSync(historyDir)) {
+    return { zones: [], snapshotCount: 0, oldestTimestamp: null, newestTimestamp: null };
+  }
+
+  // Read and sort history files by filename (ISO timestamp order)
+  let files: string[];
+  try {
+    files = readdirSync(historyDir)
+      .filter((f) => f.endsWith(".json"))
+      .sort();
+  } catch {
+    return { zones: [], snapshotCount: 0, oldestTimestamp: null, newestTimestamp: null };
+  }
+
+  if (files.length === 0) {
+    return { zones: [], snapshotCount: 0, oldestTimestamp: null, newestTimestamp: null };
+  }
+
+  // Take the most recent `limit` files
+  const selected = files.slice(-limit);
+
+  // Aggregate per-zone
+  const zoneMap = new Map<string, { zoneName: string; points: ZoneHistoryPoint[] }>();
+
+  for (const file of selected) {
+    const filePath = join(historyDir, file);
+    try {
+      const raw = readFileSync(filePath, "utf-8");
+      const data: HistoryFile = JSON.parse(raw);
+      if (!data.snapshots || !Array.isArray(data.snapshots)) continue;
+
+      for (const snap of data.snapshots) {
+        let entry = zoneMap.get(snap.zoneId);
+        if (!entry) {
+          entry = { zoneName: snap.zoneName, points: [] };
+          zoneMap.set(snap.zoneId, entry);
+        }
+        entry.points.push({
+          timestamp: snap.timestamp,
+          cohesion: snap.cohesion,
+          coupling: snap.coupling,
+          riskScore: snap.riskScore,
+          fileCount: snap.fileCount,
+          gitSha: snap.gitSha,
+        });
+      }
+    } catch {
+      // Skip malformed files
+    }
+  }
+
+  // Sort points by timestamp and compute trend direction
+  const zones: ZoneTimeSeries[] = [];
+  for (const [zoneId, { zoneName, points }] of zoneMap) {
+    points.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    zones.push({
+      zoneId,
+      zoneName,
+      points,
+      trend: computeTrend(points),
+    });
+  }
+
+  // Sort zones alphabetically for stable output
+  zones.sort((a, b) => a.zoneName.localeCompare(b.zoneName));
+
+  const allTimestamps = selected.map((f) => f.replace(/\.json$/, "").replace(/-/g, (m, i) => {
+    // Reconstruct ISO timestamp from filename: 2026-03-25T20-12-03-869Z → approximate
+    return m;
+  }));
+
+  return {
+    zones,
+    snapshotCount: selected.length,
+    oldestTimestamp: zones.length > 0 ? zones[0].points[0]?.timestamp ?? null : null,
+    newestTimestamp: zones.length > 0
+      ? zones[0].points[zones[0].points.length - 1]?.timestamp ?? null
+      : null,
+  };
+}
+
+/**
+ * Compute trend direction from time-series points.
+ * Compares the average of the last two points against the first two.
+ * "Improving" means cohesion increasing or coupling decreasing.
+ */
+function computeTrend(points: ZoneHistoryPoint[]): ZoneTimeSeries["trend"] {
+  if (points.length < 2) return "insufficient";
+
+  const first = points[0];
+  const last = points[points.length - 1];
+
+  // Risk score delta: lower is better
+  const riskDelta = last.riskScore - first.riskScore;
+  const STABLE_THRESHOLD = 0.02;
+
+  if (Math.abs(riskDelta) <= STABLE_THRESHOLD) return "stable";
+  return riskDelta < 0 ? "improving" : "degrading";
 }

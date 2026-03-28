@@ -1,10 +1,12 @@
 import { h, Fragment } from "preact";
-import { useState, useEffect, useCallback } from "preact/hooks";
+import { useState, useEffect, useCallback, useMemo } from "preact/hooks";
 import type { Zone, ZoneCrossing, RiskLevel } from "../external.js";
 import { getZoneColorByIndex } from "../visualization/colors.js";
 import { meterClass } from "../visualization/metrics.js";
+import { DualSparkline } from "./data-display/sparkline.js";
 import { basename } from "../utils.js";
 import type { NavigateTo } from "../types.js";
+import type { ZoneHistoryData } from "../hooks/use-zone-history.js";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -21,6 +23,10 @@ export interface ZoneSlideoutProps {
   onFileClick?: (path: string) => void;
   /** Navigate to a different view. */
   navigateTo?: NavigateTo;
+  /** Zone convergence history data (lazy-loaded). */
+  zoneHistory?: ZoneHistoryData;
+  /** Open the full trend chart for a zone. */
+  onOpenTrendChart?: (zoneId: string) => void;
 }
 
 // ── Risk helpers ──────────────────────────────────────────────────────
@@ -47,6 +53,8 @@ export function ZoneSlideout({
   onClose,
   onFileClick,
   navigateTo,
+  zoneHistory,
+  onOpenTrendChart,
 }: ZoneSlideoutProps) {
   const [showFiles, setShowFiles] = useState(false);
   const [contextMd, setContextMd] = useState<string | null>(null);
@@ -217,6 +225,9 @@ export function ZoneSlideout({
           }),
         ),
       ),
+
+      // Convergence trend sparkline
+      renderTrendSection(zone.id, zoneHistory, onOpenTrendChart),
 
       // Entry points
       zone.entryPoints.length > 0
@@ -392,4 +403,84 @@ function groupBy<T>(items: T[], key: (item: T) => string): Record<string, T[]> {
     result[k].push(item);
   }
   return result;
+}
+
+/**
+ * Render the convergence trend section in the zone slideout.
+ * Shows a sparkline with cohesion/coupling history, or a placeholder
+ * when data is unavailable or insufficient.
+ */
+function renderTrendSection(
+  zoneId: string,
+  zoneHistory: ZoneHistoryData | undefined,
+  onOpenTrendChart: ((zoneId: string) => void) | undefined,
+) {
+  // History not loaded yet
+  if (!zoneHistory) {
+    return h("div", { class: "zone-slideout-trend-section" },
+      h("div", { class: "zone-slideout-trend-header" },
+        h("h4", null, "Trend"),
+      ),
+      h("div", { class: "zone-slideout-trend-loading" }, "Loading history\u2026"),
+    );
+  }
+
+  const series = zoneHistory.zones.find((z) => z.zoneId === zoneId);
+
+  // No history for this zone
+  if (!series || series.points.length === 0) {
+    return h("div", { class: "zone-slideout-trend-section" },
+      h("div", { class: "zone-slideout-trend-header" },
+        h("h4", null, "Trend"),
+      ),
+      h("div", { class: "zone-slideout-trend-empty" }, "No history available"),
+    );
+  }
+
+  // Not enough data points for a trend line
+  if (series.points.length < 2) {
+    return h("div", { class: "zone-slideout-trend-section" },
+      h("div", { class: "zone-slideout-trend-header" },
+        h("h4", null, "Trend"),
+      ),
+      h("div", { class: "zone-slideout-trend-empty" }, "Not enough history"),
+    );
+  }
+
+  const trendIcon = series.trend === "improving" ? "\u2197"
+    : series.trend === "degrading" ? "\u2198"
+    : series.trend === "stable" ? "\u2192"
+    : "";
+  const trendColor = series.trend === "improving" ? "var(--green)"
+    : series.trend === "degrading" ? "var(--red)"
+    : "var(--text-dim)";
+
+  const cohesionPoints = series.points.map((p) => ({ value: p.cohesion }));
+  const couplingPoints = series.points.map((p) => ({ value: p.coupling }));
+
+  return h("div", { class: "zone-slideout-trend-section" },
+    h("div", { class: "zone-slideout-trend-header" },
+      h("h4", null, "Trend"),
+      h("span", {
+        class: "zone-trend-indicator",
+        style: `color: ${trendColor}`,
+        title: `${series.trend} (${series.points.length} snapshots)`,
+      }, trendIcon),
+    ),
+    h(DualSparkline, {
+      cohesionPoints,
+      couplingPoints,
+      trend: series.trend,
+      width: 140,
+      height: 32,
+      onClick: onOpenTrendChart ? () => onOpenTrendChart(zoneId) : undefined,
+    }),
+    h("div", {
+      style: "display: flex; gap: 12px; font-size: 10px; color: var(--text-dim); margin-top: 2px;",
+    },
+      h("span", null, `\u25CF Cohesion`),
+      h("span", { style: "color: var(--orange)" }, `\u25CF Coupling`),
+      h("span", null, `${series.points.length} snapshots`),
+    ),
+  );
 }
