@@ -7,11 +7,12 @@
  *   Phase 3 Architecture: zones + callgraph
  *   Phase 4 Deep Analysis: zone enrichment passes 2–4 + meta-evaluation
  *
- * Data comes from GET /api/sv/phases (returns 7 module statuses) which are
- * aggregated into 4 group statuses on the client side.
+ * Data comes from GET /api/sv/phases which returns 4 grouped phase objects
+ * with aggregated status, timestamps, and constituent module info.
  *
- * Run triggers constituent modules sequentially via existing single-module endpoints.
- * WebSocket "sv:phase-update" events provide real-time status updates.
+ * Run triggers are server-managed — a single POST /api/sv/phases/:n/run
+ * spawns constituent modules in sequence. WebSocket "sv:phase-update"
+ * events provide real-time status updates at the group level.
  */
 
 import { h } from "preact";
@@ -19,75 +20,44 @@ import { useState, useEffect, useCallback, useRef } from "preact/hooks";
 
 // ── Types ────────────────────────────────────────────────────────────
 
-/** Shape of a single module from GET /api/sv/phases. */
+/** Shape of a constituent module within a grouped phase. */
 interface ModuleStatus {
   id: string;
   phase: number;
   name: string;
-  description: string;
   status: "pending" | "running" | "complete" | "error";
   startedAt: string | null;
   completedAt: string | null;
   error: string | null;
 }
 
-/** LLM cost tier for display. */
-type LLMCost = "Free" | "Low" | "Medium" | "High";
-
-/** Definition of a grouped phase. */
-interface PhaseGroup {
-  /** Display group number (1–4). */
+/** Shape of a grouped phase from GET /api/sv/phases. */
+interface GroupedPhase {
   group: number;
   name: string;
   description: string;
-  /** Module IDs from the manifest (used for status aggregation). */
-  moduleIds: readonly string[];
-  /** Old phase numbers (1–7) for triggering via existing endpoints. */
-  modulePhases: readonly number[];
-  llmCost: LLMCost;
+  status: "pending" | "running" | "complete" | "error";
+  startedAt: string | null;
+  completedAt: string | null;
+  error: string | null;
+  modules: ModuleStatus[];
 }
 
-// ── Phase group definitions ─────────────────────────────────────────
+/** LLM cost tier for display. */
+type LLMCost = "Free" | "Low" | "Medium" | "High";
 
-const PHASE_GROUPS: readonly PhaseGroup[] = [
-  {
-    group: 1,
-    name: "Scan",
-    description: "Catalog files, build dependency graph, and detect configuration surface",
-    moduleIds: ["inventory", "imports", "configsurface"],
-    modulePhases: [1, 2, 7],
-    llmCost: "Free",
-  },
-  {
-    group: 2,
-    name: "Classify",
-    description: "Classify files by archetype and catalog React/Preact components",
-    moduleIds: ["classifications", "components"],
-    modulePhases: [3, 5],
-    llmCost: "Low",
-  },
-  {
-    group: 3,
-    name: "Architecture",
-    description: "Detect architectural zones and analyze function-level call patterns",
-    moduleIds: ["zones", "callgraph"],
-    modulePhases: [4, 6],
-    llmCost: "Medium",
-  },
-  {
-    group: 4,
-    name: "Deep Analysis",
-    description: "Zone enrichment passes 2\u20134 and meta-evaluation for comprehensive insights",
-    moduleIds: [],
-    modulePhases: [],
-    llmCost: "High",
-  },
-];
+/** Static display metadata per group. */
+const GROUP_DISPLAY: Record<number, { llmCost: LLMCost }> = {
+  1: { llmCost: "Free" },
+  2: { llmCost: "Low" },
+  3: { llmCost: "Medium" },
+  4: { llmCost: "High" },
+};
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
 /** Status indicator symbols matching the CSS variants. */
-const STATUS_INDICATOR: Record<ModuleStatus["status"], { icon: string; label: string }> = {
+const STATUS_INDICATOR: Record<string, { icon: string; label: string }> = {
   complete: { icon: "\u2713", label: "Complete" },
   running:  { icon: "\u25CF", label: "Running" },
   pending:  { icon: "\u2013", label: "Pending" },
@@ -128,58 +98,28 @@ function formatRelativeTime(isoDate: string): string {
   return new Date(isoDate).toLocaleDateString();
 }
 
-/** Aggregate status from constituent modules into a single group status. */
-function aggregateStatus(groupModules: ModuleStatus[]): ModuleStatus["status"] {
-  if (groupModules.length === 0) return "pending";
-  if (groupModules.some((m) => m.status === "running")) return "running";
-  if (groupModules.some((m) => m.status === "error")) return "error";
-  if (groupModules.every((m) => m.status === "complete")) return "complete";
-  return "pending";
-}
-
 /**
- * Get the most relevant display timestamp for a group of modules.
- * If any module is running, shows its startedAt.
- * Otherwise, returns the latest completedAt across all modules.
+ * Get the most relevant display timestamp for a phase.
+ * If running, shows startedAt. Otherwise shows completedAt.
  */
-function getGroupTimestamp(groupModules: ModuleStatus[]): string | null {
-  // If any module is running, show its startedAt
-  for (const m of groupModules) {
-    if (m.status === "running" && m.startedAt) return m.startedAt;
-  }
-  // Otherwise show the most recent completedAt
-  let latest: string | null = null;
-  for (const m of groupModules) {
-    if (m.completedAt && (!latest || m.completedAt > latest)) {
-      latest = m.completedAt;
-    }
-  }
-  return latest;
+function getDisplayTimestamp(phase: GroupedPhase): string | null {
+  if (phase.status === "running" && phase.startedAt) return phase.startedAt;
+  return phase.completedAt;
 }
 
 // ── Component ────────────────────────────────────────────────────────
 
 export function PhasePanel() {
-  /** Raw module statuses from server (7 individual modules). */
-  const [modules, setModules] = useState<ModuleStatus[]>([]);
+  /** Grouped phase statuses from server (4 phases). */
+  const [phases, setPhases] = useState<GroupedPhase[]>([]);
   const [loaded, setLoaded] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   /** Server-reported global lock state (includes cross-process PID checks). */
   const [serverAnyRunning, setServerAnyRunning] = useState(false);
 
-  /**
-   * Queue of module phase numbers to run sequentially.
-   * When the first item completes, it is shifted off and the next is triggered.
-   */
-  const runQueueRef = useRef<number[]>([]);
-  const [queueActive, setQueueActive] = useState(false);
-
-  /**
-   * Whether any module is currently running.
-   * Combines server-side cross-process PID verification with client-side status.
-   */
-  const anyRunning = serverAnyRunning || modules.some((m) => m.status === "running") || queueActive;
+  /** Whether any phase is currently running. */
+  const anyRunning = serverAnyRunning || phases.some((p) => p.status === "running");
 
   // ── Data fetching ────────────────────────────────────────────────
 
@@ -189,12 +129,8 @@ export function PhasePanel() {
       if (res.ok) {
         const data = await res.json();
         if (data && typeof data === "object" && Array.isArray(data.phases)) {
-          setModules(data.phases);
+          setPhases(data.phases);
           setServerAnyRunning(!!data.anyRunning);
-        } else if (Array.isArray(data)) {
-          // Backward compatibility: plain array response
-          setModules(data);
-          setServerAnyRunning(false);
         }
         setLoaded(true);
       }
@@ -221,20 +157,26 @@ export function PhasePanel() {
         if (!mounted) return;
         try {
           const msg = JSON.parse(event.data);
-          if (msg.type === "sv:phase-update") {
-            setModules((prev) =>
-              prev.map((m) =>
-                m.phase === msg.phase
+          if (msg.type === "sv:phase-update" && typeof msg.group === "number") {
+            // Group-level update from server
+            setPhases((prev) =>
+              prev.map((p) =>
+                p.group === msg.group
                   ? {
-                      ...m,
-                      status: msg.status,
-                      startedAt: msg.startedAt ?? m.startedAt,
-                      completedAt: msg.finishedAt ?? m.completedAt,
+                      ...p,
+                      status: msg.status ?? p.status,
+                      startedAt: msg.startedAt ?? p.startedAt,
+                      completedAt: msg.finishedAt ?? p.completedAt,
                       error: msg.error ?? null,
                     }
-                  : m,
+                  : p,
               ),
             );
+
+            // If a group completed or errored, re-fetch for fresh data
+            if (msg.status === "complete" || msg.status === "error" || msg.status === "pending") {
+              fetchPhases();
+            }
           }
         } catch {
           // Ignore malformed messages
@@ -259,103 +201,43 @@ export function PhasePanel() {
     };
   }, [fetchPhases]);
 
-  // ── Sequential queue runner ──────────────────────────────────────
-  //
-  // Watches module status changes. When the current queue head completes,
-  // shifts the queue and triggers the next module. Stops on error.
+  // ── Action handlers ──────────────────────────────────────────────
 
-  const triggerModuleRun = useCallback(async (phase: number) => {
+  const handleGroupRun = useCallback(async (group: GroupedPhase) => {
+    // Optimistically mark as running
+    setPhases((prev) =>
+      prev.map((p) =>
+        p.group === group.group
+          ? { ...p, status: "running" as const, startedAt: new Date().toISOString() }
+          : p,
+      ),
+    );
+
     try {
-      const res = await fetch(`/api/sv/phases/${phase}/run`, { method: "POST" });
+      const res = await fetch(`/api/sv/phases/${group.group}/run`, { method: "POST" });
       if (!res.ok) {
         const body = await res.json().catch(() => ({ error: "Request failed" }));
-        console.error(`Failed to run module phase ${phase}:`, body.error ?? body);
-        runQueueRef.current = [];
-        setQueueActive(false);
-        // Re-fetch to correct any optimistic status
+        console.error(`Failed to run phase ${group.group}:`, body.error ?? body);
+        // Revert optimistic update
         await fetchPhases();
       }
     } catch (err) {
-      console.error(`Error running module phase ${phase}:`, err);
-      runQueueRef.current = [];
-      setQueueActive(false);
+      console.error(`Error running phase ${group.group}:`, err);
       await fetchPhases();
     }
   }, [fetchPhases]);
 
-  useEffect(() => {
-    const queue = runQueueRef.current;
-    if (queue.length === 0) return;
-
-    const currentPhase = queue[0];
-    const mod = modules.find((m) => m.phase === currentPhase);
-    if (!mod) return;
-
-    if (mod.status === "error") {
-      // Stop queue on error
-      runQueueRef.current = [];
-      setQueueActive(false);
-      return;
-    }
-
-    if (mod.status === "complete") {
-      // Current module completed — advance to next
-      runQueueRef.current = queue.slice(1);
-      const nextQueue = runQueueRef.current;
-
-      if (nextQueue.length === 0) {
-        setQueueActive(false);
-        return;
+  const handleGroupReset = useCallback(async (group: GroupedPhase) => {
+    try {
+      const res = await fetch(`/api/sv/phases/${group.group}/reset`, { method: "POST" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: "Request failed" }));
+        console.error(`Failed to reset phase ${group.group}:`, body.error ?? body);
       }
-
-      // Optimistically mark next module as running to prevent false advance
-      const nextPhase = nextQueue[0];
-      setModules((prev) =>
-        prev.map((m) =>
-          m.phase === nextPhase
-            ? { ...m, status: "running" as const, startedAt: new Date().toISOString() }
-            : m,
-        ),
-      );
-      triggerModuleRun(nextPhase);
+    } catch (err) {
+      console.error(`Error resetting phase ${group.group}:`, err);
     }
-  }, [modules, triggerModuleRun]);
-
-  // ── Action handlers ──────────────────────────────────────────────
-
-  const handleGroupRun = useCallback((group: PhaseGroup) => {
-    if (group.modulePhases.length === 0) return;
-
-    // Set up the run queue with all constituent module phases
-    runQueueRef.current = [...group.modulePhases];
-    setQueueActive(true);
-
-    // Optimistically mark first module as running
-    const firstPhase = group.modulePhases[0];
-    setModules((prev) =>
-      prev.map((m) =>
-        m.phase === firstPhase
-          ? { ...m, status: "running" as const, startedAt: new Date().toISOString() }
-          : m,
-      ),
-    );
-
-    triggerModuleRun(firstPhase);
-  }, [triggerModuleRun]);
-
-  const handleGroupReset = useCallback(async (group: PhaseGroup) => {
-    for (const phase of group.modulePhases) {
-      try {
-        const res = await fetch(`/api/sv/phases/${phase}/reset`, { method: "POST" });
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({ error: "Request failed" }));
-          console.error(`Failed to reset module phase ${phase}:`, body.error ?? body);
-        }
-      } catch (err) {
-        console.error(`Error resetting module phase ${phase}:`, err);
-      }
-    }
-    // Re-fetch to pick up all reset states
+    // Re-fetch to pick up reset state
     await fetchPhases();
   }, [fetchPhases]);
 
@@ -376,34 +258,27 @@ export function PhasePanel() {
 
     // Phase cards grid — 4 grouped phases
     h("div", { class: "phase-panel__grid" },
-      ...PHASE_GROUPS.map((group) => {
-        // Resolve constituent module statuses for this group
-        const groupModules = group.moduleIds
-          .map((id) => modules.find((m) => m.id === id))
-          .filter((m): m is ModuleStatus => m != null);
-
-        const status = aggregateStatus(groupModules);
-        const indicator = STATUS_INDICATOR[status];
-        const ts = getGroupTimestamp(groupModules);
-        const cost = COST_DISPLAY[group.llmCost];
-        const hasResetTarget = groupModules.some(
-          (m) => m.status === "complete" || m.status === "error",
-        );
-        const canRun = group.modulePhases.length > 0;
+      ...phases.map((phase) => {
+        const indicator = STATUS_INDICATOR[phase.status] ?? STATUS_INDICATOR.pending;
+        const ts = getDisplayTimestamp(phase);
+        const display = GROUP_DISPLAY[phase.group] ?? { llmCost: "Free" as LLMCost };
+        const cost = COST_DISPLAY[display.llmCost];
+        const hasResetTarget = phase.status === "complete" || phase.status === "error"
+          || phase.modules.some((m) => m.status === "complete" || m.status === "error");
 
         return h("div", {
-          key: group.group,
-          class: `phase-card phase-card--${status}`,
+          key: phase.group,
+          class: `phase-card phase-card--${phase.status}`,
         },
           // Title row: group number + name + LLM cost indicator
           h("div", { class: "phase-card__title" },
             h("span", { class: "phase-card__number", "aria-hidden": "true" },
-              String(group.group),
+              String(phase.group),
             ),
-            h("span", { class: "phase-card__name" }, group.name),
+            h("span", { class: "phase-card__name" }, phase.name),
             h("span", {
               class: `phase-card__cost ${cost.cssClass}`,
-              title: `LLM cost: ${group.llmCost}`,
+              title: `LLM cost: ${display.llmCost}`,
             }, cost.label),
           ),
 
@@ -411,7 +286,7 @@ export function PhasePanel() {
           h("p", {
             class: "phase-card__description",
             style: "margin: 0 0 8px; font-size: 11px; color: var(--text-dim); line-height: 1.4;",
-          }, group.description),
+          }, phase.description),
 
           // Status badge with indicator
           h("span", {
@@ -423,43 +298,38 @@ export function PhasePanel() {
             indicator.label,
           ),
 
-          // Relative timestamp (latest completedAt across constituent modules)
+          // Relative timestamp
           ts
             ? h("div", { class: "phase-card__timestamp" },
-                status === "running" ? `Started ${formatRelativeTime(ts)}` : formatRelativeTime(ts),
+                phase.status === "running" ? `Started ${formatRelativeTime(ts)}` : formatRelativeTime(ts),
               )
             : null,
 
-          // Error messages from constituent modules
-          ...groupModules
-            .filter((m) => m.error)
-            .map((m) =>
-              h("div", {
-                key: m.id,
+          // Error message
+          phase.error
+            ? h("div", {
                 class: "phase-card__timestamp",
                 style: "color: var(--red); margin-top: 4px;",
-                title: m.error!,
-              }, `${m.name}: ${m.error!.length > 60 ? m.error!.slice(0, 60) + "\u2026" : m.error!}`),
-            ),
+                title: phase.error,
+              }, phase.error.length > 80 ? phase.error.slice(0, 80) + "\u2026" : phase.error)
+            : null,
 
           // Action buttons
           h("div", { class: "phase-card__actions" },
             h("button", {
               type: "button",
-              disabled: anyRunning || !canRun,
+              disabled: anyRunning,
               title: anyRunning
                 ? "A phase is already running"
-                : !canRun
-                ? "Requires grouped server endpoints"
-                : `Run ${group.name}`,
-              onClick: () => handleGroupRun(group),
+                : `Run ${phase.name}`,
+              onClick: () => handleGroupRun(phase),
             }, "Run"),
             hasResetTarget
               ? h("button", {
                   type: "button",
-                  disabled: anyRunning || !canRun,
-                  title: `Reset ${group.name}`,
-                  onClick: () => handleGroupReset(group),
+                  disabled: anyRunning,
+                  title: `Reset ${phase.name}`,
+                  onClick: () => handleGroupReset(phase),
                 }, "Reset")
               : null,
           ),

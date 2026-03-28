@@ -61,7 +61,7 @@ function startTestServer(
 
 // ── Tests ────────────────────────────────────────────────────────────────
 
-describe("POST /api/sv/phases/:phase/reset", () => {
+describe("POST /api/sv/phases/:n/reset (grouped phases)", () => {
   let tmpDir: string;
   let svDir: string;
   let rexDir: string;
@@ -70,7 +70,7 @@ describe("POST /api/sv/phases/:phase/reset", () => {
   let port: number;
   let bc: ReturnType<typeof createBroadcastCapture>;
 
-  const manifestWithCompletedPhase = {
+  const manifestWithCompletedPhases = {
     schema: "sourcevision/v1",
     project: "test-project",
     timestamp: "2026-01-01T00:00:00.000Z",
@@ -82,10 +82,25 @@ describe("POST /api/sv/phases/:phase/reset", () => {
         completedAt: "2026-01-01T00:00:02.000Z",
       },
       imports: {
+        status: "complete",
+        startedAt: "2026-01-01T00:00:02.000Z",
+        completedAt: "2026-01-01T00:00:03.000Z",
+      },
+      configsurface: {
         status: "error",
         startedAt: "2026-01-01T00:00:03.000Z",
         completedAt: "2026-01-01T00:00:04.000Z",
-        error: "Something went wrong",
+        error: "Config surface failed",
+      },
+      classifications: {
+        status: "complete",
+        startedAt: "2026-01-01T00:00:05.000Z",
+        completedAt: "2026-01-01T00:00:06.000Z",
+      },
+      components: {
+        status: "complete",
+        startedAt: "2026-01-01T00:00:06.000Z",
+        completedAt: "2026-01-01T00:00:07.000Z",
       },
     },
   };
@@ -98,7 +113,7 @@ describe("POST /api/sv/phases/:phase/reset", () => {
     await mkdir(rexDir, { recursive: true });
     await writeFile(
       join(svDir, "manifest.json"),
-      JSON.stringify(manifestWithCompletedPhase),
+      JSON.stringify(manifestWithCompletedPhases),
     );
 
     ctx = { projectDir: tmpDir, svDir, rexDir, dev: false };
@@ -114,33 +129,64 @@ describe("POST /api/sv/phases/:phase/reset", () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it("resets a completed phase back to pending and returns 200", async () => {
+  it("resets all modules in group 1 (Scan) back to pending", async () => {
     const res = await fetch(`http://localhost:${port}/api/sv/phases/1/reset`, {
       method: "POST",
     });
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(data.phase).toBe(1);
-    expect(data.phaseId).toBe("inventory");
-    expect(data.phaseName).toBe("Inventory");
+    expect(data.group).toBe(1);
+    expect(data.groupName).toBe("Scan");
     expect(data.status).toBe("pending");
+    expect(data.modules).toEqual(["inventory", "imports", "configsurface"]);
+
+    // Read manifest back from disk — all 3 modules should be reset
+    const raw = await readFile(join(svDir, "manifest.json"), "utf-8");
+    const manifest = JSON.parse(raw);
+
+    for (const moduleId of ["inventory", "imports", "configsurface"]) {
+      const mod = manifest.modules[moduleId];
+      expect(mod.status).toBe("pending");
+      expect(mod.startedAt).toBeUndefined();
+      expect(mod.completedAt).toBeUndefined();
+      expect(mod.error).toBeUndefined();
+    }
   });
 
-  it("clears startedAt, completedAt, and error from manifest.json", async () => {
-    await fetch(`http://localhost:${port}/api/sv/phases/2/reset`, {
+  it("resets all modules in group 2 (Classify) back to pending", async () => {
+    const res = await fetch(`http://localhost:${port}/api/sv/phases/2/reset`, {
+      method: "POST",
+    });
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.group).toBe(2);
+    expect(data.groupName).toBe("Classify");
+    expect(data.modules).toEqual(["classifications", "components"]);
+
+    const raw = await readFile(join(svDir, "manifest.json"), "utf-8");
+    const manifest = JSON.parse(raw);
+
+    expect(manifest.modules.classifications.status).toBe("pending");
+    expect(manifest.modules.components.status).toBe("pending");
+  });
+
+  it("preserves other group's modules when resetting one group", async () => {
+    // Reset group 1 — group 2 modules should be untouched
+    await fetch(`http://localhost:${port}/api/sv/phases/1/reset`, {
       method: "POST",
     });
 
-    // Read manifest back from disk
     const raw = await readFile(join(svDir, "manifest.json"), "utf-8");
     const manifest = JSON.parse(raw);
-    const mod = manifest.modules.imports;
 
-    expect(mod.status).toBe("pending");
-    expect(mod.startedAt).toBeUndefined();
-    expect(mod.completedAt).toBeUndefined();
-    expect(mod.error).toBeUndefined();
+    // Group 1 modules should be reset
+    expect(manifest.modules.inventory.status).toBe("pending");
+
+    // Group 2 modules should be unchanged
+    expect(manifest.modules.classifications.status).toBe("complete");
+    expect(manifest.modules.components.status).toBe("complete");
   });
 
   it("returns 400 for invalid phase number 0", async () => {
@@ -148,23 +194,20 @@ describe("POST /api/sv/phases/:phase/reset", () => {
       method: "POST",
     });
     expect(res.status).toBe(400);
-
     const data = await res.json();
     expect(data.error).toContain("Invalid phase number");
   });
 
-  it("returns 400 for phase number > 7", async () => {
-    const res = await fetch(`http://localhost:${port}/api/sv/phases/8/reset`, {
+  it("returns 400 for phase number > 4", async () => {
+    const res = await fetch(`http://localhost:${port}/api/sv/phases/5/reset`, {
       method: "POST",
     });
     expect(res.status).toBe(400);
-
     const data = await res.json();
     expect(data.error).toContain("Invalid phase number");
   });
 
   it("returns 404 when no manifest exists", async () => {
-    // Remove the manifest
     const { rm: rmFs } = await import("node:fs/promises");
     await rmFs(join(svDir, "manifest.json"));
 
@@ -172,12 +215,11 @@ describe("POST /api/sv/phases/:phase/reset", () => {
       method: "POST",
     });
     expect(res.status).toBe(404);
-
     const data = await res.json();
     expect(data.error).toContain("No manifest data");
   });
 
-  it("broadcasts sv:phase-update with pending status after reset", async () => {
+  it("broadcasts sv:phase-update with pending status after group reset", async () => {
     await fetch(`http://localhost:${port}/api/sv/phases/1/reset`, {
       method: "POST",
     });
@@ -186,53 +228,33 @@ describe("POST /api/sv/phases/:phase/reset", () => {
       (m) => m.type === "sv:phase-update" && m.status === "pending",
     );
     expect(resetMsg).toBeDefined();
-    expect(resetMsg!.phase).toBe(1);
-    expect(resetMsg!.phaseId).toBe("inventory");
+    expect(resetMsg!.group).toBe(1);
+    expect(resetMsg!.modules).toEqual(["inventory", "imports", "configsurface"]);
     expect(resetMsg!.timestamp).toBeTruthy();
   });
 
-  it("handles resetting a phase that has no module entry yet", async () => {
-    // Phase 5 (components) has no entry in the test manifest
-    const res = await fetch(`http://localhost:${port}/api/sv/phases/5/reset`, {
+  it("handles resetting a group where modules have no manifest entry yet", async () => {
+    // Group 3 (zones, callgraph) has no entries in test manifest
+    const res = await fetch(`http://localhost:${port}/api/sv/phases/3/reset`, {
       method: "POST",
     });
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(data.phase).toBe(5);
-    expect(data.phaseId).toBe("components");
-    expect(data.status).toBe("pending");
+    expect(data.group).toBe(3);
+    expect(data.modules).toEqual(["zones", "callgraph"]);
 
-    // Verify it was written to manifest
+    // Verify entries were created in manifest
     const raw = await readFile(join(svDir, "manifest.json"), "utf-8");
     const manifest = JSON.parse(raw);
-    expect(manifest.modules.components).toEqual({ status: "pending" });
+    expect(manifest.modules.zones).toEqual({ status: "pending" });
+    expect(manifest.modules.callgraph).toEqual({ status: "pending" });
   });
 
-  it("preserves other module entries when resetting one phase", async () => {
-    // Reset phase 1 (inventory), verify phase 2 (imports) is untouched
-    await fetch(`http://localhost:${port}/api/sv/phases/1/reset`, {
-      method: "POST",
-    });
-
-    const raw = await readFile(join(svDir, "manifest.json"), "utf-8");
-    const manifest = JSON.parse(raw);
-
-    // Phase 1 should be reset
-    expect(manifest.modules.inventory.status).toBe("pending");
-    expect(manifest.modules.inventory.startedAt).toBeUndefined();
-
-    // Phase 2 should be unchanged
-    expect(manifest.modules.imports.status).toBe("error");
-    expect(manifest.modules.imports.startedAt).toBe("2026-01-01T00:00:03.000Z");
-    expect(manifest.modules.imports.error).toBe("Something went wrong");
-  });
-
-  it("GET requests to phases/:phase/reset are not handled", async () => {
+  it("GET requests to phases/:n/reset are not handled", async () => {
     const res = await fetch(`http://localhost:${port}/api/sv/phases/1/reset`, {
       method: "GET",
     });
-    // Should fall through — not handled by the route
     expect(res.status).toBe(404);
   });
 });

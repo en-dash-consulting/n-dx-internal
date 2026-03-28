@@ -10,10 +10,10 @@
  * GET  /api/sv/components            — React component catalog
  * GET  /api/sv/context               — full CONTEXT.md contents
  * GET  /api/sv/db-packages           — database layer detection from external imports
- * GET  /api/sv/phases                — ordered analysis phase status from manifest modules
+ * GET  /api/sv/phases                — 4 grouped analysis phase objects with aggregated status
  * GET  /api/sv/summary               — summary stats across all analyses
- * POST /api/sv/phases/:phase/run     — trigger a single analysis phase
- * POST /api/sv/phases/:phase/reset   — clear phase status back to pending
+ * POST /api/sv/phases/:n/run         — trigger grouped phase (1–4), runs constituent modules in sequence
+ * POST /api/sv/phases/:n/reset       — reset all constituent modules in a grouped phase to pending
  *
  * The former /api/sv/pr-markdown endpoint has been removed.
  * PR description generation is now handled by the /pr-description Claude Code skill.
@@ -31,7 +31,7 @@ import { isAnalysisRunning } from "./domain-gateway.js";
 
 const SV_PREFIX = "/api/sv/";
 
-/** Ordered analysis phase definitions. */
+/** Internal module definitions — maps module IDs to phase numbers and metadata. */
 const PHASE_DEFINITIONS = [
   { id: "inventory", phase: 1, name: "Inventory", description: "Catalog all project files with metadata (size, language, extension)" },
   { id: "imports", phase: 2, name: "Imports", description: "Build the dependency graph from import/require statements" },
@@ -42,17 +42,81 @@ const PHASE_DEFINITIONS = [
   { id: "configsurface", phase: 7, name: "Config Surface", description: "Detect environment variables, config file references, and global constants" },
 ] as const;
 
-/** Valid phase numbers (1–7). */
-const VALID_PHASE_NUMBERS = new Set<number>(PHASE_DEFINITIONS.map((d) => d.phase));
+/**
+ * Grouped phase definitions — maps 4 user-facing groups to internal modules.
+ *
+ * Group 1 (Scan):          inventory + imports + configsurface
+ * Group 2 (Classify):      classifications + components
+ * Group 3 (Architecture):  zones + callgraph
+ * Group 4 (Deep Analysis): zone enrichment passes 2–4 via --phase=4 --full
+ */
+/** Shape of a grouped phase definition. */
+interface GroupedPhaseDef {
+  group: number;
+  name: string;
+  description: string;
+  moduleIds: readonly string[];
+  modulePhases: readonly number[];
+  /** When true, runs sourcevision analyze --phase=4 --full instead of individual modules. */
+  fullMode?: boolean;
+}
 
-// ── Singleton guard for phase execution ──────────────────────────────────
+const GROUPED_PHASES: readonly GroupedPhaseDef[] = [
+  {
+    group: 1,
+    name: "Scan",
+    description: "Catalog files, build dependency graph, and detect configuration surface",
+    moduleIds: ["inventory", "imports", "configsurface"],
+    modulePhases: [1, 2, 7],
+  },
+  {
+    group: 2,
+    name: "Classify",
+    description: "Classify files by archetype and catalog React/Preact components",
+    moduleIds: ["classifications", "components"],
+    modulePhases: [3, 5],
+  },
+  {
+    group: 3,
+    name: "Architecture",
+    description: "Detect architectural zones and analyze function-level call patterns",
+    moduleIds: ["zones", "callgraph"],
+    modulePhases: [4, 6],
+  },
+  {
+    group: 4,
+    name: "Deep Analysis",
+    description: "Zone enrichment passes 2\u20134 and meta-evaluation for comprehensive insights",
+    moduleIds: [],
+    modulePhases: [],
+    fullMode: true,
+  },
+];
 
-/** Active phase execution state. null when idle. */
-let activePhaseRun: {
-  phase: number;
-  phaseId: string;
+/** Valid grouped phase numbers (1–4). */
+const VALID_GROUP_NUMBERS = new Set<number>(GROUPED_PHASES.map((g) => g.group));
+
+// ── Singleton guard for grouped phase execution ──────────────────────────
+
+/** Active grouped phase execution state. null when idle. */
+let activeGroupRun: {
+  /** Grouped phase number (1–4). */
+  group: number;
+  /** Name of the grouped phase for display. */
+  groupName: string;
+  /** Current module being executed. */
+  currentModulePhase: number;
+  currentModuleId: string;
+  /** Remaining module phases to run after the current one completes. */
+  remainingModulePhases: number[];
+  /** Spawned process handle. */
   handle: ManagedChild;
+  /** When the grouped phase execution started. */
   startedAt: string;
+  /** Server context (captured at run start for async chain). */
+  ctx: ServerContext;
+  /** Broadcast function (captured at run start for async chain). */
+  broadcast: WebSocketBroadcaster | undefined;
 } | null = null;
 
 /** Broadcast a phase status update over WebSocket. */
@@ -68,6 +132,108 @@ function broadcastPhaseUpdate(
   });
 }
 
+// ── Sequential module runner ─────────────────────────────────────────────
+
+/** Resolve the sourcevision binary path and build spawn arguments. */
+function resolveSvBinary(
+  ctx: ServerContext,
+  extraArgs: string[],
+): { binPath: string; binArgs: string[] } {
+  const svBin = join(ctx.projectDir, "node_modules", ".bin", "sourcevision");
+  const svFallback = join(ctx.projectDir, "packages", "sourcevision", "dist", "cli", "index.js");
+  const args = ["analyze", ...extraArgs, ctx.projectDir];
+  const binPath = existsSync(svBin) ? svBin : "node";
+  const binArgs = existsSync(svBin) ? args : [svFallback, ...args];
+  return { binPath, binArgs };
+}
+
+/**
+ * Spawn the next module in the active group run.
+ * Called initially and then recursively on each module completion.
+ */
+function spawnNextModuleInGroup(): void {
+  if (!activeGroupRun) return;
+
+  const { group, currentModulePhase, currentModuleId, ctx, broadcast, startedAt } = activeGroupRun;
+
+  const { binPath, binArgs } = resolveSvBinary(ctx, [`--phase=${currentModulePhase}`]);
+
+  const handle = spawnManaged(binPath, binArgs, {
+    cwd: ctx.projectDir,
+    stdio: "pipe",
+    env: { ...process.env },
+  });
+
+  activeGroupRun.handle = handle;
+
+  // Broadcast module-level running state
+  broadcastPhaseUpdate(broadcast, {
+    group,
+    status: "running",
+    module: currentModuleId,
+    modulePhase: currentModulePhase,
+    startedAt,
+  });
+
+  // Handle module completion asynchronously
+  handle.done
+    .then((result) => {
+      // Guard: run may have been cancelled/shutdown
+      if (!activeGroupRun || activeGroupRun.group !== group) return;
+
+      if (result.exitCode !== 0) {
+        // Module failed — stop the group
+        broadcastPhaseUpdate(broadcast, {
+          group,
+          status: "error",
+          module: currentModuleId,
+          modulePhase: currentModulePhase,
+          finishedAt: new Date().toISOString(),
+          exitCode: result.exitCode,
+          ...(result.stderr ? { error: result.stderr.slice(-500) } : {}),
+        });
+        activeGroupRun = null;
+        return;
+      }
+
+      // Module succeeded — check if more modules remain
+      const remaining = activeGroupRun.remainingModulePhases;
+      if (remaining.length === 0) {
+        // Group complete
+        broadcastPhaseUpdate(broadcast, {
+          group,
+          status: "complete",
+          startedAt,
+          finishedAt: new Date().toISOString(),
+        });
+        activeGroupRun = null;
+        return;
+      }
+
+      // Advance to next module
+      const nextPhase = remaining[0];
+      const nextDef = PHASE_DEFINITIONS.find((d) => d.phase === nextPhase);
+      activeGroupRun.currentModulePhase = nextPhase;
+      activeGroupRun.currentModuleId = nextDef?.id ?? `phase-${nextPhase}`;
+      activeGroupRun.remainingModulePhases = remaining.slice(1);
+
+      // Recurse to spawn next module
+      spawnNextModuleInGroup();
+    })
+    .catch((err) => {
+      if (!activeGroupRun || activeGroupRun.group !== group) return;
+      broadcastPhaseUpdate(broadcast, {
+        group,
+        status: "error",
+        module: currentModuleId,
+        modulePhase: currentModulePhase,
+        finishedAt: new Date().toISOString(),
+        error: err instanceof Error ? err.message : String(err),
+      });
+      activeGroupRun = null;
+    });
+}
+
 // ── Phase run shutdown ───────────────────────────────────────────────────
 
 /**
@@ -75,9 +241,9 @@ function broadcastPhaseUpdate(
  * Returns true if a process was terminated.
  */
 export function shutdownPhaseRun(): boolean {
-  if (!activePhaseRun) return false;
-  activePhaseRun.handle.kill("SIGTERM");
-  activePhaseRun = null;
+  if (!activeGroupRun) return false;
+  activeGroupRun.handle.kill("SIGTERM");
+  activeGroupRun = null;
   return true;
 }
 
@@ -125,24 +291,24 @@ export function handleSourcevisionRoute(
 
   // ── POST routes ────────────────────────────────────────────────────────
 
-  // POST /api/sv/phases/:phase/run — trigger a single analysis phase
+  // POST /api/sv/phases/:n/run — trigger a grouped phase (1–4)
   const phaseRunMatch = path.match(/^phases\/(\d+)\/run$/);
   if (method === "POST" && phaseRunMatch) {
-    const phase = parseInt(phaseRunMatch[1], 10);
+    const group = parseInt(phaseRunMatch[1], 10);
 
-    // Validate phase number
-    if (!VALID_PHASE_NUMBERS.has(phase)) {
-      errorResponse(res, 400, `Invalid phase number: ${phase}. Valid phases are 1–7.`);
+    // Validate group number
+    if (!VALID_GROUP_NUMBERS.has(group)) {
+      errorResponse(res, 400, `Invalid phase number: ${group}. Valid phases are 1–4.`);
       return true;
     }
 
-    // Singleton guard — only one phase can run at a time
-    if (activePhaseRun) {
+    // Singleton guard — only one group can run at a time
+    if (activeGroupRun) {
       jsonResponse(res, 409, {
         error: "A phase is already running",
-        activePhase: activePhaseRun.phase,
-        activePhaseId: activePhaseRun.phaseId,
-        startedAt: activePhaseRun.startedAt,
+        activePhase: activeGroupRun.group,
+        activePhaseId: activeGroupRun.groupName,
+        startedAt: activeGroupRun.startedAt,
       });
       return true;
     }
@@ -159,89 +325,129 @@ export function handleSourcevisionRoute(
       return true;
     }
 
-    const phaseDef = PHASE_DEFINITIONS.find((d) => d.phase === phase)!;
-
-    // Resolve sourcevision binary (same pattern as routes-hench.ts)
-    const svBin = join(ctx.projectDir, "node_modules", ".bin", "sourcevision");
-    const svFallback = join(ctx.projectDir, "packages", "sourcevision", "dist", "cli", "index.js");
-    const args = ["analyze", `--phase=${phase}`, ctx.projectDir];
-
-    const binPath = existsSync(svBin) ? svBin : "node";
-    const binArgs = existsSync(svBin) ? args : [svFallback, ...args];
-
+    const groupDef = GROUPED_PHASES.find((g) => g.group === group)!;
     const startedAt = new Date().toISOString();
 
-    // Spawn the analysis process
-    const handle = spawnManaged(binPath, binArgs, {
-      cwd: ctx.projectDir,
-      stdio: "pipe",
-      env: { ...process.env },
-    });
+    // Group 4 (Deep Analysis) — special: runs --phase=4 --full for zone enrichment
+    if (groupDef.fullMode) {
+      const firstPhase = 4;
+      const firstModuleId = "zones";
 
-    // Track active execution
-    activePhaseRun = { phase, phaseId: phaseDef.id, handle, startedAt };
+      const { binPath, binArgs } = resolveSvBinary(ctx, ["--phase=4", "--full"]);
 
-    // Broadcast initial running state
-    broadcastPhaseUpdate(broadcast, {
-      phase,
-      phaseId: phaseDef.id,
-      status: "running",
-      startedAt,
-    });
-
-    // Handle completion asynchronously
-    handle.done
-      .then((result) => {
-        const isSuccess = result.exitCode === 0;
-        broadcastPhaseUpdate(broadcast, {
-          phase,
-          phaseId: phaseDef.id,
-          status: isSuccess ? "complete" : "error",
-          startedAt,
-          finishedAt: new Date().toISOString(),
-          exitCode: result.exitCode,
-          ...((!isSuccess && result.stderr) ? { error: result.stderr.slice(-500) } : {}),
-        });
-      })
-      .catch((err) => {
-        broadcastPhaseUpdate(broadcast, {
-          phase,
-          phaseId: phaseDef.id,
-          status: "error",
-          startedAt,
-          finishedAt: new Date().toISOString(),
-          error: err instanceof Error ? err.message : String(err),
-        });
-      })
-      .finally(() => {
-        if (activePhaseRun?.phase === phase) {
-          activePhaseRun = null;
-        }
+      const handle = spawnManaged(binPath, binArgs, {
+        cwd: ctx.projectDir,
+        stdio: "pipe",
+        env: { ...process.env },
       });
+
+      activeGroupRun = {
+        group,
+        groupName: groupDef.name,
+        currentModulePhase: firstPhase,
+        currentModuleId: firstModuleId,
+        remainingModulePhases: [],
+        handle,
+        startedAt,
+        ctx,
+        broadcast,
+      };
+
+      // Broadcast initial running state
+      broadcastPhaseUpdate(broadcast, {
+        group,
+        status: "running",
+        module: firstModuleId,
+        modulePhase: firstPhase,
+        startedAt,
+      });
+
+      // Handle completion asynchronously
+      handle.done
+        .then((result) => {
+          if (!activeGroupRun || activeGroupRun.group !== group) return;
+          const isSuccess = result.exitCode === 0;
+          broadcastPhaseUpdate(broadcast, {
+            group,
+            status: isSuccess ? "complete" : "error",
+            startedAt,
+            finishedAt: new Date().toISOString(),
+            exitCode: result.exitCode,
+            ...((!isSuccess && result.stderr) ? { error: result.stderr.slice(-500) } : {}),
+          });
+          activeGroupRun = null;
+        })
+        .catch((err) => {
+          if (!activeGroupRun || activeGroupRun.group !== group) return;
+          broadcastPhaseUpdate(broadcast, {
+            group,
+            status: "error",
+            startedAt,
+            finishedAt: new Date().toISOString(),
+            error: err instanceof Error ? err.message : String(err),
+          });
+          activeGroupRun = null;
+        });
+
+      jsonResponse(res, 202, {
+        group,
+        groupName: groupDef.name,
+        status: "started",
+        startedAt,
+        modules: [firstModuleId],
+      });
+      return true;
+    }
+
+    // Groups 1–3: run constituent modules sequentially
+    const phases = [...groupDef.modulePhases];
+    if (phases.length === 0) {
+      errorResponse(res, 400, `Phase ${group} has no constituent modules.`);
+      return true;
+    }
+
+    const firstPhase = phases[0];
+    const firstDef = PHASE_DEFINITIONS.find((d) => d.phase === firstPhase)!;
+
+    // Initialize group run state
+    activeGroupRun = {
+      group,
+      groupName: groupDef.name,
+      currentModulePhase: firstPhase,
+      currentModuleId: firstDef.id,
+      remainingModulePhases: phases.slice(1),
+      handle: null as unknown as ManagedChild, // Set by spawnNextModuleInGroup
+      startedAt,
+      ctx,
+      broadcast,
+    };
+
+    // Start the first module
+    spawnNextModuleInGroup();
 
     // Return immediately with tracking info
     jsonResponse(res, 202, {
-      phase,
-      phaseId: phaseDef.id,
-      phaseName: phaseDef.name,
+      group,
+      groupName: groupDef.name,
       status: "started",
       startedAt,
+      modules: groupDef.moduleIds,
     });
     return true;
   }
 
-  // POST /api/sv/phases/:phase/reset — clear a phase back to pending
+  // POST /api/sv/phases/:n/reset — reset all modules in a grouped phase to pending
   const phaseResetMatch = path.match(/^phases\/(\d+)\/reset$/);
   if (method === "POST" && phaseResetMatch) {
-    const phase = parseInt(phaseResetMatch[1], 10);
+    const group = parseInt(phaseResetMatch[1], 10);
 
-    // Validate phase number
-    if (!VALID_PHASE_NUMBERS.has(phase)) {
-      errorResponse(res, 400, `Invalid phase number: ${phase}. Valid phases are 1–7.`);
+    // Validate group number
+    if (!VALID_GROUP_NUMBERS.has(group)) {
+      errorResponse(res, 400, `Invalid phase number: ${group}. Valid phases are 1–4.`);
       return true;
     }
 
-    const phaseDef = PHASE_DEFINITIONS.find((d) => d.phase === phase)!;
+    const groupDef = GROUPED_PHASES.find((g) => g.group === group)!;
     const manifestPath = join(ctx.svDir, DATA_FILES.manifest);
 
     // Load manifest
@@ -251,16 +457,21 @@ export function handleSourcevisionRoute(
       return true;
     }
 
-    // Reset the module entry — remove startedAt, completedAt, error; set status to pending
+    // Reset all constituent module entries
     const modules = (manifest.modules ?? {}) as Record<string, Record<string, unknown>>;
-    const mod = modules[phaseDef.id];
-    if (mod) {
-      delete mod.startedAt;
-      delete mod.completedAt;
-      delete mod.error;
-      mod.status = "pending";
-    } else {
-      modules[phaseDef.id] = { status: "pending" };
+    const resetModuleIds: string[] = [];
+
+    for (const moduleId of groupDef.moduleIds) {
+      const mod = modules[moduleId];
+      if (mod) {
+        delete mod.startedAt;
+        delete mod.completedAt;
+        delete mod.error;
+        mod.status = "pending";
+      } else {
+        modules[moduleId] = { status: "pending" };
+      }
+      resetModuleIds.push(moduleId);
     }
     manifest.modules = modules;
 
@@ -272,18 +483,18 @@ export function handleSourcevisionRoute(
       return true;
     }
 
-    // Broadcast reset state
+    // Broadcast reset state for the group
     broadcastPhaseUpdate(broadcast, {
-      phase,
-      phaseId: phaseDef.id,
+      group,
       status: "pending",
+      modules: resetModuleIds,
     });
 
     jsonResponse(res, 200, {
-      phase,
-      phaseId: phaseDef.id,
-      phaseName: phaseDef.name,
+      group,
+      groupName: groupDef.name,
       status: "pending",
+      modules: resetModuleIds,
     });
     return true;
   }
@@ -389,45 +600,96 @@ export function handleSourcevisionRoute(
     return true;
   }
 
-  // GET /api/sv/phases — ordered analysis phase status from manifest modules
+  // GET /api/sv/phases — 4 grouped analysis phases with aggregated status
   if (path === "phases") {
     // Run the shared concurrency check FIRST — it auto-clears stale PID locks
     // in the manifest, so subsequent reads see accurate status.
     const lockCheck = isAnalysisRunning(ctx.projectDir);
-    const anyRunning = activePhaseRun !== null || lockCheck.running;
+    const anyRunning = activeGroupRun !== null || lockCheck.running;
 
     const manifest = loadDataFile(ctx, DATA_FILES.manifest) as Record<string, unknown> | null;
-    if (!manifest) {
-      // Return all phases as pending with anyRunning false when no manifest exists.
-      // This lets the UI render the phase panel in empty state.
-      const phases = PHASE_DEFINITIONS.map((def) => ({
-        id: def.id,
-        phase: def.phase,
-        name: def.name,
-        description: def.description,
-        status: "pending" as const,
-        startedAt: null,
-        completedAt: null,
-        error: null,
-      }));
-      jsonResponse(res, 200, { phases, anyRunning: false });
-      return true;
-    }
-    const modules = (manifest.modules ?? {}) as Record<string, Record<string, unknown>>;
+    const manifestModules = manifest
+      ? (((manifest as Record<string, unknown>).modules ?? {}) as Record<string, Record<string, unknown>>)
+      : null;
 
-    const phases = PHASE_DEFINITIONS.map((def) => {
-      const mod = modules[def.id];
+    // Optionally check zones.json for enrichmentPass (for group 4 status)
+    const zonesData = loadDataFile(ctx, DATA_FILES.zones) as Record<string, unknown> | null;
+    const enrichmentPass = zonesData ? (zonesData.enrichmentPass as number | undefined) : undefined;
+
+    const phases = GROUPED_PHASES.map((groupDef) => {
+      // Resolve constituent module statuses from manifest
+      const moduleStatuses = groupDef.moduleIds.map((moduleId) => {
+        const phaseDef = PHASE_DEFINITIONS.find((d) => d.id === moduleId);
+        const mod = manifestModules?.[moduleId];
+        return {
+          id: moduleId,
+          phase: phaseDef?.phase ?? 0,
+          name: phaseDef?.name ?? moduleId,
+          status: (mod?.status as string) ?? "pending",
+          startedAt: (mod?.startedAt as string) ?? null,
+          completedAt: (mod?.completedAt as string) ?? null,
+          error: (mod?.error as string) ?? null,
+        };
+      });
+
+      // Aggregate status from constituent modules
+      let status: string;
+      if (groupDef.group === 4) {
+        // Group 4 (Deep Analysis): check activeGroupRun or enrichmentPass
+        if (activeGroupRun?.group === 4) {
+          status = "running";
+        } else if (enrichmentPass != null && enrichmentPass >= 4) {
+          status = "complete";
+        } else {
+          status = "pending";
+        }
+      } else if (moduleStatuses.length === 0) {
+        status = "pending";
+      } else if (moduleStatuses.some((m) => m.status === "running")) {
+        status = "running";
+      } else if (moduleStatuses.some((m) => m.status === "error")) {
+        status = "error";
+      } else if (moduleStatuses.every((m) => m.status === "complete")) {
+        status = "complete";
+      } else {
+        status = "pending";
+      }
+
+      // Aggregate timestamps
+      let startedAt: string | null = null;
+      let completedAt: string | null = null;
+      for (const m of moduleStatuses) {
+        if (m.startedAt && (!startedAt || m.startedAt < startedAt)) {
+          startedAt = m.startedAt;
+        }
+        if (m.completedAt && (!completedAt || m.completedAt > completedAt)) {
+          completedAt = m.completedAt;
+        }
+      }
+      // For group 4, use activeGroupRun timestamps if available
+      if (groupDef.group === 4 && activeGroupRun?.group === 4) {
+        startedAt = activeGroupRun.startedAt;
+        completedAt = null;
+      }
+
+      // Aggregate error from constituent modules
+      const errorModules = moduleStatuses.filter((m) => m.error);
+      const error = errorModules.length > 0
+        ? errorModules.map((m) => `${m.name}: ${m.error}`).join("; ")
+        : null;
+
       return {
-        id: def.id,
-        phase: def.phase,
-        name: def.name,
-        description: def.description,
-        status: mod?.status ?? "pending",
-        startedAt: mod?.startedAt ?? null,
-        completedAt: mod?.completedAt ?? null,
-        error: mod?.error ?? null,
+        group: groupDef.group,
+        name: groupDef.name,
+        description: groupDef.description,
+        status,
+        startedAt,
+        completedAt,
+        error,
+        modules: moduleStatuses,
       };
     });
+
     jsonResponse(res, 200, { phases, anyRunning });
     return true;
   }

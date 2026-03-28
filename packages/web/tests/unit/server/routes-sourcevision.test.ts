@@ -269,10 +269,10 @@ describe("Sourcevision API routes", () => {
     }
   });
 
-  // ── phases endpoint ─────────────────────────────────────────────
+  // ── phases endpoint (grouped) ───────────────────────────────────
 
-  it("GET /api/sv/phases returns all 7 phases with status from manifest modules", async () => {
-    // Write manifest with modules data
+  it("GET /api/sv/phases returns 4 grouped phases with aggregated status", async () => {
+    // Write manifest with modules data — inventory+imports complete, classifications running
     const manifestWithModules = {
       ...manifestData,
       modules: {
@@ -286,9 +286,14 @@ describe("Sourcevision API routes", () => {
           startedAt: "2026-01-01T00:00:02.000Z",
           completedAt: "2026-01-01T00:00:03.000Z",
         },
+        configsurface: {
+          status: "complete",
+          startedAt: "2026-01-01T00:00:03.000Z",
+          completedAt: "2026-01-01T00:00:04.000Z",
+        },
         classifications: {
           status: "running",
-          startedAt: "2026-01-01T00:00:03.000Z",
+          startedAt: "2026-01-01T00:00:05.000Z",
           pid: process.pid, // Current PID so lock check sees it as alive
         },
       },
@@ -299,56 +304,51 @@ describe("Sourcevision API routes", () => {
     expect(res.status).toBe(200);
     const envelope = await res.json();
 
-    // Response is now { phases, anyRunning }
     expect(envelope).toHaveProperty("phases");
     expect(envelope).toHaveProperty("anyRunning");
     const data = envelope.phases;
 
-    // Should return exactly 7 phases
-    expect(data).toHaveLength(7);
+    // Should return exactly 4 grouped phases
+    expect(data).toHaveLength(4);
 
-    // Phase 1: inventory — complete
+    // Group 1 (Scan): all 3 modules complete → group status "complete"
     expect(data[0]).toMatchObject({
-      id: "inventory",
-      phase: 1,
-      name: "Inventory",
+      group: 1,
+      name: "Scan",
       status: "complete",
-      startedAt: "2026-01-01T00:00:01.000Z",
-      completedAt: "2026-01-01T00:00:02.000Z",
     });
-    expect(data[0].description).toBeTruthy();
+    expect(data[0].modules).toHaveLength(3);
+    expect(data[0].modules[0]).toMatchObject({ id: "inventory", status: "complete" });
+    expect(data[0].modules[1]).toMatchObject({ id: "imports", status: "complete" });
+    expect(data[0].modules[2]).toMatchObject({ id: "configsurface", status: "complete" });
+    // Timestamps: earliest startedAt, latest completedAt
+    expect(data[0].startedAt).toBe("2026-01-01T00:00:01.000Z");
+    expect(data[0].completedAt).toBe("2026-01-01T00:00:04.000Z");
 
-    // Phase 2: imports — complete
+    // Group 2 (Classify): classifications running → group status "running"
     expect(data[1]).toMatchObject({
-      id: "imports",
-      phase: 2,
-      status: "complete",
-    });
-
-    // Phase 3: classifications — running
-    expect(data[2]).toMatchObject({
-      id: "classifications",
-      phase: 3,
+      group: 2,
+      name: "Classify",
       status: "running",
-      startedAt: "2026-01-01T00:00:03.000Z",
     });
-    expect(data[2].completedAt).toBeNull();
+    expect(data[1].modules).toHaveLength(2);
 
-    // Phases 4-7: not in manifest — should default to pending
-    for (let i = 3; i < 7; i++) {
-      expect(data[i].status).toBe("pending");
-      expect(data[i].startedAt).toBeNull();
-      expect(data[i].completedAt).toBeNull();
-    }
+    // Group 3 (Architecture): no modules completed → pending
+    expect(data[2]).toMatchObject({
+      group: 3,
+      name: "Architecture",
+      status: "pending",
+    });
 
-    // Check specific phase ids
-    expect(data[3].id).toBe("zones");
-    expect(data[4].id).toBe("components");
-    expect(data[5].id).toBe("callgraph");
-    expect(data[6].id).toBe("configsurface");
+    // Group 4 (Deep Analysis): empty modules → pending
+    expect(data[3]).toMatchObject({
+      group: 4,
+      name: "Deep Analysis",
+      status: "pending",
+    });
   });
 
-  it("GET /api/sv/phases includes error field from manifest", async () => {
+  it("GET /api/sv/phases includes aggregated error from module errors", async () => {
     const manifestWithError = {
       ...manifestData,
       modules: {
@@ -366,16 +366,17 @@ describe("Sourcevision API routes", () => {
     const envelope = await res.json();
     const data = envelope.phases;
 
-    expect(data[0]).toMatchObject({
+    // Group 1 (Scan) should have error status and include the module error
+    expect(data[0].status).toBe("error");
+    expect(data[0].error).toContain("Something went wrong");
+    expect(data[0].modules[0]).toMatchObject({
       id: "inventory",
-      phase: 1,
       status: "error",
       error: "Something went wrong",
     });
   });
 
-  it("GET /api/sv/phases defaults all phases to pending when manifest has no modules", async () => {
-    // Manifest without modules field
+  it("GET /api/sv/phases defaults all groups to pending when manifest has no modules", async () => {
     await writeFile(join(svDir, "manifest.json"), JSON.stringify(manifestData));
 
     const res = await fetch(`http://localhost:${port}/api/sv/phases`);
@@ -383,7 +384,7 @@ describe("Sourcevision API routes", () => {
     const envelope = await res.json();
     const data = envelope.phases;
 
-    expect(data).toHaveLength(7);
+    expect(data).toHaveLength(4);
     for (const phase of data) {
       expect(phase.status).toBe("pending");
       expect(phase.startedAt).toBeNull();
@@ -393,7 +394,7 @@ describe("Sourcevision API routes", () => {
     expect(envelope.anyRunning).toBe(false);
   });
 
-  it("GET /api/sv/phases returns pending phases when manifest is missing (empty state)", async () => {
+  it("GET /api/sv/phases returns 4 pending groups when manifest is missing (empty state)", async () => {
     const emptyDir = await mkdtemp(join(tmpdir(), "sv-api-nophases-"));
     const emptySvDir = join(emptyDir, ".sourcevision");
     await mkdir(emptySvDir, { recursive: true });
@@ -405,7 +406,7 @@ describe("Sourcevision API routes", () => {
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.anyRunning).toBe(false);
-      expect(data.phases).toHaveLength(7);
+      expect(data.phases).toHaveLength(4);
       for (const phase of data.phases) {
         expect(phase.status).toBe("pending");
       }

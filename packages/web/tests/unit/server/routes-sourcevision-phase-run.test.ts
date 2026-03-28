@@ -37,7 +37,7 @@ function createMockHandle(pid = 12345): MockHandle {
   return handle;
 }
 
-let _latestHandle: MockHandle | null = null;
+let _handles: MockHandle[] = [];
 let _spawnCalls: { cmd: string; args: string[] }[] = [];
 
 vi.mock("@n-dx/llm-client", async (importOriginal) => {
@@ -46,8 +46,9 @@ vi.mock("@n-dx/llm-client", async (importOriginal) => {
     ...original,
     spawnManaged: vi.fn((_cmd: string, _args: string[]) => {
       _spawnCalls.push({ cmd: _cmd, args: _args });
-      _latestHandle = createMockHandle(99999);
-      return _latestHandle;
+      const handle = createMockHandle(99999);
+      _handles.push(handle);
+      return handle;
     }),
   };
 });
@@ -95,7 +96,7 @@ function startTestServer(
 
 // ── Tests ────────────────────────────────────────────────────────────────
 
-describe("POST /api/sv/phases/:phase/run", () => {
+describe("POST /api/sv/phases/:n/run (grouped phases)", () => {
   let tmpDir: string;
   let svDir: string;
   let rexDir: string;
@@ -112,7 +113,7 @@ describe("POST /api/sv/phases/:phase/run", () => {
   };
 
   beforeEach(async () => {
-    _latestHandle = null;
+    _handles = [];
     _spawnCalls = [];
 
     tmpDir = await mkdtemp(join(tmpdir(), "sv-phase-run-"));
@@ -138,42 +139,138 @@ describe("POST /api/sv/phases/:phase/run", () => {
   afterEach(async () => {
     // Clean up any active phase run
     shutdownPhaseRun();
-    // Resolve mock handle to prevent dangling promises
-    if (_latestHandle) {
-      _latestHandle.exit();
+    // Resolve all mock handles to prevent dangling promises
+    for (const h of _handles) {
+      h.exit();
     }
     server.close();
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it("spawns sourcevision analyze --phase=N and returns 202", async () => {
+  it("POST /api/sv/phases/1/run spawns inventory first and returns 202", async () => {
     const res = await fetch(`http://localhost:${port}/api/sv/phases/1/run`, {
       method: "POST",
     });
     expect(res.status).toBe(202);
 
     const data = await res.json();
-    expect(data.phase).toBe(1);
-    expect(data.phaseId).toBe("inventory");
-    expect(data.phaseName).toBe("Inventory");
+    expect(data.group).toBe(1);
+    expect(data.groupName).toBe("Scan");
     expect(data.status).toBe("started");
     expect(data.startedAt).toBeTruthy();
+    expect(data.modules).toEqual(["inventory", "imports", "configsurface"]);
 
-    // Verify spawn was called with correct args
+    // First spawn should be inventory (--phase=1)
     expect(_spawnCalls).toHaveLength(1);
     expect(_spawnCalls[0].args).toContain("analyze");
     expect(_spawnCalls[0].args).toContain("--phase=1");
-    expect(_spawnCalls[0].args).toContain(tmpDir);
   });
 
-  it("returns 409 if a phase is already running", async () => {
-    // Start first phase
+  it("POST /api/sv/phases/1/run runs modules sequentially: inventory → imports → configsurface", async () => {
+    await fetch(`http://localhost:${port}/api/sv/phases/1/run`, {
+      method: "POST",
+    });
+
+    // First module: inventory (--phase=1)
+    expect(_spawnCalls).toHaveLength(1);
+    expect(_spawnCalls[0].args).toContain("--phase=1");
+
+    // Complete inventory → should auto-spawn imports (--phase=2)
+    _handles[0].exit({ exitCode: 0 });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(_spawnCalls).toHaveLength(2);
+    expect(_spawnCalls[1].args).toContain("--phase=2");
+
+    // Complete imports → should auto-spawn configsurface (--phase=7)
+    _handles[1].exit({ exitCode: 0 });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(_spawnCalls).toHaveLength(3);
+    expect(_spawnCalls[2].args).toContain("--phase=7");
+
+    // Complete configsurface → group should be done
+    _handles[2].exit({ exitCode: 0 });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Should broadcast "complete" for the group
+    const completeMsg = bc.messages.find(
+      (m) => m.type === "sv:phase-update" && m.status === "complete",
+    );
+    expect(completeMsg).toBeDefined();
+    expect(completeMsg!.group).toBe(1);
+    expect(completeMsg!.finishedAt).toBeTruthy();
+  });
+
+  it("POST /api/sv/phases/2/run spawns classifications + components in sequence", async () => {
+    const res = await fetch(`http://localhost:${port}/api/sv/phases/2/run`, {
+      method: "POST",
+    });
+    expect(res.status).toBe(202);
+
+    const data = await res.json();
+    expect(data.group).toBe(2);
+    expect(data.groupName).toBe("Classify");
+    expect(data.modules).toEqual(["classifications", "components"]);
+
+    // First spawn: classifications (--phase=3)
+    expect(_spawnCalls).toHaveLength(1);
+    expect(_spawnCalls[0].args).toContain("--phase=3");
+
+    // Complete classifications → should spawn components (--phase=5)
+    _handles[0].exit({ exitCode: 0 });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(_spawnCalls).toHaveLength(2);
+    expect(_spawnCalls[1].args).toContain("--phase=5");
+  });
+
+  it("POST /api/sv/phases/3/run spawns zones + callgraph in sequence", async () => {
+    const res = await fetch(`http://localhost:${port}/api/sv/phases/3/run`, {
+      method: "POST",
+    });
+    expect(res.status).toBe(202);
+
+    const data = await res.json();
+    expect(data.group).toBe(3);
+    expect(data.groupName).toBe("Architecture");
+
+    // First spawn: zones (--phase=4)
+    expect(_spawnCalls).toHaveLength(1);
+    expect(_spawnCalls[0].args).toContain("--phase=4");
+
+    // Complete zones → should spawn callgraph (--phase=6)
+    _handles[0].exit({ exitCode: 0 });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(_spawnCalls).toHaveLength(2);
+    expect(_spawnCalls[1].args).toContain("--phase=6");
+  });
+
+  it("POST /api/sv/phases/4/run spawns zone enrichment with --full flag", async () => {
+    const res = await fetch(`http://localhost:${port}/api/sv/phases/4/run`, {
+      method: "POST",
+    });
+    expect(res.status).toBe(202);
+
+    const data = await res.json();
+    expect(data.group).toBe(4);
+    expect(data.groupName).toBe("Deep Analysis");
+
+    // Should spawn with --phase=4 and --full
+    expect(_spawnCalls).toHaveLength(1);
+    expect(_spawnCalls[0].args).toContain("--phase=4");
+    expect(_spawnCalls[0].args).toContain("--full");
+  });
+
+  it("returns 409 if a phase group is already running", async () => {
+    // Start group 1
     const res1 = await fetch(`http://localhost:${port}/api/sv/phases/1/run`, {
       method: "POST",
     });
     expect(res1.status).toBe(202);
 
-    // Attempt second phase — should be blocked
+    // Attempt group 2 — should be blocked
     const res2 = await fetch(`http://localhost:${port}/api/sv/phases/2/run`, {
       method: "POST",
     });
@@ -182,132 +279,82 @@ describe("POST /api/sv/phases/:phase/run", () => {
     const data = await res2.json();
     expect(data.error).toContain("already running");
     expect(data.activePhase).toBe(1);
-    expect(data.activePhaseId).toBe("inventory");
   });
 
-  it("returns 400 for invalid phase number", async () => {
+  it("returns 400 for invalid phase number 0", async () => {
     const res = await fetch(`http://localhost:${port}/api/sv/phases/0/run`, {
       method: "POST",
     });
     expect(res.status).toBe(400);
-
     const data = await res.json();
     expect(data.error).toContain("Invalid phase number");
   });
 
-  it("returns 400 for phase number > 7", async () => {
-    const res = await fetch(`http://localhost:${port}/api/sv/phases/8/run`, {
+  it("returns 400 for phase number > 4", async () => {
+    const res = await fetch(`http://localhost:${port}/api/sv/phases/5/run`, {
       method: "POST",
     });
     expect(res.status).toBe(400);
-
     const data = await res.json();
     expect(data.error).toContain("Invalid phase number");
   });
 
-  it("broadcasts sv:phase-update on start", async () => {
-    await fetch(`http://localhost:${port}/api/sv/phases/3/run`, {
-      method: "POST",
-    });
-
-    // Should have broadcast a "running" status
-    const runningMsg = bc.messages.find(
-      (m) => m.type === "sv:phase-update" && m.status === "running",
-    );
-    expect(runningMsg).toBeDefined();
-    expect(runningMsg!.phase).toBe(3);
-    expect(runningMsg!.phaseId).toBe("classifications");
-    expect(runningMsg!.timestamp).toBeTruthy();
-  });
-
-  it("broadcasts sv:phase-update with 'complete' on successful exit", async () => {
-    await fetch(`http://localhost:${port}/api/sv/phases/1/run`, {
-      method: "POST",
-    });
-
-    // Simulate successful process exit
-    _latestHandle!.exit({ exitCode: 0 });
-
-    // Wait for the async .then() to execute
-    await new Promise((resolve) => setTimeout(resolve, 50));
-
-    const completeMsg = bc.messages.find(
-      (m) => m.type === "sv:phase-update" && m.status === "complete",
-    );
-    expect(completeMsg).toBeDefined();
-    expect(completeMsg!.phase).toBe(1);
-    expect(completeMsg!.phaseId).toBe("inventory");
-    expect(completeMsg!.finishedAt).toBeTruthy();
-  });
-
-  it("broadcasts sv:phase-update with 'error' on failed exit", async () => {
+  it("broadcasts sv:phase-update on group start", async () => {
     await fetch(`http://localhost:${port}/api/sv/phases/2/run`, {
       method: "POST",
     });
 
-    // Simulate failed process exit
-    _latestHandle!.exit({ exitCode: 1, stderr: "Phase 2 failed" });
+    const runningMsg = bc.messages.find(
+      (m) => m.type === "sv:phase-update" && m.status === "running",
+    );
+    expect(runningMsg).toBeDefined();
+    expect(runningMsg!.group).toBe(2);
+    expect(runningMsg!.module).toBe("classifications");
+    expect(runningMsg!.timestamp).toBeTruthy();
+  });
 
+  it("broadcasts sv:phase-update with 'error' when module fails and stops group", async () => {
+    await fetch(`http://localhost:${port}/api/sv/phases/1/run`, {
+      method: "POST",
+    });
+
+    // Fail the first module
+    _handles[0].exit({ exitCode: 1, stderr: "Inventory failed" });
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     const errorMsg = bc.messages.find(
       (m) => m.type === "sv:phase-update" && m.status === "error",
     );
     expect(errorMsg).toBeDefined();
-    expect(errorMsg!.phase).toBe(2);
-    expect(errorMsg!.exitCode).toBe(1);
-    expect(errorMsg!.error).toContain("Phase 2 failed");
+    expect(errorMsg!.group).toBe(1);
+    expect(errorMsg!.error).toContain("Inventory failed");
+
+    // No further modules should have been spawned
+    expect(_spawnCalls).toHaveLength(1);
   });
 
-  it("clears singleton guard after process completes", async () => {
-    await fetch(`http://localhost:${port}/api/sv/phases/1/run`, {
+  it("clears singleton guard after group completes", async () => {
+    await fetch(`http://localhost:${port}/api/sv/phases/3/run`, {
       method: "POST",
     });
 
-    // Complete the first run
-    _latestHandle!.exit({ exitCode: 0 });
+    // Complete both modules in group 3
+    _handles[0].exit({ exitCode: 0 });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    _handles[1].exit({ exitCode: 0 });
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // Second run should succeed (singleton cleared)
-    const res2 = await fetch(`http://localhost:${port}/api/sv/phases/2/run`, {
+    // Second group run should succeed
+    const res2 = await fetch(`http://localhost:${port}/api/sv/phases/1/run`, {
       method: "POST",
     });
     expect(res2.status).toBe(202);
-    const data = await res2.json();
-    expect(data.phase).toBe(2);
-    expect(data.phaseId).toBe("imports");
   });
 
-  it("supports all 7 phases", async () => {
-    const phaseIds = [
-      "inventory", "imports", "classifications", "zones",
-      "components", "callgraph", "configsurface",
-    ];
-
-    for (let phase = 1; phase <= 7; phase++) {
-      _latestHandle = null;
-      _spawnCalls = [];
-
-      const res = await fetch(`http://localhost:${port}/api/sv/phases/${phase}/run`, {
-        method: "POST",
-      });
-      expect(res.status).toBe(202);
-
-      const data = await res.json();
-      expect(data.phase).toBe(phase);
-      expect(data.phaseId).toBe(phaseIds[phase - 1]);
-
-      // Complete the run so next iteration can start
-      _latestHandle!.exit({ exitCode: 0 });
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }
-  });
-
-  it("GET requests to phases/:phase/run are not handled", async () => {
+  it("GET requests to phases/:n/run are not handled", async () => {
     const res = await fetch(`http://localhost:${port}/api/sv/phases/1/run`, {
       method: "GET",
     });
-    // Should fall through — not handled by the route
     expect(res.status).toBe(404);
   });
 });
