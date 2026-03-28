@@ -1,13 +1,14 @@
 import { h, Fragment } from "preact";
 import { useState, useMemo } from "preact/hooks";
-import type { LoadedData } from "../types.js";
+import type { LoadedData, NavigateTo } from "../types.js";
 import type { RouteTreeNode, RouteExportKind, ComponentUsageEdge, ServerRouteGroup, HttpMethod } from "../external.js";
-import { TreeView, type TreeNode, CollapsibleSection, BarChart } from "../visualization/index.js";
+import { TreeView, type TreeNode, CollapsibleSection, BarChart, buildFileToZoneMap } from "../visualization/index.js";
 import { SearchFilter } from "../components/search-filter.js";
 import { BrandedHeader } from "../components/logos.js";
 
 interface RoutesViewProps {
   data: LoadedData;
+  navigateTo?: NavigateTo;
 }
 
 function routeToTreeNode(node: RouteTreeNode): TreeNode {
@@ -78,9 +79,12 @@ function buildComponentTree(
   }).filter((n) => n.children.length > 0);
 }
 
-export function RoutesView({ data }: RoutesViewProps) {
+export function RoutesView({ data, navigateTo }: RoutesViewProps) {
   const components = data.components;
   const [search, setSearch] = useState("");
+
+  // Build file → zone lookup for zone badge display on server routes
+  const fileToZone = useMemo(() => buildFileToZoneMap(data.zones), [data.zones]);
 
   if (!components) {
     return h("div", { class: "locked-view" },
@@ -324,12 +328,14 @@ export function RoutesView({ data }: RoutesViewProps) {
                     h("th", null, "Method"),
                     h("th", null, "Path"),
                     h("th", null, "File"),
+                    h("th", null, "Zone"),
                     h("th", null, "Handler"),
                   )
                 ),
                 h("tbody", null,
-                  allServerRoutes.map((route) =>
-                    h("tr", { key: `${route.method}:${route.path}` },
+                  allServerRoutes.map((route) => {
+                    const zone = fileToZone.get(route.file);
+                    return h("tr", { key: `${route.method}:${route.path}` },
                       h("td", null,
                         h("span", {
                           class: `method-badge method-badge-${route.method.toLowerCase()}`,
@@ -340,12 +346,23 @@ export function RoutesView({ data }: RoutesViewProps) {
                       ),
                       h("td", null, route.file),
                       h("td", null,
+                        zone
+                          ? h("span", {
+                              class: "zone-badge-link",
+                              style: `--zone-color: ${zone.color}`,
+                              onClick: navigateTo ? () => navigateTo("zones", { zone: zone.id }) : undefined,
+                              role: navigateTo ? "button" : undefined,
+                              tabIndex: navigateTo ? 0 : undefined,
+                            }, zone.name)
+                          : null
+                      ),
+                      h("td", null,
                         route.handler
                           ? h("span", { class: "server-route-handler" }, route.handler)
                           : null
                       ),
-                    )
-                  )
+                    );
+                  })
                 )
               )
             )

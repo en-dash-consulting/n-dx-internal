@@ -77,3 +77,28 @@
   font-style: italic;
 }
 
+/* Clickable zone badge in server endpoint rows */
+.zone-badge-link {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--zone-color) 13%, transparent);
+  color: var(--zone-color);
+  border: 1px solid color-mix(in srgb, var(--zone-color) 27%, transparent);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.zone-badge-link:hover {
+  background: color-mix(in srgb, var(--zone-color) 22%, transparent);
+  border-color: color-mix(in srgb, var(--zone-color) 45%, transparent);
+}
+
+.zone-badge-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+

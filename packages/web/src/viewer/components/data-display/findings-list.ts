@@ -1,6 +1,7 @@
 import { h, Fragment } from "preact";
 import { useState, useMemo } from "preact/hooks";
-import type { Finding } from "../../external.js";
+import type { Finding, Zones } from "../../external.js";
+import type { NavigateTo } from "../../types.js";
 import { CollapsibleSection } from "./collapsible-section.js";
 import { SearchFilter } from "../search-filter.js";
 
@@ -10,6 +11,8 @@ interface FindingsListProps {
   groupBy?: "severity" | "scope" | "type";
   searchable?: boolean;
   threshold?: number;
+  navigateTo?: NavigateTo;
+  zones?: Zones | null;
 }
 
 const SEVERITY_ICON: Record<string, string> = {
@@ -31,8 +34,22 @@ export function FindingsList({
   groupBy = "severity",
   searchable = true,
   threshold = 8,
+  navigateTo,
+  zones,
 }: FindingsListProps) {
   const [search, setSearch] = useState("");
+
+  // Build set of zone IDs/names for distinguishing zone refs from file refs
+  const zoneIds = useMemo(() => {
+    const ids = new Set<string>();
+    if (zones) {
+      for (const z of zones.zones) {
+        ids.add(z.id);
+        ids.add(z.name);
+      }
+    }
+    return ids;
+  }, [zones]);
 
   const filtered = useMemo(() => {
     if (!search) return findings;
@@ -116,7 +133,19 @@ export function FindingsList({
         ? h("div", { class: "finding-meta" },
             h("span", { class: "finding-related-label" }, "Related:"),
             h("div", { class: "finding-related" },
-              f.related.map((r, j) => h("code", { key: j }, r))
+              f.related.map((r, j) => {
+                const isZone = zoneIds.has(r);
+                if (navigateTo) {
+                  return h("button", {
+                    key: j,
+                    class: `related-chip ${isZone ? "related-chip-zone" : "related-chip-file"}`,
+                    onClick: () => isZone
+                      ? navigateTo("zones", { zone: r })
+                      : navigateTo("files", { file: r }),
+                  }, r);
+                }
+                return h("code", { key: j }, r);
+              })
             )
           )
         : null

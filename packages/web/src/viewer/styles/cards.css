@@ -191,6 +191,50 @@
 
 .finding-related code:hover { color: var(--text); }
 
+/* Clickable related chips (replace plain code tags when navigation is available) */
+.related-chip {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: monospace;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--bg-hover);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.related-chip:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-hover));
+  border-color: var(--accent-dim);
+}
+
+.related-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.related-chip-zone {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+
+.related-chip-zone:hover {
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-hover));
+  color: var(--accent);
+}
+
+.related-chip-file {
+  color: var(--text-dim);
+}
+
+.related-chip-file:hover {
+  color: var(--text);
+}
+
 /* Getting started card */
 .getting-started {
   background: var(--bg-surface);

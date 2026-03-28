@@ -596,6 +596,8 @@ export function ArchitectureView({ data, onSelect, navigateTo }: ArchitecturePro
       legacyInsights,
       groupBy: "type",
       searchable: true,
+      navigateTo,
+      zones,
     })
   );
 }

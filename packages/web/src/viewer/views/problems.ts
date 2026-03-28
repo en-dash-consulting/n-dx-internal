@@ -1,6 +1,6 @@
 import { h, Fragment } from "preact";
 import { useMemo } from "preact/hooks";
-import type { LoadedData } from "../types.js";
+import type { LoadedData, NavigateTo } from "../types.js";
 import type { Finding } from "../external.js";
 import { FindingsList, BarChart } from "../visualization/index.js";
 import { ENRICHMENT_THRESHOLDS } from "./enrichment-thresholds.js";
@@ -8,9 +8,10 @@ import { BrandedHeader } from "../components/logos.js";
 
 interface ProblemsProps {
   data: LoadedData;
+  navigateTo?: NavigateTo;
 }
 
-export function ProblemsView({ data }: ProblemsProps) {
+export function ProblemsView({ data, navigateTo }: ProblemsProps) {
   const { zones } = data;
   const enrichmentPass = zones?.enrichmentPass ?? 0;
 
@@ -97,6 +98,8 @@ export function ProblemsView({ data }: ProblemsProps) {
       legacyInsights,
       groupBy: "severity",
       searchable: true,
+      navigateTo,
+      zones: data.zones,
     })
   );
 }
