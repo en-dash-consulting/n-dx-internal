@@ -3,15 +3,16 @@
  *
  * All endpoints are under /api/sv/.
  *
- * GET /api/sv/manifest      — analysis metadata and git info
- * GET /api/sv/inventory     — file listing with metadata
- * GET /api/sv/imports       — dependency graph
- * GET /api/sv/zones         — architectural zone map
- * GET /api/sv/components    — React component catalog
- * GET /api/sv/context       — full CONTEXT.md contents
- * GET /api/sv/db-packages   — database layer detection from external imports
- * GET /api/sv/phases        — ordered analysis phase status from manifest modules
- * GET /api/sv/summary       — summary stats across all analyses
+ * GET  /api/sv/manifest              — analysis metadata and git info
+ * GET  /api/sv/inventory             — file listing with metadata
+ * GET  /api/sv/imports               — dependency graph
+ * GET  /api/sv/zones                 — architectural zone map
+ * GET  /api/sv/components            — React component catalog
+ * GET  /api/sv/context               — full CONTEXT.md contents
+ * GET  /api/sv/db-packages           — database layer detection from external imports
+ * GET  /api/sv/phases                — ordered analysis phase status from manifest modules
+ * GET  /api/sv/summary               — summary stats across all analyses
+ * POST /api/sv/phases/:phase/run     — trigger a single analysis phase
  *
  * The former /api/sv/pr-markdown endpoint has been removed.
  * PR description generation is now handled by the /pr-description Claude Code skill.
@@ -20,8 +21,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { spawnManaged, type ManagedChild } from "@n-dx/llm-client";
 import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse } from "./types.js";
+import type { WebSocketBroadcaster } from "./websocket.js";
 import { DATA_FILES, buildDbPackagesResponse } from "../shared/index.js";
 
 const SV_PREFIX = "/api/sv/";
@@ -36,6 +39,47 @@ const PHASE_DEFINITIONS = [
   { id: "callgraph", phase: 6, name: "Call Graph", description: "Analyze function-level call relationships and cross-zone patterns" },
   { id: "configsurface", phase: 7, name: "Config Surface", description: "Detect environment variables, config file references, and global constants" },
 ] as const;
+
+/** Valid phase numbers (1–7). */
+const VALID_PHASE_NUMBERS = new Set<number>(PHASE_DEFINITIONS.map((d) => d.phase));
+
+// ── Singleton guard for phase execution ──────────────────────────────────
+
+/** Active phase execution state. null when idle. */
+let activePhaseRun: {
+  phase: number;
+  phaseId: string;
+  handle: ManagedChild;
+  startedAt: string;
+} | null = null;
+
+/** Broadcast a phase status update over WebSocket. */
+function broadcastPhaseUpdate(
+  broadcast: WebSocketBroadcaster | undefined,
+  payload: Record<string, unknown>,
+): void {
+  if (!broadcast) return;
+  broadcast({
+    type: "sv:phase-update",
+    ...payload,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+// ── Phase run shutdown ───────────────────────────────────────────────────
+
+/**
+ * Terminate any running phase execution. Called during server shutdown.
+ * Returns true if a process was terminated.
+ */
+export function shutdownPhaseRun(): boolean {
+  if (!activePhaseRun) return false;
+  activePhaseRun.handle.kill("SIGTERM");
+  activePhaseRun = null;
+  return true;
+}
+
+// ── Data file helpers ────────────────────────────────────────────────────
 
 /** Safely read and parse a JSON data file. Returns null on failure. */
 function loadDataFile(ctx: ServerContext, filename: string): unknown | null {
@@ -64,6 +108,7 @@ export function handleSourcevisionRoute(
   req: IncomingMessage,
   res: ServerResponse,
   ctx: ServerContext,
+  broadcast?: WebSocketBroadcaster,
 ): boolean {
   const url = req.url || "/";
   const method = req.method || "GET";
@@ -75,6 +120,101 @@ export function handleSourcevisionRoute(
 
   const path = routePath.slice(SV_PREFIX.length);
   const params = new URLSearchParams(query);
+
+  // ── POST routes ────────────────────────────────────────────────────────
+
+  // POST /api/sv/phases/:phase/run — trigger a single analysis phase
+  const phaseRunMatch = path.match(/^phases\/(\d+)\/run$/);
+  if (method === "POST" && phaseRunMatch) {
+    const phase = parseInt(phaseRunMatch[1], 10);
+
+    // Validate phase number
+    if (!VALID_PHASE_NUMBERS.has(phase)) {
+      errorResponse(res, 400, `Invalid phase number: ${phase}. Valid phases are 1–7.`);
+      return true;
+    }
+
+    // Singleton guard — only one phase can run at a time
+    if (activePhaseRun) {
+      jsonResponse(res, 409, {
+        error: "A phase is already running",
+        activePhase: activePhaseRun.phase,
+        activePhaseId: activePhaseRun.phaseId,
+        startedAt: activePhaseRun.startedAt,
+      });
+      return true;
+    }
+
+    const phaseDef = PHASE_DEFINITIONS.find((d) => d.phase === phase)!;
+
+    // Resolve sourcevision binary (same pattern as routes-hench.ts)
+    const svBin = join(ctx.projectDir, "node_modules", ".bin", "sourcevision");
+    const svFallback = join(ctx.projectDir, "packages", "sourcevision", "dist", "cli", "index.js");
+    const args = ["analyze", `--phase=${phase}`, ctx.projectDir];
+
+    const binPath = existsSync(svBin) ? svBin : "node";
+    const binArgs = existsSync(svBin) ? args : [svFallback, ...args];
+
+    const startedAt = new Date().toISOString();
+
+    // Spawn the analysis process
+    const handle = spawnManaged(binPath, binArgs, {
+      cwd: ctx.projectDir,
+      stdio: "pipe",
+      env: { ...process.env },
+    });
+
+    // Track active execution
+    activePhaseRun = { phase, phaseId: phaseDef.id, handle, startedAt };
+
+    // Broadcast initial running state
+    broadcastPhaseUpdate(broadcast, {
+      phase,
+      phaseId: phaseDef.id,
+      status: "running",
+      startedAt,
+    });
+
+    // Handle completion asynchronously
+    handle.done
+      .then((result) => {
+        const isSuccess = result.exitCode === 0;
+        broadcastPhaseUpdate(broadcast, {
+          phase,
+          phaseId: phaseDef.id,
+          status: isSuccess ? "complete" : "error",
+          startedAt,
+          finishedAt: new Date().toISOString(),
+          exitCode: result.exitCode,
+          ...((!isSuccess && result.stderr) ? { error: result.stderr.slice(-500) } : {}),
+        });
+      })
+      .catch((err) => {
+        broadcastPhaseUpdate(broadcast, {
+          phase,
+          phaseId: phaseDef.id,
+          status: "error",
+          startedAt,
+          finishedAt: new Date().toISOString(),
+          error: err instanceof Error ? err.message : String(err),
+        });
+      })
+      .finally(() => {
+        if (activePhaseRun?.phase === phase) {
+          activePhaseRun = null;
+        }
+      });
+
+    // Return immediately with tracking info
+    jsonResponse(res, 202, {
+      phase,
+      phaseId: phaseDef.id,
+      phaseName: phaseDef.name,
+      status: "started",
+      startedAt,
+    });
+    return true;
+  }
 
   if (method !== "GET") return false;
 

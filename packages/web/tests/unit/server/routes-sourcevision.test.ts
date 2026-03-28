@@ -185,7 +185,7 @@ describe("Sourcevision API routes", () => {
     expect(text).toBe("Not found");
   });
 
-  it("does not handle POST requests", async () => {
+  it("does not handle POST requests to GET-only endpoints", async () => {
     const res = await fetch(`http://localhost:${port}/api/sv/manifest`, { method: "POST" });
     expect(res.status).toBe(404);
   });

@@ -10,7 +10,7 @@ import type { ServerContext, ViewerScope } from "./types.js";
 import { resolveStaticAssets, handleStaticRoute, isProjectInitialized } from "./routes-static.js";
 import { createDataWatcher, handleDataRoute } from "./routes-data.js";
 import { handleRexRoute, shutdownRexExecution } from "./routes-rex/index.js";
-import { handleSourcevisionRoute } from "./routes-sourcevision.js";
+import { handleSourcevisionRoute, shutdownPhaseRun } from "./routes-sourcevision.js";
 import { handleTokenUsageRoute } from "./routes-token-usage.js";
 import { handleValidationRoute } from "./routes-validation.js";
 import { handleHenchRoute, startHeartbeatMonitor, startConcurrencyMonitor, startMemoryMonitor, shutdownActiveExecutions, getAggregator } from "./routes-hench.js";
@@ -113,9 +113,10 @@ export function registerShutdownHandlers(
       closeWatchers(watcherHandles);
     }
 
-    // Step 1 — terminate hench child processes (highest priority: avoids orphaned agents)
-    // Covers both hench-route executions and the rex epic-by-epic execution engine.
+    // Step 1 — terminate child processes (highest priority: avoids orphaned agents)
+    // Covers hench-route executions, rex epic-by-epic execution, and sourcevision phase runs.
     console.log("[shutdown] step 1/4 — child processes");
+    const svPhaseTerminated = shutdownPhaseRun();
     const [henchResult, rexResult] = await Promise.all([
       shutdownActiveExecutions(),
       shutdownRexExecution(),
@@ -125,6 +126,10 @@ export function registerShutdownHandlers(
       component: "rex-execution",
       ok: !rexResult.hadActiveProcess || rexResult.terminated,
     });
+    componentStatus.push({ component: "sv-phase-run", ok: true });
+    if (svPhaseTerminated) {
+      console.log("[shutdown] sourcevision phase run terminated");
+    }
 
     // Step 2 — close WebSocket connections (sends close frames, frees sockets)
     console.log("[shutdown] step 2/4 — WebSocket connections");
@@ -474,7 +479,7 @@ async function handleApiRoutes(
   if (await handleScopedRoute(isInScope(ctx.scope, "rex"), handleNotionRoute(req, res, ctx))) return true;
   if (await handleScopedRoute(isInScope(ctx.scope, "rex"), handleIntegrationRoute(req, res, ctx))) return true;
   if (await handleFeaturesRoute(req, res, ctx)) return true;
-  if (isInScope(ctx.scope, "sourcevision") && handleSourcevisionRoute(req, res, ctx)) return true;
+  if (isInScope(ctx.scope, "sourcevision") && handleSourcevisionRoute(req, res, ctx, ws.broadcast)) return true;
   if (isInScope(ctx.scope, "rex") && handleSearchRoute(req, res, ctx)) return true;
   if (await handleScopedRoute(isInScope(ctx.scope, "rex"), handleRexRoute(req, res, ctx, ws.broadcast))) return true;
   if (await handleScopedRoute(isInScope(ctx.scope, "hench"), handleHenchRoute(req, res, ctx, ws.broadcast))) return true;
