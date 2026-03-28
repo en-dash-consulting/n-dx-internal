@@ -8,8 +8,8 @@ import {
 import { ENRICHMENT_THRESHOLDS } from "../../../src/viewer/views/enrichment-thresholds.js";
 
 describe("SOURCEVISION_TABS", () => {
-  it("defines exactly 9 tabs", () => {
-    expect(SOURCEVISION_TABS).toHaveLength(9);
+  it("defines exactly 8 tabs (unified analysis replaces architecture/problems/suggestions)", () => {
+    expect(SOURCEVISION_TABS).toHaveLength(8);
   });
 
   it("every tab has required fields", () => {
@@ -34,27 +34,27 @@ describe("SOURCEVISION_TABS", () => {
     expect(ids).toContain("zones");
     expect(ids).toContain("files");
     expect(ids).toContain("routes");
-    expect(ids).toContain("architecture");
-    expect(ids).toContain("problems");
-    expect(ids).toContain("suggestions");
+    expect(ids).toContain("analysis");
     expect(ids).toContain("pr-markdown");
+    expect(ids).toContain("config-surface");
   });
 
-  it("enrichment-gated tabs reference correct thresholds", () => {
-    const arch = SOURCEVISION_TABS.find((t) => t.id === "architecture")!;
-    const problems = SOURCEVISION_TABS.find((t) => t.id === "problems")!;
-    const suggestions = SOURCEVISION_TABS.find((t) => t.id === "suggestions")!;
-
-    expect(arch.minPass).toBe(ENRICHMENT_THRESHOLDS.architecture);
-    expect(problems.minPass).toBe(ENRICHMENT_THRESHOLDS.problems);
-    expect(suggestions.minPass).toBe(ENRICHMENT_THRESHOLDS.suggestions);
+  it("does not contain legacy architecture/problems/suggestions tabs", () => {
+    const ids = SOURCEVISION_TABS.map((t) => t.id);
+    expect(ids).not.toContain("architecture");
+    expect(ids).not.toContain("problems");
+    expect(ids).not.toContain("suggestions");
   });
 
-  it("ungated tabs have minPass of 0", () => {
-    const ungated = SOURCEVISION_TABS.filter(
-      (t) => !["architecture", "problems", "suggestions"].includes(t.id),
-    );
-    for (const tab of ungated) {
+  it("unified analysis tab has minPass 0 (softened enrichment gating)", () => {
+    const analysis = SOURCEVISION_TABS.find((t) => t.id === "analysis")!;
+    expect(analysis).toBeDefined();
+    expect(analysis.minPass).toBe(ENRICHMENT_THRESHOLDS.analysis);
+    expect(analysis.minPass).toBe(0);
+  });
+
+  it("all tabs have minPass of 0", () => {
+    for (const tab of SOURCEVISION_TABS) {
       expect(tab.minPass).toBe(0);
     }
   });

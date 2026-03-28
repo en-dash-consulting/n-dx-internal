@@ -146,6 +146,10 @@ export interface Finding {
   severity?: "info" | "warning" | "critical";
   /** Related zone IDs or file paths */
   related?: string[];
+  /** Source file path (move-file findings only) */
+  from?: string;
+  /** Suggested destination path (move-file findings only) */
+  to?: string;
 }
 
 // ── Zones ───────────────────────────────────────────────────────────────────

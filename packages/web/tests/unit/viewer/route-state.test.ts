@@ -8,6 +8,7 @@ const VIEWS = new Set<ViewId>([
   "zones",
   "files",
   "routes",
+  "analysis",
   "architecture",
   "problems",
   "suggestions",
@@ -60,5 +61,28 @@ describe("route-state", () => {
   it("does not treat non-deep-link views as sub-id routes", () => {
     expect(parsePathnameRoute("/rex-dashboard/some-id", VIEWS)).toBeNull();
     expect(parsePathnameRoute("/token-usage/some-id", VIEWS)).toBeNull();
+  });
+
+  it("redirects legacy /architecture route to analysis view", () => {
+    expect(parsePathnameRoute("/architecture", VIEWS)).toEqual({ view: "analysis", subId: null });
+  });
+
+  it("redirects legacy /problems route to analysis view", () => {
+    expect(parsePathnameRoute("/problems", VIEWS)).toEqual({ view: "analysis", subId: null });
+  });
+
+  it("redirects legacy /suggestions route to analysis view", () => {
+    expect(parsePathnameRoute("/suggestions", VIEWS)).toEqual({ view: "analysis", subId: null });
+  });
+
+  it("redirects legacy hash routes for architecture/problems/suggestions to analysis", () => {
+    expect(parseLegacyHashRoute("#architecture", VIEWS)).toEqual({ view: "analysis", subId: null });
+    expect(parseLegacyHashRoute("#problems", VIEWS)).toEqual({ view: "analysis", subId: null });
+    expect(parseLegacyHashRoute("#suggestions", VIEWS)).toEqual({ view: "analysis", subId: null });
+    expect(parseLegacyHashRoute("#sourcevision/architecture", VIEWS)).toEqual({ view: "analysis", subId: null });
+  });
+
+  it("parses direct /analysis route", () => {
+    expect(parsePathnameRoute("/analysis", VIEWS)).toEqual({ view: "analysis", subId: null });
   });
 });

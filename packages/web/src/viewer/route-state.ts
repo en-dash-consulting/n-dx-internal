@@ -7,6 +7,9 @@ export interface ParsedRoute {
 
 const DEEP_LINK_VIEWS = new Set<ViewId>(["prd", "hench-runs"]);
 
+/** Legacy view IDs that redirect to the unified analysis view */
+const ANALYSIS_REDIRECTS = new Set(["architecture", "problems", "suggestions"]);
+
 function resolveLegacyViewAlias(base: string, sub: string | null): ViewId | null {
   const normalizedBase = base.trim().toLowerCase();
   const normalizedSub = (sub ?? "").trim().toLowerCase();
@@ -15,6 +18,10 @@ function resolveLegacyViewAlias(base: string, sub: string | null): ViewId | null
     && (normalizedSub === "token-usage" || normalizedSub === "token_usage" || normalizedSub === "llm-utilization")
   ) {
     return "token-usage";
+  }
+  // Redirect legacy findings tabs to unified analysis view
+  if (ANALYSIS_REDIRECTS.has(normalizedBase)) {
+    return "analysis";
   }
   return null;
 }

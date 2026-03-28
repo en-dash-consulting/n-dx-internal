@@ -25,6 +25,7 @@ export type {
   ExternalImport,
   FileEntry,
   Finding,
+  FindingType,
   HttpMethod,
   RiskLevel,
   RouteExportKind,

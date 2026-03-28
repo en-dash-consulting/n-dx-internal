@@ -15,6 +15,7 @@ function makeData(overrides: Partial<LoadedData["zones"]> = {}): LoadedData {
       crossings: [],
       findings: [],
       insights: [],
+      zones: [],
       ...overrides,
     } as LoadedData["zones"],
     components: null,

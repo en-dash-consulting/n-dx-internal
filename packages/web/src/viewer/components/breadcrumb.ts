@@ -49,6 +49,7 @@ const VIEW_META: Record<ViewId, ViewMeta> = {
   zones:                 { product: "sourcevision", label: "Zones",           productLabel: "SourceVision" },
   files:                 { product: "sourcevision", label: "Files",           productLabel: "SourceVision" },
   routes:                { product: "sourcevision", label: "Routes",          productLabel: "SourceVision" },
+  analysis:              { product: "sourcevision", label: "Analysis",         productLabel: "SourceVision" },
   architecture:          { product: "sourcevision", label: "Architecture",    productLabel: "SourceVision" },
   problems:              { product: "sourcevision", label: "Problems",        productLabel: "SourceVision" },
   suggestions:           { product: "sourcevision", label: "Suggestions",     productLabel: "SourceVision" },

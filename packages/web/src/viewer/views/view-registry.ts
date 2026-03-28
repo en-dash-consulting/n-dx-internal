@@ -25,6 +25,7 @@ import {
   Graph,
   ZonesView,
   FilesView,
+  SvAnalysisView,
   ArchitectureView,
   ProblemsView,
   SuggestionsView,
@@ -101,14 +102,18 @@ const REGISTRY: Record<string, ViewRenderer> = {
   "config-surface": ({ data, setDetail, navigateTo }) =>
     h(ConfigSurfaceView, { data, onSelect: setDetail, navigateTo }),
 
+  "analysis": ({ data, setDetail, navigateTo }) =>
+    h(SvAnalysisView, { data, onSelect: setDetail, navigateTo }),
+
+  // Legacy routes — redirect to unified Analysis view
   "architecture": ({ data, setDetail, navigateTo }) =>
-    h(ArchitectureView, { data, onSelect: setDetail, navigateTo }),
+    h(SvAnalysisView, { data, onSelect: setDetail, navigateTo }),
 
-  "problems": ({ data, navigateTo }) =>
-    h(ProblemsView, { data, navigateTo }),
+  "problems": ({ data, setDetail, navigateTo }) =>
+    h(SvAnalysisView, { data, onSelect: setDetail, navigateTo }),
 
-  "suggestions": ({ data, navigateTo }) =>
-    h(SuggestionsView, { data, navigateTo }),
+  "suggestions": ({ data, setDetail, navigateTo }) =>
+    h(SvAnalysisView, { data, onSelect: setDetail, navigateTo }),
 
   "pr-markdown": () =>
     h(PRMarkdownView, null),

@@ -12,6 +12,7 @@ export type ViewId =
   | "zones"
   | "files"
   | "routes"
+  | "analysis"
   | "architecture"
   | "problems"
   | "suggestions"

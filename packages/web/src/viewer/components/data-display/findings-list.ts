@@ -26,6 +26,7 @@ const TYPE_ICON: Record<string, string> = {
   relationship: "\u2194",  // left-right arrow
   "anti-pattern": "\u2718",// cross
   suggestion: "\u2728",    // sparkles
+  "move-file": "\u21E5",   // rightwards arrow to bar
 };
 
 export function FindingsList({
@@ -215,6 +216,7 @@ function groupLabel(key: string, groupBy: string): string {
       relationship: "\u2194 Relationships",
       "anti-pattern": "\u2718 Anti-Patterns",
       suggestion: "\u2728 Suggestions",
+      "move-file": "\u21E5 Move File",
     };
     return labels[key] || capitalize(key);
   }

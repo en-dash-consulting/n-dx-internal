@@ -1,0 +1,182 @@
+/* ── SV Analysis View (unified findings) ──────────────────────────── */
+
+/* Enrichment notice banner */
+.analysis-enrichment-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: var(--radius-md);
+  font-size: var(--font-sm);
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.analysis-enrichment-notice .finding-icon {
+  flex-shrink: 0;
+  font-size: var(--font-md);
+  color: var(--accent);
+}
+
+.analysis-enrichment-notice code {
+  background: var(--bg-surface);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: var(--font-xs);
+}
+
+/* ── Category pills ──────────────────────────────────────────────── */
+
+.analysis-category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.analysis-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  font-size: var(--font-sm);
+  font-weight: var(--weight-medium);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: var(--bg-surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.analysis-pill:hover:not(.analysis-pill-locked) {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.analysis-pill-active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
+.analysis-pill-locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.analysis-pill .nav-badge {
+  margin-left: 2px;
+}
+
+/* ── Severity filter pills ───────────────────────────────────────── */
+
+.analysis-severity-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.analysis-filter-label {
+  font-size: var(--font-sm);
+  color: var(--text-dim);
+  margin-right: 4px;
+}
+
+.analysis-severity-pill {
+  padding: 3px 10px;
+  font-size: var(--font-xs);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: var(--bg-surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.analysis-severity-pill:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+.analysis-severity-pill-active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
+.analysis-severity-pill-empty {
+  opacity: 0.4;
+}
+
+/* ── Move-file cards ─────────────────────────────────────────────── */
+
+.move-file-card {
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.move-file-card.severity-critical {
+  border-left-color: var(--red);
+}
+
+.move-file-card.severity-warning {
+  border-left-color: var(--orange);
+}
+
+.move-file-card.severity-info {
+  border-left-color: var(--accent);
+}
+
+.move-file-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.move-file-rationale {
+  font-size: var(--font-base);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.move-file-paths {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.move-file-path {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-sm);
+}
+
+.move-file-path-label {
+  font-weight: var(--weight-semibold);
+  color: var(--text-dim);
+  min-width: 40px;
+  flex-shrink: 0;
+}
+
+.move-file-path-value {
+  font-family: var(--font-mono);
+  font-size: var(--font-xs);
+  background: transparent;
+  padding: 0;
+}
