@@ -361,6 +361,28 @@ const ClassificationsSchema = z.object({
   summary: ClassificationsSummarySchema,
 });
 
+// ── Config Surface ──────────────────────────────────────────────────────────
+
+const ConfigSurfaceEntrySchema = z.object({
+  name: z.string(),
+  type: z.enum(["env", "config", "constant"]),
+  file: z.string(),
+  line: z.number().int().positive(),
+  referencedBy: z.array(z.string()),
+  value: z.string().optional(),
+});
+
+const ConfigSurfaceSummarySchema = z.object({
+  totalEnvVars: z.number().int().nonnegative(),
+  totalConfigRefs: z.number().int().nonnegative(),
+  totalConstants: z.number().int().nonnegative(),
+});
+
+const ConfigSurfaceSchema = z.object({
+  entries: z.array(ConfigSurfaceEntrySchema),
+  summary: ConfigSurfaceSummarySchema,
+});
+
 // ── Validation helpers ──────────────────────────────────────────────────────
 
 export type ValidationResult<T> =
@@ -412,4 +434,10 @@ export function validateClassifications(
   data: unknown
 ): ValidationResult<V1.Classifications> {
   return validate(ClassificationsSchema, data);
+}
+
+export function validateConfigSurface(
+  data: unknown
+): ValidationResult<V1.ConfigSurface> {
+  return validate(ConfigSurfaceSchema, data);
 }

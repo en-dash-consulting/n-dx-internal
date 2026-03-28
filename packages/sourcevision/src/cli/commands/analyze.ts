@@ -31,6 +31,7 @@ import {
   runZonesPhase,
   runComponentsPhase,
   runCallGraphPhase,
+  runConfigSurfacePhase,
   PhasePrerequsiteError,
   PhaseError,
 } from "./analyze-phases.js";
@@ -148,6 +149,9 @@ async function executePhases(ctx: AnalyzeContext, filter: PhaseFilter, extraArgs
     { phase: 4, module: "zones",           run: () => runZonesPhase(ctx, extraArgs),        critical: true },
     { phase: 5, module: "components",      run: () => runComponentsPhase(ctx),              critical: true },
     { phase: 6, module: "callgraph",       run: () => runCallGraphPhase(ctx),               critical: false },
+    ...(!extraArgs.includes("--no-config-surface") ? [
+      { phase: 7, module: "configsurface",   run: () => runConfigSurfacePhase(ctx),             critical: false },
+    ] : []),
   ];
 
   for (const { phase, module, run, critical } of phases) {

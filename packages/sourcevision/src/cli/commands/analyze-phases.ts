@@ -24,6 +24,7 @@ import { analyzeZones } from "../../analyzers/zones.js";
 import { analyzeComponents } from "../../analyzers/components.js";
 import { analyzeCallGraph, computeZoneCallStats } from "../../analyzers/callgraph.js";
 import { generateCallGraphFindings } from "../../analyzers/callgraph-findings.js";
+import { analyzeConfigSurface } from "../../analyzers/config-surface.js";
 import { deduplicateFindings, enforceSeverityRules } from "../../analyzers/enrich-parsing.js";
 import type { CallGraph, Classifications, ImportEdge, Inventory } from "../../schema/index.js";
 import { readManifest, writeManifest, updateManifestModule, updateManifestError } from "../../analyzers/manifest.js";
@@ -567,6 +568,52 @@ function enrichZonesWithCallGraph(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(`  Warning: call graph zone enrichment failed: ${msg}`);
+  }
+}
+
+// ── Phase 7: Config Surface ───────────────────────────────────────
+
+export async function runConfigSurfacePhase(ctx: AnalyzeContext): Promise<void> {
+  const inventoryPath = join(ctx.svDir, DATA_FILES.inventory);
+  if (!existsSync(inventoryPath)) {
+    throw new PhasePrerequsiteError(7, "configsurface", "inventory.json — run phase 1 first");
+  }
+
+  info("[phase 7] Config surface...");
+  updateManifestModule(ctx.absDir, "configsurface", "running");
+
+  try {
+    const inventory = JSON.parse(readFileSync(inventoryPath, "utf-8"));
+
+    // Build file-to-zone mapping if zones are available
+    let fileToZone: Map<string, string> | undefined;
+    const zonesPath = join(ctx.svDir, DATA_FILES.zones);
+    if (existsSync(zonesPath)) {
+      try {
+        const zonesData = JSON.parse(readFileSync(zonesPath, "utf-8"));
+        if (zonesData.zones && Array.isArray(zonesData.zones)) {
+          fileToZone = new Map();
+          for (const zone of zonesData.zones) {
+            for (const file of zone.files) {
+              fileToZone.set(file, zone.id);
+            }
+          }
+        }
+      } catch {
+        // Non-critical — proceed without zone attribution
+      }
+    }
+
+    const configSurface = analyzeConfigSurface(ctx.absDir, inventory, { fileToZone });
+    const outPath = join(ctx.svDir, DATA_FILES.configSurface);
+    writeFileSync(outPath, toCanonicalJSON(configSurface));
+    updateManifestModule(ctx.absDir, "configsurface", "complete");
+    info(`  ${configSurface.summary.totalEnvVars} env vars, ${configSurface.summary.totalConfigRefs} config refs, ${configSurface.summary.totalConstants} constants → ${outPath}`);
+  } catch (err) {
+    if (err instanceof PhasePrerequsiteError) throw err;
+    const msg = err instanceof Error ? err.message : String(err);
+    updateManifestError(ctx.absDir, "configsurface", msg);
+    throw new PhaseError(7, "configsurface", msg);
   }
 }
 

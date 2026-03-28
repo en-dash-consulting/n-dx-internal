@@ -47,6 +47,7 @@ const EMPTY_DATA: LoadedData = {
   components: null,
   callGraph: null,
   classifications: null,
+  configSurface: null,
 };
 
 /** Modules needed for the initial UI shell (sidebar, overview). */

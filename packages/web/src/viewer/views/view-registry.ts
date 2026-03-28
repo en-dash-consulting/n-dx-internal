@@ -30,6 +30,7 @@ import {
   SuggestionsView,
   PRMarkdownView,
   RoutesView,
+  ConfigSurfaceView,
 } from "./domain-sourcevision.js";
 
 import {
@@ -96,6 +97,9 @@ const REGISTRY: Record<string, ViewRenderer> = {
 
   "routes": ({ data, navigateTo }) =>
     h(RoutesView, { data, navigateTo }),
+
+  "config-surface": ({ data, setDetail, navigateTo }) =>
+    h(ConfigSurfaceView, { data, onSelect: setDetail, navigateTo }),
 
   "architecture": ({ data, setDetail, navigateTo }) =>
     h(ArchitectureView, { data, onSelect: setDetail, navigateTo }),

@@ -53,6 +53,7 @@ const VIEW_META: Record<ViewId, ViewMeta> = {
   problems:              { product: "sourcevision", label: "Problems",        productLabel: "SourceVision" },
   suggestions:           { product: "sourcevision", label: "Suggestions",     productLabel: "SourceVision" },
   "pr-markdown":         { product: "sourcevision", label: "PR Markdown",     productLabel: "SourceVision" },
+  "config-surface":      { product: "sourcevision", label: "Configuration",   productLabel: "SourceVision" },
   "rex-dashboard":       { product: "rex",          label: "Dashboard",       productLabel: "Rex" },
   prd:                   { product: "rex",          label: "Tasks",           productLabel: "Rex" },
   "token-usage":         { product: "global",       label: "Token Usage",     productLabel: "Global" },

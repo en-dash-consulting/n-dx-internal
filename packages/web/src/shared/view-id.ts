@@ -16,6 +16,7 @@ export type ViewId =
   | "problems"
   | "suggestions"
   | "pr-markdown"
+  | "config-surface"
   | "rex-dashboard"
   | "prd"
   | "token-usage"

@@ -485,6 +485,41 @@ export interface CallGraph {
   summary: CallGraphSummary;
 }
 
+// ── Config Surface ──────────────────────────────────────────────────
+
+export type ConfigSurfaceEntryType = "env" | "config" | "constant";
+
+export interface ConfigSurfaceEntry {
+  /** Name of the env var, config file reference, or constant. */
+  name: string;
+  /** Entry classification: env var read, config file reference, or constant. */
+  type: ConfigSurfaceEntryType;
+  /** File where the entry was found (relative to project root). */
+  file: string;
+  /** Line number in the source file. */
+  line: number;
+  /** Zone IDs that reference this entry. */
+  referencedBy: string[];
+  /** Statically determinable value (strings, numbers, booleans). */
+  value?: string;
+}
+
+export interface ConfigSurfaceSummary {
+  /** Number of unique environment variables detected. */
+  totalEnvVars: number;
+  /** Number of config file references detected. */
+  totalConfigRefs: number;
+  /** Number of global constants detected. */
+  totalConstants: number;
+}
+
+export interface ConfigSurface {
+  /** All detected configuration surface entries. */
+  entries: ConfigSurfaceEntry[];
+  /** Aggregate statistics. */
+  summary: ConfigSurfaceSummary;
+}
+
 // ── Next Steps ──────────────────────────────────────────────────────────────
 
 export interface NextStep {
@@ -653,4 +688,5 @@ export interface SourcevisionOutput {
   zones: Zones;
   components?: Components;
   callGraph?: CallGraph;
+  configSurface?: ConfigSurface;
 }

@@ -15,6 +15,7 @@ import type {
   Classifications,
   Zones,
   Components,
+  ConfigSurface,
 } from "../schema/index.js";
 import { DATA_FILES } from "../schema/data-files.js";
 import { generateContext } from "../analyzers/context.js";
@@ -28,6 +29,7 @@ interface SourcevisionData {
   classifications: Classifications | null;
   zones: Zones | null;
   components: Components | null;
+  configSurface: ConfigSurface | null;
 }
 
 function loadData(targetDir: string): SourcevisionData {
@@ -39,6 +41,7 @@ function loadData(targetDir: string): SourcevisionData {
     classifications: null,
     zones: null,
     components: null,
+    configSurface: null,
   };
 
   const modules: Array<{ key: keyof SourcevisionData; file: string }> = [
@@ -48,6 +51,7 @@ function loadData(targetDir: string): SourcevisionData {
     { key: "classifications", file: DATA_FILES.classifications },
     { key: "zones", file: DATA_FILES.zones },
     { key: "components", file: DATA_FILES.components },
+    { key: "configSurface", file: DATA_FILES.configSurface },
   ];
 
   for (const mod of modules) {
@@ -174,6 +178,7 @@ function registerOverviewTools(server: McpServer, context: McpContext): void {
       components: data.components?.summary.totalComponents ?? 0,
       routeModules: data.components?.summary.totalRouteModules ?? 0,
       serverRoutes: data.components?.summary.totalServerRoutes ?? 0,
+      configSurface: data.configSurface ? data.configSurface.summary : null,
     };
 
     return { content: [{ type: "text", text: JSON.stringify(summary, null, 2) }] };
@@ -469,12 +474,55 @@ function registerComponentTools(server: McpServer, context: McpContext): void {
   });
 }
 
+function registerConfigSurfaceTools(server: McpServer, context: McpContext): void {
+  server.tool(
+    "sv_config_surface",
+    "Get the configuration surface: environment variables, config file references, and global constants with zone attribution. Use to understand runtime configuration dependencies.",
+    {
+      type: z.string().optional().describe("Filter by entry type: env, config, constant"),
+      zone: z.string().optional().describe("Filter by zone ID"),
+      name: z.string().optional().describe("Search by name substring"),
+    },
+    ({ type, zone, name }) => {
+      const data = context.freshData();
+      if (!data.configSurface) {
+        return { content: [{ type: "text", text: "No config surface data available. Run 'sourcevision analyze' first." }] };
+      }
+
+      let entries = data.configSurface.entries;
+
+      if (type) {
+        entries = entries.filter((e) => e.type === type);
+      }
+      if (zone) {
+        entries = entries.filter((e) => e.referencedBy.includes(zone));
+      }
+      if (name) {
+        const q = name.toLowerCase();
+        entries = entries.filter((e) => e.name.toLowerCase().includes(q));
+      }
+
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            entries: entries.slice(0, 100),
+            total: entries.length,
+            summary: data.configSurface.summary,
+          }, null, 2),
+        }],
+      };
+    }
+  );
+}
+
 function registerMcpTools(server: McpServer, context: McpContext): void {
   registerOverviewTools(server, context);
   registerZoneTools(server, context);
   registerFileTools(server, context);
   registerClassificationTools(server, context);
   registerComponentTools(server, context);
+  registerConfigSurfaceTools(server, context);
 }
 
 function registerMcpResources(server: McpServer, context: McpContext): void {

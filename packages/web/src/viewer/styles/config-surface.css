@@ -1,0 +1,163 @@
+/* Configuration Surface view styles */
+
+.config-surface-view {
+  padding: 2rem;
+  max-width: 1200px;
+}
+
+.config-summary-grid {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.config-summary-grid .metric-card {
+  flex: 1;
+  min-width: 140px;
+}
+
+.config-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.config-type-filters {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.config-type-filters .filter-btn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-dim);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.15s;
+}
+
+.config-type-filters .filter-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.config-type-filters .filter-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.config-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.config-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-dim);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.config-table td {
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.config-table tr:hover td {
+  background: var(--bg-hover);
+}
+
+.config-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.config-type-env {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent);
+}
+
+.config-type-config {
+  background: rgba(249, 115, 22, 0.15);
+  color: var(--orange);
+}
+
+.config-type-constant {
+  background: rgba(168, 85, 247, 0.15);
+  color: var(--purple);
+}
+
+.config-name {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.config-line {
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  text-align: right;
+}
+
+.config-value code {
+  font-size: 0.8rem;
+  padding: 0.1rem 0.3rem;
+  background: var(--bg-secondary);
+  border-radius: 3px;
+  color: var(--green);
+}
+
+.no-results {
+  color: var(--text-dim);
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Zone attribution */
+
+.zone-attribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.zone-attribution-item {
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.zone-attribution-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.zone-attribution-count {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.zone-attribution-breakdown {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}

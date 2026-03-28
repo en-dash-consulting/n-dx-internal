@@ -52,12 +52,13 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
       },
     ],
     options: [
-      { flag: "--phase=<N>", description: "Run only phase N (1–4)" },
-      { flag: "--only=<module>", description: "Run only a named module: inventory, imports, zones, components" },
+      { flag: "--phase=<N>", description: "Run only phase N (1–7)" },
+      { flag: "--only=<module>", description: "Run only a named module: inventory, imports, zones, components, configsurface" },
       { flag: "--fast", description: "Skip AI zone-name enrichment (algorithmic names only)" },
       { flag: "--full", description: "Run all 4 enrichment passes in sequence" },
       { flag: "--deep", description: "Re-analyze sub-packages before root analysis" },
       { flag: "--per-zone", description: "Per-zone enrichment (smaller context, parallelizable)" },
+      { flag: "--no-config-surface", description: "Skip the config surface phase (env vars, constants)" },
       { flag: "--quiet, -q", description: "Suppress informational output" },
     ],
     examples: [

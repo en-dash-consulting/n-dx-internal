@@ -102,6 +102,11 @@ export type {
   CallType,
   FunctionNode,
   CallGraphSummary,
+  // config-surface.json
+  ConfigSurface,
+  ConfigSurfaceEntry,
+  ConfigSurfaceEntryType,
+  ConfigSurfaceSummary,
   // workspace
   WorkspaceMember,
   WorkspaceConfig,

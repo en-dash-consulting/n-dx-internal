@@ -23,6 +23,7 @@ const migrations: Record<ModuleKey, Migration[]> = {
   components: [],
   callGraph: [],
   classifications: [],
+  configSurface: [],
 };
 
 /**

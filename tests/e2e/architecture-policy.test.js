@@ -904,8 +904,8 @@ describe("architecture policy: zone cohesion gate", () => {
 const BOUNDARY_FILES = [
   {
     file: "packages/web/src/viewer/external.ts",
-    maxExports: 37,
-    description: "viewer outbound gateway (schema types, shared utilities, messaging, db-packages detection, classifications, risk levels)",
+    maxExports: 39,
+    description: "viewer outbound gateway (schema types, shared utilities, messaging, db-packages detection, classifications, risk levels, config surface)",
   },
   {
     file: "packages/web/src/server/rex-gateway.ts",

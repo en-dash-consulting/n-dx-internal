@@ -29,3 +29,5 @@ export { analyzeCallGraph, extractFunctions, extractCalls, computeZoneCallStats 
 export type { ZoneCallStats, CrossZoneCallPattern } from "./callgraph.js";
 export { generateCallGraphFindings } from "./callgraph-findings.js";
 export type { CallGraphFindingsOptions } from "./callgraph-findings.js";
+export { analyzeConfigSurface } from "./config-surface.js";
+export type { AnalyzeConfigSurfaceOptions } from "./config-surface.js";

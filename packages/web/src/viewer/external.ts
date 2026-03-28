@@ -33,6 +33,8 @@ export type {
   ServerRouteGroup,
   Zone,
   ZoneCrossing,
+  ConfigSurface,
+  ConfigSurfaceEntry,
 } from "../schema/v1.js";
 
 // Namespace re-export for validate.ts (import type * as V1)
