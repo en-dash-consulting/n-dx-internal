@@ -11,6 +11,7 @@ import {
 } from "../visualization/index.js";
 import { basename } from "../utils.js";
 import { BrandedHeader } from "../components/logos.js";
+import { PhasePanel } from "../components/phase-panel.js";
 
 interface OverviewProps {
   data: LoadedData;
@@ -48,10 +49,6 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
   if (!manifest && !inventory && !imports && !zones) {
     return h("div", { class: "loading" }, "No data loaded. Use 'sourcevision serve' or drop files.");
   }
-
-  const hasZones = zones && zones.zones.length > 0;
-  const hasImports = imports && imports.edges.length > 0;
-  const showGettingStarted = manifest && (!hasImports || !hasZones);
 
   // Calculate overall health metrics
   const healthMetrics = useMemo(() => {
@@ -210,22 +207,8 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
           h("h2", { class: "view-title" }, "Overview"),
         ),
 
-    // Getting Started guide for incomplete analysis
-    showGettingStarted
-      ? h("div", { class: "getting-started" },
-          h("h3", null, "Getting Started"),
-          h("p", null, "Complete the analysis to see architectural insights:"),
-          h("ol", null,
-            !hasImports
-              ? h("li", null, h("code", null, "sourcevision analyze --phase=2"), " \u2014 Build import graph")
-              : null,
-            !hasZones
-              ? h("li", null, h("code", null, "sourcevision analyze --phase=3"), " \u2014 Detect zones")
-              : null,
-            h("li", null, h("code", null, "sourcevision analyze --full"), " \u2014 Run full analysis"),
-          ),
-        )
-      : null,
+    // Analysis phases panel
+    h(PhasePanel, null),
 
     // Main metrics row
     h("div", { class: "overview-metrics" },
