@@ -3,6 +3,7 @@ import { useMemo } from "preact/hooks";
 import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
 import {
   BarChart,
+  CollapsibleSection,
   HealthGauge,
   PatternBadge,
   MetricCard,
@@ -31,7 +32,7 @@ const LANG_COLORS: Record<string, string> = {
 };
 
 export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
-  const { manifest, inventory, imports, zones, components } = data;
+  const { manifest, inventory, imports, zones, components, callGraph } = data;
 
   if (!manifest && !inventory && !imports && !zones) {
     return h("div", { class: "loading" }, "No data loaded. Use 'sourcevision serve' or drop files.");
@@ -120,6 +121,28 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
     return zones.zones.filter(z => z.cohesion < 0.4 || z.coupling > 0.5).length;
   }, [zones]);
 
+  // Hotspot data: filter out external entries, take top 10
+  const mostCalledItems = useMemo(() => {
+    if (!callGraph) return [];
+    return callGraph.summary.mostCalled
+      .filter(f => f.file !== "<external>")
+      .slice(0, 10);
+  }, [callGraph]);
+
+  const mostCallingItems = useMemo(() => {
+    if (!callGraph) return [];
+    return callGraph.summary.mostCalling
+      .filter(f => f.file !== "<external>")
+      .slice(0, 10);
+  }, [callGraph]);
+
+  const mostUsedComponents = useMemo(() => {
+    if (!components) return [];
+    return components.summary.mostUsedComponents.slice(0, 10);
+  }, [components]);
+
+  const hasHotspots = mostCalledItems.length > 0 || mostCallingItems.length > 0 || mostUsedComponents.length > 0;
+
   return h("div", { class: "overview-container" },
     // Header with project info
     manifest
@@ -193,6 +216,26 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
         ? h(MetricCard, {
             value: imports.summary.totalExternal,
             label: "External Deps",
+          })
+        : null,
+      callGraph
+        ? h(MetricCard, {
+            value: callGraph.summary.totalFunctions.toLocaleString(),
+            label: "Functions",
+            color: "var(--accent)",
+          })
+        : null,
+      callGraph
+        ? h(MetricCard, {
+            value: callGraph.summary.totalCalls.toLocaleString(),
+            label: "Call Edges",
+          })
+        : null,
+      callGraph
+        ? h(MetricCard, {
+            value: callGraph.summary.cycleCount,
+            label: "Call Cycles",
+            color: callGraph.summary.cycleCount > 0 ? "var(--purple)" : "var(--green)",
           })
         : null
     ),
@@ -292,6 +335,87 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
           )
         : null
     ),
+
+    // Hotspots panel
+    hasHotspots
+      ? h("div", { class: "overview-section hotspots-panel" },
+          h("h3", null, "Hotspots"),
+          h("div", { class: "hotspots-grid" },
+            mostCalledItems.length > 0
+              ? h("div", { class: "hotspots-col" },
+                  h(CollapsibleSection, {
+                    title: "Most Called Functions",
+                    count: mostCalledItems.length,
+                    defaultOpen: true,
+                    storageKey: "hotspots-most-called",
+                  },
+                    mostCalledItems.map((item, i) =>
+                      h("div", {
+                        key: `called-${i}`,
+                        class: "hotspot-item",
+                        onClick: navigateTo ? () => navigateTo("files", { file: item.file }) : undefined,
+                        title: `${item.qualifiedName} in ${item.file}`,
+                      },
+                        h("span", { class: "hotspot-rank" }, `${i + 1}`),
+                        h("span", { class: "hotspot-name" }, item.qualifiedName),
+                        h("span", { class: "hotspot-count called" }, `${item.callerCount} callers`),
+                        h("span", { class: "hotspot-file" }, item.file),
+                      )
+                    )
+                  )
+                )
+              : null,
+            mostCallingItems.length > 0
+              ? h("div", { class: "hotspots-col" },
+                  h(CollapsibleSection, {
+                    title: "Most Calling Functions",
+                    count: mostCallingItems.length,
+                    defaultOpen: true,
+                    storageKey: "hotspots-most-calling",
+                  },
+                    mostCallingItems.map((item, i) =>
+                      h("div", {
+                        key: `calling-${i}`,
+                        class: "hotspot-item",
+                        onClick: navigateTo ? () => navigateTo("files", { file: item.file }) : undefined,
+                        title: `${item.qualifiedName} in ${item.file}`,
+                      },
+                        h("span", { class: "hotspot-rank" }, `${i + 1}`),
+                        h("span", { class: "hotspot-name" }, item.qualifiedName),
+                        h("span", { class: "hotspot-count calling" }, `${item.calleeCount} callees`),
+                        h("span", { class: "hotspot-file" }, item.file),
+                      )
+                    )
+                  )
+                )
+              : null,
+            mostUsedComponents.length > 0
+              ? h("div", { class: "hotspots-col" },
+                  h(CollapsibleSection, {
+                    title: "Most Used Components",
+                    count: mostUsedComponents.length,
+                    defaultOpen: true,
+                    storageKey: "hotspots-most-used",
+                  },
+                    mostUsedComponents.map((item, i) =>
+                      h("div", {
+                        key: `comp-${i}`,
+                        class: "hotspot-item",
+                        onClick: navigateTo ? () => navigateTo("files", { file: item.file }) : undefined,
+                        title: `${item.name} in ${item.file}`,
+                      },
+                        h("span", { class: "hotspot-rank" }, `${i + 1}`),
+                        h("span", { class: "hotspot-name" }, item.name),
+                        h("span", { class: "hotspot-count component" }, `${item.usageCount} uses`),
+                        h("span", { class: "hotspot-file" }, item.file),
+                      )
+                    )
+                  )
+                )
+              : null,
+          )
+        )
+      : null,
 
     // Circular dependencies (compact)
     imports?.summary.circulars.length
