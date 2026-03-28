@@ -6,7 +6,7 @@
  * web-viewer zone, enabling future extraction or lazy-loading of the
  * entire SourceVision view surface without touching individual files.
  *
- * Domain scope: codebase analysis, import graphs, zones, files, routes,
+ * Domain scope: codebase analysis, import graphs, zones, files, endpoints,
  * architecture findings, and PR markdown.
  */
 
@@ -14,10 +14,12 @@ export { Overview } from "./overview.js";
 export { Graph } from "./graph.js";
 export { ZonesView } from "./zones.js";
 export { FilesView } from "./files.js";
+export { ExplorerView } from "./sv-explorer.js";
 export { SvAnalysisView } from "./sv-analysis.js";
 export { ArchitectureView } from "./architecture.js";
 export { ProblemsView } from "./problems.js";
 export { SuggestionsView } from "./suggestions.js";
 export { PRMarkdownView } from "./pr-markdown.js";
 export { RoutesView } from "./routes.js";
+export { EndpointsView } from "./sv-endpoints.js";
 export { ConfigSurfaceView } from "./config-surface.js";

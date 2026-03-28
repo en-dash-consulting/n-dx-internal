@@ -25,12 +25,14 @@ import {
   Graph,
   ZonesView,
   FilesView,
+  ExplorerView,
   SvAnalysisView,
   ArchitectureView,
   ProblemsView,
   SuggestionsView,
   PRMarkdownView,
   RoutesView,
+  EndpointsView,
   ConfigSurfaceView,
 } from "./domain-sourcevision.js";
 
@@ -80,24 +82,25 @@ const REGISTRY: Record<string, ViewRenderer> = {
   "overview": ({ data }) =>
     h(Overview, { data }),
 
-  "graph": ({ data, setDetail, selectedFile, selectedZone, navigateTo, isFeatureDisabled }) => {
-    if (isFeatureDisabled("graphRendering")) {
-      return h("div", { class: "degraded-view-placeholder", role: "status" },
-        h("h2", null, "Graph view unavailable"),
-        h("p", null, "The graph view has been temporarily disabled to conserve memory. It will be re-enabled automatically when memory usage decreases, or you can refresh the page."),
-      );
-    }
-    return h(Graph, { data, onSelect: setDetail, selectedFile, selectedZone, navigateTo });
-  },
+  "explorer": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isFeatureDisabled }) =>
+    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering") }),
+
+  // Legacy routes — redirect to Explorer view
+  "graph": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isFeatureDisabled }) =>
+    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering") }),
+
+  "files": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isFeatureDisabled }) =>
+    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering") }),
 
   "zones": ({ data, setDetail, navigateTo }) =>
     h(ZonesView, { data, onSelect: setDetail, navigateTo }),
 
-  "files": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo }) =>
-    h(FilesView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo }),
+  "endpoints": ({ data, navigateTo }) =>
+    h(EndpointsView, { data, navigateTo }),
 
+  // Legacy route — redirect to Endpoints view
   "routes": ({ data, navigateTo }) =>
-    h(RoutesView, { data, navigateTo }),
+    h(EndpointsView, { data, navigateTo }),
 
   "config-surface": ({ data, setDetail, navigateTo }) =>
     h(ConfigSurfaceView, { data, onSelect: setDetail, navigateTo }),

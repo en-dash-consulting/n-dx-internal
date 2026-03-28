@@ -8,8 +8,8 @@ import {
 import { ENRICHMENT_THRESHOLDS } from "../../../src/viewer/views/enrichment-thresholds.js";
 
 describe("SOURCEVISION_TABS", () => {
-  it("defines exactly 8 tabs (unified analysis replaces architecture/problems/suggestions)", () => {
-    expect(SOURCEVISION_TABS).toHaveLength(8);
+  it("defines exactly 7 tabs (explorer replaces files+graph, endpoints replaces routes)", () => {
+    expect(SOURCEVISION_TABS).toHaveLength(7);
   });
 
   it("every tab has required fields", () => {
@@ -30,20 +30,25 @@ describe("SOURCEVISION_TABS", () => {
   it("contains all expected tab IDs", () => {
     const ids = SOURCEVISION_TABS.map((t) => t.id);
     expect(ids).toContain("overview");
-    expect(ids).toContain("graph");
+    expect(ids).toContain("explorer");
     expect(ids).toContain("zones");
-    expect(ids).toContain("files");
-    expect(ids).toContain("routes");
+    expect(ids).toContain("endpoints");
     expect(ids).toContain("analysis");
     expect(ids).toContain("pr-markdown");
     expect(ids).toContain("config-surface");
   });
 
-  it("does not contain legacy architecture/problems/suggestions tabs", () => {
+  it("does not contain legacy tabs replaced by consolidation", () => {
     const ids = SOURCEVISION_TABS.map((t) => t.id);
+    // architecture/problems/suggestions → analysis
     expect(ids).not.toContain("architecture");
     expect(ids).not.toContain("problems");
     expect(ids).not.toContain("suggestions");
+    // files/graph → explorer
+    expect(ids).not.toContain("files");
+    expect(ids).not.toContain("graph");
+    // routes → endpoints
+    expect(ids).not.toContain("routes");
   });
 
   it("unified analysis tab has minPass 0 (softened enrichment gating)", () => {

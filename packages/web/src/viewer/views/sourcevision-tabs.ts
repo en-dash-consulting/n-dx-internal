@@ -10,7 +10,8 @@ import { ENRICHMENT_THRESHOLDS } from "./enrichment-thresholds.js";
 
 export type SourceVisionTabId = Extract<
   ViewId,
-  "overview" | "graph" | "zones" | "files" | "routes" | "config-surface" | "analysis" | "architecture" | "problems" | "suggestions" | "pr-markdown"
+  | "overview" | "explorer" | "graph" | "zones" | "files" | "routes" | "endpoints"
+  | "config-surface" | "analysis" | "architecture" | "problems" | "suggestions" | "pr-markdown"
 >;
 
 export interface SourceVisionTab {
@@ -23,10 +24,9 @@ export interface SourceVisionTab {
 
 export const SOURCEVISION_TABS: readonly SourceVisionTab[] = [
   { id: "overview", icon: "\u25A3", label: "Overview", minPass: 0 },
-  { id: "graph", icon: "\u2B95", label: "Import Graph", minPass: 0, featureGate: "sourcevision.callGraph" },
+  { id: "explorer", icon: "\u2630", label: "Explorer", minPass: 0 },
   { id: "zones", icon: "\u2B22", label: "Zones", minPass: 0 },
-  { id: "files", icon: "\u2630", label: "Files", minPass: 0 },
-  { id: "routes", icon: "\u25C7", label: "Routes", minPass: 0 },
+  { id: "endpoints", icon: "\u25C7", label: "Endpoints", minPass: 0 },
   { id: "config-surface", icon: "\u2699", label: "Configuration", minPass: 0 },
   { id: "analysis", icon: "\u25E8", label: "Analysis", minPass: ENRICHMENT_THRESHOLDS.analysis },
   { id: "pr-markdown", icon: "\u270D", label: "PR Markdown", minPass: 0 },

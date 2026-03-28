@@ -45,9 +45,11 @@ const PRODUCT_DEFAULT_VIEW: Record<string, ViewId> = {
 
 const VIEW_META: Record<ViewId, ViewMeta> = {
   overview:              { product: "sourcevision", label: "Overview",        productLabel: "SourceVision" },
+  explorer:              { product: "sourcevision", label: "Explorer",        productLabel: "SourceVision" },
   graph:                 { product: "sourcevision", label: "Import Graph",    productLabel: "SourceVision" },
   zones:                 { product: "sourcevision", label: "Zones",           productLabel: "SourceVision" },
   files:                 { product: "sourcevision", label: "Files",           productLabel: "SourceVision" },
+  endpoints:             { product: "sourcevision", label: "Endpoints",       productLabel: "SourceVision" },
   routes:                { product: "sourcevision", label: "Routes",          productLabel: "SourceVision" },
   analysis:              { product: "sourcevision", label: "Analysis",         productLabel: "SourceVision" },
   architecture:          { product: "sourcevision", label: "Architecture",    productLabel: "SourceVision" },

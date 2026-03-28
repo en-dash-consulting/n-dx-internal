@@ -68,8 +68,9 @@ describe("favicon", () => {
   describe("VIEW_TO_PRODUCT", () => {
     it("maps sourcevision views correctly", () => {
       const svViews: ViewId[] = [
-        "overview", "graph", "zones", "files", "routes",
+        "overview", "explorer", "graph", "zones", "files", "endpoints", "routes",
         "architecture", "problems", "suggestions", "pr-markdown",
+        "config-surface", "analysis",
       ];
       for (const view of svViews) {
         expect(VIEW_TO_PRODUCT[view]).toBe("sourcevision");

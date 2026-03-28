@@ -8,10 +8,12 @@
 
 export type ViewId =
   | "overview"
+  | "explorer"
   | "graph"
   | "zones"
   | "files"
   | "routes"
+  | "endpoints"
   | "analysis"
   | "architecture"
   | "problems"

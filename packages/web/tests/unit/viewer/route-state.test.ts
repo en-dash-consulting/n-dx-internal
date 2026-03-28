@@ -4,9 +4,11 @@ import { parseLegacyHashRoute, parsePathnameRoute, resolveLocationRoute } from "
 
 const VIEWS = new Set<ViewId>([
   "overview",
+  "explorer",
   "graph",
   "zones",
   "files",
+  "endpoints",
   "routes",
   "analysis",
   "architecture",
@@ -63,6 +65,7 @@ describe("route-state", () => {
     expect(parsePathnameRoute("/token-usage/some-id", VIEWS)).toBeNull();
   });
 
+  // Analysis redirects
   it("redirects legacy /architecture route to analysis view", () => {
     expect(parsePathnameRoute("/architecture", VIEWS)).toEqual({ view: "analysis", subId: null });
   });
@@ -84,5 +87,39 @@ describe("route-state", () => {
 
   it("parses direct /analysis route", () => {
     expect(parsePathnameRoute("/analysis", VIEWS)).toEqual({ view: "analysis", subId: null });
+  });
+
+  // Explorer redirects (files + graph → explorer)
+  it("redirects legacy /files route to explorer view", () => {
+    expect(parsePathnameRoute("/files", VIEWS)).toEqual({ view: "explorer", subId: null });
+  });
+
+  it("redirects legacy /graph route to explorer view", () => {
+    expect(parsePathnameRoute("/graph", VIEWS)).toEqual({ view: "explorer", subId: null });
+  });
+
+  it("redirects legacy hash routes for files/graph to explorer", () => {
+    expect(parseLegacyHashRoute("#files", VIEWS)).toEqual({ view: "explorer", subId: null });
+    expect(parseLegacyHashRoute("#graph", VIEWS)).toEqual({ view: "explorer", subId: null });
+    expect(parseLegacyHashRoute("#sourcevision/files", VIEWS)).toEqual({ view: "explorer", subId: null });
+    expect(parseLegacyHashRoute("#sourcevision/graph", VIEWS)).toEqual({ view: "explorer", subId: null });
+  });
+
+  it("parses direct /explorer route", () => {
+    expect(parsePathnameRoute("/explorer", VIEWS)).toEqual({ view: "explorer", subId: null });
+  });
+
+  // Endpoints redirects (routes → endpoints)
+  it("redirects legacy /routes route to endpoints view", () => {
+    expect(parsePathnameRoute("/routes", VIEWS)).toEqual({ view: "endpoints", subId: null });
+  });
+
+  it("redirects legacy hash route for routes to endpoints", () => {
+    expect(parseLegacyHashRoute("#routes", VIEWS)).toEqual({ view: "endpoints", subId: null });
+    expect(parseLegacyHashRoute("#sourcevision/routes", VIEWS)).toEqual({ view: "endpoints", subId: null });
+  });
+
+  it("parses direct /endpoints route", () => {
+    expect(parsePathnameRoute("/endpoints", VIEWS)).toEqual({ view: "endpoints", subId: null });
   });
 });

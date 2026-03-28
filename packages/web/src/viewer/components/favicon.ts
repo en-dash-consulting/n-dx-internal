@@ -36,14 +36,18 @@ const FAVICON_PNGS: Record<Product | "ndx", string> = {
  */
 const VIEW_TO_PRODUCT: Partial<Record<ViewId, Product>> = {
   overview: "sourcevision",
+  explorer: "sourcevision",
   graph: "sourcevision",
   zones: "sourcevision",
   files: "sourcevision",
+  endpoints: "sourcevision",
   routes: "sourcevision",
   architecture: "sourcevision",
   problems: "sourcevision",
   suggestions: "sourcevision",
   "pr-markdown": "sourcevision",
+  "config-surface": "sourcevision",
+  analysis: "sourcevision",
   "rex-dashboard": "rex",
   prd: "rex",
   validation: "rex",

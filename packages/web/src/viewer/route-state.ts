@@ -10,6 +10,9 @@ const DEEP_LINK_VIEWS = new Set<ViewId>(["prd", "hench-runs"]);
 /** Legacy view IDs that redirect to the unified analysis view */
 const ANALYSIS_REDIRECTS = new Set(["architecture", "problems", "suggestions"]);
 
+/** Legacy view IDs that redirect to the explorer view */
+const EXPLORER_REDIRECTS = new Set(["files", "graph"]);
+
 function resolveLegacyViewAlias(base: string, sub: string | null): ViewId | null {
   const normalizedBase = base.trim().toLowerCase();
   const normalizedSub = (sub ?? "").trim().toLowerCase();
@@ -22,6 +25,14 @@ function resolveLegacyViewAlias(base: string, sub: string | null): ViewId | null
   // Redirect legacy findings tabs to unified analysis view
   if (ANALYSIS_REDIRECTS.has(normalizedBase)) {
     return "analysis";
+  }
+  // Redirect legacy files/graph tabs to explorer view
+  if (EXPLORER_REDIRECTS.has(normalizedBase)) {
+    return "explorer";
+  }
+  // Redirect legacy routes tab to endpoints view
+  if (normalizedBase === "routes") {
+    return "endpoints";
   }
   return null;
 }
