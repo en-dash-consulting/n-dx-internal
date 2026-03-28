@@ -10,6 +10,7 @@
  * GET /api/sv/components    — React component catalog
  * GET /api/sv/context       — full CONTEXT.md contents
  * GET /api/sv/db-packages   — database layer detection from external imports
+ * GET /api/sv/phases        — ordered analysis phase status from manifest modules
  * GET /api/sv/summary       — summary stats across all analyses
  *
  * The former /api/sv/pr-markdown endpoint has been removed.
@@ -24,6 +25,17 @@ import { jsonResponse, errorResponse } from "./types.js";
 import { DATA_FILES, buildDbPackagesResponse } from "../shared/index.js";
 
 const SV_PREFIX = "/api/sv/";
+
+/** Ordered analysis phase definitions. */
+const PHASE_DEFINITIONS = [
+  { id: "inventory", phase: 1, name: "Inventory", description: "Catalog all project files with metadata (size, language, extension)" },
+  { id: "imports", phase: 2, name: "Imports", description: "Build the dependency graph from import/require statements" },
+  { id: "classifications", phase: 3, name: "Classifications", description: "Classify files by archetype (utility, entrypoint, route-handler, etc.)" },
+  { id: "zones", phase: 4, name: "Zones", description: "Detect architectural zones using community detection on the import graph" },
+  { id: "components", phase: 5, name: "Components", description: "Catalog React/Preact components, props, and usage relationships" },
+  { id: "callgraph", phase: 6, name: "Call Graph", description: "Analyze function-level call relationships and cross-zone patterns" },
+  { id: "configsurface", phase: 7, name: "Config Surface", description: "Detect environment variables, config file references, and global constants" },
+] as const;
 
 /** Safely read and parse a JSON data file. Returns null on failure. */
 function loadDataFile(ctx: ServerContext, filename: string): unknown | null {
@@ -162,6 +174,31 @@ export function handleSourcevisionRoute(
     }
     const external = Array.isArray(data.external) ? data.external : [];
     jsonResponse(res, 200, buildDbPackagesResponse(external));
+    return true;
+  }
+
+  // GET /api/sv/phases — ordered analysis phase status from manifest modules
+  if (path === "phases") {
+    const manifest = loadDataFile(ctx, DATA_FILES.manifest) as Record<string, unknown> | null;
+    if (!manifest) {
+      errorResponse(res, 404, "No manifest data. Run 'sourcevision analyze' first.");
+      return true;
+    }
+    const modules = (manifest.modules ?? {}) as Record<string, Record<string, unknown>>;
+    const phases = PHASE_DEFINITIONS.map((def) => {
+      const mod = modules[def.id];
+      return {
+        id: def.id,
+        phase: def.phase,
+        name: def.name,
+        description: def.description,
+        status: mod?.status ?? "pending",
+        startedAt: mod?.startedAt ?? null,
+        completedAt: mod?.completedAt ?? null,
+        error: mod?.error ?? null,
+      };
+    });
+    jsonResponse(res, 200, phases);
     return true;
   }
 

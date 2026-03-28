@@ -268,4 +268,137 @@ describe("Sourcevision API routes", () => {
       await rm(emptyDir, { recursive: true, force: true });
     }
   });
+
+  // ── phases endpoint ─────────────────────────────────────────────
+
+  it("GET /api/sv/phases returns all 7 phases with status from manifest modules", async () => {
+    // Write manifest with modules data
+    const manifestWithModules = {
+      ...manifestData,
+      modules: {
+        inventory: {
+          status: "complete",
+          startedAt: "2026-01-01T00:00:01.000Z",
+          completedAt: "2026-01-01T00:00:02.000Z",
+        },
+        imports: {
+          status: "complete",
+          startedAt: "2026-01-01T00:00:02.000Z",
+          completedAt: "2026-01-01T00:00:03.000Z",
+        },
+        classifications: {
+          status: "running",
+          startedAt: "2026-01-01T00:00:03.000Z",
+        },
+      },
+    };
+    await writeFile(join(svDir, "manifest.json"), JSON.stringify(manifestWithModules));
+
+    const res = await fetch(`http://localhost:${port}/api/sv/phases`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+
+    // Should return exactly 7 phases
+    expect(data).toHaveLength(7);
+
+    // Phase 1: inventory — complete
+    expect(data[0]).toMatchObject({
+      id: "inventory",
+      phase: 1,
+      name: "Inventory",
+      status: "complete",
+      startedAt: "2026-01-01T00:00:01.000Z",
+      completedAt: "2026-01-01T00:00:02.000Z",
+    });
+    expect(data[0].description).toBeTruthy();
+
+    // Phase 2: imports — complete
+    expect(data[1]).toMatchObject({
+      id: "imports",
+      phase: 2,
+      status: "complete",
+    });
+
+    // Phase 3: classifications — running
+    expect(data[2]).toMatchObject({
+      id: "classifications",
+      phase: 3,
+      status: "running",
+      startedAt: "2026-01-01T00:00:03.000Z",
+    });
+    expect(data[2].completedAt).toBeNull();
+
+    // Phases 4-7: not in manifest — should default to pending
+    for (let i = 3; i < 7; i++) {
+      expect(data[i].status).toBe("pending");
+      expect(data[i].startedAt).toBeNull();
+      expect(data[i].completedAt).toBeNull();
+    }
+
+    // Check specific phase ids
+    expect(data[3].id).toBe("zones");
+    expect(data[4].id).toBe("components");
+    expect(data[5].id).toBe("callgraph");
+    expect(data[6].id).toBe("configsurface");
+  });
+
+  it("GET /api/sv/phases includes error field from manifest", async () => {
+    const manifestWithError = {
+      ...manifestData,
+      modules: {
+        inventory: {
+          status: "error",
+          startedAt: "2026-01-01T00:00:01.000Z",
+          error: "Something went wrong",
+        },
+      },
+    };
+    await writeFile(join(svDir, "manifest.json"), JSON.stringify(manifestWithError));
+
+    const res = await fetch(`http://localhost:${port}/api/sv/phases`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+
+    expect(data[0]).toMatchObject({
+      id: "inventory",
+      phase: 1,
+      status: "error",
+      error: "Something went wrong",
+    });
+  });
+
+  it("GET /api/sv/phases defaults all phases to pending when manifest has no modules", async () => {
+    // Manifest without modules field
+    await writeFile(join(svDir, "manifest.json"), JSON.stringify(manifestData));
+
+    const res = await fetch(`http://localhost:${port}/api/sv/phases`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+
+    expect(data).toHaveLength(7);
+    for (const phase of data) {
+      expect(phase.status).toBe("pending");
+      expect(phase.startedAt).toBeNull();
+      expect(phase.completedAt).toBeNull();
+      expect(phase.error).toBeNull();
+    }
+  });
+
+  it("GET /api/sv/phases returns 404 when manifest is missing", async () => {
+    const emptyDir = await mkdtemp(join(tmpdir(), "sv-api-nophases-"));
+    const emptySvDir = join(emptyDir, ".sourcevision");
+    await mkdir(emptySvDir, { recursive: true });
+    const emptyCtx: ServerContext = { projectDir: emptyDir, svDir: emptySvDir, rexDir, dev: false };
+
+    const emptyStarted = await startTestServer(emptyCtx);
+    try {
+      const res = await fetch(`http://localhost:${emptyStarted.port}/api/sv/phases`);
+      expect(res.status).toBe(404);
+      const data = await res.json();
+      expect(data.error).toContain("No manifest data");
+    } finally {
+      emptyStarted.server.close();
+      await rm(emptyDir, { recursive: true, force: true });
+    }
+  });
 });
