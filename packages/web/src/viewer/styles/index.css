@@ -38,6 +38,7 @@
 @import "./search-overlay.css";
 @import "./analysis.css";
 @import "./sv-analysis.css";
+@import "./phase-panel.css";
 @import "./explorer.css";
 @import "./zone-slideout.css";
 @import "./zone-trends.css";
