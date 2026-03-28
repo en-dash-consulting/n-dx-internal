@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Phase Panel — Analysis phases grid with status cards
+   Phase Panel — 4 grouped analysis phase cards with status + cost
    ─────────────────────────────────────────────────────────────────
-   Shows all 7 SourceVision analysis phases as interactive cards.
-   Each card displays phase number, name, status, timestamp,
-   and Run/Reset actions. Running phases pulse to indicate activity.
+   Shows 4 grouped SourceVision analysis phases as interactive cards.
+   Each card displays group number, name, status, LLM cost indicator,
+   timestamp, and Run/Reset actions. Running phases pulse to indicate
+   activity.
    ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Panel container (overview-section pattern) ────────────────── */
@@ -57,7 +58,7 @@
   border-color: var(--border-strong);
 }
 
-/* Phase number + name row */
+/* Phase number + name + cost row */
 .phase-card__title {
   display: flex;
   align-items: center;
@@ -87,6 +88,37 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ── LLM cost indicator ───────────────────────────────────────── */
+
+.phase-card__cost {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.phase-card__cost--free {
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 12%, transparent);
+}
+
+.phase-card__cost--low {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.phase-card__cost--medium {
+  color: var(--yellow, #e5a50a);
+  background: color-mix(in srgb, var(--yellow, #e5a50a) 12%, transparent);
+}
+
+.phase-card__cost--high {
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 12%, transparent);
 }
 
 /* Status indicator */
