@@ -40,6 +40,11 @@
 
 export { createSourcevisionMcpServer } from "./cli/mcp.js";
 
+// ---- Concurrency guard ------------------------------------------------------
+
+export { isAnalysisRunning } from "./analyzers/manifest.js";
+export type { AnalysisRunningResult } from "./analyzers/manifest.js";
+
 // ---- Schema constants -------------------------------------------------------
 
 export { SCHEMA_VERSION as SV_SCHEMA_VERSION } from "./schema/v1.js";

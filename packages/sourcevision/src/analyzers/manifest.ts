@@ -62,8 +62,10 @@ export function updateManifestModule(
 
   if (status === "running") {
     manifest.modules[moduleName].startedAt = now;
+    manifest.modules[moduleName].pid = process.pid;
   } else {
     manifest.modules[moduleName].completedAt = now;
+    delete manifest.modules[moduleName].pid;
   }
 
   // Clear previous error on new run
@@ -89,6 +91,112 @@ export function updateManifestError(
   manifest.modules[moduleName].status = "error";
   manifest.modules[moduleName].completedAt = now;
   manifest.modules[moduleName].error = error;
+  delete manifest.modules[moduleName].pid;
 
   writeManifest(dir, manifest);
+}
+
+// ── Concurrency guard ─────────────────────────────────────────────────
+
+/** Check whether a PID is still alive. signal 0 does not kill, only checks. */
+function isPidAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Result of an analysis-running check. */
+export interface AnalysisRunningResult {
+  /** Whether any module is actively running (after stale lock cleanup). */
+  running: boolean;
+  /** Module names that are actively running. */
+  modules: string[];
+  /** Whether stale locks were auto-cleared during the check. */
+  staleCleared: boolean;
+}
+
+/**
+ * Check whether any analysis module is currently running.
+ *
+ * Reads the manifest and finds modules with status "running".
+ * If a running module has a recorded PID that is no longer alive,
+ * it is considered a stale lock and automatically cleared to "error".
+ *
+ * This function is the single source of truth for cross-process
+ * concurrency detection — used by CLI, server routes, and MCP tools.
+ */
+export function isAnalysisRunning(dir: string): AnalysisRunningResult {
+  const manifestPath = join(resolve(dir), SV_DIR, "manifest.json");
+  if (!existsSync(manifestPath)) {
+    return { running: false, modules: [], staleCleared: false };
+  }
+
+  const manifest = readManifest(dir);
+  const runningModules: string[] = [];
+  const staleModules: string[] = [];
+
+  for (const [name, info] of Object.entries(manifest.modules)) {
+    if (info.status !== "running") continue;
+
+    // If a PID is recorded, check whether it is still alive
+    if (info.pid && !isPidAlive(info.pid)) {
+      staleModules.push(name);
+    } else {
+      runningModules.push(name);
+    }
+  }
+
+  // Auto-clear stale locks
+  if (staleModules.length > 0) {
+    const now = new Date().toISOString();
+    for (const name of staleModules) {
+      manifest.modules[name].status = "error";
+      manifest.modules[name].completedAt = now;
+      manifest.modules[name].error = "Process exited unexpectedly (stale lock cleared)";
+      delete manifest.modules[name].pid;
+    }
+    writeManifest(dir, manifest);
+  }
+
+  return {
+    running: runningModules.length > 0,
+    modules: runningModules,
+    staleCleared: staleModules.length > 0,
+  };
+}
+
+/**
+ * Clear all modules in "running" state back to "error".
+ *
+ * Used as a cleanup handler on process exit to release locks
+ * held by the current process.
+ */
+export function clearRunningModules(dir: string): void {
+  const manifestPath = join(resolve(dir), SV_DIR, "manifest.json");
+  if (!existsSync(manifestPath)) return;
+
+  try {
+    const manifest = readManifest(dir);
+    const now = new Date().toISOString();
+    let changed = false;
+
+    for (const [, info] of Object.entries(manifest.modules)) {
+      if (info.status === "running" && info.pid === process.pid) {
+        info.status = "error";
+        info.completedAt = now;
+        info.error = "Process exited before phase completed";
+        delete info.pid;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      writeManifest(dir, manifest);
+    }
+  } catch {
+    // Best-effort cleanup — don't throw during process exit
+  }
 }

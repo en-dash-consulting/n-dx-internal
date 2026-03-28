@@ -146,6 +146,40 @@ export function handleSourcevisionRoute(
       return true;
     }
 
+    // Cross-process guard — check manifest for externally running analysis
+    const manifestData = loadDataFile(ctx, DATA_FILES.manifest) as Record<string, unknown> | null;
+    if (manifestData) {
+      const modules = (manifestData.modules ?? {}) as Record<string, Record<string, unknown>>;
+      const runningModules: Array<{ id: string; pid?: number }> = [];
+
+      for (const [id, mod] of Object.entries(modules)) {
+        if (mod.status === "running") {
+          const pid = typeof mod.pid === "number" ? mod.pid : undefined;
+          // Check if the recorded PID is still alive
+          if (pid) {
+            try {
+              process.kill(pid, 0);
+              runningModules.push({ id, pid });
+            } catch {
+              // PID is dead — stale lock, ignore it
+            }
+          } else {
+            // No PID recorded — conservatively treat as running
+            runningModules.push({ id });
+          }
+        }
+      }
+
+      if (runningModules.length > 0) {
+        jsonResponse(res, 409, {
+          error: "Analysis is already running (external process)",
+          runningModules: runningModules.map((m) => m.id),
+          source: "manifest",
+        });
+        return true;
+      }
+    }
+
     const phaseDef = PHASE_DEFINITIONS.find((d) => d.phase === phase)!;
 
     // Resolve sourcevision binary (same pattern as routes-hench.ts)

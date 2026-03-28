@@ -3,7 +3,7 @@ import { resolve, join, relative } from "node:path";
 import { SV_DIR } from "../../constants.js";
 import { CLIError } from "../errors.js";
 import { DATA_FILES, SUPPLEMENTARY_FILES } from "../../schema/data-files.js";
-import { readManifest, writeManifest } from "../../analyzers/manifest.js";
+import { readManifest, writeManifest, isAnalysisRunning, clearRunningModules } from "../../analyzers/manifest.js";
 import { generateLlmsTxt } from "../../analyzers/llms-txt.js";
 import { generateContext } from "../../analyzers/context.js";
 import { emitZoneOutputs } from "../../analyzers/zone-output.js";
@@ -206,6 +206,24 @@ export async function cmdAnalyze(targetDir: string, extraArgs: string[]): Promis
       "Check the path and try again.",
     );
   }
+
+  // ── Concurrency guard: prevent parallel analyze runs ───────────────
+  const runCheck = isAnalysisRunning(absDir);
+  if (runCheck.staleCleared) {
+    info("Cleared stale analysis lock from a previous crashed process.");
+  }
+  if (runCheck.running) {
+    throw new CLIError(
+      `Analysis already in progress: ${runCheck.modules.join(", ")} running.`,
+      "Wait for the current analysis to finish, or clear stale locks with 'sourcevision analyze --phase=1' after verifying no other process is running.",
+    );
+  }
+
+  // Register cleanup handler to release locks if this process exits unexpectedly
+  const cleanup = () => clearRunningModules(absDir);
+  process.on("exit", cleanup);
+  process.on("SIGINT", () => { cleanup(); process.exit(130); });
+  process.on("SIGTERM", () => { cleanup(); process.exit(143); });
 
   const { svDir, llmConfig } = await initAndLoadLLMConfig(absDir);
   const filter = parsePhaseFilter(extraArgs);

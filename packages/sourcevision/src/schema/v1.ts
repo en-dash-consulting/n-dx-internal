@@ -13,6 +13,8 @@ export interface ModuleInfo {
   error?: string;
   /** Number of chunks processed (for large codebases) */
   chunks?: number;
+  /** PID of the process that set this module to "running". Used for stale lock detection. */
+  pid?: number;
 }
 
 export interface Manifest {
