@@ -13,6 +13,7 @@ export { ActiveTasksPanel } from "./active-tasks-panel.js";
 export type { ActiveRun } from "./active-tasks-panel.js";
 export { ConcurrencyPanel } from "./concurrency-panel.js";
 export { MemoryPanel } from "./memory-panel.js";
+export { PhasePanel } from "./phase-panel.js";
 export { WsHealthPanel } from "./ws-health-panel.js";
 export { ThrottleControlsPanel } from "./throttle-controls.js";
 export { DetailPanel } from "./detail-panel.js";
