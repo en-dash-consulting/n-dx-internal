@@ -14,7 +14,7 @@ The current web dashboard surfaces approximately **41% of available data** (45 o
 
 Beyond data gaps, the current 9-tab SourceVision navigation has structural issues: tabs mix abstraction levels (raw data alongside synthesized insights), the enrichment-gating system hides high-value views behind AI pass thresholds, and the route organization doesn't guide users through a coherent analytical workflow.
 
-This audit catalogs every data field, maps it to its current UI consumer (if any), identifies visualization gaps ranked by user impact, and proposes a reorganized route structure for increased focus and clarity.
+This audit catalogs every data field, maps it to its current UI consumer (if any), identifies visualization gaps ranked by user impact, proposes a reorganized route structure for increased focus and clarity, and identifies a new data collection opportunity: **environment variables, config items, and global constants** — the invisible configuration surface that drives runtime behavior but is currently unscanned.
 
 ---
 
@@ -338,6 +338,65 @@ This audit catalogs every data field, maps it to its current UI consumer (if any
 
 **Impact:** Low for SourceVision views specifically. More relevant to Rex/PR workflows.
 
+### 4.4 Proposed New Data Collection — Not Yet Scanned
+
+#### GAP-17: Environment Variables, Config Items, and Global Constants
+
+**Data available:** None — SourceVision does not currently scan for this category of data.
+
+**What should be collected:** A new analysis phase (or extension to an existing phase) that catalogs the project's configuration surface:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `entries[].name` | string | Variable/constant name (e.g., `DATABASE_URL`, `MAX_RETRIES`, `API_VERSION`) |
+| `entries[].kind` | enum | `env-var` \| `config-item` \| `global-constant` \| `feature-flag` |
+| `entries[].valueSource` | enum | `environment` \| `dotenv-file` \| `config-file` \| `hardcoded` \| `cli-arg` \| `computed` |
+| `entries[].runtimeAssigned` | boolean | Whether the value is determined at runtime (true) vs. build-time/static (false) |
+| `entries[].environmentDependent` | boolean | Whether the value differs across environments (dev/staging/prod) |
+| `entries[].definedIn` | string | File path where the variable is defined or first assigned |
+| `entries[].definedAtLine` | number | Line number of definition |
+| `entries[].referencedBy[]` | array | File paths + line numbers where this variable is read/used |
+| `entries[].referenceCount` | number | Total number of call sites across the codebase |
+| `entries[].defaultValue` | string \| null | Default/fallback value if detectable (e.g., `process.env.PORT \|\| 3000`) |
+| `entries[].required` | boolean \| null | Whether the code enforces presence (throws on missing, marked required in schema) |
+| `entries[].type` | string \| null | Inferred type (string, number, boolean, url, path) if detectable |
+| `entries[].scope` | enum | `global` \| `module` \| `function` \| `block` — where the constant is accessible |
+| `entries[].category` | string \| null | Semantic grouping (e.g., "database", "auth", "api", "logging", "feature-flags") |
+| `summary.totalEntries` | number | Total config surface items discovered |
+| `summary.byKind` | Record | Distribution by kind |
+| `summary.byValueSource` | Record | Distribution by value source |
+| `summary.runtimeCount` | number | Entries that are runtime-assigned |
+| `summary.environmentDependentCount` | number | Entries that vary by environment |
+| `summary.undocumentedEnvVars` | number | Env vars with no default and no .env.example entry |
+| `summary.mostReferenced[]` | array | Top entries by reference count — the most load-bearing config values |
+
+**Detection strategy per language:**
+
+| Language | Environment Variables | Config Items | Global Constants |
+|----------|---------------------|--------------|------------------|
+| TypeScript/JS | `process.env.*`, `import.meta.env.*`, dotenv files | JSON/YAML/TOML config files, config objects | `const` at module scope, `export const`, `Object.freeze()` |
+| Go | `os.Getenv()`, `os.LookupEnv()`, env struct tags | Viper/envconfig/config structs | Package-level `const` blocks, `var` at package scope |
+| Python | `os.environ[]`, `os.getenv()`, python-dotenv | Settings classes (Django, Pydantic), YAML/TOML config | Module-level UPPER_CASE assignments |
+| Rust | `std::env::var()`, dotenv | Config structs (serde), TOML files | `const`, `static`, `lazy_static!` |
+
+**Why this matters:**
+
+- **Configuration drift:** Teams frequently lose track of which env vars are required, which have defaults, and which differ between environments. This is a leading cause of deployment failures.
+- **Coupling visibility:** A global constant referenced by 40 files is a hidden coupling hub — changing its value has blast radius comparable to modifying a heavily-imported module, yet it's invisible in the current import graph.
+- **Onboarding:** New developers need to understand what to configure before the project runs. An auto-generated config surface catalog eliminates the "ask someone" step.
+- **Security audit surface:** Identifying which values come from the environment at runtime helps assess the attack surface of config injection.
+- **Refactoring safety:** Knowing all call sites for a config value is essential before changing it. The `referencedBy[]` field provides this traceability.
+
+**Proposed output file:** `config-surface.json` (new Phase 7 or extension to Phase 3 classifications)
+
+**Proposed UI placement:**
+- **Dashboard:** Summary metrics — total config entries, runtime vs. static ratio, undocumented env var count
+- **Explorer:** Config entries as a filterable panel alongside files, with "referenced by" drill-down
+- **Hotspots:** Most-referenced config values as a "config coupling" panel — the constants/env vars with the widest blast radius
+- **Architecture:** Zone-scoped config — which zones depend on which environment variables, revealing hidden cross-zone coupling through shared config
+
+**Recommended priority:** **P1** — This is net-new data collection (not just a UI gap), so it requires both analyzer work and UI work. However, the architectural insight it provides (especially for backend projects) justifies prioritizing it alongside the existing P1 items.
+
 ---
 
 ## 5. Coverage Summary
@@ -564,6 +623,7 @@ zones.json ───────────────────────
   └── history/*.json ────────────────→ Architecture (convergence trends)
 components.json ─────────────────────→ Dashboard (metrics) + Endpoints (routes + components)
 callgraph.json ──────────────────────→ Dashboard (metrics) + Explorer (overlay) + Hotspots (functions)
+config-surface.json ─────────────────→ Dashboard (summary) + Explorer (config panel) + Hotspots (config coupling) + Architecture (zone config deps)
 manifest.json ───────────────────────→ Dashboard (project identity)
 ```
 
@@ -591,6 +651,7 @@ Combining gap closure with route reorganization:
 | **P3** | Relocate PR Markdown to header action | Structural | Low |
 | **P3** | Add move-file finding cards | GAP-15 | Low |
 | **P3** | Add minor inventory/component fields | GAP-11, GAP-12 | Low |
+| **P1** | New analyzer: environment variables, config items, global constants | GAP-17 | High |
 
 ---
 
@@ -612,13 +673,13 @@ Combining gap closure with route reorganization:
 
 ### Proposed state: which reorganized views would consume which data files
 
-| View | inventory | imports | classifications | zones | components | callgraph | manifest | supplementary |
-|------|-----------|---------|-----------------|-------|------------|-----------|----------|---------------|
-| Dashboard | summary | summary | summary | summary | summary | summary | metadata | — |
-| Architecture | — | — | — | zones, crossings, findings, risk | — | edge weighting | — | zones/*/context.md, history/*.json |
-| Explorer | files array | edges, external | files array | file-zone map | — | overlay edges | — | — |
-| Endpoints | — | — | — | file-zone map | routes, components, usage, server | — | — | — |
-| Hotspots | — | mostImported, hubs | summary, byArchetype | — | — | summary, mostCalled, mostCalling | — | — |
+| View | inventory | imports | classifications | zones | components | callgraph | config-surface | manifest | supplementary |
+|------|-----------|---------|-----------------|-------|------------|-----------|----------------|----------|---------------|
+| Dashboard | summary | summary | summary | summary | summary | summary | summary | metadata | — |
+| Architecture | — | — | — | zones, crossings, findings, risk | — | edge weighting | zone config deps | — | zones/*/context.md, history/*.json |
+| Explorer | files array | edges, external | files array | file-zone map | — | overlay edges | entries, referencedBy | — | — |
+| Endpoints | — | — | — | file-zone map | routes, components, usage, server | — | — | — | — |
+| Hotspots | — | mostImported, hubs | summary, byArchetype | — | — | summary, mostCalled, mostCalling | mostReferenced | — | — |
 
 ---
 
