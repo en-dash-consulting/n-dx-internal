@@ -204,6 +204,30 @@
   background: color-mix(in srgb, var(--red) 12%, transparent);
 }
 
+/* Locked — prerequisites not met, dimmed card */
+.phase-card--locked {
+  opacity: 0.5;
+  border-color: var(--border);
+}
+
+.phase-card--locked:hover {
+  border-color: var(--border);
+}
+
+.phase-card--locked .phase-card__number {
+  background: var(--bg-hover);
+  color: var(--text-dim);
+}
+
+/* Prerequisite hint message */
+.phase-card__prereq-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
 /* ── Pulse animation (mirrors status-badge-pulse in badges.css) ── */
 
 @keyframes phase-pulse {

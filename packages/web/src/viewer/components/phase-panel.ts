@@ -41,6 +41,10 @@ interface GroupedPhase {
   completedAt: string | null;
   error: string | null;
   modules: ModuleStatus[];
+  /** Whether all prerequisite phases are complete (Phase 1 is always true). */
+  prerequisiteMet: boolean;
+  /** Human-readable hint when prerequisites are not met. */
+  prerequisiteHint: string | null;
 }
 
 /** LLM cost tier for display. */
@@ -266,9 +270,12 @@ export function PhasePanel() {
         const hasResetTarget = phase.status === "complete" || phase.status === "error"
           || phase.modules.some((m) => m.status === "complete" || m.status === "error");
 
+        const isLocked = !phase.prerequisiteMet;
+        const cardClass = `phase-card phase-card--${phase.status}${isLocked ? " phase-card--locked" : ""}`;
+
         return h("div", {
           key: phase.group,
-          class: `phase-card phase-card--${phase.status}`,
+          class: cardClass,
         },
           // Title row: group number + name + LLM cost indicator
           h("div", { class: "phase-card__title" },
@@ -314,14 +321,23 @@ export function PhasePanel() {
               }, phase.error.length > 80 ? phase.error.slice(0, 80) + "\u2026" : phase.error)
             : null,
 
+          // Prerequisite lock hint
+          isLocked && phase.prerequisiteHint
+            ? h("div", {
+                class: "phase-card__prereq-hint",
+              }, phase.prerequisiteHint)
+            : null,
+
           // Action buttons
           h("div", { class: "phase-card__actions" },
             h("button", {
               type: "button",
-              disabled: anyRunning,
-              title: anyRunning
-                ? "A phase is already running"
-                : `Run ${phase.name}`,
+              disabled: anyRunning || isLocked,
+              title: isLocked
+                ? phase.prerequisiteHint ?? "Prerequisites not met"
+                : anyRunning
+                  ? "A phase is already running"
+                  : `Run ${phase.name}`,
               onClick: () => handleGroupRun(phase),
             }, "Run"),
             hasResetTarget

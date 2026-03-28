@@ -105,11 +105,22 @@ describe("POST /api/sv/phases/:n/run (grouped phases)", () => {
   let port: number;
   let bc: ReturnType<typeof createBroadcastCapture>;
 
+  // Manifest with all modules marked complete so prerequisite checks pass.
+  // Individual tests for prerequisite enforcement are in phase-prereq.test.ts.
   const manifestData = {
     schema: "sourcevision/v1",
     project: "test-project",
     timestamp: "2026-01-01T00:00:00.000Z",
     version: "0.1.0",
+    modules: {
+      inventory: { status: "complete", completedAt: "2026-01-01T00:00:00.000Z" },
+      imports: { status: "complete", completedAt: "2026-01-01T00:00:00.000Z" },
+      configsurface: { status: "complete", completedAt: "2026-01-01T00:00:00.000Z" },
+      classifications: { status: "complete", completedAt: "2026-01-01T00:00:00.000Z" },
+      components: { status: "complete", completedAt: "2026-01-01T00:00:00.000Z" },
+      zones: { status: "complete", completedAt: "2026-01-01T00:00:00.000Z" },
+      callgraph: { status: "complete", completedAt: "2026-01-01T00:00:00.000Z" },
+    },
   };
 
   beforeEach(async () => {

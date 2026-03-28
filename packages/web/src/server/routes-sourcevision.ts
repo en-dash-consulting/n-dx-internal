@@ -96,6 +96,56 @@ const GROUPED_PHASES: readonly GroupedPhaseDef[] = [
 /** Valid grouped phase numbers (1–4). */
 const VALID_GROUP_NUMBERS = new Set<number>(GROUPED_PHASES.map((g) => g.group));
 
+/**
+ * Check phase prerequisite completion.
+ *
+ * Phase ordering: 1 → 2 → 3 → 4. Each phase (except 1) requires the
+ * previous phase to be complete before it can run.
+ *
+ * Returns an error message string if prerequisites are not met, or null if OK.
+ */
+function getPhasePrerequisiteError(
+  group: number,
+  ctx: ServerContext,
+): string | null {
+  // Phase 1 is always runnable — no prerequisites
+  if (group <= 1) return null;
+
+  const manifest = loadDataFile(ctx, DATA_FILES.manifest) as Record<string, unknown> | null;
+  const manifestModules = manifest
+    ? (((manifest as Record<string, unknown>).modules ?? {}) as Record<string, Record<string, unknown>>)
+    : null;
+
+  // Check zones.json for enrichmentPass (for group 4 prerequisite on group 3)
+  const zonesData = group === 4
+    ? loadDataFile(ctx, DATA_FILES.zones) as Record<string, unknown> | null
+    : null;
+
+  // Check each prerequisite group in order (all phases before `group` must be complete)
+  for (let prereq = 1; prereq < group; prereq++) {
+    const prereqDef = GROUPED_PHASES.find((g) => g.group === prereq)!;
+    let isComplete: boolean;
+
+    if (prereqDef.group === 4) {
+      // Group 4 uses zones enrichmentPass
+      const enrichmentPass = zonesData ? (zonesData.enrichmentPass as number | undefined) : undefined;
+      isComplete = enrichmentPass != null && enrichmentPass >= 4;
+    } else {
+      // Groups 1–3: all constituent modules must be complete
+      isComplete = prereqDef.moduleIds.length > 0 && prereqDef.moduleIds.every((moduleId) => {
+        const mod = manifestModules?.[moduleId];
+        return mod?.status === "complete";
+      });
+    }
+
+    if (!isComplete) {
+      return `Phase ${group} (${GROUPED_PHASES.find((g) => g.group === group)!.name}) requires Phase ${prereq} (${prereqDef.name}) to be complete first. Run Phase ${prereq} before attempting Phase ${group}.`;
+    }
+  }
+
+  return null;
+}
+
 // ── Singleton guard for grouped phase execution ──────────────────────────
 
 /** Active grouped phase execution state. null when idle. */
@@ -321,6 +371,17 @@ export function handleSourcevisionRoute(
         error: "Analysis is already running (external process)",
         runningModules: lockCheck.modules,
         source: "manifest",
+      });
+      return true;
+    }
+
+    // Phase prerequisite enforcement — phases must run in order (1 → 2 → 3 → 4)
+    const prereqError = getPhasePrerequisiteError(group, ctx);
+    if (prereqError) {
+      jsonResponse(res, 400, {
+        error: prereqError,
+        code: "PREREQUISITE_NOT_MET",
+        phase: group,
       });
       return true;
     }
@@ -687,8 +748,24 @@ export function handleSourcevisionRoute(
         completedAt,
         error,
         modules: moduleStatuses,
+        prerequisiteMet: true as boolean,
+        prerequisiteHint: null as string | null,
       };
     });
+
+    // Second pass: compute prerequisite lock state now that all statuses are known
+    for (const phase of phases) {
+      if (phase.group <= 1) continue;
+      for (let prereq = 1; prereq < phase.group; prereq++) {
+        const prereqPhase = phases.find((p) => p.group === prereq);
+        if (!prereqPhase || prereqPhase.status !== "complete") {
+          const prereqDef = GROUPED_PHASES.find((g) => g.group === prereq)!;
+          phase.prerequisiteMet = false;
+          phase.prerequisiteHint = `Phase ${prereq} (${prereqDef.name}) must complete first`;
+          break;
+        }
+      }
+    }
 
     jsonResponse(res, 200, { phases, anyRunning });
     return true;
