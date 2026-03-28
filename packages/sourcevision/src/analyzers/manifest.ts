@@ -138,7 +138,7 @@ export function isAnalysisRunning(dir: string): AnalysisRunningResult {
   const runningModules: string[] = [];
   const staleModules: string[] = [];
 
-  for (const [name, info] of Object.entries(manifest.modules)) {
+  for (const [name, info] of Object.entries(manifest.modules ?? {})) {
     if (info.status !== "running") continue;
 
     // If a PID is recorded, check whether it is still alive

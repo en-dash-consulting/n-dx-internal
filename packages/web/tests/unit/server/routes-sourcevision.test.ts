@@ -289,6 +289,7 @@ describe("Sourcevision API routes", () => {
         classifications: {
           status: "running",
           startedAt: "2026-01-01T00:00:03.000Z",
+          pid: process.pid, // Current PID so lock check sees it as alive
         },
       },
     };
@@ -296,7 +297,12 @@ describe("Sourcevision API routes", () => {
 
     const res = await fetch(`http://localhost:${port}/api/sv/phases`);
     expect(res.status).toBe(200);
-    const data = await res.json();
+    const envelope = await res.json();
+
+    // Response is now { phases, anyRunning }
+    expect(envelope).toHaveProperty("phases");
+    expect(envelope).toHaveProperty("anyRunning");
+    const data = envelope.phases;
 
     // Should return exactly 7 phases
     expect(data).toHaveLength(7);
@@ -357,7 +363,8 @@ describe("Sourcevision API routes", () => {
 
     const res = await fetch(`http://localhost:${port}/api/sv/phases`);
     expect(res.status).toBe(200);
-    const data = await res.json();
+    const envelope = await res.json();
+    const data = envelope.phases;
 
     expect(data[0]).toMatchObject({
       id: "inventory",
@@ -373,7 +380,8 @@ describe("Sourcevision API routes", () => {
 
     const res = await fetch(`http://localhost:${port}/api/sv/phases`);
     expect(res.status).toBe(200);
-    const data = await res.json();
+    const envelope = await res.json();
+    const data = envelope.phases;
 
     expect(data).toHaveLength(7);
     for (const phase of data) {
@@ -382,9 +390,10 @@ describe("Sourcevision API routes", () => {
       expect(phase.completedAt).toBeNull();
       expect(phase.error).toBeNull();
     }
+    expect(envelope.anyRunning).toBe(false);
   });
 
-  it("GET /api/sv/phases returns 404 when manifest is missing", async () => {
+  it("GET /api/sv/phases returns pending phases when manifest is missing (empty state)", async () => {
     const emptyDir = await mkdtemp(join(tmpdir(), "sv-api-nophases-"));
     const emptySvDir = join(emptyDir, ".sourcevision");
     await mkdir(emptySvDir, { recursive: true });
@@ -393,9 +402,13 @@ describe("Sourcevision API routes", () => {
     const emptyStarted = await startTestServer(emptyCtx);
     try {
       const res = await fetch(`http://localhost:${emptyStarted.port}/api/sv/phases`);
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(200);
       const data = await res.json();
-      expect(data.error).toContain("No manifest data");
+      expect(data.anyRunning).toBe(false);
+      expect(data.phases).toHaveLength(7);
+      for (const phase of data.phases) {
+        expect(phase.status).toBe("pending");
+      }
     } finally {
       emptyStarted.server.close();
       await rm(emptyDir, { recursive: true, force: true });

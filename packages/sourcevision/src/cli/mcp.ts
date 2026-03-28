@@ -21,6 +21,7 @@ import { DATA_FILES } from "../schema/data-files.js";
 import { generateContext } from "../analyzers/context.js";
 import { deriveNextSteps } from "../analyzers/next-steps.js";
 import { SV_DIR, TOOL_VERSION } from "../constants.js";
+import { isAnalysisRunning } from "../analyzers/manifest.js";
 
 interface SourcevisionData {
   manifest: Manifest | null;
@@ -516,6 +517,27 @@ function registerConfigSurfaceTools(server: McpServer, context: McpContext): voi
   );
 }
 
+function registerConcurrencyTools(server: McpServer, context: McpContext): void {
+  server.tool(
+    "is_analysis_running",
+    "Check whether a sourcevision analysis is currently running. Use before triggering analysis to avoid conflicts. Returns running state, active module names, and whether stale locks were auto-cleared.",
+    {},
+    () => {
+      const result = isAnalysisRunning(context.absDir);
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            running: result.running,
+            modules: result.modules,
+            staleCleared: result.staleCleared,
+          }, null, 2),
+        }],
+      };
+    },
+  );
+}
+
 function registerMcpTools(server: McpServer, context: McpContext): void {
   registerOverviewTools(server, context);
   registerZoneTools(server, context);
@@ -523,6 +545,7 @@ function registerMcpTools(server: McpServer, context: McpContext): void {
   registerClassificationTools(server, context);
   registerComponentTools(server, context);
   registerConfigSurfaceTools(server, context);
+  registerConcurrencyTools(server, context);
 }
 
 function registerMcpResources(server: McpServer, context: McpContext): void {

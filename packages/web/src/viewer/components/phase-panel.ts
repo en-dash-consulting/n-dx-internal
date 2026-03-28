@@ -79,16 +79,34 @@ export function PhasePanel() {
   const [loaded, setLoaded] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
-  /** Whether any phase is currently running. */
-  const anyRunning = phases.some((p) => p.status === "running");
+  /** Server-reported global lock state (includes cross-process PID checks). */
+  const [serverAnyRunning, setServerAnyRunning] = useState(false);
+
+  /**
+   * Whether any phase is currently running.
+   *
+   * Combines server-side cross-process PID verification (`anyRunning` from
+   * GET /api/sv/phases) with client-side status derived from WebSocket
+   * updates. The server flag catches external CLI processes; the client
+   * flag stays current between polls via real-time WebSocket messages.
+   */
+  const anyRunning = serverAnyRunning || phases.some((p) => p.status === "running");
 
   // Fetch from REST endpoint
   const fetchPhases = useCallback(async () => {
     try {
       const res = await fetch("/api/sv/phases");
       if (res.ok) {
-        const data = (await res.json()) as PhaseStatus[];
-        setPhases(data);
+        const data = await res.json();
+        // Response is { phases: PhaseStatus[], anyRunning: boolean }
+        if (data && typeof data === "object" && Array.isArray(data.phases)) {
+          setPhases(data.phases);
+          setServerAnyRunning(!!data.anyRunning);
+        } else if (Array.isArray(data)) {
+          // Backward compatibility: plain array response
+          setPhases(data);
+          setServerAnyRunning(false);
+        }
         setLoaded(true);
       }
     } catch {

@@ -27,6 +27,7 @@ import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse } from "./types.js";
 import type { WebSocketBroadcaster } from "./websocket.js";
 import { DATA_FILES, buildDbPackagesResponse } from "../shared/index.js";
+import { isAnalysisRunning } from "./domain-gateway.js";
 
 const SV_PREFIX = "/api/sv/";
 
@@ -147,37 +148,15 @@ export function handleSourcevisionRoute(
     }
 
     // Cross-process guard — check manifest for externally running analysis
-    const manifestData = loadDataFile(ctx, DATA_FILES.manifest) as Record<string, unknown> | null;
-    if (manifestData) {
-      const modules = (manifestData.modules ?? {}) as Record<string, Record<string, unknown>>;
-      const runningModules: Array<{ id: string; pid?: number }> = [];
-
-      for (const [id, mod] of Object.entries(modules)) {
-        if (mod.status === "running") {
-          const pid = typeof mod.pid === "number" ? mod.pid : undefined;
-          // Check if the recorded PID is still alive
-          if (pid) {
-            try {
-              process.kill(pid, 0);
-              runningModules.push({ id, pid });
-            } catch {
-              // PID is dead — stale lock, ignore it
-            }
-          } else {
-            // No PID recorded — conservatively treat as running
-            runningModules.push({ id });
-          }
-        }
-      }
-
-      if (runningModules.length > 0) {
-        jsonResponse(res, 409, {
-          error: "Analysis is already running (external process)",
-          runningModules: runningModules.map((m) => m.id),
-          source: "manifest",
-        });
-        return true;
-      }
+    // Uses the shared isAnalysisRunning() which also auto-clears stale PID locks.
+    const lockCheck = isAnalysisRunning(ctx.projectDir);
+    if (lockCheck.running) {
+      jsonResponse(res, 409, {
+        error: "Analysis is already running (external process)",
+        runningModules: lockCheck.modules,
+        source: "manifest",
+      });
+      return true;
     }
 
     const phaseDef = PHASE_DEFINITIONS.find((d) => d.phase === phase)!;
@@ -412,12 +391,30 @@ export function handleSourcevisionRoute(
 
   // GET /api/sv/phases — ordered analysis phase status from manifest modules
   if (path === "phases") {
+    // Run the shared concurrency check FIRST — it auto-clears stale PID locks
+    // in the manifest, so subsequent reads see accurate status.
+    const lockCheck = isAnalysisRunning(ctx.projectDir);
+    const anyRunning = activePhaseRun !== null || lockCheck.running;
+
     const manifest = loadDataFile(ctx, DATA_FILES.manifest) as Record<string, unknown> | null;
     if (!manifest) {
-      errorResponse(res, 404, "No manifest data. Run 'sourcevision analyze' first.");
+      // Return all phases as pending with anyRunning false when no manifest exists.
+      // This lets the UI render the phase panel in empty state.
+      const phases = PHASE_DEFINITIONS.map((def) => ({
+        id: def.id,
+        phase: def.phase,
+        name: def.name,
+        description: def.description,
+        status: "pending" as const,
+        startedAt: null,
+        completedAt: null,
+        error: null,
+      }));
+      jsonResponse(res, 200, { phases, anyRunning: false });
       return true;
     }
     const modules = (manifest.modules ?? {}) as Record<string, Record<string, unknown>>;
+
     const phases = PHASE_DEFINITIONS.map((def) => {
       const mod = modules[def.id];
       return {
@@ -431,7 +428,7 @@ export function handleSourcevisionRoute(
         error: mod?.error ?? null,
       };
     });
-    jsonResponse(res, 200, phases);
+    jsonResponse(res, 200, { phases, anyRunning });
     return true;
   }
 

@@ -17,3 +17,5 @@
  */
 
 export { createSourcevisionMcpServer } from "@n-dx/sourcevision";
+export { isAnalysisRunning } from "@n-dx/sourcevision";
+export type { AnalysisRunningResult } from "@n-dx/sourcevision";
