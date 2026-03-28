@@ -288,6 +288,134 @@
   margin-left: 8px;
 }
 
+/* Risk & detection quality badges row */
+.zone-slideout-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.risk-badge--healthy {
+  background: color-mix(in srgb, var(--green) 15%, transparent);
+  color: var(--green);
+}
+
+.risk-badge--at-risk {
+  background: color-mix(in srgb, var(--orange) 15%, transparent);
+  color: var(--orange);
+}
+
+.risk-badge--critical {
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  color: var(--red);
+}
+
+.risk-badge--catastrophic {
+  background: color-mix(in srgb, var(--red) 25%, transparent);
+  color: var(--red);
+  border: 1px solid color-mix(in srgb, var(--red) 40%, transparent);
+}
+
+.risk-badge--policy-fail {
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+  color: var(--red);
+  border: 1px dashed color-mix(in srgb, var(--red) 40%, transparent);
+}
+
+.detection-quality-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: help;
+}
+
+.detection-quality--genuine {
+  background: color-mix(in srgb, var(--green) 10%, transparent);
+  color: var(--green);
+}
+
+.detection-quality--artifact {
+  background: color-mix(in srgb, var(--orange) 10%, transparent);
+  color: var(--orange);
+}
+
+.detection-quality--residual {
+  background: color-mix(in srgb, var(--text-dim) 10%, transparent);
+  color: var(--text-dim);
+}
+
+/* Risk justification */
+.zone-slideout-justification {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--orange) 8%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--orange) 20%, transparent);
+  border-radius: 6px;
+}
+
+.zone-slideout-justification-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--orange);
+  margin-bottom: 4px;
+}
+
+.zone-slideout-justification-text {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Zone AI context */
+.zone-slideout-context-loading {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 12px;
+  text-align: center;
+}
+
+.zone-slideout-context-md {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono, monospace);
+}
+
+.zone-slideout-context-empty {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 8px 0;
+}
+
 /* Navigation buttons */
 .zone-slideout-nav {
   display: flex;

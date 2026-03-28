@@ -15,7 +15,7 @@ interface FilesViewProps {
   navigateTo?: NavigateTo;
 }
 
-type SortKey = "path" | "size" | "language" | "lineCount" | "role" | "category" | "archetype" | "confidence";
+type SortKey = "path" | "size" | "language" | "lineCount" | "role" | "category" | "archetype" | "confidence" | "lastModified";
 type SortDir = "asc" | "desc";
 
 /** Internal tool directories hidden from the file list by default */
@@ -98,6 +98,12 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
 
   const hasClassifications = classifications !== null && classifications.files.length > 0;
 
+  // Check if any files have lastModified data
+  const hasLastModified = useMemo(
+    () => inventory.files.some((f) => f.lastModified != null),
+    [inventory]
+  );
+
   const filtered = useMemo(() => {
     let files = inventory.files;
 
@@ -157,6 +163,10 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
         const aConf = fileToClassification.get(a.path)?.confidence ?? -1;
         const bConf = fileToClassification.get(b.path)?.confidence ?? -1;
         cmp = aConf - bConf;
+      } else if (sortKey === "lastModified") {
+        const aTime = a.lastModified ?? 0;
+        const bTime = b.lastModified ?? 0;
+        cmp = aTime - bTime;
       } else {
         const aVal = a[sortKey];
         const bVal = b[sortKey];
@@ -291,6 +301,9 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
           h("th", { onClick: () => toggleSort("size") }, `Size${sortIndicator("size")}`),
           h("th", { onClick: () => toggleSort("role") }, `Role${sortIndicator("role")}`),
           h("th", { onClick: () => toggleSort("category") }, `Category${sortIndicator("category")}`),
+          hasLastModified
+            ? h("th", { onClick: () => toggleSort("lastModified") }, `Modified${sortIndicator("lastModified")}`)
+            : null,
           hasClassifications
             ? h("th", { onClick: () => toggleSort("archetype") }, `Archetype${sortIndicator("archetype")}`)
             : null,
@@ -327,6 +340,11 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
               h("span", { class: `tag ${ROLE_TAG_CLASS[file.role] || "tag-other"}` }, file.role)
             ),
             h("td", null, file.category),
+            hasLastModified
+              ? h("td", { class: "text-right" },
+                  file.lastModified ? formatDate(file.lastModified) : "\u2014"
+                )
+              : null,
             hasClassifications
               ? h("td", null,
                   h("span", {
@@ -362,4 +380,16 @@ function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDate(epochMs: number): string {
+  const d = new Date(epochMs);
+  const now = Date.now();
+  const diffMs = now - epochMs;
+  const diffDays = Math.floor(diffMs / 86_400_000);
+  if (diffDays === 0) return "today";
+  if (diffDays === 1) return "yesterday";
+  if (diffDays < 30) return `${diffDays}d ago`;
+  // Compact date: "Mar 28"
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }

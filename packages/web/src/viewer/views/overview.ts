@@ -31,6 +31,17 @@ const LANG_COLORS: Record<string, string> = {
   Go: "#00add8",
 };
 
+const ROLE_COLORS: Record<string, string> = {
+  source: "var(--accent)",
+  test: "var(--green)",
+  config: "var(--orange)",
+  docs: "#8b90a8",
+  generated: "var(--purple)",
+  asset: "#fbbf24",
+  build: "#dea584",
+  other: "var(--text-dim)",
+};
+
 export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
   const { manifest, inventory, imports, zones, components, callGraph, classifications } = data;
 
@@ -153,6 +164,32 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
         color: "var(--accent)",
       }));
   }, [classifications]);
+
+  // byRole distribution chart data
+  const roleChartData = useMemo(() => {
+    if (!inventory || !inventory.summary.byRole) return [];
+    return Object.entries(inventory.summary.byRole)
+      .filter(([, count]) => (count as number) > 0)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .map(([role, count]) => ({
+        label: role,
+        value: count as number,
+        color: ROLE_COLORS[role] || "var(--text-dim)",
+      }));
+  }, [inventory]);
+
+  // byCategory distribution chart data
+  const categoryChartData = useMemo(() => {
+    if (!inventory || !inventory.summary.byCategory) return [];
+    return Object.entries(inventory.summary.byCategory)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .slice(0, 10)
+      .map(([cat, count]) => ({
+        label: cat,
+        value: count as number,
+        color: "var(--purple)",
+      }));
+  }, [inventory]);
 
   const hasHotspots = mostCalledItems.length > 0 || mostCallingItems.length > 0 || mostUsedComponents.length > 0;
 
@@ -362,6 +399,24 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
           )
         : null
     ),
+
+    // byRole / byCategory distribution
+    (roleChartData.length > 0 || categoryChartData.length > 0)
+      ? h("div", { class: "overview-columns" },
+          roleChartData.length > 0
+            ? h("div", { class: "overview-col" },
+                h("h3", null, "Files by Role"),
+                h(BarChart, { data: roleChartData }),
+              )
+            : null,
+          categoryChartData.length > 0
+            ? h("div", { class: "overview-col" },
+                h("h3", null, "Files by Category"),
+                h(BarChart, { data: categoryChartData }),
+              )
+            : null,
+        )
+      : null,
 
     // Archetype distribution
     archetypeChartData.length > 0

@@ -1,6 +1,6 @@
 import { h, Fragment } from "preact";
 import { useState, useEffect, useCallback } from "preact/hooks";
-import type { Zone, ZoneCrossing } from "../external.js";
+import type { Zone, ZoneCrossing, RiskLevel } from "../external.js";
 import { getZoneColorByIndex } from "../visualization/colors.js";
 import { meterClass } from "../visualization/metrics.js";
 import { basename } from "../utils.js";
@@ -23,6 +23,21 @@ export interface ZoneSlideoutProps {
   navigateTo?: NavigateTo;
 }
 
+// ── Risk helpers ──────────────────────────────────────────────────────
+
+const RISK_BADGE_CLASS: Record<RiskLevel, string> = {
+  healthy: "risk-badge--healthy",
+  "at-risk": "risk-badge--at-risk",
+  critical: "risk-badge--critical",
+  catastrophic: "risk-badge--catastrophic",
+};
+
+const DETECTION_QUALITY_TOOLTIP: Record<string, string> = {
+  genuine: "Genuine architectural unit identified by community detection",
+  artifact: "Detection artifact — residual community from Louvain when most files are pinned elsewhere",
+  residual: "Residual zone — remaining files after primary zones were formed",
+};
+
 // ── Component ──────────────────────────────────────────────────────────
 
 export function ZoneSlideout({
@@ -34,9 +49,35 @@ export function ZoneSlideout({
   navigateTo,
 }: ZoneSlideoutProps) {
   const [showFiles, setShowFiles] = useState(false);
+  const [contextMd, setContextMd] = useState<string | null>(null);
+  const [contextLoading, setContextLoading] = useState(false);
+  const [showContext, setShowContext] = useState(false);
 
-  // Reset file list when zone changes
-  useEffect(() => { setShowFiles(false); }, [zone?.id]);
+  // Reset state when zone changes
+  useEffect(() => {
+    setShowFiles(false);
+    setContextMd(null);
+    setShowContext(false);
+  }, [zone?.id]);
+
+  // Load per-zone context.md on demand
+  useEffect(() => {
+    if (!zone || !showContext || contextMd !== null) return;
+    setContextLoading(true);
+    fetch(`/data/zones/${encodeURIComponent(zone.id)}/context.md`)
+      .then((res) => {
+        if (res.ok) return res.text();
+        return null;
+      })
+      .then((text) => {
+        setContextMd(text ?? "");
+        setContextLoading(false);
+      })
+      .catch(() => {
+        setContextMd("");
+        setContextLoading(false);
+      });
+  }, [zone?.id, showContext, contextMd]);
 
   // Close on Escape
   useEffect(() => {
@@ -57,6 +98,8 @@ export function ZoneSlideout({
 
   const zoneIdx = allZones.indexOf(zone);
   const color = getZoneColorByIndex(zoneIdx >= 0 ? zoneIdx : 0);
+  const risk = zone.riskMetrics;
+  const dq = zone.detectionQuality;
 
   // Dependencies
   const incoming = crossings.filter((c) => c.toZone === zone.id);
@@ -94,9 +137,41 @@ export function ZoneSlideout({
         }, "\u2715"),
       ),
 
+      // Risk level badge + detection quality + policy-fail
+      (risk || dq)
+        ? h("div", { class: "zone-slideout-badges" },
+            risk
+              ? h("span", {
+                  class: `risk-badge ${RISK_BADGE_CLASS[risk.riskLevel]}`,
+                  title: `Risk score: ${risk.riskScore.toFixed(2)}`,
+                }, risk.riskLevel)
+              : null,
+            risk?.failsThreshold
+              ? h("span", {
+                  class: "risk-badge risk-badge--policy-fail",
+                  title: "Fails dual-fragility threshold: cohesion < 0.4 AND coupling > 0.6",
+                }, "\u26A0 policy fail")
+              : null,
+            dq
+              ? h("span", {
+                  class: `detection-quality-badge detection-quality--${dq}`,
+                  title: DETECTION_QUALITY_TOOLTIP[dq] || dq,
+                }, dq)
+              : null,
+          )
+        : null,
+
       // Description
       zone.description
         ? h("p", { class: "zone-slideout-desc" }, zone.description)
+        : null,
+
+      // Risk justification (when present)
+      risk?.riskJustification
+        ? h("div", { class: "zone-slideout-justification" },
+            h("span", { class: "zone-slideout-justification-label" }, "Risk Justification"),
+            h("p", { class: "zone-slideout-justification-text" }, risk.riskJustification),
+          )
         : null,
 
       // Metrics row
@@ -258,6 +333,23 @@ export function ZoneSlideout({
                 ),
               ),
             )
+          : null,
+      ),
+
+      // Zone AI context toggle
+      h("div", { class: "zone-slideout-section" },
+        h("button", {
+          class: "zone-slideout-files-toggle",
+          onClick: () => setShowContext(!showContext),
+        },
+          showContext ? "Hide AI context" : "Show AI context",
+        ),
+        showContext
+          ? contextLoading
+            ? h("div", { class: "zone-slideout-context-loading" }, "Loading context\u2026")
+            : contextMd
+              ? h("pre", { class: "zone-slideout-context-md" }, contextMd)
+              : h("div", { class: "zone-slideout-context-empty" }, "No per-zone context available.")
           : null,
       ),
 

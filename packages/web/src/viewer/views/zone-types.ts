@@ -39,6 +39,14 @@ export interface ZoneData {
   subCrossings?: FlowEdge[];
   /** Whether this zone has sub-zone data available for drill-down. */
   hasDrillDown?: boolean;
+  /** Entry point file paths (public API surface). */
+  entryPoints?: string[];
+  /** Risk classification: healthy | at-risk | critical | catastrophic. */
+  riskLevel?: import("../../schema/v1.js").RiskLevel;
+  /** Whether the zone fails the governance threshold. */
+  failsThreshold?: boolean;
+  /** Detection quality: genuine | artifact | residual. */
+  detectionQuality?: "genuine" | "artifact" | "residual";
 }
 
 /** Breadcrumb entry for tracking the drill-down navigation path. */

@@ -83,6 +83,10 @@ export function convertSubZones(subZones: Zone[]): ZoneData[] {
       totalFunctions: 0,
       internalCalls: 0,
       crossZoneCalls: 0,
+      entryPoints: sz.entryPoints,
+      riskLevel: sz.riskMetrics?.riskLevel,
+      failsThreshold: sz.riskMetrics?.failsThreshold,
+      detectionQuality: sz.detectionQuality,
     };
 
     // Recurse if deeper levels exist
@@ -237,6 +241,10 @@ function buildExplorerData(
         totalFunctions,
         internalCalls,
         crossZoneCalls,
+        entryPoints: z.entryPoints,
+        riskLevel: z.riskMetrics?.riskLevel,
+        failsThreshold: z.riskMetrics?.failsThreshold,
+        detectionQuality: z.detectionQuality,
       };
 
       // Attach sub-zone data for drill-down when available
@@ -672,6 +680,7 @@ function FileRow({
   boxW,
   searchMatch,
   hasCrossZone,
+  isEntryPoint,
   onClick,
   onDblClick,
 }: {
@@ -681,6 +690,7 @@ function FileRow({
   boxW: number;
   searchMatch: boolean;
   hasCrossZone: boolean;
+  isEntryPoint: boolean;
   onClick: () => void;
   onDblClick: () => void;
 }) {
@@ -691,7 +701,7 @@ function FileRow({
   const arrows = `${totalIn > 0 ? "\u2190" + totalIn : ""}${totalOut > 0 ? "\u2192" + totalOut : ""}`;
 
   return h("g", {
-    class: `cg-file-row${searchMatch ? " search-match" : ""}${hasCrossZone ? " cross-zone" : ""}`,
+    class: `cg-file-row${searchMatch ? " search-match" : ""}${hasCrossZone ? " cross-zone" : ""}${isEntryPoint ? " entry-point" : ""}`,
     onClick: (e: Event) => { e.stopPropagation(); onClick(); },
     onDblClick: (e: Event) => { e.stopPropagation(); onDblClick(); },
   },
@@ -714,11 +724,20 @@ function FileRow({
           rx: 1,
         })
       : null,
+    // Entry point indicator
+    isEntryPoint
+      ? h("circle", {
+          class: "cg-file-entry-dot",
+          cx: boxX + (hasCrossZone ? 16 : 14),
+          cy: y + 10,
+          r: 3,
+        })
+      : null,
     h("text", {
       class: "cg-file-name",
-      x: boxX + (hasCrossZone ? 16 : 14),
+      x: boxX + (hasCrossZone ? 16 : 14) + (isEntryPoint ? 8 : 0),
       y: y + 14,
-    }, name.length > 20 ? name.slice(0, 18) + "\u2026" : name),
+    }, name.length > (isEntryPoint ? 18 : 20) ? name.slice(0, isEntryPoint ? 16 : 18) + "\u2026" : name),
     h("text", {
       class: "cg-file-stats",
       x: boxX + boxW - 14,
@@ -914,6 +933,7 @@ function ZoneBox({
         const fy = box.y + BOX_H_COLLAPSED - 4 + i * FILE_ROW_H;
         const isMatch = !searchQ || matchingFiles.has(file.path);
         const hasCrossZone = fileConnections.has(file.path);
+        const isEP = zone.entryPoints?.includes(file.path) ?? false;
         return h(FileRow, {
           key: file.path,
           file,
@@ -922,6 +942,7 @@ function ZoneBox({
           boxW: box.w,
           searchMatch: searchQ ? isMatch : false,
           hasCrossZone,
+          isEntryPoint: isEP,
           onClick: () => onSelectFile(file.path),
           onDblClick: () => onDblClickFile(file.path),
         });
@@ -968,6 +989,7 @@ function ZoneBox({
           const file = szFiles[fi];
           const fy = curY;
           const hasCrossZone = fileConnections.has(file.path);
+          const szIsEP = sz.entryPoints?.includes(file.path) ?? false;
           elements.push(
             h(FileRow, {
               key: `${sz.id}-${file.path}`,
@@ -977,6 +999,7 @@ function ZoneBox({
               boxW: box.w - SUBZONE_FILE_INDENT,
               searchMatch: searchQ ? matchingFiles.has(file.path) : false,
               hasCrossZone,
+              isEntryPoint: szIsEP,
               onClick: () => onSelectFile(file.path),
               onDblClick: () => onDblClickFile(file.path),
             }),
@@ -1052,6 +1075,25 @@ function ZoneBox({
       `${zone.internalCalls + zone.crossZoneCalls} calls`,
       zone.crossZoneCalls > 0 ? ` \u00B7 ${zone.crossZoneCalls} cross-zone` : "",
     ),
+    // Risk level badge (top-right corner)
+    zone.riskLevel && zone.riskLevel !== "healthy"
+      ? h("g", { class: `cg-zone-risk-badge cg-risk--${zone.riskLevel}`, style: "pointer-events: none;" },
+          h("rect", {
+            x: box.x + box.w - 90,
+            y: box.y + 42,
+            width: 76,
+            height: 16,
+            rx: 3,
+            class: "cg-risk-bg",
+          }),
+          h("text", {
+            x: box.x + box.w - 52,
+            y: box.y + 54,
+            "text-anchor": "middle",
+            class: "cg-risk-label",
+          }, zone.failsThreshold ? `\u26A0 ${zone.riskLevel}` : zone.riskLevel),
+        )
+      : null,
     h("g", {
       class: "cg-zone-toggle-btn",
       onMouseDown: (e: Event) => e.stopPropagation(),

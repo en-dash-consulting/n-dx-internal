@@ -26,6 +26,7 @@ export type {
   FileEntry,
   Finding,
   HttpMethod,
+  RiskLevel,
   RouteExportKind,
   RouteTreeNode,
   ServerRoute,

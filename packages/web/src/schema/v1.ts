@@ -174,6 +174,42 @@ export interface Zone {
   subZones?: Zone[];
   /** Cross-zone import edges within this zone's sub-zones. */
   subCrossings?: ZoneCrossing[];
+  /** Computed architectural risk metrics (deterministic, from cohesion/coupling). */
+  riskMetrics?: ZoneRiskMetrics;
+  /**
+   * Indicates whether this zone is a detection artifact rather than a genuine
+   * architectural unit. Artifact zones arise from residual Louvain community
+   * detection when most files have been pinned elsewhere.
+   */
+  detectionQuality?: "genuine" | "artifact" | "residual";
+}
+
+/** Risk classification level for architectural governance. */
+export type RiskLevel = "healthy" | "at-risk" | "critical" | "catastrophic";
+
+/**
+ * Architectural risk metrics computed from zone cohesion and coupling.
+ *
+ * Governance threshold: cohesion < 0.4 AND coupling > 0.6 triggers
+ * mandatory refactoring. Catastrophic: cohesion < 0.3 AND coupling > 0.7.
+ */
+export interface ZoneRiskMetrics {
+  /** Zone cohesion (0–1, higher = more cohesive). */
+  cohesion: number;
+  /** Zone coupling (0–1, higher = more coupled). */
+  coupling: number;
+  /** Normalized risk score (0–1, 0 = healthy, 1 = worst). */
+  riskScore: number;
+  /** Risk classification: healthy | at-risk | critical | catastrophic. */
+  riskLevel: RiskLevel;
+  /** Whether the zone fails the governance threshold (cohesion < 0.4 AND coupling > 0.6). */
+  failsThreshold: boolean;
+  /**
+   * Human-provided justification for why the current risk level is acceptable.
+   * When present, the zone is still reported but findings are downgraded to
+   * informational rather than actionable warnings.
+   */
+  riskJustification?: string;
 }
 
 /** Token usage tracked per zone during per-zone enrichment */

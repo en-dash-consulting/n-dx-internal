@@ -307,3 +307,43 @@
 .cg-zoom-btn:active {
   background: var(--bg-active);
 }
+
+/* ── Risk level badge inside SVG zone boxes ──────────────────────── */
+
+.cg-zone-risk-badge .cg-risk-bg {
+  fill: color-mix(in srgb, var(--orange) 15%, transparent);
+}
+.cg-risk--at-risk .cg-risk-bg {
+  fill: color-mix(in srgb, var(--orange) 20%, transparent);
+}
+.cg-risk--critical .cg-risk-bg {
+  fill: color-mix(in srgb, var(--red) 20%, transparent);
+}
+.cg-risk--catastrophic .cg-risk-bg {
+  fill: color-mix(in srgb, var(--red) 30%, transparent);
+  stroke: var(--red);
+  stroke-width: 0.5;
+}
+
+.cg-risk-label {
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  pointer-events: none;
+}
+.cg-risk--at-risk .cg-risk-label { fill: var(--orange); }
+.cg-risk--critical .cg-risk-label { fill: var(--red); }
+.cg-risk--catastrophic .cg-risk-label { fill: var(--red); }
+
+/* ── Entry point dot on file rows ────────────────────────────────── */
+
+.cg-file-entry-dot {
+  fill: var(--accent);
+  pointer-events: none;
+}
+
+.cg-file-row.entry-point .cg-file-name {
+  fill: var(--accent);
+  font-weight: 500;
+}
