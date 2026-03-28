@@ -13,6 +13,7 @@ export const DATA_FILES = {
   zones: "zones.json",
   components: "components.json",
   callGraph: "callgraph.json",
+  classifications: "classifications.json",
 } as const;
 
 export const ALL_DATA_FILES = Object.values(DATA_FILES);

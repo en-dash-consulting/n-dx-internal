@@ -119,6 +119,32 @@ function renderFileDetail(
       h("span", null, detail.category)
     ) : null,
 
+    // Archetype
+    detail.archetype
+      ? h("div", { class: "detail-row" },
+          h("span", { class: "label" }, "Archetype"),
+          h("span", {
+            class: `tag ${detail.archetypeSource === "user-override" ? "tag-override" : "tag-archetype"}`,
+          },
+            detail.archetypeSource === "user-override"
+              ? `\u270E ${detail.archetype}`
+              : detail.archetype
+          )
+        )
+      : null,
+    detail.archetypeConfidence !== undefined
+      ? h("div", { class: "detail-row" },
+          h("span", { class: "label" }, "Confidence"),
+          h("span", null, detail.archetypeConfidence.toFixed(2))
+        )
+      : null,
+    detail.archetypeSource
+      ? h("div", { class: "detail-row" },
+          h("span", { class: "label" }, "Source"),
+          h("span", null, detail.archetypeSource)
+        )
+      : null,
+
     // Zone badge
     fileZone
       ? h("div", { class: "detail-row" },

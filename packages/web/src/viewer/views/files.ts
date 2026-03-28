@@ -1,7 +1,7 @@
 import { h } from "preact";
 import { useState, useMemo, useEffect } from "preact/hooks";
 import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
-import type { FileEntry } from "../external.js";
+import type { FileEntry, FileClassification } from "../external.js";
 import { buildFileToZoneMap, getZoneColorByIndex } from "../visualization/index.js";
 import { basename } from "../utils.js";
 import { BrandedHeader } from "../components/logos.js";
@@ -15,7 +15,7 @@ interface FilesViewProps {
   navigateTo?: NavigateTo;
 }
 
-type SortKey = "path" | "size" | "language" | "lineCount" | "role" | "category";
+type SortKey = "path" | "size" | "language" | "lineCount" | "role" | "category" | "archetype" | "confidence";
 type SortDir = "asc" | "desc";
 
 /** Internal tool directories hidden from the file list by default */
@@ -33,11 +33,12 @@ const ROLE_TAG_CLASS: Record<string, string> = {
 };
 
 export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selectedZone, navigateTo }: FilesViewProps) {
-  const { inventory, zones } = data;
+  const { inventory, zones, classifications } = data;
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [langFilter, setLangFilter] = useState<string>("all");
   const [zoneFilter, setZoneFilter] = useState<string>("all");
+  const [archetypeFilter, setArchetypeFilter] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("path");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [showCount, setShowCount] = useState(100);
@@ -55,6 +56,17 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
   }
 
   const fileToZone = useMemo(() => buildFileToZoneMap(zones), [zones]);
+
+  // Build file→classification lookup map
+  const fileToClassification = useMemo(() => {
+    const map = new Map<string, FileClassification>();
+    if (classifications) {
+      for (const fc of classifications.files) {
+        map.set(fc.path, fc);
+      }
+    }
+    return map;
+  }, [classifications]);
 
   // Zone list for dropdown
   const zoneList = useMemo(() => {
@@ -75,6 +87,16 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
     () => Object.keys(inventory.summary.byRole).sort(),
     [inventory]
   );
+
+  // Archetype list for dropdown (sorted alphabetically)
+  const archetypeList = useMemo(() => {
+    if (!classifications) return [];
+    return classifications.archetypes
+      .map((a) => ({ id: a.id, name: a.name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [classifications]);
+
+  const hasClassifications = classifications !== null && classifications.files.length > 0;
 
   const filtered = useMemo(() => {
     let files = inventory.files;
@@ -111,21 +133,46 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
       }
     }
 
+    if (archetypeFilter !== "all") {
+      if (archetypeFilter === "__unclassified__") {
+        files = files.filter((f) => {
+          const fc = fileToClassification.get(f.path);
+          return !fc || fc.archetype === null;
+        });
+      } else {
+        files = files.filter((f) => {
+          const fc = fileToClassification.get(f.path);
+          return fc?.archetype === archetypeFilter;
+        });
+      }
+    }
+
     files = [...files].sort((a, b) => {
-      const aVal = a[sortKey];
-      const bVal = b[sortKey];
-      const cmp =
-        typeof aVal === "number" && typeof bVal === "number"
-          ? aVal - bVal
-          : String(aVal).localeCompare(String(bVal));
+      let cmp: number;
+      if (sortKey === "archetype") {
+        const aArch = fileToClassification.get(a.path)?.archetype ?? "";
+        const bArch = fileToClassification.get(b.path)?.archetype ?? "";
+        cmp = aArch.localeCompare(bArch);
+      } else if (sortKey === "confidence") {
+        const aConf = fileToClassification.get(a.path)?.confidence ?? -1;
+        const bConf = fileToClassification.get(b.path)?.confidence ?? -1;
+        cmp = aConf - bConf;
+      } else {
+        const aVal = a[sortKey];
+        const bVal = b[sortKey];
+        cmp =
+          typeof aVal === "number" && typeof bVal === "number"
+            ? aVal - bVal
+            : String(aVal).localeCompare(String(bVal));
+      }
       return sortDir === "asc" ? cmp : -cmp;
     });
 
     return files;
-  }, [inventory, search, roleFilter, langFilter, zoneFilter, sortKey, sortDir, fileToZone, showAllFiles]);
+  }, [inventory, search, roleFilter, langFilter, zoneFilter, archetypeFilter, sortKey, sortDir, fileToZone, fileToClassification, showAllFiles]);
 
   // Reset show count when filters change
-  useMemo(() => setShowCount(100), [search, roleFilter, langFilter, zoneFilter, showAllFiles]);
+  useMemo(() => setShowCount(100), [search, roleFilter, langFilter, zoneFilter, archetypeFilter, showAllFiles]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -143,6 +190,7 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
 
   const handleRowClick = (file: FileEntry) => {
     if (setSelectedFile) setSelectedFile(file.path);
+    const fc = fileToClassification.get(file.path);
     onSelect({
       type: "file",
       title: basename(file.path),
@@ -153,6 +201,9 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
       role: file.role,
       category: file.category,
       hash: file.hash,
+      archetype: fc?.archetype ?? null,
+      archetypeConfidence: fc?.confidence,
+      archetypeSource: fc?.source,
     });
   };
 
@@ -205,6 +256,18 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
             h("option", { value: "__unzoned__" }, "Unzoned")
           )
         : null,
+      // Archetype filter
+      archetypeList.length > 0
+        ? h("select", {
+            class: "filter-select",
+            value: archetypeFilter,
+            onChange: (e: Event) => setArchetypeFilter((e.target as HTMLSelectElement).value),
+          },
+            h("option", { value: "all" }, "All Archetypes"),
+            archetypeList.map((a) => h("option", { key: a.id, value: a.id }, a.name)),
+            h("option", { value: "__unclassified__" }, "Unclassified")
+          )
+        : null,
       h("button", {
         class: `filter-toggle-btn${showAllFiles ? " active" : ""}`,
         onClick: () => setShowAllFiles(!showAllFiles),
@@ -227,12 +290,21 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
           h("th", { onClick: () => toggleSort("lineCount") }, `Lines${sortIndicator("lineCount")}`),
           h("th", { onClick: () => toggleSort("size") }, `Size${sortIndicator("size")}`),
           h("th", { onClick: () => toggleSort("role") }, `Role${sortIndicator("role")}`),
-          h("th", { onClick: () => toggleSort("category") }, `Category${sortIndicator("category")}`)
+          h("th", { onClick: () => toggleSort("category") }, `Category${sortIndicator("category")}`),
+          hasClassifications
+            ? h("th", { onClick: () => toggleSort("archetype") }, `Archetype${sortIndicator("archetype")}`)
+            : null,
+          hasClassifications
+            ? h("th", { onClick: () => toggleSort("confidence") }, `Confidence${sortIndicator("confidence")}`)
+            : null,
         )
       ),
       h("tbody", null,
         visible.map((file) => {
           const fz = fileToZone.get(file.path);
+          const fc = fileToClassification.get(file.path);
+          const archetypeName = fc?.archetype ?? "unclassified";
+          const isOverride = fc?.source === "user-override";
           return h("tr", {
             key: file.path,
             onClick: () => handleRowClick(file),
@@ -254,7 +326,22 @@ export function FilesView({ data, onSelect, selectedFile, setSelectedFile, selec
             h("td", null,
               h("span", { class: `tag ${ROLE_TAG_CLASS[file.role] || "tag-other"}` }, file.role)
             ),
-            h("td", null, file.category)
+            h("td", null, file.category),
+            hasClassifications
+              ? h("td", null,
+                  h("span", {
+                    class: `tag ${isOverride ? "tag-override" : "tag-archetype"}`,
+                    title: isOverride ? "User override" : fc?.source ?? "unclassified",
+                  },
+                    isOverride ? `\u270E ${archetypeName}` : archetypeName
+                  )
+                )
+              : null,
+            hasClassifications
+              ? h("td", { class: "text-right" },
+                  fc ? fc.confidence.toFixed(2) : "\u2014"
+                )
+              : null,
           );
         })
       )

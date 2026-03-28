@@ -19,6 +19,7 @@ function makeData(overrides: Partial<LoadedData["zones"]> = {}): LoadedData {
     } as LoadedData["zones"],
     components: null,
     callGraph: null,
+    classifications: null,
   };
 }
 
@@ -109,6 +110,7 @@ describe("SuggestionsView", () => {
       zones: null,
       components: null,
       callGraph: null,
+      classifications: null,
     };
     render(h(SuggestionsView, { data }), root);
 

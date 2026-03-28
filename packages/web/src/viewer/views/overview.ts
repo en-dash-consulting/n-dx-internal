@@ -32,7 +32,7 @@ const LANG_COLORS: Record<string, string> = {
 };
 
 export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
-  const { manifest, inventory, imports, zones, components, callGraph } = data;
+  const { manifest, inventory, imports, zones, components, callGraph, classifications } = data;
 
   if (!manifest && !inventory && !imports && !zones) {
     return h("div", { class: "loading" }, "No data loaded. Use 'sourcevision serve' or drop files.");
@@ -141,6 +141,19 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
     return components.summary.mostUsedComponents.slice(0, 10);
   }, [components]);
 
+  // Archetype distribution chart data
+  const archetypeChartData = useMemo(() => {
+    if (!classifications) return [];
+    return Object.entries(classifications.summary.byArchetype)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10)
+      .map(([archetype, count]) => ({
+        label: archetype,
+        value: count,
+        color: "var(--accent)",
+      }));
+  }, [classifications]);
+
   const hasHotspots = mostCalledItems.length > 0 || mostCallingItems.length > 0 || mostUsedComponents.length > 0;
 
   return h("div", { class: "overview-container" },
@@ -237,7 +250,21 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
             label: "Call Cycles",
             color: callGraph.summary.cycleCount > 0 ? "var(--purple)" : "var(--green)",
           })
-        : null
+        : null,
+      classifications
+        ? h(MetricCard, {
+            value: classifications.summary.totalClassified,
+            label: "Classified",
+            color: "var(--accent)",
+          })
+        : null,
+      classifications && classifications.summary.totalUnclassified > 0
+        ? h(MetricCard, {
+            value: classifications.summary.totalUnclassified,
+            label: "Unclassified",
+            color: "var(--orange)",
+          })
+        : null,
     ),
 
     // Architecture health section
@@ -335,6 +362,22 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
           )
         : null
     ),
+
+    // Archetype distribution
+    archetypeChartData.length > 0
+      ? h("div", { class: "overview-section" },
+          h("div", { class: "section-header-row" },
+            h("h3", null, "File Archetypes"),
+            navigateTo
+              ? h("button", {
+                  class: "link-btn",
+                  onClick: () => navigateTo("files"),
+                }, "View files \u2192")
+              : null
+          ),
+          h(BarChart, { data: archetypeChartData })
+        )
+      : null,
 
     // Hotspots panel
     hasHotspots

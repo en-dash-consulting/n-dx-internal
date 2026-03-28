@@ -22,6 +22,7 @@ const migrations: Record<ModuleKey, Migration[]> = {
   zones: [],
   components: [],
   callGraph: [],
+  classifications: [],
 };
 
 /**

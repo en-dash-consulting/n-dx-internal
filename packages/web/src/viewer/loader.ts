@@ -8,7 +8,7 @@
  * - Selective refresh: only reload files whose mtime changed
  */
 
-import type { Manifest, Inventory, Imports, Zones, Components, CallGraph } from "./external.js";
+import type { Manifest, Inventory, Imports, Zones, Components, CallGraph, Classifications } from "./external.js";
 import {
   validateManifest,
   validateInventory,
@@ -16,6 +16,7 @@ import {
   validateZones,
   validateComponents,
   validateCallGraph,
+  validateClassifications,
 } from "./validate.js";
 import { DATA_FILES } from "./external.js";
 import { migrateData } from "./schema-compat.js";
@@ -38,6 +39,7 @@ const MODULE_DEFS: ModuleDef[] = [
   { key: "zones", file: DATA_FILES.zones, validate: validateZones },
   { key: "components", file: DATA_FILES.components, validate: validateComponents },
   { key: "callGraph", file: DATA_FILES.callGraph, validate: validateCallGraph },
+  { key: "classifications", file: DATA_FILES.classifications, validate: validateClassifications },
 ];
 
 /** Map from data filename to its module key, for selective refresh. */
@@ -53,6 +55,7 @@ let currentData: LoadedData = {
   zones: null,
   components: null,
   callGraph: null,
+  classifications: null,
 };
 
 let onChange: DataChangeHandler | null = null;

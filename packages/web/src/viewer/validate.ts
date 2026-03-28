@@ -315,6 +315,52 @@ const CallGraphSchema = z.object({
   summary: CallGraphSummarySchema,
 });
 
+// ── Classifications ─────────────────────────────────────────────────────────
+
+const ClassificationEvidenceSchema = z.object({
+  archetypeId: z.string(),
+  signalKind: z.enum(["path", "import", "export", "filename", "directory"]),
+  detail: z.string(),
+  weight: z.number().min(0).max(1),
+});
+
+const FileClassificationSchema = z.object({
+  path: z.string(),
+  archetype: z.string().nullable(),
+  secondaryArchetypes: z.array(z.string()).optional(),
+  confidence: z.number().min(0).max(1),
+  source: z.enum(["algorithmic", "llm", "user-override"]),
+  evidence: z.array(ClassificationEvidenceSchema).optional(),
+});
+
+const ClassificationsSummarySchema = z.object({
+  totalClassified: z.number().int().nonnegative(),
+  totalUnclassified: z.number().int().nonnegative(),
+  byArchetype: z.record(z.string(), z.number().int().nonnegative()),
+  bySource: z.record(z.string(), z.number().int().nonnegative()),
+});
+
+const ArchetypeSignalSchema = z.object({
+  kind: z.enum(["path", "import", "export", "filename", "directory"]),
+  pattern: z.string(),
+  weight: z.number().min(0).max(1),
+  languages: z.array(z.string()).optional(),
+});
+
+const ArchetypeDefinitionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  signals: z.array(ArchetypeSignalSchema),
+  analysisHints: z.record(z.string(), z.string()).optional(),
+});
+
+const ClassificationsSchema = z.object({
+  archetypes: z.array(ArchetypeDefinitionSchema),
+  files: z.array(FileClassificationSchema),
+  summary: ClassificationsSummarySchema,
+});
+
 // ── Validation helpers ──────────────────────────────────────────────────────
 
 export type ValidationResult<T> =
@@ -360,4 +406,10 @@ export function validateCallGraph(
   data: unknown
 ): ValidationResult<V1.CallGraph> {
   return validate(CallGraphSchema, data);
+}
+
+export function validateClassifications(
+  data: unknown
+): ValidationResult<V1.Classifications> {
+  return validate(ClassificationsSchema, data);
 }

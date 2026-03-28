@@ -46,6 +46,7 @@ const EMPTY_DATA: LoadedData = {
   zones: null,
   components: null,
   callGraph: null,
+  classifications: null,
 };
 
 /** Modules needed for the initial UI shell (sidebar, overview). */
@@ -53,7 +54,7 @@ const PRIORITY_MODULES: Array<keyof LoadedData> = ["manifest", "zones"];
 
 /** Remaining modules loaded in background after shell renders. */
 const DEFERRED_MODULES: Array<keyof LoadedData> = [
-  "inventory", "imports", "components", "callGraph",
+  "inventory", "imports", "components", "callGraph", "classifications",
 ];
 
 export interface UseAppDataOptions {
