@@ -444,7 +444,7 @@ The SourceVision scope has 9 tabs defined in `sourcevision-tabs.ts`:
 
 **Issue 4: Routes view scope creep.** The Routes tab shows client routes, server endpoints, component definitions, *and* component usage — four distinct datasets collapsed into one view. For backend projects without client routes, the view is confusingly named.
 
-**Issue 5: PR Markdown is a workflow tool, not an analysis view.** It generates content for a specific Git workflow, unlike every other tab which analyzes the codebase. Its presence in the analysis tab bar dilutes the navigation's purpose.
+**Issue 5: PR Markdown is a workflow tool, not an analysis view.** It generates content for a specific Git workflow, unlike every other tab which analyzes the codebase. Its presence in the analysis tab bar dilutes the navigation's purpose. See section 7.3 for the recommendation to extract it as a Claude Code skill.
 
 **Issue 6: No home for new data.** Classifications and Call Graph have no obvious tab to live in. Adding them as new tabs would extend the already-long tab bar to 11+ items.
 
@@ -593,10 +593,24 @@ The complexity view. Identifies refactoring targets and architectural risk.
 
 ### 7.3 PR Markdown Disposition
 
-**Recommendation:** Move PR Markdown out of the SourceVision tab bar. It is a workflow tool, not an analysis view. Two options:
+**Recommendation:** Extract PR Markdown from the SourceVision dashboard entirely and reimplement it as a **Claude Code skill** (e.g., `/pr-description`).
 
-- **Option A:** Float it as a persistent action button in the dashboard header (like a "Generate PR Description" button), accessible from any view.
-- **Option B:** Move it to a cross-cutting "Tools" section alongside token-usage and feature-toggles.
+PR Markdown is fundamentally a *generative workflow action* ("produce this artifact for me right now") rather than a *static analysis view* ("show me what my codebase looks like"). It consumes git diff state rather than SourceVision scan output, and its value is ephemeral (tied to the current branch/PR) rather than persistent. This makes it a poor fit for a dashboard tab but an ideal fit for an on-demand skill.
+
+**Why a skill is the right home:**
+
+1. **Right interaction shape.** The user invokes it at a specific moment ("I'm about to open a PR"), it runs once, and produces a text artifact. That's `/pr-description`, not a dashboard tab.
+2. **No server dependency.** Currently the viewer fetches from `/api/sv/pr-markdown`, requiring `ndx start` to be running. A skill runs standalone via Claude Code — no dashboard required.
+3. **Richer interaction model.** A skill can interactively ask about scope, audience, or format preferences. The current dashboard view is a static render with a copy button — no interaction.
+4. **Cleans up SourceVision scope.** Removing it drops the tab count from 9 to 8 (or 4 in the proposed reorganization) and eliminates the only non-analysis view from the analysis navigation.
+5. **SourceVision data still informs it.** The skill can read `.sourcevision/zones.json` and `CONTEXT.md` to enrich the PR description with architectural context (which zones were touched, coupling impact, etc.) without the generation logic living inside SourceVision's pipeline.
+
+**Migration notes:**
+
+- The current `/api/sv/pr-markdown` endpoint has caching and staleness detection (`cacheStatus`, `staleAfterMs`, `signature`). A skill can regenerate on demand since it is invoked intentionally, making the caching layer unnecessary.
+- The `availability` check (git repo presence, base range detection) should move into the skill's preflight logic.
+- The `mode` distinction (normal vs. fallback with confidence/coverage scores) can become skill output metadata rather than a UI state.
+- The endpoint and viewer component (`pr-markdown.ts`) can be removed once the skill is shipped, with no backward-compatibility shim needed since this is an internal tool.
 
 ### 7.4 Migration Path
 
@@ -610,7 +624,7 @@ The reorganization can be implemented incrementally:
 | Phase 4 | Create Hotspots view with call graph + hub files | Medium | New view |
 | Phase 5 | Merge Files + Import Graph into Explorer | High | Major restructure |
 | Phase 6 | Rename Routes to Endpoints, add zone correlation | Low | Rename + additive |
-| Phase 7 | Extract PR Markdown to header action | Low | Tab removal |
+| Phase 7 | Extract PR Markdown to Claude Code skill (`/pr-description`) | Low | Tab + endpoint removal |
 
 ### 7.5 Data Flow After Reorganization
 
@@ -648,7 +662,7 @@ Combining gap closure with route reorganization:
 | **P2** | Load per-zone context.md in slideout | GAP-04 | Low |
 | **P3** | Merge Files + Graph into Explorer view | Structural | High |
 | **P3** | Rename Routes to Endpoints | Structural | Low |
-| **P3** | Relocate PR Markdown to header action | Structural | Low |
+| **P3** | Extract PR Markdown to Claude Code skill (`/pr-description`) | Structural | Low |
 | **P3** | Add move-file finding cards | GAP-15 | Low |
 | **P3** | Add minor inventory/component fields | GAP-11, GAP-12 | Low |
 | **P1** | New analyzer: environment variables, config items, global constants | GAP-17 | High |
