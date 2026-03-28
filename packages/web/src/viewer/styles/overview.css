@@ -18,6 +18,14 @@
   color: var(--text-dim);
 }
 
+/* Empty state welcome hint */
+.overview-empty-hint {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin: -12px 0 8px;
+  line-height: 1.5;
+}
+
 /* Metrics row */
 .overview-metrics {
   display: grid;

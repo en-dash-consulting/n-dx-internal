@@ -47,7 +47,16 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
   const { manifest, inventory, imports, zones, components, callGraph, classifications } = data;
 
   if (!manifest && !inventory && !imports && !zones) {
-    return h("div", { class: "loading" }, "No data loaded. Use 'sourcevision serve' or drop files.");
+    return h("div", { class: "overview-container" },
+      h("div", { class: "overview-header view-header" },
+        h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
+        h("h2", { class: "view-title" }, "Welcome"),
+      ),
+      h("p", { class: "overview-empty-hint" },
+        "No analysis data yet. Run Phase 1 below to scan your codebase.",
+      ),
+      h(PhasePanel, null),
+    );
   }
 
   // Calculate overall health metrics
