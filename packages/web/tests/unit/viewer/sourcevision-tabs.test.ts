@@ -8,8 +8,8 @@ import {
 import { ENRICHMENT_THRESHOLDS } from "../../../src/viewer/views/enrichment-thresholds.js";
 
 describe("SOURCEVISION_TABS", () => {
-  it("defines exactly 7 tabs (explorer replaces files+graph, endpoints replaces routes)", () => {
-    expect(SOURCEVISION_TABS).toHaveLength(7);
+  it("defines exactly 6 tabs (explorer replaces files+graph, endpoints replaces routes, pr-markdown removed)", () => {
+    expect(SOURCEVISION_TABS).toHaveLength(6);
   });
 
   it("every tab has required fields", () => {
@@ -34,11 +34,10 @@ describe("SOURCEVISION_TABS", () => {
     expect(ids).toContain("zones");
     expect(ids).toContain("endpoints");
     expect(ids).toContain("analysis");
-    expect(ids).toContain("pr-markdown");
     expect(ids).toContain("config-surface");
   });
 
-  it("does not contain legacy tabs replaced by consolidation", () => {
+  it("does not contain legacy tabs replaced by consolidation or migration", () => {
     const ids = SOURCEVISION_TABS.map((t) => t.id);
     // architecture/problems/suggestions → analysis
     expect(ids).not.toContain("architecture");
@@ -49,6 +48,8 @@ describe("SOURCEVISION_TABS", () => {
     expect(ids).not.toContain("graph");
     // routes → endpoints
     expect(ids).not.toContain("routes");
+    // pr-markdown → /pr-description skill
+    expect(ids).not.toContain("pr-markdown");
   });
 
   it("unified analysis tab has minPass 0 (softened enrichment gating)", () => {

@@ -11,7 +11,7 @@ import { ENRICHMENT_THRESHOLDS } from "./enrichment-thresholds.js";
 export type SourceVisionTabId = Extract<
   ViewId,
   | "overview" | "explorer" | "graph" | "zones" | "files" | "routes" | "endpoints"
-  | "config-surface" | "analysis" | "architecture" | "problems" | "suggestions" | "pr-markdown"
+  | "config-surface" | "analysis" | "architecture" | "problems" | "suggestions"
 >;
 
 export interface SourceVisionTab {
@@ -29,7 +29,6 @@ export const SOURCEVISION_TABS: readonly SourceVisionTab[] = [
   { id: "endpoints", icon: "\u25C7", label: "Endpoints", minPass: 0 },
   { id: "config-surface", icon: "\u2699", label: "Configuration", minPass: 0 },
   { id: "analysis", icon: "\u25E8", label: "Analysis", minPass: ENRICHMENT_THRESHOLDS.analysis },
-  { id: "pr-markdown", icon: "\u270D", label: "PR Markdown", minPass: 0 },
 ];
 
 export const SOURCEVISION_TAB_IDS: SourceVisionTabId[] = SOURCEVISION_TABS.map((tab) => tab.id);

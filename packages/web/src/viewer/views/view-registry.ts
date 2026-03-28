@@ -30,7 +30,6 @@ import {
   ArchitectureView,
   ProblemsView,
   SuggestionsView,
-  PRMarkdownView,
   RoutesView,
   EndpointsView,
   ConfigSurfaceView,
@@ -120,8 +119,21 @@ const REGISTRY: Record<string, ViewRenderer> = {
   "suggestions": ({ data, setDetail, navigateTo }) =>
     h(SvAnalysisView, { data, onSelect: setDetail, navigateTo }),
 
+  // Legacy route — PR Markdown has been migrated to the /pr-description Claude Code skill
   "pr-markdown": () =>
-    h(PRMarkdownView, null),
+    h("div", { class: "card", style: "margin-top: 16px" },
+      h("h3", { class: "section-header-sm" }, "PR Markdown has moved"),
+      h("p", null,
+        "PR description generation is now available as the ",
+        h("code", null, "/pr-description"),
+        " Claude Code skill.",
+      ),
+      h("p", null,
+        "Run ",
+        h("code", null, "/pr-description"),
+        " in Claude Code to generate a PR description enriched with architectural context.",
+      ),
+    ),
 
   "rex-dashboard": ({ navigateTo }) =>
     h(RexDashboard, { navigateTo }),
@@ -178,10 +190,29 @@ const VIEWS_BY_SCOPE: Record<string, ViewId[]> = {
 /** Cross-cutting views available in all scopes. */
 const CROSS_CUTTING_VIEWS: ViewId[] = ["token-usage", "feature-toggles"];
 
-const ALL_VIEWS = new Set<ViewId>([...Object.values(VIEWS_BY_SCOPE).flat(), ...CROSS_CUTTING_VIEWS] as ViewId[]);
+/**
+ * Legacy views that still resolve (to show migration messages) but are not
+ * in any scope's tab list. Includes views migrated to Claude Code skills
+ * and consolidated views that redirect to replacements.
+ */
+const LEGACY_VIEWS: ViewId[] = [
+  "pr-markdown",   // Migrated to /pr-description skill
+  "graph",         // Consolidated into explorer
+  "files",         // Consolidated into explorer
+  "routes",        // Consolidated into endpoints
+  "architecture",  // Consolidated into analysis
+  "problems",      // Consolidated into analysis
+  "suggestions",   // Consolidated into analysis
+];
+
+const ALL_VIEWS = new Set<ViewId>([
+  ...Object.values(VIEWS_BY_SCOPE).flat(),
+  ...CROSS_CUTTING_VIEWS,
+  ...LEGACY_VIEWS,
+] as ViewId[]);
 
 /** Build the valid view set based on an optional scope. */
 export function buildValidViews(scope: string | null): Set<ViewId> {
   if (!scope || scope === "all") return ALL_VIEWS;
-  return new Set<ViewId>([...(VIEWS_BY_SCOPE[scope] ?? []), ...CROSS_CUTTING_VIEWS] as ViewId[]);
+  return new Set<ViewId>([...(VIEWS_BY_SCOPE[scope] ?? []), ...CROSS_CUTTING_VIEWS, ...LEGACY_VIEWS] as ViewId[]);
 }
