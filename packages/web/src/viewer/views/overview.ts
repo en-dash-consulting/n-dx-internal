@@ -262,6 +262,12 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
             color: "var(--accent)",
           })
         : null,
+      imports && imports.summary.avgImportsPerFile > 0
+        ? h(MetricCard, {
+            value: imports.summary.avgImportsPerFile,
+            label: "Avg Imports/File",
+          })
+        : null,
       imports && imports.summary.totalExternal > 0
         ? h(MetricCard, {
             value: imports.summary.totalExternal,
@@ -515,13 +521,21 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
         )
       : null,
 
-    // Circular dependencies (compact)
+    // Circular dependencies (compact, clickable to focus in graph)
     imports?.summary.circulars.length
       ? h("div", { class: "overview-section" },
           h("h3", null, `${imports.summary.circularCount} Circular Dep${imports.summary.circularCount > 1 ? "s" : ""}`),
+          navigateTo
+            ? h("p", { class: "section-sub", style: "margin-bottom: 8px;" }, "Click a cycle to highlight it in the import graph.")
+            : null,
           h("div", { class: "circular-list" },
             imports.summary.circulars.slice(0, 3).map((c, i) =>
-              h("div", { key: i, class: "circular-dep-block" },
+              h("div", {
+                key: i,
+                class: `circular-dep-block${navigateTo ? " clickable" : ""}`,
+                onClick: navigateTo ? () => navigateTo("explorer", { cycle: c.cycle }) : undefined,
+                title: navigateTo ? "Click to highlight in import graph" : undefined,
+              },
                 c.cycle.join(" \u2192 ") + " \u2192 " + c.cycle[0]
               )
             ),

@@ -345,4 +345,13 @@
   margin-bottom: 6px;
   overflow-x: auto;
   white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.circular-dep-block.clickable {
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.circular-dep-block.clickable:hover {
+  background: color-mix(in srgb, var(--red) 18%, var(--bg));
+  border-color: var(--red);
 }

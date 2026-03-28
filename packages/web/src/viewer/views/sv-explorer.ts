@@ -9,9 +9,9 @@
 import { h, Fragment } from "preact";
 import { useEffect, useRef, useState, useMemo, useCallback } from "preact/hooks";
 import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
-import type { FileEntry, FileClassification } from "../external.js";
+import type { FileEntry, FileClassification, CircularDependency } from "../external.js";
 import { buildFileToZoneMap, buildZoneColorMap, getZoneColorByIndex } from "../visualization/index.js";
-import { GraphRenderer, type GraphNode, type GraphLink, type ZoneInfo } from "../graph/renderer.js";
+import { GraphRenderer, type GraphNode, type GraphLink, type ZoneInfo, type ImportEdgeType } from "../graph/renderer.js";
 import { basename } from "../utils.js";
 import { BrandedHeader } from "../components/logos.js";
 
@@ -25,6 +25,8 @@ interface ExplorerViewProps {
   selectedZone?: string | null;
   navigateTo?: NavigateTo;
   isGraphDisabled?: boolean;
+  /** When set, graph auto-opens in split mode and focuses on the given circular cycle paths. */
+  focusCycle?: string[] | null;
 }
 
 type ExplorerMode = "files" | "split";
@@ -66,6 +68,15 @@ function getInitialGraphVisible(): boolean {
 
 // ── Component ────────────────────────────────────────────────────────
 
+/** All possible import edge types for filter UI. */
+const EDGE_TYPES: { key: ImportEdgeType; label: string }[] = [
+  { key: "static", label: "Static" },
+  { key: "dynamic", label: "Dynamic" },
+  { key: "reexport", label: "Re-export" },
+  { key: "type", label: "Type-only" },
+  { key: "require", label: "Require" },
+];
+
 export function ExplorerView({
   data,
   onSelect,
@@ -74,6 +85,7 @@ export function ExplorerView({
   selectedZone,
   navigateTo,
   isGraphDisabled,
+  focusCycle,
 }: ExplorerViewProps) {
   const { inventory, zones, classifications, imports } = data;
 
@@ -100,6 +112,7 @@ export function ExplorerView({
   const [zonesVisible, setZonesVisible] = useState(true);
   const [collapsedZones, setCollapsedZones] = useState<Set<string>>(new Set());
   const [graphVisible, setGraphVisible] = useState(getInitialGraphVisible);
+  const [hiddenEdgeTypes, setHiddenEdgeTypes] = useState<Set<ImportEdgeType>>(new Set());
 
   // Auto-set zone filter when selectedZone prop is provided
   useEffect(() => {
@@ -309,6 +322,22 @@ export function ExplorerView({
     return set;
   }, [zones]);
 
+  /** Build a set of "from\0to" keys for edges that participate in any circular dependency. */
+  const circularEdgeSet = useMemo(() => {
+    const set = new Set<string>();
+    if (imports && imports.summary.circulars.length > 0) {
+      for (const circ of imports.summary.circulars) {
+        const cycle = circ.cycle;
+        for (let i = 0; i < cycle.length; i++) {
+          const from = cycle[i];
+          const to = cycle[(i + 1) % cycle.length];
+          set.add(`${from}\0${to}`);
+        }
+      }
+    }
+    return set;
+  }, [imports]);
+
   const inventoryMap = useMemo(() => {
     const map = new Map<string, { language: string; size: number; lines: number; role: string; category: string }>();
     if (inventory) {
@@ -430,6 +459,8 @@ export function ExplorerView({
       source: e.from,
       target: e.to,
       crossZone: crossZoneSet.has(`${e.from}\0${e.to}`),
+      importType: e.type as ImportEdgeType,
+      circular: circularEdgeSet.has(`${e.from}\0${e.to}`),
     }));
 
     const renderer = new GraphRenderer({
@@ -461,7 +492,7 @@ export function ExplorerView({
       graphRef.current?.destroy();
       graphRef.current = null;
     };
-  }, [mode, imports, graphInitialized, graphVisible]);
+  }, [mode, imports, graphInitialized, graphVisible, circularEdgeSet]);
 
   // Highlight selected file in graph
   useEffect(() => {
@@ -486,6 +517,44 @@ export function ExplorerView({
       graphRef.current.centerOnNode(match.id);
     }
   }, [graphSearch]);
+
+  // Focus on a circular dependency cycle when focusCycle prop is set
+  useEffect(() => {
+    if (!focusCycle || focusCycle.length === 0) return;
+    // Auto-switch to split mode and enable graph
+    if (mode !== "split") handleModeChange("split");
+    if (!graphVisible) {
+      setGraphVisible(true);
+      try { localStorage.setItem(GRAPH_VISIBLE_KEY, "true"); } catch { /* noop */ }
+    }
+  }, [focusCycle]);
+
+  // Apply focus cycle after graph is initialized
+  useEffect(() => {
+    if (graphRef.current && focusCycle && focusCycle.length > 0 && graphInitialized) {
+      // Short delay to allow layout to settle
+      const timer = setTimeout(() => {
+        graphRef.current?.focusOnPaths(focusCycle);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [focusCycle, graphInitialized]);
+
+  // Apply edge type filter
+  useEffect(() => {
+    if (graphRef.current) {
+      graphRef.current.filterEdgeTypes(hiddenEdgeTypes);
+    }
+  }, [hiddenEdgeTypes, graphInitialized]);
+
+  const handleToggleEdgeType = useCallback((type: ImportEdgeType) => {
+    setHiddenEdgeTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(type)) next.delete(type);
+      else next.add(type);
+      return next;
+    });
+  }, []);
 
   // Cleanup graph on unmount
   useEffect(() => {
@@ -523,6 +592,12 @@ export function ExplorerView({
     h("p", { class: "section-sub" },
       `${inventory.summary.totalFiles} files, ${inventory.summary.totalLines.toLocaleString()} lines`,
       hasImports ? ` \u2022 ${imports!.edges.length} import edges between ${nodeCount} files` : "",
+      hasImports && imports!.summary.avgImportsPerFile > 0
+        ? ` \u2022 ${imports!.summary.avgImportsPerFile} avg imports/file`
+        : "",
+      hasImports && imports!.summary.circularCount > 0
+        ? ` \u2022 ${imports!.summary.circularCount} circular`
+        : "",
     ),
 
     // Mode toggle bar
@@ -630,7 +705,18 @@ export function ExplorerView({
                       placeholder: "Search nodes...",
                       value: graphSearch,
                       onInput: (e: Event) => setGraphSearch((e.target as HTMLInputElement).value),
-                    })
+                    }),
+                  ),
+                  // Edge type filter pills
+                  h("div", { class: "edge-filter-bar" },
+                    EDGE_TYPES.map((et) =>
+                      h("button", {
+                        key: et.key,
+                        class: `edge-filter-pill${hiddenEdgeTypes.has(et.key) ? " hidden-type" : " active"}`,
+                        onClick: () => handleToggleEdgeType(et.key),
+                        title: hiddenEdgeTypes.has(et.key) ? `Show ${et.label} edges` : `Hide ${et.label} edges`,
+                      }, et.label)
+                    ),
                   ),
                   h("div", { class: "graph-container", style: "position: relative;" },
                     h("svg", { ref: svgRef }),
@@ -678,7 +764,52 @@ export function ExplorerView({
                             )
                           )
                         )
-                      : null
+                      : null,
+                    // Edge type legend
+                    h("div", { class: "edge-legend" },
+                      h("div", { class: "edge-legend-title" }, "Edge Types"),
+                      h("div", {
+                        class: `edge-legend-item${hiddenEdgeTypes.has("static") ? " hidden" : ""}`,
+                        onClick: () => handleToggleEdgeType("static"),
+                      },
+                        h("span", { class: "edge-legend-line line-static" }),
+                        "Static",
+                      ),
+                      h("div", {
+                        class: `edge-legend-item${hiddenEdgeTypes.has("dynamic") ? " hidden" : ""}`,
+                        onClick: () => handleToggleEdgeType("dynamic"),
+                      },
+                        h("span", { class: "edge-legend-line line-dynamic" }),
+                        "Dynamic",
+                      ),
+                      h("div", {
+                        class: `edge-legend-item${hiddenEdgeTypes.has("reexport") ? " hidden" : ""}`,
+                        onClick: () => handleToggleEdgeType("reexport"),
+                      },
+                        h("span", { class: "edge-legend-line line-reexport" }),
+                        "Re-export",
+                      ),
+                      h("div", {
+                        class: `edge-legend-item${hiddenEdgeTypes.has("type") ? " hidden" : ""}`,
+                        onClick: () => handleToggleEdgeType("type"),
+                      },
+                        h("span", { class: "edge-legend-line line-type" }),
+                        "Type-only",
+                      ),
+                      h("div", {
+                        class: `edge-legend-item${hiddenEdgeTypes.has("require") ? " hidden" : ""}`,
+                        onClick: () => handleToggleEdgeType("require"),
+                      },
+                        h("span", { class: "edge-legend-line line-require" }),
+                        "Require",
+                      ),
+                      imports && imports.summary.circularCount > 0
+                        ? h("div", { class: "edge-legend-item" },
+                            h("span", { class: "edge-legend-line line-circular" }),
+                            "Circular",
+                          )
+                        : null,
+                    ),
                   ),
                 )
               : h("div", { class: "graph-hidden-placeholder" },

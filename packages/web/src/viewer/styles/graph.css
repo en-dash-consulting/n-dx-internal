@@ -49,8 +49,16 @@
   font-weight: 600;
 }
 
+/* ── Edge type styles ───────────────────────────────────────────────── */
 .graph-link { stroke: var(--border); stroke-opacity: 0.4; }
+.graph-link.edge-static { stroke: var(--border); stroke-opacity: 0.4; }
+.graph-link.edge-dynamic { stroke: var(--accent); stroke-opacity: 0.55; stroke-dasharray: 6 3; }
+.graph-link.edge-reexport { stroke: var(--purple); stroke-opacity: 0.5; stroke-dasharray: 2 2; }
+.graph-link.edge-type { stroke: var(--text-dim); stroke-opacity: 0.2; }
+.graph-link.edge-require { stroke: var(--orange); stroke-opacity: 0.45; }
 .graph-link.cross-zone { stroke: var(--orange); stroke-opacity: 0.6; }
+/* Circular dependency edges — red, thicker, highest visual priority */
+.graph-link.circular { stroke: var(--red); stroke-opacity: 0.85; stroke-width: 2px; }
 
 .graph-node, .graph-link { transition: opacity 0.15s; }
 
@@ -299,9 +307,72 @@
 }
 
 /* Cross-zone edges — enhanced highlight for architectural clarity */
-.graph-link.cross-zone {
+.graph-link.cross-zone:not(.edge-dynamic):not(.edge-reexport):not(.edge-type) {
   stroke-dasharray: 4 2;
 }
+
+/* ── Edge type legend ────────────────────────────────────────────────── */
+.edge-legend {
+  position: absolute;
+  bottom: 12px;
+  right: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 10px;
+  z-index: 10;
+}
+.edge-legend-title {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  opacity: 0.7;
+}
+.edge-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.edge-legend-item:hover { color: var(--text); }
+.edge-legend-item.hidden { opacity: 0.35; text-decoration: line-through; }
+.edge-legend-line {
+  width: 24px;
+  height: 2px;
+  flex-shrink: 0;
+  border-radius: 1px;
+}
+.edge-legend-line.line-static { background: var(--border); }
+.edge-legend-line.line-dynamic { background: var(--accent); background-image: repeating-linear-gradient(90deg, var(--accent) 0 6px, transparent 6px 9px); }
+.edge-legend-line.line-reexport { background: var(--purple); background-image: repeating-linear-gradient(90deg, var(--purple) 0 2px, transparent 2px 4px); }
+.edge-legend-line.line-type { background: var(--text-dim); opacity: 0.4; }
+.edge-legend-line.line-require { background: var(--orange); }
+.edge-legend-line.line-circular { background: var(--red); height: 3px; }
+
+/* ── Edge type filter pills ──────────────────────────────────────────── */
+.edge-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.edge-filter-pill {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.edge-filter-pill:hover { background: var(--bg-hover, var(--border)); color: var(--text); }
+.edge-filter-pill.active { background: var(--accent-dim); color: var(--text); border-color: var(--accent); }
+.edge-filter-pill.hidden-type { opacity: 0.4; text-decoration: line-through; }
 
 /* ── Zoom controls ──────────────────────────────────────────────────── */
 

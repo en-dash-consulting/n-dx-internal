@@ -9,7 +9,7 @@
 import { h, Fragment } from "preact";
 import { useState, useMemo } from "preact/hooks";
 import type { LoadedData, NavigateTo } from "../types.js";
-import type { RouteTreeNode, RouteExportKind, ComponentUsageEdge, ServerRouteGroup, HttpMethod } from "../external.js";
+import type { RouteTreeNode, RouteExportKind, ComponentUsageEdge, ComponentDefinition, ComponentKind, ServerRouteGroup, HttpMethod } from "../external.js";
 import { TreeView, type TreeNode, CollapsibleSection, BarChart, buildFileToZoneMap } from "../visualization/index.js";
 import { SearchFilter } from "../components/search-filter.js";
 import { BrandedHeader } from "../components/logos.js";
@@ -126,6 +126,15 @@ export function EndpointsView({ data, navigateTo }: EndpointsViewProps) {
     return buildComponentTree(usageEdges, compFiles);
   }, [usageEdges, componentDefs]);
 
+  /** Lookup: "file:name" → ComponentKind. Used to enrich component tables. */
+  const componentKindMap = useMemo(() => {
+    const map = new Map<string, ComponentKind>();
+    for (const c of componentDefs) {
+      map.set(`${c.file}:${c.name}`, c.kind);
+    }
+    return map;
+  }, [componentDefs]);
+
   const filterMatch = useMemo(() => {
     if (!search) return null;
     const q = search.toLowerCase();
@@ -215,10 +224,14 @@ export function EndpointsView({ data, navigateTo }: EndpointsViewProps) {
     const name = node.componentName as string;
     const file = node.file as string;
     const count = node.usageCount as number | undefined;
+    const kind = name && file ? componentKindMap.get(`${file}:${name}`) : null;
     return h(Fragment, null,
       name
         ? h("span", { class: "component-name" }, name)
         : h("span", { class: "component-file" }, shortPath(file)),
+      kind
+        ? h("span", { class: `tag tag-kind tag-kind-${kind}`, style: "margin-left: 4px;" }, kind)
+        : null,
       name
         ? h("span", { class: "component-file" }, shortPath(file))
         : null,
@@ -439,18 +452,25 @@ export function EndpointsView({ data, navigateTo }: EndpointsViewProps) {
               h("thead", null,
                 h("tr", null,
                   h("th", null, "Component"),
+                  h("th", null, "Kind"),
                   h("th", null, "File"),
                   h("th", null, "Usage Count"),
                 )
               ),
               h("tbody", null,
-                summary.mostUsedComponents.map((comp) =>
-                  h("tr", { key: `${comp.file}:${comp.name}` },
+                summary.mostUsedComponents.map((comp) => {
+                  const kind = componentKindMap.get(`${comp.file}:${comp.name}`) ?? null;
+                  return h("tr", { key: `${comp.file}:${comp.name}` },
                     h("td", null, comp.name),
+                    h("td", null,
+                      kind
+                        ? h("span", { class: `tag tag-kind tag-kind-${kind}` }, kind)
+                        : h("span", { class: "text-dim" }, "\u2014"),
+                    ),
                     h("td", null, comp.file),
                     h("td", null, String(comp.usageCount)),
-                  )
-                )
+                  );
+                })
               )
             )
           )

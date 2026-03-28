@@ -16,6 +16,8 @@ export interface RouteState {
   selectedZone: string | null;
   selectedRunId: string | null;
   selectedTaskId: string | null;
+  /** Circular dependency cycle to focus in the graph — set via navigateTo({ cycle }). */
+  focusCycle: string[] | null;
   navigateTo: NavigateTo;
   handleSidebarNav: (id: ViewId) => void;
 }
@@ -47,16 +49,19 @@ export function useRouteState(validViews: Set<ViewId>): RouteState {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(() => getInitialTaskId(validViews));
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
+  const [focusCycle, setFocusCycle] = useState<string[] | null>(null);
 
   const navigateTo: NavigateTo = useCallback((targetView, opts) => {
     const file = opts?.file ?? null;
     const zone = opts?.zone ?? null;
     const runId = opts?.runId ?? null;
     const taskId = opts?.taskId ?? null;
+    const cycle = opts?.cycle ?? null;
     setSelectedFile(file);
     setSelectedZone(zone);
     setSelectedRunId(runId);
     setSelectedTaskId(taskId);
+    setFocusCycle(cycle);
     setView(targetView);
     const subId = runId ?? taskId;
     const urlPath = subId ? `/${targetView}/${subId}` : `/${targetView}`;
@@ -132,5 +137,5 @@ export function useRouteState(validViews: Set<ViewId>): RouteState {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { view, selectedFile, setSelectedFile, selectedZone, selectedRunId, selectedTaskId, navigateTo, handleSidebarNav };
+  return { view, selectedFile, setSelectedFile, selectedZone, selectedRunId, selectedTaskId, focusCycle, navigateTo, handleSidebarNav };
 }

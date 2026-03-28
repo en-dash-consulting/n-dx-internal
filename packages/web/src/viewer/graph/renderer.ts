@@ -35,10 +35,14 @@ export interface GraphNode {
   fy?: number | null;
 }
 
+export type ImportEdgeType = "static" | "dynamic" | "require" | "reexport" | "type";
+
 export interface GraphLink {
   source: string | GraphNode;
   target: string | GraphNode;
   crossZone: boolean;
+  importType?: ImportEdgeType;
+  circular?: boolean;
 }
 
 /** Minimal zone info the renderer needs for grouping. */
@@ -81,7 +85,7 @@ export class GraphRenderer {
   private readonly g: SVGGElement;
   private readonly linkElements: SVGLineElement[];
   private readonly nodeRadii: number[];
-  private readonly resolvedLinks: { source: GraphNode; target: GraphNode; crossZone: boolean }[];
+  private readonly resolvedLinks: { source: GraphNode; target: GraphNode; crossZone: boolean; importType?: ImportEdgeType; circular?: boolean }[];
   private readonly nodeEdgeMap: Map<string, Set<number>>;
   private readonly ac: AbortController;
   private readonly sim: SimState;
@@ -330,6 +334,66 @@ export class GraphRenderer {
     this.updateLOD();
   }
 
+  /** Focus the graph on a set of file paths (e.g. a circular dependency cycle). */
+  focusOnPaths(paths: string[]): void {
+    if (paths.length === 0) return;
+
+    // Build set of target node IDs
+    const pathSet = new Set(paths);
+
+    // Find connected edges
+    const connectedEdges = new Set<number>();
+    const connectedNodes = new Set<string>();
+    for (const p of paths) connectedNodes.add(p);
+
+    for (let i = 0; i < this.resolvedLinks.length; i++) {
+      const l = this.resolvedLinks[i];
+      if (pathSet.has(l.source.id) && pathSet.has(l.target.id)) {
+        connectedEdges.add(i);
+      }
+    }
+
+    // Dim non-connected nodes
+    for (let j = 0; j < this.nodes.length; j++) {
+      this.nodeGroups[j].style.opacity = connectedNodes.has(this.nodes[j].id) ? "1" : "0.15";
+    }
+
+    // Highlight connected edges
+    for (let j = 0; j < this.linkElements.length; j++) {
+      if (connectedEdges.has(j)) {
+        this.linkElements[j].style.strokeOpacity = "1";
+        this.linkElements[j].style.stroke = "var(--red)";
+        this.linkElements[j].style.strokeWidth = "2";
+      } else {
+        this.linkElements[j].style.strokeOpacity = "0.05";
+      }
+    }
+
+    // Center on the midpoint of the cycle nodes
+    let cx = 0, cy = 0, count = 0;
+    for (const n of this.nodes) {
+      if (pathSet.has(n.id) && n.x != null && n.y != null) {
+        cx += n.x;
+        cy += n.y;
+        count++;
+      }
+    }
+    if (count > 0) {
+      this.viewX = cx / count - this.viewW / 2;
+      this.viewY = cy / count - this.viewH / 2;
+      this.updateViewBox();
+    }
+  }
+
+  /** Show/hide edges by import type. */
+  filterEdgeTypes(hiddenTypes: Set<string>): void {
+    for (let i = 0; i < this.resolvedLinks.length; i++) {
+      const l = this.resolvedLinks[i];
+      const type = l.importType ?? "static";
+      this.linkElements[i].style.display = hiddenTypes.has(type) ? "none" : "";
+    }
+  }
+
   destroy(): void {
     this.destroyed = true;
     this.ac.abort();
@@ -352,10 +416,12 @@ export class GraphRenderer {
 
   // ── Private: Constructor helpers ──────────────────────────────────────────
 
-  /** Create SVG <defs> with the arrowhead marker. */
+  /** Create SVG <defs> with arrowhead markers. */
   private createSvgDefs(svg: SVGSVGElement): void {
     const ns = SVG_NS;
     const defs = document.createElementNS(ns, "defs");
+
+    // Standard arrowhead
     const marker = document.createElementNS(ns, "marker");
     marker.setAttribute("id", "arrowhead");
     marker.setAttribute("viewBox", "0 0 10 7");
@@ -369,6 +435,22 @@ export class GraphRenderer {
     polygon.setAttribute("fill", "var(--border)");
     marker.appendChild(polygon);
     defs.appendChild(marker);
+
+    // Circular-dependency arrowhead (red)
+    const circMarker = document.createElementNS(ns, "marker");
+    circMarker.setAttribute("id", "arrowhead-circular");
+    circMarker.setAttribute("viewBox", "0 0 10 7");
+    circMarker.setAttribute("refX", "10");
+    circMarker.setAttribute("refY", "3.5");
+    circMarker.setAttribute("markerWidth", "6");
+    circMarker.setAttribute("markerHeight", "5");
+    circMarker.setAttribute("orient", "auto");
+    const circPolygon = document.createElementNS(ns, "polygon");
+    circPolygon.setAttribute("points", "0 0, 10 3.5, 0 7");
+    circPolygon.setAttribute("fill", "var(--red)");
+    circMarker.appendChild(circPolygon);
+    defs.appendChild(circMarker);
+
     svg.appendChild(defs);
   }
 
@@ -395,7 +477,7 @@ export class GraphRenderer {
   private resolveGraphLinks(
     links: GraphLink[],
     nodeMap: Map<string, GraphNode>,
-  ): { source: GraphNode; target: GraphNode; crossZone: boolean }[] {
+  ): { source: GraphNode; target: GraphNode; crossZone: boolean; importType?: ImportEdgeType; circular?: boolean }[] {
     return links.map((l) => ({
       ...l,
       source: nodeMap.get(typeof l.source === "string" ? l.source : l.source.id)!,
@@ -422,8 +504,13 @@ export class GraphRenderer {
   private createLinkElements(): void {
     for (const l of this.resolvedLinks) {
       const line = document.createElementNS(SVG_NS, "line");
-      line.setAttribute("class", `graph-link${l.crossZone ? " cross-zone" : ""}`);
-      line.setAttribute("marker-end", "url(#arrowhead)");
+      let cls = "graph-link";
+      if (l.circular) cls += " circular";
+      if (l.crossZone) cls += " cross-zone";
+      if (l.importType) cls += ` edge-${l.importType}`;
+      line.setAttribute("class", cls);
+      line.setAttribute("marker-end", l.circular ? "url(#arrowhead-circular)" : "url(#arrowhead)");
+      if (l.importType) line.setAttribute("data-edge-type", l.importType);
       this.g.appendChild(line);
       this.linkElements.push(line);
     }

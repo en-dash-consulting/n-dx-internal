@@ -295,3 +295,15 @@
 .component-usage-table {
   margin-bottom: 24px;
 }
+
+/* Component kind tags */
+.tag-kind {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+.tag-kind-function { background: color-mix(in srgb, var(--accent) 20%, var(--bg)); color: var(--accent); }
+.tag-kind-arrow { background: color-mix(in srgb, var(--green) 20%, var(--bg)); color: var(--green); }
+.tag-kind-class { background: color-mix(in srgb, var(--purple) 20%, var(--bg)); color: var(--purple); }
+.tag-kind-forwardRef { background: color-mix(in srgb, var(--orange) 20%, var(--bg)); color: var(--orange); }

@@ -70,6 +70,8 @@ export interface ViewRenderContext {
   selectedZone: string | null;
   selectedRunId: string | null;
   selectedTaskId: string | null;
+  /** Circular dependency cycle to focus in the graph. */
+  focusCycle: string[] | null;
   navigateTo: NavigateTo;
   isFeatureDisabled: (feature: DegradableFeature) => boolean;
 }
@@ -79,18 +81,18 @@ export interface ViewRenderContext {
 type ViewRenderer = (ctx: ViewRenderContext) => ComponentChild;
 
 const REGISTRY: Record<string, ViewRenderer> = {
-  "overview": ({ data }) =>
-    h(Overview, { data }),
+  "overview": ({ data, navigateTo }) =>
+    h(Overview, { data, navigateTo }),
 
-  "explorer": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isFeatureDisabled }) =>
-    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering") }),
+  "explorer": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isFeatureDisabled }) =>
+    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering") }),
 
   // Legacy routes — redirect to Explorer view
-  "graph": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isFeatureDisabled }) =>
-    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering") }),
+  "graph": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isFeatureDisabled }) =>
+    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering") }),
 
-  "files": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isFeatureDisabled }) =>
-    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering") }),
+  "files": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isFeatureDisabled }) =>
+    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering") }),
 
   "zones": ({ data, setDetail, navigateTo }) =>
     h(ZonesView, { data, onSelect: setDetail, navigateTo }),

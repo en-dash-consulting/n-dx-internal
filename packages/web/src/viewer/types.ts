@@ -15,7 +15,7 @@ export interface LoadedData {
   configSurface: ConfigSurface | null;
 }
 
-export type NavigateTo = (view: ViewId, opts?: { file?: string; zone?: string; runId?: string; taskId?: string }) => void;
+export type NavigateTo = (view: ViewId, opts?: { file?: string; zone?: string; runId?: string; taskId?: string; cycle?: string[] }) => void;
 
 export interface FileDetail {
   type: "file";
