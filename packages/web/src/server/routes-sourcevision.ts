@@ -13,13 +13,14 @@
  * GET  /api/sv/phases                — ordered analysis phase status from manifest modules
  * GET  /api/sv/summary               — summary stats across all analyses
  * POST /api/sv/phases/:phase/run     — trigger a single analysis phase
+ * POST /api/sv/phases/:phase/reset   — clear phase status back to pending
  *
  * The former /api/sv/pr-markdown endpoint has been removed.
  * PR description generation is now handled by the /pr-description Claude Code skill.
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { spawnManaged, type ManagedChild } from "@n-dx/llm-client";
 import type { ServerContext } from "./types.js";
@@ -212,6 +213,64 @@ export function handleSourcevisionRoute(
       phaseName: phaseDef.name,
       status: "started",
       startedAt,
+    });
+    return true;
+  }
+
+  // POST /api/sv/phases/:phase/reset — clear a phase back to pending
+  const phaseResetMatch = path.match(/^phases\/(\d+)\/reset$/);
+  if (method === "POST" && phaseResetMatch) {
+    const phase = parseInt(phaseResetMatch[1], 10);
+
+    // Validate phase number
+    if (!VALID_PHASE_NUMBERS.has(phase)) {
+      errorResponse(res, 400, `Invalid phase number: ${phase}. Valid phases are 1–7.`);
+      return true;
+    }
+
+    const phaseDef = PHASE_DEFINITIONS.find((d) => d.phase === phase)!;
+    const manifestPath = join(ctx.svDir, DATA_FILES.manifest);
+
+    // Load manifest
+    const manifest = loadDataFile(ctx, DATA_FILES.manifest) as Record<string, unknown> | null;
+    if (!manifest) {
+      errorResponse(res, 404, "No manifest data. Run 'sourcevision analyze' first.");
+      return true;
+    }
+
+    // Reset the module entry — remove startedAt, completedAt, error; set status to pending
+    const modules = (manifest.modules ?? {}) as Record<string, Record<string, unknown>>;
+    const mod = modules[phaseDef.id];
+    if (mod) {
+      delete mod.startedAt;
+      delete mod.completedAt;
+      delete mod.error;
+      mod.status = "pending";
+    } else {
+      modules[phaseDef.id] = { status: "pending" };
+    }
+    manifest.modules = modules;
+
+    // Write back to manifest.json
+    try {
+      writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n", "utf-8");
+    } catch (err) {
+      errorResponse(res, 500, `Failed to write manifest: ${err instanceof Error ? err.message : String(err)}`);
+      return true;
+    }
+
+    // Broadcast reset state
+    broadcastPhaseUpdate(broadcast, {
+      phase,
+      phaseId: phaseDef.id,
+      status: "pending",
+    });
+
+    jsonResponse(res, 200, {
+      phase,
+      phaseId: phaseDef.id,
+      phaseName: phaseDef.name,
+      status: "pending",
     });
     return true;
   }
