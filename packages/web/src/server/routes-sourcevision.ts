@@ -9,6 +9,7 @@
  * GET  /api/sv/zones                 — architectural zone map
  * GET  /api/sv/components            — React component catalog
  * GET  /api/sv/context               — full CONTEXT.md contents
+ * GET  /api/sv/frameworks             — detected frameworks and tech stack
  * GET  /api/sv/db-packages           — database layer detection from external imports
  * GET  /api/sv/phases                — 4 grouped analysis phase objects with aggregated status
  * GET  /api/sv/summary               — summary stats across all analyses
@@ -643,6 +644,22 @@ export function handleSourcevisionRoute(
     const data = loadDataFile(ctx, DATA_FILES.callGraph);
     if (!data) {
       errorResponse(res, 404, "No call graph data. Run 'sourcevision analyze' first.");
+      return true;
+    }
+    jsonResponse(res, 200, data);
+    return true;
+  }
+
+  // GET /api/sv/frameworks — detected frameworks and tech stack
+  if (path === "frameworks") {
+    const data = loadDataFile(ctx, DATA_FILES.frameworks);
+    if (!data) {
+      // Return empty defaults instead of 404 — the viewer uses frameworks
+      // for tab visibility and should degrade gracefully when no analysis exists.
+      jsonResponse(res, 200, {
+        frameworks: [],
+        summary: { totalDetected: 0, byCategory: {}, byLanguage: {} },
+      });
       return true;
     }
     jsonResponse(res, 200, data);

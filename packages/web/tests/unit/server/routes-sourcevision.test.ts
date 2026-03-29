@@ -269,6 +269,70 @@ describe("Sourcevision API routes", () => {
     }
   });
 
+  // ── frameworks endpoint ──────────────────────────────────────────
+
+  it("GET /api/sv/frameworks returns frameworks data when file exists", async () => {
+    const frameworksData = {
+      frameworks: [
+        {
+          id: "react",
+          name: "React",
+          category: "frontend",
+          language: "TypeScript",
+          confidence: 0.95,
+          matchedSignals: [{ kind: "import", detail: "react" }],
+        },
+        {
+          id: "express",
+          name: "Express",
+          category: "backend",
+          language: "TypeScript",
+          confidence: 0.8,
+          matchedSignals: [{ kind: "import", detail: "express" }],
+        },
+      ],
+      summary: {
+        totalDetected: 2,
+        byCategory: { frontend: 1, backend: 1 },
+        byLanguage: { TypeScript: 2 },
+      },
+    };
+    await writeFile(join(svDir, "frameworks.json"), JSON.stringify(frameworksData));
+
+    const res = await fetch(`http://localhost:${port}/api/sv/frameworks`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.frameworks).toHaveLength(2);
+    expect(data.frameworks[0].id).toBe("react");
+    expect(data.frameworks[1].id).toBe("express");
+    expect(data.summary.totalDetected).toBe(2);
+    expect(data.summary.byCategory).toEqual({ frontend: 1, backend: 1 });
+  });
+
+  it("GET /api/sv/frameworks returns empty defaults when file is missing", async () => {
+    // No frameworks.json written — should return 200 with empty defaults
+    const emptyDir = await mkdtemp(join(tmpdir(), "sv-api-nofw-"));
+    const emptySvDir = join(emptyDir, ".sourcevision");
+    await mkdir(emptySvDir, { recursive: true });
+    const emptyCtx: ServerContext = { projectDir: emptyDir, svDir: emptySvDir, rexDir, dev: false };
+
+    const emptyStarted = await startTestServer(emptyCtx);
+    try {
+      const res = await fetch(`http://localhost:${emptyStarted.port}/api/sv/frameworks`);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.frameworks).toEqual([]);
+      expect(data.summary).toEqual({
+        totalDetected: 0,
+        byCategory: {},
+        byLanguage: {},
+      });
+    } finally {
+      emptyStarted.server.close();
+      await rm(emptyDir, { recursive: true, force: true });
+    }
+  });
+
   // ── phases endpoint (grouped) ───────────────────────────────────
 
   it("GET /api/sv/phases returns 4 grouped phases with aggregated status", async () => {
