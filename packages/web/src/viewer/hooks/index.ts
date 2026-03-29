@@ -1,4 +1,5 @@
 export * from "./use-app-data.js";
+export * from "./use-column-priority.js";
 export * from "./use-crash-recovery.js";
 export * from "./use-delete-actions.js";
 export * from "./use-dom-performance-monitor.js";

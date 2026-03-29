@@ -4,12 +4,14 @@
  */
 
 import { h } from "preact";
-import { useState, useMemo } from "preact/hooks";
+import { useRef, useState, useMemo } from "preact/hooks";
 import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
 import type { ConfigSurfaceEntry, Zone } from "../external.js";
 import { SearchFilter } from "../components/search-filter.js";
+import { ColumnSwitcher } from "../components/column-switcher.js";
 import { BrandedHeader } from "../components/logos.js";
 import { CollapsibleSection } from "../visualization/index.js";
+import { useColumnPriority, type ColumnDef } from "../hooks/index.js";
 
 interface ConfigSurfaceViewProps {
   data: LoadedData;
@@ -62,6 +64,28 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect, embedded }: Conf
   }
 
   const { entries, summary } = configSurface;
+
+  // ── Column-priority system ──────────────────────────────────────
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  const configColumns = useMemo<ColumnDef[]>(() => [
+    { key: "name", label: "Name", priority: 10, minWidth: 120 },
+    { key: "file", label: "File", priority: 8, minWidth: 90 },
+    { key: "zone", label: "Zone", priority: 7, minWidth: 80 },
+    { key: "type", label: "Type", priority: 6, minWidth: 80 },
+    { key: "line", label: "Line", priority: 3, minWidth: 60 },
+    { key: "value", label: "Value", priority: 5, minWidth: 100 },
+  ], []);
+
+  const {
+    visibleKeys: cfgVisibleKeys,
+    hiddenColumns: cfgHiddenColumns,
+    hasHiddenColumns: cfgHasHidden,
+    swapColumn: cfgSwapColumn,
+    resetSwaps: cfgResetSwaps,
+  } = useColumnPriority(tableContainerRef, configColumns);
+
+  const cfgShow = (key: string) => cfgVisibleKeys.has(key);
 
   const filtered = useMemo(() => {
     let result = entries;
@@ -152,70 +176,89 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect, embedded }: Conf
           }, t === "all" ? "All" : TYPE_LABELS[t]),
         ),
       ),
+      cfgHasHidden
+        ? h(ColumnSwitcher, {
+            columns: configColumns,
+            visibleKeys: cfgVisibleKeys,
+            hiddenColumns: cfgHiddenColumns,
+            onSwap: cfgSwapColumn,
+            onReset: cfgResetSwaps,
+          })
+        : null,
     ),
 
     // Entries table
     h(CollapsibleSection, { title: `Entries (${filtered.length})`, defaultOpen: true },
       filtered.length === 0
         ? h("p", { class: "no-results" }, "No entries match the current filter.")
-        : h("table", { class: "config-table" },
-            h("thead", null,
-              h("tr", null,
-                h("th", null, "Type"),
-                h("th", null, "Name"),
-                h("th", null, "File"),
-                h("th", null, "Line"),
-                h("th", null, "Zone"),
-                h("th", null, "Value"),
+        : h("div", { ref: tableContainerRef },
+            h("table", { class: "config-table" },
+              h("thead", null,
+                h("tr", null,
+                  cfgShow("type") ? h("th", null, "Type") : null,
+                  cfgShow("name") ? h("th", null, "Name") : null,
+                  cfgShow("file") ? h("th", null, "File") : null,
+                  cfgShow("line") ? h("th", null, "Line") : null,
+                  cfgShow("zone") ? h("th", null, "Zone") : null,
+                  cfgShow("value") ? h("th", null, "Value") : null,
+                ),
               ),
-            ),
-            h("tbody", null,
-              filtered.slice(0, 200).map((entry) => {
-                const zone = fileToZone.get(entry.file);
-                return h("tr", { key: `${entry.type}-${entry.name}-${entry.file}-${entry.line}` },
-                  h("td", null,
-                    h("span", { class: `config-type-badge config-type-${entry.type}`, title: TYPE_LABELS[entry.type] },
-                      TYPE_ICONS[entry.type] ?? "", " ", entry.type,
-                    ),
-                  ),
-                  h("td", { class: "config-name" }, entry.name),
-                  h("td", null,
-                    h("a", {
-                      class: "file-link",
-                      href: "#",
-                      onClick: (e: Event) => {
-                        e.preventDefault();
-                        handleFileClick(entry.file, entry.line);
-                      },
-                    }, entry.file.split("/").pop()),
-                  ),
-                  h("td", { class: "config-line" }, String(entry.line)),
-                  h("td", null,
-                    zone
-                      ? h("a", {
-                          class: "zone-badge-link",
-                          href: "#",
-                          onClick: (e: Event) => {
-                            e.preventDefault();
-                            handleZoneClick(zone.id);
-                          },
-                        }, zone.name)
-                      : h("span", { class: "text-dim" }, "—"),
-                  ),
-                  h("td", { class: "config-value" },
-                    entry.value !== undefined
-                      ? h("code", null, entry.value.length > 40 ? entry.value.slice(0, 37) + "..." : entry.value)
-                      : h("span", { class: "text-dim" }, "—"),
-                  ),
-                );
-              }),
-              filtered.length > 200
-                ? h("tr", null,
-                    h("td", { colSpan: 6, class: "text-dim" },
-                      `... and ${filtered.length - 200} more entries`,
-                    ),
-                  )
-                : null,
+              h("tbody", null,
+                filtered.slice(0, 200).map((entry) => {
+                  const zone = fileToZone.get(entry.file);
+                  return h("tr", { key: `${entry.type}-${entry.name}-${entry.file}-${entry.line}` },
+                    cfgShow("type")
+                      ? h("td", null,
+                          h("span", { class: `config-type-badge config-type-${entry.type}`, title: TYPE_LABELS[entry.type] },
+                            TYPE_ICONS[entry.type] ?? "", " ", entry.type,
+                          ),
+                        )
+                      : null,
+                    cfgShow("name") ? h("td", { class: "config-name" }, entry.name) : null,
+                    cfgShow("file")
+                      ? h("td", null,
+                          h("a", {
+                            class: "file-link",
+                            href: "#",
+                            onClick: (e: Event) => {
+                              e.preventDefault();
+                              handleFileClick(entry.file, entry.line);
+                            },
+                          }, entry.file.split("/").pop()),
+                        )
+                      : null,
+                    cfgShow("line") ? h("td", { class: "config-line" }, String(entry.line)) : null,
+                    cfgShow("zone")
+                      ? h("td", null,
+                          zone
+                            ? h("a", {
+                                class: "zone-badge-link",
+                                href: "#",
+                                onClick: (e: Event) => {
+                                  e.preventDefault();
+                                  handleZoneClick(zone.id);
+                                },
+                              }, zone.name)
+                            : h("span", { class: "text-dim" }, "\u2014"),
+                        )
+                      : null,
+                    cfgShow("value")
+                      ? h("td", { class: "config-value" },
+                          entry.value !== undefined
+                            ? h("code", null, entry.value.length > 40 ? entry.value.slice(0, 37) + "..." : entry.value)
+                            : h("span", { class: "text-dim" }, "\u2014"),
+                        )
+                      : null,
+                  );
+                }),
+                filtered.length > 200
+                  ? h("tr", null,
+                      h("td", { colSpan: cfgVisibleKeys.size, class: "text-dim" },
+                        `... and ${filtered.length - 200} more entries`,
+                      ),
+                    )
+                  : null,
+              ),
             ),
           ),
     ),

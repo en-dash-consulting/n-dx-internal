@@ -14,6 +14,8 @@ import { buildFileToZoneMap, buildZoneColorMap, getZoneColorByIndex } from "../v
 import { GraphRenderer, type GraphNode, type GraphLink, type ZoneInfo, type ImportEdgeType } from "../graph/renderer.js";
 import { basename } from "../utils.js";
 import { BrandedHeader } from "../components/logos.js";
+import { ColumnSwitcher } from "../components/column-switcher.js";
+import { useColumnPriority, type ColumnDef } from "../hooks/index.js";
 import { ConfigSurfaceView } from "./config-surface.js";
 import { FunctionsCatalog } from "./functions-catalog.js";
 
@@ -235,6 +237,39 @@ export function ExplorerView({
     () => inventory ? inventory.files.some((f) => f.lastModified != null) : false,
     [inventory]
   );
+
+  // ── Column-priority system ──────────────────────────────────────
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  const fileColumns = useMemo<ColumnDef[]>(() => {
+    const cols: ColumnDef[] = [
+      { key: "path", label: "Path", priority: 10, minWidth: 140 },
+    ];
+    if (zoneList.length > 0) cols.push({ key: "zone", label: "Zone", priority: 9, minWidth: 90 });
+    cols.push(
+      { key: "language", label: "Language", priority: 8, minWidth: 80 },
+      { key: "lineCount", label: "Lines", priority: 7, minWidth: 70 },
+      { key: "size", label: "Size", priority: 6, minWidth: 70 },
+      { key: "role", label: "Role", priority: 5, minWidth: 70 },
+      { key: "category", label: "Category", priority: 4, minWidth: 80 },
+    );
+    if (hasLastModified) cols.push({ key: "lastModified", label: "Modified", priority: 3, minWidth: 80 });
+    if (hasClassifications) {
+      cols.push(
+        { key: "archetype", label: "Archetype", priority: 2, minWidth: 90 },
+        { key: "confidence", label: "Confidence", priority: 1, minWidth: 80 },
+      );
+    }
+    return cols;
+  }, [zoneList.length, hasLastModified, hasClassifications]);
+
+  const {
+    visibleKeys: fileVisibleKeys,
+    hiddenColumns: fileHiddenColumns,
+    hasHiddenColumns: fileHasHidden,
+    swapColumn: fileSwapColumn,
+    resetSwaps: fileResetSwaps,
+  } = useColumnPriority(tableContainerRef, fileColumns);
 
   const filtered = useMemo(() => {
     if (!inventory) return [];
@@ -748,6 +783,15 @@ export function ExplorerView({
         title: showAllFiles ? "Hide internal tool directories" : "Show all files including internal directories",
         "aria-pressed": String(showAllFiles),
       }, showAllFiles ? "\u2713 All Files" : "Show All Files"),
+      fileHasHidden
+        ? h(ColumnSwitcher, {
+            columns: fileColumns,
+            visibleKeys: fileVisibleKeys,
+            hiddenColumns: fileHiddenColumns,
+            onSwap: fileSwapColumn,
+            onReset: fileResetSwaps,
+          })
+        : null,
       h("span", { class: "filter-result-count" },
         `Showing ${Math.min(showCount, filtered.length)} of ${filtered.length} files`
       ),
@@ -758,7 +802,7 @@ export function ExplorerView({
       ? // Split mode: file list + graph side by side
         h("div", { class: "explorer-split" },
           h("div", { class: "explorer-split-files" },
-            renderFileTable(visible, remaining, showCount, setShowCount, zoneList, hasClassifications, hasLastModified, fileToZone, fileToClassification, sortIndicator, toggleSort, handleRowClick, selectedFile),
+            renderFileTable(visible, remaining, showCount, setShowCount, zoneList, hasClassifications, hasLastModified, fileToZone, fileToClassification, sortIndicator, toggleSort, handleRowClick, selectedFile, fileVisibleKeys, tableContainerRef),
           ),
           h("div", { class: "explorer-split-graph" },
             // Graph visibility toggle
@@ -914,7 +958,7 @@ export function ExplorerView({
         )
       : // Files-only mode
         h("div", null,
-          renderFileTable(visible, remaining, showCount, setShowCount, zoneList, hasClassifications, hasLastModified, fileToZone, fileToClassification, sortIndicator, toggleSort, handleRowClick, selectedFile),
+          renderFileTable(visible, remaining, showCount, setShowCount, zoneList, hasClassifications, hasLastModified, fileToZone, fileToClassification, sortIndicator, toggleSort, handleRowClick, selectedFile, fileVisibleKeys, tableContainerRef),
         ),
       ) : activeTab === "functions" ? h(FunctionsCatalog, {
         data,
@@ -947,26 +991,30 @@ function renderFileTable(
   toggleSort: (key: SortKey) => void,
   handleRowClick: (file: FileEntry) => void,
   selectedFile: string | null | undefined,
+  visibleKeys: Set<string>,
+  containerRef: { current: HTMLDivElement | null },
 ) {
+  const show = (key: string) => visibleKeys.has(key);
+
   return h(Fragment, null,
-    h("div", { class: "data-table-wrapper" },
+    h("div", { class: "data-table-wrapper", ref: containerRef },
       h("table", { class: "data-table" },
         h("thead", null,
           h("tr", null,
-            h("th", { onClick: () => toggleSort("path") }, `Path${sortIndicator("path")}`),
-            zoneList.length > 0 ? h("th", null, "Zone") : null,
-            h("th", { onClick: () => toggleSort("language") }, `Language${sortIndicator("language")}`),
-            h("th", { onClick: () => toggleSort("lineCount") }, `Lines${sortIndicator("lineCount")}`),
-            h("th", { onClick: () => toggleSort("size") }, `Size${sortIndicator("size")}`),
-            h("th", { onClick: () => toggleSort("role") }, `Role${sortIndicator("role")}`),
-            h("th", { onClick: () => toggleSort("category") }, `Category${sortIndicator("category")}`),
-            hasLastModified
+            show("path") ? h("th", { onClick: () => toggleSort("path") }, `Path${sortIndicator("path")}`) : null,
+            zoneList.length > 0 && show("zone") ? h("th", null, "Zone") : null,
+            show("language") ? h("th", { onClick: () => toggleSort("language") }, `Language${sortIndicator("language")}`) : null,
+            show("lineCount") ? h("th", { onClick: () => toggleSort("lineCount") }, `Lines${sortIndicator("lineCount")}`) : null,
+            show("size") ? h("th", { onClick: () => toggleSort("size") }, `Size${sortIndicator("size")}`) : null,
+            show("role") ? h("th", { onClick: () => toggleSort("role") }, `Role${sortIndicator("role")}`) : null,
+            show("category") ? h("th", { onClick: () => toggleSort("category") }, `Category${sortIndicator("category")}`) : null,
+            hasLastModified && show("lastModified")
               ? h("th", { onClick: () => toggleSort("lastModified") }, `Modified${sortIndicator("lastModified")}`)
               : null,
-            hasClassifications
+            hasClassifications && show("archetype")
               ? h("th", { onClick: () => toggleSort("archetype") }, `Archetype${sortIndicator("archetype")}`)
               : null,
-            hasClassifications
+            hasClassifications && show("confidence")
               ? h("th", { onClick: () => toggleSort("confidence") }, `Confidence${sortIndicator("confidence")}`)
               : null,
           )
@@ -982,8 +1030,8 @@ function renderFileTable(
               onClick: () => handleRowClick(file),
               style: `cursor: pointer;${selectedFile === file.path ? " background: var(--bg-hover);" : ""}`,
             },
-              h("td", { class: "mono-sm" }, file.path),
-              zoneList.length > 0
+              show("path") ? h("td", { class: "mono-sm" }, file.path) : null,
+              zoneList.length > 0 && show("zone")
                 ? h("td", null,
                     fz
                       ? h("span", { class: "zone-badge", style: `--zone-color: ${fz.color}` },
@@ -992,19 +1040,21 @@ function renderFileTable(
                       : null
                   )
                 : null,
-              h("td", null, file.language),
-              h("td", { class: "text-right" }, file.lineCount.toLocaleString()),
-              h("td", { class: "text-right" }, formatSize(file.size)),
-              h("td", null,
-                h("span", { class: `tag ${ROLE_TAG_CLASS[file.role] || "tag-other"}` }, file.role)
-              ),
-              h("td", null, file.category),
-              hasLastModified
+              show("language") ? h("td", null, file.language) : null,
+              show("lineCount") ? h("td", { class: "text-right" }, file.lineCount.toLocaleString()) : null,
+              show("size") ? h("td", { class: "text-right" }, formatSize(file.size)) : null,
+              show("role")
+                ? h("td", null,
+                    h("span", { class: `tag ${ROLE_TAG_CLASS[file.role] || "tag-other"}` }, file.role)
+                  )
+                : null,
+              show("category") ? h("td", null, file.category) : null,
+              hasLastModified && show("lastModified")
                 ? h("td", { class: "text-right" },
                     file.lastModified ? formatDate(file.lastModified) : "\u2014"
                   )
                 : null,
-              hasClassifications
+              hasClassifications && show("archetype")
                 ? h("td", null,
                     h("span", {
                       class: `tag ${isOverride ? "tag-override" : "tag-archetype"}`,
@@ -1014,7 +1064,7 @@ function renderFileTable(
                     )
                   )
                 : null,
-              hasClassifications
+              hasClassifications && show("confidence")
                 ? h("td", { class: "text-right" },
                     fc ? fc.confidence.toFixed(2) : "\u2014"
                   )
