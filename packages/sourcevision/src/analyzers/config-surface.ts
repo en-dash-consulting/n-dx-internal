@@ -5,6 +5,7 @@
  * - Environment variable reads (process.env.* for JS/TS, os.Getenv/os.LookupEnv for Go)
  * - Config file references (.env, .env.*, config.json, config.yaml, *.toml)
  * - Exported constant definitions (export const in TS/JS, capitalized const in Go)
+ * - Config JSON file fields (.hench/config.json, .rex/config.json) with current values
  *
  * Produces config-surface.json alongside other phase outputs.
  */
@@ -286,11 +287,83 @@ function extractStaticValue(raw: string): string | undefined {
   return undefined;
 }
 
+// ── Config JSON scanner ──────────────────────────────────────────────
+
+/**
+ * Flatten a JSON object into dot-notated key/value pairs.
+ * Nested objects are recursed; arrays and primitives become leaf entries.
+ */
+function flattenJsonEntries(
+  obj: unknown,
+  prefix: string,
+): Array<{ name: string; value: string }> {
+  const out: Array<{ name: string; value: string }> = [];
+  if (obj === null || obj === undefined) {
+    out.push({ name: prefix, value: String(obj) });
+    return out;
+  }
+  if (Array.isArray(obj)) {
+    out.push({ name: prefix, value: JSON.stringify(obj) });
+    return out;
+  }
+  if (typeof obj === "object") {
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      const fullKey = prefix ? `${prefix}.${key}` : key;
+      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+        out.push(...flattenJsonEntries(value, fullKey));
+      } else {
+        out.push(...flattenJsonEntries(value, fullKey));
+      }
+    }
+    return out;
+  }
+  // Primitive: string, number, boolean
+  out.push({ name: prefix, value: String(obj) });
+  return out;
+}
+
+/**
+ * Scan a config JSON file and return config surface entries for each field.
+ * Returns an empty array if the file doesn't exist or can't be parsed.
+ */
+function scanConfigJsonFile(absDir: string, relPath: string): ConfigSurfaceEntry[] {
+  const filePath = join(absDir, relPath);
+  if (!existsSync(filePath)) return [];
+
+  let raw: string;
+  try {
+    raw = readFileSync(filePath, "utf-8");
+  } catch {
+    return [];
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return [];
+  }
+
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return [];
+
+  const flat = flattenJsonEntries(parsed, "");
+  return flat.map(({ name, value }) => ({
+    name,
+    type: "config" as const,
+    file: relPath,
+    line: 0,
+    referencedBy: [],
+    value,
+  }));
+}
+
 // ── Public API ───────────────────────────────────────────────────────
 
 export interface AnalyzeConfigSurfaceOptions {
   /** File-to-zone mapping for zone attribution. */
   fileToZone?: Map<string, string>;
+  /** Relative paths to config JSON files to scan (e.g. .hench/config.json). */
+  configJsonPaths?: string[];
 }
 
 /**
@@ -305,6 +378,7 @@ export function analyzeConfigSurface(
   options?: AnalyzeConfigSurfaceOptions,
 ): ConfigSurface {
   const fileToZone = options?.fileToZone;
+  const configJsonPaths = options?.configJsonPaths;
   const allEnvVars: ConfigSurfaceEntry[] = [];
   const allConfigRefs: ConfigSurfaceEntry[] = [];
   const allConstants: ConfigSurfaceEntry[] = [];
@@ -326,6 +400,14 @@ export function analyzeConfigSurface(
     allEnvVars.push(...result.envVars);
     allConfigRefs.push(...result.configRefs);
     allConstants.push(...result.constants);
+  }
+
+  // Scan config JSON files (e.g. .hench/config.json, .rex/config.json)
+  if (configJsonPaths) {
+    for (const relPath of configJsonPaths) {
+      const entries = scanConfigJsonFile(absDir, relPath);
+      allConfigRefs.push(...entries);
+    }
   }
 
   // Deduplicate env vars by name, merging zone references

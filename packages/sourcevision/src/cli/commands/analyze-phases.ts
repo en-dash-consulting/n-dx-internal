@@ -605,7 +605,10 @@ export async function runConfigSurfacePhase(ctx: AnalyzeContext): Promise<void> 
       }
     }
 
-    const configSurface = analyzeConfigSurface(ctx.absDir, inventory, { fileToZone });
+    // Known n-dx config JSON files to scan for runtime config fields
+    const configJsonPaths = [".hench/config.json", ".rex/config.json"];
+
+    const configSurface = analyzeConfigSurface(ctx.absDir, inventory, { fileToZone, configJsonPaths });
     const outPath = join(ctx.svDir, DATA_FILES.configSurface);
     writeFileSync(outPath, toCanonicalJSON(configSurface));
     updateManifestModule(ctx.absDir, "configsurface", "complete");

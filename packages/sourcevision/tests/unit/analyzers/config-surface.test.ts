@@ -308,4 +308,206 @@ describe("analyzeConfigSurface", () => {
     expect(names.indexOf("constant:ALPHA_CONST")).toBeGreaterThan(names.indexOf("env:PORT"));
     expect(names.indexOf("env:API_URL")).toBeLessThan(names.indexOf("env:PORT"));
   });
+
+  // ── Config JSON scanning ────────────────────────────────────────────
+
+  it("scans hench config.json and produces config entries", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await mkdir(join(tmpDir, ".hench"), { recursive: true });
+    await writeFile(
+      join(tmpDir, ".hench/config.json"),
+      JSON.stringify({ schema: "hench/v1", provider: "cli", model: "sonnet", maxTurns: 50 }),
+    );
+
+    const inventory = makeInventory([]);
+    const result = analyzeConfigSurface(tmpDir, inventory, {
+      configJsonPaths: [".hench/config.json"],
+    });
+
+    const configEntries = result.entries.filter(
+      (e) => e.type === "config" && e.file === ".hench/config.json",
+    );
+    expect(configEntries.length).toBe(4);
+    expect(configEntries.map((e) => e.name).sort()).toEqual([
+      "maxTurns", "model", "provider", "schema",
+    ]);
+
+    const provider = configEntries.find((e) => e.name === "provider");
+    expect(provider?.value).toBe("cli");
+    expect(provider?.line).toBe(0);
+    expect(provider?.referencedBy).toEqual([]);
+  });
+
+  it("scans rex config.json and produces config entries", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await mkdir(join(tmpDir, ".rex"), { recursive: true });
+    await writeFile(
+      join(tmpDir, ".rex/config.json"),
+      JSON.stringify({ schema: "rex/v1", project: "my-app", adapter: "file" }),
+    );
+
+    const inventory = makeInventory([]);
+    const result = analyzeConfigSurface(tmpDir, inventory, {
+      configJsonPaths: [".rex/config.json"],
+    });
+
+    const configEntries = result.entries.filter(
+      (e) => e.type === "config" && e.file === ".rex/config.json",
+    );
+    expect(configEntries.length).toBe(3);
+    expect(configEntries.map((e) => e.name).sort()).toEqual([
+      "adapter", "project", "schema",
+    ]);
+    expect(configEntries.find((e) => e.name === "project")?.value).toBe("my-app");
+  });
+
+  it("flattens nested config JSON with dot notation", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await mkdir(join(tmpDir, ".hench"), { recursive: true });
+    await writeFile(
+      join(tmpDir, ".hench/config.json"),
+      JSON.stringify({
+        guard: {
+          commandTimeout: 30000,
+          maxFileSize: 1048576,
+        },
+        retry: {
+          maxRetries: 3,
+        },
+      }),
+    );
+
+    const inventory = makeInventory([]);
+    const result = analyzeConfigSurface(tmpDir, inventory, {
+      configJsonPaths: [".hench/config.json"],
+    });
+
+    const configEntries = result.entries.filter(
+      (e) => e.type === "config" && e.file === ".hench/config.json",
+    );
+    expect(configEntries.map((e) => e.name).sort()).toEqual([
+      "guard.commandTimeout",
+      "guard.maxFileSize",
+      "retry.maxRetries",
+    ]);
+    expect(configEntries.find((e) => e.name === "guard.commandTimeout")?.value).toBe("30000");
+    expect(configEntries.find((e) => e.name === "retry.maxRetries")?.value).toBe("3");
+  });
+
+  it("represents array values as JSON strings in config entries", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await mkdir(join(tmpDir, ".hench"), { recursive: true });
+    await writeFile(
+      join(tmpDir, ".hench/config.json"),
+      JSON.stringify({
+        guard: {
+          blockedPaths: [".hench/**", ".git/**"],
+          allowedCommands: ["npm", "node"],
+        },
+      }),
+    );
+
+    const inventory = makeInventory([]);
+    const result = analyzeConfigSurface(tmpDir, inventory, {
+      configJsonPaths: [".hench/config.json"],
+    });
+
+    const blocked = result.entries.find((e) => e.name === "guard.blockedPaths");
+    expect(blocked?.value).toBe('[".hench/**",".git/**"]');
+    expect(blocked?.type).toBe("config");
+  });
+
+  it("gracefully handles missing config JSON files (no crash)", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+
+    const inventory = makeInventory([]);
+    const result = analyzeConfigSurface(tmpDir, inventory, {
+      configJsonPaths: [".hench/config.json", ".rex/config.json"],
+    });
+
+    // No crash, empty entries
+    expect(result.entries).toEqual([]);
+    expect(result.summary.totalConfigRefs).toBe(0);
+  });
+
+  it("gracefully handles malformed config JSON files", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await mkdir(join(tmpDir, ".hench"), { recursive: true });
+    await writeFile(join(tmpDir, ".hench/config.json"), "{ not valid json");
+
+    const inventory = makeInventory([]);
+    const result = analyzeConfigSurface(tmpDir, inventory, {
+      configJsonPaths: [".hench/config.json"],
+    });
+
+    expect(result.entries).toEqual([]);
+  });
+
+  it("includes config JSON entries in totalConfigRefs summary count", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await mkdir(join(tmpDir, ".hench"), { recursive: true });
+    await writeFile(
+      join(tmpDir, ".hench/config.json"),
+      JSON.stringify({ provider: "cli", model: "sonnet" }),
+    );
+    // Also add a source file that references a config file
+    await writeFile(
+      join(tmpDir, "loader.ts"),
+      `const c = readFile(".env.production");\n`,
+    );
+
+    const inventory = makeInventory([{ path: "loader.ts" }]);
+    const result = analyzeConfigSurface(tmpDir, inventory, {
+      configJsonPaths: [".hench/config.json"],
+    });
+
+    // 2 config JSON fields + at least 1 config file reference from source
+    expect(result.summary.totalConfigRefs).toBeGreaterThanOrEqual(3);
+  });
+
+  it("scans multiple config JSON files simultaneously", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await mkdir(join(tmpDir, ".hench"), { recursive: true });
+    await mkdir(join(tmpDir, ".rex"), { recursive: true });
+    await writeFile(
+      join(tmpDir, ".hench/config.json"),
+      JSON.stringify({ provider: "cli" }),
+    );
+    await writeFile(
+      join(tmpDir, ".rex/config.json"),
+      JSON.stringify({ adapter: "file" }),
+    );
+
+    const inventory = makeInventory([]);
+    const result = analyzeConfigSurface(tmpDir, inventory, {
+      configJsonPaths: [".hench/config.json", ".rex/config.json"],
+    });
+
+    const henchEntries = result.entries.filter((e) => e.file === ".hench/config.json");
+    const rexEntries = result.entries.filter((e) => e.file === ".rex/config.json");
+    expect(henchEntries).toHaveLength(1);
+    expect(rexEntries).toHaveLength(1);
+    expect(henchEntries[0].name).toBe("provider");
+    expect(rexEntries[0].name).toBe("adapter");
+  });
+
+  it("handles boolean and null values in config JSON", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await mkdir(join(tmpDir, ".hench"), { recursive: true });
+    await writeFile(
+      join(tmpDir, ".hench/config.json"),
+      JSON.stringify({ selfHeal: true, debug: false, extra: null }),
+    );
+
+    const inventory = makeInventory([]);
+    const result = analyzeConfigSurface(tmpDir, inventory, {
+      configJsonPaths: [".hench/config.json"],
+    });
+
+    const entries = result.entries.filter((e) => e.file === ".hench/config.json");
+    expect(entries.find((e) => e.name === "selfHeal")?.value).toBe("true");
+    expect(entries.find((e) => e.name === "debug")?.value).toBe("false");
+    // null values should still appear
+    expect(entries.find((e) => e.name === "extra")).toBeDefined();
+  });
 });
