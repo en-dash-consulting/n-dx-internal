@@ -506,6 +506,43 @@ export interface ConfigSurface {
   summary: ConfigSurfaceSummary;
 }
 
+// ── Framework Detection ─────────────────────────────────────────────────────
+
+export type FrameworkCategory = "frontend" | "backend" | "fullstack";
+
+export interface MatchedSignal {
+  kind: "config" | "import" | "file" | "method-call";
+  detail: string;
+}
+
+export interface DetectedFramework {
+  /** Framework ID from the registry. */
+  id: string;
+  /** Human-readable name. */
+  name: string;
+  /** Framework classification. */
+  category: FrameworkCategory;
+  /** Primary language. */
+  language: string;
+  /** Detection confidence: 0–1 scale. */
+  confidence: number;
+  /** Signals that contributed to detection. */
+  matchedSignals: MatchedSignal[];
+}
+
+export interface DetectedFrameworksSummary {
+  totalDetected: number;
+  byCategory: Partial<Record<FrameworkCategory, number>>;
+  byLanguage: Record<string, number>;
+}
+
+export interface DetectedFrameworks {
+  /** All detected frameworks, sorted by confidence descending. */
+  frameworks: DetectedFramework[];
+  /** Aggregate statistics. */
+  summary: DetectedFrameworksSummary;
+}
+
 // ── Next Steps ──────────────────────────────────────────────────────────────
 
 export interface NextStep {

@@ -1,4 +1,4 @@
-import type { Manifest, Inventory, Imports, Zones, Components, CallGraph, Classifications, ConfigSurface, ViewId } from "./external.js";
+import type { Manifest, Inventory, Imports, Zones, Components, CallGraph, Classifications, ConfigSurface, DetectedFrameworks, ViewId } from "./external.js";
 
 // ViewId is canonically defined in the shared layer (framework-agnostic).
 // Re-exported here for backward compatibility with viewer consumers.
@@ -13,6 +13,7 @@ export interface LoadedData {
   callGraph: CallGraph | null;
   classifications: Classifications | null;
   configSurface: ConfigSurface | null;
+  frameworks: DetectedFrameworks | null;
 }
 
 export type NavigateTo = (view: ViewId, opts?: { file?: string; zone?: string; runId?: string; taskId?: string; cycle?: string[] }) => void;

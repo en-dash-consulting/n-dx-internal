@@ -15,6 +15,7 @@ export const DATA_FILES = {
   callGraph: "callgraph.json",
   classifications: "classifications.json",
   configSurface: "config-surface.json",
+  frameworks: "frameworks.json",
 } as const;
 
 export const ALL_DATA_FILES = Object.values(DATA_FILES);

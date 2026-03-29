@@ -28,6 +28,7 @@ describe("Sidebar", () => {
         onNavigate,
         manifest: null,
         zones: null,
+        frameworks: null,
         sidebarCollapsed: false,
         onToggleSidebar,
         ...props,

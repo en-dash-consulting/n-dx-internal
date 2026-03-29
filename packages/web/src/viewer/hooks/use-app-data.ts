@@ -48,10 +48,11 @@ const EMPTY_DATA: LoadedData = {
   callGraph: null,
   classifications: null,
   configSurface: null,
+  frameworks: null,
 };
 
 /** Modules needed for the initial UI shell (sidebar, overview). */
-const PRIORITY_MODULES: Array<keyof LoadedData> = ["manifest", "zones"];
+const PRIORITY_MODULES: Array<keyof LoadedData> = ["manifest", "zones", "frameworks"];
 
 /** Remaining modules loaded in background after shell renders. */
 const DEFERRED_MODULES: Array<keyof LoadedData> = [

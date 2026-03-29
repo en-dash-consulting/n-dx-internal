@@ -24,6 +24,7 @@ const migrations: Record<ModuleKey, Migration[]> = {
   callGraph: [],
   classifications: [],
   configSurface: [],
+  frameworks: [],
 };
 
 /**

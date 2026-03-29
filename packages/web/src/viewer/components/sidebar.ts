@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { useState, useEffect, useCallback, useRef, useMemo } from "preact/hooks";
-import type { Manifest, Zones } from "../external.js";
+import type { Manifest, Zones, DetectedFrameworks } from "../external.js";
 import type { ViewId } from "../types.js";
 import { NdxLogoPng, ProductLogoPng } from "./logos.js";
 import { SidebarThemeToggle } from "./theme-toggle.js";
@@ -13,7 +13,7 @@ import {
 } from "./status-indicators.js";
 import { ConfigFooter } from "./config-footer.js";
 import { useProjectMetadata, useFeatureToggle } from "../hooks/index.js";
-import { SOURCEVISION_TABS } from "../views/sourcevision-tabs.js";
+import { SOURCEVISION_TABS, getVisibleTabs } from "../views/sourcevision-tabs.js";
 
 const STORAGE_KEY = "sidebar-expanded-section";
 
@@ -22,6 +22,7 @@ interface SidebarProps {
   onNavigate: (view: ViewId) => void;
   manifest: Manifest | null;
   zones: Zones | null;
+  frameworks: DetectedFrameworks | null;
   sidebarCollapsed: boolean;
   onToggleSidebar: () => void;
   /** When set, restricts sidebar to a single package section. */
@@ -100,7 +101,7 @@ for (const section of SECTIONS) {
 }
 
 
-export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, onToggleSidebar, scope }: SidebarProps) {
+export function Sidebar({ view, onNavigate, manifest, zones, frameworks, sidebarCollapsed, onToggleSidebar, scope }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const projectStatus = useProjectStatus();
   const projectMeta = useProjectMetadata();
@@ -117,20 +118,28 @@ export function Sidebar({ view, onNavigate, manifest, zones, sidebarCollapsed, o
     return m;
   }, [callGraphEnabled, notionSyncEnabled, integrationsEnabled]);
 
-  /** Sections filtered by scope and feature gates. */
+  // Compute the set of visible SV tab IDs based on detected frameworks.
+  const visibleSvTabIds = useMemo((): Set<string> => {
+    const visible = getVisibleTabs(frameworks);
+    return new Set(visible.map((t) => t.id as string));
+  }, [frameworks]);
+
+  /** Sections filtered by scope, feature gates, and framework detection. */
   const visibleSections = useMemo(() => {
     const scopeFiltered = scope && scope !== "all"
       ? SECTIONS.filter((s) => s.product === scope || !s.product)
       : SECTIONS;
-    // Filter out feature-gated items that are disabled
+    // Filter out feature-gated items and framework-gated SV tabs
     return scopeFiltered.map((s) => ({
       ...s,
       items: s.items.filter((item) => {
-        if (!item.featureGate) return true;
-        return enabledGates.get(item.featureGate) ?? false;
+        if (item.featureGate && !(enabledGates.get(item.featureGate) ?? false)) return false;
+        // For sourcevision tabs, apply framework-based visibility
+        if (s.product === "sourcevision" && !visibleSvTabIds.has(item.id)) return false;
+        return true;
       }),
     }));
-  }, [scope, enabledGates]);
+  }, [scope, enabledGates, visibleSvTabIds]);
 
   const [expandedSection, setExpandedSection] = useState<string>(() =>
     scope ? (visibleSections[0]?.label ?? getInitialExpanded(view)) : getInitialExpanded(view)

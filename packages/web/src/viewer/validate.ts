@@ -383,6 +383,35 @@ const ConfigSurfaceSchema = z.object({
   summary: ConfigSurfaceSummarySchema,
 });
 
+// ── Frameworks ──────────────────────────────────────────────────────────────
+
+const FrameworkCategorySchema = z.enum(["frontend", "backend", "fullstack"]);
+
+const MatchedSignalSchema = z.object({
+  kind: z.enum(["config", "import", "file", "method-call"]),
+  detail: z.string(),
+});
+
+const DetectedFrameworkSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  category: FrameworkCategorySchema,
+  language: z.string(),
+  confidence: z.number().min(0).max(1),
+  matchedSignals: z.array(MatchedSignalSchema),
+});
+
+const DetectedFrameworksSummarySchema = z.object({
+  totalDetected: z.number().int().nonnegative(),
+  byCategory: z.record(z.string(), z.number().int().nonnegative()),
+  byLanguage: z.record(z.string(), z.number().int().nonnegative()),
+});
+
+const DetectedFrameworksSchema = z.object({
+  frameworks: z.array(DetectedFrameworkSchema),
+  summary: DetectedFrameworksSummarySchema,
+});
+
 // ── Validation helpers ──────────────────────────────────────────────────────
 
 export type ValidationResult<T> =
@@ -440,4 +469,10 @@ export function validateConfigSurface(
   data: unknown
 ): ValidationResult<V1.ConfigSurface> {
   return validate(ConfigSurfaceSchema, data);
+}
+
+export function validateFrameworks(
+  data: unknown
+): ValidationResult<V1.DetectedFrameworks> {
+  return validate(DetectedFrameworksSchema, data);
 }

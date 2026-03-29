@@ -155,7 +155,7 @@ function App({ scope }: { scope: string | null }) {
     h(MemoryWarningBanner, { snapshot: memorySnapshot, level: memoryLevel, visible: showMemoryWarning, onDismiss: dismissMemoryWarning }),
     h(DegradationBanner, { tier: degradationTier, isDegraded, summary: degradationSummary, disabledFeatures, visible: showDegradationBanner, onDismiss: () => setDegradationDismissed(true) }),
     h("a", { href: "#main-content", class: "skip-link" }, "Skip to main content"),
-    h(Sidebar, { view, onNavigate: handleSidebarNav, manifest: data.manifest, zones: data.zones, sidebarCollapsed, onToggleSidebar: handleToggleSidebar, scope }),
+    h(Sidebar, { view, onNavigate: handleSidebarNav, manifest: data.manifest, zones: data.zones, frameworks: data.frameworks, sidebarCollapsed, onToggleSidebar: handleToggleSidebar, scope }),
     h("main", {
       id: "main-content",
       class: "main",

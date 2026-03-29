@@ -18,6 +18,7 @@ import {
   validateCallGraph,
   validateClassifications,
   validateConfigSurface,
+  validateFrameworks,
 } from "./validate.js";
 import { DATA_FILES } from "./external.js";
 import { migrateData } from "./schema-compat.js";
@@ -42,6 +43,7 @@ const MODULE_DEFS: ModuleDef[] = [
   { key: "callGraph", file: DATA_FILES.callGraph, validate: validateCallGraph },
   { key: "classifications", file: DATA_FILES.classifications, validate: validateClassifications },
   { key: "configSurface", file: DATA_FILES.configSurface, validate: validateConfigSurface },
+  { key: "frameworks", file: DATA_FILES.frameworks, validate: validateFrameworks },
 ];
 
 /** Map from data filename to its module key, for selective refresh. */
@@ -59,6 +61,7 @@ let currentData: LoadedData = {
   callGraph: null,
   classifications: null,
   configSurface: null,
+  frameworks: null,
 };
 
 let onChange: DataChangeHandler | null = null;

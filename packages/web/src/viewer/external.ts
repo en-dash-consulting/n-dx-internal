@@ -41,6 +41,9 @@ export type {
   ZoneCrossing,
   ConfigSurface,
   ConfigSurfaceEntry,
+  DetectedFrameworks,
+  DetectedFramework,
+  FrameworkCategory,
 } from "../schema/v1.js";
 
 // Namespace re-export for validate.ts (import type * as V1)
