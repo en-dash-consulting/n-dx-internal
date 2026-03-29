@@ -399,6 +399,7 @@ const DetectedFrameworkSchema = z.object({
   language: z.string(),
   confidence: z.number().min(0).max(1),
   matchedSignals: z.array(MatchedSignalSchema),
+  projectRoot: z.string().optional(),
 });
 
 const DetectedFrameworksSummarySchema = z.object({

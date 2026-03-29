@@ -1,6 +1,7 @@
 import { h } from "preact";
 import { useMemo } from "preact/hooks";
 import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
+import type { DetectedFramework, FrameworkCategory } from "../external.js";
 import {
   BarChart,
   CollapsibleSection,
@@ -17,6 +18,20 @@ interface OverviewProps {
   data: LoadedData;
   navigateTo?: NavigateTo;
   onSelect?: (detail: DetailItem | null) => void;
+}
+
+const CATEGORY_LABELS: Record<FrameworkCategory, string> = {
+  frontend: "Frontend",
+  backend: "Backend",
+  fullstack: "Fullstack",
+};
+
+const CATEGORY_ORDER: FrameworkCategory[] = ["frontend", "backend", "fullstack"];
+
+function confidenceLevel(confidence: number): "high" | "medium" | "low" {
+  if (confidence >= 0.8) return "high";
+  if (confidence >= 0.5) return "medium";
+  return "low";
 }
 
 const LANG_COLORS: Record<string, string> = {
@@ -44,7 +59,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
-  const { manifest, inventory, imports, zones, components, callGraph, classifications } = data;
+  const { manifest, inventory, imports, zones, components, callGraph, classifications, frameworks } = data;
 
   if (!manifest && !inventory && !imports && !zones) {
     return h("div", { class: "overview-container" },
@@ -199,6 +214,30 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
 
   const hasHotspots = mostCalledItems.length > 0 || mostCallingItems.length > 0 || mostUsedComponents.length > 0;
 
+  // Framework grouping: by root (for monorepo), then by category within each root
+  const frameworkGroups = useMemo(() => {
+    if (!frameworks || frameworks.frameworks.length === 0) return null;
+    const fws = frameworks.frameworks;
+
+    // Determine distinct roots
+    const roots = [...new Set(fws.map(fw => fw.projectRoot ?? "."))];
+    const isMonorepo = roots.length > 1 || (roots.length === 1 && roots[0] !== ".");
+
+    // Group by root, then by category
+    const groups = roots.map(root => {
+      const rootFws = fws.filter(fw => (fw.projectRoot ?? ".") === root);
+      const byCategory = new Map<FrameworkCategory, DetectedFramework[]>();
+      for (const fw of rootFws) {
+        const list = byCategory.get(fw.category) ?? [];
+        list.push(fw);
+        byCategory.set(fw.category, list);
+      }
+      return { root, byCategory };
+    });
+
+    return { groups, isMonorepo };
+  }, [frameworks]);
+
   return h("div", { class: "overview-container" },
     // Header with project info
     manifest
@@ -301,6 +340,49 @@ export function Overview({ data, navigateTo, onSelect }: OverviewProps) {
           })
         : null,
     ),
+
+    // Technology Stack section (hidden when no frameworks detected)
+    frameworkGroups
+      ? h("div", { class: "overview-section" },
+          h("h3", null, "Technology Stack"),
+          frameworkGroups.groups.map(group =>
+            h("div", {
+              key: group.root,
+              class: frameworkGroups.isMonorepo ? "tech-stack-root-group" : undefined,
+            },
+              frameworkGroups.isMonorepo
+                ? h("div", { class: "tech-stack-root-label" }, group.root)
+                : null,
+              h("div", { class: "tech-stack-categories" },
+                CATEGORY_ORDER
+                  .filter(cat => group.byCategory.has(cat))
+                  .map(cat => {
+                    const fws = group.byCategory.get(cat)!;
+                    return h("div", { key: cat, class: "tech-stack-category" },
+                      h("div", { class: "tech-stack-category-label" }, CATEGORY_LABELS[cat]),
+                      h("div", { class: "tech-stack-badges" },
+                        fws.map(fw =>
+                          h("span", {
+                            key: fw.id,
+                            class: "tech-stack-badge",
+                            title: `${fw.name} (${fw.language}) — ${confidenceLevel(fw.confidence)} confidence (${Math.round(fw.confidence * 100)}%)`,
+                            onClick: navigateTo
+                              ? () => navigateTo("files", fw.projectRoot && fw.projectRoot !== "." ? { file: fw.projectRoot } : undefined)
+                              : undefined,
+                          },
+                            h("span", { class: `tech-stack-confidence ${confidenceLevel(fw.confidence)}` }),
+                            fw.name,
+                            h("span", { class: "fw-lang" }, fw.language),
+                          )
+                        )
+                      )
+                    );
+                  })
+              )
+            )
+          )
+        )
+      : null,
 
     // Architecture health section
     healthMetrics && zones

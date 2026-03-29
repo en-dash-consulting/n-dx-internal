@@ -34,6 +34,96 @@
   margin-bottom: 24px;
 }
 
+/* Technology Stack */
+.tech-stack-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.tech-stack-category {
+  flex: 1;
+  min-width: 180px;
+}
+
+.tech-stack-category-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.tech-stack-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tech-stack-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.tech-stack-badge:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
+.tech-stack-badge .fw-lang {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.tech-stack-confidence {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tech-stack-confidence.high {
+  background: var(--green);
+}
+
+.tech-stack-confidence.medium {
+  background: var(--orange);
+}
+
+.tech-stack-confidence.low {
+  background: var(--text-dim);
+}
+
+.tech-stack-root-group {
+  margin-bottom: 16px;
+}
+
+.tech-stack-root-group:last-child {
+  margin-bottom: 0;
+}
+
+.tech-stack-root-label {
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  padding: 2px 6px;
+  background: var(--bg);
+  border-radius: 4px;
+  display: inline-block;
+}
+
 /* Section styling */
 .overview-section {
   margin-bottom: 24px;

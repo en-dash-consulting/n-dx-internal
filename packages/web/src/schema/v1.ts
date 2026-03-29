@@ -528,6 +528,8 @@ export interface DetectedFramework {
   confidence: number;
   /** Signals that contributed to detection. */
   matchedSignals: MatchedSignal[];
+  /** Project root path where the framework was detected (for monorepo support). */
+  projectRoot?: string;
 }
 
 export interface DetectedFrameworksSummary {
