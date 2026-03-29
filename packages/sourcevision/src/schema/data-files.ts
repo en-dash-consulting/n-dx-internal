@@ -7,6 +7,7 @@ export const DATA_FILES = {
   components: "components.json",
   callGraph: "callgraph.json",
   configSurface: "config-surface.json",
+  frameworks: "frameworks.json",
 } as const;
 
 export const ALL_DATA_FILES = Object.values(DATA_FILES);

@@ -680,6 +680,97 @@ export interface WorkspaceConfig {
   members: WorkspaceMember[];
 }
 
+// ── Framework Detection ─────────────────────────────────────────────────────
+
+export type FrameworkCategory = "frontend" | "backend" | "fullstack";
+
+/**
+ * Signals used to detect a framework's presence in a project.
+ * Each signal type targets a different detection surface.
+ */
+export interface FrameworkDetectionSignals {
+  /** Glob-style file patterns (e.g., "app/routes/**\/*.tsx", "next.config.*"). */
+  filePatterns?: string[];
+  /** Config filenames whose mere presence signals the framework (e.g., "next.config.js"). */
+  configFiles?: string[];
+  /** Package/module import strings (e.g., "react-router", "github.com/gin-gonic/gin"). */
+  importPatterns?: string[];
+  /** Method call patterns found in source code (e.g., "app.get", "router.GET"). */
+  methodCallPatterns?: string[];
+}
+
+/**
+ * Registry entry for a detectable framework.
+ * Static definition — doesn't change per project.
+ */
+export interface FrameworkRegistryEntry {
+  /** Unique framework identifier (e.g., "react-router-v7", "express"). */
+  id: string;
+  /** Human-readable display name (e.g., "React Router v7 / Remix"). */
+  name: string;
+  /** Framework classification. */
+  category: FrameworkCategory;
+  /** Primary language (e.g., "typescript", "go"). */
+  language: string;
+  /** Detection signals used to identify this framework. */
+  detectionSignals: FrameworkDetectionSignals;
+}
+
+/**
+ * A signal that matched during detection, providing evidence for a framework's presence.
+ */
+export interface MatchedSignal {
+  /** What kind of signal matched. */
+  kind: "file" | "config" | "import" | "methodCall";
+  /** The pattern that matched. */
+  pattern: string;
+  /** File(s) where the match was found. */
+  matchedFiles: string[];
+}
+
+/**
+ * A framework detected in the project with confidence scoring.
+ */
+export interface DetectedFramework {
+  /** Framework ID from the registry. */
+  id: string;
+  /** Human-readable name. */
+  name: string;
+  /** Framework classification. */
+  category: FrameworkCategory;
+  /** Primary language. */
+  language: string;
+  /** Detection confidence: 0–1 scale.
+   *  - >0.8: high (multiple signal types matched)
+   *  - 0.5–0.8: medium (single signal type matched)
+   *  - <0.5: low (heuristic only)
+   */
+  confidence: number;
+  /** Signals that contributed to detection. */
+  detectedSignals: MatchedSignal[];
+  /** Project root path where the framework was detected (for monorepo support). */
+  projectRoot: string;
+}
+
+export interface DetectedFrameworksSummary {
+  /** Total number of detected frameworks. */
+  totalDetected: number;
+  /** Breakdown by category. */
+  byCategory: Partial<Record<FrameworkCategory, number>>;
+  /** Breakdown by language. */
+  byLanguage: Record<string, number>;
+}
+
+/**
+ * Complete framework detection output — written to frameworks.json.
+ */
+export interface DetectedFrameworks {
+  /** All detected frameworks, sorted by confidence descending. */
+  frameworks: DetectedFramework[];
+  /** Aggregate statistics. */
+  summary: DetectedFrameworksSummary;
+}
+
 // ── Union type for all output modules ───────────────────────────────────────
 
 export interface SourcevisionOutput {

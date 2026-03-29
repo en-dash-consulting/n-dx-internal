@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "toolVersion": "0.1.0",
-  "analyzedAt": "2026-03-29T02:36:30.583Z",
+  "analyzedAt": "2026-03-29T04:05:12.266Z",
   "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11",
   "gitBranch": "feature/sourcevision-ui-backend-display",
   "targetPath": "/Users/ryankeith/ndx/n-dx-internal",
@@ -22,13 +22,36 @@
       "completedAt": "2026-03-29T02:35:34.439Z"
     },
     "classifications": {
-      "status": "running",
+      "status": "complete",
       "startedAt": "2026-03-29T02:36:30.583Z",
-      "pid": 19047
+      "completedAt": "2026-03-29T02:42:36.638Z"
+    },
+    "components": {
+      "status": "complete",
+      "startedAt": "2026-03-29T02:42:36.965Z",
+      "completedAt": "2026-03-29T02:42:37.191Z"
+    },
+    "zones": {
+      "status": "complete",
+      "startedAt": "2026-03-29T04:05:12.266Z",
+      "completedAt": "2026-03-29T04:48:38.972Z",
+      "error": "Process exited before phase completed"
+    },
+    "callgraph": {
+      "status": "complete",
+      "startedAt": "2026-03-29T02:52:44.515Z",
+      "completedAt": "2026-03-29T02:52:48.499Z"
     }
   },
   "language": "typescript",
   "languages": [
     "typescript"
-  ]
+  ],
+  "tokenUsage": {
+    "calls": 5,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "vendor": "claude",
+    "model": "claude-sonnet-4-6"
+  }
 }

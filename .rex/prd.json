@@ -5,11 +5,10 @@
     {
       "id": "ebe4c082-7e93-44ee-a286-cf01c05dd907",
       "title": "SourceVision",
-      "status": "completed",
+      "status": "pending",
       "level": "epic",
       "description": "Static analysis engine: file inventory, import graph, zone detection (Louvain community detection), React component catalog, PR markdown generation. Produces .sourcevision/CONTEXT.md and llms.txt for AI consumption.",
       "startedAt": "2026-03-28T18:05:26.005Z",
-      "completedAt": "2026-03-28T18:05:26.005Z",
       "mergedProposals": [
         {
           "proposalNodeKey": "p0:epic",
@@ -9561,6 +9560,323 @@
               "completedAt": "2026-03-28T16:55:52.880Z"
             }
           ]
+        },
+        {
+          "id": "90485376-544a-4c71-ae81-f84106cbd8bd",
+          "title": "Config Surface Page Redesign & Scanner Improvements",
+          "status": "pending",
+          "level": "feature",
+          "description": "Overhaul the config surface page layout and scanner. Replace bar charts with 3 horizontal summary panels. Change emoji badges (gear for env, globe for exported constants). Filter constants to only exported/global ones. Ensure Go and TypeScript/React Router config patterns are properly scanned. Add hench config values to the scan. Adopt explorer-style search.",
+          "priority": "high",
+          "tags": [
+            "web-viewer",
+            "sourcevision",
+            "config-surface"
+          ],
+          "children": [
+            {
+              "id": "fec63543-e5b9-4a82-951d-0cc4c8ab2c31",
+              "title": "Change config surface emoji badges: gear for env, globe for exported constants",
+              "status": "completed",
+              "level": "task",
+              "description": "Replace the 🔑 (key) emoji on env variable badges with ⚙️ (gear). Replace 📌 (pin) emoji on constant badges with 🌐 (globe). Keep 📄 for config file references. Update both the type badge rendering in config-surface.ts and any tooltip/legend text.",
+              "acceptanceCriteria": [
+                "Env variable badges show ⚙️ gear emoji instead of 🔑 key",
+                "Constant badges show 🌐 globe emoji instead of 📌 pin",
+                "Config file reference badges remain 📄 unchanged",
+                "Badge colors updated if needed to match new semantics"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-viewer",
+                "config-surface"
+              ],
+              "startedAt": "2026-03-29T04:42:24.774Z",
+              "completedAt": "2026-03-29T04:47:20.180Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Changed config surface emoji badges: gear for env, globe for constants. Commit a73ecf74."
+            },
+            {
+              "id": "5bf88f1e-a915-4f20-ab60-ba073d494cec",
+              "title": "Filter constants to exported/global only in config surface scanner",
+              "status": "completed",
+              "level": "task",
+              "description": "Modify the sourcevision config-surface scanner (packages/sourcevision/src/analyzers/config-surface.ts) to only include constants that are exported (have `export` keyword in TS, or are in an exported Go const block). Non-exported file-local constants should be excluded — they are not part of the project's configuration surface. For TS: require `export const`. For Go: include constants in package-level const blocks (Go constants are always package-exported if capitalized).",
+              "acceptanceCriteria": [
+                "scanTsConstants only matches `export const NAME = value` patterns",
+                "Non-exported `const NAME = value` at file top-level are excluded",
+                "Go constants follow Go visibility rules (capitalized = exported)",
+                "Total constant count decreases to only globally-shared values",
+                "Existing tests updated to reflect exported-only filtering"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "scanner",
+                "config-surface"
+              ],
+              "startedAt": "2026-03-29T04:55:36.446Z",
+              "completedAt": "2026-03-29T05:20:41.829Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "scanTsConstants regex requires `export const` prefix — non-exported file-local constants excluded. scanGoConstants filters by Go visibility (capitalized = exported). Tests updated with explicit non-exported exclusion tests for both TS and Go. All 17 tests pass."
+            },
+            {
+              "id": "d62f6938-258e-49d7-8a9a-8a10df5be18f",
+              "title": "Consolidate config surface summary into 3 horizontal panels, remove bar charts",
+              "status": "completed",
+              "level": "task",
+              "description": "Replace the collapsible summary dropdown and bar chart visualization at the top of the config surface page with 3 horizontally-connected panels showing: (1) Env Variables count with gear icon, (2) Config References count with file icon, (3) Global Constants count with globe icon. The panels should be visually connected (shared border/background) in a single row. Remove the bar chart entirely — it is redundant given the count panels and the table below.",
+              "acceptanceCriteria": [
+                "Top of config surface page shows 3 panels in a single horizontal row",
+                "Each panel displays its count prominently with the corresponding icon",
+                "Panels are visually connected (shared container div, adjacent borders)",
+                "Bar chart visualization is completely removed",
+                "Collapsible summary dropdown is removed — panels are always visible",
+                "Layout remains readable at tablet width (panels can stack if needed)"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-viewer",
+                "config-surface",
+                "layout"
+              ],
+              "startedAt": "2026-03-29T04:47:20.680Z",
+              "completedAt": "2026-03-29T04:55:35.953Z"
+            },
+            {
+              "id": "e7dbb622-0a32-4458-9032-0c3daaa9dc32",
+              "title": "Add hench config fields to config surface scanner",
+              "status": "pending",
+              "level": "task",
+              "description": "The hench package defines 27 configurable fields in packages/hench/src/cli/commands/config.ts (CONFIG_FIELDS array) across 5 categories (Execution Strategy, Task Selection, Retry Policy, Guard Rails, General). These are not picked up by the sourcevision config surface scanner because they are runtime config values stored in .hench/config.json, not env vars or source-level constants. Add support for scanning known n-dx config files (.hench/config.json, .rex/config.json) and representing their fields in the config surface as a 'config' type entry with the source file as the config JSON path.",
+              "acceptanceCriteria": [
+                "Hench config fields from .hench/config.json appear in config surface entries",
+                "Rex config fields from .rex/config.json appear in config surface entries",
+                "Config JSON entries show as 'config' type with their file path",
+                "Current values from the JSON files are displayed in the value column",
+                "Scanner gracefully handles missing config files (no crash)"
+              ],
+              "priority": "medium",
+              "tags": [
+                "sourcevision",
+                "scanner",
+                "hench",
+                "config-surface"
+              ]
+            },
+            {
+              "id": "262f4bb8-a6fb-46b4-a176-f419149b5b9b",
+              "title": "Tune config scanner for Go and TypeScript/React Router patterns",
+              "status": "pending",
+              "level": "task",
+              "description": "Audit and improve the config surface scanner for both supported languages. For TypeScript/React Router: ensure detection of route-level config (loader env access, route module constants), Vite/esbuild define replacements, and tsconfig paths that act as config. For Go: ensure detection of viper/cobra config patterns (viper.GetString, viper.SetDefault), flag definitions (flag.String, pflag), and struct tag-based config (env:\"VAR\" tags). Verify the scanner handles both languages when coexisting in the same project.",
+              "acceptanceCriteria": [
+                "Go viper config patterns (viper.GetString, viper.SetDefault) detected as config entries",
+                "Go flag definitions (flag.String, pflag) detected as config entries",
+                "Go struct env tags (env:\"VAR\") detected as env var entries",
+                "TypeScript Vite define replacements detected",
+                "Mixed Go+TS projects scan both languages correctly",
+                "Existing detection patterns for process.env and os.Getenv remain functional"
+              ],
+              "priority": "medium",
+              "tags": [
+                "sourcevision",
+                "scanner",
+                "go",
+                "typescript"
+              ]
+            },
+            {
+              "id": "b52fb34c-0dcc-4dd1-86ff-bc46af5c2fd1",
+              "title": "Replace config surface search with explorer-style search component",
+              "status": "pending",
+              "level": "task",
+              "description": "The config surface page currently uses the basic SearchFilter component. Replace it with the same search pattern used in the explorer view — inline filter bar with search input, dropdown filters for type (env/config/constant) and zone, and result count. Ensure the search bar is properly contained within the page width and does not overflow.",
+              "acceptanceCriteria": [
+                "Config surface search uses same visual pattern as explorer filter bar",
+                "Type filter (env/config/constant/all) integrated into the filter bar as dropdown or pills",
+                "Zone filter dropdown available for filtering by zone",
+                "Search + filters contained within page width at all screen sizes",
+                "Result count displayed inline"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-viewer",
+                "config-surface",
+                "search"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "4b4d2a68-2751-4ca4-a66f-ff41cdc56690",
+          "title": "Framework Detection Registry & Dynamic Dashboard Routing",
+          "status": "pending",
+          "level": "feature",
+          "description": "Consolidate SourceVision's implicit framework detection (scattered across route-detection, go-route-detection, server-route-detection, inventory, and language detection) into an explicit FrameworkDetection module with a registry. Use the detected frameworks to dynamically show/hide dashboard tabs and panels. Support monorepo detection where different subdirectories use different languages/frameworks (e.g. Go backend + React frontend). This is the foundation for rolling out language and framework support in waves.",
+          "priority": "high",
+          "tags": [
+            "sourcevision",
+            "web-viewer",
+            "framework-detection",
+            "routing"
+          ],
+          "children": [
+            {
+              "id": "3ed96080-7100-42c1-a033-7ac362eacde7",
+              "title": "Create FrameworkDetection module with explicit registry",
+              "status": "in_progress",
+              "level": "task",
+              "description": "Create a new FrameworkDetection module in packages/sourcevision/src/analyzers/ that consolidates all existing implicit framework detection into one explicit registry. The module should: (1) Define a FrameworkRegistry with entries for each supported framework containing id, name, category (frontend/backend/fullstack), language, detection signals (file patterns, config files, import patterns, method call patterns), and confidence scoring. (2) Run detection against the inventory and import graph to produce a DetectedFrameworks result with framework id, confidence (0-1), detected signals, and project root path. (3) Cover all currently-detected frameworks: React Router v7/Remix, Next.js, Nuxt, Svelte Kit, Astro, Express, Hono, Koa, chi, gin, echo, fiber, gorilla/mux, net/http stdlib. (4) Output to .sourcevision/frameworks.json alongside existing analysis outputs. This runs as part of Phase 2 (Classify) since it depends on inventory + imports from Phase 1.",
+              "acceptanceCriteria": [
+                "FrameworkRegistry type defined with id, name, category, language, detectionSignals, confidence",
+                "Detection runs against inventory and import graph data",
+                "All 14+ currently-detected frameworks have registry entries",
+                "Output written to .sourcevision/frameworks.json",
+                "Confidence scoring: high (>0.8) when multiple signals match, medium (0.5-0.8) for single signal, low (<0.5) for heuristic only",
+                "Module integrates into Phase 2 analysis pipeline",
+                "DetectedFrameworks result includes project root path per framework for monorepo support"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "analyzer",
+                "framework-detection"
+              ],
+              "startedAt": "2026-03-29T05:20:57.343Z"
+            },
+            {
+              "id": "7be2ea3f-2022-4d7a-a141-aee956f6a18c",
+              "title": "Monorepo multi-root detection: infer backend/frontend project boundaries",
+              "status": "pending",
+              "level": "task",
+              "description": "Extend the FrameworkDetection module to detect monorepo project boundaries — subdirectories that contain their own package.json, go.mod, or equivalent package manifest. Each detected root gets its own framework detection pass. For example, a monorepo with packages/api (Go + chi) and packages/web (React Router) should produce two framework entries scoped to their respective roots. The detection should handle: (1) pnpm/npm/yarn workspaces (packages/*, apps/*), (2) Go multi-module repos (nested go.mod), (3) mixed-language repos where top-level is one language and subdirectories are another. Expose the detected roots and their frameworks in the frameworks.json output.",
+              "acceptanceCriteria": [
+                "Detects pnpm/npm/yarn workspace roots from package.json workspaces field",
+                "Detects nested go.mod files as separate Go project roots",
+                "Each detected root gets independent framework detection with scoped confidence",
+                "frameworks.json includes a roots array with path and detectedFrameworks per root",
+                "Mixed-language monorepos (Go + TS) produce correct per-root results",
+                "Single-root projects produce one root entry at '.'",
+                "Does not recurse into node_modules, vendor, or dist directories"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "framework-detection",
+                "monorepo"
+              ]
+            },
+            {
+              "id": "075c48be-b312-438f-bd5a-7d3513c2bed5",
+              "title": "Dynamic SOURCEVISION_TABS: show/hide tabs based on detected frameworks",
+              "status": "pending",
+              "level": "task",
+              "description": "Refactor SOURCEVISION_TABS in sourcevision-tabs.ts from a static hardcoded array to a dynamic system that shows/hides tabs based on detected frameworks from frameworks.json. Add a requiredFramework field (or requiredCategory: frontend/backend) to tab definitions. Tabs with no framework requirement always show. Tabs with a requirement only show when their framework/category is detected with sufficient confidence. Examples: Components tab only shows if a React/Preact/Vue framework detected. Endpoints tab only shows if a server framework detected (Express, chi, gin, etc). Routes tab only shows if a file-based routing framework detected (React Router, Next.js, Nuxt). The overview tab and explorer always show regardless.",
+              "acceptanceCriteria": [
+                "Tab definitions support optional requiredFramework and requiredCategory fields",
+                "Tabs with no requirement always render in sidebar",
+                "Components tab hidden when no frontend component framework detected",
+                "Endpoints tab hidden when no server/API framework detected",
+                "Routes tab hidden when no routing framework detected",
+                "Overview and Explorer tabs always visible",
+                "Tab visibility updates when frameworks.json is reloaded (e.g. after re-scan)",
+                "Minimum confidence threshold configurable (default 0.5)"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-viewer",
+                "routing",
+                "sourcevision-tabs"
+              ]
+            },
+            {
+              "id": "25dafd4d-c07f-4257-83f8-eb48013744f8",
+              "title": "Server endpoint and loader for frameworks.json",
+              "status": "pending",
+              "level": "task",
+              "description": "Add GET /api/sv/frameworks endpoint to routes-sourcevision.ts that reads and returns .sourcevision/frameworks.json. Add a frameworks loader to the viewer's data loading pipeline (loader.ts) so detected frameworks are available to all view components. Add the frameworks data to the LoadedData type and wire it into the app shell so SOURCEVISION_TABS can consume it for dynamic tab visibility. Include a validateFrameworks function for schema validation consistent with other loaders.",
+              "acceptanceCriteria": [
+                "GET /api/sv/frameworks returns parsed frameworks.json content",
+                "Returns empty object with defaults when frameworks.json doesn't exist",
+                "Viewer loader fetches frameworks data alongside other SV data",
+                "LoadedData type includes frameworks field",
+                "validateFrameworks validates the schema on load",
+                "frameworks data available in app shell for tab visibility computation"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-server",
+                "web-viewer",
+                "loader",
+                "api"
+              ]
+            },
+            {
+              "id": "254d3c24-7384-4411-b7ea-fca362d5f1dc",
+              "title": "MCP tool: sv_frameworks for exposing detected frameworks",
+              "status": "pending",
+              "level": "task",
+              "description": "Add an sv_frameworks MCP tool to sourcevision's MCP server that exposes the detected frameworks data. The tool should return the list of detected frameworks with their confidence scores, categories, detected signals, and project root paths. Support optional filters by category (frontend/backend/fullstack) and minimum confidence threshold. This enables Claude Code to understand what frameworks a project uses and tailor its assistance accordingly.",
+              "acceptanceCriteria": [
+                "sv_frameworks MCP tool registered in sourcevision MCP server",
+                "Returns detected frameworks with id, name, category, confidence, signals, rootPath",
+                "Optional category filter parameter (frontend/backend/fullstack)",
+                "Optional minConfidence filter parameter (default 0)",
+                "Returns empty array when no frameworks.json exists",
+                "Tool description explains what it detects and when to use it"
+              ],
+              "priority": "medium",
+              "tags": [
+                "sourcevision",
+                "mcp",
+                "framework-detection"
+              ]
+            },
+            {
+              "id": "2281057e-ae97-4932-aaca-776be35d91e9",
+              "title": "Framework-aware overview panel: show detected stack summary",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a Technology Stack section to the SV overview page that shows the detected frameworks as visual badges grouped by category (Frontend, Backend, Tooling). Each badge shows the framework name, icon/logo if available, and confidence level. For monorepos, group by project root with a sub-heading for each root. This gives users an instant understanding of what technologies the project uses. The section should appear between the existing summary stats and the zone overview.",
+              "acceptanceCriteria": [
+                "Overview page shows Technology Stack section with detected frameworks",
+                "Frameworks grouped by category: Frontend, Backend, Tooling",
+                "Each framework shown as a badge with name and confidence indicator",
+                "Monorepo roots shown as sub-groups with path label",
+                "Section hidden when no frameworks detected (pre-Phase 2)",
+                "Clicking a framework badge filters explorer to files in that framework's root"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-viewer",
+                "overview",
+                "framework-detection"
+              ]
+            },
+            {
+              "id": "1bb52dc1-8882-433b-8fcd-1d35ba5807a7",
+              "title": "Framework detection instructions in CONTEXT.md and llms.txt output",
+              "status": "pending",
+              "level": "task",
+              "description": "Update the CONTEXT.md and llms.txt generators to include detected framework information. The AI-readable output should clearly state: which frameworks were detected, at what confidence, in which project roots, and what analysis capabilities are available for each. This ensures that any AI consumer of SourceVision output (Claude, other LLMs) understands the technology stack and can reason about framework-specific patterns. Include a Supported Frameworks section that lists what SourceVision can fully analyze vs detect-only, so LLMs know the boundaries of the analysis.",
+              "acceptanceCriteria": [
+                "CONTEXT.md includes a Technology Stack section listing detected frameworks",
+                "Each framework entry includes name, category, confidence, and root path",
+                "llms.txt includes framework information in a parseable format",
+                "Supported Frameworks section lists Tier 1 (full analysis) vs Tier 2 (detection only) languages",
+                "Framework-specific analysis capabilities listed per detected framework",
+                "Output is informative enough for zero-context consumers to understand the project stack"
+              ],
+              "priority": "medium",
+              "tags": [
+                "sourcevision",
+                "context-md",
+                "llms-txt",
+                "framework-detection"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -13726,11 +14042,10 @@
     {
       "id": "4d62fa6c-ad0d-4e1e-91f8-c2f1ebe696e7",
       "title": "Web Dashboard",
-      "status": "completed",
+      "status": "pending",
       "level": "epic",
       "description": "Unified web dashboard and MCP HTTP server. Preact-based UI with SourceVision, Rex, and Hench views. Includes server architecture, real-time updates, performance optimization, and landing page.",
       "startedAt": "2026-03-24T05:27:03.754Z",
-      "completedAt": "2026-03-27T03:03:34.998Z",
       "children": [
         {
           "id": "d5ad6f16-156d-496f-99e5-0230dd48cd47",
@@ -19752,6 +20067,218 @@
               "completedAt": "2026-03-27T03:03:34.711Z"
             }
           ]
+        },
+        {
+          "id": "eecc3540-e70f-4df8-b17b-d6b8ffe8492f",
+          "title": "Responsive Table Columns & Search Overflow Fixes",
+          "status": "pending",
+          "level": "feature",
+          "description": "Fix search/filter bar overflow in explorer view and config surface. Implement responsive column-priority system for data tables — prioritize highest-value columns for human consumers, hide lower-priority columns at narrow widths, and provide a column switcher to swap visible columns. Ensure tables condense to screen width instead of bleeding.",
+          "priority": "high",
+          "tags": [
+            "web-viewer",
+            "responsive",
+            "explorer",
+            "config-surface"
+          ],
+          "children": [
+            {
+              "id": "6aecfae6-93b9-4f33-8dae-cadecdf0f047",
+              "title": "Fix explorer file search overflow — constrain to page width",
+              "status": "pending",
+              "level": "task",
+              "description": "The explorer view filter bar bleeds across the screen at narrow widths and results cannot be scrolled to view content. The filter bar (search input + dropdowns for Role/Language/Zone/Archetype + toggle + count) needs to be constrained within the page container. Inputs should shrink with min-width:0 and the bar should wrap gracefully. The file table below must be scrollable within its container — not overflow the viewport.",
+              "acceptanceCriteria": [
+                "Explorer filter bar stays within page container at all screen widths down to 768px",
+                "Filter bar wraps to multiple rows at narrow widths without horizontal overflow",
+                "File table is horizontally scrollable within its container when columns exceed width",
+                "No horizontal page-level scrollbar appears from explorer content",
+                "Search results are fully visible and scrollable on narrow screens"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-viewer",
+                "explorer",
+                "responsive",
+                "css"
+              ]
+            },
+            {
+              "id": "b2b0820b-00d7-45d8-abe5-f98b8a34cf6d",
+              "title": "Responsive column-priority system for data tables",
+              "status": "pending",
+              "level": "task",
+              "description": "Implement a reusable column-priority system for data tables across the dashboard (explorer files table, config surface table, etc.). Each table defines a priority ranking for its columns (highest value to human consumers first). At narrower screen widths, lower-priority columns are hidden to maintain readability. A column switcher control allows users to swap which columns are visible — but the total number of visible columns stays constant based on available width. This prevents tables from getting crammed while ensuring users can still access all data.",
+              "acceptanceCriteria": [
+                "Each data table defines column priority order (e.g. Name > File > Zone > Type > Line > Value)",
+                "At narrow widths, lowest-priority columns are hidden first",
+                "Total visible column count is determined by available screen width",
+                "Column switcher UI allows swapping a hidden column for a visible one",
+                "Swapping maintains the same total column count — no layout shift",
+                "Column switcher is accessible (keyboard navigable, labeled)",
+                "Applied to both explorer files table and config surface table",
+                "Desktop width shows all columns (no hiding needed)"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-viewer",
+                "component",
+                "responsive",
+                "tables"
+              ]
+            },
+            {
+              "id": "b112507c-33ff-49a0-b7bc-a4bdaadb0294",
+              "title": "Apply column-priority and search fixes to config surface table",
+              "status": "pending",
+              "level": "task",
+              "description": "Wire the new column-priority system into the config surface table. Priority order: Name > Type > File > Zone > Value > Line. Ensure the search/filter bar is constrained to page width (same fix pattern as explorer). Verify the table renders cleanly at mobile, tablet, and desktop widths.",
+              "acceptanceCriteria": [
+                "Config surface table uses column-priority system with order: Name > Type > File > Zone > Value > Line",
+                "Column switcher available on config surface table at narrow widths",
+                "Search/filter bar constrained within page width at all breakpoints",
+                "Table renders cleanly at 768px, 1024px, and 1280px+ widths"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-viewer",
+                "config-surface",
+                "responsive"
+              ],
+              "blockedBy": [
+                "fec63543-e5b9-4a82-951d-0cc4c8ab2c31",
+                "d62f6938-258e-49d7-8a9a-8a10df5be18f"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "f7329088-aee6-45d1-bbe3-ff0187d563da",
+          "title": "Explorer Subroute Refactor: Files, Functions & Properties Tabs",
+          "status": "pending",
+          "level": "feature",
+          "description": "Refactor the Explorer page into three subroutes/tabs: \"Files\" (current explorer content), \"Functions\" (moved from zones page top-functions tables + full function catalog), and \"Properties\" (moved from the config-surface route). The explorer becomes the unified data-browsing hub. The config-surface top-level nav entry is retired. The zones page loses its functions section. All views with charts/tables get a configurable row-count selector at the top.",
+          "priority": "high",
+          "tags": [
+            "web-viewer",
+            "explorer",
+            "routing",
+            "refactor"
+          ],
+          "children": [
+            {
+              "id": "a61d47a0-5fe3-484e-b8cc-9d1a2eab7dcc",
+              "title": "Add sub-tab routing system to Explorer view",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a tab bar to the Explorer view with three tabs: Files, Functions, Properties. The active tab should be reflected in the URL (e.g. /explorer/files, /explorer/functions, /explorer/properties) using the existing subId route mechanism from route-state.ts. Default to \"files\" when navigating to /explorer with no sub-path. Persist the last-selected tab to localStorage. The tab bar should sit below the view header and above the filter bar.",
+              "acceptanceCriteria": [
+                "Explorer view renders a tab bar with Files, Functions, Properties tabs",
+                "URL updates to /explorer/files, /explorer/functions, /explorer/properties on tab switch",
+                "Navigating to /explorer defaults to /explorer/files",
+                "Direct navigation to /explorer/functions loads the functions tab",
+                "Last-selected tab persisted to localStorage",
+                "Tab bar renders below view header and above content area"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-viewer",
+                "explorer",
+                "routing"
+              ]
+            },
+            {
+              "id": "24acb263-05ed-4725-a753-c5d92acd6171",
+              "title": "Move functions catalog from zones to Explorer /functions tab",
+              "status": "pending",
+              "level": "task",
+              "description": "Extract the functions content currently in the zones view (Top Functions section with Most Called and Most Complex tables, plus the per-zone FuncInfo data) into a dedicated Functions tab component under Explorer. The Functions tab should present a full searchable/filterable table of all functions across the project with columns: Function Name, File, Zone, Incoming Calls, Outgoing Calls, Internal/Cross-Zone classification. Support filtering by zone and sorting by any column. Remove the Top Functions collapsible section from the zones view after migration.",
+              "acceptanceCriteria": [
+                "Functions tab displays a table of all functions aggregated from callgraph/zone data",
+                "Table columns: Function Name, File, Zone, Incoming Calls, Outgoing Calls",
+                "Table is sortable by any column",
+                "Filter bar with search (by function name) and zone dropdown",
+                "Top Functions section removed from zones view",
+                "Zones view retains function counts in file rows but no longer has the expandable tables",
+                "navigateTo('explorer', { sub: 'functions' }) works from zones view links"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-viewer",
+                "explorer",
+                "functions",
+                "zones"
+              ]
+            },
+            {
+              "id": "39710c9a-06fc-4d04-9247-9e4dd2df1539",
+              "title": "Move config surface content to Explorer /properties tab",
+              "status": "pending",
+              "level": "task",
+              "description": "Move the config surface view content into the Explorer Properties tab. The Properties tab renders the same table (env vars, config refs, constants) with the redesigned summary panels and updated badges (from the config surface redesign tasks). Remove \"Configuration\" from SOURCEVISION_TABS in sourcevision-tabs.ts so it no longer appears as a top-level sidebar entry. Redirect any existing deep-links or navigateTo calls targeting \"config-surface\" to \"explorer\" with sub \"properties\".",
+              "acceptanceCriteria": [
+                "Properties tab renders the config surface table with all env/config/constant entries",
+                "Configuration entry removed from SOURCEVISION_TABS sidebar",
+                "config-surface ViewId redirects to explorer/properties",
+                "All navigateTo('config-surface') calls updated to navigateTo('explorer', { sub: 'properties' })",
+                "Zone attribution section available in Properties tab",
+                "Config surface CSS and components reused without duplication"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-viewer",
+                "explorer",
+                "config-surface",
+                "routing"
+              ]
+            },
+            {
+              "id": "ad04b0bd-f1a0-4a78-900b-4c66f6b88c40",
+              "title": "Add configurable row-count selector to all chart/table views",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a row-count selector control (e.g. dropdown or segmented buttons: 10, 25, 50, 100, All) at the top of every view that displays charts or tables with variable row counts. This applies to: Explorer files table, Functions table, Properties table, zone file lists, bar charts in overview, and any other paginated data display. The selected count should persist per-view to localStorage. Default to 25 rows. The selector should be compact and sit inline with other controls (next to search/filters).",
+              "acceptanceCriteria": [
+                "Row-count selector rendered at top of Explorer files table, Functions table, Properties table",
+                "Options: 10, 25, 50, 100, All",
+                "Default is 25 rows",
+                "Selection persists per-view in localStorage",
+                "Selector sits inline with existing filter controls",
+                "Changing row count immediately updates the visible rows without page reload",
+                "Applied to zone file lists (replacing hardcoded FILE_ROWS_MAX = 15)",
+                "Applied to bar charts in overview (top zones, hotspots)"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-viewer",
+                "component",
+                "pagination",
+                "ux"
+              ]
+            },
+            {
+              "id": "9f41de55-c392-49ab-bf1e-5031c50ba468",
+              "title": "Update sidebar nav and cross-view navigation for explorer subroutes",
+              "status": "pending",
+              "level": "task",
+              "description": "Update the sidebar navigation to reflect the explorer restructuring. Explorer should show as expandable in the sidebar with sub-entries for Files, Functions, Properties (similar to how sections expand). Update all cross-view navigation calls throughout the dashboard: overview hotspot links should go to explorer/files, zone function links should go to explorer/functions, any config-surface references should go to explorer/properties. Update the search overlay to include functions in search results.",
+              "acceptanceCriteria": [
+                "Sidebar shows Explorer as expandable with Files, Functions, Properties sub-entries",
+                "Clicking a sub-entry navigates directly to that explorer tab",
+                "Overview hotspot file links navigate to explorer/files with file selected",
+                "Zone function references navigate to explorer/functions",
+                "Config surface references navigate to explorer/properties",
+                "Search overlay includes function names in search results",
+                "Breadcrumb reflects current explorer sub-tab"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-viewer",
+                "sidebar",
+                "navigation"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -23698,6 +24225,7 @@
         "dashboard"
       ],
       "startedAt": "2026-03-28T19:19:57.893Z",
+      "completedAt": "2026-03-28T21:18:14.995Z",
       "children": [
         {
           "id": "13c7d2d6-6a34-450a-b3a3-480d14bb3fb4",
@@ -23981,8 +24509,7 @@
             }
           ]
         }
-      ],
-      "completedAt": "2026-03-28T21:18:14.995Z"
+      ]
     }
   ]
 }

@@ -87,20 +87,35 @@ function sleep(ms: number): Promise<void> {
 const CLI_FILE_TOOLS = ["Read", "Edit", "Write", "Glob", "Grep"];
 
 /**
+ * Rex MCP tools that hench needs for task lifecycle management.
+ * These allow the agent to update task status, log events, and query the PRD
+ * without hitting interactive permission prompts during autonomous execution.
+ */
+const REX_MCP_TOOLS = [
+  "mcp__rex__update_task_status",
+  "mcp__rex__append_log",
+  "mcp__rex__get_next_task",
+  "mcp__rex__get_item",
+  "mcp__rex__get_prd_status",
+];
+
+/**
  * Build the `--allowed-tools` list for the Claude CLI.
  *
  * Maps the guard's `allowedCommands` (e.g. `["npm", "git"]`) to Claude CLI's
  * tool pattern format (e.g. `["Bash(npm:*)", "Bash(git:*)"]`), and includes
- * file tools that are inherently scoped to `cwd` by Claude CLI.
+ * file tools that are inherently scoped to `cwd` by Claude CLI and Rex MCP
+ * tools for task lifecycle management.
  *
  * This replaces `--dangerously-skip-permissions` so that:
  * - Listed tools are auto-approved (no interactive prompts → autonomous execution)
  * - Claude CLI's directory scoping stays active (file access restricted to cwd)
  * - Bash is restricted to the same commands the API provider's guard allows
+ * - Rex MCP tools allow the agent to update PRD task status autonomously
  */
 export function buildAllowedTools(allowedCommands: string[]): string[] {
   const bashTools = allowedCommands.map((cmd) => `Bash(${cmd}:*)`);
-  return [...bashTools, ...CLI_FILE_TOOLS];
+  return [...bashTools, ...CLI_FILE_TOOLS, ...REX_MCP_TOOLS];
 }
 
 /** @internal Exported for testing. */

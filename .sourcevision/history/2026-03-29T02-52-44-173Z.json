@@ -1,0 +1,257 @@
+{
+  "schemaVersion": "1.0.0",
+  "snapshots": [
+    {
+      "zoneId": "cli-bootstrap-shims",
+      "zoneName": "CLI Bootstrap Shims",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 3,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "completion-reader-analyzer",
+      "zoneName": "Completion Reader Analyzer",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "go-middleware-fixtures",
+      "zoneName": "Go HTTP Middleware Fixtures",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "go-project-test-fixtures",
+      "zoneName": "Go Project Test Fixtures",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "go-response-package-fixtures",
+      "zoneName": "Go JSON Response Package Fixtures",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "go-user-service-fixtures",
+      "zoneName": "Go User Service Fixtures",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "hench-agent-engine",
+      "zoneName": "Hench Agent Engine",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 158,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "llm-foundation-client",
+      "zoneName": "LLM Foundation Client",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 41,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "mixed-project-go-router-fixtures",
+      "zoneName": "Mixed-Project Go Router Fixtures",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "mixed-project-ts-frontend-fixtures",
+      "zoneName": "Mixed-Project TypeScript Frontend Fixtures",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 3,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "monorepo-e2e-tests",
+      "zoneName": "Monorepo E2E Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 24,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "monorepo-integration-tests",
+      "zoneName": "Monorepo Integration Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 5,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "monorepo-maintenance-scripts",
+      "zoneName": "Monorepo Maintenance Scripts",
+      "cohesion": 0,
+      "coupling": 0,
+      "riskScore": 0.5,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "monorepo-orchestration-shell",
+      "zoneName": "Monorepo Orchestration Shell",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 22,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "prd-epic-resolver-cli",
+      "zoneName": "PRD Epic Resolver CLI",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "prd-task-management",
+      "zoneName": "PRD Task Management",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 237,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "rex-e2e-tests",
+      "zoneName": "Rex CLI End-to-End Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 11,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "sourcevision-analysis-engine",
+      "zoneName": "Sourcevision Analysis Engine",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 159,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "viewer-crash-recovery",
+      "zoneName": "Viewer Crash Recovery",
+      "cohesion": 0.6,
+      "coupling": 0.4,
+      "riskScore": 0.4,
+      "fileCount": 8,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "web-build-viewer-extensions",
+      "zoneName": "Web Build And Viewer Extensions",
+      "cohesion": 0.32,
+      "coupling": 0.68,
+      "riskScore": 0.6799999999999999,
+      "fileCount": 11,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "web-dashboard-ui-hub",
+      "zoneName": "Web Dashboard UI Hub",
+      "cohesion": 0.97,
+      "coupling": 0.03,
+      "riskScore": 0.030000000000000013,
+      "fileCount": 313,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "web-landing",
+      "zoneName": "Web Landing Page",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "web-package-integration-tests",
+      "zoneName": "Web Package Integration Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "web-server",
+      "zoneName": "Web Server Composition Root",
+      "cohesion": 0.87,
+      "coupling": 0.13,
+      "riskScore": 0.13,
+      "fileCount": 48,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    },
+    {
+      "zoneId": "web-server-isolated-tests",
+      "zoneName": "Web Server Isolated Tests",
+      "cohesion": 1,
+      "coupling": 0,
+      "riskScore": 0,
+      "fileCount": 2,
+      "timestamp": "2026-03-29T02:52:44.173Z",
+      "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+    }
+  ],
+  "analyzedAt": "2026-03-29T02:52:44.173Z",
+  "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11"
+}
