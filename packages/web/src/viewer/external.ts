@@ -23,6 +23,7 @@ export type {
   ComponentKind,
   CallGraph,
   CallEdge,
+  FunctionNode,
   Classifications,
   ClassificationsSummary,
   FileClassification,

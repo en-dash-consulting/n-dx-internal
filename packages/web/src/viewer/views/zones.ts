@@ -1550,74 +1550,6 @@ function ZoneDiagram({
   );
 }
 
-// ── Top functions tables ──────────────────────────────────────────────
-
-interface TopFunctionsTablesProps {
-  summary: CallGraph["summary"];
-}
-
-function TopFunctionsTables({ summary }: TopFunctionsTablesProps) {
-  const hasMostCalled = summary.mostCalled.length > 0;
-  const hasMostCalling = summary.mostCalling.length > 0;
-  if (!hasMostCalled && !hasMostCalling) return null;
-
-  return h(CollapsibleSection, {
-    title: "Top Functions",
-    count: undefined,
-    defaultOpen: false,
-  },
-    h("div", { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 8px;" },
-      hasMostCalled
-        ? h("div", null,
-            h("h3", { style: "font-size: 14px; margin-bottom: 8px; color: var(--text);" }, "Most Called Functions"),
-            h("table", { class: "data-table", style: "width: 100%; font-size: 12px;" },
-              h("thead", null,
-                h("tr", null,
-                  h("th", { style: "text-align: left; padding: 4px 8px;" }, "Function"),
-                  h("th", { style: "text-align: left; padding: 4px 8px;" }, "File"),
-                  h("th", { style: "text-align: right; padding: 4px 8px;" }, "Callers"),
-                ),
-              ),
-              h("tbody", null,
-                summary.mostCalled.slice(0, 10).map((item, i) =>
-                  h("tr", { key: i, style: "border-top: 1px solid var(--border);" },
-                    h("td", { style: "padding: 4px 8px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, item.qualifiedName),
-                    h("td", { style: "padding: 4px 8px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, basename(item.file)),
-                    h("td", { style: "padding: 4px 8px; text-align: right; font-weight: 600;" }, String(item.callerCount)),
-                  ),
-                ),
-              ),
-            ),
-          )
-        : null,
-
-      hasMostCalling
-        ? h("div", null,
-            h("h3", { style: "font-size: 14px; margin-bottom: 8px; color: var(--text);" }, "Most Complex Functions"),
-            h("table", { class: "data-table", style: "width: 100%; font-size: 12px;" },
-              h("thead", null,
-                h("tr", null,
-                  h("th", { style: "text-align: left; padding: 4px 8px;" }, "Function"),
-                  h("th", { style: "text-align: left; padding: 4px 8px;" }, "File"),
-                  h("th", { style: "text-align: right; padding: 4px 8px;" }, "Callees"),
-                ),
-              ),
-              h("tbody", null,
-                summary.mostCalling.slice(0, 10).map((item, i) =>
-                  h("tr", { key: i, style: "border-top: 1px solid var(--border);" },
-                    h("td", { style: "padding: 4px 8px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, item.qualifiedName),
-                    h("td", { style: "padding: 4px 8px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" }, basename(item.file)),
-                    h("td", { style: "padding: 4px 8px; text-align: right; font-weight: 600;" }, String(item.calleeCount)),
-                  ),
-                ),
-              ),
-            ),
-          )
-        : null,
-    ),
-  );
-}
-
 // ── Main component ───────────────────────────────────────────────────
 
 export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
@@ -1923,9 +1855,6 @@ export function ZonesView({ data, onSelect, navigateTo }: ZonesViewProps) {
           )
         )
       : null,
-
-    // Top functions (only when call graph data available)
-    callGraph ? h(TopFunctionsTables, { summary: callGraph.summary }) : null,
 
     // Zone slideout panel
     h(ZoneSlideout, {

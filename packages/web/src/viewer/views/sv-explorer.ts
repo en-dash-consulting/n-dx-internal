@@ -15,6 +15,7 @@ import { GraphRenderer, type GraphNode, type GraphLink, type ZoneInfo, type Impo
 import { basename } from "../utils.js";
 import { BrandedHeader } from "../components/logos.js";
 import { ConfigSurfaceView } from "./config-surface.js";
+import { FunctionsCatalog } from "./functions-catalog.js";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -915,9 +916,10 @@ export function ExplorerView({
         h("div", null,
           renderFileTable(visible, remaining, showCount, setShowCount, zoneList, hasClassifications, hasLastModified, fileToZone, fileToClassification, sortIndicator, toggleSort, handleRowClick, selectedFile),
         ),
-      ) : activeTab === "functions" ? h("div", { class: "explorer-tab-placeholder" },
-        h("p", { class: "section-sub" }, "Functions catalog — coming soon."),
-      ) : activeTab === "properties" ? h(ConfigSurfaceView, {
+      ) : activeTab === "functions" ? h(FunctionsCatalog, {
+        data,
+        navigateTo,
+      }) : activeTab === "properties" ? h(ConfigSurfaceView, {
         data,
         navigateTo,
         onSelect: onSelect,
