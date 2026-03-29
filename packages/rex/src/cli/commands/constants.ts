@@ -34,6 +34,7 @@ export function usage(): void {
           { name: "reorganize [dir]", description: "Detect and fix structural issues in the PRD" },
           { name: "health [dir]", description: "Show structure health score (depth, balance, completeness)" },
           { name: "sync [dir]", description: "Sync local PRD with remote adapter" },
+          { name: "parallel plan [dir]", description: "Show parallel execution plan (blast radius + conflicts)" },
           { name: "adapter <sub> [name]", description: "Manage store adapters (list|add|remove|show)" },
           { name: "mcp [dir]", description: "Start MCP server" },
         ],

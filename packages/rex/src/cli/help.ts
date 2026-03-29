@@ -536,6 +536,26 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
     ],
     related: ["reorganize", "report", "validate"],
   },
+  parallel: {
+    tool: "rex",
+    command: "parallel",
+    summary: "parallel execution planning",
+    usage: "rex parallel plan [options] [dir]",
+    description:
+      "Analyzes actionable PRD tasks, computes blast radii using sourcevision\n" +
+      "zone and import data, detects conflicts between tasks, and outputs an\n" +
+      "execution plan showing which tasks can safely run in parallel worktrees.\n" +
+      "\n" +
+      "This is read-only analysis — no worktrees are created or modified.",
+    options: [
+      { flag: "--format=json", description: "Machine-readable JSON output (ExecutionPlan)" },
+    ],
+    examples: [
+      { command: "rex parallel plan", description: "Show execution plan for current directory" },
+      { command: "rex parallel plan --format=json .", description: "JSON output for scripting" },
+    ],
+    related: ["next", "status"],
+  },
   mcp: {
     tool: "rex",
     command: "mcp",
@@ -579,6 +599,7 @@ const RELATED_COMMANDS: Record<string, string[]> = {
   adapter: ["sync"],
   reorganize: ["health", "prune", "reshape"],
   health: ["reorganize", "report", "validate"],
+  parallel: ["next", "status"],
   mcp: [],
 };
 
