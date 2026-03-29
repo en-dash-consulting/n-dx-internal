@@ -26,9 +26,9 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_ICONS: Record<string, string> = {
-  env: "\u{1F511}",     // 🔑
-  config: "\u{1F4C4}",  // 📄
-  constant: "\u{1F4CC}", // 📌
+  env: "\u{2699}\u{FE0F}",  // ⚙️
+  config: "\u{1F4C4}",       // 📄
+  constant: "\u{1F310}",     // 🌐
 };
 
 function buildFileToZoneMap(zones: Zone[]): Map<string, { id: string; name: string }> {
