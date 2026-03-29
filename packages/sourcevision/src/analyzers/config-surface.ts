@@ -4,7 +4,7 @@
  * Scans source files for:
  * - Environment variable reads (process.env.* for JS/TS, os.Getenv/os.LookupEnv for Go)
  * - Config file references (.env, .env.*, config.json, config.yaml, *.toml)
- * - Global constant definitions (top-level const/let in TS/JS, module-level const in Go)
+ * - Exported constant definitions (export const in TS/JS, capitalized const in Go)
  *
  * Produces config-surface.json alongside other phase outputs.
  */
@@ -154,8 +154,10 @@ function scanFile(absDir: string, file: FileEntry): ScanResult {
 }
 
 /**
- * Scan for top-level const declarations in TypeScript/JavaScript.
- * Only captures constants at module level (not inside functions/classes).
+ * Scan for exported top-level const declarations in TypeScript/JavaScript.
+ * Only captures constants that are both module-level (not inside functions/classes)
+ * and explicitly exported. Non-exported file-local constants are excluded — they
+ * are not part of the project's configuration surface.
  */
 function scanTsConstants(content: string, lines: string[], filePath: string, result: ScanResult): void {
   // Track brace depth to identify top-level scope
@@ -180,9 +182,9 @@ function scanTsConstants(content: string, lines: string[], filePath: string, res
     // Only capture module-level (top-level) constants
     if (braceDepth > 0) continue;
 
-    // Match: export const NAME = VALUE or const NAME = VALUE
+    // Match: export const NAME = VALUE (requires export keyword)
     const constMatch = trimmed.match(
-      /^(?:export\s+)?const\s+([A-Z_][A-Z0-9_]*)\s*(?::\s*[^=]+)?\s*=\s*(.+)/,
+      /^export\s+const\s+([A-Z_][A-Z0-9_]*)\s*(?::\s*[^=]+)?\s*=\s*(.+)/,
     );
     if (constMatch) {
       const [, name, rawValue] = constMatch;
@@ -200,7 +202,10 @@ function scanTsConstants(content: string, lines: string[], filePath: string, res
 }
 
 /**
- * Scan for module-level const declarations in Go.
+ * Scan for exported module-level const declarations in Go.
+ * In Go, identifiers starting with an uppercase letter are exported (visible
+ * outside the package). Lowercase identifiers are package-private and excluded
+ * from the config surface.
  */
 function scanGoConstants(content: string, lines: string[], filePath: string, result: ScanResult): void {
   let inConstBlock = false;
@@ -225,6 +230,8 @@ function scanGoConstants(content: string, lines: string[], filePath: string, res
       const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)\s+(?:\w+\s+)?=\s*(.+)/);
       if (match) {
         const [, name, rawValue] = match;
+        // Go visibility: only capitalized identifiers are exported
+        if (!/^[A-Z]/.test(name)) continue;
         const value = extractStaticValue(rawValue);
         result.constants.push({
           name,
@@ -244,6 +251,8 @@ function scanGoConstants(content: string, lines: string[], filePath: string, res
     );
     if (singleMatch) {
       const [, name, rawValue] = singleMatch;
+      // Go visibility: only capitalized identifiers are exported
+      if (!/^[A-Z]/.test(name)) continue;
       const value = extractStaticValue(rawValue);
       result.constants.push({
         name,

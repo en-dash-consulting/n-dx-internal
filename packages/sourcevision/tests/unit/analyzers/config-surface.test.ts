@@ -141,7 +141,7 @@ describe("analyzeConfigSurface", () => {
     expect(result.summary.totalConfigRefs).toBeGreaterThanOrEqual(2);
   });
 
-  it("detects top-level constants in TypeScript", async () => {
+  it("detects exported top-level constants in TypeScript", async () => {
     tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
     await writeFile(
       join(tmpDir, "constants.ts"),
@@ -152,10 +152,11 @@ describe("analyzeConfigSurface", () => {
     const result = analyzeConfigSurface(tmpDir, inventory);
 
     const constants = result.entries.filter((e) => e.type === "constant");
-    expect(constants.length).toBeGreaterThanOrEqual(3);
-    expect(constants.map((c) => c.name)).toContain("MAX_RETRIES");
-    expect(constants.map((c) => c.name)).toContain("API_BASE_URL");
-    expect(constants.map((c) => c.name)).toContain("TIMEOUT_MS");
+    expect(constants).toHaveLength(2);
+    expect(constants.map((c) => c.name).sort()).toEqual(["API_BASE_URL", "MAX_RETRIES"]);
+
+    // Non-exported TIMEOUT_MS should be excluded
+    expect(constants.map((c) => c.name)).not.toContain("TIMEOUT_MS");
 
     const maxRetries = constants.find((c) => c.name === "MAX_RETRIES");
     expect(maxRetries?.value).toBe("3");
@@ -164,7 +165,7 @@ describe("analyzeConfigSurface", () => {
     expect(apiUrl?.value).toBe("https://api.example.com");
   });
 
-  it("detects Go constants", async () => {
+  it("detects exported Go constants (capitalized names only)", async () => {
     tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
     await writeFile(
       join(tmpDir, "constants.go"),
@@ -183,6 +184,41 @@ describe("analyzeConfigSurface", () => {
 
     const defaultPort = constants.find((c) => c.name === "DefaultPort");
     expect(defaultPort?.value).toBe("8080");
+  });
+
+  it("excludes non-exported TS constants (no export keyword)", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await writeFile(
+      join(tmpDir, "internal.ts"),
+      `const PRIVATE_TIMEOUT = 5000;\nconst INTERNAL_URL = "http://localhost";\nexport const PUBLIC_FLAG = true;\n`,
+    );
+
+    const inventory = makeInventory([{ path: "internal.ts" }]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    const constants = result.entries.filter((e) => e.type === "constant");
+    expect(constants).toHaveLength(1);
+    expect(constants[0].name).toBe("PUBLIC_FLAG");
+    expect(constants[0].value).toBe("true");
+  });
+
+  it("excludes non-exported Go constants (lowercase names)", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await writeFile(
+      join(tmpDir, "internal.go"),
+      `package main\n\nconst maxRetries int = 3\nconst PublicTimeout int = 5000\n\nconst (\n  defaultPort string = "8080"\n  DefaultHost string = "localhost"\n)\n`,
+    );
+
+    const inventory = makeInventory([{ path: "internal.go", language: "Go" }]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    const constants = result.entries.filter((e) => e.type === "constant");
+    expect(constants).toHaveLength(2);
+    expect(constants.map((c) => c.name).sort()).toEqual(["DefaultHost", "PublicTimeout"]);
+
+    // Lowercase Go identifiers should be excluded
+    expect(constants.map((c) => c.name)).not.toContain("maxRetries");
+    expect(constants.map((c) => c.name)).not.toContain("defaultPort");
   });
 
   it("deduplicates env vars by name, keeping first occurrence", async () => {
