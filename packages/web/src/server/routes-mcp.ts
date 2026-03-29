@@ -17,6 +17,8 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { existsSync, statSync } from "node:fs";
+import { isAbsolute, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -36,6 +38,8 @@ interface McpSession {
   server: McpServer;
   /** Timestamp of last activity (Date.now()), used for TTL-based cleanup. */
   lastActivityAt: number;
+  /** Root directory override for this session (from X-Ndx-Root-Dir header at init). Absent when using server default. */
+  rootDir?: string;
 }
 
 /** Session maps keyed by session ID. */
@@ -79,27 +83,65 @@ function ensureSweepTimer(): void {
   if (sweepTimer.unref) sweepTimer.unref();
 }
 
-type McpServerFactory = (ctx: ServerContext) => McpServer | Promise<McpServer>;
+type McpServerFactory = (rootDir: string) => McpServer | Promise<McpServer>;
 
 /** Factory that creates a Rex MCP server instance. */
-const createRexServer: McpServerFactory = async (ctx) =>
-  createRexMcpServer(ctx.projectDir);
+const createRexServer: McpServerFactory = (rootDir) =>
+  createRexMcpServer(rootDir);
 
 /** Factory that creates a Sourcevision MCP server instance. */
-const createSvServer: McpServerFactory = (ctx) =>
-  createSourcevisionMcpServer(ctx.projectDir);
+const createSvServer: McpServerFactory = (rootDir) =>
+  createSourcevisionMcpServer(rootDir);
+
+/**
+ * Parse and validate the X-Ndx-Root-Dir header value.
+ *
+ * @returns The resolved absolute path, or `null` if the header is absent.
+ * @throws {Error} With a user-facing message when the header is present but invalid
+ *         (relative path, non-existent, or not a directory).
+ */
+function parseRootDirHeader(req: IncomingMessage): string | null {
+  const raw = req.headers["x-ndx-root-dir"];
+  if (!raw || typeof raw !== "string") return null;
+
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  if (!isAbsolute(trimmed)) {
+    throw new Error("X-Ndx-Root-Dir must be an absolute path");
+  }
+
+  const resolved = resolve(trimmed); // normalize away any /../ segments
+
+  if (!existsSync(resolved)) {
+    throw new Error(`X-Ndx-Root-Dir path does not exist: ${resolved}`);
+  }
+
+  const stat = statSync(resolved);
+  if (!stat.isDirectory()) {
+    throw new Error(`X-Ndx-Root-Dir is not a directory: ${resolved}`);
+  }
+
+  return resolved;
+}
 
 /**
  * Create a new MCP session: transport + server, connected but not yet handling requests.
  * The session is registered in the session map once the transport assigns a session ID
  * (which happens during the first handleRequest call for the initialize request).
+ *
+ * @param rootDir - The project directory for this session's MCP server.
+ * @param sessions - Session map to register cleanup hooks on.
+ * @param factory - Factory function that creates the MCP server for the given rootDir.
+ * @param sessionRootDir - If set, stored on the session to indicate an explicit override.
  */
 async function createSession(
-  ctx: ServerContext,
+  rootDir: string,
   sessions: Map<string, McpSession>,
   factory: McpServerFactory,
+  sessionRootDir?: string,
 ): Promise<McpSession> {
-  const server = await factory(ctx);
+  const server = await factory(rootDir);
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
   });
@@ -109,7 +151,7 @@ async function createSession(
   };
   await server.connect(transport);
   ensureSweepTimer();
-  return { transport, server, lastActivityAt: Date.now() };
+  return { transport, server, lastActivityAt: Date.now(), rootDir: sessionRootDir };
 }
 
 /**
@@ -145,13 +187,26 @@ async function handleMcpRequest(
   if (method === "POST") {
     const existing = findSession(req, sessions);
     if (existing) {
+      // Subsequent requests on an existing session — header is ignored after init.
       existing.lastActivityAt = Date.now();
       await existing.transport.handleRequest(req, res);
       return true;
     }
     // No session header — this should be an initialization request.
+    // Parse optional X-Ndx-Root-Dir header to scope this session to a specific directory.
+    let overrideDir: string | null;
+    try {
+      overrideDir = parseRootDirHeader(req);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Invalid X-Ndx-Root-Dir header";
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: message }));
+      return true;
+    }
+
+    const effectiveDir = overrideDir ?? ctx.projectDir;
     // Create transport + server, handle the request, then register the session.
-    const session = await createSession(ctx, sessions, factory);
+    const session = await createSession(effectiveDir, sessions, factory, overrideDir ?? undefined);
     await session.transport.handleRequest(req, res);
     // After handleRequest, the transport has generated a session ID
     const sid = session.transport.sessionId;
