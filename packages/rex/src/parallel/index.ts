@@ -40,3 +40,16 @@ export {
   computeExecutionPlan,
   formatExecutionPlan,
 } from "./execution-plan.js";
+
+// ── Reconciliation ──────────────────────────────────────────────────────
+
+export type {
+  StatusChange,
+  ReconciledChange,
+  ReconcileSummary,
+} from "./reconcile.js";
+export {
+  detectChanges,
+  applyChanges,
+  reconcile,
+} from "./reconcile.js";

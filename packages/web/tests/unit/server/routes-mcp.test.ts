@@ -8,6 +8,16 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import type { ServerContext } from "../../../src/server/types.js";
 import { handleMcpRoute, closeAllMcpSessions } from "../../../src/server/routes-mcp.js";
 
+/** Create a PRD and manifest in the given directory so MCP servers can initialize. */
+async function seedProjectDir(dir: string): Promise<void> {
+  const svDir = join(dir, ".sourcevision");
+  const rexDir = join(dir, ".rex");
+  await mkdir(svDir, { recursive: true });
+  await mkdir(rexDir, { recursive: true });
+  await writeFile(join(rexDir, "prd.json"), JSON.stringify(makePRD(), null, 2));
+  await writeFile(join(svDir, "manifest.json"), JSON.stringify(makeManifest(), null, 2));
+}
+
 /** Minimal PRD document fixture for rex. */
 function makePRD() {
   return {
@@ -51,7 +61,7 @@ function startTestServer(ctx: ServerContext): Promise<{ server: Server; port: nu
       // Mirror the CORS setup from start.ts
       res.setHeader("Access-Control-Allow-Origin", "*");
       res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Mcp-Session-Id");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Mcp-Session-Id, X-Ndx-Root-Dir");
       res.setHeader("Access-Control-Expose-Headers", "Mcp-Session-Id");
 
       if ((req.method || "GET") === "OPTIONS") {
@@ -85,10 +95,7 @@ describe("MCP routes", () => {
     tmpDir = await mkdtemp(join(tmpdir(), "mcp-routes-"));
     svDir = join(tmpDir, ".sourcevision");
     rexDir = join(tmpDir, ".rex");
-    await mkdir(svDir, { recursive: true });
-    await mkdir(rexDir, { recursive: true });
-    await writeFile(join(rexDir, "prd.json"), JSON.stringify(makePRD(), null, 2));
-    await writeFile(join(svDir, "manifest.json"), JSON.stringify(makeManifest(), null, 2));
+    await seedProjectDir(tmpDir);
 
     ctx = { projectDir: tmpDir, svDir, rexDir, dev: false };
     const started = await startTestServer(ctx);
@@ -321,5 +328,135 @@ describe("MCP routes", () => {
       body: "{}",
     });
     expect(res.status).toBe(405);
+  });
+
+  // ── X-Ndx-Root-Dir header tests ────────────────────────────────────────────
+
+  describe("X-Ndx-Root-Dir header", () => {
+    it("session scoped to alternate rootDir reads that directory's PRD", async () => {
+      // Create a second project directory with a distinct PRD title
+      const altDir = await mkdtemp(join(tmpdir(), "mcp-alt-root-"));
+      try {
+        const altPrd = makePRD();
+        altPrd.title = "Alternate Project";
+        await seedProjectDir(altDir);
+        await writeFile(
+          join(altDir, ".rex", "prd.json"),
+          JSON.stringify(altPrd, null, 2),
+        );
+
+        const client = new Client({ name: "scoped-client", version: "1.0.0" });
+        const transport = new StreamableHTTPClientTransport(
+          new URL(`http://localhost:${port}/mcp/rex`),
+          { requestInit: { headers: { "X-Ndx-Root-Dir": altDir } } },
+        );
+
+        await client.connect(transport);
+
+        const result = await client.callTool({ name: "get_prd_status", arguments: {} });
+        const text = (result.content as Array<{ type: string; text: string }>)[0]?.text;
+        const parsed = JSON.parse(text);
+        expect(parsed.title).toBe("Alternate Project");
+
+        await client.close();
+      } finally {
+        await rm(altDir, { recursive: true, force: true });
+      }
+    });
+
+    it("absent header defaults to ctx.projectDir", async () => {
+      // No X-Ndx-Root-Dir header — should use the server's default projectDir
+      const client = new Client({ name: "default-client", version: "1.0.0" });
+      const transport = new StreamableHTTPClientTransport(
+        new URL(`http://localhost:${port}/mcp/rex`),
+      );
+
+      await client.connect(transport);
+
+      const result = await client.callTool({ name: "get_prd_status", arguments: {} });
+      const text = (result.content as Array<{ type: string; text: string }>)[0]?.text;
+      const parsed = JSON.parse(text);
+      expect(parsed.title).toBe("Test Project");
+
+      await client.close();
+    });
+
+    it("relative path returns 400", async () => {
+      const res = await fetch(`http://localhost:${port}/mcp/rex`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Ndx-Root-Dir": "relative/path",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "initialize",
+          params: {
+            protocolVersion: "2025-03-26",
+            capabilities: {},
+            clientInfo: { name: "test", version: "1.0.0" },
+          },
+        }),
+      });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("absolute path");
+    });
+
+    it("non-existent path returns 400", async () => {
+      const res = await fetch(`http://localhost:${port}/mcp/rex`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Ndx-Root-Dir": "/tmp/definitely-does-not-exist-mcp-test",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "initialize",
+          params: {
+            protocolVersion: "2025-03-26",
+            capabilities: {},
+            clientInfo: { name: "test", version: "1.0.0" },
+          },
+        }),
+      });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("does not exist");
+    });
+
+    it("path to a file (not directory) returns 400", async () => {
+      const filePath = join(tmpDir, ".rex", "prd.json");
+      const res = await fetch(`http://localhost:${port}/mcp/rex`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Ndx-Root-Dir": filePath,
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "initialize",
+          params: {
+            protocolVersion: "2025-03-26",
+            capabilities: {},
+            clientInfo: { name: "test", version: "1.0.0" },
+          },
+        }),
+      });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("not a directory");
+    });
+
+    it("CORS preflight includes X-Ndx-Root-Dir in allowed headers", async () => {
+      const res = await fetch(`http://localhost:${port}/mcp/rex`, {
+        method: "OPTIONS",
+      });
+      expect(res.status).toBe(204);
+      expect(res.headers.get("access-control-allow-headers")).toContain("X-Ndx-Root-Dir");
+    });
   });
 });

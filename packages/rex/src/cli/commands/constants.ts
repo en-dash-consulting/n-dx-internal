@@ -35,6 +35,7 @@ export function usage(): void {
           { name: "health [dir]", description: "Show structure health score (depth, balance, completeness)" },
           { name: "sync [dir]", description: "Sync local PRD with remote adapter" },
           { name: "parallel plan [dir]", description: "Show parallel execution plan (blast radius + conflicts)" },
+          { name: "parallel reconcile <wt>", description: "Merge worktree task completions back to main PRD" },
           { name: "adapter <sub> [name]", description: "Manage store adapters (list|add|remove|show)" },
           { name: "mcp [dir]", description: "Start MCP server" },
         ],
