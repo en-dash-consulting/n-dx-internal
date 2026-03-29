@@ -2,7 +2,14 @@ import { describe, it, expect, afterEach } from "vitest";
 import { mkdtemp, writeFile, rm, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { analyzeFrameworks, FRAMEWORK_REGISTRY } from "../../../src/analyzers/framework-detection.js";
+import {
+  analyzeFrameworks,
+  FRAMEWORK_REGISTRY,
+  detectJSWorkspaceRoots,
+  detectGoModuleRoots,
+  detectMonorepoRoots,
+  parsePnpmWorkspacePatterns,
+} from "../../../src/analyzers/framework-detection.js";
 import type { Inventory, Imports, FileEntry, FrameworkRegistryEntry } from "../../../src/schema/v1.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -556,5 +563,568 @@ describe("analyzeFrameworks", () => {
 
     const nuxt = result.frameworks.find((f) => f.id === "nuxt");
     expect(nuxt).toBeDefined();
+  });
+
+  // ── Roots output ──────────────────────────────────────────────────
+
+  it("single-root project produces one root entry at '.'", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-fw-"));
+    const inventory = makeInventory([{ path: "src/server.ts" }]);
+    const imports = makeImports([{ package: "express", importedBy: ["src/server.ts"] }]);
+
+    const result = analyzeFrameworks(tmpDir, inventory, imports);
+
+    expect(result.roots).toHaveLength(1);
+    expect(result.roots[0].path).toBe(".");
+    expect(result.roots[0].detectedFrameworks.length).toBeGreaterThanOrEqual(1);
+    expect(result.roots[0].detectedFrameworks.find((f) => f.id === "express")).toBeDefined();
+  });
+
+  it("single-root project root frameworks match top-level frameworks", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-fw-"));
+    const inventory = makeInventory([{ path: "src/server.ts" }]);
+    const imports = makeImports([{ package: "express", importedBy: ["src/server.ts"] }]);
+
+    const result = analyzeFrameworks(tmpDir, inventory, imports);
+
+    // The root's frameworks should be the same as the top-level list
+    expect(result.roots[0].detectedFrameworks).toEqual(result.frameworks);
+  });
+});
+
+// ── parsePnpmWorkspacePatterns ────────────────────────────────────────────
+
+describe("parsePnpmWorkspacePatterns", () => {
+  it("parses standard pnpm-workspace.yaml", () => {
+    const content = `packages:\n  - 'packages/*'\n  - 'apps/*'\n`;
+    const patterns = parsePnpmWorkspacePatterns(content);
+    expect(patterns).toEqual(["packages/*", "apps/*"]);
+  });
+
+  it("parses patterns without quotes", () => {
+    const content = `packages:\n  - packages/*\n  - apps/*\n`;
+    const patterns = parsePnpmWorkspacePatterns(content);
+    expect(patterns).toEqual(["packages/*", "apps/*"]);
+  });
+
+  it("parses patterns with double quotes", () => {
+    const content = `packages:\n  - "packages/*"\n  - "tools/cli"\n`;
+    const patterns = parsePnpmWorkspacePatterns(content);
+    expect(patterns).toEqual(["packages/*", "tools/cli"]);
+  });
+
+  it("stops at next top-level key", () => {
+    const content = `packages:\n  - 'packages/*'\nsomethingElse:\n  key: value\n`;
+    const patterns = parsePnpmWorkspacePatterns(content);
+    expect(patterns).toEqual(["packages/*"]);
+  });
+
+  it("returns empty for file without packages key", () => {
+    const content = `overrides:\n  foo: bar\n`;
+    const patterns = parsePnpmWorkspacePatterns(content);
+    expect(patterns).toEqual([]);
+  });
+
+  it("handles empty packages list", () => {
+    const content = `packages:\n`;
+    const patterns = parsePnpmWorkspacePatterns(content);
+    expect(patterns).toEqual([]);
+  });
+});
+
+// ── detectJSWorkspaceRoots ───────────────────────────────────────────────
+
+describe("detectJSWorkspaceRoots", () => {
+  let tmpDir: string;
+
+  afterEach(async () => {
+    if (tmpDir) {
+      await rm(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("detects npm/yarn workspace roots from package.json workspaces array", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-ws-"));
+
+    // Create workspace structure
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "api"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "api", "package.json"), JSON.stringify({ name: "api" }));
+    await mkdir(join(tmpDir, "packages", "web"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "web", "package.json"), JSON.stringify({ name: "web" }));
+
+    const roots = detectJSWorkspaceRoots(tmpDir);
+    expect(roots).toEqual(["packages/api", "packages/web"]);
+  });
+
+  it("detects yarn workspace roots from { packages: [...] } format", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-ws-"));
+
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: { packages: ["apps/*"] },
+    }));
+    await mkdir(join(tmpDir, "apps", "frontend"), { recursive: true });
+    await writeFile(join(tmpDir, "apps", "frontend", "package.json"), JSON.stringify({ name: "frontend" }));
+
+    const roots = detectJSWorkspaceRoots(tmpDir);
+    expect(roots).toEqual(["apps/frontend"]);
+  });
+
+  it("detects pnpm workspace roots from pnpm-workspace.yaml", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-ws-"));
+
+    await writeFile(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+    await mkdir(join(tmpDir, "packages", "core"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "core", "package.json"), JSON.stringify({ name: "core" }));
+
+    const roots = detectJSWorkspaceRoots(tmpDir);
+    expect(roots).toEqual(["packages/core"]);
+  });
+
+  it("skips directories without package.json", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-ws-"));
+
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "has-pkg"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "has-pkg", "package.json"), JSON.stringify({ name: "has-pkg" }));
+    await mkdir(join(tmpDir, "packages", "no-pkg"), { recursive: true });
+    // no package.json in no-pkg
+
+    const roots = detectJSWorkspaceRoots(tmpDir);
+    expect(roots).toEqual(["packages/has-pkg"]);
+  });
+
+  it("skips node_modules directories", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-ws-"));
+
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "node_modules", "some-pkg"), { recursive: true });
+    await writeFile(
+      join(tmpDir, "packages", "node_modules", "some-pkg", "package.json"),
+      JSON.stringify({ name: "some-pkg" }),
+    );
+
+    const roots = detectJSWorkspaceRoots(tmpDir);
+    expect(roots).toEqual([]);
+  });
+
+  it("returns empty for project without workspaces", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-ws-"));
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({ name: "single-app" }));
+
+    const roots = detectJSWorkspaceRoots(tmpDir);
+    expect(roots).toEqual([]);
+  });
+
+  it("handles direct path patterns (no glob)", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-ws-"));
+
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["tools/cli"],
+    }));
+    await mkdir(join(tmpDir, "tools", "cli"), { recursive: true });
+    await writeFile(join(tmpDir, "tools", "cli", "package.json"), JSON.stringify({ name: "cli" }));
+
+    const roots = detectJSWorkspaceRoots(tmpDir);
+    expect(roots).toEqual(["tools/cli"]);
+  });
+});
+
+// ── detectGoModuleRoots ──────────────────────────────────────────────────
+
+describe("detectGoModuleRoots", () => {
+  let tmpDir: string;
+
+  afterEach(async () => {
+    if (tmpDir) {
+      await rm(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("detects nested go.mod files as separate Go project roots", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-go-"));
+
+    // Root go.mod (not counted)
+    await writeFile(join(tmpDir, "go.mod"), "module example.com/root\n");
+    // Nested go.mod
+    await mkdir(join(tmpDir, "services", "api"), { recursive: true });
+    await writeFile(join(tmpDir, "services", "api", "go.mod"), "module example.com/services/api\n");
+
+    const roots = detectGoModuleRoots(tmpDir);
+    expect(roots).toEqual(["services/api"]);
+  });
+
+  it("detects multiple nested go.mod files", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-go-"));
+
+    await mkdir(join(tmpDir, "cmd", "server"), { recursive: true });
+    await writeFile(join(tmpDir, "cmd", "server", "go.mod"), "module example.com/cmd/server\n");
+    await mkdir(join(tmpDir, "pkg", "lib"), { recursive: true });
+    await writeFile(join(tmpDir, "pkg", "lib", "go.mod"), "module example.com/pkg/lib\n");
+
+    const roots = detectGoModuleRoots(tmpDir);
+    expect(roots).toEqual(["cmd/server", "pkg/lib"]);
+  });
+
+  it("skips vendor and node_modules directories", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-go-"));
+
+    await mkdir(join(tmpDir, "vendor", "github.com", "pkg"), { recursive: true });
+    await writeFile(
+      join(tmpDir, "vendor", "github.com", "pkg", "go.mod"),
+      "module github.com/pkg\n",
+    );
+
+    const roots = detectGoModuleRoots(tmpDir);
+    expect(roots).toEqual([]);
+  });
+
+  it("returns empty for project without nested go.mod", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-go-"));
+    // Only root go.mod
+    await writeFile(join(tmpDir, "go.mod"), "module example.com/root\n");
+
+    const roots = detectGoModuleRoots(tmpDir);
+    expect(roots).toEqual([]);
+  });
+
+  it("does not recurse into sub-modules", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-go-"));
+
+    // Nested module
+    await mkdir(join(tmpDir, "svc", "api"), { recursive: true });
+    await writeFile(join(tmpDir, "svc", "api", "go.mod"), "module example.com/svc/api\n");
+    // Deeply nested module (should not be found since we stop at svc/api)
+    await mkdir(join(tmpDir, "svc", "api", "internal", "sub"), { recursive: true });
+    await writeFile(join(tmpDir, "svc", "api", "internal", "sub", "go.mod"), "module example.com/sub\n");
+
+    const roots = detectGoModuleRoots(tmpDir);
+    expect(roots).toEqual(["svc/api"]);
+  });
+});
+
+// ── detectMonorepoRoots ─────────────────────────────────────────────────
+
+describe("detectMonorepoRoots", () => {
+  let tmpDir: string;
+
+  afterEach(async () => {
+    if (tmpDir) {
+      await rm(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("combines JS workspace and Go module roots", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-mono-"));
+
+    // JS workspace
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "web"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "web", "package.json"), JSON.stringify({ name: "web" }));
+
+    // Go module
+    await mkdir(join(tmpDir, "services", "api"), { recursive: true });
+    await writeFile(join(tmpDir, "services", "api", "go.mod"), "module example.com/api\n");
+
+    const roots = detectMonorepoRoots(tmpDir);
+    expect(roots).toEqual(["packages/web", "services/api"]);
+  });
+
+  it("deduplicates roots from multiple detection methods", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-mono-"));
+
+    // A directory that is both a workspace member and has go.mod
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "hybrid"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "hybrid", "package.json"), JSON.stringify({ name: "hybrid" }));
+    await writeFile(join(tmpDir, "packages", "hybrid", "go.mod"), "module example.com/hybrid\n");
+
+    const roots = detectMonorepoRoots(tmpDir);
+    // Should not duplicate
+    expect(roots).toEqual(["packages/hybrid"]);
+  });
+
+  it("returns empty for single-root project", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-mono-"));
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({ name: "my-app" }));
+
+    const roots = detectMonorepoRoots(tmpDir);
+    expect(roots).toEqual([]);
+  });
+});
+
+// ── Monorepo framework detection (integration) ──────────────────────────
+
+describe("analyzeFrameworks — monorepo", () => {
+  let tmpDir: string;
+
+  afterEach(async () => {
+    if (tmpDir) {
+      await rm(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("detects frameworks per workspace root", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-fw-mono-"));
+
+    // Set up workspace
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "web"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "web", "package.json"), JSON.stringify({ name: "web" }));
+    await mkdir(join(tmpDir, "packages", "api"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "api", "package.json"), JSON.stringify({ name: "api" }));
+
+    const inventory = makeInventory([
+      { path: "packages/web/app/routes/home.tsx" },
+      { path: "packages/web/app/root.tsx" },
+      { path: "packages/api/src/server.ts" },
+    ]);
+    const imports = makeImports([
+      { package: "react-router", importedBy: ["packages/web/app/root.tsx"] },
+      { package: "express", importedBy: ["packages/api/src/server.ts"] },
+    ]);
+
+    const result = analyzeFrameworks(tmpDir, inventory, imports);
+
+    // Should have two roots
+    expect(result.roots).toHaveLength(2);
+
+    const webRoot = result.roots.find((r) => r.path === "packages/web");
+    const apiRoot = result.roots.find((r) => r.path === "packages/api");
+
+    expect(webRoot).toBeDefined();
+    expect(apiRoot).toBeDefined();
+
+    // Web root should detect React Router
+    expect(webRoot!.detectedFrameworks.find((f) => f.id === "react-router-v7")).toBeDefined();
+    // Web root should NOT detect Express
+    expect(webRoot!.detectedFrameworks.find((f) => f.id === "express")).toBeUndefined();
+
+    // API root should detect Express
+    expect(apiRoot!.detectedFrameworks.find((f) => f.id === "express")).toBeDefined();
+    // API root should NOT detect React Router
+    expect(apiRoot!.detectedFrameworks.find((f) => f.id === "react-router-v7")).toBeUndefined();
+  });
+
+  it("sets projectRoot correctly per framework", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-fw-mono-"));
+
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "web"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "web", "package.json"), JSON.stringify({ name: "web" }));
+    await mkdir(join(tmpDir, "packages", "api"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "api", "package.json"), JSON.stringify({ name: "api" }));
+
+    const inventory = makeInventory([
+      { path: "packages/web/app/root.tsx" },
+      { path: "packages/api/src/server.ts" },
+    ]);
+    const imports = makeImports([
+      { package: "react-router", importedBy: ["packages/web/app/root.tsx"] },
+      { package: "express", importedBy: ["packages/api/src/server.ts"] },
+    ]);
+
+    const result = analyzeFrameworks(tmpDir, inventory, imports);
+
+    const rr = result.frameworks.find((f) => f.id === "react-router-v7");
+    const express = result.frameworks.find((f) => f.id === "express");
+
+    expect(rr).toBeDefined();
+    expect(rr!.projectRoot).toBe("packages/web");
+
+    expect(express).toBeDefined();
+    expect(express!.projectRoot).toBe("packages/api");
+  });
+
+  it("mixed-language monorepo: Go + TypeScript produce correct per-root results", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-fw-mixed-"));
+
+    // JS workspace for frontend
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "web"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "web", "package.json"), JSON.stringify({ name: "web" }));
+
+    // Go module for backend
+    await mkdir(join(tmpDir, "services", "api"), { recursive: true });
+    await writeFile(join(tmpDir, "services", "api", "go.mod"), "module example.com/api\n");
+
+    const inventory = makeInventory([
+      { path: "packages/web/app/root.tsx" },
+      { path: "packages/web/app/routes/home.tsx" },
+      { path: "services/api/main.go", language: "Go" },
+      { path: "services/api/handlers/user.go", language: "Go" },
+    ]);
+    const imports = makeImports([
+      { package: "react-router", importedBy: ["packages/web/app/root.tsx"] },
+      { package: "github.com/go-chi/chi/v5", importedBy: ["services/api/main.go"] },
+    ]);
+
+    const result = analyzeFrameworks(tmpDir, inventory, imports);
+
+    // Should have two roots
+    expect(result.roots).toHaveLength(2);
+
+    const webRoot = result.roots.find((r) => r.path === "packages/web");
+    const apiRoot = result.roots.find((r) => r.path === "services/api");
+
+    expect(webRoot).toBeDefined();
+    expect(apiRoot).toBeDefined();
+
+    // Web root: React Router
+    const webRR = webRoot!.detectedFrameworks.find((f) => f.id === "react-router-v7");
+    expect(webRR).toBeDefined();
+    expect(webRR!.language).toBe("typescript");
+
+    // API root: chi
+    const apiChi = apiRoot!.detectedFrameworks.find((f) => f.id === "go-chi");
+    expect(apiChi).toBeDefined();
+    expect(apiChi!.language).toBe("go");
+
+    // Summary should reflect both languages
+    expect(result.summary.byLanguage.typescript).toBeGreaterThanOrEqual(1);
+    expect(result.summary.byLanguage.go).toBeGreaterThanOrEqual(1);
+  });
+
+  it("config files are scoped to each root directory", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-fw-cfg-"));
+
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "web"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "web", "package.json"), JSON.stringify({ name: "web" }));
+    // Put next.config.js inside the web root, NOT at project root
+    await writeFile(join(tmpDir, "packages", "web", "next.config.js"), "module.exports = {};\n");
+    await mkdir(join(tmpDir, "packages", "docs"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "docs", "package.json"), JSON.stringify({ name: "docs" }));
+
+    const inventory = makeInventory([
+      { path: "packages/web/app/page.tsx" },
+      { path: "packages/docs/src/index.ts" },
+    ]);
+
+    const result = analyzeFrameworks(tmpDir, inventory, EMPTY_IMPORTS);
+
+    const webRoot = result.roots.find((r) => r.path === "packages/web");
+    const docsRoot = result.roots.find((r) => r.path === "packages/docs");
+
+    expect(webRoot).toBeDefined();
+    expect(docsRoot).toBeDefined();
+
+    // Web root should detect Next.js via config + file pattern
+    const webNext = webRoot!.detectedFrameworks.find((f) => f.id === "nextjs");
+    expect(webNext).toBeDefined();
+    expect(webNext!.detectedSignals.some((s) => s.kind === "config")).toBe(true);
+
+    // Docs root should NOT detect Next.js (no config file there)
+    const docsNext = docsRoot!.detectedFrameworks.find((f) => f.id === "nextjs");
+    expect(docsNext).toBeUndefined();
+  });
+
+  it("flat frameworks array is the union of all per-root detections", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-fw-union-"));
+
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "web"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "web", "package.json"), JSON.stringify({ name: "web" }));
+    await mkdir(join(tmpDir, "packages", "api"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "api", "package.json"), JSON.stringify({ name: "api" }));
+
+    const inventory = makeInventory([
+      { path: "packages/web/app/root.tsx" },
+      { path: "packages/api/src/server.ts" },
+    ]);
+    const imports = makeImports([
+      { package: "react-router", importedBy: ["packages/web/app/root.tsx"] },
+      { package: "express", importedBy: ["packages/api/src/server.ts"] },
+    ]);
+
+    const result = analyzeFrameworks(tmpDir, inventory, imports);
+
+    // Flat frameworks array should contain frameworks from both roots
+    expect(result.frameworks.find((f) => f.id === "react-router-v7")).toBeDefined();
+    expect(result.frameworks.find((f) => f.id === "express")).toBeDefined();
+
+    // Total count should match sum of per-root detections
+    const totalPerRoot = result.roots.reduce((sum, r) => sum + r.detectedFrameworks.length, 0);
+    expect(result.frameworks.length).toBe(totalPerRoot);
+  });
+
+  it("each per-root framework has scoped confidence", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-fw-scope-"));
+
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "web"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "web", "package.json"), JSON.stringify({ name: "web" }));
+    await writeFile(join(tmpDir, "packages", "web", "next.config.js"), "module.exports = {};\n");
+
+    const inventory = makeInventory([
+      { path: "packages/web/app/page.tsx" },
+      { path: "packages/web/app/about/page.tsx" },
+    ]);
+    const imports = makeImports([
+      { package: "next", importedBy: ["packages/web/app/page.tsx"] },
+    ]);
+
+    const result = analyzeFrameworks(tmpDir, inventory, imports);
+
+    const webRoot = result.roots.find((r) => r.path === "packages/web");
+    const nextInRoot = webRoot!.detectedFrameworks.find((f) => f.id === "nextjs");
+    expect(nextInRoot).toBeDefined();
+    // Should have high confidence: config (0.5) + import (0.45) + file (0.3) + bonus
+    expect(nextInRoot!.confidence).toBeGreaterThan(0.8);
+  });
+
+  it("empty roots still produce root entries with empty frameworks", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-fw-empty-"));
+
+    await writeFile(join(tmpDir, "package.json"), JSON.stringify({
+      name: "monorepo",
+      workspaces: ["packages/*"],
+    }));
+    await mkdir(join(tmpDir, "packages", "utils"), { recursive: true });
+    await writeFile(join(tmpDir, "packages", "utils", "package.json"), JSON.stringify({ name: "utils" }));
+
+    // No framework signals in the inventory
+    const inventory = makeInventory([{ path: "packages/utils/src/math.ts" }]);
+
+    const result = analyzeFrameworks(tmpDir, inventory, EMPTY_IMPORTS);
+
+    expect(result.roots).toHaveLength(1);
+    expect(result.roots[0].path).toBe("packages/utils");
+    expect(result.roots[0].detectedFrameworks).toEqual([]);
   });
 });

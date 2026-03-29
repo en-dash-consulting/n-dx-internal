@@ -120,6 +120,7 @@ export type {
   DetectedFramework,
   DetectedFrameworks,
   DetectedFrameworksSummary,
+  DetectedRoot,
   // workspace
   WorkspaceMember,
   WorkspaceConfig,

@@ -9725,7 +9725,7 @@
             {
               "id": "3ed96080-7100-42c1-a033-7ac362eacde7",
               "title": "Create FrameworkDetection module with explicit registry",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Create a new FrameworkDetection module in packages/sourcevision/src/analyzers/ that consolidates all existing implicit framework detection into one explicit registry. The module should: (1) Define a FrameworkRegistry with entries for each supported framework containing id, name, category (frontend/backend/fullstack), language, detection signals (file patterns, config files, import patterns, method call patterns), and confidence scoring. (2) Run detection against the inventory and import graph to produce a DetectedFrameworks result with framework id, confidence (0-1), detected signals, and project root path. (3) Cover all currently-detected frameworks: React Router v7/Remix, Next.js, Nuxt, Svelte Kit, Astro, Express, Hono, Koa, chi, gin, echo, fiber, gorilla/mux, net/http stdlib. (4) Output to .sourcevision/frameworks.json alongside existing analysis outputs. This runs as part of Phase 2 (Classify) since it depends on inventory + imports from Phase 1.",
               "acceptanceCriteria": [
@@ -9743,12 +9743,15 @@
                 "analyzer",
                 "framework-detection"
               ],
-              "startedAt": "2026-03-29T05:20:57.343Z"
+              "startedAt": "2026-03-29T05:20:57.343Z",
+              "completedAt": "2026-03-29T06:01:04.135Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Created FrameworkDetection module with explicit registry (14 frameworks), confidence scoring, Phase 8 pipeline integration, frameworks.json output, and 35 unit tests."
             },
             {
               "id": "7be2ea3f-2022-4d7a-a141-aee956f6a18c",
               "title": "Monorepo multi-root detection: infer backend/frontend project boundaries",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Extend the FrameworkDetection module to detect monorepo project boundaries — subdirectories that contain their own package.json, go.mod, or equivalent package manifest. Each detected root gets its own framework detection pass. For example, a monorepo with packages/api (Go + chi) and packages/web (React Router) should produce two framework entries scoped to their respective roots. The detection should handle: (1) pnpm/npm/yarn workspaces (packages/*, apps/*), (2) Go multi-module repos (nested go.mod), (3) mixed-language repos where top-level is one language and subdirectories are another. Expose the detected roots and their frameworks in the frameworks.json output.",
               "acceptanceCriteria": [
@@ -9765,12 +9768,13 @@
                 "sourcevision",
                 "framework-detection",
                 "monorepo"
-              ]
+              ],
+              "startedAt": "2026-03-29T06:11:47.554Z"
             },
             {
               "id": "075c48be-b312-438f-bd5a-7d3513c2bed5",
               "title": "Dynamic SOURCEVISION_TABS: show/hide tabs based on detected frameworks",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Refactor SOURCEVISION_TABS in sourcevision-tabs.ts from a static hardcoded array to a dynamic system that shows/hides tabs based on detected frameworks from frameworks.json. Add a requiredFramework field (or requiredCategory: frontend/backend) to tab definitions. Tabs with no framework requirement always show. Tabs with a requirement only show when their framework/category is detected with sufficient confidence. Examples: Components tab only shows if a React/Preact/Vue framework detected. Endpoints tab only shows if a server framework detected (Express, chi, gin, etc). Routes tab only shows if a file-based routing framework detected (React Router, Next.js, Nuxt). The overview tab and explorer always show regardless.",
               "acceptanceCriteria": [
@@ -9788,7 +9792,11 @@
                 "web-viewer",
                 "routing",
                 "sourcevision-tabs"
-              ]
+              ],
+              "startedAt": "2026-03-29T06:01:35.684Z",
+              "completedAt": "2026-03-29T06:11:16.103Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added requiredFramework/requiredCategory fields to SourceVisionTab, getVisibleTabs() filtering function, full frameworks.json data pipeline (types, validation, loading), and sidebar integration. 21 tests covering all acceptance criteria."
             },
             {
               "id": "25dafd4d-c07f-4257-83f8-eb48013744f8",
@@ -9883,11 +9891,10 @@
     {
       "id": "bf053fb2-509d-4acf-aa61-7243e66027e5",
       "title": "Rex",
-      "status": "completed",
+      "status": "pending",
       "level": "epic",
       "description": "PRD management: hierarchical epics/features/tasks/subtasks, smart add from natural language, LLM-powered analysis and recommendations, validation, pruning, reshaping. Stores state in .rex/prd.json.",
       "startedAt": "2026-03-24T20:09:27.774Z",
-      "completedAt": "2026-03-24T20:09:27.774Z",
       "children": [
         {
           "id": "95bfdba2-2cba-4921-b614-3a34779e0892",
@@ -12717,6 +12724,110 @@
           ],
           "startedAt": "2026-03-24T05:12:16.787Z",
           "completedAt": "2026-03-24T05:20:58.936Z"
+        },
+        {
+          "id": "820971d2-56a3-4372-b097-19efeb79d661",
+          "title": "Parallel Worktree Execution: Phase 1 — Conflict Analysis",
+          "status": "blocked",
+          "level": "feature",
+          "description": "Build the conflict analysis foundation for parallel worktree execution. Compute task blast radius from sourcevision zones, PRD tags, acceptance criteria, and import graph. Build a conflict graph between tasks and detect independent sets (non-conflicting task groups) that can safely run in parallel worktrees. Expose via `ndx parallel plan .` CLI command. This is read-only analysis — no worktree creation or execution.",
+          "priority": "high",
+          "tags": [
+            "rex",
+            "parallel",
+            "conflict-analysis"
+          ],
+          "children": [
+            {
+              "id": "6fb678d5-75e3-4e17-b551-c3c5b6403875",
+              "title": "Blast radius computation from zones, tags, and acceptance criteria",
+              "status": "blocked",
+              "level": "task",
+              "description": "Create packages/rex/src/parallel/blast-radius.ts. For each PRD task, compute the set of files it is likely to modify (its blast radius). Signal sources: (1) Extract zone IDs from task tags and expand to file sets via sourcevision zones data. (2) Parse acceptance criteria for explicit file/module/component mentions. (3) Add 1-hop import neighbors for high-coupling files from the import graph. (4) Sibling tasks under the same feature inherit the parent feature's aggregate blast radius as a conservative heuristic. Return a Map<taskId, Set<filePath>> as the blast radius index.",
+              "acceptanceCriteria": [
+                "Function blastRadius(tasks, zones, imports) returns Map<string, Set<string>>",
+                "Zone-based expansion: task tagged 'web-viewer' includes all files in the web-viewer zone",
+                "Acceptance criteria parsing: extracts file paths matching src/**/*.ts patterns and module names",
+                "Import neighbor expansion: adds files that directly import or are imported by blast radius files",
+                "Sibling heuristic: tasks sharing a parent feature union their blast radii",
+                "Handles tasks with no tags or criteria gracefully (empty blast radius)",
+                "Unit tests cover all four signal sources independently and combined"
+              ],
+              "priority": "critical",
+              "tags": [
+                "rex",
+                "parallel",
+                "blast-radius"
+              ]
+            },
+            {
+              "id": "accc830e-51eb-4ad8-a8d4-178eec505ca5",
+              "title": "Conflict graph construction and independent set detection",
+              "status": "blocked",
+              "level": "task",
+              "description": "Create packages/rex/src/parallel/conflict-analysis.ts. Build a conflict graph where nodes are actionable tasks and edges connect tasks with overlapping blast radii. Edge weight = number of overlapping files. Classify edges by confidence: high (direct file overlap), medium (shared import neighborhood), low (same zone but different files). Implement greedy graph coloring to find independent sets — groups of tasks with no edges between them. Respect explicit blockedBy dependencies (force into same group, sequential). Output an ExecutionPlan with groups, serial tasks, and detected conflicts.",
+              "acceptanceCriteria": [
+                "buildConflictGraph(blastRadii) returns adjacency list with weighted edges",
+                "Each edge has confidence level: high/medium/low based on overlap type",
+                "Explicit blockedBy dependencies force tasks into the same group",
+                "Tasks sharing a parent feature are conservatively placed in the same group",
+                "findIndependentSets(graph) returns groups via greedy graph coloring",
+                "ExecutionPlan type includes groups[], serialTasks[], conflicts[]",
+                "Groups are sorted by estimated size (largest first for load balancing)",
+                "Unit tests: non-overlapping tasks → separate groups, overlapping → same group, blockedBy respected"
+              ],
+              "priority": "critical",
+              "tags": [
+                "rex",
+                "parallel",
+                "conflict-graph"
+              ]
+            },
+            {
+              "id": "87072165-3e7b-45d8-b12b-693bd1fac343",
+              "title": "Execution plan formatter and ndx parallel plan CLI command",
+              "status": "blocked",
+              "level": "task",
+              "description": "Create packages/rex/src/parallel/execution-plan.ts with plan formatting and packages/rex/src/parallel/index.ts as barrel export. Add `ndx parallel plan .` command to cli.js that: (1) Loads PRD and sourcevision data (zones, imports). (2) Filters to actionable tasks. (3) Runs blast radius computation and conflict analysis. (4) Outputs a human-readable execution plan showing task groups, their blast radii, detected conflicts, and estimated parallelism. Support --format=json for machine-readable output. Re-export the parallel module from packages/rex/src/public.ts.",
+              "acceptanceCriteria": [
+                "ndx parallel plan . outputs human-readable execution plan to stdout",
+                "Plan shows: N groups, tasks per group, blast radius summary per group, detected conflicts",
+                "Each conflict shows the two tasks, overlapping files, and confidence level",
+                "--format=json outputs structured ExecutionPlan JSON",
+                "Handles edge cases: no actionable tasks, all tasks conflict, single task",
+                "cli.js delegates to rex parallel plan via spawn (follows spawn-only rule)",
+                "packages/rex/src/public.ts re-exports parallel module",
+                "Exit code 0 on success, 1 on error"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "parallel",
+                "cli"
+              ]
+            },
+            {
+              "id": "06791a6e-3253-49a8-a716-977633d7698c",
+              "title": "Sourcevision data integration: load zones and imports for blast radius",
+              "status": "blocked",
+              "level": "task",
+              "description": "The blast radius computation needs to read sourcevision zone and import data. Since rex cannot import sourcevision (they are independent domain packages), create a loader in the parallel module that reads .sourcevision/zones.json and .sourcevision/imports.json directly from disk. Define minimal TypeScript interfaces for the zone file list and import edges needed — do not import sourcevision types. This follows the existing pattern where rex reads .sourcevision files via file I/O rather than package imports.",
+              "acceptanceCriteria": [
+                "Loader reads .sourcevision/zones.json and extracts zone → file[] mapping",
+                "Loader reads .sourcevision/imports.json and extracts file → imports[] edges",
+                "Minimal interfaces defined in rex (not imported from sourcevision)",
+                "Graceful fallback when .sourcevision/ doesn't exist (empty zones, empty imports)",
+                "No runtime import from sourcevision package (domain isolation preserved)",
+                "Validated by domain-isolation.test.js (no new cross-package imports)"
+              ],
+              "priority": "high",
+              "tags": [
+                "rex",
+                "parallel",
+                "sourcevision-integration"
+              ]
+            }
+          ]
         }
       ]
     },

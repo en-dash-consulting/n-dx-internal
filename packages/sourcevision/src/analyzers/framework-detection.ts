@@ -5,10 +5,14 @@
  * Runs against inventory + import graph data to produce frameworks.json.
  * Detection signals include file patterns, config files, import patterns,
  * and method call patterns.
+ *
+ * Supports monorepo multi-root detection: workspace members (pnpm/npm/yarn),
+ * nested Go modules (go.mod), and mixed-language repos each get their own
+ * independent framework detection pass.
  */
 
-import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join, dirname, relative } from "node:path";
 import type {
   Inventory,
   Imports,
@@ -16,6 +20,7 @@ import type {
   DetectedFramework,
   DetectedFrameworks,
   DetectedFrameworksSummary,
+  DetectedRoot,
   MatchedSignal,
   FrameworkCategory,
 } from "../schema/v1.js";
@@ -245,6 +250,49 @@ function buildDetectionContext(
 }
 
 /**
+ * Build a detection context scoped to a specific project root.
+ *
+ * For root ".", returns the full context unchanged.
+ * For a sub-root like "packages/web", filters inventory files and imports
+ * to only those within the root prefix, and relativizes paths so that
+ * framework glob patterns match correctly.
+ */
+function buildScopedDetectionContext(
+  rootPath: string,
+  absDir: string,
+  inventory: Inventory,
+  imports: Imports,
+): DetectionContext {
+  if (rootPath === ".") {
+    return buildDetectionContext(absDir, inventory, imports);
+  }
+
+  const prefix = rootPath + "/";
+
+  // Filter and relativize file paths to root-relative
+  const filePaths = new Set<string>();
+  for (const f of inventory.files) {
+    if (f.path.startsWith(prefix)) {
+      filePaths.add(f.path.slice(prefix.length));
+    }
+  }
+
+  // Filter imports to those from files in this root
+  const externalImports = new Map<string, string[]>();
+  for (const ext of imports.external) {
+    const scopedFiles = ext.importedBy.filter((f) => f.startsWith(prefix));
+    if (scopedFiles.length > 0) {
+      externalImports.set(ext.package, scopedFiles);
+    }
+  }
+
+  // Config file checks should be relative to the root directory
+  const rootAbsDir = join(absDir, rootPath);
+
+  return { filePaths, externalImports, absDir: rootAbsDir };
+}
+
+/**
  * Match file patterns against inventory files using glob matching.
  * Returns matched file paths.
  */
@@ -339,12 +387,13 @@ function computeConfidence(signals: MatchedSignal[]): number {
 }
 
 /**
- * Detect a single framework against the project context.
+ * Detect a single framework against a detection context.
  * Returns null if no signals match.
  */
 function detectFramework(
   entry: FrameworkRegistryEntry,
   ctx: DetectionContext,
+  projectRoot: string,
 ): DetectedFramework | null {
   const signals: MatchedSignal[] = [];
   const ds = entry.detectionSignals;
@@ -398,8 +447,250 @@ function detectFramework(
     language: entry.language,
     confidence,
     detectedSignals: signals,
-    projectRoot: ".",
+    projectRoot,
   };
+}
+
+// ── Monorepo root detection ─────────────────────────────────────────────────
+
+/** Directories to skip during filesystem traversal. */
+const SKIP_DIRS = new Set([
+  "node_modules",
+  "vendor",
+  "dist",
+  ".git",
+  "build",
+  "__pycache__",
+  ".next",
+  ".nuxt",
+  ".svelte-kit",
+  ".turbo",
+  ".cache",
+  "coverage",
+  ".output",
+  ".sourcevision",
+  ".rex",
+  ".hench",
+]);
+
+/** Normalize path separators to forward slashes. */
+function toForwardSlash(p: string): string {
+  return p.replace(/\\/g, "/");
+}
+
+/**
+ * Parse pnpm-workspace.yaml to extract workspace package patterns.
+ * Uses simple line parsing to avoid requiring a YAML dependency.
+ */
+export function parsePnpmWorkspacePatterns(content: string): string[] {
+  const patterns: string[] = [];
+  let inPackages = false;
+
+  for (const line of content.split("\n")) {
+    const trimmed = line.trim();
+
+    if (/^packages\s*:/.test(trimmed)) {
+      inPackages = true;
+      continue;
+    }
+
+    if (inPackages) {
+      // Stop at next top-level key (non-indented, non-list-item)
+      if (/^\S/.test(line) && !trimmed.startsWith("-")) {
+        break;
+      }
+      // Parse list item: "  - 'packages/*'" or "  - packages/*"
+      const match = trimmed.match(/^-\s+['"]?([^'"]+?)['"]?\s*$/);
+      if (match) {
+        patterns.push(match[1]);
+      }
+    }
+  }
+
+  return patterns;
+}
+
+/**
+ * Expand a single workspace glob pattern to actual directory paths.
+ * Supports patterns like "packages/*", "apps/*", or direct paths like "tools/cli".
+ *
+ * For JS/TS workspaces, directories must have a package.json to be counted.
+ */
+function expandWorkspacePattern(absDir: string, pattern: string): string[] {
+  // Normalize: strip leading ./
+  pattern = pattern.replace(/^\.\//, "");
+
+  // Skip negation patterns
+  if (pattern.startsWith("!")) return [];
+
+  // Handle trailing glob: "packages/*" or "packages/**"
+  if (pattern.endsWith("/*") || pattern.endsWith("/**")) {
+    const parentDir = pattern.replace(/\/\*{1,2}$/, "");
+    const parentAbs = join(absDir, parentDir);
+
+    if (!existsSync(parentAbs)) return [];
+
+    let entries: string[];
+    try {
+      entries = readdirSync(parentAbs);
+    } catch {
+      return [];
+    }
+
+    const results: string[] = [];
+    for (const entry of entries) {
+      if (SKIP_DIRS.has(entry) || entry.startsWith(".")) continue;
+      const fullPath = join(parentAbs, entry);
+      try {
+        if (statSync(fullPath).isDirectory()) {
+          if (existsSync(join(fullPath, "package.json"))) {
+            results.push(toForwardSlash(join(parentDir, entry)));
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+    return results;
+  }
+
+  // Direct path: verify it exists and has package.json
+  const targetAbs = join(absDir, pattern);
+  if (existsSync(targetAbs) && existsSync(join(targetAbs, "package.json"))) {
+    return [toForwardSlash(pattern)];
+  }
+
+  return [];
+}
+
+/**
+ * Detect JS/TS workspace roots from package.json workspaces field
+ * and pnpm-workspace.yaml.
+ */
+export function detectJSWorkspaceRoots(absDir: string): string[] {
+  const allPatterns: string[] = [];
+
+  // 1. Check package.json workspaces
+  const pkgJsonPath = join(absDir, "package.json");
+  if (existsSync(pkgJsonPath)) {
+    try {
+      const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf-8"));
+      const workspaces = pkgJson.workspaces;
+      if (workspaces) {
+        // npm/yarn: array or { packages: [...] }
+        const patterns = Array.isArray(workspaces)
+          ? workspaces
+          : Array.isArray(workspaces.packages) ? workspaces.packages : [];
+        allPatterns.push(...patterns);
+      }
+    } catch {
+      // Invalid package.json — skip
+    }
+  }
+
+  // 2. Check pnpm-workspace.yaml
+  const pnpmPaths = [
+    join(absDir, "pnpm-workspace.yaml"),
+    join(absDir, "pnpm-workspace.yml"),
+  ];
+  for (const pnpmPath of pnpmPaths) {
+    if (existsSync(pnpmPath)) {
+      try {
+        const content = readFileSync(pnpmPath, "utf-8");
+        const patterns = parsePnpmWorkspacePatterns(content);
+        allPatterns.push(...patterns);
+      } catch {
+        // Invalid YAML — skip
+      }
+      break; // Only read first found
+    }
+  }
+
+  // 3. Expand patterns to actual directories
+  const roots = new Set<string>();
+  for (const pattern of allPatterns) {
+    const expanded = expandWorkspacePattern(absDir, pattern);
+    for (const dir of expanded) {
+      roots.add(dir);
+    }
+  }
+
+  return Array.from(roots).sort();
+}
+
+/**
+ * Recursively scan for nested go.mod files that indicate separate Go modules.
+ * Only returns go.mod files in subdirectories, not the root.
+ */
+function findNestedGoMods(
+  rootDir: string,
+  currentDir: string,
+  results: string[],
+  depth: number = 0,
+): void {
+  // Limit recursion depth to avoid scanning too deep
+  if (depth > 6) return;
+
+  let entries: string[];
+  try {
+    entries = readdirSync(currentDir);
+  } catch {
+    return;
+  }
+
+  // Check if this directory has a go.mod
+  if (depth > 0 && entries.includes("go.mod")) {
+    const relPath = toForwardSlash(relative(rootDir, currentDir));
+    if (relPath !== "" && relPath !== ".") {
+      results.push(relPath);
+    }
+    // Don't recurse into sub-modules — they manage themselves
+    return;
+  }
+
+  for (const entry of entries) {
+    if (SKIP_DIRS.has(entry) || entry.startsWith(".")) continue;
+
+    const fullPath = join(currentDir, entry);
+    try {
+      if (statSync(fullPath).isDirectory()) {
+        findNestedGoMods(rootDir, fullPath, results, depth + 1);
+      }
+    } catch {
+      continue;
+    }
+  }
+}
+
+/**
+ * Detect Go module roots by finding nested go.mod files.
+ */
+export function detectGoModuleRoots(absDir: string): string[] {
+  const results: string[] = [];
+  findNestedGoMods(absDir, absDir, results);
+  return results.sort();
+}
+
+/**
+ * Detect all monorepo project roots.
+ *
+ * Combines:
+ * - JS/TS workspace detection (package.json workspaces, pnpm-workspace.yaml)
+ * - Go multi-module detection (nested go.mod files)
+ *
+ * Returns relative paths sorted alphabetically. Returns empty array for
+ * single-root projects (no workspace members or nested go.mod files found).
+ */
+export function detectMonorepoRoots(absDir: string): string[] {
+  const roots = new Set<string>();
+
+  const jsRoots = detectJSWorkspaceRoots(absDir);
+  for (const root of jsRoots) roots.add(root);
+
+  const goRoots = detectGoModuleRoots(absDir);
+  for (const root of goRoots) roots.add(root);
+
+  return Array.from(roots).sort();
 }
 
 // ── Public API ──────────────────────────────────────────────────────────────
@@ -413,7 +704,12 @@ export interface AnalyzeFrameworksOptions {
  * Detect frameworks in a project by scanning inventory and import graph
  * against the framework registry.
  *
- * Returns a DetectedFrameworks result with confidence-scored entries.
+ * Supports monorepo multi-root detection: if workspace members or nested
+ * go.mod files are found, each root gets an independent detection pass.
+ * Single-root projects produce one root entry at ".".
+ *
+ * Returns a DetectedFrameworks result with confidence-scored entries
+ * and per-root breakdown.
  */
 export function analyzeFrameworks(
   absDir: string,
@@ -422,36 +718,58 @@ export function analyzeFrameworks(
   options?: AnalyzeFrameworksOptions,
 ): DetectedFrameworks {
   const registry = options?.registry ?? FRAMEWORK_REGISTRY;
-  const ctx = buildDetectionContext(absDir, inventory, imports);
-  const detected: DetectedFramework[] = [];
 
-  for (const entry of registry) {
-    const result = detectFramework(entry, ctx);
-    if (result) {
-      detected.push(result);
+  // Detect monorepo roots
+  const monorepoRoots = detectMonorepoRoots(absDir);
+
+  // If no sub-roots detected, treat as single-root project
+  const rootPaths = monorepoRoots.length > 0 ? monorepoRoots : ["."];
+
+  const allDetected: DetectedFramework[] = [];
+  const roots: DetectedRoot[] = [];
+
+  for (const rootPath of rootPaths) {
+    const ctx = buildScopedDetectionContext(rootPath, absDir, inventory, imports);
+    const rootFrameworks: DetectedFramework[] = [];
+
+    for (const entry of registry) {
+      const result = detectFramework(entry, ctx, rootPath);
+      if (result) {
+        rootFrameworks.push(result);
+      }
     }
+
+    // Sort per-root frameworks by confidence descending, then by name
+    rootFrameworks.sort((a, b) => {
+      const conf = b.confidence - a.confidence;
+      if (conf !== 0) return conf;
+      return a.name.localeCompare(b.name);
+    });
+
+    roots.push({ path: rootPath, detectedFrameworks: rootFrameworks });
+    allDetected.push(...rootFrameworks);
   }
 
-  // Sort by confidence descending, then by name
-  detected.sort((a, b) => {
+  // Sort combined frameworks by confidence descending, then by name
+  allDetected.sort((a, b) => {
     const conf = b.confidence - a.confidence;
     if (conf !== 0) return conf;
     return a.name.localeCompare(b.name);
   });
 
-  // Build summary
+  // Build summary from all detected frameworks
   const byCategory: Partial<Record<FrameworkCategory, number>> = {};
   const byLanguage: Record<string, number> = {};
-  for (const fw of detected) {
+  for (const fw of allDetected) {
     byCategory[fw.category] = (byCategory[fw.category] ?? 0) + 1;
     byLanguage[fw.language] = (byLanguage[fw.language] ?? 0) + 1;
   }
 
   const summary: DetectedFrameworksSummary = {
-    totalDetected: detected.length,
+    totalDetected: allDetected.length,
     byCategory,
     byLanguage,
   };
 
-  return { frameworks: detected, summary };
+  return { frameworks: allDetected, roots, summary };
 }

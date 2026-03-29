@@ -762,11 +762,24 @@ export interface DetectedFrameworksSummary {
 }
 
 /**
+ * A detected project root within a monorepo (or single-root project).
+ * Each root gets its own independent framework detection pass.
+ */
+export interface DetectedRoot {
+  /** Relative path from the project root (e.g., "." or "packages/web"). */
+  path: string;
+  /** Frameworks detected within this root, sorted by confidence descending. */
+  detectedFrameworks: DetectedFramework[];
+}
+
+/**
  * Complete framework detection output — written to frameworks.json.
  */
 export interface DetectedFrameworks {
   /** All detected frameworks, sorted by confidence descending. */
   frameworks: DetectedFramework[];
+  /** Detected project roots with per-root framework results. */
+  roots: DetectedRoot[];
   /** Aggregate statistics. */
   summary: DetectedFrameworksSummary;
 }
