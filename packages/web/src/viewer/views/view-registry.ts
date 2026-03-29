@@ -69,6 +69,8 @@ export interface ViewRenderContext {
   selectedZone: string | null;
   selectedRunId: string | null;
   selectedTaskId: string | null;
+  /** Explorer sub-tab (files, functions, properties). */
+  explorerTab: string | null;
   /** Circular dependency cycle to focus in the graph. */
   focusCycle: string[] | null;
   navigateTo: NavigateTo;
@@ -83,8 +85,8 @@ const REGISTRY: Record<string, ViewRenderer> = {
   "overview": ({ data, navigateTo }) =>
     h(Overview, { data, navigateTo }),
 
-  "explorer": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isFeatureDisabled }) =>
-    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering") }),
+  "explorer": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isFeatureDisabled, explorerTab }) =>
+    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering"), initialTab: explorerTab }),
 
   // Legacy routes — redirect to Explorer view
   "graph": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isFeatureDisabled }) =>

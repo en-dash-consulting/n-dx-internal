@@ -17,6 +17,30 @@ import { BrandedHeader } from "../components/logos.js";
 
 // ── Types ───────────────────────────────────────────────────────────
 
+/** Valid explorer sub-tab identifiers. */
+export type ExplorerTabId = "files" | "functions" | "properties";
+
+const EXPLORER_TABS: { id: ExplorerTabId; label: string; icon: string }[] = [
+  { id: "files", label: "Files", icon: "\u2630" },
+  { id: "functions", label: "Functions", icon: "\u0192" },
+  { id: "properties", label: "Properties", icon: "\u2699" },
+];
+
+const VALID_TAB_IDS = new Set<string>(EXPLORER_TABS.map((t) => t.id));
+const EXPLORER_TAB_KEY = "explorer-active-tab";
+
+function resolveInitialTab(initialTab: string | null | undefined): ExplorerTabId {
+  // 1. If URL provides a valid tab, use it
+  if (initialTab && VALID_TAB_IDS.has(initialTab)) return initialTab as ExplorerTabId;
+  // 2. Fall back to localStorage
+  try {
+    const stored = localStorage.getItem(EXPLORER_TAB_KEY);
+    if (stored && VALID_TAB_IDS.has(stored)) return stored as ExplorerTabId;
+  } catch { /* noop */ }
+  // 3. Default to files
+  return "files";
+}
+
 interface ExplorerViewProps {
   data: LoadedData;
   onSelect: (detail: DetailItem | null) => void;
@@ -27,6 +51,8 @@ interface ExplorerViewProps {
   isGraphDisabled?: boolean;
   /** When set, graph auto-opens in split mode and focuses on the given circular cycle paths. */
   focusCycle?: string[] | null;
+  /** Initial sub-tab from URL (e.g. "files", "functions", "properties"). */
+  initialTab?: string | null;
 }
 
 type ExplorerMode = "files" | "split";
@@ -86,8 +112,37 @@ export function ExplorerView({
   navigateTo,
   isGraphDisabled,
   focusCycle,
+  initialTab,
 }: ExplorerViewProps) {
   const { inventory, zones, classifications, imports } = data;
+
+  // Active sub-tab
+  const [activeTab, setActiveTab] = useState<ExplorerTabId>(() => resolveInitialTab(initialTab));
+  const initialTabConsumedRef = useRef(false);
+
+  // Sync URL on initial mount and when tab comes from URL
+  useEffect(() => {
+    if (initialTabConsumedRef.current) return;
+    initialTabConsumedRef.current = true;
+    const resolved = resolveInitialTab(initialTab);
+    setActiveTab(resolved);
+    // Always ensure URL reflects the active tab
+    history.replaceState(
+      { view: "explorer", file: null, zone: null, runId: null, taskId: null, explorerTab: resolved },
+      "",
+      `/explorer/${resolved}`,
+    );
+  }, [initialTab]);
+
+  const handleTabChange = useCallback((tabId: ExplorerTabId) => {
+    setActiveTab(tabId);
+    try { localStorage.setItem(EXPLORER_TAB_KEY, tabId); } catch { /* noop */ }
+    history.pushState(
+      { view: "explorer", file: null, zone: null, runId: null, taskId: null, explorerTab: tabId },
+      "",
+      `/explorer/${tabId}`,
+    );
+  }, []);
 
   // Mode: files-only or split (files + graph)
   const [mode, setMode] = useState<ExplorerMode>(getInitialMode);
@@ -589,16 +644,38 @@ export function ExplorerView({
       h(BrandedHeader, { product: "sourcevision", title: "SourceVision", class: "branded-header-sv" }),
       h("h2", { class: "section-header" }, "Explorer"),
     ),
-    h("p", { class: "section-sub" },
-      `${inventory.summary.totalFiles} files, ${inventory.summary.totalLines.toLocaleString()} lines`,
-      hasImports ? ` \u2022 ${imports!.edges.length} import edges between ${nodeCount} files` : "",
-      hasImports && imports!.summary.avgImportsPerFile > 0
-        ? ` \u2022 ${imports!.summary.avgImportsPerFile} avg imports/file`
-        : "",
-      hasImports && imports!.summary.circularCount > 0
-        ? ` \u2022 ${imports!.summary.circularCount} circular`
-        : "",
+
+    // Sub-tab bar
+    h("div", { class: "explorer-tab-bar", role: "tablist", "aria-label": "Explorer sections" },
+      EXPLORER_TABS.map((tab) =>
+        h("button", {
+          key: tab.id,
+          class: `explorer-tab${activeTab === tab.id ? " explorer-tab-active" : ""}`,
+          role: "tab",
+          "aria-selected": String(activeTab === tab.id),
+          "aria-controls": `explorer-panel-${tab.id}`,
+          onClick: () => handleTabChange(tab.id),
+        }, `${tab.icon} ${tab.label}`)
+      ),
     ),
+
+    // Tab panel wrapper
+    h("div", {
+      role: "tabpanel",
+      id: `explorer-panel-${activeTab}`,
+      "aria-labelledby": `explorer-tab-${activeTab}`,
+    },
+      activeTab === "files" ? h(Fragment, null,
+        h("p", { class: "section-sub" },
+          `${inventory.summary.totalFiles} files, ${inventory.summary.totalLines.toLocaleString()} lines`,
+          hasImports ? ` \u2022 ${imports!.edges.length} import edges between ${nodeCount} files` : "",
+          hasImports && imports!.summary.avgImportsPerFile > 0
+            ? ` \u2022 ${imports!.summary.avgImportsPerFile} avg imports/file`
+            : "",
+          hasImports && imports!.summary.circularCount > 0
+            ? ` \u2022 ${imports!.summary.circularCount} circular`
+            : "",
+        ),
 
     // Mode toggle bar
     h("div", { class: "explorer-mode-bar" },
@@ -837,6 +914,12 @@ export function ExplorerView({
         h("div", null,
           renderFileTable(visible, remaining, showCount, setShowCount, zoneList, hasClassifications, hasLastModified, fileToZone, fileToClassification, sortIndicator, toggleSort, handleRowClick, selectedFile),
         ),
+      ) : activeTab === "functions" ? h("div", { class: "explorer-tab-placeholder" },
+        h("p", { class: "section-sub" }, "Functions catalog — coming soon."),
+      ) : activeTab === "properties" ? h("div", { class: "explorer-tab-placeholder" },
+        h("p", { class: "section-sub" }, "Configuration properties — coming soon."),
+      ) : null,
+    ),
   );
 }
 

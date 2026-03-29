@@ -109,6 +109,27 @@ describe("route-state", () => {
     expect(parsePathnameRoute("/explorer", VIEWS)).toEqual({ view: "explorer", subId: null });
   });
 
+  // Explorer sub-tab deep links
+  it("parses /explorer/files as explorer deep link with subId 'files'", () => {
+    expect(parsePathnameRoute("/explorer/files", VIEWS)).toEqual({ view: "explorer", subId: "files" });
+  });
+
+  it("parses /explorer/functions as explorer deep link with subId 'functions'", () => {
+    expect(parsePathnameRoute("/explorer/functions", VIEWS)).toEqual({ view: "explorer", subId: "functions" });
+  });
+
+  it("parses /explorer/properties as explorer deep link with subId 'properties'", () => {
+    expect(parsePathnameRoute("/explorer/properties", VIEWS)).toEqual({ view: "explorer", subId: "properties" });
+  });
+
+  it("resolves /explorer/files from hash route", () => {
+    expect(parseLegacyHashRoute("#explorer/files", VIEWS)).toEqual({ view: "explorer", subId: "files" });
+  });
+
+  it("resolves /explorer/functions via resolveLocationRoute", () => {
+    expect(resolveLocationRoute("/explorer/functions", "", VIEWS)).toEqual({ view: "explorer", subId: "functions" });
+  });
+
   // Endpoints redirects (routes → endpoints)
   it("redirects legacy /routes route to endpoints view", () => {
     expect(parsePathnameRoute("/routes", VIEWS)).toEqual({ view: "endpoints", subId: null });

@@ -16,7 +16,7 @@ export interface LoadedData {
   frameworks: DetectedFrameworks | null;
 }
 
-export type NavigateTo = (view: ViewId, opts?: { file?: string; zone?: string; runId?: string; taskId?: string; cycle?: string[] }) => void;
+export type NavigateTo = (view: ViewId, opts?: { file?: string; zone?: string; runId?: string; taskId?: string; cycle?: string[]; explorerTab?: string }) => void;
 
 export interface FileDetail {
   type: "file";

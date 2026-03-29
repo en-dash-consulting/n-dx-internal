@@ -5,7 +5,7 @@ export interface ParsedRoute {
   subId: string | null;
 }
 
-const DEEP_LINK_VIEWS = new Set<ViewId>(["prd", "hench-runs"]);
+const DEEP_LINK_VIEWS = new Set<ViewId>(["prd", "hench-runs", "explorer"]);
 
 /** Legacy view IDs that redirect to the unified analysis view */
 const ANALYSIS_REDIRECTS = new Set(["architecture", "problems", "suggestions"]);

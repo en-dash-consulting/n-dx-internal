@@ -14,7 +14,7 @@ export { Overview } from "./overview.js";
 export { Graph } from "./graph.js";
 export { ZonesView } from "./zones.js";
 export { FilesView } from "./files.js";
-export { ExplorerView } from "./sv-explorer.js";
+export { ExplorerView, type ExplorerTabId } from "./sv-explorer.js";
 export { SvAnalysisView } from "./sv-analysis.js";
 export { ArchitectureView } from "./architecture.js";
 export { ProblemsView } from "./problems.js";

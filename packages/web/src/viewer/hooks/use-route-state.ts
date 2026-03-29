@@ -16,6 +16,8 @@ export interface RouteState {
   selectedZone: string | null;
   selectedRunId: string | null;
   selectedTaskId: string | null;
+  /** Explorer sub-tab (files, functions, properties) — set via URL or navigateTo({ explorerTab }). */
+  explorerTab: string | null;
   /** Circular dependency cycle to focus in the graph — set via navigateTo({ cycle }). */
   focusCycle: string[] | null;
   navigateTo: NavigateTo;
@@ -43,10 +45,17 @@ function getInitialTaskId(validViews: Set<ViewId>): string | null {
   return parsed.subId;
 }
 
+function getInitialExplorerTab(validViews: Set<ViewId>): string | null {
+  const parsed = resolveLocationRoute(location.pathname, location.hash, validViews);
+  if (!parsed || parsed.view !== "explorer") return null;
+  return parsed.subId;
+}
+
 export function useRouteState(validViews: Set<ViewId>): RouteState {
   const [view, setView] = useState<ViewId>(() => getInitialView(validViews));
   const [selectedRunId, setSelectedRunId] = useState<string | null>(() => getInitialRunId(validViews));
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(() => getInitialTaskId(validViews));
+  const [explorerTab, setExplorerTab] = useState<string | null>(() => getInitialExplorerTab(validViews));
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [focusCycle, setFocusCycle] = useState<string[] | null>(null);
@@ -57,15 +66,17 @@ export function useRouteState(validViews: Set<ViewId>): RouteState {
     const runId = opts?.runId ?? null;
     const taskId = opts?.taskId ?? null;
     const cycle = opts?.cycle ?? null;
+    const eTab = opts?.explorerTab ?? null;
     setSelectedFile(file);
     setSelectedZone(zone);
     setSelectedRunId(runId);
     setSelectedTaskId(taskId);
+    setExplorerTab(eTab);
     setFocusCycle(cycle);
     setView(targetView);
-    const subId = runId ?? taskId;
+    const subId = runId ?? taskId ?? eTab;
     const urlPath = subId ? `/${targetView}/${subId}` : `/${targetView}`;
-    history.pushState({ view: targetView, file, zone, runId, taskId }, "", urlPath);
+    history.pushState({ view: targetView, file, zone, runId, taskId, explorerTab: eTab }, "", urlPath);
   }, []);
 
   const handleSidebarNav = useCallback((id: ViewId) => {
@@ -73,8 +84,9 @@ export function useRouteState(validViews: Set<ViewId>): RouteState {
     setSelectedZone(null);
     setSelectedRunId(null);
     setSelectedTaskId(null);
+    setExplorerTab(null);
     setView(id);
-    history.pushState({ view: id, file: null, zone: null, runId: null, taskId: null }, "", `/${id}`);
+    history.pushState({ view: id, file: null, zone: null, runId: null, taskId: null, explorerTab: null }, "", `/${id}`);
   }, []);
 
   useEffect(() => {
@@ -83,31 +95,35 @@ export function useRouteState(validViews: Set<ViewId>): RouteState {
     if (hashRoute) {
       const isRunView = hashRoute.view === "hench-runs";
       const isTaskView = hashRoute.view === "prd";
+      const isExplorer = hashRoute.view === "explorer";
       const runId = isRunView ? hashRoute.subId : null;
       const taskId = isTaskView ? hashRoute.subId : null;
+      const eTab = isExplorer ? hashRoute.subId : null;
       setView(hashRoute.view);
       setSelectedFile(null);
       setSelectedZone(null);
       setSelectedRunId(runId);
       setSelectedTaskId(taskId);
+      setExplorerTab(eTab);
       const hashUrl = hashRoute.subId ? `/${hashRoute.view}/${hashRoute.subId}` : `/${hashRoute.view}`;
-      history.replaceState({ view: hashRoute.view, file: null, zone: null, runId, taskId }, "", hashUrl);
+      history.replaceState({ view: hashRoute.view, file: null, zone: null, runId, taskId, explorerTab: eTab }, "", hashUrl);
     } else {
       // Seed the initial history entry — preserve deep-link path if present
-      const subId = selectedRunId ?? selectedTaskId;
+      const subId = selectedRunId ?? selectedTaskId ?? explorerTab;
       const initialUrl = subId ? `/${view}/${subId}` : `/${view}`;
-      history.replaceState({ view, file: selectedFile, zone: selectedZone, runId: selectedRunId, taskId: selectedTaskId }, "", initialUrl);
+      history.replaceState({ view, file: selectedFile, zone: selectedZone, runId: selectedRunId, taskId: selectedTaskId, explorerTab }, "", initialUrl);
     }
 
     const handlePopState = (e: PopStateEvent) => {
       if (e.state) {
-        const s = e.state as { view?: string; file?: string | null; zone?: string | null; runId?: string | null; taskId?: string | null };
+        const s = e.state as { view?: string; file?: string | null; zone?: string | null; runId?: string | null; taskId?: string | null; explorerTab?: string | null };
         if (s.view && validViews.has(s.view as ViewId)) {
           setView(s.view as ViewId);
           setSelectedFile(s.file ?? null);
           setSelectedZone(s.zone ?? null);
           setSelectedRunId(s.runId ?? null);
           setSelectedTaskId(s.taskId ?? null);
+          setExplorerTab(s.explorerTab ?? null);
           return;
         }
       }
@@ -119,8 +135,10 @@ export function useRouteState(validViews: Set<ViewId>): RouteState {
       setSelectedZone(null);
       const isRunView = parsed.view === "hench-runs";
       const isTaskView = parsed.view === "prd";
+      const isExplorer = parsed.view === "explorer";
       setSelectedRunId(isRunView ? parsed.subId : null);
       setSelectedTaskId(isTaskView ? parsed.subId : null);
+      setExplorerTab(isExplorer ? parsed.subId : null);
       const fallbackUrl = parsed.subId ? `/${parsed.view}/${parsed.subId}` : `/${parsed.view}`;
       history.replaceState({
         view: parsed.view,
@@ -128,6 +146,7 @@ export function useRouteState(validViews: Set<ViewId>): RouteState {
         zone: null,
         runId: isRunView ? parsed.subId : null,
         taskId: isTaskView ? parsed.subId : null,
+        explorerTab: isExplorer ? parsed.subId : null,
       }, "", fallbackUrl);
     };
 
@@ -137,5 +156,5 @@ export function useRouteState(validViews: Set<ViewId>): RouteState {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { view, selectedFile, setSelectedFile, selectedZone, selectedRunId, selectedTaskId, focusCycle, navigateTo, handleSidebarNav };
+  return { view, selectedFile, setSelectedFile, selectedZone, selectedRunId, selectedTaskId, explorerTab, focusCycle, navigateTo, handleSidebarNav };
 }

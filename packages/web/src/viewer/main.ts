@@ -63,6 +63,7 @@ function App({ scope }: { scope: string | null }) {
     selectedZone,
     selectedRunId,
     selectedTaskId,
+    explorerTab,
     focusCycle,
     navigateTo,
     handleSidebarNav,
@@ -171,7 +172,7 @@ function App({ scope }: { scope: string | null }) {
       ),
       loading
         ? h("div", { class: "loading", role: "status", "aria-live": "polite" }, "Loading...")
-        : renderActiveView(view, { data, setDetail, setPrdDetailContent, selectedFile, setSelectedFile, selectedZone, selectedRunId, selectedTaskId, focusCycle, navigateTo, isFeatureDisabled }),
+        : renderActiveView(view, { data, setDetail, setPrdDetailContent, selectedFile, setSelectedFile, selectedZone, selectedRunId, selectedTaskId, explorerTab, focusCycle, navigateTo, isFeatureDisabled }),
     ),
     !isFeatureDisabled("detailPanel")
       ? h(DetailPanel, { detail, data, navigateTo, onClose: () => { setDetail(null); setPrdDetailContent(null); }, prdDetailContent })
