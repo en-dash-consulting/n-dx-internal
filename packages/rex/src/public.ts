@@ -361,6 +361,36 @@ export type {
   FileValidationErrorCode,
 } from "./analyze/file-validation.js";
 
+// ---- Parallel: blast radius, conflict analysis, execution plan ---------------
+
+export type { ZoneIndex, ImportGraph } from "./parallel/blast-radius.js";
+export {
+  blastRadius,
+  extractPathsFromCriteria,
+  resolveModuleNames,
+  expandImportNeighbors,
+  expandZoneTags,
+} from "./parallel/blast-radius.js";
+
+export type {
+  ConflictConfidence,
+  ConflictEdge,
+  ConflictGraph,
+  Conflict,
+  TaskGroup,
+  ExecutionPlan,
+} from "./parallel/conflict-analysis.js";
+export {
+  buildConflictGraph,
+  findIndependentSets,
+} from "./parallel/conflict-analysis.js";
+
+export type { FormattedExecutionPlan } from "./parallel/execution-plan.js";
+export {
+  computeExecutionPlan,
+  formatExecutionPlan,
+} from "./parallel/execution-plan.js";
+
 // ---- MCP server factory -----------------------------------------------------
 
 export { createRexMcpServer } from "./cli/mcp.js";

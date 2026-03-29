@@ -312,7 +312,7 @@ async function dispatchCommand(
   // init creates it; analyze handles its own graceful fallback.
   // Commands whose first positional arg is an ID (not a dir) must handle
   // their own dir resolution and requireRexDir check inside the case block.
-  const SKIP_DIR_CHECK = new Set(["init", "analyze", "import", "update", "move", "add", "reshape", "remove"]);
+  const SKIP_DIR_CHECK = new Set(["init", "analyze", "import", "update", "move", "add", "reshape", "remove", "parallel"]);
   if (!SKIP_DIR_CHECK.has(command)) {
     requireRexDir(resolveDir(positional));
   }
@@ -438,6 +438,15 @@ async function dispatchCommand(
       await cmdHealth(resolveDir(positional), flags);
       break;
     }
+    case "parallel": {
+      const { cmdParallel } = await import("./commands/parallel.js");
+      const sub = positional[0];
+      const parallelDir = positional.length > 1
+        ? resolve(positional[positional.length - 1])
+        : sub && !["plan"].includes(sub) ? resolve(sub) : process.cwd();
+      await cmdParallel(parallelDir, sub === "plan" ? sub : undefined, flags);
+      break;
+    }
     case "mcp": {
       const { startMcpServer } = await import("./mcp.js");
       await startMcpServer(resolveDir(positional));
@@ -465,7 +474,8 @@ async function dispatchCommand(
       const REX_COMMANDS = [
         "init", "status", "next", "add", "update", "move", "remove", "reshape",
         "prune", "validate", "fix", "sync", "usage", "report", "verify",
-        "recommend", "analyze", "import", "adapter", "reorganize", "health", "mcp",
+        "recommend", "analyze", "import", "adapter", "reorganize", "health",
+        "parallel", "mcp",
       ];
       const typoHint = formatTypoSuggestion(command, REX_COMMANDS, "rex ");
       throw new CLIError(

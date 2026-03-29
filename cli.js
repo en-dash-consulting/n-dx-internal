@@ -1063,6 +1063,13 @@ async function handleNext(rest) {
   process.exit(0);
 }
 
+async function handleParallel(rest) {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".rex"]);
+  await runOrDie(tools.rex, ["parallel", ...rest]);
+  process.exit(0);
+}
+
 // ── Delegated sourcevision commands ───────────────────────────────────────────
 
 async function handleReset(rest) {
@@ -1193,6 +1200,7 @@ async function main() {
     case "reorganize":  return handleReorganize(rest);
     case "prune":       return handlePrune(rest);
     case "next":        return handleNext(rest);
+    case "parallel":    return handleParallel(rest);
 
     // ── Delegated sourcevision commands ──
     case "reset":       return handleReset(rest);
