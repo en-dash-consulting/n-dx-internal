@@ -1,0 +1,3992 @@
+{
+  "entries": [
+    {
+      "name": "A",
+      "type": "env",
+      "file": "packages/sourcevision/src/analyzers/config-surface.ts",
+      "line": 98,
+      "referencedBy": []
+    },
+    {
+      "name": "B",
+      "type": "env",
+      "file": "packages/sourcevision/src/analyzers/config-surface.ts",
+      "line": 98,
+      "referencedBy": []
+    },
+    {
+      "name": "FORCE_COLOR",
+      "type": "env",
+      "file": "help.js",
+      "line": 27,
+      "referencedBy": []
+    },
+    {
+      "name": "HENCH_SHUTDOWN_TIMEOUT_MS",
+      "type": "env",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 2205,
+      "referencedBy": []
+    },
+    {
+      "name": "N_DX_SHUTDOWN_TIMEOUT_MS",
+      "type": "env",
+      "file": "packages/web/src/server/start.ts",
+      "line": 81,
+      "referencedBy": []
+    },
+    {
+      "name": "N_DX_STOP_GRACE_MS",
+      "type": "env",
+      "file": "cli.js",
+      "line": 325,
+      "referencedBy": []
+    },
+    {
+      "name": "NDX_DEBUG",
+      "type": "env",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 50,
+      "referencedBy": []
+    },
+    {
+      "name": "NDX_DEBUG_LLM",
+      "type": "env",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 50,
+      "referencedBy": []
+    },
+    {
+      "name": "NO_COLOR",
+      "type": "env",
+      "file": "cli-brand.js",
+      "line": 39,
+      "referencedBy": []
+    },
+    {
+      "name": "NODE_ENV",
+      "type": "env",
+      "file": "packages/web/build.js",
+      "line": 35,
+      "referencedBy": []
+    },
+    {
+      "name": "OPENAI_API_KEY",
+      "type": "env",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 213,
+      "referencedBy": []
+    },
+    {
+      "name": "VAR",
+      "type": "env",
+      "file": "packages/sourcevision/src/analyzers/config-surface.ts",
+      "line": 29,
+      "referencedBy": []
+    },
+    {
+      "name": "VAR_NAME",
+      "type": "env",
+      "file": "packages/sourcevision/src/analyzers/config-surface.ts",
+      "line": 25,
+      "referencedBy": []
+    },
+    {
+      "name": ".env.example",
+      "type": "config",
+      "file": "packages/sourcevision/src/language/typescript.ts",
+      "line": 73,
+      "referencedBy": []
+    },
+    {
+      "name": "ACCEPT_SENTINEL",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/analyze.ts",
+      "line": 49,
+      "referencedBy": [],
+      "value": ".accepting"
+    },
+    {
+      "name": "ACQUIRE_TIMEOUT_MS",
+      "type": "constant",
+      "file": "packages/rex/src/store/file-lock.ts",
+      "line": 22,
+      "referencedBy": []
+    },
+    {
+      "name": "ACTIONABLE_STATUSES",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 946,
+      "referencedBy": []
+    },
+    {
+      "name": "ADAPTIVE_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-adaptive.ts",
+      "line": 25,
+      "referencedBy": [],
+      "value": "/api/hench/adaptive/"
+    },
+    {
+      "name": "ADD_PATTERNS",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/validate-modification.ts",
+      "line": 36,
+      "referencedBy": []
+    },
+    {
+      "name": "ADDABLE_LEVELS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/prd-tree.ts",
+      "line": 38,
+      "referencedBy": []
+    },
+    {
+      "name": "AGE_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/prune-confirmation.ts",
+      "line": 91,
+      "referencedBy": []
+    },
+    {
+      "name": "ALL_DATA_FILES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/schema/data-files.ts",
+      "line": 12,
+      "referencedBy": []
+    },
+    {
+      "name": "ALL_DATA_FILES",
+      "type": "constant",
+      "file": "packages/web/src/shared/data-files.ts",
+      "line": 20,
+      "referencedBy": []
+    },
+    {
+      "name": "ALL_PARSEABLE",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/components.ts",
+      "line": 36,
+      "referencedBy": []
+    },
+    {
+      "name": "ALL_STATUSES",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/status-filter.ts",
+      "line": 14,
+      "referencedBy": []
+    },
+    {
+      "name": "ALL_VIEWS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/view-registry.ts",
+      "line": 208,
+      "referencedBy": []
+    },
+    {
+      "name": "ALLOWED_REFRESH_FLAGS",
+      "type": "constant",
+      "file": "refresh-plan.js",
+      "line": 1,
+      "referencedBy": []
+    },
+    {
+      "name": "ANALYSIS_MODULES",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-status.ts",
+      "line": 101,
+      "referencedBy": []
+    },
+    {
+      "name": "ANALYSIS_REDIRECTS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/route-state.ts",
+      "line": 11,
+      "referencedBy": []
+    },
+    {
+      "name": "ANTI_PATTERNS",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reason.ts",
+      "line": 491,
+      "referencedBy": []
+    },
+    {
+      "name": "API_SETTABLE_STATUSES",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-rex/shared.ts",
+      "line": 32,
+      "referencedBy": []
+    },
+    {
+      "name": "ARCHITECTURE_SOURCE_FILES",
+      "type": "constant",
+      "file": "ci.js",
+      "line": 1180,
+      "referencedBy": []
+    },
+    {
+      "name": "ARCHIVE_FILE",
+      "type": "constant",
+      "file": "packages/rex/src/core/archive.ts",
+      "line": 17,
+      "referencedBy": [],
+      "value": "archive.json"
+    },
+    {
+      "name": "ASSET_EXTENSIONS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/inventory.ts",
+      "line": 137,
+      "referencedBy": []
+    },
+    {
+      "name": "AUTH_PATTERNS",
+      "type": "constant",
+      "file": "packages/llm-client/src/cli-provider.ts",
+      "line": 45,
+      "referencedBy": []
+    },
+    {
+      "name": "AUTH_PATTERNS",
+      "type": "constant",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 20,
+      "referencedBy": []
+    },
+    {
+      "name": "AUTO_APPROVED_TOOLS",
+      "type": "constant",
+      "file": "claude-integration.js",
+      "line": 40,
+      "referencedBy": []
+    },
+    {
+      "name": "AUTO_COMPLETABLE_STATUSES",
+      "type": "constant",
+      "file": "packages/rex/src/core/parent-completion.ts",
+      "line": 29,
+      "referencedBy": []
+    },
+    {
+      "name": "AUTO_COMPLETABLE_STATUSES",
+      "type": "constant",
+      "file": "packages/rex/src/core/remove-task.ts",
+      "line": 16,
+      "referencedBy": []
+    },
+    {
+      "name": "AUTO_PLACEMENT_INSTRUCTION",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reason.ts",
+      "line": 503,
+      "referencedBy": []
+    },
+    {
+      "name": "BASE_DELAY_MS",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/loop.ts",
+      "line": 47,
+      "referencedBy": [],
+      "value": "1000"
+    },
+    {
+      "name": "BASE_SKIP_DIRS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/inventory.ts",
+      "line": 20,
+      "referencedBy": []
+    },
+    {
+      "name": "BINARY_CHECK_BYTES",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/file-validation.ts",
+      "line": 24,
+      "referencedBy": [],
+      "value": "8192"
+    },
+    {
+      "name": "BOLD",
+      "type": "constant",
+      "file": "cli-brand.js",
+      "line": 11,
+      "referencedBy": [],
+      "value": "\\x1b[1m"
+    },
+    {
+      "name": "BOX_H_COLLAPSED",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-file-edges.ts",
+      "line": 12,
+      "referencedBy": [],
+      "value": "80"
+    },
+    {
+      "name": "BOX_H_COLLAPSED",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-subzone-edges.ts",
+      "line": 12,
+      "referencedBy": [],
+      "value": "80"
+    },
+    {
+      "name": "BOX_H_COLLAPSED",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/zones.ts",
+      "line": 54,
+      "referencedBy": [],
+      "value": "80"
+    },
+    {
+      "name": "BOX_W",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/zones.ts",
+      "line": 53,
+      "referencedBy": [],
+      "value": "200"
+    },
+    {
+      "name": "BRAND_COLOR",
+      "type": "constant",
+      "file": "cli-brand.js",
+      "line": 10,
+      "referencedBy": []
+    },
+    {
+      "name": "BREAKING_TAG_PATTERNS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/branch-work-classifier.ts",
+      "line": 50,
+      "referencedBy": []
+    },
+    {
+      "name": "BREAKING_TEXT_PATTERNS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/branch-work-classifier.ts",
+      "line": 59,
+      "referencedBy": []
+    },
+    {
+      "name": "BUILT_IN_NAMES",
+      "type": "constant",
+      "file": "packages/rex/src/store/adapter-registry.ts",
+      "line": 151,
+      "referencedBy": []
+    },
+    {
+      "name": "BUILT_IN_TEMPLATES",
+      "type": "constant",
+      "file": "packages/hench/src/schema/templates.ts",
+      "line": 41,
+      "referencedBy": []
+    },
+    {
+      "name": "BUILT_IN_TEMPLATES",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 693,
+      "referencedBy": []
+    },
+    {
+      "name": "BUILTIN_ARCHETYPES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/archetypes.ts",
+      "line": 16,
+      "referencedBy": []
+    },
+    {
+      "name": "BUILTIN_METHOD_NAMES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 39,
+      "referencedBy": []
+    },
+    {
+      "name": "CACHE_TTL_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-project.ts",
+      "line": 56,
+      "referencedBy": []
+    },
+    {
+      "name": "CACHE_TTL_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-status.ts",
+      "line": 88,
+      "referencedBy": []
+    },
+    {
+      "name": "CATEGORY_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+      "line": 742,
+      "referencedBy": []
+    },
+    {
+      "name": "CATEGORY_ORDER",
+      "type": "constant",
+      "file": "packages/hench/src/cli/commands/config.ts",
+      "line": 321,
+      "referencedBy": []
+    },
+    {
+      "name": "CATEGORY_ORDER",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/hench-config.ts",
+      "line": 74,
+      "referencedBy": []
+    },
+    {
+      "name": "CATEGORY_ORDER",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/sv-analysis.ts",
+      "line": 31,
+      "referencedBy": []
+    },
+    {
+      "name": "CHART_H",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/zone-trend-chart.ts",
+      "line": 29,
+      "referencedBy": [],
+      "value": "260"
+    },
+    {
+      "name": "CHART_W",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/zone-trend-chart.ts",
+      "line": 28,
+      "referencedBy": [],
+      "value": "600"
+    },
+    {
+      "name": "CHECKPOINT_FILENAME",
+      "type": "constant",
+      "file": "packages/hench/src/store/run-change-detector.ts",
+      "line": 68,
+      "referencedBy": [],
+      "value": ".aggregation-checkpoint.json"
+    },
+    {
+      "name": "CHILD_PROCESS_ALLOWED",
+      "type": "constant",
+      "file": "ci.js",
+      "line": 973,
+      "referencedBy": []
+    },
+    {
+      "name": "CHUNK_CHAR_LIMIT",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reason.ts",
+      "line": 605,
+      "referencedBy": []
+    },
+    {
+      "name": "CHUNK_ITEM_LIMIT",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reason.ts",
+      "line": 612,
+      "referencedBy": [],
+      "value": "100"
+    },
+    {
+      "name": "CHUNK_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/util/merge.ts",
+      "line": 186,
+      "referencedBy": [],
+      "value": "500"
+    },
+    {
+      "name": "CLI_FILE_TOOLS",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/cli-loop.ts",
+      "line": 87,
+      "referencedBy": []
+    },
+    {
+      "name": "COMMAND_REGISTRY",
+      "type": "constant",
+      "file": "help.js",
+      "line": 84,
+      "referencedBy": []
+    },
+    {
+      "name": "CONFIG_CACHE_TTL_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-config.ts",
+      "line": 72,
+      "referencedBy": []
+    },
+    {
+      "name": "CONFIG_FIELD_META",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 125,
+      "referencedBy": []
+    },
+    {
+      "name": "CONFIG_FIELDS",
+      "type": "constant",
+      "file": "packages/hench/src/cli/commands/config.ts",
+      "line": 34,
+      "referencedBy": []
+    },
+    {
+      "name": "CONFIG_FILE_PATTERNS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/config-surface.ts",
+      "line": 44,
+      "referencedBy": []
+    },
+    {
+      "name": "CONFIG_POLL_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/config-footer.ts",
+      "line": 29,
+      "referencedBy": []
+    },
+    {
+      "name": "CONFIG_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-config.ts",
+      "line": 260,
+      "referencedBy": [],
+      "value": "/api/ndx-config"
+    },
+    {
+      "name": "CONFLICT_THRESHOLD",
+      "type": "constant",
+      "file": "packages/rex/src/recommend/conflict-detection.ts",
+      "line": 27,
+      "referencedBy": [],
+      "value": "0.7"
+    },
+    {
+      "name": "CONSOLIDATION_INSTRUCTION",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reason.ts",
+      "line": 519,
+      "referencedBy": []
+    },
+    {
+      "name": "CONTAINER_LEVELS",
+      "type": "constant",
+      "file": "packages/rex/src/core/structural.ts",
+      "line": 157,
+      "referencedBy": []
+    },
+    {
+      "name": "CONTENT_WIDTH",
+      "type": "constant",
+      "file": "packages/sourcevision/src/export/pdf-report.ts",
+      "line": 32,
+      "referencedBy": []
+    },
+    {
+      "name": "CONTEXT_CHARS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/search-overlay.ts",
+      "line": 76,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "COPY_FEEDBACK_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/pr-markdown.ts",
+      "line": 31,
+      "referencedBy": [],
+      "value": "2000"
+    },
+    {
+      "name": "CRASH_HISTORY_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/crash/crash-detector.ts",
+      "line": 56,
+      "referencedBy": [],
+      "value": "ndx-crash-history"
+    },
+    {
+      "name": "CRASH_LOOP_THRESHOLD",
+      "type": "constant",
+      "file": "packages/web/src/viewer/crash/crash-detector.ts",
+      "line": 65,
+      "referencedBy": [],
+      "value": "2"
+    },
+    {
+      "name": "CRASH_LOOP_WINDOW_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/crash/crash-detector.ts",
+      "line": 62,
+      "referencedBy": []
+    },
+    {
+      "name": "CREATABLE_TYPES",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-notion.ts",
+      "line": 131,
+      "referencedBy": []
+    },
+    {
+      "name": "CROSS_CUTTING_VIEWS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/view-registry.ts",
+      "line": 191,
+      "referencedBy": []
+    },
+    {
+      "name": "DANGEROUS_PATTERNS",
+      "type": "constant",
+      "file": "packages/hench/src/guard/commands.ts",
+      "line": 30,
+      "referencedBy": []
+    },
+    {
+      "name": "DASHBOARD_ARTIFACT_FILENAME",
+      "type": "constant",
+      "file": "refresh-artifacts.js",
+      "line": 4,
+      "referencedBy": [],
+      "value": "dashboard-artifacts.json"
+    },
+    {
+      "name": "DATA_DIRECTORIES",
+      "type": "constant",
+      "file": "ci.js",
+      "line": 1075,
+      "referencedBy": []
+    },
+    {
+      "name": "DEBOUNCE_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/search-overlay.ts",
+      "line": 77,
+      "referencedBy": [],
+      "value": "200"
+    },
+    {
+      "name": "DEEP_LINK_VIEWS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/route-state.ts",
+      "line": 8,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_AVG_REFRESH_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/refresh-throttle.ts",
+      "line": 74,
+      "referencedBy": [],
+      "value": "800"
+    },
+    {
+      "name": "DEFAULT_BAR_WIDTH",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/status-shared.ts",
+      "line": 31,
+      "referencedBy": [],
+      "value": "20"
+    },
+    {
+      "name": "DEFAULT_BASE_DELAY_MS",
+      "type": "constant",
+      "file": "packages/hench/src/process/memory-throttle.ts",
+      "line": 33,
+      "referencedBy": [],
+      "value": "2000"
+    },
+    {
+      "name": "DEFAULT_BASE_DELAY_MS",
+      "type": "constant",
+      "file": "packages/llm-client/src/api-provider.ts",
+      "line": 42,
+      "referencedBy": [],
+      "value": "1000"
+    },
+    {
+      "name": "DEFAULT_BASE_DELAY_MS",
+      "type": "constant",
+      "file": "packages/llm-client/src/cli-provider.ts",
+      "line": 65,
+      "referencedBy": [],
+      "value": "1000"
+    },
+    {
+      "name": "DEFAULT_BASE_DELAY_MS",
+      "type": "constant",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 37,
+      "referencedBy": [],
+      "value": "1000"
+    },
+    {
+      "name": "DEFAULT_BASE_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/refresh-throttle.ts",
+      "line": 73,
+      "referencedBy": [],
+      "value": "5000"
+    },
+    {
+      "name": "DEFAULT_BUFFER_COUNT",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
+      "line": 60,
+      "referencedBy": [],
+      "value": "10"
+    },
+    {
+      "name": "DEFAULT_CHUNK_SIZE",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/chunked-review-state.ts",
+      "line": 9,
+      "referencedBy": [],
+      "value": "5"
+    },
+    {
+      "name": "DEFAULT_CHUNK_SIZE",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/progressive-loader.ts",
+      "line": 29,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "DEFAULT_CLEANUP_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/usage-cleanup-scheduler.ts",
+      "line": 45,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_CODEX_BINARY",
+      "type": "constant",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 39,
+      "referencedBy": [],
+      "value": "codex"
+    },
+    {
+      "name": "DEFAULT_CODEX_MODEL",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/cli-loop.ts",
+      "line": 40,
+      "referencedBy": [],
+      "value": "gpt-5-codex"
+    },
+    {
+      "name": "DEFAULT_CODEX_MODEL",
+      "type": "constant",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 40,
+      "referencedBy": [],
+      "value": "gpt-5-codex"
+    },
+    {
+      "name": "DEFAULT_CODEX_MODEL",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/analyze-shared.ts",
+      "line": 18,
+      "referencedBy": [],
+      "value": "gpt-5-codex"
+    },
+    {
+      "name": "DEFAULT_CODEX_MODEL",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/claude-client.ts",
+      "line": 23,
+      "referencedBy": [],
+      "value": "gpt-5-codex"
+    },
+    {
+      "name": "DEFAULT_DELAY_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/messaging/message-throttle.ts",
+      "line": 85,
+      "referencedBy": [],
+      "value": "250"
+    },
+    {
+      "name": "DEFAULT_DELAY_THRESHOLD",
+      "type": "constant",
+      "file": "packages/hench/src/process/memory-throttle.ts",
+      "line": 27,
+      "referencedBy": [],
+      "value": "80"
+    },
+    {
+      "name": "DEFAULT_HIGH_CONFIDENCE",
+      "type": "constant",
+      "file": "packages/rex/src/core/epic-correlation.ts",
+      "line": 81,
+      "referencedBy": [],
+      "value": "0.5"
+    },
+    {
+      "name": "DEFAULT_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/dom-performance-monitor.ts",
+      "line": 116,
+      "referencedBy": [],
+      "value": "2000"
+    },
+    {
+      "name": "DEFAULT_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/memory-monitor.ts",
+      "line": 87,
+      "referencedBy": [],
+      "value": "5000"
+    },
+    {
+      "name": "DEFAULT_ITEM_HEIGHT",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/virtual-scroll.ts",
+      "line": 57,
+      "referencedBy": [],
+      "value": "40"
+    },
+    {
+      "name": "DEFAULT_LIMIT",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-search.ts",
+      "line": 44,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "DEFAULT_MAX_BATCH_SIZE",
+      "type": "constant",
+      "file": "packages/web/src/viewer/messaging/message-coalescer.ts",
+      "line": 84,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "DEFAULT_MAX_BUFFER",
+      "type": "constant",
+      "file": "packages/llm-client/src/exec.ts",
+      "line": 59,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_MAX_CANDIDATES",
+      "type": "constant",
+      "file": "packages/rex/src/core/epic-correlation.ts",
+      "line": 82,
+      "referencedBy": [],
+      "value": "5"
+    },
+    {
+      "name": "DEFAULT_MAX_COMPARISONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/dom-performance-monitor.ts",
+      "line": 119,
+      "referencedBy": [],
+      "value": "100"
+    },
+    {
+      "name": "DEFAULT_MAX_COMPLETED_HISTORIES",
+      "type": "constant",
+      "file": "packages/hench/src/process/process-memory-tracker.ts",
+      "line": 24,
+      "referencedBy": [],
+      "value": "20"
+    },
+    {
+      "name": "DEFAULT_MAX_COMPLETED_HISTORIES",
+      "type": "constant",
+      "file": "packages/web/src/server/process-memory-tracker.ts",
+      "line": 23,
+      "referencedBy": [],
+      "value": "20"
+    },
+    {
+      "name": "DEFAULT_MAX_COMPLETED_TASKS",
+      "type": "constant",
+      "file": "packages/hench/src/process/concurrent-execution-metrics.ts",
+      "line": 31,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "DEFAULT_MAX_COMPLETED_TASKS",
+      "type": "constant",
+      "file": "packages/web/src/server/concurrent-execution-metrics.ts",
+      "line": 24,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "DEFAULT_MAX_CONCURRENT_PROCESSES",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 1774,
+      "referencedBy": [],
+      "value": "3"
+    },
+    {
+      "name": "DEFAULT_MAX_DELAY_MS",
+      "type": "constant",
+      "file": "packages/hench/src/process/memory-throttle.ts",
+      "line": 36,
+      "referencedBy": [],
+      "value": "30000"
+    },
+    {
+      "name": "DEFAULT_MAX_DELAY_MS",
+      "type": "constant",
+      "file": "packages/llm-client/src/cli-provider.ts",
+      "line": 66,
+      "referencedBy": [],
+      "value": "10000"
+    },
+    {
+      "name": "DEFAULT_MAX_DELAY_MS",
+      "type": "constant",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 38,
+      "referencedBy": [],
+      "value": "10000"
+    },
+    {
+      "name": "DEFAULT_MAX_PENDING_PER_TYPE",
+      "type": "constant",
+      "file": "packages/web/src/viewer/messaging/message-throttle.ts",
+      "line": 86,
+      "referencedBy": [],
+      "value": "20"
+    },
+    {
+      "name": "DEFAULT_MAX_RETRIES",
+      "type": "constant",
+      "file": "packages/hench/src/process/memory-throttle.ts",
+      "line": 39,
+      "referencedBy": [],
+      "value": "10"
+    },
+    {
+      "name": "DEFAULT_MAX_RETRIES",
+      "type": "constant",
+      "file": "packages/llm-client/src/api-provider.ts",
+      "line": 41,
+      "referencedBy": [],
+      "value": "3"
+    },
+    {
+      "name": "DEFAULT_MAX_RETRIES",
+      "type": "constant",
+      "file": "packages/llm-client/src/cli-provider.ts",
+      "line": 64,
+      "referencedBy": [],
+      "value": "2"
+    },
+    {
+      "name": "DEFAULT_MAX_RETRIES",
+      "type": "constant",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 36,
+      "referencedBy": [],
+      "value": "2"
+    },
+    {
+      "name": "DEFAULT_MAX_SAMPLES",
+      "type": "constant",
+      "file": "packages/hench/src/process/process-memory-tracker.ts",
+      "line": 21,
+      "referencedBy": [],
+      "value": "360"
+    },
+    {
+      "name": "DEFAULT_MAX_SAMPLES",
+      "type": "constant",
+      "file": "packages/web/src/server/process-memory-tracker.ts",
+      "line": 20,
+      "referencedBy": [],
+      "value": "360"
+    },
+    {
+      "name": "DEFAULT_MAX_SNAPSHOTS",
+      "type": "constant",
+      "file": "packages/hench/src/process/concurrent-execution-metrics.ts",
+      "line": 28,
+      "referencedBy": [],
+      "value": "360"
+    },
+    {
+      "name": "DEFAULT_MAX_SNAPSHOTS",
+      "type": "constant",
+      "file": "packages/web/src/server/concurrent-execution-metrics.ts",
+      "line": 21,
+      "referencedBy": [],
+      "value": "360"
+    },
+    {
+      "name": "DEFAULT_MAX_SNAPSHOTS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/dom-performance-monitor.ts",
+      "line": 117,
+      "referencedBy": [],
+      "value": "120"
+    },
+    {
+      "name": "DEFAULT_MAX_TIMINGS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/dom-performance-monitor.ts",
+      "line": 118,
+      "referencedBy": [],
+      "value": "200"
+    },
+    {
+      "name": "DEFAULT_MAX_TOKENS",
+      "type": "constant",
+      "file": "packages/llm-client/src/api-provider.ts",
+      "line": 43,
+      "referencedBy": [],
+      "value": "8192"
+    },
+    {
+      "name": "DEFAULT_MAX_ZONE_PERCENT",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/zones.ts",
+      "line": 1727,
+      "referencedBy": [],
+      "value": "15"
+    },
+    {
+      "name": "DEFAULT_MIN_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/messaging/call-rate-limiter.ts",
+      "line": 45,
+      "referencedBy": [],
+      "value": "500"
+    },
+    {
+      "name": "DEFAULT_MIN_SCORE",
+      "type": "constant",
+      "file": "packages/rex/src/core/epic-correlation.ts",
+      "line": 80,
+      "referencedBy": [],
+      "value": "0.15"
+    },
+    {
+      "name": "DEFAULT_MODEL",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/analyze-shared.ts",
+      "line": 17,
+      "referencedBy": [],
+      "value": "claude-sonnet-4-6"
+    },
+    {
+      "name": "DEFAULT_MODEL",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/claude-client.ts",
+      "line": 22,
+      "referencedBy": [],
+      "value": "claude-sonnet-4-6"
+    },
+    {
+      "name": "DEFAULT_PORT",
+      "type": "constant",
+      "file": "packages/web/src/server/port.ts",
+      "line": 14,
+      "referencedBy": [],
+      "value": "3117"
+    },
+    {
+      "name": "DEFAULT_PORT",
+      "type": "constant",
+      "file": "web.js",
+      "line": 25,
+      "referencedBy": [],
+      "value": "3117"
+    },
+    {
+      "name": "DEFAULT_REJECT_THRESHOLD",
+      "type": "constant",
+      "file": "packages/hench/src/process/memory-throttle.ts",
+      "line": 30,
+      "referencedBy": [],
+      "value": "95"
+    },
+    {
+      "name": "DEFAULT_RESUME_DEBOUNCE_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/dom-update-gate.ts",
+      "line": 137,
+      "referencedBy": [],
+      "value": "100"
+    },
+    {
+      "name": "DEFAULT_RESUME_DEBOUNCE_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/response-buffer-gate.ts",
+      "line": 104,
+      "referencedBy": [],
+      "value": "100"
+    },
+    {
+      "name": "DEFAULT_RESUME_DEBOUNCE_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/polling/tick-visibility-gate.ts",
+      "line": 99,
+      "referencedBy": [],
+      "value": "100"
+    },
+    {
+      "name": "DEFAULT_RETENTION_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/hench/src/store/run-retention-scheduler.ts",
+      "line": 49,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_RSS_WARNING_BYTES",
+      "type": "constant",
+      "file": "packages/hench/src/process/process-memory-tracker.ts",
+      "line": 27,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_RSS_WARNING_BYTES",
+      "type": "constant",
+      "file": "packages/web/src/server/process-memory-tracker.ts",
+      "line": 26,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_SHUTDOWN_TIMEOUT_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/start.ts",
+      "line": 44,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_SIGNIFICANCE",
+      "type": "constant",
+      "file": "packages/sourcevision/src/generators/pr-markdown-template.ts",
+      "line": 32,
+      "referencedBy": [],
+      "value": "patch"
+    },
+    {
+      "name": "DEFAULT_SPAWN_THRESHOLD",
+      "type": "constant",
+      "file": "packages/hench/src/process/memory-monitor.ts",
+      "line": 40,
+      "referencedBy": [],
+      "value": "90"
+    },
+    {
+      "name": "DEFAULT_SPIN_THRESHOLD",
+      "type": "constant",
+      "file": "packages/hench/src/agent/analysis/spin.ts",
+      "line": 15,
+      "referencedBy": [],
+      "value": "5"
+    },
+    {
+      "name": "DEFAULT_STALE_MS",
+      "type": "constant",
+      "file": "packages/rex/src/core/health.ts",
+      "line": 54,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_STALE_RUN_THRESHOLD_MS",
+      "type": "constant",
+      "file": "packages/hench/src/process/lifecycle.ts",
+      "line": 33,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_STUCK_THRESHOLD_MS",
+      "type": "constant",
+      "file": "packages/rex/src/core/structural.ts",
+      "line": 52,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_STUCK_THRESHOLD_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-validation.ts",
+      "line": 43,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_THRESHOLD",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/dedupe.ts",
+      "line": 5,
+      "referencedBy": [],
+      "value": "0.7"
+    },
+    {
+      "name": "DEFAULT_THRESHOLD",
+      "type": "constant",
+      "file": "packages/rex/src/core/scope-creep.ts",
+      "line": 25,
+      "referencedBy": [],
+      "value": "0.5"
+    },
+    {
+      "name": "DEFAULT_TIMEOUT",
+      "type": "constant",
+      "file": "packages/hench/src/agent/analysis/review.ts",
+      "line": 28,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_TIMEOUT",
+      "type": "constant",
+      "file": "packages/hench/src/tools/test-runner.ts",
+      "line": 50,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_TIMEOUT",
+      "type": "constant",
+      "file": "packages/hench/src/validation/completion.ts",
+      "line": 30,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_TIMEOUT",
+      "type": "constant",
+      "file": "packages/rex/src/core/verify.ts",
+      "line": 85,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFAULT_WINDOW_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/messaging/message-coalescer.ts",
+      "line": 83,
+      "referencedBy": [],
+      "value": "150"
+    },
+    {
+      "name": "DEFAULT_WORKFLOW",
+      "type": "constant",
+      "file": "packages/rex/src/workflow/default.ts",
+      "line": 1,
+      "referencedBy": []
+    },
+    {
+      "name": "DEFERRED_MODULES",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-app-data.ts",
+      "line": 57,
+      "referencedBy": []
+    },
+    {
+      "name": "DEPGRAPH_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-validation.ts",
+      "line": 24,
+      "referencedBy": [],
+      "value": "/api/rex/dependency-graph"
+    },
+    {
+      "name": "DIM",
+      "type": "constant",
+      "file": "cli-brand.js",
+      "line": 12,
+      "referencedBy": [],
+      "value": "\\x1b[2m"
+    },
+    {
+      "name": "DUPLICATE_THRESHOLD",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/smart-add-duplicates.ts",
+      "line": 11,
+      "referencedBy": [],
+      "value": "0.7"
+    },
+    {
+      "name": "DURATION_WINDOW_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/websocket.ts",
+      "line": 82,
+      "referencedBy": []
+    },
+    {
+      "name": "EDGE_TYPES",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/sv-explorer.ts",
+      "line": 72,
+      "referencedBy": []
+    },
+    {
+      "name": "EMPTY",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/status-shared.ts",
+      "line": 30,
+      "referencedBy": [],
+      "value": "░"
+    },
+    {
+      "name": "ENTRY_FILE_CONVENTIONS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/workspace-crossings.ts",
+      "line": 35,
+      "referencedBy": []
+    },
+    {
+      "name": "ENTRY_POINT_PATTERNS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 115,
+      "referencedBy": []
+    },
+    {
+      "name": "ERROR_HINTS",
+      "type": "constant",
+      "file": "cli.js",
+      "line": 146,
+      "referencedBy": []
+    },
+    {
+      "name": "ERROR_HINTS",
+      "type": "constant",
+      "file": "packages/hench/src/cli/errors.ts",
+      "line": 55,
+      "referencedBy": []
+    },
+    {
+      "name": "ERROR_HINTS",
+      "type": "constant",
+      "file": "packages/rex/src/cli/errors.ts",
+      "line": 46,
+      "referencedBy": []
+    },
+    {
+      "name": "ERROR_HINTS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/cli/errors.ts",
+      "line": 30,
+      "referencedBy": []
+    },
+    {
+      "name": "ESCALATION_THRESHOLD",
+      "type": "constant",
+      "file": "packages/rex/src/core/override-escalation.ts",
+      "line": 26,
+      "referencedBy": [],
+      "value": "3"
+    },
+    {
+      "name": "EVENT_DRIVEN_REASONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/ws-health-panel.ts",
+      "line": 118,
+      "referencedBy": []
+    },
+    {
+      "name": "EXAMPLE_PROMPTS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+      "line": 49,
+      "referencedBy": []
+    },
+    {
+      "name": "EXEMPT_ROLES",
+      "type": "constant",
+      "file": "ci.js",
+      "line": 604,
+      "referencedBy": []
+    },
+    {
+      "name": "EXPLORER_MODE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/sv-explorer.ts",
+      "line": 51,
+      "referencedBy": [],
+      "value": "explorer-mode"
+    },
+    {
+      "name": "EXPLORER_REDIRECTS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/route-state.ts",
+      "line": 14,
+      "referencedBy": []
+    },
+    {
+      "name": "FACET_PARAM",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-facet-state.ts",
+      "line": 21,
+      "referencedBy": [],
+      "value": "facets"
+    },
+    {
+      "name": "FACET_SEP",
+      "type": "constant",
+      "file": "packages/rex/src/core/facets.ts",
+      "line": 15,
+      "referencedBy": [],
+      "value": ":"
+    },
+    {
+      "name": "FAILURE_STATUSES",
+      "type": "constant",
+      "file": "packages/hench/src/agent/analysis/adaptive.ts",
+      "line": 127,
+      "referencedBy": []
+    },
+    {
+      "name": "FAILURE_STATUSES",
+      "type": "constant",
+      "file": "packages/hench/src/agent/analysis/stuck.ts",
+      "line": 8,
+      "referencedBy": []
+    },
+    {
+      "name": "FAILURE_STATUSES",
+      "type": "constant",
+      "file": "packages/hench/src/agent/analysis/workflow.ts",
+      "line": 64,
+      "referencedBy": []
+    },
+    {
+      "name": "FAILURE_STATUSES",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-adaptive.ts",
+      "line": 197,
+      "referencedBy": []
+    },
+    {
+      "name": "FAILURE_STATUSES",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-workflow.ts",
+      "line": 160,
+      "referencedBy": []
+    },
+    {
+      "name": "FALLBACK_HEAP_LIMIT",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/memory-monitor.ts",
+      "line": 93,
+      "referencedBy": []
+    },
+    {
+      "name": "FALLBACK_TRIGGER_CODES",
+      "type": "constant",
+      "file": "packages/web/src/server/pr-markdown-refresh-diagnostics.ts",
+      "line": 87,
+      "referencedBy": []
+    },
+    {
+      "name": "FAQ_SECTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/faq.ts",
+      "line": 15,
+      "referencedBy": []
+    },
+    {
+      "name": "FEATURE_REGISTRY",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-features.ts",
+      "line": 43,
+      "referencedBy": []
+    },
+    {
+      "name": "FEATURES_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-features.ts",
+      "line": 223,
+      "referencedBy": [],
+      "value": "/api/features"
+    },
+    {
+      "name": "FETCH_ERROR_TOKENS",
+      "type": "constant",
+      "file": "packages/web/src/server/pr-markdown-refresh-diagnostics.ts",
+      "line": 125,
+      "referencedBy": []
+    },
+    {
+      "name": "FEW_SHOT_EXAMPLE",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reason.ts",
+      "line": 543,
+      "referencedBy": []
+    },
+    {
+      "name": "FILE_ROW_H",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-file-edges.ts",
+      "line": 11,
+      "referencedBy": [],
+      "value": "22"
+    },
+    {
+      "name": "FILE_ROW_H",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-subzone-edges.ts",
+      "line": 15,
+      "referencedBy": [],
+      "value": "22"
+    },
+    {
+      "name": "FILE_ROW_H",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/zones.ts",
+      "line": 55,
+      "referencedBy": [],
+      "value": "22"
+    },
+    {
+      "name": "FILE_ROWS_MAX",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-file-edges.ts",
+      "line": 13,
+      "referencedBy": [],
+      "value": "15"
+    },
+    {
+      "name": "FILE_ROWS_MAX",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-subzone-edges.ts",
+      "line": 16,
+      "referencedBy": [],
+      "value": "15"
+    },
+    {
+      "name": "FILE_ROWS_MAX",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/zones.ts",
+      "line": 56,
+      "referencedBy": [],
+      "value": "15"
+    },
+    {
+      "name": "FILE_TO_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/loader.ts",
+      "line": 48,
+      "referencedBy": []
+    },
+    {
+      "name": "FILENAME_SKIP_WORDS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/zones.ts",
+      "line": 250,
+      "referencedBy": []
+    },
+    {
+      "name": "FILLED",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/status-shared.ts",
+      "line": 29,
+      "referencedBy": [],
+      "value": "█"
+    },
+    {
+      "name": "FILTER_PRESETS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/status-filter.ts",
+      "line": 49,
+      "referencedBy": []
+    },
+    {
+      "name": "FINDING_SIMILARITY_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "line": 305,
+      "referencedBy": [],
+      "value": "0.8"
+    },
+    {
+      "name": "FRAGMENT_NAMES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/components.ts",
+      "line": 267,
+      "referencedBy": []
+    },
+    {
+      "name": "FRAMEWORK_METHOD_NAMES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/server-route-detection.ts",
+      "line": 28,
+      "referencedBy": []
+    },
+    {
+      "name": "FUZZY_SIMILARITY_THRESHOLD",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/acknowledge.ts",
+      "line": 116,
+      "referencedBy": [],
+      "value": "0.65"
+    },
+    {
+      "name": "GAP_X",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/zones.ts",
+      "line": 57,
+      "referencedBy": [],
+      "value": "80"
+    },
+    {
+      "name": "GAP_Y",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/zones.ts",
+      "line": 58,
+      "referencedBy": [],
+      "value": "60"
+    },
+    {
+      "name": "GENERIC_BASES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/zones.ts",
+      "line": 325,
+      "referencedBy": []
+    },
+    {
+      "name": "GENERIC_PREFIXES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/inventory.ts",
+      "line": 283,
+      "referencedBy": []
+    },
+    {
+      "name": "GENERIC_SEGMENTS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/zones.ts",
+      "line": 114,
+      "referencedBy": []
+    },
+    {
+      "name": "GIT_CREDENTIAL_HELPER_COMMAND",
+      "type": "constant",
+      "file": "packages/web/src/server/pr-markdown-refresh-diagnostics.ts",
+      "line": 85,
+      "referencedBy": [],
+      "value": "sourcevision git-credential-helper"
+    },
+    {
+      "name": "GIT_TIMEOUT",
+      "type": "constant",
+      "file": "packages/hench/src/tools/git.ts",
+      "line": 4,
+      "referencedBy": [],
+      "value": "15000"
+    },
+    {
+      "name": "GLOB_ARGS",
+      "type": "constant",
+      "file": "packages/hench/src/agent/analysis/summary.ts",
+      "line": 25,
+      "referencedBy": []
+    },
+    {
+      "name": "GO_ENV_PATTERNS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/config-surface.ts",
+      "line": 36,
+      "referencedBy": []
+    },
+    {
+      "name": "GO_EXTENSION",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/imports.ts",
+      "line": 29,
+      "referencedBy": [],
+      "value": ".go"
+    },
+    {
+      "name": "GO_EXTENSIONS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/config-surface.ts",
+      "line": 58,
+      "referencedBy": []
+    },
+    {
+      "name": "GO_MOD_MODULE_RE",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/go-imports.ts",
+      "line": 45,
+      "referencedBy": []
+    },
+    {
+      "name": "GO_TEST_RUNNER",
+      "type": "constant",
+      "file": "packages/hench/src/tools/test-runner.ts",
+      "line": 79,
+      "referencedBy": [],
+      "value": "go"
+    },
+    {
+      "name": "GOD_FUNCTION_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 20,
+      "referencedBy": [],
+      "value": "30"
+    },
+    {
+      "name": "GRAPH_VISIBLE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/graph.ts",
+      "line": 16,
+      "referencedBy": [],
+      "value": "import-graph-visible"
+    },
+    {
+      "name": "GRAPH_VISIBLE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/sv-explorer.ts",
+      "line": 50,
+      "referencedBy": [],
+      "value": "explorer-graph-visible"
+    },
+    {
+      "name": "GROUPED_PHASES",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-sourcevision.ts",
+      "line": 64,
+      "referencedBy": []
+    },
+    {
+      "name": "GUIDE_SOURCE_FILES",
+      "type": "constant",
+      "file": "ci.js",
+      "line": 1186,
+      "referencedBy": []
+    },
+    {
+      "name": "HEARTBEAT_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/heartbeat.ts",
+      "line": 22,
+      "referencedBy": []
+    },
+    {
+      "name": "HEARTBEAT_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 1200,
+      "referencedBy": []
+    },
+    {
+      "name": "HEARTBEAT_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/crash/crash-detector.ts",
+      "line": 50,
+      "referencedBy": [],
+      "value": "ndx-crash-heartbeat"
+    },
+    {
+      "name": "HEARTBEAT_UNRESPONSIVE_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 1206,
+      "referencedBy": []
+    },
+    {
+      "name": "HEARTBEAT_WARNING_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 1203,
+      "referencedBy": []
+    },
+    {
+      "name": "HELP_TEXT",
+      "type": "constant",
+      "file": "config.js",
+      "line": 502,
+      "referencedBy": []
+    },
+    {
+      "name": "HENCH_DIR",
+      "type": "constant",
+      "file": "packages/hench/src/cli/commands/constants.ts",
+      "line": 4,
+      "referencedBy": []
+    },
+    {
+      "name": "HENCH_DIR",
+      "type": "constant",
+      "file": "packages/hench/src/cli/errors.ts",
+      "line": 12,
+      "referencedBy": []
+    },
+    {
+      "name": "HENCH_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 55,
+      "referencedBy": [],
+      "value": "/api/hench/"
+    },
+    {
+      "name": "HENCH_SCHEMA_VERSION",
+      "type": "constant",
+      "file": "packages/hench/src/schema/v1.ts",
+      "line": 9,
+      "referencedBy": [],
+      "value": "hench/v1"
+    },
+    {
+      "name": "HENCH_STALE_THRESHOLD_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-status.ts",
+      "line": 191,
+      "referencedBy": []
+    },
+    {
+      "name": "HIGH_FANIN_ARCHETYPES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 88,
+      "referencedBy": []
+    },
+    {
+      "name": "HIGH_FANIN_BASENAMES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 76,
+      "referencedBy": []
+    },
+    {
+      "name": "HIGH_FANIN_PATH_SEGMENTS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 73,
+      "referencedBy": []
+    },
+    {
+      "name": "HIGH_GOD_THRESHOLD_ARCHETYPES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 98,
+      "referencedBy": []
+    },
+    {
+      "name": "HIGH_IMPACT_RELATED_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/next-steps.ts",
+      "line": 195,
+      "referencedBy": [],
+      "value": "4"
+    },
+    {
+      "name": "HINTS_TEMPLATE",
+      "type": "constant",
+      "file": "packages/sourcevision/src/cli/commands/init.ts",
+      "line": 8,
+      "referencedBy": []
+    },
+    {
+      "name": "HOTSPOT_FILE_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 29,
+      "referencedBy": [],
+      "value": "5"
+    },
+    {
+      "name": "HUB_FUNCTION_FILE_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 26,
+      "referencedBy": [],
+      "value": "6"
+    },
+    {
+      "name": "IMPORTANT_AC_PATTERNS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/branch-work-classifier.ts",
+      "line": 72,
+      "referencedBy": []
+    },
+    {
+      "name": "INIT_BANNER_LINES",
+      "type": "constant",
+      "file": "cli.js",
+      "line": 1132,
+      "referencedBy": []
+    },
+    {
+      "name": "INTERNAL_DIR_PREFIXES",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/files.ts",
+      "line": 22,
+      "referencedBy": []
+    },
+    {
+      "name": "INTERNAL_DIR_PREFIXES",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/sv-explorer.ts",
+      "line": 37,
+      "referencedBy": []
+    },
+    {
+      "name": "INTRA_BATCH_THRESHOLD",
+      "type": "constant",
+      "file": "packages/rex/src/recommend/conflict-detection.ts",
+      "line": 38,
+      "referencedBy": [],
+      "value": "0.85"
+    },
+    {
+      "name": "JS_TS_EXTENSIONS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph.ts",
+      "line": 28,
+      "referencedBy": []
+    },
+    {
+      "name": "JS_TS_EXTENSIONS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/imports.ts",
+      "line": 28,
+      "referencedBy": []
+    },
+    {
+      "name": "JSX_EXTENSIONS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/components.ts",
+      "line": 35,
+      "referencedBy": []
+    },
+    {
+      "name": "KILL_ESCALATION_MS",
+      "type": "constant",
+      "file": "packages/llm-client/src/exec.ts",
+      "line": 186,
+      "referencedBy": []
+    },
+    {
+      "name": "KIND_ORDER",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reason.ts",
+      "line": 674,
+      "referencedBy": []
+    },
+    {
+      "name": "KNOWN_DB_PACKAGES",
+      "type": "constant",
+      "file": "packages/web/src/shared/db-packages.ts",
+      "line": 56,
+      "referencedBy": []
+    },
+    {
+      "name": "LANGUAGE_CONFIGS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/language/detect.ts",
+      "line": 29,
+      "referencedBy": []
+    },
+    {
+      "name": "LARGE_EPIC_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/branch-work-classifier.ts",
+      "line": 47,
+      "referencedBy": [],
+      "value": "5"
+    },
+    {
+      "name": "LARGE_FILE_WARNING_BYTES",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/file-validation.ts",
+      "line": 21,
+      "referencedBy": []
+    },
+    {
+      "name": "LEGACY_SKILL_NAMES",
+      "type": "constant",
+      "file": "claude-integration.js",
+      "line": 398,
+      "referencedBy": []
+    },
+    {
+      "name": "LEGACY_VIEWS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/view-registry.ts",
+      "line": 198,
+      "referencedBy": []
+    },
+    {
+      "name": "LEVEL_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/add-item-form.ts",
+      "line": 38,
+      "referencedBy": []
+    },
+    {
+      "name": "LEVEL_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/search-overlay.ts",
+      "line": 55,
+      "referencedBy": []
+    },
+    {
+      "name": "LIFECYCLE_DIR",
+      "type": "constant",
+      "file": "packages/hench/src/process/lifecycle.ts",
+      "line": 30,
+      "referencedBy": [],
+      "value": "lifecycle"
+    },
+    {
+      "name": "LIVE_RELOAD_SNIPPET",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-static.ts",
+      "line": 11,
+      "referencedBy": []
+    },
+    {
+      "name": "LLM_BATCH_SIZE",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/classify.ts",
+      "line": 323,
+      "referencedBy": [],
+      "value": "30"
+    },
+    {
+      "name": "LOCAL_HISTORY_ERROR_TOKENS",
+      "type": "constant",
+      "file": "packages/web/src/server/pr-markdown-refresh-diagnostics.ts",
+      "line": 149,
+      "referencedBy": []
+    },
+    {
+      "name": "LOCKFILE_NAMES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/inventory.ts",
+      "line": 124,
+      "referencedBy": []
+    },
+    {
+      "name": "LOCKS_DIR",
+      "type": "constant",
+      "file": "packages/hench/src/process/lifecycle.ts",
+      "line": 28,
+      "referencedBy": [],
+      "value": "locks"
+    },
+    {
+      "name": "LOCKS_DIR",
+      "type": "constant",
+      "file": "packages/hench/src/process/limiter.ts",
+      "line": 22,
+      "referencedBy": [],
+      "value": "locks"
+    },
+    {
+      "name": "MAGIC_SIGNATURES",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/file-validation.ts",
+      "line": 30,
+      "referencedBy": []
+    },
+    {
+      "name": "MAX_ARCHIVE_BATCHES",
+      "type": "constant",
+      "file": "packages/rex/src/core/archive.ts",
+      "line": 24,
+      "referencedBy": [],
+      "value": "100"
+    },
+    {
+      "name": "MAX_CLARIFY_ROUNDS",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/guided.ts",
+      "line": 177,
+      "referencedBy": [],
+      "value": "5"
+    },
+    {
+      "name": "MAX_CLEANUP_HISTORY",
+      "type": "constant",
+      "file": "packages/web/src/server/websocket.ts",
+      "line": 76,
+      "referencedBy": [],
+      "value": "500"
+    },
+    {
+      "name": "MAX_CONCURRENT_BATCHES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "line": 17,
+      "referencedBy": [],
+      "value": "1"
+    },
+    {
+      "name": "MAX_CONCURRENT_ZONES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "line": 22,
+      "referencedBy": [],
+      "value": "3"
+    },
+    {
+      "name": "MAX_CONTEXT_LENGTH",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reason.ts",
+      "line": 114,
+      "referencedBy": [],
+      "value": "4000"
+    },
+    {
+      "name": "MAX_CONTEXT_PAIRS",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/loop.ts",
+      "line": 48,
+      "referencedBy": [],
+      "value": "20"
+    },
+    {
+      "name": "MAX_COUPLING",
+      "type": "constant",
+      "file": "ci.js",
+      "line": 601,
+      "referencedBy": [],
+      "value": "0.25"
+    },
+    {
+      "name": "MAX_CRASH_HISTORY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/crash/crash-detector.ts",
+      "line": 68,
+      "referencedBy": [],
+      "value": "10"
+    },
+    {
+      "name": "MAX_DEAD_EXPORT_FINDINGS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 32,
+      "referencedBy": [],
+      "value": "10"
+    },
+    {
+      "name": "MAX_FILE_SIZE_BYTES",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/file-validation.ts",
+      "line": 18,
+      "referencedBy": []
+    },
+    {
+      "name": "MAX_HISTORY_FILES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/convergence.ts",
+      "line": 69,
+      "referencedBy": [],
+      "value": "30"
+    },
+    {
+      "name": "MAX_HISTORY_LENGTH",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/memory-monitor.ts",
+      "line": 96,
+      "referencedBy": [],
+      "value": "60"
+    },
+    {
+      "name": "MAX_LIMIT",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-search.ts",
+      "line": 45,
+      "referencedBy": [],
+      "value": "200"
+    },
+    {
+      "name": "MAX_RETRIES",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/loop.ts",
+      "line": 46,
+      "referencedBy": [],
+      "value": "3"
+    },
+    {
+      "name": "MAX_RETRIES",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/analyze-shared.ts",
+      "line": 21,
+      "referencedBy": [],
+      "value": "2"
+    },
+    {
+      "name": "MAX_SUBDIVISION_DEPTH",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/zones.ts",
+      "line": 523,
+      "referencedBy": [],
+      "value": "3"
+    },
+    {
+      "name": "MAX_SUGGESTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/facet-filter.ts",
+      "line": 38,
+      "referencedBy": [],
+      "value": "20"
+    },
+    {
+      "name": "MAX_SUMMARY_LENGTH",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/cli-loop.ts",
+      "line": 39,
+      "referencedBy": [],
+      "value": "500"
+    },
+    {
+      "name": "MAX_SUMMARY_LENGTH",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/loop.ts",
+      "line": 49,
+      "referencedBy": [],
+      "value": "500"
+    },
+    {
+      "name": "MAX_TOOL_OUTPUT_STORED",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/loop.ts",
+      "line": 50,
+      "referencedBy": [],
+      "value": "2000"
+    },
+    {
+      "name": "MAX_TRANSITION_HISTORY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/polling/tab-visibility.ts",
+      "line": 99,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "MAX_WAIT",
+      "type": "constant",
+      "file": "packages/web/dev.js",
+      "line": 69,
+      "referencedBy": [],
+      "value": "30000"
+    },
+    {
+      "name": "MCP_REX_PATH",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-mcp.ts",
+      "line": 27,
+      "referencedBy": [],
+      "value": "/mcp/rex"
+    },
+    {
+      "name": "MCP_SV_PATH",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-mcp.ts",
+      "line": 28,
+      "referencedBy": [],
+      "value": "/mcp/sourcevision"
+    },
+    {
+      "name": "MIN_COHESION",
+      "type": "constant",
+      "file": "ci.js",
+      "line": 599,
+      "referencedBy": [],
+      "value": "0.5"
+    },
+    {
+      "name": "MIN_INPUT_LENGTH",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/smart-add-input.ts",
+      "line": 46,
+      "referencedBy": [],
+      "value": "10"
+    },
+    {
+      "name": "MIN_WORD_COUNT",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/validate-modification.ts",
+      "line": 51,
+      "referencedBy": [],
+      "value": "3"
+    },
+    {
+      "name": "MISSING_BUDGET_LABEL",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/task-utilization.ts",
+      "line": 3,
+      "referencedBy": [],
+      "value": "No budget"
+    },
+    {
+      "name": "MODIFY_PATTERNS",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/validate-modification.ts",
+      "line": 42,
+      "referencedBy": []
+    },
+    {
+      "name": "MODULE_DEFS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/loader.ts",
+      "line": 36,
+      "referencedBy": []
+    },
+    {
+      "name": "MULTI_VALUE_KEYS",
+      "type": "constant",
+      "file": "packages/rex/src/cli/index.ts",
+      "line": 42,
+      "referencedBy": []
+    },
+    {
+      "name": "NAV_ENTRIES",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/sidebar.ts",
+      "line": 41,
+      "referencedBy": []
+    },
+    {
+      "name": "NAV_STATE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/crash/crash-detector.ts",
+      "line": 53,
+      "referencedBy": [],
+      "value": "ndx-crash-nav-state"
+    },
+    {
+      "name": "NDX_CONFIG",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-features.ts",
+      "line": 152,
+      "referencedBy": [],
+      "value": ".n-dx.json"
+    },
+    {
+      "name": "NEEDS_SV_DIR",
+      "type": "constant",
+      "file": "packages/sourcevision/src/cli/index.ts",
+      "line": 75,
+      "referencedBy": []
+    },
+    {
+      "name": "NETWORK_ERROR_TOKENS",
+      "type": "constant",
+      "file": "packages/web/src/server/pr-markdown-refresh-diagnostics.ts",
+      "line": 137,
+      "referencedBy": []
+    },
+    {
+      "name": "NO_TASKS_MSG",
+      "type": "constant",
+      "file": "packages/hench/src/cli/commands/run.ts",
+      "line": 634,
+      "referencedBy": [],
+      "value": "No actionable tasks found in PRD"
+    },
+    {
+      "name": "NON_ACTIONABLE_STATUSES",
+      "type": "constant",
+      "file": "packages/hench/src/agent/planning/brief.ts",
+      "line": 59,
+      "referencedBy": []
+    },
+    {
+      "name": "NON_IMPORTABLE_EXTENSIONS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/zones.ts",
+      "line": 1860,
+      "referencedBy": []
+    },
+    {
+      "name": "NOT_FOUND_PATTERNS",
+      "type": "constant",
+      "file": "packages/llm-client/src/cli-provider.ts",
+      "line": 42,
+      "referencedBy": []
+    },
+    {
+      "name": "NOTION_API",
+      "type": "constant",
+      "file": "packages/rex/src/store/notion-client.ts",
+      "line": 60,
+      "referencedBy": [],
+      "value": "https://api.notion.com/v1"
+    },
+    {
+      "name": "NOTION_API",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-notion.ts",
+      "line": 78,
+      "referencedBy": [],
+      "value": "https://api.notion.com/v1"
+    },
+    {
+      "name": "NOTION_TO_PRIORITY",
+      "type": "constant",
+      "file": "packages/rex/src/store/notion-map.ts",
+      "line": 213,
+      "referencedBy": []
+    },
+    {
+      "name": "NOTION_TO_STATUS",
+      "type": "constant",
+      "file": "packages/rex/src/store/notion-map.ts",
+      "line": 203,
+      "referencedBy": []
+    },
+    {
+      "name": "NOTION_VERSION",
+      "type": "constant",
+      "file": "packages/rex/src/store/notion-client.ts",
+      "line": 61,
+      "referencedBy": [],
+      "value": "2022-06-28"
+    },
+    {
+      "name": "NOTION_VERSION",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-notion.ts",
+      "line": 79,
+      "referencedBy": [],
+      "value": "2022-06-28"
+    },
+    {
+      "name": "PACKAGE_ORDER",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/feature-toggles.ts",
+      "line": 39,
+      "referencedBy": []
+    },
+    {
+      "name": "PAD_BOTTOM",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/zone-trend-chart.ts",
+      "line": 33,
+      "referencedBy": [],
+      "value": "40"
+    },
+    {
+      "name": "PAD_LEFT",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/zone-trend-chart.ts",
+      "line": 30,
+      "referencedBy": [],
+      "value": "48"
+    },
+    {
+      "name": "PAD_RIGHT",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/zone-trend-chart.ts",
+      "line": 31,
+      "referencedBy": [],
+      "value": "16"
+    },
+    {
+      "name": "PAD_TOP",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/zone-trend-chart.ts",
+      "line": 32,
+      "referencedBy": [],
+      "value": "16"
+    },
+    {
+      "name": "PADDING",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/zones.ts",
+      "line": 59,
+      "referencedBy": [],
+      "value": "40"
+    },
+    {
+      "name": "PAGE_MARGIN",
+      "type": "constant",
+      "file": "packages/sourcevision/src/export/pdf-report.ts",
+      "line": 31,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "PARSEABLE",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/server-route-detection.ts",
+      "line": 25,
+      "referencedBy": []
+    },
+    {
+      "name": "PASS_CONFIGS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "line": 36,
+      "referencedBy": []
+    },
+    {
+      "name": "PENDING_FILE",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/analyze.ts",
+      "line": 43,
+      "referencedBy": [],
+      "value": "pending-proposals.json"
+    },
+    {
+      "name": "PENDING_FILE",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/smart-add.ts",
+      "line": 37,
+      "referencedBy": [],
+      "value": "pending-smart-proposals.json"
+    },
+    {
+      "name": "PENDING_SMART_PRUNE_FILE",
+      "type": "constant",
+      "file": "packages/rex/src/core/pending-cache.ts",
+      "line": 20,
+      "referencedBy": [],
+      "value": "pending-smart-prune.json"
+    },
+    {
+      "name": "PER_ZONE_MAX_CROSSINGS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "line": 26,
+      "referencedBy": [],
+      "value": "20"
+    },
+    {
+      "name": "PER_ZONE_MAX_FILES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "line": 24,
+      "referencedBy": [],
+      "value": "15"
+    },
+    {
+      "name": "PHASE_DEFINITIONS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-sourcevision.ts",
+      "line": 35,
+      "referencedBy": []
+    },
+    {
+      "name": "PID_FILE",
+      "type": "constant",
+      "file": "web.js",
+      "line": 26,
+      "referencedBy": [],
+      "value": ".n-dx-web.pid"
+    },
+    {
+      "name": "PING_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/websocket.ts",
+      "line": 323,
+      "referencedBy": []
+    },
+    {
+      "name": "POLL_INTERVAL",
+      "type": "constant",
+      "file": "packages/web/dev.js",
+      "line": 70,
+      "referencedBy": [],
+      "value": "500"
+    },
+    {
+      "name": "POLL_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-project-status.ts",
+      "line": 72,
+      "referencedBy": []
+    },
+    {
+      "name": "POLLING_STATE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/dom-performance-monitor.ts",
+      "line": 122,
+      "referencedBy": [],
+      "value": "dom-performance-monitor"
+    },
+    {
+      "name": "POLLING_STATE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/performance/memory-monitor.ts",
+      "line": 90,
+      "referencedBy": [],
+      "value": "memory-monitor"
+    },
+    {
+      "name": "POLLING_STATE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/polling/polling-manager.ts",
+      "line": 58,
+      "referencedBy": [],
+      "value": "polling-manager"
+    },
+    {
+      "name": "POLLING_STATE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/polling/tick-timer.ts",
+      "line": 40,
+      "referencedBy": [],
+      "value": "tick-timer"
+    },
+    {
+      "name": "PORT_FILE",
+      "type": "constant",
+      "file": "packages/web/src/server/start.ts",
+      "line": 39,
+      "referencedBy": [],
+      "value": ".n-dx-web.port"
+    },
+    {
+      "name": "PORT_FILE",
+      "type": "constant",
+      "file": "web.js",
+      "line": 27,
+      "referencedBy": [],
+      "value": ".n-dx-web.port"
+    },
+    {
+      "name": "PORT_RANGE_END",
+      "type": "constant",
+      "file": "packages/web/src/server/port.ts",
+      "line": 16,
+      "referencedBy": [],
+      "value": "3200"
+    },
+    {
+      "name": "PORT_RANGE_START",
+      "type": "constant",
+      "file": "packages/web/src/server/port.ts",
+      "line": 15,
+      "referencedBy": [],
+      "value": "3117"
+    },
+    {
+      "name": "POSITIVE_INDICATORS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "line": 210,
+      "referencedBy": []
+    },
+    {
+      "name": "POST_PRUNE_CONSOLIDATION_PROMPT",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reshape-reason.ts",
+      "line": 168,
+      "referencedBy": []
+    },
+    {
+      "name": "PR_MARKDOWN_FILENAME",
+      "type": "constant",
+      "file": "packages/sourcevision/src/cli/commands/pr-markdown.ts",
+      "line": 36,
+      "referencedBy": [],
+      "value": "pr-markdown.md"
+    },
+    {
+      "name": "PR_MARKDOWN_MODE_STORAGE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/pr-markdown.ts",
+      "line": 32,
+      "referencedBy": [],
+      "value": "sv:pr-markdown:view-mode"
+    },
+    {
+      "name": "PRIMARY_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/classify.ts",
+      "line": 33,
+      "referencedBy": [],
+      "value": "0.4"
+    },
+    {
+      "name": "PRIORITY_MODULES",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-app-data.ts",
+      "line": 54,
+      "referencedBy": []
+    },
+    {
+      "name": "PRIORITY_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/add-item-form.ts",
+      "line": 45,
+      "referencedBy": []
+    },
+    {
+      "name": "PRIORITY_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/inline-add-form.ts",
+      "line": 52,
+      "referencedBy": []
+    },
+    {
+      "name": "PRIORITY_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+      "line": 59,
+      "referencedBy": []
+    },
+    {
+      "name": "PRIORITY_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/search-overlay.ts",
+      "line": 69,
+      "referencedBy": []
+    },
+    {
+      "name": "PRIORITY_TO_NOTION",
+      "type": "constant",
+      "file": "packages/rex/src/store/notion-map.ts",
+      "line": 208,
+      "referencedBy": []
+    },
+    {
+      "name": "PROBE_EXTENSIONS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/imports.ts",
+      "line": 30,
+      "referencedBy": []
+    },
+    {
+      "name": "PROCESS_SPAWNING_TOOLS",
+      "type": "constant",
+      "file": "packages/hench/src/tools/dispatch.ts",
+      "line": 165,
+      "referencedBy": []
+    },
+    {
+      "name": "PROGRAMMING_LANGUAGES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/inventory.ts",
+      "line": 161,
+      "referencedBy": []
+    },
+    {
+      "name": "PROGRESSIVE_THRESHOLD",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/progressive-loader.ts",
+      "line": 35,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "PROJECT_CONFIG_FILE",
+      "type": "constant",
+      "file": "config.js",
+      "line": 15,
+      "referencedBy": [],
+      "value": ".n-dx.json"
+    },
+    {
+      "name": "PROJECT_CONFIG_FILE",
+      "type": "constant",
+      "file": "packages/llm-client/src/config.ts",
+      "line": 12,
+      "referencedBy": [],
+      "value": ".n-dx.json"
+    },
+    {
+      "name": "PROJECT_CONFIG_FILE",
+      "type": "constant",
+      "file": "packages/llm-client/src/llm-config.ts",
+      "line": 13,
+      "referencedBy": [],
+      "value": ".n-dx.json"
+    },
+    {
+      "name": "PROJECT_CONFIG_FILE",
+      "type": "constant",
+      "file": "packages/llm-client/src/project-config.ts",
+      "line": 12,
+      "referencedBy": [],
+      "value": ".n-dx.json"
+    },
+    {
+      "name": "PROJECT_CONFIG_FILE",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/workspace-aggregate.ts",
+      "line": 56,
+      "referencedBy": [],
+      "value": ".n-dx.json"
+    },
+    {
+      "name": "PROJECT_DOC_FILES",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reason.ts",
+      "line": 106,
+      "referencedBy": []
+    },
+    {
+      "name": "PROJECT_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-project.ts",
+      "line": 165,
+      "referencedBy": [],
+      "value": "/api/project"
+    },
+    {
+      "name": "PROJECT_SECTIONS",
+      "type": "constant",
+      "file": "config.js",
+      "line": 27,
+      "referencedBy": []
+    },
+    {
+      "name": "PROJECTS_CACHE_TTL_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-config.ts",
+      "line": 75,
+      "referencedBy": []
+    },
+    {
+      "name": "PROJECTS_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-config.ts",
+      "line": 261,
+      "referencedBy": [],
+      "value": "/api/projects"
+    },
+    {
+      "name": "QUICK_STATUSES",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/rex-task-link.ts",
+      "line": 81,
+      "referencedBy": []
+    },
+    {
+      "name": "RANGE_PRESETS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/completion-timeline.ts",
+      "line": 54,
+      "referencedBy": []
+    },
+    {
+      "name": "RATE_LIMIT_PATTERNS",
+      "type": "constant",
+      "file": "packages/llm-client/src/cli-provider.ts",
+      "line": 48,
+      "referencedBy": []
+    },
+    {
+      "name": "RATE_LIMIT_PATTERNS",
+      "type": "constant",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 21,
+      "referencedBy": []
+    },
+    {
+      "name": "RECENT_WINDOW_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/websocket.ts",
+      "line": 79,
+      "referencedBy": []
+    },
+    {
+      "name": "RECONCILE_THRESHOLD",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reconcile.ts",
+      "line": 7,
+      "referencedBy": [],
+      "value": "0.7"
+    },
+    {
+      "name": "RECOVERY_SHOWN_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/crash/crash-detector.ts",
+      "line": 59,
+      "referencedBy": [],
+      "value": "ndx-crash-recovery-shown"
+    },
+    {
+      "name": "REMOVABLE_LEVELS",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/remove.ts",
+      "line": 23,
+      "referencedBy": []
+    },
+    {
+      "name": "REMOVE_PATTERNS",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/validate-modification.ts",
+      "line": 39,
+      "referencedBy": []
+    },
+    {
+      "name": "REQ_CMD_TIMEOUT",
+      "type": "constant",
+      "file": "packages/hench/src/tools/rex.ts",
+      "line": 242,
+      "referencedBy": []
+    },
+    {
+      "name": "REQUIRED_COMMUNITY_FILES",
+      "type": "constant",
+      "file": "ci.js",
+      "line": 561,
+      "referencedBy": []
+    },
+    {
+      "name": "REQUIREMENT_PATTERNS",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/extract.ts",
+      "line": 605,
+      "referencedBy": []
+    },
+    {
+      "name": "RESET",
+      "type": "constant",
+      "file": "cli-brand.js",
+      "line": 13,
+      "referencedBy": [],
+      "value": "\\x1b[0m"
+    },
+    {
+      "name": "RESHAPE_FEW_SHOT",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reshape-reason.ts",
+      "line": 130,
+      "referencedBy": []
+    },
+    {
+      "name": "RESHAPE_SYSTEM_PROMPT",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reshape-reason.ts",
+      "line": 109,
+      "referencedBy": []
+    },
+    {
+      "name": "RESTRUCTURE_PATTERNS",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/validate-modification.ts",
+      "line": 45,
+      "referencedBy": []
+    },
+    {
+      "name": "RESUME_DEBOUNCE_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/polling/polling-manager.ts",
+      "line": 54,
+      "referencedBy": [],
+      "value": "100"
+    },
+    {
+      "name": "RETRY_DELAY_MS",
+      "type": "constant",
+      "file": "packages/rex/src/store/file-lock.ts",
+      "line": 19,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "RETRY_STATUS_CODES",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/loop.ts",
+      "line": 45,
+      "referencedBy": []
+    },
+    {
+      "name": "RETRY_STATUS_CODES",
+      "type": "constant",
+      "file": "packages/llm-client/src/api-provider.ts",
+      "line": 40,
+      "referencedBy": []
+    },
+    {
+      "name": "REX_DIR",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/constants.ts",
+      "line": 3,
+      "referencedBy": []
+    },
+    {
+      "name": "REX_DIR",
+      "type": "constant",
+      "file": "packages/rex/src/core/pending-cache.ts",
+      "line": 18,
+      "referencedBy": [],
+      "value": ".rex"
+    },
+    {
+      "name": "REX_DIR",
+      "type": "constant",
+      "file": "packages/sourcevision/src/cli/commands/prd-epic-resolver.ts",
+      "line": 5,
+      "referencedBy": [],
+      "value": ".rex"
+    },
+    {
+      "name": "REX_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-rex/index.ts",
+      "line": 31,
+      "referencedBy": [],
+      "value": "/api/rex/"
+    },
+    {
+      "name": "ROUTE_EXPORT_NAMES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/route-detection.ts",
+      "line": 19,
+      "referencedBy": []
+    },
+    {
+      "name": "RUNS_DIR",
+      "type": "constant",
+      "file": "packages/hench/src/process/lifecycle.ts",
+      "line": 29,
+      "referencedBy": [],
+      "value": "runs"
+    },
+    {
+      "name": "SCALAR_KEYS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/tree-differ.ts",
+      "line": 30,
+      "referencedBy": []
+    },
+    {
+      "name": "SCANNABLE_EXTENSIONS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/config-surface.ts",
+      "line": 52,
+      "referencedBy": []
+    },
+    {
+      "name": "SCHEMA_CACHE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/notion-schema-wizard.ts",
+      "line": 59,
+      "referencedBy": [],
+      "value": "notion-schema-validation"
+    },
+    {
+      "name": "SCHEMA_VERSION",
+      "type": "constant",
+      "file": "packages/rex/src/schema/v1.ts",
+      "line": 41,
+      "referencedBy": [],
+      "value": "rex/v1"
+    },
+    {
+      "name": "SCHEMA_VERSION",
+      "type": "constant",
+      "file": "packages/sourcevision/src/schema/v1.ts",
+      "line": 3,
+      "referencedBy": [],
+      "value": "1.0.0"
+    },
+    {
+      "name": "SCHEMA_VERSION",
+      "type": "constant",
+      "file": "packages/web/src/schema/v1.ts",
+      "line": 3,
+      "referencedBy": [],
+      "value": "1.0.0"
+    },
+    {
+      "name": "SCHEMA_VERSION",
+      "type": "constant",
+      "file": "packages/web/src/viewer/schema-compat.ts",
+      "line": 7,
+      "referencedBy": [],
+      "value": "1.0.0"
+    },
+    {
+      "name": "SEARCH_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-search.ts",
+      "line": 43,
+      "referencedBy": [],
+      "value": "/api/search"
+    },
+    {
+      "name": "SECONDARY_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/classify.ts",
+      "line": 36,
+      "referencedBy": [],
+      "value": "0.3"
+    },
+    {
+      "name": "SECTION_DEFAULT_VIEW",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/sidebar.ts",
+      "line": 95,
+      "referencedBy": []
+    },
+    {
+      "name": "SECTION_WIDTH",
+      "type": "constant",
+      "file": "packages/hench/src/types/output.ts",
+      "line": 29,
+      "referencedBy": [],
+      "value": "60"
+    },
+    {
+      "name": "SECTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/sidebar.ts",
+      "line": 77,
+      "referencedBy": []
+    },
+    {
+      "name": "SENSITIVE_KEYS",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/adapter.ts",
+      "line": 208,
+      "referencedBy": []
+    },
+    {
+      "name": "SENSITIVE_KEYS",
+      "type": "constant",
+      "file": "packages/rex/src/store/adapter-registry.ts",
+      "line": 89,
+      "referencedBy": []
+    },
+    {
+      "name": "SESSION_SWEEP_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-mcp.ts",
+      "line": 51,
+      "referencedBy": []
+    },
+    {
+      "name": "SESSION_TTL_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-mcp.ts",
+      "line": 48,
+      "referencedBy": []
+    },
+    {
+      "name": "SEVERITY_RANK",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "line": 275,
+      "referencedBy": []
+    },
+    {
+      "name": "SHALLOW_CLONE_ERROR_TOKENS",
+      "type": "constant",
+      "file": "packages/web/src/server/pr-markdown-refresh-diagnostics.ts",
+      "line": 158,
+      "referencedBy": []
+    },
+    {
+      "name": "SHELL_OPERATORS",
+      "type": "constant",
+      "file": "packages/hench/src/guard/commands.ts",
+      "line": 24,
+      "referencedBy": []
+    },
+    {
+      "name": "SHUTDOWN_KILL_ESCALATION_MS",
+      "type": "constant",
+      "file": "packages/llm-client/src/exec.ts",
+      "line": 431,
+      "referencedBy": []
+    },
+    {
+      "name": "SIDEBAR_COLLAPSED_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/main.ts",
+      "line": 46,
+      "referencedBy": [],
+      "value": "sidebar-collapsed"
+    },
+    {
+      "name": "SKIP_DIRS",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/scanners.ts",
+      "line": 27,
+      "referencedBy": []
+    },
+    {
+      "name": "SKIP_DOC_DIRS",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/scanners.ts",
+      "line": 40,
+      "referencedBy": []
+    },
+    {
+      "name": "SKIP_DOC_FILES",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/scanners.ts",
+      "line": 55,
+      "referencedBy": []
+    },
+    {
+      "name": "SKIPPABLE_SEGMENTS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/zones.ts",
+      "line": 124,
+      "referencedBy": []
+    },
+    {
+      "name": "SMART_PRUNE_PROMPT",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reshape-reason.ts",
+      "line": 155,
+      "referencedBy": []
+    },
+    {
+      "name": "SOURCE",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/extract.ts",
+      "line": 220,
+      "referencedBy": [],
+      "value": "file-import"
+    },
+    {
+      "name": "SOURCE_EXTENSIONS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/move-recommendations.ts",
+      "line": 25,
+      "referencedBy": []
+    },
+    {
+      "name": "SOURCEVISION_DASHBOARD_INPUT_FILES",
+      "type": "constant",
+      "file": "refresh-artifacts.js",
+      "line": 6,
+      "referencedBy": []
+    },
+    {
+      "name": "SOURCEVISION_SNAPSHOT_FILES",
+      "type": "constant",
+      "file": "refresh-validate.js",
+      "line": 9,
+      "referencedBy": []
+    },
+    {
+      "name": "SOURCEVISION_TAB_IDS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/sourcevision-tabs.ts",
+      "line": 34,
+      "referencedBy": []
+    },
+    {
+      "name": "SOURCEVISION_TABS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/sourcevision-tabs.ts",
+      "line": 25,
+      "referencedBy": []
+    },
+    {
+      "name": "SPA_VIEWS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-static.ts",
+      "line": 130,
+      "referencedBy": []
+    },
+    {
+      "name": "STABILITY_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/convergence.ts",
+      "line": 66,
+      "referencedBy": [],
+      "value": "0.02"
+    },
+    {
+      "name": "STALE_LOCK_MS",
+      "type": "constant",
+      "file": "packages/rex/src/store/file-lock.ts",
+      "line": 16,
+      "referencedBy": []
+    },
+    {
+      "name": "STALE_THRESHOLD_MINUTES",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-status.ts",
+      "line": 75,
+      "referencedBy": []
+    },
+    {
+      "name": "STALE_THRESHOLD_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 1194,
+      "referencedBy": []
+    },
+    {
+      "name": "STALE_THRESHOLD_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/active-tasks-panel.ts",
+      "line": 55,
+      "referencedBy": []
+    },
+    {
+      "name": "STALE_THRESHOLD_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/hench-runs.ts",
+      "line": 128,
+      "referencedBy": []
+    },
+    {
+      "name": "STATUS_ENUM",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/reason.ts",
+      "line": 54,
+      "referencedBy": []
+    },
+    {
+      "name": "STATUS_FACETS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/facet-filter.ts",
+      "line": 28,
+      "referencedBy": []
+    },
+    {
+      "name": "STATUS_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/bulk-actions.ts",
+      "line": 27,
+      "referencedBy": []
+    },
+    {
+      "name": "STATUS_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/inline-status-picker.ts",
+      "line": 17,
+      "referencedBy": []
+    },
+    {
+      "name": "STATUS_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/prune-confirmation.ts",
+      "line": 100,
+      "referencedBy": []
+    },
+    {
+      "name": "STATUS_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+      "line": 49,
+      "referencedBy": []
+    },
+    {
+      "name": "STATUS_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/search-overlay.ts",
+      "line": 62,
+      "referencedBy": []
+    },
+    {
+      "name": "STATUS_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-status.ts",
+      "line": 257,
+      "referencedBy": [],
+      "value": "/api/status"
+    },
+    {
+      "name": "STATUS_TO_NOTION",
+      "type": "constant",
+      "file": "packages/rex/src/store/notion-map.ts",
+      "line": 198,
+      "referencedBy": []
+    },
+    {
+      "name": "STOP_WORDS",
+      "type": "constant",
+      "file": "packages/rex/src/core/keywords.ts",
+      "line": 11,
+      "referencedBy": []
+    },
+    {
+      "name": "STOP_WORDS",
+      "type": "constant",
+      "file": "packages/web/src/server/search-index.ts",
+      "line": 73,
+      "referencedBy": []
+    },
+    {
+      "name": "STOPWORDS",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/dedupe.ts",
+      "line": 66,
+      "referencedBy": []
+    },
+    {
+      "name": "STORAGE_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/sidebar.ts",
+      "line": 18,
+      "referencedBy": [],
+      "value": "sidebar-expanded-section"
+    },
+    {
+      "name": "STORAGE_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/data-display/collapsible-section.ts",
+      "line": 4,
+      "referencedBy": [],
+      "value": "collapsible-section:"
+    },
+    {
+      "name": "STORE_FILE",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/acknowledge.ts",
+      "line": 24,
+      "referencedBy": [],
+      "value": "acknowledged-findings.json"
+    },
+    {
+      "name": "STRUCTURAL_FIELDS",
+      "type": "constant",
+      "file": "packages/rex/src/core/sync.ts",
+      "line": 50,
+      "referencedBy": []
+    },
+    {
+      "name": "SUBDIVISION_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/zones.ts",
+      "line": 520,
+      "referencedBy": [],
+      "value": "50"
+    },
+    {
+      "name": "SUBZONE_FILE_INDENT",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/zones.ts",
+      "line": 62,
+      "referencedBy": [],
+      "value": "12"
+    },
+    {
+      "name": "SUBZONE_ROW_H",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-subzone-edges.ts",
+      "line": 13,
+      "referencedBy": [],
+      "value": "28"
+    },
+    {
+      "name": "SUBZONE_ROW_H",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/zones.ts",
+      "line": 60,
+      "referencedBy": [],
+      "value": "28"
+    },
+    {
+      "name": "SUBZONE_ROWS_MAX",
+      "type": "constant",
+      "file": "packages/web/src/viewer/hooks/use-subzone-edges.ts",
+      "line": 14,
+      "referencedBy": [],
+      "value": "10"
+    },
+    {
+      "name": "SUBZONE_ROWS_MAX",
+      "type": "constant",
+      "file": "packages/web/src/viewer/views/zones.ts",
+      "line": 61,
+      "referencedBy": [],
+      "value": "10"
+    },
+    {
+      "name": "SUGGESTIONS_FILE",
+      "type": "constant",
+      "file": "packages/hench/src/store/suggestions.ts",
+      "line": 32,
+      "referencedBy": [],
+      "value": "suggestions.json"
+    },
+    {
+      "name": "SUPPLEMENTARY_FILES",
+      "type": "constant",
+      "file": "packages/sourcevision/src/schema/data-files.ts",
+      "line": 14,
+      "referencedBy": []
+    },
+    {
+      "name": "SUPPLEMENTARY_FILES",
+      "type": "constant",
+      "file": "packages/web/src/shared/data-files.ts",
+      "line": 22,
+      "referencedBy": []
+    },
+    {
+      "name": "SUPPORTED_PROVIDERS",
+      "type": "constant",
+      "file": "cli.js",
+      "line": 1131,
+      "referencedBy": []
+    },
+    {
+      "name": "SV_DIR",
+      "type": "constant",
+      "file": "packages/sourcevision/src/constants.ts",
+      "line": 7,
+      "referencedBy": []
+    },
+    {
+      "name": "SV_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-sourcevision.ts",
+      "line": 32,
+      "referencedBy": [],
+      "value": "/api/sv/"
+    },
+    {
+      "name": "SVG_NS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/graph/renderer.ts",
+      "line": 21,
+      "referencedBy": [],
+      "value": "http://www.w3.org/2000/svg"
+    },
+    {
+      "name": "SYNC_META_FIELDS",
+      "type": "constant",
+      "file": "packages/rex/src/core/sync.ts",
+      "line": 40,
+      "referencedBy": []
+    },
+    {
+      "name": "TAG_PREFIX",
+      "type": "constant",
+      "file": "packages/hench/src/queue/priority-scheduler.ts",
+      "line": 30,
+      "referencedBy": [],
+      "value": "priority:"
+    },
+    {
+      "name": "TEMPLATES_FILE",
+      "type": "constant",
+      "file": "packages/hench/src/store/templates.ts",
+      "line": 16,
+      "referencedBy": [],
+      "value": "templates.json"
+    },
+    {
+      "name": "TEMPLATES_FILE",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-hench.ts",
+      "line": 741,
+      "referencedBy": [],
+      "value": "templates.json"
+    },
+    {
+      "name": "TERMINAL_CHILD_STATUSES",
+      "type": "constant",
+      "file": "packages/rex/src/core/parent-completion.ts",
+      "line": 30,
+      "referencedBy": []
+    },
+    {
+      "name": "TERMINAL_CONTAINER_STATUSES",
+      "type": "constant",
+      "file": "packages/rex/src/core/structural.ts",
+      "line": 163,
+      "referencedBy": []
+    },
+    {
+      "name": "TERMINAL_STATUSES",
+      "type": "constant",
+      "file": "packages/rex/src/core/remove-task.ts",
+      "line": 10,
+      "referencedBy": []
+    },
+    {
+      "name": "TEST_COUPLING_INDICATORS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "line": 217,
+      "referencedBy": []
+    },
+    {
+      "name": "TEST_DIR_CANDIDATES",
+      "type": "constant",
+      "file": "packages/hench/src/tools/test-runner.ts",
+      "line": 72,
+      "referencedBy": []
+    },
+    {
+      "name": "TEST_DIR_SEGMENTS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/move-recommendations.ts",
+      "line": 22,
+      "referencedBy": []
+    },
+    {
+      "name": "TEST_FILE_PATTERNS",
+      "type": "constant",
+      "file": "packages/hench/src/tools/test-runner.ts",
+      "line": 53,
+      "referencedBy": []
+    },
+    {
+      "name": "TEST_FILE_RE",
+      "type": "constant",
+      "file": "packages/rex/src/core/verify.ts",
+      "line": 88,
+      "referencedBy": []
+    },
+    {
+      "name": "TEST_PATTERNS",
+      "type": "constant",
+      "file": "packages/hench/src/agent/analysis/summary.ts",
+      "line": 9,
+      "referencedBy": []
+    },
+    {
+      "name": "TICK_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/polling/tick-timer.ts",
+      "line": 37,
+      "referencedBy": [],
+      "value": "1000"
+    },
+    {
+      "name": "TIGHT_COUPLING_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 23,
+      "referencedBy": [],
+      "value": "30"
+    },
+    {
+      "name": "TOKEN_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-token-usage.ts",
+      "line": 141,
+      "referencedBy": [],
+      "value": "/api/token/"
+    },
+    {
+      "name": "TOKEN_USAGE_POLL_KEY",
+      "type": "constant",
+      "file": "packages/web/src/viewer/usage/constants.ts",
+      "line": 12,
+      "referencedBy": [],
+      "value": "token-usage"
+    },
+    {
+      "name": "TOKEN_USAGE_VIEW_ID",
+      "type": "constant",
+      "file": "packages/web/src/viewer/usage/constants.ts",
+      "line": 18,
+      "referencedBy": [],
+      "value": "token-usage"
+    },
+    {
+      "name": "TOOL_DEFINITIONS",
+      "type": "constant",
+      "file": "packages/hench/src/tools/dispatch.ts",
+      "line": 39,
+      "referencedBy": []
+    },
+    {
+      "name": "TOOL_VERSION",
+      "type": "constant",
+      "file": "packages/hench/src/cli/commands/constants.ts",
+      "line": 5,
+      "referencedBy": [],
+      "value": "0.1.0"
+    },
+    {
+      "name": "TOOL_VERSION",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/constants.ts",
+      "line": 4,
+      "referencedBy": [],
+      "value": "0.1.0"
+    },
+    {
+      "name": "TOOL_VERSION",
+      "type": "constant",
+      "file": "packages/sourcevision/src/constants.ts",
+      "line": 4,
+      "referencedBy": [],
+      "value": "0.1.0"
+    },
+    {
+      "name": "TRANSIENT_PATTERNS",
+      "type": "constant",
+      "file": "packages/hench/src/agent/lifecycle/cli-loop.ts",
+      "line": 42,
+      "referencedBy": []
+    },
+    {
+      "name": "TRANSIENT_PATTERNS",
+      "type": "constant",
+      "file": "packages/llm-client/src/cli-provider.ts",
+      "line": 51,
+      "referencedBy": []
+    },
+    {
+      "name": "TRANSIENT_PATTERNS",
+      "type": "constant",
+      "file": "packages/llm-client/src/codex-cli-provider.ts",
+      "line": 22,
+      "referencedBy": []
+    },
+    {
+      "name": "TRIGGERABLE_STATUSES",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+      "line": 1010,
+      "referencedBy": []
+    },
+    {
+      "name": "TS_ENV_PATTERNS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/config-surface.ts",
+      "line": 24,
+      "referencedBy": []
+    },
+    {
+      "name": "TYPES_FILE_PATTERNS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/callgraph-findings.ts",
+      "line": 105,
+      "referencedBy": []
+    },
+    {
+      "name": "UNKNOWN_PROVIDER_METADATA",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/analyze.ts",
+      "line": 50,
+      "referencedBy": [],
+      "value": "unknown"
+    },
+    {
+      "name": "UNKNOWN_PROVIDER_METADATA",
+      "type": "constant",
+      "file": "packages/sourcevision/src/cli/commands/analyze.ts",
+      "line": 46,
+      "referencedBy": [],
+      "value": "unknown"
+    },
+    {
+      "name": "UNMOUNT_DELAY_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/lazy-children.ts",
+      "line": 28,
+      "referencedBy": [],
+      "value": "300"
+    },
+    {
+      "name": "UPDATE_FLAGS",
+      "type": "constant",
+      "file": "packages/rex/src/cli/validate-input.ts",
+      "line": 133,
+      "referencedBy": []
+    },
+    {
+      "name": "USAGE_POLL_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/usage/constants.ts",
+      "line": 15,
+      "referencedBy": []
+    },
+    {
+      "name": "VAGUE_PHRASES",
+      "type": "constant",
+      "file": "packages/rex/src/analyze/validate-modification.ts",
+      "line": 57,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_FORMATS",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/status.ts",
+      "line": 36,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_FORMATS",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/usage.ts",
+      "line": 23,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_GROUP_NUMBERS",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-sourcevision.ts",
+      "line": 97,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_GROUPS",
+      "type": "constant",
+      "file": "packages/rex/src/cli/commands/usage.ts",
+      "line": 24,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_LANGUAGE_IDS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/language/detect.ts",
+      "line": 39,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_LANGUAGES",
+      "type": "constant",
+      "file": "config.js",
+      "line": 33,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_LEVELS",
+      "type": "constant",
+      "file": "packages/rex/src/schema/v1.ts",
+      "line": 409,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_METHODS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/go-route-detection.ts",
+      "line": 15,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_METHODS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/server-route-detection.ts",
+      "line": 24,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_PRIORITIES",
+      "type": "constant",
+      "file": "packages/hench/src/queue/priority-scheduler.ts",
+      "line": 37,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_PRIORITIES",
+      "type": "constant",
+      "file": "packages/rex/src/schema/v1.ts",
+      "line": 429,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_REQUIREMENT_CATEGORIES",
+      "type": "constant",
+      "file": "packages/rex/src/schema/v1.ts",
+      "line": 201,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_SCOPES",
+      "type": "constant",
+      "file": "packages/web/src/cli/index.ts",
+      "line": 14,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_STATUSES",
+      "type": "constant",
+      "file": "packages/rex/src/schema/v1.ts",
+      "line": 418,
+      "referencedBy": []
+    },
+    {
+      "name": "VALID_VALIDATION_TYPES",
+      "type": "constant",
+      "file": "packages/rex/src/schema/v1.ts",
+      "line": 211,
+      "referencedBy": []
+    },
+    {
+      "name": "VALIDATION_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-validation.ts",
+      "line": 23,
+      "referencedBy": [],
+      "value": "/api/rex/validate"
+    },
+    {
+      "name": "VALIDATION_TYPE_OPTIONS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/components/prd-tree/task-detail.ts",
+      "line": 746,
+      "referencedBy": []
+    },
+    {
+      "name": "VALUE_KEYS",
+      "type": "constant",
+      "file": "packages/rex/src/cli/index.ts",
+      "line": 44,
+      "referencedBy": []
+    },
+    {
+      "name": "WATCHER_DEBOUNCE_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/start.ts",
+      "line": 216,
+      "referencedBy": [],
+      "value": "500"
+    },
+    {
+      "name": "WEB_PORT_FILE",
+      "type": "constant",
+      "file": "cli.js",
+      "line": 366,
+      "referencedBy": [],
+      "value": ".n-dx-web.port"
+    },
+    {
+      "name": "WORKFLOW_PREFIX",
+      "type": "constant",
+      "file": "packages/web/src/server/routes-workflow.ts",
+      "line": 19,
+      "referencedBy": [],
+      "value": "/api/hench/workflow/"
+    },
+    {
+      "name": "WS_HEALTH_BROADCAST_INTERVAL_MS",
+      "type": "constant",
+      "file": "packages/web/src/server/start.ts",
+      "line": 548,
+      "referencedBy": []
+    },
+    {
+      "name": "WS_MAGIC",
+      "type": "constant",
+      "file": "packages/web/src/server/websocket.ts",
+      "line": 325,
+      "referencedBy": [],
+      "value": "258EAFA5-E914-47DA-95CA-5AB9DC65B11D"
+    },
+    {
+      "name": "ZONE_COLORS",
+      "type": "constant",
+      "file": "packages/web/src/viewer/visualization/colors.ts",
+      "line": 11,
+      "referencedBy": []
+    },
+    {
+      "name": "ZONE_DETECTION_ARTIFACT_INDICATORS",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-parsing.ts",
+      "line": 230,
+      "referencedBy": []
+    },
+    {
+      "name": "ZONE_HEALTH_THRESHOLD",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/next-steps.ts",
+      "line": 198,
+      "referencedBy": [],
+      "value": "1.2"
+    },
+    {
+      "name": "ZONES_PER_BATCH",
+      "type": "constant",
+      "file": "packages/sourcevision/src/analyzers/enrich-config.ts",
+      "line": 16,
+      "referencedBy": [],
+      "value": "5"
+    }
+  ],
+  "summary": {
+    "totalEnvVars": 13,
+    "totalConfigRefs": 1,
+    "totalConstants": 520
+  }
+}

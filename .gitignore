@@ -3,6 +3,7 @@ dist/
 package-lock.json
 *.tsbuildinfo
 .hench/runs/
+.hench/locks/
 .n-dx.json
 .n-dx2.json
 .n-dx-web.pid

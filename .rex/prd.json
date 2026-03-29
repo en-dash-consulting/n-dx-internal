@@ -8,7 +8,19 @@
       "status": "completed",
       "level": "epic",
       "description": "Static analysis engine: file inventory, import graph, zone detection (Louvain community detection), React component catalog, PR markdown generation. Produces .sourcevision/CONTEXT.md and llms.txt for AI consumption.",
-      "completedAt": "2026-03-24T04:16:45.798Z",
+      "startedAt": "2026-03-28T18:05:26.005Z",
+      "completedAt": "2026-03-28T18:05:26.005Z",
+      "mergedProposals": [
+        {
+          "proposalNodeKey": "p0:epic",
+          "proposalTitle": "SourceVision UI Audit — Data Visualization Gap Analysis & Route Reorganization",
+          "proposalKind": "epic",
+          "reason": "semantic_title",
+          "score": 0.95,
+          "mergedAt": "2026-03-28T03:28:02.086Z",
+          "source": "smart-add"
+        }
+      ],
       "children": [
         {
           "id": "3bf3754c-c0d0-4fb7-9cbd-5ebbddb85d51",
@@ -9184,6 +9196,371 @@
             "matchedItemStatus": "completed",
             "createdAt": "2026-02-25T03:25:22.943Z"
           }
+        },
+        {
+          "id": "e365be07-3cf9-42a0-9f57-73e7658c0839",
+          "title": "Critical Data Coverage: Classifications and Call Graph",
+          "status": "completed",
+          "level": "feature",
+          "description": "Two entire SourceVision datasets — classifications.json (13 fields, 0% UI coverage) and callgraph.json (17 fields, 0% UI coverage) — are computed and persisted but completely invisible to users. This feature closes the two highest-priority data gaps identified in the audit by surfacing archetype classifications throughout the file-centric views and introducing a Hotspots panel driven by call graph analysis.",
+          "source": "smart-add",
+          "startedAt": "2026-03-28T03:59:05.827Z",
+          "completedAt": "2026-03-28T03:59:05.827Z",
+          "children": [
+            {
+              "id": "d56b7be8-b8bc-4f2f-8ecf-24f3f6a5c824",
+              "title": "Surface file archetype classifications in Overview, Files view, and MCP tool parity",
+              "status": "completed",
+              "level": "task",
+              "description": "The classifications.json dataset assigns each file an archetype (e.g., controller, repository, middleware) with confidence scores and evidence. Currently 0 of 13 fields appear in the dashboard, and the get_classifications MCP tool has no dashboard equivalent. Surfacing this data adds semantic meaning to the Files view and enables users to understand code role distribution at a glance. Add an archetype column and filter to the Files view, byArchetype summary chart to Overview, and ensure the get_classifications MCP output has a visual counterpart in the dashboard.",
+              "acceptanceCriteria": [
+                "Files view displays an archetype column showing the assigned archetype name (or 'unclassified') for each file",
+                "Files view includes an archetype filter alongside the existing role/category filters",
+                "Files view displays classification confidence score (0–1) as a sortable column",
+                "Overview adds a byArchetype distribution chart showing file counts per archetype",
+                "Overview displays totalClassified and totalUnclassified as metric cards or within the summary section",
+                "Files view per-row detail shows archetype field matching the get_file_info MCP output",
+                "Files with archetype source = 'user-override' are visually distinguished from algorithmic classifications",
+                "No regression to existing Files view filters, sorting, or column layout"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "ui",
+                "data-gap",
+                "classifications"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-28T03:47:25.871Z",
+              "completedAt": "2026-03-28T03:59:05.624Z"
+            },
+            {
+              "id": "5685d1ee-5ffe-42a1-917f-45f6762e98ee",
+              "title": "Surface call graph data in new Hotspots panel and Overview summary metrics",
+              "status": "completed",
+              "level": "task",
+              "description": "The callgraph.json dataset (17 fields) is used only as internal input to zone edge weighting — none of its fields are directly visible to users. The most actionable data for developers is mostCalled[], mostCalling[], and cycleCount, which identify performance hotspots, overly complex functions, and recursive dependencies. Create a Hotspots panel within or adjacent to the Overview view and add call graph summary metrics. The panel should also surface most-used component data (summary.mostUsedComponents from components.json, also currently hidden) as a complementary hotspot signal.",
+              "acceptanceCriteria": [
+                "Overview displays totalFunctions, totalCalls, and cycleCount as metric cards",
+                "A Hotspots panel shows the top 10 most-called functions (summary.mostCalled[]) with file path, function name, and caller count",
+                "Hotspots panel shows the top 10 most-calling functions (summary.mostCalling[]) with callee count",
+                "Hotspots panel shows most-used components (summary.mostUsedComponents from components.json) with usage frequency",
+                "Each hotspot entry links to or highlights the corresponding file in the Files view",
+                "Call graph cycleCount in Overview is visually distinct from import circular count (different metrics)",
+                "Panel degrades gracefully when callgraph.json is missing or empty (partial language support)",
+                "No regression to existing Overview layout or metric cards"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "ui",
+                "data-gap",
+                "callgraph"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-28T03:37:57.797Z",
+              "completedAt": "2026-03-28T03:45:04.729Z"
+            }
+          ]
+        },
+        {
+          "id": "7bb8caec-29f5-4f4b-944a-558f0b55a1c1",
+          "title": "Zone View Enrichment and Risk Transparency",
+          "status": "completed",
+          "level": "feature",
+          "description": "The Zones view currently surfaces 15 of 24 available fields (63%). Key missing data includes risk level labels, risk justification text, entry point badges, zone detection quality, per-zone AI-generated context, and zone correlation in the Routes view. These gaps mean users see color-coded risk indicators but cannot understand why a zone is flagged, which files form its public API, or navigate from a server route back to its owning zone. This feature closes the highest-impact zone data gaps.",
+          "source": "smart-add",
+          "startedAt": "2026-03-28T04:28:23.637Z",
+          "completedAt": "2026-03-28T04:28:23.637Z",
+          "children": [
+            {
+              "id": "bf4cde5d-50c8-4117-8d0c-411e3ef26912",
+              "title": "Add zone risk labels, entry point badges, detection quality indicators, and per-zone AI context to Zones view",
+              "status": "completed",
+              "level": "task",
+              "description": "The zones.json schema includes riskLevel (healthy/at-risk/critical/catastrophic), riskJustification (AI text), entryPoints[] (public API surface files), and detectionQuality (genuine/artifact/residual) — none of which are displayed. Per-zone context.md files exist under .sourcevision/zones/{id}/ but are never loaded. This task makes zone risk actionable by labeling and explaining it, highlights the public API surface, and loads zone AI context into the detail slideout. It also adds lastModified column to Files view and byRole/byCategory distribution charts to Overview (minor inventory gaps GAP-11).",
+              "acceptanceCriteria": [
+                "Zones view displays riskLevel as a labeled badge (healthy/at-risk/critical/catastrophic) in addition to the existing color indicator",
+                "Zone detail slideout displays riskJustification text when available",
+                "Zone file rows highlight entry point files with a distinct badge or icon indicating public API surface",
+                "Zone detail slideout displays detectionQuality (genuine/artifact/residual) with a tooltip explanation",
+                "Zone detail slideout loads and renders per-zone context.md when the file exists at .sourcevision/zones/{id}/context.md",
+                "failsThreshold boolean is surfaced as a visible policy-fail indicator on zones exceeding dual-fragility thresholds",
+                "Files view adds a lastModified column (sortable)",
+                "Overview adds byRole and byCategory distribution charts using inventory.json summary data",
+                "Missing or null riskJustification and context.md are handled gracefully with no empty panels shown",
+                "No regression to existing zone slideout content (cohesion/coupling gauges, file list, findings)"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "ui",
+                "zones",
+                "data-gap"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-28T04:12:47.389Z",
+              "completedAt": "2026-03-28T04:28:23.467Z"
+            },
+            {
+              "id": "56e8c179-5095-41c4-aee3-dbda69f50501",
+              "title": "Add zone attribution badges to server routes and clickable related[] links to findings",
+              "status": "completed",
+              "level": "task",
+              "description": "Two missing cross-view linkages reduce the actionability of the dashboard: (1) server route rows do not show which architectural zone owns them, breaking the connection between API surface and code structure; (2) finding items in Architecture/Problems/Suggestions have a related[] field referencing zones or files that is not rendered as navigable links. This task adds zone attribution to routes and makes finding relationships navigable, tying together the analysis views.",
+              "acceptanceCriteria": [
+                "Each server route row in the Routes view displays a zone badge showing the owning zone name, derived from the file-to-zone mapping in zones.json",
+                "Clicking a zone badge in the Routes view navigates to or highlights the corresponding zone in the Zones view",
+                "Finding items in Architecture, Problems, and Suggestions views render the related[] array as clickable chips",
+                "Clicking a related[] chip referencing a zone navigates to the Zones view filtered to that zone",
+                "Clicking a related[] chip referencing a file navigates to or highlights the file in the Files view",
+                "Empty related[] arrays render no chips (no empty section shown)",
+                "No regression to existing Routes view layout or findings rendering"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "ui",
+                "zones",
+                "routes",
+                "findings"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-28T04:01:38.552Z",
+              "completedAt": "2026-03-28T04:12:06.813Z"
+            }
+          ]
+        },
+        {
+          "id": "af5409a7-75a0-403e-823a-a30e1c3e5217",
+          "title": "Import Graph Depth Enhancement",
+          "status": "completed",
+          "level": "feature",
+          "description": "The Import Graph currently renders all edges identically, losing the semantic signal carried by edge type (static/dynamic/require/reexport/type). Circular dependency paths are listed in Overview but not highlighted in the graph where they would be most actionable. The imports.json schema also includes avgImportsPerFile — a useful density metric — that is not displayed. This feature makes the graph semantically richer and directly actionable for dependency management.",
+          "source": "smart-add",
+          "startedAt": "2026-03-28T17:46:42.995Z",
+          "completedAt": "2026-03-28T17:46:42.995Z",
+          "children": [
+            {
+              "id": "e97d2776-9306-4572-abf3-9ce98728a348",
+              "title": "Differentiate import edge types visually and highlight circular dependency paths in graph view",
+              "status": "completed",
+              "level": "task",
+              "description": "Import edges carry a type field (static, dynamic, require, reexport, type-only) currently ignored in rendering. Dynamic imports indicate code-splitting points, reexports identify barrel files, and type-only imports have zero runtime cost — all architectural signals. Circular paths are listed in Overview as text but not shown in the graph where developers can act on them. Add edge type styling with a legend, circular path highlighting, an edge type filter, and the avgImportsPerFile density metric. Also display component-level detail fields from components.json (kind, usageEdges.usageCount) in the Routes view (GAP-12).",
+              "acceptanceCriteria": [
+                "Import Graph renders edges with distinct styles per type: static (solid), dynamic (dashed), reexport (dotted), type-only (faint/grey)",
+                "A legend in the Import Graph explains the edge type visual encoding",
+                "Circular dependency paths are highlighted with a distinct color (e.g. red edges) when circulars[] is non-empty",
+                "Selecting a circular from Overview or clicking a highlighted edge focuses the graph on those nodes",
+                "Overview or Import Graph displays avgImportsPerFile as a metric",
+                "An edge type filter toggle allows showing/hiding specific edge types",
+                "Routes view component rows display component kind (function/arrow/class/forwardRef) and usageCount",
+                "Graph rendering is not degraded for projects with 200+ edges (validated against the Go backend sample data)",
+                "No regression to existing graph layout, zoom, or node interaction behavior"
+              ],
+              "priority": "medium",
+              "tags": [
+                "sourcevision",
+                "ui",
+                "import-graph",
+                "data-gap"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-28T17:32:40.198Z",
+              "completedAt": "2026-03-28T17:46:42.830Z"
+            }
+          ]
+        },
+        {
+          "id": "138efa77-6111-4304-8df6-56c2cd648555",
+          "title": "SourceVision Route Reorganization",
+          "status": "completed",
+          "level": "feature",
+          "description": "The current 9-tab SourceVision navigation mixes abstraction levels, hides high-value views behind enrichment pass thresholds, and spreads one dataset (findings[]) across three separate tabs. There is also no home for new datasets. This feature implements the phased reorganization from the audit: merging the three findings tabs into a unified Analysis view, consolidating Files and Import Graph into an Explorer view, and renaming Routes to Endpoints — reducing the tab count from 9 to 5 focused views.",
+          "source": "smart-add",
+          "startedAt": "2026-03-28T05:27:06.380Z",
+          "completedAt": "2026-03-28T05:27:06.380Z",
+          "children": [
+            {
+              "id": "fc2699aa-38a8-4a87-9dfc-10bbb59256c1",
+              "title": "Merge Architecture, Problems, and Suggestions findings tabs into a unified Analysis view with move-file finding support",
+              "status": "completed",
+              "level": "task",
+              "description": "Architecture, Problems, and Suggestions all source from the same findings[] array in zones.json, split by finding type. Three tabs for one dataset creates navigation friction and amplifies the enrichment gating cliff (two of three tabs become hidden below pass 3). Merge into a single Analysis view with type-based sections and severity filtering. Additionally, move-file findings (type: move-file) exist in zones.json but have no dedicated UI treatment — add them as actionable cards with source and suggested destination.",
+              "acceptanceCriteria": [
+                "A single 'Analysis' tab consolidates all content from the current Architecture, Problems, and Suggestions tabs",
+                "Analysis view displays findings grouped by type: relationship/pattern findings, anti-pattern findings, suggestion findings, and move-file recommendations in distinct labeled sections",
+                "Severity filter (critical/warning/info) applies across all finding types in the unified view",
+                "Finding type section pills or tabs within the view allow focusing on one category",
+                "move-file findings are displayed as distinct actionable cards showing the file path, suggested destination, and rationale",
+                "Navigating to old /problems or /suggestions routes redirects to the unified Analysis view",
+                "Enrichment gating is softened: the unified view shows available findings at any pass level with a notice when additional findings become available at higher passes",
+                "External package analysis and hub file charts (previously in Architecture) are preserved in the unified view",
+                "No findings data is lost — all content previously accessible across the three tabs remains accessible"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "ui",
+                "route-reorganization",
+                "navigation",
+                "findings"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-28T04:55:25.747Z",
+              "completedAt": "2026-03-28T05:12:07.663Z"
+            },
+            {
+              "id": "37a21efb-3408-41b7-9bc7-dc65420a8f1d",
+              "title": "Consolidate Files and Import Graph views into Explorer view and rename Routes to Endpoints",
+              "status": "completed",
+              "level": "task",
+              "description": "Files and Import Graph present complementary perspectives on the same file set — merging them into an Explorer view enables correlation (selecting a file shows its imports inline) and reduces tab count. The Routes tab name is misleading for backend projects with no client routes; renaming to 'Endpoints' better reflects its content across project types. Route module detail fields (exports[], isLayout, isIndex, parentLayout, layoutDepth) that are currently hidden should be added to the Endpoints view as part of this work.",
+              "acceptanceCriteria": [
+                "A new 'Explorer' tab replaces the separate 'Files' and 'Import Graph' tabs",
+                "Explorer view defaults to the file list mode with all existing Files view columns, filters, and sorting preserved",
+                "Explorer view includes a toggle or split-panel mode to show the import graph alongside the file list",
+                "Selecting a file in the file list highlights its import edges in the graph panel when graph mode is active",
+                "Navigating to old /files or /graph routes redirects to the Explorer view",
+                "The 'Routes' tab is renamed to 'Endpoints' in all navigation labels and URL paths",
+                "Navigating to the old /routes path redirects to /endpoints",
+                "Endpoints view adds route module detail fields: exports[], isLayout, isIndex, and parentLayout when available",
+                "Endpoints view adds summary.layoutDepth as a displayed metric",
+                "No regression to file filtering, sorting, or import graph interaction behavior"
+              ],
+              "priority": "medium",
+              "tags": [
+                "sourcevision",
+                "ui",
+                "route-reorganization",
+                "navigation",
+                "explorer"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-28T05:13:06.259Z",
+              "completedAt": "2026-03-28T05:27:06.177Z"
+            }
+          ]
+        },
+        {
+          "id": "e05323c0-8d47-4e84-8ec2-6253a963caaa",
+          "title": "PR Markdown Migration to Claude Code Skill",
+          "status": "completed",
+          "level": "feature",
+          "description": "The PR Markdown tab is a generative workflow action — produce a PR description artifact on demand — rather than a static analysis view. It depends on git diff state, produces ephemeral output, and currently requires ndx start to be running. Extracting it as a /pr-description Claude Code skill removes the only non-analysis view from SourceVision navigation, eliminates the server dependency, and enables richer interaction via prompts.",
+          "source": "smart-add",
+          "startedAt": "2026-03-28T18:05:25.887Z",
+          "completedAt": "2026-03-28T18:05:25.887Z",
+          "children": [
+            {
+              "id": "eb207022-1a33-480f-b62a-0187834b93f0",
+              "title": "Implement /pr-description Claude Code skill and remove PR Markdown dashboard tab",
+              "status": "completed",
+              "level": "task",
+              "description": "The current PR Markdown tab fetches from /api/sv/pr-markdown with caching and staleness detection. A Claude Code skill regenerates on demand (eliminating the cache layer), runs standalone without ndx start, and can interactively ask about scope, audience, or format preferences. The skill should read .sourcevision/zones.json and CONTEXT.md to enrich descriptions with architectural context (zones touched, coupling impact) while generation logic stays outside SourceVision's pipeline.",
+              "acceptanceCriteria": [
+                "A /pr-description skill is implemented and registered in the n-dx skills registry",
+                "The skill detects the git base range using the same availability logic as the current endpoint and fails with a clear message when not in a git repo",
+                "The skill reads .sourcevision/zones.json and CONTEXT.md when available to enrich the PR description with zone-level architectural context",
+                "The skill supports the existing normal and fallback modes, surfacing confidence/coverage scores when sourcevision data is unavailable",
+                "The skill produces output qualitatively equivalent to the current dashboard render",
+                "The /api/sv/pr-markdown server endpoint is removed",
+                "The pr-markdown view component and its tab entry in sourcevision-tabs.ts are removed",
+                "Navigating to the old /pr-markdown route displays a clear message directing users to /pr-description",
+                "No other dashboard views or API endpoints are affected by the removal"
+              ],
+              "priority": "low",
+              "tags": [
+                "sourcevision",
+                "skill",
+                "pr-markdown",
+                "route-reorganization"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-28T17:47:31.237Z",
+              "completedAt": "2026-03-28T18:05:25.715Z"
+            }
+          ]
+        },
+        {
+          "id": "aff9ca27-a7d1-4144-b8aa-14b89b5dd1f9",
+          "title": "Configuration Surface Analyzer",
+          "status": "completed",
+          "level": "feature",
+          "description": "Environment variables, config file references, and global constants are the invisible configuration surface that drives runtime behavior but is currently unscanned by SourceVision. This new analysis phase detects env var reads, config file references, and global constant definitions, producing a config-surface.json output and enabling a new Configuration panel that correlates configuration entries with the zones that depend on them.",
+          "source": "smart-add",
+          "startedAt": "2026-03-28T04:55:15.931Z",
+          "completedAt": "2026-03-28T04:55:15.931Z",
+          "children": [
+            {
+              "id": "9586af69-f090-455d-a899-2a0fc3fcdd8a",
+              "title": "Implement environment variable and global constants scanner as a new SourceVision analysis phase",
+              "status": "completed",
+              "level": "task",
+              "description": "SourceVision's 6 analysis phases do not scan configuration access patterns. For production systems, understanding which env vars exist, which zones depend on them, and which config files are loaded is critical operational context. This task adds a new analysis phase scanning for env var reads, config file references, and global constant definitions in JavaScript/TypeScript and Go, producing config-surface.json and surfacing the data in a new Configuration panel in the dashboard with zone attribution.",
+              "acceptanceCriteria": [
+                "A new SourceVision analysis phase detects env var reads for TypeScript/JavaScript (process.env.*) and Go (os.Getenv, os.LookupEnv, os.Getenv)",
+                "The phase produces config-surface.json with fields: entries[] (name, type: env|config|constant, file, line, referencedBy[]), summary.totalEnvVars, summary.totalConfigRefs, summary.totalConstants",
+                "Config file references (.env, .env.*, config.json, config.yaml, *.toml) are detected and listed",
+                "Global constant definitions (module-level const in Go, top-level const/let in TypeScript) are catalogued with statically determinable values",
+                "A Configuration panel in the dashboard lists env vars and constants with owning zone attribution (derived from file-to-zone mapping)",
+                "A new sv_config_surface MCP tool exposes the config surface data for AI consumption",
+                "The phase produces empty output with no errors for projects with no detectable env var usage",
+                "Phase output is written to .sourcevision/config-surface.json alongside other phase outputs",
+                "ndx analyze runs the new phase by default; it can be skipped with --no-config-surface flag"
+              ],
+              "priority": "high",
+              "tags": [
+                "sourcevision",
+                "analyzer",
+                "config-surface",
+                "new-feature"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-28T04:29:22.223Z",
+              "completedAt": "2026-03-28T04:55:15.759Z"
+            }
+          ]
+        },
+        {
+          "id": "4ffcaf78-4dae-4dce-ae6e-254f9052ee14",
+          "title": "Convergence History Trend Visualization",
+          "status": "completed",
+          "level": "feature",
+          "description": "SourceVision saves zone metric snapshots to .sourcevision/history/{timestamp}.json after each analysis run. Currently these are never loaded or visualized — users have no way to see whether architecture is improving or degrading across commits. This feature adds trend charts to the Zones view using the historical snapshot data, turning the accumulated history into an architectural drift indicator.",
+          "source": "smart-add",
+          "startedAt": "2026-03-28T16:55:53.143Z",
+          "completedAt": "2026-03-28T16:55:53.143Z",
+          "children": [
+            {
+              "id": "15643abc-0ece-4544-bd12-2ea66753c1e0",
+              "title": "Add zone cohesion and coupling trend charts using historical analysis snapshots",
+              "status": "completed",
+              "level": "task",
+              "description": "The .sourcevision/history/ directory accumulates timestamped zone metric snapshots with each analysis run. For projects that analyze frequently (CI, pre-commit), this produces a time series of cohesion/coupling values per zone. Loading and charting this data in the Zones view provides a leading indicator of architectural drift. A new API endpoint aggregates the history files; the view renders sparklines or mini trend charts per zone with an expandable full chart.",
+              "acceptanceCriteria": [
+                "A new API endpoint loads all history/{timestamp}.json files and returns a time-series of cohesion/coupling per zone",
+                "The Zones view displays a sparkline or mini trend chart per zone showing cohesion and coupling over the last 10 snapshots (configurable default)",
+                "Trend charts visually indicate direction: improving (cohesion increasing, coupling decreasing) vs degrading (cohesion decreasing, coupling increasing)",
+                "Clicking a trend chart expands to a full-size chart showing complete history for that zone",
+                "History data is loaded lazily after initial page render to avoid blocking the Zones view",
+                "Zones with fewer than 2 snapshots display a 'Not enough history' placeholder",
+                "Feature degrades gracefully when the history/ directory is empty or absent",
+                "No regression to existing Zones view layout or zone detail slideout behavior"
+              ],
+              "priority": "medium",
+              "tags": [
+                "sourcevision",
+                "ui",
+                "history",
+                "zones",
+                "trends"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-03-28T16:39:43.250Z",
+              "completedAt": "2026-03-28T16:55:52.880Z"
+            }
+          ]
         }
       ]
     },
@@ -23306,6 +23683,306 @@
           ]
         }
       ]
+    },
+    {
+      "id": "b1306eb7-6b15-4918-9adf-d9a4041055ad",
+      "title": "SourceVision Analysis Phases Panel",
+      "status": "completed",
+      "level": "epic",
+      "description": "Add a clickable UI panel to the SourceVision overview page that shows all 7 analysis phases with status, timestamps, and run/reset triggers. When a phase is running, a pulse animation indicates activity. The panel replaces the existing Getting Started section and provides an interactive way to manage analysis phases from the dashboard.",
+      "priority": "high",
+      "tags": [
+        "web",
+        "sourcevision",
+        "ui",
+        "dashboard"
+      ],
+      "startedAt": "2026-03-28T19:19:57.893Z",
+      "children": [
+        {
+          "id": "13c7d2d6-6a34-450a-b3a3-480d14bb3fb4",
+          "title": "Server-side phase status API and execution endpoints",
+          "status": "completed",
+          "level": "feature",
+          "description": "Add server endpoints to expose phase status from manifest.json and to trigger/reset individual analysis phases. Includes GET /api/sv/phases for status, POST /api/sv/phases/:phase/run for triggering, POST /api/sv/phases/:phase/reset for clearing, and WebSocket broadcasts for real-time updates.",
+          "acceptanceCriteria": [
+            "GET /api/sv/phases returns all 7 phases with status, timestamps, and descriptions derived from manifest.json",
+            "POST /api/sv/phases/:phase/run spawns sourcevision analyze --phase=N as a managed child process using spawnManaged from @n-dx/llm-client",
+            "Only one phase can run at a time (singleton execution guard)",
+            "POST /api/sv/phases/:phase/reset clears a phase status back to pending in manifest",
+            "WebSocket broadcasts sv:phase-update messages when phase status changes",
+            "Server polls manifest.json during phase execution to detect completion"
+          ],
+          "priority": "high",
+          "tags": [
+            "server",
+            "api",
+            "websocket"
+          ],
+          "startedAt": "2026-03-28T19:19:57.776Z",
+          "completedAt": "2026-03-28T19:19:57.776Z",
+          "children": [
+            {
+              "id": "b0e44d48-759b-4cf2-b4c8-876f2e804399",
+              "title": "Add GET /api/sv/phases endpoint to return phase status from manifest",
+              "status": "completed",
+              "level": "task",
+              "description": "In packages/web/src/server/routes-sourcevision.ts, add a GET /api/sv/phases endpoint that reads manifest.json and maps the modules record to an ordered array of 7 phases with human-friendly names, descriptions, status, and timestamps. Use the existing loadDataFile() helper. Phase definitions: 1=inventory, 2=imports, 3=classifications, 4=zones, 5=components, 6=callgraph, 7=config-surface.",
+              "acceptanceCriteria": [
+                "Endpoint returns JSON array of 7 phases with id, name, phase number, description, status, startedAt, completedAt, and error fields",
+                "Phases not yet in manifest default to status: pending",
+                "Uses existing loadDataFile helper from routes-sourcevision.ts"
+              ],
+              "priority": "high",
+              "startedAt": "2026-03-28T18:41:33.534Z",
+              "completedAt": "2026-03-28T18:47:56.057Z"
+            },
+            {
+              "id": "8a1d4d81-0782-4d12-9677-367bbf07be6b",
+              "title": "Add POST /api/sv/phases/:phase/run endpoint to trigger analysis",
+              "status": "completed",
+              "level": "task",
+              "description": "Add a POST endpoint that spawns `sourcevision analyze --phase=N projectDir` using spawnManaged from @n-dx/llm-client (same pattern as routes-rex/execution.ts:130 and routes-hench.ts:1102). Include a singleton guard preventing concurrent phase runs. Poll manifest.json to detect completion and broadcast status via WebSocket. The route handler needs to accept POST methods — expand the existing handleSourcevisionRoute to handle POST for phase paths.",
+              "acceptanceCriteria": [
+                "POST /api/sv/phases/:phase/run spawns sourcevision analyze --phase=N",
+                "Returns 409 if a phase is already running",
+                "Uses spawnManaged from @n-dx/llm-client",
+                "Broadcasts sv:phase-update via WebSocket on state changes"
+              ],
+              "priority": "high",
+              "startedAt": "2026-03-28T18:47:56.480Z",
+              "completedAt": "2026-03-28T18:54:53.691Z"
+            },
+            {
+              "id": "bba8cdf0-0d27-434d-aca6-a48fe0cfb105",
+              "title": "Add POST /api/sv/phases/:phase/reset endpoint",
+              "status": "completed",
+              "level": "task",
+              "description": "Add a POST endpoint that clears a phase's status in manifest.json back to pending by removing startedAt, completedAt, and error fields. Read manifest, modify the module entry, write it back. Broadcast sv:phase-update via WebSocket after reset.",
+              "acceptanceCriteria": [
+                "POST /api/sv/phases/:phase/reset clears phase status to pending in manifest.json",
+                "Returns 400 if phase number is invalid",
+                "Broadcasts sv:phase-update via WebSocket after reset"
+              ],
+              "priority": "medium",
+              "startedAt": "2026-03-28T19:15:25.255Z",
+              "completedAt": "2026-03-28T19:19:57.592Z"
+            }
+          ]
+        },
+        {
+          "id": "01ed9294-ae32-46d8-aeed-b76cd08da419",
+          "title": "Phase panel UI component with status display and animations",
+          "status": "completed",
+          "level": "feature",
+          "description": "Create a Preact PhasePanel component that renders all 7 analysis phases as interactive cards on the Overview page. Each card shows phase number, name, status indicator, last-run timestamp, and Run/Reset action buttons. Running phases display a pulse animation. Replaces the existing Getting Started section.",
+          "acceptanceCriteria": [
+            "PhasePanel component in packages/web/src/viewer/components/phase-panel.ts renders 7 phase cards",
+            "Each card shows phase number, name, brief description, status icon (check/spinner/dash/warning), and relative timestamp",
+            "Running phase cards have a pulsing border animation",
+            "Run and Reset buttons trigger POST requests to the server API",
+            "Run button is disabled when any phase is already running",
+            "Panel is rendered on the Overview page between header and metrics row",
+            "Existing Getting Started section is replaced by the phase panel",
+            "CSS in packages/web/src/viewer/styles/phase-panel.css follows existing overview-section patterns",
+            "Cards are responsive (grid wraps on small screens)"
+          ],
+          "priority": "high",
+          "tags": [
+            "viewer",
+            "component",
+            "css",
+            "animation"
+          ],
+          "startedAt": "2026-03-28T19:12:56.904Z",
+          "completedAt": "2026-03-28T19:12:56.904Z",
+          "children": [
+            {
+              "id": "47d43004-8b67-4ae9-a8df-b1964395b07f",
+              "title": "Create PhasePanel Preact component with phase cards",
+              "status": "completed",
+              "level": "task",
+              "description": "Create packages/web/src/viewer/components/phase-panel.ts with a PhasePanel Preact component. Fetches /api/sv/phases on mount. Renders a responsive grid of 7 phase cards, each showing: phase number + name, brief description, status indicator (checkmark for complete, pulse dot for running, dash for pending, warning for error), relative timestamp for last run, and Run/Reset action buttons. Run button disabled when any phase is running. Listens for WebSocket sv:phase-update messages to refresh state.",
+              "acceptanceCriteria": [
+                "Component fetches /api/sv/phases on mount and renders 7 cards",
+                "Status indicators: checkmark (complete), animated dot (running), dash (pending), warning (error)",
+                "Run/Reset buttons call POST endpoints",
+                "Run button disabled during any active phase execution",
+                "Listens for WebSocket sv:phase-update to refresh state without polling"
+              ],
+              "priority": "high",
+              "startedAt": "2026-03-28T18:59:40.530Z",
+              "completedAt": "2026-03-28T19:07:02.060Z"
+            },
+            {
+              "id": "38649417-81b3-4c23-af46-9417dc37f210",
+              "title": "Add phase-panel.css with card styles and pulse animation",
+              "status": "completed",
+              "level": "task",
+              "description": "Create packages/web/src/viewer/styles/phase-panel.css with styles for the phase panel. Follow existing overview-section patterns (bg-surface, border, border-radius: 12px). Include: .phase-panel grid container, .phase-card styling with status variants (--running, --complete, --error, --pending), .phase-card__actions button group, and @keyframes phase-pulse animation for running state (similar to status-badge-pulse in badges.css).",
+              "acceptanceCriteria": [
+                "CSS file follows existing overview-section patterns",
+                "Running cards have visible pulse animation",
+                "Complete/error/pending cards have distinct visual states",
+                "Grid is responsive and wraps on small screens"
+              ],
+              "priority": "high",
+              "startedAt": "2026-03-28T18:54:54.112Z",
+              "completedAt": "2026-03-28T18:59:40.108Z"
+            },
+            {
+              "id": "c72ec7c7-29c0-434b-81ac-ce2f8b6cfe5f",
+              "title": "Integrate PhasePanel into Overview page, replace Getting Started section",
+              "status": "completed",
+              "level": "task",
+              "description": "In packages/web/src/viewer/views/overview.ts, import PhasePanel and render it between the header and metrics row. Remove the existing Getting Started section (the showGettingStarted conditional block at lines 214-228) since the phase panel subsumes that functionality by showing which phases haven't run and providing triggers to run them.",
+              "acceptanceCriteria": [
+                "PhasePanel renders between header and metrics row on Overview page",
+                "Getting Started section is removed",
+                "Overview page still renders correctly when manifest has no modules"
+              ],
+              "priority": "high",
+              "startedAt": "2026-03-28T19:07:02.476Z",
+              "completedAt": "2026-03-28T19:12:56.723Z"
+            }
+          ]
+        },
+        {
+          "id": "67ee29a7-e422-43b3-9b0a-8645f95392fe",
+          "title": "SV Phases Panel v2: 4-Phase Grouping, Concurrency Guard & Empty State",
+          "status": "completed",
+          "level": "feature",
+          "description": "Redesign the SV phases panel from 7 individual module triggers to 4 logical grouped phases (Scan, Classify, Architecture, Deep Analysis). Add global concurrency guard preventing parallel SV processes across UI/CLI/MCP. Ensure the phase panel renders on empty state (no SV data) so users can initiate their first scan from the UI.",
+          "priority": "high",
+          "tags": [
+            "web",
+            "sourcevision",
+            "ui"
+          ],
+          "startedAt": "2026-03-28T21:18:14.861Z",
+          "completedAt": "2026-03-28T21:18:14.861Z",
+          "children": [
+            {
+              "id": "76d6cf52-511e-4de5-93bf-23cb310b973e",
+              "title": "Global SV concurrency guard: prevent parallel analyze processes",
+              "status": "completed",
+              "level": "task",
+              "description": "Add a singleton execution lock that prevents concurrent sourcevision analyze runs across all entry points (UI phase triggers, CLI `sourcevision analyze`, MCP tools). The server should check manifest for a running status before spawning. CLI should check for a lock file or manifest running state. Return 409 from API and a clear error from CLI/MCP when blocked. Lock releases on process exit (success or error).",
+              "acceptanceCriteria": [
+                "POST /api/sv/phases/:n/run returns 409 if any SV phase is already running",
+                "CLI `sourcevision analyze` checks manifest for running modules and exits with error if found",
+                "MCP sv_analyze tool checks for running state before executing",
+                "Lock is released on process exit regardless of success or error",
+                "UI disables all Run buttons globally when any phase is in progress"
+              ],
+              "priority": "critical",
+              "tags": [
+                "web-server",
+                "sourcevision",
+                "concurrency"
+              ],
+              "startedAt": "2026-03-28T19:45:51.614Z",
+              "completedAt": "2026-03-28T20:27:54.435Z"
+            },
+            {
+              "id": "3d578006-03c0-49e2-a12f-c23bf67aa48c",
+              "title": "Show phase panel on empty state (no SV data)",
+              "status": "completed",
+              "level": "task",
+              "description": "When no sourcevision data exists (fresh project or after `sv reset`), the overview page currently shows a static \"No data loaded\" message. Instead, render the phase panel component so users can initiate their first scan directly from the UI. The panel should show all 4 phases in pending state with Run buttons enabled (at minimum Phase 1 Scan).",
+              "acceptanceCriteria": [
+                "Overview page renders phase panel when no .sourcevision data exists",
+                "Phase 1 (Scan) Run button is clickable and triggers analysis",
+                "Static 'No data loaded' message is replaced by the phase panel plus a brief welcome/onboarding message",
+                "After sv reset, refreshing the dashboard shows the phase panel not the blank error state"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-viewer",
+                "overview",
+                "empty-state"
+              ],
+              "startedAt": "2026-03-28T21:02:45.025Z",
+              "completedAt": "2026-03-28T21:08:59.048Z"
+            },
+            {
+              "id": "31376db9-cb5d-4890-9ea5-4efdce9c3327",
+              "title": "Redesign phase panel: 4 grouped phases replacing 7 module triggers",
+              "status": "completed",
+              "level": "task",
+              "description": "Refactor the phase panel component from 7 individual module cards to 4 logical phase groups wrapped in a shared container div. Each phase card maps to multiple internal modules: Phase 1 Scan (inventory + imports + configsurface), Phase 2 Classify (classifications + components), Phase 3 Architecture (zones + callgraph), Phase 4 Deep Analysis (zone enrichment passes 2-4 + meta-eval). Each card shows: phase name, brief description, status derived from constituent modules, last-run timestamp (latest completedAt across modules), and Run/Reset actions. Include LLM cost indicator (free/low/medium/high) on each card.",
+              "acceptanceCriteria": [
+                "Phase panel displays exactly 4 phase cards in a shared wrapper div",
+                "Phase 1 Scan triggers inventory + imports + configsurface sequentially",
+                "Phase 2 Classify triggers classifications + components sequentially",
+                "Phase 3 Architecture triggers zones + callgraph sequentially",
+                "Phase 4 Deep Analysis triggers zone enrichment passes 2-4 and meta-evaluation (--full mode content)",
+                "Each card shows aggregated status from its constituent modules",
+                "Each card displays the most recent completedAt timestamp from its modules",
+                "Each card shows an LLM cost indicator (Phase 1: Free, Phase 2: Low, Phase 3: Medium, Phase 4: High)",
+                "Pulse animation plays on the card when any constituent module has status running"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-viewer",
+                "component",
+                "phase-panel"
+              ],
+              "startedAt": "2026-03-28T20:27:54.928Z",
+              "completedAt": "2026-03-28T20:41:41.979Z"
+            },
+            {
+              "id": "83ea2756-4f89-4823-9465-79cb8832d750",
+              "title": "Server endpoints for grouped phase execution",
+              "status": "completed",
+              "level": "task",
+              "description": "Add or update server API endpoints to support the 4 grouped phases. GET /api/sv/phases returns phase status aggregated from manifest modules. POST /api/sv/phases/:n/run accepts phase number 1-4 and spawns the appropriate sequence of internal modules (e.g. phase 1 runs `sv analyze --phase=1 --phase=2 --phase=7` or equivalent). POST /api/sv/phases/:n/reset resets the constituent modules in the manifest. Broadcast sv:phase-update via WebSocket on status transitions.",
+              "acceptanceCriteria": [
+                "GET /api/sv/phases returns 4 phase objects with aggregated status, timestamps, and constituent module info",
+                "POST /api/sv/phases/1/run spawns inventory + imports + configsurface in sequence",
+                "POST /api/sv/phases/2/run spawns classifications + components in sequence",
+                "POST /api/sv/phases/3/run spawns zones + callgraph in sequence",
+                "POST /api/sv/phases/4/run spawns zone enrichment passes 2-4 (--full mode)",
+                "POST /api/sv/phases/:n/reset resets constituent module statuses to pending in manifest",
+                "sv:phase-update WebSocket message broadcasts on each status transition",
+                "409 returned if concurrency guard detects a running process"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-server",
+                "api",
+                "routes-sourcevision"
+              ],
+              "startedAt": "2026-03-28T20:41:42.483Z",
+              "completedAt": "2026-03-28T21:02:44.533Z"
+            },
+            {
+              "id": "a9d134f2-4721-4082-95c6-c49b8e13aad9",
+              "title": "Phase prerequisite enforcement and sequential gating",
+              "status": "completed",
+              "level": "task",
+              "description": "Enforce phase ordering so users cannot run Phase 2 without Phase 1 complete, Phase 3 without Phase 2 complete, or Phase 4 without Phase 3 complete. The UI should visually indicate locked phases (dimmed with tooltip explaining prerequisite). The server should return 400 with a clear message if prerequisites are not met.",
+              "acceptanceCriteria": [
+                "Server returns 400 with prerequisite error if Phase 2 triggered without Phase 1 complete",
+                "Server returns 400 with prerequisite error if Phase 3 triggered without Phase 2 complete",
+                "Server returns 400 with prerequisite error if Phase 4 triggered without Phase 3 complete",
+                "UI dims Run button on phases whose prerequisites are not met",
+                "Tooltip on locked phases explains which prior phase must complete first",
+                "Phase 1 is always runnable (no prerequisites)"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-server",
+                "web-viewer",
+                "validation"
+              ],
+              "startedAt": "2026-03-28T21:08:59.554Z",
+              "completedAt": "2026-03-28T21:18:14.654Z"
+            }
+          ]
+        }
+      ],
+      "completedAt": "2026-03-28T21:18:14.995Z"
     }
   ]
 }
