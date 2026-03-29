@@ -16,6 +16,7 @@ import type {
   Zones,
   Components,
   ConfigSurface,
+  DetectedFrameworks,
 } from "../schema/index.js";
 import { DATA_FILES } from "../schema/data-files.js";
 import { generateContext } from "../analyzers/context.js";
@@ -31,6 +32,7 @@ interface SourcevisionData {
   zones: Zones | null;
   components: Components | null;
   configSurface: ConfigSurface | null;
+  frameworks: DetectedFrameworks | null;
 }
 
 function loadData(targetDir: string): SourcevisionData {
@@ -43,6 +45,7 @@ function loadData(targetDir: string): SourcevisionData {
     zones: null,
     components: null,
     configSurface: null,
+    frameworks: null,
   };
 
   const modules: Array<{ key: keyof SourcevisionData; file: string }> = [
@@ -53,6 +56,7 @@ function loadData(targetDir: string): SourcevisionData {
     { key: "zones", file: DATA_FILES.zones },
     { key: "components", file: DATA_FILES.components },
     { key: "configSurface", file: DATA_FILES.configSurface },
+    { key: "frameworks", file: DATA_FILES.frameworks },
   ];
 
   for (const mod of modules) {
@@ -572,6 +576,7 @@ function registerMcpResources(server: McpServer, context: McpContext): void {
         data.zones,
         data.components,
         data.classifications,
+        data.frameworks,
       );
 
       return {

@@ -328,6 +328,10 @@ function generateOutputFiles(ctx: AnalyzeContext): void {
     const classData = existsSync(classificationsPath)
       ? JSON.parse(readFileSync(classificationsPath, "utf-8"))
       : null;
+    const frameworksPath = join(ctx.svDir, DATA_FILES.frameworks);
+    const frameworksData = existsSync(frameworksPath)
+      ? JSON.parse(readFileSync(frameworksPath, "utf-8"))
+      : null;
 
     // Load risk justifications and zone types from .n-dx.json
     const riskJustifications = loadRiskJustifications(ctx.svDir);
@@ -365,10 +369,10 @@ function generateOutputFiles(ctx: AnalyzeContext): void {
       writeFileSync(join(ctx.svDir, DATA_FILES.zones), toCanonicalJSON(zonesData));
     }
 
-    const llmsTxt = generateLlmsTxt(manifest, inventory, importsData, zonesData, componentsData, classData);
+    const llmsTxt = generateLlmsTxt(manifest, inventory, importsData, zonesData, componentsData, classData, frameworksData);
     writeFileSync(join(ctx.svDir, SUPPLEMENTARY_FILES[0]), llmsTxt);
 
-    const contextMd = generateContext(manifest, inventory, importsData, zonesData, componentsData, classData);
+    const contextMd = generateContext(manifest, inventory, importsData, zonesData, componentsData, classData, frameworksData);
     writeFileSync(join(ctx.svDir, SUPPLEMENTARY_FILES[1]), contextMd);
 
     // Emit per-zone output files

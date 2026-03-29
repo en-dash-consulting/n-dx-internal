@@ -387,10 +387,10 @@ export function writeWorkspaceOutput(
 
   // Generate supplementary output (llms.txt + CONTEXT.md)
   try {
-    const llmsTxt = generateLlmsTxt(manifest, inventory, imports, zones, null, null);
+    const llmsTxt = generateLlmsTxt(manifest, inventory, imports, zones, null, null, null);
     writeFileSync(join(svDir, SUPPLEMENTARY_FILES[0]), llmsTxt);
 
-    const contextMd = generateContext(manifest, inventory, imports, zones, null, null);
+    const contextMd = generateContext(manifest, inventory, imports, zones, null, null, null);
     writeFileSync(join(svDir, SUPPLEMENTARY_FILES[1]), contextMd);
   } catch {
     // Non-critical — don't fail aggregation

@@ -10,9 +10,11 @@ import type {
   Classifications,
   Zones,
   Components,
+  DetectedFrameworks,
 } from "../schema/index.js";
 import { buildClassificationMap } from "./classify.js";
 import { deriveNextSteps } from "./next-steps.js";
+import { SUPPORTED_LANGUAGES, getFrameworkCapabilities } from "./framework-support.js";
 
 export function generateLlmsTxt(
   manifest: Manifest,
@@ -21,9 +23,11 @@ export function generateLlmsTxt(
   zones: Zones,
   components?: Components | null,
   classifications?: Classifications | null,
+  frameworks?: DetectedFrameworks | null,
 ): string {
   const lines: string[] = [
     ...buildProjectIdentity(manifest, inventory, zones),
+    ...buildTechnologyStack(frameworks),
     ...buildArchitectureZones(zones),
     ...buildKeyDependencies(imports),
     ...buildRouteStructure(components),
@@ -73,6 +77,53 @@ function buildProjectIdentity(manifest: Manifest, inventory: Inventory, zones: Z
   }
   lines.push(`- **Analyzed**: ${manifest.analyzedAt}`);
   lines.push("");
+
+  return lines;
+}
+
+function buildTechnologyStack(frameworks?: DetectedFrameworks | null): string[] {
+  if (!frameworks || frameworks.frameworks.length === 0) return [];
+
+  const lines: string[] = [];
+  lines.push("## Technology Stack");
+  lines.push("");
+
+  lines.push("### Detected Frameworks");
+  lines.push("");
+
+  for (const fw of frameworks.frameworks) {
+    const confLabel = fw.confidence >= 0.8 ? "high" : fw.confidence >= 0.5 ? "medium" : "low";
+    const root = fw.projectRoot !== "." ? ` (root: \`${fw.projectRoot}\`)` : "";
+    const caps = getFrameworkCapabilities(fw.id);
+    lines.push(`- **${fw.name}** — ${fw.category}, ${fw.language}, confidence: ${confLabel} (${fw.confidence})${root}`);
+    if (caps.length > 0) {
+      lines.push(`  - Analysis capabilities: ${caps.join(", ")}`);
+    }
+  }
+  lines.push("");
+
+  // Supported languages section
+  lines.push("### Supported Languages");
+  lines.push("");
+
+  const tier1 = SUPPORTED_LANGUAGES.filter((l) => l.tier === 1);
+  const tier2 = SUPPORTED_LANGUAGES.filter((l) => l.tier === 2);
+
+  lines.push("**Tier 1 (full analysis):** inventory, import graph, zone detection, route detection, framework detection");
+  lines.push("");
+  for (const lang of tier1) {
+    lines.push(`- ${lang.name}`);
+  }
+  lines.push("");
+
+  if (tier2.length > 0) {
+    lines.push("**Tier 2 (detection only):** inventory and basic detection");
+    lines.push("");
+    for (const lang of tier2) {
+      lines.push(`- ${lang.name}`);
+    }
+    lines.push("");
+  }
 
   return lines;
 }

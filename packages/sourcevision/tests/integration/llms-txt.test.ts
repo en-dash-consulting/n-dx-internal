@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generateLlmsTxt } from "../../src/analyzers/llms-txt.js";
-import type { Manifest, Inventory, Imports, Zones, Components, Classifications } from "../../src/schema/index.js";
+import type { Manifest, Inventory, Imports, Zones, Components, Classifications, DetectedFrameworks } from "../../src/schema/index.js";
 
 const manifest: Manifest = {
   schemaVersion: "1.0.0",
@@ -158,5 +158,97 @@ describe("generateLlmsTxt", () => {
     expect(result).toContain("Archetype");
     expect(result).toContain("entrypoint");
     expect(result).toContain("utility");
+  });
+
+  it("includes technology stack section when frameworks provided", () => {
+    const frameworks: DetectedFrameworks = {
+      frameworks: [
+        {
+          id: "react-router-v7",
+          name: "React Router v7 / Remix",
+          category: "frontend",
+          language: "typescript",
+          confidence: 0.95,
+          detectedSignals: [
+            { kind: "config", pattern: "react-router.config.ts", matchedFiles: ["react-router.config.ts"] },
+            { kind: "import", pattern: "react-router", matchedFiles: ["src/entry.tsx"] },
+          ],
+          projectRoot: ".",
+        },
+        {
+          id: "go-chi",
+          name: "chi",
+          category: "backend",
+          language: "go",
+          confidence: 0.45,
+          detectedSignals: [
+            { kind: "import", pattern: "github.com/go-chi/chi", matchedFiles: ["cmd/api/main.go"] },
+          ],
+          projectRoot: "services/api",
+        },
+      ],
+      roots: [
+        { path: ".", detectedFrameworks: [] },
+        { path: "services/api", detectedFrameworks: [] },
+      ],
+      summary: {
+        totalDetected: 2,
+        byCategory: { frontend: 1, backend: 1 },
+        byLanguage: { typescript: 1, go: 1 },
+      },
+    };
+
+    const result = generateLlmsTxt(manifest, inventory, imports, zones, null, null, frameworks);
+
+    expect(result).toContain("## Technology Stack");
+    expect(result).toContain("### Detected Frameworks");
+    expect(result).toContain("**React Router v7 / Remix**");
+    expect(result).toContain("frontend");
+    expect(result).toContain("confidence: high (0.95)");
+    expect(result).toContain("**chi**");
+    expect(result).toContain("confidence: low (0.45)");
+    expect(result).toContain("(root: `services/api`)");
+    expect(result).toContain("### Supported Languages");
+    expect(result).toContain("Tier 1 (full analysis)");
+    expect(result).toContain("Tier 2 (detection only)");
+  });
+
+  it("includes framework-specific analysis capabilities", () => {
+    const frameworks: DetectedFrameworks = {
+      frameworks: [
+        {
+          id: "express",
+          name: "Express",
+          category: "backend",
+          language: "typescript",
+          confidence: 0.55,
+          detectedSignals: [
+            { kind: "import", pattern: "express", matchedFiles: ["src/server.ts"] },
+          ],
+          projectRoot: ".",
+        },
+      ],
+      roots: [{ path: ".", detectedFrameworks: [] }],
+      summary: { totalDetected: 1, byCategory: { backend: 1 }, byLanguage: { typescript: 1 } },
+    };
+
+    const result = generateLlmsTxt(manifest, inventory, imports, zones, null, null, frameworks);
+    expect(result).toContain("Analysis capabilities: server-route-detection, middleware-chain");
+  });
+
+  it("omits technology stack when no frameworks detected", () => {
+    const emptyFrameworks: DetectedFrameworks = {
+      frameworks: [],
+      roots: [{ path: ".", detectedFrameworks: [] }],
+      summary: { totalDetected: 0, byCategory: {}, byLanguage: {} },
+    };
+
+    const result = generateLlmsTxt(manifest, inventory, imports, zones, null, null, emptyFrameworks);
+    expect(result).not.toContain("## Technology Stack");
+  });
+
+  it("omits technology stack when frameworks is null", () => {
+    const result = generateLlmsTxt(manifest, inventory, imports, zones, null, null, null);
+    expect(result).not.toContain("## Technology Stack");
   });
 });

@@ -10,9 +10,11 @@ import type {
   Classifications,
   Zones,
   Components,
+  DetectedFrameworks,
 } from "../schema/index.js";
 import { buildClassificationMap } from "./classify.js";
 import { deriveNextSteps } from "./next-steps.js";
+import { SUPPORTED_LANGUAGES } from "./framework-support.js";
 
 export function generateContext(
   manifest: Manifest,
@@ -21,6 +23,7 @@ export function generateContext(
   zones: Zones,
   components?: Components | null,
   classifications?: Classifications | null,
+  frameworks?: DetectedFrameworks | null,
 ): string {
   const lines: string[] = [];
   const projectName = manifest.targetPath.split("/").pop() || "project";
@@ -57,6 +60,29 @@ export function generateContext(
   lines.push("");
   lines.push("</architecture>");
   lines.push("");
+
+  // ── Frameworks ────────────────────────────────────────────────────────
+
+  if (frameworks && frameworks.frameworks.length > 0) {
+    lines.push("<frameworks>");
+    lines.push("");
+
+    for (const fw of frameworks.frameworks) {
+      const conf = fw.confidence >= 0.8 ? "high" : fw.confidence >= 0.5 ? "medium" : "low";
+      const root = fw.projectRoot !== "." ? ` root=${fw.projectRoot}` : "";
+      lines.push(`${fw.name} [${fw.category}] lang=${fw.language} confidence=${conf}(${fw.confidence})${root}`);
+    }
+
+    // Supported language tiers
+    lines.push("");
+    const tier1 = SUPPORTED_LANGUAGES.filter((l) => l.tier === 1).map((l) => l.name);
+    const tier2 = SUPPORTED_LANGUAGES.filter((l) => l.tier === 2).map((l) => l.name);
+    lines.push(`Analysis support: Tier 1 (full): ${tier1.join(", ")} | Tier 2 (detect-only): ${tier2.join(", ")}`);
+
+    lines.push("");
+    lines.push("</frameworks>");
+    lines.push("");
+  }
 
   // ── Zones ───────────────────────────────────────────────────────────────
 
