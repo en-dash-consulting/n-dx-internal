@@ -15,6 +15,8 @@ interface ConfigSurfaceViewProps {
   data: LoadedData;
   navigateTo?: NavigateTo;
   onSelect?: (detail: DetailItem | null) => void;
+  /** When true, omit the standalone view header (used when embedded in Explorer). */
+  embedded?: boolean;
 }
 
 type FilterType = "all" | "env" | "config" | "constant";
@@ -41,7 +43,7 @@ function buildFileToZoneMap(zones: Zone[]): Map<string, { id: string; name: stri
   return map;
 }
 
-export function ConfigSurfaceView({ data, navigateTo, onSelect }: ConfigSurfaceViewProps) {
+export function ConfigSurfaceView({ data, navigateTo, onSelect, embedded }: ConfigSurfaceViewProps) {
   const { configSurface, zones } = data;
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<FilterType>("all");
@@ -112,11 +114,13 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect }: ConfigSurfaceV
   };
 
   return h("div", { class: "config-surface-view" },
-    // Header
-    h("div", { class: "view-header" },
-      h(BrandedHeader, { product: "sourcevision", title: "SourceVision" }),
-      h("h2", { class: "section-header" }, "Configuration Surface"),
-    ),
+    // Header (omitted when embedded in Explorer Properties tab)
+    !embedded
+      ? h("div", { class: "view-header" },
+          h(BrandedHeader, { product: "sourcevision", title: "SourceVision" }),
+          h("h2", { class: "section-header" }, "Configuration Surface"),
+        )
+      : null,
 
     // Summary panels
     h("div", { class: "config-summary-panels" },

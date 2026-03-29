@@ -143,4 +143,18 @@ describe("route-state", () => {
   it("parses direct /endpoints route", () => {
     expect(parsePathnameRoute("/endpoints", VIEWS)).toEqual({ view: "endpoints", subId: null });
   });
+
+  // Config surface redirects (config-surface → explorer/properties)
+  it("redirects legacy /config-surface route to explorer/properties", () => {
+    expect(parsePathnameRoute("/config-surface", VIEWS)).toEqual({ view: "explorer", subId: "properties" });
+  });
+
+  it("redirects legacy hash routes for config-surface to explorer/properties", () => {
+    expect(parseLegacyHashRoute("#config-surface", VIEWS)).toEqual({ view: "explorer", subId: "properties" });
+    expect(parseLegacyHashRoute("#sourcevision/config-surface", VIEWS)).toEqual({ view: "explorer", subId: "properties" });
+  });
+
+  it("resolves /config-surface via resolveLocationRoute to explorer/properties", () => {
+    expect(resolveLocationRoute("/config-surface", "", VIEWS)).toEqual({ view: "explorer", subId: "properties" });
+  });
 });

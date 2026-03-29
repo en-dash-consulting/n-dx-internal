@@ -44,8 +44,8 @@ function makeDetected(frameworks: DetectedFramework[]): DetectedFrameworks {
 // ── Static tab definitions ──────────────────────────────────────────────────
 
 describe("SOURCEVISION_TABS", () => {
-  it("defines exactly 6 tabs (explorer replaces files+graph, endpoints replaces routes, pr-markdown removed)", () => {
-    expect(SOURCEVISION_TABS).toHaveLength(6);
+  it("defines exactly 5 tabs (config-surface moved to explorer/properties)", () => {
+    expect(SOURCEVISION_TABS).toHaveLength(5);
   });
 
   it("every tab has required fields", () => {
@@ -70,7 +70,6 @@ describe("SOURCEVISION_TABS", () => {
     expect(ids).toContain("zones");
     expect(ids).toContain("endpoints");
     expect(ids).toContain("analysis");
-    expect(ids).toContain("config-surface");
   });
 
   it("does not contain legacy tabs replaced by consolidation or migration", () => {
@@ -82,6 +81,8 @@ describe("SOURCEVISION_TABS", () => {
     // files/graph → explorer
     expect(ids).not.toContain("files");
     expect(ids).not.toContain("graph");
+    // config-surface → explorer/properties
+    expect(ids).not.toContain("config-surface");
     // routes → endpoints
     expect(ids).not.toContain("routes");
     // pr-markdown → /pr-description skill
@@ -146,7 +147,6 @@ describe("getVisibleTabs", () => {
     expect(ids).toContain("overview");
     expect(ids).toContain("explorer");
     expect(ids).toContain("zones");
-    expect(ids).toContain("config-surface");
     expect(ids).toContain("analysis");
   });
 
@@ -186,12 +186,11 @@ describe("getVisibleTabs", () => {
     expect(ids).toContain("explorer");
   });
 
-  it("zones, config-surface, analysis always visible with empty detection", () => {
+  it("zones and analysis always visible with empty detection", () => {
     const detected = makeDetected([]);
     const visible = getVisibleTabs(detected);
     const ids = visible.map((t) => t.id);
     expect(ids).toContain("zones");
-    expect(ids).toContain("config-surface");
     expect(ids).toContain("analysis");
   });
 

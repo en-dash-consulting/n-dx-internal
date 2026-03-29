@@ -14,6 +14,7 @@ import { buildFileToZoneMap, buildZoneColorMap, getZoneColorByIndex } from "../v
 import { GraphRenderer, type GraphNode, type GraphLink, type ZoneInfo, type ImportEdgeType } from "../graph/renderer.js";
 import { basename } from "../utils.js";
 import { BrandedHeader } from "../components/logos.js";
+import { ConfigSurfaceView } from "./config-surface.js";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -916,9 +917,12 @@ export function ExplorerView({
         ),
       ) : activeTab === "functions" ? h("div", { class: "explorer-tab-placeholder" },
         h("p", { class: "section-sub" }, "Functions catalog — coming soon."),
-      ) : activeTab === "properties" ? h("div", { class: "explorer-tab-placeholder" },
-        h("p", { class: "section-sub" }, "Configuration properties — coming soon."),
-      ) : null,
+      ) : activeTab === "properties" ? h(ConfigSurfaceView, {
+        data,
+        navigateTo,
+        onSelect: onSelect,
+        embedded: true,
+      }) : null,
     ),
   );
 }

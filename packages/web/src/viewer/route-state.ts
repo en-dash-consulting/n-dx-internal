@@ -13,26 +13,35 @@ const ANALYSIS_REDIRECTS = new Set(["architecture", "problems", "suggestions"]);
 /** Legacy view IDs that redirect to the explorer view */
 const EXPLORER_REDIRECTS = new Set(["files", "graph"]);
 
-function resolveLegacyViewAlias(base: string, sub: string | null): ViewId | null {
+interface LegacyAlias {
+  view: ViewId;
+  subId?: string;
+}
+
+function resolveLegacyViewAlias(base: string, sub: string | null): LegacyAlias | null {
   const normalizedBase = base.trim().toLowerCase();
   const normalizedSub = (sub ?? "").trim().toLowerCase();
   if (
     (normalizedBase === "rex-dashboard" || normalizedBase === "rex")
     && (normalizedSub === "token-usage" || normalizedSub === "token_usage" || normalizedSub === "llm-utilization")
   ) {
-    return "token-usage";
+    return { view: "token-usage" };
   }
   // Redirect legacy findings tabs to unified analysis view
   if (ANALYSIS_REDIRECTS.has(normalizedBase)) {
-    return "analysis";
+    return { view: "analysis" };
   }
   // Redirect legacy files/graph tabs to explorer view
   if (EXPLORER_REDIRECTS.has(normalizedBase)) {
-    return "explorer";
+    return { view: "explorer" };
+  }
+  // Redirect legacy config-surface to explorer/properties sub-tab
+  if (normalizedBase === "config-surface") {
+    return { view: "explorer", subId: "properties" };
   }
   // Redirect legacy routes tab to endpoints view
   if (normalizedBase === "routes") {
-    return "endpoints";
+    return { view: "endpoints" };
   }
   return null;
 }
@@ -68,7 +77,7 @@ export function parsePathnameRoute(pathname: string, validViews: Set<ViewId>): P
   const sub = slashIdx > 0 ? raw.slice(slashIdx + 1) : "";
 
   const legacyAlias = resolveLegacyViewAlias(base, sub || null);
-  if (legacyAlias && validViews.has(legacyAlias)) return { view: legacyAlias, subId: null };
+  if (legacyAlias && validViews.has(legacyAlias.view)) return { view: legacyAlias.view, subId: legacyAlias.subId ?? null };
 
   if (validViews.has(raw as ViewId)) return { view: raw as ViewId, subId: null };
 
@@ -88,7 +97,7 @@ export function parseLegacyHashRoute(hash: string, validViews: Set<ViewId>): Par
   const base = slashIdx > 0 ? normalized.slice(0, slashIdx) : normalized;
   const sub = slashIdx > 0 ? normalized.slice(slashIdx + 1) : "";
   const legacyAlias = resolveLegacyViewAlias(base, sub || null);
-  if (legacyAlias && validViews.has(legacyAlias)) return { view: legacyAlias, subId: null };
+  if (legacyAlias && validViews.has(legacyAlias.view)) return { view: legacyAlias.view, subId: legacyAlias.subId ?? null };
   const normalizedBase = normalizeHashView(base);
   const normalizedPath = sub ? `/${normalizedBase}/${sub}` : `/${normalizedBase}`;
   const parsed = parsePathnameRoute(normalizedPath, validViews);

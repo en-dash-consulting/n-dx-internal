@@ -105,8 +105,9 @@ const REGISTRY: Record<string, ViewRenderer> = {
   "routes": ({ data, navigateTo }) =>
     h(EndpointsView, { data, navigateTo }),
 
-  "config-surface": ({ data, setDetail, navigateTo }) =>
-    h(ConfigSurfaceView, { data, onSelect: setDetail, navigateTo }),
+  // Legacy route — config-surface redirects to explorer/properties sub-tab
+  "config-surface": ({ data, setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isFeatureDisabled }) =>
+    h(ExplorerView, { data, onSelect: setDetail, selectedFile, setSelectedFile, selectedZone, focusCycle, navigateTo, isGraphDisabled: isFeatureDisabled("graphRendering"), initialTab: "properties" }),
 
   "analysis": ({ data, setDetail, navigateTo }) =>
     h(SvAnalysisView, { data, onSelect: setDetail, navigateTo }),
@@ -198,13 +199,14 @@ const CROSS_CUTTING_VIEWS: ViewId[] = ["token-usage", "feature-toggles"];
  * and consolidated views that redirect to replacements.
  */
 const LEGACY_VIEWS: ViewId[] = [
-  "pr-markdown",   // Migrated to /pr-description skill
-  "graph",         // Consolidated into explorer
-  "files",         // Consolidated into explorer
-  "routes",        // Consolidated into endpoints
-  "architecture",  // Consolidated into analysis
-  "problems",      // Consolidated into analysis
-  "suggestions",   // Consolidated into analysis
+  "pr-markdown",      // Migrated to /pr-description skill
+  "graph",            // Consolidated into explorer
+  "files",            // Consolidated into explorer
+  "config-surface",   // Consolidated into explorer/properties sub-tab
+  "routes",           // Consolidated into endpoints
+  "architecture",     // Consolidated into analysis
+  "problems",         // Consolidated into analysis
+  "suggestions",      // Consolidated into analysis
 ];
 
 const ALL_VIEWS = new Set<ViewId>([
