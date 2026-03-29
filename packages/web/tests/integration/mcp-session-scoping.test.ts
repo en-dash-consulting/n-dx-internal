@@ -340,30 +340,147 @@ describe("MCP session-scoped isolation", () => {
     }
   });
 
-  // ── AC: Blocked tools (rex_add) return error in worktree sessions ───────
-  // Depends on sibling task: "Parallel-mode tool blocking for scoped MCP sessions"
-  // (ID: 1f3de12b-cbef-4187-9832-9b1118c296ae)
-  // Once that task is implemented, remove .todo and the test should pass.
+  // ── AC: Blocked tools return error in worktree sessions ─────────────────
 
-  it.todo(
-    "add_item returns parallel-mode error in worktree-scoped sessions",
-  );
+  it("add_item returns parallel-mode error in worktree-scoped sessions", async () => {
+    const client = await connectRexClient(port, worktreeA);
 
-  // ── Cross-session mutation isolation (edit_item) ────────────────────────
+    try {
+      const result = await client.callTool({
+        name: "add_item",
+        arguments: {
+          title: "Should be blocked",
+          level: "task",
+          parentId: "epic-1",
+        },
+      });
 
-  it("edit_item in one session does not leak to another", async () => {
+      expect(result.isError).toBe(true);
+      const parsed = JSON.parse(extractText(result));
+      expect(parsed.error).toBe("parallel_mode_restricted");
+      expect(parsed.tool).toBe("add_item");
+      expect(parsed.message).toContain("parallel mode");
+    } finally {
+      await client.close();
+    }
+  });
+
+  it("edit_item returns parallel-mode error in worktree-scoped sessions", async () => {
+    const client = await connectRexClient(port, worktreeA);
+
+    try {
+      const result = await client.callTool({
+        name: "edit_item",
+        arguments: { id: "task-1", title: "Should be blocked" },
+      });
+
+      expect(result.isError).toBe(true);
+      const parsed = JSON.parse(extractText(result));
+      expect(parsed.error).toBe("parallel_mode_restricted");
+      expect(parsed.tool).toBe("edit_item");
+    } finally {
+      await client.close();
+    }
+  });
+
+  it("reorganize returns parallel-mode error in worktree-scoped sessions", async () => {
+    const client = await connectRexClient(port, worktreeA);
+
+    try {
+      const result = await client.callTool({
+        name: "reorganize",
+        arguments: { mode: "fast" },
+      });
+
+      expect(result.isError).toBe(true);
+      const parsed = JSON.parse(extractText(result));
+      expect(parsed.error).toBe("parallel_mode_restricted");
+    } finally {
+      await client.close();
+    }
+  });
+
+  // ── AC: Allowed tools work in worktree sessions ───────────────────────
+
+  it("get_prd_status works normally in worktree-scoped sessions", async () => {
+    const client = await connectRexClient(port, worktreeA);
+
+    try {
+      const result = await client.callTool({
+        name: "get_prd_status",
+        arguments: {},
+      });
+
+      expect(result.isError).toBeFalsy();
+      const parsed = JSON.parse(extractText(result));
+      expect(parsed.title).toBe("Worktree Alpha");
+    } finally {
+      await client.close();
+    }
+  });
+
+  it("update_task_status works for status changes in worktree-scoped sessions", async () => {
+    const client = await connectRexClient(port, worktreeA);
+
+    try {
+      const result = await client.callTool({
+        name: "update_task_status",
+        arguments: { id: "task-1", status: "in_progress" },
+      });
+
+      expect(result.isError).toBeFalsy();
+
+      // Verify the status was actually updated
+      const item = JSON.parse(
+        extractText(
+          await client.callTool({ name: "get_item", arguments: { id: "task-1" } }),
+        ),
+      );
+      expect(item.item.status).toBe("in_progress");
+    } finally {
+      await client.close();
+    }
+  });
+
+  // ── AC: Non-worktree sessions are unaffected ──────────────────────────
+
+  it("add_item works normally in non-worktree sessions", async () => {
+    // No rootDir argument → standard session, no parallel blocking
+    const client = await connectRexClient(port);
+
+    try {
+      const result = await client.callTool({
+        name: "add_item",
+        arguments: {
+          title: "New Task via MCP",
+          level: "task",
+          parentId: "epic-1",
+        },
+      });
+
+      expect(result.isError).toBeFalsy();
+      const parsed = JSON.parse(extractText(result));
+      expect(parsed.id).toBeDefined();
+    } finally {
+      await client.close();
+    }
+  });
+
+  // ── Cross-session mutation isolation (via allowed status updates) ────────
+
+  it("allowed mutations in one worktree do not leak to another", async () => {
     const clientA = await connectRexClient(port, worktreeA);
     const clientB = await connectRexClient(port, worktreeB);
 
     try {
-      // Edit task title in session A
-      const editResult = await clientA.callTool({
-        name: "edit_item",
-        arguments: { id: "task-1", title: "Mutated in Alpha" },
+      // Use an allowed mutation (update_task_status) to mark task in session A
+      const updateResult = await clientA.callTool({
+        name: "update_task_status",
+        arguments: { id: "task-1", status: "in_progress" },
       });
-      expect(editResult.isError).toBeFalsy();
+      expect(updateResult.isError).toBeFalsy();
 
-      // Session A should see the updated title
+      // Session A should see in_progress
       const itemA = JSON.parse(
         extractText(
           await clientA.callTool({
@@ -372,9 +489,9 @@ describe("MCP session-scoped isolation", () => {
           }),
         ),
       );
-      expect(itemA.item.title).toBe("Mutated in Alpha");
+      expect(itemA.item.status).toBe("in_progress");
 
-      // Session B should still see the original title
+      // Session B should still see pending (original status)
       const itemB = JSON.parse(
         extractText(
           await clientB.callTool({
@@ -383,7 +500,7 @@ describe("MCP session-scoped isolation", () => {
           }),
         ),
       );
-      expect(itemB.item.title).toBe("Worktree Beta Task");
+      expect(itemB.item.status).toBe("pending");
     } finally {
       await Promise.all([clientA.close(), clientB.close()]);
     }

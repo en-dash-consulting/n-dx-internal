@@ -25,6 +25,10 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { createRexMcpServer } from "./rex-gateway.js";
 import { createSourcevisionMcpServer } from "./domain-gateway.js";
 import type { ServerContext } from "./types.js";
+import {
+  applyParallelModeBlocking,
+  REX_PARALLEL_ALLOWED_TOOLS,
+} from "./utils/parallel-mode.js";
 
 const MCP_REX_PATH = "/mcp/rex";
 const MCP_SV_PATH = "/mcp/sourcevision";
@@ -134,14 +138,23 @@ function parseRootDirHeader(req: IncomingMessage): string | null {
  * @param sessions - Session map to register cleanup hooks on.
  * @param factory - Factory function that creates the MCP server for the given rootDir.
  * @param sessionRootDir - If set, stored on the session to indicate an explicit override.
+ * @param parallelAllowed - If set, apply parallel-mode blocking using this allowlist.
  */
 async function createSession(
   rootDir: string,
   sessions: Map<string, McpSession>,
   factory: McpServerFactory,
   sessionRootDir?: string,
+  parallelAllowed?: ReadonlySet<string>,
 ): Promise<McpSession> {
   const server = await factory(rootDir);
+
+  // Worktree-scoped sessions get parallel-mode blocking: only allowed tools
+  // remain functional, all others return a clear error response.
+  if (sessionRootDir && parallelAllowed) {
+    applyParallelModeBlocking(server, parallelAllowed);
+  }
+
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
   });
@@ -180,6 +193,7 @@ async function handleMcpRequest(
   ctx: ServerContext,
   sessions: Map<string, McpSession>,
   factory: McpServerFactory,
+  parallelAllowed?: ReadonlySet<string>,
 ): Promise<boolean> {
   const method = req.method || "GET";
 
@@ -206,7 +220,12 @@ async function handleMcpRequest(
 
     const effectiveDir = overrideDir ?? ctx.projectDir;
     // Create transport + server, handle the request, then register the session.
-    const session = await createSession(effectiveDir, sessions, factory, overrideDir ?? undefined);
+    // Worktree-scoped sessions (overrideDir set) get parallel-mode tool blocking.
+    const session = await createSession(
+      effectiveDir, sessions, factory,
+      overrideDir ?? undefined,
+      overrideDir ? parallelAllowed : undefined,
+    );
     await session.transport.handleRequest(req, res);
     // After handleRequest, the transport has generated a session ID
     const sid = session.transport.sessionId;
@@ -249,10 +268,11 @@ export async function handleMcpRoute(
   const path = url.split("?")[0];
 
   if (path === MCP_REX_PATH) {
-    return handleMcpRequest(req, res, ctx, rexSessions, createRexServer);
+    return handleMcpRequest(req, res, ctx, rexSessions, createRexServer, REX_PARALLEL_ALLOWED_TOOLS);
   }
 
   if (path === MCP_SV_PATH) {
+    // All SV tools are read-only — no parallel-mode blocking needed.
     return handleMcpRequest(req, res, ctx, svSessions, createSvServer);
   }
 
