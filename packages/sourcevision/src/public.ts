@@ -112,6 +112,14 @@ export type {
   ConfigSurfaceEntry,
   ConfigSurfaceEntryType,
   ConfigSurfaceSummary,
+  // frameworks.json
+  FrameworkCategory,
+  FrameworkDetectionSignals,
+  FrameworkRegistryEntry,
+  MatchedSignal,
+  DetectedFramework,
+  DetectedFrameworks,
+  DetectedFrameworksSummary,
   // workspace
   WorkspaceMember,
   WorkspaceConfig,

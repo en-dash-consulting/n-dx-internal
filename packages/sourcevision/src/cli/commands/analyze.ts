@@ -32,6 +32,7 @@ import {
   runComponentsPhase,
   runCallGraphPhase,
   runConfigSurfacePhase,
+  runFrameworksPhase,
   PhasePrerequsiteError,
   PhaseError,
 } from "./analyze-phases.js";
@@ -152,6 +153,7 @@ async function executePhases(ctx: AnalyzeContext, filter: PhaseFilter, extraArgs
     ...(!extraArgs.includes("--no-config-surface") ? [
       { phase: 7, module: "configsurface",   run: () => runConfigSurfacePhase(ctx),             critical: false },
     ] : []),
+    { phase: 8, module: "frameworks",      run: () => runFrameworksPhase(ctx),               critical: false },
   ];
 
   for (const { phase, module, run, critical } of phases) {

@@ -25,6 +25,7 @@ import { analyzeComponents } from "../../analyzers/components.js";
 import { analyzeCallGraph, computeZoneCallStats } from "../../analyzers/callgraph.js";
 import { generateCallGraphFindings } from "../../analyzers/callgraph-findings.js";
 import { analyzeConfigSurface } from "../../analyzers/config-surface.js";
+import { analyzeFrameworks } from "../../analyzers/framework-detection.js";
 import { deduplicateFindings, enforceSeverityRules } from "../../analyzers/enrich-parsing.js";
 import type { CallGraph, Classifications, ImportEdge, Inventory } from "../../schema/index.js";
 import { readManifest, writeManifest, updateManifestModule, updateManifestError } from "../../analyzers/manifest.js";
@@ -614,6 +615,41 @@ export async function runConfigSurfacePhase(ctx: AnalyzeContext): Promise<void> 
     const msg = err instanceof Error ? err.message : String(err);
     updateManifestError(ctx.absDir, "configsurface", msg);
     throw new PhaseError(7, "configsurface", msg);
+  }
+}
+
+// ── Phase 8: Framework Detection ──────────────────────────────────────
+
+export async function runFrameworksPhase(ctx: AnalyzeContext): Promise<void> {
+  const inventoryPath = join(ctx.svDir, DATA_FILES.inventory);
+  const importsPath = join(ctx.svDir, DATA_FILES.imports);
+  if (!existsSync(inventoryPath) || !existsSync(importsPath)) {
+    throw new PhasePrerequsiteError(8, "frameworks", "inventory.json and imports.json — run phases 1-2 first");
+  }
+
+  info("[phase 8] Framework detection...");
+  updateManifestModule(ctx.absDir, "frameworks", "running");
+
+  try {
+    const inventory = JSON.parse(readFileSync(inventoryPath, "utf-8"));
+    const importsData = JSON.parse(readFileSync(importsPath, "utf-8"));
+
+    const result = analyzeFrameworks(ctx.absDir, inventory, importsData);
+    const outPath = join(ctx.svDir, DATA_FILES.frameworks);
+    writeFileSync(outPath, toCanonicalJSON(result));
+    updateManifestModule(ctx.absDir, "frameworks", "complete");
+
+    if (result.summary.totalDetected > 0) {
+      const names = result.frameworks.map((f) => `${f.name} (${f.confidence})`).join(", ");
+      info(`  ${result.summary.totalDetected} frameworks detected: ${names} → ${outPath}`);
+    } else {
+      info(`  No frameworks detected → ${outPath}`);
+    }
+  } catch (err) {
+    if (err instanceof PhasePrerequsiteError) throw err;
+    const msg = err instanceof Error ? err.message : String(err);
+    updateManifestError(ctx.absDir, "frameworks", msg);
+    throw new PhaseError(8, "frameworks", msg);
   }
 }
 
