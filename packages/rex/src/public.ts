@@ -391,6 +391,17 @@ export {
   formatExecutionPlan,
 } from "./parallel/execution-plan.js";
 
+export type {
+  StatusChange,
+  ReconciledChange,
+  ReconcileSummary,
+} from "./parallel/reconcile.js";
+export {
+  detectChanges,
+  applyChanges,
+  reconcile,
+} from "./parallel/reconcile.js";
+
 // ---- MCP server factory -----------------------------------------------------
 
 export { createRexMcpServer } from "./cli/mcp.js";

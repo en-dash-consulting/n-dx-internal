@@ -440,11 +440,17 @@ async function dispatchCommand(
     }
     case "parallel": {
       const { cmdParallel } = await import("./commands/parallel.js");
+      const PARALLEL_SUBCOMMANDS = ["plan", "reconcile"];
       const sub = positional[0];
-      const parallelDir = positional.length > 1
-        ? resolve(positional[positional.length - 1])
-        : sub && !["plan"].includes(sub) ? resolve(sub) : process.cwd();
-      await cmdParallel(parallelDir, sub === "plan" ? sub : undefined, flags);
+      const isSubcommand = sub !== undefined && PARALLEL_SUBCOMMANDS.includes(sub);
+      // For reconcile: `rex parallel reconcile <worktree-dir> [main-dir]`
+      // positional[0] = "reconcile", positional[1] = worktree-dir, positional[2] = main-dir
+      // For plan: `rex parallel plan [dir]`
+      const parallelDir = isSubcommand
+        ? (positional.length > 2 ? resolve(positional[positional.length - 1]) : process.cwd())
+        : (sub ? resolve(sub) : process.cwd());
+      const extraArgs = isSubcommand ? positional.slice(1) : [];
+      await cmdParallel(parallelDir, isSubcommand ? sub : undefined, flags, extraArgs);
       break;
     }
     case "mcp": {
