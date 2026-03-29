@@ -510,4 +510,291 @@ describe("analyzeConfigSurface", () => {
     // null values should still appear
     expect(entries.find((e) => e.name === "extra")).toBeDefined();
   });
+
+  // ── Go viper config patterns ──────────────────────────────────────
+
+  it("detects Go viper.GetString and viper.GetInt config reads", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await writeFile(
+      join(tmpDir, "server.go"),
+      `package main
+
+import "github.com/spf13/viper"
+
+func main() {
+  port := viper.GetString("server.port")
+  timeout := viper.GetInt("server.timeout")
+  debug := viper.GetBool("debug")
+}
+`,
+    );
+
+    const inventory = makeInventory([{ path: "server.go", language: "Go" }]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    const configEntries = result.entries.filter((e) => e.type === "config");
+    expect(configEntries).toHaveLength(3);
+    expect(configEntries.map((e) => e.name).sort()).toEqual([
+      "debug", "server.port", "server.timeout",
+    ]);
+  });
+
+  it("detects Go viper.SetDefault config declarations", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await writeFile(
+      join(tmpDir, "config.go"),
+      `package main
+
+import "github.com/spf13/viper"
+
+func init() {
+  viper.SetDefault("server.port", "8080")
+  viper.SetDefault("log.level", "info")
+}
+`,
+    );
+
+    const inventory = makeInventory([{ path: "config.go", language: "Go" }]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    const configEntries = result.entries.filter((e) => e.type === "config");
+    expect(configEntries).toHaveLength(2);
+    expect(configEntries.map((e) => e.name).sort()).toEqual([
+      "log.level", "server.port",
+    ]);
+  });
+
+  // ── Go flag definitions ───────────────────────────────────────────
+
+  it("detects Go flag.String and flag.Int definitions", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await writeFile(
+      join(tmpDir, "main.go"),
+      `package main
+
+import "flag"
+
+func main() {
+  port := flag.String("port", "8080", "port to listen on")
+  verbose := flag.Bool("verbose", false, "enable verbose logging")
+  timeout := flag.Int("timeout", 30, "request timeout in seconds")
+  flag.Parse()
+}
+`,
+    );
+
+    const inventory = makeInventory([{ path: "main.go", language: "Go" }]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    const configEntries = result.entries.filter((e) => e.type === "config");
+    expect(configEntries).toHaveLength(3);
+    expect(configEntries.map((e) => e.name).sort()).toEqual([
+      "port", "timeout", "verbose",
+    ]);
+  });
+
+  it("detects Go pflag definitions (cobra/pflag)", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await writeFile(
+      join(tmpDir, "cmd.go"),
+      `package cmd
+
+import "github.com/spf13/pflag"
+
+func init() {
+  pflag.String("config", "", "config file path")
+  pflag.IntP("port", "p", 8080, "port to listen on")
+  pflag.BoolVar(&verbose, "verbose", false, "verbose output")
+}
+`,
+    );
+
+    const inventory = makeInventory([{ path: "cmd.go", language: "Go" }]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    const configEntries = result.entries.filter((e) => e.type === "config");
+    expect(configEntries).toHaveLength(3);
+    expect(configEntries.map((e) => e.name).sort()).toEqual([
+      "config", "port", "verbose",
+    ]);
+  });
+
+  // ── Go struct env tags ────────────────────────────────────────────
+
+  it("detects Go struct env tags as env var entries", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await writeFile(
+      join(tmpDir, "config.go"),
+      `package main
+
+type Config struct {
+  Port     string ` + "`" + `env:"PORT" default:"8080"` + "`" + `
+  Host     string ` + "`" + `env:"HOST"` + "`" + `
+  LogLevel string ` + "`" + `json:"log_level" env:"LOG_LEVEL"` + "`" + `
+}
+`,
+    );
+
+    const inventory = makeInventory([{ path: "config.go", language: "Go" }]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    const envEntries = result.entries.filter((e) => e.type === "env");
+    expect(envEntries).toHaveLength(3);
+    expect(envEntries.map((e) => e.name).sort()).toEqual([
+      "HOST", "LOG_LEVEL", "PORT",
+    ]);
+  });
+
+  // ── TypeScript Vite define replacements ───────────────────────────
+
+  it("detects Vite define replacements in vite.config.ts", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await writeFile(
+      join(tmpDir, "vite.config.ts"),
+      `import { defineConfig } from "vite";
+
+export default defineConfig({
+  define: {
+    '__APP_VERSION__': JSON.stringify('1.0.0'),
+    '__BUILD_TIME__': JSON.stringify(Date.now()),
+  },
+});
+`,
+    );
+
+    const inventory = makeInventory([{ path: "vite.config.ts" }]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    const constants = result.entries.filter((e) => e.type === "constant");
+    expect(constants.map((e) => e.name).sort()).toEqual([
+      "__APP_VERSION__", "__BUILD_TIME__",
+    ]);
+  });
+
+  it("detects Vite define replacements with double quotes", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await writeFile(
+      join(tmpDir, "vite.config.ts"),
+      `import { defineConfig } from "vite";
+
+export default defineConfig({
+  define: {
+    "process.env.NODE_ENV": JSON.stringify("production"),
+    "import.meta.env.SSR": "false",
+  },
+});
+`,
+    );
+
+    const inventory = makeInventory([{ path: "vite.config.ts" }]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    const constants = result.entries.filter((e) => e.type === "constant");
+    expect(constants.map((e) => e.name).sort()).toEqual([
+      "import.meta.env.SSR", "process.env.NODE_ENV",
+    ]);
+  });
+
+  // ── Mixed Go + TS project ────────────────────────────────────────
+
+  it("scans both Go and TypeScript files in mixed projects", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+    await mkdir(join(tmpDir, "api"), { recursive: true });
+    await mkdir(join(tmpDir, "web"), { recursive: true });
+
+    // Go API with viper config, flag, and env tags
+    await writeFile(
+      join(tmpDir, "api/main.go"),
+      `package main
+
+import (
+  "os"
+  "flag"
+  "github.com/spf13/viper"
+)
+
+type Config struct {
+  Port string ` + "`" + `env:"API_PORT"` + "`" + `
+}
+
+func main() {
+  dbUrl := os.Getenv("DATABASE_URL")
+  port := flag.String("port", "8080", "server port")
+  host := viper.GetString("server.host")
+}
+`,
+    );
+
+    // TypeScript web app with process.env reads
+    await writeFile(
+      join(tmpDir, "web/app.ts"),
+      `const apiUrl = process.env.API_URL;\nexport const MAX_RETRIES = 3;\n`,
+    );
+
+    const inventory = makeInventory([
+      { path: "api/main.go", language: "Go" },
+      { path: "web/app.ts", language: "TypeScript" },
+    ]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    // Should detect env vars from both languages
+    const envEntries = result.entries.filter((e) => e.type === "env");
+    const envNames = envEntries.map((e) => e.name).sort();
+    expect(envNames).toContain("DATABASE_URL");
+    expect(envNames).toContain("API_PORT");
+    expect(envNames).toContain("API_URL");
+
+    // Should detect Go config reads (viper + flag)
+    const configEntries = result.entries.filter((e) => e.type === "config");
+    expect(configEntries.map((e) => e.name)).toContain("server.host");
+    expect(configEntries.map((e) => e.name)).toContain("port");
+
+    // Should detect TS constants
+    const constants = result.entries.filter((e) => e.type === "constant");
+    expect(constants.map((e) => e.name)).toContain("MAX_RETRIES");
+  });
+
+  // ── Existing patterns still work ─────────────────────────────────
+
+  it("existing process.env and os.Getenv patterns still work alongside new patterns", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-config-"));
+
+    // Go file with both os.Getenv and viper
+    await writeFile(
+      join(tmpDir, "server.go"),
+      `package main
+
+import (
+  "os"
+  "github.com/spf13/viper"
+)
+
+func main() {
+  port := os.Getenv("PORT")
+  host := viper.GetString("server.host")
+}
+`,
+    );
+
+    // TS file with process.env
+    await writeFile(
+      join(tmpDir, "client.ts"),
+      `const apiKey = process.env.API_KEY;\n`,
+    );
+
+    const inventory = makeInventory([
+      { path: "server.go", language: "Go" },
+      { path: "client.ts", language: "TypeScript" },
+    ]);
+    const result = analyzeConfigSurface(tmpDir, inventory);
+
+    // os.Getenv still detected
+    const envEntries = result.entries.filter((e) => e.type === "env");
+    expect(envEntries.map((e) => e.name)).toContain("PORT");
+    expect(envEntries.map((e) => e.name)).toContain("API_KEY");
+
+    // Viper detected as config
+    const configEntries = result.entries.filter((e) => e.type === "config");
+    expect(configEntries.map((e) => e.name)).toContain("server.host");
+  });
 });

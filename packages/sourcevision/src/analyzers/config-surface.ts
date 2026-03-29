@@ -3,8 +3,12 @@
  *
  * Scans source files for:
  * - Environment variable reads (process.env.* for JS/TS, os.Getenv/os.LookupEnv for Go)
+ * - Go struct env tags (env:"VAR")
+ * - Go viper config reads (viper.GetString, viper.SetDefault, viper.BindEnv)
+ * - Go flag definitions (flag.String, pflag.IntP, etc.)
  * - Config file references (.env, .env.*, config.json, config.yaml, *.toml)
  * - Exported constant definitions (export const in TS/JS, capitalized const in Go)
+ * - Vite/esbuild define replacements (define: { 'KEY': value })
  * - Config JSON file fields (.hench/config.json, .rex/config.json) with current values
  *
  * Produces config-surface.json alongside other phase outputs.
@@ -39,6 +43,27 @@ const GO_ENV_PATTERNS = [
   /os\.Getenv\("([^"]+)"\)/g,
   // os.LookupEnv("VAR_NAME")
   /os\.LookupEnv\("([^"]+)"\)/g,
+  // struct env tags: `env:"VAR_NAME"`
+  /`[^`]*\benv:"([^"]+)"[^`]*`/g,
+];
+
+/** Regex patterns for viper config reads in Go. */
+const GO_VIPER_PATTERNS = [
+  // viper.Get("key"), viper.GetString("key"), viper.GetInt("key"), etc.
+  /viper\.Get(?:String|Int|Bool|Float64|Duration|StringSlice|IntSlice|StringMap|StringMapString|SizeInBytes|Time)?\("([^"]+)"\)/g,
+  // viper.SetDefault("key", value)
+  /viper\.SetDefault\("([^"]+)"/g,
+  // viper.BindEnv("KEY")
+  /viper\.BindEnv\("([^"]+)"/g,
+  // viper.IsSet("key")
+  /viper\.IsSet\("([^"]+)"\)/g,
+];
+
+/** Regex patterns for flag/pflag definitions in Go. */
+const GO_FLAG_PATTERNS = [
+  // flag.String("name", ...) / flag.StringVar(&v, "name", ...)
+  // pflag.String("name", ...) / pflag.StringP("name", ...) / pflag.BoolVar(&v, "name", ...)
+  /(?:flag|pflag)\.\w+\((?:&[\w.]+\s*,\s*)?["']([^"']+)["']/g,
 ];
 
 /** Config file patterns to detect references. */
@@ -147,8 +172,10 @@ function scanFile(absDir: string, file: FileEntry): ScanResult {
   // Scan for top-level constants (simplified heuristic)
   if (isGo) {
     scanGoConstants(content, lines, file.path, result);
+    scanGoConfigReads(content, file.path, result);
   } else {
     scanTsConstants(content, lines, file.path, result);
+    scanViteDefine(content, lines, file.path, result);
   }
 
   return result;
@@ -262,6 +289,123 @@ function scanGoConstants(content: string, lines: string[], filePath: string, res
         line: i + 1,
         referencedBy: [],
         ...(value !== undefined ? { value } : {}),
+      });
+    }
+  }
+}
+
+/**
+ * Scan Go files for viper config reads and flag definitions.
+ * Produces "config" type entries for each detected key.
+ */
+function scanGoConfigReads(content: string, filePath: string, result: ScanResult): void {
+  // Viper config reads
+  for (const pattern of GO_VIPER_PATTERNS) {
+    const regex = new RegExp(pattern.source, pattern.flags);
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(content)) !== null) {
+      const lineNum = content.substring(0, match.index).split("\n").length;
+      const name = match[1];
+      if (name) {
+        result.configRefs.push({
+          name,
+          type: "config",
+          file: filePath,
+          line: lineNum,
+          referencedBy: [],
+        });
+      }
+    }
+  }
+
+  // Flag/pflag definitions
+  for (const pattern of GO_FLAG_PATTERNS) {
+    const regex = new RegExp(pattern.source, pattern.flags);
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(content)) !== null) {
+      const lineNum = content.substring(0, match.index).split("\n").length;
+      const name = match[1];
+      if (name) {
+        result.configRefs.push({
+          name,
+          type: "config",
+          file: filePath,
+          line: lineNum,
+          referencedBy: [],
+        });
+      }
+    }
+  }
+}
+
+/**
+ * Scan TypeScript/JavaScript files for Vite/esbuild `define` blocks.
+ * Only applies to files that contain `defineConfig` or are named like
+ * build config files (vite.config.*, esbuild.config.*, etc.).
+ * Produces "constant" type entries for each key in the define block.
+ */
+function scanViteDefine(content: string, lines: string[], filePath: string, result: ScanResult): void {
+  // Only scan files that look like build config
+  const isBuildConfig = /(?:vite|esbuild|rollup|webpack)\.config\./.test(filePath);
+  const hasDefineConfig = /\bdefineConfig\s*\(/.test(content);
+  if (!isBuildConfig && !hasDefineConfig) return;
+
+  let inDefine = false;
+  let braceDepth = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Skip comments
+    if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")) continue;
+
+    // Detect define block start: `define: {` or `define:{`
+    if (!inDefine && /\bdefine\s*:\s*\{/.test(trimmed)) {
+      inDefine = true;
+      braceDepth = 0;
+      // Count braces on this line to track nesting
+      for (const ch of trimmed) {
+        if (ch === "{") braceDepth++;
+        if (ch === "}") braceDepth--;
+      }
+      // Extract keys from same line (after the opening brace)
+      extractDefineKeys(trimmed, i + 1, filePath, result);
+      if (braceDepth <= 0) inDefine = false;
+      continue;
+    }
+
+    if (inDefine) {
+      for (const ch of trimmed) {
+        if (ch === "{") braceDepth++;
+        if (ch === "}") braceDepth--;
+      }
+
+      extractDefineKeys(trimmed, i + 1, filePath, result);
+
+      if (braceDepth <= 0) {
+        inDefine = false;
+      }
+    }
+  }
+}
+
+/**
+ * Extract define replacement keys from a single line within a `define: {}` block.
+ * Matches quoted strings before `:` (object keys).
+ */
+function extractDefineKeys(line: string, lineNum: number, filePath: string, result: ScanResult): void {
+  const keyPattern = /['"]([^'"]+)['"]\s*:/g;
+  let match: RegExpExecArray | null;
+  while ((match = keyPattern.exec(line)) !== null) {
+    const key = match[1];
+    if (key) {
+      result.constants.push({
+        name: key,
+        type: "constant",
+        file: filePath,
+        line: lineNum,
+        referencedBy: [],
       });
     }
   }
