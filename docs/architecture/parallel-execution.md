@@ -228,7 +228,7 @@ This avoids the merge-conflict problem entirely for PRD state. Task status is id
 
 ---
 
-## Phase 3: Single MCP Server with Worktree Scoping (Design)
+## Phase 3: Single MCP Server with Worktree Scoping (Implemented)
 
 ### Problem
 
@@ -239,9 +239,9 @@ Phase 2's multi-server approach (one `ndx start` per worktree on different ports
 - Claude Code needs reconfigured MCP URLs per worktree session
 - No unified dashboard view of parallel execution
 
-### Proposed Architecture: Session-Scoped MCP
+### Architecture: Session-Scoped MCP
 
-A single MCP server running on the primary port (3117) serves all worktrees. Each MCP session is scoped to a specific worktree via a `rootDir` parameter.
+A single MCP server running on the primary port (3117) serves all worktrees. Each MCP session is scoped to a specific worktree via the `X-Ndx-Root-Dir` header.
 
 ```
 ┌──────────────────────────────────────────────────┐
@@ -269,6 +269,20 @@ A single MCP server running on the primary port (3117) serves all worktrees. Eac
 └──────────────────────────────────────────────────┘
 ```
 
+### Module Structure
+
+```
+packages/web/src/server/
+├── routes-mcp.ts                     # Modified — session-scoped rootDir + parallel blocking
+└── utils/
+    ├── worktree-validation.ts        # Validates worktree paths (abs, git, .rex/, .sourcevision/)
+    └── parallel-mode.ts              # Tool blocking for worktree-scoped sessions
+
+packages/rex/src/parallel/
+├── reconcile.ts                      # PRD reconciliation (worktree → main status merge)
+└── index.ts                          # Updated barrel export
+```
+
 ### Session Initialization
 
 When a worktree-scoped session connects:
@@ -281,10 +295,104 @@ Headers:
 
 Server behavior:
   1. Resolve rootDir to absolute path
-  2. Validate it's a git worktree of the primary repo
-  3. Load PRDStore scoped to rootDir/.rex/
-  4. All subsequent MCP tool calls in this session read/write from rootDir
+  2. Validate it's a git worktree of the primary repo (worktree-validation.ts)
+  3. Create MCP server with PRDStore scoped to rootDir/.rex/
+  4. Apply parallel-mode tool blocking (parallel-mode.ts)
+  5. Store rootDir on the McpSession object
+  6. All subsequent MCP tool calls in this session read/write from rootDir
 ```
+
+### Worktree Validation (`worktree-validation.ts`)
+
+The validator performs 6 sequential checks, returning a discriminated union (`ok: true | ok: false`):
+
+| Check | Error Field | What It Verifies |
+|-------|-------------|------------------|
+| 1 | `path_not_absolute` | Path is absolute (not relative) |
+| 2 | `path_not_found` | Path exists and is a directory |
+| 3 | `not_git_repo` | `.git` file or directory exists at path |
+| 4 | `not_valid_worktree` | Path is the primary repo root or appears in `git worktree list --porcelain` output |
+| 5 | `missing_rex` | `.rex/` directory exists in the worktree |
+| 6 | `missing_sourcevision` | `.sourcevision/` directory exists in the worktree |
+
+The validator uses dependency injection (`WorktreeValidationDeps`) for testability — tests inject stubs for `existsSync`, `statSync`, `readFileSync`, and `execFileSync`.
+
+### Parallel-Mode Tool Blocking (`parallel-mode.ts`)
+
+When a session is initialized with `X-Ndx-Root-Dir`, it enters parallel mode. Structural PRD mutation tools are blocked to prevent conflicts across worktrees.
+
+**Allowed Rex tools in parallel mode:**
+
+| Tool | Reason |
+|------|--------|
+| `get_prd_status` | Read-only — PRD overview |
+| `get_next_task` | Read-only — task selection |
+| `get_item` | Read-only — item detail |
+| `update_task_status` | Status transitions only (in_progress → completed) |
+| `append_log` | Append-only logging |
+| `health` | Read-only — health score |
+| `facets` | Read-only — facet overview |
+| `get_capabilities` | Read-only — server capabilities |
+
+**Blocked Rex tools (structural mutations):**
+
+`add_item`, `edit_item`, `move_item`, `merge_items`, `reorganize`, `verify_criteria`, `get_recommendations`, `sync_with_remote`
+
+Blocked tools remain visible in `listTools` responses (client can discover them) but return `isError: true` with a clear `parallel_mode_restricted` error message.
+
+Implementation uses `applyParallelModeBlocking()` which iterates `server._registeredTools` and replaces blocked handlers with error-returning stubs via `update({ callback })`.
+
+### MCP Route Handler Changes (`routes-mcp.ts`)
+
+The `McpSession` interface now includes an optional `rootDir` field:
+
+```typescript
+interface McpSession {
+  transport: StreamableHTTPServerTransport;
+  server: McpServer;
+  lastActivityAt: number;
+  rootDir?: string;  // ← new: worktree root override
+}
+```
+
+On session initialization (`POST /mcp/rex` or `/mcp/sourcevision` without `Mcp-Session-Id`):
+
+1. Check for `X-Ndx-Root-Dir` header
+2. If present, validate via `validateWorktree()`
+3. If valid, create MCP server with `rootDir` as `cwd`
+4. Apply `applyParallelModeBlocking()` for Rex sessions
+5. Store `rootDir` on the session object
+
+### PRD Reconciliation (`reconcile.ts`)
+
+After a worktree completes its work, status changes must be propagated back to the main PRD. The reconciler handles this:
+
+**Reconcilable statuses:** Only `completed` and `failing` are propagated back. Intermediate states (`in_progress`, `pending`, `deferred`, `blocked`) are ignored — they represent transient worktree state, not work results.
+
+**Reconciliation pipeline:**
+
+```
+detectChanges(mainDoc, worktreeDoc)
+    ↓
+  Walks worktree PRD tree
+  Compares each item's status to main PRD
+  Filters to reconcilable statuses only
+  Skips items not found in main (worktree-only additions)
+    ↓
+applyChanges(store, changes, worktreeDoc)
+    ↓
+  For each change:
+    1. Validate transition (mainStatus → worktreeStatus) via validateTransition()
+    2. Compute timestamp updates (startedAt, completedAt) via computeTimestampUpdates()
+    3. Copy resolution metadata (failureReason, resolutionType, resolutionDetail)
+    4. Apply via store.updateItem()
+    ↓
+  Returns: { reconciled[], conflicts[] }
+```
+
+**Conflict handling:** If a status transition is not allowed (e.g., main PRD already moved the item to `completed` while the worktree was running), the change is recorded as a conflict with a reason. Conflicts are logged via `store.appendLog()` with event `parallel_reconcile_conflict`.
+
+**CLI access:** `rex parallel reconcile <worktree-path> [main-dir]`
 
 ### Implementation Considerations
 
@@ -294,34 +402,33 @@ Server behavior:
 | SV data | Read from `rootDir/.sourcevision/` — immutable during parallel runs |
 | Process spawning | `spawnManaged` receives `cwd: rootDir` so CLI tools operate in the worktree |
 | WebSocket broadcasts | Scoped by session group — workers don't receive each other's `rex:item-updated` messages |
-| Dashboard | New "Parallel Runs" view aggregates status across all active worktree sessions |
+| Dashboard | New "Parallel Runs" view aggregates status across all active worktree sessions (future work) |
 | Cleanup | Session disconnect triggers worktree cleanup (configurable: keep or remove) |
+| Permissions | `.claude/settings.local.json` must be copied to worktrees — hench agents inherit allowed commands and MCP tool permissions from this file |
 
-### MCP Tool Scoping Matrix
+### Claude Code / Hench Permissions for Worktrees
 
-| Tool | Scoping Behavior |
-|------|-----------------|
-| `rex_status` | Returns PRD from session's `rootDir` |
-| `rex_next` | Selects from session's scoped PRD (deferred tasks invisible) |
-| `rex_add` | Writes to session's PRD — **blocked during parallel mode** |
-| `rex_update` | Writes to session's PRD (status transitions only) |
-| `sv_inventory` | Reads from session's `.sourcevision/` |
-| `sv_zones` | Reads from session's `.sourcevision/` |
-| `sv_imports` | Reads from session's `.sourcevision/` |
+**Critical for worktree agent operation:** The `.claude/settings.local.json` file must be present in the worktree for the hench agent's Claude Code subprocess to have the correct permissions. This file defines:
 
-### Claude Code Configuration
+- **Bash command permissions:** `pnpm:*`, `node:*`, `npx:*`, `git:*`, `go:*`, and filesystem utilities
+- **MCP tool permissions:** All `mcp__rex__*` and `mcp__sourcevision__*` tools
 
-For the single-server approach, Claude Code sessions connect to the same URL but the server disambiguates by the session init message:
+When creating a worktree for parallel execution, the setup script must copy `.claude/settings.local.json` from the main repo root. Without this, the agent session will prompt for permission on every command, effectively blocking automated execution.
 
-```sh
-# Same URL for all worktrees — server scopes by session
-claude mcp add --transport http rex http://localhost:3117/mcp/rex
+### Test Coverage
 
-# Hench would pass rootDir when initializing the MCP session
-hench run --worktree=/path/to/worktree .
 ```
+packages/web/tests/unit/server/
+├── worktree-validation.test.ts       # Path validation, git checks, missing directories
+├── parallel-mode.test.ts             # Tool blocking, allowed set, error messages
+└── routes-mcp.test.ts                # Session scoping, header handling (updated)
 
-This eliminates per-worktree port management entirely.
+packages/web/tests/integration/
+└── mcp-session-scoping.test.ts       # End-to-end session isolation, parallel mode
+
+packages/rex/tests/unit/parallel/
+└── reconcile.test.ts                 # Status detection, conflict handling, metadata copy
+```
 
 ---
 
