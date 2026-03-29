@@ -57,39 +57,11 @@
   }
 }
 
-.config-filters {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.config-type-filters {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.config-type-filters .filter-btn {
-  padding: 0.25rem 0.75rem;
-  border: 1px solid var(--border);
-  background: var(--bg-secondary);
-  color: var(--text-dim);
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: all 0.15s;
-}
-
-.config-type-filters .filter-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text);
-}
-
-.config-type-filters .filter-btn.active {
-  background: var(--accent);
-  color: var(--bg);
-  border-color: var(--accent);
+/* Filter bar containment — reuses .filter-bar from forms.css;
+   ensure the bar stays within page width at all screen sizes. */
+.config-surface-view .filter-bar {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .config-table {

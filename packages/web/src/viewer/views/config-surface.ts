@@ -7,7 +7,6 @@ import { h } from "preact";
 import { useRef, useState, useMemo } from "preact/hooks";
 import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
 import type { ConfigSurfaceEntry, Zone } from "../external.js";
-import { SearchFilter } from "../components/search-filter.js";
 import { ColumnSwitcher } from "../components/column-switcher.js";
 import { BrandedHeader } from "../components/logos.js";
 import { CollapsibleSection } from "../visualization/index.js";
@@ -49,6 +48,7 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect, embedded }: Conf
   const { configSurface, zones } = data;
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<FilterType>("all");
+  const [zoneFilter, setZoneFilter] = useState("all");
 
   const fileToZone = useMemo(() => {
     if (!zones) return new Map<string, { id: string; name: string }>();
@@ -70,11 +70,11 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect, embedded }: Conf
 
   const configColumns = useMemo<ColumnDef[]>(() => [
     { key: "name", label: "Name", priority: 10, minWidth: 120 },
+    { key: "type", label: "Type", priority: 9, minWidth: 80 },
     { key: "file", label: "File", priority: 8, minWidth: 90 },
     { key: "zone", label: "Zone", priority: 7, minWidth: 80 },
-    { key: "type", label: "Type", priority: 6, minWidth: 80 },
-    { key: "line", label: "Line", priority: 3, minWidth: 60 },
-    { key: "value", label: "Value", priority: 5, minWidth: 100 },
+    { key: "value", label: "Value", priority: 6, minWidth: 100 },
+    { key: "line", label: "Line", priority: 5, minWidth: 60 },
   ], []);
 
   const {
@@ -87,10 +87,35 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect, embedded }: Conf
 
   const cfgShow = (key: string) => cfgVisibleKeys.has(key);
 
+  // Build list of zones referenced by config entries for the zone filter dropdown
+  const zoneList = useMemo(() => {
+    if (!zones) return [] as Array<{ id: string; name: string }>;
+    const referencedIds = new Set<string>();
+    for (const entry of entries) {
+      for (const zoneId of entry.referencedBy) referencedIds.add(zoneId);
+      // Also include zones derived from file mapping
+      const z = fileToZone.get(entry.file);
+      if (z) referencedIds.add(z.id);
+    }
+    return zones.zones
+      .filter((z) => referencedIds.has(z.id))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [zones, entries, fileToZone]);
+
   const filtered = useMemo(() => {
     let result = entries;
     if (filterType !== "all") {
       result = result.filter((e) => e.type === filterType);
+    }
+    if (zoneFilter !== "all") {
+      result = result.filter((e) => {
+        if (zoneFilter === "__unzoned__") {
+          const z = fileToZone.get(e.file);
+          return !z && e.referencedBy.length === 0;
+        }
+        const z = fileToZone.get(e.file);
+        return (z && z.id === zoneFilter) || e.referencedBy.includes(zoneFilter);
+      });
     }
     if (search) {
       const q = search.toLowerCase();
@@ -102,7 +127,7 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect, embedded }: Conf
       );
     }
     return result;
-  }, [entries, filterType, search]);
+  }, [entries, filterType, zoneFilter, search, fileToZone]);
 
   // Group by zone for the zone attribution section
   const byZone = useMemo(() => {
@@ -165,17 +190,36 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect, embedded }: Conf
       ),
     ),
 
-    // Filters
-    h("div", { class: "config-filters" },
-      h(SearchFilter, { value: search, onInput: setSearch, placeholder: "Search by name, file, or value..." }),
-      h("div", { class: "config-type-filters" },
-        (["all", "env", "config", "constant"] as FilterType[]).map((t) =>
-          h("button", {
-            class: `filter-btn ${filterType === t ? "active" : ""}`,
-            onClick: () => setFilterType(t),
-          }, t === "all" ? "All" : TYPE_LABELS[t]),
-        ),
+    // Explorer-style filter bar
+    h("div", { class: "filter-bar" },
+      h("input", {
+        class: "filter-input",
+        type: "text",
+        placeholder: "Search by name, file, or value...",
+        value: search,
+        onInput: (e: Event) => setSearch((e.target as HTMLInputElement).value),
+      }),
+      h("select", {
+        class: "filter-select",
+        value: filterType,
+        onChange: (e: Event) => setFilterType((e.target as HTMLSelectElement).value as FilterType),
+      },
+        h("option", { value: "all" }, "All Types"),
+        h("option", { value: "env" }, `\u{2699}\u{FE0F} ${TYPE_LABELS.env}`),
+        h("option", { value: "config" }, `\u{1F4C4} ${TYPE_LABELS.config}`),
+        h("option", { value: "constant" }, `\u{1F310} ${TYPE_LABELS.constant}`),
       ),
+      zoneList.length > 0
+        ? h("select", {
+            class: "filter-select",
+            value: zoneFilter,
+            onChange: (e: Event) => setZoneFilter((e.target as HTMLSelectElement).value),
+          },
+            h("option", { value: "all" }, "All Zones"),
+            zoneList.map((z) => h("option", { key: z.id, value: z.id }, z.name)),
+            h("option", { value: "__unzoned__" }, "Unzoned"),
+          )
+        : null,
       cfgHasHidden
         ? h(ColumnSwitcher, {
             columns: configColumns,
@@ -185,6 +229,9 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect, embedded }: Conf
             onReset: cfgResetSwaps,
           })
         : null,
+      h("span", { class: "filter-result-count" },
+        `Showing ${Math.min(200, filtered.length)} of ${entries.length} entries`,
+      ),
     ),
 
     // Entries table
