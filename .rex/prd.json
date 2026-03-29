@@ -9801,7 +9801,7 @@
             {
               "id": "25dafd4d-c07f-4257-83f8-eb48013744f8",
               "title": "Server endpoint and loader for frameworks.json",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add GET /api/sv/frameworks endpoint to routes-sourcevision.ts that reads and returns .sourcevision/frameworks.json. Add a frameworks loader to the viewer's data loading pipeline (loader.ts) so detected frameworks are available to all view components. Add the frameworks data to the LoadedData type and wire it into the app shell so SOURCEVISION_TABS can consume it for dynamic tab visibility. Include a validateFrameworks function for schema validation consistent with other loaders.",
               "acceptanceCriteria": [
@@ -9818,7 +9818,11 @@
                 "web-viewer",
                 "loader",
                 "api"
-              ]
+              ],
+              "startedAt": "2026-03-29T18:08:08.595Z",
+              "completedAt": "2026-03-29T18:21:11.240Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added GET /api/sv/frameworks endpoint to routes-sourcevision.ts with empty defaults fallback. Viewer-side pieces (loader, types, validation, app shell wiring) were already implemented by sibling task \"Dynamic SOURCEVISION_TABS\"."
             },
             {
               "id": "254d3c24-7384-4411-b7ea-fca362d5f1dc",
@@ -12826,6 +12830,142 @@
                 "parallel",
                 "sourcevision-integration"
               ]
+            }
+          ]
+        },
+        {
+          "id": "efd183b8-8447-4cf1-835f-732cd5456f27",
+          "title": "Session-Scoped MCP: Single Server Multi-Worktree Support (Phase 3)",
+          "status": "blocked",
+          "level": "feature",
+          "description": "Enable a single running MCP server to scope operations to different worktree root directories via session headers. When a client sends X-Ndx-Root-Dir on session initialization, the server creates an isolated PRDStore and sourcevision data context for that directory. This eliminates the need to spawn separate servers per worktree. No frontend dashboard changes — this is purely server-side MCP infrastructure. Phase 1 conflict analysis (already implemented) provides the execution plan; this feature provides the server-side isolation to execute it.",
+          "priority": "high",
+          "tags": [
+            "web-server",
+            "mcp",
+            "parallel"
+          ],
+          "children": [
+            {
+              "id": "a4a97b89-7b74-444c-8942-417291d1ebf8",
+              "title": "Worktree validation middleware for MCP sessions",
+              "status": "completed",
+              "level": "task",
+              "description": "Create a validation module that verifies X-Ndx-Root-Dir header values. Must confirm: (1) path is absolute, (2) path is a valid git worktree of the primary repo (check .git file pointing to main worktree or presence of worktree in `git worktree list`), (3) directory contains initialized .rex/ and .sourcevision/ directories. Return 400 with descriptive error if validation fails. Place in packages/web/src/server/utils/worktree-validation.ts.",
+              "acceptanceCriteria": [
+                "Rejects relative paths with 400 and descriptive error",
+                "Rejects paths outside the git repository with 400",
+                "Rejects paths that are not valid git worktrees with 400",
+                "Accepts valid worktree paths that contain .rex/ and .sourcevision/",
+                "Returns structured error object with field indicating which check failed",
+                "Handles missing .git file gracefully (not a worktree)"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-server",
+                "validation",
+                "parallel"
+              ],
+              "startedAt": "2026-03-29T18:45:25.097Z",
+              "completedAt": "2026-03-29T18:50:05.513Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Created worktree-validation.ts in packages/web/src/server/utils/ with validateWorktreeDir() that checks: absolute path, path existence, .git presence, git worktree membership (two-pass: .git file parse + git worktree list --porcelain fallback), .rex/ and .sourcevision/ directories. Returns discriminated union with structured error including machine-readable field. All 22 unit tests passing."
+            },
+            {
+              "id": "23475994-0961-41ee-b0e7-f0cbccc5a573",
+              "title": "Session-scoped rootDir in MCP route handlers",
+              "status": "completed",
+              "level": "task",
+              "description": "Update routes-mcp.ts session initialization to parse X-Ndx-Root-Dir header. When present and validated, pass the rootDir to createRexMcpServer(rootDir) and createSvMcpServer(rootDir) instead of ctx.projectDir. Extend the session map entries (rexSessions, svSessions) to store rootDir alongside transport and server. Default behavior unchanged when header is absent (uses ctx.projectDir). The McpSession interface should be extended with an optional rootDir field.",
+              "acceptanceCriteria": [
+                "X-Ndx-Root-Dir header parsed on POST without existing session (session init)",
+                "Valid rootDir passed to server factory functions instead of ctx.projectDir",
+                "Session map entries store rootDir for later reference",
+                "Absent header defaults to ctx.projectDir (backwards compatible)",
+                "Invalid header returns 400 before session creation",
+                "Subsequent requests on same session use stored rootDir (header ignored after init)"
+              ],
+              "priority": "high",
+              "tags": [
+                "web-server",
+                "routes-mcp",
+                "parallel"
+              ],
+              "startedAt": "2026-03-29T18:38:56.953Z",
+              "completedAt": "2026-03-29T18:44:53.603Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Implemented X-Ndx-Root-Dir header parsing in routes-mcp.ts with validation (absolute path, exists, is directory), session-scoped rootDir storage, CORS header update, and 6 new tests. All 18 routes-mcp tests pass."
+            },
+            {
+              "id": "1f3de12b-cbef-4187-9832-9b1118c296ae",
+              "title": "Parallel-mode tool blocking for scoped MCP sessions",
+              "status": "in_progress",
+              "level": "task",
+              "description": "When a session is initialized with X-Ndx-Root-Dir (indicating a worktree-scoped session), certain MCP tools should be blocked to prevent structural PRD changes during parallel execution. Blocked tools: rex_add, rex_analyze, rex_recommend, sv_analyze. Allowed tools: rex_status, rex_next, rex_update (status changes only), sv_inventory, sv_zones, sv_imports, sv_context. Return a clear error message indicating the tool is unavailable in parallel mode.",
+              "acceptanceCriteria": [
+                "rex_add returns error with parallel-mode message in worktree sessions",
+                "rex_analyze returns error with parallel-mode message in worktree sessions",
+                "rex_update works for status changes in worktree sessions",
+                "rex_status and rex_next work normally in worktree sessions",
+                "All sv read tools work normally in worktree sessions",
+                "Non-worktree sessions (no X-Ndx-Root-Dir) are unaffected"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-server",
+                "mcp",
+                "parallel"
+              ],
+              "startedAt": "2026-03-29T18:56:48.939Z"
+            },
+            {
+              "id": "d1e83893-74d0-44d7-806e-0a4293e4382d",
+              "title": "PRD reconciliation: merge worktree task completions back to main",
+              "status": "blocked",
+              "level": "task",
+              "description": "Add a reconciliation function in packages/rex/src/parallel/ that reads completed task statuses from a worktree's .rex/prd.json and applies them to the main PRD. Uses the existing PRDStore API (update_task_status) to write changes. Handles: tasks completed in worktree, tasks that failed in worktree, tasks unchanged. Should be callable from CLI via `rex parallel reconcile <worktree-dir>`. Operates on task status only — does not merge structural changes (add/remove/reparent).",
+              "acceptanceCriteria": [
+                "Reads worktree prd.json and identifies tasks with status changes vs main prd.json",
+                "Applies completed status to main PRD via store API",
+                "Applies failing status to main PRD via store API",
+                "Skips tasks with unchanged status",
+                "Logs each reconciled task with before/after status",
+                "CLI command `rex parallel reconcile <dir>` invokes the function",
+                "Returns summary: N reconciled, N skipped, N conflicts"
+              ],
+              "priority": "medium",
+              "tags": [
+                "rex",
+                "parallel",
+                "reconciliation"
+              ]
+            },
+            {
+              "id": "5284e1b4-3b18-473f-9a8a-872c5183a330",
+              "title": "Integration tests for session-scoped MCP isolation",
+              "status": "completed",
+              "level": "task",
+              "description": "Write integration tests that start the web server, create two MCP sessions with different X-Ndx-Root-Dir headers pointing to two separate worktrees, and verify: (1) rex_status returns different PRD trees per session, (2) rex_update in one session does not affect the other, (3) blocked tools return proper errors in worktree sessions, (4) default session (no header) uses ctx.projectDir. Place tests in packages/web/tests/integration/mcp-session-scoping.test.ts.",
+              "acceptanceCriteria": [
+                "Test creates two temporary worktrees with distinct .rex/prd.json files",
+                "Test initializes two MCP sessions with different X-Ndx-Root-Dir headers",
+                "rex_status returns correct PRD per session",
+                "rex_update in session A does not modify session B's PRD",
+                "Blocked tools (rex_add) return error in worktree sessions",
+                "Default session (no header) reads from server's projectDir",
+                "Cleanup removes temporary worktrees after tests"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web",
+                "testing",
+                "integration",
+                "parallel"
+              ],
+              "startedAt": "2026-03-29T18:50:36.360Z",
+              "completedAt": "2026-03-29T18:56:16.635Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Created packages/web/tests/integration/mcp-session-scoping.test.ts with 6 passing tests + 1 .todo test for pending tool blocking feature"
             }
           ]
         }
@@ -20196,7 +20336,7 @@
             {
               "id": "6aecfae6-93b9-4f33-8dae-cadecdf0f047",
               "title": "Fix explorer file search overflow — constrain to page width",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "The explorer view filter bar bleeds across the screen at narrow widths and results cannot be scrolled to view content. The filter bar (search input + dropdowns for Role/Language/Zone/Archetype + toggle + count) needs to be constrained within the page container. Inputs should shrink with min-width:0 and the bar should wrap gracefully. The file table below must be scrollable within its container — not overflow the viewport.",
               "acceptanceCriteria": [
@@ -20212,7 +20352,8 @@
                 "explorer",
                 "responsive",
                 "css"
-              ]
+              ],
+              "startedAt": "2026-03-29T18:58:48.642Z"
             },
             {
               "id": "b2b0820b-00d7-45d8-abe5-f98b8a34cf6d",
@@ -20280,7 +20421,7 @@
             {
               "id": "a61d47a0-5fe3-484e-b8cc-9d1a2eab7dcc",
               "title": "Add sub-tab routing system to Explorer view",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add a tab bar to the Explorer view with three tabs: Files, Functions, Properties. The active tab should be reflected in the URL (e.g. /explorer/files, /explorer/functions, /explorer/properties) using the existing subId route mechanism from route-state.ts. Default to \"files\" when navigating to /explorer with no sub-path. Persist the last-selected tab to localStorage. The tab bar should sit below the view header and above the filter bar.",
               "acceptanceCriteria": [
@@ -20296,12 +20437,16 @@
                 "web-viewer",
                 "explorer",
                 "routing"
-              ]
+              ],
+              "startedAt": "2026-03-29T18:30:29.298Z",
+              "completedAt": "2026-03-29T18:38:48.509Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added sub-tab routing system to Explorer view with Files/Functions/Properties tabs, URL routing via subId mechanism, localStorage persistence, and ARIA accessibility"
             },
             {
               "id": "24acb263-05ed-4725-a753-c5d92acd6171",
               "title": "Move functions catalog from zones to Explorer /functions tab",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Extract the functions content currently in the zones view (Top Functions section with Most Called and Most Complex tables, plus the per-zone FuncInfo data) into a dedicated Functions tab component under Explorer. The Functions tab should present a full searchable/filterable table of all functions across the project with columns: Function Name, File, Zone, Incoming Calls, Outgoing Calls, Internal/Cross-Zone classification. Support filtering by zone and sorting by any column. Remove the Top Functions collapsible section from the zones view after migration.",
               "acceptanceCriteria": [
@@ -20319,12 +20464,16 @@
                 "explorer",
                 "functions",
                 "zones"
-              ]
+              ],
+              "startedAt": "2026-03-29T18:49:29.151Z",
+              "completedAt": "2026-03-29T18:58:14.758Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Created FunctionsCatalog component with sortable/filterable table, wired into Explorer functions tab, removed TopFunctionsTables from zones view"
             },
             {
               "id": "39710c9a-06fc-4d04-9247-9e4dd2df1539",
               "title": "Move config surface content to Explorer /properties tab",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Move the config surface view content into the Explorer Properties tab. The Properties tab renders the same table (env vars, config refs, constants) with the redesigned summary panels and updated badges (from the config surface redesign tasks). Remove \"Configuration\" from SOURCEVISION_TABS in sourcevision-tabs.ts so it no longer appears as a top-level sidebar entry. Redirect any existing deep-links or navigateTo calls targeting \"config-surface\" to \"explorer\" with sub \"properties\".",
               "acceptanceCriteria": [
@@ -20341,7 +20490,11 @@
                 "explorer",
                 "config-surface",
                 "routing"
-              ]
+              ],
+              "startedAt": "2026-03-29T18:39:46.320Z",
+              "completedAt": "2026-03-29T18:48:23.598Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Moved config surface view into Explorer /properties tab. Removed Configuration sidebar entry, added legacy route redirect, rendered ConfigSurfaceView embedded in explorer."
             },
             {
               "id": "ad04b0bd-f1a0-4a78-900b-4c66f6b88c40",
