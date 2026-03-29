@@ -521,6 +521,57 @@ function registerConfigSurfaceTools(server: McpServer, context: McpContext): voi
   );
 }
 
+function registerFrameworkTools(server: McpServer, context: McpContext): void {
+  server.tool(
+    "sv_frameworks",
+    "Get detected frameworks with confidence scores, categories, and detection signals. Use to understand what frameworks/libraries a project uses (e.g., React, Express, Next.js, Gin) and tailor assistance accordingly. Supports filtering by category (frontend/backend/fullstack) and minimum confidence threshold.",
+    {
+      category: z.enum(["frontend", "backend", "fullstack"]).optional().describe("Filter by framework category: frontend, backend, or fullstack"),
+      minConfidence: z.number().min(0).max(1).optional().describe("Minimum confidence threshold (0-1, default 0)"),
+    },
+    ({ category, minConfidence }) => {
+      const data = context.freshData();
+      if (!data.frameworks) {
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ frameworks: [], total: 0 }, null, 2),
+          }],
+        };
+      }
+
+      let frameworks = data.frameworks.frameworks;
+      const threshold = minConfidence ?? 0;
+
+      if (category) {
+        frameworks = frameworks.filter((f) => f.category === category);
+      }
+      if (threshold > 0) {
+        frameworks = frameworks.filter((f) => f.confidence >= threshold);
+      }
+
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            frameworks: frameworks.map((f) => ({
+              id: f.id,
+              name: f.name,
+              category: f.category,
+              language: f.language,
+              confidence: f.confidence,
+              signals: f.detectedSignals,
+              rootPath: f.projectRoot,
+            })),
+            total: frameworks.length,
+            summary: data.frameworks.summary,
+          }, null, 2),
+        }],
+      };
+    }
+  );
+}
+
 function registerConcurrencyTools(server: McpServer, context: McpContext): void {
   server.tool(
     "is_analysis_running",
@@ -549,6 +600,7 @@ function registerMcpTools(server: McpServer, context: McpContext): void {
   registerClassificationTools(server, context);
   registerComponentTools(server, context);
   registerConfigSurfaceTools(server, context);
+  registerFrameworkTools(server, context);
   registerConcurrencyTools(server, context);
 }
 

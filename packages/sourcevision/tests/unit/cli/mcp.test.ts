@@ -18,6 +18,9 @@ const EXPECTED_TOOLS = [
   "get_next_steps",
   "get_classifications",
   "set_file_archetype",
+  "sv_config_surface",
+  "sv_frameworks",
+  "is_analysis_running",
 ];
 
 const EXPECTED_RESOURCES = ["summary", "zones", "routes"];
@@ -226,5 +229,175 @@ describe("Sourcevision MCP server factory", () => {
   it("factory is re-exported from public API", async () => {
     const publicApi = await import("../../../src/public.js");
     expect(typeof publicApi.createSourcevisionMcpServer).toBe("function");
+  });
+
+  describe("sv_frameworks tool", () => {
+    function sampleFrameworks() {
+      return {
+        frameworks: [
+          {
+            id: "react",
+            name: "React",
+            category: "frontend",
+            language: "typescript",
+            confidence: 0.9,
+            detectedSignals: [{ kind: "import", pattern: "react", matchedFiles: ["src/App.tsx"] }],
+            projectRoot: ".",
+          },
+          {
+            id: "express",
+            name: "Express",
+            category: "backend",
+            language: "typescript",
+            confidence: 0.7,
+            detectedSignals: [{ kind: "import", pattern: "express", matchedFiles: ["src/server.ts"] }],
+            projectRoot: ".",
+          },
+          {
+            id: "next",
+            name: "Next.js",
+            category: "fullstack",
+            language: "typescript",
+            confidence: 0.4,
+            detectedSignals: [{ kind: "config", pattern: "next.config.js", matchedFiles: [] }],
+            projectRoot: "packages/web",
+          },
+        ],
+        roots: [{ path: ".", detectedFrameworks: [] }],
+        summary: {
+          totalDetected: 3,
+          byCategory: { frontend: 1, backend: 1, fullstack: 1 },
+          byLanguage: { typescript: 3 },
+        },
+      };
+    }
+
+    it("returns empty array when no frameworks.json exists", async () => {
+      const server = createSourcevisionMcpServer(tmpDir);
+      const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+      const client = new Client({ name: "test-client", version: "1.0.0" });
+      await server.connect(serverTransport);
+      await client.connect(clientTransport);
+
+      const result = await client.callTool({ name: "sv_frameworks", arguments: {} });
+      const content = result.content as Array<{ type: string; text: string }>;
+      const parsed = JSON.parse(content[0].text);
+
+      expect(parsed.frameworks).toEqual([]);
+      expect(parsed.total).toBe(0);
+
+      await client.close();
+      await server.close();
+    });
+
+    it("returns all frameworks with mapped fields", async () => {
+      await writeFile(join(svDir, DATA_FILES.frameworks), JSON.stringify(sampleFrameworks()), "utf-8");
+      // Touch manifest to invalidate cache
+      await new Promise((r) => setTimeout(r, 50));
+      await writeFile(join(svDir, DATA_FILES.manifest), JSON.stringify(minimalManifest()), "utf-8");
+
+      const server = createSourcevisionMcpServer(tmpDir);
+      const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+      const client = new Client({ name: "test-client", version: "1.0.0" });
+      await server.connect(serverTransport);
+      await client.connect(clientTransport);
+
+      const result = await client.callTool({ name: "sv_frameworks", arguments: {} });
+      const content = result.content as Array<{ type: string; text: string }>;
+      const parsed = JSON.parse(content[0].text);
+
+      expect(parsed.total).toBe(3);
+      expect(parsed.frameworks).toHaveLength(3);
+
+      // Verify field mapping (detectedSignals → signals, projectRoot → rootPath)
+      const react = parsed.frameworks.find((f: { id: string }) => f.id === "react");
+      expect(react).toEqual({
+        id: "react",
+        name: "React",
+        category: "frontend",
+        language: "typescript",
+        confidence: 0.9,
+        signals: [{ kind: "import", pattern: "react", matchedFiles: ["src/App.tsx"] }],
+        rootPath: ".",
+      });
+
+      // Verify summary is included
+      expect(parsed.summary.totalDetected).toBe(3);
+
+      await client.close();
+      await server.close();
+    });
+
+    it("filters by category", async () => {
+      await writeFile(join(svDir, DATA_FILES.frameworks), JSON.stringify(sampleFrameworks()), "utf-8");
+      await new Promise((r) => setTimeout(r, 50));
+      await writeFile(join(svDir, DATA_FILES.manifest), JSON.stringify(minimalManifest()), "utf-8");
+
+      const server = createSourcevisionMcpServer(tmpDir);
+      const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+      const client = new Client({ name: "test-client", version: "1.0.0" });
+      await server.connect(serverTransport);
+      await client.connect(clientTransport);
+
+      const result = await client.callTool({ name: "sv_frameworks", arguments: { category: "backend" } });
+      const content = result.content as Array<{ type: string; text: string }>;
+      const parsed = JSON.parse(content[0].text);
+
+      expect(parsed.total).toBe(1);
+      expect(parsed.frameworks[0].id).toBe("express");
+
+      await client.close();
+      await server.close();
+    });
+
+    it("filters by minConfidence", async () => {
+      await writeFile(join(svDir, DATA_FILES.frameworks), JSON.stringify(sampleFrameworks()), "utf-8");
+      await new Promise((r) => setTimeout(r, 50));
+      await writeFile(join(svDir, DATA_FILES.manifest), JSON.stringify(minimalManifest()), "utf-8");
+
+      const server = createSourcevisionMcpServer(tmpDir);
+      const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+      const client = new Client({ name: "test-client", version: "1.0.0" });
+      await server.connect(serverTransport);
+      await client.connect(clientTransport);
+
+      const result = await client.callTool({ name: "sv_frameworks", arguments: { minConfidence: 0.5 } });
+      const content = result.content as Array<{ type: string; text: string }>;
+      const parsed = JSON.parse(content[0].text);
+
+      expect(parsed.total).toBe(2);
+      const ids = parsed.frameworks.map((f: { id: string }) => f.id);
+      expect(ids).toContain("react");
+      expect(ids).toContain("express");
+      expect(ids).not.toContain("next");
+
+      await client.close();
+      await server.close();
+    });
+
+    it("combines category and minConfidence filters", async () => {
+      await writeFile(join(svDir, DATA_FILES.frameworks), JSON.stringify(sampleFrameworks()), "utf-8");
+      await new Promise((r) => setTimeout(r, 50));
+      await writeFile(join(svDir, DATA_FILES.manifest), JSON.stringify(minimalManifest()), "utf-8");
+
+      const server = createSourcevisionMcpServer(tmpDir);
+      const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+      const client = new Client({ name: "test-client", version: "1.0.0" });
+      await server.connect(serverTransport);
+      await client.connect(clientTransport);
+
+      const result = await client.callTool({
+        name: "sv_frameworks",
+        arguments: { category: "frontend", minConfidence: 0.8 },
+      });
+      const content = result.content as Array<{ type: string; text: string }>;
+      const parsed = JSON.parse(content[0].text);
+
+      expect(parsed.total).toBe(1);
+      expect(parsed.frameworks[0].id).toBe("react");
+
+      await client.close();
+      await server.close();
+    });
   });
 });
