@@ -9,7 +9,7 @@ import type { LoadedData, NavigateTo, DetailItem } from "../types.js";
 import type { ConfigSurfaceEntry, Zone } from "../external.js";
 import { SearchFilter } from "../components/search-filter.js";
 import { BrandedHeader } from "../components/logos.js";
-import { CollapsibleSection, BarChart } from "../visualization/index.js";
+import { CollapsibleSection } from "../visualization/index.js";
 
 interface ConfigSurfaceViewProps {
   data: LoadedData;
@@ -94,13 +94,6 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect }: ConfigSurfaceV
     return map;
   }, [entries]);
 
-  // Summary bar chart data
-  const summaryData = useMemo(() => [
-    { label: "Env Vars", value: summary.totalEnvVars, color: "var(--accent)" },
-    { label: "Config Refs", value: summary.totalConfigRefs, color: "var(--orange)" },
-    { label: "Constants", value: summary.totalConstants, color: "var(--purple)" },
-  ], [summary]);
-
   const handleFileClick = (file: string, line: number) => {
     if (!onSelect) return;
     const zone = fileToZone.get(file);
@@ -125,25 +118,23 @@ export function ConfigSurfaceView({ data, navigateTo, onSelect }: ConfigSurfaceV
       h("h2", { class: "section-header" }, "Configuration Surface"),
     ),
 
-    // Summary
-    h(CollapsibleSection, { title: "Summary", defaultOpen: true },
-      h("div", { class: "config-summary-grid" },
-        h("div", { class: "metric-card" },
-          h("div", { class: "metric-value" }, String(summary.totalEnvVars)),
-          h("div", { class: "metric-label" }, "Environment Variables"),
-        ),
-        h("div", { class: "metric-card" },
-          h("div", { class: "metric-value" }, String(summary.totalConfigRefs)),
-          h("div", { class: "metric-label" }, "Config References"),
-        ),
-        h("div", { class: "metric-card" },
-          h("div", { class: "metric-value" }, String(summary.totalConstants)),
-          h("div", { class: "metric-label" }, "Global Constants"),
-        ),
+    // Summary panels
+    h("div", { class: "config-summary-panels" },
+      h("div", { class: "config-summary-panel" },
+        h("span", { class: "config-summary-icon" }, "\u{2699}\u{FE0F}"),
+        h("span", { class: "config-summary-count" }, String(summary.totalEnvVars)),
+        h("span", { class: "config-summary-label" }, "Env Variables"),
       ),
-      summaryData.some((d) => d.value > 0)
-        ? h(BarChart, { data: summaryData, maxWidth: 400 })
-        : null,
+      h("div", { class: "config-summary-panel" },
+        h("span", { class: "config-summary-icon" }, "\u{1F4C4}"),
+        h("span", { class: "config-summary-count" }, String(summary.totalConfigRefs)),
+        h("span", { class: "config-summary-label" }, "Config References"),
+      ),
+      h("div", { class: "config-summary-panel" },
+        h("span", { class: "config-summary-icon" }, "\u{1F310}"),
+        h("span", { class: "config-summary-count" }, String(summary.totalConstants)),
+        h("span", { class: "config-summary-label" }, "Global Constants"),
+      ),
     ),
 
     // Filters

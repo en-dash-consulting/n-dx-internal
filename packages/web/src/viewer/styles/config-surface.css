@@ -5,16 +5,56 @@
   max-width: 1200px;
 }
 
-.config-summary-grid {
+/* Summary panels — 3 visually connected horizontal cards */
+.config-summary-panels {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
 }
 
-.config-summary-grid .metric-card {
+.config-summary-panel {
   flex: 1;
-  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 12px;
+}
+
+.config-summary-panel + .config-summary-panel {
+  border-left: 1px solid var(--border);
+}
+
+.config-summary-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.config-summary-count {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.config-summary-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+/* Stack panels vertically at narrow widths */
+@media (max-width: 600px) {
+  .config-summary-panels {
+    flex-direction: column;
+  }
+  .config-summary-panel + .config-summary-panel {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
 }
 
 .config-filters {
