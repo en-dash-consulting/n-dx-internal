@@ -1,5 +1,10 @@
 /* ── Explorer view ──────────────────────────────────────────────────── */
 
+.explorer-view {
+  min-width: 0;
+  overflow: hidden;
+}
+
 .explorer-mode-bar {
   display: flex;
   gap: 4px;
@@ -116,5 +121,20 @@
     border-top: 1px solid var(--border);
     padding-left: 0;
     padding-top: 16px;
+  }
+}
+
+/* Responsive: compact filter bar at narrow widths */
+@media (max-width: 768px) {
+  .explorer-view .filter-bar {
+    gap: var(--space-1-5);
+  }
+
+  .explorer-view .filter-input {
+    flex-basis: 100%;
+  }
+
+  .explorer-view .filter-select {
+    flex: 1 1 auto;
   }
 }
