@@ -474,6 +474,8 @@ describe("Sidebar", () => {
         zones: { status: "running" },
         components: { status: "pending" },
         callgraph: { status: "pending" },
+        configsurface: { status: "complete" },
+        frameworks: { status: "pending" },
       },
     } as any;
 
@@ -523,15 +525,18 @@ describe("Sidebar", () => {
     it("renders module status icons", () => {
       renderSidebar({ manifest: mockManifest, view: "overview" as const });
       const modules = root.querySelectorAll(".progress-module");
-      expect(modules.length).toBe(6);
-      // First three should be done (✓)
+      expect(modules.length).toBe(8);
+      // inventory, imports, classifications should be done (✓)
       expect(modules[0].classList.contains("done")).toBe(true);
       expect(modules[1].classList.contains("done")).toBe(true);
       expect(modules[2].classList.contains("done")).toBe(true);
-      // Last three should not be done
+      // zones (running), components (pending), callgraph (pending) should not be done
       expect(modules[3].classList.contains("done")).toBe(false);
       expect(modules[4].classList.contains("done")).toBe(false);
       expect(modules[5].classList.contains("done")).toBe(false);
+      // configsurface should be done, frameworks should not
+      expect(modules[6].classList.contains("done")).toBe(true);
+      expect(modules[7].classList.contains("done")).toBe(false);
     });
 
     it("progress bar reflects completion percentage", () => {

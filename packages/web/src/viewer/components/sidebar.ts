@@ -148,7 +148,7 @@ export function Sidebar({ view, onNavigate, manifest, zones, frameworks, sidebar
   const enrichmentPass = zones?.enrichmentPass ?? 0;
 
   const modules = manifest?.modules ?? {};
-  const moduleNames = ["inventory", "imports", "classifications", "zones", "components", "callgraph"];
+  const moduleNames = ["inventory", "imports", "classifications", "zones", "components", "callgraph", "configsurface", "frameworks"];
   const completedCount = moduleNames.filter(
     (m) => modules[m]?.status === "complete"
   ).length;

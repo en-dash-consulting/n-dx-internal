@@ -417,6 +417,11 @@
         {
           "file": "packages/web/src/server/routes-sourcevision.ts",
           "method": "GET",
+          "path": "/api/sv/frameworks"
+        },
+        {
+          "file": "packages/web/src/server/routes-sourcevision.ts",
+          "method": "GET",
           "path": "/api/sv/imports"
         },
         {
@@ -549,7 +554,7 @@
     "totalComponents": 6,
     "totalRouteModules": 0,
     "totalUsageEdges": 0,
-    "totalServerRoutes": 80,
+    "totalServerRoutes": 81,
     "routeConventions": {},
     "mostUsedComponents": [],
     "layoutDepth": 0

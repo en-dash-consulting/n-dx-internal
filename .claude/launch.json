@@ -4,7 +4,7 @@
     {
       "name": "ndx-server",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["web.js", "start", "/Users/ryankeith/go-projects/go-backend-clean-architecture"],
+      "runtimeArgs": ["web.js", "start", "/Users/ryankeith/ndx/n-dx-internal"],
       "port": 3117
     }
   ]

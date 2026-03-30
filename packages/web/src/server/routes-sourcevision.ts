@@ -42,6 +42,7 @@ const PHASE_DEFINITIONS = [
   { id: "callgraph", phase: 6, name: "Call Graph", description: "Analyze function-level call relationships and cross-zone patterns" },
   { id: "configsurface", phase: 7, name: "Config Surface", description: "Detect environment variables, config file references, and global constants" },
   { id: "frameworks", phase: 8, name: "Frameworks", description: "Detect languages, frameworks, and runtime stack" },
+  { id: "zone-enrichment", phase: 9, name: "Zone Enrichment", description: "Deep enrichment passes 2\u20134 for comprehensive zone insights" },
 ] as const;
 
 /**
@@ -89,8 +90,8 @@ const GROUPED_PHASES: readonly GroupedPhaseDef[] = [
     group: 4,
     name: "Deep Analysis",
     description: "Zone enrichment passes 2\u20134 and meta-evaluation for comprehensive insights",
-    moduleIds: [],
-    modulePhases: [],
+    moduleIds: ["zone-enrichment"],
+    modulePhases: [9],
     fullMode: true,
   },
 ];
@@ -394,7 +395,7 @@ export function handleSourcevisionRoute(
     // Group 4 (Deep Analysis) — special: runs --phase=4 --full for zone enrichment
     if (groupDef.fullMode) {
       const firstPhase = 4;
-      const firstModuleId = "zones";
+      const firstModuleId = "zone-enrichment";
 
       const { binPath, binArgs } = resolveSvBinary(ctx, ["--phase=4", "--full"]);
 
@@ -714,9 +715,14 @@ export function handleSourcevisionRoute(
       // Aggregate status from constituent modules
       let status: string;
       if (groupDef.group === 4) {
-        // Group 4 (Deep Analysis): check activeGroupRun or enrichmentPass
+        // Group 4 (Deep Analysis): check activeGroupRun, zone-enrichment module, or enrichmentPass
+        const enrichMod = manifestModules?.["zone-enrichment"];
         if (activeGroupRun?.group === 4) {
           status = "running";
+        } else if (enrichMod?.status === "running") {
+          status = "running";
+        } else if (enrichMod?.status === "error") {
+          status = "error";
         } else if (enrichmentPass != null && enrichmentPass >= 4) {
           status = "complete";
         } else {

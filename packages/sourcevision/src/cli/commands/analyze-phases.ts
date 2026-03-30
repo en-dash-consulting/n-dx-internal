@@ -251,8 +251,9 @@ export async function runZonesPhase(ctx: AnalyzeContext, extraArgs: string[]): P
     throw new PhasePrerequsiteError(4, "zones", "inventory.json and imports.json — run phases 1-2 first");
   }
 
+  const moduleKey = ctx.fullMode ? "zone-enrichment" : "zones";
   info("[phase 4] Zones...");
-  updateManifestModule(ctx.absDir, "zones", "running");
+  updateManifestModule(ctx.absDir, moduleKey, "running");
 
   const enrich = !ctx.fastMode;
   const perZone = extraArgs.includes("--per-zone");
@@ -332,7 +333,7 @@ export async function runZonesPhase(ctx: AnalyzeContext, extraArgs: string[]): P
       writeManifest(ctx.absDir, manifest);
     }
 
-    updateManifestModule(ctx.absDir, "zones", "complete");
+    updateManifestModule(ctx.absDir, moduleKey, "complete");
     info(`  ${zones.zones.length} zones, ${zones.crossings.length} crossings, ${zones.unzoned.length} unzoned → ${outPath}`);
 
     // ── Convergence tracking ──
@@ -364,7 +365,7 @@ export async function runZonesPhase(ctx: AnalyzeContext, extraArgs: string[]): P
   } catch (err) {
     if (err instanceof PhasePrerequsiteError) throw err;
     const msg = err instanceof Error ? err.message : String(err);
-    updateManifestError(ctx.absDir, "zones", msg);
+    updateManifestError(ctx.absDir, moduleKey, msg);
     throw new PhaseError(4, "zones", msg);
   }
 }

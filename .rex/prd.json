@@ -9928,6 +9928,9 @@
       "level": "epic",
       "description": "PRD management: hierarchical epics/features/tasks/subtasks, smart add from natural language, LLM-powered analysis and recommendations, validation, pruning, reshaping. Stores state in .rex/prd.json.",
       "startedAt": "2026-03-24T20:09:27.774Z",
+      "completedAt": "2026-03-30T02:23:50.557Z",
+      "resolutionType": "acknowledgment",
+      "resolutionDetail": "All 140 children completed; epic status was stale from parallel worktree PRD copy",
       "children": [
         {
           "id": "95bfdba2-2cba-4921-b614-3a34779e0892",
@@ -13017,10 +13020,7 @@
             }
           ]
         }
-      ],
-      "completedAt": "2026-03-30T02:23:50.557Z",
-      "resolutionType": "acknowledgment",
-      "resolutionDetail": "All 140 children completed; epic status was stale from parallel worktree PRD copy"
+      ]
     },
     {
       "id": "4fc05c48-48b0-4da3-8126-4fa237b924d9",
@@ -24555,7 +24555,6 @@
         "dashboard"
       ],
       "startedAt": "2026-03-28T19:19:57.893Z",
-      "completedAt": "2026-03-28T21:18:14.995Z",
       "children": [
         {
           "id": "13c7d2d6-6a34-450a-b3a3-480d14bb3fb4",
@@ -24838,8 +24837,55 @@
               "completedAt": "2026-03-28T21:18:14.654Z"
             }
           ]
+        },
+        {
+          "id": "de23e7ad-267e-4af5-b63e-8d7cf2cecc0d",
+          "title": "Fix Phase 3/4 status contamination in SV phases panel",
+          "status": "completed",
+          "level": "task",
+          "description": "When Phase 4 (Deep Analysis) runs with --full, it re-enters the zones module for enrichment passes 2-4 and sets zones.status back to running in the manifest. This makes Phase 3 (Architecture) regress from \"Complete\" to \"Running\" in the UI. Fix by separating zone enrichment into its own manifest module key (zone-enrichment) so Phase 4 doesn't contaminate Phase 3's status.",
+          "acceptanceCriteria": [
+            "Phase 3 (Architecture) status remains 'Complete' when Phase 4 starts running",
+            "Phase 4 writes enrichment status to manifest.modules['zone-enrichment'] instead of manifest.modules['zones']",
+            "zone-enrichment module added to manifest schema",
+            "PHASE_DEFINITIONS and GROUPED_PHASES updated to use zone-enrichment for Phase 4",
+            "pnpm build && pnpm typecheck pass"
+          ],
+          "priority": "high",
+          "tags": [
+            "bug-fix",
+            "sourcevision",
+            "web"
+          ],
+          "startedAt": "2026-03-30T03:52:38.491Z",
+          "completedAt": "2026-03-30T03:52:38.491Z",
+          "resolutionType": "code-change",
+          "resolutionDetail": "Separated zone enrichment into its own manifest module key (zone-enrichment) so Phase 4 no longer contaminates Phase 3's status"
+        },
+        {
+          "id": "7d1e2832-d8ed-41b1-a33c-8f8c32d3c8db",
+          "title": "Update sidebar analysis progress to include configsurface and frameworks modules",
+          "status": "completed",
+          "level": "task",
+          "description": "The sidebar hardcodes 6 module names (inventory, imports, classifications, zones, components, callgraph) for the analysis progress indicator. It's missing configsurface and frameworks, which were added later. The progress shows \"0/6\" instead of \"0/8\". Update the moduleNames array in sidebar.ts to include all 8 modules.",
+          "acceptanceCriteria": [
+            "Sidebar moduleNames array includes all 8 modules: inventory, imports, classifications, zones, components, callgraph, configsurface, frameworks",
+            "Progress indicator shows X/8 instead of X/6",
+            "pnpm build && pnpm typecheck pass"
+          ],
+          "priority": "high",
+          "tags": [
+            "bug-fix",
+            "web",
+            "ui"
+          ],
+          "startedAt": "2026-03-30T04:01:22.329Z",
+          "completedAt": "2026-03-30T04:03:27.227Z",
+          "resolutionType": "code-change",
+          "resolutionDetail": "Added configsurface and frameworks to sidebar moduleNames array (6→8 modules). Updated test mock and assertions to match."
         }
-      ]
+      ],
+      "completedAt": "2026-03-30T04:03:27.725Z"
     }
   ]
 }

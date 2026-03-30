@@ -1,49 +1,50 @@
 {
   "schemaVersion": "1.0.0",
   "toolVersion": "0.1.0",
-  "analyzedAt": "2026-03-30T02:38:32.847Z",
-  "gitSha": "9df7e7467c0157679d667e03eedec8bc2c4bfa11",
+  "analyzedAt": "2026-03-30T09:26:37.375Z",
+  "gitSha": "34044d2ecdb43c33ce6de76ebb71a30ee563517e",
   "gitBranch": "feature/sourcevision-ui-backend-display",
   "targetPath": "/Users/ryankeith/ndx/n-dx-internal",
   "modules": {
     "inventory": {
       "status": "complete",
-      "startedAt": "2026-03-29T02:35:32.692Z",
-      "completedAt": "2026-03-29T02:35:32.930Z"
+      "startedAt": "2026-03-30T04:26:57.862Z",
+      "completedAt": "2026-03-30T04:26:58.239Z"
     },
     "imports": {
       "status": "complete",
-      "startedAt": "2026-03-29T02:35:33.225Z",
-      "completedAt": "2026-03-29T02:35:34.028Z"
+      "startedAt": "2026-03-30T04:26:58.687Z",
+      "completedAt": "2026-03-30T04:27:00.635Z"
     },
     "configsurface": {
       "status": "complete",
-      "startedAt": "2026-03-29T02:35:34.323Z",
-      "completedAt": "2026-03-29T02:35:34.439Z"
-    },
-    "classifications": {
-      "status": "complete",
-      "startedAt": "2026-03-29T02:36:30.583Z",
-      "completedAt": "2026-03-29T02:42:36.638Z"
-    },
-    "components": {
-      "status": "complete",
-      "startedAt": "2026-03-29T02:42:36.965Z",
-      "completedAt": "2026-03-29T02:42:37.191Z"
-    },
-    "zones": {
-      "status": "error",
-      "startedAt": "2026-03-30T02:38:32.847Z",
-      "completedAt": "2026-03-30T02:55:15.755Z",
-      "error": "Process exited before phase completed"
-    },
-    "callgraph": {
-      "status": "pending"
+      "startedAt": "2026-03-30T04:27:01.106Z",
+      "completedAt": "2026-03-30T04:27:01.284Z"
     },
     "frameworks": {
       "status": "complete",
-      "startedAt": "2026-03-30T02:35:46.286Z",
-      "completedAt": "2026-03-30T02:35:46.309Z"
+      "startedAt": "2026-03-30T04:27:01.741Z",
+      "completedAt": "2026-03-30T04:27:01.760Z"
+    },
+    "classifications": {
+      "status": "complete",
+      "startedAt": "2026-03-30T04:27:30.250Z",
+      "completedAt": "2026-03-30T04:33:34.559Z"
+    },
+    "components": {
+      "status": "complete",
+      "startedAt": "2026-03-30T04:33:35.128Z",
+      "completedAt": "2026-03-30T04:33:35.596Z"
+    },
+    "zones": {
+      "status": "complete",
+      "startedAt": "2026-03-30T04:33:51.183Z",
+      "completedAt": "2026-03-30T09:26:29.396Z"
+    },
+    "callgraph": {
+      "status": "complete",
+      "startedAt": "2026-03-30T09:26:29.882Z",
+      "completedAt": "2026-03-30T09:26:37.375Z"
     }
   },
   "language": "typescript",

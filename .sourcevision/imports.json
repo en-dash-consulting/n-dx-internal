@@ -7057,6 +7057,74 @@
       ]
     },
     {
+      "from": "packages/rex/src/cli/commands/parallel.ts",
+      "to": "packages/rex/src/cli/commands/constants.ts",
+      "type": "static",
+      "symbols": [
+        "REX_DIR"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/parallel.ts",
+      "to": "packages/rex/src/cli/errors.ts",
+      "type": "static",
+      "symbols": [
+        "CLIError",
+        "requireRexDir"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/parallel.ts",
+      "to": "packages/rex/src/cli/output.ts",
+      "type": "static",
+      "symbols": [
+        "result",
+        "info"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/parallel.ts",
+      "to": "packages/rex/src/parallel/execution-plan.ts",
+      "type": "static",
+      "symbols": [
+        "computeExecutionPlan",
+        "formatExecutionPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/parallel.ts",
+      "to": "packages/rex/src/parallel/reconcile.ts",
+      "type": "static",
+      "symbols": [
+        "reconcile"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/parallel.ts",
+      "to": "packages/rex/src/parallel/sourcevision-loader.ts",
+      "type": "static",
+      "symbols": [
+        "loadZones",
+        "loadImports"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/parallel.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/commands/parallel.ts",
+      "to": "packages/rex/src/store/index.ts",
+      "type": "static",
+      "symbols": [
+        "resolveStore"
+      ]
+    },
+    {
       "from": "packages/rex/src/cli/commands/prune.ts",
       "to": "packages/rex/src/analyze/reason.ts",
       "type": "dynamic",
@@ -8694,6 +8762,14 @@
     },
     {
       "from": "packages/rex/src/cli/index.ts",
+      "to": "packages/rex/src/cli/commands/parallel.ts",
+      "type": "dynamic",
+      "symbols": [
+        "cmdParallel"
+      ]
+    },
+    {
+      "from": "packages/rex/src/cli/index.ts",
       "to": "packages/rex/src/cli/commands/prune.ts",
       "type": "dynamic",
       "symbols": [
@@ -10038,6 +10114,206 @@
       ]
     },
     {
+      "from": "packages/rex/src/parallel/blast-radius.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/conflict-analysis.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneIndex",
+        "ImportGraph"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/conflict-analysis.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/execution-plan.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "static",
+      "symbols": [
+        "blastRadius"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/execution-plan.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneIndex",
+        "ImportGraph"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/execution-plan.ts",
+      "to": "packages/rex/src/parallel/conflict-analysis.ts",
+      "type": "static",
+      "symbols": [
+        "buildConflictGraph",
+        "findIndependentSets"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/execution-plan.ts",
+      "to": "packages/rex/src/parallel/conflict-analysis.ts",
+      "type": "type",
+      "symbols": [
+        "ExecutionPlan",
+        "Conflict",
+        "TaskGroup"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/execution-plan.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/index.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "reexport",
+      "symbols": [
+        "blastRadius",
+        "extractPathsFromCriteria",
+        "resolveModuleNames",
+        "expandImportNeighbors",
+        "expandZoneTags"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/index.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneIndex",
+        "ImportGraph"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/index.ts",
+      "to": "packages/rex/src/parallel/conflict-analysis.ts",
+      "type": "reexport",
+      "symbols": [
+        "buildConflictGraph",
+        "findIndependentSets"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/index.ts",
+      "to": "packages/rex/src/parallel/conflict-analysis.ts",
+      "type": "type",
+      "symbols": [
+        "ConflictConfidence",
+        "ConflictEdge",
+        "ConflictGraph",
+        "Conflict",
+        "TaskGroup",
+        "ExecutionPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/index.ts",
+      "to": "packages/rex/src/parallel/execution-plan.ts",
+      "type": "reexport",
+      "symbols": [
+        "computeExecutionPlan",
+        "formatExecutionPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/index.ts",
+      "to": "packages/rex/src/parallel/execution-plan.ts",
+      "type": "type",
+      "symbols": [
+        "FormattedExecutionPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/index.ts",
+      "to": "packages/rex/src/parallel/reconcile.ts",
+      "type": "reexport",
+      "symbols": [
+        "detectChanges",
+        "applyChanges",
+        "reconcile"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/index.ts",
+      "to": "packages/rex/src/parallel/reconcile.ts",
+      "type": "type",
+      "symbols": [
+        "StatusChange",
+        "ReconciledChange",
+        "ReconcileSummary"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/reconcile.ts",
+      "to": "packages/rex/src/core/timestamps.ts",
+      "type": "static",
+      "symbols": [
+        "computeTimestampUpdates"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/reconcile.ts",
+      "to": "packages/rex/src/core/transitions.ts",
+      "type": "static",
+      "symbols": [
+        "validateTransition"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/reconcile.ts",
+      "to": "packages/rex/src/core/tree.ts",
+      "type": "static",
+      "symbols": [
+        "walkTree"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/reconcile.ts",
+      "to": "packages/rex/src/schema/index.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem",
+        "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/reconcile.ts",
+      "to": "packages/rex/src/store/contracts.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
+      ]
+    },
+    {
+      "from": "packages/rex/src/parallel/sourcevision-loader.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneIndex",
+        "ImportGraph"
+      ]
+    },
+    {
       "from": "packages/rex/src/public.ts",
       "to": "packages/rex/src/analyze/acknowledge.ts",
       "type": "reexport",
@@ -10584,6 +10860,86 @@
       "type": "type",
       "symbols": [
         "TreeEntry"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "reexport",
+      "symbols": [
+        "blastRadius",
+        "extractPathsFromCriteria",
+        "resolveModuleNames",
+        "expandImportNeighbors",
+        "expandZoneTags"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneIndex",
+        "ImportGraph"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/parallel/conflict-analysis.ts",
+      "type": "reexport",
+      "symbols": [
+        "buildConflictGraph",
+        "findIndependentSets"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/parallel/conflict-analysis.ts",
+      "type": "type",
+      "symbols": [
+        "ConflictConfidence",
+        "ConflictEdge",
+        "ConflictGraph",
+        "Conflict",
+        "TaskGroup",
+        "ExecutionPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/parallel/execution-plan.ts",
+      "type": "reexport",
+      "symbols": [
+        "computeExecutionPlan",
+        "formatExecutionPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/parallel/execution-plan.ts",
+      "type": "type",
+      "symbols": [
+        "FormattedExecutionPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/parallel/reconcile.ts",
+      "type": "reexport",
+      "symbols": [
+        "detectChanges",
+        "applyChanges",
+        "reconcile"
+      ]
+    },
+    {
+      "from": "packages/rex/src/public.ts",
+      "to": "packages/rex/src/parallel/reconcile.ts",
+      "type": "type",
+      "symbols": [
+        "StatusChange",
+        "ReconciledChange",
+        "ReconcileSummary"
       ]
     },
     {
@@ -13956,6 +14312,151 @@
       ]
     },
     {
+      "from": "packages/rex/tests/unit/parallel/blast-radius.test.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "static",
+      "symbols": [
+        "blastRadius",
+        "expandZoneTags",
+        "extractPathsFromCriteria",
+        "resolveModuleNames",
+        "expandImportNeighbors"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/blast-radius.test.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneIndex",
+        "ImportGraph"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/blast-radius.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/conflict-analysis.test.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneIndex",
+        "ImportGraph"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/conflict-analysis.test.ts",
+      "to": "packages/rex/src/parallel/conflict-analysis.ts",
+      "type": "static",
+      "symbols": [
+        "buildConflictGraph",
+        "findIndependentSets"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/conflict-analysis.test.ts",
+      "to": "packages/rex/src/parallel/conflict-analysis.ts",
+      "type": "type",
+      "symbols": [
+        "ConflictGraph",
+        "ExecutionPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/conflict-analysis.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/execution-plan.test.ts",
+      "to": "packages/rex/src/parallel/blast-radius.ts",
+      "type": "type",
+      "symbols": [
+        "ZoneIndex",
+        "ImportGraph"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/execution-plan.test.ts",
+      "to": "packages/rex/src/parallel/execution-plan.ts",
+      "type": "static",
+      "symbols": [
+        "computeExecutionPlan",
+        "formatExecutionPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/execution-plan.test.ts",
+      "to": "packages/rex/src/parallel/execution-plan.ts",
+      "type": "type",
+      "symbols": [
+        "FormattedExecutionPlan"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/execution-plan.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDItem"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/reconcile.test.ts",
+      "to": "packages/rex/src/parallel/reconcile.ts",
+      "type": "static",
+      "symbols": [
+        "detectChanges",
+        "applyChanges",
+        "reconcile"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/reconcile.test.ts",
+      "to": "packages/rex/src/parallel/reconcile.ts",
+      "type": "type",
+      "symbols": [
+        "StatusChange",
+        "ReconcileSummary"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/reconcile.test.ts",
+      "to": "packages/rex/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "PRDDocument",
+        "PRDItem",
+        "ItemStatus"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/reconcile.test.ts",
+      "to": "packages/rex/src/store/contracts.ts",
+      "type": "type",
+      "symbols": [
+        "PRDStore"
+      ]
+    },
+    {
+      "from": "packages/rex/tests/unit/parallel/sourcevision-loader.test.ts",
+      "to": "packages/rex/src/parallel/sourcevision-loader.ts",
+      "type": "static",
+      "symbols": [
+        "loadZones",
+        "loadImports",
+        "loadSourcevisionData"
+      ]
+    },
+    {
       "from": "packages/rex/tests/unit/recommend/conflict-detection.test.ts",
       "to": "packages/rex/src/recommend/conflict-detection.ts",
       "type": "static",
@@ -14605,6 +15106,14 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/context.ts",
+      "to": "packages/sourcevision/src/analyzers/framework-support.ts",
+      "type": "static",
+      "symbols": [
+        "SUPPORTED_LANGUAGES"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/context.ts",
       "to": "packages/sourcevision/src/analyzers/next-steps.ts",
       "type": "static",
       "symbols": [
@@ -14621,7 +15130,8 @@
         "Imports",
         "Classifications",
         "Zones",
-        "Components"
+        "Components",
+        "DetectedFrameworks"
       ]
     },
     {
@@ -14940,6 +15450,22 @@
         "ZoneCrossing",
         "Zones",
         "FindingType"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/framework-detection.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "FrameworkRegistryEntry",
+        "DetectedFramework",
+        "DetectedFrameworks",
+        "DetectedFrameworksSummary",
+        "DetectedRoot",
+        "MatchedSignal",
+        "FrameworkCategory"
       ]
     },
     {
@@ -15271,6 +15797,15 @@
     },
     {
       "from": "packages/sourcevision/src/analyzers/llms-txt.ts",
+      "to": "packages/sourcevision/src/analyzers/framework-support.ts",
+      "type": "static",
+      "symbols": [
+        "SUPPORTED_LANGUAGES",
+        "getFrameworkCapabilities"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/analyzers/llms-txt.ts",
       "to": "packages/sourcevision/src/analyzers/next-steps.ts",
       "type": "static",
       "symbols": [
@@ -15287,7 +15822,8 @@
         "Imports",
         "Classifications",
         "Zones",
-        "Components"
+        "Components",
+        "DetectedFrameworks"
       ]
     },
     {
@@ -15808,6 +16344,14 @@
     },
     {
       "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
+      "to": "packages/sourcevision/src/analyzers/framework-detection.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeFrameworks"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/src/cli/commands/analyze-phases.ts",
       "to": "packages/sourcevision/src/analyzers/imports.ts",
       "type": "static",
       "symbols": [
@@ -16004,6 +16548,7 @@
         "runComponentsPhase",
         "runCallGraphPhase",
         "runConfigSurfacePhase",
+        "runFrameworksPhase",
         "PhasePrerequsiteError",
         "PhaseError"
       ]
@@ -16538,7 +17083,8 @@
         "Classifications",
         "Zones",
         "Components",
-        "ConfigSurface"
+        "ConfigSurface",
+        "DetectedFrameworks"
       ]
     },
     {
@@ -16736,6 +17282,14 @@
         "ConfigSurfaceEntry",
         "ConfigSurfaceEntryType",
         "ConfigSurfaceSummary",
+        "FrameworkCategory",
+        "FrameworkDetectionSignals",
+        "FrameworkRegistryEntry",
+        "MatchedSignal",
+        "DetectedFramework",
+        "DetectedFrameworks",
+        "DetectedFrameworksSummary",
+        "DetectedRoot",
         "WorkspaceMember",
         "WorkspaceConfig",
         "SourcevisionOutput",
@@ -16962,7 +17516,8 @@
         "Imports",
         "Zones",
         "Components",
-        "Classifications"
+        "Classifications",
+        "DetectedFrameworks"
       ]
     },
     {
@@ -17080,7 +17635,8 @@
         "Imports",
         "Zones",
         "Components",
-        "Classifications"
+        "Classifications",
+        "DetectedFrameworks"
       ]
     },
     {
@@ -17580,6 +18136,30 @@
         "Zone",
         "ZoneCrossing",
         "Zones"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/framework-detection.test.ts",
+      "to": "packages/sourcevision/src/analyzers/framework-detection.ts",
+      "type": "static",
+      "symbols": [
+        "analyzeFrameworks",
+        "FRAMEWORK_REGISTRY",
+        "detectJSWorkspaceRoots",
+        "detectGoModuleRoots",
+        "detectMonorepoRoots",
+        "parsePnpmWorkspacePatterns"
+      ]
+    },
+    {
+      "from": "packages/sourcevision/tests/unit/analyzers/framework-detection.test.ts",
+      "to": "packages/sourcevision/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "Inventory",
+        "Imports",
+        "FileEntry",
+        "FrameworkRegistryEntry"
       ]
     },
     {
@@ -19062,6 +19642,15 @@
       ]
     },
     {
+      "from": "packages/web/src/server/routes-mcp.ts",
+      "to": "packages/web/src/server/utils/parallel-mode.ts",
+      "type": "static",
+      "symbols": [
+        "applyParallelModeBlocking",
+        "REX_PARALLEL_ALLOWED_TOOLS"
+      ]
+    },
+    {
       "from": "packages/web/src/server/routes-notion.ts",
       "to": "packages/web/src/server/types.ts",
       "type": "static",
@@ -20282,6 +20871,14 @@
       ]
     },
     {
+      "from": "packages/web/src/viewer/components/column-switcher.ts",
+      "to": "packages/web/src/viewer/hooks/index.ts",
+      "type": "type",
+      "symbols": [
+        "ColumnDef"
+      ]
+    },
+    {
       "from": "packages/web/src/viewer/components/constants.ts",
       "to": "packages/web/src/viewer/visualization/colors.ts",
       "type": "reexport",
@@ -21434,7 +22031,8 @@
       "type": "type",
       "symbols": [
         "Manifest",
-        "Zones"
+        "Zones",
+        "DetectedFrameworks"
       ]
     },
     {
@@ -21459,7 +22057,8 @@
       "to": "packages/web/src/viewer/views/sourcevision-tabs.ts",
       "type": "static",
       "symbols": [
-        "SOURCEVISION_TABS"
+        "SOURCEVISION_TABS",
+        "getVisibleTabs"
       ]
     },
     {
@@ -21606,6 +22205,7 @@
         "ComponentKind",
         "CallGraph",
         "CallEdge",
+        "FunctionNode",
         "Classifications",
         "ClassificationsSummary",
         "FileClassification",
@@ -21623,7 +22223,10 @@
         "Zone",
         "ZoneCrossing",
         "ConfigSurface",
-        "ConfigSurfaceEntry"
+        "ConfigSurfaceEntry",
+        "DetectedFrameworks",
+        "DetectedFramework",
+        "FrameworkCategory"
       ]
     },
     {
@@ -21741,6 +22344,14 @@
     {
       "from": "packages/web/src/viewer/hooks/index.ts",
       "to": "packages/web/src/viewer/hooks/use-app-data.ts",
+      "type": "reexport",
+      "symbols": [
+        "*"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/hooks/index.ts",
+      "to": "packages/web/src/viewer/hooks/use-column-priority.ts",
       "type": "reexport",
       "symbols": [
         "*"
@@ -22577,7 +23188,8 @@
         "validateComponents",
         "validateCallGraph",
         "validateClassifications",
-        "validateConfigSurface"
+        "validateConfigSurface",
+        "validateFrameworks"
       ]
     },
     {
@@ -23194,6 +23806,7 @@
         "CallGraph",
         "Classifications",
         "ConfigSurface",
+        "DetectedFrameworks",
         "ViewId"
       ]
     },
@@ -23346,18 +23959,18 @@
     },
     {
       "from": "packages/web/src/viewer/views/config-surface.ts",
-      "to": "packages/web/src/viewer/components/logos.ts",
+      "to": "packages/web/src/viewer/components/column-switcher.ts",
       "type": "static",
       "symbols": [
-        "BrandedHeader"
+        "ColumnSwitcher"
       ]
     },
     {
       "from": "packages/web/src/viewer/views/config-surface.ts",
-      "to": "packages/web/src/viewer/components/search-filter.ts",
+      "to": "packages/web/src/viewer/components/logos.ts",
       "type": "static",
       "symbols": [
-        "SearchFilter"
+        "BrandedHeader"
       ]
     },
     {
@@ -23367,6 +23980,22 @@
       "symbols": [
         "ConfigSurfaceEntry",
         "Zone"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/config-surface.ts",
+      "to": "packages/web/src/viewer/hooks/index.ts",
+      "type": "static",
+      "symbols": [
+        "useColumnPriority"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/config-surface.ts",
+      "to": "packages/web/src/viewer/hooks/index.ts",
+      "type": "type",
+      "symbols": [
+        "ColumnDef"
       ]
     },
     {
@@ -23384,8 +24013,7 @@
       "to": "packages/web/src/viewer/visualization/index.ts",
       "type": "static",
       "symbols": [
-        "CollapsibleSection",
-        "BarChart"
+        "CollapsibleSection"
       ]
     },
     {
@@ -23588,7 +24216,8 @@
       "to": "packages/web/src/viewer/views/sv-explorer.ts",
       "type": "reexport",
       "symbols": [
-        "ExplorerView"
+        "ExplorerView",
+        "ExplorerTabId"
       ]
     },
     {
@@ -23653,6 +24282,41 @@
     },
     {
       "from": "packages/web/src/viewer/views/files.ts",
+      "to": "packages/web/src/viewer/visualization/index.ts",
+      "type": "static",
+      "symbols": [
+        "buildFileToZoneMap",
+        "getZoneColorByIndex"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/functions-catalog.ts",
+      "to": "packages/web/src/viewer/external.ts",
+      "type": "type",
+      "symbols": [
+        "CallGraph",
+        "FunctionNode"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/functions-catalog.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData",
+        "NavigateTo"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/functions-catalog.ts",
+      "to": "packages/web/src/viewer/utils.ts",
+      "type": "static",
+      "symbols": [
+        "basename"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/functions-catalog.ts",
       "to": "packages/web/src/viewer/visualization/index.ts",
       "type": "static",
       "symbols": [
@@ -23806,6 +24470,15 @@
       "type": "static",
       "symbols": [
         "PhasePanel"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/overview.ts",
+      "to": "packages/web/src/viewer/external.ts",
+      "type": "type",
+      "symbols": [
+        "DetectedFramework",
+        "FrameworkCategory"
       ]
     },
     {
@@ -24127,6 +24800,15 @@
     },
     {
       "from": "packages/web/src/viewer/views/sourcevision-tabs.ts",
+      "to": "packages/web/src/viewer/external.ts",
+      "type": "type",
+      "symbols": [
+        "DetectedFrameworks",
+        "FrameworkCategory"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/sourcevision-tabs.ts",
       "to": "packages/web/src/viewer/types.ts",
       "type": "type",
       "symbols": [
@@ -24301,6 +24983,14 @@
     },
     {
       "from": "packages/web/src/viewer/views/sv-explorer.ts",
+      "to": "packages/web/src/viewer/components/column-switcher.ts",
+      "type": "static",
+      "symbols": [
+        "ColumnSwitcher"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/sv-explorer.ts",
       "to": "packages/web/src/viewer/components/logos.ts",
       "type": "static",
       "symbols": [
@@ -24338,6 +25028,22 @@
     },
     {
       "from": "packages/web/src/viewer/views/sv-explorer.ts",
+      "to": "packages/web/src/viewer/hooks/index.ts",
+      "type": "static",
+      "symbols": [
+        "useColumnPriority"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/sv-explorer.ts",
+      "to": "packages/web/src/viewer/hooks/index.ts",
+      "type": "type",
+      "symbols": [
+        "ColumnDef"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/sv-explorer.ts",
       "to": "packages/web/src/viewer/types.ts",
       "type": "type",
       "symbols": [
@@ -24352,6 +25058,22 @@
       "type": "static",
       "symbols": [
         "basename"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/sv-explorer.ts",
+      "to": "packages/web/src/viewer/views/config-surface.ts",
+      "type": "static",
+      "symbols": [
+        "ConfigSurfaceView"
+      ]
+    },
+    {
+      "from": "packages/web/src/viewer/views/sv-explorer.ts",
+      "to": "packages/web/src/viewer/views/functions-catalog.ts",
+      "type": "static",
+      "symbols": [
+        "FunctionsCatalog"
       ]
     },
     {
@@ -24806,6 +25528,23 @@
       ]
     },
     {
+      "from": "packages/web/tests/integration/mcp-session-scoping.test.ts",
+      "to": "packages/web/src/server/routes-mcp.ts",
+      "type": "static",
+      "symbols": [
+        "handleMcpRoute",
+        "closeAllMcpSessions"
+      ]
+    },
+    {
+      "from": "packages/web/tests/integration/mcp-session-scoping.test.ts",
+      "to": "packages/web/src/server/types.ts",
+      "type": "type",
+      "symbols": [
+        "ServerContext"
+      ]
+    },
+    {
       "from": "packages/web/tests/integration/memory-aware-polling-suspension.test.ts",
       "to": "packages/web/src/viewer/performance/graceful-degradation.ts",
       "type": "static",
@@ -25079,6 +25818,17 @@
       "type": "dynamic",
       "symbols": [
         "closeAllMcpSessions"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/parallel-mode.test.ts",
+      "to": "packages/web/src/server/utils/parallel-mode.ts",
+      "type": "static",
+      "symbols": [
+        "applyParallelModeBlocking",
+        "parallelModeErrorMessage",
+        "REX_PARALLEL_ALLOWED_TOOLS",
+        "PARALLEL_MODE_ERROR"
       ]
     },
     {
@@ -25795,6 +26545,23 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/server/worktree-validation.test.ts",
+      "to": "packages/web/src/server/utils/worktree-validation.ts",
+      "type": "static",
+      "symbols": [
+        "validateWorktreeDir"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/server/worktree-validation.test.ts",
+      "to": "packages/web/src/server/utils/worktree-validation.ts",
+      "type": "type",
+      "symbols": [
+        "WorktreeValidationDeps",
+        "WorktreeValidationField"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/server/ws-health-tracker.test.ts",
       "to": "packages/web/src/server/websocket.ts",
       "type": "static",
@@ -25960,6 +26727,22 @@
       "type": "static",
       "symbols": [
         "CollapsibleSection"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/column-priority.test.ts",
+      "to": "packages/web/src/viewer/hooks/use-column-priority.ts",
+      "type": "static",
+      "symbols": [
+        "computeVisibleColumns"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/column-priority.test.ts",
+      "to": "packages/web/src/viewer/hooks/use-column-priority.ts",
+      "type": "type",
+      "symbols": [
+        "ColumnDef"
       ]
     },
     {
@@ -26290,6 +27073,24 @@
       "type": "static",
       "symbols": [
         "FlowDiagram"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/functions-catalog.test.ts",
+      "to": "packages/web/src/schema/v1.ts",
+      "type": "type",
+      "symbols": [
+        "CallGraph",
+        "FunctionNode",
+        "CallEdge"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/functions-catalog.test.ts",
+      "to": "packages/web/src/viewer/views/functions-catalog.ts",
+      "type": "static",
+      "symbols": [
+        "buildFunctionRows"
       ]
     },
     {
@@ -26660,6 +27461,32 @@
       ]
     },
     {
+      "from": "packages/web/tests/unit/viewer/overview-tech-stack.test.ts",
+      "to": "packages/web/src/viewer/external.ts",
+      "type": "type",
+      "symbols": [
+        "DetectedFrameworks",
+        "DetectedFramework"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/overview-tech-stack.test.ts",
+      "to": "packages/web/src/viewer/types.ts",
+      "type": "type",
+      "symbols": [
+        "LoadedData",
+        "NavigateTo"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/overview-tech-stack.test.ts",
+      "to": "packages/web/src/viewer/views/overview.ts",
+      "type": "static",
+      "symbols": [
+        "Overview"
+      ]
+    },
+    {
       "from": "packages/web/tests/unit/viewer/persistent-filter.test.ts",
       "to": "packages/web/src/viewer/components/prd-tree/status-filter.ts",
       "type": "static",
@@ -27001,6 +27828,15 @@
     },
     {
       "from": "packages/web/tests/unit/viewer/sourcevision-tabs.test.ts",
+      "to": "packages/web/src/viewer/external.ts",
+      "type": "type",
+      "symbols": [
+        "DetectedFrameworks",
+        "DetectedFramework"
+      ]
+    },
+    {
+      "from": "packages/web/tests/unit/viewer/sourcevision-tabs.test.ts",
       "to": "packages/web/src/viewer/views/enrichment-thresholds.ts",
       "type": "static",
       "symbols": [
@@ -27013,7 +27849,9 @@
       "type": "static",
       "symbols": [
         "SOURCEVISION_TABS",
-        "SOURCEVISION_TAB_IDS"
+        "SOURCEVISION_TAB_IDS",
+        "getVisibleTabs",
+        "DEFAULT_CONFIDENCE_THRESHOLD"
       ]
     },
     {
@@ -27838,6 +28676,8 @@
         "packages/sourcevision/src/cli/mcp.ts",
         "packages/sourcevision/tests/unit/cli/mcp.test.ts",
         "packages/web/src/server/routes-mcp.ts",
+        "packages/web/src/server/utils/parallel-mode.ts",
+        "packages/web/tests/integration/mcp-session-scoping.test.ts",
         "packages/web/tests/unit/server/routes-mcp.test.ts"
       ],
       "symbols": [
@@ -28186,6 +29026,7 @@
       "importedBy": [
         "packages/web/src/viewer/components/active-tasks-panel.ts",
         "packages/web/src/viewer/components/breadcrumb.ts",
+        "packages/web/src/viewer/components/column-switcher.ts",
         "packages/web/src/viewer/components/concurrency-panel.ts",
         "packages/web/src/viewer/components/config-footer.ts",
         "packages/web/src/viewer/components/copy-link-button.ts",
@@ -28245,6 +29086,7 @@
         "packages/web/src/viewer/components/zone-slideout.ts",
         "packages/web/src/viewer/components/zone-trend-chart.ts",
         "packages/web/src/viewer/hooks/use-app-data.ts",
+        "packages/web/src/viewer/hooks/use-column-priority.ts",
         "packages/web/src/viewer/hooks/use-crash-recovery.ts",
         "packages/web/src/viewer/hooks/use-delete-actions.ts",
         "packages/web/src/viewer/hooks/use-dom-performance-monitor.ts",
@@ -28278,6 +29120,7 @@
         "packages/web/src/viewer/views/config-surface.ts",
         "packages/web/src/viewer/views/feature-toggles.ts",
         "packages/web/src/viewer/views/files.ts",
+        "packages/web/src/viewer/views/functions-catalog.ts",
         "packages/web/src/viewer/views/graph.ts",
         "packages/web/src/viewer/views/hench-config.ts",
         "packages/web/src/viewer/views/hench-runs.ts",
@@ -28316,6 +29159,7 @@
         "packages/web/tests/unit/viewer/lazy-children.test.ts",
         "packages/web/tests/unit/viewer/memory-warning.test.ts",
         "packages/web/tests/unit/viewer/node-culling-integration.test.ts",
+        "packages/web/tests/unit/viewer/overview-tech-stack.test.ts",
         "packages/web/tests/unit/viewer/persistent-filter.test.ts",
         "packages/web/tests/unit/viewer/polling-suspension-indicator.test.ts",
         "packages/web/tests/unit/viewer/pr-markdown.test.ts",
@@ -28622,6 +29466,11 @@
         "packages/rex/tests/unit/core/tree-hardened.test.ts",
         "packages/rex/tests/unit/core/tree.test.ts",
         "packages/rex/tests/unit/core/verify.test.ts",
+        "packages/rex/tests/unit/parallel/blast-radius.test.ts",
+        "packages/rex/tests/unit/parallel/conflict-analysis.test.ts",
+        "packages/rex/tests/unit/parallel/execution-plan.test.ts",
+        "packages/rex/tests/unit/parallel/reconcile.test.ts",
+        "packages/rex/tests/unit/parallel/sourcevision-loader.test.ts",
         "packages/rex/tests/unit/recommend/conflict-detection.test.ts",
         "packages/rex/tests/unit/recommend/create-from-recommendations.test.ts",
         "packages/rex/tests/unit/schema/schema-version.test.ts",
@@ -28662,6 +29511,7 @@
         "packages/sourcevision/tests/unit/analyzers/dedup-findings.test.ts",
         "packages/sourcevision/tests/unit/analyzers/enrich-content-skip.test.ts",
         "packages/sourcevision/tests/unit/analyzers/enrich-per-zone.test.ts",
+        "packages/sourcevision/tests/unit/analyzers/framework-detection.test.ts",
         "packages/sourcevision/tests/unit/analyzers/go-archetypes.test.ts",
         "packages/sourcevision/tests/unit/analyzers/go-imports.test.ts",
         "packages/sourcevision/tests/unit/analyzers/go-route-detection.test.ts",
@@ -28709,6 +29559,7 @@
         "packages/web/tests/integration/background-suspension-recovery.test.ts",
         "packages/web/tests/integration/boundary-check.test.ts",
         "packages/web/tests/integration/build-output-contract.test.ts",
+        "packages/web/tests/integration/mcp-session-scoping.test.ts",
         "packages/web/tests/integration/memory-aware-polling-suspension.test.ts",
         "packages/web/tests/integration/messaging-stack.test.ts",
         "packages/web/tests/integration/pr-markdown-refresh.test.ts",
@@ -28724,6 +29575,7 @@
         "packages/web/tests/unit/server/domain-gateway.test.ts",
         "packages/web/tests/unit/server/incremental-task-usage.test.ts",
         "packages/web/tests/unit/server/memory-leak-fixes.test.ts",
+        "packages/web/tests/unit/server/parallel-mode.test.ts",
         "packages/web/tests/unit/server/port.test.ts",
         "packages/web/tests/unit/server/pr-markdown-refresh-diagnostics.test.ts",
         "packages/web/tests/unit/server/register-scheduler.test.ts",
@@ -28763,6 +29615,7 @@
         "packages/web/tests/unit/server/type-consistency.test.ts",
         "packages/web/tests/unit/server/usage-cleanup-scheduler.test.ts",
         "packages/web/tests/unit/server/websocket.test.ts",
+        "packages/web/tests/unit/server/worktree-validation.test.ts",
         "packages/web/tests/unit/server/ws-health-tracker.test.ts",
         "packages/web/tests/unit/shared/db-packages.test.ts",
         "packages/web/tests/unit/viewer/accessibility.test.ts",
@@ -28773,6 +29626,7 @@
         "packages/web/tests/unit/viewer/batched-tick-dispatcher.test.ts",
         "packages/web/tests/unit/viewer/call-rate-limiter.test.ts",
         "packages/web/tests/unit/viewer/collapsible-section.test.ts",
+        "packages/web/tests/unit/viewer/column-priority.test.ts",
         "packages/web/tests/unit/viewer/copy-link-button.test.ts",
         "packages/web/tests/unit/viewer/crash-detector.test.ts",
         "packages/web/tests/unit/viewer/crash-recovery-banner.test.ts",
@@ -28790,6 +29644,7 @@
         "packages/web/tests/unit/viewer/fetch-pipeline.test.ts",
         "packages/web/tests/unit/viewer/flow-data-builders.test.ts",
         "packages/web/tests/unit/viewer/flow-diagram.test.ts",
+        "packages/web/tests/unit/viewer/functions-catalog.test.ts",
         "packages/web/tests/unit/viewer/graceful-degradation.test.ts",
         "packages/web/tests/unit/viewer/graph-destroy.test.ts",
         "packages/web/tests/unit/viewer/graph-interaction.test.ts",
@@ -28809,6 +29664,7 @@
         "packages/web/tests/unit/viewer/message-throttle.test.ts",
         "packages/web/tests/unit/viewer/multi-select.test.ts",
         "packages/web/tests/unit/viewer/node-culling-integration.test.ts",
+        "packages/web/tests/unit/viewer/overview-tech-stack.test.ts",
         "packages/web/tests/unit/viewer/persistent-filter.test.ts",
         "packages/web/tests/unit/viewer/polling-manager.test.ts",
         "packages/web/tests/unit/viewer/polling-restart.test.ts",
@@ -28927,14 +29783,14 @@
     }
   ],
   "summary": {
-    "totalEdges": 2988,
+    "totalEdges": 3078,
     "totalExternal": 20,
     "circularCount": 0,
     "circulars": [],
     "mostImported": [
       {
         "path": "packages/rex/src/core/tree.ts",
-        "count": 49
+        "count": 50
       },
       {
         "path": "packages/rex/src/schema/index.ts",
@@ -28942,15 +29798,15 @@
       },
       {
         "path": "packages/rex/src/store/index.ts",
-        "count": 36
+        "count": 37
       },
       {
         "path": "packages/rex/src/cli/commands/constants.ts",
-        "count": 31
+        "count": 32
       },
       {
         "path": "packages/rex/src/cli/output.ts",
-        "count": 28
+        "count": 29
       },
       {
         "path": "packages/web/src/viewer/components/logos.ts",
@@ -28958,7 +29814,7 @@
       },
       {
         "path": "packages/rex/src/cli/errors.ts",
-        "count": 24
+        "count": 25
       },
       {
         "path": "packages/rex/src/analyze/reason.ts",
@@ -28981,15 +29837,15 @@
         "count": 17
       },
       {
+        "path": "packages/web/src/viewer/visualization/index.ts",
+        "count": 17
+      },
+      {
         "path": "packages/hench/src/prd/llm-gateway.ts",
         "count": 16
       },
       {
         "path": "packages/web/src/viewer/polling/tab-visibility.ts",
-        "count": 16
-      },
-      {
-        "path": "packages/web/src/viewer/visualization/index.ts",
         "count": 16
       },
       {
@@ -29005,14 +29861,14 @@
         "count": 13
       },
       {
-        "path": "packages/sourcevision/src/util/sort.ts",
-        "count": 12
+        "path": "packages/web/src/viewer/hooks/index.ts",
+        "count": 13
       },
       {
-        "path": "packages/llm-client/src/types.ts",
-        "count": 11
+        "path": "packages/sourcevision/src/util/sort.ts",
+        "count": 12
       }
     ],
-    "avgImportsPerFile": 3.45
+    "avgImportsPerFile": 3.46
   }
 }
