@@ -23,7 +23,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     environment: npm
-    timeout-minutes: 30
+    timeout-minutes: 20
     permissions:
       contents: write
       pull-requests: write
