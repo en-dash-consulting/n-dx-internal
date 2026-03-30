@@ -225,7 +225,6 @@ export function extractGoImports(
     } else {
       // External (stdlib or third-party)
       const pkg = imp.kind === "stdlib" ? `stdlib:${imp.path}` : imp.path;
-      const kind = imp.kind as "stdlib" | "third-party";
       const existing = externalMap.get(pkg);
       if (existing) {
         if (!existing.importedBy.includes(filePath)) {
@@ -236,7 +235,6 @@ export function extractGoImports(
           package: pkg,
           importedBy: [filePath],
           symbols: ["*"],
-          kind,
         });
       }
     }

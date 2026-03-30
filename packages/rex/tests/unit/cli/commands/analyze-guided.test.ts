@@ -12,7 +12,7 @@ vi.mock("../../../../src/analyze/guided.js", () => ({
 vi.mock("../../../../src/analyze/scanners.js", () => ({
   scanTests: vi.fn().mockResolvedValue([]),
   scanDocs: vi.fn().mockResolvedValue([]),
-  scanSourceVision: vi.fn().mockResolvedValue([]),
+  scanSourceVision: vi.fn().mockResolvedValue({ results: [], staleCount: 0 }),
   scanPackageJson: vi.fn().mockResolvedValue([]),
   scanGoMod: vi.fn().mockResolvedValue([]),
   parseGoMod: vi.fn().mockResolvedValue({ module: "", goVersion: "", require: [], replace: [] }),

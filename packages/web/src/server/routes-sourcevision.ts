@@ -31,6 +31,23 @@ import { DATA_FILES, buildDbPackagesResponse } from "../shared/index.js";
 import { isAnalysisRunning } from "./domain-gateway.js";
 
 const SV_PREFIX = "/api/sv/";
+const NDX_CONFIG = ".n-dx.json";
+
+/** Load zone pins from .n-dx.json → sourcevision.zones.pins */
+function loadZonePins(ctx: ServerContext): Record<string, string> | null {
+  const configPath = join(ctx.projectDir, NDX_CONFIG);
+  if (!existsSync(configPath)) return null;
+  try {
+    const config = JSON.parse(readFileSync(configPath, "utf-8"));
+    const pins = config?.sourcevision?.zones?.pins;
+    if (pins && typeof pins === "object" && !Array.isArray(pins)) {
+      return pins as Record<string, string>;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 /** Internal module definitions — maps module IDs to phase numbers and metadata. */
 const PHASE_DEFINITIONS = [
@@ -625,6 +642,11 @@ export function handleSourcevisionRoute(
     if (!data) {
       errorResponse(res, 404, "No zones data. Run 'sourcevision analyze' first.");
       return true;
+    }
+    // Augment with zone pins from .n-dx.json
+    const pins = loadZonePins(ctx);
+    if (pins && Object.keys(pins).length > 0) {
+      (data as Record<string, unknown>).zonePins = pins;
     }
     jsonResponse(res, 200, data);
     return true;

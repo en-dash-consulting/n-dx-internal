@@ -89,25 +89,7 @@ describe("analyzeImports — Go fixture project", () => {
     }
   });
 
-  it("third-party entries have kind 'third-party'", () => {
-    const thirdParty = result.external.filter(
-      (e) => !e.package.startsWith("stdlib:"),
-    );
-    for (const entry of thirdParty) {
-      expect(entry.kind).toBe("third-party");
-    }
-  });
-
   // ── Stdlib external packages ───────────────────────────────────────────────
-
-  it("stdlib entries have kind 'stdlib'", () => {
-    const stdlib = result.external.filter((e) =>
-      e.package.startsWith("stdlib:"),
-    );
-    for (const entry of stdlib) {
-      expect(entry.kind).toBe("stdlib");
-    }
-  });
 
   it("includes expected stdlib packages with 'stdlib:' prefix", () => {
     const stdlibNames = result.external
