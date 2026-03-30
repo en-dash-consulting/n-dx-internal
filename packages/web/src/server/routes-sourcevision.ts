@@ -41,12 +41,13 @@ const PHASE_DEFINITIONS = [
   { id: "components", phase: 5, name: "Components", description: "Catalog React/Preact components, props, and usage relationships" },
   { id: "callgraph", phase: 6, name: "Call Graph", description: "Analyze function-level call relationships and cross-zone patterns" },
   { id: "configsurface", phase: 7, name: "Config Surface", description: "Detect environment variables, config file references, and global constants" },
+  { id: "frameworks", phase: 8, name: "Frameworks", description: "Detect languages, frameworks, and runtime stack" },
 ] as const;
 
 /**
  * Grouped phase definitions — maps 4 user-facing groups to internal modules.
  *
- * Group 1 (Scan):          inventory + imports + configsurface
+ * Group 1 (Scan):          inventory + imports + configsurface + frameworks
  * Group 2 (Classify):      classifications + components
  * Group 3 (Architecture):  zones + callgraph
  * Group 4 (Deep Analysis): zone enrichment passes 2–4 via --phase=4 --full
@@ -66,9 +67,9 @@ const GROUPED_PHASES: readonly GroupedPhaseDef[] = [
   {
     group: 1,
     name: "Scan",
-    description: "Catalog files, build dependency graph, and detect configuration surface",
-    moduleIds: ["inventory", "imports", "configsurface"],
-    modulePhases: [1, 2, 7],
+    description: "Catalog files, build dependency graph, detect configuration surface, and identify frameworks",
+    moduleIds: ["inventory", "imports", "configsurface", "frameworks"],
+    modulePhases: [1, 2, 7, 8],
   },
   {
     group: 2,

@@ -1,0 +1,38 @@
+{
+  "frameworks": [],
+  "roots": [
+    {
+      "path": "packages/hench",
+      "detectedFrameworks": []
+    },
+    {
+      "path": "packages/llm-client",
+      "detectedFrameworks": []
+    },
+    {
+      "path": "packages/rex",
+      "detectedFrameworks": []
+    },
+    {
+      "path": "packages/sourcevision",
+      "detectedFrameworks": []
+    },
+    {
+      "path": "packages/sourcevision/tests/fixtures/go-project",
+      "detectedFrameworks": []
+    },
+    {
+      "path": "packages/sourcevision/tests/fixtures/mixed-go-ts",
+      "detectedFrameworks": []
+    },
+    {
+      "path": "packages/web",
+      "detectedFrameworks": []
+    }
+  ],
+  "summary": {
+    "totalDetected": 0,
+    "byCategory": {},
+    "byLanguage": {}
+  }
+}

@@ -5,10 +5,11 @@
     {
       "id": "ebe4c082-7e93-44ee-a286-cf01c05dd907",
       "title": "SourceVision",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Static analysis engine: file inventory, import graph, zone detection (Louvain community detection), React component catalog, PR markdown generation. Produces .sourcevision/CONTEXT.md and llms.txt for AI consumption.",
       "startedAt": "2026-03-28T18:05:26.005Z",
+      "completedAt": "2026-03-29T23:25:48.336Z",
       "mergedProposals": [
         {
           "proposalNodeKey": "p0:epic",
@@ -9564,7 +9565,7 @@
         {
           "id": "90485376-544a-4c71-ae81-f84106cbd8bd",
           "title": "Config Surface Page Redesign & Scanner Improvements",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Overhaul the config surface page layout and scanner. Replace bar charts with 3 horizontal summary panels. Change emoji badges (gear for env, globe for exported constants). Filter constants to only exported/global ones. Ensure Go and TypeScript/React Router config patterns are properly scanned. Add hench config values to the scan. Adopt explorer-style search.",
           "priority": "high",
@@ -9573,6 +9574,8 @@
             "sourcevision",
             "config-surface"
           ],
+          "startedAt": "2026-03-29T23:25:47.969Z",
+          "completedAt": "2026-03-29T23:25:47.969Z",
           "children": [
             {
               "id": "fec63543-e5b9-4a82-951d-0cc4c8ab2c31",
@@ -9646,7 +9649,7 @@
             {
               "id": "e7dbb622-0a32-4458-9032-0c3daaa9dc32",
               "title": "Add hench config fields to config surface scanner",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "The hench package defines 27 configurable fields in packages/hench/src/cli/commands/config.ts (CONFIG_FIELDS array) across 5 categories (Execution Strategy, Task Selection, Retry Policy, Guard Rails, General). These are not picked up by the sourcevision config surface scanner because they are runtime config values stored in .hench/config.json, not env vars or source-level constants. Add support for scanning known n-dx config files (.hench/config.json, .rex/config.json) and representing their fields in the config surface as a 'config' type entry with the source file as the config JSON path.",
               "acceptanceCriteria": [
@@ -9662,12 +9665,16 @@
                 "scanner",
                 "hench",
                 "config-surface"
-              ]
+              ],
+              "startedAt": "2026-03-29T22:38:44.735Z",
+              "completedAt": "2026-03-29T22:53:58.049Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added scanConfigJsonFile function to config-surface.ts that reads JSON config files and flattens fields with dot notation. Wired into Phase 7 via configJsonPaths option. 9 new tests covering all acceptance criteria."
             },
             {
               "id": "262f4bb8-a6fb-46b4-a176-f419149b5b9b",
               "title": "Tune config scanner for Go and TypeScript/React Router patterns",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Audit and improve the config surface scanner for both supported languages. For TypeScript/React Router: ensure detection of route-level config (loader env access, route module constants), Vite/esbuild define replacements, and tsconfig paths that act as config. For Go: ensure detection of viper/cobra config patterns (viper.GetString, viper.SetDefault), flag definitions (flag.String, pflag), and struct tag-based config (env:\"VAR\" tags). Verify the scanner handles both languages when coexisting in the same project.",
               "acceptanceCriteria": [
@@ -9684,12 +9691,16 @@
                 "scanner",
                 "go",
                 "typescript"
-              ]
+              ],
+              "startedAt": "2026-03-29T23:01:00.205Z",
+              "completedAt": "2026-03-29T23:25:47.506Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added Go viper/flag/env-tag patterns and Vite define detection to config surface scanner with 9 new tests"
             },
             {
               "id": "b52fb34c-0dcc-4dd1-86ff-bc46af5c2fd1",
               "title": "Replace config surface search with explorer-style search component",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "The config surface page currently uses the basic SearchFilter component. Replace it with the same search pattern used in the explorer view — inline filter bar with search input, dropdown filters for type (env/config/constant) and zone, and result count. Ensure the search bar is properly contained within the page width and does not overflow.",
               "acceptanceCriteria": [
@@ -9704,14 +9715,18 @@
                 "web-viewer",
                 "config-surface",
                 "search"
-              ]
+              ],
+              "startedAt": "2026-03-29T22:54:24.130Z",
+              "completedAt": "2026-03-29T23:00:38.016Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Replaced SearchFilter component and button-based type filters with explorer-style inline filter bar using dropdowns for type and zone, inline result count, and shared forms.css classes"
             }
           ]
         },
         {
           "id": "4b4d2a68-2751-4ca4-a66f-ff41cdc56690",
           "title": "Framework Detection Registry & Dynamic Dashboard Routing",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Consolidate SourceVision's implicit framework detection (scattered across route-detection, go-route-detection, server-route-detection, inventory, and language detection) into an explicit FrameworkDetection module with a registry. Use the detected frameworks to dynamically show/hide dashboard tabs and panels. Support monorepo detection where different subdirectories use different languages/frameworks (e.g. Go backend + React frontend). This is the foundation for rolling out language and framework support in waves.",
           "priority": "high",
@@ -9721,6 +9736,8 @@
             "framework-detection",
             "routing"
           ],
+          "startedAt": "2026-03-29T22:38:23.324Z",
+          "completedAt": "2026-03-29T22:38:23.324Z",
           "children": [
             {
               "id": "3ed96080-7100-42c1-a033-7ac362eacde7",
@@ -9827,7 +9844,7 @@
             {
               "id": "254d3c24-7384-4411-b7ea-fca362d5f1dc",
               "title": "MCP tool: sv_frameworks for exposing detected frameworks",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add an sv_frameworks MCP tool to sourcevision's MCP server that exposes the detected frameworks data. The tool should return the list of detected frameworks with their confidence scores, categories, detected signals, and project root paths. Support optional filters by category (frontend/backend/fullstack) and minimum confidence threshold. This enables Claude Code to understand what frameworks a project uses and tailor its assistance accordingly.",
               "acceptanceCriteria": [
@@ -9843,12 +9860,16 @@
                 "sourcevision",
                 "mcp",
                 "framework-detection"
-              ]
+              ],
+              "startedAt": "2026-03-29T22:36:03.354Z",
+              "completedAt": "2026-03-29T22:38:22.870Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added sv_frameworks MCP tool with category and minConfidence filters, plus 5 unit tests"
             },
             {
               "id": "2281057e-ae97-4932-aaca-776be35d91e9",
               "title": "Framework-aware overview panel: show detected stack summary",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add a Technology Stack section to the SV overview page that shows the detected frameworks as visual badges grouped by category (Frontend, Backend, Tooling). Each badge shows the framework name, icon/logo if available, and confidence level. For monorepos, group by project root with a sub-heading for each root. This gives users an instant understanding of what technologies the project uses. The section should appear between the existing summary stats and the zone overview.",
               "acceptanceCriteria": [
@@ -9864,12 +9885,16 @@
                 "web-viewer",
                 "overview",
                 "framework-detection"
-              ]
+              ],
+              "startedAt": "2026-03-29T22:24:01.503Z",
+              "completedAt": "2026-03-29T22:35:35.107Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added Technology Stack section to SV overview page with framework badges grouped by category and monorepo root support"
             },
             {
               "id": "1bb52dc1-8882-433b-8fcd-1d35ba5807a7",
               "title": "Framework detection instructions in CONTEXT.md and llms.txt output",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Update the CONTEXT.md and llms.txt generators to include detected framework information. The AI-readable output should clearly state: which frameworks were detected, at what confidence, in which project roots, and what analysis capabilities are available for each. This ensures that any AI consumer of SourceVision output (Claude, other LLMs) understands the technology stack and can reason about framework-specific patterns. Include a Supported Frameworks section that lists what SourceVision can fully analyze vs detect-only, so LLMs know the boundaries of the analysis.",
               "acceptanceCriteria": [
@@ -9886,7 +9911,11 @@
                 "context-md",
                 "llms-txt",
                 "framework-detection"
-              ]
+              ],
+              "startedAt": "2026-03-29T22:09:53.820Z",
+              "completedAt": "2026-03-29T22:23:33.131Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added framework detection info to CONTEXT.md (<frameworks> section) and llms.txt (Technology Stack section). Created framework-support.ts with language tier definitions and per-framework capability mappings. Updated all call sites to pass frameworks data. Added integration tests."
             }
           ]
         }
@@ -9895,7 +9924,7 @@
     {
       "id": "bf053fb2-509d-4acf-aa61-7243e66027e5",
       "title": "Rex",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "PRD management: hierarchical epics/features/tasks/subtasks, smart add from natural language, LLM-powered analysis and recommendations, validation, pruning, reshaping. Stores state in .rex/prd.json.",
       "startedAt": "2026-03-24T20:09:27.774Z",
@@ -12732,7 +12761,7 @@
         {
           "id": "820971d2-56a3-4372-b097-19efeb79d661",
           "title": "Parallel Worktree Execution: Phase 1 — Conflict Analysis",
-          "status": "blocked",
+          "status": "completed",
           "level": "feature",
           "description": "Build the conflict analysis foundation for parallel worktree execution. Compute task blast radius from sourcevision zones, PRD tags, acceptance criteria, and import graph. Build a conflict graph between tasks and detect independent sets (non-conflicting task groups) that can safely run in parallel worktrees. Expose via `ndx parallel plan .` CLI command. This is read-only analysis — no worktree creation or execution.",
           "priority": "high",
@@ -12741,11 +12770,13 @@
             "parallel",
             "conflict-analysis"
           ],
+          "resolutionType": "code-change",
+          "resolutionDetail": "Implemented in parallel worktree and merged",
           "children": [
             {
               "id": "6fb678d5-75e3-4e17-b551-c3c5b6403875",
               "title": "Blast radius computation from zones, tags, and acceptance criteria",
-              "status": "blocked",
+              "status": "completed",
               "level": "task",
               "description": "Create packages/rex/src/parallel/blast-radius.ts. For each PRD task, compute the set of files it is likely to modify (its blast radius). Signal sources: (1) Extract zone IDs from task tags and expand to file sets via sourcevision zones data. (2) Parse acceptance criteria for explicit file/module/component mentions. (3) Add 1-hop import neighbors for high-coupling files from the import graph. (4) Sibling tasks under the same feature inherit the parent feature's aggregate blast radius as a conservative heuristic. Return a Map<taskId, Set<filePath>> as the blast radius index.",
               "acceptanceCriteria": [
@@ -12762,12 +12793,14 @@
                 "rex",
                 "parallel",
                 "blast-radius"
-              ]
+              ],
+              "resolutionType": "code-change",
+              "resolutionDetail": "Implemented in parallel worktree and merged"
             },
             {
               "id": "accc830e-51eb-4ad8-a8d4-178eec505ca5",
               "title": "Conflict graph construction and independent set detection",
-              "status": "blocked",
+              "status": "completed",
               "level": "task",
               "description": "Create packages/rex/src/parallel/conflict-analysis.ts. Build a conflict graph where nodes are actionable tasks and edges connect tasks with overlapping blast radii. Edge weight = number of overlapping files. Classify edges by confidence: high (direct file overlap), medium (shared import neighborhood), low (same zone but different files). Implement greedy graph coloring to find independent sets — groups of tasks with no edges between them. Respect explicit blockedBy dependencies (force into same group, sequential). Output an ExecutionPlan with groups, serial tasks, and detected conflicts.",
               "acceptanceCriteria": [
@@ -12785,12 +12818,14 @@
                 "rex",
                 "parallel",
                 "conflict-graph"
-              ]
+              ],
+              "resolutionType": "code-change",
+              "resolutionDetail": "Implemented in parallel worktree and merged"
             },
             {
               "id": "87072165-3e7b-45d8-b12b-693bd1fac343",
               "title": "Execution plan formatter and ndx parallel plan CLI command",
-              "status": "blocked",
+              "status": "completed",
               "level": "task",
               "description": "Create packages/rex/src/parallel/execution-plan.ts with plan formatting and packages/rex/src/parallel/index.ts as barrel export. Add `ndx parallel plan .` command to cli.js that: (1) Loads PRD and sourcevision data (zones, imports). (2) Filters to actionable tasks. (3) Runs blast radius computation and conflict analysis. (4) Outputs a human-readable execution plan showing task groups, their blast radii, detected conflicts, and estimated parallelism. Support --format=json for machine-readable output. Re-export the parallel module from packages/rex/src/public.ts.",
               "acceptanceCriteria": [
@@ -12808,12 +12843,14 @@
                 "rex",
                 "parallel",
                 "cli"
-              ]
+              ],
+              "resolutionType": "code-change",
+              "resolutionDetail": "Implemented in parallel worktree and merged"
             },
             {
               "id": "06791a6e-3253-49a8-a716-977633d7698c",
               "title": "Sourcevision data integration: load zones and imports for blast radius",
-              "status": "blocked",
+              "status": "completed",
               "level": "task",
               "description": "The blast radius computation needs to read sourcevision zone and import data. Since rex cannot import sourcevision (they are independent domain packages), create a loader in the parallel module that reads .sourcevision/zones.json and .sourcevision/imports.json directly from disk. Define minimal TypeScript interfaces for the zone file list and import edges needed — do not import sourcevision types. This follows the existing pattern where rex reads .sourcevision files via file I/O rather than package imports.",
               "acceptanceCriteria": [
@@ -12829,14 +12866,16 @@
                 "rex",
                 "parallel",
                 "sourcevision-integration"
-              ]
+              ],
+              "resolutionType": "code-change",
+              "resolutionDetail": "Implemented in parallel worktree and merged"
             }
           ]
         },
         {
           "id": "efd183b8-8447-4cf1-835f-732cd5456f27",
           "title": "Session-Scoped MCP: Single Server Multi-Worktree Support (Phase 3)",
-          "status": "blocked",
+          "status": "completed",
           "level": "feature",
           "description": "Enable a single running MCP server to scope operations to different worktree root directories via session headers. When a client sends X-Ndx-Root-Dir on session initialization, the server creates an isolated PRDStore and sourcevision data context for that directory. This eliminates the need to spawn separate servers per worktree. No frontend dashboard changes — this is purely server-side MCP infrastructure. Phase 1 conflict analysis (already implemented) provides the execution plan; this feature provides the server-side isolation to execute it.",
           "priority": "high",
@@ -12845,6 +12884,8 @@
             "mcp",
             "parallel"
           ],
+          "resolutionType": "code-change",
+          "resolutionDetail": "Implemented in parallel worktree and merged",
           "children": [
             {
               "id": "a4a97b89-7b74-444c-8942-417291d1ebf8",
@@ -12899,7 +12940,7 @@
             {
               "id": "1f3de12b-cbef-4187-9832-9b1118c296ae",
               "title": "Parallel-mode tool blocking for scoped MCP sessions",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "When a session is initialized with X-Ndx-Root-Dir (indicating a worktree-scoped session), certain MCP tools should be blocked to prevent structural PRD changes during parallel execution. Blocked tools: rex_add, rex_analyze, rex_recommend, sv_analyze. Allowed tools: rex_status, rex_next, rex_update (status changes only), sv_inventory, sv_zones, sv_imports, sv_context. Return a clear error message indicating the tool is unavailable in parallel mode.",
               "acceptanceCriteria": [
@@ -12916,12 +12957,15 @@
                 "mcp",
                 "parallel"
               ],
-              "startedAt": "2026-03-29T18:56:48.939Z"
+              "startedAt": "2026-03-29T18:56:48.939Z",
+              "completedAt": "2026-03-29T19:08:49.937Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Implemented parallel-mode tool blocking in routes-mcp.ts using MCP SDK RegisteredTool.update() to replace blocked tool handlers with error stubs. Created utils/parallel-mode.ts with allowlist-based blocking. 8 unit tests + 7 new integration tests all pass."
             },
             {
               "id": "d1e83893-74d0-44d7-806e-0a4293e4382d",
               "title": "PRD reconciliation: merge worktree task completions back to main",
-              "status": "blocked",
+              "status": "completed",
               "level": "task",
               "description": "Add a reconciliation function in packages/rex/src/parallel/ that reads completed task statuses from a worktree's .rex/prd.json and applies them to the main PRD. Uses the existing PRDStore API (update_task_status) to write changes. Handles: tasks completed in worktree, tasks that failed in worktree, tasks unchanged. Should be callable from CLI via `rex parallel reconcile <worktree-dir>`. Operates on task status only — does not merge structural changes (add/remove/reparent).",
               "acceptanceCriteria": [
@@ -12938,7 +12982,11 @@
                 "rex",
                 "parallel",
                 "reconciliation"
-              ]
+              ],
+              "startedAt": "2026-03-29T19:09:30.006Z",
+              "completedAt": "2026-03-29T19:16:13.039Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Implemented reconcile module (reconcile.ts), CLI command (parallel reconcile), 19 unit tests, barrel and public API exports"
             },
             {
               "id": "5284e1b4-3b18-473f-9a8a-872c5183a330",
@@ -12969,7 +13017,10 @@
             }
           ]
         }
-      ]
+      ],
+      "completedAt": "2026-03-30T02:23:50.557Z",
+      "resolutionType": "acknowledgment",
+      "resolutionDetail": "All 140 children completed; epic status was stale from parallel worktree PRD copy"
     },
     {
       "id": "4fc05c48-48b0-4da3-8126-4fa237b924d9",
@@ -14293,10 +14344,11 @@
     {
       "id": "4d62fa6c-ad0d-4e1e-91f8-c2f1ebe696e7",
       "title": "Web Dashboard",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Unified web dashboard and MCP HTTP server. Preact-based UI with SourceVision, Rex, and Hench views. Includes server architecture, real-time updates, performance optimization, and landing page.",
       "startedAt": "2026-03-24T05:27:03.754Z",
+      "completedAt": "2026-03-29T19:29:23.733Z",
       "children": [
         {
           "id": "d5ad6f16-156d-496f-99e5-0230dd48cd47",
@@ -20322,7 +20374,7 @@
         {
           "id": "eecc3540-e70f-4df8-b17b-d6b8ffe8492f",
           "title": "Responsive Table Columns & Search Overflow Fixes",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Fix search/filter bar overflow in explorer view and config surface. Implement responsive column-priority system for data tables — prioritize highest-value columns for human consumers, hide lower-priority columns at narrow widths, and provide a column switcher to swap visible columns. Ensure tables condense to screen width instead of bleeding.",
           "priority": "high",
@@ -20332,11 +20384,13 @@
             "explorer",
             "config-surface"
           ],
+          "startedAt": "2026-03-29T19:27:59.200Z",
+          "completedAt": "2026-03-29T19:27:59.200Z",
           "children": [
             {
               "id": "6aecfae6-93b9-4f33-8dae-cadecdf0f047",
               "title": "Fix explorer file search overflow — constrain to page width",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "The explorer view filter bar bleeds across the screen at narrow widths and results cannot be scrolled to view content. The filter bar (search input + dropdowns for Role/Language/Zone/Archetype + toggle + count) needs to be constrained within the page container. Inputs should shrink with min-width:0 and the bar should wrap gracefully. The file table below must be scrollable within its container — not overflow the viewport.",
               "acceptanceCriteria": [
@@ -20353,12 +20407,15 @@
                 "responsive",
                 "css"
               ],
-              "startedAt": "2026-03-29T18:58:48.642Z"
+              "startedAt": "2026-03-29T18:58:48.642Z",
+              "completedAt": "2026-03-29T19:03:02.220Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Fixed explorer filter bar and file table overflow with CSS-only changes to forms.css and explorer.css. Added flex-wrap to .filter-bar, min-width:0 to .filter-input and .filter-select, flex-basis 180px to search input, overflow:hidden + min-width:0 to .explorer-view container, and a 768px responsive breakpoint that gives the search full width while selects share the remaining row."
             },
             {
               "id": "b2b0820b-00d7-45d8-abe5-f98b8a34cf6d",
               "title": "Responsive column-priority system for data tables",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Implement a reusable column-priority system for data tables across the dashboard (explorer files table, config surface table, etc.). Each table defines a priority ranking for its columns (highest value to human consumers first). At narrower screen widths, lower-priority columns are hidden to maintain readability. A column switcher control allows users to swap which columns are visible — but the total number of visible columns stays constant based on available width. This prevents tables from getting crammed while ensuring users can still access all data.",
               "acceptanceCriteria": [
@@ -20377,12 +20434,16 @@
                 "component",
                 "responsive",
                 "tables"
-              ]
+              ],
+              "startedAt": "2026-03-29T19:08:27.362Z",
+              "completedAt": "2026-03-29T19:21:12.616Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Implemented reusable column-priority system with useColumnPriority hook, ColumnSwitcher component, and applied to both explorer files table and config surface table. 12 unit tests for pure logic."
             },
             {
               "id": "b112507c-33ff-49a0-b7bc-a4bdaadb0294",
               "title": "Apply column-priority and search fixes to config surface table",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Wire the new column-priority system into the config surface table. Priority order: Name > Type > File > Zone > Value > Line. Ensure the search/filter bar is constrained to page width (same fix pattern as explorer). Verify the table renders cleanly at mobile, tablet, and desktop widths.",
               "acceptanceCriteria": [
@@ -20400,14 +20461,15 @@
               "blockedBy": [
                 "fec63543-e5b9-4a82-951d-0cc4c8ab2c31",
                 "d62f6938-258e-49d7-8a9a-8a10df5be18f"
-              ]
+              ],
+              "startedAt": "2026-03-29T19:25:32.794Z"
             }
           ]
         },
         {
           "id": "f7329088-aee6-45d1-bbe3-ff0187d563da",
           "title": "Explorer Subroute Refactor: Files, Functions & Properties Tabs",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Refactor the Explorer page into three subroutes/tabs: \"Files\" (current explorer content), \"Functions\" (moved from zones page top-functions tables + full function catalog), and \"Properties\" (moved from the config-surface route). The explorer becomes the unified data-browsing hub. The config-surface top-level nav entry is retired. The zones page loses its functions section. All views with charts/tables get a configurable row-count selector at the top.",
           "priority": "high",
@@ -20417,6 +20479,8 @@
             "routing",
             "refactor"
           ],
+          "startedAt": "2026-03-29T19:29:23.486Z",
+          "completedAt": "2026-03-29T19:29:23.486Z",
           "children": [
             {
               "id": "a61d47a0-5fe3-484e-b8cc-9d1a2eab7dcc",
@@ -20499,7 +20563,7 @@
             {
               "id": "ad04b0bd-f1a0-4a78-900b-4c66f6b88c40",
               "title": "Add configurable row-count selector to all chart/table views",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Add a row-count selector control (e.g. dropdown or segmented buttons: 10, 25, 50, 100, All) at the top of every view that displays charts or tables with variable row counts. This applies to: Explorer files table, Functions table, Properties table, zone file lists, bar charts in overview, and any other paginated data display. The selected count should persist per-view to localStorage. Default to 25 rows. The selector should be compact and sit inline with other controls (next to search/filters).",
               "acceptanceCriteria": [
@@ -20518,12 +20582,13 @@
                 "component",
                 "pagination",
                 "ux"
-              ]
+              ],
+              "startedAt": "2026-03-29T19:28:14.369Z"
             },
             {
               "id": "9f41de55-c392-49ab-bf1e-5031c50ba468",
               "title": "Update sidebar nav and cross-view navigation for explorer subroutes",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Update the sidebar navigation to reflect the explorer restructuring. Explorer should show as expandable in the sidebar with sub-entries for Files, Functions, Properties (similar to how sections expand). Update all cross-view navigation calls throughout the dashboard: overview hotspot links should go to explorer/files, zone function links should go to explorer/functions, any config-surface references should go to explorer/properties. Update the search overlay to include functions in search results.",
               "acceptanceCriteria": [
@@ -20540,7 +20605,8 @@
                 "web-viewer",
                 "sidebar",
                 "navigation"
-              ]
+              ],
+              "startedAt": "2026-03-29T19:29:20.605Z"
             }
           ]
         }
