@@ -256,11 +256,20 @@ describe("hench → llm-client gateway contract", () => {
     "parseStreamTokenUsage",
     "resolveModel",
     "formatUsage",
+    "createPromptEnvelope",
+    "assemblePrompt",
+    "mapErrorReasonToFailureCategory",
+    "mapRunFailureToCategory",
   ];
 
   const GATEWAY_CLASSES = ["CLIError", "ClaudeClientError", "ProcessPool", "ProcessLimitError"];
 
-  const GATEWAY_CONSTANTS = ["PROJECT_DIRS"];
+  const GATEWAY_CONSTANTS = [
+    "PROJECT_DIRS",
+    "DEFAULT_EXECUTION_POLICY",
+    "CANONICAL_PROMPT_SECTIONS",
+    "ALL_FAILURE_CATEGORIES",
+  ];
 
   for (const name of GATEWAY_FUNCTIONS) {
     it(`re-exports "${name}" as a function`, async () => {
@@ -582,8 +591,11 @@ describe("gateway export auto-detection", () => {
         "CLIError", "ClaudeClientError",
         "exec", "execStdout", "execShellCmd", "getCurrentHead", "getCurrentBranch",
         "isExecutableOnPath", "spawnTool", "spawnManaged", "ProcessPool", "ProcessLimitError",
-        "parseApiTokenUsage", "parseStreamTokenUsage", "resolveModel", "formatUsage"],
-      ...["PROJECT_DIRS"],
+        "parseApiTokenUsage", "parseStreamTokenUsage", "resolveModel", "formatUsage",
+        "createPromptEnvelope", "assemblePrompt", "mapErrorReasonToFailureCategory",
+        "mapRunFailureToCategory"],
+      ...["PROJECT_DIRS", "DEFAULT_EXECUTION_POLICY", "CANONICAL_PROMPT_SECTIONS",
+        "ALL_FAILURE_CATEGORIES"],
     ]);
 
     const untested = sourceExports.filter((s) => !testedSymbols.has(s));

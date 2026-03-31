@@ -86,6 +86,17 @@ export { resolveModel } from "@n-dx/llm-client";
 // ---- Usage formatting -------------------------------------------------------
 export { formatUsage } from "@n-dx/llm-client";
 
+// ---- Runtime contract -------------------------------------------------------
+export {
+  DEFAULT_EXECUTION_POLICY,
+  CANONICAL_PROMPT_SECTIONS,
+  ALL_FAILURE_CATEGORIES,
+  createPromptEnvelope,
+  assemblePrompt,
+  mapErrorReasonToFailureCategory,
+  mapRunFailureToCategory,
+} from "@n-dx/llm-client";
+
 // ---- Type re-exports --------------------------------------------------------
 export type {
   ClaudeConfig,
@@ -97,4 +108,15 @@ export type {
   SpawnToolResult,
   ManagedChild,
   HelpDefinition,
+  PromptSectionName,
+  PromptSection,
+  PromptEnvelope,
+  SandboxMode,
+  ApprovalPolicy,
+  ExecutionPolicy,
+  RuntimeEventType,
+  RuntimeEvent,
+  FailureCategory,
+  TokenDiagnosticStatus,
+  RuntimeDiagnostics,
 } from "@n-dx/llm-client";

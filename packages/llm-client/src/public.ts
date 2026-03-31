@@ -233,6 +233,31 @@ export {
   formatTypoSuggestion,
 } from "./suggest.js";
 
+// Runtime contract (normalized Claude/Codex execution contract)
+export type {
+  PromptSectionName,
+  PromptSection,
+  PromptEnvelope,
+  SandboxMode,
+  ApprovalPolicy,
+  ExecutionPolicy,
+  RuntimeEventType,
+  RuntimeEvent,
+  FailureCategory,
+  TokenDiagnosticStatus,
+  RuntimeDiagnostics,
+} from "./runtime-contract.js";
+
+export {
+  DEFAULT_EXECUTION_POLICY,
+  CANONICAL_PROMPT_SECTIONS,
+  ALL_FAILURE_CATEGORIES,
+  createPromptEnvelope,
+  assemblePrompt,
+  mapErrorReasonToFailureCategory,
+  mapRunFailureToCategory,
+} from "./runtime-contract.js";
+
 // CLI help formatting
 export {
   isColorEnabled,
