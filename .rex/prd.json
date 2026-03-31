@@ -23268,25 +23268,30 @@
             {
               "id": "ceb4b95d-4c78-45eb-bb40-5604a10180ac",
               "title": "Generate .agents skill directories for Codex",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "During init, create one generated .agents/skills/<name>/SKILL.md directory per shared n-dx workflow skill.\n\nThe emitted content should stay structurally aligned with the Claude-delivered skills while using the Codex repository-local skill layout.",
               "priority": "critical",
               "blockedBy": [
                 "7bd0e002-d1a7-4aaa-82a1-30fdad108618",
                 "3f98efc4-382d-431a-a1e0-64ca91ac7b57"
-              ]
+              ],
+              "startedAt": "2026-03-31T21:33:27.366Z"
             },
             {
               "id": "73346263-26ca-4499-8fe8-a3bcb689435d",
               "title": "Generate .codex/config.toml MCP definitions",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Generate project-local Codex MCP server definitions for Rex and SourceVision.\n\nThe first implementation should prefer stdio transport because it matches current Claude-side init behavior and avoids fixed-port drift. HTTP transport can remain documented as a later/manual option.",
               "priority": "critical",
               "blockedBy": [
                 "3f98efc4-382d-431a-a1e0-64ca91ac7b57"
-              ]
+              ],
+              "startedAt": "2026-03-31T21:21:04.602Z",
+              "completedAt": "2026-03-31T21:31:21.198Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Generated .codex/config.toml with stdio MCP server definitions during ndx init. Added renderCodexConfigToml() to assistant-assets/index.js, created codex-integration.js module, integrated into cli.js with --no-codex flag support, and wrote 20 tests covering TOML rendering, integration output, source validation, and CLI flag behavior."
             },
             {
               "id": "c9f700ec-3ca9-4516-a4e7-5ed4d493740d",

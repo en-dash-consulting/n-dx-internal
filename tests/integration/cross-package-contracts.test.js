@@ -596,7 +596,8 @@ describe("gateway export auto-detection", () => {
         "isExecutableOnPath", "spawnTool", "spawnManaged", "ProcessPool", "ProcessLimitError",
         "parseApiTokenUsage", "parseStreamTokenUsage", "resolveModel", "formatUsage",
         "createPromptEnvelope", "assemblePrompt", "mapErrorReasonToFailureCategory",
-        "mapRunFailureToCategory"],
+        "mapRunFailureToCategory",
+        "compileCodexPolicyFlags", "mapSandboxToCodexFlag", "mapApprovalToCodexFlag"],
       ...["PROJECT_DIRS", "DEFAULT_EXECUTION_POLICY", "CANONICAL_PROMPT_SECTIONS",
         "ALL_FAILURE_CATEGORIES"],
     ]);
