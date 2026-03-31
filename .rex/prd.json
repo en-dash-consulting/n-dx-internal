@@ -23182,6 +23182,270 @@
           ]
         }
       ]
+    },
+    {
+      "id": "eeb9eaa6-ec5f-4fad-8b4e-342c6e2abc79",
+      "title": "Codex Workflow Parity",
+      "status": "pending",
+      "level": "epic",
+      "description": "Implement assistant-surface parity plus baseline runtime guardrails so Codex can participate in the n-dx workflow with first-class project artifacts, shared workflow skills, MCP configuration, and a consistent execution contract instead of relying on the current Claude-only outer-layer setup.\\n\\nExecution sources for this epic:\\n- docs/analysis/claude-codex-runtime-identity-discovery.md\\n- docs/process/codex-workflow-parity-plan.md when present on the branch\\n- docs/analysis/codex-workflow-parity-audit.md when present on the branch\\n\\nIf the plan or audit docs are absent, the epic and task descriptions in .rex/prd.json are the implementation contract for this branch.\\n\\nScope:\\n- canonical vendor-neutral assistant asset layer\\n- Codex project artifact generation (AGENTS.md, .agents/skills, .codex/config.toml)\\n- assistant-neutral init orchestration\\n- documentation and startup/help parity\\n- baseline runtime identity guardrails for prompt delivery, sandbox and approval policy, event normalization, diagnostics, and failure taxonomy\\n- regression tests that prevent Claude/Codex workflow drift\\n\\nNon-goals for this epic:\\n- identical assistant prose or code edits across vendors\\n- full Claude/Codex runtime equivalence beyond the defined workflow contract\\n- API-mode parity for Codex in the first implementation pass",
+      "priority": "critical",
+      "children": [
+        {
+          "id": "ca1e2dc0-1903-4927-b66c-76685d839456",
+          "title": "Canonical Assistant Asset Layer",
+          "status": "pending",
+          "level": "feature",
+          "description": "Create one vendor-neutral source of truth for n-dx workflow skills and assistant integration metadata, then render Claude and Codex artifacts from that shared source.\\n\\nThis feature should land before Codex artifact generation, runtime instruction-loading alignment, and most assistant-facing documentation updates so later work can reuse one canonical asset pipeline.\\n\\nDeliverables:\\n- assistant asset source directory for shared workflow skills\\n- manifest or registry describing skills, MCP servers, and assistant-specific metadata\\n- removal of parallel hand-maintained skill definitions as the canonical source",
+          "priority": "critical",
+          "children": [
+            {
+              "id": "9470f4e3-8ec9-49de-bf20-632b64d9b4a3",
+              "title": "Create vendor-neutral assistant asset source directory",
+              "status": "pending",
+              "level": "task",
+              "description": "Introduce a canonical assistant asset location, likely assistant-assets/, that stores the shared n-dx workflow skill bodies once.\n\nThe source must be suitable for both Claude and Codex output generation and should cover the existing ndx-plan, ndx-status, ndx-capture, ndx-zone, ndx-work, ndx-config, ndx-reshape, ndx-pr-description, and ndx-feedback workflows.",
+              "priority": "critical"
+            },
+            {
+              "id": "7bd0e002-d1a7-4aaa-82a1-30fdad108618",
+              "title": "Define assistant asset manifest and render contract",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a manifest that enumerates shared workflow skills, assistant delivery targets, MCP server descriptors, and any assistant-specific metadata wrappers.\n\nKeep vendor adapters thin so the manifest defines shared meaning while Claude/Codex writers only adapt file locations and wrappers.",
+              "priority": "high"
+            },
+            {
+              "id": "79659c41-7011-4c68-a3ba-98f534029bb0",
+              "title": "Replace Claude-specific skill duplication with generated outputs",
+              "status": "pending",
+              "level": "task",
+              "description": "Stop treating claude-integration.js and .claude/skills as separate sources of truth.\n\nUpdate the generation path so Claude artifacts are emitted from the canonical asset source and future Codex artifacts use the same shared content.",
+              "priority": "high"
+            }
+          ]
+        },
+        {
+          "id": "28f44611-7113-49be-8d66-8b9d5d49fe6d",
+          "title": "Codex Project Artifact Generation",
+          "status": "pending",
+          "level": "feature",
+          "description": "Generate the project-local artifacts Codex needs to follow n-dx workflows without manual per-repo setup.\n\nPrimary deliverables:\n- AGENTS.md\n- .agents/skills/<name>/SKILL.md\n- .codex/config.toml with Rex and SourceVision MCP servers",
+          "priority": "critical",
+          "children": [
+            {
+              "id": "6b1b809b-8a37-4f44-b433-0ed111deaef5",
+              "title": "Generate AGENTS.md during ndx init",
+              "status": "pending",
+              "level": "task",
+              "description": "Emit a project-local AGENTS.md that explains the n-dx workflow, lists available generated skills, and tells Codex when to use Rex and SourceVision MCP capabilities.\n\nThe content should be generated from the shared assistant asset layer rather than hand-maintained independently.",
+              "priority": "critical"
+            },
+            {
+              "id": "ceb4b95d-4c78-45eb-bb40-5604a10180ac",
+              "title": "Generate .agents skill directories for Codex",
+              "status": "pending",
+              "level": "task",
+              "description": "During init, create one generated .agents/skills/<name>/SKILL.md directory per shared n-dx workflow skill.\n\nThe emitted content should stay structurally aligned with the Claude-delivered skills while using the Codex repository-local skill layout.",
+              "priority": "critical"
+            },
+            {
+              "id": "73346263-26ca-4499-8fe8-a3bcb689435d",
+              "title": "Generate .codex/config.toml MCP definitions",
+              "status": "pending",
+              "level": "task",
+              "description": "Generate project-local Codex MCP server definitions for Rex and SourceVision.\n\nThe first implementation should prefer stdio transport because it matches current Claude-side init behavior and avoids fixed-port drift. HTTP transport can remain documented as a later/manual option.",
+              "priority": "critical"
+            },
+            {
+              "id": "c9f700ec-3ca9-4516-a4e7-5ed4d493740d",
+              "title": "Validate Codex artifact generation in init tests",
+              "status": "pending",
+              "level": "task",
+              "description": "Add automated checks that ndx init writes AGENTS.md, generated .agents skills, and .codex/config.toml in a stable format.\n\nTests should protect against path drift, missing skills, and malformed MCP definitions.",
+              "priority": "high"
+            }
+          ]
+        },
+        {
+          "id": "63be7d6a-273f-4099-9c15-3f297d144037",
+          "title": "Assistant-Neutral Init Orchestration",
+          "status": "pending",
+          "level": "feature",
+          "description": "Refactor init orchestration so assistant setup is no longer Claude-only and can provision both Claude and Codex consistently from the orchestration layer.\\n\\nThis feature depends on the canonical asset and artifact-generation work having clear writers and target file contracts. Keep the orchestration changes in cli/orchestration code rather than moving assistant concerns into Rex or SourceVision domain packages.\\n\\nDone when ndx init can provision the intended assistant surfaces deterministically and report what was generated without Claude-specific branching dominating the flow.",
+          "priority": "critical",
+          "children": [
+            {
+              "id": "93b1bf7d-d985-4123-b7a1-fb58fdb6115d",
+              "title": "Replace setupClaudeIntegration with assistant-neutral setup orchestration",
+              "status": "pending",
+              "level": "task",
+              "description": "Introduce an assistant-neutral orchestration entry point, such as setupAssistantIntegrations, that provisions supported assistant surfaces without coupling ndx init to Claude-specific logic.\n\nThe refactor must preserve current behavior for Claude while making Codex a first-class setup target.",
+              "priority": "critical"
+            },
+            {
+              "id": "312a5f34-98fa-4a1c-825c-71846026acab",
+              "title": "Add assistant-specific init flags and summary reporting",
+              "status": "pending",
+              "level": "task",
+              "description": "Extend init UX to report assistant provisioning separately from llm.vendor and add configuration toggles such as --no-codex alongside backward-compatible Claude options.\n\nThe init summary should make it obvious which assistant artifacts were provisioned for the repo.",
+              "priority": "high"
+            },
+            {
+              "id": "b18f544f-3d53-4616-9d85-469d51412f6a",
+              "title": "Preserve backward-compatible Claude setup behavior during parity rollout",
+              "status": "pending",
+              "level": "task",
+              "description": "Keep existing Claude onboarding intact while the shared assistant setup path is introduced.\n\nAny migration of generated assets or flags must avoid breaking current users and should include compatibility handling where needed.",
+              "priority": "high"
+            }
+          ]
+        },
+        {
+          "id": "2f835373-3459-4337-b6e8-f849f830fac8",
+          "title": "Documentation and Startup Parity",
+          "status": "pending",
+          "level": "feature",
+          "description": "Repair docs, startup text, and user guidance so Codex is described as a supported workflow surface instead of an afterthought.\n\nThis should cover README/help text, guide docs, MCP setup docs, and server startup banners.",
+          "priority": "high",
+          "children": [
+            {
+              "id": "aa6fe37f-470a-4358-ad89-2a7ceaf485b9",
+              "title": "Update public docs for Claude and Codex workflow setup",
+              "status": "pending",
+              "level": "task",
+              "description": "Update README.md and guide documentation to explain how repos are provisioned for both Claude and Codex, including where generated assistant artifacts live and how users start working from each surface.",
+              "priority": "high"
+            },
+            {
+              "id": "6d93d8fd-b72b-4d34-9313-9154236f17fc",
+              "title": "Correct MCP tool-name and transport documentation",
+              "status": "pending",
+              "level": "task",
+              "description": "Bring MCP docs in line with the current tool names and transports actually exposed by the Rex and SourceVision MCP servers.\n\nThis repair should happen as part of the Codex rollout so new assistant docs do not encode stale names.",
+              "priority": "high"
+            },
+            {
+              "id": "f51c83b1-af4f-407d-bf7d-715ae8c9026f",
+              "title": "Align startup banners and guidance with assistant parity",
+              "status": "pending",
+              "level": "task",
+              "description": "Update startup text, help output, and repo guidance so they no longer imply that Claude is the only first-class assistant path.\\n\\nThe implementation should explicitly define the intended roles of AGENTS.md, CODEX.md, and CLAUDE.md so future init and docs work cannot drift: AGENTS.md as the canonical shared guidance surface, CLAUDE.md as the Claude-facing bridge or import surface, and CODEX.md only if the project chooses to keep a compatibility layer.",
+              "priority": "medium"
+            }
+          ]
+        },
+        {
+          "id": "5d591638-a1e1-46e3-a87c-99af6a62f41b",
+          "title": "Workflow Parity Regression Coverage",
+          "status": "pending",
+          "level": "feature",
+          "description": "Add tests that prevent workflow drift between generated Claude and Codex assets, init outputs, and assistant-facing docs.\\n\\nThis coverage should expand after the canonical asset layer and runtime-identity guardrails are wired so the tests can lock both artifact parity and the shared execution contract.\\n\\nRequired coverage areas:\\n- generated skill and instruction asset parity\\n- Codex MCP config and init output contracts\\n- runtime event, diagnostics, and failure-taxonomy normalization\\n- fresh-project smoke paths that prove Codex can act as a first-class execution surface",
+          "priority": "high",
+          "children": [
+            {
+              "id": "3b49da9b-e11f-4ac3-b337-448a7db46893",
+              "title": "Add dual-vendor skill sync tests from canonical assets",
+              "status": "pending",
+              "level": "task",
+              "description": "Add coverage that verifies the canonical assistant asset source renders the expected Claude and Codex outputs.\n\nThis should replace the current Claude-only sync assumption with dual-vendor contract checks.",
+              "priority": "high"
+            },
+            {
+              "id": "625a955a-57b9-49f8-b155-dc747502192b",
+              "title": "Add Codex config generation and MCP contract tests",
+              "status": "pending",
+              "level": "task",
+              "description": "Verify that generated .codex/config.toml entries reference the correct stdio commands, arguments, and stable project-local paths.\n\nReuse existing MCP transport tests where possible instead of reimplementing server protocol coverage.",
+              "priority": "high"
+            },
+            {
+              "id": "8242a482-67d2-4dd4-a4c3-22e7b6dbb430",
+              "title": "Add docs and help smoke coverage for assistant parity",
+              "status": "pending",
+              "level": "task",
+              "description": "Add smoke checks that help text, init guidance, and startup output mention both supported assistant paths and do not regress back to Claude-only wording.",
+              "priority": "medium"
+            }
+          ]
+        },
+        {
+          "id": "31ecca8c-cb59-4caf-9385-e233af284ed5",
+          "title": "Parity Scope Lock and Runtime Boundary",
+          "status": "pending",
+          "level": "feature",
+          "description": "Capture the rollout decisions that keep this implementation focused on assistant-surface parity plus the baseline runtime guardrails required for consistent execution, while documenting deeper equivalence work that is intentionally deferred.\\n\\nThis feature exists to keep the execution work aligned with the plan and prevent scope from drifting into vendor-identical outputs, full API-mode symmetry, or deeper runtime normalization that is not required for the baseline workflow contract.",
+          "priority": "medium",
+          "children": [
+            {
+              "id": "3f98efc4-382d-431a-a1e0-64ca91ac7b57",
+              "title": "Lock initial Codex transport and artifact decisions",
+              "status": "pending",
+              "level": "task",
+              "description": "Finalize and document the first-pass decisions for stdio versus HTTP MCP transport, AGENTS.md ownership, generated skill locations, and init defaults so implementation work can proceed without repeated replanning.",
+              "priority": "medium"
+            },
+            {
+              "id": "15ae7442-fc6b-4c35-9c62-4f222e591dc3",
+              "title": "Document deferred runtime parity follow-up work",
+              "status": "pending",
+              "level": "task",
+              "description": "Record the Claude/Codex runtime differences that still remain after the baseline guardrails in this epic land, including API-mode gaps, deeper multi-turn observability differences, and any vendor capability mismatches that do not block the shared workflow contract.\\n\\nThis task should make the post-epic boundary explicit so future work can target true residual gaps instead of reopening questions that the runtime-identity feature already resolved.",
+              "priority": "medium"
+            }
+          ]
+        },
+        {
+          "id": "1ef0be83-c7a2-4ff9-a9e5-d6fe044284e0",
+          "title": "Runtime Identity Guardrails",
+          "status": "pending",
+          "level": "feature",
+          "description": "Define and enforce the minimum cross-vendor runtime contract so Claude and Codex are interchangeable at the workflow level even when model outputs differ. Source of truth: docs/analysis/claude-codex-runtime-identity-discovery.md. Deliverables: one normalized runtime policy and prompt/event contract, a hardened Codex CLI path that prefers structured automation output, shared instruction-loading rules across AGENTS.md/CODEX.md/CLAUDE.md, and smoke coverage proving the same guardrails and completion semantics on both vendors.",
+          "priority": "critical",
+          "children": [
+            {
+              "id": "547ba5e2-b5cf-47d8-a608-eaef28398411",
+              "title": "Define a normalized Claude/Codex runtime contract",
+              "status": "pending",
+              "level": "task",
+              "description": "Create a shared runtime contract module that defines the prompt envelope, sandbox and approval policy object, normalized event schema, and shared failure categories for both vendors. Initial touchpoints should include packages/hench/src/agent/lifecycle/, packages/hench/src/cli/commands/run.ts, and packages/llm-client/src/types.ts. Done when vendor wrappers compile from one contract instead of embedding ad hoc defaults.",
+              "priority": "critical"
+            },
+            {
+              "id": "99fe140a-103d-43bd-bcbd-eb8690eb3e17",
+              "title": "Normalize Codex CLI execution flags and structured output handling",
+              "status": "pending",
+              "level": "task",
+              "description": "Refactor the Codex execution path in packages/hench/src/agent/lifecycle/cli-loop.ts and packages/llm-client/src/codex-cli-provider.ts to prefer official machine-readable Codex output, set sandbox and approval intent explicitly, and treat heuristic stdout normalization as a compatibility fallback only. Done when Codex runs can be mapped into the same internal lifecycle states that Claude stream-json events already support.",
+              "priority": "critical"
+            },
+            {
+              "id": "67c0ada9-003e-48fe-9a0d-e822d66e2e11",
+              "title": "Align Claude/Codex instruction loading around shared project guidance",
+              "status": "pending",
+              "level": "task",
+              "description": "Wire runtime instruction loading so Codex, Claude, and repo-generated assistant assets resolve back to the same workflow guidance instead of drifting by surface. Coordinate the asset and init work so AGENTS.md is the canonical shared guidance, CLAUDE.md imports or mirrors that guidance as the Claude-facing surface, and CODEX.md is either retired or kept only as an explicit compatibility layer. Done when both vendors start runs from equivalent repo instructions.",
+              "priority": "high"
+            },
+            {
+              "id": "cebf61e0-2fc9-41d1-8970-932f0539d0d2",
+              "title": "Normalize token diagnostics and failure taxonomy across vendors",
+              "status": "pending",
+              "level": "task",
+              "description": "Unify token-usage mapping and failure classification across Claude and Codex in packages/hench/src/agent/lifecycle/token-usage.ts, packages/hench/src/cli/errors.ts, and packages/llm-client/src/token-usage.ts. Missing usage data must surface as an explicit degraded diagnostic instead of a silent zero-value success path, and vendor-specific raw errors must map into one shared user-facing taxonomy.",
+              "priority": "high"
+            },
+            {
+              "id": "8a2f9f66-8210-436b-b7ac-bce8cad8ef13",
+              "title": "Add cross-vendor baseline runtime fixtures and smoke tests",
+              "status": "pending",
+              "level": "task",
+              "description": "Add fixtures and smoke coverage that prove Claude and Codex runs share the same prompt sections, MCP availability, permission envelope, normalized event schema, failure classification, and completion gates. This should include unit coverage in packages/hench plus at least one fresh-project init-to-run smoke path so Codex can be validated as a first-class execution surface.",
+              "priority": "high"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
