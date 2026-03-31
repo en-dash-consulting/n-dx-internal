@@ -23198,6 +23198,8 @@
           "level": "feature",
           "description": "Create one vendor-neutral source of truth for n-dx workflow skills and assistant integration metadata, then render Claude and Codex artifacts from that shared source.\\n\\nThis feature should land before Codex artifact generation, runtime instruction-loading alignment, and most assistant-facing documentation updates so later work can reuse one canonical asset pipeline.\\n\\nDeliverables:\\n- assistant asset source directory for shared workflow skills\\n- manifest or registry describing skills, MCP servers, and assistant-specific metadata\\n- removal of parallel hand-maintained skill definitions as the canonical source",
           "priority": "critical",
+          "startedAt": "2026-03-31T19:10:29.512Z",
+          "completedAt": "2026-03-31T19:10:29.512Z",
           "children": [
             {
               "id": "9470f4e3-8ec9-49de-bf20-632b64d9b4a3",
@@ -23241,9 +23243,7 @@
               "resolutionType": "code-change",
               "resolutionDetail": "Added writeVendorSkills() to assistant-assets/index.js as the canonical generation function for all vendors. Refactored claude-integration.js to delegate skill writing to writeVendorSkills(\"claude\", dir) instead of rendering and writing independently. Removed .claude/skills/ from git tracking (gitignored — they are now generated outputs). Updated skill-sync tests to validate writeVendorSkills for both claude and codex vendors in a temp directory. Tests expanded from 61 to 74."
             }
-          ],
-          "startedAt": "2026-03-31T19:10:29.512Z",
-          "completedAt": "2026-03-31T19:10:29.512Z"
+          ]
         },
         {
           "id": "28f44611-7113-49be-8d66-8b9d5d49fe6d",
@@ -23448,10 +23448,14 @@
             {
               "id": "3f98efc4-382d-431a-a1e0-64ca91ac7b57",
               "title": "Lock initial Codex transport and artifact decisions",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Finalize and document the first-pass decisions for stdio versus HTTP MCP transport, AGENTS.md ownership, generated skill locations, and init defaults so implementation work can proceed without repeated replanning.",
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-03-31T19:16:45.499Z",
+              "completedAt": "2026-03-31T19:27:13.725Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Created docs/process/codex-transport-artifact-decisions.md locking 7 first-pass decisions: (1) stdio MCP transport for Codex init, (2) AGENTS.md as generated canonical shared guidance, (3) .agents/skills/{name}/SKILL.md for Codex skills (plain wrapper, no prefix), (4) provision both assistants by default during init, (5) .codex/config.toml scoped to MCP server definitions only, (6) CLAUDE.md remains Claude-facing with future @AGENTS.md import, (7) CODEX.md becomes compatibility artifact. Each decision includes rationale, deferred items, and downstream task implications."
             },
             {
               "id": "15ae7442-fc6b-4c35-9c62-4f222e591dc3",
