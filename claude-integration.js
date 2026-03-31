@@ -9,8 +9,9 @@
  *   3. MCP server registration via `claude mcp add` (best-effort)
  *
  * Skill content is sourced from `assistant-assets/` — the vendor-neutral
- * canonical location.  This module renders Claude-specific SKILL.md files
- * (YAML frontmatter + body) from that shared source.
+ * canonical location.  Skill writing is delegated to the shared
+ * `writeVendorSkills()` function so Claude and Codex use the same
+ * generation path.
  *
  * @module n-dx/claude-integration
  */
@@ -22,10 +23,10 @@ import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import {
-  renderAllClaudeSkills,
   getSkillNames,
   getAutoApprovedToolIds,
   getMcpServers,
+  writeVendorSkills,
 } from "./assistant-assets/index.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -53,24 +54,6 @@ function resolveSubPackageCli(pkgDir, npmName) {
  * Write tools are intentionally omitted — they require user approval by default.
  */
 const AUTO_APPROVED_TOOLS = getAutoApprovedToolIds("claude");
-
-// ── Skills ────────────────────────────────────────────────────────────────────
-
-/**
- * Skills are rendered from the canonical `assistant-assets/` directory.
- * Claude-specific YAML frontmatter is added by `renderAllClaudeSkills()`.
- *
- * The SKILLS object is lazily populated on first access so the module can
- * still be imported without side effects at parse time.
- */
-let _skillsCache = null;
-
-function getSkills() {
-  if (!_skillsCache) {
-    _skillsCache = renderAllClaudeSkills();
-  }
-  return _skillsCache;
-}
 
 // ── Settings merge ────────────────────────────────────────────────────────────
 
@@ -113,47 +96,41 @@ function mergeSettings(dir) {
 // ── Skill writing ─────────────────────────────────────────────────────────────
 
 /**
- * Write all skill files to `.claude/skills/<name>/SKILL.md`.
- * Overwrites existing skill files (they're n-dx-managed).
- * Also cleans up old flat-file format (`.claude/skills/<name>.md`).
+ * Write all skill files via the canonical vendor-neutral writer, after
+ * cleaning up legacy Claude-specific skill layouts.
+ *
+ * Legacy cleanup is a Claude-only migration concern — the shared
+ * `writeVendorSkills()` handles the actual generation.
  */
 /** Old unprefixed skill names — removed on init to avoid duplicates. */
 const LEGACY_SKILL_NAMES = ["plan", "status", "capture", "zone", "work", "configure"];
 
 function writeSkills(dir) {
   const skillsDir = join(dir, ".claude", "skills");
-  mkdirSync(skillsDir, { recursive: true });
 
-  // Clean up legacy unprefixed skill directories
+  // Clean up legacy unprefixed skill directories (Claude-specific migration)
   for (const old of LEGACY_SKILL_NAMES) {
     const oldDir = join(skillsDir, old);
     if (existsSync(join(oldDir, "SKILL.md"))) {
       try { unlinkSync(join(oldDir, "SKILL.md")); } catch { /* ignore */ }
       try { rmdirSync(oldDir); } catch { /* ignore — may have user files */ }
     }
-    // Also clean up old flat-file format
     const oldFlat = join(skillsDir, `${old}.md`);
     if (existsSync(oldFlat)) {
       try { unlinkSync(oldFlat); } catch { /* ignore */ }
     }
   }
 
-  const skills = getSkills();
-  let written = 0;
-  for (const [name, content] of Object.entries(skills)) {
-    // Clean up old flat-file format if it exists
+  // Clean up old flat-file format for current skill names
+  for (const name of getSkillNames()) {
     const oldPath = join(skillsDir, `${name}.md`);
     if (existsSync(oldPath)) {
       try { unlinkSync(oldPath); } catch { /* ignore */ }
     }
-
-    const skillDir = join(skillsDir, name);
-    mkdirSync(skillDir, { recursive: true });
-    writeFileSync(join(skillDir, "SKILL.md"), content);
-    written++;
   }
 
-  return { written };
+  // Delegate to the shared vendor-neutral writer
+  return writeVendorSkills("claude", dir);
 }
 
 // ── MCP registration ──────────────────────────────────────────────────────────

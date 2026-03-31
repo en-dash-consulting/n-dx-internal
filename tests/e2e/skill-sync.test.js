@@ -1,21 +1,22 @@
 /**
- * Validates that the assistant asset manifest is well-formed and that skill
- * definitions stay in sync across three locations:
+ * Validates the assistant asset manifest, render contract, and generated
+ * vendor skill output.
  *
- *   1. `assistant-assets/` — the vendor-neutral canonical source
- *      (manifest.json + skills/*.md)
- *   2. `.claude/skills/` — the Claude Code output
- *      (rendered from assistant-assets/ via renderSkill)
- *   3. `claude-integration.js` — the init module that writes (2)
- *      (must import from assistant-assets/, not define skills inline)
+ * The canonical source of truth is `assistant-assets/` (manifest.json +
+ * skills/*.md).  `.claude/skills/` is a generated output — not committed
+ * to git.  These tests validate:
  *
- * When a skill is added, renamed, or modified in one place but not the
- * others, these tests fail with a diff showing what's out of sync.
+ *   1. Manifest structure and completeness
+ *   2. Render contract correctness for all vendors
+ *   3. `writeVendorSkills()` generates correct output to disk
+ *   4. `claude-integration.js` imports from `assistant-assets/`
+ *      (no inline skill definitions)
  */
 
-import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync, readdirSync } from "fs";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { readFileSync, existsSync, readdirSync, mkdtempSync, rmSync } from "fs";
 import { join, resolve } from "path";
+import { tmpdir } from "os";
 import {
   getManifest,
   getRegistry,
@@ -32,6 +33,7 @@ import {
   renderAllSkills,
   renderClaudeSkill,
   renderAllClaudeSkills,
+  writeVendorSkills,
 } from "../../assistant-assets/index.js";
 
 const ROOT = join(import.meta.dirname, "../..");
@@ -43,17 +45,18 @@ const normalize = (s) =>
   s.replace(/\u2192/g, "->").replace(/\r\n/g, "\n").replace(/[ \t]+$/gm, "").trim();
 
 /**
- * Read all local Claude skill files from .claude/skills/.
+ * Read all skill files from a vendor's output directory.
  * Returns a Map of skill name -> content string.
  */
-function readClaudeSkills() {
-  const skillsDir = join(ROOT, ".claude", "skills");
+function readVendorSkills(baseDir, vendor) {
+  const target = getVendorTarget(vendor);
+  const skillsDir = join(baseDir, target.skillDir);
   if (!existsSync(skillsDir)) return new Map();
 
   const skills = new Map();
   for (const dir of readdirSync(skillsDir, { withFileTypes: true })) {
     if (!dir.isDirectory()) continue;
-    const skillFile = join(skillsDir, dir.name, "SKILL.md");
+    const skillFile = join(skillsDir, dir.name, target.skillFile);
     if (existsSync(skillFile)) {
       skills.set(dir.name, readFileSync(skillFile, "utf-8").trim());
     }
@@ -310,59 +313,85 @@ describe("backward compatibility", () => {
   });
 });
 
-// ── Claude output sync (.claude/skills/ <-> assistant-assets/) ──────────────
+// ── writeVendorSkills output validation ──────────────────────────────────────
 
-describe("claude skill file sync", () => {
-  const claudeSkills = readClaudeSkills();
-  const skillNames = getSkillNames();
+describe("writeVendorSkills generates correct output", () => {
+  let tmpDir;
 
-  it("local .claude/skills/ has entries for all canonical skills", () => {
-    const missing = skillNames.filter((n) => !claudeSkills.has(n));
-    if (missing.length > 0) {
-      expect.fail(
-        `Canonical skills not in .claude/skills/: ${missing.join(", ")}\n` +
-        "Run `ndx init .` to regenerate, or create matching " +
-        ".claude/skills/<name>/SKILL.md files.",
-      );
-    }
+  beforeAll(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), "ndx-skill-sync-"));
   });
 
-  it("local .claude/skills/ has no extra skills beyond the canonical set", () => {
-    const nameSet = new Set(skillNames);
-    const extra = [...claudeSkills.keys()].filter((n) => !nameSet.has(n));
-    if (extra.length > 0) {
-      expect.fail(
-        `Extra skills in .claude/skills/ not in canonical source: ${extra.join(", ")}\n` +
-        "Add them to assistant-assets/ or remove from .claude/skills/.",
-      );
-    }
+  afterAll(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  for (const name of skillNames) {
-    it(`"${name}" Claude output matches canonical render`, () => {
-      const local = claudeSkills.get(name);
-      if (!local) return; // covered by the "has entries" test above
+  for (const vendor of ["claude", "codex"]) {
+    describe(`vendor "${vendor}"`, () => {
+      const skillNames = getSkillNames();
+      let generated;
 
-      const expected = renderClaudeSkill(name);
+      beforeAll(() => {
+        const result = writeVendorSkills(vendor, tmpDir);
+        expect(result.written).toBe(skillNames.length);
+        generated = readVendorSkills(tmpDir, vendor);
+      });
 
-      if (normalize(local) !== normalize(expected)) {
-        const localLines = normalize(local).split("\n");
-        const expectedLines = normalize(expected).split("\n");
-        let diffLine = -1;
-        for (let i = 0; i < Math.max(localLines.length, expectedLines.length); i++) {
-          if (localLines[i] !== expectedLines[i]) {
-            diffLine = i + 1;
-            break;
-          }
+      it("writes all canonical skills", () => {
+        const missing = skillNames.filter((n) => !generated.has(n));
+        if (missing.length > 0) {
+          expect.fail(
+            `writeVendorSkills("${vendor}") did not write: ${missing.join(", ")}`,
+          );
         }
-        expect.fail(
-          `Skill "${name}" is out of sync (first difference at line ${diffLine}).\n` +
-          "Update assistant-assets/skills/" + name + ".md (canonical source), " +
-          "then run `ndx init .` to regenerate .claude/skills/.",
-        );
+      });
+
+      it("writes no extra skills beyond the canonical set", () => {
+        const nameSet = new Set(skillNames);
+        const extra = [...generated.keys()].filter((n) => !nameSet.has(n));
+        if (extra.length > 0) {
+          expect.fail(
+            `writeVendorSkills("${vendor}") wrote unexpected: ${extra.join(", ")}`,
+          );
+        }
+      });
+
+      for (const name of skillNames) {
+        it(`"${name}" output matches renderSkill`, () => {
+          const written = generated.get(name);
+          if (!written) return; // covered by "writes all" test
+
+          const expected = renderSkill(name, vendor);
+
+          if (normalize(written) !== normalize(expected)) {
+            const writtenLines = normalize(written).split("\n");
+            const expectedLines = normalize(expected).split("\n");
+            let diffLine = -1;
+            for (let i = 0; i < Math.max(writtenLines.length, expectedLines.length); i++) {
+              if (writtenLines[i] !== expectedLines[i]) {
+                diffLine = i + 1;
+                break;
+              }
+            }
+            expect.fail(
+              `Skill "${name}" written for "${vendor}" differs from renderSkill ` +
+              `(first difference at line ${diffLine}).`,
+            );
+          }
+        });
       }
     });
   }
+
+  it("uses vendor-specific output directories", () => {
+    const claudeTarget = getVendorTarget("claude");
+    const codexTarget = getVendorTarget("codex");
+
+    expect(existsSync(join(tmpDir, claudeTarget.skillDir))).toBe(true);
+    expect(existsSync(join(tmpDir, codexTarget.skillDir))).toBe(true);
+    // Verify they're different directories
+    expect(claudeTarget.skillDir).not.toBe(codexTarget.skillDir);
+  });
 });
 
 // ── claude-integration.js uses canonical source ─────────────────────────────
@@ -374,13 +403,28 @@ describe("claude-integration.js uses canonical source", () => {
     expect(src).toContain("from \"./assistant-assets/index.js\"");
   });
 
+  it("imports writeVendorSkills from the render contract", () => {
+    expect(src).toContain("writeVendorSkills");
+  });
+
   it("does not contain inline SKILLS object", () => {
     // The old pattern was `const SKILLS = {` with template literals.
-    // The new pattern uses a lazy getter wrapping renderAllClaudeSkills().
+    // The new pattern delegates to writeVendorSkills("claude", dir).
     if (/^const SKILLS\s*=\s*\{/m.test(src)) {
       expect.fail(
         "claude-integration.js still contains an inline SKILLS object.\n" +
         "It should import skills from assistant-assets/ instead.",
+      );
+    }
+  });
+
+  it("does not call renderAllClaudeSkills directly", () => {
+    // Skill writing is delegated to writeVendorSkills — the integration
+    // module should not render and write independently.
+    if (src.includes("renderAllClaudeSkills")) {
+      expect.fail(
+        "claude-integration.js still calls renderAllClaudeSkills.\n" +
+        "It should use writeVendorSkills(\"claude\", dir) instead.",
       );
     }
   });

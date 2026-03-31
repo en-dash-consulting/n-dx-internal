@@ -18,7 +18,7 @@
  * @module assistant-assets
  */
 
-import { readFileSync, readdirSync, existsSync } from "fs";
+import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -255,6 +255,41 @@ export function renderAllSkills(vendor) {
     result[name] = renderSkill(name, vendor);
   }
   return result;
+}
+
+// ── Vendor skill writer ──────────────────────────────────────────────────────
+
+/**
+ * Write all rendered skills to disk for a given vendor.
+ *
+ * This is the canonical generation function — both Claude and Codex init
+ * paths should call this instead of reimplementing skill file I/O.  The
+ * manifest's vendor delivery target determines the output directory
+ * structure and file naming.
+ *
+ * Output layout:
+ *   {projectDir}/{vendorTarget.skillDir}/{skillName}/{vendorTarget.skillFile}
+ *
+ * @param {string} vendor     Vendor id ("claude" or "codex")
+ * @param {string} projectDir Absolute path to the project root
+ * @returns {{ written: number, dir: string }}
+ */
+export function writeVendorSkills(vendor, projectDir) {
+  const vendorTarget = getVendorTarget(vendor);
+  const skillsDir = join(projectDir, vendorTarget.skillDir);
+  mkdirSync(skillsDir, { recursive: true });
+
+  const rendered = renderAllSkills(vendor);
+  let written = 0;
+
+  for (const [name, content] of Object.entries(rendered)) {
+    const skillDir = join(skillsDir, name);
+    mkdirSync(skillDir, { recursive: true });
+    writeFileSync(join(skillDir, vendorTarget.skillFile), content);
+    written++;
+  }
+
+  return { written, dir: skillsDir };
 }
 
 // ── Claude-specific aliases (backward compatibility) ────────────────────────
