@@ -922,8 +922,8 @@ const BOUNDARY_FILES = [
   },
   {
     file: "packages/hench/src/prd/llm-gateway.ts",
-    maxExports: 57,
-    description: "hench→llm-client gateway (config, constants, JSON, output, errors, exec, runtime-contract)",
+    maxExports: 60,
+    description: "hench→llm-client gateway (config, constants, JSON, output, errors, exec, runtime-contract, codex-policy)",
   },
 ];
 

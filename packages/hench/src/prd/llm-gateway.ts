@@ -97,6 +97,13 @@ export {
   mapRunFailureToCategory,
 } from "@n-dx/llm-client";
 
+// ---- Codex policy compilation -----------------------------------------------
+export {
+  compileCodexPolicyFlags,
+  mapSandboxToCodexFlag,
+  mapApprovalToCodexFlag,
+} from "@n-dx/llm-client";
+
 // ---- Type re-exports --------------------------------------------------------
 export type {
   ClaudeConfig,

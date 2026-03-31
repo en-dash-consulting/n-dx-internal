@@ -162,7 +162,12 @@ export type { ApiProviderOptions } from "./api-provider.js";
 export { createCliClient } from "./cli-provider.js";
 export type { CliProviderOptions } from "./cli-provider.js";
 
-export { createCodexCliClient } from "./codex-cli-provider.js";
+export {
+  createCodexCliClient,
+  compileCodexPolicyFlags,
+  mapSandboxToCodexFlag,
+  mapApprovalToCodexFlag,
+} from "./codex-cli-provider.js";
 export type { CodexCliProviderOptions } from "./codex-cli-provider.js";
 
 // Factory

@@ -19,6 +19,11 @@ import {
   resolveVendorCliEnv,
 } from "../../store/project-config.js";
 import {
+  compileCodexPolicyFlags,
+  DEFAULT_EXECUTION_POLICY,
+  type ExecutionPolicy,
+} from "../../prd/llm-gateway.js";
+import {
   prepareBrief,
   executeDryRun,
   transitionToInProgress,
@@ -372,6 +377,178 @@ export function normalizeCodexResponse(raw: unknown): NormalizedCodexResponse {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Codex structured JSONL event parser
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse a single JSONL line from `codex exec --json` structured output.
+ *
+ * Maps Codex event types into the same {@link CliRunResult} shape that
+ * Claude's `processStreamLine()` produces. This allows both vendors to
+ * populate identical lifecycle state after execution.
+ *
+ * Returns `true` if the line was recognized as a structured event,
+ * `false` if it wasn't (caller should fall back to heuristic handling).
+ *
+ * Supported event types (Codex JSONL format):
+ * - `message` — assistant text + optional content blocks + optional usage
+ * - `function_call` — tool invocation
+ * - `function_call_output` — tool result
+ * - `error` — execution error
+ * - `summary` / `response.completed` / `done` / `complete` — completion
+ *
+ * @see processStreamLine — Claude equivalent
+ * @see normalizeCodexResponse — heuristic fallback when structured output unavailable
+ * @internal Exported for testing.
+ */
+export function processCodexJsonLine(
+  line: string,
+  result: CliRunResult,
+  turnCounter: { value: number },
+  tokenMetadata?: TokenEventMetadata,
+): boolean {
+  if (!line.trim()) return false;
+
+  let event: Record<string, unknown>;
+  try {
+    event = JSON.parse(line);
+  } catch {
+    return false;
+  }
+
+  const type = event.type as string | undefined;
+  if (!type) return false;
+
+  switch (type) {
+    case "message": {
+      turnCounter.value++;
+
+      // Extract text from content blocks (array of { type, text } objects)
+      const content = event.content as Array<{ type: string; text?: string; name?: string; input?: Record<string, unknown>; arguments?: string }> | undefined;
+      if (Array.isArray(content)) {
+        for (const block of content) {
+          if ((block.type === "text" || block.type === "output_text") && block.text) {
+            stream("Agent", block.text);
+            result.summary = block.text.slice(0, MAX_SUMMARY_LENGTH);
+          } else if (block.type === "tool_use" || block.type === "function_call") {
+            const toolName = block.name || "unknown";
+            const rawInput = block.input ?? parseMaybeJson(block.arguments);
+            const toolInput = rawInput && typeof rawInput === "object" && !Array.isArray(rawInput)
+              ? rawInput as Record<string, unknown>
+              : {};
+            stream("Tool", `${toolName}(${JSON.stringify(toolInput).slice(0, 100)})`);
+            result.toolCalls.push({
+              turn: turnCounter.value,
+              tool: toolName,
+              input: toolInput,
+              output: "",
+              durationMs: 0,
+            });
+          }
+        }
+      }
+
+      // Direct text on the event (some Codex output shapes)
+      if (typeof event.text === "string" && !content) {
+        stream("Agent", event.text);
+        result.summary = event.text.slice(0, MAX_SUMMARY_LENGTH);
+      }
+
+      // Token usage embedded in the message event
+      if (event.usage && typeof event.usage === "object") {
+        const parsed = parseTokenUsage(event.usage as Record<string, unknown>);
+        result.tokenUsage.input += parsed.input;
+        result.tokenUsage.output += parsed.output;
+
+        const turnUsage: TurnTokenUsage = {
+          turn: turnCounter.value,
+          input: parsed.input,
+          output: parsed.output,
+          ...(tokenMetadata ? { vendor: tokenMetadata.vendor, model: tokenMetadata.model } : {}),
+        };
+        result.turnTokenUsage.push(turnUsage);
+      }
+
+      return true;
+    }
+
+    case "function_call": {
+      const toolName = (event.name as string) || "unknown";
+      const rawArgs = parseMaybeJson(event.arguments);
+      const toolInput = rawArgs && typeof rawArgs === "object" && !Array.isArray(rawArgs)
+        ? rawArgs as Record<string, unknown>
+        : {};
+      stream("Tool", `${toolName}(${JSON.stringify(toolInput).slice(0, 100)})`);
+      result.toolCalls.push({
+        turn: turnCounter.value || 1,
+        tool: toolName,
+        input: toolInput,
+        output: "",
+        durationMs: 0,
+      });
+      return true;
+    }
+
+    case "function_call_output": {
+      const output = (event.output as string) || (event.content as string) || "";
+      // Attach output to the last tool call if available
+      if (result.toolCalls.length > 0) {
+        result.toolCalls[result.toolCalls.length - 1].output = output.slice(0, 2000);
+      }
+      const preview = output.slice(0, 200);
+      stream("Result", `${preview}${output.length > 200 ? "..." : ""}`);
+      return true;
+    }
+
+    case "error": {
+      result.error = (event.message as string) || (event.error as string) || "Unknown error";
+      return true;
+    }
+
+    case "summary":
+    case "response.completed":
+    case "done":
+    case "complete": {
+      // Extract summary text
+      if (typeof event.result === "string") {
+        result.summary = event.result.slice(0, MAX_SUMMARY_LENGTH);
+      } else if (typeof event.text === "string") {
+        result.summary = event.text.slice(0, MAX_SUMMARY_LENGTH);
+      }
+
+      // Turn count from completion event
+      if (typeof event.num_turns === "number") {
+        result.turns = event.num_turns;
+      }
+
+      // Cost from completion event
+      if (typeof event.cost_usd === "number") {
+        result.costUsd = event.cost_usd;
+      }
+
+      // Error in completion
+      if (event.is_error === true) {
+        result.error = (event.result as string) || "Unknown error";
+      }
+
+      // Token usage from completion event (fallback if per-turn not available)
+      if (event.usage && typeof event.usage === "object") {
+        const fallback = parseStreamTokenUsage(event);
+        if (fallback && result.tokenUsage.input === 0 && result.tokenUsage.output === 0) {
+          result.tokenUsage.input = fallback.input;
+          result.tokenUsage.output = fallback.output;
+        }
+      }
+
+      return true;
+    }
+
+    default:
+      return false;
+  }
+}
+
 /** @internal Exported for testing. */
 export function processStreamLine(
   line: string,
@@ -613,6 +790,7 @@ async function spawnCodex(
   cwd: string,
   model: string | undefined,
   tokenMetadata: TokenEventMetadata,
+  policy: ExecutionPolicy = DEFAULT_EXECUTION_POLICY,
   cliBinary = "codex",
   env?: NodeJS.ProcessEnv,
 ): Promise<CliRunResult> {
@@ -621,9 +799,13 @@ async function spawnCodex(
 
   try {
     return await new Promise<CliRunResult>((resolve, reject) => {
+      // Compile explicit sandbox and approval flags from the n-dx policy.
+      // Replaces --full-auto so preset aliases cannot override intent.
+      const policyFlags = compileCodexPolicyFlags(policy);
       const args = [
         "exec",
-        "--full-auto",
+        ...policyFlags,
+        "--json",
         "--skip-git-repo-check",
         "-o",
         outputPath,
@@ -641,38 +823,58 @@ async function spawnCodex(
 
       let stderr = "";
       let stdout = "";
-      let stdoutBuffer = "";
+      let stdoutLineBuffer = "";
       let stderrBuffer = "";
 
-      const flushLines = (buffer: string): { lines: string[]; rest: string } => {
+      // Track whether structured JSONL events were successfully parsed.
+      // When structured events are present, they take precedence.
+      // Heuristic normalization only kicks in as a compatibility fallback
+      // when no structured events are received (e.g. older Codex versions
+      // that don't support --json).
+      let structuredEventCount = 0;
+
+      const result: CliRunResult = {
+        turns: 0,
+        toolCalls: [],
+        tokenUsage: { input: 0, output: 0 },
+        turnTokenUsage: [],
+      };
+      const turnCounter = { value: 0 };
+
+      const flushStderrLines = (buffer: string): { lines: string[]; rest: string } => {
         const parts = buffer.split("\n");
         const rest = parts.pop() ?? "";
         return { lines: parts, rest };
       };
 
-      const emitLines = (label: string, lines: string[]): void => {
-        for (const raw of lines) {
-          const line = raw.trim();
-          if (!line) continue;
-          stream(label, line);
-        }
-      };
-
       proc.stdout.on("data", (chunk: Buffer) => {
         const text = chunk.toString();
         stdout += text;
-        stdoutBuffer += text;
-        const { lines, rest } = flushLines(stdoutBuffer);
-        stdoutBuffer = rest;
-        emitLines("Codex", lines);
+        stdoutLineBuffer += text;
+
+        const lines = stdoutLineBuffer.split("\n");
+        stdoutLineBuffer = lines.pop()!;
+
+        for (const line of lines) {
+          if (processCodexJsonLine(line, result, turnCounter, tokenMetadata)) {
+            structuredEventCount++;
+          } else if (line.trim()) {
+            // Not a structured event — stream raw for visibility
+            stream("Codex", line.trim());
+          }
+        }
       });
+
       proc.stderr.on("data", (chunk: Buffer) => {
         const text = chunk.toString();
         stderr += text;
         stderrBuffer += text;
-        const { lines, rest } = flushLines(stderrBuffer);
+        const { lines, rest } = flushStderrLines(stderrBuffer);
         stderrBuffer = rest;
-        emitLines("Codex", lines);
+        for (const raw of lines) {
+          const line = raw.trim();
+          if (line) stream("Codex", line);
+        }
       });
 
       proc.on("error", (err) => {
@@ -684,73 +886,106 @@ async function spawnCodex(
       });
 
       proc.on("close", async (code) => {
-        if (stdoutBuffer.trim()) {
-          stream("Codex", stdoutBuffer.trim());
+        // Flush remaining buffered output
+        if (stdoutLineBuffer.trim()) {
+          if (processCodexJsonLine(stdoutLineBuffer, result, turnCounter, tokenMetadata)) {
+            structuredEventCount++;
+          } else {
+            stream("Codex", stdoutLineBuffer.trim());
+          }
         }
         if (stderrBuffer.trim()) {
           stream("Codex", stderrBuffer.trim());
         }
 
-        const result: CliRunResult = {
-          turns: 1,
-          toolCalls: [],
-          tokenUsage: { input: 0, output: 0 },
-          turnTokenUsage: [],
-        };
-        const normalized = normalizeCodexResponse(stdout);
-        const codexTokenMapping = mapCodexUsageToTokenUsage(parseMaybeJson(stdout));
-        result.tokenUsage = codexTokenMapping.usage;
-        result.turnTokenUsage.push({
-          turn: 1,
-          input: codexTokenMapping.usage.input,
-          output: codexTokenMapping.usage.output,
-          vendor: tokenMetadata.vendor,
-          model: tokenMetadata.model,
-        });
+        // If structured JSONL parsing produced events, those take
+        // precedence — the result is already populated by processCodexJsonLine.
+        // Apply heuristic normalization only as a compatibility fallback.
+        if (structuredEventCount === 0 && stdout.trim()) {
+          // ── Heuristic fallback (compatibility) ──
+          // Codex did not emit structured --json events. This happens when:
+          // - Codex version doesn't support --json
+          // - Output was plain text or an ad hoc JSON shape
+          // Apply the defensive heuristic parser that was previously the
+          // primary path. This ensures backward compatibility.
+          const normalized = normalizeCodexResponse(stdout);
+          const codexTokenMapping = mapCodexUsageToTokenUsage(parseMaybeJson(stdout));
 
-        for (const warning of normalized.warnings) {
-          stream("Warn", warning);
-        }
-        if (codexTokenMapping.diagnostic) {
-          stream("Warn", "Codex response omitted usage; token accounting defaulted to zero.");
-        }
-
-        if (normalized.toolEvents.length > 0) {
-          result.toolCalls = normalized.toolEvents.map((event) => ({
+          result.tokenUsage = codexTokenMapping.usage;
+          result.turnTokenUsage.push({
             turn: 1,
-            tool: event.tool,
-            input: {
-              ...event.input,
-              _codexEventType: event.eventType,
-              ...(event.status ? { _codexStatus: event.status } : {}),
-            },
-            output: event.output?.slice(0, 2000) ?? "",
-            durationMs: 0,
-          }));
+            input: codexTokenMapping.usage.input,
+            output: codexTokenMapping.usage.output,
+            vendor: tokenMetadata.vendor,
+            model: tokenMetadata.model,
+          });
+
+          for (const warning of normalized.warnings) {
+            stream("Warn", warning);
+          }
+          if (codexTokenMapping.diagnostic) {
+            stream("Warn", "Codex response omitted usage; token accounting defaulted to zero (heuristic fallback).");
+          }
+
+          if (normalized.toolEvents.length > 0) {
+            result.toolCalls = normalized.toolEvents.map((event) => ({
+              turn: 1,
+              tool: event.tool,
+              input: {
+                ...event.input,
+                _codexEventType: event.eventType,
+                ...(event.status ? { _codexStatus: event.status } : {}),
+              },
+              output: event.output?.slice(0, 2000) ?? "",
+              durationMs: 0,
+            }));
+          }
+
+          if (normalized.assistantText) {
+            result.summary = normalized.assistantText.slice(0, MAX_SUMMARY_LENGTH);
+          }
+
+          if (normalized.status === "error" && !result.error) {
+            result.error = normalized.error ?? "Codex response indicated an error";
+          }
+
+          // Ensure at least 1 turn for heuristic fallback
+          if (result.turns === 0) result.turns = 1;
         }
 
-        if (normalized.assistantText) {
-          result.summary = normalized.assistantText.slice(0, MAX_SUMMARY_LENGTH);
-        }
-
+        // Summary fallback: read from -o output file
         try {
-          const summary = await readFile(outputPath, "utf-8");
-          if (summary.trim() && !result.summary) {
-            result.summary = summary.trim().slice(0, MAX_SUMMARY_LENGTH);
+          const fileSummary = await readFile(outputPath, "utf-8");
+          if (fileSummary.trim() && !result.summary) {
+            result.summary = fileSummary.trim().slice(0, MAX_SUMMARY_LENGTH);
           }
         } catch {
           // Ignore missing summary file
         }
 
+        // Last-resort summary from raw stdout
         if (!result.summary && stdout.trim()) {
           result.summary = stdout.trim().slice(0, MAX_SUMMARY_LENGTH);
         }
 
-        if (normalized.status === "error" && !result.error) {
-          result.error = normalized.error ?? "Codex response indicated an error";
+        // Ensure turns is at least the turn counter
+        if (result.turns === 0) {
+          result.turns = turnCounter.value || 1;
         }
 
-        if (code !== 0) {
+        // Token usage fallback: if structured events didn't provide usage,
+        // try to extract from the raw stdout (heuristic).
+        if (structuredEventCount > 0 && result.tokenUsage.input === 0 && result.tokenUsage.output === 0) {
+          const codexTokenMapping = mapCodexUsageToTokenUsage(parseMaybeJson(stdout));
+          if (!codexTokenMapping.diagnostic) {
+            result.tokenUsage = codexTokenMapping.usage;
+          }
+          if (codexTokenMapping.diagnostic) {
+            stream("Warn", "Codex structured output omitted usage; token accounting defaulted to zero.");
+          }
+        }
+
+        if (code !== 0 && !result.error) {
           result.error = stderr.trim() || `codex exited with code ${code}`;
         }
         resolve(result);
@@ -854,6 +1089,8 @@ interface VendorDispatchOptions {
   cliBinary: string;
   cliEnv?: NodeJS.ProcessEnv;
   modelOverride?: string;
+  /** Execution policy compiled to vendor-specific flags. */
+  policy?: ExecutionPolicy;
 }
 
 async function dispatchVendorSpawn(opts: VendorDispatchOptions): Promise<CliRunResult> {
@@ -863,6 +1100,7 @@ async function dispatchVendorSpawn(opts: VendorDispatchOptions): Promise<CliRunR
       opts.projectDir,
       opts.modelOverride,
       opts.tokenMetadata,
+      opts.policy ?? DEFAULT_EXECUTION_POLICY,
       opts.cliBinary,
       opts.cliEnv,
     );
@@ -1119,6 +1357,10 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
         cliBinary,
         cliEnv,
         modelOverride: opts.model,
+        policy: {
+          ...DEFAULT_EXECUTION_POLICY,
+          allowedCommands: config.guard.allowedCommands,
+        },
       });
 
       accumulateResult(accumulated, result);

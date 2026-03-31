@@ -103,6 +103,9 @@ import {
   createCliClient,
   // codex-cli-provider.ts
   createCodexCliClient,
+  compileCodexPolicyFlags,
+  mapSandboxToCodexFlag,
+  mapApprovalToCodexFlag,
   // create-client.ts
   createClient,
   detectAuthMode,
@@ -188,6 +191,18 @@ describe("public API — function exports", () => {
 
   it("exports createCodexCliClient as a function", () => {
     expect(typeof createCodexCliClient).toBe("function");
+  });
+
+  it("exports compileCodexPolicyFlags as a function", () => {
+    expect(typeof compileCodexPolicyFlags).toBe("function");
+  });
+
+  it("exports mapSandboxToCodexFlag as a function", () => {
+    expect(typeof mapSandboxToCodexFlag).toBe("function");
+  });
+
+  it("exports mapApprovalToCodexFlag as a function", () => {
+    expect(typeof mapApprovalToCodexFlag).toBe("function");
   });
 
   it("exports loadClaudeConfig as a function", () => {

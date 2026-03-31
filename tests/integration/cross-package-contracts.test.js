@@ -260,6 +260,9 @@ describe("hench → llm-client gateway contract", () => {
     "assemblePrompt",
     "mapErrorReasonToFailureCategory",
     "mapRunFailureToCategory",
+    "compileCodexPolicyFlags",
+    "mapSandboxToCodexFlag",
+    "mapApprovalToCodexFlag",
   ];
 
   const GATEWAY_CLASSES = ["CLIError", "ClaudeClientError", "ProcessPool", "ProcessLimitError"];

@@ -23493,24 +23493,32 @@
             {
               "id": "547ba5e2-b5cf-47d8-a608-eaef28398411",
               "title": "Define a normalized Claude/Codex runtime contract",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create a shared runtime contract module that defines the prompt envelope, sandbox and approval policy object, normalized event schema, and shared failure categories for both vendors. Initial touchpoints should include packages/hench/src/agent/lifecycle/, packages/hench/src/cli/commands/run.ts, and packages/llm-client/src/types.ts. Done when vendor wrappers compile from one contract instead of embedding ad hoc defaults.",
               "priority": "critical",
               "blockedBy": [
                 "3f98efc4-382d-431a-a1e0-64ca91ac7b57"
-              ]
+              ],
+              "startedAt": "2026-03-31T20:14:31.262Z",
+              "completedAt": "2026-03-31T20:49:48.832Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Created packages/llm-client/src/runtime-contract.ts defining the normalized Claude/Codex runtime contract with 4 areas: (1) PromptEnvelope with named sections and assemblePrompt() for vendor-neutral prompt delivery, (2) ExecutionPolicy with SandboxMode/ApprovalPolicy replacing ad hoc --full-auto and --allowed-tools patterns, (3) RuntimeEvent schema with vendor-neutral event types for consistent run classification, (4) FailureCategory taxonomy with mapping helpers bridging legacy ErrorReason and hench run failure strings. 48 unit tests. Exported through llm-client public.ts and hench llm-gateway.ts. All architecture, domain isolation, and contract tests pass (275+441+1431 tests)."
             },
             {
               "id": "99fe140a-103d-43bd-bcbd-eb8690eb3e17",
               "title": "Normalize Codex CLI execution flags and structured output handling",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Refactor the Codex execution path in packages/hench/src/agent/lifecycle/cli-loop.ts and packages/llm-client/src/codex-cli-provider.ts to prefer official machine-readable Codex output, set sandbox and approval intent explicitly, and treat heuristic stdout normalization as a compatibility fallback only. Done when Codex runs can be mapped into the same internal lifecycle states that Claude stream-json events already support.",
               "priority": "critical",
               "blockedBy": [
                 "547ba5e2-b5cf-47d8-a608-eaef28398411"
-              ]
+              ],
+              "startedAt": "2026-03-31T20:58:55.417Z",
+              "completedAt": "2026-03-31T21:18:45.412Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Normalized the Codex CLI execution path to prefer structured machine-readable output and explicit policy flags. Changes: (1) codex-cli-provider.ts: added compileCodexPolicyFlags(), mapSandboxToCodexFlag(), mapApprovalToCodexFlag() that compile ExecutionPolicy into Codex --sandbox and --approval-policy flags, replacing the --full-auto preset alias. (2) cli-loop.ts: added processCodexJsonLine() — a structured JSONL event parser for codex exec --json output that maps Codex events into the same CliRunResult shape Claude's processStreamLine() produces (message, function_call, function_call_output, error, summary/completion events). Refactored spawnCodex() to use explicit policy flags, --json flag, and structured event parsing with heuristic normalizeCodexResponse() demoted to compatibility fallback only. (3) Gateway exports: compileCodexPolicyFlags, mapSandboxToCodexFlag, mapApprovalToCodexFlag exported through llm-client public.ts and hench llm-gateway.ts. (4) Tests: 12 new policy compilation tests in llm-client, 19 new structured event parser tests in hench, 3 new public API assertions. All architecture (47), domain-isolation (54), cross-package-contracts (174+), llm-client (456), and hench (1450) tests pass."
             },
             {
               "id": "67c0ada9-003e-48fe-9a0d-e822d66e2e11",
