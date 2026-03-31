@@ -60,6 +60,8 @@ const ALLOWED = new Set([
   "packages/web/src/server/routes-sourcevision.ts",
   // Claude Code integration — runs `claude mcp add` via execSync
   "claude-integration.js",
+  // Codex integration — writes .codex/config.toml, .agents/skills, AGENTS.md
+  "codex-integration.js",
 ]);
 
 /** Directories to skip entirely. */
@@ -199,6 +201,8 @@ const ORCHESTRATION_PEERS = new Set([
   "refresh-artifacts.js",
   "refresh-validate.js",
   "claude-integration.js",
+  "codex-integration.js",
+  "assistant-integration.js",
 ]);
 
 /**

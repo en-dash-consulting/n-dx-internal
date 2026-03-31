@@ -333,8 +333,9 @@ describe("architecture policy: orchestration tier boundary", () => {
    * files) must not import domain or execution packages as libraries. They
    * should spawn CLIs or use filesystem coordination instead.
    *
-   * claude-integration.js is a root-level service file that participates
-   * in the orchestration tier — it must follow the same rules.
+   * claude-integration.js, codex-integration.js, and
+   * assistant-integration.js are root-level service files that
+   * participate in the orchestration tier — they must follow the same rules.
    */
   const ORCHESTRATION_FILES = [
     "cli.js",
@@ -343,6 +344,8 @@ describe("architecture policy: orchestration tier boundary", () => {
     "config.js",
     "pr-check.js",
     "claude-integration.js",
+    "codex-integration.js",
+    "assistant-integration.js",
   ];
 
   const DOMAIN_PACKAGES = ["@n-dx/rex", "@n-dx/sourcevision", "@n-dx/hench", "@n-dx/web"];
@@ -1083,6 +1086,8 @@ describe("architecture policy: foundation tier boundary (@n-dx/llm-client)", () 
     "config.js",
     "pr-check.js",
     "claude-integration.js",
+    "codex-integration.js",
+    "assistant-integration.js",
   ];
 
   for (const file of ORCHESTRATION_FILES) {

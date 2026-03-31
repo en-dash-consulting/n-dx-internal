@@ -66,8 +66,7 @@ import {
   formatMainHelp,
   formatOrchestratorCommandHelp,
 } from "./help.js";
-import { setupClaudeIntegration, printClaudeSetupSummary } from "./claude-integration.js";
-import { setupCodexIntegration, printCodexSetupSummary } from "./codex-integration.js";
+import { setupAssistantIntegrations } from "./assistant-integration.js";
 import { runExport } from "./export.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -557,27 +556,11 @@ async function handleInit(rest) {
   console.log = () => {};
   try { await runConfig(["llm.vendor", selectedProvider, dir]); } finally { console.log = origLog; }
 
-  // Claude Code integration
-  let claudeSummary = "skipped";
-  if (!noClaude) {
-    try {
-      const result = setupClaudeIntegration(dir);
-      claudeSummary = `${result.skills.written} skills, ${result.settings.total} permissions`;
-    } catch {
-      claudeSummary = "skipped";
-    }
-  }
-
-  // Codex integration
-  let codexSummary = "skipped";
-  if (!noCodex) {
-    try {
-      const result = setupCodexIntegration(dir);
-      codexSummary = `AGENTS.md, ${result.skills.written} skills, ${result.config.serverCount} MCP servers`;
-    } catch {
-      codexSummary = "skipped";
-    }
-  }
+  // Assistant integrations (vendor-neutral dispatch)
+  const assistantResults = setupAssistantIntegrations(dir, {
+    claude: !noClaude,
+    codex: !noCodex,
+  });
 
   // Print unified summary
   console.log("");
@@ -586,8 +569,8 @@ async function handleInit(rest) {
   console.log(`  .rex/           ${rexExists ? "already exists (reused)" : "created"}`);
   console.log(`  .hench/         ${henchExists ? "already exists (reused)" : "created"}`);
   console.log(`  LLM provider    ${selectedProvider} (${providerSource})`);
-  console.log(`  Claude Code     ${claudeSummary}`);
-  console.log(`  Codex           ${codexSummary}`);
+  console.log(`  Claude Code     ${assistantResults.claude.summary}`);
+  console.log(`  Codex           ${assistantResults.codex.summary}`);
   console.log("");
 
   process.exit(0);
