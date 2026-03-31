@@ -27,6 +27,7 @@ import {
   getAutoApprovedToolIds,
   getMcpServers,
   writeVendorSkills,
+  renderClaudeMd,
 } from "./assistant-assets/index.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -133,6 +134,25 @@ function writeSkills(dir) {
   return writeVendorSkills("claude", dir);
 }
 
+// ── CLAUDE.md writing ─────────────────────────────────────────────────────────
+
+/**
+ * Write `CLAUDE.md` to the project root.
+ *
+ * The content is generated from the shared project guidance template plus
+ * the Claude-specific addendum, so that CLAUDE.md stays in sync with
+ * AGENTS.md's shared sections automatically.
+ *
+ * @param {string} dir  Absolute project root directory
+ * @returns {{ written: boolean, path: string }}
+ */
+function writeClaudeMd(dir) {
+  const claudePath = join(dir, "CLAUDE.md");
+  const content = renderClaudeMd();
+  writeFileSync(claudePath, content);
+  return { written: true, path: claudePath };
+}
+
 // ── MCP registration ──────────────────────────────────────────────────────────
 
 /**
@@ -181,7 +201,7 @@ function hasClaudeCli() {
  * Run the full Claude Code integration setup.
  *
  * @param {string} dir  Project root directory
- * @returns {{ settings: object, skills: object, mcp: object }}
+ * @returns {{ settings: object, skills: object, mcp: object, instructions: object }}
  */
 export function setupClaudeIntegration(dir) {
   const absDir = resolve(dir);
@@ -189,8 +209,9 @@ export function setupClaudeIntegration(dir) {
   const settings = mergeSettings(absDir);
   const skills = writeSkills(absDir);
   const mcp = registerMcpServers(absDir);
+  const instructions = writeClaudeMd(absDir);
 
-  return { settings, skills, mcp };
+  return { settings, skills, mcp, instructions };
 }
 
 /**
@@ -199,6 +220,11 @@ export function setupClaudeIntegration(dir) {
 export function printClaudeSetupSummary(result) {
   console.log("");
   console.log("Claude Code integration:");
+
+  // Instructions
+  if (result.instructions && result.instructions.written) {
+    console.log("  CLAUDE.md: wrote project instructions");
+  }
 
   // Settings
   if (result.settings.added > 0) {

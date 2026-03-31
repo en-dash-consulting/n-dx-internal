@@ -27,7 +27,7 @@ const VENDOR_REGISTRY = {
   claude: {
     setup: setupClaudeIntegration,
     summarize: (r) =>
-      `${r.skills.written} skills, ${r.settings.total} permissions`,
+      `CLAUDE.md, ${r.skills.written} skills, ${r.settings.total} permissions`,
   },
   codex: {
     setup: setupCodexIntegration,

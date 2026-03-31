@@ -71,6 +71,8 @@ describe("setupAssistantIntegrations", () => {
     for (const name of skillNames) {
       expect(existsSync(join(tmpDir, ".claude", "skills", name, "SKILL.md"))).toBe(true);
     }
+    // Claude writes CLAUDE.md to project root
+    expect(existsSync(join(tmpDir, "CLAUDE.md"))).toBe(true);
   });
 
   it("provisions Codex artifacts when codex is enabled", () => {
@@ -98,6 +100,7 @@ describe("setupAssistantIntegrations", () => {
     expect(results.claude.detail).toBeUndefined();
     // Claude artifacts should not exist
     expect(existsSync(join(tmpDir, ".claude"))).toBe(false);
+    expect(existsSync(join(tmpDir, "CLAUDE.md"))).toBe(false);
   });
 
   it("skips Codex when codex: false", () => {
@@ -115,9 +118,10 @@ describe("setupAssistantIntegrations", () => {
     expect(results.codex.summary).toBe("skipped");
   });
 
-  it("Claude summary includes skill count and permission count", () => {
+  it("Claude summary includes CLAUDE.md, skill count, and permission count", () => {
     const results = setupAssistantIntegrations(tmpDir, { codex: false });
     const skillCount = getSkillNames().length;
+    expect(results.claude.summary).toContain("CLAUDE.md");
     expect(results.claude.summary).toContain(`${skillCount} skills`);
     expect(results.claude.summary).toMatch(/\d+ permissions/);
   });
@@ -138,6 +142,7 @@ describe("setupAssistantIntegrations", () => {
     expect(results.claude.detail).toHaveProperty("settings");
     expect(results.claude.detail).toHaveProperty("skills");
     expect(results.claude.detail).toHaveProperty("mcp");
+    expect(results.claude.detail).toHaveProperty("instructions");
 
     // Codex detail
     expect(results.codex.detail).toHaveProperty("config");

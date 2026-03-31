@@ -21,6 +21,7 @@ import {
   getSkillNames,
   renderCodexConfigToml,
   renderAgentsMd,
+  renderClaudeMd,
 } from "../../assistant-assets/index.js";
 import {
   setupCodexIntegration,
@@ -87,6 +88,30 @@ describe("renderAgentsMd", () => {
     expect(content).toContain("# n-dx");
   });
 
+  it("includes shared project guidance sections", () => {
+    expect(content).toContain("## Packages");
+    expect(content).toContain("## Monorepo Structure");
+    expect(content).toContain("### Architecture");
+    expect(content).toContain("## Command Aliases");
+    expect(content).toContain("## n-dx Orchestration Commands");
+    expect(content).toContain("## Direct Tool Access");
+    expect(content).toContain("## Key Files");
+  });
+
+  it("excludes Claude-specific deep sections from shared guidance", () => {
+    expect(content).not.toContain("zone fragility governance");
+    expect(content).not.toContain("Injection seam registry");
+    expect(content).not.toContain("Concurrency contract");
+    expect(content).not.toContain("<!-- ADDENDUM -->");
+  });
+
+  it("excludes shared guidance MCP and Workflow sections (replaced by manifest-derived)", () => {
+    // Should not contain the shared guidance's HTTP transport setup
+    expect(content).not.toContain("claude mcp add --transport http");
+    // Should not contain the shared guidance's Development Workflow steps
+    expect(content).not.toContain("## Development Workflow");
+  });
+
   it("includes a Workflow section", () => {
     expect(content).toContain("## Workflow");
     expect(content).toContain("get_next_task");
@@ -102,9 +127,6 @@ describe("renderAgentsMd", () => {
   });
 
   it("includes skill descriptions from the manifest", () => {
-    const manifest = { skills: Object.fromEntries(
-      skillNames.map((n) => [n, getMcpServers() /* unused, just need names */])
-    )};
     // Verify at least one description appears
     expect(content).toContain("Analyze the codebase and propose PRD updates");
   });
@@ -136,6 +158,11 @@ describe("renderAgentsMd", () => {
     expect(content).toContain("## When to Use Each Server");
     expect(content).toContain("**Rex**");
     expect(content).toContain("**SourceVision**");
+  });
+
+  it("includes Codex Troubleshooting section", () => {
+    expect(content).toContain("## Codex Troubleshooting");
+    expect(content).toContain("Malformed Codex output");
   });
 
   it("uses bare tool names (no mcp__ prefix for Codex)", () => {

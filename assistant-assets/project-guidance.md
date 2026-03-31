@@ -1,20 +1,3 @@
-<!--
-  SYNC NOTICE — Sections that must be mirrored in CLAUDE.md:
-    • Packages (list and descriptions)
-    • Monorepo Structure (directory tree)
-    • Architecture (four-tier hierarchy diagram)
-    • Gateway modules (table and rules)
-    • Package conventions (table)
-    • Build and test commands
-    • Command Aliases
-    • Orchestration Commands
-    • Direct Tool Access (rex, sourcevision, hench commands)
-    • MCP Servers (HTTP/stdio setup, tool lists)
-    • Development Workflow
-    • Key Files table
-  When updating any of these sections, update CLAUDE.md as well.
-  CODEX.md additionally contains the Codex Troubleshooting section (unique to this file).
--->
 # n-dx
 
 AI-powered development toolkit. Three packages that chain together: analyze a codebase, build a PRD, execute tasks autonomously.
@@ -32,7 +15,6 @@ packages/
   sourcevision/    # analysis engine
   rex/             # PRD + task tracker
   hench/           # autonomous agent
-  claude-client/   # compatibility bridge to llm-client
   llm-client/      # vendor-neutral LLM foundation (claude adapter + future vendors)
   web/             # dashboard + MCP HTTP server
 ci.js              # CI pipeline (analysis + PRD health validation)
@@ -47,6 +29,7 @@ Four-tier dependency hierarchy (each layer imports only from the layer below):
 
 ```
   Orchestration   cli.js, web.js, ci.js        (spawns CLIs, no library imports)
+                  config.js                     (spawn-exempt — see note below)
        ↓
   Execution       hench                         (agent loops, tool dispatch)
        ↓
@@ -59,38 +42,21 @@ Zero circular dependencies. The web package sits alongside orchestration — it 
 
 #### Web package internal zone layering
 
-Within the web package, four internal zones form a directed dependency stack:
+Within the web package, four internal zones form a hub topology with `web-viewer` at the center:
 
 ```
   web-server          (composition root — Express routes, gateways, MCP handlers)
-       ↓
-  web-viewer          (Preact UI components, hooks, views)
-       ↓
+       ↓                    ↓ (serves static assets only, no runtime import)
+  web-viewer          (Preact UI hub — components, hooks, views)
+       ↑ ↓                  ↓
   viewer-message-pipeline  (messaging middleware — coalescer, throttle, rate-limiter, request-dedup)
-       ↓
-  web-shared          (framework-agnostic utilities — data-files, node-culler)
+       ↓                    ↓
+  web-shared          (framework-agnostic utilities — data-files, node-culler, view-id)
 ```
 
-Import direction flows downward only. `web-server` is a parallel composition root — it wires gateways and routes but does not import from `web-viewer` at runtime (the viewer is built separately and served as static assets). The `viewer-message-pipeline` zone owns all messaging primitives; `web-viewer` consumes them through `external.ts`. `web-shared` is the foundation layer with zero framework dependencies.
+`web-viewer` is the hub: it imports from `viewer-message-pipeline` (via `external.ts`) and `web-shared`, while also receiving imports from sub-zones like `crash/` and `hench-agent-monitor`. The actual import graph has 11+ distinct cross-zone edges radiating from `web-viewer`, making it a hub rather than a linear stack. `web-server` is a parallel composition root — it wires gateways and routes but does not import from `web-viewer` at runtime (the viewer is built separately and served as static assets). `web-shared` is the foundation layer with zero upward dependencies (enforced by `boundary-check.test.ts`).
 
-### Gateway modules
-
-Packages that import from other packages at runtime concentrate **all** cross-package imports into a single gateway module. This makes the dependency surface explicit, auditable, and easy to update when upstream APIs change.
-
-| Package | Gateway file | Imports from | Re-exports |
-|---------|-------------|--------------|------------|
-| hench | `src/prd/rex-gateway.ts` | rex | 8 functions (store, tree, task selection) |
-| web | `src/server/domain-gateway.ts` | rex, sourcevision | 2 MCP server factories + rex domain types/constants |
-| web | `src/viewer/external.ts` | `src/viewer/messaging/`, `src/shared/`, `src/schema/` | Schema types (V1), data-file constants, RequestDedup — viewer↔server boundary gateway |
-
-Rules:
-- **One gateway per package** — all runtime cross-package imports pass through it.
-- **Re-export only** — gateways re-export; they contain no logic.
-- **Type imports excluded** — `import type` is erased at compile time and stays at the call-site.
-- **Messaging exemption** — `src/viewer/messaging/` files may import directly from `src/shared/` without going through `external.ts`. The shared/ directory is neutral (neither server nor viewer), so messaging utilities access it directly to avoid zone-level dependency inversion. Enforced by `boundary-check.test.ts`.
-- **New cross-package imports** require a deliberate edit to the gateway, not a casual import in a leaf file.
-
-See also: `PACKAGE_GUIDELINES.md` for the full pattern reference.
+<!-- ADDENDUM -->
 
 ### Package conventions
 
@@ -99,7 +65,7 @@ See also: `PACKAGE_GUIDELINES.md` for the full pattern reference.
 | Public API | `src/public.ts` → `exports["."]` in `package.json` | All 5 packages follow this |
 | Test structure | `tests/{unit,integration,e2e}/**/*.test.ts` | Standardized across all packages |
 | Naming | Mixed: `rex`, `sourcevision`, `hench` (unscoped) / `@n-dx/web`, `@n-dx/llm-client` (scoped) | Intentional: CLI tools use short unscoped names for `npx`/`pnpm exec`; internal-only packages use the `@n-dx/` scope |
-| Subpath exports | `"./dist/*": "./dist/*"` | Allows direct imports from `dist/` for advanced consumers |
+| Subpath exports | `"./dist/*": "./dist/*"` | Intentional escape hatch — not public API, no stability guarantee. See `PACKAGE_GUIDELINES.md` for acceptable/prohibited uses |
 
 Build and test:
 
@@ -118,17 +84,20 @@ Both `n-dx` and `ndx` work identically (`ndx` is shorter to type).
 
 ```sh
 ndx init [dir]            # sourcevision init → rex init → hench init
-ndx analyze [dir]         # run SourceVision codebase analysis
-ndx recommend [dir]       # show/accept SourceVision recommendations (--accept, --actionable-only)
-ndx add "<desc>" [dir]    # add PRD items from descriptions or files
+ndx analyze [dir]         # sourcevision analyze (--deep, --full, --lite)
+ndx recommend [dir]       # rex recommend (--accept, --actionable-only, --acknowledge)
+ndx add "description"     # smart-add PRD items from freeform descriptions
+ndx add --file=spec.md    # import ideas from a text file
 ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals)
 ndx plan --accept [dir]   # ...then accept proposals into PRD
 ndx work [dir]            # hench run (pass --task=ID, --auto, --iterations=N, etc.)
 ndx self-heal [N] [dir]   # iterative improvement loop (analyze → recommend → execute)
-ndx status [dir]          # rex status (pass --format=json)
 ndx start [dir]           # start server: dashboard + MCP endpoints (--port=N, --background, stop, status)
+ndx status [dir]          # rex status (pass --format=json)
 ndx usage [dir]           # token usage analytics (--format=json, --group=day|week|month)
 ndx sync [dir]            # sync local PRD with remote adapter (--push, --pull)
+ndx refresh [dir]         # refresh dashboard artifacts (--ui-only, --data-only, --no-build)
+ndx dev [dir]             # start web dev server with live reload
 ndx ci [dir]              # run analysis pipeline and validate PRD health (--format=json)
 ndx config [key] [value]  # view/edit settings (--json, --help)
 ndx export [dir]          # export static deployable dashboard (--out-dir, --deploy=github)
@@ -152,7 +121,7 @@ sv <command> [args]               # alias for sourcevision
 
 ### Rex commands
 
-`init`, `status`, `next`, `add`, `update`, `validate`, `analyze`, `recommend`, `mcp`
+`init`, `status`, `next`, `add`, `remove`, `update`, `validate`, `analyze`, `recommend`, `mcp`
 
 ### Sourcevision commands
 
@@ -161,76 +130,6 @@ sv <command> [args]               # alias for sourcevision
 ### Hench commands
 
 `init`, `run`, `status`, `show`
-
-## Codex Troubleshooting
-
-### 1) Malformed Codex output (parse fallback)
-
-Symptoms:
-- Task run does not crash, but summary contains raw payload text.
-- Warnings appear for missing/unknown block types.
-
-Verify:
-```sh
-rg -n "normalizeCodexResponse|Codex block missing type|Unknown Codex block type" packages/hench/src/agent/lifecycle/cli-loop.ts
-```
-Expected:
-- Matches exist for `normalizeCodexResponse`.
-- Warning strings are present: `Codex block missing type; ignoring block.` and `Unknown Codex block type "..."`
-
-```sh
-pnpm --filter hench exec vitest run tests/unit/agent/codex-normalization.test.ts
-```
-Expected:
-- Test names include `truncated JSON payload falls back to plain text` and `applies deterministic fallback behavior for malformed fixtures`.
-- Suite passes without throwing on malformed payloads.
-
-Operational signal during a run:
-- `[Warn] Codex block missing type; ignoring block.`
-- `[Warn] Unknown Codex block type "<type>" ignored.`
-
-Remediation:
-- If you wrap `codex exec`, ensure blocks include a `type` and text fields (`text`, `content`, `delta`, or `output_text`).
-- Plain text output is supported; malformed JSON is treated as plain text fallback.
-
-### 2) Missing usage fields / token mismatch in Codex mode
-
-Symptoms:
-- `hench show` reports `0 in / 0 out` despite a non-empty response.
-- Token budget behavior looks lower than expected for that turn.
-
-Verify:
-```sh
-rg -n "mapCodexUsageToTokenUsage|codex_usage_missing|input_tokens|prompt_tokens|completion_tokens|total_tokens" packages/hench/src/agent/lifecycle/token-usage.ts packages/hench/src/agent/lifecycle/cli-loop.ts
-```
-Expected:
-- Mapping exists for:
-  - input: `input_tokens | prompt_tokens | input`
-  - output: `output_tokens | completion_tokens | output`
-  - total: `total_tokens | total` (fallback to `input + output`)
-- Diagnostic key `codex_usage_missing` is present.
-- Warning text exists: `Codex response omitted usage; token accounting defaulted to zero.`
-
-```sh
-pnpm --filter hench exec vitest run tests/unit/agent/token-usage.test.ts
-```
-Expected:
-- `mapCodexUsageToTokenUsage` cases pass, including:
-  - nested `response.usage` mapping
-  - zeroed usage with `codex_usage_missing` when usage is absent/empty
-
-```sh
-ndx hench show <run-id> --format=json .
-```
-Expected when usage fields are missing:
-- `tokenUsage.input = 0`
-- `tokenUsage.output = 0`
-- `turnTokenUsage` still records the turn with zeros.
-
-Remediation:
-- Prefer emitting `usage.input_tokens` and `usage.output_tokens` from Codex-compatible wrappers.
-- If upstream only provides `prompt_tokens`/`completion_tokens`, those are already mapped.
-- If no usage fields are available, zero fallback is intentional; treat the warning as a data-quality signal.
 
 ## MCP Servers
 
@@ -291,13 +190,13 @@ Benefits of HTTP over stdio: single process, shared port with the web dashboard,
 ## Development Workflow
 
 1. `ndx init .` — set up all tool directories
-2. `ndx analyze .` — run SourceVision codebase analysis
-3. `ndx recommend --accept .` — turn findings into PRD tasks
-4. `ndx add "feature description" .` — add custom feature requests
-5. `ndx work --auto .` — execute the next task autonomously
+2. `ndx start .` — start server (dashboard + MCP endpoints)
+3. `ndx plan .` — analyze codebase, review proposals
+4. `ndx plan --accept .` — accept proposals into PRD
+5. `ndx work .` — execute next task autonomously
 6. `ndx status .` — check progress
 
-Use `ndx start .` for the dashboard + MCP server, `ndx self-heal 3 .` for iterative improvement loops.
+Use `ndx start --background .` for daemon mode, `ndx start status .` to check, `ndx start stop .` to stop.
 
 ## Key Files
 
@@ -317,3 +216,5 @@ Use `ndx start .` for the dashboard + MCP server, `ndx self-heal 3 .` for iterat
 | `tests/e2e/domain-isolation.test.js` | Gateway enforcement, domain layer isolation, foundation tier boundary |
 | `tests/e2e/mcp-transport.test.js` | MCP HTTP transport end-to-end validation (session management, tool calls) |
 | `tests/e2e/integration-coverage-policy.test.js` | Minimum integration test file count, cross-package contract verification |
+| `tests/e2e/cli-dev.test.js` | **Required test** — see [TESTING.md](TESTING.md#required-tests) |
+| `tests/integration/scheduler-startup.test.js` | **Required test** — see [TESTING.md](TESTING.md#required-tests) |
