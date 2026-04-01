@@ -1,16 +1,17 @@
 /**
  * Validates the assistant asset manifest, render contract, and generated
- * vendor skill output.
+ * vendor skill output for both Claude and Codex.
  *
  * The canonical source of truth is `assistant-assets/` (manifest.json +
- * skills/*.md).  `.claude/skills/` is a generated output — not committed
- * to git.  These tests validate:
+ * skills/*.md).  `.claude/skills/` and `.agents/skills/` are generated
+ * outputs — not committed to git.  These tests validate:
  *
  *   1. Manifest structure and completeness
  *   2. Render contract correctness for all vendors
  *   3. `writeVendorSkills()` generates correct output to disk
- *   4. `claude-integration.js` imports from `assistant-assets/`
- *      (no inline skill definitions)
+ *   4. Both integration modules (claude-integration.js, codex-integration.js)
+ *      import from `assistant-assets/` (no inline skill definitions)
+ *   5. Cross-vendor skill body identity (same bodies, different wrappers)
  */
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
@@ -43,32 +44,6 @@ const ROOT = join(import.meta.dirname, "../..");
 /** Normalize whitespace so trivial formatting differences don't break sync. */
 const normalize = (s) =>
   s.replace(/\u2192/g, "->").replace(/\r\n/g, "\n").replace(/[ \t]+$/gm, "").trim();
-/**
- * Extract the SKILLS object entries from claude-integration.js.
- * Evaluates the SKILLS constant to get properly rendered content.
- * Returns a Map of skill name → content string.
- */
-function extractSkillsFromCI() {
-  const src = readFileSync(join(ROOT, "packages/core/claude-integration.js"), "utf-8");
-
-  const start = src.indexOf("const SKILLS = {");
-  if (start === -1) throw new Error("Could not find SKILLS object in claude-integration.js");
-
-  // Find the closing `};` for the SKILLS object
-  const end = src.indexOf("\n};", start) + 3;
-  const skillsSrc = src.substring(start, end);
-
-  // Evaluate to get rendered content (template literals resolved)
-  const SKILLS = new Function(skillsSrc.replace("const SKILLS =", "return"))();
-
-  const skills = new Map();
-  for (const [name, content] of Object.entries(SKILLS)) {
-    skills.set(name, String(content).trim());
-  }
-
-  return skills;
-}
-
 /**
  * Read all skill files from a vendor's output directory.
  * Returns a Map of skill name -> content string.
@@ -419,38 +394,138 @@ describe("writeVendorSkills generates correct output", () => {
   });
 });
 
-// ── claude-integration.js uses canonical source ─────────────────────────────
+// ── Dual-vendor integration source checks ────────────────────────────────────
 
-describe("claude-integration.js uses canonical source", () => {
-  const src = readFileSync(join(ROOT, "packages/core/claude-integration.js"), "utf-8");
+describe("vendor integration modules use canonical source", () => {
+  const claudeSrc = readFileSync(join(ROOT, "packages/core/claude-integration.js"), "utf-8");
+  const codexSrc = readFileSync(join(ROOT, "packages/core/codex-integration.js"), "utf-8");
 
-  it("imports from assistant-assets/", () => {
-    expect(src).toContain('from "../../assistant-assets/index.js"');
+  describe("claude-integration.js", () => {
+    it("imports from assistant-assets/", () => {
+      expect(claudeSrc).toContain('from "../../assistant-assets/index.js"');
+    });
+
+    it("imports writeVendorSkills from the render contract", () => {
+      expect(claudeSrc).toContain("writeVendorSkills");
+    });
+
+    it("does not contain inline SKILLS object", () => {
+      if (/^const SKILLS\s*=\s*\{/m.test(claudeSrc)) {
+        expect.fail(
+          "claude-integration.js still contains an inline SKILLS object.\n" +
+          "It should import skills from assistant-assets/ instead.",
+        );
+      }
+    });
+
+    it("does not call renderAllClaudeSkills directly", () => {
+      if (claudeSrc.includes("renderAllClaudeSkills")) {
+        expect.fail(
+          "claude-integration.js still calls renderAllClaudeSkills.\n" +
+          'It should use writeVendorSkills("claude", dir) instead.',
+        );
+      }
+    });
+
+    it("delegates instruction rendering to renderClaudeMd", () => {
+      expect(claudeSrc).toContain("renderClaudeMd");
+    });
   });
 
-  it("imports writeVendorSkills from the render contract", () => {
-    expect(src).toContain("writeVendorSkills");
+  describe("codex-integration.js", () => {
+    it("imports from assistant-assets/", () => {
+      expect(codexSrc).toContain('from "../../assistant-assets/index.js"');
+    });
+
+    it("imports writeVendorSkills from the render contract", () => {
+      expect(codexSrc).toContain("writeVendorSkills");
+    });
+
+    it("does not contain inline skill definitions", () => {
+      if (/^const SKILLS\s*=\s*\{/m.test(codexSrc)) {
+        expect.fail(
+          "codex-integration.js contains an inline SKILLS object.\n" +
+          "It should import skills from assistant-assets/ instead.",
+        );
+      }
+    });
+
+    it("does not contain inline TOML strings", () => {
+      // config.toml content is rendered by renderCodexConfigToml from the
+      // canonical asset layer — no hardcoded TOML in the integration module.
+      if (/^\[mcp_servers\./m.test(codexSrc)) {
+        expect.fail(
+          "codex-integration.js contains inline TOML server definitions.\n" +
+          "It should use renderCodexConfigToml() instead.",
+        );
+      }
+    });
+
+    it("delegates config rendering to renderCodexConfigToml", () => {
+      expect(codexSrc).toContain("renderCodexConfigToml");
+    });
+
+    it("delegates instruction rendering to renderAgentsMd", () => {
+      expect(codexSrc).toContain("renderAgentsMd");
+    });
   });
 
-  it("does not contain inline SKILLS object", () => {
-    // The old pattern was `const SKILLS = {` with template literals.
-    // The new pattern delegates to writeVendorSkills("claude", dir).
-    if (/^const SKILLS\s*=\s*\{/m.test(src)) {
-      expect.fail(
-        "claude-integration.js still contains an inline SKILLS object.\n" +
-        "It should import skills from assistant-assets/ instead.",
-      );
-    }
+  describe("symmetric canonical delegation", () => {
+    it("both vendors import writeVendorSkills (not vendor-specific writers)", () => {
+      // The shared writeVendorSkills is the only sanctioned write path.
+      // Neither module should reimplement skill file I/O.
+      expect(claudeSrc).toContain("writeVendorSkills");
+      expect(codexSrc).toContain("writeVendorSkills");
+    });
+
+    it("both vendors import from the same canonical module", () => {
+      const claudeImport = claudeSrc.match(/from\s+"([^"]+assistant-assets[^"]+)"/);
+      const codexImport = codexSrc.match(/from\s+"([^"]+assistant-assets[^"]+)"/);
+      expect(claudeImport).not.toBeNull();
+      expect(codexImport).not.toBeNull();
+      expect(claudeImport[1]).toBe(codexImport[1]);
+    });
+  });
+});
+
+// ── Cross-vendor skill body identity ─────────────────────────────────────────
+
+describe("cross-vendor skill body identity", () => {
+  const skillNames = getSkillNames();
+
+  it("both vendors render all registered skills (no vendor-specific omissions)", () => {
+    const claudeSkills = Object.keys(renderAllSkills("claude")).sort();
+    const codexSkills = Object.keys(renderAllSkills("codex")).sort();
+    expect(claudeSkills).toEqual(codexSkills);
+    expect(claudeSkills).toEqual([...skillNames].sort());
   });
 
-  it("does not call renderAllClaudeSkills directly", () => {
-    // Skill writing is delegated to writeVendorSkills — the integration
-    // module should not render and write independently.
-    if (src.includes("renderAllClaudeSkills")) {
-      expect.fail(
-        "claude-integration.js still calls renderAllClaudeSkills.\n" +
-        "It should use writeVendorSkills(\"claude\", dir) instead.",
-      );
+  for (const name of skillNames) {
+    it(`"${name}" has identical body content regardless of vendor`, () => {
+      // Both vendors receive the same canonical skill body.
+      // The only difference is the wrapper (YAML frontmatter vs plain).
+      const body = getSkillBody(name);
+      const codexRendered = renderSkill(name, "codex");
+      const claudeRendered = renderSkill(name, "claude");
+
+      // Codex uses plain wrapper — rendered output IS the body
+      expect(codexRendered).toBe(body);
+
+      // Claude wraps with YAML frontmatter — body appears after the frontmatter
+      const bodyStart = claudeRendered.indexOf("---\n\n");
+      expect(bodyStart).toBeGreaterThan(0);
+      const claudeBody = claudeRendered.slice(bodyStart + "---\n\n".length);
+      expect(claudeBody).toBe(body);
+    });
+  }
+
+  it("renderSkill is idempotent for both vendors", () => {
+    for (const name of skillNames) {
+      for (const vendor of ["claude", "codex"]) {
+        const first = renderSkill(name, vendor);
+        const second = renderSkill(name, vendor);
+        expect(first).toBe(second);
+      }
     }
   });
 });
