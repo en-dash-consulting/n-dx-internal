@@ -23410,13 +23410,17 @@
             {
               "id": "aa6fe37f-470a-4358-ad89-2a7ceaf485b9",
               "title": "Update public docs for Claude and Codex workflow setup",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Update README.md and guide documentation to explain how repos are provisioned for both Claude and Codex, including where generated assistant artifacts live and how users start working from each surface.",
               "priority": "high",
               "blockedBy": [
                 "93b1bf7d-d985-4123-b7a1-fb58fdb6115d"
-              ]
+              ],
+              "startedAt": "2026-04-01T18:49:58.957Z",
+              "completedAt": "2026-04-01T18:56:46.101Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Updated 8 documentation files to explain dual-assistant (Claude + Codex) provisioning, artifact locations, MCP setup by assistant, init flags, and tool name conventions."
             },
             {
               "id": "6d93d8fd-b72b-4d34-9313-9154236f17fc",
