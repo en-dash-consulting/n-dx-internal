@@ -165,6 +165,102 @@ describe("n-dx init provider selection", () => {
     }
   });
 
+  describe("assistant-specific init flags and summary reporting", () => {
+    it("shows 'Assistant surfaces' header in init summary", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-surfaces-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(
+          ["init", "--provider=codex", tmpDir],
+          { env: { ...process.env, PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}` } },
+        );
+
+        expect(output).toContain("Assistant surfaces:");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("shows vendor labels in summary instead of raw vendor names", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-labels-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(
+          ["init", "--provider=codex", tmpDir],
+          { env: { ...process.env, PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}` } },
+        );
+
+        expect(output).toContain("Claude Code");
+        expect(output).toContain("Codex");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("shows skip reason with flag name when --no-codex is used", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-no-codex-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(
+          ["init", "--provider=codex", "--no-codex", tmpDir],
+          { env: { ...process.env, PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}` } },
+        );
+
+        expect(output).toContain("Assistant surfaces:");
+        expect(output).toMatch(/Codex\s+skipped \(--no-codex\)/);
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("shows skip reason with flag name when --no-claude is used", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-no-claude-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(
+          ["init", "--provider=codex", "--no-claude", tmpDir],
+          { env: { ...process.env, PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}` } },
+        );
+
+        expect(output).toContain("Assistant surfaces:");
+        expect(output).toMatch(/Claude Code\s+skipped \(--no-claude\)/);
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("shows artifact details for provisioned vendors", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-artifacts-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(
+          ["init", "--provider=codex", tmpDir],
+          { env: { ...process.env, PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}` } },
+        );
+
+        // Claude line should include artifact info
+        expect(output).toContain("CLAUDE.md");
+        expect(output).toMatch(/\d+ skills/);
+        // Codex line should include artifact info
+        expect(output).toContain("AGENTS.md");
+        expect(output).toMatch(/\d+ MCP servers/);
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("--no-codex is documented in help text", () => {
+      const output = run(["init", "--help"]);
+      expect(output).toContain("--no-codex");
+      expect(output).toContain("--no-claude");
+    });
+  });
+
   describe("provider auth preflight during init", () => {
     function pathEnvWith(...dirs) {
       return {

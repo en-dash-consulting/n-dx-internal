@@ -25,11 +25,15 @@ import { setupCodexIntegration } from "./codex-integration.js";
  */
 const VENDOR_REGISTRY = {
   claude: {
+    label: "Claude Code",
+    skipFlag: "--no-claude",
     setup: setupClaudeIntegration,
     summarize: (r) =>
       `CLAUDE.md, ${r.skills.written} skills, ${r.settings.total} permissions`,
   },
   codex: {
+    label: "Codex",
+    skipFlag: "--no-codex",
     setup: setupCodexIntegration,
     summarize: (r) =>
       `AGENTS.md, ${r.skills.written} skills, ${r.config.serverCount} MCP servers`,
@@ -68,7 +72,11 @@ export function setupAssistantIntegrations(dir, enabled = {}) {
     const isEnabled = enabled[vendor] !== false;
 
     if (!isEnabled) {
-      results[vendor] = { summary: "skipped" };
+      results[vendor] = {
+        summary: `skipped (${entry.skipFlag})`,
+        label: entry.label,
+        skipped: true,
+      };
       continue;
     }
 
@@ -76,12 +84,112 @@ export function setupAssistantIntegrations(dir, enabled = {}) {
       const detail = entry.setup(dir);
       results[vendor] = {
         summary: entry.summarize(detail),
+        label: entry.label,
         detail,
+        skipped: false,
       };
     } catch {
-      results[vendor] = { summary: "skipped" };
+      results[vendor] = {
+        summary: "skipped (setup failed)",
+        label: entry.label,
+        skipped: true,
+      };
     }
   }
 
   return results;
+}
+
+/**
+ * Format the assistant provisioning section for the init summary.
+ *
+ * Returns an array of pre-formatted lines ready for console output.
+ * Each line is indented to align with the init summary's 2-space
+ * indent convention.
+ *
+ * When `verbose` is true (default), the report includes per-artifact
+ * detail lines beneath each vendor — making it obvious which files
+ * were written and which capabilities were provisioned.
+ *
+ * @param {Record<string, { summary: string, label: string, skipped?: boolean, detail?: object }>} results
+ *   The return value of `setupAssistantIntegrations()`.
+ * @param {{ verbose?: boolean }} [opts]
+ * @returns {string[]}
+ */
+export function formatInitReport(results, opts = {}) {
+  const verbose = opts.verbose !== false;
+  const lines = ["  Assistant surfaces:"];
+
+  for (const [vendor, result] of Object.entries(results)) {
+    const label = (result.label ?? "unknown").padEnd(14);
+
+    if (result.skipped || !verbose || !result.detail) {
+      // Compact single-line form (skipped vendors or non-verbose mode)
+      lines.push(`    ${label}${result.summary}`);
+      continue;
+    }
+
+    // Verbose per-artifact breakdown
+    lines.push(`    ${label}${result.summary}`);
+    const artifacts = formatVendorArtifacts(vendor, result.detail);
+    for (const line of artifacts) {
+      lines.push(`      ${line}`);
+    }
+  }
+
+  return lines;
+}
+
+/**
+ * Build per-artifact detail lines for a provisioned vendor.
+ *
+ * Each vendor setup function returns a different detail shape.
+ * This function maps known shapes to human-readable artifact lines.
+ *
+ * @param {string} vendor
+ * @param {object} detail
+ * @returns {string[]}
+ */
+function formatVendorArtifacts(vendor, detail) {
+  const lines = [];
+
+  if (vendor === "claude") {
+    if (detail.instructions?.written) {
+      lines.push("CLAUDE.md written");
+    }
+    if (detail.skills) {
+      lines.push(`.claude/skills/ — ${detail.skills.written} skill${detail.skills.written === 1 ? "" : "s"}`);
+    }
+    if (detail.settings) {
+      lines.push(`.claude/settings — ${detail.settings.added} new permission${detail.settings.added === 1 ? "" : "s"} (${detail.settings.total} total)`);
+    }
+    if (detail.mcp) {
+      if (!detail.mcp.registered) {
+        lines.push(`MCP servers — skipped (${detail.mcp.reason})`);
+      } else if (detail.mcp.servers) {
+        const ok = detail.mcp.servers.filter((s) => s.ok);
+        const failed = detail.mcp.servers.filter((s) => !s.ok);
+        if (ok.length > 0) {
+          lines.push(`MCP servers — ${ok.map((s) => s.name).join(", ")} (${ok[0].transport})`);
+        }
+        if (failed.length > 0) {
+          lines.push(`MCP servers — failed: ${failed.map((s) => s.name).join(", ")}`);
+        }
+      }
+    }
+  }
+
+  if (vendor === "codex") {
+    if (detail.agents?.written) {
+      lines.push("AGENTS.md written");
+    }
+    if (detail.skills) {
+      lines.push(`.agents/skills/ — ${detail.skills.written} skill${detail.skills.written === 1 ? "" : "s"}`);
+    }
+    if (detail.config?.written) {
+      lines.push(`.codex/config.toml — ${detail.config.serverCount} MCP server${detail.config.serverCount === 1 ? "" : "s"} (stdio)`);
+    }
+  }
+
+  return lines;
 }

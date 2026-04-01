@@ -23248,27 +23248,33 @@
         {
           "id": "28f44611-7113-49be-8d66-8b9d5d49fe6d",
           "title": "Codex Project Artifact Generation",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Generate the project-local artifacts Codex needs to follow n-dx workflows without manual per-repo setup.\n\nPrimary deliverables:\n- AGENTS.md\n- .agents/skills/<name>/SKILL.md\n- .codex/config.toml with Rex and SourceVision MCP servers",
           "priority": "critical",
+          "startedAt": "2026-03-31T22:17:01.156Z",
+          "completedAt": "2026-03-31T22:17:01.156Z",
           "children": [
             {
               "id": "6b1b809b-8a37-4f44-b433-0ed111deaef5",
               "title": "Generate AGENTS.md during ndx init",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Emit a project-local AGENTS.md that explains the n-dx workflow, lists available generated skills, and tells Codex when to use Rex and SourceVision MCP capabilities.\n\nThe content should be generated from the shared assistant asset layer rather than hand-maintained independently.",
               "priority": "critical",
               "blockedBy": [
                 "7bd0e002-d1a7-4aaa-82a1-30fdad108618",
                 "3f98efc4-382d-431a-a1e0-64ca91ac7b57"
-              ]
+              ],
+              "startedAt": "2026-03-31T21:44:51.442Z",
+              "completedAt": "2026-03-31T21:51:51.511Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added renderAgentsMd() to assistant-assets/index.js that generates AGENTS.md content from the manifest (skills, MCP servers, tool classifications). Integrated writeAgentsMd() into codex-integration.js and the setupCodexIntegration() flow. Updated cli.js init summary. Added 18 tests covering content generation, file writing, idempotency, source validation, and CLI integration. All 38 codex-integration tests pass."
             },
             {
               "id": "ceb4b95d-4c78-45eb-bb40-5604a10180ac",
               "title": "Generate .agents skill directories for Codex",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "During init, create one generated .agents/skills/<name>/SKILL.md directory per shared n-dx workflow skill.\n\nThe emitted content should stay structurally aligned with the Claude-delivered skills while using the Codex repository-local skill layout.",
               "priority": "critical",
@@ -23276,7 +23282,10 @@
                 "7bd0e002-d1a7-4aaa-82a1-30fdad108618",
                 "3f98efc4-382d-431a-a1e0-64ca91ac7b57"
               ],
-              "startedAt": "2026-03-31T21:33:27.366Z"
+              "startedAt": "2026-03-31T21:33:27.366Z",
+              "completedAt": "2026-03-31T21:43:14.448Z",
+              "resolutionType": "acknowledgment",
+              "resolutionDetail": "The .agents/skills/<name>/SKILL.md generation was already implemented in commit 4ade57bc as part of the .codex/config.toml task. codex-integration.js calls writeVendorSkills(\"codex\", dir) which writes all 8 skills (ndx-plan, ndx-status, ndx-capture, ndx-zone, ndx-work, ndx-config, ndx-reshape, ndx-feedback) to .agents/skills/<name>/SKILL.md in plain markdown format (no YAML frontmatter). Fixed the cross-package-contracts test that was left out of sync (3 new llm-gateway exports). All 271 relevant tests pass (94 codex-integration + 74 skill-sync + 177 cross-package-contracts)."
             },
             {
               "id": "73346263-26ca-4499-8fe8-a3bcb689435d",
@@ -23296,7 +23305,7 @@
             {
               "id": "c9f700ec-3ca9-4516-a4e7-5ed4d493740d",
               "title": "Validate Codex artifact generation in init tests",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add automated checks that ndx init writes AGENTS.md, generated .agents skills, and .codex/config.toml in a stable format.\n\nTests should protect against path drift, missing skills, and malformed MCP definitions.",
               "priority": "high",
@@ -23304,7 +23313,11 @@
                 "6b1b809b-8a37-4f44-b433-0ed111deaef5",
                 "ceb4b95d-4c78-45eb-bb40-5604a10180ac",
                 "73346263-26ca-4499-8fe8-a3bcb689435d"
-              ]
+              ],
+              "startedAt": "2026-03-31T22:10:07.529Z",
+              "completedAt": "2026-03-31T22:17:00.543Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added codex-artifact-validation.test.js with 39 tests covering path drift protection, skill completeness, config.toml structural validity, AGENTS.md format stability, cross-artifact consistency, and artifact regeneration stability."
             }
           ]
         },
@@ -23319,7 +23332,7 @@
             {
               "id": "93b1bf7d-d985-4123-b7a1-fb58fdb6115d",
               "title": "Replace setupClaudeIntegration with assistant-neutral setup orchestration",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Introduce an assistant-neutral orchestration entry point, such as setupAssistantIntegrations, that provisions supported assistant surfaces without coupling ndx init to Claude-specific logic.\n\nThe refactor must preserve current behavior for Claude while making Codex a first-class setup target.",
               "priority": "critical",
@@ -23328,18 +23341,23 @@
                 "6b1b809b-8a37-4f44-b433-0ed111deaef5",
                 "ceb4b95d-4c78-45eb-bb40-5604a10180ac",
                 "73346263-26ca-4499-8fe8-a3bcb689435d"
-              ]
+              ],
+              "startedAt": "2026-03-31T21:58:06.593Z",
+              "completedAt": "2026-03-31T22:05:34.738Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Introduced assistant-integration.js with vendor registry pattern; cli.js now calls setupAssistantIntegrations() instead of vendor-specific setup functions directly"
             },
             {
               "id": "312a5f34-98fa-4a1c-825c-71846026acab",
               "title": "Add assistant-specific init flags and summary reporting",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Extend init UX to report assistant provisioning separately from llm.vendor and add configuration toggles such as --no-codex alongside backward-compatible Claude options.\n\nThe init summary should make it obvious which assistant artifacts were provisioned for the repo.",
               "priority": "high",
               "blockedBy": [
                 "93b1bf7d-d985-4123-b7a1-fb58fdb6115d"
-              ]
+              ],
+              "startedAt": "2026-04-01T01:25:20.198Z"
             },
             {
               "id": "b18f544f-3d53-4616-9d85-469d51412f6a",
@@ -23490,10 +23508,12 @@
         {
           "id": "1ef0be83-c7a2-4ff9-a9e5-d6fe044284e0",
           "title": "Runtime Identity Guardrails",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Define and enforce the minimum cross-vendor runtime contract so Claude and Codex are interchangeable at the workflow level even when model outputs differ. Source of truth: docs/analysis/claude-codex-runtime-identity-discovery.md. Deliverables: one normalized runtime policy and prompt/event contract, a hardened Codex CLI path that prefers structured automation output, shared instruction-loading rules across AGENTS.md/CODEX.md/CLAUDE.md, and smoke coverage proving the same guardrails and completion semantics on both vendors.",
           "priority": "critical",
+          "startedAt": "2026-04-01T01:24:40.906Z",
+          "completedAt": "2026-04-01T01:24:40.906Z",
           "children": [
             {
               "id": "547ba5e2-b5cf-47d8-a608-eaef28398411",
@@ -23528,30 +23548,38 @@
             {
               "id": "67c0ada9-003e-48fe-9a0d-e822d66e2e11",
               "title": "Align Claude/Codex instruction loading around shared project guidance",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Wire runtime instruction loading so Codex, Claude, and repo-generated assistant assets resolve back to the same workflow guidance instead of drifting by surface. Coordinate the asset and init work so AGENTS.md is the canonical shared guidance, CLAUDE.md imports or mirrors that guidance as the Claude-facing surface, and CODEX.md is either retired or kept only as an explicit compatibility layer. Done when both vendors start runs from equivalent repo instructions.",
               "priority": "high",
               "blockedBy": [
                 "547ba5e2-b5cf-47d8-a608-eaef28398411",
                 "79659c41-7011-4c68-a3ba-98f534029bb0"
-              ]
+              ],
+              "startedAt": "2026-03-31T22:17:50.808Z",
+              "completedAt": "2026-03-31T23:35:23.557Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Extracted shared project guidance into assistant-assets/project-guidance.md as canonical source. Both CLAUDE.md and AGENTS.md are now auto-generated during ndx init from the same template. CODEX.md retired; unique content preserved in template files. 41 new tests verify shared guidance equivalence."
             },
             {
               "id": "cebf61e0-2fc9-41d1-8970-932f0539d0d2",
               "title": "Normalize token diagnostics and failure taxonomy across vendors",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Unify token-usage mapping and failure classification across Claude and Codex in packages/hench/src/agent/lifecycle/token-usage.ts, packages/hench/src/cli/errors.ts, and packages/llm-client/src/token-usage.ts. Missing usage data must surface as an explicit degraded diagnostic instead of a silent zero-value success path, and vendor-specific raw errors must map into one shared user-facing taxonomy.",
               "priority": "high",
               "blockedBy": [
                 "547ba5e2-b5cf-47d8-a608-eaef28398411"
-              ]
+              ],
+              "startedAt": "2026-03-31T23:36:05.340Z",
+              "completedAt": "2026-04-01T00:59:06.271Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Unified token-usage mapping and failure classification across Claude and Codex. Added diagnostic-aware parsing variants (TokenParseResult with TokenDiagnosticStatus) to llm-client. Replaced Codex-specific CodexUsageDiagnostic with vendor-neutral TokenDiagnosticStatus. Added classifyVendorError() and failureCategoryLabel() for shared error taxonomy. Updated hench CLI error formatting to use category labels and per-category hints. 49 new tests across both packages."
             },
             {
               "id": "8a2f9f66-8210-436b-b7ac-bce8cad8ef13",
               "title": "Add cross-vendor baseline runtime fixtures and smoke tests",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add fixtures and smoke coverage that prove Claude and Codex runs share the same prompt sections, MCP availability, permission envelope, normalized event schema, failure classification, and completion gates. This should include unit coverage in packages/hench plus at least one fresh-project init-to-run smoke path so Codex can be validated as a first-class execution surface.",
               "priority": "high",
@@ -23559,7 +23587,11 @@
                 "99fe140a-103d-43bd-bcbd-eb8690eb3e17",
                 "67c0ada9-003e-48fe-9a0d-e822d66e2e11",
                 "cebf61e0-2fc9-41d1-8970-932f0539d0d2"
-              ]
+              ],
+              "startedAt": "2026-04-01T00:59:42.066Z",
+              "completedAt": "2026-04-01T01:24:40.637Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added 92 tests (72 unit + 20 integration) across 3 files proving cross-vendor runtime parity for all 8 contract areas: prompt sections, execution policy, permission envelope, event schema, failure classification, token diagnostics, completion gates, and runtime diagnostics."
             }
           ]
         }

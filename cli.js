@@ -66,7 +66,7 @@ import {
   formatMainHelp,
   formatOrchestratorCommandHelp,
 } from "./help.js";
-import { setupAssistantIntegrations } from "./assistant-integration.js";
+import { setupAssistantIntegrations, formatInitReport } from "./assistant-integration.js";
 import { runExport } from "./export.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -205,6 +205,58 @@ function extractInitProvider(args) {
 
 function stripInitProviderFlag(args) {
   return args.filter((a) => !a.startsWith("--provider="));
+}
+
+/**
+ * Extract `--assistants=<list>` flag value from CLI args.
+ * Returns undefined when the flag is absent, or a Set of vendor names
+ * when present (e.g. `--assistants=claude` → Set{"claude"}).
+ *
+ * @param {string[]} args
+ * @returns {Set<string> | undefined}
+ */
+function extractAssistantsFlag(args) {
+  const flag = args.find((a) => a.startsWith("--assistants="));
+  if (!flag) return undefined;
+  const raw = flag.slice("--assistants=".length).trim().toLowerCase();
+  if (!raw) return undefined;
+  return new Set(raw.split(",").map((s) => s.trim()).filter(Boolean));
+}
+
+/** All assistant-selection flags that should be stripped before passing to sub-inits. */
+const ASSISTANT_FLAGS = ["--no-claude", "--no-codex", "--claude-only", "--codex-only"];
+
+function stripAssistantFlags(args) {
+  return args.filter((a) => !ASSISTANT_FLAGS.includes(a) && !a.startsWith("--assistants="));
+}
+
+/**
+ * Resolve which assistants are enabled from the init CLI flags.
+ *
+ * Priority: --assistants= > --claude-only / --codex-only > --no-claude / --no-codex > default (both)
+ *
+ * @param {string[]} rest  Raw CLI args after the command name
+ * @returns {{ claude: boolean, codex: boolean }}
+ */
+function resolveAssistantFlags(rest) {
+  // --assistants= takes highest priority
+  const assistantsSet = extractAssistantsFlag(rest);
+  if (assistantsSet) {
+    return {
+      claude: assistantsSet.has("claude"),
+      codex: assistantsSet.has("codex"),
+    };
+  }
+
+  // Exclusive convenience flags
+  if (rest.includes("--claude-only")) return { claude: true, codex: false };
+  if (rest.includes("--codex-only")) return { claude: false, codex: true };
+
+  // Individual skip flags
+  return {
+    claude: !rest.includes("--no-claude"),
+    codex: !rest.includes("--no-codex"),
+  };
 }
 
 function shouldShowInitBanner(providerFromFlag) {
@@ -504,9 +556,20 @@ async function handleInit(rest) {
     process.exit(1);
   }
 
-  const noClaude = rest.includes("--no-claude");
-  const noCodex = rest.includes("--no-codex");
-  const initArgs = stripInitProviderFlag(rest).filter((a) => a !== "--no-claude" && a !== "--no-codex");
+  // Validate --assistants= values
+  const assistantsSet = extractAssistantsFlag(rest);
+  if (assistantsSet) {
+    const invalid = [...assistantsSet].filter((v) => !SUPPORTED_PROVIDERS.includes(v));
+    if (invalid.length > 0) {
+      console.error(`Error: Unknown assistant${invalid.length > 1 ? "s" : ""}: ${invalid.join(", ")}. Expected: claude, codex.`);
+      process.exit(1);
+    }
+  }
+
+  // Resolve assistant-selection flags (--assistants= > --*-only > --no-* > default)
+  const assistantEnabled = resolveAssistantFlags(rest);
+
+  const initArgs = stripAssistantFlags(stripInitProviderFlag(rest));
   const dir = resolveDir(initArgs);
   const flags = extractFlags(initArgs);
 
@@ -557,10 +620,7 @@ async function handleInit(rest) {
   try { await runConfig(["llm.vendor", selectedProvider, dir]); } finally { console.log = origLog; }
 
   // Assistant integrations (vendor-neutral dispatch)
-  const assistantResults = setupAssistantIntegrations(dir, {
-    claude: !noClaude,
-    codex: !noCodex,
-  });
+  const assistantResults = setupAssistantIntegrations(dir, assistantEnabled);
 
   // Print unified summary
   console.log("");
@@ -569,8 +629,9 @@ async function handleInit(rest) {
   console.log(`  .rex/           ${rexExists ? "already exists (reused)" : "created"}`);
   console.log(`  .hench/         ${henchExists ? "already exists (reused)" : "created"}`);
   console.log(`  LLM provider    ${selectedProvider} (${providerSource})`);
-  console.log(`  Claude Code     ${assistantResults.claude.summary}`);
-  console.log(`  Codex           ${assistantResults.codex.summary}`);
+  for (const line of formatInitReport(assistantResults)) {
+    console.log(line);
+  }
   console.log("");
 
   process.exit(0);

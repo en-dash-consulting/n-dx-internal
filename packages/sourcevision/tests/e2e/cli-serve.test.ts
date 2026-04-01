@@ -63,7 +63,7 @@ describe("sourcevision serve (e2e)", () => {
     // Start server on an OS-assigned free port
     const port = await getFreePort();
     serverProc = spawn("node", [CLI_PATH, "serve", tmpDir, `--port=${port}`], {
-      stdio: "pipe",
+      stdio: ["ignore", "pipe", "pipe"],
     });
 
     await waitForServer(port);

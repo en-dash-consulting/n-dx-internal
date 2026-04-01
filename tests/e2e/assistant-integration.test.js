@@ -7,6 +7,8 @@
  *   4. getSupportedAssistants() reflects the registry
  *   5. assistant-integration.js imports from vendor integration modules (no inline logic)
  *   6. Summary strings match the vendor-specific format
+ *   7. formatInitReport() verbose mode shows per-artifact detail
+ *   8. cli.js supports --assistants=, --claude-only, --codex-only flags
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -16,6 +18,7 @@ import { tmpdir } from "os";
 import {
   setupAssistantIntegrations,
   getSupportedAssistants,
+  formatInitReport,
 } from "../../assistant-integration.js";
 import { getSkillNames, getMcpServers } from "../../assistant-assets/index.js";
 
@@ -64,7 +67,7 @@ describe("setupAssistantIntegrations", () => {
 
   it("provisions Claude artifacts when claude is enabled", () => {
     const results = setupAssistantIntegrations(tmpDir, { claude: true, codex: false });
-    expect(results.claude.summary).not.toBe("skipped");
+    expect(results.claude.summary).not.toContain("skipped");
     expect(results.claude.detail).toBeDefined();
     // Claude writes skills to .claude/skills/
     const skillNames = getSkillNames();
@@ -77,7 +80,7 @@ describe("setupAssistantIntegrations", () => {
 
   it("provisions Codex artifacts when codex is enabled", () => {
     const results = setupAssistantIntegrations(tmpDir, { claude: false, codex: true });
-    expect(results.codex.summary).not.toBe("skipped");
+    expect(results.codex.summary).not.toContain("skipped");
     expect(results.codex.detail).toBeDefined();
     // Codex writes config, skills, AGENTS.md
     expect(existsSync(join(tmpDir, ".codex", "config.toml"))).toBe(true);
@@ -90,13 +93,23 @@ describe("setupAssistantIntegrations", () => {
 
   it("provisions both vendors by default", () => {
     const results = setupAssistantIntegrations(tmpDir);
-    expect(results.claude.summary).not.toBe("skipped");
-    expect(results.codex.summary).not.toBe("skipped");
+    expect(results.claude.summary).not.toContain("skipped");
+    expect(results.claude.skipped).toBe(false);
+    expect(results.codex.summary).not.toContain("skipped");
+    expect(results.codex.skipped).toBe(false);
+  });
+
+  it("includes label in results for all vendors", () => {
+    const results = setupAssistantIntegrations(tmpDir);
+    expect(results.claude.label).toBe("Claude Code");
+    expect(results.codex.label).toBe("Codex");
   });
 
   it("skips Claude when claude: false", () => {
     const results = setupAssistantIntegrations(tmpDir, { claude: false });
-    expect(results.claude.summary).toBe("skipped");
+    expect(results.claude.summary).toContain("skipped");
+    expect(results.claude.summary).toContain("--no-claude");
+    expect(results.claude.skipped).toBe(true);
     expect(results.claude.detail).toBeUndefined();
     // Claude artifacts should not exist
     expect(existsSync(join(tmpDir, ".claude"))).toBe(false);
@@ -105,7 +118,9 @@ describe("setupAssistantIntegrations", () => {
 
   it("skips Codex when codex: false", () => {
     const results = setupAssistantIntegrations(tmpDir, { codex: false });
-    expect(results.codex.summary).toBe("skipped");
+    expect(results.codex.summary).toContain("skipped");
+    expect(results.codex.summary).toContain("--no-codex");
+    expect(results.codex.skipped).toBe(true);
     expect(results.codex.detail).toBeUndefined();
     // Codex artifacts should not exist
     expect(existsSync(join(tmpDir, ".codex"))).toBe(false);
@@ -114,8 +129,8 @@ describe("setupAssistantIntegrations", () => {
 
   it("skips both when both disabled", () => {
     const results = setupAssistantIntegrations(tmpDir, { claude: false, codex: false });
-    expect(results.claude.summary).toBe("skipped");
-    expect(results.codex.summary).toBe("skipped");
+    expect(results.claude.summary).toContain("skipped");
+    expect(results.codex.summary).toContain("skipped");
   });
 
   it("Claude summary includes CLAUDE.md, skill count, and permission count", () => {
@@ -195,6 +210,106 @@ describe("assistant-integration.js uses vendor integration modules", () => {
   it("exports getSupportedAssistants", () => {
     expect(src).toContain("export function getSupportedAssistants");
   });
+
+  it("exports formatInitReport", () => {
+    expect(src).toContain("export function formatInitReport");
+  });
+});
+
+// ── formatInitReport() ──────────────────────────────────────────────────────
+
+describe("formatInitReport", () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), "ndx-init-report-"));
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("returns an array of strings", () => {
+    const results = setupAssistantIntegrations(tmpDir);
+    const lines = formatInitReport(results);
+    expect(Array.isArray(lines)).toBe(true);
+    for (const line of lines) {
+      expect(typeof line).toBe("string");
+    }
+  });
+
+  it("starts with an Assistant surfaces header", () => {
+    const results = setupAssistantIntegrations(tmpDir);
+    const lines = formatInitReport(results);
+    expect(lines[0]).toContain("Assistant surfaces");
+  });
+
+  it("includes vendor labels from the registry", () => {
+    const results = setupAssistantIntegrations(tmpDir);
+    const lines = formatInitReport(results);
+    const joined = lines.join("\n");
+    expect(joined).toContain("Claude Code");
+    expect(joined).toContain("Codex");
+  });
+
+  it("shows skip flag when vendor is disabled", () => {
+    const results = setupAssistantIntegrations(tmpDir, { codex: false });
+    const lines = formatInitReport(results);
+    const joined = lines.join("\n");
+    expect(joined).toContain("--no-codex");
+    expect(joined).toContain("skipped");
+  });
+
+  it("shows artifact summary when vendor is enabled", () => {
+    const results = setupAssistantIntegrations(tmpDir, { claude: true, codex: false });
+    const lines = formatInitReport(results);
+    const joined = lines.join("\n");
+    expect(joined).toContain("CLAUDE.md");
+    expect(joined).toMatch(/\d+ skills/);
+  });
+
+  it("verbose mode includes artifact detail lines beyond the summary", () => {
+    const results = setupAssistantIntegrations(tmpDir);
+    const lines = formatInitReport(results); // verbose by default
+    // Header + vendor summary + artifact lines → more than 1 + vendor count
+    expect(lines.length).toBeGreaterThan(1 + getSupportedAssistants().length);
+  });
+
+  it("non-verbose mode includes one line per vendor plus the header", () => {
+    const results = setupAssistantIntegrations(tmpDir);
+    const lines = formatInitReport(results, { verbose: false });
+    // 1 header + 1 per vendor
+    expect(lines.length).toBe(1 + getSupportedAssistants().length);
+  });
+
+  it("verbose Claude detail includes CLAUDE.md written, skills, settings, and MCP", () => {
+    const results = setupAssistantIntegrations(tmpDir, { codex: false });
+    const lines = formatInitReport(results);
+    const joined = lines.join("\n");
+    expect(joined).toContain("CLAUDE.md written");
+    expect(joined).toMatch(/\.claude\/skills\/.*skill/);
+    expect(joined).toMatch(/\.claude\/settings.*permission/);
+    expect(joined).toMatch(/MCP servers/);
+  });
+
+  it("verbose Codex detail includes AGENTS.md written, skills, and config", () => {
+    const results = setupAssistantIntegrations(tmpDir, { claude: false });
+    const lines = formatInitReport(results);
+    const joined = lines.join("\n");
+    expect(joined).toContain("AGENTS.md written");
+    expect(joined).toMatch(/\.agents\/skills\/.*skill/);
+    expect(joined).toMatch(/\.codex\/config\.toml/);
+  });
+
+  it("skipped vendors show compact single-line even in verbose mode", () => {
+    const results = setupAssistantIntegrations(tmpDir, { claude: false, codex: false });
+    const lines = formatInitReport(results); // verbose by default
+    // 1 header + 1 per skipped vendor (no extra artifact lines)
+    expect(lines.length).toBe(1 + getSupportedAssistants().length);
+    for (const line of lines.slice(1)) {
+      expect(line).toContain("skipped");
+    }
+  });
 });
 
 // ── cli.js uses assistant-integration.js ────────────────────────────────────
@@ -216,5 +331,78 @@ describe("cli.js uses assistant-neutral orchestration", () => {
 
   it("calls setupAssistantIntegrations", () => {
     expect(src).toContain("setupAssistantIntegrations");
+  });
+
+  it("imports formatInitReport", () => {
+    expect(src).toContain("formatInitReport");
+  });
+
+  it("uses formatInitReport for the init summary", () => {
+    expect(src).toContain("formatInitReport(assistantResults)");
+  });
+});
+
+// ── cli.js assistant-selection flags ─────────────────────────────────────────
+
+describe("cli.js assistant-selection flags", () => {
+  const src = readFileSync(join(ROOT, "cli.js"), "utf-8");
+
+  it("defines resolveAssistantFlags function", () => {
+    expect(src).toContain("function resolveAssistantFlags");
+  });
+
+  it("defines extractAssistantsFlag function", () => {
+    expect(src).toContain("function extractAssistantsFlag");
+  });
+
+  it("supports --claude-only flag", () => {
+    expect(src).toContain("--claude-only");
+  });
+
+  it("supports --codex-only flag", () => {
+    expect(src).toContain("--codex-only");
+  });
+
+  it("supports --assistants= flag", () => {
+    expect(src).toContain("--assistants=");
+  });
+
+  it("uses resolveAssistantFlags in handleInit", () => {
+    expect(src).toContain("resolveAssistantFlags(rest)");
+  });
+
+  it("validates --assistants= values against SUPPORTED_PROVIDERS", () => {
+    // The validation should reference SUPPORTED_PROVIDERS to reject unknown vendors
+    expect(src).toContain("SUPPORTED_PROVIDERS.includes");
+  });
+
+  it("strips all assistant flags before passing to sub-inits", () => {
+    expect(src).toContain("stripAssistantFlags");
+  });
+});
+
+// ── help.js init documentation ──────────────────────────────────────────────
+
+describe("help.js init help documents all assistant flags", () => {
+  const src = readFileSync(join(ROOT, "help.js"), "utf-8");
+
+  it("documents --claude-only flag", () => {
+    expect(src).toContain("--claude-only");
+  });
+
+  it("documents --codex-only flag", () => {
+    expect(src).toContain("--codex-only");
+  });
+
+  it("documents --assistants= flag", () => {
+    expect(src).toContain("--assistants=");
+  });
+
+  it("documents --no-claude flag", () => {
+    expect(src).toContain("--no-claude");
+  });
+
+  it("documents --no-codex flag", () => {
+    expect(src).toContain("--no-codex");
   });
 });
