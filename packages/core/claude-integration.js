@@ -28,7 +28,7 @@ import {
   getMcpServers,
   writeVendorSkills,
   renderClaudeMd,
-} from "./assistant-assets/index.js";
+} from "../../assistant-assets/index.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const MONOREPO_ROOT = resolve(__dir, "../..");

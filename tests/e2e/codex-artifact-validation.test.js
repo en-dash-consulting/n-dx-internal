@@ -21,7 +21,7 @@ import {
   getVendorTarget,
   listSkillFiles,
 } from "../../assistant-assets/index.js";
-import { setupCodexIntegration } from "../../codex-integration.js";
+import { setupCodexIntegration } from "../../packages/core/codex-integration.js";
 
 // ── Shared setup: generate all artifacts once ───────────────────────────────
 

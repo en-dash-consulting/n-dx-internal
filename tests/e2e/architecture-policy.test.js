@@ -59,9 +59,9 @@ const ALLOWED = new Set([
   "packages/web/src/server/routes-hench.ts",
   "packages/web/src/server/routes-sourcevision.ts",
   // Claude Code integration — runs `claude mcp add` via execSync
-  "claude-integration.js",
+  "packages/core/claude-integration.js",
   // Codex integration — writes .codex/config.toml, .agents/skills, AGENTS.md
-  "codex-integration.js",
+  "packages/core/codex-integration.js",
 ]);
 
 /** Directories to skip entirely. */

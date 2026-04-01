@@ -422,10 +422,10 @@ describe("writeVendorSkills generates correct output", () => {
 // ── claude-integration.js uses canonical source ─────────────────────────────
 
 describe("claude-integration.js uses canonical source", () => {
-  const src = readFileSync(join(ROOT, "claude-integration.js"), "utf-8");
+  const src = readFileSync(join(ROOT, "packages/core/claude-integration.js"), "utf-8");
 
   it("imports from assistant-assets/", () => {
-    expect(src).toContain("from \"./assistant-assets/index.js\"");
+    expect(src).toContain('from "../../assistant-assets/index.js"');
   });
 
   it("imports writeVendorSkills from the render contract", () => {

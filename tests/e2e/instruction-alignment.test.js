@@ -26,7 +26,7 @@ import {
   getClaudeAddendum,
   getCodexTroubleshooting,
 } from "../../assistant-assets/index.js";
-import { setupAssistantIntegrations } from "../../assistant-integration.js";
+import { setupAssistantIntegrations } from "../../packages/core/assistant-integration.js";
 
 const ROOT = join(import.meta.dirname, "../..");
 

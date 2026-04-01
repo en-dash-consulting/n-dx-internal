@@ -334,18 +334,18 @@ describe("architecture policy: orchestration tier boundary", () => {
    * should spawn CLIs or use filesystem coordination instead.
    *
    * claude-integration.js, codex-integration.js, and
-   * assistant-integration.js are root-level service files that
+   * assistant-integration.js are packages/core service files that
    * participate in the orchestration tier — they must follow the same rules.
    */
   const ORCHESTRATION_FILES = [
-    "cli.js",
-    "ci.js",
-    "web.js",
-    "config.js",
+    "packages/core/cli.js",
+    "packages/core/ci.js",
+    "packages/core/web.js",
+    "packages/core/config.js",
     "pr-check.js",
-    "claude-integration.js",
-    "codex-integration.js",
-    "assistant-integration.js",
+    "packages/core/claude-integration.js",
+    "packages/core/codex-integration.js",
+    "packages/core/assistant-integration.js",
   ];
 
   const DOMAIN_PACKAGES = ["@n-dx/rex", "@n-dx/sourcevision", "@n-dx/hench", "@n-dx/web"];
@@ -1080,14 +1080,14 @@ describe("architecture policy: production → test boundary", () => {
  */
 describe("architecture policy: foundation tier boundary (@n-dx/llm-client)", () => {
   const ORCHESTRATION_FILES = [
-    "cli.js",
-    "ci.js",
-    "web.js",
-    "config.js",
+    "packages/core/cli.js",
+    "packages/core/ci.js",
+    "packages/core/web.js",
+    "packages/core/config.js",
     "pr-check.js",
-    "claude-integration.js",
-    "codex-integration.js",
-    "assistant-integration.js",
+    "packages/core/claude-integration.js",
+    "packages/core/codex-integration.js",
+    "packages/core/assistant-integration.js",
   ];
 
   for (const file of ORCHESTRATION_FILES) {

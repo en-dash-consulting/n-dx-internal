@@ -26,12 +26,12 @@ import {
 import {
   setupCodexIntegration,
   printCodexSetupSummary,
-} from "../../codex-integration.js";
+} from "../../packages/core/codex-integration.js";
 
 const ROOT = join(import.meta.dirname, "../..");
 const isWin = process.platform === "win32";
 const PATH_SEP = isWin ? ";" : ":";
-const CLI_PATH = join(ROOT, "cli.js");
+const CLI_PATH = join(ROOT, "packages/core/cli.js");
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -340,10 +340,10 @@ describe("setupCodexIntegration", () => {
 // ── codex-integration.js source validation ──────────────────────────────────
 
 describe("codex-integration.js uses canonical source", () => {
-  const src = readFileSync(join(ROOT, "codex-integration.js"), "utf-8");
+  const src = readFileSync(join(ROOT, "packages/core/codex-integration.js"), "utf-8");
 
   it("imports from assistant-assets/", () => {
-    expect(src).toContain('from "./assistant-assets/index.js"');
+    expect(src).toContain('from "../../assistant-assets/index.js"');
   });
 
   it("imports writeVendorSkills from the render contract", () => {

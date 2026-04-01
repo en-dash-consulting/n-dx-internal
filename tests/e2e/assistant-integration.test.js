@@ -19,7 +19,7 @@ import {
   setupAssistantIntegrations,
   getSupportedAssistants,
   formatInitReport,
-} from "../../assistant-integration.js";
+} from "../../packages/core/assistant-integration.js";
 import { getSkillNames, getMcpServers } from "../../assistant-assets/index.js";
 
 const ROOT = join(import.meta.dirname, "../..");
@@ -184,7 +184,7 @@ describe("setupAssistantIntegrations", () => {
 // ── assistant-integration.js source validation ──────────────────────────────
 
 describe("assistant-integration.js uses vendor integration modules", () => {
-  const src = readFileSync(join(ROOT, "assistant-integration.js"), "utf-8");
+  const src = readFileSync(join(ROOT, "packages/core/assistant-integration.js"), "utf-8");
 
   it("imports setupClaudeIntegration from claude-integration.js", () => {
     expect(src).toContain('from "./claude-integration.js"');
@@ -315,7 +315,7 @@ describe("formatInitReport", () => {
 // ── cli.js uses assistant-integration.js ────────────────────────────────────
 
 describe("cli.js uses assistant-neutral orchestration", () => {
-  const src = readFileSync(join(ROOT, "cli.js"), "utf-8");
+  const src = readFileSync(join(ROOT, "packages/core/cli.js"), "utf-8");
 
   it("imports from assistant-integration.js", () => {
     expect(src).toContain('from "./assistant-integration.js"');
@@ -345,7 +345,7 @@ describe("cli.js uses assistant-neutral orchestration", () => {
 // ── cli.js assistant-selection flags ─────────────────────────────────────────
 
 describe("cli.js assistant-selection flags", () => {
-  const src = readFileSync(join(ROOT, "cli.js"), "utf-8");
+  const src = readFileSync(join(ROOT, "packages/core/cli.js"), "utf-8");
 
   it("defines resolveAssistantFlags function", () => {
     expect(src).toContain("function resolveAssistantFlags");
@@ -384,7 +384,7 @@ describe("cli.js assistant-selection flags", () => {
 // ── backward-compatibility: re-init detection ────────────────────────────────
 
 describe("cli.js backward-compatible re-init detection", () => {
-  const src = readFileSync(join(ROOT, "cli.js"), "utf-8");
+  const src = readFileSync(join(ROOT, "packages/core/cli.js"), "utf-8");
 
   it("defines hasExplicitAssistantFlags function", () => {
     expect(src).toContain("function hasExplicitAssistantFlags");
@@ -418,24 +418,24 @@ describe("cli.js backward-compatible re-init detection", () => {
 
 describe("deprecated vendor summary exports are preserved", () => {
   it("claude-integration.js still exports printClaudeSetupSummary", () => {
-    const src = readFileSync(join(ROOT, "claude-integration.js"), "utf-8");
+    const src = readFileSync(join(ROOT, "packages/core/claude-integration.js"), "utf-8");
     expect(src).toContain("export function printClaudeSetupSummary");
     expect(src).toContain("@deprecated");
   });
 
   it("codex-integration.js still exports printCodexSetupSummary", () => {
-    const src = readFileSync(join(ROOT, "codex-integration.js"), "utf-8");
+    const src = readFileSync(join(ROOT, "packages/core/codex-integration.js"), "utf-8");
     expect(src).toContain("export function printCodexSetupSummary");
     expect(src).toContain("@deprecated");
   });
 
   it("printClaudeSetupSummary is importable (not removed)", async () => {
-    const mod = await import("../../claude-integration.js");
+    const mod = await import("../../packages/core/claude-integration.js");
     expect(typeof mod.printClaudeSetupSummary).toBe("function");
   });
 
   it("printCodexSetupSummary is importable (not removed)", async () => {
-    const mod = await import("../../codex-integration.js");
+    const mod = await import("../../packages/core/codex-integration.js");
     expect(typeof mod.printCodexSetupSummary).toBe("function");
   });
 });
@@ -443,7 +443,7 @@ describe("deprecated vendor summary exports are preserved", () => {
 // ── help.js init documentation ──────────────────────────────────────────────
 
 describe("help.js init help documents all assistant flags", () => {
-  const src = readFileSync(join(ROOT, "help.js"), "utf-8");
+  const src = readFileSync(join(ROOT, "packages/core/help.js"), "utf-8");
 
   it("documents --claude-only flag", () => {
     expect(src).toContain("--claude-only");
