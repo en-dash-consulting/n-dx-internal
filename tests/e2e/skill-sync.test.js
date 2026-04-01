@@ -43,6 +43,31 @@ const ROOT = join(import.meta.dirname, "../..");
 /** Normalize whitespace so trivial formatting differences don't break sync. */
 const normalize = (s) =>
   s.replace(/\u2192/g, "->").replace(/\r\n/g, "\n").replace(/[ \t]+$/gm, "").trim();
+/**
+ * Extract the SKILLS object entries from claude-integration.js.
+ * Evaluates the SKILLS constant to get properly rendered content.
+ * Returns a Map of skill name → content string.
+ */
+function extractSkillsFromCI() {
+  const src = readFileSync(join(ROOT, "packages/core/claude-integration.js"), "utf-8");
+
+  const start = src.indexOf("const SKILLS = {");
+  if (start === -1) throw new Error("Could not find SKILLS object in claude-integration.js");
+
+  // Find the closing `};` for the SKILLS object
+  const end = src.indexOf("\n};", start) + 3;
+  const skillsSrc = src.substring(start, end);
+
+  // Evaluate to get rendered content (template literals resolved)
+  const SKILLS = new Function(skillsSrc.replace("const SKILLS =", "return"))();
+
+  const skills = new Map();
+  for (const [name, content] of Object.entries(SKILLS)) {
+    skills.set(name, String(content).trim());
+  }
+
+  return skills;
+}
 
 /**
  * Read all skill files from a vendor's output directory.

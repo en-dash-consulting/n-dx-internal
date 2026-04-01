@@ -385,7 +385,7 @@ describe("architecture policy: orchestration tier boundary", () => {
    * filesystem I/O and child_process coordination.
    */
   it("config.js must only import from node: builtins", () => {
-    const fullPath = join(ROOT, "config.js");
+    const fullPath = join(ROOT, "packages/core/config.js");
     if (!existsSync(fullPath)) return;
 
     const content = readFileSync(fullPath, "utf-8");
@@ -428,7 +428,7 @@ describe("architecture policy: orchestration tier boundary", () => {
  * This is the single source of truth for gateway file paths and allowed
  * import patterns, shared with ci.js to prevent silent divergence.
  */
-const _gatewayConfig = JSON.parse(readFileSync(join(ROOT, "gateway-rules.json"), "utf-8"));
+const _gatewayConfig = JSON.parse(readFileSync(join(ROOT, "packages/core/gateway-rules.json"), "utf-8"));
 
 const GATEWAY_RULES = _gatewayConfig.gateways.map((g) => ({
   packageDir: g.consumer,

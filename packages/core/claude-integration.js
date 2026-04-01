@@ -31,13 +31,14 @@ import {
 } from "./assistant-assets/index.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
+const MONOREPO_ROOT = resolve(__dir, "../..");
 const _require = createRequire(import.meta.url);
 
 /**
  * Resolve a sub-package CLI path — monorepo first, then node_modules.
  */
 function resolveSubPackageCli(pkgDir, npmName) {
-  const monoPath = resolve(__dir, pkgDir, "dist/cli/index.js");
+  const monoPath = resolve(MONOREPO_ROOT, pkgDir, "dist/cli/index.js");
   if (existsSync(monoPath)) return monoPath;
   try {
     return _require.resolve(npmName + "/dist/cli/index.js");

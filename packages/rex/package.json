@@ -1,6 +1,6 @@
 {
   "name": "@n-dx/rex",
-  "version": "0.1.9",
+  "version": "0.2.1",
   "publishConfig": {
     "access": "public"
   },
@@ -22,7 +22,8 @@
     "./dist/*": "./dist/*"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "build": "tsc",

@@ -1,6 +1,6 @@
 {
   "name": "@n-dx/web",
-  "version": "0.1.9",
+  "version": "0.2.1",
   "license": "Elastic-2.0",
   "description": "n-dx web dashboard — serves sourcevision, rex, and hench data",
   "repository": {
@@ -24,6 +24,7 @@
   },
   "files": [
     "dist",
+    "!dist/**/*.map",
     "build.js"
   ],
   "scripts": {
