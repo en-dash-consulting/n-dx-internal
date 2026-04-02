@@ -7,7 +7,7 @@ import type { HenchConfig, RetryConfig, RunRecord, ToolCallRecord, TurnTokenUsag
 import { validateCompletion, formatValidationResult } from "../../validation/completion.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/rex.js";
 import { checkTokenBudget } from "./token-budget.js";
-import { mapCodexUsageToTokenUsage, parseTokenUsage, parseStreamTokenUsage } from "./token-usage.js";
+import { mapCodexUsageToTokenUsage, parseTokenUsage, parseStreamTokenUsage, parseTokenUsageWithDiagnostic } from "./token-usage.js";
 import { startHeartbeat } from "./heartbeat.js";
 import { section, stream, info } from "../../types/output.js";
 import { isSpinningRun } from "../analysis/spin.js";
@@ -457,7 +457,7 @@ export function processCodexJsonLine(
 
       // Token usage embedded in the message event
       if (event.usage && typeof event.usage === "object") {
-        const parsed = parseTokenUsage(event.usage as Record<string, unknown>);
+        const { usage: parsed, diagnosticStatus } = parseTokenUsageWithDiagnostic(event.usage as Record<string, unknown>);
         result.tokenUsage.input += parsed.input;
         result.tokenUsage.output += parsed.output;
 
@@ -465,6 +465,7 @@ export function processCodexJsonLine(
           turn: turnCounter.value,
           input: parsed.input,
           output: parsed.output,
+          diagnosticStatus,
           ...(tokenMetadata ? { vendor: tokenMetadata.vendor, model: tokenMetadata.model } : {}),
         };
         result.turnTokenUsage.push(turnUsage);
@@ -604,7 +605,7 @@ export function processStreamLine(
 
         // Extract per-turn token usage from message.usage
         if (msg.usage && typeof msg.usage === "object") {
-          const parsed = parseTokenUsage(msg.usage as Record<string, unknown>);
+          const { usage: parsed, diagnosticStatus } = parseTokenUsageWithDiagnostic(msg.usage as Record<string, unknown>);
 
           result.tokenUsage.input += parsed.input;
           result.tokenUsage.output += parsed.output;
@@ -613,6 +614,7 @@ export function processStreamLine(
             turn: turnCounter.value,
             input: parsed.input,
             output: parsed.output,
+            diagnosticStatus,
             ...(tokenMetadata ? { vendor: tokenMetadata.vendor, model: tokenMetadata.model } : {}),
           };
 

@@ -86,6 +86,8 @@ const TokenUsageSchema = z.object({
   cacheReadInput: z.number().optional(),
 });
 
+const TokenDiagnosticStatusSchema = z.enum(["complete", "partial", "unavailable"]);
+
 const TurnTokenUsageSchema = z.object({
   turn: z.number(),
   input: z.number(),
@@ -94,6 +96,7 @@ const TurnTokenUsageSchema = z.object({
   cacheReadInput: z.number().optional(),
   vendor: z.string().optional(),
   model: z.string().optional(),
+  diagnosticStatus: TokenDiagnosticStatusSchema.optional(),
 });
 
 const CommandRecordSchema = z.object({
@@ -142,6 +145,12 @@ const RunMemoryStatsSchema = z.object({
   systemTotalBytes: z.number(),
 });
 
+const RunDiagnosticsSchema = z.object({
+  tokenDiagnosticStatus: TokenDiagnosticStatusSchema,
+  parseMode: z.string(),
+  notes: z.array(z.string()),
+});
+
 export const RunRecordSchema = z.object({
   id: z.string(),
   taskId: z.string(),
@@ -160,6 +169,7 @@ export const RunRecordSchema = z.object({
   retryAttempts: z.number().int().nonnegative().optional(),
   structuredSummary: RunSummaryDataSchema.optional(),
   memoryStats: RunMemoryStatsSchema.optional(),
+  diagnostics: RunDiagnosticsSchema.optional(),
 });
 
 export function validateConfig(

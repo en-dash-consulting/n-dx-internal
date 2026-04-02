@@ -51,6 +51,7 @@ export type {
   SummaryCounts,
   PostRunTestRecord,
   RunSummaryData,
+  RunDiagnostics,
 } from "./schema/v1.js";
 
 // ---- Task brief types ------------------------------------------------------

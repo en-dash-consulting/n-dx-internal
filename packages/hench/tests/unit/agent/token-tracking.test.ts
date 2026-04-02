@@ -50,6 +50,7 @@ describe("processStreamLine token tracking", () => {
       turn: 1,
       input: 1000,
       output: 500,
+      diagnosticStatus: "complete",
     });
   });
 
@@ -70,6 +71,7 @@ describe("processStreamLine token tracking", () => {
       turn: 1,
       input: 200,
       output: 100,
+      diagnosticStatus: "complete",
       vendor: "codex",
       model: "gpt-5-codex",
     });

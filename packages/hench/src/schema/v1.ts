@@ -186,6 +186,13 @@ export interface TurnTokenUsage {
   vendor?: string;
   /** Model used for this token event. */
   model?: string;
+  /**
+   * Diagnostic status of token usage data for this turn.
+   * - `complete` — both input and output fields were present and numeric
+   * - `partial` — only one of input/output was present; the other was backfilled to 0
+   * - `unavailable` — neither field was present; values are synthetic zeros
+   */
+  diagnosticStatus?: "complete" | "partial" | "unavailable";
 }
 
 export interface CommandRecord {
@@ -246,6 +253,29 @@ export interface RunMemoryStats {
   systemTotalBytes: number;
 }
 
+/**
+ * Run-level diagnostics captured during execution.
+ *
+ * Provides observability into how token usage was parsed and whether
+ * the data is trustworthy. Stored on the run record so that post-hoc
+ * analysis can distinguish "vendor returned zeros" from "vendor omitted
+ * usage data and we backfilled zeros".
+ */
+export interface RunDiagnostics {
+  /**
+   * Overall token diagnostic status for the run.
+   * Derived from per-turn diagnostic statuses:
+   * - `complete` — all turns reported complete token data
+   * - `partial` — at least one turn had partial data
+   * - `unavailable` — at least one turn had no token data
+   */
+  tokenDiagnosticStatus: "complete" | "partial" | "unavailable";
+  /** Output parse mode used by the vendor wrapper (e.g. "stream-json", "json"). */
+  parseMode: string;
+  /** Vendor-specific diagnostic notes (e.g. "codex_usage_missing"). */
+  notes: string[];
+}
+
 export interface RunRecord {
   id: string;
   taskId: string;
@@ -268,6 +298,8 @@ export interface RunRecord {
   structuredSummary?: RunSummaryData;
   /** Memory usage statistics captured during the run. */
   memoryStats?: RunMemoryStats;
+  /** Run-level diagnostics for token parsing and vendor observability. */
+  diagnostics?: RunDiagnostics;
 }
 
 export interface TaskBriefTask {
