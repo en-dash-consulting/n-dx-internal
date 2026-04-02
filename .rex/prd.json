@@ -23402,10 +23402,12 @@
         {
           "id": "2f835373-3459-4337-b6e8-f849f830fac8",
           "title": "Documentation and Startup Parity",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Repair docs, startup text, and user guidance so Codex is described as a supported workflow surface instead of an afterthought.\n\nThis should cover README/help text, guide docs, MCP setup docs, and server startup banners.",
           "priority": "high",
+          "startedAt": "2026-04-02T02:43:45.365Z",
+          "completedAt": "2026-04-02T02:43:45.365Z",
           "children": [
             {
               "id": "aa6fe37f-470a-4358-ad89-2a7ceaf485b9",
@@ -23440,13 +23442,17 @@
             {
               "id": "f51c83b1-af4f-407d-bf7d-715ae8c9026f",
               "title": "Align startup banners and guidance with assistant parity",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Update startup text, help output, and repo guidance so they no longer imply that Claude is the only first-class assistant path.\\n\\nThe implementation should explicitly define the intended roles of AGENTS.md, CODEX.md, and CLAUDE.md so future init and docs work cannot drift: AGENTS.md as the canonical shared guidance surface, CLAUDE.md as the Claude-facing bridge or import surface, and CODEX.md only if the project chooses to keep a compatibility layer.",
               "priority": "medium",
               "blockedBy": [
                 "93b1bf7d-d985-4123-b7a1-fb58fdb6115d"
-              ]
+              ],
+              "startedAt": "2026-04-02T02:31:13.601Z",
+              "completedAt": "2026-04-02T02:43:45.072Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Updated 9 files to replace Claude-only language with assistant-neutral framing in startup banners, project guidance, README, and docs. Added Assistant Instruction Files section defining roles of AGENTS.md, CLAUDE.md, and .codex/config.toml."
             }
           ]
         },
@@ -23461,14 +23467,18 @@
             {
               "id": "3b49da9b-e11f-4ac3-b337-448a7db46893",
               "title": "Add dual-vendor skill sync tests from canonical assets",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add coverage that verifies the canonical assistant asset source renders the expected Claude and Codex outputs.\n\nThis should replace the current Claude-only sync assumption with dual-vendor contract checks.",
               "priority": "high",
               "blockedBy": [
                 "79659c41-7011-4c68-a3ba-98f534029bb0",
                 "ceb4b95d-4c78-45eb-bb40-5604a10180ac"
-              ]
+              ],
+              "startedAt": "2026-04-01T19:19:26.658Z",
+              "completedAt": "2026-04-01T19:42:02.872Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Replaced Claude-only integration source check in skill-sync.test.js with dual-vendor validation covering both claude-integration.js and codex-integration.js canonical delegation, cross-vendor body identity, and render idempotency."
             },
             {
               "id": "625a955a-57b9-49f8-b155-dc747502192b",
@@ -23488,14 +23498,15 @@
             {
               "id": "8242a482-67d2-4dd4-a4c3-22e7b6dbb430",
               "title": "Add docs and help smoke coverage for assistant parity",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Add smoke checks that help text, init guidance, and startup output mention both supported assistant paths and do not regress back to Claude-only wording.",
               "priority": "medium",
               "blockedBy": [
                 "aa6fe37f-470a-4358-ad89-2a7ceaf485b9",
                 "f51c83b1-af4f-407d-bf7d-715ae8c9026f"
-              ]
+              ],
+              "startedAt": "2026-04-02T02:44:25.490Z"
             }
           ]
         },
