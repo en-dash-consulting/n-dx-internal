@@ -428,9 +428,10 @@ export async function runWeb(dir, rest, { run, tools, __dir, commandName = "web"
     log(`  MCP (rex):          http://localhost:${actualPort}/mcp/rex`);
     log(`  MCP (sourcevision): http://localhost:${actualPort}/mcp/sourcevision`);
     log("");
-    log("Claude Code MCP setup:");
-    log(`  claude mcp add --transport http rex http://localhost:${actualPort}/mcp/rex`);
-    log(`  claude mcp add --transport http sourcevision http://localhost:${actualPort}/mcp/sourcevision`);
+    log("MCP setup:");
+    log(`  Claude:  claude mcp add --transport http rex http://localhost:${actualPort}/mcp/rex`);
+    log(`           claude mcp add --transport http sourcevision http://localhost:${actualPort}/mcp/sourcevision`);
+    log("  Codex:   configured automatically via .codex/config.toml (stdio)");
     log("");
     log(`Use '${stopCmd}' to stop it.`);
     return 0;

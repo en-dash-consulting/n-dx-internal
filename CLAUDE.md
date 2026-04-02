@@ -7,7 +7,7 @@ AI-powered development toolkit. Three packages that chain together: analyze a co
 
 - **sourcevision** — Static analysis: file inventory, import graph, zone detection (Louvain community detection), React component catalog. Produces `.sourcevision/CONTEXT.md` and `llms.txt` for AI consumption.
 - **rex** — PRD management: hierarchical epics/features/tasks/subtasks, `analyze` scans project + sourcevision output to generate proposals, `status` shows completion tree. Stores state in `.rex/prd.json`.
-- **hench** — Autonomous agent: picks next rex task, builds a brief, calls Claude API or CLI in a tool-use loop, records runs in `.hench/runs/`.
+- **hench** — Autonomous agent: picks next rex task, builds a brief, drives an LLM in a tool-use loop, records runs in `.hench/runs/`.
 
 ## Monorepo Structure
 
@@ -208,6 +208,20 @@ pnpm test           # test all packages
 pnpm typecheck      # typecheck all packages
 ```
 
+## Assistant Instruction Files
+
+`ndx init` generates per-assistant instruction files from a shared source of truth (`assistant-assets/project-guidance.md`). Each file has a defined role:
+
+| File | Role | Generated from |
+|------|------|----------------|
+| `AGENTS.md` | **Canonical shared guidance surface.** Read by Codex and any future assistants. Contains project docs, workflow, skill inventory, and MCP tool reference derived from the asset manifest. | `project-guidance.md` (filtered) + manifest-derived sections + `codex-troubleshooting.md` |
+| `CLAUDE.md` | **Claude-facing bridge.** Read by Claude Code on startup. Imports the same shared guidance plus Claude-specific deep sections (zone governance, gateway details, concurrency contract). | `project-guidance.md` + `claude-addendum.md` |
+| `.codex/config.toml` | **Codex MCP configuration.** Auto-read by Codex — no manual registration required. | Manifest MCP server descriptors |
+
+**Design invariant:** Both `AGENTS.md` and `CLAUDE.md` derive their base project documentation (Packages, Architecture, Commands, Key Files) from `project-guidance.md`. Vendor-specific additions are layered on top — never inlined into the shared template. This prevents instruction drift between assistant surfaces.
+
+Re-run `ndx init` to regenerate all instruction files after changes to `assistant-assets/`.
+
 ## Command Aliases
 
 Both `n-dx` and `ndx` work identically (`ndx` is shorter to type).
@@ -270,31 +284,35 @@ Rex and sourcevision expose MCP servers for Claude Code and Codex tool use. Two 
 
 ### HTTP transport (recommended)
 
-Start the unified server, then point Claude Code at the HTTP endpoints:
+Start the unified server, then point your assistant at the HTTP endpoints:
 
 ```sh
 # 1. Start the server (dashboard + MCP on one port)
 ndx start .
 
-# 2. Add HTTP MCP servers to Claude Code
+# 2. Register HTTP MCP servers (Claude example)
 claude mcp add --transport http rex http://localhost:3117/mcp/rex
 claude mcp add --transport http sourcevision http://localhost:3117/mcp/sourcevision
 ```
 
-The server runs on port 3117 by default. If you use a custom port (`--port=N` or `web.port` in `.n-dx.json`), update the URLs accordingly.
+Any MCP-compatible assistant can connect to these endpoints. The server runs on port 3117 by default. If you use a custom port (`--port=N` or `web.port` in `.n-dx.json`), update the URLs accordingly.
 
 HTTP transport uses [Streamable HTTP](https://modelcontextprotocol.io/) with session management. Sessions are created automatically on the first request and identified by the `Mcp-Session-Id` header.
 
-### stdio transport (legacy)
+### stdio transport
 
-Stdio spawns a separate process per MCP server. No `ndx start` required, but each server runs independently:
+Stdio spawns a separate process per MCP server. No `ndx start` required. `ndx init` auto-registers stdio servers for both Claude Code and Codex.
+
+**Claude Code** (manual registration):
 
 ```sh
 claude mcp add rex -- node packages/rex/dist/cli/index.js mcp .
 claude mcp add sourcevision -- node packages/sourcevision/dist/cli/index.js mcp .
 ```
 
-### Migrating from stdio to HTTP
+**Codex** reads `.codex/config.toml` automatically — no manual registration required.
+
+### Migrating from stdio to HTTP (Claude)
 
 1. Start the server: `ndx start --background .`
 2. Remove old stdio servers: `claude mcp remove rex && claude mcp remove sourcevision`

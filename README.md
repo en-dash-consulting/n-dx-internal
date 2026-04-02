@@ -154,12 +154,13 @@ Both `n-dx` and `ndx` work identically. `sv` is an alias for `sourcevision`.
 
 ## MCP Servers
 
-Rex and SourceVision expose MCP servers for Claude Code and Codex tool use.
+Rex and SourceVision expose MCP servers for any MCP-compatible assistant (Claude Code, Codex, etc.).
 
-### HTTP transport (recommended for Claude)
+### HTTP transport (recommended)
 
 ```sh
 ndx start .
+# Claude example:
 claude mcp add --transport http rex http://localhost:3117/mcp/rex
 claude mcp add --transport http sourcevision http://localhost:3117/mcp/sourcevision
 ```
@@ -168,12 +169,14 @@ claude mcp add --transport http sourcevision http://localhost:3117/mcp/sourcevis
 
 `ndx init` auto-registers stdio MCP servers for both Claude Code and Codex. After init, MCP works out of the box.
 
-Manual Claude registration (after installing `@n-dx/core`):
+Manual Claude registration:
 
 ```sh
 claude mcp add rex -- rex mcp .
 claude mcp add sourcevision -- sv mcp .
 ```
+
+Codex reads `.codex/config.toml` automatically — no manual registration required.
 
 ### Tools
 

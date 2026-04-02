@@ -88,7 +88,7 @@ Generated assistant artifacts:
 | `CLAUDE.md` | `AGENTS.md` |
 | `.claude/skills/*/SKILL.md` | `.agents/skills/*/SKILL.md` |
 | `.claude/settings.local.json` | `.codex/config.toml` |
-| MCP servers via `claude mcp add` | MCP servers via config file |
+| MCP servers via `claude mcp add` | MCP servers via `.codex/config.toml` |
 
 ### analyze
 

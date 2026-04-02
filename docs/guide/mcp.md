@@ -38,18 +38,20 @@ args = ["node_modules/@n-dx/sourcevision/dist/cli/index.js", "mcp", "."]
 
 ## Transport Options
 
-### HTTP (Recommended for Claude)
+### HTTP (Recommended)
 
-Start the unified server, then register the MCP endpoints:
+Start the unified server, then register the MCP endpoints with your assistant:
 
 ```sh
 # 1. Start the server (dashboard + MCP on one port)
 ndx start .
 
-# 2. Add HTTP MCP servers to Claude Code
+# 2. Register HTTP MCP servers (Claude example)
 claude mcp add --transport http rex http://localhost:3117/mcp/rex
 claude mcp add --transport http sourcevision http://localhost:3117/mcp/sourcevision
 ```
+
+Any MCP-compatible assistant can connect to these HTTP endpoints.
 
 The server runs on port 3117 by default. Custom port: `--port=N` or `ndx config web.port N .`
 

@@ -82,7 +82,7 @@ codex login
 | Instructions | `CLAUDE.md` | Project guidance, architecture docs, workflow rules |
 | Skills | `.claude/skills/{name}/SKILL.md` | Slash-command skills (YAML frontmatter format) |
 | Settings | `.claude/settings.local.json` | Auto-approved read-only MCP tool permissions |
-| MCP servers | Registered via `claude mcp add` | Rex and SourceVision stdio servers |
+| MCP servers | Registered via `claude mcp add` (or auto-configured for Codex) | Rex and SourceVision stdio servers |
 
 To start working with Claude Code after init:
 
