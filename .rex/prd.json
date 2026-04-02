@@ -23798,7 +23798,7 @@
         {
           "id": "357ef25f-c555-4e60-8258-c79bcfd23a6f",
           "title": "Vendor Adapter Extraction",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Extract vendor-specific code from cli-loop.ts (1200+ lines) into self-contained adapter modules. Define VendorAdapter interface, extract ClaudeCliAdapter and CodexCliAdapter, refactor cli-loop.ts to use adapter-based dispatch. Highest-risk refactor in Phase 2 — physically moves Claude CLI functions into new modules. Must be done with contract tests (Feature 6) as the regression safety net.",
           "acceptanceCriteria": [
@@ -23818,6 +23818,8 @@
           "blockedBy": [
             "da21807f-fc7b-4680-bd13-253c0ac9fd17"
           ],
+          "startedAt": "2026-04-02T22:17:07.298Z",
+          "completedAt": "2026-04-02T22:17:07.298Z",
           "children": [
             {
               "id": "5b7cde87-7c99-4ca9-8f66-00ba26a50b70",
@@ -23902,7 +23904,7 @@
             {
               "id": "2f1b47d2-da25-425e-bfd0-d94b9a500201",
               "title": "Refactor cli-loop.ts to use adapter-based dispatch",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Replace dispatchVendorSpawn() with adapter-based dispatch. Create resolveVendorAdapter(vendor: LLMVendor): VendorAdapter factory. Refactor the main loop to call adapter.buildSpawnConfig() → spawn → adapter.parseEvent() per line. Remove vendor-specific functions from cli-loop.ts (now in adapter modules). Verify existing E2E tests pass without behavioral changes.",
               "acceptanceCriteria": [
@@ -23923,14 +23925,18 @@
               "blockedBy": [
                 "b321915a-9f3f-418c-9ddc-5f0c50d0bc10",
                 "18aa02a2-e4d6-4fac-a0db-b7d68c96d01e"
-              ]
+              ],
+              "startedAt": "2026-04-02T21:08:14.695Z",
+              "completedAt": "2026-04-02T22:17:07.118Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Refactored cli-loop.ts to use adapter-based dispatch. Replaced spawnClaude/spawnCodex/dispatchVendorSpawn with generic spawnWithAdapter() using VendorAdapter pattern. Created resolveVendorAdapter factory, event-accumulator.ts for legacy parsers, applyRuntimeEvent bridge. cli-loop.ts reduced from 1418→884 lines (-534). All 1807 hench tests pass."
             }
           ]
         },
         {
           "id": "07b75236-2a3c-4725-8d95-929dc6b74754",
           "title": "Prompt Envelope Adoption",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Use the existing PromptEnvelope type throughout prompt construction so both vendors receive tagged, traceable prompt sections. Refactor planning/prompt.ts to produce PromptEnvelope instead of flat strings. Each vendor adapter translates the envelope to native delivery format. Sections are logged for diagnostics. Low risk — output should be identical strings with tagged metadata.",
           "acceptanceCriteria": [
@@ -23953,7 +23959,7 @@
             {
               "id": "5c298011-399d-496d-95c2-93bc40864e64",
               "title": "Refactor prompt construction to produce PromptEnvelope",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Update packages/hench/src/agent/planning/prompt.ts to produce PromptEnvelope instead of flat strings. Tag each section with its canonical name (system, workflow, brief, files, validation, completion). Update packages/hench/src/agent/planning/brief.ts to contribute sections to the envelope. CRITICAL: capture exact system prompt strings for 3+ representative tasks before the change, assert byte-identical output after.",
               "acceptanceCriteria": [
@@ -23966,12 +23972,16 @@
               "tags": [
                 "phase-2",
                 "prompt-envelope"
-              ]
+              ],
+              "startedAt": "2026-04-02T22:52:42.697Z",
+              "completedAt": "2026-04-02T23:15:23.489Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Refactored prompt construction to produce PromptEnvelope with tagged sections. Added buildPromptEnvelope to prompt.ts, buildBriefSections to brief.ts, updated shared.ts and cli-loop.ts to use the envelope. 32 regression tests verify byte-identical output."
             },
             {
               "id": "851ce775-c477-4b30-bfb2-14af614cead8",
               "title": "Vendor-specific prompt delivery via adapters",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "ClaudeCliAdapter.buildSpawnConfig() uses assemblePrompt() to split system/task. CodexCliAdapter.buildSpawnConfig() uses assemblePrompt() and formats as SYSTEM:\\n...\\nTASK:\\n... Log prompt section names and sizes in run diagnostics.",
               "acceptanceCriteria": [
@@ -23987,12 +23997,16 @@
               ],
               "blockedBy": [
                 "5c298011-399d-496d-95c2-93bc40864e64"
-              ]
+              ],
+              "startedAt": "2026-04-02T23:16:07.442Z",
+              "completedAt": "2026-04-02T23:36:24.882Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added prompt section diagnostics to vendor adapter delivery. Both adapters already used assemblePrompt() correctly; added PromptSectionDiagnostic type, extraction/logging utilities, and wired into cli-loop.ts. 7 files changed, 513 insertions. All 1957 hench tests pass (87 files), build and typecheck clean."
             },
             {
               "id": "5409318d-45df-4709-9283-c0cef15c4fd3",
               "title": "Prompt envelope parity tests",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Assert both adapters receive identical section names for the same task. Assert section content is equivalent (not just present). Assert no vendor receives sections the other doesn't.",
               "acceptanceCriteria": [
@@ -24008,9 +24022,12 @@
               ],
               "blockedBy": [
                 "851ce775-c477-4b30-bfb2-14af614cead8"
-              ]
+              ],
+              "startedAt": "2026-04-02T23:41:44.713Z"
             }
-          ]
+          ],
+          "startedAt": "2026-04-02T23:45:50.169Z",
+          "completedAt": "2026-04-02T23:45:50.169Z"
         },
         {
           "id": "a1e10c77-5187-49b8-9b50-a5403f9fef94",
@@ -24041,7 +24058,7 @@
             {
               "id": "e8e087e8-5a02-40c1-b6dc-ce42fcb08b19",
               "title": "Create EventAccumulator",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create packages/hench/src/agent/lifecycle/event-accumulator.ts. Implement EventAccumulator class that collects RuntimeEvent[] and derives: total token usage (with diagnostic status), tool call count and list, assistant message text, completion summary, failure details. Add toCliRunResult() method for backward compatibility during migration. Add unit tests.",
               "acceptanceCriteria": [
@@ -24054,12 +24071,16 @@
               "tags": [
                 "phase-2",
                 "event-pipeline"
-              ]
+              ],
+              "startedAt": "2026-04-02T22:20:18.802Z",
+              "completedAt": "2026-04-02T22:35:17.201Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "EventAccumulator class created in event-accumulator.ts with full RuntimeEvent[] derivation (token usage with diagnostics, tool calls with pairing, assistant text, completion summary, failure details). toCliRunResult() backward-compat bridge included. Barrel-exported from agent/index.ts. 53 unit tests cover all derivation paths. All 1860 tests pass."
             },
             {
               "id": "f257df67-5470-4661-ac03-b0f74a994ae3",
               "title": "Wire event pipeline into CLI loop",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Replace inline result accumulation with EventAccumulator. Feed adapter.parseEvent() output directly into accumulator. Update spin detection to operate on RuntimeEvent stream. Update token budget checking to use accumulator totals. Verify run records contain equivalent data post-migration. Gate behind config.useEventPipeline flag.",
               "acceptanceCriteria": [
@@ -24078,7 +24099,11 @@
               ],
               "blockedBy": [
                 "e8e087e8-5a02-40c1-b6dc-ce42fcb08b19"
-              ]
+              ],
+              "startedAt": "2026-04-02T22:36:12.759Z",
+              "completedAt": "2026-04-02T22:48:12.444Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Wired EventAccumulator into CLI loop behind config.useEventPipeline flag. When enabled: adapter.parseEvent() feeds accumulator, spin detection/budget checking operate on RuntimeEvent stream, SpawnResult derived from accumulator. 4 files changed (877 insertions, 67 deletions), 40 new tests."
             },
             {
               "id": "0fbbf86f-5ffa-483a-bedd-2dc97793fb7d",
