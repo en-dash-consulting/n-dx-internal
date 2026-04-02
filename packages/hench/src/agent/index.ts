@@ -33,6 +33,14 @@ export type { VendorAdapter, SpawnConfig } from "./lifecycle/vendor-adapter.js";
 // Vendor adapter factory + implementations
 export { resolveVendorAdapter, claudeCliAdapter, codexCliAdapter } from "./lifecycle/adapters/index.js";
 
+// Event accumulator
+export { EventAccumulator } from "./lifecycle/event-accumulator.js";
+export type {
+  AccumulatedTokenUsage,
+  AccumulatedToolCalls,
+  AccumulatedFailure,
+} from "./lifecycle/event-accumulator.js";
+
 // Token budget
 export { checkTokenBudget } from "./lifecycle/token-budget.js";
 export type { TokenBudgetResult } from "./lifecycle/token-budget.js";

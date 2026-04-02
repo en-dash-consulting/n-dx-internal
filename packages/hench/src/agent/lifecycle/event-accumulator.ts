@@ -1,30 +1,29 @@
 /**
- * Legacy event accumulation functions — mutation-based CLI event parsers.
+ * Event accumulation — RuntimeEvent-based and legacy mutation-based parsers.
  *
- * These functions parse vendor CLI output lines and **mutate** a shared
- * `CliRunResult` object in place. They are the original parsing
- * implementation from `cli-loop.ts`, preserved here for backward
- * compatibility with existing tests.
+ * ## EventAccumulator (primary)
  *
- * ## Deprecation notice
+ * The `EventAccumulator` class collects `RuntimeEvent[]` and derives
+ * aggregated run metrics: total token usage (with diagnostic status),
+ * tool call count and list, assistant message text, completion summary,
+ * and failure details. The `toCliRunResult()` method produces a
+ * backward-compatible `CliRunResult` for the migration period.
  *
- * Production code now uses the adapter-based dispatch path:
- *   `adapter.parseEvent(line) → RuntimeEvent → applyRuntimeEvent()`
+ * ## Legacy functions (deprecated)
  *
- * The mutation-based functions here remain only because several test suites
- * import them to verify the legacy parsing contract. New tests should use
- * the adapter API (`claudeCliAdapter.parseEvent`, `codexCliAdapter.parseEvent`)
- * and the `applyRuntimeEvent` bridge in `cli-loop.ts`.
+ * The mutation-based functions (`processStreamLine`, `processCodexJsonLine`)
+ * parse vendor CLI output lines and mutate a shared `CliRunResult` in place.
+ * They remain for backward compatibility with existing tests.
  *
- * @deprecated Use VendorAdapter.parseEvent() + applyRuntimeEvent() instead.
  * @see packages/hench/src/agent/lifecycle/adapters/ — adapter implementations
  * @see packages/hench/src/agent/lifecycle/cli-loop.ts — generic spawn function
  */
 
-import type { ToolCallRecord, TurnTokenUsage } from "../../schema/index.js";
+import type { ToolCallRecord, TurnTokenUsage, TokenUsage } from "../../schema/index.js";
 import { parseTokenUsageWithDiagnostic, parseStreamTokenUsage } from "./token-usage.js";
+import type { TokenDiagnosticStatus } from "./token-usage.js";
 import { stream, info } from "../../types/output.js";
-import type { LLMVendor } from "../../prd/llm-gateway.js";
+import type { LLMVendor, RuntimeEvent, FailureCategory } from "../../prd/llm-gateway.js";
 import { parseMaybeJson } from "./adapters/codex-cli-adapter.js";
 
 // ── Shared types ──────────────────────────────────────────────────────────
@@ -46,6 +45,337 @@ export interface TokenEventMetadata {
   vendor: LLMVendor;
   model: string;
 }
+
+// ── EventAccumulator ──────────────────────────────────────────────────────
+
+/**
+ * Accumulated token usage with per-turn granularity and diagnostic status.
+ *
+ * `overallDiagnostic` reflects the worst diagnostic across all turns:
+ * - `complete` — every turn reported complete usage
+ * - `partial` — at least one turn had partial data
+ * - `unavailable` — at least one turn had no usage data, OR no token events at all
+ */
+export interface AccumulatedTokenUsage {
+  readonly total: TokenUsage;
+  readonly perTurn: ReadonlyArray<TurnTokenUsage>;
+  readonly overallDiagnostic: TokenDiagnosticStatus;
+}
+
+/**
+ * Derived tool call summary.
+ */
+export interface AccumulatedToolCalls {
+  readonly count: number;
+  readonly calls: ReadonlyArray<ToolCallRecord>;
+}
+
+/**
+ * Derived failure information from failure events.
+ */
+export interface AccumulatedFailure {
+  readonly category: FailureCategory;
+  readonly message: string;
+  readonly vendorDetail?: string;
+}
+
+/**
+ * Collects `RuntimeEvent[]` and derives aggregated run metrics.
+ *
+ * This class is the primary event-pipeline accumulator. It replaces the
+ * mutation-based `applyRuntimeEvent` bridge in `cli-loop.ts` with a
+ * clean, functional derivation from the event stream.
+ *
+ * ## Usage
+ *
+ * ```ts
+ * const acc = new EventAccumulator();
+ * for (const event of events) acc.push(event);
+ *
+ * acc.tokenUsage;     // AccumulatedTokenUsage
+ * acc.toolCalls;      // AccumulatedToolCalls
+ * acc.assistantText;  // string[]
+ * acc.completionSummary;  // string | undefined
+ * acc.failures;       // AccumulatedFailure[]
+ * acc.toCliRunResult();   // CliRunResult (backward compat)
+ * ```
+ *
+ * All derivations are computed lazily on first access and cached until
+ * the next `push()` call invalidates the cache.
+ */
+export class EventAccumulator {
+  private readonly _events: RuntimeEvent[] = [];
+
+  // ── Lazy caches ──
+  private _tokenUsageCache: AccumulatedTokenUsage | null = null;
+  private _toolCallsCache: AccumulatedToolCalls | null = null;
+  private _assistantTextCache: string[] | null = null;
+  private _completionSummaryCache: string | undefined | null = null;
+  private _failuresCache: AccumulatedFailure[] | null = null;
+  // Sentinel: null means "not computed", undefined means "computed, no summary"
+  private _completionSummaryComputed = false;
+
+  /** Number of events accumulated so far. */
+  get eventCount(): number {
+    return this._events.length;
+  }
+
+  /** Snapshot of accumulated events (defensive copy). */
+  get events(): ReadonlyArray<RuntimeEvent> {
+    return this._events;
+  }
+
+  /**
+   * Add one or more events to the accumulator.
+   * Invalidates all cached derivations.
+   */
+  push(...events: RuntimeEvent[]): void {
+    for (const event of events) {
+      this._events.push(event);
+    }
+    this._invalidate();
+  }
+
+  // ── Derived properties ──────────────────────────────────────────────
+
+  /** Aggregated token usage across all `token_usage` events. */
+  get tokenUsage(): AccumulatedTokenUsage {
+    if (this._tokenUsageCache === null) {
+      this._tokenUsageCache = this._deriveTokenUsage();
+    }
+    return this._tokenUsageCache;
+  }
+
+  /** Tool call count and detail list. */
+  get toolCalls(): AccumulatedToolCalls {
+    if (this._toolCallsCache === null) {
+      this._toolCallsCache = this._deriveToolCalls();
+    }
+    return this._toolCallsCache;
+  }
+
+  /** All assistant message texts, in order. */
+  get assistantText(): ReadonlyArray<string> {
+    if (this._assistantTextCache === null) {
+      this._assistantTextCache = this._deriveAssistantText();
+    }
+    return this._assistantTextCache;
+  }
+
+  /** Completion summary from the last `completion` event, if any. */
+  get completionSummary(): string | undefined {
+    if (!this._completionSummaryComputed) {
+      this._completionSummaryCache = this._deriveCompletionSummary();
+      this._completionSummaryComputed = true;
+    }
+    return this._completionSummaryCache ?? undefined;
+  }
+
+  /** All failure events accumulated during the run. */
+  get failures(): ReadonlyArray<AccumulatedFailure> {
+    if (this._failuresCache === null) {
+      this._failuresCache = this._deriveFailures();
+    }
+    return this._failuresCache;
+  }
+
+  /**
+   * Highest turn number seen across all events.
+   * Returns 0 if no events have been accumulated.
+   */
+  get maxTurn(): number {
+    let max = 0;
+    for (const e of this._events) {
+      if (e.turn > max) max = e.turn;
+    }
+    return max;
+  }
+
+  // ── Backward compatibility ──────────────────────────────────────────
+
+  /**
+   * Produce a `CliRunResult` from accumulated events.
+   *
+   * This bridges the event-pipeline accumulator to the legacy shape
+   * consumed by `cli-loop.ts`, `finalizeRun`, spin detection, and
+   * budget checks. It will be removed once all consumers migrate to
+   * reading from the accumulator directly.
+   */
+  toCliRunResult(): CliRunResult {
+    const tokenUsage = this.tokenUsage;
+    const toolCalls = this.toolCalls;
+    const failures = this.failures;
+
+    // Summary: prefer completionSummary, then last assistant text
+    let summary: string | undefined = this.completionSummary;
+    if (!summary && this.assistantText.length > 0) {
+      summary = this.assistantText[this.assistantText.length - 1].slice(0, MAX_SUMMARY_LENGTH);
+    }
+
+    // Error: first failure message, if any
+    const error = failures.length > 0 ? failures[0].message : undefined;
+
+    return {
+      turns: this.maxTurn,
+      toolCalls: toolCalls.calls as ToolCallRecord[],
+      tokenUsage: { ...tokenUsage.total },
+      turnTokenUsage: tokenUsage.perTurn as TurnTokenUsage[],
+      summary,
+      error,
+    };
+  }
+
+  // ── Private derivation methods ──────────────────────────────────────
+
+  private _invalidate(): void {
+    this._tokenUsageCache = null;
+    this._toolCallsCache = null;
+    this._assistantTextCache = null;
+    this._completionSummaryCache = null;
+    this._completionSummaryComputed = false;
+    this._failuresCache = null;
+  }
+
+  private _deriveTokenUsage(): AccumulatedTokenUsage {
+    const total: TokenUsage = { input: 0, output: 0 };
+    const perTurn: TurnTokenUsage[] = [];
+    let worstDiagnostic: TokenDiagnosticStatus = "complete";
+
+    const tokenEvents = this._events.filter((e) => e.type === "token_usage");
+
+    if (tokenEvents.length === 0) {
+      return { total, perTurn, overallDiagnostic: "unavailable" };
+    }
+
+    for (const event of tokenEvents) {
+      const usage = event.tokenUsage;
+      if (!usage) continue;
+
+      total.input += usage.input;
+      total.output += usage.output;
+
+      if (usage.cacheCreationInput) {
+        total.cacheCreationInput = (total.cacheCreationInput ?? 0) + usage.cacheCreationInput;
+      }
+      if (usage.cacheReadInput) {
+        total.cacheReadInput = (total.cacheReadInput ?? 0) + usage.cacheReadInput;
+      }
+
+      // Determine diagnostic status for this turn based on data quality
+      let turnDiagnostic: TokenDiagnosticStatus = "complete";
+      if (usage.input === 0 && usage.output === 0) {
+        turnDiagnostic = "unavailable";
+      } else if (usage.input === 0 || usage.output === 0) {
+        turnDiagnostic = "partial";
+      }
+
+      perTurn.push({
+        turn: event.turn,
+        input: usage.input,
+        output: usage.output,
+        diagnosticStatus: turnDiagnostic,
+        vendor: event.vendor,
+        ...(usage.cacheCreationInput ? { cacheCreationInput: usage.cacheCreationInput } : {}),
+        ...(usage.cacheReadInput ? { cacheReadInput: usage.cacheReadInput } : {}),
+      });
+
+      // Worst-case diagnostic: unavailable > partial > complete
+      worstDiagnostic = worstDiagnosticStatus(worstDiagnostic, turnDiagnostic);
+    }
+
+    return { total, perTurn, overallDiagnostic: worstDiagnostic };
+  }
+
+  private _deriveToolCalls(): AccumulatedToolCalls {
+    const calls: ToolCallRecord[] = [];
+
+    // Collect tool_use events, and pair with following tool_result events
+    for (let i = 0; i < this._events.length; i++) {
+      const event = this._events[i];
+      if (event.type === "tool_use" && event.toolCall) {
+        const record: ToolCallRecord = {
+          turn: event.turn,
+          tool: event.toolCall.tool,
+          input: event.toolCall.input,
+          output: "",
+          durationMs: 0,
+        };
+
+        // Look ahead for a matching tool_result
+        for (let j = i + 1; j < this._events.length; j++) {
+          const next = this._events[j];
+          if (next.type === "tool_result" && next.toolResult) {
+            // Match by tool name or assume sequential pairing
+            if (next.toolResult.tool === event.toolCall.tool || next.toolResult.tool === "") {
+              record.output = next.toolResult.output.slice(0, 2000);
+              record.durationMs = next.toolResult.durationMs;
+              break;
+            }
+          }
+          // Stop looking if we hit another tool_use (next invocation)
+          if (next.type === "tool_use") break;
+        }
+
+        calls.push(record);
+      }
+    }
+
+    return { count: calls.length, calls };
+  }
+
+  private _deriveAssistantText(): string[] {
+    const texts: string[] = [];
+    for (const event of this._events) {
+      if (event.type === "assistant" && event.text) {
+        texts.push(event.text);
+      }
+    }
+    return texts;
+  }
+
+  private _deriveCompletionSummary(): string | undefined {
+    // Use the last completion event's summary
+    for (let i = this._events.length - 1; i >= 0; i--) {
+      const event = this._events[i];
+      if (event.type === "completion" && event.completionSummary) {
+        return event.completionSummary;
+      }
+    }
+    return undefined;
+  }
+
+  private _deriveFailures(): AccumulatedFailure[] {
+    const failures: AccumulatedFailure[] = [];
+    for (const event of this._events) {
+      if (event.type === "failure" && event.failure) {
+        failures.push({
+          category: event.failure.category,
+          message: event.failure.message,
+          ...(event.failure.vendorDetail ? { vendorDetail: event.failure.vendorDetail } : {}),
+        });
+      }
+    }
+    return failures;
+  }
+}
+
+/**
+ * Return the worse of two diagnostic statuses.
+ * Ordering: unavailable > partial > complete
+ */
+function worstDiagnosticStatus(
+  a: TokenDiagnosticStatus,
+  b: TokenDiagnosticStatus,
+): TokenDiagnosticStatus {
+  const order: Record<TokenDiagnosticStatus, number> = {
+    complete: 0,
+    partial: 1,
+    unavailable: 2,
+  };
+  return order[a] >= order[b] ? a : b;
+}
+
+// ── Legacy types & parsers (deprecated) ───────────────────────────────────
 
 // ── Claude stream-json parser (mutation-based) ────────────────────────────
 
