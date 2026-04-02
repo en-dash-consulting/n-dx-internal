@@ -23822,7 +23822,7 @@
             {
               "id": "5b7cde87-7c99-4ca9-8f66-00ba26a50b70",
               "title": "Define VendorAdapter interface and SpawnConfig type",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Define VendorAdapter interface in packages/hench/src/agent/lifecycle/vendor-adapter.ts with: buildSpawnConfig(envelope, policy, model) → SpawnConfig; parseEvent(line, turn, metadata) → RuntimeEvent | null; classifyError(err) → FailureCategory; readonly vendor: LLMVendor; readonly parseMode: string. Define SpawnConfig type (binary, args, env, stdinContent, cwd). Export through hench's internal barrel.",
               "acceptanceCriteria": [
@@ -23837,12 +23837,15 @@
                 "adapter-extraction",
                 "interface"
               ],
-              "startedAt": "2026-04-02T16:01:39.498Z"
+              "startedAt": "2026-04-02T16:01:39.498Z",
+              "completedAt": "2026-04-02T16:06:55.724Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Defined VendorAdapter interface and SpawnConfig type in packages/hench/src/agent/lifecycle/vendor-adapter.ts. VendorAdapter has 4 methods/properties (buildSpawnConfig, parseEvent, classifyError, vendor, parseMode). SpawnConfig has 5 fields (binary, args, env, stdinContent, cwd). Types exported through agent barrel. 27 tests covering type shape, composability, and both vendor patterns."
             },
             {
               "id": "b321915a-9f3f-418c-9ddc-5f0c50d0bc10",
               "title": "Extract ClaudeCliAdapter",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Move buildClaudeCliArgs(), processStreamLine(), and spawnClaude() subprocess config into packages/hench/src/agent/lifecycle/adapters/claude-cli-adapter.ts. Implement VendorAdapter interface: buildSpawnConfig() wraps buildClaudeCliArgs, parseEvent() produces RuntimeEvent objects from stream-json, classifyError() delegates to classifyVendorError(). Add unit tests for Claude adapter in isolation. CRITICAL: snapshot test capturing exact args array before extraction, assert byte-identical after.",
               "acceptanceCriteria": [
@@ -23862,12 +23865,16 @@
               ],
               "blockedBy": [
                 "5b7cde87-7c99-4ca9-8f66-00ba26a50b70"
-              ]
+              ],
+              "startedAt": "2026-04-02T16:20:00.263Z",
+              "completedAt": "2026-04-02T16:27:17.904Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Extracted ClaudeCliAdapter into packages/hench/src/agent/lifecycle/adapters/claude-cli-adapter.ts implementing VendorAdapter interface. 48 unit tests with snapshot parity assertions. All 1745 hench tests pass."
             },
             {
               "id": "18aa02a2-e4d6-4fac-a0db-b7d68c96d01e",
               "title": "Extract CodexCliAdapter",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Move spawnCodex(), processCodexJsonLine(), normalizeCodexResponse(), and compileCodexPolicyFlags() into packages/hench/src/agent/lifecycle/adapters/codex-cli-adapter.ts. Implement VendorAdapter interface: buildSpawnConfig() compiles ExecutionPolicy to Codex flags, parseEvent() produces RuntimeEvent from JSONL with heuristic fallback, classifyError() delegates to classifyVendorError(). Add unit tests for Codex adapter in isolation.",
               "acceptanceCriteria": [
@@ -23886,7 +23893,11 @@
               ],
               "blockedBy": [
                 "5b7cde87-7c99-4ca9-8f66-00ba26a50b70"
-              ]
+              ],
+              "startedAt": "2026-04-02T16:27:49.963Z",
+              "completedAt": "2026-04-02T16:41:39.255Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Created codex-cli-adapter.ts implementing VendorAdapter interface with buildSpawnConfig, parseEvent (structured JSONL + heuristic fallback), and classifyError. 62 unit tests pass in isolation."
             },
             {
               "id": "2f1b47d2-da25-425e-bfd0-d94b9a500201",
