@@ -996,8 +996,8 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   // Resolve the vendor adapter — replaces the old dispatchVendorSpawn switch
   const adapter = resolveVendorAdapter(vendor);
 
-  // Shared: assemble brief, format, build system prompt, display task info
-  const { brief, taskId, briefText, systemPrompt } = await prepareBrief(
+  // Shared: assemble brief, format, build system prompt + envelope, display task info
+  const { brief, taskId, briefText, systemPrompt, envelope: baseEnvelope } = await prepareBrief(
     store, config, opts.taskId,
     { excludeTaskIds: opts.excludeTaskIds, epicId: opts.epicId },
     { priorAttempts: opts.priorAttempts, runHistory: opts.runHistory },
@@ -1066,13 +1066,15 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
         ? briefText
         : briefText + buildRetryNotice(attempt, retryConfig.maxRetries, accumulated.turns);
 
-      // Build a PromptEnvelope from the system prompt and task brief.
-      // The adapter's buildSpawnConfig will call assemblePrompt() to
-      // separate them into the vendor's delivery channels.
-      const envelope = createPromptEnvelope([
-        { name: "system" as PromptSectionName, content: systemPrompt } as PromptSection,
-        { name: "brief" as PromptSectionName, content: promptText } as PromptSection,
-      ]);
+      // Build the per-attempt PromptEnvelope. On the first attempt we use
+      // the base envelope from prepareBrief directly. On retries we replace
+      // the "brief" section with the retry-augmented prompt text.
+      const envelope = attempt === 0
+        ? baseEnvelope
+        : createPromptEnvelope([
+            { name: "system" as PromptSectionName, content: systemPrompt } as PromptSection,
+            { name: "brief" as PromptSectionName, content: promptText } as PromptSection,
+          ]);
 
       // Use the adapter to build the vendor-specific spawn configuration
       const spawnConfig = adapter.buildSpawnConfig(envelope, policy, opts.model);

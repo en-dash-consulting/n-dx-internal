@@ -61,14 +61,15 @@ export type { AggregateTokenUsage } from "./lifecycle/token-usage.js";
 export {
   assembleTaskBrief,
   formatTaskBrief,
+  buildBriefSections,
   getActionableTasks,
   collectEpicTaskIds,
   TaskNotActionableError,
 } from "./planning/brief.js";
 export type { AssembleBriefOptions, ActionableTask } from "./planning/brief.js";
 
-// System prompt
-export { buildSystemPrompt } from "./planning/prompt.js";
+// System prompt + prompt envelope
+export { buildSystemPrompt, buildPromptEnvelope } from "./planning/prompt.js";
 
 // ── Analysis ──
 // Re-exported from analysis barrel (review, summary, stuck, spin, adaptive, workflow)

@@ -22,7 +22,8 @@ import { getCurrentHead } from "../../process/index.js";
 import { SystemMemoryMonitor } from "../../process/memory-monitor.js";
 import { assembleTaskBrief, formatTaskBrief } from "../planning/brief.js";
 import type { AssembleBriefOptions } from "../planning/brief.js";
-import { buildSystemPrompt } from "../planning/prompt.js";
+import { buildSystemPrompt, buildPromptEnvelope } from "../planning/prompt.js";
+import type { PromptEnvelope } from "../../prd/llm-gateway.js";
 import { saveRun } from "../../store/index.js";
 import { buildRunSummary } from "../analysis/summary.js";
 import { collectReviewDiff, promptReview, revertChanges } from "../analysis/review.js";
@@ -67,6 +68,8 @@ export interface PreparedBrief {
   taskId: string;
   briefText: string;
   systemPrompt: string;
+  /** Structured prompt envelope with tagged sections. */
+  envelope: PromptEnvelope;
 }
 
 /** Additional display options for brief preparation. */
@@ -94,6 +97,7 @@ export async function prepareBrief(
   const { brief, taskId: resolvedTaskId } = await assembleTaskBrief(store, taskId, options);
   const briefText = formatTaskBrief(brief);
   const systemPrompt = buildSystemPrompt(brief.project, config);
+  const envelope = buildPromptEnvelope(brief, config);
 
   const reason: SelectionReason = taskId ? "explicit" : "auto";
 
@@ -121,7 +125,7 @@ export async function prepareBrief(
 
   displayTaskInfo(brief, reason, explanation, priorAttempts);
 
-  return { brief, taskId: resolvedTaskId, briefText, systemPrompt };
+  return { brief, taskId: resolvedTaskId, briefText, systemPrompt, envelope };
 }
 
 // ---------------------------------------------------------------------------
