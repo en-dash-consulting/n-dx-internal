@@ -40,6 +40,18 @@ function startTestServer(
   });
 }
 
+async function waitFor(
+  predicate: () => boolean,
+  timeoutMs: number = 5_000,
+): Promise<void> {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  throw new Error(`Timed out after ${timeoutMs}ms`);
+}
+
 describe("POST /api/hench/execute", () => {
   let tmpDir: string;
   let rexDir: string;
@@ -370,8 +382,12 @@ describe("broadcast on execute", () => {
     });
     expect(res.status).toBe(202);
 
-    // Wait for process to spawn and complete/fail (no real hench binary in test env)
-    await new Promise((r) => setTimeout(r, 200));
+    await waitFor(() =>
+      broadcastMessages.some((msg) => {
+        const state = (msg as Record<string, unknown>).state as Record<string, unknown> | undefined;
+        return state?.status === "completed" || state?.status === "failed";
+      }),
+    );
 
     expect(broadcastFn).toHaveBeenCalled();
 

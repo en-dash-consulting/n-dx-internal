@@ -34,9 +34,11 @@
     "dev": "node dev.js",
     "dev:viewer": "node build.js --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "pnpm run test:unit && pnpm run test:integration",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration --no-file-parallelism",
     "test:watch": "vitest",
-    "validate": "tsc --noEmit && vitest run",
+    "validate": "tsc --noEmit && pnpm run test",
     "prepare": "pnpm run build"
   },
   "dependencies": {

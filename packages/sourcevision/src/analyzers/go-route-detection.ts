@@ -284,9 +284,12 @@ function inferPrefix(routes: ServerRoute[]): string {
   let prefix = paths[0];
   for (let i = 1; i < paths.length; i++) {
     while (!paths[i].startsWith(prefix)) {
-      const lastSlash = prefix.lastIndexOf("/");
+      // Trim any trailing slash before walking up a segment so we always
+      // reduce the candidate prefix and never spin on "/segment/".
+      const candidate = prefix.endsWith("/") ? prefix.slice(0, -1) : prefix;
+      const lastSlash = candidate.lastIndexOf("/");
       if (lastSlash <= 0) return "/";
-      prefix = prefix.slice(0, lastSlash + 1);
+      prefix = candidate.slice(0, lastSlash + 1);
     }
   }
   // Ensure prefix ends with /

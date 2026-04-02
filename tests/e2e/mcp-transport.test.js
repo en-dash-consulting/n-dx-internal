@@ -109,8 +109,10 @@ describe("MCP HTTP transport (e2e)", () => {
     });
 
     // Start the server in the foreground (as a child process)
+    // detached: true creates a process group so we can kill the whole tree
     serverProcess = spawn("node", [CLI_PATH, "start", "--port=" + port, tmpDir], {
-      stdio: "pipe",
+      stdio: ["ignore", "pipe", "pipe"],
+      detached: true,
       env: { ...process.env },
     });
 
@@ -123,11 +125,21 @@ describe("MCP HTTP transport (e2e)", () => {
 
   afterAll(async () => {
     if (serverProcess) {
-      serverProcess.kill("SIGTERM");
-      // Wait for process to exit
+      const proc = serverProcess;
+      serverProcess = null;
+      // Kill the entire process group (wrapper + web server child)
+      if (proc.pid) {
+        try { process.kill(-proc.pid, "SIGTERM"); } catch { /* already dead */ }
+      }
       await new Promise((resolve) => {
-        serverProcess.on("exit", resolve);
-        setTimeout(resolve, 3000);
+        proc.on("close", () => resolve());
+        setTimeout(() => {
+          // Force kill if SIGTERM didn't work
+          if (proc.pid) {
+            try { process.kill(-proc.pid, "SIGKILL"); } catch { /* already dead */ }
+          }
+          resolve();
+        }, 3000);
       });
     }
     await removeTmpDir(tmpDir);

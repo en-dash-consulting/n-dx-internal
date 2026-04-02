@@ -31,9 +31,11 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "pnpm run test:unit && pnpm run test:e2e",
+    "test:unit": "vitest run tests/unit tests/integration",
+    "test:e2e": "vitest run tests/e2e --no-file-parallelism",
     "test:watch": "vitest",
-    "validate": "tsc --noEmit && vitest run",
+    "validate": "tsc --noEmit && pnpm run test",
     "prepare": "pnpm run build"
   },
   "dependencies": {

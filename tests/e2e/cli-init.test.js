@@ -68,6 +68,27 @@ describe("n-dx init provider selection", () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
+  async function expectProviderPersistsThroughConfigGet(provider, stdout) {
+    const projectDir = await mkdtemp(join(tmpdir(), `ndx-init-${provider}-`));
+    const binDir = await mkdtemp(join(tmpdir(), `ndx-init-bin-${provider}-`));
+    try {
+      await writeFakeBinary(join(binDir, provider), { stdout });
+
+      run(["init", `--provider=${provider}`, projectDir], {
+        env: {
+          ...process.env,
+          PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}`,
+        },
+      });
+
+      const configured = run(["config", "llm.vendor", projectDir]).trim();
+      expect(configured).toBe(provider);
+    } finally {
+      await rm(binDir, { recursive: true, force: true });
+      await rm(projectDir, { recursive: true, force: true });
+    }
+  }
+
   it("prompts with codex and claude options only", async () => {
     const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-prompt-"));
     try {
@@ -111,32 +132,12 @@ describe("n-dx init provider selection", () => {
     expect(ndxConfig.llm.vendor).toBe("claude");
   });
 
-  it("persists both providers through config get pathway", async () => {
-    const cases = [
-      { provider: "codex", stdout: "ok" },
-      { provider: "claude", stdout: '{"result":"ok"}' },
-    ];
+  it("persists codex through config get pathway", async () => {
+    await expectProviderPersistsThroughConfigGet("codex", "ok");
+  });
 
-    for (const { provider, stdout } of cases) {
-      const projectDir = await mkdtemp(join(tmpdir(), `ndx-init-${provider}-`));
-      const binDir = await mkdtemp(join(tmpdir(), `ndx-init-bin-${provider}-`));
-      try {
-        await writeFakeBinary(join(binDir, provider), { stdout });
-
-        run(["init", `--provider=${provider}`, projectDir], {
-          env: {
-            ...process.env,
-            PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}`,
-          },
-        });
-
-        const configured = run(["config", "llm.vendor", projectDir]).trim();
-        expect(configured).toBe(provider);
-      } finally {
-        await rm(binDir, { recursive: true, force: true });
-        await rm(projectDir, { recursive: true, force: true });
-      }
-    }
+  it("persists claude through config get pathway", async () => {
+    await expectProviderPersistsThroughConfigGet("claude", '{"result":"ok"}');
   });
 
   it("exits non-zero with clear message when selection is cancelled", () => {

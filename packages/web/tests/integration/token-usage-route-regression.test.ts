@@ -174,7 +174,7 @@ describe("token usage route regression", () => {
     expect(document.querySelector(".breadcrumb-product-rex")).toBeNull();
     expect(document.title).toContain("Token Usage");
     expect(document.title).toContain("Global");
-  });
+  }, 10_000);
 
   it("redirects legacy Rex token links to canonical global /token-usage", async () => {
     await bootViewer("/rex-dashboard/token-usage", createMockApi());

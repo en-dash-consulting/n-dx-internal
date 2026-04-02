@@ -38,14 +38,41 @@ function waitForServer(port: number, timeout = 5000): Promise<void> {
   });
 }
 
+/** Kill a process and all its children by PID */
+function killTree(pid: number): void {
+  try {
+    // Kill the entire process group (negative PID)
+    process.kill(-pid, "SIGTERM");
+  } catch {
+    // Process group kill failed — fall back to direct kill
+    try {
+      process.kill(pid, "SIGKILL");
+    } catch {
+      // Already dead
+    }
+  }
+}
+
 describe("sourcevision serve (e2e)", () => {
   let tmpDir: string;
   let serverProc: ChildProcess | null = null;
 
   afterEach(async () => {
     if (serverProc) {
-      serverProc.kill("SIGTERM");
+      const proc = serverProc;
       serverProc = null;
+      if (proc.pid) killTree(proc.pid);
+      // Wait for the process to fully exit so vitest doesn't hang on open handles
+      await new Promise<void>((resolve) => {
+        proc.on("close", () => resolve());
+        setTimeout(() => {
+          // Final SIGKILL if still alive
+          if (proc.pid) {
+            try { process.kill(proc.pid, "SIGKILL"); } catch { /* already dead */ }
+          }
+          resolve();
+        }, 3000);
+      });
     }
     if (tmpDir) await rm(tmpDir, { recursive: true, force: true });
   });
@@ -61,9 +88,11 @@ describe("sourcevision serve (e2e)", () => {
     });
 
     // Start server on an OS-assigned free port
+    // detached: true creates a new process group so we can kill the whole tree
     const port = await getFreePort();
     serverProc = spawn("node", [CLI_PATH, "serve", tmpDir, `--port=${port}`], {
-      stdio: "pipe",
+      stdio: ["ignore", "pipe", "pipe"],
+      detached: true,
     });
 
     await waitForServer(port);

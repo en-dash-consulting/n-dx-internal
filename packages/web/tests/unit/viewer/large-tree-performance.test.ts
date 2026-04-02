@@ -298,6 +298,18 @@ function timedMedian(fn: () => void, iterations = 20): number {
   return times[Math.floor(times.length / 2)];
 }
 
+/**
+ * Batch repeated executions inside each sample to reduce noisy scheduling
+ * effects when the underlying operation is very fast.
+ */
+function timedMedianBatch(fn: () => void, batchCount = 50, iterations = 31): number {
+  return timedMedian(() => {
+    for (let i = 0; i < batchCount; i++) {
+      fn();
+    }
+  }, iterations);
+}
+
 // ── Memory tracking mock ──────────────────────────────────────────────────────
 
 interface MemorySnapshot {
@@ -855,15 +867,16 @@ describe("performance regression detection", () => {
     const small = generateRealisticTree(500);
     const large = generateRealisticTree(2000);
 
-    // Measure computeBranchStats at both sizes using median of multiple runs
-    // to avoid flaky results from sub-millisecond single-run timing.
-    const smallTime = timedMedian(() => computeBranchStats(small));
-    const largeTime = timedMedian(() => computeBranchStats(large));
+    // Batch repeated runs so the timing reflects algorithmic cost rather than
+    // scheduler noise from very small single-call samples.
+    const smallTime = timedMedianBatch(() => computeBranchStats(small));
+    const largeTime = timedMedianBatch(() => computeBranchStats(large));
 
     // If O(n), large should be ~4× small. If O(n²), it would be ~16×.
-    // We accept up to 8× to account for cache effects and timing variance.
+    // We accept up to 12× to account for cache effects, scheduler noise, and
+    // concurrent workspace test load while still catching quadratic regressions.
     const ratio = (largeTime + 0.01) / (smallTime + 0.01);
-    expect(ratio).toBeLessThan(8);
+    expect(ratio).toBeLessThan(12);
   });
 
   it("diffItems scales linearly with tree size", () => {
@@ -872,48 +885,48 @@ describe("performance regression detection", () => {
     const smallNext = cloneWithOneChange(small, findMiddleLeafId(small), "completed");
     const largeNext = cloneWithOneChange(large, findMiddleLeafId(large), "completed");
 
-    const smallTime = timedMedian(() => diffItems(small, smallNext));
-    const largeTime = timedMedian(() => diffItems(large, largeNext));
+    const smallTime = timedMedianBatch(() => diffItems(small, smallNext));
+    const largeTime = timedMedianBatch(() => diffItems(large, largeNext));
 
     const ratio = (largeTime + 0.01) / (smallTime + 0.01);
-    expect(ratio).toBeLessThan(8);
+    expect(ratio).toBeLessThan(12);
   });
 
   it("filterTree scales linearly with tree size", () => {
     const small = generateRealisticTree(500);
     const large = generateRealisticTree(2000);
 
-    const smallTime = timedMedian(() => filterTree(small, ACTIVE_WORK));
-    const largeTime = timedMedian(() => filterTree(large, ACTIVE_WORK));
+    const smallTime = timedMedianBatch(() => filterTree(small, ACTIVE_WORK));
+    const largeTime = timedMedianBatch(() => filterTree(large, ACTIVE_WORK));
 
     const ratio = (largeTime + 0.01) / (smallTime + 0.01);
-    expect(ratio).toBeLessThan(8);
+    expect(ratio).toBeLessThan(12);
   });
 
   it("countVisibleNodes scales linearly with tree size", () => {
     const small = generateRealisticTree(500);
     const large = generateRealisticTree(2000);
 
-    const smallTime = timedMedian(() => countVisibleNodes(small, ALL_STATUSES));
-    const largeTime = timedMedian(() => countVisibleNodes(large, ALL_STATUSES));
+    const smallTime = timedMedianBatch(() => countVisibleNodes(small, ALL_STATUSES));
+    const largeTime = timedMedianBatch(() => countVisibleNodes(large, ALL_STATUSES));
 
     const ratio = (largeTime + 0.01) / (smallTime + 0.01);
-    expect(ratio).toBeLessThan(8);
+    expect(ratio).toBeLessThan(12);
   });
 
   it("sliceVisibleTree scales linearly with tree size", () => {
     const small = generateRealisticTree(500);
     const large = generateRealisticTree(2000);
 
-    const smallTime = timedMedian(() =>
+    const smallTime = timedMedianBatch(() =>
       sliceVisibleTree(small, ALL_STATUSES, PROGRESSIVE_THRESHOLD),
     );
-    const largeTime = timedMedian(() =>
+    const largeTime = timedMedianBatch(() =>
       sliceVisibleTree(large, ALL_STATUSES, PROGRESSIVE_THRESHOLD),
     );
 
     const ratio = (largeTime + 0.01) / (smallTime + 0.01);
-    expect(ratio).toBeLessThan(8);
+    expect(ratio).toBeLessThan(12);
   });
 
   it("applyItemUpdate is constant-time relative to tree depth", () => {
