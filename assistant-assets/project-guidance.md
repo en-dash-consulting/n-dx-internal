@@ -94,7 +94,9 @@ Both `n-dx` and `ndx` work identically (`ndx` is shorter to type).
 ## n-dx Orchestration Commands
 
 ```sh
-ndx init [dir]            # sourcevision init → rex init → hench init
+ndx init [dir]            # sourcevision init → rex init → hench init + LLM model selection
+                          #   --provider=claude|codex  --model=<id>
+                          #   --claude-model=<id>  --codex-model=<id>
 ndx analyze [dir]         # sourcevision analyze (--deep, --full, --lite)
 ndx recommend [dir]       # rex recommend (--accept, --actionable-only, --acknowledge)
 ndx add "description"     # smart-add PRD items from freeform descriptions
@@ -239,7 +241,7 @@ Use `ndx start --background .` for daemon mode, `ndx start status .` to check, `
 | `.hench/config.json` | Hench agent configuration (model, max turns) |
 | `.hench/runs/` | Run history and transcripts |
 | `.rex/archive.json` | Pruned/reshaped item archive (written by `rex prune` and `rex reshape`; max 100 batches, auto-trimmed; safe to delete — only used for item recovery/audit) |
-| `.n-dx.json` | Project-level config overrides (web.port, etc.) |
+| `.n-dx.json` | Project-level config overrides (web.port, llm.vendor, llm.claude.model, llm.codex.model) |
 | `.n-dx-web.pid` | Background web server PID file (auto-managed) |
 | `tests/e2e/architecture-policy.test.js` | Spawn-only enforcement, intra-package layering, zone-cycle detection |
 | `tests/e2e/domain-isolation.test.js` | Gateway enforcement, domain layer isolation, foundation tier boundary |
